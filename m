@@ -1,82 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755946AbYAQJkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755129AbYAQJmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755946AbYAQJkf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 04:40:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbYAQJkY
+	id S1755129AbYAQJmX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 04:42:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbYAQJmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 04:40:24 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43870 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751132AbYAQJkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 04:40:22 -0500
-Date: Thu, 17 Jan 2008 07:40:07 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: David Miller <davem@davemloft.net>
-Cc: elendil@planet.nl, jesse.brandeburg@intel.com, slavon@bigtelecom.ru,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
-Message-ID: <20080117094007.GF321@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	David Miller <davem@davemloft.net>, elendil@planet.nl,
-	jesse.brandeburg@intel.com, slavon@bigtelecom.ru,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <36D9DB17C6DE9E40B059440DB8D95F520432DA91@orsmsx418.amr.corp.intel.com> <20080116.232037.261622584.davem@davemloft.net> <200801170851.56029.elendil@planet.nl> <20080117.000002.37027317.davem@davemloft.net>
+	Thu, 17 Jan 2008 04:42:15 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:38020 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751752AbYAQJmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 04:42:13 -0500
+Message-ID: <400562938.07583@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Thu, 17 Jan 2008 17:41:41 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Michael Rubin <mrubin@google.com>
+Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch] Converting writeback linked lists to a tree based data structure
+References: <20080115080921.70E3810653@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080117.000002.37027317.davem@davemloft.net>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080115080921.70E3810653@localhost>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <E1JFRFm-00011Q-0q@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Jan 17, 2008 at 12:00:02AM -0800, David Miller escreveu:
-> From: Frans Pop <elendil@planet.nl>
-> Date: Thu, 17 Jan 2008 08:51:55 +0100
+On Tue, Jan 15, 2008 at 12:09:21AM -0800, Michael Rubin wrote:
+> 1) Adding a datastructure to guarantee fairness when writing
+>    inodes to disk and simplify the code base.
 > 
-> > On Thursday 17 January 2008, David Miller wrote:
-> > > From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-> > >
-> > > > We spent Wednesday trying to reproduce (without the patch) these issues
-> > > > without much luck, and have applied the patch cleanly and will continue
-> > > > testing it.  Given the simplicity of the changes, and the community
-> > > > testing, I'll give my ack and we will continue testing.
-> > >
-> > > You need a slow CPU, and you need to make sure you do actually
-> > > trigger the TX limiting code there.
-> > 
-> > Hmmm. Is a dual core Pentium D 3.20GHz considered slow these days?
+>    When inodes are parked for writeback they are parked in the
+>    flush_tree. The flush tree is a data structure based on an rb tree.
+
+The main benefit of rbtree is possibly better support of future policies.
+Can you demonstrate an example?
+
+(grumble:
+Apart from the benefit of flexibility, I don't think it makes things
+simpler, nor does the introduction of rbtree automatically fixes bugs.
+Bugs can only be avoided by good understanding of all possible cases.)
+
+The most tricky writeback issues could be starvation prevention
+between
+        - small/large files
+        - new/old files
+        - superblocks
+Some kind of limit should be applied for each. They used to be:
+        - requeue to s_more_io whenever MAX_WRITEBACK_PAGES is reached
+          this preempts big files
+        - refill s_io iif it is drained
+          this prevents promotion of big/old files
+        - return from sync_sb_inodes() after one go of s_io
+          (todo: don't restart from the first superblock in writeback_inodes())
+          this prevents busy superblock from starving others
+          and ensures fairness between superblocks
+ 
+Michael, could you sort out and document the new starvation prevention schemes?
+
+>    Duplicate keys are handled by making a list in the tree for each key
+>    value. The order of how we choose the next inode to flush is decided
+>    by two fields. First the earliest dirtied_when value. If there are
+>    duplicate dirtied_when values then the earliest i_flush_gen value
+>    determines who gets flushed next.
 > 
-> No of course :-)  I guess it therefore depends upon the load
-> as well.
+>    The flush tree organizes the dirtied_when keys with the rb_tree. Any
+>    inodes with a duplicate dirtied_when value are link listed together. This
+>    link list is sorted by the inode's i_flush_gen. When both the
+>    dirtied_when and the i_flush_gen are identical the order in the
+>    linked list determines the order we flush the inodes.
 
-I saw it just once, yesterday:
+Introduce i_flush_gen to help restarting from the last inode?
+Well, it's not as simple as list_heads.
 
-[root@doppio ~]# uname -r
-2.6.24-rc5
-e1000: eth0: e1000_clean_tx_irq: Detected Tx Unit Hang
-  Tx Queue             <0>
-  TDH                  <58>
-  TDT                  <8f>
-  next_to_use          <8f>
-  next_to_clean        <55>
-buffer_info[next_to_clean]
-  time_stamp           <105e973a9>
-  next_to_watch        <56>
-  jiffies              <105e97992>
-  next_to_watch.status <1>
-[root@doppio ~]#
+> 2) Added an inode flag to allow inodes to be marked so that they
+>    are never written back to disk.
+> 
+>    The motivation behind this change is several fold. The first is
+>    to insure fairness in the writeback algorithm. The second is to
 
-on a lenovo T60W, core2duo machine (2GHz), when using it to stress test
-another machine, I was using netperf TCP_STREAM ranging from 1 to 8
-streams + a ping -f using various packet sizes.
+What do you mean by fairness? Why cannot I_WRITEBACK_NEVER be in a
+decoupled standalone patch?
 
-I'll update this machine today to 2.6.24-rc8-git + net-2.6 and try again
-to reproduce.
+>    deal with a bug where the writing to large files concurrently
+>    to smaller ones creates a situation where writeback cannot
+>    keep up with traffic and memory baloons until the we hit the
+>    threshold watermark. This can result in surprising long latency
+>    with respect to disk traffic. This latency can take minutes. The
 
-I also applied David's patch while trying some RT experiments on
-another, 8 way machine used as a server, but on this machine I didn't
-experience the Tx Unit Hang message with or without the patch.
+>    flush tree fixes this issue and fixes several other minor issues
+>    with fairness also.
 
-- Arnaldo
+More details about the fixings, please?
+
