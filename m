@@ -1,174 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759802AbYAQVvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759666AbYAQVvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759802AbYAQVvj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 16:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759766AbYAQVuN
+	id S1759666AbYAQVvz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 16:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758434AbYAQVu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 16:50:13 -0500
-Received: from slowhand.arndnet.de ([88.198.19.76]:38527 "EHLO mail.unitix.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759755AbYAQVuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 16:50:10 -0500
-Message-ID: <478FCDB6.4010708@i4.informatik.rwth-aachen.de>
-Date: Thu, 17 Jan 2008 22:50:46 +0100
-From: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 17 Jan 2008 16:50:28 -0500
+Received: from web32606.mail.mud.yahoo.com ([68.142.207.233]:41869 "HELO
+	web32606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759885AbYAQVuX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 16:50:23 -0500
+X-YMail-OSG: ahV9EcIVM1ltDjoZlXEYM854JXdL3XwkiDhOdVtA1kKsTjQHpfbN2k3Xf.KbEsSbk95nsIIWknqInwKlrAzHHGmUFw--
+X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
+Date: Thu, 17 Jan 2008 13:50:22 -0800 (PST)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Mike Snitzer <snitzer@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jplatte@naasa.net,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       James.Bottomley@steeleye.com
 MIME-Version: 1.0
-To: Jordan Crouse <jordan.crouse@amd.com>
-CC: Andres Salomon <dilinger@queued.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
-References: <478E4267.7020509@i4.informatik.rwth-aachen.de> <20080116161912.7b449466@ephemeral> <20080116165606.3ebc06a4@ephemeral> <478F25D6.3060503@i4.informatik.rwth-aachen.de> <20080117134032.4cc1a1cf@ephemeral> <478FB255.5040001@i4.informatik.rwth-aachen.de> <20080117211917.GF8244@cosmic.amd.com>
-In-Reply-To: <20080117211917.GF8244@cosmic.amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <169450.15299.qm@web32606.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jordan Crouse schrieb:
-> On 17/01/08 20:53 +0100, Arnd Hannemann wrote:
->> Andres Salomon schrieb:
->>> On Thu, 17 Jan 2008 10:54:30 +0100
->>> Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
->>>
->>>> Andres Salomon schrieb:
->>>>> On Wed, 16 Jan 2008 16:19:12 -0500
->>>>> Andres Salomon <dilinger@queued.net> wrote:
->>>>>
->>>>>> On Wed, 16 Jan 2008 18:44:07 +0100
->>>>>> Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
->>>>>>
->>>>>>> Hi,
->>>>>>>
->>>>>>> I'm trying to boot 2.6.24-rc8 on a GEODE LX board (ALIX.3),
->>>>>>> and it hangs during boot:
->>>>>>>
->>>>>>> [   12.689971] NET: Registered protocol family 16
->>>>>>> [   12.703329] geode-mfgpt:  Registered timer 0
->>>>>>> [   12.716149] mfgpt-timer:  registering the MFGT timer as a clock event...
->>>>>>>
->>>>>> What BIOS are you using?  It's possible that our detection code is
->>>>>> failing to detect in-use timers.
->>>> I'm using v0.99 (latest available).
->>>
->>> v0.99 of what?  Jordan seems to think it's an Award BIOS, but I'd like
->>> to make sure.
->> Its an ALIX board from PCEngines, they have their own BIOS
->> implementation (tinyBios).
->> http://www.pcengines.ch/alix.htm
->>
->>>> Also note when I do enable the mysterios "MFGPT workaround" option in
->>>> the bios the machine hangs directly after:
->>>> [   36.780990] NET: Registered protocol family 16
->>>
->>> "MFGPT workaround"?  That sounds a bit frightening.
->>>
->>> Presumably, the BIOS is using the MFGPTs, but we're not detecting them as
->>> being in use.
->> Yes I think so too, for the fun of it I compiled a 2.6.16.29 kernel with
->> the attached patch from fi4l.
+----- Original Message ----
+> From: Mel Gorman <mel@csn.ul.ie>
+> To: Martin Knoblauch <spamtrap@knobisoft.de>
+> Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>; Mike Snitzer <snitzer@gmail.com>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>; Linus Torvalds <torvalds@linux-foundation.org>; James.Bottomley@steeleye.com
+> Sent: Thursday, January 17, 2008 9:23:57 PM
+> Subject: Re: regression: 100% io-wait with 2.6.24-rcX
 > 
-> Okay - thats an MFPGT patch from pre-OLPC days. I am the guilty and
-> dubious party.  We changed the API to work better with the timer tick,
-> and thats the version that ended up in the kernel.
+> On (17/01/08 09:44), Martin Knoblauch didst pronounce:
+> > > > > > > > On Wed, Jan 16, 2008 at 01:26:41AM -0800,
+> Martin
 > 
-> I really wish I could take back this patch, because it keeps coming back
-> to torment me.  We must, as a people, put it behind us and forgot it. :)
+ Knoblauch wrote:
+> > > > > > > For those interested in using your writeback
+> improvements
 > 
->> relevant output is this:
->> [   31.015425] geode-mfgpt:  7 timers available.
->> ...
->> [   31.245875] geode-mfgpt:  Registered timer 0
+ in
+> > > > > > > production sooner rather than later (primarily with
+> ext3);
 > 
->> So the above kernel detects only 7 timers not 8, and it works. But note
->> that timer 0 is not used as a clock event source but as a watchdog,
->> which btw actually works fine :-)
+ what
+> > > > > > > recommendations do you have?  Just heavily test our
+> own
 > 
-> It detects 7 timers because of a bug in the code -  there really are 8 
-> timers, which the current code correctly identifies.
-Yes I can confirm this, changed MFGPT_MAX_TIMERS from 7 to 8 in the old
-kernel and it still works.
-
->> The funny thing is the #define workaround part of this dubious patch and
->> its interaction with the bios:
->>
->> #ifdef WORKAROUND:
->>  I have to turn the "MFPGT workaround" option in the bios ON, to boot
->> the kernel probably.
->>
->> #ifndef WORKAROUND:
->>  I have to turn the "MFPGT workaround" option in the bios OFF, to boot
->> the kernel probably.
+ 2.6.24
+> > > > > > > evolving "close, but not ready for merge" -mm
+> writeback
 > 
-> So the workaround works around the workaround.   Fun.  I think that Mitch
-> Bradley verified that if you write the magic MSR when all the clocks are
-> already clear that bad things happen.  The workaround probably adds a 
-> dummy clock in.  Notice that the "magic MSR" no longer is in the vanilla
-> code, and thats the way it should be.  If the BIOS doesn't allow use of
-> the clocks, then we have to live with that.
+ patchset?
+> > > > > > > 
+> > > > > > 
+> > > > > >  I can add myself to Mikes question. It would be good to
+> know
 > 
-> So, based on everything you are saying, I think its clear that our
-> problem isn't in the MFGPT, but rather in the timer tick (because, as
-> you said, the watchdog works).  We try to use IRQ 7 for the tick, which
-> Andres and I totally plucked out of thin air based on what we had to work
-> with on OLPC.  Its totally possible that the TinyBIOS had other ideas.
-> Please try to boot with nomfgpt, and see which interrupts are free, and
-> use mfgpt_irq= to change it to something else if 7 is in use.  Based on
-> your findings above, you'll probably need to leave the MFGPT workaround
-> off from now on.
-Great analysis! I think I can confirm this too. I tried the following:
+ a
+> > > > > 
+> > > > > "roadmap" for the writeback changes. Testing 2.6.24-rcX so
+> far
+> 
+ has
+> > > > > been showing quite nice improvement of the overall
+> writeback
+> 
+ situation and
+> > > > > it would be sad to see this [partially] gone in 2.6.24-final.
+> > > > > Linus apparently already has reverted  "...2250b". I
+> will
+> 
+ definitely
+> > > > > repeat my tests  with -rc8. and report.
+> > > > > 
+> > > > Thank you, Martin. Can you help test this patch on 2.6.24-rc7?
+> > > > Maybe we can push it to 2.6.24 after your testing.
+> > > > 
+> > > Hi Fengguang,
+> > > 
+> > > something really bad has happened between -rc3 and -rc6.
+> > > Embarrassingly I did not catch that earlier :-(
+> > > Compared to the numbers I posted in
+> > > http://lkml.org/lkml/2007/10/26/208 , dd1 is now at 60 MB/sec
+> > > (slight plus), while dd2/dd3 suck the same way as in pre 2.6.24.
+> > > The only test that is still good is mix3, which I attribute to
+> > > the per-BDI stuff.
+> 
+> I suspect that the IO hardware you have is very sensitive to the
+> color of the physical page. I wonder, do you boot the system cleanly
+> and then run these tests? If so, it would be interesting to know what
+> happens if you stress the system first (many kernel compiles for example,
+> basically anything that would use a lot of memory in different ways for some
+> time) to randomise the free lists a bit and then run your test. You'd need to run
+> the test three times for 2.6.23, 2.6.24-rc8 and 2.6.24-rc8 with the patch you
+> identified reverted.
+>
 
-First in mfgpt_timer_setup I commented out "clockevents_register_device"
-result: the system still hangs with "registering the MFGT timer as a
-clock event" !
+ The effect  is  defintely  depending on  the  IO  hardware. I performed the same tests
+on a different box with an AACRAID controller and there things look different. Basically
+the "offending" commit helps seingle stream performance on that box, while dual/triple
+stream are not affected. So I suspect that the CCISS is just not behaving well.
 
-Then I also commented out "ret = setup_irq(irq, &mfgptirq)".
-result: system boots, voila!
+ And yes, the tests are usually done on a freshly booted box. Of course, I repeat them
+a few times. On the CCISS box the numbers are very constant. On the AACRAID box
+they vary quite a bit.
 
-However the vendor claims that 7 should be used (from the bios changelog):
-"v0.90 (IRQ7 is no longer directed to the LPC bus, used as a default
-interrupt for MFGPT high resolution timer."
+ I can certainly stress the box before doing the tests. Please define "many" for the kernel
+compiles :-)
 
-There is also a interrupt map in the bios[0] readme:
+> > 
+> >  OK, the change happened between rc5 and rc6. Just following a
+> > gut feeling, I reverted
+> > 
+> > #commit 81eabcbe0b991ddef5216f30ae91c4b226d54b6d
+> > #Author: Mel Gorman 
+> > #Date:   Mon Dec 17 16:20:05 2007 -0800
+> > #
 
-IRQ0    timer
-IRQ1    KBD (LPC)
-IRQ2    cascade
-IRQ3    COM1 serial (internal / LPC)
-IRQ4    COM2 serial (LPC)
-IRQ5    audio (CS5536)
-IRQ6    FDC (LPC)
-IRQ7    spare, used for MFGPT high resolution timer
+> > 
+> > This has brought back the good results I observed and reported.
+> > I do not know what to make out of this. At least on the systems
+> > I care about (HP/DL380g4, dual CPUs, HT-enabled, 8 GB Memory,
+> > SmartaArray6i controller with 4x72GB SCSI disks as RAID5 (battery
+> > protected writeback cache enabled) and gigabit networking (tg3)) this
+> > optimisation is a dissaster.
+> > 
+> 
+> That patch was not an optimisation, it was a regression fix
+> against 2.6.23 and I don't believe reverting it is an option. Other IO
+> hardware benefits from having the allocator supply pages in PFN order.
 
-IRQ8    RTC
-IRQ9    PCI INTA
-IRQ10   PCI INTB
-IRQ11   PCI INTC
-IRQ12   PCI INTD
-IRQ13   floating point
-IRQ14   IDE HDD
-IRQ15   USB (CS5536)
+ I think this late in the 2.6.24 game we just should leave things as they are. But
+we should try to find a way to make CCISS faster, as it apparently can be faster.
 
-/proc/interrupts on a running system looks like this:
-           CPU0
-  0:      12329          XT-PIC  timer
-  2:          0          XT-PIC  cascade
-  4:        240          XT-PIC  serial
-  8:          3          XT-PIC  rtc
-  9:        558          XT-PIC  wifi0
- 10:      67591          XT-PIC  eth0
- 11:        622          XT-PIC  wifi1
-NMI:          0
-ERR:          0
+> Your controller would seem to suffer when presented with the same situation
+> but I don't know why that is. I've added James to the cc in case he has seen this
+> sort of situation before.
+> 
+> > On the other hand, it is not a regression against 2.6.22/23. Those
+> 
+ > had bad IO scaling to. It would just be a shame to loose an apparently
+> 
+ > great performance win.
+> 
+> Could you try running your tests again when the system has been
+> stressed with some other workload first?
+> 
 
-> I'll port the watchdog timer to the new API, and we can use that instead
-> of the timer tick to just make sure that it isn't the timer that is broken.
-> Also, hopefully that will cease the stream of angry emails asking me why
-> the ancient patch doesn't work on a current kernel... :)
-Watchdog for the new API would be great :-)
+ Will do.
 
-> Jordan
-Thanks for your effort!
+Cheers
+Martin
 
-[0] http://www.pcengines.ch/file/alixb099.zip
+
+
