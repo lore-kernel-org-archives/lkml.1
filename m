@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbYAQO1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYAQObJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754097AbYAQO1N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 09:27:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYAQO05
+	id S1754776AbYAQObJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 09:31:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYAQOa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 09:26:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51866 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750847AbYAQO05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 09:26:57 -0500
-Date: Thu, 17 Jan 2008 15:26:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       apw@shadowen.org, balbir@linux.vnet.ibm.com
-Subject: Re: 2.6.24-rc8-mm1
-Message-ID: <20080117142636.GA22515@elte.hu>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org> <20080117133403.GA17131@linux.vnet.ibm.com>
+	Thu, 17 Jan 2008 09:30:56 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:56764 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751328AbYAQOaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 09:30:55 -0500
+Date: Thu, 17 Jan 2008 06:30:53 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Olaf Hering <olaf@aepfle.de>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Linux MM <linux-mm@kvack.org>
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
+References: <20080115150949.GA14089@aepfle.de>
+ <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080117133403.GA17131@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 17 Jan 2008, Pekka Enberg wrote:
 
-* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> Looks similar to the one discussed on linux-mm ("[BUG] at
+> mm/slab.c:3320" thread). Christoph?
 
-> Hi Andrew,
-> 
-> The kernel build fails with following error
-> 
-> arch/x86/kernel/mpparse_32.c: In function `smp_read_mpc_oem':
-> arch/x86/kernel/mpparse_32.c:318: error: `oemtable' undeclared (first use in this function)
-> arch/x86/kernel/mpparse_32.c:318: error: (Each undeclared identifier is reported only once
-> arch/x86/kernel/mpparse_32.c:318: error: for each function it appears in.)
-> arch/x86/kernel/mpparse_32.c:332: error: `mpc_phys' undeclared (first use in this function)
+Right. Try the latest version of the patch to fix it:
 
-thanks, applied.
-
-	Ingo
+Index: linux-2.6/mm/slab.c
+===================================================================
+--- linux-2.6.orig/mm/slab.c	2008-01-03 12:26:42.000000000 -0800
++++ linux-2.6/mm/slab.c	2008-01-09 15:59:49.000000000 -0800
+@@ -2977,7 +2977,10 @@ retry:
+ 	}
+ 	l3 = cachep->nodelists[node];
+ 
+-	BUG_ON(ac->avail > 0 || !l3);
++	if (!l3)
++		return NULL;
++
++	BUG_ON(ac->avail > 0);
+ 	spin_lock(&l3->list_lock);
+ 
+ 	/* See if we can refill from the shared array */
+@@ -3224,7 +3227,7 @@ static void *alternate_node_alloc(struct
+ 		nid_alloc = cpuset_mem_spread_node();
+ 	else if (current->mempolicy)
+ 		nid_alloc = slab_node(current->mempolicy);
+-	if (nid_alloc != nid_here)
++	if (nid_alloc != nid_here && node_state(nid_alloc, N_NORMAL_MEMORY))
+ 		return ____cache_alloc_node(cachep, flags, nid_alloc);
+ 	return NULL;
+ }
+@@ -3439,8 +3442,14 @@ __do_cache_alloc(struct kmem_cache *cach
+ 	 * We may just have run out of memory on the local node.
+ 	 * ____cache_alloc_node() knows how to locate memory on other nodes
+ 	 */
+- 	if (!objp)
+- 		objp = ____cache_alloc_node(cache, flags, numa_node_id());
++ 	if (!objp) {
++		int node_id = numa_node_id();
++		if (likely(cache->nodelists[node_id])) /* fast path */
++ 			objp = ____cache_alloc_node(cache, flags, node_id);
++		else /* this function can do good fallback */
++			objp = __cache_alloc_node(cache, flags, node_id,
++					__builtin_return_address(0));
++	}
+ 
+   out:
+ 	return objp;
