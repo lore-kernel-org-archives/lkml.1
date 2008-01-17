@@ -1,158 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759906AbYAQWfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759459AbYAQWgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759906AbYAQWfn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757339AbYAQWfM
+	id S1759459AbYAQWgD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:36:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757427AbYAQWfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:35:12 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:50957 "EHLO relay.sgi.com"
+	Thu, 17 Jan 2008 17:35:15 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:50942 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755652AbYAQWfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755628AbYAQWfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jan 2008 17:35:09 -0500
-Message-Id: <20080117223505.513183000@sgi.com>
+Message-Id: <20080117223505.644199000@sgi.com>
 References: <20080117223505.203884000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 17 Jan 2008 14:35:07 -0800
+Date: Thu, 17 Jan 2008 14:35:08 -0800
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        mingo@elte.hu
 Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 2/6] percpu: Change Kconfig ARCH_SETS_UP_PER_CPU_AREA to HAVE_SETUP_PER_CPU_AREA
-Content-Disposition: inline; filename=config-to-select
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
+Subject: [PATCH 3/6] Sparc64: Use generic percpu
+Content-Disposition: inline; filename=sparc64_generic_percpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change "config ARCH_SETS_UP_PER_CPU_AREA" to "select
-HAVE_SETUP_PER_CPU_AREA" as suggested by Sam.
+Sparc64 has a way of providing the base address for the per cpu area of the
+currently executing processor in a global register.
 
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>
+Sparc64 also provides a way to calculate the address of a per cpu area
+from a base address instead of performing an array lookup.
+
+Cc: David Miller <davem@davemloft.net>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Mike Travis <travis@sgi.com>
-
 ---
- arch/ia64/Kconfig            |    4 +---
- arch/powerpc/Kconfig         |    4 +---
- arch/sparc64/Kconfig         |    4 +---
- arch/x86/Kconfig             |    4 +---
- include/asm-generic/percpu.h |    2 +-
- init/main.c                  |    4 ++--
- 6 files changed, 7 insertions(+), 15 deletions(-)
+ arch/sparc64/mm/init.c       |    5 +++++
+ include/asm-sparc64/percpu.h |   22 +++-------------------
+ 2 files changed, 8 insertions(+), 19 deletions(-)
 
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -17,6 +17,7 @@ config IA64
- 	select ARCH_SUPPORTS_MSI
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
-+	select HAVE_SETUP_PER_CPU_AREA
- 	default y
- 	help
- 	  The Itanium Processor Family is Intel's 64-bit successor to
-@@ -82,9 +83,6 @@ config GENERIC_TIME_VSYSCALL
- 	bool
- 	default y
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -1328,6 +1328,11 @@ pgd_t swapper_pg_dir[2048];
+ static void sun4u_pgprot_init(void);
+ static void sun4v_pgprot_init(void);
  
--config ARCH_SETS_UP_PER_CPU_AREA
--	def_bool y
++/* Dummy function */
++void __init setup_per_cpu_areas(void)
++{
++}
++
+ void __init paging_init(void)
+ {
+ 	unsigned long end_pfn, pages_avail, shift, phys_base;
+--- a/include/asm-sparc64/percpu.h
++++ b/include/asm-sparc64/percpu.h
+@@ -7,7 +7,6 @@ register unsigned long __local_per_cpu_o
+ 
+ #ifdef CONFIG_SMP
+ 
+-#define setup_per_cpu_areas()			do { } while (0)
+ extern void real_setup_per_cpu_areas(void);
+ 
+ extern unsigned long __per_cpu_base;
+@@ -16,29 +15,14 @@ extern unsigned long __per_cpu_shift;
+ 	(__per_cpu_base + ((unsigned long)(__cpu) << __per_cpu_shift))
+ #define per_cpu_offset(x) (__per_cpu_offset(x))
+ 
+-/* var is in discarded region: offset to particular copy we want */
+-#define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset(cpu)))
+-#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __local_per_cpu_offset))
+-#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __local_per_cpu_offset))
 -
- config DMI
- 	bool
- 	default y
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -42,9 +42,6 @@ config GENERIC_HARDIRQS
- 	bool
- 	default y
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+__per_cpu_offset(__i),		\
+-		       (src), (size));				\
+-} while (0)
++#define __my_cpu_offset __local_per_cpu_offset
++
+ #else /* ! SMP */
  
--config ARCH_SETS_UP_PER_CPU_AREA
--	def_bool PPC64
+ #define real_setup_per_cpu_areas()		do { } while (0)
+ 
+-#define per_cpu(var, cpu)			(*((void)cpu, &per_cpu__##var))
+-#define __get_cpu_var(var)			per_cpu__##var
+-#define __raw_get_cpu_var(var)			per_cpu__##var
 -
- config IRQ_PER_CPU
- 	bool
- 	default y
-@@ -89,6 +86,7 @@ config PPC
- 	default y
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
-+	select HAVE_SETUP_PER_CPU_AREA if PPC64
+ #endif	/* SMP */
  
- config EARLY_PRINTK
- 	bool
---- a/arch/sparc64/Kconfig
-+++ b/arch/sparc64/Kconfig
-@@ -10,6 +10,7 @@ config SPARC
- 	default y
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
-+	select HAVE_SETUP_PER_CPU_AREA
+-#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
++#include <asm-generic/percpu.h>
  
- config SPARC64
- 	bool
-@@ -68,9 +69,6 @@ config AUDIT_ARCH
- 	bool
- 	default y
- 
--config ARCH_SETS_UP_PER_CPU_AREA
--	def_bool y
--
- config ARCH_NO_VIRT_TO_BUS
- 	def_bool y
- 
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -20,6 +20,7 @@ config X86
- 	def_bool y
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
-+	select HAVE_SETUP_PER_CPU_AREA if ARCH = "x86_64"
- 
- config GENERIC_LOCKBREAK
- 	def_bool n
-@@ -106,9 +107,6 @@ config GENERIC_TIME_VSYSCALL
- 	bool
- 	default X86_64
- 
--config ARCH_SETS_UP_PER_CPU_AREA
--	def_bool X86_64
--
- config ARCH_SUPPORTS_OPROFILE
- 	bool
- 	default y
---- a/include/asm-generic/percpu.h
-+++ b/include/asm-generic/percpu.h
-@@ -59,7 +59,7 @@ extern unsigned long __per_cpu_offset[NR
- 	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), __my_cpu_offset))
- 
- 
--#ifdef CONFIG_ARCH_SETS_UP_PER_CPU_AREA
-+#ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
- extern void setup_per_cpu_areas(void);
- #endif
- 
---- a/init/main.c
-+++ b/init/main.c
-@@ -363,7 +363,7 @@ static inline void smp_prepare_cpus(unsi
- 
- #else
- 
--#ifndef CONFIG_ARCH_SETS_UP_PER_CPU_AREA
-+#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
- unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
- 
- EXPORT_SYMBOL(__per_cpu_offset);
-@@ -384,7 +384,7 @@ static void __init setup_per_cpu_areas(v
- 		ptr += size;
- 	}
- }
--#endif /* CONFIG_ARCH_SETS_UP_CPU_AREA */
-+#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
- 
- /* Called by boot processor to activate the rest. */
- static void __init smp_init(void)
+ #endif /* __ARCH_SPARC64_PERCPU__ */
 
 -- 
