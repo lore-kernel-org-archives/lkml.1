@@ -1,82 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbYAQVXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbYAQV0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbYAQVXr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 16:23:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYAQVXj
+	id S1757544AbYAQV0G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 16:26:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYAQVZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 16:23:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43423 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752564AbYAQVXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 16:23:38 -0500
-Date: Thu, 17 Jan 2008 22:22:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Herrmann3 <andreas.herrmann3@amd.com>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>, ak@muc.de,
-       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
-       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
-       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
-       jesse.barnes@intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
-Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
-	fixes
-Message-ID: <20080117212214.GA10165@elte.hu>
-References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com> <20080116203328.GA17869@linux-os.sc.intel.com> <20080117191211.GA12631@alberich.amd.com> <20080117203600.GB27778@elte.hu> <20080117210301.GC12631@alberich.amd.com> <20080117211308.GA7858@elte.hu>
+	Thu, 17 Jan 2008 16:25:55 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48482 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750999AbYAQVZy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 16:25:54 -0500
+Date: Thu, 17 Jan 2008 13:25:39 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Schwartz <davids@webmaster.com>
+cc: Johannes Weiner <hannes@saeurebad.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       clameter@sgi.com, penberg@cs.helsinki.fi
+Subject: RE: Why is the kfree() argument const?
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIEGIJJAC.davids@webmaster.com>
+Message-ID: <alpine.LFD.1.00.0801171316390.14959@woody.linux-foundation.org>
+References: <MDEHLPKNGKAHNMBLJOLKIEGIJJAC.davids@webmaster.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080117211308.GA7858@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
 
-> * Andreas Herrmann3 <andreas.herrmann3@amd.com> wrote:
+On Thu, 17 Jan 2008, David Schwartz wrote:
 > 
-> > Yes.
-> > 
-> > Meanwhile I have figured out that it is some ACPI stuff that maps the 
-> > page cached. I've changed the ioremap's in drivers/acpi/osl.c to 
-> > ioremap_nocache. See attached patch.
-> > 
-> > Now the machine boots without conflicts.
-> 
-> ah, nice!
-> 
-> but in general we must be robust enough in this case and just degrade 
-> any overlapping page to UC (and emit a warning perhaps) - instead of 
-> failing the ioremap and thus failing the driver (and the bootup).
+> Which does change the thing the pointer points to. It goes from being a
+> valid object to not existing.
 
-btw., there's a change i did in today's x86.git: _all_ the old BIOS data 
-accesses now go through early_ioremap(). This cleaned up the boot code 
-quite significantly, as it's much more apparent now when we access a 
-BIOS data table. (it also solves the problem when BIOS data pages are in 
-reserved areas that we map via UC or dont map at all)
+No. It's the *pointer* that is no longer valid.
 
-the same happens with all ISA ioremaps as well - no more "low 1MB is 
-treated special" exceptions.
+There's definitely a difference between "exists and is changed" and 
+"doesn't exist any more".
 
-[ This also solves the 'EFI puts data pages into really high memory we
-  dont have mapped yet' category of problems that BIOS writers are
-  apparently busy creating right now ;-) ]
+> How is ceasing to exist not a change?
 
-the downside is that old linear-mapped assumptions might now result in 
-an early fault - boot with earlyprintk=vga or 
-earlyprintk=serial,ttyS0,115200. I fixed most such assumptions already 
-and booted an allyesconfig kernel on both 32-bit and 64-bit x86, but a 
-few more remain still. I've enhanced the early fault printout code as 
-well to make it easier to debug such things, so it should be relatively 
-easy to find the rest.
+It's not a change to the data behind it, it's a change to the *metadata*. 
+Which is somethign that "const" doesn't talk about at all.
 
-	Ingo
+> >    Why? Because we want the types to be as tight as possible, and normal 
+> >    code should need as few casts as possible.
+>  
+> Right, and that's why you are wrong.
+
+No, it's why I'm right.
+
+"kmalloc/kfree" (or any memory manager) by definition has to play games 
+with pointers and do things like cast them. But the users shouldn't need 
+to, not for something like this.
+
+> No, it's both correct and useful. This code is the exception to a rule. The
+> rule is that the object remain unchanged and this violates that rule.
+
+No. 
+
+You are continuing to make the mistake that you think that "const" means 
+that the memory behind the pointer is not going to change.
+
+Why do you make that mistake, when it is PROVABLY NOT TRUE!
+
+Try this trivial program:
+
+	int main(int argc, char **argv)
+	{
+	        int i;
+	        const int *c;
+	
+	        i = 5;
+	        c = &i;
+	        i = 10;
+	        return *c;
+	}
+
+and realize that according to the C rules, if it returns anything but 10, 
+the compiler is *buggy*.
+
+The fact is, that in spite of us having a "const int *", the data behind 
+that pointer may change.
+
+So it doesn't matter ONE WHIT if you pass in a "const *" to "kfree()": it 
+does not guarantee that the data doesn't change, because the object you 
+point to has other pointers pointing to it.
+
+This isn't worth discussing. It's really simple: a conforming program 
+CANNOT POSSIBLY TELL whether "kfree()" modified the data or not. As such, 
+AS FAR AS THE PROGRAM IS CONCERNED, kfree() takes a const pointer, and the 
+rule that "if it can be considered const, it should be marked const" comes 
+and says that kfree() should take a const pointer.
+
+In other words - anythign that could ever disagree with "const *" is BY 
+DEFINITION buggy.
+
+It really is that simple. 
+
+		Linus
