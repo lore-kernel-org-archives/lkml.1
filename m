@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbYAQXsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbYAQXt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758279AbYAQXsk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 18:48:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755961AbYAQXsb
+	id S1759280AbYAQXt1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 18:49:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbYAQXtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 18:48:31 -0500
-Received: from def92-3-81-56-114-101.fbx.proxad.net ([81.56.114.101]:38855
-	"EHLO barad-dur.regala.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756101AbYAQXsa (ORCPT
+	Thu, 17 Jan 2008 18:49:20 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57727 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756597AbYAQXtT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 18:48:30 -0500
-To: linux-ext4@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, sct@redhat.com
-Subject: Re: [PATCH] Convert ext3_ioctl() to an unlocked_ioctl
-References: <1200573450-1246-1-git-send-email-mathieu.segaud@regala.cx>
-	<1200573450-1246-2-git-send-email-mathieu.segaud@regala.cx>
-From: Mathieu SEGAUD <mathieu.segaud@regala.cx>
-Date: Fri, 18 Jan 2008 00:48:29 +0100
-In-Reply-To: <1200573450-1246-2-git-send-email-mathieu.segaud@regala.cx> (Mathieu Segaud's message of "Thu\, 17 Jan 2008 13\:37\:29 +0100")
-Message-ID: <87wsq89foy.fsf@barad-dur.regala.cx>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Thu, 17 Jan 2008 18:49:19 -0500
+Date: Thu, 17 Jan 2008 15:48:16 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Daniel Walker <dwalker@mvista.com>
+cc: linux-kernel@vger.kernel.org, Maxim Levitsky <maximlevitsky@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: [PATCH] fix wrong sized spinlock flags argument
+In-Reply-To: <20080117205205.878723737@mvista.com>
+Message-ID: <alpine.LFD.1.00.0801171542390.2957@woody.linux-foundation.org>
+References: <20080117205205.878723737@mvista.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vous m'avez dit récemment :
 
-> --- a/fs/ext3/ioctl.c
-> +++ b/fs/ext3/ioctl.c
-> @@ -17,12 +17,19 @@
->  #include <linux/smp_lock.h>
->  #include <asm/uaccess.h>
+Applied.
+
+However, the patch itself didn't apply cleanly, because in my souce tree, 
+these two lines are in a different order:
+
+On Thu, 17 Jan 2008, Daniel Walker wrote:
 >  
-> -int ext3_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
-> +long ext3_ioctl(struct file *filp, unsigned int cmd,
->  		unsigned long arg)
->  {
-> -	struct ext3_inode_info *ei = EXT3_I(inode);
-> +	struct ext3_inode_info *ei;
-> +	struct inode *inode;
->  	unsigned int flags;
->  	unsigned short rsv_window_size;
-> +	long retval = 0;
-> +
-> +	lock_kernel();
-> +
-> +	inode = filp->f_dentry->d_inode;
+>  	pci_set_power_state(pci_dev, PCI_D0);
+>  	pci_restore_state(pci_dev);
 
-I guess this should be
-        inode = filp->f_path.dentry->d_inode;
+but I actually think your order is the *correct* one (because I'm not at 
+all sure that config space writes are even guaranteed to make a difference 
+when in D3cold).
 
+So I wonder, did you have some other fix applied to your "original" tree 
+(it sure isn't original 2.6.23, since that whole suspend/resume code was 
+added later.
 
-I will repost a fixed patch
-sorry for this one.
+Maxim? Mauro? Pretty much all other drivers do
 
+	pci_set_power_state(pdev, PCI_D0);
+	pci_restore_state(pdev);
 
-> +	ei = EXT3_I(inode);
->  
->  	ext3_debug ("cmd = %u, arg = %lu\n", cmd, arg);
->  
+in that order, and I really do think that D3cold is allowed to not 
+actually react fully to all config space accesses (ie we have to re-write 
+them after bringing it out of D3)
 
--- 
-Mathieu
+			Linus
