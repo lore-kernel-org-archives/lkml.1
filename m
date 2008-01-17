@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbYAQBSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbYAQBR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755212AbYAQBSS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 20:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754371AbYAQBRr
+	id S1754817AbYAQBR5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 20:17:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYAQBRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 20:17:47 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42852 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752773AbYAQBRq (ORCPT
+	Wed, 16 Jan 2008 20:17:38 -0500
+Received: from wx-out-0506.google.com ([66.249.82.224]:39089 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753329AbYAQBRg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 20:17:46 -0500
-Date: Wed, 16 Jan 2008 17:17:13 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Olof Johansson <olof@lixom.net>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 3/3]  Add bug/warn marker to generic report_bug()
-Message-ID: <20080116171713.4d5f2f61@laptopd505.fenrus.org>
-In-Reply-To: <20080117011000.GC24766@lixom.net>
-References: <20080117010130.GA24663@lixom.net>
-	<20080117011000.GC24766@lixom.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 Jan 2008 20:17:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=maxKZKaYhB9a2/2kysIEcBxAp8lNRi89XQxez2gxx5FckQkM6OHfYhPGo4HaeB4hWzJJVZ3Woew+AwW5DUi3JOm6uG+djHkFGBBVGW0IMppGpz6sA6ZrcSO2gcZ+p+YXmQYtBGlUDfRZjr9pl9Asreb5Qz4JpJKdkOXmIQnl3EQ=
+Message-ID: <a8e1da0801161717r4cdc1e9cn6a8ec1731c8f831b@mail.gmail.com>
+Date: Thu, 17 Jan 2008 09:17:35 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Jarek Poplawski" <jarkao2@gmail.com>
+Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct class
+Cc: "Greg KH" <gregkh@suse.de>, stefanr@s5r6.in-berlin.de, david-b@pacbell.net,
+       stern@rowland.harvard.edu, linux-kernel@vger.kernel.org
+In-Reply-To: <20080116083442.GA2307@ff.dom.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20080112100515.GA2956@darkstar.te-china.tietoenator.com>
+	 <20080115091527.GB3186@darkstar.te-china.tietoenator.com>
+	 <20080115135604.GD1696@ff.dom.local>
+	 <a8e1da0801151703w52df227en42eae85e75d5017f@mail.gmail.com>
+	 <20080116083442.GA2307@ff.dom.local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jan 2008 19:10:00 -0600
-Olof Johansson <olof@lixom.net> wrote:
+On Jan 16, 2008 4:34 PM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> On Wed, Jan 16, 2008 at 09:03:03AM +0800, Dave Young wrote:
+> ...
+> > The lockdep warining was posted in the below thread, actually, I have
+> > built and run this patced kernel for several days, there's no more
+> > warnings.
+> > http://lkml.org/lkml/2008/1/3/2
+>
+> Right... But, with something like this:
+>
+> ... have_some_fun(... cls)
+> {
+>         mutex_lock_nested(&cls->mutex, SINGLE_DEPTH_NESTING);
+>         have_other_fun(cls);
+>         mutex_unlock(&cls->mutex);
+>
+> }
+>
+> ... have_more_fun(...)
+> {
+>         ...
+>
+>         mutex_init(&cls->mutex);
+>
+>         mutex_lock(&cls->mutex);
+>         have_some_fun(cls);
+>         mutex_unlock(&cls->mutex);
+> }
+>
+> probably you wouldn't get any lockdep warning too...
 
-> Powerpc uses the generic report_bug() from lib/bug.c to report
-> warnings, and I'm guessing other arches do as well.
-> 
-> Add the module list as well as the end-of-trace marker to the output.
-> This required making print_oops_end_marker() nonstatic.
-> 
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
-> 
-> 
+Sorry for late reply.
+Actually, I don't know much about lockdep. Could you tell how to use
+it properly in this scenario?
 
-All three are
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+>
+> Of course, if we know all the locking is right such proper lockdep
+> annotating shouldn't matter too much. (And of course this could be
+> improved later.)
+>
+> Regards,
+> Jarek P.
+>
