@@ -1,48 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbYAQMg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbYAQMhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbYAQMg0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 07:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYAQMgS
+	id S1754524AbYAQMhp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 07:37:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbYAQMhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 07:36:18 -0500
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:45748 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752268AbYAQMgR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 07:36:17 -0500
-Date: Thu, 17 Jan 2008 13:36:13 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: mingo@elte.hu, venkatesh.pallipadi@intel.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Enable PAT for more AMD CPUs
-Message-ID: <20080117123613.GA22563@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 17 Jan 2008 12:30:01.0814 (UTC) FILETIME=[AE3E9F60:01C85904]
+	Thu, 17 Jan 2008 07:37:33 -0500
+Received: from bde.crans.org ([138.231.137.76]:34766 "EHLO bde.crans.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750877AbYAQMhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 07:37:32 -0500
+From: Mathieu Segaud <mathieu.segaud@regala.cx>
+To: linux-ext4@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, sct@redhat.com,
+       Mathieu Segaud <mathieu.segaud@regala.cx>
+Subject: [PATCH] Convert EXT2 to use unlocked_ioctl
+Date: Thu, 17 Jan 2008 13:37:28 +0100
+Message-Id: <1200573450-1246-1-git-send-email-mathieu.segaud@regala.cx>
+X-Mailer: git-send-email 1.5.3.8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Change ext_ioctl() to be an unlocked_ioctl(), explicitly
+exposing BKL's uses.
 
-I checked some K7 errata files and couldn't find anything related
-to PAT.  Also for Fam10h and 11h it should be definitely enabled.
+Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
+---
+ fs/ext2/dir.c   |    2 +-
+ fs/ext2/ext2.h  |    3 +-
+ fs/ext2/file.c  |    4 +-
+ fs/ext2/ioctl.c |  103 +++++++++++++++++++++++++++++++++++++------------------
+ 4 files changed, 73 insertions(+), 39 deletions(-)
 
-Enable PAT for all AMD CPUs >= 6, which is K7 and newer.
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux/arch/x86/mm/pat.c
-===================================================================
---- linux.orig/arch/x86/mm/pat.c
-+++ linux/arch/x86/mm/pat.c
-@@ -49,7 +49,7 @@ static int pat_known_cpu(void)
- 		return cpu_has_pat;
+diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
+index d868e26..dbee3c9 100644
+--- a/fs/ext2/dir.c
++++ b/fs/ext2/dir.c
+@@ -703,7 +703,7 @@ const struct file_operations ext2_dir_operations = {
+ 	.llseek		= generic_file_llseek,
+ 	.read		= generic_read_dir,
+ 	.readdir	= ext2_readdir,
+-	.ioctl		= ext2_ioctl,
++	.unlocked_ioctl	= ext2_ioctl,
+ #ifdef CONFIG_COMPAT
+ 	.compat_ioctl	= ext2_compat_ioctl,
+ #endif
+diff --git a/fs/ext2/ext2.h b/fs/ext2/ext2.h
+index c87ae29..bb9948c 100644
+--- a/fs/ext2/ext2.h
++++ b/fs/ext2/ext2.h
+@@ -139,8 +139,7 @@ int __ext2_write_begin(struct file *file, struct address_space *mapping,
+ 		struct page **pagep, void **fsdata);
  
- 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
--					    (boot_cpu_data.x86 == 0xF))
-+					    (boot_cpu_data.x86 >= 6))
- 		return cpu_has_pat;
+ /* ioctl.c */
+-extern int ext2_ioctl (struct inode *, struct file *, unsigned int,
+-		       unsigned long);
++extern long ext2_ioctl(struct file *, unsigned int, unsigned long);
+ extern long ext2_compat_ioctl(struct file *, unsigned int, unsigned long);
  
- 	return 0;
+ /* namei.c */
+diff --git a/fs/ext2/file.c b/fs/ext2/file.c
+index c051798..17fe628 100644
+--- a/fs/ext2/file.c
++++ b/fs/ext2/file.c
+@@ -48,7 +48,7 @@ const struct file_operations ext2_file_operations = {
+ 	.write		= do_sync_write,
+ 	.aio_read	= generic_file_aio_read,
+ 	.aio_write	= generic_file_aio_write,
+-	.ioctl		= ext2_ioctl,
++	.unlocked_ioctl	= ext2_ioctl,
+ #ifdef CONFIG_COMPAT
+ 	.compat_ioctl	= ext2_compat_ioctl,
+ #endif
+@@ -65,7 +65,7 @@ const struct file_operations ext2_xip_file_operations = {
+ 	.llseek		= generic_file_llseek,
+ 	.read		= xip_file_read,
+ 	.write		= xip_file_write,
+-	.ioctl		= ext2_ioctl,
++	.unlocked_ioctl	= ext2_ioctl,
+ #ifdef CONFIG_COMPAT
+ 	.compat_ioctl	= ext2_compat_ioctl,
+ #endif
+diff --git a/fs/ext2/ioctl.c b/fs/ext2/ioctl.c
+index 320b2cb..0f18ac5 100644
+--- a/fs/ext2/ioctl.c
++++ b/fs/ext2/ioctl.c
+@@ -17,12 +17,18 @@
+ #include <asm/uaccess.h>
+ 
+ 
+-int ext2_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
++long ext2_ioctl(struct file *filp, unsigned int cmd,
+ 		unsigned long arg)
+ {
+-	struct ext2_inode_info *ei = EXT2_I(inode);
++	struct ext2_inode_info *ei;
++	struct inode *inode;
+ 	unsigned int flags;
+ 	unsigned short rsv_window_size;
++	long retval = 0;
++
++	lock_kernel();
++	inode = filp->f_path.dentry->d_inode;
++	ei = EXT2_I(inode);
+ 
+ 	ext2_debug ("cmd = %u, arg = %lu\n", cmd, arg);
+ 
+@@ -30,18 +36,25 @@ int ext2_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
+ 	case EXT2_IOC_GETFLAGS:
+ 		ext2_get_inode_flags(ei);
+ 		flags = ei->i_flags & EXT2_FL_USER_VISIBLE;
+-		return put_user(flags, (int __user *) arg);
++		retval = put_user(flags, (int __user *) arg);
++		goto out;
+ 	case EXT2_IOC_SETFLAGS: {
+ 		unsigned int oldflags;
+ 
+-		if (IS_RDONLY(inode))
+-			return -EROFS;
++		if (IS_RDONLY(inode)) {
++			retval = -EROFS;
++			goto out;
++		}
+ 
+-		if (!is_owner_or_cap(inode))
+-			return -EACCES;
++		if (!is_owner_or_cap(inode)) {
++			retval = -EACCES;
++			goto out;
++		}
+ 
+-		if (get_user(flags, (int __user *) arg))
+-			return -EFAULT;
++		if (get_user(flags, (int __user *) arg)) {
++			retval = -EFAULT;
++			goto out;
++		}
+ 
+ 		if (!S_ISDIR(inode->i_mode))
+ 			flags &= ~EXT2_DIRSYNC_FL;
+@@ -50,7 +63,8 @@ int ext2_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
+ 		/* Is it quota file? Do not allow user to mess with it */
+ 		if (IS_NOQUOTA(inode)) {
+ 			mutex_unlock(&inode->i_mutex);
+-			return -EPERM;
++			retval = -EPERM;
++			goto out;
+ 		}
+ 		oldflags = ei->i_flags;
+ 
+@@ -63,7 +77,8 @@ int ext2_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
+ 		if ((flags ^ oldflags) & (EXT2_APPEND_FL | EXT2_IMMUTABLE_FL)) {
+ 			if (!capable(CAP_LINUX_IMMUTABLE)) {
+ 				mutex_unlock(&inode->i_mutex);
+-				return -EPERM;
++				retval = -EPERM;
++				goto out;
+ 			}
+ 		}
+ 
+@@ -75,41 +90,59 @@ int ext2_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
+ 		ext2_set_inode_flags(inode);
+ 		inode->i_ctime = CURRENT_TIME_SEC;
+ 		mark_inode_dirty(inode);
+-		return 0;
++		goto out;
+ 	}
+ 	case EXT2_IOC_GETVERSION:
+-		return put_user(inode->i_generation, (int __user *) arg);
++		retval = put_user(inode->i_generation, (int __user *) arg);
++		goto out;
+ 	case EXT2_IOC_SETVERSION:
+-		if (!is_owner_or_cap(inode))
+-			return -EPERM;
+-		if (IS_RDONLY(inode))
+-			return -EROFS;
+-		if (get_user(inode->i_generation, (int __user *) arg))
+-			return -EFAULT;	
++		if (!is_owner_or_cap(inode)) {
++			retval = -EPERM;
++			goto out;
++		}
++		if (IS_RDONLY(inode)) {
++			retval = -EROFS;
++			goto out;
++		}
++		if (get_user(inode->i_generation, (int __user *) arg)) {
++			retval = -EFAULT;
++			goto out;
++		}
+ 		inode->i_ctime = CURRENT_TIME_SEC;
+ 		mark_inode_dirty(inode);
+-		return 0;
++		goto out;
+ 	case EXT2_IOC_GETRSVSZ:
+ 		if (test_opt(inode->i_sb, RESERVATION)
+ 			&& S_ISREG(inode->i_mode)
+ 			&& ei->i_block_alloc_info) {
+ 			rsv_window_size = ei->i_block_alloc_info->rsv_window_node.rsv_goal_size;
+-			return put_user(rsv_window_size, (int __user *)arg);
++			retval = put_user(rsv_window_size, (int __user *)arg);
++			goto out;
+ 		}
+-		return -ENOTTY;
++		retval = -ENOTTY;
++		goto out;
+ 	case EXT2_IOC_SETRSVSZ: {
+ 
+-		if (!test_opt(inode->i_sb, RESERVATION) ||!S_ISREG(inode->i_mode))
+-			return -ENOTTY;
++		if (!test_opt(inode->i_sb, RESERVATION) ||
++				!S_ISREG(inode->i_mode)) {
++			retval = -ENOTTY;
++			goto out;
++		}
+ 
+-		if (IS_RDONLY(inode))
+-			return -EROFS;
++		if (IS_RDONLY(inode)) {
++			retval = -EROFS;
++			goto out;
++		}
+ 
+-		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER))
+-			return -EACCES;
++		if ((current->fsuid != inode->i_uid) && !capable(CAP_FOWNER)) {
++			retval = -EACCES;
++			goto out;
++		}
+ 
+-		if (get_user(rsv_window_size, (int __user *)arg))
+-			return -EFAULT;
++		if (get_user(rsv_window_size, (int __user *)arg)) {
++			retval = -EFAULT;
++			goto out;
++		}
+ 
+ 		if (rsv_window_size > EXT2_MAX_RESERVE_BLOCKS)
+ 			rsv_window_size = EXT2_MAX_RESERVE_BLOCKS;
+@@ -131,11 +164,15 @@ int ext2_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
+ 			rsv->rsv_goal_size = rsv_window_size;
+ 		}
+ 		mutex_unlock(&ei->truncate_mutex);
+-		return 0;
++		goto out;
+ 	}
+ 	default:
+-		return -ENOTTY;
++		retval = -ENOTTY;
++		goto out;
+ 	}
++out:
++	unlock_kernel();
++	return retval;
+ }
+ 
+ #ifdef CONFIG_COMPAT
+@@ -161,9 +198,7 @@ long ext2_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 	default:
+ 		return -ENOIOCTLCMD;
+ 	}
+-	lock_kernel();
+ 	ret = ext2_ioctl(inode, file, cmd, (unsigned long) compat_ptr(arg));
+-	unlock_kernel();
+ 	return ret;
+ }
+ #endif
+-- 
+1.5.3.8
+
