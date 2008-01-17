@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbYAQVtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760007AbYAQVtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759392AbYAQVtg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 16:49:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758235AbYAQVoM
+	id S1760007AbYAQVtw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 16:49:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759075AbYAQVpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 16:44:12 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:43964 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758945AbYAQVoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 16:44:10 -0500
-Date: Thu, 17 Jan 2008 23:43:01 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6.24 patch] x86: allow 64bit setting in Kconfig
-Message-ID: <20080117214301.GA28233@does.not.exist>
+	Thu, 17 Jan 2008 16:45:55 -0500
+Received: from home.nigel.suspend2.net ([203.171.70.205]:59142 "EHLO
+	laptop.nigel.suspend2.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759260AbYAQVpx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 16:45:53 -0500
+Message-ID: <478FCC90.60605@nigel.suspend2.net>
+Date: Fri, 18 Jan 2008 08:45:52 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-12-11)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>, Zan Lynx <zlynx@acm.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: echo mem > /sys/power/state
+References: <20080116222445.6f7ff66e.akpm@linux-foundation.org> <1200591411.34145.4.camel@localhost> <20080117111355.29554f38.akpm@linux-foundation.org> <200801172238.17176.rjw@sisk.pl>
+In-Reply-To: <200801172238.17176.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recently someone told me he had a bug on x86 and to reproduce
-it I should "'make allyesconfig' and disable CONFIG_HOTPLUG=y".
+Hi.
 
-But I didn't see it.
+Rafael J. Wysocki wrote:
+> On Thursday, 17 of January 2008, Andrew Morton wrote:
+>> On Thu, 17 Jan 2008 10:36:51 -0700 Zan Lynx <zlynx@acm.org> wrote:
+>>
+>>> On Wed, 2008-01-16 at 22:24 -0800, Andrew Morton wrote:
+>>>> So I take everyone's latest and greatest product and injudiciously type the
+>>>> above command.  The result five minutes later is at
+>>>> http://userweb.kernel.org/~akpm/borkage.jpg.  See if you can count all the bugs.
+>>>>
+>>>> Sorry, but I've had it with this stuff and I'm tired of fixing everyone else's
+>>>> stuff.  I'm just going to ship it.  Good luck.
+>>> Heh.  Laptop suspend to anything has been so broken for so long in the
+>>> -mm series on my Compaq R3000 that I didn't even know it was ever
+>>> supposed to work.
+>> It gets broken more often than anything else.  I do test each release on
+>> two laptops and I get to do a lot of bisection searching and
+>> grumpygramming as a result.
+>>
+>> Probably it would be more efficient to have the people who wrote the code
+>> also test it.
+> 
+> Well, that would certainly help.
+> 
+> I do test all of my patches and generally all of the patches I sign off, but
+> surely that's not enough.
 
-"make allyesconfig" is ambiguous on x86 and he had a 64bit computer.
+It is far too easy to take a cursory glance, say 'That looks okay' and
+move on to the next thing, isn't it? I was horrified when I saw the list
+of acks etc (including me) on the commit with the helper_unlock issue we
+just fixed. It's truly scary to think that none of us looked closely
+enough to pick that up at the time.
 
-There go another two hours compile time.
-
-It makes sense to have the Kconfig default and the defconfig based on 
-whether you are on a 32bit or a 64bit machine, but it's complete 
-nonsense to not offer the Kconfig variable unless you had explicitely 
-given ARCH=x86 (in which case you could as well immediately set the ARCH 
-to i386 or x86_64).
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-fcf848366a166812fa32b2a22f2631fcd4982cb4 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 80b7ba4..0e6e74d 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -3,7 +3,7 @@ mainmenu "Linux Kernel Configuration for x86"
- 
- # Select 32 or 64 bit
- config 64BIT
--	bool "64-bit kernel" if ARCH = "x86"
-+	bool "64-bit kernel"
- 	default ARCH = "x86_64"
- 	help
- 	  Say yes to build a 64-bit kernel - formerly known as x86_64
-
+Nigel
