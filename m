@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbYAQPMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbYAQPQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbYAQPMd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 10:12:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbYAQPMY
+	id S1753349AbYAQPQl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 10:16:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbYAQPQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 10:12:24 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37344 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751525AbYAQPMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 10:12:24 -0500
-Cc: wim@iguana.be, Scott Wood <scottwood@freescale.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Message-Id: <9E91DB29-BBB8-4CC9-8F6D-71306329D7A5@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jochen Friedrich <jochen@scram.de>
-In-Reply-To: <478F6C5F.4010505@scram.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH/RFCv2] wdt: Add support for PowerQUICC watchdog
-Date: Thu, 17 Jan 2008 09:11:57 -0600
-References: <478F4E4A.4060907@scram.de> <A00FB5AE-903B-461A-B234-4BA817B3C5CB@kernel.crashing.org> <478F6C5F.4010505@scram.de>
-X-Mailer: Apple Mail (2.915)
+	Thu, 17 Jan 2008 10:16:34 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:44593 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750941AbYAQPQd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 10:16:33 -0500
+Date: Thu, 17 Jan 2008 10:16:30 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Dave Young <hidave.darkstar@gmail.com>
+cc: Jarek Poplawski <jarkao2@gmail.com>, Greg KH <gregkh@suse.de>,
+       <stefanr@s5r6.in-berlin.de>, <david-b@pacbell.net>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct
+ class
+In-Reply-To: <a8e1da0801161718w573ac941jc83011e63c47ecf@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0801171014030.4378-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 17 Jan 2008, Dave Young wrote:
 
-On Jan 17, 2008, at 8:55 AM, Jochen Friedrich wrote:
+> > Your meaning isn't clear.  Do you mean that your patch doesn't generate
+> > any lockdep warnings at all?  Or do you mean that it generates a single
+> > lockdep warning at boot time and then no more warnings afterward?
+> 
+> I means the latter one.
 
-> Hi Kumar,
->
->> Why are you commenting on mpc83xx_wdt with respect to pq1_wdt?
->> Also, is this driver just for PQ1 platforms or PQ1 & PQ2?  If its  
->> just pq1 we should probably call it pq1_wdt*
->
-> It should be for pq1, pq2 and pq2pro. However, i only have the  
-> possibility
-> to test this on pq1.
->
->>> arch/powerpc/platforms/8xx/mpc86xads_setup.c |    5 +
->>> arch/powerpc/platforms/8xx/mpc885ads_setup.c |    5 +
->>> arch/powerpc/sysdev/Makefile                 |    3 +
->>> arch/powerpc/sysdev/pq_wdt.c                 |  203 +++++++++++++++ 
->>> ++++++++
->>> arch/powerpc/sysdev/pq_wdt.h                 |   28 ++++
->>> drivers/watchdog/Kconfig                     |   13 ++-
->>> drivers/watchdog/Makefile                    |    1 +
->>> drivers/watchdog/pq_wdt.c                    |  225 +++++++++++++++ 
->>> +++++++++++
->>> 8 files changed, 482 insertions(+), 1 deletions(-)
->>> create mode 100644 arch/powerpc/sysdev/pq_wdt.c
->>> create mode 100644 arch/powerpc/sysdev/pq_wdt.h
->>> create mode 100644 drivers/watchdog/pq_wdt.c
->> What are the bits in sysdev/pq_wdt.{c,h}.  Why aren't these just in  
->> drivers/watchdog?
->
-> These are the parts needed to boot a device with activated watchdog.  
-> If a bootloader like u-boot activates the watchdog, it can't be  
-> deactivated again
-> and needs to be reset at regular intervals. This is done using a  
-> kernel timer.
-> The driver in drivers/watchdog disables the timer as soon as the wdt  
-> device
-> is opened.
+That's very bad.
 
-Ok, but is there a need for these bits to be in sysdev vs just being  
-in the driver and calling into it.
+For each type of violation, lockdep only gives one error message.  So
+the fact that you get one message at boot time and then no more doesn't
+mean the code is almost right -- it probably means the code has lots of
+errors and you're seeing only the first one.
 
-- k
+Alan Stern
+
