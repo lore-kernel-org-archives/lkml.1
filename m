@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbYAQUkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757094AbYAQUmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbYAQUkV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 15:40:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYAQUjt
+	id S1757094AbYAQUmS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbYAQUmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 15:39:49 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:64802 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751566AbYAQUjr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 15:39:47 -0500
-Date: Thu, 17 Jan 2008 12:45:34 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86: left over fix for leak of early_ioremp
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <200801171245.35095.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Thu, 17 Jan 2008 15:42:07 -0500
+Received: from mail.queued.net ([207.210.101.209]:1091 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752503AbYAQUmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 15:42:06 -0500
+Date: Thu, 17 Jan 2008 15:42:22 -0500
+From: Andres Salomon <dilinger@queued.net>
+To: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
+Cc: linux-kernel@vger.kernel.org, Jordan Crouse <jordan.crouse@amd.com>
+Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
+Message-ID: <20080117154222.6587864b@ephemeral>
+In-Reply-To: <478FB255.5040001@i4.informatik.rwth-aachen.de>
+References: <478E4267.7020509@i4.informatik.rwth-aachen.de>
+	<20080116161912.7b449466@ephemeral>
+	<20080116165606.3ebc06a4@ephemeral>
+	<478F25D6.3060503@i4.informatik.rwth-aachen.de>
+	<20080117134032.4cc1a1cf@ephemeral>
+	<478FB255.5040001@i4.informatik.rwth-aachen.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86: left over fix for leak of early_ioremp
+On Thu, 17 Jan 2008 20:53:57 +0100
+Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
 
-Signed-off-by: Yinghai Lu <yinghai@sun.com>
+> Andres Salomon schrieb:
+> > On Thu, 17 Jan 2008 10:54:30 +0100
+> > Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
+> > 
+> >> Andres Salomon schrieb:
+> >>> On Wed, 16 Jan 2008 16:19:12 -0500
+> >>> Andres Salomon <dilinger@queued.net> wrote:
+> >>>
+> >>>> On Wed, 16 Jan 2008 18:44:07 +0100
+> >>>> Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
+> >>>>
+> >>>>> Hi,
+> >>>>>
+> >>>>> I'm trying to boot 2.6.24-rc8 on a GEODE LX board (ALIX.3),
+> >>>>> and it hangs during boot:
+> >>>>>
+> >>>>> [   12.689971] NET: Registered protocol family 16
+> >>>>> [   12.703329] geode-mfgpt:  Registered timer 0
+> >>>>> [   12.716149] mfgpt-timer:  registering the MFGT timer as a clock event...
+> >>>>>
+> >>>> What BIOS are you using?  It's possible that our detection code is
+> >>>> failing to detect in-use timers.
+> >> I'm using v0.99 (latest available).
+> > 
+> > 
+> > v0.99 of what?  Jordan seems to think it's an Award BIOS, but I'd like
+> > to make sure.
+> 
+> Its an ALIX board from PCEngines, they have their own BIOS
+> implementation (tinyBios).
+> http://www.pcengines.ch/alix.htm
+> 
 
-Index: linux-2.6/drivers/acpi/tables.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/tables.c
-+++ linux-2.6/drivers/acpi/tables.c
-@@ -206,8 +206,10 @@ acpi_table_parse_entries(char *id,
- 	       table_end) {
- 		if (entry->type == entry_id
- 		    && (!max_entries || count++ < max_entries))
--			if (handler(entry, table_end))
-+			if (handler(entry, table_end)) {
-+				acpi_os_unmap_memory(table_header, table_header->length);
- 				return -EINVAL;
-+			}
- 
- 		entry = (struct acpi_subtable_header *)
- 		    ((unsigned long)entry + entry->length);
-@@ -282,6 +285,7 @@ static void __init check_multiple_madt(v
- 		       "notify linux-acpi@vger.kernel.org\n",
- 		       acpi_apic_instance ? 0 : 2);
- 
-+		acpi_os_unmap_memory(table, table->length);
- 	} else
- 		acpi_apic_instance = 0;
- 
-Index: linux-2.6/drivers/firmware/dmi_scan.c
-===================================================================
---- linux-2.6.orig/drivers/firmware/dmi_scan.c
-+++ linux-2.6/drivers/firmware/dmi_scan.c
-@@ -353,6 +353,7 @@ void __init dmi_scan_machine(void)
- 				return;
- 			}
- 		}
-+		dmi_iounmap(p, 0x10000);
- 	}
-  out:	printk(KERN_INFO "DMI not present or invalid.\n");
- }
+Ah, okay.  I couldn't find anything about MFGPTs in the available
+source, but I did find the following:
+
+http://article.gmane.org/gmane.linux.distributions.voyage.general/1824
+
+It would appear that something between 0.90 and 0.92 changed that
+has broken things.  There's also a changelog here:
+
+http://forum.pfsense.org/index.php?topic=6729.15
+
+Note two MFGPT-related entries in 0.92:
+	
+	- disable CS5536 diverse device power management to avoid
+MFGPT /
+	  interrupt issues.
+	
+	- MFGPT issues: please observe AMD CS5536 data book section
+5.16.3,
+	  incorrect initialization sequence can HANG the system.
+
+
+I'm assuming the first is messing w/ DIVIL_GLD_MSR_PM...
+
+
