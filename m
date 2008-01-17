@@ -1,117 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYAQSky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYAQSo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbYAQSky (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 13:40:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbYAQSkn
+	id S1753584AbYAQSo6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 13:44:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYAQSor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 13:40:43 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42546 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755543AbYAQSkm (ORCPT
+	Thu, 17 Jan 2008 13:44:47 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:36172 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751494AbYAQSor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 13:40:42 -0500
-Date: Thu, 17 Jan 2008 10:40:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: balbir@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org,
-       Linux ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Intel E/100 mailing list <e1000-devel@lists.sourceforge.net>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: 2.6.24-rc8-mm1
-Message-Id: <20080117104021.25a8e562.akpm@linux-foundation.org>
-In-Reply-To: <20080117124622.GA18450@balbir.in.ibm.com>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<20080117124622.GA18450@balbir.in.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jan 2008 13:44:47 -0500
+Date: Thu, 17 Jan 2008 13:44:03 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Daniel Walker <dwalker@mvista.com>
+cc: Wolfgang Grandegger <wg@grandegger.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-rt1
+In-Reply-To: <1200594655.18731.148.camel@imap.mvista.com>
+Message-ID: <Pine.LNX.4.58.0801171343250.28350@gandalf.stny.rr.com>
+References: <1200544050.318.18.camel@localhost.localdomain> 
+ <478F2A46.5070506@grandegger.com>  <1200586632.18731.141.camel@imap.mvista.com>
+  <478F9BCE.4030301@grandegger.com> <1200594655.18731.148.camel@imap.mvista.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 18:16:22 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> * Andrew Morton <akpm@linux-foundation.org> [2008-01-17 02:35:14]:
-> 
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
-> > 
-> > - selinux is busted on one of my two selinux-enabled test machines.
-> > 
-> > - suspend-to-ram and suspend-to-disk are totally hosed on one of my test
-> >   machines.  I guess I get to bisect this.
-> > 
-> > - git-nfsd is dropped due to conflicts with git-nfs
-> > 
-> > - git-newsetup is dropped due to conflicts with git-x86 (I think)
-> > 
-> > - git-perfmon is dropped due to conflicts with git-x86 (I think)
-> > 
-> > - git-kgdb is dropped due to conflicts with git-damn-near-everything
-> > 
-> > - git-block is dropped due to conflicts with the IDE tree
-> > 
-> > - kvm probably doesn't work properly because I couldn't be bothered fixing
-> >   the conflicts between git-kvm and the driver tree
-> > 
-> > - the volume of rejects and build errors which are caused by subsystem
-> >   maintainers fiddling with other people's stuff is quite out of control. 
-> >   Something needs to happen here.
-> 
-> Hi, Andrew,
-> 
-> May be it was one of the conflicts, but my system fails to get
-> ethernet working with this version. I see
-> 
-> e100: Intel(R) PRO/100 Network Driver, 3. 5.23-k4-NAPI
-> e100: Copyright(c) 1999-2006 Intel Corporation
-> ACPI: PCI Interrupt 0000:04:08.0[A] -> GSI 20 (level, low) -> IRQ 20
-> modprobe:2584 conflicting cache attribute 50000000-50001000
-> uncached<->default
-> e100: 0000:04:08.0: e100_probe: Cannot map device registers, aborting.
-> ACPI: PCI interrupt for device 0000:04:08.0 disabled
-> e100: probe of 0000:04:08.0 failed with error -12
-> 
-> Other interesting boot information
-> 
-> Using ACPI (MADT) for SMP configuration information
-> PM: Registered nosave memory: 000000000008f000 - 00000000000a0000
-> PM: Registered nosave memory: 00000000000a0000 - 00000000000e0000
-> PM: Registered nosave memory: 00000000000e0000 - 0000000000100000
-> PM: Registered nosave memory: 000000003e5d1000 - 000000003e6e5000
-> PM: Registered nosave memory: 000000003f574000 - 000000003f57c000
-> PM: Registered nosave memory: 000000003f62d000 - 000000003f631000
-> PM: Registered nosave memory: 000000003f6a7000 - 000000003f6e9000
-> PM: Registered nosave memory: 000000003f6ed000 - 000000003f6ff000
-> Allocating PCI resources starting at 50000000 (gap: 40000000:bff80000)
-> 
->  PCI: Bridge: 0000:00:1c.0
->    IO window: disabled.
->    MEM window:
-> 0x50300000-0x503fffff
->    PREFETCH window: disabled.
->  PCI: Bridge: 0000:00:1c.2
->    IO window: disabled.
->    MEM window:
-> 0x50400000-0x504fffff
->    PREFETCH window: disabled.
->  PCI: Bridge: 0000:00:1c.3
->    IO window: disabled.
->    MEM window:
-> 0x50500000-0x505fffff
->    PREFETCH window: disabled.
->  PCI: Bridge: 0000:00:1e.0
->    IO window: 1000-1fff
->    MEM window:
-> 0x50000000-0x500fffff
->    PREFETCH window: disabled.
-> 
-> I am yet to get down to the root cause, thought I'd report it first to
-> the x86 and ACPI list to see if someone has seen the problem before.
-> 
+On Thu, 17 Jan 2008, Daniel Walker wrote:
 
-It appears that the new PAT code didn't like e100's pci_iomap().  Venki, can you
-take a look please?
+>
+> On Thu, 2008-01-17 at 19:17 +0100, Wolfgang Grandegger wrote:
+> > [    0.733248] TCP bind hash table entries: 2048 (order: 3, 57344
+> > bytes)
+> > [    0.741132] TCP: Hash tables configured (established 2048 bind
+> > 2048)
+> > [    0.747981] TCP reno registered
+> > [    0.805896] krcupreemptd setsched 0
+> > [    0.809657]   prio = 98
+>
+> That's interesting .. You chould try running cyclictest at priority 99
+> to eliminate other threads that might get involved (using -p99 instead
+> of -p80 , I think) ..
+
+No that prio is the internal prio where smaller number is higher priority.
+The krcupreemptd runs at RT prio 1, which is 98 internally.
+
+-- Steve
 
