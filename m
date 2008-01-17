@@ -1,377 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbYAQA6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbYAQA6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753107AbYAQA6h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 19:58:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbYAQA5x
+	id S1755375AbYAQA6v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 19:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYAQA54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 19:57:53 -0500
-Received: from smtp05.mtu.ru ([62.5.255.52]:60652 "EHLO smtp05.mtu.ru"
+	Wed, 16 Jan 2008 19:57:56 -0500
+Received: from lixom.net ([66.141.50.11]:57130 "EHLO mail.lixom.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751270AbYAQA5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 19:57:51 -0500
-From: Anton Salikhmetov <salikhmetov@gmail.com>
-To: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
-       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
-Subject: [PATCH -v5 2/2] Updating ctime and mtime at syncing
-Date: Thu, 17 Jan 2008 03:57:46 +0300
-Message-Id: <1200531471556-git-send-email-salikhmetov@gmail.com>
-X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12005314662518-git-send-email-salikhmetov@gmail.com>
-References: <12005314662518-git-send-email-salikhmetov@gmail.com>
-X-DCC-STREAM-Metrics: smtp05.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
+	id S1752765AbYAQA5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 19:57:55 -0500
+Date: Wed, 16 Jan 2008 19:08:27 -0600
+From: Olof Johansson <olof@lixom.net>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org
+Subject: [patch 1/3] bug.h: Remove HAVE_ARCH_BUG and HAVE_ARCH_WARN
+Message-ID: <20080117010827.GA24766@lixom.net>
+References: <20080117010130.GA24663@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080117010130.GA24663@lixom.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=2645
+No need to have the HAVE_ARCH_BUG.* / HAVE_ARCH_WARN.* defines, when
+the generic implementation can just use #ifndef on the macros themselves.
 
-Changes for updating the ctime and mtime fields for memory-mapped files:
+Signed-off-by: Olof Johansson <olof@lixom.net>
+Cc: <linux-arch@vger.kernel.org>
 
-1) a new flag triggering update of the inode data;
-2) a new field in the address_space structure for saving modification time;
-3) a new helper function to update ctime and mtime when needed;
-4) updating time stamps for mapped files in sys_msync() and do_fsync();
-5) implementing lazy ctime and mtime update.
-
-Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
 ---
- fs/buffer.c             |    3 ++
- fs/fs-writeback.c       |    2 +
- fs/inode.c              |   43 +++++++++++++++++++++++----------
- fs/sync.c               |    2 +
- include/linux/fs.h      |   13 +++++++++-
- include/linux/pagemap.h |    3 +-
- mm/msync.c              |   61 +++++++++++++++++++++++++++++++++-------------
- mm/page-writeback.c     |   54 ++++++++++++++++++++++-------------------
- 8 files changed, 124 insertions(+), 57 deletions(-)
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 7249e01..3967aa7 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -701,6 +701,9 @@ static int __set_page_dirty(struct page *page,
- 	if (unlikely(!mapping))
- 		return !TestSetPageDirty(page);
+ include/asm-alpha/bug.h   |    1 -
+ include/asm-arm/bug.h     |    1 -
+ include/asm-avr32/bug.h   |    3 ---
+ include/asm-frv/bug.h     |    1 -
+ include/asm-generic/bug.h |   10 +++++-----
+ include/asm-ia64/bug.h    |    1 -
+ include/asm-m68k/bug.h    |    1 -
+ include/asm-mips/bug.h    |    4 ----
+ include/asm-parisc/bug.h  |    2 --
+ include/asm-powerpc/bug.h |    3 ---
+ include/asm-s390/bug.h    |    2 --
+ include/asm-sparc/bug.h   |    1 -
+ include/asm-sparc64/bug.h |    1 -
+ include/asm-v850/bug.h    |    1 -
+ include/asm-x86/bug.h     |    1 -
+ 15 files changed, 5 insertions(+), 28 deletions(-)
+
+Index: linux-2.6.24-rc6/include/asm-alpha/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-alpha/bug.h
++++ linux-2.6.24-rc6/include/asm-alpha/bug.h
+@@ -10,7 +10,6 @@
+   __asm__ __volatile__("call_pal %0  # bugchk\n\t"".long %1\n\t.8byte %2" \
+ 		       : : "i" (PAL_bugchk), "i"(__LINE__), "i"(__FILE__))
  
-+	mapping->mtime = CURRENT_TIME;
-+	set_bit(AS_MCTIME, &mapping->flags);
-+
- 	if (TestSetPageDirty(page))
- 		return 0;
+-#define HAVE_ARCH_BUG
+ #endif
  
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 300324b..affd291 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -243,6 +243,8 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
+ #include <asm-generic/bug.h>
+Index: linux-2.6.24-rc6/include/asm-arm/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-arm/bug.h
++++ linux-2.6.24-rc6/include/asm-arm/bug.h
+@@ -16,7 +16,6 @@ extern void __bug(const char *file, int 
  
- 	spin_unlock(&inode_lock);
+ #endif
  
-+	mapping_update_time(mapping);
-+
- 	ret = do_writepages(mapping, wbc);
+-#define HAVE_ARCH_BUG
+ #endif
  
- 	/* Don't write the inode if only I_DIRTY_PAGES was set */
-diff --git a/fs/inode.c b/fs/inode.c
-index ed35383..edd5bf4 100644
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -1243,8 +1243,10 @@ void touch_atime(struct vfsmount *mnt, struct dentry *dentry)
- EXPORT_SYMBOL(touch_atime);
+ #include <asm-generic/bug.h>
+Index: linux-2.6.24-rc6/include/asm-avr32/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-avr32/bug.h
++++ linux-2.6.24-rc6/include/asm-avr32/bug.h
+@@ -63,9 +63,6 @@
+ 		unlikely(__ret_warn_on);				\
+ 	})
  
- /**
-- *	file_update_time	-	update mtime and ctime time
-- *	@file: file accessed
-+ *	inode_update_time	-	update mtime and ctime time
-+ *	@inode: inode accessed
-+ *	@ts: time when inode was accessed
-+ *	@sync: whether to do synchronous update
-  *
-  *	Update the mtime and ctime members of an inode and mark the inode
-  *	for writeback.  Note that this function is meant exclusively for
-@@ -1253,11 +1255,8 @@ EXPORT_SYMBOL(touch_atime);
-  *	S_NOCTIME inode flag, e.g. for network filesystem where these
-  *	timestamps are handled by the server.
-  */
+-#define HAVE_ARCH_BUG
+-#define HAVE_ARCH_WARN_ON
 -
--void file_update_time(struct file *file)
-+void inode_update_time(struct inode *inode, struct timespec *ts)
- {
--	struct inode *inode = file->f_path.dentry->d_inode;
--	struct timespec now;
- 	int sync_it = 0;
+ #endif /* CONFIG_BUG */
  
- 	if (IS_NOCMTIME(inode))
-@@ -1265,22 +1264,41 @@ void file_update_time(struct file *file)
- 	if (IS_RDONLY(inode))
- 		return;
+ #include <asm-generic/bug.h>
+Index: linux-2.6.24-rc6/include/asm-frv/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-frv/bug.h
++++ linux-2.6.24-rc6/include/asm-frv/bug.h
+@@ -32,7 +32,6 @@ do {						\
+ 	asm volatile("nop");			\
+ } while(0)
  
--	now = current_fs_time(inode->i_sb);
--	if (!timespec_equal(&inode->i_mtime, &now)) {
--		inode->i_mtime = now;
-+	if (timespec_compare(&inode->i_mtime, ts) < 0) {
-+		inode->i_mtime = *ts;
- 		sync_it = 1;
- 	}
+-#define HAVE_ARCH_BUG
+ #define BUG()					\
+ do {						\
+ 	_debug_bug_printk();			\
+Index: linux-2.6.24-rc6/include/asm-generic/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-generic/bug.h
++++ linux-2.6.24-rc6/include/asm-generic/bug.h
+@@ -20,14 +20,14 @@ struct bug_entry {
+ #define BUGFLAG_WARNING	(1<<0)
+ #endif	/* CONFIG_GENERIC_BUG */
  
--	if (!timespec_equal(&inode->i_ctime, &now)) {
--		inode->i_ctime = now;
-+	if (timespec_compare(&inode->i_ctime, ts) < 0) {
-+		inode->i_ctime = *ts;
- 		sync_it = 1;
- 	}
+-#ifndef HAVE_ARCH_BUG
++#ifndef BUG
+ #define BUG() do { \
+ 	printk("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__); \
+ 	panic("BUG!"); \
+ } while (0)
+ #endif
  
- 	if (sync_it)
- 		mark_inode_dirty_sync(inode);
- }
-+EXPORT_SYMBOL(inode_update_time);
+-#ifndef HAVE_ARCH_BUG_ON
++#ifndef BUG_ON
+ #define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while(0)
+ #endif
  
--EXPORT_SYMBOL(file_update_time);
-+/*
-+ * Update the ctime and mtime stamps after checking if they are to be updated.
-+ */
-+void mapping_update_time(struct address_space *mapping)
-+{
-+	if (test_and_clear_bit(AS_MCTIME, &mapping->flags)) {
-+		struct inode *inode = mapping->host;
-+		struct timespec *ts = &mapping->mtime;
-+
-+		if (S_ISBLK(inode->i_mode)) {
-+			struct block_device *bdev = inode->i_bdev;
-+
-+			mutex_lock(&bdev->bd_mutex);
-+			list_for_each_entry(inode, &bdev->bd_inodes, i_devices)
-+				inode_update_time(inode, ts);
-+			mutex_unlock(&bdev->bd_mutex);
-+		} else
-+			inode_update_time(inode, ts);
-+	}
-+}
+@@ -49,15 +49,15 @@ extern void warn_on_slowpath(const char 
+ #endif
  
- int inode_needs_sync(struct inode *inode)
- {
-@@ -1290,7 +1308,6 @@ int inode_needs_sync(struct inode *inode)
- 		return 1;
- 	return 0;
- }
+ #else /* !CONFIG_BUG */
+-#ifndef HAVE_ARCH_BUG
++#ifndef BUG
+ #define BUG()
+ #endif
+ 
+-#ifndef HAVE_ARCH_BUG_ON
++#ifndef BUG_ON
+ #define BUG_ON(condition) do { if (condition) ; } while(0)
+ #endif
+ 
+-#ifndef HAVE_ARCH_WARN_ON
++#ifndef WARN_ON
+ #define WARN_ON(condition) ({						\
+ 	int __ret_warn_on = !!(condition);				\
+ 	unlikely(__ret_warn_on);					\
+Index: linux-2.6.24-rc6/include/asm-ia64/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-ia64/bug.h
++++ linux-2.6.24-rc6/include/asm-ia64/bug.h
+@@ -6,7 +6,6 @@
+ #define BUG() do { printk("kernel BUG at %s:%d!\n", __FILE__, __LINE__); ia64_abort(); } while (0)
+ 
+ /* should this BUG be made generic? */
+-#define HAVE_ARCH_BUG
+ #endif
+ 
+ #include <asm-generic/bug.h>
+Index: linux-2.6.24-rc6/include/asm-m68k/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-m68k/bug.h
++++ linux-2.6.24-rc6/include/asm-m68k/bug.h
+@@ -21,7 +21,6 @@
+ } while (0)
+ #endif
+ 
+-#define HAVE_ARCH_BUG
+ #endif
+ 
+ #include <asm-generic/bug.h>
+Index: linux-2.6.24-rc6/include/asm-mips/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-mips/bug.h
++++ linux-2.6.24-rc6/include/asm-mips/bug.h
+@@ -12,8 +12,6 @@ do {									\
+ 	__asm__ __volatile__("break %0" : : "i" (BRK_BUG));		\
+ } while (0)
+ 
+-#define HAVE_ARCH_BUG
 -
- EXPORT_SYMBOL(inode_needs_sync);
+ #if (_MIPS_ISA > _MIPS_ISA_MIPS1)
  
- int inode_wait(void *word)
-diff --git a/fs/sync.c b/fs/sync.c
-index 7cd005e..5561464 100644
---- a/fs/sync.c
-+++ b/fs/sync.c
-@@ -87,6 +87,8 @@ long do_fsync(struct file *file, int datasync)
- 		goto out;
- 	}
+ #define BUG_ON(condition)						\
+@@ -22,8 +20,6 @@ do {									\
+ 			     : : "r" (condition), "i" (BRK_BUG));	\
+ } while (0)
  
-+	mapping_update_time(mapping);
-+
- 	ret = filemap_fdatawrite(mapping);
+-#define HAVE_ARCH_BUG_ON
+-
+ #endif /* _MIPS_ISA > _MIPS_ISA_MIPS1 */
  
- 	/*
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index b3ec4a4..f0d3ced 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -511,6 +511,7 @@ struct address_space {
- 	spinlock_t		private_lock;	/* for use by the address_space */
- 	struct list_head	private_list;	/* ditto */
- 	struct address_space	*assoc_mapping;	/* ditto */
-+	struct timespec		mtime;		/* modification time */
- } __attribute__((aligned(sizeof(long))));
- 	/*
- 	 * On most architectures that alignment is already the case; but
-@@ -1977,7 +1978,17 @@ extern int buffer_migrate_page(struct address_space *,
- extern int inode_change_ok(struct inode *, struct iattr *);
- extern int __must_check inode_setattr(struct inode *, struct iattr *);
- 
--extern void file_update_time(struct file *file);
-+extern void inode_update_time(struct inode *, struct timespec *);
-+
-+static inline void file_update_time(struct file *file)
-+{
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct timespec ts = current_fs_time(inode->i_sb);
-+
-+	inode_update_time(inode, &ts);
-+}
-+
-+extern void mapping_update_time(struct address_space *);
- 
- static inline ino_t parent_ino(struct dentry *dentry)
- {
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index db8a410..bf0f9e7 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -17,8 +17,9 @@
-  * Bits in mapping->flags.  The lower __GFP_BITS_SHIFT bits are the page
-  * allocation mode flags.
+ #endif
+Index: linux-2.6.24-rc6/include/asm-parisc/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-parisc/bug.h
++++ linux-2.6.24-rc6/include/asm-parisc/bug.h
+@@ -7,8 +7,6 @@
   */
--#define	AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
-+#define AS_EIO		(__GFP_BITS_SHIFT + 0)	/* IO error on async write */
- #define AS_ENOSPC	(__GFP_BITS_SHIFT + 1)	/* ENOSPC on async write */
-+#define AS_MCTIME	(__GFP_BITS_SHIFT + 2)	/* mtime and ctime to update */
  
- static inline void mapping_set_error(struct address_space *mapping, int error)
- {
-diff --git a/mm/msync.c b/mm/msync.c
-index 44997bf..7657776 100644
---- a/mm/msync.c
-+++ b/mm/msync.c
-@@ -13,16 +13,37 @@
- #include <linux/syscalls.h>
+ #ifdef CONFIG_BUG
+-#define HAVE_ARCH_BUG
+-#define HAVE_ARCH_WARN_ON
  
- /*
-+ * Scan the PTEs for pages belonging to the VMA and mark them read-only.
-+ * It will force a pagefault on the next write access.
-+ */
-+static void vma_wrprotect(struct vm_area_struct *vma)
-+{
-+	unsigned long addr;
-+
-+	for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE) {
-+		spinlock_t *ptl;
-+		pgd_t *pgd = pgd_offset(vma->vm_mm, addr);
-+		pud_t *pud = pud_offset(pgd, addr);
-+		pmd_t *pmd = pmd_offset(pud, addr);
-+		pte_t *pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
-+
-+		if (pte_dirty(*pte) && pte_write(*pte))
-+			*pte = pte_wrprotect(*pte);
-+		pte_unmap_unlock(pte, ptl);
-+	}
-+}
-+
-+/*
-  * MS_SYNC syncs the entire file - including mappings.
-  *
-- * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
-- * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
-- * Now it doesn't do anything, since dirty pages are properly tracked.
-+ * MS_ASYNC does not start I/O. Instead, it marks the relevant pages
-+ * read-only by calling vma_wrprotect(). This is needed to catch the next
-+ * write reference to the mapped region and update the file times
-+ * accordingly.
-  *
-- * The application may now run fsync() to
-- * write out the dirty pages and wait on the writeout and check the result.
-- * Or the application may run fadvise(FADV_DONTNEED) against the fd to start
-- * async writeout immediately.
-+ * The application may now run fsync() to write out the dirty pages and
-+ * wait on the writeout and check the result. Or the application may run
-+ * fadvise(FADV_DONTNEED) against the fd to start async writeout immediately.
-  * So by _not_ starting I/O in MS_ASYNC we provide complete flexibility to
-  * applications.
-  */
-@@ -80,16 +101,22 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
- 		start = vma->vm_end;
+ /* the break instruction is used as BUG() marker.  */
+ #define	PARISC_BUG_BREAK_ASM	"break 0x1f, 0x1fff"
+Index: linux-2.6.24-rc6/include/asm-powerpc/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-powerpc/bug.h
++++ linux-2.6.24-rc6/include/asm-powerpc/bug.h
+@@ -109,9 +109,6 @@
+ 	unlikely(__ret_warn_on);				\
+ })
  
- 		file = vma->vm_file;
--		if (file && (vma->vm_flags & VM_SHARED) && (flags & MS_SYNC)) {
--			get_file(file);
--			up_read(&mm->mmap_sem);
--			error = do_fsync(file, 0);
--			fput(file);
--			if (error)
--				goto out;
--			down_read(&mm->mmap_sem);
--			vma = find_vma(mm, start);
--			continue;
-+		if (file && (vma->vm_flags & VM_SHARED)) {
-+			if (flags & MS_ASYNC) {
-+				vma_wrprotect(vma);
-+				mapping_update_time(file->f_mapping);
-+			}
-+			if (flags & MS_SYNC) {
-+				get_file(file);
-+				up_read(&mm->mmap_sem);
-+				error = do_fsync(file, 0);
-+				fput(file);
-+				if (error)
-+					goto out;
-+				down_read(&mm->mmap_sem);
-+				vma = find_vma(mm, start);
-+				continue;
-+			}
- 		}
+-#define HAVE_ARCH_BUG
+-#define HAVE_ARCH_BUG_ON
+-#define HAVE_ARCH_WARN_ON
+ #endif /* __ASSEMBLY __ */
+ #endif /* CONFIG_BUG */
  
- 		vma = vma->vm_next;
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 3d3848f..53d0e34 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -997,35 +997,39 @@ int __set_page_dirty_no_writeback(struct page *page)
-  */
- int __set_page_dirty_nobuffers(struct page *page)
- {
--	if (!TestSetPageDirty(page)) {
--		struct address_space *mapping = page_mapping(page);
--		struct address_space *mapping2;
-+	struct address_space *mapping = page_mapping(page);
-+	struct address_space *mapping2;
+Index: linux-2.6.24-rc6/include/asm-s390/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-s390/bug.h
++++ linux-2.6.24-rc6/include/asm-s390/bug.h
+@@ -61,8 +61,6 @@
+ 	unlikely(__ret_warn_on);			\
+ })
  
--		if (!mapping)
--			return 1;
-+	if (!mapping)
-+		return 1;
+-#define HAVE_ARCH_BUG
+-#define HAVE_ARCH_WARN_ON
+ #endif /* CONFIG_BUG */
  
--		write_lock_irq(&mapping->tree_lock);
--		mapping2 = page_mapping(page);
--		if (mapping2) { /* Race with truncate? */
--			BUG_ON(mapping2 != mapping);
--			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
--			if (mapping_cap_account_dirty(mapping)) {
--				__inc_zone_page_state(page, NR_FILE_DIRTY);
--				__inc_bdi_stat(mapping->backing_dev_info,
--						BDI_RECLAIMABLE);
--				task_io_account_write(PAGE_CACHE_SIZE);
--			}
--			radix_tree_tag_set(&mapping->page_tree,
--				page_index(page), PAGECACHE_TAG_DIRTY);
--		}
--		write_unlock_irq(&mapping->tree_lock);
--		if (mapping->host) {
--			/* !PageAnon && !swapper_space */
--			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-+	mapping->mtime = CURRENT_TIME;
-+	set_bit(AS_MCTIME, &mapping->flags);
-+
-+	if (TestSetPageDirty(page))
-+		return 0;
-+
-+	write_lock_irq(&mapping->tree_lock);
-+	mapping2 = page_mapping(page);
-+	if (mapping2) {
-+		/* Race with truncate? */
-+		BUG_ON(mapping2 != mapping);
-+		WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
-+		if (mapping_cap_account_dirty(mapping)) {
-+			__inc_zone_page_state(page, NR_FILE_DIRTY);
-+			__inc_bdi_stat(mapping->backing_dev_info,
-+					BDI_RECLAIMABLE);
-+			task_io_account_write(PAGE_CACHE_SIZE);
- 		}
--		return 1;
-+		radix_tree_tag_set(&mapping->page_tree,
-+				page_index(page), PAGECACHE_TAG_DIRTY);
- 	}
--	return 0;
-+	write_unlock_irq(&mapping->tree_lock);
-+
-+	if (mapping->host)
-+		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-+
-+	return 1;
- }
- EXPORT_SYMBOL(__set_page_dirty_nobuffers);
+ #include <asm-generic/bug.h>
+Index: linux-2.6.24-rc6/include/asm-sparc/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-sparc/bug.h
++++ linux-2.6.24-rc6/include/asm-sparc/bug.h
+@@ -26,7 +26,6 @@ extern void do_BUG(const char *file, int
+ #define BUG()		__bug_trap()
+ #endif
  
--- 
-1.4.4.4
+-#define HAVE_ARCH_BUG
+ #endif
+ 
+ #include <asm-generic/bug.h>
+Index: linux-2.6.24-rc6/include/asm-sparc64/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-sparc64/bug.h
++++ linux-2.6.24-rc6/include/asm-sparc64/bug.h
+@@ -14,7 +14,6 @@ extern void do_BUG(const char *file, int
+ #define BUG()		__builtin_trap()
+ #endif
+ 
+-#define HAVE_ARCH_BUG
+ #endif
+ 
+ #include <asm-generic/bug.h>
+Index: linux-2.6.24-rc6/include/asm-v850/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-v850/bug.h
++++ linux-2.6.24-rc6/include/asm-v850/bug.h
+@@ -17,7 +17,6 @@
+ #ifdef CONFIG_BUG
+ extern void __bug (void) __attribute__ ((noreturn));
+ #define BUG()		__bug()
+-#define HAVE_ARCH_BUG
+ #endif
+ 
+ #include <asm-generic/bug.h>
+Index: linux-2.6.24-rc6/include/asm-x86/bug.h
+===================================================================
+--- linux-2.6.24-rc6.orig/include/asm-x86/bug.h
++++ linux-2.6.24-rc6/include/asm-x86/bug.h
+@@ -2,7 +2,6 @@
+ #define _ASM_X86_BUG_H
+ 
+ #ifdef CONFIG_BUG
+-#define HAVE_ARCH_BUG
+ 
+ #ifdef CONFIG_DEBUG_BUGVERBOSE
+ 
+
 
