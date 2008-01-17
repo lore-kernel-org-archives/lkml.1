@@ -1,81 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752310AbYAQLgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbYAQLnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752310AbYAQLgV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 06:36:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbYAQLgK
+	id S1752563AbYAQLnR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 06:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYAQLnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 06:36:10 -0500
-Received: from mail.clusterfs.com ([74.0.229.162]:54909 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbYAQLgJ (ORCPT
+	Thu, 17 Jan 2008 06:43:01 -0500
+Received: from nessie.weebeastie.net ([220.233.7.36]:54146 "EHLO
+	bunyip.lochness.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751379AbYAQLnA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 06:36:09 -0500
-Date: Thu, 17 Jan 2008 04:36:05 -0700
-From: Andreas Dilger <adilger@sun.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Abhishek Rai <abhishekrai@google.com>, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, linux-ext4@vger.kernel.org
-Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm
-	patch]
-Message-ID: <20080117113605.GT3351@webber.adilger.int>
-Mail-Followup-To: Valdis.Kletnieks@vt.edu,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Abhishek Rai <abhishekrai@google.com>, linux-kernel@vger.kernel.org,
-	rohitseth@google.com, linux-ext4@vger.kernel.org
-References: <200801140839.01986.abhishekrai@google.com> <20080114163412.83a8b18d.akpm@linux-foundation.org> <20080115030441.a0270609.akpm@linux-foundation.org> <25815.1200457538@turing-police.cc.vt.edu>
+	Thu, 17 Jan 2008 06:43:00 -0500
+Date: Thu, 17 Jan 2008 22:40:50 +1100
+From: CaT <cat@zip.com.au>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc7: memory leak?
+Message-ID: <20080117114050.GR3940@zip.com.au>
+References: <20080117063410.GQ3940@zip.com.au> <1200568923.28661.9.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <25815.1200457538@turing-police.cc.vt.edu>
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1200568923.28661.9.camel@twins>
+Organisation: Furball Inc.
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 15, 2008  23:25 -0500, Valdis.Kletnieks@vt.edu wrote:
-> I've got multiple boxes across the hall that have 50T of disk on them, in one
-> case as one large filesystem, and the users want *more* *bigger* still (damned
-> researchers - you put a 15 teraflop supercomputer in the room, and then they
-> want someplace to *put* all the numbers that come spewing out of there.. ;)
+On Thu, Jan 17, 2008 at 12:22:03PM +0100, Peter Zijlstra wrote:
+> On Thu, 2008-01-17 at 17:34 +1100, CaT wrote:
+> > cache). During the rsync the memory used grew to just shy of 1.6gig and
+> > now, about 2 hours after the rsync has well and truly finished, the used
+> > memory is at 1.23gig. This is what free reports:
+> > 
+> >              total       used       free     shared    buffers cached
+> > Mem:       2058128    1994468      63660          0     688604 11432
+> > -/+ buffers/cache:    1294432     763696
+> > Swap:      1048568          0    1048568
 > 
-> There comes a point where that downtime gets too long to be politically
-> expedient.  6->2 may not be a biggie, because you can likely get a 6 hour
-> window.  24->8 suddenly looks a lot different.
+> How much memory does:
 > 
-> (Having said that, I'll admit the one 52T filesystem is an SGI Itanium box
-> running Suse and using XFS rather than ext3).
+>   echo 3 > /proc/sys/vm/drop_caches
 > 
-> Has anybody done a back-of-envelope of what this would do for fsck times for
-> a "max realistically achievable ext3 filesystem" (i.e. 100T-200T or ext3
-> design limit, whichever is smaller)?
+> gain you?
 
-This is exactly the kind of environment that Lustre is designed for.
-Not only do you get parallel IO performance, but you can also do parallel
-e2fsck on the individual filesystems when you need it.  Not that we aren't
-also working on improving e2fsck performance, but 100 * 4TB e2fsck in
-parallel is much better than 1 * 400TB e2fsck (probably not possible on
-a system today due to RAM constraints though I haven't really done any
-calculations either way).  I know customers were having RAM problems with
-3 * 2TB e2fsck in parallel on a 2GB node.
+56M used now. Should all this cache usage not be counted towards the
+'Cached' entry in meminfo rather then getting counted as part of used
+ram. I assume that this would not cause an oom situation and would be
+freed up if all that memory really did need to be used.
 
-Most customers these days use 2-4 4-8TB filesystems per server
-(inexpensive SMP node with 2-4GB RAM instead of a single monstrous SGI box).
+> > ext3_inode_cache  1235577 1240565    768    5    1 : tunables   54   27    8 : slabdata 248113 248113      0
+> > dentry            703661 749797    200   19    1 : tunables  120   60    8 : slabdata  39463  39463      0
+> > buffer_head       174535 209087    104   37    1 : tunables  120   60    8 : slabdata   5651   5651      0
+> 
+> would get freed by doing that.
 
-We have many Lustre filesystems in the 100-200TB range today, some over 1PB
-already and much larger ones being planned.
+They were indeed.
 
-> (And one of the research crew had a not-totally-on-crack proposal to get a
-> petabyte of spinning oxide.  Figuring out how to back that up would probably
-> have landed firmly in my lap.  Ouch. ;)
+> this one:
+> 
+> > size-64           537590 850249     64   59    1 : tunables  120   60    8 : slabdata  14411  14411      0
+> 
+> I'm unsure about, if that one sticks around that'd be something to worry
+> about. See if you can monitor this value and try to determine:
 
-Charge them for 2PB of storage, and use rsync :-).
+This went away also.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+>  - if it ever drops
+>  - what makes it grow (fastest)
+> 
+> I guess we could stick some instrumentation in there to track that
+> bucket.
 
+Might help prevent upraised eyebrows or worse. :)
+
+-- 
+    "To the extent that we overreact, we proffer the terrorists the
+    greatest tribute."
+    	- High Court Judge Michael Kirby
