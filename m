@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbYAQTjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbYAQTky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756999AbYAQTjx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 14:39:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYAQTjp
+	id S1757301AbYAQTky (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 14:40:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbYAQTkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 14:39:45 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55399 "EHLO
+	Thu, 17 Jan 2008 14:40:46 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57276 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751481AbYAQTjo (ORCPT
+	by vger.kernel.org with ESMTP id S1751681AbYAQTkp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 14:39:44 -0500
-Date: Thu, 17 Jan 2008 11:38:22 -0800
+	Thu, 17 Jan 2008 14:40:45 -0500
+Date: Thu, 17 Jan 2008 11:40:32 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: 2.6.24-rc8-mm1 (BUG: sched_rt)
-Message-Id: <20080117113822.f45d4da3.akpm@linux-foundation.org>
-In-Reply-To: <20080117111401.354f8949.randy.dunlap@oracle.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: <balbir@linux.vnet.ibm.com>, <linux-kernel@vger.kernel.org>,
+       "Linux ACPI mailing list" <linux-acpi@vger.kernel.org>,
+       "Intel E/100 mailing list" <e1000-devel@lists.sourceforge.net>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-mm1
+Message-Id: <20080117114032.1f9f1df5.akpm@linux-foundation.org>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE5E909A@orsmsx423.amr.corp.intel.com>
 References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<20080117084833.dc946466.randy.dunlap@oracle.com>
-	<1200589864.5159.6.camel@twins>
-	<20080117111401.354f8949.randy.dunlap@oracle.com>
+	<20080117124622.GA18450@balbir.in.ibm.com>
+	<20080117104021.25a8e562.akpm@linux-foundation.org>
+	<924EFEDD5F540B4284297C4DC59F3DEE5E909A@orsmsx423.amr.corp.intel.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,22 +32,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 11:14:01 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Thu, 17 Jan 2008 11:22:19 -0800 "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
 
-> > Does reverting that fix it?
+>  
+> The problem is
+> >> modprobe:2584 conflicting cache attribute 50000000-50001000
+> >> uncached<->default
 > 
-> Ack.  Andrew, do you want this hotfix?
-> 
-> ---
-> From:   Peter Zijlstra <peterz@infradead.org>
->                                             
-> Revert the BUG_ON(). Condition is OK and happens.
-> 
-> Tested-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Some address range here is being mapped with conflicting types.
+> Somewhere the range was mapped with default (write-back). Later
+> pci_iomap() is mapping that region as uncacheable which is basically
+> aliasing. PAT code detects the aliasing and fails the second uncacheable
+> request which leads in the failure.
 
-Thanks - I already added that to
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/hot-fixes/
+It sounds to me like you need considerably more runtime debugging and
+reporting support in that code.  Ensure that it generates enough output
+both during regular operation and during failures for you to be able to
+diagnose things in a single iteration.
 
-There are quite a few fixes there so I'd remind people to apply those as
-well before testing.
+We can always take it out later.
+
 
