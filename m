@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbYAQV42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbYAQV6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758671AbYAQV42 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 16:56:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYAQV4V
+	id S1758576AbYAQV6u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 16:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbYAQV6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 16:56:21 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:56779 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbYAQV4U (ORCPT
+	Thu, 17 Jan 2008 16:58:41 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:41856 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348AbYAQV6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 16:56:20 -0500
-Date: Thu, 17 Jan 2008 14:00:07 -0800
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Olof Johansson <olof@lixom.net>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, raisch@de.ibm.com, jgarzik@pobox.com,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: 2.6.24-rc8-mm1 powerpc build errors
-Message-ID: <20080117220007.GB12952@kroah.com>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org> <20080117190639.GA9499@lixom.net> <20080117113523.d802f991.akpm@linux-foundation.org>
+	Thu, 17 Jan 2008 16:58:40 -0500
+Message-ID: <478FCF99.4060505@davidnewall.com>
+Date: Fri, 18 Jan 2008 08:28:49 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080117113523.d802f991.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, "David P. Reed" <dpreed@reed.com>,
+       David Woodhouse <dwmw2@infradead.org>, Zachary Amsden <zach@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Christer Weinigel <christer@weinigel.se>,
+       Ondrej Zary <linux@rainbow-software.org>, Bodo Eggert <7eggert@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, Paul Rolland <rol@as2917.net>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       rol <rol@witbe.net>
+Subject: Re: [linux-kernel] Re: [PATCH] x86: provide a DMI based port 0x80
+ I/O delay override.
+References: <9BdU5-1YW-9@gated-at.bofh.it>	<200801081810.58904.linux@rainbow-software.org>	<4783B1B2.6070005@reed.com>	<200801081838.16241.linux@rainbow-software.org>	<4783C4A6.9060402@reed.com>	<20080108185120.3ff7ed18@lxorguk.ukuu.org.uk>	<4783CBD9.7020709@reed.com>	<1199847162.7369.323.camel@bodhitayantram.eng.vmware.com>	<47845972.9090803@zytor.com>	<1199915614.7369.367.camel@bodhitayantram.eng.vmware.com>	<47854916.4080703@reed.com>	<1200015388.6192.22.camel@bodhitayantram.eng.vmware.com>	<4786DD05.20804@keyaccess.nl>	<47877ECD.9060408@reed.com>	<1200347847.2647.97.camel@shinybook.infradead.org>	<478BE08B.3090306@reed.com>	<478E1668.9040404@davidnewall.com>	<20080116145515.6d84dc7b@lxorguk.ukuu.org.uk>	<478E57C8.2080403@davidnewall.com>	<20080116200829.26040351@lxorguk.ukuu.org.uk>	<478EF4C9.8030406@davidnewall.com> <20080117120227.3d09baf5@lxorguk.ukuu.org.uk> <478F59CC.8050907@davidnewall.com> <478F5E47.6000204@keyaccess.nl>
+In-Reply-To: <478F5E47.6000204@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 11:35:23AM -0800, Andrew Morton wrote:
-> On Thu, 17 Jan 2008 13:06:39 -0600 Olof Johansson <olof@lixom.net> wrote:
-> > powerpc_allyesconfig:
-> > 
-> > drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_add':
-> > drivers/net/ehea/ehea_main.c:2812: error: 'struct device_driver' has no member named 'kobj'
-> > drivers/net/ehea/ehea_main.c:2815: error: 'struct device_driver' has no member named 'kobj'
-> > drivers/net/ehea/ehea_main.c:2818: error: 'struct device_driver' has no member named 'kobj'
-> > drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_remove':
-> > drivers/net/ehea/ehea_main.c:2830: error: 'struct device_driver' has no member named 'kobj'
-> 
-> Looks like the driver tree wrecking ball failed to visit that driver.
+Rene Herman wrote:
+> Over the course of a 100 messages or so in this thread it's been
+> determined that the best course of action is to keep the out for ISA
+> and replace it with udelay() for chipset logic. Now go away. 
 
-Crap, I thought I fixed that one, but the patch never made it out...
-I'll fix that tomorrow, sorry about that.
-
-greg k-h
+Rather than this incredible rudeness, why don't you direct your energy
+towards convincing Alan of this.  He's the hold-out.
