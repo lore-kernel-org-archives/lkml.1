@@ -1,93 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbYAQU0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbYAQU3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756405AbYAQU0r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 15:26:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYAQU0j
+	id S1756510AbYAQU3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYAQU3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 15:26:39 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:28373 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbYAQU0i (ORCPT
+	Thu, 17 Jan 2008 15:29:07 -0500
+Received: from hu-out-0506.google.com ([72.14.214.238]:18333 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761AbYAQU3E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 15:26:38 -0500
+	Thu, 17 Jan 2008 15:29:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WlwFSL/FlSN99atWwnPzMECukFqMy3nM1CXWt6BJkyzkaf1jFsce7/73Z8YvNutls11ZJ2/iU/5bmjem+2aKFKpBx/igllW6ierLhDWpklpxJtzCP8LETA9e23iMLiP7NCnVn1keXLdtA+wASUnXIDYZDvYYWetbXN1Ve8meDS0=
-Message-ID: <19f34abd0801171226m2ede3572kbaf91e4603313a9c@mail.gmail.com>
-Date: Thu, 17 Jan 2008 21:26:37 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Subject: Re: [BISECTED] Re: psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
-Cc: linux-input@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "William Pettersson" <william.pettersson@gmail.com>
-In-Reply-To: <20080116154524.ZZRA012@mailhub.coreip.homeip.net>
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=FEwq4fZ2nIjLokFyFfrJ+YnCs8+unL/F15N3cwU+L+A/LiKEpxoQX6nfdUP4iN48CB2NXQGLm7RR4NCBgfzBd6FKPgsAVtMaY/2cryotZtdNkQ701+uEDbX9jQjEyvCLxrnvSZhuyNdALr/jSwuaGxrnttR2TaC83htoz2Gzbm0=
+Date: Thu, 17 Jan 2008 21:31:55 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Dave Young <hidave.darkstar@gmail.com>, Greg KH <gregkh@suse.de>,
+       stefanr@s5r6.in-berlin.de, David Brownell <david-b@pacbell.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct
+	class
+Message-ID: <20080117203155.GA2791@ami.dom.local>
+References: <20080117194728.GA2598@ami.dom.local> <Pine.LNX.4.44L0.0801171448590.5731-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <19f34abd0711141226n60323630rdc4833db0bfb2eeb@mail.gmail.com>
-	 <19f34abd0801071224kb9cb121u244b00b274231db0@mail.gmail.com>
-	 <d120d5000801110647k4b1fa49ene974898baf745aec@mail.gmail.com>
-	 <478CFB56.1030700@gmail.com>
-	 <20080115154142.ZZRA012@mailhub.coreip.homeip.net>
-	 <20080116104024.ZZRA012@mailhub.coreip.homeip.net>
-	 <19f34abd0801160946j2fe1c75ap3617dd125c81008f@mail.gmail.com>
-	 <20080116142815.ZZRA012@mailhub.coreip.homeip.net>
-	 <19f34abd0801161219oe478b50se13c0710759d581f@mail.gmail.com>
-	 <20080116154524.ZZRA012@mailhub.coreip.homeip.net>
+In-Reply-To: <Pine.LNX.4.44L0.0801171448590.5731-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 16, 2008 9:49 PM, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> Hmm, it seems to work properly, I think it is now a setup issue to a
-> certain degree. The touchpad now works in native mode (as opposed to
-> Intellimouse emulation) and so I'd recommend installing Synaptics X
-> driver from http://web.telia.com/~u89404340/touchpad/
+On Thu, Jan 17, 2008 at 02:57:36PM -0500, Alan Stern wrote:
+> On Thu, 17 Jan 2008, Jarek Poplawski wrote:
+> 
+> > On Thu, Jan 17, 2008 at 10:16:30AM -0500, Alan Stern wrote:
+> > > On Thu, 17 Jan 2008, Dave Young wrote:
+> > > 
+> > > > > Your meaning isn't clear.  Do you mean that your patch doesn't generate
+> > > > > any lockdep warnings at all?  Or do you mean that it generates a single
+> > > > > lockdep warning at boot time and then no more warnings afterward?
+> > > > 
+> > > > I means the latter one.
+> > > 
+> > > That's very bad.
+> > > 
+> > > For each type of violation, lockdep only gives one error message.  So
+> > > the fact that you get one message at boot time and then no more doesn't
+> > > mean the code is almost right -- it probably means the code has lots of
+> > > errors and you're seeing only the first one.
+> > 
+> > I hope it's better than this: lockdep really stops checking after first
+> > warning, but I've understood from David's description that after fixing
+> > this one place lockdep seems to be pleased.
+> 
+> That isn't what Dave said above; he said that lockdep produces a single
+> warning at bootup.  If he did mention anything about one place being
+> fixed up or lockdep being pleased, it was a while back and I've lost 
+> track of it.
+> 
+> If I recall correctly the nature of the warning was that a method
+> routine for one class (called with the class's mutex held) was creating
+> a second class and locking that class's mutex.  In principle this is
+> perfectly legal and should be allowed for arbitrary depths of nesting,
+> even though it is the sort of thing lockdep is currently unable to
+> handle.
 
-I have now installed this driver and copied the relevant parts of the
-example X configuration file. However, I do not think that this is the
-correct driver. I can move the mouse around, but only VERY slowly
-(takes 6-7 swipes over the pad just to go from one edge of the screen
-to the other), and only the left/right buttons work. Tapping does NOT
-work. I also installed and ran gsynaptics. I am not sure how or if
-this program will change my X config or not, but changing any settings
-there did not have any effect on the mouse at all. (It also showed
-that tapping was enabled.)
+You are definitely right! After first reading Dave's description I got
+it the same way, but after re-reading I probably was misled with this
+"thus"! Only now I've had a look at this warning and there is really
+mutex_lock_nested(). Sorry Alan!
 
-> Just to verify, could you please locate evtest utility and check
-> whether your up and down buttons generate BTN_FORWARD and BTN_BACK
-> events?
+David, I don't think a patch which causes such a warning can be merged
+even to -mm, because, as I wrote earlier it would automatically turn
+off lockdep for everybody. So, every such warning needs to be fixed or,
+if it's impossible because of some lockdep deficiency, it should be
+considered if it's better to wait for lockdep changes, or do the change
+with lockdep turned off locally for each lock (IMHO, it's better,
+because with sems there is no such control as well, and some other
+aspects could be tested in the meantime).
 
-Where can I find evtest? It is not in my distribution's software
-repository (Fedora 8). I have tried to use xev instead (I do not know
-if this is sufficient), and it reports the following when I press
-up/down buttons:
+> > On the other hand, according to Greg the code is OK, so if there are any
+> > such warnings they simply have to be false! (...Unless you trust lockdep
+> > more?!)
+> 
+> It's not a matter of trust or of false warnings.  People shouldn't 
+> tolerate any lockdep warnings at all; otherwise they will start to 
+> ignore the valid ones.
+> 
+> Alan Stern
+> 
+> P.S.: Just because Greg says the code is okay doesn't mean it will 
+> please lockdep -- it doesn't even mean the code really is okay!  I've 
+> known Greg to make an occasional mistake.
 
-ButtonPress event, serial 31, synthetic NO, window 0x3200001,
-    root 0x13b, subw 0x0, time 2305203062, (49,88), root:(600,409),
-    state 0x0, button 4, same_screen YES
+Alan, you are 200% right! I apologize for my bad jokes too!
 
-ButtonRelease event, serial 31, synthetic NO, window 0x3200001,
-    root 0x13b, subw 0x0, time 2305203062, (49,88), root:(600,409),
-    state 0x800, button 4, same_screen YES
-
-ButtonPress event, serial 31, synthetic NO, window 0x3200001,
-    root 0x13b, subw 0x0, time 2305205151, (49,88), root:(600,409),
-    state 0x0, button 5, same_screen YES
-
-ButtonRelease event, serial 31, synthetic NO, window 0x3200001,
-    root 0x13b, subw 0x0, time 2305205151, (49,88), root:(600,409),
-    state 0x1000, button 5, same_screen YES
-
-
-Still, I wonder if it may be better for me to use the old driver
-(ImPS/2 -- is this the Intellimouse?) since this used to work
-perfectly for me earlier. Maybe I can just remove the GlidePoint
-driver from my kernel to force the older driver?
-
-
-Kind regards,
-Vegard Nossum
+Regards,
+Jarek P.
