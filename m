@@ -1,48 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYAQALL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbYAQASf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbYAQALL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 19:11:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYAQAKz
+	id S1753921AbYAQASf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 19:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYAQAS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 19:10:55 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55242 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752084AbYAQAKy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 19:10:54 -0500
-Date: Wed, 16 Jan 2008 16:09:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Karel Zak <kzak@redhat.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org, linuxram@us.ibm.com,
-       viro@ftp.linux.org.uk, hch@infradead.org, a.p.zijlstra@chello.nl
-Subject: Re: [patch] VFS: extend /proc/mounts
-Message-Id: <20080116160930.28168da3.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0801170057520.31385@fbirervta.pbzchgretzou.qr>
-References: <E1JFGUp-00054z-KQ@pomaz-ex.szeredi.hu>
-	<20080116143051.ec488f3d.akpm@linux-foundation.org>
-	<20080116234339.GG26049@petra.dvoda.cz>
-	<Pine.LNX.4.64.0801170057520.31385@fbirervta.pbzchgretzou.qr>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 16 Jan 2008 19:18:26 -0500
+Received: from mga03.intel.com ([143.182.124.21]:6439 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750998AbYAQASZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 19:18:25 -0500
+X-ExtLoop1: 1
+Date: Wed, 16 Jan 2008 16:18:24 -0800
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Mika =?iso-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>
+Cc: venkatesh.pallipadi@intel.com, ak@muc.de, ebiederm@xmission.com,
+       rdreier@cisco.com, torvalds@linux-foundation.org, gregkh@suse.de,
+       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       jesse.barnes@intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [patch 2/4] x86: PAT followup - Remove KERNPG_TABLE from pte entry
+Message-ID: <20080117001823.GA20383@linux-os.sc.intel.com>
+References: <20080116023955.597433000@intel.com> <20080116024111.825025000@intel.com> <478DBCC8.10404@kolumbus.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <478DBCC8.10404@kolumbus.fi>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 00:58:06 +0100 (CET) Jan Engelhardt <jengelh@computergmbh.de> wrote:
-
-> 
-> On Jan 17 2008 00:43, Karel Zak wrote:
-> >> 
-> >> Seems like a plain bad idea to me.  There will be any number of home-made
-> >> /proc/mounts parsers and we don't know what they do.
+On Wed, Jan 16, 2008 at 10:14:00AM +0200, Mika Penttilä wrote:
+> venkatesh.pallipadi@intel.com kirjoitti:
+> >KERNPG_TABLE was a bug in earlier patch. Remove it from pte.
+> >pte_val() check is redundant as this routine is called immediately after a
+> >ptepage is allocated afresh.
 > >
-> > So, let's use /proc/mounts_v2  ;-)
+> >Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> >Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> >
+> >Index: linux-2.6.git/arch/x86/mm/init_64.c
+> >===================================================================
+> >--- linux-2.6.git.orig/arch/x86/mm/init_64.c	2008-01-15 
+> >11:02:23.000000000 -0800
+> >+++ linux-2.6.git/arch/x86/mm/init_64.c	2008-01-15 
+> >11:06:37.000000000 -0800
+> >@@ -541,9 +541,6 @@
+> > 		if (address >= end)
+> > 			break;
+> > 
+> >-		if (pte_val(*pte))
+> >-			continue;
+> >-
+> > 		/* Nothing to map. Map the null page */
+> > 		if (!(address & (~PAGE_MASK)) &&
+> > 		    (address + PAGE_SIZE <= end) &&
+> >@@ -561,9 +558,9 @@
+> > 		}
+> > 
+> > 		if (exec)
+> >-			entry = _PAGE_NX|_KERNPG_TABLE|_PAGE_GLOBAL|address;
+> >+			entry = _PAGE_NX|_PAGE_GLOBAL|address;
+> > 		else
+> >-			entry = _KERNPG_TABLE|_PAGE_GLOBAL|address;
+> >+			entry = _PAGE_GLOBAL|address;
+> > 		entry &= __supported_pte_mask;
+> > 		set_pte(pte, __pte(entry));
+> > 	}
+> >
+> >  
 > 
-> Was not it like "don't use /proc for new things"?
+> Hmm then what's the point of mapping not present 4k pages for valid mem 
+> here?
+> 
 
-Well yeah.  If we're going to do a brand new mechanism to expose
-per-mount data then we should hunker down and get it right.
+Ingo,
+
+Below incremental patch fixes this pte entry setting correctly. Thanks to
+Mika for catching this.
+
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+
+Index: linux-2.6.git/arch/x86/mm/init_64.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/mm/init_64.c	2008-01-16 03:38:32.000000000 -0800
++++ linux-2.6.git/arch/x86/mm/init_64.c	2008-01-16 03:51:34.000000000 -0800
+@@ -515,9 +515,9 @@
+ 		}
+ 
+ 		if (exec)
+-			entry = _PAGE_NX|_PAGE_GLOBAL|address;
++			entry = __PAGE_KERNEL_EXEC | _PAGE_GLOBAL | address;
+ 		else
+-			entry = _PAGE_GLOBAL|address;
++			entry = __PAGE_KERNEL | _PAGE_GLOBAL | address;
+ 		entry &= __supported_pte_mask;
+ 		set_pte(pte, __pte(entry));
+ 	}
+
