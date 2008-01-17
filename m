@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752988AbYAQMNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbYAQMOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752988AbYAQMNA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 07:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbYAQMMu
+	id S1754257AbYAQMOU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 07:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYAQMON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 07:12:50 -0500
-Received: from def92-3-81-56-114-101.fbx.proxad.net ([81.56.114.101]:60093
-	"EHLO barad-dur.regala.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751178AbYAQMMt (ORCPT
+	Thu, 17 Jan 2008 07:14:13 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:10116 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbYAQMOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 07:12:49 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, sct@redhat.com
-Subject: Re: [PATCH] Convert EXT2 to use unlocked_ioctl
-References: <1200565824-362-1-git-send-email-mathieu.segaud@regala.cx>
-	<200801171254.04071.arnd@arndb.de>
-	<87myr4ek82.fsf@barad-dur.regala.cx>
-From: Mathieu SEGAUD <mathieu.segaud@regala.cx>
-Date: Thu, 17 Jan 2008 13:12:48 +0100
-In-Reply-To: <87myr4ek82.fsf@barad-dur.regala.cx> (Mathieu SEGAUD's message of "Thu\, 17 Jan 2008 12\:59\:25 +0100")
-Message-ID: <87fxwwejlr.fsf@barad-dur.regala.cx>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Thu, 17 Jan 2008 07:14:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=xE2SLYAim92DRUuCy8zYsorK6iImWJELU2OhoiRONhpBN5VUj7osEs/MmWYGBvpJTCRcByEG/os9rApTUq6QqW6Rwk/Fjk8zHq0JFadr3b/Ly4dTCXJp94xLlWZHeRKWacvnqGJon7SG9WXS0YJyzcUv8pa5ig+1lFyMohHNxeM=
+Message-ID: <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
+Date: Thu, 17 Jan 2008 14:14:11 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Olaf Hering" <olaf@aepfle.de>
+Subject: Re: crash in kmem_cache_init
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, clameter@sgi.com,
+       "Linux MM" <linux-mm@kvack.org>
+In-Reply-To: <20080115150949.GA14089@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080115150949.GA14089@aepfle.de>
+X-Google-Sender-Auth: 5763aa03c0a58b89
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vous m'avez dit récemment :
+Hi Olaf,
 
-> Vous m'avez dit récemment :
+[Adding Christoph as cc.]
+
+On Jan 15, 2008 5:09 PM, Olaf Hering <olaf@aepfle.de> wrote:
+> Current linus tree crashes in kmem_cache_init, as shown below. The
+> system is a 8cpu 2.2GHz POWER5 system, model 9117-570, with 4GB ram.
+> Firmware is 240_332, 2.6.23 boots ok with the same config.
 >
->> On Thursday 17 January 2008, you wrote:
->>> 
->>> Change ext_ioctl() to be an unlocked_ioctl(), explicitly
->>> exposing BKL's uses.
->>> 
->>> Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
->>
->> You are now calling lock_kernel() twice in case of ext2_compat_ioctl(),
->> which calls back into ext2_ioctl with the BKL already held.
->>
->> This is allowed with the BKL, but really bad style that you should
->> avoid. I assume the ext3 and ext4dev versions of your patch have
->> the same issue, but I didn't check in detail.
->
-> yep, they do. I noticed this nested calls. I guess I will add
-> _extX_compat_ioctl() running with no BKL's which would be used by both
-> extX_ioctl() and extX_compat_ioctl().
-> Any comments on such a strategy ? thanks a lot for the reminder :)
+> There is a series of mm related patches in 2.6.24-rc1:
+> commit 04231b3002ac53f8a64a7bd142fde3fa4b6808c6 seems to break it,
 
-Well as I am not awake enough, this would sum up to get rid of
-lock/unlock_kernel() around extX_ioctl() calls...
-Will repost with theses changes.
-Thanks.
+So that's the "Memoryless nodes: Slab support" patch that I think
+cause a similar oops while ago.
 
--- 
-Mathieu
+> Unable to handle kernel paging request for data at address 0x00000040
+> Faulting instruction address: 0xc000000000437470
+> cpu 0x0: Vector: 300 (Data Access) at [c00000000075b830]
+>     pc: c000000000437470: ._spin_lock+0x20/0x88
+>     lr: c0000000000f78a8: .cache_grow+0x7c/0x338
+>     sp: c00000000075bab0
+>    msr: 8000000000009032
+>    dar: 40
+>  dsisr: 40000000
+>   current = 0xc000000000665a50
+>   paca    = 0xc000000000666380
+>     pid   = 0, comm = swapper
+> enter ? for help
+> [c00000000075bb30] c0000000000f78a8 .cache_grow+0x7c/0x338
+> [c00000000075bbf0] c0000000000f7d04 .fallback_alloc+0x1a0/0x1f4
+> [c00000000075bca0] c0000000000f8544 .kmem_cache_alloc+0xec/0x150
+> [c00000000075bd40] c0000000000fb1c0 .kmem_cache_create+0x208/0x478
+> [c00000000075be20] c0000000005e670c .kmem_cache_init+0x218/0x4f4
+> [c00000000075bee0] c0000000005bf8ec .start_kernel+0x2f8/0x3fc
+> [c00000000075bf90] c000000000008590 .start_here_common+0x60/0xd0
+
+Looks similar to the one discussed on linux-mm ("[BUG] at
+mm/slab.c:3320" thread). Christoph?
