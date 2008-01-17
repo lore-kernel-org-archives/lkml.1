@@ -1,139 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbYAQI1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbYAQI3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755230AbYAQI1v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 03:27:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbYAQI1m
+	id S1755913AbYAQI3g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 03:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbYAQI32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 03:27:42 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:59582 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753568AbYAQI1l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 03:27:41 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:to:subject:message-id:date:from;
-	b=gny/1fUckKstPMTv0kF3ce6ppcv4e+NMPHTayWi3LBAruCsAgbYU6xpf7ADrzx5ZX
-	v7DnqYfFYzefmLCYhqTNA==
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, mrubin@google.com
-Subject: Crash with 2.6.24-rc6-mm1 in restore_i387_ia32
-Message-Id: <20080117082725.11AE810655@localhost>
-Date: Thu, 17 Jan 2008 00:27:25 -0800 (PST)
-From: mrubin@google.com (Michael Rubin)
+	Thu, 17 Jan 2008 03:29:28 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:59399 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750865AbYAQI31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 03:29:27 -0500
+Subject: [RFC] Per-thread getrusage
+From: Vinay Sridhar <vinay@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, libc-alpha@sourceware.org
+Cc: drepper@redhat.com, wli@holomorphy.com, akpm@linux-foundation.org,
+       sripathik@in.ibm.com
+Content-Type: text/plain
+Date: Thu, 17 Jan 2008 13:57:05 +0530
+Message-Id: <1200558425.5992.17.camel@srivinay.in.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When I boot my system with 2.6.24-rc6 everything is great. When I apply the mm1
-patch I crash with the output below. Anyone seen this before?
+Hi All,
 
-Starting sendmail: Unable to handle kernel paging request at 0000000100000013 RIP: 
- [<ffffffff80215d2f>] restore_i387_ia32+0x1f/0x150
-PGD 47e134067 PUD 0 
-Oops: 0000 [1] SMP 
-last sysfs file: /sys/devices/system/machinecheck/machinecheck3/tolerant
-CPU 3 
-Modules linked in:
-Pid: 0, comm: make Not tainted 2.6.24-rc6-mm1 #2
-RIP: 0010:[<ffffffff80215d2f>]  [<ffffffff80215d2f>] restore_i387_ia32+0x1f/0x150
-RSP: 0000:ffff81047e58be38  EFLAGS: 00010282
-RAX: ffff81047e58bfd8 RBX: ffff81047e4cc000 RCX: 00000000ffffffff
-RDX: 0000000000000000 RSI: 00000000ffdc232c RDI: ffff81047e4cc000
-RBP: ffff81047e58bec8 R08: 0000000000000000 R09: 00000000ffdc25d8
-R10: ffff81047e58a000 R11: 0000000000000000 R12: 0000000000000000
-R13: ffff81047e4cc000 R14: ffff81047e58bf58 R15: ffff81047e58bf24
-FS:  00007ff45f9566e0(0003) GS:ffff81047f015d80(0003) knlGS:00000000f7eebe80
-CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-CR2: 0000000100000013 CR3: 000000047e117000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process make (pid: 0, threadinfo 00000000ffffffff, task ffff81047e4cc000)
-Stack:  ffff81047e58be48 ffffffff80243202 ffff81047e58bf48 ffffffff8020ad7d
- ffff81047e58be98 0000000000000011 0000000000000001 00000000ffffffff
- 0000000000000011 ffff810400040001 000000080000087c 0000000000000000
-Call Trace:
-Code: 8b 51 14 89 d0 83 e0 01 85 c0 74 11 9b 83 e2 fe 89 51 14 0f 
-RIP  [<ffffffff80215d2f>] restore_i387_ia32+0x1f/0x150
- RSP <ffff81047e58be38>
-CR2: 0000000100000013
-divide error: 0000 [2] SMP 
-last sysfs file: /sys/devices/system/machinecheck/machinecheck3/tolerant
-CPU 1 
-Modules linked in:
-Pid: 2175, comm: uname Tainted: G      D 2.6.24-rc6-mm1 #2
-RIP: 0010:[<ffffffff8022c204>]  [<ffffffff8022c204>] calc_delta_mine+0x64/0x90
-RSP: 0000:ffff81027dc9fb78  EFLAGS: 00010046
-RAX: 0000000100000000 RBX: ffff81047e4cc038 RCX: 0000000000000000
-RDX: 0000000000000000 RSI: 0000000000000400 RDI: ffffc009aeef285e
-RBP: ffff81027dc9fb78 R08: ffff81047e4cc038 R09: 0000000000000000
-R10: 0000000000000001 R11: 0000000000000064 R12: ffff8102800a21c0
-R13: ffff8102800a21c0 R14: 0000000a6eeea85e R15: 0000000000000003
-FS:  00007f120bb256e0(0000) GS:ffff81027f029000(0000) knlGS:00000000f7ef6e80
-CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-CR2: 00000000f7f05aa0 CR3: 000000027dc59000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process uname (pid: 2175, threadinfo ffff81027dc9e000, task ffff81027e542790)
-Stack:  ffff81027dc9fba8 ffffffff802313a6 0000000000000001 ffff8102800a21c0
- ffff81047e552038 0000000000000001 ffff81027dc9fbd8 ffffffff80231491
- ffff81027dc9fbd8 ffff81047e552038 ffff8102800a5dc0 ffff8102800a5dc0
-Call Trace:
- [<ffffffff802313a6>] update_curr+0xa6/0xb0
- [<ffffffff80231491>] enqueue_entity+0x21/0x70
- [<ffffffff80231b72>] enqueue_task_fair+0x32/0x60
- [<ffffffff8022c643>] enqueue_task+0x13/0x30
- [<ffffffff8022c690>] activate_task+0x30/0x50
- [<ffffffff8023392d>] try_to_wake_up+0x10d/0x130
- [<ffffffff8023395d>] default_wake_function+0xd/0x10
- [<ffffffff8024c531>] autoremove_wake_function+0x11/0x40
- [<ffffffff8022cafe>] __wake_up_common+0x4e/0x90
- [<ffffffff8022cc1a>] __wake_up_sync+0x4a/0x70
- [<ffffffff8029bd62>] pipe_write+0x3d2/0x500
- [<ffffffff80273d35>] __do_fault+0x215/0x470
- [<ffffffff80294af1>] do_sync_write+0xf1/0x150
- [<ffffffff8024c520>] autoremove_wake_function+0x0/0x40
- [<ffffffff802241c0>] do_page_fault+0x420/0x7e0
- [<ffffffff8033afd2>] __up_write+0x72/0x150
- [<ffffffff80294fe7>] vfs_write+0xc7/0x170
- [<ffffffff80295820>] sys_write+0x50/0x90
- [<ffffffff80225f32>] ia32_sysret+0x0/0xa
-Code: 48 f7 f1 48 8d 48 01 49 89 48 08 eb 9f 48 8d 82 00 80 00 00 
-RIP  [<ffffffff8022c204>] calc_delta_mine+0x64/0x90
- RSP <ffff81027dc9fb78>
----[ end trace ca96c3a87188c958 ]---
-BUG: sleeping function called from invalid context at kernel/rwsem.c:21
-in_atomic():0, irqs_disabled():1
-Pid: 2175, comm: uname Tainted: G      D 2.6.24-rc6-mm1 #2
-Call Trace:
- [<ffffffff8022d652>] __might_sleep+0xb2/0xd0
- [<ffffffff804f76ed>] down_read+0x1d/0x30
- [<ffffffff802390f0>] exit_mm+0x30/0x100
- [<ffffffff8023aecb>] do_exit+0x1bb/0x850
- [<ffffffff8020c8a5>] oops_end+0x85/0x90
- [<ffffffff8020d38e>] die+0x5e/0x90
- [<ffffffff8020d6e4>] do_trap+0x154/0x160
- [<ffffffff8020d86a>] do_divide_error+0x8a/0xa0
- [<ffffffff8022c204>] calc_delta_mine+0x64/0x90
- [<ffffffff8029e1f0>] do_lookup+0x80/0x1f0
- [<ffffffff802a7b85>] dput+0x65/0x1a0
- [<ffffffff8029f055>] __link_path_walk+0xcf5/0xd50
- [<ffffffff804f8a99>] error_exit+0x0/0x51
- [<ffffffff8022c204>] calc_delta_mine+0x64/0x90
- [<ffffffff802313a6>] update_curr+0xa6/0xb0
- [<ffffffff80231491>] enqueue_entity+0x21/0x70
- [<ffffffff80231b72>] enqueue_task_fair+0x32/0x60
- [<ffffffff8022c643>] enqueue_task+0x13/0x30
- [<ffffffff8022c690>] activate_task+0x30/0x50
- [<ffffffff8023392d>] try_to_wake_up+0x10d/0x130
- [<ffffffff8023395d>] default_wake_function+0xd/0x10
- [<ffffffff8024c531>] autoremove_wake_function+0x11/0x40
- [<ffffffff8022cafe>] __wake_up_common+0x4e/0x90
- [<ffffffff8022cc1a>] __wake_up_sync+0x4a/0x70
- [<ffffffff8029bd62>] pipe_write+0x3d2/0x500
- [<ffffffff80273d35>] __do_fault+0x215/0x470
- [<ffffffff80294af1>] do_sync_write+0xf1/0x150
- [<ffffffff8024c520>] autoremove_wake_function+0x0/0x40
- [<ffffffff802241c0>] do_page_fault+0x420/0x7e0
- [<ffffffff8033afd2>] __up_write+0x72/0x150
- [<ffffffff80294fe7>] vfs_write+0xc7/0x170
- [<ffffffff80295820>] sys_write+0x50/0x90
- [<ffffffff80225f32>] ia32_sysret+0x0/0xa
+Last year, there was discussion about per-thread getrusage by adding
+RUSAGE_THREAD flag to getrusage(). Please refer to the thread
+http://lkml.org/lkml/2007/4/4/308. Ulrich had suggested that we should
+design a better user-space API. Specifically, we need a
+pthread_getrusage interface in the thread library, which accepts
+pthread_t, converts pthread_t into the corresponding tid and passes it
+down to the syscall.
+
+There are two ways to implement this in the kernel:
+1) Introduce an additional parameter 'tid' to sys_getrusage() and put
+code in glibc to handle getrusage() and pthread_getrusage() calls
+correctly.
+2) Introduce a new system call to handle pthread_getrusage() and leave
+sys_getrusage() untouched.
+
+We implemented the second idea above, simply because it avoids touching
+any existing code. We have implemented a new syscall, thread_getrusage()
+and we have exposed pthread_getrusage() API to applications.
+
+Could you please share your thoughts on this? Does the approach look
+alright? The code is hardly complete. It is just a prototype that works
+on IA32 at the moment.
+
+kernel patch : 
+
+signed-off by : Vinay Sridhar <vinay@linux.vnet.ibm.com>
+signed-off by : Sripathi Kodi <sripathik@in.ibm.com>
+
+diff -Nuarp linux-2.6.24-rc6_org/arch/x86/ia32/ia32entry.S linux-2.6.24-rc6/arch/x86/ia32/ia32entry.S
+--- linux-2.6.24-rc6_org/arch/x86/ia32/ia32entry.S	2008-01-10 17:16:05.000000000 +0530
++++ linux-2.6.24-rc6/arch/x86/ia32/ia32entry.S	2008-01-14 15:54:54.000000000 +0530
+@@ -726,4 +726,5 @@ ia32_sys_call_table:
+ 	.quad compat_sys_timerfd
+ 	.quad sys_eventfd
+ 	.quad sys32_fallocate
++	.quad sys_thread_getrusage	/* 325 */
+ ia32_syscall_end:
+diff -Nuarp linux-2.6.24-rc6_org/arch/x86/kernel/syscall_table_32.S linux-2.6.24-rc6/arch/x86/kernel/syscall_table_32.S
+--- linux-2.6.24-rc6_org/arch/x86/kernel/syscall_table_32.S	2008-01-10 17:16:05.000000000 +0530
++++ linux-2.6.24-rc6/arch/x86/kernel/syscall_table_32.S	2008-01-14 15:54:17.000000000 +0530
+@@ -324,3 +324,5 @@ ENTRY(sys_call_table)
+ 	.long sys_timerfd
+ 	.long sys_eventfd
+ 	.long sys_fallocate
++	.long sys_thread_getrusage	/* 325 */
++
+diff -Nuarp linux-2.6.24-rc6_org/include/asm-x86/unistd_32.h linux-2.6.24-rc6/include/asm-x86/unistd_32.h
+--- linux-2.6.24-rc6_org/include/asm-x86/unistd_32.h	2008-01-10 17:16:13.000000000 +0530
++++ linux-2.6.24-rc6/include/asm-x86/unistd_32.h	2008-01-14 15:58:35.000000000 +0530
+@@ -330,10 +330,11 @@
+ #define __NR_timerfd		322
+ #define __NR_eventfd		323
+ #define __NR_fallocate		324
++#define __NR_thread_getrusage	325
+ 
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 325
++#define NR_syscalls 326
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+diff -Nuarp linux-2.6.24-rc6_org/include/linux/syscalls.h linux-2.6.24-rc6/include/linux/syscalls.h
+--- linux-2.6.24-rc6_org/include/linux/syscalls.h	2008-01-10 17:16:15.000000000 +0530
++++ linux-2.6.24-rc6/include/linux/syscalls.h	2008-01-14 15:59:12.000000000 +0530
+@@ -611,7 +611,7 @@ asmlinkage long sys_timerfd(int ufd, int
+ 			    const struct itimerspec __user *utmr);
+ asmlinkage long sys_eventfd(unsigned int count);
+ asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
+-
++asmlinkage long sys_thread_getrusage(int tid, struct rusage __user *ru);
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+ 
+ #endif
+diff -Nuarp linux-2.6.24-rc6_org/kernel/sys.c linux-2.6.24-rc6/kernel/sys.c
+--- linux-2.6.24-rc6_org/kernel/sys.c	2008-01-10 17:16:10.000000000 +0530
++++ linux-2.6.24-rc6/kernel/sys.c	2008-01-17 11:00:18.000000000 +0530
+@@ -33,6 +33,7 @@
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/seccomp.h>
+ #include <linux/cpu.h>
++#include <linux/sched.h>
+ 
+ #include <linux/compat.h>
+ #include <linux/syscalls.h>
+@@ -1570,6 +1571,16 @@ static void k_getrusage(struct task_stru
+ 	}
+ 
+ 	switch (who) {
++		case RUSAGE_THREAD:
++			utime = p->utime;
++			stime = p->stime;
++			r->ru_nvcsw = p->nvcsw;
++			r->ru_nivcsw = p->nivcsw;
++			r->ru_minflt = p->min_flt;
++			r->ru_majflt = p->maj_flt;
++			r->ru_inblock = task_io_get_inblock(p);
++			r->ru_oublock = task_io_get_oublock(p);
++			break;
+ 		case RUSAGE_BOTH:
+ 		case RUSAGE_CHILDREN:
+ 			utime = p->signal->cutime;
+@@ -1627,11 +1638,19 @@ int getrusage(struct task_struct *p, int
+ 
+ asmlinkage long sys_getrusage(int who, struct rusage __user *ru)
+ {
+-	if (who != RUSAGE_SELF && who != RUSAGE_CHILDREN)
++	if (who != RUSAGE_SELF && who != RUSAGE_CHILDREN &&
++					who != RUSAGE_THREAD)
+ 		return -EINVAL;
+ 	return getrusage(current, who, ru);
+ }
+ 
++asmlinkage long sys_thread_getrusage(int tid, struct rusage __user *ru)
++{
++	struct task_struct *tsk;
++	tsk = find_task_by_pid(tid);
++	return getrusage(tsk, RUSAGE_THREAD, ru);
++}
++	
+ asmlinkage long sys_umask(int mask)
+ {
+ 	mask = xchg(&current->fs->umask, mask & S_IRWXUGO);
+
+
+glibc patch : 
+
+signed-off by : Vinay Sridhar <vinay@linux.vnet.ibm.com>
+signed-off by : Sripathi Kodi <sripathik@in.ibm.com>
+
+diff -Nuarp glibc_cvs_20sep.orig/abilist/libpthread.abilist glibc_cvs_20sep/abilist/libpthread.abilist
+--- glibc_cvs_20sep.orig/abilist/libpthread.abilist	2008-01-16 11:31:32.000000000 +0530
++++ glibc_cvs_20sep/abilist/libpthread.abilist	2008-01-16 11:26:37.000000000 +0530
+@@ -102,6 +102,7 @@ GLIBC_2.0 i.86-.*-linux.*/notls i.86-.*-
+  pthread_key_create F
+  pthread_key_delete F
+  pthread_kill F
++ pthread_getrusage F
+  pthread_kill_other_threads_np F
+  pthread_mutex_destroy F
+  pthread_mutex_init F
+diff -Nuarp glibc_cvs_20sep.orig/nptl/Makefile glibc_cvs_20sep/nptl/Makefile
+--- glibc_cvs_20sep.orig/nptl/Makefile	2008-01-16 11:31:32.000000000 +0530
++++ glibc_cvs_20sep/nptl/Makefile	2008-01-16 11:28:10.000000000 +0530
+@@ -85,7 +85,7 @@ libpthread-routines = init vars events v
+ 		      pthread_barrierattr_setpshared \
+ 		      pthread_key_create pthread_key_delete \
+ 		      pthread_getspecific pthread_setspecific \
+-		      pthread_sigmask pthread_kill \
++		      pthread_sigmask pthread_kill pthread_getrusage \
+ 		      pthread_cancel pthread_testcancel \
+ 		      pthread_setcancelstate pthread_setcanceltype \
+ 		      pthread_once \
+diff -Nuarp glibc_cvs_20sep.orig/nptl/sysdeps/unix/sysv/linux/pthread_getrusage.c glibc_cvs_20sep/nptl/sysdeps/unix/sysv/linux/pthread_getrusage.c
+--- glibc_cvs_20sep.orig/nptl/sysdeps/unix/sysv/linux/pthread_getrusage.c	1970-01-01 05:30:00.000000000 +0530
++++ glibc_cvs_20sep/nptl/sysdeps/unix/sysv/linux/pthread_getrusage.c	2008-01-16 11:34:56.000000000 +0530
+@@ -0,0 +1,29 @@
++#include <sys/resource.h>
++#include <errno.h>
++#include <pthreadP.h>
++#include <tls.h>
++#include <sysdep.h>
++#include <kernel-features.h>
++#define __NR_pthread_getrusage 325
++
++
++int
++__pthread_getrusage (threadid, usage)
++     pthread_t threadid;
++     struct rusage *usage;
++{
++  int val;
++  pid_t tid;
++  struct pthread *pd = (const struct pthread *) threadid;
++  tid = atomic_forced_read (pd->tid);
++  if (__builtin_expect (tid <= 0, 0))
++    /* Not a valid thread handle.  */
++    return ESRCH;
++  INTERNAL_SYSCALL_DECL (err);
++  val = INTERNAL_SYSCALL (pthread_getrusage, err, 2, tid, usage);
++  return (INTERNAL_SYSCALL_ERROR_P (val, err)
++          ? INTERNAL_SYSCALL_ERRNO (val, err) : 0);
++}
++
++strong_alias (__pthread_getrusage, pthread_getrusage)
++
+diff -Nuarp glibc_cvs_20sep.orig/nptl/Versions glibc_cvs_20sep/nptl/Versions
+--- glibc_cvs_20sep.orig/nptl/Versions	2008-01-16 11:31:32.000000000 +0530
++++ glibc_cvs_20sep/nptl/Versions	2008-01-16 11:27:37.000000000 +0530
+@@ -60,7 +60,7 @@ libpthread {
+     pthread_cancel; pthread_testcancel;
+     pthread_setcancelstate; pthread_setcanceltype;
+ 
+-    pthread_sigmask; pthread_kill;
++    pthread_sigmask; pthread_kill; pthread_getrusage;
+ 
+     pthread_key_create; pthread_key_delete;
+     pthread_getspecific; pthread_setspecific;
+
+
