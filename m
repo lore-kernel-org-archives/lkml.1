@@ -1,62 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbYAQMbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYAQMcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbYAQMbQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 07:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYAQMbF
+	id S1755294AbYAQMcS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 07:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbYAQMcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 07:31:05 -0500
-Received: from nessie.weebeastie.net ([220.233.7.36]:57727 "EHLO
-	bunyip.lochness.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751714AbYAQMbE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 07:31:04 -0500
-Date: Thu, 17 Jan 2008 23:28:57 +1100
-From: CaT <cat@zip.com.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc7: memory leak?
-Message-ID: <20080117122856.GT3940@zip.com.au>
-References: <20080117063410.GQ3940@zip.com.au> <1200568923.28661.9.camel@twins> <20080117114050.GR3940@zip.com.au> <1200571632.28661.13.camel@twins> <20080117121408.GS3940@zip.com.au> <1200572511.28661.20.camel@twins>
+	Thu, 17 Jan 2008 07:32:08 -0500
+Received: from mail0.scram.de ([78.47.204.202]:57499 "EHLO mail0.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751936AbYAQMcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 07:32:05 -0500
+X-Spam-Score: -4.034
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.4 AWL AWL: From: address is in the auto white-list
+Message-ID: <478F4AE3.5090803@scram.de>
+Date: Thu, 17 Jan 2008 13:32:35 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1200572511.28661.20.camel@twins>
-Organisation: Furball Inc.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linuxppc-dev@ozlabs.org
+CC: linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: [PATCH/RFCv2] [POWERPC] Add support for freescale watchdog to CPM
+ serial driver.
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 01:21:51PM +0100, Peter Zijlstra wrote:
-> > If that's the case it would seem to be somewhat of a pain to get and
-> > kind of out of left field as I'd say most people would expect MemFree to
-> > indicate the amount of memory that's no longer freely available
-> > (ignoring swapping it out for simplicities sake).
-> 
-> I'm somewhat confused as to what you're saying. How would anyone expect
-> MemFree to be memory that is _not_ freely available?
+If a freescale watchdog device node is present, reset the watchdog
+while waiting for serial input.
 
-I think we have conflicting ideas of what 'freely available' means here
-which is causing the confusion. :)
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/boot/Makefile     |    2 +-
+ arch/powerpc/boot/cpm-serial.c |    6 ++++
+ arch/powerpc/boot/cuboot-8xx.c |    1 +
+ arch/powerpc/boot/ops.h        |    2 +
+ arch/powerpc/boot/watchdog.c   |   65 ++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 75 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/watchdog.c
 
-> Or are you asking how to compute the amount of freeable memory, that is
-> memory that isn't currently free, but could be freed up under pressure?
-
-Yes. I think I am. (heh)
-
-> If that is indeed your question, then yes, thats rather hard as slabinfo
-> and the like don't indicate which buckets have shrinkers (but even if
-
-Ah. Foo.
-
-> they would have shrinkers there is no guarantee they'd be able to shrink
-> 100%)
-
-Whacky.
-
-:/
-
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index d1e625c..66edf77 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -56,7 +56,7 @@ src-wlib := string.S crt0.S stdio.c main.c \
+ 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
+ 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
+ 		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
+-		fsl-soc.c mpc8xx.c pq2.c
++		fsl-soc.c mpc8xx.c pq2.c watchdog.c
+ src-plat := of.c cuboot-52xx.c cuboot-83xx.c cuboot-85xx.c holly.c \
+ 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
+ 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
+diff --git a/arch/powerpc/boot/cpm-serial.c b/arch/powerpc/boot/cpm-serial.c
+index 28296fa..56b5fda 100644
+--- a/arch/powerpc/boot/cpm-serial.c
++++ b/arch/powerpc/boot/cpm-serial.c
+@@ -6,6 +6,9 @@
+  *
+  * It is assumed that the firmware (or the platform file) has already set
+  * up the port.
++ *
++ * If a watchdog node exists, periodically reset the watchdog while waiting
++ * for console input.
+  */
+ 
+ #include "types.h"
+@@ -154,6 +157,9 @@ static void cpm_serial_putc(unsigned char c)
+ 
+ static unsigned char cpm_serial_tstc(void)
+ {
++
++	watchdog_poke();
++
+ 	barrier();
+ 	return !(rbdf->sc & 0x8000);
+ }
+diff --git a/arch/powerpc/boot/cuboot-8xx.c b/arch/powerpc/boot/cuboot-8xx.c
+index c202c88..767670e 100644
+--- a/arch/powerpc/boot/cuboot-8xx.c
++++ b/arch/powerpc/boot/cuboot-8xx.c
+@@ -43,5 +43,6 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 	CUBOOT_INIT();
+ 	fdt_init(_dtb_start);
+ 	serial_console_init();
++	watchdog_init();
+ 	platform_ops.fixups = platform_fixups;
+ }
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index 6036a98..0701359 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -86,6 +86,8 @@ int mpsc_console_init(void *devp, struct serial_console_data *scdp);
+ int cpm_console_init(void *devp, struct serial_console_data *scdp);
+ int mpc5200_psc_console_init(void *devp, struct serial_console_data *scdp);
+ int uartlite_console_init(void *devp, struct serial_console_data *scdp);
++void watchdog_poke(void);
++void watchdog_init(void);
+ void *simple_alloc_init(char *base, unsigned long heap_size,
+ 			unsigned long granularity, unsigned long max_allocs);
+ extern void flush_cache(void *, unsigned long);
+diff --git a/arch/powerpc/boot/watchdog.c b/arch/powerpc/boot/watchdog.c
+new file mode 100644
+index 0000000..6c50052
+--- /dev/null
++++ b/arch/powerpc/boot/watchdog.c
+@@ -0,0 +1,65 @@
++/*
++ * PQ Watchdog
++ *
++ * Copyright 2008 Jochen Friedrich <jochen@scram.de>
++ *
++ * Search for PowerQUICC type watchdog devices. Provide a callback to
++ * periodically reset the watchdog while waiting for console input.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include "types.h"
++#include "io.h"
++#include "ops.h"
++
++struct pq_wdt {
++	u32 res0;
++	u32 swcrr; /* System watchdog control register */
++	u32 swcnr; /* System watchdog count register */
++	u8  res1[2];
++	u16 swsrr; /* System watchdog service register */
++};
++
++static struct pq_wdt *wdt;
++
++void watchdog_poke(void)
++{
++	if (wdt) {
++		out_be16(&wdt->swsrr, 0x556c);
++		out_be16(&wdt->swsrr, 0xaa39);
++	}
++}
++
++void watchdog_init(void)
++{
++	void *reg_virt[2];
++	int n;
++	unsigned long reg_phys;
++	void *watchdog;
++
++	watchdog = finddevice("/soc/wdt");
++	if (watchdog && (dt_is_compatible(watchdog, "fsl,pq1-wdt") ||
++			 dt_is_compatible(watchdog, "fsl,pq2-wdt") ||
++			 dt_is_compatible(watchdog, "fsl,pq2pro-wdt"))) {
++		n = getprop(watchdog, "virtual-reg", reg_virt,
++			 sizeof(reg_virt));
++		if (n < (int)sizeof(reg_virt)) {
++			if (!dt_xlate_reg(watchdog, 0, &reg_phys, NULL))
++				return;
++			reg_virt[0] = (void *)reg_phys;
++		}
++		wdt = reg_virt[0];
++	}
++}
 -- 
-    "To the extent that we overreact, we proffer the terrorists the
-    greatest tribute."
-    	- High Court Judge Michael Kirby
+1.5.3.8
+
