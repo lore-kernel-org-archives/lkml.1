@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYAQDjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYAQDs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755330AbYAQDjZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 22:39:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYAQDjR
+	id S1754123AbYAQDs6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 22:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYAQDst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 22:39:17 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:50746 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751721AbYAQDjQ (ORCPT
+	Wed, 16 Jan 2008 22:48:49 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38154 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751069AbYAQDss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 22:39:16 -0500
-Date: Wed, 16 Jan 2008 22:39:09 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Paul Mackerras <paulus@samba.org>
-cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
-In-Reply-To: <18318.51622.37470.246611@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.58.0801162234340.21116@gandalf.stny.rr.com>
-References: <20080115220824.GB22242@Krystal> <Pine.LNX.4.58.0801151717250.29090@gandalf.stny.rr.com>
- <20080116031730.GA2164@Krystal> <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com>
- <20080116145604.GB31329@Krystal> <1f1b08da0801161436k4a7ac1e3kd83590951e7bebb9@mail.gmail.com>
- <1200523867.6127.5.camel@localhost.localdomain>
- <Pine.LNX.4.58.0801161827450.17781@gandalf.stny.rr.com>
- <1200536889.6127.52.camel@localhost.localdomain> <20080117024000.GD2322@Krystal>
- <20080117025004.GE2322@Krystal> <18318.51622.37470.246611@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Jan 2008 22:48:48 -0500
+Date: Thu, 17 Jan 2008 03:48:44 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Cedric Le Goater <clg@fr.ibm.com>, drepper@redhat.com,
+       Serge Hallyn <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] Extend sys_clone and sys_unshare system calls API
+Message-ID: <20080117034844.GA27894@ZenIV.linux.org.uk>
+References: <478DFF8F.9030006@openvz.org> <9803.1200493420@vena.lwn.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9803.1200493420@vena.lwn.net>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 16, 2008 at 07:23:40AM -0700, Jonathan Corbet wrote:
+> Hi, Pavel,
+> 
+> [Adding Ulrich]
+> 
+> > I use the last bit in the clone_flags for CLONE_LONGARG. When set it
+> > will denote that the child_tidptr is not a pointer to a tid storage,
+> > but the pointer to the struct long_clone_struct which currently 
+> > looks like this:
+> 
+> I'm probably just totally off the deep end, but something did occur to
+> me: this looks an awful lot like a special version of the sys_indirect()
+> idea.  Unless it has been somehow decided that sys_indirect() is the
+> wrong idea, might it not be better to look at making that interface
+> solve the extended clone() problem as well?
 
-On Thu, 17 Jan 2008, Paul Mackerras wrote:
->
-> It's very hard to do a per-thread counter in the VDSO, since threads
-> in the same process see the same memory, by definition.  You'd have to
-> have an array of counters and have some way for each thread to know
-> which entry to read.  Also you'd have to find space for tens or
-> hundreds of thousands of counters, since there can be that many
-> threads in a process sometimes.
+Nah, just put an XML parser into the kernel to have the form match the
+contents...
 
-I was thinking about this. What would also work is just the ability to
-read the schedule counter for the current cpu. Now this would require that
-the task had a way to know which CPU it was currently on.
-
--- Steve
-
+Al "perhaps we should newgroup alt.tasteless.api for all that stuff" Viro
