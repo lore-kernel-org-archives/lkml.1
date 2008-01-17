@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYAQOn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbYAQOyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbYAQOn2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 09:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYAQOnT
+	id S1753962AbYAQOyk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 09:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbYAQOya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 09:43:19 -0500
-Received: from lizzard.sbs.de ([194.138.37.39]:18553 "EHLO lizzard.sbs.de"
+	Thu, 17 Jan 2008 09:54:30 -0500
+Received: from mail0.scram.de ([78.47.204.202]:34833 "EHLO mail0.scram.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751238AbYAQOnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 09:43:18 -0500
-Message-ID: <478F6983.5010707@siemens.com>
-Date: Thu, 17 Jan 2008 15:43:15 +0100
-From: Jan Kiszka <jan.kiszka@siemens.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	id S1751131AbYAQOya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 09:54:30 -0500
+X-Spam-Score: -4.046
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.4 AWL AWL: From: address is in the auto white-list
+Message-ID: <478F6C5F.4010505@scram.de>
+Date: Thu, 17 Jan 2008 15:55:27 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kgdb:unify x86-kgdb
-References: <478F66F6.40107@siemens.com> <478F67BF.4090409@windriver.com>
-In-Reply-To: <478F67BF.4090409@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-15
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: wim@iguana.be, Scott Wood <scottwood@freescale.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFCv2] wdt: Add support for PowerQUICC watchdog
+References: <478F4E4A.4060907@scram.de> <A00FB5AE-903B-461A-B234-4BA817B3C5CB@kernel.crashing.org>
+In-Reply-To: <A00FB5AE-903B-461A-B234-4BA817B3C5CB@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Wessel wrote:
-> Jan Kiszka wrote:
->> diff -up arch/x86/kernel/kgdb_32.c arch/x86/kernel/kgdb_64.c
->>
->> screamed for unification. Here it is.
->>
->> Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
->>
->> ---
->>  arch/x86/kernel/Makefile_32 |    2 
->>  arch/x86/kernel/Makefile_64 |    2 
->>  arch/x86/kernel/kgdb.c      |  561 ++++++++++++++++++++++++++++++++++++++++++++
->>  arch/x86/kernel/kgdb_32.c   |  414 --------------------------------
->>  arch/x86/kernel/kgdb_64.c   |  495 --------------------------------------
->>  5 files changed, 563 insertions(+), 911 deletions(-)
->>   
-> FYI this is already done in the head branch for kgdb which is going into
-> the -mm tree.  You will see the new patch set in the 2.6.25-rcX series.
+Hi Kumar,
+
+> Why are you commenting on mpc83xx_wdt with respect to pq1_wdt?
 > 
-> There is now a single x86-lite.patch which contains a number of other
-> modifications to the core-lite.patch to make use of
-> probe_kernel_address() and a new function probe_kernel_write().  Also
-> the die hooks for the "no context" memory faults were removed.
+> Also, is this driver just for PQ1 platforms or PQ1 & PQ2?  If its just 
+> pq1 we should probably call it pq1_wdt*
 
-Hmm, is this any kind of patch I should have seen in your kernel.org
-git? Which branch?
+It should be for pq1, pq2 and pq2pro. However, i only have the possibility
+to test this on pq1.
 
-Jan
+>> arch/powerpc/platforms/8xx/mpc86xads_setup.c |    5 +
+>> arch/powerpc/platforms/8xx/mpc885ads_setup.c |    5 +
+>> arch/powerpc/sysdev/Makefile                 |    3 +
+>> arch/powerpc/sysdev/pq_wdt.c                 |  203 
+>> +++++++++++++++++++++++
+>> arch/powerpc/sysdev/pq_wdt.h                 |   28 ++++
+>> drivers/watchdog/Kconfig                     |   13 ++-
+>> drivers/watchdog/Makefile                    |    1 +
+>> drivers/watchdog/pq_wdt.c                    |  225 
+>> ++++++++++++++++++++++++++
+>> 8 files changed, 482 insertions(+), 1 deletions(-)
+>> create mode 100644 arch/powerpc/sysdev/pq_wdt.c
+>> create mode 100644 arch/powerpc/sysdev/pq_wdt.h
+>> create mode 100644 drivers/watchdog/pq_wdt.c
+> 
+> What are the bits in sysdev/pq_wdt.{c,h}.  Why aren't these just in 
+> drivers/watchdog?
+
+These are the parts needed to boot a device with activated watchdog. If a 
+bootloader like u-boot activates the watchdog, it can't be deactivated again
+and needs to be reset at regular intervals. This is done using a kernel timer.
+The driver in drivers/watchdog disables the timer as soon as the wdt device
+is opened.
+
+Thanks,
+Jochen
