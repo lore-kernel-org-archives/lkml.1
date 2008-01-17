@@ -1,161 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759116AbYAQW36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbYAQWcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759116AbYAQW36 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbYAQW3s
+	id S1759117AbYAQWcS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYAQWcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:29:48 -0500
-Received: from mail1.webmaster.com ([216.152.64.169]:1271 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752519AbYAQW3r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 17:29:47 -0500
-From: "David Schwartz" <davids@webmaster.com>
-To: <torvalds@linux-foundation.org>
-Cc: "Johannes Weiner" <hannes@saeurebad.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <clameter@sgi.com>, <penberg@cs.helsinki.fi>
-Subject: RE: Why is the kfree() argument const?
-Date: Thu, 17 Jan 2008 14:28:43 -0800
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEHDJJAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-reply-to: <alpine.LFD.1.00.0801171316390.14959@woody.linux-foundation.org>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 17 Jan 2008 14:29:59 -0800
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 17 Jan 2008 14:29:59 -0800
+	Thu, 17 Jan 2008 17:32:06 -0500
+Received: from smtp02.mtu.ru ([62.5.255.49]:64271 "EHLO smtp02.mtu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753826AbYAQWcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 17:32:04 -0500
+From: Anton Salikhmetov <salikhmetov@gmail.com>
+To: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
+       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
+Subject: [PATCH -v6 0/2] Fixing the issue with memory-mapped file times
+Date: Fri, 18 Jan 2008 01:31:56 +0300
+Message-Id: <12006091182260-git-send-email-salikhmetov@gmail.com>
+X-Mailer: git-send-email 1.4.4.4
+X-DCC-STREAM-Metrics: smtp02.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is the sixth version of my solution for the bug #2645:
 
+http://bugzilla.kernel.org/show_bug.cgi?id=2645
 
-> On Thu, 17 Jan 2008, David Schwartz wrote:
+New since the previous version:
 
-> > Which does change the thing the pointer points to. It goes from being a
-> > valid object to not existing.
+1) a few cosmetic changes according to the latest feedback
+   for the cleanup patch;
 
-> No. It's the *pointer* that is no longer valid.
+2) implementation of the following suggestion by Miklos Szeredi:
 
-The pointer is no longer valid because the object it pointed to no longer
-exists. The pointer is also no longer valid, but that is not the end of the
-story.
+http://lkml.org/lkml/2008/1/17/158
 
-> There's definitely a difference between "exists and is changed" and
-> "doesn't exist any more".
+These changes were tested as explained below. Please note that all
+tests were performed with all recommended kernel debug options
+enabled. Also note that the tests were performed on regular files
+residing on both an ext3 partition and a tmpfs filesystem. I also
+checked the block device case, which worked for me as well.
 
-> > How is ceasing to exist not a change?
+1. My own unit test:
 
-> It's not a change to the data behind it, it's a change to the *metadata*.
-> Which is somethign that "const" doesn't talk about at all.
+http://bugzilla.kernel.org/attachment.cgi?id=14430
 
-It doesn't matter what has changed. All that matters is whether this is
-something we normally want to happen to a const pointer or whether doing
-this to a const pointer is not normal.
+Result: all test cases passed successfully.
 
-> > >    Why? Because we want the types to be as tight as possible,
-> > > and normal
-> > >    code should need as few casts as possible.
-> >
-> > Right, and that's why you are wrong.
->
-> No, it's why I'm right.
+2. Unit test provided by Miklos Szeredi:
 
-> "kmalloc/kfree" (or any memory manager) by definition has to play games
-> with pointers and do things like cast them. But the users shouldn't need
-> to, not for something like this.
+http://lkml.org/lkml/2008/1/14/104
 
-If you don't like having to cast, don't use 'const'. But if you use 'const',
-you have to cast when you mean to do something that you would like to be
-warned about if you do it by accident.
+Result: this test produced the following output:
 
-> > No, it's both correct and useful. This code is the exception to
-> a rule. The
-> > rule is that the object remain unchanged and this violates that rule.
+debian-64:~# ./miklos_test test
+begin   1200598736      1200598736      1200598617
+write   1200598737      1200598737      1200598617
+mmap    1200598737      1200598737      1200598738
+b       1200598739      1200598739      1200598738
+msync b 1200598739      1200598739      1200598738
+c       1200598741      1200598741      1200598738
+msync c 1200598741      1200598741      1200598738
+d       1200598743      1200598743      1200598738
+munmap  1200598743      1200598743      1200598738
+close   1200598743      1200598743      1200598738
+sync    1200598743      1200598743      1200598738
+debian-64:~#
 
-> No.
->
-> You are continuing to make the mistake that you think that "const" means
-> that the memory behind the pointer is not going to change.
+3. Regression tests were performed using the following test cases from
+the LTP test suite:
 
-No, that's not what it means. It has nothing to do with memory. It has to do
-with logical state.
+	msync01
+	msync02
+	msync03
+	msync04
+	msync05
+	mmapstress01
+	mmapstress09
+	mmapstress10
 
-> Why do you make that mistake, when it is PROVABLY NOT TRUE!
+Result: no regressions were found while running these test cases.
 
-I don't. You do, because you argue 'kfree' can be const because it doesn't
-change the memory. The change in the memory is meaningless, the change in
-the logical state of the object is what matters.
+4. Performance test was done using the program available from the
+following link:
 
-> Try this trivial program:
->
-> 	int main(int argc, char **argv)
-> 	{
-> 	        int i;
-> 	        const int *c;
->
-> 	        i = 5;
-> 	        c = &i;
-> 	        i = 10;
-> 	        return *c;
-> 	}
->
-> and realize that according to the C rules, if it returns anything but 10,
-> the compiler is *buggy*.
->
-> The fact is, that in spite of us having a "const int *", the data behind
-> that pointer may change.
+http://bugzilla.kernel.org/attachment.cgi?id=14493
 
-I don't know what you think this example proves. Nobody is arguing that so
-long as one const pointer to an object exists, no code anywhere should ever
-be able to change it.
+Result: the impact of the changes was negligible for files of a few
+hundred megabytes.
 
-All I'm saying is that changing the logical state of an object *through* a
-const pointer is unusual. You should need a cast to do this because that's
-the only way to get a warning if you do it by mistake.
+I wonder if these changes can be applied now.
 
-> So it doesn't matter ONE WHIT if you pass in a "const *" to "kfree()": it
-> does not guarantee that the data doesn't change, because the object you
-> point to has other pointers pointing to it.
-
-Right, nobody said this was about guaranteeing that data doesn't change.
-
-> This isn't worth discussing. It's really simple: a conforming program
-> CANNOT POSSIBLY TELL whether "kfree()" modified the data or not.
-
-But that's exactly what doesn't matter. As you've said at least twice now,
-it has nothing to do with changing the data. It has to do with changing the
-logical state of the object. That's what you're not supposed to do through a
-'const' pointer.
-
-> As such,
-> AS FAR AS THE PROGRAM IS CONCERNED, kfree() takes a const
-> pointer, and the
-> rule that "if it can be considered const, it should be marked
-> const" comes
-> and says that kfree() should take a const pointer.
-
-That's crazy.
-
-> In other words - anythign that could ever disagree with "const *" is BY
-> DEFINITION buggy.
->
-> It really is that simple.
-
-I think you may be the only person in the world who thinks so.
-
-DS
-
-
+These patches are the result of many fruitful discussions with
+Miklos Szeredi, Peter Zijlstra, Rik van Riel, Peter Staubach,
+and Jacob Oestergaard. I am grateful to you all for your support
+during the days I was working on this long-standing nasty bug.
