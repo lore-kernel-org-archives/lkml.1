@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbYAQUwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbYAQUxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757188AbYAQUwj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 15:52:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYAQUwa
+	id S1757397AbYAQUxw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:53:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYAQUxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 15:52:30 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:54479 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752483AbYAQUw3 (ORCPT
+	Thu, 17 Jan 2008 15:53:44 -0500
+Received: from homer.mvista.com ([63.81.120.158]:3087 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751993AbYAQUxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 15:52:29 -0500
-Message-ID: <478FBFDB.4000600@oracle.com>
-Date: Thu, 17 Jan 2008 12:51:39 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: Zhang Rui <rui.zhang@intel.com>, linux-acpi@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       sujith.thomas@intel.com
-Subject: Re: [PATCH 9/10] introduce intel_menlow platform specific driver
-References: <1200556278.2935.118.camel@acpi-sony.sh.intel.com> <20080117092030.a9dfe528.randy.dunlap@oracle.com> <200801171451.18613.lenb@kernel.org>
-In-Reply-To: <200801171451.18613.lenb@kernel.org>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 17 Jan 2008 15:53:44 -0500
+Message-Id: <20080117205205.878723737@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 17 Jan 2008 12:52:05 -0800
+From: Daniel Walker <dwalker@mvista.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] fix wrong sized spinlock flags argument
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len Brown wrote:
->>> +static int
->>> +memory_get_int_max_bandwidth(struct thermal_cooling_device *cdev,
->>> +			     unsigned long *max_state)
->> Don't put 'static int' (return type etc.) on a line by itself.
->> That format is not wanted in Linux.   (many places here)
-> 
-> if checkpatch.pl and Lindent are happey (which they are not, totally)
-> then I'm satisifed witht he Linux style of the code.
-> 
-> Randy, if you feel strongly about this this style nit,
-> then change Lindent to implement it -- nagging
-> developers about trivia is a waste of everybody's time.
-> 
-> thanks,
-> -Len
+Correct wrong sized spinlock flags, form int to unsigned long.
 
-http://marc.info/?l=linux-kernel&m=105451996829576&w=2
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-Thanks.
+---
+ drivers/media/video/saa7134/saa7134-core.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.23/drivers/media/video/saa7134/saa7134-core.c
+===================================================================
+--- linux-2.6.23.orig/drivers/media/video/saa7134/saa7134-core.c
++++ linux-2.6.23/drivers/media/video/saa7134/saa7134-core.c
+@@ -1212,7 +1212,7 @@ static int saa7134_resume(struct pci_dev
+ {
+ 
+ 	struct saa7134_dev *dev = pci_get_drvdata(pci_dev);
+-	unsigned int flags;
++	unsigned long flags;
+ 
+ 	pci_set_power_state(pci_dev, PCI_D0);
+ 	pci_restore_state(pci_dev);
+-- 
 
 -- 
-~Randy
