@@ -1,120 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbYAQMqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbYAQMrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756760AbYAQMqv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 07:46:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbYAQMqm
+	id S1754535AbYAQMrM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 07:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYAQMq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 07:46:42 -0500
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:34233 "EHLO
-	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756201AbYAQMqk (ORCPT
+	Thu, 17 Jan 2008 07:46:56 -0500
+Received: from metis.extern.pengutronix.de ([83.236.181.26]:48098 "EHLO
+	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756777AbYAQMqx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 07:46:40 -0500
-Date: Thu, 17 Jan 2008 18:16:22 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linux ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Intel E/100 mailing list <e1000-devel@lists.sourceforge.net>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-mm1
-Message-ID: <20080117124622.GA18450@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	Linux ACPI mailing list <linux-acpi@vger.kernel.org>,
-	Intel E/100 mailing list <e1000-devel@lists.sourceforge.net>,
-	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	Thu, 17 Jan 2008 07:46:53 -0500
+Date: Thu, 17 Jan 2008 13:46:47 +0100
+From: Luotao Fu <l.fu@pengutronix.de>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-rt1
+Message-ID: <20080117124647.GK5859@pengutronix.de>
+Mail-Followup-To: Wolfgang Grandegger <wg@grandegger.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>
+References: <1200544050.318.18.camel@localhost.localdomain> <478F2A46.5070506@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="zH41lVBEV8cLJnCl"
 Content-Disposition: inline
-In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <478F2A46.5070506@grandegger.com>
+X-PGP-Key-ID: 0xE5325261
+X-URL: http://www.pengutronix.de/
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Hannoversche
+	Str. 2, 31134 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-9 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 13:40:06 up 10 days,  4:29,  1 user,  load average: 0.69, 0.61,
+	0.68
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 10.1.0.69
+X-SA-Exim-Mail-From: l.fu@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton <akpm@linux-foundation.org> [2008-01-17 02:35:14]:
 
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
-> 
-> - selinux is busted on one of my two selinux-enabled test machines.
-> 
-> - suspend-to-ram and suspend-to-disk are totally hosed on one of my test
->   machines.  I guess I get to bisect this.
-> 
-> - git-nfsd is dropped due to conflicts with git-nfs
-> 
-> - git-newsetup is dropped due to conflicts with git-x86 (I think)
-> 
-> - git-perfmon is dropped due to conflicts with git-x86 (I think)
-> 
-> - git-kgdb is dropped due to conflicts with git-damn-near-everything
-> 
-> - git-block is dropped due to conflicts with the IDE tree
-> 
-> - kvm probably doesn't work properly because I couldn't be bothered fixing
->   the conflicts between git-kvm and the driver tree
-> 
-> - the volume of rejects and build errors which are caused by subsystem
->   maintainers fiddling with other people's stuff is quite out of control. 
->   Something needs to happen here.
+--zH41lVBEV8cLJnCl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi, Andrew,
+Hi Wolfgang,
 
-May be it was one of the conflicts, but my system fails to get
-ethernet working with this version. I see
+On Thu, Jan 17, 2008 at 11:13:26AM +0100, Wolfgang Grandegger wrote:
+> Steven Rostedt wrote:
+> It builds and runs fine on my Icecube-MPC5200 board, now also with the
+> latency tracer enabled. That's great. Still, "cyclictest -n -p80 -i1000"
+> reports latencies up to 400 us and therefore I tried to trigger and save
+> a high latency trace using:
+>=20
+>   # ./cyclictest -n -p80 -i1000 -b400
+>   1.21 0.33 0.11 4/42 1048
+>=20
+>   T: 0 (  914) P:80 I:1000 C:  38726 Min:     61 Act:  107 Avg:  106
+> Max:     377
+>   [   91.042169] (      cyclictest-914  |#0): new 39733427 us user-latenc=
+y.
+>   bash-3.00# cat /proc/latency_trace > trace.log
+>=20
 
-e100: Intel(R) PRO/100 Network Driver, 3. 5.23-k4-NAPI
-e100: Copyright(c) 1999-2006 Intel Corporation
-ACPI: PCI Interrupt 0000:04:08.0[A] -> GSI 20 (level, low) -> IRQ 20
-modprobe:2584 conflicting cache attribute 50000000-50001000
-uncached<->default
-e100: 0000:04:08.0: e100_probe: Cannot map device registers, aborting.
-ACPI: PCI interrupt for device 0000:04:08.0 disabled
-e100: probe of 0000:04:08.0 failed with error -12
+I tested 2.6.24-rc8-rt1 on our phytec phyCORE-MPC5200B-tiny. I runned cycli=
+ctest
+with exactly the same parameter as you used and made some non-rt Workload w=
+ith
+"hackbench 5" in a while 1 loop and a "ping -f" from a host machine. I run =
+the
+test for about 3 hours and could not push the latency to higher than 220 us.
+(The latency tracer is also turned on in kernel). Could you please send me =
+your
+kernelconfig privately?
 
-Other interesting boot information
+cheers
+Luotao Fu
+--=20
+   Dipl.-Ing. Luotao Fu | Phone: +49-5121-206917-3
+Pengutronix - Linux Solutions for Science and Industry
+Entwicklungszentrum Nord     http://www.pengutronix.de
 
-Using ACPI (MADT) for SMP configuration information
-PM: Registered nosave memory: 000000000008f000 - 00000000000a0000
-PM: Registered nosave memory: 00000000000a0000 - 00000000000e0000
-PM: Registered nosave memory: 00000000000e0000 - 0000000000100000
-PM: Registered nosave memory: 000000003e5d1000 - 000000003e6e5000
-PM: Registered nosave memory: 000000003f574000 - 000000003f57c000
-PM: Registered nosave memory: 000000003f62d000 - 000000003f631000
-PM: Registered nosave memory: 000000003f6a7000 - 000000003f6e9000
-PM: Registered nosave memory: 000000003f6ed000 - 000000003f6ff000
-Allocating PCI resources starting at 50000000 (gap: 40000000:bff80000)
 
- PCI: Bridge: 0000:00:1c.0
-   IO window: disabled.
-   MEM window:
-0x50300000-0x503fffff
-   PREFETCH window: disabled.
- PCI: Bridge: 0000:00:1c.2
-   IO window: disabled.
-   MEM window:
-0x50400000-0x504fffff
-   PREFETCH window: disabled.
- PCI: Bridge: 0000:00:1c.3
-   IO window: disabled.
-   MEM window:
-0x50500000-0x505fffff
-   PREFETCH window: disabled.
- PCI: Bridge: 0000:00:1e.0
-   IO window: 1000-1fff
-   MEM window:
-0x50000000-0x500fffff
-   PREFETCH window: disabled.
+--zH41lVBEV8cLJnCl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-I am yet to get down to the root cause, thought I'd report it first to
-the x86 and ACPI list to see if someone has seen the problem before.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+iD8DBQFHj040iruQY+UyUmERAoIUAJ4kJ6+H8iWtWoqg9X0RDq8uFXqDPQCeJT18
+7ykRHYirV77EzkuphzvN7ro=
+=JFyf
+-----END PGP SIGNATURE-----
+
+--zH41lVBEV8cLJnCl--
