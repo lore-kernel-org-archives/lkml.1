@@ -1,796 +1,504 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbYAQTxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbYAQTy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756892AbYAQTxb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 14:53:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbYAQTxY
+	id S1756923AbYAQTy6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 14:54:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYAQTyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 14:53:24 -0500
-Received: from slowhand.arndnet.de ([88.198.19.76]:58513 "EHLO mail.unitix.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751238AbYAQTxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 14:53:22 -0500
-Message-ID: <478FB255.5040001@i4.informatik.rwth-aachen.de>
-Date: Thu, 17 Jan 2008 20:53:57 +0100
-From: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 17 Jan 2008 14:54:50 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:42606 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751545AbYAQTys (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 14:54:48 -0500
+Date: Thu, 17 Jan 2008 20:54:56 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Linux MM <linux-mm@kvack.org>
+Subject: Re: crash in kmem_cache_init
+Message-ID: <20080117195456.GA24901@aepfle.de>
+References: <20080115150949.GA14089@aepfle.de> <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com> <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com> <20080117181222.GA24411@aepfle.de> <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Andres Salomon <dilinger@queued.net>
-CC: linux-kernel@vger.kernel.org, Jordan Crouse <jordan.crouse@amd.com>
-Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
-References: <478E4267.7020509@i4.informatik.rwth-aachen.de> <20080116161912.7b449466@ephemeral> <20080116165606.3ebc06a4@ephemeral> <478F25D6.3060503@i4.informatik.rwth-aachen.de> <20080117134032.4cc1a1cf@ephemeral>
-In-Reply-To: <20080117134032.4cc1a1cf@ephemeral>
-Content-Type: multipart/mixed;
- boundary="------------000006000207020107050206"
+Content-Type: multipart/mixed; boundary="0F1p//8PRICkK4MW"
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000006000207020107050206
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Andres Salomon schrieb:
-> On Thu, 17 Jan 2008 10:54:30 +0100
-> Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+
+On Thu, Jan 17, Christoph Lameter wrote:
+
+> > freeing bootmem node 1
+> > Memory: 3496632k/3571712k available (6188k kernel code, 75080k reserved, 1324k data, 1220k bss, 304k init)
+> > cache_grow(2781) swapper(0):c0,j4294937299 cp c0000000006a4fb8 !l3
 > 
->> Andres Salomon schrieb:
->>> On Wed, 16 Jan 2008 16:19:12 -0500
->>> Andres Salomon <dilinger@queued.net> wrote:
->>>
->>>> On Wed, 16 Jan 2008 18:44:07 +0100
->>>> Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
->>>>
->>>>> Hi,
->>>>>
->>>>> I'm trying to boot 2.6.24-rc8 on a GEODE LX board (ALIX.3),
->>>>> and it hangs during boot:
->>>>>
->>>>> [   12.689971] NET: Registered protocol family 16
->>>>> [   12.703329] geode-mfgpt:  Registered timer 0
->>>>> [   12.716149] mfgpt-timer:  registering the MFGT timer as a clock event...
->>>>>
->>>> What BIOS are you using?  It's possible that our detection code is
->>>> failing to detect in-use timers.
->> I'm using v0.99 (latest available).
-> 
-> 
-> v0.99 of what?  Jordan seems to think it's an Award BIOS, but I'd like
-> to make sure.
+> Is there more backtrace information? What function called cache_grow?
 
-Its an ALIX board from PCEngines, they have their own BIOS
-implementation (tinyBios).
-http://www.pcengines.ch/alix.htm
-
-> 
->> Also note when I do enable the mysterios "MFGPT workaround" option in
->> the bios the machine hangs directly after:
->> [   36.780990] NET: Registered protocol family 16
-> 
-> 
-> "MFGPT workaround"?  That sounds a bit frightening.
-> 
-> Presumably, the BIOS is using the MFGPTs, but we're not detecting them as
-> being in use.
-Yes I think so too, for the fun of it I compiled a 2.6.16.29 kernel with
-the attached patch from fi4l.
-
-relevant output is this:
-[   31.015425] geode-mfgpt:  7 timers available.
-...
-[   31.245875] geode-mfgpt:  Registered timer 0
-
-So the above kernel detects only 7 timers not 8, and it works. But note
-that timer 0 is not used as a clock event source but as a watchdog,
-which btw actually works fine :-)
-The funny thing is the #define workaround part of this dubious patch and
-its interaction with the bios:
-
-#ifdef WORKAROUND:
- I have to turn the "MFPGT workaround" option in the bios ON, to boot
-the kernel probably.
-
-#ifndef WORKAROUND:
- I have to turn the "MFPGT workaround" option in the bios OFF, to boot
-the kernel probably.
-
-All other combinations will hang the system.
-
-Doest it make sense to try to boot older release candidates of 2.6.24 ?
-
-> 
-> I'm assuming that booting with 'nomfgpt' works for you?
-In fact it does.
-It just says:
-geode-mfgpt:  Skipping MFGPT setup
-and boots.
-
-> 
->>>
->>> Also, could you provide a log with the following (untested) patch?  I'm
->>> curious how many MFGPTs we're actually detecting as being available, and
->>> the existing code is backwards.
->> The relevant part would be:
->> [   23.092507] NET: Registered protocol family 16
->> [   23.105875] geode-mfgpt:  8 MFGPT timers available
->> [   23.120247] geode-mfgpt:  Registered timer 0
->> [   23.133076] mfgpt-timer:  registering the MFGT timer as a clock event.
+I just put a 'if (!l3) return 0;' into cache_grow, the backtrace is the
+one from the initial report.
+Reverting 04231b3002ac53f8a64a7bd142fde3fa4b6808c6 does not change
+anything.
 
 
---------------000006000207020107050206
-Content-Type: text/plain;
- name="patch_12_cs5535_gpt_wdt_alix_2.6.16"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch_12_cs5535_gpt_wdt_alix_2.6.16"
+Since -mm boots further, what patch should I try?
 
-diff -uNr linux-2.6.16.56/arch/i386/kernel/geode-mfgpt.c linux-2.6.16.56.patched/arch/i386/kernel/geode-mfgpt.c
---- linux-2.6.16.56/arch/i386/kernel/geode-mfgpt.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.16.56.patched/arch/i386/kernel/geode-mfgpt.c	2007-12-11 14:57:36.000000000 +0100
-@@ -0,0 +1,312 @@
-+/*     Driver/API for AMD Geode Multi-Function General Purpose Timers (MFGPT)
-+ *
-+ *     Copyright (C) 2006, Advanced Micro Devices, Inc.
-+ *
-+ *      This program is free software; you can redistribute it and/or
-+ *      modify it under the terms of the GNU General Public License
-+ *      as published by the Free Software Foundation; either version
-+ *      2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/pci_ids.h>
-+#include <linux/interrupt.h>
-+#include <linux/cdev.h>
-+#include <asm/geode-mfgpt.h>
-+#include <asm/io.h>
-+#include <asm/msr.h>
-+
-+#define WORKAROUND
-+
-+#define MFGPT_IRQ_MSR 0x51400028
-+#define MFGPT_NR_MSR  0x51400029
-+
-+#define MFGPT_MAX_TIMERS 7
-+#define MFGPT_PCI_BAR 2
-+
-+#define F_AVAIL    0x01
-+#define F_RESERVED 0x02
-+
-+static void *mfgpt_iobase;
-+static int reserved_mask = 0;
-+static struct class *mfgpt_class;
-+
-+static struct mfgpt_timer_t {
-+	int index;
-+	int flags;
-+	struct module *owner;
-+	struct class_device *cdev;
-+} mfgpt_timers[MFGPT_MAX_TIMERS];
-+
-+void
-+geode_mfgpt_write(int i, u16 r, u16 v)
-+{
-+	iowrite16(v, mfgpt_iobase + (r + (i * 8)));
-+}
-+
-+EXPORT_SYMBOL(geode_mfgpt_write);
-+
-+u16
-+geode_mfgpt_read(int i, u16 r)
-+{
-+	return ioread16(mfgpt_iobase + (r + (i * 8)));
-+}
-+
-+EXPORT_SYMBOL(geode_mfgpt_read);
-+
-+static ssize_t
-+sys_print_register(struct class_device *dev, char *buf, int reg)
-+{
-+	struct mfgpt_timer_t *timer = class_get_devdata(dev);
-+	u16 val = geode_mfgpt_read(timer->index, reg);
-+
-+	return sprintf(buf, "%4.4X\n", val);
-+}
-+
-+static ssize_t
-+sys_show_setup(struct class_device *dev, char *buf)
-+{
-+	return sys_print_register(dev, buf, MFGPT_REG_SETUP);
-+}
-+
-+static ssize_t
-+sys_show_counter(struct class_device *dev, char *buf)
-+{
-+	return sys_print_register(dev, buf, MFGPT_REG_COUNTER);
-+}
-+
-+static ssize_t
-+sys_show_cmp1(struct class_device *dev, char *buf)
-+{
-+	return sys_print_register(dev, buf, MFGPT_REG_CMP1);
-+}
-+
-+static ssize_t
-+sys_show_cmp2(struct class_device *dev, char *buf)
-+{
-+	return sys_print_register(dev, buf, MFGPT_REG_CMP2);
-+}
-+
-+static struct class_device_attribute mfgpt_attrs[] = {
-+	__ATTR(setup, S_IRUGO, sys_show_setup, NULL),
-+	__ATTR(counter, S_IRUGO, sys_show_counter, NULL),
-+	__ATTR(cmp1, S_IRUGO, sys_show_cmp1, NULL),
-+	__ATTR(cmp2, S_IRUGO, sys_show_cmp2, NULL),
-+};
-+
-+void
-+geode_mfgpt_toggle_event(int timer, int cmp, int event, int setup)
-+{
-+	u32 msr, mask, value, dummy;
-+	int shift = (cmp == MFGPT_CMP1) ? 0 : 8;
-+
-+	switch(event) {
-+	case MFGPT_EVENT_RESET:
-+		msr = MFGPT_NR_MSR;
-+		mask = 1 << (timer + 24);
-+		break;
-+
-+	case MFGPT_EVENT_NMI:
-+		msr = MFGPT_NR_MSR;
-+		mask = 1 << (timer + shift);
-+		break;
-+
-+	case MFGPT_EVENT_IRQ:
-+		msr = MFGPT_IRQ_MSR;
-+		mask = 1 << (timer + shift);
-+		break;
-+
-+	default:
-+		return;
-+	}
-+
-+	rdmsr(msr, value, dummy);
-+
-+	if (setup)
-+		value |= mask;
-+	else
-+		value &= ~mask;
-+
-+	wrmsr(msr, value, dummy);
-+}
-+
-+EXPORT_SYMBOL(geode_mfgpt_toggle_event);
-+
-+void
-+geode_mfgpt_set_irq(int timer, int cmp, int irq, int setup)
-+{
-+	u32 val, dummy;
-+	int offset;
-+
-+	geode_mfgpt_toggle_event(timer, cmp, MFGPT_EVENT_IRQ, setup);
-+
-+	rdmsr(0x51400022, val, dummy);
-+
-+	offset = (timer % 4) * 4;
-+
-+	val &= ~((0xF << offset) | (0xF << (offset + 16)));
-+
-+	if (setup) {
-+		val |= (irq & 0x0F) << (offset);
-+		val |= (irq & 0x0F) << (offset + 16);
-+	}
-+
-+	wrmsr(0x51400022, val, dummy);
-+}
-+
-+int
-+geode_mfgpt_alloc_timer(int timer, int domain, struct module *owner)
-+{
-+	int i;
-+
-+	/* If they requested a specific timer, try to honor that */
-+	if (mfgpt_iobase == NULL)
-+		return -ENODEV;
-+
-+	if (timer != MFGPT_TIMER_ANY) {
-+		if (mfgpt_timers[timer].flags & F_AVAIL) {
-+			mfgpt_timers[timer].flags &= ~F_AVAIL;
-+			mfgpt_timers[timer].owner = owner;
-+
-+			printk("geode-mfgpt:  Registered timer %d\n", timer);
-+			return timer;
-+		}
-+		else if (mfgpt_timers[timer].owner == owner)
-+			return timer;
-+
-+		/* Request failed - somebody else owns it */
-+		return -1;
-+	}
-+
-+	/* Try to find an available timer */
-+
-+	for(i = 0; i < MFGPT_MAX_TIMERS; i++) {
-+
-+		if ((mfgpt_timers[i].flags & F_AVAIL) &&
-+		    !(mfgpt_timers[i].flags & F_RESERVED)) {
-+			mfgpt_timers[i].flags &= ~F_AVAIL;
-+			mfgpt_timers[i].owner = owner;
-+			
-+			printk("geode-mfgpt:  Registered timer %d\n", i);
-+			return i;
-+		}
-+
-+		if (i == 5 && domain == MFGPT_DOMAIN_WORKING)
-+			break;
-+	}
-+
-+	/* No timers available - too bad */
-+	return -1;
-+}
-+
-+EXPORT_SYMBOL(geode_mfgpt_alloc_timer);
-+
-+static int
-+mfgpt_setup_timer(struct pci_dev *pdev, int timer)
-+{
-+	dev_t devid = MKDEV(0, 0);
-+	u16 val = geode_mfgpt_read(timer, MFGPT_REG_SETUP);
-+	mfgpt_timers[timer].index = timer;
-+
-+	if (reserved_mask & (1 << timer))
-+		mfgpt_timers[timer].flags |= F_RESERVED;
-+
-+	if (!(val & MFGPT_SETUP_SETUP)) {
-+		int v;
-+
-+		mfgpt_timers[timer].flags = F_AVAIL;
-+
-+		/* Add the class device */
-+		mfgpt_timers[timer].cdev =
-+			class_device_create(mfgpt_class, NULL, devid,
-+				&pdev->dev, "mfgpt%d", timer);
-+
-+	        class_set_devdata(mfgpt_timers[timer].cdev, &mfgpt_timers[timer]);
-+
-+		for(v = 0; v < ARRAY_SIZE(mfgpt_attrs); v++)
-+			if (class_device_create_file(mfgpt_timers[timer].cdev,
-+				&mfgpt_attrs[v]))
-+				printk(KERN_ERR "geode-mfpgt:  Couldn't create %s\n",
-+				mfgpt_attrs[v].attr.name);
-+
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+static struct pci_device_id geode_sbdevs[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_NS, PCI_DEVICE_ID_NS_CS5535_ISA) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_CS5536_ISA) }
-+};
-+
-+static int __init
-+geode_mfgpt_init(void)
-+{
-+	struct pci_dev *pdev = NULL;
-+	int i, ret, dev, count = 0;
-+
-+#ifdef WORKAROUND
-+	u32 val, dummy;
-+
-+	/* The following udocumented bit resets the MFGPT timers */
-+
-+	val = 0xFF;
-+	wrmsr(0x5140002B, val, dummy);
-+#endif
-+
-+	for (dev = 0; dev < ARRAY_SIZE(geode_sbdevs); dev++) {
-+		pdev = pci_get_device(geode_sbdevs[dev].vendor,
-+				      geode_sbdevs[dev].device, NULL);
-+
-+		if (pdev != NULL)
-+			break;
-+	}
-+
-+	if (pdev == NULL) {
-+		printk(KERN_ERR "geode-mfgpt:  No PCI devices found\n");
-+		goto err;
-+	}
-+
-+	if ((ret = pci_enable_device_bars(pdev, 1 << MFGPT_PCI_BAR)))
-+		goto err;
-+
-+	if ((ret = pci_request_region(pdev, MFGPT_PCI_BAR, "geode-mfgpt")))
-+		goto err;
-+
-+	mfgpt_iobase = pci_iomap(pdev, MFGPT_PCI_BAR, 64);
-+
-+	if (mfgpt_iobase == NULL)
-+		goto ereq;
-+
-+	mfgpt_class = class_create(THIS_MODULE, "mfgpt");
-+
-+	if (IS_ERR(mfgpt_class)) {
-+		printk(KERN_ERR "geode-mfgpt: Unable to allocate the class.\n");
-+		goto eiobase;
-+	}
-+
-+	for(i = 0; i < MFGPT_MAX_TIMERS; i++)
-+		count += mfgpt_setup_timer(pdev, i);
-+
-+	printk("geode-mfgpt:  %d timers available.\n", count);
-+	return 0;
-+
-+ eiobase:
-+	pci_iounmap(pdev, mfgpt_iobase);
-+	mfgpt_iobase = NULL;
-+
-+ ereq:
-+	pci_release_region(pdev, MFGPT_PCI_BAR);
-+
-+ err:
-+ 	printk("geode-mfgpt:  Error initalizing the timers\n");
-+	return -1;
-+}
-+
-+device_initcall(geode_mfgpt_init);
-+MODULE_AUTHOR("Advanced Micro Devices, Inc");
-+MODULE_DESCRIPTION("Geode GX/LX MFGPT Driver");
-+MODULE_LICENSE("GPL");
-diff -uNr linux-2.6.16.56/arch/i386/kernel/Makefile linux-2.6.16.56.patched/arch/i386/kernel/Makefile
---- linux-2.6.16.56/arch/i386/kernel/Makefile	2007-11-01 03:23:29.000000000 +0100
-+++ linux-2.6.16.56.patched/arch/i386/kernel/Makefile	2007-12-12 15:18:48.000000000 +0100
-@@ -37,6 +37,7 @@
- obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault.o
- obj-$(CONFIG_VM86)		+= vm86.o
- obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
-+obj-m         += geode-mfgpt.o
- 
- EXTRA_AFLAGS   := -traditional
- 
-diff -uNr linux-2.6.16.56/drivers/char/watchdog/geodewdt.c linux-2.6.16.56.patched/drivers/char/watchdog/geodewdt.c
---- linux-2.6.16.56/drivers/char/watchdog/geodewdt.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.16.56.patched/drivers/char/watchdog/geodewdt.c	2007-12-12 15:22:31.000000000 +0100
-@@ -0,0 +1,247 @@
-+/* Watchdog timer for the Geode GX/LX
-+ *
-+ * Copyright (C) 2006, Advanced Micro Devices, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/miscdevice.h>
-+#include <linux/watchdog.h>
-+#include <linux/fs.h>
-+#include <linux/notifier.h>
-+#include <linux/reboot.h>
-+
-+#include <asm/uaccess.h>
-+#include <asm/geode-mfgpt.h>
-+
-+#define GEODEWDT_HZ 500
-+#define GEODEWDT_SCALE 6
-+#define GEODEWDT_MAX_SECONDS 131
-+
-+#define WDT_FLAGS_OPEN 1
-+#define WDT_FLAGS_ORPHAN 2
-+
-+/* The defaults for the other timers are 60, so we'll use that too */
-+
-+static int cur_interval = 60;
-+static int wdt_timer;
-+static unsigned long wdt_flags;
-+static int safe_close;
-+
-+static void geodewdt_ping(void)
-+{
-+	printk("PING\n");
-+	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
-+	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
-+	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
-+}
-+
-+static void geodewdt_stop(void)
-+{
-+	printk("STOP\n");
-+	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
-+	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
-+}
-+
-+static int geodewdt_set_heartbeat(int val)
-+{
-+	if (val < 1 || val > GEODEWDT_MAX_SECONDS)
-+		return -EINVAL;
-+
-+	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
-+	geode_mfgpt_write(wdt_timer, MFGPT_REG_CMP2, val * GEODEWDT_HZ);
-+	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
-+	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
-+
-+	printk("HEARTBEAT %d\n", val);
-+	cur_interval = val;
-+	return 0;
-+}
-+
-+static int
-+geodewdt_open(struct inode *inode, struct file *file)
-+{
-+        if (test_and_set_bit(WDT_FLAGS_OPEN, &wdt_flags))
-+                return -EBUSY;
-+
-+        if (!test_and_clear_bit(WDT_FLAGS_ORPHAN, &wdt_flags))
-+                __module_get(THIS_MODULE);
-+
-+	geodewdt_ping();
-+        return nonseekable_open(inode, file);
-+}
-+
-+static int
-+geodewdt_release(struct inode *inode, struct file *file)
-+{
-+	if (safe_close) {
-+		geodewdt_stop();
-+		module_put(THIS_MODULE);
-+	}
-+	else {
-+		printk(KERN_CRIT "Unexpected close - watchdog is not stopping.\n");
-+		geodewdt_ping();
-+
-+		set_bit(WDT_FLAGS_ORPHAN, &wdt_flags);
-+	}
-+
-+	clear_bit(WDT_FLAGS_OPEN, &wdt_flags);
-+	safe_close = 0;
-+	return 0;
-+}
-+
-+static ssize_t
-+geodewdt_write(struct file *file, const char __user *data, size_t len,
-+	       loff_t *ppos)
-+{
-+        if(len) {
-+		size_t i;
-+                safe_close = 0;
-+
-+                for (i = 0; i != len; i++) {
-+			char c;
-+
-+			if (get_user(c, data + i))
-+				return -EFAULT;
-+
-+			if (c == 'V')
-+				safe_close = 1;
-+		}
-+	}
-+
-+	geodewdt_ping();
-+	return len;
-+}
-+
-+static int
-+geodewdt_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-+	       unsigned long arg)
-+{
-+	void __user *argp = (void __user *)arg;
-+	int __user *p = argp;
-+	int interval;
-+
-+	static struct watchdog_info ident = {
-+		.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING
-+		| WDIOF_MAGICCLOSE,
-+		.firmware_version =     0,
-+		.identity =             "Geode Watchdog",
-+        };
-+
-+	switch(cmd) {
-+	case WDIOC_GETSUPPORT:
-+		return copy_to_user(argp, &ident,
-+				    sizeof(ident)) ? -EFAULT : 0;
-+		break;
-+
-+	case WDIOC_GETSTATUS:
-+	case WDIOC_GETBOOTSTATUS:
-+		return put_user(0, p);
-+
-+	case WDIOC_KEEPALIVE:
-+		geodewdt_ping();
-+		return 0;
-+
-+	case WDIOC_SETTIMEOUT:
-+		if (get_user(interval, p))
-+			return -EFAULT;
-+
-+		if (geodewdt_set_heartbeat(interval))
-+			return -EINVAL;
-+
-+/* Fall through */
-+
-+	case WDIOC_GETTIMEOUT:
-+		return put_user(cur_interval, p);
-+	}
-+
-+	return -ENOTTY;
-+}
-+
-+static int geodewdt_notify_sys(struct notifier_block *this,
-+			       unsigned long code, void *unused)
-+{
-+        if(code==SYS_DOWN || code==SYS_HALT)
-+		geodewdt_stop();
-+
-+        return NOTIFY_DONE;
-+}
-+
-+static const struct file_operations geodewdt_fops = {
-+        .owner          = THIS_MODULE,
-+        .llseek         = no_llseek,
-+        .write          = geodewdt_write,
-+        .ioctl          = geodewdt_ioctl,
-+        .open           = geodewdt_open,
-+        .release        = geodewdt_release,
-+};
-+
-+static struct miscdevice geodewdt_miscdev = {
-+	.minor = WATCHDOG_MINOR,
-+	.name = "geode-watchdog",
-+	.fops = &geodewdt_fops
-+};
-+
-+static struct notifier_block geodewdt_notifier = {
-+	.notifier_call = geodewdt_notify_sys
-+};
-+
-+static int __init geodewdt_init(void)
-+{
-+	int ret, timer;
-+
-+	timer = geode_mfgpt_alloc_timer(MFGPT_TIMER_ANY,
-+					MFGPT_DOMAIN_ANY, THIS_MODULE);
-+
-+	if (timer == -1) {
-+		printk(KERN_ERR "geodewdt:  No timers were available\n");
-+		return -ENODEV;
-+	}
-+
-+	wdt_timer = timer;
-+
-+	/* Set up the timer */
-+
-+	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP,
-+			  GEODEWDT_SCALE | (3 << 8));
-+
-+	/* Set up comparator 2 to reset when the event fires */
-+	geode_mfgpt_set_event(wdt_timer, MFGPT_CMP2, MFGPT_EVENT_RESET);
-+
-+	/* Set up the initial timeout */
-+
-+	geode_mfgpt_write(wdt_timer, MFGPT_REG_CMP2,
-+		cur_interval * GEODEWDT_HZ);
-+
-+	ret = misc_register(&geodewdt_miscdev);
-+	if (ret)
-+		return ret;
-+
-+	ret = register_reboot_notifier(&geodewdt_notifier);
-+
-+	if (ret)
-+		misc_deregister(&geodewdt_miscdev);
-+
-+	return ret;
-+}
-+
-+static void __exit
-+geodewdt_exit(void)
-+{
-+	misc_deregister(&geodewdt_miscdev);
-+	unregister_reboot_notifier(&geodewdt_notifier);
-+}
-+
-+module_init(geodewdt_init);
-+module_exit(geodewdt_exit);
-+
-+MODULE_AUTHOR("Advanced Micro Devices, Inc");
-+MODULE_DESCRIPTION("Geode GX/LX Watchdog Driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
-diff -uNr linux-2.6.16.56/drivers/char/watchdog/Kconfig linux-2.6.16.56.patched/drivers/char/watchdog/Kconfig
---- linux-2.6.16.56/drivers/char/watchdog/Kconfig	2007-11-01 03:23:29.000000000 +0100
-+++ linux-2.6.16.56.patched/drivers/char/watchdog/Kconfig	2007-12-12 15:22:31.000000000 +0100
-@@ -209,6 +209,14 @@
- 	  You can compile this driver directly into the kernel, or use
- 	  it as a module.  The module will be called sc520_wdt.
- 
-+config GEODE_WDT
-+	tristate "AMD Geode GX/LX Watchdog Timer"
-+	depends on WATCHDOG && X86
-+	help
-+	  Enable support for a hardware based watchdog timer running 
-+	  on the MFGPT timers available on AMD Geode GX and LX based
-+	  platforms.
-+
- config EUROTECH_WDT
- 	tristate "Eurotech CPU-1220/1410 Watchdog Timer"
- 	depends on WATCHDOG && X86
-diff -uNr linux-2.6.16.56/drivers/char/watchdog/Makefile linux-2.6.16.56.patched/drivers/char/watchdog/Makefile
---- linux-2.6.16.56/drivers/char/watchdog/Makefile	2007-11-01 03:23:29.000000000 +0100
-+++ linux-2.6.16.56.patched/drivers/char/watchdog/Makefile	2007-12-12 15:22:31.000000000 +0100
-@@ -38,6 +38,7 @@
- obj-$(CONFIG_ALIM7101_WDT) += alim7101_wdt.o
- obj-$(CONFIG_SC520_WDT) += sc520_wdt.o
- obj-$(CONFIG_EUROTECH_WDT) += eurotechwdt.o
-+obj-$(CONFIG_GEODE_WDT) += geodewdt.o
- obj-$(CONFIG_IB700_WDT) += ib700wdt.o
- obj-$(CONFIG_IBMASR) += ibmasr.o
- obj-$(CONFIG_WAFER_WDT) += wafer5823wdt.o
-diff -uNr linux-2.6.16.56/include/asm-i386/geode-mfgpt.h linux-2.6.16.56.patched/include/asm-i386/geode-mfgpt.h
---- linux-2.6.16.56/include/asm-i386/geode-mfgpt.h	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.16.56.patched/include/asm-i386/geode-mfgpt.h	2007-12-11 14:57:37.000000000 +0100
-@@ -0,0 +1,57 @@
-+/*     Driver/API for AMD Geode Multi-Function General Purpose Timers (MFGPT)
-+ *
-+ *     Copyright (C) 2006, Advanced Micro Devices, Inc.
-+ *
-+ *      This program is free software; you can redistribute it and/or
-+ *      modify it under the terms of the GNU General Public License
-+ *      as published by the Free Software Foundation; either version
-+ *      2 of the License, or (at your option) any later version.
-+ *
-+ */
-+
-+#ifndef MFGPT_GEODE_H_
-+#define MFGPT_GEODE_H_
-+
-+#define MFGPT_TIMER_ANY -1
-+
-+#define MFGPT_DOMAIN_WORKING 1
-+#define MFGPT_DOMAIN_STANDBY 2
-+#define MFGPT_DOMAIN_ANY (MFGPT_DOMAIN_WORKING | MFGPT_DOMAIN_STANDBY)
-+
-+#define MFGPT_CMP1 0
-+#define MFGPT_CMP2 1
-+
-+#define MFGPT_EVENT_IRQ   0
-+#define MFGPT_EVENT_NMI   1
-+#define MFGPT_EVENT_RESET 3
-+
-+#define MFGPT_REG_CMP1    0
-+#define MFGPT_REG_CMP2    2
-+#define MFGPT_REG_COUNTER 4
-+#define MFGPT_REG_SETUP   6
-+
-+#define MFGPT_SETUP_CNTEN  (1 << 15)
-+#define MFGPT_SETUP_CMP2   (1 << 14)
-+#define MFGPT_SETUP_CMP1   (1 << 13)
-+#define MFGPT_SETUP_SETUP  (1 << 12)
-+#define MFGPT_SETUP_STOPEN (1 << 11)
-+#define MFGPT_SETUP_EXTEN  (1 << 10)
-+#define MFGPT_SETUP_REVEN  (1 << 5)
-+#define MFGPT_SETUP_CLKSEL (1 << 4)
-+
-+extern void geode_mfgpt_toggle_event(int, int, int, int);
-+
-+#define geode_mfgpt_set_event(t,c,e) geode_mfgpt_toggle_event(t,c,e,1)
-+#define geode_mfgpt_clear_event(t,c,e) geode_mfgpt_toggle_event(t,c,e,0)
-+
-+extern void geode_mfgpt_set_irq(int, int, int, int);
-+
-+#define geode_mfgpt_setup_irq(t, c, i) geode_mfgpt_set_irq(t,c,i,1)
-+#define geode_mfgpt_release_irq(t, c, i) geode_mfgpt_set_irq(t,c,i,0)
-+
-+extern void geode_mfgpt_write(int, u16, u16);
-+extern u16 geode_mfgpt_read(int, u16);
-+
-+extern int geode_mfgpt_alloc_timer(int, int, struct module *);
-+
-+#endif
+The kernel boots on a different p570.
+See attached dmesg. huckleberry boots, cranberry crashes.
 
---------------000006000207020107050206--
+
+--- huckleberry.suse.de-2.6.16.57-0.5-ppc64.txt	2008-01-17 20:48:18.510309000 +0100
++++ cranberry.suse.de-2.6.16.57-0.5-ppc64.txt	2008-01-17 20:48:09.425402000 +0100
+@@ -1,56 +1,55 @@
+ Page orders: linear mapping = 24, others = 12
+-Found initrd at 0xc000000002700000:0xc000000002a93000
++Found initrd at 0xc000000001300000:0xc0000000016e6c1e
+ Partition configured for 8 cpus.
+ Starting Linux PPC64 #1 SMP Wed Dec 5 09:02:21 UTC 2007
+ -----------------------------------------------------
+-ppc64_pft_size                = 0x1b
++ppc64_pft_size                = 0x1c
+ ppc64_interrupt_controller    = 0x2
+ platform                      = 0x101
+-physicalMemorySize            = 0x158000000
++physicalMemorySize            = 0xda000000
+ ppc64_caches.dcache_line_size = 0x80
+ ppc64_caches.icache_line_size = 0x80
+ htab_address                  = 0x0000000000000000
+-htab_hash_mask                = 0xfffff
++htab_hash_mask                = 0x1fffff
+ -----------------------------------------------------
+ [boot]0100 MM Init
+ [boot]0100 MM Init Done
+ Linux version 2.6.16.57-0.5-ppc64 (geeko@buildhost) (gcc version 4.1.2 20070115 (prerelease) (SUSE Linux)) #1 SMP Wed Dec 5 09:02:21 UTC 2007
+ [boot]0012 Setup Arch
+-Node 0 Memory: 0x0-0xb0000000
+-Node 1 Memory: 0xb0000000-0x158000000
++Node 0 Memory:
++Node 1 Memory: 0x0-0xda000000
+ EEH: PCI Enhanced I/O Error Handling Enabled
+-PPC64 nvram contains 7168 bytes
++PPC64 nvram contains 8192 bytes
+ Using dedicated idle loop
+-On node 0 totalpages: 720896
+-  DMA zone: 720896 pages, LIFO batch:31
++On node 0 totalpages: 0
++  DMA zone: 0 pages, LIFO batch:0
+   DMA32 zone: 0 pages, LIFO batch:0
+   Normal zone: 0 pages, LIFO batch:0
+   HighMem zone: 0 pages, LIFO batch:0
+-On node 1 totalpages: 688128
+-  DMA zone: 688128 pages, LIFO batch:31
++On node 1 totalpages: 892928
++  DMA zone: 892928 pages, LIFO batch:31
+   DMA32 zone: 0 pages, LIFO batch:0
+   Normal zone: 0 pages, LIFO batch:0
+   HighMem zone: 0 pages, LIFO batch:0
+ [boot]0015 Setup Done
+ Built 2 zonelists
+-Kernel command line: root=/dev/disk/by-id/scsi-SIBM_ST373453LC_3HW1CPW500007445Q010-part5  xmon=on sysrq=1 quiet 
++Kernel command line: root=/dev/system/root  xmon=on sysrq=1 quiet 
+ [boot]0020 XICS Init
+ xics: no ISA interrupt controller
+ [boot]0021 XICS Done
+ PID hash table entries: 4096 (order: 12, 131072 bytes)
+-time_init: decrementer frequency = 207.052000 MHz
+-time_init: processor frequency   = 1654.344000 MHz
++time_init: decrementer frequency = 275.070000 MHz
++time_init: processor frequency   = 2197.800000 MHz
+ Console: colour dummy device 80x25
+-Dentry cache hash table entries: 1048576 (order: 11, 8388608 bytes)
+-Inode-cache hash table entries: 524288 (order: 10, 4194304 bytes)
+-freeing bootmem node 0
++Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
++Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
+ freeing bootmem node 1
+-Memory: 5524952k/5636096k available (4464k kernel code, 111144k reserved, 1992k data, 836k bss, 264k init)
+-Calibrating delay loop... 413.69 BogoMIPS (lpj=2068480)
++Memory: 3494648k/3571712k available (4464k kernel code, 77064k reserved, 1992k data, 836k bss, 264k init)
++Calibrating delay loop... 548.86 BogoMIPS (lpj=2744320)
+ Security Framework v1.0.0 initialized
+ Mount-cache hash table entries: 256
+ checking if image is initramfs... it is
+-Freeing initrd memory: 3660k freed
++Freeing initrd memory: 3995k freed
+ Processor 1 found.
+ Processor 2 found.
+ Processor 3 found.
+@@ -61,7 +60,7 @@ Processor 7 found.
+ Brought up 8 CPUs
+ Node 0 CPUs: 0-3
+ Node 1 CPUs: 4-7
+-migration_cost=41,0,4308
++migration_cost=38,0,3225
+ NET: Registered protocol family 16
+ PCI: Probing PCI hardware
+ IOMMU table initialized, virtual merging enabled
+
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: attachment; filename="huckleberry.suse.de-2.6.16.57-0.5-ppc64.txt"
+
+Page orders: linear mapping = 24, others = 12
+Found initrd at 0xc000000002700000:0xc000000002a93000
+Partition configured for 8 cpus.
+Starting Linux PPC64 #1 SMP Wed Dec 5 09:02:21 UTC 2007
+-----------------------------------------------------
+ppc64_pft_size                = 0x1b
+ppc64_interrupt_controller    = 0x2
+platform                      = 0x101
+physicalMemorySize            = 0x158000000
+ppc64_caches.dcache_line_size = 0x80
+ppc64_caches.icache_line_size = 0x80
+htab_address                  = 0x0000000000000000
+htab_hash_mask                = 0xfffff
+-----------------------------------------------------
+[boot]0100 MM Init
+[boot]0100 MM Init Done
+Linux version 2.6.16.57-0.5-ppc64 (geeko@buildhost) (gcc version 4.1.2 20070115 (prerelease) (SUSE Linux)) #1 SMP Wed Dec 5 09:02:21 UTC 2007
+[boot]0012 Setup Arch
+Node 0 Memory: 0x0-0xb0000000
+Node 1 Memory: 0xb0000000-0x158000000
+EEH: PCI Enhanced I/O Error Handling Enabled
+PPC64 nvram contains 7168 bytes
+Using dedicated idle loop
+On node 0 totalpages: 720896
+  DMA zone: 720896 pages, LIFO batch:31
+  DMA32 zone: 0 pages, LIFO batch:0
+  Normal zone: 0 pages, LIFO batch:0
+  HighMem zone: 0 pages, LIFO batch:0
+On node 1 totalpages: 688128
+  DMA zone: 688128 pages, LIFO batch:31
+  DMA32 zone: 0 pages, LIFO batch:0
+  Normal zone: 0 pages, LIFO batch:0
+  HighMem zone: 0 pages, LIFO batch:0
+[boot]0015 Setup Done
+Built 2 zonelists
+Kernel command line: root=/dev/disk/by-id/scsi-SIBM_ST373453LC_3HW1CPW500007445Q010-part5  xmon=on sysrq=1 quiet 
+[boot]0020 XICS Init
+xics: no ISA interrupt controller
+[boot]0021 XICS Done
+PID hash table entries: 4096 (order: 12, 131072 bytes)
+time_init: decrementer frequency = 207.052000 MHz
+time_init: processor frequency   = 1654.344000 MHz
+Console: colour dummy device 80x25
+Dentry cache hash table entries: 1048576 (order: 11, 8388608 bytes)
+Inode-cache hash table entries: 524288 (order: 10, 4194304 bytes)
+freeing bootmem node 0
+freeing bootmem node 1
+Memory: 5524952k/5636096k available (4464k kernel code, 111144k reserved, 1992k data, 836k bss, 264k init)
+Calibrating delay loop... 413.69 BogoMIPS (lpj=2068480)
+Security Framework v1.0.0 initialized
+Mount-cache hash table entries: 256
+checking if image is initramfs... it is
+Freeing initrd memory: 3660k freed
+Processor 1 found.
+Processor 2 found.
+Processor 3 found.
+Processor 4 found.
+Processor 5 found.
+Processor 6 found.
+Processor 7 found.
+Brought up 8 CPUs
+Node 0 CPUs: 0-3
+Node 1 CPUs: 4-7
+migration_cost=41,0,4308
+NET: Registered protocol family 16
+PCI: Probing PCI hardware
+IOMMU table initialized, virtual merging enabled
+mapping IO 3fe00100000 -> d000080000000000, size: 100000
+mapping IO 3fe00600000 -> d000080000100000, size: 100000
+mapping IO 3fe00300000 -> d000080000200000, size: 100000
+PCI: Probing PCI hardware done
+Registering pmac pic with sysfs...
+usbcore: registered new driver usbfs
+usbcore: registered new driver hub
+IBM eBus Device Driver
+RTAS daemon started
+RTAS: event: 109, Type: Platform Error, Severity: 2
+probe_bus_pseries: processing c000000157ff7058
+probe_bus_pseries: processing c000000157ff7228
+probe_bus_pseries: processing c000000157ff7378
+probe_bus_pseries: processing c000000157ff74e8
+probe_bus_pseries: processing c000000157ff7658
+audit: initializing netlink socket (disabled)
+audit(1200599258.200:1): initialized
+Total HugeTLB memory allocated, 0
+VFS: Disk quotas dquot_6.5.1
+Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+Initializing Cryptographic API
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered (default)
+pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+rpaphp: Slot [0001:00:02.0](PCI location=U7879.001.DQD02EK-P1-C3) registered
+rpaphp: Slot [0001:00:02.2](PCI location=U7879.001.DQD02EK-P1-C4) registered
+rpaphp: Slot [0001:00:02.4](PCI location=U7879.001.DQD02EK-P1-C5) registered
+rpaphp: Slot [0001:00:02.6](PCI location=U7879.001.DQD02EK-P1-C6) registered
+rpaphp: Slot [0002:00:02.0](PCI location=U7879.001.DQD02EK-P1-C1) registered
+rpaphp: Slot [0002:00:02.6](PCI location=U7879.001.DQD02EK-P1-C2) registered
+matroxfb: Matrox G450 detected
+PInS data found at offset 31168
+PInS memtype = 5
+matroxfb: 640x480x8bpp (virtual: 640x26214)
+matroxfb: framebuffer at 0x400C0000000, mapped to 0xd000080080004000, size 33554432
+Console: switching to colour frame buffer device 80x30
+fb0: MATROX frame buffer device
+matroxfb_crtc2: secondary head of fb0 was registered as fb1
+vio_register_driver: driver hvc_console registering
+HVSI: registered 0 devices
+Generic RTC Driver v1.07
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
+pmac_zilog: 0.6 (Benjamin Herrenschmidt <benh@kernel.crashing.org>)
+RAMDISK driver initialized: 16 RAM disks of 123456K size 1024 blocksize
+input: Macintosh mouse button emulation as /class/input/input0
+Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+ehci_hcd 0000:c8:01.2: EHCI Host Controller
+ehci_hcd 0000:c8:01.2: new USB bus registered, assigned bus number 1
+ehci_hcd 0000:c8:01.2: irq 101, io mem 0x400a0002000
+ehci_hcd 0000:c8:01.2: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb usb1: new device found, idVendor=0000, idProduct=0000
+usb usb1: new device strings: Mfr=3, Product=2, SerialNumber=1
+usb usb1: Product: EHCI Host Controller
+usb usb1: Manufacturer: Linux 2.6.16.57-0.5-ppc64 ehci_hcd
+usb usb1: SerialNumber: 0000:c8:01.2
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 5 ports detected
+ohci_hcd: 2005 April 22 USB 1.1 'Open' Host Controller (OHCI) Driver (PCI)
+ohci_hcd 0000:c8:01.0: OHCI Host Controller
+ohci_hcd 0000:c8:01.0: new USB bus registered, assigned bus number 2
+ohci_hcd 0000:c8:01.0: irq 101, io mem 0x400a0001000
+usb usb2: new device found, idVendor=0000, idProduct=0000
+usb usb2: new device strings: Mfr=3, Product=2, SerialNumber=1
+usb usb2: Product: OHCI Host Controller
+usb usb2: Manufacturer: Linux 2.6.16.57-0.5-ppc64 ohci_hcd
+usb usb2: SerialNumber: 0000:c8:01.0
+usb usb2: configuration #1 chosen from 1 choice
+hub 2-0:1.0: USB hub found
+hub 2-0:1.0: 3 ports detected
+hub 2-0:1.0: over-current change on port 1
+ohci_hcd 0000:c8:01.1: OHCI Host Controller
+ohci_hcd 0000:c8:01.1: new USB bus registered, assigned bus number 3
+ohci_hcd 0000:c8:01.1: irq 101, io mem 0x400a0000000
+usb usb3: new device found, idVendor=0000, idProduct=0000
+usb usb3: new device strings: Mfr=3, Product=2, SerialNumber=1
+usb usb3: Product: OHCI Host Controller
+usb usb3: Manufacturer: Linux 2.6.16.57-0.5-ppc64 ohci_hcd
+usb usb3: SerialNumber: 0000:c8:01.1
+usb usb3: configuration #1 chosen from 1 choice
+hub 3-0:1.0: USB hub found
+hub 3-0:1.0: 2 ports detected
+hub 3-0:1.0: over-current change on port 1
+usbcore: registered new driver hiddev
+usbcore: registered new driver usbhid
+drivers/usb/input/hid-core.c: v2.6:USB HID core driver
+mice: PS/2 mouse device common for all mice
+md: md driver 0.90.3 MAX_MD_DEVS=256, MD_SB_DISKS=27
+md: bitmap version 4.39
+oprofile: using ppc64/power5 performance monitoring.
+NET: Registered protocol family 2
+IP route cache hash table entries: 262144 (order: 9, 2097152 bytes)
+TCP established hash table entries: 524288 (order: 11, 8388608 bytes)
+TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
+TCP: Hash tables configured (established 524288 bind 65536)
+TCP reno registered
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+NET: Registered protocol family 15
+Freeing unused kernel memory: 264k freed
+SCSI subsystem initialized
+libata version 2.00 loaded.
+ipr: IBM Power RAID SCSI Device Driver version: 2.2.0.2 (November 14, 2007)
+ipr 0000:c0:01.0: Found IOA with IRQ: 99
+ipr 0000:c0:01.0: Starting IOA initialization sequence.
+ipr 0000:c0:01.0: Adapter firmware version: 020A004E
+ipr 0000:c0:01.0: IOA initialized.
+scsi0 : IBM 570B Storage Adapter
+  Vendor: IBM       Model: ST373453LC        Rev: C51A
+  Type:   Direct-Access                      ANSI SCSI revision: 03
+SCSI device sda: 143374000 512-byte hdwr sectors (73407 MB)
+sda: Write Protect is off
+sda: Mode Sense: cb 00 10 08
+SCSI device sda: drive cache: write through w/ FUA
+SCSI device sda: 143374000 512-byte hdwr sectors (73407 MB)
+sda: Write Protect is off
+sda: Mode Sense: cb 00 10 08
+SCSI device sda: drive cache: write through w/ FUA
+ sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 >
+sd 0:0:4:0: Attached scsi disk sda
+  Vendor: IBM       Model: VSBPD3E   U4SCSI  Rev: 4812
+  Type:   Enclosure                          ANSI SCSI revision: 02
+sd 0:0:4:0: Attached scsi generic sg0 type 0
+ 0:0:15:0: Attached scsi generic sg1 type 13
+scsi: unknown device type 31
+  Vendor: IBM       Model: 570B001           Rev: 0150
+  Type:   Unknown                            ANSI SCSI revision: 00
+ 0:255:255:255: Attached scsi generic sg2 type 31
+ipr 0002:c8:01.0: Found IOA with IRQ: 133
+ipr 0002:c8:01.0: Starting IOA initialization sequence.
+ipr 0002:c8:01.0: Adapter firmware version: 020A004E
+ipr 0002:c8:01.0: IOA initialized.
+scsi1 : IBM 570B Storage Adapter
+  Vendor: IBM       Model: IC35L073UCDY10-0  Rev: S28G
+  Type:   Direct-Access                      ANSI SCSI revision: 03
+SCSI device sdb: 143374000 512-byte hdwr sectors (73407 MB)
+sdb: Write Protect is off
+sdb: Mode Sense: cb 00 00 08
+SCSI device sdb: drive cache: write through
+SCSI device sdb: 143374000 512-byte hdwr sectors (73407 MB)
+sdb: Write Protect is off
+sdb: Mode Sense: cb 00 00 08
+SCSI device sdb: drive cache: write through
+ sdb: sdb1
+sd 1:0:3:0: Attached scsi disk sdb
+sd 1:0:3:0: Attached scsi generic sg3 type 0
+  Vendor: IBM       Model: ST373453LC        Rev: C51A
+  Type:   Direct-Access                      ANSI SCSI revision: 03
+SCSI device sdc: 143374000 512-byte hdwr sectors (73407 MB)
+sdc: Write Protect is off
+sdc: Mode Sense: cb 00 10 08
+SCSI device sdc: drive cache: write through w/ FUA
+SCSI device sdc: 143374000 512-byte hdwr sectors (73407 MB)
+sdc: Write Protect is off
+sdc: Mode Sense: cb 00 10 08
+SCSI device sdc: drive cache: write through w/ FUA
+ sdc: sdc1
+sd 1:0:5:0: Attached scsi disk sdc
+sd 1:0:5:0: Attached scsi generic sg4 type 0
+  Vendor: IBM       Model: VSBPD3E   U4SCSI  Rev: 4812
+  Type:   Enclosure                          ANSI SCSI revision: 02
+ 1:0:15:0: Attached scsi generic sg5 type 13
+scsi: unknown device type 31
+  Vendor: IBM       Model: 570B001           Rev: 0150
+  Type:   Unknown                            ANSI SCSI revision: 00
+ 1:255:255:255: Attached scsi generic sg6 type 31
+pata_pdc2027x 0002:d0:01.0: version 0.74-ac5
+PCI: Enabling device: (0002:d0:01.0), cmd 3
+pata_pdc2027x 0002:d0:01.0: PLL input clock 32760 kHz
+ata1: PATA max UDMA/133 cmd 0xD0000800820887C0 ctl 0xD000080082088FDA bmdma 0xD000080082088000 irq 135
+ata2: PATA max UDMA/133 cmd 0xD0000800820885C0 ctl 0xD000080082088DDA bmdma 0xD000080082088008 irq 135
+scsi2 : pata_pdc2027x
+ata1.00: ATAPI, max UDMA/33
+ata1.00: configured for UDMA/33
+scsi3 : pata_pdc2027x
+ATA: abnormal status 0x8 on port 0xD0000800820885DF
+  Vendor: IBM       Model: DROM00205         Rev: NR38
+  Type:   CD-ROM                             ANSI SCSI revision: 02
+ 2:0:0:0: Attached scsi generic sg7 type 5
+sr0: scsi3-mmc drive: 24x/24x cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 2:0:0:0: Attached scsi CD-ROM sr0
+ReiserFS: sda5: found reiserfs format "3.6" with standard journal
+ReiserFS: sda5: using ordered data mode
+reiserfs: using flush barriers
+ReiserFS: sda5: journal params: device sda5, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
+ReiserFS: sda5: checking transaction log (sda5)
+ReiserFS: sda5: Using r5 hash to sort names
+Adding 1050616k swap on /dev/disk/by-label/vscsi_swap.  Priority:-1 extents:1 across:1050616k
+Intel(R) PRO/1000 Network Driver - version 7.6.9.1-NAPI
+Copyright (c) 1999-2007 Intel Corporation.
+PCI: Enabling device: (0000:d0:01.0), cmd 3
+e1000: 0000:d0:01.0: e1000_probe: (PCI-X:133MHz:64-bit) 00:09:6b:dd:0e:78
+e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+PCI: Enabling device: (0000:d0:01.1), cmd 3
+e1000: 0000:d0:01.1: e1000_probe: (PCI-X:133MHz:64-bit) 00:09:6b:dd:0e:79
+e1000: eth1: e1000_probe: Intel(R) PRO/1000 Network Connection
+PCI: Enabling device: (0001:c0:01.0), cmd 3
+e1000: 0001:c0:01.0: e1000_probe: (PCI-X:133MHz:64-bit) 00:11:25:c0:5a:13
+e1000: eth2: e1000_probe: Intel(R) PRO/1000 Network Connection
+PCI: Enabling device: (0001:c8:01.0), cmd 3
+e1000: 0001:c8:01.0: e1000_probe: (PCI-X:133MHz:64-bit) 00:09:6b:6e:1b:ee
+e1000: eth3: e1000_probe: Intel(R) PRO/1000 Network Connection
+PCI: Enabling device: (0001:c8:01.1), cmd 3
+e1000: 0001:c8:01.1: e1000_probe: (PCI-X:133MHz:64-bit) 00:09:6b:6e:1b:ef
+e1000: eth4: e1000_probe: Intel(R) PRO/1000 Network Connection
+md: md0 stopped.
+device-mapper: 4.7.0-ioctl (2006-06-24) initialised: dm-devel@redhat.com
+dm-netlink version 0.0.2 loaded
+md: bind<sdc1>
+md: bind<sdb1>
+md: raid0 personality registered for level 0
+md0: setting max_sectors to 64, segment boundary to 16383
+raid0: looking at sdb1
+raid0:   comparing sdb1(71673856) with sdb1(71673856)
+raid0:   END
+raid0:   ==> UNIQUE
+raid0: 1 zones
+raid0: looking at sdc1
+raid0:   comparing sdc1(71673856) with sdb1(71673856)
+raid0:   EQUAL
+raid0: FINAL 1 zones
+raid0: done.
+raid0 : md_size is 143347712 blocks.
+raid0 : conf->hash_spacing is 143347712 blocks.
+raid0 : nb_zone is 1.
+raid0 : Allocating 8 bytes for hash.
+loop: loaded (max 8 devices)
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with ordered data mode.
+ReiserFS: sda6: found reiserfs format "3.6" with standard journal
+ReiserFS: sda6: using ordered data mode
+reiserfs: using flush barriers
+ReiserFS: sda6: journal params: device sda6, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
+ReiserFS: sda6: checking transaction log (sda6)
+ReiserFS: sda6: Using r5 hash to sort names
+AppArmor: AppArmor (version 2.0-19.43r6320) initialized
+audit(1200599270.450:2): AppArmor (version 2.0-19.43r6320) initialized
+
+ib_core: module not supported by Novell, setting U taint flag.
+ib_mad: module not supported by Novell, setting U taint flag.
+ib_mthca: module not supported by Novell, setting U taint flag.
+ib_umad: module not supported by Novell, setting U taint flag.
+ib_uverbs: module not supported by Novell, setting U taint flag.
+NET: Registered protocol family 10
+lo: Disabled Privacy Extensions
+IPv6 over IPv4 tunneling driver
+ib_sa: module not supported by Novell, setting U taint flag.
+ib_cm: module not supported by Novell, setting U taint flag.
+ib_ipoib: module not supported by Novell, setting U taint flag.
+iw_cm: module not supported by Novell, setting U taint flag.
+ib_addr: module not supported by Novell, setting U taint flag.
+rdma_cm: module not supported by Novell, setting U taint flag.
+ib_sdp: module not supported by Novell, setting U taint flag.
+NET: Registered protocol family 27
+ib_srp: module not supported by Novell, setting U taint flag.
+rdma_ucm: module not supported by Novell, setting U taint flag.
+ADDRCONF(NETDEV_UP): eth0: link is not ready
+e1000: eth0: e1000_watchdog_task: NIC Link is Up 100 Mbps Full Duplex, Flow Control: RX
+ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+audit(1200599280.383:3): audit_pid=3972 old=0 by auid=4294967295
+sd 0:0:4:0: queue not ready for req c000000157bdb2a8
+sd 0:0:4:0: queue not ready for req c000000157bdb2a8
+sd 0:0:4:0: queue not ready for req c000000156d3b2a8
+sd 0:0:4:0: queue not ready for req c000000156d3b2a8
+sd 0:0:4:0: queue not ready for req c0000000b35ed2a8
+sd 0:0:4:0: queue not ready for req c0000000b35ed2a8
+sd 0:0:4:0: queue not ready for req c00000000fc71728
+sd 0:0:4:0: queue not ready for req c00000000fc713c8
+sd 0:0:4:0: queue not ready for req c000000156082188
+sd 0:0:4:0: queue not ready for req c000000156082188
+sd 0:0:4:0: queue not ready for req c00000000fc712a8
+sd 0:0:4:0: queue not ready for req c00000000fc714e8
+sd 0:0:4:0: queue not ready for req c00000000fc714e8
+sd 0:0:4:0: queue not ready for req c00000000fc71608
+sd 0:0:4:0: queue not ready for req c00000000fc71608
+sd 0:0:4:0: queue not ready for req c00000000fd6c848
+sd 0:0:4:0: queue not ready for req c00000000fd6c3c8
+sd 0:0:4:0: queue not ready for req c00000000fd6c068
+sd 0:0:4:0: queue not ready for req c00000000fd6c728
+sd 0:0:4:0: queue not ready for req c0000001560824e8
+sd 0:0:4:0: queue not ready for req c000000156082968
+sd 0:0:4:0: queue not ready for req c000000003364728
+sd 0:0:4:0: queue not ready for req c00000000fe41188
+sd 0:0:4:0: queue not ready for req c00000000f8e0968
+
+--0F1p//8PRICkK4MW--
