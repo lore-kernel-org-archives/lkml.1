@@ -1,46 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbYAQXDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbYAQXEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758277AbYAQXDg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 18:03:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbYAQXDZ
+	id S1758873AbYAQXEX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 18:04:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbYAQXEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 18:03:25 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39514 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754851AbYAQXDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 18:03:24 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <28942.1200610127@redhat.com>
-References: <28942.1200610127@redhat.com> <20080117204804.GC6416@fieldses.org> <20080115234724.22183.9603.stgit@warthog.procyon.org.uk> <20080115234652.22183.24850.stgit@warthog.procyon.org.uk> <20849.1200590240@redhat.com>
-Cc: dhowells@redhat.com, "J. Bruce Fields" <bfields@fieldses.org>,
-       sds@tycho.nsa.gov, casey@schaufler-ca.com, Trond.Myklebust@netapp.com,
-       neilb@suse.de, linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, nfs@lists.sourceforge.net
-Subject: Re: [PATCH 06b/26] Security: Make NFSD work with detached security
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Thu, 17 Jan 2008 23:02:06 +0000
-Message-ID: <29216.1200610926@redhat.com>
-To: unlisted-recipients:; (no To-header on input)
+	Thu, 17 Jan 2008 18:04:09 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:48445 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753220AbYAQXEI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 18:04:08 -0500
+Date: Fri, 18 Jan 2008 00:04:06 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Vince Fuller <vaf@cisco.com>
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 001/001] ipv4: enable use of 240/4 address space
+In-Reply-To: <20080108011057.GA21168@cisco.com>
+Message-ID: <Pine.LNX.4.64.0801180003330.18447@fbirervta.pbzchgretzou.qr>
+References: <20080108011057.GA21168@cisco.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> wrote:
 
-> J. Bruce Fields <bfields@fieldses.org> wrote:
+On Jan 7 2008 17:10, Vince Fuller wrote:
+>--- net/ipv4/devinet.c.orig	2007-04-12 10:16:23.000000000 -0700
+>+++ net/ipv4/devinet.c	2008-01-07 16:55:59.000000000 -0800
+>@@ -594,6 +594,8 @@ static __inline__ int inet_abc_len(__be3
+> 			rc = 16;
+> 		else if (IN_CLASSC(haddr))
+> 			rc = 24;
+>+		else if (IN_CLASSE(haddr))
+>+			rc = 24;
+> 	}
 > 
-> > Just curious--why?  Are get_kernel_security(), etc., particularly
-> > expensive?
-> 
-> It involves a kmalloc().  That means an extra possibility for an error.  Plus
-> it may allow you to cache the result of checking whether, say, SELinux
-> security labels are allowed to be set when passed over NFS (if such is
-> possible).
+>   	return rc;
 
-Apart from that, though, no, it's not particularly expensive.
-
-David
+Any particular reason why 24?
