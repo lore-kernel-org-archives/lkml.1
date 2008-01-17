@@ -1,74 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758401AbYAQWQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbYAQWQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758401AbYAQWQG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:16:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758991AbYAQWPn
+	id S1758902AbYAQWQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759073AbYAQWPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:15:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46795 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758936AbYAQWPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 17:15:42 -0500
-Date: Thu, 17 Jan 2008 23:15:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Herrmann3 <andreas.herrmann3@AMD.COM>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>, ak@muc.de,
-       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
-       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
-       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
-       jesse.barnes@intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
-	fixes
-Message-ID: <20080117221505.GB18883@elte.hu>
-References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com> <20080116203328.GA17869@linux-os.sc.intel.com> <20080117191211.GA12631@alberich.amd.com> <20080117203600.GB27778@elte.hu> <20080117210301.GC12631@alberich.amd.com> <20080117211308.GA7858@elte.hu> <20080117213131.GA25389@linux-os.sc.intel.com> <20080117214209.GA12811@elte.hu> <20080117220650.GE12631@alberich.amd.com>
+	Thu, 17 Jan 2008 17:15:45 -0500
+Received: from free-electrons.com ([88.191.23.47]:35881 "EHLO
+	sd-2511.dedibox.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757120AbYAQWPo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 17:15:44 -0500
+From: Michael Opdenacker <michael-lists@free-electrons.com>
+Organization: Free Electrons
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH] x86: fix unconditional =?utf-8?q?arch/x86/kernel/pcspeaker=2Ec=09compiling?=
+Date: Thu, 17 Jan 2008 23:15:29 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Linux-tiny@selenic.com,
+       Ingo Molnar <mingo@elte.hu>
+References: <200801171643.49301.michael-lists@free-electrons.com> <478F8AEC.1080209@free-electrons.com> <1200590031.5332.19.camel@cinder.waste.org>
+In-Reply-To: <1200590031.5332.19.camel@cinder.waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080117220650.GE12631@alberich.amd.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200801172315.29976.michael-lists@free-electrons.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andreas Herrmann3 <andreas.herrmann3@AMD.COM> wrote:
-
-> On Thu, Jan 17, 2008 at 10:42:09PM +0100, Ingo Molnar wrote:
-> > 
-> > * Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
-> > 
-> > > On Thu, Jan 17, 2008 at 10:13:08PM +0100, Ingo Molnar wrote:
-> > > > but in general we must be robust enough in this case and just degrade 
-> > > > any overlapping page to UC (and emit a warning perhaps) - instead of 
-> > > > failing the ioremap and thus failing the driver (and the bootup).
-> > > 
-> > > But then, this will cause an attribute conflicit. Old one was 
-> > > specifying WB in PAT (ioremap with noflags) and the new ioremap 
-> > > specifies UC.
-> > 
-> > we could fix up all aliases of that page as well and degrade them to UC?
+On Thursday 17 January 2008, Matt Mackall wrote:
+> > >> diff -Naur linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32 linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32
+> > >> --- linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32	2008-01-17 09:48:58.000000000 +0100
+> > >> +++ linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32	2008-01-17 10:06:56.000000000 +0100
+> > >> @@ -45,10 +45,13 @@
+> > >>  
+> > >>  obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
+> > >>  obj-$(CONFIG_PARAVIRT)		+= paravirt_32.o
+> > >> -obj-y				+= pcspeaker.o
+> > >> -
+> > >>  obj-$(CONFIG_SCx200)		+= scx200_32.o
+> > >>  
+> > >> +ifeq ($(CONFIG_INPUT_PCSPKR),y)
+> > >> +	obj-y			+= pcspeaker.o
+> > >> +endif
+> > >>     
+> > >
+> > > I'm not sure this does what you want. What if CONFIG_INPUT_PCSPKR = m?
+> > >   
+> > Does it make sense to compile arch/x86/kernel/pcspeaker.c as a module?
+> > It defines no init and exit functions, and it defines an initcall, which
+> > only makes sense at boot time.
 > 
-> Yes, we must fix all aliases or reject the conflicting mapping. But 
-> fixing all aliases might not be that easy. (I've just seen a panic 
-> when using your patch ;-(
+> Probably not. However, the above code won't build pcspeaker.o if
+> CONFIG_INPUT_PCSPKR = m. In other words, it'll break.
+> 
 
-yes, indeed my patch is bad if you have PAT enabled: conflicting cache 
-attributes might be present. I'll go with your patch for now.
+Here's a corrected version.
 
-should we perhaps do UC by default for early_ioremap() as well? Normally 
-those mappings are only temporary - but in case of a leak they might 
-hang around in the pagetables and the CPU might stumble upon them. Also, 
-should early_iounmap() do a wbinvd() [/clflush()] call as well, to be 
-safe?
+Even if this patch doesn't seem to cause any bug
+(tested on a QEMU based PC), I'm wondering if this is "legal" (according
+to Linux standards) not to declare a device we don't care about,
+but that probably always exists in any PC-compatible machine?
+Doesn't this hurt the consistency of the device model?
 
-	Ingo
+Another issue would be that we would no longer be able 
+to load the speaker driver module from a kernel which
+wasn't originally compiled with support for this module.
+
+Perhaps we should only use this trick when CONFIG_EMBEDDED is set.
+In this case, we know we're using a limited, non-standard kernel,
+and having a partial device tree could be acceptable.
+
+What do you think?
+
+Thanks,
+
+Michael.
+
+Signed-off-by: Michael Opdenacker <michael@free-electrons.com>
+
+diff -Naur linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32 linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32
+--- linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32	2008-01-17 09:48:58.000000000 +0100
++++ linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32	2008-01-17 22:43:33.000000000 +0100
+@@ -45,10 +45,13 @@
+ 
+ obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
+ obj-$(CONFIG_PARAVIRT)		+= paravirt_32.o
+-obj-y				+= pcspeaker.o
+-
+ obj-$(CONFIG_SCx200)		+= scx200_32.o
+ 
++ifdef CONFIG_INPUT_PCSPKR
++	obj-y			+= pcspeaker.o
++endif
++
++
+ # vsyscall_32.o contains the vsyscall DSO images as __initdata.
+ # We must build both images before we can assemble it.
+ # Note: kbuild does not track this dependency due to usage of .incbin
+diff -Naur linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_64 linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_64
+--- linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_64	2008-01-17 09:48:58.000000000 +0100
++++ linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_64	2008-01-17 22:46:07.000000000 +0100
+@@ -40,6 +40,9 @@
+ obj-$(CONFIG_PCI)		+= early-quirks.o
+ 
+ obj-y				+= topology.o
+-obj-y				+= pcspeaker.o
++
++ifdef CONFIG_INPUT_PCSPKR
++        obj-y			+= pcspeaker.o
++endif
+ 
+ CFLAGS_vsyscall_64.o		:= $(PROFILING) -g0
+
+-- 
+Michael Opdenacker, Free Electrons
+Free Embedded Linux Training Materials
+on http://free-electrons.com/training
+(More than 1500 pages!)
