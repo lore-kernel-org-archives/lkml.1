@@ -1,119 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbYAQVM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbYAQVNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758413AbYAQVM1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 16:12:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbYAQVMS
+	id S1757956AbYAQVNt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 16:13:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYAQVNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 16:12:18 -0500
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:58793 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754204AbYAQVMQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 16:12:16 -0500
-Date: Thu, 17 Jan 2008 22:11:49 +0100
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-rt1
-Message-ID: <20080117211149.GQ27137@pengutronix.de>
-References: <1200544050.318.18.camel@localhost.localdomain> <478F2A46.5070506@grandegger.com>
+	Thu, 17 Jan 2008 16:13:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58231 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751887AbYAQVNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 16:13:41 -0500
+Date: Thu, 17 Jan 2008 22:13:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann3 <andreas.herrmann3@amd.com>
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>, ak@muc.de,
+       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
+       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       jesse.barnes@intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
+Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
+	fixes
+Message-ID: <20080117211308.GA7858@elte.hu>
+References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com> <20080116203328.GA17869@linux-os.sc.intel.com> <20080117191211.GA12631@alberich.amd.com> <20080117203600.GB27778@elte.hu> <20080117210301.GC12631@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <478F2A46.5070506@grandegger.com>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Hannoversche
-	Str. 2, 31134 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-9 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 21:47:34 up 127 days, 37 min, 31 users,  load average: 0.00,
-	0.00, 0.00
+In-Reply-To: <20080117210301.GC12631@alberich.amd.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SA-Exim-Connect-IP: 10.1.1.3
-X-SA-Exim-Mail-From: rsc@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 11:13:26AM +0100, Wolfgang Grandegger wrote:
->   # ./cyclictest -n -p80 -i1000 -b400
->
-> [...]
->
-> Well, I'm not sure if this is the correct way to do it. Is there some
-> doc on how to use the latency tracer and interpret the results?
 
-Could you put in this kind of log information inline next time? It makes
-it easier to review.
+* Andreas Herrmann3 <andreas.herrmann3@amd.com> wrote:
 
-Let's see ...
+> Yes.
+> 
+> Meanwhile I have figured out that it is some ACPI stuff that maps the 
+> page cached. I've changed the ioremap's in drivers/acpi/osl.c to 
+> ioremap_nocache. See attached patch.
+> 
+> Now the machine boots without conflicts.
 
-> preemption latency trace v1.1.5 on 2.6.24-rc8-rt1
-> --------------------------------------------------------------------
->  latency: 39733427 us, #65536/1202801, CPU#0 | (M:rt VP:0, KP:0, SP:1 HP:1)
->     -----------------
->     | task: cyclictest-914 (uid:0 nice:0 policy:1 rt_prio:80)
->     -----------------
+ah, nice!
 
-Ok, so cyclictest-914 triggered the tracer. No big surprise at -t 1 :-)
+but in general we must be robust enough in this case and just degrade 
+any overlapping page to UC (and emit a warning perhaps) - instead of 
+failing the ioremap and thus failing the driver (and the bootup).
 
-> cyclicte-914   0D..1   40us+: enqueue_hrtimer+0x50/0x1a0 (   89 5aa9862 c3a6dea8)
+Does my third patch (which falls back to UC in case of attribute 
+conflicts, also attached below) instead of your ioremap_nocache() patch 
+solve your bootup problem too?
 
-cyclictest-914 goes to sleep for next period. We expect it to wake up
-again at 40 us + 1000 us = 1040 us.
+while ACPI should not hurt too much from using UC mappings, we should 
+still solve this intelligently and only use UC when needed. (Sane system 
+makers with a sane layout of IO areas and BIOS areas should not be 
+punished with UC overhead.)
 
->       ls-1032  0DNh2  999us+: __trace_start_sched_wakeup+0x154/0x18c <cyclicte-914> (19 -1)
->       ls-1032  0DNh2 1001us+: try_to_wake_up+0x194/0x1b4 <cyclicte-914> (180 0)
->       ls-1032  0DNh. 1008us+: clockevents_program_event+0x84/0x1c0 (   89 5ad6bbf 18e8e)
-> cyclicte-914   0D..2 1033us+: __schedule+0x21c/0x444 <ls-1032> (0 180)
-> cyclicte-914   0D..1 1071us+: enqueue_hrtimer+0x50/0x1a0 (   89 5b9daa2 c3a6dea8)
+> > as an intermediate fix, how about following the attribute of the 
+> > already existing mapping, instead of rejecting the ioremap due to 
+> > the conflict? I.e. something like below?
+> 
+> I guess it is not a good idea to use an existing cachable attribute if 
+> the IO-region is non-prefetchable. And in this example there are 3 
+> devices which are potentially affected:
+> 
+>   00:12.0 IDE interface: ATI Technologies Inc 4379 Serial ATA Controller (rev 80) (
+>      ...
+>         Memory at c0403000 (32-bit, non-prefetchable) [size=512]
+>      ...
+> 
+>   00:14.0 SMBus: ATI Technologies Inc IXP SB400 SMBus Controller (rev 82)
+>      ...
+>           Memory at c0403400 (32-bit, non-prefetchable) [size=1K]
+>      ...
+> 
+>   00:14.5 Multimedia audio controller: ATI Technologies Inc IXP SB400 AC'97 Audio Controller (rev 80)
+>      ...
+>           Memory at c0403800 (32-bit, non-prefetchable) [size=256]
+>      ...
+> 
+> BTW, is there a need for osl.c to map all regions as cached?
 
-Looks good, it happened. Next wakeup at about 1071 us + 1000 us = 2071
-us.
+no, there should be no such need. There can be "mapping leaks", in that 
+the mapped object is not unmapped. There's detection code in today's 
+x86.git that should report something like this if it occurs:
 
-> cyclicte-914   0D..2 2031us+: __schedule+0x21c/0x444 <IRQ-129-682> (150 180)
-> cyclicte-914   0D..1 2072us+: enqueue_hrtimer+0x50/0x1a0 (   89 5c91ce2 c3a6dea8)
+  Debug warning: early ioremap leak of 1 areas detected.
+  please boot with early_ioremap_debug and report the dmesg.
+  ------------[ cut here ]------------
+  WARNING: at arch/x86/mm/ioremap_32.c:346 ()
 
-Bingo. Let's get a cup of coffee in the meantime ...
+but i have not seen this message in your boot log. Could you boot with 
+early_ioremap_debug and send us the dmesg - i'm curious which ACPI 
+tables are actively mapped while those devices are initialized.
 
-> cyclicte-914   0D..1 1905066us+: enqueue_hrtimer+0x50/0x1a0 (   91 66210 c3a6dea8)
+	Ingo
 
-Expected arival at 1905066 us + 1000 us = 1906066 us.
+-------------->
+Subject: x86: patches/pat-conflict-fixup.patch
+From: Ingo Molnar <mingo@elte.hu>
 
->       ls-1048  0DNh3 1906017us+: __trace_start_sched_wakeup+0x154/0x18c <cyclicte-914> (19 -1)
->       ls-1048  0DNh3 1906021us : __trace_start_sched_wakeup+0x154/0x18c <cyclicte-914> (19 -1)
->       ls-1048  0DNh3 1906023us+: try_to_wake_up+0x194/0x1b4 <cyclicte-914> (180 0)
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/mm/pat.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-It's trying hard to wake up ...
-
->       ls-1048  0DNh1 1906028us!: clockevents_program_event+0x84/0x1c0 (   91 391676 367eff)
->       ls-1048  0DNh2 1906274us+: activate_task+0x60/0xa4 <IRQ-193-681> (150 6)
-
-Between these it should have happened.
-
->       ls-1048  0DNh2 1906285us+: __trace_start_sched_wakeup+0x154/0x18c <IRQ-193-681> (49 -1)
->       ls-1048  0DNh2 1906293us+: __trace_start_sched_wakeup+0x154/0x18c <IRQ-193-681> (49 -1)
->       ls-1048  0DNh2 1906295us+: try_to_wake_up+0x194/0x1b4 <IRQ-193-681> (150 0)
-> cyclicte-914   0D..2 1906332us : __schedule+0x21c/0x444 <ls-1048> (0 180)
-
-What is this IRQ-193-681? Can you post your /proc/interrupts and the
-output of
-
-	ps axHo user,pid,%cpu,%mem,nice,rtprio,policy,tty,stat,start_time,bsdtime,args
-
-Robert
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
-
+Index: linux-x86.q/arch/x86/mm/pat.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/mm/pat.c
++++ linux-x86.q/arch/x86/mm/pat.c
+@@ -174,7 +174,12 @@ int reserve_mattr(u64 start, u64 end, un
+ 					current->comm, current->pid,
+ 					start, end,
+ 					cattr_name(attr), cattr_name(ml->attr));
+-				err = -EBUSY;
++				/*
++				 * Force UC on a conflict:
++				 */
++				ma->attr = _PAGE_UC;
++				if (*fattr)
++					*fattr = _PAGE_UC;
+ 				break;
+ 			}
+ 		} else if (ml->start >= end) {
