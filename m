@@ -1,107 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbYAQUf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbYAQUgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756743AbYAQUf7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 15:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbYAQUft
+	id S1756790AbYAQUgt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:36:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbYAQUgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 15:35:49 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:39574 "EHLO smtp4.pp.htv.fi"
+	Thu, 17 Jan 2008 15:36:41 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54711 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752843AbYAQUfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 15:35:48 -0500
-Date: Thu, 17 Jan 2008 22:34:39 +0200
-From: Adrian Bunk <adrian.bunk@movial.fi>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.59-rc1
-Message-ID: <20080117203439.GL23696@does.not.exist>
+	id S1751887AbYAQUgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 15:36:41 -0500
+Date: Thu, 17 Jan 2008 21:36:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann3 <andreas.herrmann3@amd.com>
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>, ak@muc.de,
+       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
+       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       jesse.barnes@intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
+Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
+	fixes
+Message-ID: <20080117203600.GB27778@elte.hu>
+References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com> <20080116203328.GA17869@linux-os.sc.intel.com> <20080117191211.GA12631@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-12-11)
+In-Reply-To: <20080117191211.GA12631@alberich.amd.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Security fixes since 2.6.16.58:
-- CVE-2006-6058: limit minixfs printks on corrupted dir i_size
-- CVE-2007-5500: wait_task_stopped: Check p->exit_state instead of TASK_TRACED
-- CVE-2008-0001: Use access mode instead of open flags to determine needed permissions
 
+* Andreas Herrmann3 <andreas.herrmann3@amd.com> wrote:
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
+> For the failed devices I get:
+> 
+>   sata_sil 0000:00:12.0: version 2.3
+>   ACPI: PCI Interrupt 0000:00:12.0[A] -> GSI 22 (level, low) -> IRQ 22
+>   ioremap_nocache: addr c0403000, size 200
+>   swapper:1 conflicting cache attribute c0403000-c0404000 uncached<->default
+>   ACPI: PCI interrupt for device 0000:00:12.0 disabled
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+hm, is the problem that the two devices share the same physical page, 
+and thus get an overlapping area?
 
-RSS feed of the git tree:
-http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+as an intermediate fix, how about following the attribute of the already 
+existing mapping, instead of rejecting the ioremap due to the conflict? 
+I.e. something like below?
 
+	Ingo
 
-Changes since 2.6.16.58:
+---
+ arch/x86/mm/pat.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Adrian Bunk (2):
-      struct input_device_id mustn't be userspace visible
-      Linux 2.6.16.59-rc1
-
-Al Viro (1):
-      missing dma_sync_single_range_for_{cpu,device} on alpha
-
-David S. Miller (1):
-      [SPARC64]: Fix endless loop in cheetah_xcall_deliver().
-
-Denis Vlasenko (1):
-      fix messages in fs/minix
-
-Eric Sandeen (1):
-      limit minixfs printks on corrupted dir i_size (CVE-2006-6058)
-
-Evgeniy Polyakov (1):
-      [IPV6]: Restore IPv6 when MTU is big enough
-
-Herbert Xu (2):
-      [IPV4] raw: Strengthen check on validity of iph->ihl
-      [IPSEC]: Avoid undefined shift operation when testing algorithm ID
-
-Ivan Kokshaysky (1):
-      include/asm-alpha/io_trivial.h build fixes
-
-Li Zefan (1):
-      CONNECTOR: don't touch queue dev after decrement of ref count
-
-Linus Torvalds (1):
-      Use access mode instead of open flags to determine needed permissions (CVE-2008-0001)
-
-Mark McLoughlin (1):
-      [INET]: Fix netdev renaming and inet address labels
-
-Maximilian Attems (1):
-      [IRDA]: irda_create() nuke user triggable printk
-
-Roland McGrath (1):
-      wait_task_stopped: Check p->exit_state instead of TASK_TRACED (CVE-2007-5500)
-
-Russ Dill (1):
-      [NET] kaweth was forgotten in msec switchover of usb_start_wait_urb
-
-
- Makefile                        |    2 +-
- arch/sparc64/kernel/smp.c       |   19 +++++++++++++------
- drivers/connector/cn_queue.c    |    2 +-
- drivers/usb/net/kaweth.c        |    2 +-
- fs/minix/bitmap.c               |   10 +++++-----
- fs/minix/inode.c                |   26 +++++++++++++-------------
- fs/minix/itree_v1.c             |    9 +++++++--
- fs/minix/itree_v2.c             |    9 +++++++--
- fs/namei.c                      |    4 ++--
- include/asm-alpha/dma-mapping.h |   14 ++++++++------
- include/asm-alpha/io_trivial.h  |   12 ++++++++----
- include/linux/input.h           |    3 +++
- kernel/exit.c                   |    3 +--
- net/ipv4/devinet.c              |    2 +-
- net/ipv4/raw.c                  |    4 +++-
- net/ipv6/addrconf.c             |   11 ++++++++++-
- net/irda/af_irda.c              |    2 --
- net/key/af_key.c                |   14 ++++++++++++--
- 18 files changed, 96 insertions(+), 52 deletions(-)
-
+Index: linux-x86.q/arch/x86/mm/pat.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/mm/pat.c
++++ linux-x86.q/arch/x86/mm/pat.c
+@@ -174,7 +174,12 @@ int reserve_mattr(u64 start, u64 end, un
+ 					current->comm, current->pid,
+ 					start, end,
+ 					cattr_name(attr), cattr_name(ml->attr));
+-				err = -EBUSY;
++				/*
++				 * Force the already existing attribute:
++				 */
++				ma->attr = ml->attr;
++				if (*fattr)
++					*fatt = ml->attr;
+ 				break;
+ 			}
+ 		} else if (ml->start >= end) {
