@@ -1,171 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760556AbYAQWj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbYAQWjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760556AbYAQWj3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:39:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757881AbYAQWgh
+	id S1760598AbYAQWjt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:39:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759588AbYAQWgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:36:37 -0500
-Received: from mail-dub.bigfish.com ([213.199.154.10]:24992 "EHLO
-	mail110-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760079AbYAQWge (ORCPT
+	Thu, 17 Jan 2008 17:36:39 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:36236 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757406AbYAQWgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 17:36:34 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
-X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
-Date: Thu, 17 Jan 2008 15:36:44 -0700
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-To: "Arnd Hannemann" <hannemann@i4.informatik.rwth-aachen.de>
-cc: "Andres Salomon" <dilinger@queued.net>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
-Message-ID: <20080117223644.GK8244@cosmic.amd.com>
-References: <478E4267.7020509@i4.informatik.rwth-aachen.de>
- <20080116161912.7b449466@ephemeral> <20080116165606.3ebc06a4@ephemeral>
- <478F25D6.3060503@i4.informatik.rwth-aachen.de>
- <20080117134032.4cc1a1cf@ephemeral>
- <478FB255.5040001@i4.informatik.rwth-aachen.de>
- <20080117211917.GF8244@cosmic.amd.com>
- <478FCDB6.4010708@i4.informatik.rwth-aachen.de>
-MIME-Version: 1.0
-In-Reply-To: <478FCDB6.4010708@i4.informatik.rwth-aachen.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 17 Jan 2008 22:36:14.0567 (UTC)
- FILETIME=[5E184770:01C85959]
-X-WSS-ID: 6B9107D40QK8077816-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jan 2008 17:36:36 -0500
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: ocfs2-devel@oss.oracle.com, Mark Fasheh <mark.fasheh@oracle.com>
+Subject: [PATCH 16/30] ocfs2: Support commit= mount option
+Date: Thu, 17 Jan 2008 14:35:42 -0800
+Message-Id: <1200609356-17788-17-git-send-email-mark.fasheh@oracle.com>
+X-Mailer: git-send-email 1.5.3.4
+In-Reply-To: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
+References: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/01/08 22:50 +0100, Arnd Hannemann wrote:
-> Jordan Crouse schrieb:
-> > On 17/01/08 20:53 +0100, Arnd Hannemann wrote:
-> >> Andres Salomon schrieb:
-> >>> On Thu, 17 Jan 2008 10:54:30 +0100
-> >>> Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
-> >>>
-> >>>> Andres Salomon schrieb:
-> >>>>> On Wed, 16 Jan 2008 16:19:12 -0500
-> >>>>> Andres Salomon <dilinger@queued.net> wrote:
-> >>>>>
-> >>>>>> On Wed, 16 Jan 2008 18:44:07 +0100
-> >>>>>> Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
-> >>>>>>
-> >>>>>>> Hi,
-> >>>>>>>
-> >>>>>>> I'm trying to boot 2.6.24-rc8 on a GEODE LX board (ALIX.3),
-> >>>>>>> and it hangs during boot:
-> >>>>>>>
-> >>>>>>> [   12.689971] NET: Registered protocol family 16
-> >>>>>>> [   12.703329] geode-mfgpt:  Registered timer 0
-> >>>>>>> [   12.716149] mfgpt-timer:  registering the MFGT timer as a clock event...
-> >>>>>>>
-> >>>>>> What BIOS are you using?  It's possible that our detection code is
-> >>>>>> failing to detect in-use timers.
-> >>>> I'm using v0.99 (latest available).
-> >>>
-> >>> v0.99 of what?  Jordan seems to think it's an Award BIOS, but I'd like
-> >>> to make sure.
-> >> Its an ALIX board from PCEngines, they have their own BIOS
-> >> implementation (tinyBios).
-> >> http://www.pcengines.ch/alix.htm
-> >>
-> >>>> Also note when I do enable the mysterios "MFGPT workaround" option in
-> >>>> the bios the machine hangs directly after:
-> >>>> [   36.780990] NET: Registered protocol family 16
-> >>>
-> >>> "MFGPT workaround"?  That sounds a bit frightening.
-> >>>
-> >>> Presumably, the BIOS is using the MFGPTs, but we're not detecting them as
-> >>> being in use.
-> >> Yes I think so too, for the fun of it I compiled a 2.6.16.29 kernel with
-> >> the attached patch from fi4l.
-> > 
-> > Okay - thats an MFPGT patch from pre-OLPC days. I am the guilty and
-> > dubious party.  We changed the API to work better with the timer tick,
-> > and thats the version that ended up in the kernel.
-> > 
-> > I really wish I could take back this patch, because it keeps coming back
-> > to torment me.  We must, as a people, put it behind us and forgot it. :)
-> > 
-> >> relevant output is this:
-> >> [   31.015425] geode-mfgpt:  7 timers available.
-> >> ...
-> >> [   31.245875] geode-mfgpt:  Registered timer 0
-> > 
-> >> So the above kernel detects only 7 timers not 8, and it works. But note
-> >> that timer 0 is not used as a clock event source but as a watchdog,
-> >> which btw actually works fine :-)
-> > 
-> > It detects 7 timers because of a bug in the code -  there really are 8 
-> > timers, which the current code correctly identifies.
-> Yes I can confirm this, changed MFGPT_MAX_TIMERS from 7 to 8 in the old
-> kernel and it still works.
-> 
-> >> The funny thing is the #define workaround part of this dubious patch and
-> >> its interaction with the bios:
-> >>
-> >> #ifdef WORKAROUND:
-> >>  I have to turn the "MFPGT workaround" option in the bios ON, to boot
-> >> the kernel probably.
-> >>
-> >> #ifndef WORKAROUND:
-> >>  I have to turn the "MFPGT workaround" option in the bios OFF, to boot
-> >> the kernel probably.
-> > 
-> > So the workaround works around the workaround.   Fun.  I think that Mitch
-> > Bradley verified that if you write the magic MSR when all the clocks are
-> > already clear that bad things happen.  The workaround probably adds a 
-> > dummy clock in.  Notice that the "magic MSR" no longer is in the vanilla
-> > code, and thats the way it should be.  If the BIOS doesn't allow use of
-> > the clocks, then we have to live with that.
-> > 
-> > So, based on everything you are saying, I think its clear that our
-> > problem isn't in the MFGPT, but rather in the timer tick (because, as
-> > you said, the watchdog works).  We try to use IRQ 7 for the tick, which
-> > Andres and I totally plucked out of thin air based on what we had to work
-> > with on OLPC.  Its totally possible that the TinyBIOS had other ideas.
-> > Please try to boot with nomfgpt, and see which interrupts are free, and
-> > use mfgpt_irq= to change it to something else if 7 is in use.  Based on
-> > your findings above, you'll probably need to leave the MFGPT workaround
-> > off from now on.
-> Great analysis! I think I can confirm this too. I tried the following:
-> 
-> First in mfgpt_timer_setup I commented out "clockevents_register_device"
-> result: the system still hangs with "registering the MFGT timer as a
-> clock event" !
-> 
-> Then I also commented out "ret = setup_irq(irq, &mfgptirq)".
-> result: system boots, voila!
+Mostly taken from ext3. This allows the user to set the jbd commit interval,
+in seconds. The default of 5 seconds stays the same, but now users can
+easily increase the commit interval. Typically, this would be increased in
+order to benefit performance at the expense of data-safety.
 
-Hmmm - not sure whats happening here.  I wonder if we're stuck in an
-interrupt storm of some sort as soon as you register the interrupt handler.
-But I would think that whatever was causing the interrupt storm would be
-running well before we hit setup_irq(), and you would be recording "nobody
-cared" interrupts left and right.
+Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
+---
+ Documentation/filesystems/ocfs2.txt |   11 +++++++++++
+ fs/ocfs2/journal.c                  |    8 ++++++--
+ fs/ocfs2/ocfs2.h                    |    1 +
+ fs/ocfs2/super.c                    |   23 +++++++++++++++++++++++
+ 4 files changed, 41 insertions(+), 2 deletions(-)
 
-The thing that scares me is that the TinyBIOS seems to know that we want
-to use the MFGPT timers, and I wonder if they did anything behind the scenes
-to "help us out" even though we didn't ask for it.
-
-I don't know how easy it would be for you - but can you try reading 
-MSRs 0x51400020 - 0x51400023?   If you need a command line app to do it,
-you can use rdmsr from here:
-
-http://wiki.laptop.org/go/Flashing_LinuxBIOS_on_A-Test_Boards
-
-> Watchdog for the new API would be great :-)
-
-Coming soon.
-
-Jordan
+diff --git a/Documentation/filesystems/ocfs2.txt b/Documentation/filesystems/ocfs2.txt
+index e78abdc..b63bd2d 100644
+--- a/Documentation/filesystems/ocfs2.txt
++++ b/Documentation/filesystems/ocfs2.txt
+@@ -61,3 +61,14 @@ data=writeback		Data ordering is not preserved, data may be written
+ preferred_slot=0(*)	During mount, try to use this filesystem slot first. If
+ 			it is in use by another node, the first empty one found
+ 			will be chosen. Invalid values will be ignored.
++commit=nrsec	(*)	Ocfs2 can be told to sync all its data and metadata
++			every 'nrsec' seconds. The default value is 5 seconds.
++			This means that if you lose your power, you will lose
++			as much as the latest 5 seconds of work (your
++			filesystem will not be damaged though, thanks to the
++			journaling).  This default value (or any low value)
++			will hurt performance, but it's good for data-safety.
++			Setting it to 0 will have the same effect as leaving
++			it at the default (5 seconds).
++			Setting it to very large values will improve
++			performance.
+diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
+index 4f440a8..8b9ce2a 100644
+--- a/fs/ocfs2/journal.c
++++ b/fs/ocfs2/journal.c
+@@ -313,14 +313,18 @@ int ocfs2_journal_dirty_data(handle_t *handle,
+ 	return err;
+ }
+ 
+-#define OCFS2_DEFAULT_COMMIT_INTERVAL 	(HZ * 5)
++#define OCFS2_DEFAULT_COMMIT_INTERVAL 	(HZ * JBD_DEFAULT_MAX_COMMIT_AGE)
+ 
+ void ocfs2_set_journal_params(struct ocfs2_super *osb)
+ {
+ 	journal_t *journal = osb->journal->j_journal;
++	unsigned long commit_interval = OCFS2_DEFAULT_COMMIT_INTERVAL;
++
++	if (osb->osb_commit_interval)
++		commit_interval = osb->osb_commit_interval;
+ 
+ 	spin_lock(&journal->j_state_lock);
+-	journal->j_commit_interval = OCFS2_DEFAULT_COMMIT_INTERVAL;
++	journal->j_commit_interval = commit_interval;
+ 	if (osb->s_mount_opt & OCFS2_MOUNT_BARRIER)
+ 		journal->j_flags |= JFS_BARRIER;
+ 	else
+diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
+index f8f8661..82802f5 100644
+--- a/fs/ocfs2/ocfs2.h
++++ b/fs/ocfs2/ocfs2.h
+@@ -229,6 +229,7 @@ struct ocfs2_super
+ 	wait_queue_head_t checkpoint_event;
+ 	atomic_t needs_checkpoint;
+ 	struct ocfs2_journal *journal;
++	unsigned long osb_commit_interval;
+ 
+ 	enum ocfs2_local_alloc_state local_alloc_state;
+ 	struct buffer_head *local_alloc_bh;
+diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+index 479ac50..8044ed9 100644
+--- a/fs/ocfs2/super.c
++++ b/fs/ocfs2/super.c
+@@ -83,6 +83,7 @@ MODULE_LICENSE("GPL");
+ 
+ struct mount_options
+ {
++	unsigned long	commit_interval;
+ 	unsigned long	mount_opt;
+ 	unsigned int	atime_quantum;
+ 	signed short	slot;
+@@ -149,6 +150,7 @@ enum {
+ 	Opt_data_writeback,
+ 	Opt_atime_quantum,
+ 	Opt_slot,
++	Opt_commit,
+ 	Opt_err,
+ };
+ 
+@@ -164,6 +166,7 @@ static match_table_t tokens = {
+ 	{Opt_data_writeback, "data=writeback"},
+ 	{Opt_atime_quantum, "atime_quantum=%u"},
+ 	{Opt_slot, "preferred_slot=%u"},
++	{Opt_commit, "commit=%u"},
+ 	{Opt_err, NULL}
+ };
+ 
+@@ -442,6 +445,8 @@ unlock_osb:
+ 		osb->s_mount_opt = parsed_options.mount_opt;
+ 		osb->s_atime_quantum = parsed_options.atime_quantum;
+ 		osb->preferred_slot = parsed_options.slot;
++		if (parsed_options.commit_interval)
++			osb->osb_commit_interval = parsed_options.commit_interval;
+ 
+ 		if (!ocfs2_is_hard_readonly(osb))
+ 			ocfs2_set_journal_params(osb);
+@@ -596,6 +601,7 @@ static int ocfs2_fill_super(struct super_block *sb, void *data, int silent)
+ 	osb->s_mount_opt = parsed_options.mount_opt;
+ 	osb->s_atime_quantum = parsed_options.atime_quantum;
+ 	osb->preferred_slot = parsed_options.slot;
++	osb->osb_commit_interval = parsed_options.commit_interval;
+ 
+ 	sb->s_magic = OCFS2_SUPER_MAGIC;
+ 
+@@ -746,6 +752,7 @@ static int ocfs2_parse_options(struct super_block *sb,
+ 	mlog_entry("remount: %d, options: \"%s\"\n", is_remount,
+ 		   options ? options : "(none)");
+ 
++	mopt->commit_interval = 0;
+ 	mopt->mount_opt = 0;
+ 	mopt->atime_quantum = OCFS2_DEFAULT_ATIME_QUANTUM;
+ 	mopt->slot = OCFS2_INVALID_SLOT;
+@@ -815,6 +822,18 @@ static int ocfs2_parse_options(struct super_block *sb,
+ 			if (option)
+ 				mopt->slot = (s16)option;
+ 			break;
++		case Opt_commit:
++			option = 0;
++			if (match_int(&args[0], &option)) {
++				status = 0;
++				goto bail;
++			}
++			if (option < 0)
++				return 0;
++			if (option == 0)
++				option = JBD_DEFAULT_MAX_COMMIT_AGE;
++			mopt->commit_interval = HZ * option;
++			break;
+ 		default:
+ 			mlog(ML_ERROR,
+ 			     "Unrecognized mount option \"%s\" "
+@@ -863,6 +882,10 @@ static int ocfs2_show_options(struct seq_file *s, struct vfsmount *mnt)
+ 	if (osb->s_atime_quantum != OCFS2_DEFAULT_ATIME_QUANTUM)
+ 		seq_printf(s, ",atime_quantum=%u", osb->s_atime_quantum);
+ 
++	if (osb->osb_commit_interval)
++		seq_printf(s, ",commit=%u",
++			   (unsigned) (osb->osb_commit_interval / HZ));
++
+ 	return 0;
+ }
+ 
 -- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
+1.5.3.6
 
