@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbYAQCDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbYAQCIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbYAQCDR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 21:03:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYAQCDD
+	id S1754122AbYAQCIU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 21:08:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYAQCII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 21:03:03 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:39283 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbYAQCDA (ORCPT
+	Wed, 16 Jan 2008 21:08:08 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:63473 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbYAQCIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 21:03:00 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=OMM8Xi1fD6U9YkjYTQKuhYbWXSAHsB2aP5R2wzr7vczKgFX+Og2sE1bKG5X+2YzCL
-	ypANtupsWtrw8O3y8mRcg==
-Message-ID: <4d47a5d10801161802x2c24ef59pf8422c8d14d487aa@mail.gmail.com>
-Date: Wed, 16 Jan 2008 21:02:50 -0500
-From: "Daniel Phillips" <phillips@google.com>
-To: "Bryan Henderson" <hbryan@us.ibm.com>
-Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental fsck)
-Cc: "Al Boldi" <a1426z@gawab.com>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "David Chinner" <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       "Pavel Machek" <pavel@ucw.cz>, "Rik van Riel" <riel@redhat.com>,
-       "Theodore Tso" <tytso@mit.edu>, "Valerie Henson" <val.henson@gmail.com>
-In-Reply-To: <OFDB679999.9793D1C7-ON882573D2.00646D05-882573D2.0068FF85@us.ibm.com>
+	Wed, 16 Jan 2008 21:08:07 -0500
+Date: Wed, 16 Jan 2008 21:07:36 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc7-rt2
+In-Reply-To: <200801151810.28279.m.kozlowski@tuxland.pl>
+Message-ID: <Pine.LNX.4.58.0801162106070.19540@gandalf.stny.rr.com>
+References: <1200336080.318.8.camel@localhost.localdomain>
+ <200801142316.39330.m.kozlowski@tuxland.pl> <Pine.LNX.4.58.0801141730150.3109@gandalf.stny.rr.com>
+ <200801151810.28279.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4d47a5d10801151724m418e18efp9a0dd936e9a3584c@mail.gmail.com>
-	 <OFDB679999.9793D1C7-ON882573D2.00646D05-882573D2.0068FF85@us.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 16, 2008 2:06 PM, Bryan Henderson <hbryan@us.ibm.com> wrote:
-> >The "disk motor as a generator" tale may not be purely folklore.  When
-> >an IDE drive is not in writeback mode, something special needs to done
-> >to ensure the last write to media is not a scribble.
+
+On Tue, 15 Jan 2008, Mariusz Kozlowski wrote:
+> Ok. It works.
 >
-> No it doesn't.  The last write _is_ a scribble.
+> I found this in dmesg:
+>
+> BUG: swapper:0 task might have lost a preemption check!
+> Pid: 0, comm: swapper Not tainted 2.6.24-rc7-rt2 #3
+>  [<c010386b>] show_trace_log_lvl+0x1d/0x3b
+>  [<c01042f3>] show_trace+0x12/0x14
+>  [<c0104a2f>] dump_stack+0x6a/0x70
+>  [<c0115419>] preempt_enable_no_resched+0x5c/0x5e
 
-Have you observed that in the wild?  A former engineer of a disk drive
-company suggests to me that the capacitors on the board provide enough
-power to complete the last sector, even to park the head.
+This is really really strange. cpu_idle calls __preempt_enable_no_resched
+and not preempt_enable_no_resched (notice the prefixed underscores).
+So I don't know how you got that output. Did you get any strance rejects
+in applying this patch?
 
-Regards,
+-- Steve
 
-Daniel
+
+>  [<c0100e35>] cpu_idle+0x6d/0x82
+>  [<c0323b6e>] rest_init+0x66/0x68
+>  [<c043aba6>] start_kernel+0x20c/0x276
+>  [<00000000>] 0x0
+>  =======================
+> ---------------------------
+> | preempt count: 00000000 ]
+> | 0-level deep critical section nesting:
+> ----------------------------------------
+>
+> Box runs fine though.
+>
+> Regards,
+>
+> 	Mariusz
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
