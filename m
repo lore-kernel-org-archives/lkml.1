@@ -1,156 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762791AbYAQWza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762590AbYAQWzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762791AbYAQWza (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761404AbYAQWvd
+	id S1762590AbYAQWzu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762053AbYAQWvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 17 Jan 2008 17:51:36 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51891 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761894AbYAQWvd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jan 2008 17:51:33 -0500
-Received: from slowhand.arndnet.de ([88.198.19.76]:54906 "EHLO mail.unitix.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761504AbYAQWvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 17:51:25 -0500
-Message-ID: <478FDC12.6020505@i4.informatik.rwth-aachen.de>
-Date: Thu, 17 Jan 2008 23:52:02 +0100
-From: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Jordan Crouse <jordan.crouse@amd.com>
-CC: Andres Salomon <dilinger@queued.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
-References: <478E4267.7020509@i4.informatik.rwth-aachen.de> <20080116161912.7b449466@ephemeral> <20080116165606.3ebc06a4@ephemeral> <478F25D6.3060503@i4.informatik.rwth-aachen.de> <20080117134032.4cc1a1cf@ephemeral> <478FB255.5040001@i4.informatik.rwth-aachen.de> <20080117211917.GF8244@cosmic.amd.com> <478FCDB6.4010708@i4.informatik.rwth-aachen.de> <20080117223644.GK8244@cosmic.amd.com>
-In-Reply-To: <20080117223644.GK8244@cosmic.amd.com>
-Content-Type: text/plain; charset=ISO-8859-15
+Date: Thu, 17 Jan 2008 14:51:05 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
+Message-Id: <20080117145105.ad968ea6.akpm@linux-foundation.org>
+In-Reply-To: <200801172315.28129.m.kozlowski@tuxland.pl>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<200801172315.28129.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jordan Crouse wrote:
-> On 17/01/08 22:50 +0100, Arnd Hannemann wrote:
->> Jordan Crouse schrieb:
->>> On 17/01/08 20:53 +0100, Arnd Hannemann wrote:
->>>> Andres Salomon schrieb:
->>>>> On Thu, 17 Jan 2008 10:54:30 +0100
->>>>> Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
->>>>>
->>>>>> Andres Salomon schrieb:
->>>>>>> On Wed, 16 Jan 2008 16:19:12 -0500
->>>>>>> Andres Salomon <dilinger@queued.net> wrote:
->>>>>>>
->>>>>>>> On Wed, 16 Jan 2008 18:44:07 +0100
->>>>>>>> Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
->>>>>>>>
->>>>>>>>> Hi,
->>>>>>>>>
->>>>>>>>> I'm trying to boot 2.6.24-rc8 on a GEODE LX board (ALIX.3),
->>>>>>>>> and it hangs during boot:
->>>>>>>>>
->>>>>>>>> [   12.689971] NET: Registered protocol family 16
->>>>>>>>> [   12.703329] geode-mfgpt:  Registered timer 0
->>>>>>>>> [   12.716149] mfgpt-timer:  registering the MFGT timer as a clock event...
->>>>>>>>>
->>>>>>>> What BIOS are you using?  It's possible that our detection code is
->>>>>>>> failing to detect in-use timers.
->>>>>> I'm using v0.99 (latest available).
->>>>> v0.99 of what?  Jordan seems to think it's an Award BIOS, but I'd like
->>>>> to make sure.
->>>> Its an ALIX board from PCEngines, they have their own BIOS
->>>> implementation (tinyBios).
->>>> http://www.pcengines.ch/alix.htm
->>>>
->>>>>> Also note when I do enable the mysterios "MFGPT workaround" option in
->>>>>> the bios the machine hangs directly after:
->>>>>> [   36.780990] NET: Registered protocol family 16
->>>>> "MFGPT workaround"?  That sounds a bit frightening.
->>>>>
->>>>> Presumably, the BIOS is using the MFGPTs, but we're not detecting them as
->>>>> being in use.
->>>> Yes I think so too, for the fun of it I compiled a 2.6.16.29 kernel with
->>>> the attached patch from fi4l.
->>> Okay - thats an MFPGT patch from pre-OLPC days. I am the guilty and
->>> dubious party.  We changed the API to work better with the timer tick,
->>> and thats the version that ended up in the kernel.
->>>
->>> I really wish I could take back this patch, because it keeps coming back
->>> to torment me.  We must, as a people, put it behind us and forgot it. :)
->>>
->>>> relevant output is this:
->>>> [   31.015425] geode-mfgpt:  7 timers available.
->>>> ...
->>>> [   31.245875] geode-mfgpt:  Registered timer 0
->>>> So the above kernel detects only 7 timers not 8, and it works. But note
->>>> that timer 0 is not used as a clock event source but as a watchdog,
->>>> which btw actually works fine :-)
->>> It detects 7 timers because of a bug in the code -  there really are 8 
->>> timers, which the current code correctly identifies.
->> Yes I can confirm this, changed MFGPT_MAX_TIMERS from 7 to 8 in the old
->> kernel and it still works.
->>
->>>> The funny thing is the #define workaround part of this dubious patch and
->>>> its interaction with the bios:
->>>>
->>>> #ifdef WORKAROUND:
->>>>  I have to turn the "MFPGT workaround" option in the bios ON, to boot
->>>> the kernel probably.
->>>>
->>>> #ifndef WORKAROUND:
->>>>  I have to turn the "MFPGT workaround" option in the bios OFF, to boot
->>>> the kernel probably.
->>> So the workaround works around the workaround.   Fun.  I think that Mitch
->>> Bradley verified that if you write the magic MSR when all the clocks are
->>> already clear that bad things happen.  The workaround probably adds a 
->>> dummy clock in.  Notice that the "magic MSR" no longer is in the vanilla
->>> code, and thats the way it should be.  If the BIOS doesn't allow use of
->>> the clocks, then we have to live with that.
->>>
->>> So, based on everything you are saying, I think its clear that our
->>> problem isn't in the MFGPT, but rather in the timer tick (because, as
->>> you said, the watchdog works).  We try to use IRQ 7 for the tick, which
->>> Andres and I totally plucked out of thin air based on what we had to work
->>> with on OLPC.  Its totally possible that the TinyBIOS had other ideas.
->>> Please try to boot with nomfgpt, and see which interrupts are free, and
->>> use mfgpt_irq= to change it to something else if 7 is in use.  Based on
->>> your findings above, you'll probably need to leave the MFGPT workaround
->>> off from now on.
->> Great analysis! I think I can confirm this too. I tried the following:
->>
->> First in mfgpt_timer_setup I commented out "clockevents_register_device"
->> result: the system still hangs with "registering the MFGT timer as a
->> clock event" !
->>
->> Then I also commented out "ret = setup_irq(irq, &mfgptirq)".
->> result: system boots, voila!
-> 
-> Hmmm - not sure whats happening here.  I wonder if we're stuck in an
-> interrupt storm of some sort as soon as you register the interrupt handler.
-> But I would think that whatever was causing the interrupt storm would be
-> running well before we hit setup_irq(), and you would be recording "nobody
-> cared" interrupts left and right.
+On Thu, 17 Jan 2008 23:15:27 +0100
+Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-Interesting thing is that it hangs not in setup_irq() but later, right
-after printing the newline of the printk.
+> Hello,
+> 
+>         The script below kills powerpc. oopses get longer and more
+> wonderful with every next 'cated' file.
 
-> The thing that scares me is that the TinyBIOS seems to know that we want
-> to use the MFGPT timers, and I wonder if they did anything behind the scenes
-> to "help us out" even though we didn't ask for it.
-> 
-> I don't know how easy it would be for you - but can you try reading 
-> MSRs 0x51400020 - 0x51400023?   If you need a command line app to do it,
-> you can use rdmsr from here:
-> 
-> http://wiki.laptop.org/go/Flashing_LinuxBIOS_on_A-Test_Boards
+ppc32.
 
-MSR register 0x51400020 => b7:ef:5f:f4:bf:d1:95:68
-MSR register 0x51400021 => b7:fd:1f:f4:bf:cf:5a:d8
-MSR register 0x51400022 => b7:f3:bf:f4:bf:f5:fb:a8
-MSR register 0x51400023 => b7:fb:9f:f4:bf:fd:d9:f8
+> /proc/<pid>/task/<pid>/pagemap seems to be the cause of oops. The
+> important thing is that it oopses for random (that is not first in a row)
+> process from /proc. So not every 'cat /proc/<pid>/task/<pid>/pagemap'
+> causes an oops.
+> 
+> I could try to bisect this but this powerpc box is iMac G3 (cpu at 400MHz)
+> and this will take time. So any hints appreciated.
+> 
+> Regards,
+> 
+> 	Mariusz
+> 
+> script:
+> ---------
+> #!/bin/bash
+> 
+> for i in `find /proc/*/ -readable -type f`; do
+>         echo -n "cat $i > /dev/null ... ";
+>         logger -t proc_loop $i;
+>         sync;
+>         cat $i > /dev/null;
+>         echo "done";
+> done
+> ----------
+> syslog:
+> proc_loop: /proc/3731/task/3731/pagemap
+> kernel: BUG: sleeping function called from invalid context at fs/proc/task_mmu.c:554
+> kernel: in_atomic():1, irqs_disabled():0
+> kernel: Call Trace:
+> kernel: [cf1cddf0] [c000840c] show_stack+0x3c/0x194 (unreliable)
+> kernel: [cf1cde20] [c002b2ec] __might_sleep+0xf4/0x108
+> kernel: [cf1cde30] [c00d2d54] add_to_pagemap+0x40/0x11c
+> kernel: [cf1cde50] [c00d2f44] pagemap_pte_range+0xa8/0x10c
+> kernel: [cf1cde70] [c0081b30] walk_page_range+0x148/0x23c
+> kernel: [cf1cdeb0] [c00d3104] pagemap_read+0x15c/0x244
+> kernel: [cf1cdef0] [c0092144] vfs_read+0xc4/0x16c
+> kernel: [cf1cdf10] [c009261c] sys_read+0x4c/0x90
+> kernel: [cf1cdf40] [c001328c] ret_from_syscall+0x0/0x40
 
-> 
->> Watchdog for the new API would be great :-)
-> 
-> Coming soon.
-> 
-> Jordan
+It's not really an oops - it's a warning.  add_to_pagemap() is doing a
+put_user() inside pagemap_pte_range->pte_offset_map->kmap_atomic.
 
-Arnd
+A known bug, I'm afraid.
+
+How to fix?
+
+- double-buffer the data to be copied to userspace or
+
+- take a local copy of the pte page then work on that instead or
+
+- play copy_to_user_inatomic() tricks.
+
+It would be really nice to get the maps4 stuff merged this time around but
+it is looking unlikely.
+
+> kernel: --- Exception: c01 at 0xff5a364
+> kernel:     LR = 0x10002f60
+> kernel: BUG: scheduling while atomic: cat/8929/0x00000002
+> kernel: Call Trace:
+> kernel: [cf1cde90] [c000840c] show_stack+0x3c/0x194 (unreliable)
+> kernel: [cf1cdec0] [c002db24] __schedule_bug+0x64/0x78
+> kernel: [cf1cdee0] [c027207c] schedule+0x304/0x32c
+> kernel: [cf1cdf40] [c0013a5c] recheck+0x0/0x28
+> kernel: --- Exception: c01 at 0xff5a364
+> kernel:     LR = 0x10002f60
+> kernel: BUG: scheduling while atomic: cat/8929/0x00000007
+> kernel: Call Trace:
+> kernel: [cf1cde90] [c000840c] show_stack+0x3c/0x194 (unreliable)
+> kernel: [cf1cdec0] [c002db24] __schedule_bug+0x64/0x78
+> kernel: [cf1cdee0] [c027207c] schedule+0x304/0x32c
+> kernel: [cf1cdf40] [c0013a5c] recheck+0x0/0x28
+> kernel: --- Exception: c01 at 0xff5a364
+> kernel:     LR = 0x10002f60
+> kernel: BUG: scheduling while atomic: cat/8929/0x00000009
+> kernel: Call Trace:
+> kernel: [cf1cde90] [c000840c] show_stack+0x3c/0x194 (unreliable)
+> kernel: [cf1cdec0] [c002db24] __schedule_bug+0x64/0x78
+> kernel: [cf1cdee0] [c027207c] schedule+0x304/0x32c
+> kernel: [cf1cdf40] [c0013a5c] recheck+0x0/0x28
+> kernel: --- Exception: c01 at 0xff5a364
+> kernel:     LR = 0x10002f60
+> kernel: Page fault in user mode with in_atomic() = 1 mm = cf2765a0
+> kernel: NIP = ff0cbc8  MSR = 4000f932
+> kernel: Oops: Weird page fault, sig: 11 [#3]
+
+hm.  Not sure how that happened.  The arch code thinks we're running in
+user mode.
+
+> kernel: PREEMPT PowerMac
+> kernel: Modules linked in: usbhid ide_cd_mod ohci_hcd usbcore uninorth_agp agpgart
+> kernel: NIP: 0ff0cbc8 LR: 0ff0d398 CTR: 0ff0d2d0
+> kernel: REGS: cf1cdf50 TRAP: 0401   Tainted: G      D  (2.6.24-rc8-mm1)
+> kernel: MSR: 4000f932 <EE,PR,FP,ME,IR,DR>  CR: 28022442  XER: 00000000
+> kernel: TASK = cf8d74f0[8929] 'cat' THREAD: cf1cc000
+> kernel: GPR00: 00000001 bf93e330 48029bf0 0ffed488 10016038 28022442 00000000 0ff5a364 
+> kernel: GPR08: 0000f932 00000000 00001032 00000000 28022442 
+> kernel: NIP [0ff0cbc8] 0xff0cbc8
+> kernel: LR [0ff0d398] 0xff0d398
+> proc_loop: /proc/3731/task/3731/wchan
+> kernel: Call Trace:
+> kernel: ---[ end trace 54bd1ed4883922c9 ]---
+> kernel: note: cat[8929] exited with preempt_count 10
+> proc_loop: /proc/3731/task/3731/oom_score
+> proc_loop: /proc/3731/task/3731/oom_adj
+> proc_loop: /proc/3731/fdinfo/0
+> [... snip ...]
