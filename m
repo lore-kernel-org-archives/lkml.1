@@ -1,52 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYAQD0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbYAQD1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbYAQD0v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 22:26:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYAQD0m
+	id S1755504AbYAQD1T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 22:27:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYAQD1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 22:26:42 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:45490 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbYAQD0l (ORCPT
+	Wed, 16 Jan 2008 22:27:06 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41100 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755356AbYAQD1E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 22:26:41 -0500
-Date: Wed, 16 Jan 2008 22:26:08 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Luotao Fu <l.fu@pengutronix.de>
-cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc7-rt2 [PATCH] latency tracer fix for ppc32
-In-Reply-To: <20080116120307.GI5859@pengutronix.de>
-Message-ID: <Pine.LNX.4.58.0801162223120.21116@gandalf.stny.rr.com>
-References: <1200336080.318.8.camel@localhost.localdomain>
- <20080115162729.GF5859@pengutronix.de> <Pine.LNX.4.58.0801151301550.26624@gandalf.stny.rr.com>
- <20080116120307.GI5859@pengutronix.de>
+	Wed, 16 Jan 2008 22:27:04 -0500
+Date: Thu, 17 Jan 2008 12:26:58 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: =?ISO-2022-JP?B?IkRhbmllbCBTcBskQmlPGyhCZyI=?= 
+	<daniel.spang@gmail.com>
+Subject: Re: [RFC][PATCH 4/5] memory_pressure_notify() caller
+Cc: kosaki.motohiro@jp.fujitsu.com, "Rik van Riel" <riel@redhat.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "Marcelo Tosatti" <marcelo@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <cfd9edbf0801160303s53237b81yb9d5e374c16cd006@mail.gmail.com>
+References: <20080116104536.11AE.KOSAKI.MOTOHIRO@jp.fujitsu.com> <cfd9edbf0801160303s53237b81yb9d5e374c16cd006@mail.gmail.com>
+Message-Id: <20080117120112.11CE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="ISO-2022-JP"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Daniel
+
+> > Thank you for good point out!
+> > Could you please post your test program and reproduced method?
+> 
+> Sure:
+> 
+> 1. Fill almost all available memory with page cache in a system without swap.
+> 2. Run attached alloc-test program.
+> 3. Notification fires when page cache is reclaimed.
+
+Unfortunately, I can't reproduce it.
+
+my machine
+	CPU:    Pentium4 2.8GHz with HT
+	memory: 512M
 
 
-On Wed, 16 Jan 2008, Luotao Fu wrote:
->
-> I found out that the tracer got stuck on ppc32 platforms because some early
-> functions call _mcount before mcount_enabled is initialized at all. I made a
-> patch, which marks these functions as notrace to solve this problem. With this
-> patch I can successfully boot up our mpc5200b platform and make latency trace.
-> (tested with -b switch in cyclictest). Please comment.
->
-> I made my patch against the -rt2 tree since the dummy call early_printk() in
-> -rt3 conflicts with our implementation of a functional early_printk(). It
-> should also work with -rt3 though.
->
+1. I doubt ZONE_DMA, please shipment ignore zone_dma patch(below).
+2. Could you please send your .config and /etc/sysctl.conf?
+   I hope more reproduce challenge.
 
-Thanks, applied.
+thanks.
 
-But for future reference, if you attach your patch please name it with the
-ending of .patch and not .diff. Also do it at a -p1 level and not -p0.
+- kosaki
 
--- Steve
+
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+---
+ include/linux/mem_notify.h |    3 +++
+ mm/page_alloc.c            |    6 +++++-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.24-rc6-mm1-memnotify/include/linux/mem_notify.h
+===================================================================
+--- linux-2.6.24-rc6-mm1-memnotify.orig/include/linux/mem_notify.h
+ 2008-01-16 21:31:09.000000000 +0900
++++ linux-2.6.24-rc6-mm1-memnotify/include/linux/mem_notify.h
+2008-01-16 21:34:24.000000000 +0900
+@@ -22,6 +22,9 @@ static inline void memory_pressure_notif
+        unsigned long target;
+        unsigned long pages_high, pages_free, pages_reserve;
+
++       if (unlikely(zone->mem_notify_status == -1))
++               return;
++
+        if (pressure) {
+                target = atomic_long_read(&last_mem_notify) + MEM_NOTIFY_FREQ;
+                if (likely(time_before(jiffies, target)))
+Index: linux-2.6.24-rc6-mm1-memnotify/mm/page_alloc.c
+===================================================================
+--- linux-2.6.24-rc6-mm1-memnotify.orig/mm/page_alloc.c 2008-01-13
+19:50:27.000000000 +0900
++++ linux-2.6.24-rc6-mm1-memnotify/mm/page_alloc.c      2008-01-16
+21:41:58.000000000 +0900
+@@ -3467,7 +3467,11 @@ static void __meminit free_area_init_cor
+                zone->zone_pgdat = pgdat;
+
+                zone->prev_priority = DEF_PRIORITY;
+-               zone->mem_notify_status = 0;
++
++               if (zone->present_pages < (pgdat->node_present_pages / 10))
++                       zone->mem_notify_status = -1;
++               else
++                       zone->mem_notify_status = 0;
+
+                zone_pcp_init(zone);
+                INIT_LIST_HEAD(&zone->active_list);
+
+
 
