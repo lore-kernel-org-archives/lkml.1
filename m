@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYAQDYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYAQD0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbYAQDYV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 22:24:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYAQDYN
+	id S1754898AbYAQD0v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 22:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYAQD0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 22:24:13 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40985 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750991AbYAQDYM (ORCPT
+	Wed, 16 Jan 2008 22:26:42 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:45490 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751220AbYAQD0l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 22:24:12 -0500
-Date: Thu, 17 Jan 2008 12:23:16 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Paulo Marques <pmarques@grupopie.com>
-Subject: Re: [RFC] mmaped copy too slow?
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080116110200.11B4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <478CAB25.30300@grupopie.com> <20080116110200.11B4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20080117121231.11D4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 16 Jan 2008 22:26:41 -0500
+Date: Wed, 16 Jan 2008 22:26:08 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Luotao Fu <l.fu@pengutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc7-rt2 [PATCH] latency tracer fix for ppc32
+In-Reply-To: <20080116120307.GI5859@pengutronix.de>
+Message-ID: <Pine.LNX.4.58.0801162223120.21116@gandalf.stny.rr.com>
+References: <1200336080.318.8.camel@localhost.localdomain>
+ <20080115162729.GF5859@pengutronix.de> <Pine.LNX.4.58.0801151301550.26624@gandalf.stny.rr.com>
+ <20080116120307.GI5859@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-> > One thing you could also try is to pass MAP_POPULATE to mmap so that the 
-> > page tables are filled in at the time of the mmap, avoiding a lot of 
-> > page faults later.
-> > 
-> 
-> OK, I will test your idea and report about tomorrow.
-> but I don't think page fault is major performance impact.
-
-I got more interesting result :)
-MAP_POPULATE is harmful result at large copy.
 
 
-1G copy
-                             elapse(sec)
---------------------------------------------
-mmap                          71.54
-mmap + madvice                69.63
-mmap + populate              100.87
-mmap + populate + madvice    101.16
+On Wed, 16 Jan 2008, Luotao Fu wrote:
+>
+> I found out that the tracer got stuck on ppc32 platforms because some early
+> functions call _mcount before mcount_enabled is initialized at all. I made a
+> patch, which marks these functions as notrace to solve this problem. With this
+> patch I can successfully boot up our mpc5200b platform and make latency trace.
+> (tested with -b switch in cyclictest). Please comment.
+>
+> I made my patch against the -rt2 tree since the dummy call early_printk() in
+> -rt3 conflicts with our implementation of a functional early_printk(). It
+> should also work with -rt3 though.
+>
 
+Thanks, applied.
 
-more detail:
-time command output of mmap copy
-	0.50user 3.59system 1:11.54elapsed 5%CPU (0avgtext+0avgdata 0maxresident)k
-	2101192inputs+2097160outputs (32776major+491573minor)pagefaults 0swaps
+But for future reference, if you attach your patch please name it with the
+ending of .patch and not .diff. Also do it at a -p1 level and not -p0.
 
-time command output of mmap+populate copy
-	0.53user 5.13system 1:40.87elapsed 5%CPU (0avgtext+0avgdata 0maxresident)k
-	4200808inputs+2097160outputs (49164major+737340minor)pagefaults 0swaps
-
-
-input blocks increase about x2.
-in fact, mmap(MAP_POPULATE) read disk to memory and drop it just after,
-thus read again. 
-
-
-of cource, when copy file size is enough small, MAP_POPULATE is effective.
-
-
-100M copy
-                             elapse(sec)
---------------------------------------------
-mmap                          7.38
-mmap + madvice                7.29
-mmap + populate               7.13
-mmap + populate + madvice     6.65
-
-
-- kosaki
-
+-- Steve
 
