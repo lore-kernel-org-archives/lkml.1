@@ -1,174 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbYAQInX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbYAQIzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756235AbYAQInX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 03:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbYAQInK
+	id S1755668AbYAQIzx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 03:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbYAQIzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 03:43:10 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:38298 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754355AbYAQInI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 03:43:08 -0500
-Message-ID: <400559396.04956@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Thu, 17 Jan 2008 13:28:18 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mike Snitzer <snitzer@gmail.com>, Martin Knoblauch <spamtrap@knobisoft.de>,
-       Peter Zijlstra <peterz@infradead.org>, jplatte@naasa.net,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: [PATCH] writeback: speed up writeback of big dirty files
-References: <230154.6549.qm@web32604.mail.mud.yahoo.com> <170fa0d20801160827p73ae28d0u702120a4f9f48936@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <170fa0d20801160827p73ae28d0u702120a4f9f48936@mail.gmail.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.12-2006-07-14
-Message-Id: <E1JFNIY-0007R4-VO@localhost.localdomain>
+	Thu, 17 Jan 2008 03:55:43 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36807 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbYAQIzm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 03:55:42 -0500
+To: neilb@suse.de
+CC: jengelh@computergmbh.de, kzak@redhat.com, akpm@linux-foundation.org,
+       miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, util-linux-ng@vger.kernel.org,
+       linuxram@us.ibm.com, viro@ftp.linux.org.uk, hch@infradead.org,
+       a.p.zijlstra@chello.nl
+In-reply-to: <18318.41541.386224.301640@notabene.brown> (message from Neil
+	Brown on Thu, 17 Jan 2008 11:33:09 +1100)
+Subject: Re: [patch] VFS: extend /proc/mounts
+References: <E1JFGUp-00054z-KQ@pomaz-ex.szeredi.hu>
+	<20080116143051.ec488f3d.akpm@linux-foundation.org>
+	<20080116234339.GG26049@petra.dvoda.cz>
+	<Pine.LNX.4.64.0801170057520.31385@fbirervta.pbzchgretzou.qr> <18318.41541.386224.301640@notabene.brown>
+Message-Id: <E1JFQWv-00061b-QA@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 17 Jan 2008 09:55:21 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Jan 16, 2008 9:15 AM, Martin Knoblauch <spamtrap@knobisoft.de> wrote:
-> Fengguang's latest writeback patch applies cleanly, builds, boots on 2.6.24-rc8.
+> Hey, I just found /proc/X/mountstats.  How does this fit in to the big
+> picture?
 
-Linus, if possible, I'd suggest this patch be merged for 2.6.24.
+It seems to show some counters for NFS mounts, no other filesystem
+uses it.  Format looks rather less nice, than /proc/X/mounts (why do
+we need long english sentences under /proc?).
 
-It's a safer version of the reverted patch. It was tested on
-ext2/ext3/jfs/xfs/reiserfs and won't 100% iowait even without the
-other bug fixing patches.
-
-Fengguang
----
-
-writeback: speed up writeback of big dirty files
-
-After making dirty a 100M file, the normal behavior is to
-start the writeback for all data after 30s delays. But
-sometimes the following happens instead:
-
-	- after 30s:    ~4M
-	- after 5s:     ~4M
-	- after 5s:     all remaining 92M
-
-Some analyze shows that the internal io dispatch queues goes like this:
-
-		s_io            s_more_io
-		-------------------------
-	1)	100M,1K         0
-	2)	1K              96M
-	3)	0               96M
-1) initial state with a 100M file and a 1K file
-2) 4M written, nr_to_write <= 0, so write more
-3) 1K written, nr_to_write > 0, no more writes(BUG)
-nr_to_write > 0 in (3) fools the upper layer to think that data have all been
-written out. The big dirty file is actually still sitting in s_more_io. We
-cannot simply splice s_more_io back to s_io as soon as s_io becomes empty, and
-let the loop in generic_sync_sb_inodes() continue: this may starve newly
-expired inodes in s_dirty.  It is also not an option to draw inodes from both
-s_more_io and s_dirty, an let the loop go on: this might lead to live locks,
-and might also starve other superblocks in sync time(well kupdate may still
-starve some superblocks, that's another bug).
-We have to return when a full scan of s_io completes. So nr_to_write > 0 does
-not necessarily mean that "all data are written". This patch introduces a flag
-writeback_control.more_io to indicate that more io should be done. With it the
-big dirty file no longer has to wait for the next kupdate invocation 5s later.
-
-In sync_sb_inodes() we only set more_io on super_blocks we actually visited.
-This aviods the interaction between two pdflush deamons.
-
-Also in __sync_single_inode() we don't blindly keep requeuing the io if the
-filesystem cannot progress. Failing to do so may lead to 100% iowait.
-
-Tested-by: Mike Snitzer <snitzer@gmail.com>
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
----
- fs/fs-writeback.c         |   18 ++++++++++++++++--
- include/linux/writeback.h |    1 +
- mm/page-writeback.c       |    9 ++++++---
- 3 files changed, 23 insertions(+), 5 deletions(-)
-
---- linux.orig/fs/fs-writeback.c
-+++ linux/fs/fs-writeback.c
-@@ -284,7 +284,17 @@ __sync_single_inode(struct inode *inode,
- 				 * soon as the queue becomes uncongested.
- 				 */
- 				inode->i_state |= I_DIRTY_PAGES;
--				requeue_io(inode);
-+				if (wbc->nr_to_write <= 0) {
-+					/*
-+					 * slice used up: queue for next turn
-+					 */
-+					requeue_io(inode);
-+				} else {
-+					/*
-+					 * somehow blocked: retry later
-+					 */
-+					redirty_tail(inode);
-+				}
- 			} else {
- 				/*
- 				 * Otherwise fully redirty the inode so that
-@@ -479,8 +489,12 @@ sync_sb_inodes(struct super_block *sb, s
- 		iput(inode);
- 		cond_resched();
- 		spin_lock(&inode_lock);
--		if (wbc->nr_to_write <= 0)
-+		if (wbc->nr_to_write <= 0) {
-+			wbc->more_io = 1;
- 			break;
-+		}
-+		if (!list_empty(&sb->s_more_io))
-+			wbc->more_io = 1;
- 	}
- 	return;		/* Leave any unwritten inodes on s_io */
- }
---- linux.orig/include/linux/writeback.h
-+++ linux/include/linux/writeback.h
-@@ -62,6 +62,7 @@ struct writeback_control {
- 	unsigned for_reclaim:1;		/* Invoked from the page allocator */
- 	unsigned for_writepages:1;	/* This is a writepages() call */
- 	unsigned range_cyclic:1;	/* range_start is cyclic */
-+	unsigned more_io:1;		/* more io to be dispatched */
- };
- 
- /*
---- linux.orig/mm/page-writeback.c
-+++ linux/mm/page-writeback.c
-@@ -558,6 +558,7 @@ static void background_writeout(unsigned
- 			global_page_state(NR_UNSTABLE_NFS) < background_thresh
- 				&& min_pages <= 0)
- 			break;
-+		wbc.more_io = 0;
- 		wbc.encountered_congestion = 0;
- 		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
- 		wbc.pages_skipped = 0;
-@@ -565,8 +566,9 @@ static void background_writeout(unsigned
- 		min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
- 		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
- 			/* Wrote less than expected */
--			congestion_wait(WRITE, HZ/10);
--			if (!wbc.encountered_congestion)
-+			if (wbc.encountered_congestion || wbc.more_io)
-+				congestion_wait(WRITE, HZ/10);
-+			else
- 				break;
- 		}
- 	}
-@@ -631,11 +633,12 @@ static void wb_kupdate(unsigned long arg
- 			global_page_state(NR_UNSTABLE_NFS) +
- 			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
- 	while (nr_to_write > 0) {
-+		wbc.more_io = 0;
- 		wbc.encountered_congestion = 0;
- 		wbc.nr_to_write = MAX_WRITEBACK_PAGES;
- 		writeback_inodes(&wbc);
- 		if (wbc.nr_to_write > 0) {
--			if (wbc.encountered_congestion)
-+			if (wbc.encountered_congestion || wbc.more_io)
- 				congestion_wait(WRITE, HZ/10);
- 			else
- 				break;	/* All the old data is written */
-
+Miklos
