@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbYAQUgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbYAQUil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbYAQUgt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 15:36:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbYAQUgl
+	id S1756629AbYAQUil (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:38:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYAQUib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 15:36:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54711 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751887AbYAQUgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 15:36:41 -0500
-Date: Thu, 17 Jan 2008 21:36:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Herrmann3 <andreas.herrmann3@amd.com>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>, ak@muc.de,
-       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
-       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
-       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
-       jesse.barnes@intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
-Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
-	fixes
-Message-ID: <20080117203600.GB27778@elte.hu>
-References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com> <20080116203328.GA17869@linux-os.sc.intel.com> <20080117191211.GA12631@alberich.amd.com>
+	Thu, 17 Jan 2008 15:38:31 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:5510 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752473AbYAQUia (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 15:38:30 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: [Bug 9514] it87 probe failure in 2.6.24-rc -- what now?
+Date: Thu, 17 Jan 2008 13:38:57 -0700
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: bugme-daemon@bugzilla.kernel.org, "Shaohua Li" <shaohua.li@intel.com>,
+       "Mike Houston" <mikeserv@bmts.com>, "Adrian Bunk" <bunk@stusta.de>,
+       "Elvis Pranskevichus" <el@prans.net>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       "Adam Belay" <ambx1@neo.rr.com>, "Zhao Yakui" <yakui.zhao@intel.com>,
+       "Thomas Renninger" <trenn@suse.de>, lenb@kernel.org,
+       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080117191211.GA12631@alberich.amd.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200801171339.00887.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Where are we with this problem?
+(http://bugzilla.kernel.org/show_bug.cgi?id=9514)
 
-* Andreas Herrmann3 <andreas.herrmann3@amd.com> wrote:
+I think (correct me if I'm misremembering), we started reserving more
+motherboard resources, and then we started seeing conflicts between
+some of those resources and something it87 needs.
 
-> For the failed devices I get:
-> 
->   sata_sil 0000:00:12.0: version 2.3
->   ACPI: PCI Interrupt 0000:00:12.0[A] -> GSI 22 (level, low) -> IRQ 22
->   ioremap_nocache: addr c0403000, size 200
->   swapper:1 conflicting cache attribute c0403000-c0404000 uncached<->default
->   ACPI: PCI interrupt for device 0000:00:12.0 disabled
+We can't fix this by reserving fewer motherboard resources.  We
+really want to reserve *all* the motherboard resources to prevent
+conflicts.
 
-hm, is the problem that the two devices share the same physical page, 
-and thus get an overlapping area?
+We could fiddle with the PNP system driver to make it ignore
+resources that overlap other resources (http://lkml.org/lkml/2007/12/9/186).
+The system device has 0x290-0x29f and 0x290-0x294 ranges, and this
+patch ignores the second.  I'm reluctant to do this because it just
+seems like a hack in the system driver.  Also, Mike Houston found
+that Windows lists both, and I think we should do the same
+(http://lkml.org/lkml/2007/12/9/170).
 
-as an intermediate fix, how about following the attribute of the already 
-existing mapping, instead of rejecting the ioremap due to the conflict? 
-I.e. something like below?
+The second option I see is to use my patch
+(http://bugzilla.kernel.org/attachment.cgi?id=14267&action=view)
+to make it87 request only the ports it uses.
 
-	Ingo
+Jean rightly believes a platform device should reflect all the ports
+a chip decodes, and my patch goes the other direction.  But in an
+ACPI system, the BIOS has the responsibility of listing all the address
+space that is in use, so I don't think we really should *have* platform
+devices unless they come from ACPI.  Since we don't know how to get the
+it87 functionality the "correct" way (i.e., via some ACPI device),
+we have to kludge things a bit, and I think a reasonable start is to
+rely on ACPI to tell us what address space is in use and change the
+it87 driver to request only the ports it uses.
 
----
- arch/x86/mm/pat.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+Whatever we do, it'd be nice to have a fix in 2.6.24, and I think my
+patch is the least evil for now.
 
-Index: linux-x86.q/arch/x86/mm/pat.c
-===================================================================
---- linux-x86.q.orig/arch/x86/mm/pat.c
-+++ linux-x86.q/arch/x86/mm/pat.c
-@@ -174,7 +174,12 @@ int reserve_mattr(u64 start, u64 end, un
- 					current->comm, current->pid,
- 					start, end,
- 					cattr_name(attr), cattr_name(ml->attr));
--				err = -EBUSY;
-+				/*
-+				 * Force the already existing attribute:
-+				 */
-+				ma->attr = ml->attr;
-+				if (*fattr)
-+					*fatt = ml->attr;
- 				break;
- 			}
- 		} else if (ml->start >= end) {
+Possibly the situation could actually be improved slightly by removing
+the platform device stuff from it87 altogether, at least for ACPI
+systems, though I think this is a post-2.6.24 question.
+
+Jean, you own the it87 driver, so do you want to chime in?  Any other
+possibilities for a 2.6.24 fix?
