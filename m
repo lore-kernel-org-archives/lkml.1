@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYAQN0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbYAQNd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbYAQN0q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 08:26:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbYAQN0i
+	id S1753458AbYAQNd1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 08:33:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYAQNdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 08:26:38 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:50080 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750965AbYAQN0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 08:26:37 -0500
-Date: Thu, 17 Jan 2008 14:26:32 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: "Adolfo R. Brandes" <arbrandes@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: USB HID: Missing keys on Gyration Media Center Universal Remote
- Control
-In-Reply-To: <b4292e150712280848h36a5bbf5k76e121168e8bfd12@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0801171420400.15647@twin.jikos.cz>
-References: <b4292e150712280848h36a5bbf5k76e121168e8bfd12@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 Jan 2008 08:33:18 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:43976 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751238AbYAQNdR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 08:33:17 -0500
+To: salikhmetov@gmail.com
+CC: miklos@szeredi.hu, linux-mm@kvack.org, jakob@unthought.net,
+       linux-kernel@vger.kernel.org, valdis.kletnieks@vt.edu, riel@redhat.com,
+       ksm@42.dk, staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
+       hidave.darkstar@gmail.com, hch@infradead.org
+In-reply-to: <4df4ef0c0801170516k3f82dc69ieee836b5633378a@mail.gmail.com>
+	(salikhmetov@gmail.com)
+Subject: Re: [PATCH -v5 2/2] Updating ctime and mtime at syncing
+References: <12005314662518-git-send-email-salikhmetov@gmail.com>
+	 <1200531471556-git-send-email-salikhmetov@gmail.com>
+	 <E1JFSgG-0006G1-6V@pomaz-ex.szeredi.hu>
+	 <4df4ef0c0801170416s5581ae28h90d91578baa77738@mail.gmail.com>
+	 <E1JFU7r-0006PK-So@pomaz-ex.szeredi.hu> <4df4ef0c0801170516k3f82dc69ieee836b5633378a@mail.gmail.com>
+Message-Id: <E1JFUrm-0006XG-SB@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 17 Jan 2008 14:33:10 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Dec 2007, Adolfo R. Brandes wrote:
-
-> 1) The power button, which is actually a Sleep or Suspend button, when
-> pressed repeats endlessly.  One must disconnect the receiver for it to
-> stop.  I suspect this is because the key press event registers
-> correctly, but not the key release.
+> 2008/1/17, Miklos Szeredi <miklos@szeredi.hu>:
+> > > > 4. Recording the time was the file data changed
+> > > >
+> > > > Finally, I noticed yet another issue with the previous version of my patch.
+> > > > Specifically, the time stamps were set to the current time of the moment
+> > > > when syncing but not the write reference was being done. This led to the
+> > > > following adverse effect on my development system:
+> > > >
+> > > > 1) a text file A was updated by process B;
+> > > > 2) process B exits without calling any of the *sync() functions;
+> > > > 3) vi editor opens the file A;
+> > > > 4) file data synced, file times updated;
+> > > > 5) vi is confused by "thinking" that the file was changed after 3).
+> >
+> > Updating the time in remove_vma() would fix this, no?
 > 
-> 2) Four of the buttons ("TV", "SETUP MENU", "LAST", and "INPUT") are
-> not recognized and do not register any events.
-> * "SETUP MENU", "LAST", and "INPUT" keys do absolutely nothing.
+> We need to save modification time. Otherwise, updating time stamps
+> will be confusing the vi editor.
 
-Hi Adolfo,
+remove_vma() will be called when process B exits, so if the times are
+updated there, and the flag is cleared, the times won't be updated
+later.
 
-this is really weird, that the keys do not produce any debugging output at 
-all. Do you think you could use usbmon to see what data is coming from 
-they keyboard through USB bus? Details are explained at 
-Documentation/usb/usbmon.txt.
+> >
+> > > > All these changes to inode.c are unnecessary, I think.
+> > >
+> > > The first part is necessary to account for "remembering" the modification time.
+> > >
+> > > The second part is for handling block device files. I cannot see any other
+> > > sane way to update file times for them.
+> >
+> > Use file_update_time(), which will do the right thing.  It will in
+> > fact do the same thing as write(2) on the device, which is really what
+> > we want.
+> >
+> > Block devices being mapped for write through different device
+> > nodes..., well, I don't think we really need to handle such weird
+> > corner cases 100% acurately.
+> 
+> The file_update_time() cannot be used for implementing
+> the "auto-update" feature, because the sync() system call
+> doesn't "know" about the file which was memory-mapped.
 
-> * "TV" registers something, but apparently not enough for an event.
+I'm not sure this auto-updating is really needed (POSIX doesn't
+mandate it).
 
->From the debugging output, it seems that the HID report arrives, but all 
-bits are set to zero, which is also strange. Could you please also capture 
-usbmon output for this event? It could be that the HID report descriptor 
-of this device is wrong, and the report is in fact longer than two bytes.
+At least split it out into a separate patch, so it can be considered
+separately on it's own merit.
 
-> * "Power" correctly registers a Sleep event, but repeats endlessly.
+I think doing the same with the page-table reprotecting in MS_ASYNC is
+also a good idea.  That will leave us with
 
-The keyboard is buggy and doesn't handle "Power" as a button for which 
-EV_REP should be set. This will be trivial to fix by keyboard-specific 
-quirk, I will send it to you together with other changes, when we collect 
-any interesting information from usbmon.
+ 1) a base patch: update time just from fsync() and remove_vma()
+ 2) update time on sync(2) as well
+ 3) update time on MS_ASYNC as well
 
-Thanks for great and detailed bugreport,
+I'd happily ack the first one, which would solve the most serious
+issues, but have some reservations about the other two.
 
--- 
-Jiri Kosina
+Miklos
