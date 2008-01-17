@@ -1,48 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbYAQQU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYAQQVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756036AbYAQQU3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 11:20:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYAQQUU
+	id S1756210AbYAQQVP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 11:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYAQQU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 11:20:20 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:49780 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752590AbYAQQUT (ORCPT
+	Thu, 17 Jan 2008 11:20:59 -0500
+Received: from hs-out-0708.google.com ([64.233.178.245]:26922 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752611AbYAQQU6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 11:20:19 -0500
-Subject: Re: 2.6.24-rc8-rt1
-From: Daniel Walker <dwalker@mvista.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <478F2A46.5070506@grandegger.com>
-References: <1200544050.318.18.camel@localhost.localdomain>
-	 <478F2A46.5070506@grandegger.com>
-Content-Type: text/plain
-Date: Thu, 17 Jan 2008 08:17:12 -0800
-Message-Id: <1200586632.18731.141.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+	Thu, 17 Jan 2008 11:20:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GGtDbV97NuBfg4X8NlTRRM58BWQ04/bdzFAvIdP9qL0E/iPtovXvPnY2p3XqQgY3gvCjLRb2qsQDo9Z0QvVJLzC7ZxVqdTzd/VTa8Mb+wTZeSXzxbQGydKPrSlhtI5rPG84DTSECBXTPlwxho76i0ZBoydm3bdxT6JlXbR3dHhw=
+Message-ID: <4df4ef0c0801170820i6af58e8u15e3c3b8e944c0c6@mail.gmail.com>
+Date: Thu, 17 Jan 2008 19:20:53 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: [PATCH -v5 2/2] Updating ctime and mtime at syncing
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
+       hidave.darkstar@gmail.com, hch@infradead.org
+In-Reply-To: <E1JFWvy-0006kJ-I2@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12005314662518-git-send-email-salikhmetov@gmail.com>
+	 <1200531471556-git-send-email-salikhmetov@gmail.com>
+	 <E1JFSgG-0006G1-6V@pomaz-ex.szeredi.hu>
+	 <4df4ef0c0801170416s5581ae28h90d91578baa77738@mail.gmail.com>
+	 <E1JFU7r-0006PK-So@pomaz-ex.szeredi.hu>
+	 <4df4ef0c0801170516k3f82dc69ieee836b5633378a@mail.gmail.com>
+	 <E1JFUrm-0006XG-SB@pomaz-ex.szeredi.hu>
+	 <4df4ef0c0801170540p36d3c566w973251527fc3bca1@mail.gmail.com>
+	 <E1JFWvy-0006kJ-I2@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/1/17, Miklos Szeredi <miklos@szeredi.hu>:
+> > > I'm not sure this auto-updating is really needed (POSIX doesn't
+> > > mandate it).
+> >
+> > Peter Shtaubach, author of the first solution for this bug,
+> > and Jacob Ostergaard, the reporter of this bug, insist the "auto-update"
+> > feature to be implemented.
+>
+> Can they state their reasons for the insistence?
+>
+> >  1) a base patch: update time just from fsync() and remove_vma()
+> >  2) update time on sync(2) as well
+> >  3) update time on MS_ASYNC as well
+>
+> Oh, and the four-liner I posted the other day will give you 1) + 2) +
+> even more at a small fraction of the complexity.  And tacking on the
+> reprotect code will solve the MS_ASYNC issue just the same.
+>
+> I agree, that having the timestamp updated on sync() is nice, and that
+> trivial patch will give you that, and will also update the timestamp
+> at least each 30 seconds if the file is being constantly modified,
+> even if no explicit syncing is done.
+>
+> So maybe it's worth a little effort benchmarking how much that patch
+> affects the cost of writing to a page.
+>
+> You could write a little test program like this (if somebody hasn't
+> yet done so):
+>
+>  - do some preparation:
+>
+>    echo 80 > dirty_ratio
+>    echo 80 > dirty_background_ratio
+>    echo 30000 > dirty_expire_centisecs
+>    sync
+>
+>  - map a large file, one that fits comfortably into free memory
+>  - bring the whole file in, by reading a byte from each page
+>  - start the timer
+>  - write a byte to each page
+>  - stop the timer
+>
+> It would be most interesting to try this on a filesystem supporting
+> nanosecond timestamps.  Anyone know which these are?
 
-On Thu, 2008-01-17 at 11:13 +0100, Wolfgang Grandegger wrote:
-> Steven Rostedt wrote:
-> > We are pleased to announce the 2.6.24-rc8-rt1 tree, which can be
-> > downloaded from the location:
-> > 
-> >   http://rt.et.redhat.com/download/
-> 
-> It builds and runs fine on my Icecube-MPC5200 board, now also with the
-> latency tracer enabled. That's great. Still, "cyclictest -n -p80 -i1000"
-> reports latencies up to 400 us and therefore I tried to trigger and save
-> a high latency trace using:
+The do_wp_page() function is called in mm/memory.c after locking PTE.
+And the file_update_time() routine calls the filesystem operation that can
+sleep. It's not accepted, I guess.
 
-Do you happen to have a boot log (dmesg) for this system?
-
-Daniel
-
+>
+> Miklos
+> ----
+>
+> Index: linux/mm/memory.c
+> ===================================================================
+> --- linux.orig/mm/memory.c      2008-01-09 21:16:30.000000000 +0100
+> +++ linux/mm/memory.c   2008-01-15 21:16:14.000000000 +0100
+> @@ -1680,6 +1680,8 @@ gotten:
+>  unlock:
+>         pte_unmap_unlock(page_table, ptl);
+>         if (dirty_page) {
+> +               if (vma->vm_file)
+> +                       file_update_time(vma->vm_file);
+>                 /*
+>                  * Yes, Virginia, this is actually required to prevent a race
+>                  * with clear_page_dirty_for_io() from clearing the page dirty
+> @@ -2313,6 +2315,8 @@ out_unlocked:
+>         if (anon)
+>                 page_cache_release(vmf.page);
+>         else if (dirty_page) {
+> +               if (vma->vm_file)
+> +                       file_update_time(vma->vm_file);
+>                 set_page_dirty_balance(dirty_page, page_mkwrite);
+>                 put_page(dirty_page);
+>         }
+>
+>
+>
