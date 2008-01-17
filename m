@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbYAQRuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbYAQRvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753582AbYAQRuS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 12:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYAQRuF
+	id S1754759AbYAQRvd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 12:51:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYAQRvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 12:50:05 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39144 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751246AbYAQRuD (ORCPT
+	Thu, 17 Jan 2008 12:51:24 -0500
+Received: from web32604.mail.mud.yahoo.com ([68.142.207.231]:42586 "HELO
+	web32604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751569AbYAQRvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 12:50:03 -0500
-Date: Thu, 17 Jan 2008 09:46:59 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Paul Mackerras <paulus@samba.org>, john stultz <johnstul@us.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Daniel Walker <dwalker@mvista.com>
-Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
-In-Reply-To: <20080117041443.GA9513@Krystal>
-Message-ID: <alpine.LFD.1.00.0801170945120.14959@woody.linux-foundation.org>
-References: <20080116031730.GA2164@Krystal> <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com> <20080116145604.GB31329@Krystal> <1f1b08da0801161436k4a7ac1e3kd83590951e7bebb9@mail.gmail.com> <1200523867.6127.5.camel@localhost.localdomain>
- <Pine.LNX.4.58.0801161827450.17781@gandalf.stny.rr.com> <1200536889.6127.52.camel@localhost.localdomain> <20080117024000.GD2322@Krystal> <20080117025004.GE2322@Krystal> <18318.51622.37470.246611@cargo.ozlabs.ibm.com> <20080117041443.GA9513@Krystal>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 17 Jan 2008 12:51:23 -0500
+X-YMail-OSG: OAvcvCMVM1l6ET7xN5kw9q88.MoXk.1322Tj0eM8xTs1qNgR
+X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
+Date: Thu, 17 Jan 2008 09:51:22 -0800 (PST)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Peter Zijlstra <peterz@infradead.org>,
+       jplatte@naasa.net, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <998992.73288.qm@web32604.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 16 Jan 2008, Mathieu Desnoyers wrote:
+----- Original Message ----
+> From: Mike Snitzer <snitzer@gmail.com>
+> To: Martin Knoblauch <spamtrap@knobisoft.de>
+> Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>; Linus Torvalds <torvalds@linux-foundation.org>
+> Sent: Thursday, January 17, 2008 5:11:50 PM
+> Subject: Re: regression: 100% io-wait with 2.6.24-rcX
 > 
-> Or could we map a per-thread page that would contradict this
-> "definition" ?
+> 
+> I've backported Peter's perbdi patchset to 2.6.22.x.  I can share it
+> with anyone who might be interested.
+> 
+> As expected, it has yielded 2.6.24-rcX level scaling.  Given the test
+> result matrix you previously posted, 2.6.22.x+perbdi might give you
+> what you're looking for (sans improved writeback that 2.6.24 was
+> thought to be providing).  That is, much improved scaling with better
+> O_DIRECT and network throughput.  Just a thought...
+> 
+> Unfortunately, my priorities (and computing resources) have shifted
+> and I won't be able to thoroughly test Fengguang's new writeback patch
+> on 2.6.24-rc8... whereby missing out on providing
+> justification/testing to others on _some_ improved writeback being
+> included in 2.6.24 final.
+> 
+> Not to mention the window for writeback improvement is all but closed
+> considering the 2.6.24-rc8 announcement's 2.6.24 final release
+> timetable.
+> 
+Mike,
 
-Over my dead body.
+ thanks for the offer, but the improved throughput is my #1 priority nowadays.
+And while the better scaling for different targets is nothing to frown upon, the
+much better scaling when writing to the same target would have been the big
+winner for me.
 
-It's been done before. Many times. It's horrible, and means that you need 
-to flush the TLB on context switches between threads and cannot share the 
-same hw page tables across CPU's (since now different CPU's run different 
-threads).
+ Anyway, I located the "offending" commit. Lets see what the experts say.
 
-It generally makes threads pointless. You might as well implement them as 
-processes with shared mmap.
 
-		Linus
+Cheers
+Martin
+
+
+
