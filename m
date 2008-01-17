@@ -1,103 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYAQQeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751598AbYAQQhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755961AbYAQQeq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 11:34:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYAQQei
+	id S1751598AbYAQQhH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 11:37:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbYAQQg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 11:34:38 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:38917
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751263AbYAQQeh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 11:34:37 -0500
-X-Greylist: delayed 671 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jan 2008 11:34:37 EST
-Date: Thu, 17 Jan 2008 17:23:02 +0100
-From: Andrea Arcangeli <andrea@cpushare.com>
-To: Izik Eidus <izike@qumranet.com>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm-devel@lists.sourceforge.net,
-       Avi Kivity <avi@qumranet.com>, clameter@sgi.com,
-       daniel.blueman@quadrics.com, holt@sgi.com, steiner@sgi.com,
-       Andrew Morton <akpm@osdl.org>, Hugh Dickins <hugh@veritas.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, andrea@qumranet.com
-Subject: Re: [PATCH] mmu notifiers #v2
-Message-ID: <20080117162302.GI7170@v2.random>
-References: <20080113162418.GE8736@v2.random> <20080116124256.44033d48@bree.surriel.com> <478E4356.7030303@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <478E4356.7030303@qumranet.com>
+	Thu, 17 Jan 2008 11:36:56 -0500
+Received: from waste.org ([66.93.16.53]:49231 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751581AbYAQQgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 11:36:55 -0500
+Subject: Re: [PATCH] x86: fix unconditional arch/x86/kernel/pcspeaker.c
+	compiling
+From: Matt Mackall <mpm@selenic.com>
+To: Michael Opdenacker <michael-lists@free-electrons.com>
+Cc: linux-kernel@vger.kernel.org, Linux-tiny@selenic.com,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200801171643.49301.michael-lists@free-electrons.com>
+References: <200801171643.49301.michael-lists@free-electrons.com>
+Content-Type: text/plain
+Date: Thu, 17 Jan 2008 10:36:14 -0600
+Message-Id: <1200587774.5332.11.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 07:48:06PM +0200, Izik Eidus wrote:
-> Rik van Riel wrote:
->> On Sun, 13 Jan 2008 17:24:18 +0100
->> Andrea Arcangeli <andrea@qumranet.com> wrote:
->>
->>   
->>> In my basic initial patch I only track the tlb flushes which should be
->>> the minimum required to have a nice linux-VM controlled swapping
->>> behavior of the KVM gphysical memory.     
->>
->> I have a vaguely related question on KVM swapping.
->>
->> Do page accesses inside KVM guests get propagated to the host
->> OS, so Linux can choose a reasonable page for eviction, or is
->> the pageout of KVM guest pages essentially random?
 
-Right, selection of the guest OS pages to swap is partly random but
-wait: _only_ for the long-cached and hot spte entries. It's certainly
-not entirely random.
+On Thu, 2008-01-17 at 16:43 +0100, Michael Opdenacker wrote:
+> [PATCH] x86: fix unconditional arch/x86/kernel/pcspeaker.c compiling
+> 
+> Applies to 2.6.24-rc8-git1
+> 
+> This patch results from Linux Tiny's efforts to hunt for unnecessary
+> code added unconditionally with "obj-y +="
+> 
+> This patch make the compilation of arch/x86/kernel/pcspeaker.c
+> depend on PC speaker support. Before that, this file was always
+> compiled even if pc speaker support wasn't enabled.
+> 
+> I'm checking that CONFIG_INPUT_PCSPKR is not set to "m",
+> as arch/x86/kernel/pcspeaker.c shouldn't be compiled as a module:
+> - It defines no init and exit functions
+> - It defines an initcall which only makes sense at
+>   kernel boot time.
+> 
+> Results: if PC speaker support is disabled
+> - It reduces the uncompressed kernel size by 218 bytes!!! ;)
+> - It must also bring a tiny reduction in boot time
+>   but suppressing a useless initcall.
+> 
+> Your comments?
+> 
+> ---
+> Signed-off-by: Michael Opdenacker <michael@free-electrons.com>
+> 
+> diff -Naur linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32 linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32
+> --- linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32	2008-01-17 09:48:58.000000000 +0100
+> +++ linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32	2008-01-17 10:06:56.000000000 +0100
+> @@ -45,10 +45,13 @@
+>  
+>  obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
+>  obj-$(CONFIG_PARAVIRT)		+= paravirt_32.o
+> -obj-y				+= pcspeaker.o
+> -
+>  obj-$(CONFIG_SCx200)		+= scx200_32.o
+>  
+> +ifeq ($(CONFIG_INPUT_PCSPKR),y)
+> +	obj-y			+= pcspeaker.o
+> +endif
 
-As the shadow-cache is a bit dynamic, every new instantiated spte will
-refresh the PG_referenced bit in follow_page already (through minor
-faults). not-present fault of swapped non-present sptes, can trigger
-minor faults from swapcache too and they'll refresh young regular
-ptes.
+I'm not sure this does what you want. What if CONFIG_INPUT_PCSPKR = m?
 
-> right now when kvm remove pte from the shadow cache, it mark as access the 
-> page that this pte pointed to.
+You ought to cc: this to Ingo (added). I'm pretty sure these Makefiles
+have been unified in x86.git already.
 
-Yes: the referenced bit in the mmu-notifier invalidate case isn't
-useful because it's set right before freeing the page.
+-- 
+Mathematics is the supreme nostalgia of our time.
 
-> it was a good solution untill the mmut notifiers beacuse the pages were 
-> pinned and couldnt be swapped to disk
-
-It probably still makes sense for sptes removed because of other
-reasons (not mmu notifier invalidates).
-
-> so now it will have to do something more sophisticated or at least mark as 
-> access every page pointed by pte
-> that get insrted to the shadow cache....
-
-I think that should already be the case, see the mark_page_accessed in
-follow_page, isn't FOLL_TOUCH set, isn't it?
-
-The only thing we clearly miss is a logic that refreshes the
-PG_referenced bitflag for "hot" sptes that remains instantiated and
-cached for a long time. For regular linux ptes this is done by the cpu
-through the young bitflag. But note that not all architectures have
-the young bitflag support in hardware! So I suppose the swapping of
-the KVM task, is like the swapping any other task but on an alpha
-CPU. It works good enough in practice even if we clearly have room for
-further optimizations in this area (like there would be on archs w/o
-young bit updated in hardware too).
-
-To refresh the PG_referenced bit for long lived hot sptes, I think the
-easiest solution is to chain the sptes in a lru, and to start dropping
-them when memory pressure start. We could drop one spte every X pages
-collected by the VM. So the "age" time factor depends on the VM
-velocity and we totally avoid useless shadow page faults when there's
-no VM pressure. When VM pressure increases, the kvm non-present fault
-will then take care to refresh the PG_referenced bit. This should
-solve the aging-issue for long lived and hot sptes. This should
-improve the responsiveness of the guest OS during "initial" swap
-pressure (after the initial swap pressure, the working set finds
-itself in ram again). So it should avoid some swapout/swapin not
-required jitter during the initial swap. I see this mostly as a kvm
-internal optimization, not strictly related to the mmu notifiers
-though.
