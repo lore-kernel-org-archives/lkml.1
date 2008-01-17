@@ -1,80 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbYAQBR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYAQBka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbYAQBR5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 20:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYAQBRi
+	id S1753904AbYAQBka (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 20:40:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbYAQBkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 20:17:38 -0500
-Received: from wx-out-0506.google.com ([66.249.82.224]:39089 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753329AbYAQBRg (ORCPT
+	Wed, 16 Jan 2008 20:40:20 -0500
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:34318 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752348AbYAQBkS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 20:17:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=maxKZKaYhB9a2/2kysIEcBxAp8lNRi89XQxez2gxx5FckQkM6OHfYhPGo4HaeB4hWzJJVZ3Woew+AwW5DUi3JOm6uG+djHkFGBBVGW0IMppGpz6sA6ZrcSO2gcZ+p+YXmQYtBGlUDfRZjr9pl9Asreb5Qz4JpJKdkOXmIQnl3EQ=
-Message-ID: <a8e1da0801161717r4cdc1e9cn6a8ec1731c8f831b@mail.gmail.com>
-Date: Thu, 17 Jan 2008 09:17:35 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Jarek Poplawski" <jarkao2@gmail.com>
-Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct class
-Cc: "Greg KH" <gregkh@suse.de>, stefanr@s5r6.in-berlin.de, david-b@pacbell.net,
-       stern@rowland.harvard.edu, linux-kernel@vger.kernel.org
-In-Reply-To: <20080116083442.GA2307@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 16 Jan 2008 20:40:18 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HADZBjkdMROHU/2dsb2JhbACBWJARnE0
+Date: Wed, 16 Jan 2008 20:35:12 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Richard Purdie <rpurdie@rpsys.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: john stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>, Paul Mackerras <paulus@samba.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
+Message-ID: <20080117013511.GA30644@Krystal>
+References: <Pine.LNX.4.58.0801151658190.29090@gandalf.stny.rr.com> <20080115220824.GB22242@Krystal> <Pine.LNX.4.58.0801151717250.29090@gandalf.stny.rr.com> <20080116031730.GA2164@Krystal> <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com> <20080116145604.GB31329@Krystal> <1f1b08da0801161436k4a7ac1e3kd83590951e7bebb9@mail.gmail.com> <1200523867.6127.5.camel@localhost.localdomain> <20080116233927.GB23895@Krystal> <alpine.LFD.1.00.0801161649540.2806@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080112100515.GA2956@darkstar.te-china.tietoenator.com>
-	 <20080115091527.GB3186@darkstar.te-china.tietoenator.com>
-	 <20080115135604.GD1696@ff.dom.local>
-	 <a8e1da0801151703w52df227en42eae85e75d5017f@mail.gmail.com>
-	 <20080116083442.GA2307@ff.dom.local>
+In-Reply-To: <alpine.LFD.1.00.0801161649540.2806@woody.linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:21:13 up 74 days,  6:26,  5 users,  load average: 0.41, 0.70,
+	0.72
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 16, 2008 4:34 PM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> On Wed, Jan 16, 2008 at 09:03:03AM +0800, Dave Young wrote:
-> ...
-> > The lockdep warining was posted in the below thread, actually, I have
-> > built and run this patced kernel for several days, there's no more
-> > warnings.
-> > http://lkml.org/lkml/2008/1/3/2
->
-> Right... But, with something like this:
->
-> ... have_some_fun(... cls)
-> {
->         mutex_lock_nested(&cls->mutex, SINGLE_DEPTH_NESTING);
->         have_other_fun(cls);
->         mutex_unlock(&cls->mutex);
->
-> }
->
-> ... have_more_fun(...)
-> {
->         ...
->
->         mutex_init(&cls->mutex);
->
->         mutex_lock(&cls->mutex);
->         have_some_fun(cls);
->         mutex_unlock(&cls->mutex);
-> }
->
-> probably you wouldn't get any lockdep warning too...
+* Linus Torvalds (torvalds@linux-foundation.org) wrote:
+> 
+> 
+> On Wed, 16 Jan 2008, Mathieu Desnoyers wrote:
+> >
+> > > +	int num = !cs->base_num;
+> > > +	cycle_t offset = (now - cs->base[!num].cycle_base_last);
+> > 
+> > !0 is not necessarily 1.
+> 
+> Incorrect.
+> 
 
-Sorry for late reply.
-Actually, I don't know much about lockdep. Could you tell how to use
-it properly in this scenario?
+Hrm, *digging in my mailbox*, ah, here it is :
 
->
-> Of course, if we know all the locking is right such proper lockdep
-> annotating shouldn't matter too much. (And of course this could be
-> improved later.)
->
-> Regards,
-> Jarek P.
->
+http://listserv.shafik.org/pipermail/ltt-dev/2006-June/001548.html
+
+Richard Purdie reviewed my code back in 2006 and made this modification.
+Maybe will he have something to add.
+
+
+> !0 _is_ necessarily 1. It's how all C logical operators work. If you find 
+> a compiler that turns !x into anything but 0/1, you found a compiler for 
+> another language than C.
+> 
+> It's true that any non-zero value counts as "true", but the that does not 
+> mean that a logical operator can return any non-zero value for true. As a 
+> return value of the logical operations in C, true is *always* 1.
+> 
+> So !, ||, &&, when used as values, will *always* return either 0 or 1 (but 
+> when used as part of a conditional, the compiler will often optimize out 
+> unnecessary stuff, so the CPU may not actually ever see a 0/1 value, if 
+> the value itself was never used, only branched upon).
+> 
+> So doing "!cs->base_num" to turn 0->1 and 1->0 is perfectly fine.
+> 
+> That's not to say it's necessarily the *best* way.
+> 
+> If you *know* that you started with 0/1 in the first place, the best way 
+> to flip it tends to be to do (1-x) (or possibly (x^1)).
+> 
+> And if you can't guarantee that, !x is probably better than x ? 0 : 1, 
+> but you might also decide to use ((x+1)&1) for example.
+> 
+> And obviously, the compiler may sometimes surprise you, and if *it* also 
+> knows it's always 0/1 (for something like the source being a single-bit 
+> bitfield for example), it may end up doing something else than you coded 
+> that is equivalent. And the particular choice of operation the compiler 
+> chooses may well depend on the code _around_ that sequence.
+> 
+> (One reason to potentially prefer (1-x) over (x^1) is that it's often 
+> easier to combine a subtraction with other operations, while an xor seldom 
+> combines with anything around it)
+> 
+
+Ok, I'll adopt (1-x) then. Thanks!
+
+Mathieu
+
+> 		Linus
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
