@@ -1,287 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbYAQXd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbYAQXeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760233AbYAQXd1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 18:33:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbYAQXdR
+	id S1759998AbYAQXeX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 18:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbYAQXeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 18:33:17 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34786 "EHLO ogre.sisk.pl"
+	Thu, 17 Jan 2008 18:34:14 -0500
+Received: from mga02.intel.com ([134.134.136.20]:2606 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757349AbYAQXdQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 18:33:16 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.24-rc8-git1: Reported regressions from 2.6.23
-Date: Fri, 18 Jan 2008 00:35:41 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+	id S1754304AbYAQXeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 18:34:12 -0500
+X-ExtLoop1: 1
+Date: Thu, 17 Jan 2008 15:33:55 -0800
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Linux ACPI mailing list <linux-acpi@vger.kernel.org>,
+       Intel E/100 mailing list <e1000-devel@lists.sourceforge.net>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-mm1
+Message-ID: <20080117233355.GA13590@linux-os.sc.intel.com>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org> <20080117124622.GA18450@balbir.in.ibm.com> <20080117104021.25a8e562.akpm@linux-foundation.org> <924EFEDD5F540B4284297C4DC59F3DEE5E909A@orsmsx423.amr.corp.intel.com> <20080117114032.1f9f1df5.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801180035.42878.rjw@sisk.pl>
+In-Reply-To: <20080117114032.1f9f1df5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message contains a list of some regressions from 2.6.23 reported since
-2.6.24-rc1 was released, for which there are no fixes in the mainline I know
-of.  If any of them have been fixed already, please let me know.
+On Thu, Jan 17, 2008 at 11:40:32AM -0800, Andrew Morton wrote:
+> On Thu, 17 Jan 2008 11:22:19 -0800 "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
+> 
+> >  
+> > The problem is
+> > >> modprobe:2584 conflicting cache attribute 50000000-50001000
+> > >> uncached<->default
+> > 
+> > Some address range here is being mapped with conflicting types.
+> > Somewhere the range was mapped with default (write-back). Later
+> > pci_iomap() is mapping that region as uncacheable which is basically
+> > aliasing. PAT code detects the aliasing and fails the second uncacheable
+> > request which leads in the failure.
+> 
+> It sounds to me like you need considerably more runtime debugging and
+> reporting support in that code.  Ensure that it generates enough output
+> both during regular operation and during failures for you to be able to
+> diagnose things in a single iteration.
+> 
+> We can always take it out later.
+> 
+> 
 
-If you know of any other unresolved regressions from 2.6.23, please let me know
-either and I'll add them to the list.  Also, please let me know if any of the
-entries below are invalid.
+Patch below makes the interesting printks from PAT non DEBUG.
 
-Listed regressions statistics:
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-  Date          Total  Pending  Unresolved
-  ----------------------------------------
-  Today           157       25          12
-  2008-01-12      150       28          14
-  2008-01-05      139       28          15
-  2008-01-01      139       38          23
-  2007-12-21      118       21          13
-  2007-12-18      115       29          15
-  2007-12-12      106       31          17
-  2007-12-08       98       29          19
-  2007-12-01       85       29          18
-  2007-11-24       75       25          21
-  2007-11-19       68       26          21
-  2007-11-17       65       25          20
-
-
-Unresolved regressions
-----------------------
-
-Subject		: EHCI causes system to resume instantly from S4
-Submitter	: Maxim Levitsky <maximlevitsky@gmail.com>
-Date		: 2007-10-28 14:56
-References	: http://lkml.org/lkml/2007/10/27/66
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9258
-Handled-By	: "Rafael J. Wysocki" <rjw@sisk.pl>
-		  David Brownell <david-b@pacbell.net>
-		  Alan Stern <stern@rowland.harvard.edu>
-Workaround	: http://bugzilla.kernel.org/show_bug.cgi?id=9258#c30
-
-
-Subject		: SError: { DevExch } occuring and causing disruption
-Submitter	: Avuton Olrich <avuton@gmail.com>
-Date		: 2007-11-15 22:39
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9393
-Handled-By	: Tejun Heo <htejun@gmail.com>
-		  Mark Lord <mlord@pobox.com>
-
-
-Subject		: BUG: bad unlock balance detected!
-Submitter	: Krzysztof Oledzki <olel@ans.pl>
-Date		: 2007-12-11 03:17
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9542
-Handled-By	: Andrew Morton <akpm@linux-foundation.org>
-		  Herbert Xu <herbert@gondor.apana.org.au>
-
-
-Subject		: swapping in 2.6.24-rc5-git3
-Submitter	: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Date		: 2007-12-17 14:04
-References	: http://lkml.org/lkml/2007/12/17/98
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9592
-Handled-By	: Jan Kara <jack@suse.cz>
-
-
-Subject		: Problems on booting
-Submitter	: "werner" <werner@copaya.yi.org>
-Date		: 2007-12-22 14:29
-References	: http://lkml.org/lkml/2007/12/22/110
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9621
-
-
-Subject		: ACPI or radeon: spontaneous reboot regression
-Submitter	: Matt Mackall <mpm@selenic.com>
-Date		: 2007-12-22 16:09
-References	: http://lkml.org/lkml/2007/12/22/139
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9624
-Handled-By	: Len Brown <lenb@kernel.org>
-
-
-Subject		: lockdep warning with LTP dio test (v2.6.24-rc6-125-g5356f66)
-Submitter	: Erez Zadok <ezk@cs.sunysb.edu>
-Date		: 2007-12-24 18:02
-References	: http://lkml.org/lkml/2007/12/24/107
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9670
-
-
-Subject		: kexec buffer error
-Submitter	: Randy Dunlap <rdunlap@xenotime.net>
-Date		: 2008-01-04 22:54
-References	: http://lkml.org/lkml/2008/1/4/255
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9693
-
-
-Subject		: 2.6.24-rc7 -- WARNING: at kernel/lockdep.c:2662 check_flags()
-Submitter	: "Miles Lane" <miles.lane@gmail.com>
-Date		: 2008-01-07 04:34
-References	: http://lkml.org/lkml/2008/1/6/313
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9737
-Handled-By	: Ingo Molnar <mingo@elte.hu>
-
-
-Subject		: [BUG] 2.6.24-rc5: 'sysctl table check failed' when turning on printer
-Submitter	: Frans Pop <elendil@planet.nl>
-Date		: 2007-12-16 21:19
-References	: http://lkml.org/lkml/2007/12/16/121
-		  http://lkml.org/lkml/2008/1/6/228
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9749
-Handled-By	: "Eric W. Biederman" <ebiederm@xmission.com>
-
-
-Subject		: crash in kmem_cache_init
-Submitter	: Olaf Hering <olaf@aepfle.de>
-Date		: 2008-01-15 16:09
-References	: http://lkml.org/lkml/2008/1/15/180
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9755
-Handled-By	: Christoph Lameter <clameter@sgi.com>
-
-
-Subject		: sky2 patch in 2.6.24-rc7-git6 breaks POST - commit 84cd2dfb04d23a961c5f537baa243fa54d0987ac
-Submitter	: "Ioan Ionita" <opslynx@gmail.com>
-Date		: 2008-01-15 12:01
-References	: http://lkml.org/lkml/2008/1/15/98
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9756
-Handled-By	: Stephen Hemminger <stephen.hemminger@vyatta.com>
-
-
-Regressionn with patches
-------------------------
-
-Subject		: [2.6.24-rc6] pdflush still stuck in D state regression
-Submitter	: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-Date		: 2007-11-02 09:54
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9291
-Handled-By	: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=14219&action=view
-
-
-Subject		: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
-Submitter	: Roland Dreier <rdreier@cisco.com>
-Date		: 2007-11-08 14:55
-References	: http://lkml.org/lkml/2007/11/8/255
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9332
-Handled-By	: Takashi Iwai <tiwai@suse.de>
-		  Ingo Molnar <mingo@elte.hu>
-Patch		: http://lkml.org/lkml/2007/11/16/66
-
-
-Subject		: jiffies counter leaps in 2.6.24-rc3
-Submitter	: Stefano Brivio <stefano.brivio@polimi.it>
-Date		: 2007-11-29 08:36
-References	: http://lkml.org/lkml/2007/11/24/53
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9475
-Handled-By	: Ingo Molnar <mingo@elte.hu>
-Patch		: http://lkml.org/lkml/2007/12/7/132
-
-
-Subject		: 2.6.24-rc4 hwmon it87 probe fails
-Submitter	: Mike Houston <mikeserv@bmts.com>
-Date		: 2007-12-06 17:10
-References	: http://lkml.org/lkml/2007/12/4/466
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9514
-Handled-By	: Shaohua Li <shaohua.li@intel.com>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=14267&action=view
-
-
-Subject		: RTNL: assertion failed at net/ipv6/addrconf.c (2164)/RTNL: assertion failed at net/ipv4/devinet.c (1055)
-Submitter	: Krzysztof Oledzki <olel@ans.pl>
-Date		: 2007-12-11 03:20
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9543
-Handled-By	: Andrew Morton <akpm@linux-foundation.org>
-		  Herbert Xu <herbert@gondor.apana.org.au>
-		  Jay Vosburgh <fubar@us.ibm.com>
-Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=9543#c6
-
-
-Subject		: PATA_HPT37X embezzles two ports
-Submitter	: "Bjoern Olausson" <lkmlist@gmail.com>
-Date		: 2007-12-12 11:05
-References	: http://lkml.org/lkml/2007/12/12/161
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9551
-Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Patch		: http://lkml.org/lkml/2007/1/4/161
-
-
-Subject		: wake on lan fails with sky2 module
-Submitter	: cpo <supersud501@yahoo.de>
-Date		: 2008-01-09 13:05
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9721
-		  http://marc.info/?t=119992349300001&r=1&w=4
-Handled-By	: Stephen Hemminger <shemminger@linux-foundation.org>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=14455&action=view
-
-
-Subject		: psmouse.c: GlidePoint at isa0060/serio1/input0 lost sync at byte 1
-Submitter	: "Vegard Nossum" <vegard.nossum@gmail.com>
-Date		: 2007-11-14 21:26
-References	: http://lkml.org/lkml/2007/11/14/363
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9727
-Handled-By	: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Patch		: http://lkml.org/lkml/2008/1/16/151
-
-
-Subject		: regression: sysctl_check changes in 2.6.24 are O(n) resulting in slow creation of 10000 network interfaces
-Submitter	: Benjamin LaHaise <bcrl@kvack.org>
-Date		: 2008-01-06 23:03
-References	: http://lkml.org/lkml/2008/1/6/248
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9736
-Handled-By	: "Eric W. Biederman" <ebiederm@xmission.com>
-Patch		: http://lkml.org/lkml/2008/1/7/60
-
-
-Subject		: Oops on boot from laptop mode writing to /proc/acpi/processor/CPU0/throttling
-Submitter	: Simon Huggins <huggie@earth.li>
-Date		: 2008-01-14 11:19
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9747
-Handled-By	: Alexey Starikovskiy <astarikovskiy@suse.de>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=14456&action=view
-
-
-Subject		: fs/hfs/btree.c: new NULL dereference
-Submitter	: Adrian Bunk <bunk@kernel.org>
-Date		: 2008-01-14 13:17
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9748
-Handled-By	: Eric Sandeen <sandeen@redhat.com>
-Patch		: http://lkml.org/lkml/2008/1/14/365
-
-
-Subject		: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
-Submitter	: Frans Pop <elendil@planet.nl>
-Date		: 2008-01-15 06:25
-References	: http://lkml.org/lkml/2008/1/15/4
-		  http://bugzilla.kernel.org/show_bug.cgi?id=9757
-Handled-By	: David Miller <davem@davemloft.net>
-Patch		: http://lkml.org/lkml/2008/1/16/2
-
-
-Subject		: radeonfb and Xpress 200m 5955
-Submitter	: Alex <alevkovich@tut.by>
-Date		: 2008-01-16 01:33
-References	: http://bugzilla.kernel.org/show_bug.cgi?id=9762
-Handled-By	: Geert Uytterhoeven <geert@linux-m68k.org>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=14481&action=view
-
-
-For details, please follow the links given in references.
-
-As you can see, there is a Bugzilla entry for each of the listed regressions.
-There also is a Bugzilla entry used for tracking the regressions from 2.6.23,
-unresolved as well as resolved, at:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=9243
-
-Please let me know if there are any Bugzilla entries that should be added to
-the list in there.
-
-Thanks,
-Rafael
+Index: linux-2.6.git/arch/x86/mm/ioremap.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/mm/ioremap.c	2008-01-17 03:18:59.000000000 -0800
++++ linux-2.6.git/arch/x86/mm/ioremap.c	2008-01-17 08:11:51.000000000 -0800
+@@ -25,10 +25,13 @@
+  */
+ void __iomem *ioremap_wc(unsigned long phys_addr, unsigned long size)
+ {
+-	if (pat_wc_enabled)
++	if (pat_wc_enabled) {
++		printk(KERN_INFO "ioremap_wc: addr %lx, size %lx\n",
++		       phys_addr, size);
+ 		return __ioremap(phys_addr, size, _PAGE_WC);
+-	else
++	} else {
+ 		return ioremap_nocache(phys_addr, size);
++	}
+ }
+ EXPORT_SYMBOL(ioremap_wc);
+ 
+Index: linux-2.6.git/arch/x86/mm/ioremap_32.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/mm/ioremap_32.c	2008-01-17 03:18:59.000000000 -0800
++++ linux-2.6.git/arch/x86/mm/ioremap_32.c	2008-01-17 08:10:58.000000000 -0800
+@@ -164,6 +164,8 @@
+ 
+ void __iomem *ioremap_nocache (unsigned long phys_addr, unsigned long size)
+ {
++	printk(KERN_INFO "ioremap_nocache: addr %lx, size %lx\n",
++	       phys_addr, size);
+ 	return __ioremap(phys_addr, size, _PAGE_UC);
+ }
+ EXPORT_SYMBOL(ioremap_nocache);
+Index: linux-2.6.git/arch/x86/mm/ioremap_64.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/mm/ioremap_64.c	2008-01-17 03:18:59.000000000 -0800
++++ linux-2.6.git/arch/x86/mm/ioremap_64.c	2008-01-17 08:10:13.000000000 -0800
+@@ -144,7 +144,7 @@
+ 
+ void __iomem *ioremap_nocache (unsigned long phys_addr, unsigned long size)
+ {
+-	printk(KERN_DEBUG "ioremap_nocache: addr %lx, size %lx\n",
++	printk(KERN_INFO "ioremap_nocache: addr %lx, size %lx\n",
+ 	       phys_addr, size);
+ 	return __ioremap(phys_addr, size, _PAGE_UC);
+ }
+Index: linux-2.6.git/arch/x86/mm/pat.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/mm/pat.c	2008-01-17 03:18:59.000000000 -0800
++++ linux-2.6.git/arch/x86/mm/pat.c	2008-01-17 08:06:23.000000000 -0800
+@@ -170,7 +170,7 @@
+ 
+ 			if (!fattr && attr != ml->attr) {
+ 				printk(
+-	KERN_DEBUG "%s:%d conflicting cache attribute %Lx-%Lx %s<->%s\n",
++	KERN_WARNING "%s:%d conflicting cache attribute %Lx-%Lx %s<->%s\n",
+ 					current->comm, current->pid,
+ 					start, end,
+ 					cattr_name(attr), cattr_name(ml->attr));
+@@ -205,7 +205,7 @@
+ 	list_for_each_entry(ml, &mattr_list, nd) {
+ 		if (ml->start == start && ml->end == end) {
+ 			if (ml->attr != attr)
+-				printk(KERN_DEBUG
++				printk(KERN_WARNING
+ 	"%s:%d conflicting cache attributes on free %Lx-%Lx %s<->%s\n",
+ 			current->comm, current->pid, start, end,
+ 			cattr_name(attr), cattr_name(ml->attr));
+@@ -217,7 +217,7 @@
+ 	}
+ 	spin_unlock(&mattr_lock);
+ 	if (err)
+-		printk(KERN_DEBUG "%s:%d freeing invalid mattr %Lx-%Lx %s\n",
++		printk(KERN_WARNING "%s:%d freeing invalid mattr %Lx-%Lx %s\n",
+ 			current->comm, current->pid,
+ 			start, end, cattr_name(attr));
+ 	return err;
+Index: linux-2.6.git/include/asm-x86/io_32.h
+===================================================================
+--- linux-2.6.git.orig/include/asm-x86/io_32.h	2008-01-17 06:28:06.000000000 -0800
++++ linux-2.6.git/include/asm-x86/io_32.h	2008-01-17 08:09:30.000000000 -0800
+@@ -113,6 +113,8 @@
+ 
+ static inline void __iomem * ioremap(unsigned long offset, unsigned long size)
+ {
++	printk(KERN_INFO "ioremap: addr %lx, size %lx\n",
++	       offset, size);
+ 	return __ioremap(offset, size, 0);
+ }
+ 
+Index: linux-2.6.git/include/asm-x86/io_64.h
+===================================================================
+--- linux-2.6.git.orig/include/asm-x86/io_64.h	2008-01-17 08:08:23.000000000 -0800
++++ linux-2.6.git/include/asm-x86/io_64.h	2008-01-17 08:08:44.000000000 -0800
+@@ -154,7 +154,7 @@
+ 
+ static inline void __iomem * ioremap (unsigned long offset, unsigned long size)
+ {
+-	printk(KERN_DEBUG "ioremap: addr %lx, size %lx\n",
++	printk(KERN_INFO "ioremap: addr %lx, size %lx\n",
+ 	       offset, size);
+ 	return __ioremap(offset, size, 0);
+ }
