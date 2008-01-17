@@ -1,45 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbYAQXJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761621AbYAQXKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbYAQXJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 18:09:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbYAQXJs
+	id S1761621AbYAQXKe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 18:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbYAQXKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 18:09:48 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33574 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756936AbYAQXJr (ORCPT
+	Thu, 17 Jan 2008 18:10:18 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:7995 "EHLO
+	outbound7-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757826AbYAQXKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 18:09:47 -0500
-Date: Thu, 17 Jan 2008 22:58:18 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Theodore Tso <tytso@MIT.EDU>
-Cc: Daniel Phillips <phillips@google.com>, Bryan Henderson <hbryan@us.ibm.com>,
-       Al Boldi <a1426z@gawab.com>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Rik van Riel <riel@redhat.com>, Valerie Henson <val.henson@gmail.com>
-Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental
- fsck)
-Message-ID: <20080117225818.1ae3d4f9@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080117224530.GH5547@mit.edu>
-References: <4d47a5d10801151724m418e18efp9a0dd936e9a3584c@mail.gmail.com>
-	<OFDB679999.9793D1C7-ON882573D2.00646D05-882573D2.0068FF85@us.ibm.com>
-	<4d47a5d10801161802x2c24ef59pf8422c8d14d487aa@mail.gmail.com>
-	<20080117224530.GH5547@mit.edu>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Jan 2008 18:10:13 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
+Date: Fri, 18 Jan 2008 00:06:07 +0100
+From: "Andreas Herrmann3" <andreas.herrmann3@amd.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+cc: "Venki Pallipadi" <venkatesh.pallipadi@intel.com>, ak@muc.de,
+       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
+       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       jesse.barnes@intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
+Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
+ fixes
+Message-ID: <20080117230607.GI12631@alberich.amd.com>
+References: <20080116023955.597433000@intel.com>
+ <20080116185748.GA11244@alberich.amd.com>
+ <20080116203328.GA17869@linux-os.sc.intel.com>
+ <20080117191211.GA12631@alberich.amd.com>
+ <20080117203600.GB27778@elte.hu>
+ <20080117210301.GC12631@alberich.amd.com>
+ <20080117211308.GA7858@elte.hu>
+ <20080117214228.GD12631@alberich.amd.com>
+ <20080117222634.GG12631@alberich.amd.com>
+ <20080117223551.GA23543@elte.hu>
+MIME-Version: 1.0
+In-Reply-To: <20080117223551.GA23543@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 17 Jan 2008 23:05:51.0416 (UTC)
+ FILETIME=[812DEB80:01C8595D]
+X-WSS-ID: 6B9100D824S8211700-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 17, 2008 at 11:35:51PM +0100, Ingo Molnar wrote:
+> 
+> * Andreas Herrmann3 <andreas.herrmann3@amd.com> wrote:
+> 
+> > > I'll check this asap
+> > 
+> > So, now that I've avoided this tiny NULL-pointer-dereference, the 
+> > system boots fine as well with your (slightly modified) patch. See 
+> > dmesg attached.
+> 
+> for now i applied your ioremap_uncached() patch and removed my patch.
+> 
+> my patch might work if the MTRR marks that area UC. Does it on your 
+> system?
 
-> interrupt which caused the Irix to run around frantically shutting
-> down DMA's for a controlled shutdown.  Of course, PC-class hardware
-> has none of this.  My source for this was Jim Mostek, one of the
+The region (c0403000-c04031ff) is not characterized by an MTRR.
+The MTRRdefType specifies it and it is
 
-PC class hardware has a power good signal which drops just before the
-rest.
+  MTRRdefType          = 0x0000000000000c00
+    MemType=0
+    MtrrDefTypeFixEn=0x1
+    MtrrDefTypeEn=0x1
+
+=> 0==UC
+
+So, that's why it worked.
+
+
+Andreas
+
+
+
