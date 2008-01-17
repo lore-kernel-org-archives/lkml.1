@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYAQMY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYAQM0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359AbYAQMY4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 07:24:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbYAQMYs
+	id S1755503AbYAQM0n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 07:26:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbYAQM0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 07:24:48 -0500
-Received: from cavan.codon.org.uk ([78.32.9.130]:34254 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751238AbYAQMYq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 07:24:46 -0500
-Date: Thu, 17 Jan 2008 12:24:31 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       sujith.thomas@intel.com
-Message-ID: <20080117122431.GA32133@srcf.ucam.org>
-References: <1200556282.2935.122.camel@acpi-sony.sh.intel.com>
+	Thu, 17 Jan 2008 07:26:36 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:50104 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751253AbYAQM0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 07:26:35 -0500
+Date: Thu, 17 Jan 2008 12:26:33 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Denys Fedoryshchenko <denys@visp.net.lb>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: bugreport kernel panic on early stage, with HIGHMEM4G:
+Message-ID: <20080117122632.GA14011@csn.ul.ie>
+References: <20080107053908.M5584@visp.net.lb> <20080115113947.GA14603@elte.hu> <20080115131340.GA6237@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1200556282.2935.122.camel@acpi-sony.sh.intel.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH 6/10] ACPI: register ACPI Video LCD as generic thermal cooling device
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <20080115131340.GA6237@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 03:51:22PM +0800, Zhang Rui wrote:
-> From: Zhang Rui <rui.zhang@intel.com>
+On (15/01/08 14:13), Ingo Molnar didst pronounce:
 > 
-> Register ACPI video device as thermal cooling devices as they may be listed
-> in _TZD method and the backlight control can be used for throttling.
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > thanks for the detailed report, i think i know what's going on. Could 
+> > you try the patch below, does it fix your problem?
+> 
+> find below the fix with a more complete changelog and with no debugging 
+> printouts.
+> 
 
-I'm worried to some extent about how ungeneric this is. A thermal zone 
-may cover any devices, not just processor and video ones. Perhaps this 
-should be added to the acpi_device struct instead, and then let 
-individual drivers implement whatever callbacks are appropriate?
+Looks good and the right thing to do. If you check the equivilant code for
+DISCONTIG, it calls pfn_valid() searching for holes so it was expected.
 
-> +static int
-> +video_set_cur_state(struct thermal_cooling_device *cdev, unsigned int state)
-> +{
-> +	struct acpi_device *device = cdev->devdata;
-> +	struct acpi_video_device *video = acpi_driver_data(device);
-> +	int level;
-> +
-> +	if ( state >= video->brightness->count - 2)
-> +		return -EINVAL;
-> +
-> +	state = video->brightness->count - state;
-> +	level = video->brightness->levels[state -1];
-> +	return acpi_video_device_lcd_set_level(video, level);
-
-This all seems like duplication of the backlight interface?
-
-(Speaking of which - Len, what's happening with my patches to the video 
-driver? Some feedback would be nice)
+Acked-by: Mel Gorman <mel@csn.ul.ie>
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
