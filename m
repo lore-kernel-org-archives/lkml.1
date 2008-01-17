@@ -1,77 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbYAQW2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759116AbYAQW36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758805AbYAQW2d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:28:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbYAQW2Y
+	id S1759116AbYAQW36 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:29:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbYAQW3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:28:24 -0500
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:33927 "EHLO
-	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752519AbYAQW2X (ORCPT
+	Thu, 17 Jan 2008 17:29:48 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:1271 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752519AbYAQW3r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 17:28:23 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, auke-jan.h.kok@intel.com,
-       jesse.brandeburg@intel.com, jeffrey.t.kirsher@intel.com,
-       john.ronciak@intel.com, e1000-devel@lists.sourceforge.net,
-       venkatesh.pallipadi@intel.com, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] Net: e100, fix iomap mem accesses
-Date: Thu, 17 Jan 2008 23:28:20 +0100
-Message-Id: <1200608900-3507-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.3.7
+	Thu, 17 Jan 2008 17:29:47 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: <torvalds@linux-foundation.org>
+Cc: "Johannes Weiner" <hannes@saeurebad.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       <clameter@sgi.com>, <penberg@cs.helsinki.fi>
+Subject: RE: Why is the kfree() argument const?
+Date: Thu, 17 Jan 2008 14:28:43 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKKEHDJJAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-reply-to: <alpine.LFD.1.00.0801171316390.14959@woody.linux-foundation.org>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Thu, 17 Jan 2008 14:29:59 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Thu, 17 Jan 2008 14:29:59 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-readX functions are not permitted on iomap-ped space change to ioreadX,
-also pci_unmap pci_map-ped space on exit (instead of iounmap).
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/net/e100.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-index 51cf577..47548ef 100644
---- a/drivers/net/e100.c
-+++ b/drivers/net/e100.c
-@@ -1836,7 +1836,7 @@ static int e100_rx_indicate(struct nic *nic, struct rx *rx,
- 		if ((le16_to_cpu(rfd->command) & cb_el) &&
- 		    (RU_RUNNING == nic->ru_running))
- 
--			if (readb(&nic->csr->scb.status) & rus_no_res)
-+			if (ioread8(&nic->csr->scb.status) & rus_no_res)
- 				nic->ru_running = RU_SUSPENDED;
- 		return -ENODATA;
- 	}
-@@ -1859,7 +1859,7 @@ static int e100_rx_indicate(struct nic *nic, struct rx *rx,
- 	if ((le16_to_cpu(rfd->command) & cb_el) &&
- 	    (RU_RUNNING == nic->ru_running)) {
- 
--	    if (readb(&nic->csr->scb.status) & rus_no_res)
-+	    if (ioread8(&nic->csr->scb.status) & rus_no_res)
- 		nic->ru_running = RU_SUSPENDED;
- 	}
- 
-@@ -1958,7 +1958,7 @@ static void e100_rx_clean(struct nic *nic, unsigned int *work_done,
- 
- 	if(restart_required) {
- 		// ack the rnr?
--		writeb(stat_ack_rnr, &nic->csr->scb.stat_ack);
-+		iowrite8(stat_ack_rnr, &nic->csr->scb.stat_ack);
- 		e100_start_receiver(nic, nic->rx_to_clean);
- 		if(work_done)
- 			(*work_done)++;
-@@ -2774,7 +2774,7 @@ static void __devexit e100_remove(struct pci_dev *pdev)
- 		struct nic *nic = netdev_priv(netdev);
- 		unregister_netdev(netdev);
- 		e100_free(nic);
--		iounmap(nic->csr);
-+		pci_iounmap(pdev, nic->csr);
- 		free_netdev(netdev);
- 		pci_release_regions(pdev);
- 		pci_disable_device(pdev);
--- 
-1.5.3.7
+> On Thu, 17 Jan 2008, David Schwartz wrote:
+
+> > Which does change the thing the pointer points to. It goes from being a
+> > valid object to not existing.
+
+> No. It's the *pointer* that is no longer valid.
+
+The pointer is no longer valid because the object it pointed to no longer
+exists. The pointer is also no longer valid, but that is not the end of the
+story.
+
+> There's definitely a difference between "exists and is changed" and
+> "doesn't exist any more".
+
+> > How is ceasing to exist not a change?
+
+> It's not a change to the data behind it, it's a change to the *metadata*.
+> Which is somethign that "const" doesn't talk about at all.
+
+It doesn't matter what has changed. All that matters is whether this is
+something we normally want to happen to a const pointer or whether doing
+this to a const pointer is not normal.
+
+> > >    Why? Because we want the types to be as tight as possible,
+> > > and normal
+> > >    code should need as few casts as possible.
+> >
+> > Right, and that's why you are wrong.
+>
+> No, it's why I'm right.
+
+> "kmalloc/kfree" (or any memory manager) by definition has to play games
+> with pointers and do things like cast them. But the users shouldn't need
+> to, not for something like this.
+
+If you don't like having to cast, don't use 'const'. But if you use 'const',
+you have to cast when you mean to do something that you would like to be
+warned about if you do it by accident.
+
+> > No, it's both correct and useful. This code is the exception to
+> a rule. The
+> > rule is that the object remain unchanged and this violates that rule.
+
+> No.
+>
+> You are continuing to make the mistake that you think that "const" means
+> that the memory behind the pointer is not going to change.
+
+No, that's not what it means. It has nothing to do with memory. It has to do
+with logical state.
+
+> Why do you make that mistake, when it is PROVABLY NOT TRUE!
+
+I don't. You do, because you argue 'kfree' can be const because it doesn't
+change the memory. The change in the memory is meaningless, the change in
+the logical state of the object is what matters.
+
+> Try this trivial program:
+>
+> 	int main(int argc, char **argv)
+> 	{
+> 	        int i;
+> 	        const int *c;
+>
+> 	        i = 5;
+> 	        c = &i;
+> 	        i = 10;
+> 	        return *c;
+> 	}
+>
+> and realize that according to the C rules, if it returns anything but 10,
+> the compiler is *buggy*.
+>
+> The fact is, that in spite of us having a "const int *", the data behind
+> that pointer may change.
+
+I don't know what you think this example proves. Nobody is arguing that so
+long as one const pointer to an object exists, no code anywhere should ever
+be able to change it.
+
+All I'm saying is that changing the logical state of an object *through* a
+const pointer is unusual. You should need a cast to do this because that's
+the only way to get a warning if you do it by mistake.
+
+> So it doesn't matter ONE WHIT if you pass in a "const *" to "kfree()": it
+> does not guarantee that the data doesn't change, because the object you
+> point to has other pointers pointing to it.
+
+Right, nobody said this was about guaranteeing that data doesn't change.
+
+> This isn't worth discussing. It's really simple: a conforming program
+> CANNOT POSSIBLY TELL whether "kfree()" modified the data or not.
+
+But that's exactly what doesn't matter. As you've said at least twice now,
+it has nothing to do with changing the data. It has to do with changing the
+logical state of the object. That's what you're not supposed to do through a
+'const' pointer.
+
+> As such,
+> AS FAR AS THE PROGRAM IS CONCERNED, kfree() takes a const
+> pointer, and the
+> rule that "if it can be considered const, it should be marked
+> const" comes
+> and says that kfree() should take a const pointer.
+
+That's crazy.
+
+> In other words - anythign that could ever disagree with "const *" is BY
+> DEFINITION buggy.
+>
+> It really is that simple.
+
+I think you may be the only person in the world who thinks so.
+
+DS
+
 
