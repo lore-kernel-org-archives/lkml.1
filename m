@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbYAQNxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbYAQNym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754949AbYAQNxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 08:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYAQNxA
+	id S1755255AbYAQNym (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 08:54:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbYAQNye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 08:53:00 -0500
-Received: from web32611.mail.mud.yahoo.com ([68.142.207.238]:47437 "HELO
-	web32611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752235AbYAQNw7 (ORCPT
+	Thu, 17 Jan 2008 08:54:34 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:47731 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751581AbYAQNyd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 08:52:59 -0500
-X-YMail-OSG: k9aljlQVM1krrFzRsL_DdXslEyI8whBo80fnekBfTifIT1Scieya.nL0XeRiJTaHHaB_MtNh6R21SNk9wW6VkWyj7Q--
-X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
-Date: Thu, 17 Jan 2008 05:52:58 -0800 (PST)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Mike Snitzer <snitzer@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
-       jplatte@naasa.net, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
+	Thu, 17 Jan 2008 08:54:33 -0500
+Message-ID: <478F5E05.2020106@linux.vnet.ibm.com>
+Date: Thu, 17 Jan 2008 19:24:13 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <400343.10983.qm@web32611.mail.mud.yahoo.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc8-mm1 kernel panic while bootup
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-> From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> To: Martin Knoblauch <knobi@knobisoft.de>
-> Cc: Mike Snitzer <snitzer@gmail.com>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>; Linus Torvalds <torvalds@linux-foundation.org>
-> Sent: Wednesday, January 16, 2008 1:00:04 PM
-> Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-> 
-> On Wed, Jan 16, 2008 at 01:26:41AM -0800, Martin Knoblauch wrote:
-> > > For those interested in using your writeback improvements in
-> > > production sooner rather than later (primarily with ext3); what
-> > > recommendations do you have?  Just heavily test our own 2.6.24
-> +
-> 
- your
-> > > evolving "close, but not ready for merge" -mm writeback patchset?
-> > > 
-> > Hi Fengguang, Mike,
-> > 
-> >  I can add myself to Mikes question. It would be good to know
-> a
-> 
- "roadmap" for the writeback changes. Testing 2.6.24-rcX so far has
-> been
-> 
- showing quite nice improvement of the overall writeback situation and
-> it
-> 
- would be sad to see this [partially] gone in 2.6.24-final.
-> Linus
-> 
- apparently already has reverted  "...2250b". I will definitely repeat my
-> tests
-> 
- with -rc8. and report.
-> 
-> Thank you, Martin. Can you help test this patch on 2.6.24-rc7?
-> Maybe we can push it to 2.6.24 after your testing.
-> 
-Hi Fengguang,
+Hi Andrew,
 
- something really bad has happened between -rc3 and -rc6. Embarrassingly I did not catch that earlier :-(
+The 2.6.24-rc8-mm1 kernel panic while bootup with bootup message
 
- Compared to the numbers I posted in http://lkml.org/lkml/2007/10/26/208 , dd1 is now at 60 MB/sec (slight plus), while dd2/dd3 suck the same way as in pre 2.6.24. The only test that is still good is mix3, which I attribute to the per-BDI stuff.
+Dual Core AMD Opteron(tm) Processor 270 stepping 02
+Unable to handle kernel paging request at 0000000000004a78 RIP: 
+ [<ffffffff8026f966>] __alloc_pages+0x40/0x31e
+PGD 0 
+Oops: 0000 [1] SMP 
+last sysfs file: 
+CPU 0 
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.24-rc8-mm1-autotest #1
+RIP: 0010:[<ffffffff8026f966>]  [<ffffffff8026f966>] __alloc_pages+0x40/0x31e
+RSP: 0000:ffff81003f9b9c60  EFLAGS: 00010246
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000002
+RDX: 0000000000004a70 RSI: 0000000000000605 RDI: ffffffff805a6f66
+RBP: 00000000000000d0 R08: 00380800000000c0 R09: 000000000003db89
+R10: ffffe20000fe6880 R11: ffffffff806287b0 R12: 0000000000004a70
+R13: 0000000000000000 R14: 0000000000000286 R15: ffff81003f9b6000
+FS:  0000000000000000(0000) GS:ffffffff80664000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 0000000000004a78 CR3: 0000000000201000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process swapper (pid: 1, threadinfo ffff81003f9b8000, task ffff81003f9b6000)
+Stack:  000000000000c0d0 0000001000000000 ffffffff8027574f ffff81000000e5c8
+ 000000000000c0d0 ffffffff8026f320 ffff81003f9b9c88 0000000000000000
+ 0000000000000000 ffffffff807fac90 ffffffff807fac90 0000000000000286
+Call Trace:
+ [<ffffffff8027574f>] ? zone_statistics+0x3f/0x97
+ [<ffffffff8026f320>] ? get_page_from_freelist+0x463/0x5b5
+ [<ffffffff8028d7b8>] ? new_slab+0x10e/0x261
+ [<ffffffff8028d92b>] ? get_new_slab+0x20/0xaa
+ [<ffffffff8028dad8>] ? __slab_alloc+0x123/0x182
+ [<ffffffff8026e5a1>] ? process_zones+0x79/0x15e
+ [<ffffffff8028db73>] ? kmem_cache_alloc_node+0x3c/0x70
+ [<ffffffff8026e5a1>] ? process_zones+0x79/0x15e
+ [<ffffffff804f15b9>] ? _spin_lock_irqsave+0x9/0xe
+ [<ffffffff8026e6b9>] ? pageset_cpuup_callback+0x33/0x91
+ [<ffffffff804f37b9>] ? notifier_call_chain+0x29/0x56
+ [<ffffffff80254b09>] ? _cpu_up+0x68/0x101
+ [<ffffffff80254bf6>] ? cpu_up+0x54/0x61
+ [<ffffffff808a4581>] ? kernel_init+0xbf/0x2ef
+ [<ffffffff804f15a1>] ? _spin_unlock_irq+0x9/0xc
+ [<ffffffff8020cc08>] ? child_rip+0xa/0x12
+ [<ffffffff808a44c2>] ? kernel_init+0x0/0x2ef
+ [<ffffffff8020cbfe>] ? child_rip+0x0/0x12
 
- At the moment I am frantically trying to find when things went down. I did run -rc8 and rc8+yourpatch. No difference to what I see with -rc6. Sorry that I cannot provide any input to your patch.
 
-Depressed
-Martin
+Code: 83 ec 38 65 4c 8b 3c 25 00 00 00 00 83 e0 10 89 44 24 0c 74 16 be 05 06 00 00 48 c7 c7 66 6f 5a 80 e8 a9 f4 fb ff e8 20 05 28 00 <49> 83 7c 24 08 00 49 8d 44 24 08 48 89 44 24 18 75 1a 48 c7 44 
+RIP  [<ffffffff8026f966>] __alloc_pages+0x40/0x31e
+ RSP <ffff81003f9b9c60>
+CR2: 0000000000004a78
 
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
