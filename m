@@ -1,52 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbYAQT2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757264AbYAQT3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757141AbYAQT2s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 14:28:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbYAQT2k
+	id S1757264AbYAQT3i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 14:29:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbYAQT3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 14:28:40 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:49455 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753840AbYAQT2j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 14:28:39 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=SqkbOGqLN++MJBM1lYlzReSN6/FEmgeaAMu4xUuxu/KFS+icL273c4+6LFirSsNCI
-	ua561mqmGj3mO7GbdxCvA==
-Message-ID: <4d47a5d10801171128t371fb3c4y27401c156f20569@mail.gmail.com>
-Date: Thu, 17 Jan 2008 14:28:29 -0500
-From: "Daniel Phillips" <phillips@google.com>
-To: "Chris mason" <chris.mason@oracle.com>
-Subject: Re: [Btrfs-devel] [ANNOUNCE] Btrfs v0.10 (online growing/shrinking, ext3 conversion, and more)
-Cc: btrfs-devel@oss.oracle.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <200801171325.55406.chris.mason@oracle.com>
+	Thu, 17 Jan 2008 14:29:30 -0500
+Received: from gw.goop.org ([64.81.55.164]:59900 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752869AbYAQT33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 14:29:29 -0500
+Message-ID: <478FAC91.90109@goop.org>
+Date: Thu, 17 Jan 2008 11:29:21 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Jan Beulich <jbeulich@novell.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH]  x86: fold _PAGE_GLOBAL into __PAGE_KERNEL
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080115105238.4fc3e992@think.oraclecorp.com>
-	 <200801171325.55406.chris.mason@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 17, 2008 1:25 PM, Chris mason <chris.mason@oracle.com> wrote:
-> So, I've put v0.11 out there.  It fixes those two problems and will also
-> compile on older (2.6.18) enterprise kernels.
->
-> v0.11 does not have any disk format changes.
+With the iounmap problem resolved, it should be OK to always set
+_PAGE_GLOBAL in __PAGE_KERNEL*.
 
-Hi Chris,
+[ Did this patch cause problems before? ]
 
-First, massive congratulations for bringing this to fruition in such a
-short time.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-Now back to the regular carping: why even support older kernels?
+---
+ arch/x86/mm/ioremap_64.c  |    2 +-
+ include/asm-x86/pgtable.h |   27 ++++++++++-----------------
+ 2 files changed, 11 insertions(+), 18 deletions(-)
 
-Regards,
+diff -r eaf8bc049cdb arch/x86/mm/ioremap_64.c
+--- a/arch/x86/mm/ioremap_64.c	Thu Jan 17 10:37:45 2008 -0800
++++ b/arch/x86/mm/ioremap_64.c	Thu Jan 17 10:39:51 2008 -0800
+@@ -79,7 +79,7 @@ void __iomem * __ioremap(unsigned long p
+ 	if (!size || last_addr < phys_addr)
+ 		return NULL;
+ 
+-	pgprot = __pgprot(__PAGE_KERNEL_EXEC | _PAGE_GLOBAL | flags);
++	pgprot = __pgprot(__PAGE_KERNEL_EXEC | flags);
+ 	/*
+ 	 * Mappings have to be page-aligned
+ 	 */
+diff -r eaf8bc049cdb include/asm-x86/pgtable.h
+--- a/include/asm-x86/pgtable.h	Thu Jan 17 10:37:45 2008 -0800
++++ b/include/asm-x86/pgtable.h	Thu Jan 17 10:39:51 2008 -0800
+@@ -78,7 +78,7 @@ extern unsigned long long __PAGE_KERNEL,
+ #endif	/* __ASSEMBLY__ */
+ #else
+ #define __PAGE_KERNEL_EXEC						\
+-	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
++	(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_GLOBAL)
+ #define __PAGE_KERNEL		(__PAGE_KERNEL_EXEC | _PAGE_NX)
+ #endif
+ 
+@@ -90,21 +90,15 @@ extern unsigned long long __PAGE_KERNEL,
+ #define __PAGE_KERNEL_LARGE		(__PAGE_KERNEL | _PAGE_PSE)
+ #define __PAGE_KERNEL_LARGE_EXEC	(__PAGE_KERNEL_EXEC | _PAGE_PSE)
+ 
+-#ifdef CONFIG_X86_32
+-# define MAKE_GLOBAL(x)			__pgprot((x))
+-#else
+-# define MAKE_GLOBAL(x)			__pgprot((x) | _PAGE_GLOBAL)
+-#endif
+-
+-#define PAGE_KERNEL			MAKE_GLOBAL(__PAGE_KERNEL)
+-#define PAGE_KERNEL_RO			MAKE_GLOBAL(__PAGE_KERNEL_RO)
+-#define PAGE_KERNEL_EXEC		MAKE_GLOBAL(__PAGE_KERNEL_EXEC)
+-#define PAGE_KERNEL_RX			MAKE_GLOBAL(__PAGE_KERNEL_RX)
+-#define PAGE_KERNEL_NOCACHE		MAKE_GLOBAL(__PAGE_KERNEL_NOCACHE)
+-#define PAGE_KERNEL_LARGE		MAKE_GLOBAL(__PAGE_KERNEL_LARGE)
+-#define PAGE_KERNEL_LARGE_EXEC		MAKE_GLOBAL(__PAGE_KERNEL_LARGE_EXEC)
+-#define PAGE_KERNEL_VSYSCALL		MAKE_GLOBAL(__PAGE_KERNEL_VSYSCALL)
+-#define PAGE_KERNEL_VSYSCALL_NOCACHE	MAKE_GLOBAL(__PAGE_KERNEL_VSYSCALL_NOCACHE)
++#define PAGE_KERNEL			__pgprot(__PAGE_KERNEL)
++#define PAGE_KERNEL_RO			__pgprot(__PAGE_KERNEL_RO)
++#define PAGE_KERNEL_EXEC		__pgprot(__PAGE_KERNEL_EXEC)
++#define PAGE_KERNEL_RX			__pgprot(__PAGE_KERNEL_RX)
++#define PAGE_KERNEL_NOCACHE		__pgprot(__PAGE_KERNEL_NOCACHE)
++#define PAGE_KERNEL_LARGE		__pgprot(__PAGE_KERNEL_LARGE)
++#define PAGE_KERNEL_LARGE_EXEC		__pgprot(__PAGE_KERNEL_LARGE_EXEC)
++#define PAGE_KERNEL_VSYSCALL		__pgprot(__PAGE_KERNEL_VSYSCALL)
++#define PAGE_KERNEL_VSYSCALL_NOCACHE	__pgprot(__PAGE_KERNEL_VSYSCALL_NOCACHE)
+ 
+ /*         xwr */
+ #define __P000	PAGE_NONE
 
-Daniel
