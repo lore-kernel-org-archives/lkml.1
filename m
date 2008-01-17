@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbYAQTpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbYAQTrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbYAQTpu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 14:45:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbYAQTo5
+	id S1756724AbYAQTrs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 14:47:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYAQTrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 14:44:57 -0500
-Received: from hu-out-0506.google.com ([72.14.214.230]:65106 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756225AbYAQTo4 (ORCPT
+	Thu, 17 Jan 2008 14:47:39 -0500
+Received: from mga03.intel.com ([143.182.124.21]:21947 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751618AbYAQTrh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 14:44:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=AeKcfhPKPmcdwp8NxRxxRJD0meHmVsMMJ6yEqHPNuqtkJ47YSJDJXXDr7m8WsSG2DCYQJrYYVwczzgqMGNABcZOgvLxnmI2m4ZaQEK2SvOUdOG/bWnh3RFjetKlbOnjmKC7oTU0zF5hmbvY4AVYPgLo7YH1TguTlOO/njfrBB+M=
-Date: Thu, 17 Jan 2008 20:47:28 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Dave Young <hidave.darkstar@gmail.com>, Greg KH <gregkh@suse.de>,
-       stefanr@s5r6.in-berlin.de, david-b@pacbell.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct
-	class
-Message-ID: <20080117194728.GA2598@ami.dom.local>
-References: <a8e1da0801161718w573ac941jc83011e63c47ecf@mail.gmail.com> <Pine.LNX.4.44L0.0801171014030.4378-100000@iolanthe.rowland.org>
+	Thu, 17 Jan 2008 14:47:37 -0500
+X-ExtLoop1: 1
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0801171014030.4378-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [E1000-devel] 2.6.24-rc8-mm1
+Date: Thu, 17 Jan 2008 11:47:35 -0800
+Message-ID: <36D9DB17C6DE9E40B059440DB8D95F5204368270@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20080117114032.1f9f1df5.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [E1000-devel] 2.6.24-rc8-mm1
+Thread-Index: AchZQNxQ7VzL1XERRf2VmHQXffHwtwAAMGMQ
+References: <20080117023514.9df393cf.akpm@linux-foundation.org><20080117124622.GA18450@balbir.in.ibm.com><20080117104021.25a8e562.akpm@linux-foundation.org><924EFEDD5F540B4284297C4DC59F3DEE5E909A@orsmsx423.amr.corp.intel.com> <20080117114032.1f9f1df5.akpm@linux-foundation.org>
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: "Intel E/100 mailing list" <e1000-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>,
+       "Linux ACPI mailing list" <linux-acpi@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       <balbir@linux.vnet.ibm.com>
+X-OriginalArrivalTime: 17 Jan 2008 19:47:36.0418 (UTC) FILETIME=[CF354420:01C85941]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 10:16:30AM -0500, Alan Stern wrote:
-> On Thu, 17 Jan 2008, Dave Young wrote:
+Andrew Morton wrote:
+> On Thu, 17 Jan 2008 11:22:19 -0800 "Pallipadi, Venkatesh"
+> <venkatesh.pallipadi@intel.com> wrote: 
 > 
-> > > Your meaning isn't clear.  Do you mean that your patch doesn't generate
-> > > any lockdep warnings at all?  Or do you mean that it generates a single
-> > > lockdep warning at boot time and then no more warnings afterward?
-> > 
-> > I means the latter one.
+>> 
+>> The problem is
+>>>> modprobe:2584 conflicting cache attribute 50000000-50001000
+>>>> uncached<->default
+>> 
+>> Some address range here is being mapped with conflicting types.
+>> Somewhere the range was mapped with default (write-back). Later
+>> pci_iomap() is mapping that region as uncacheable which is basically
+>> aliasing. PAT code detects the aliasing and fails the second
+>> uncacheable request which leads in the failure.
+
+its probably the e100 screaming interrupt disable quirk code doing the
+mapping?
+ 
+> It sounds to me like you need considerably more runtime debugging and
+> reporting support in that code.  Ensure that it generates enough
+> output 
+> both during regular operation and during failures for you to be able
+> to 
+> diagnose things in a single iteration.
 > 
-> That's very bad.
-> 
-> For each type of violation, lockdep only gives one error message.  So
-> the fact that you get one message at boot time and then no more doesn't
-> mean the code is almost right -- it probably means the code has lots of
-> errors and you're seeing only the first one.
+> We can always take it out later.
 
-I hope it's better than this: lockdep really stops checking after first
-warning, but I've understood from David's description that after fixing
-this one place lockdep seems to be pleased.
-
-On the other hand, according to Greg the code is OK, so if there are any
-such warnings they simply have to be false! (...Unless you trust lockdep
-more?!)
-
-Regards,
-Jarek P.
+FWIW (nothing) I agree.
