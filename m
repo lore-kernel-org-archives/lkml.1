@@ -1,110 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343AbYAQQMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbYAQQNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754343AbYAQQMM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 11:12:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYAQQL4
+	id S1755366AbYAQQNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 11:13:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYAQQNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 11:11:56 -0500
-Received: from wx-out-0506.google.com ([66.249.82.236]:16594 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751768AbYAQQLy (ORCPT
+	Thu, 17 Jan 2008 11:13:08 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:9506 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752142AbYAQQNG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 11:11:54 -0500
+	Thu, 17 Jan 2008 11:13:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=w/rGqMpYq5Ur+eGU/fo6PNV5x3GA6uT9eOd/1KU3QBObKTAsDUH8+kyq24M+LLiumE0uyL2ADKDYlXc7iMAmnaFjg12Kgrum7S4mK1B5fVdColC8nzlofLA8oywmzG8EjjdMX0v1zLY4M6wx52nW90HSyoj9lBZtOvSzxgZ4EBI=
-Message-ID: <170fa0d20801170811k4f1fb39by2d793c3351d3cdd9@mail.gmail.com>
-Date: Thu, 17 Jan 2008 11:11:50 -0500
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Martin Knoblauch" <spamtrap@knobisoft.de>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-Cc: "Fengguang Wu" <wfg@mail.ustc.edu.cn>,
-       "Peter Zijlstra" <peterz@infradead.org>, jplatte@naasa.net,
-       "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <400343.10983.qm@web32611.mail.mud.yahoo.com>
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=HNCnnQnNokGpTrTMw7KgMOTJatTgbt/UmohnuiCnGOMiYipOzD/GHxMgMgoPx0k0v8ZckpTwCGe+NyR7G45SlZmhjzhfSNKOTND1Qulq20IpuIqVbttO+E9hdKjmzi8yGgZuAycjXV0q8f5TCPixNOwJhm84hX+xufP28cTZ+DM=
+Message-ID: <519a8b110801170813h96b8f2by795e6d8b72a00ba4@mail.gmail.com>
+Date: Thu, 17 Jan 2008 17:13:02 +0100
+From: xming <xmingske@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Cannot boot xen DomU > 2.6.23.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <400343.10983.qm@web32611.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 17, 2008 8:52 AM, Martin Knoblauch <spamtrap@knobisoft.de> wrote:
->
-> ----- Original Message ----
-> > From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> > To: Martin Knoblauch <knobi@knobisoft.de>
-> > Cc: Mike Snitzer <snitzer@gmail.com>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>; Linus Torvalds <torvalds@linux-foundation.org>
-> > Sent: Wednesday, January 16, 2008 1:00:04 PM
-> > Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-> >
-> > On Wed, Jan 16, 2008 at 01:26:41AM -0800, Martin Knoblauch wrote:
-> > > > For those interested in using your writeback improvements in
-> > > > production sooner rather than later (primarily with ext3); what
-> > > > recommendations do you have?  Just heavily test our own 2.6.24
-> > +
-> >
->  your
-> > > > evolving "close, but not ready for merge" -mm writeback patchset?
-> > > >
-> > > Hi Fengguang, Mike,
-> > >
-> > >  I can add myself to Mikes question. It would be good to know
-> > a
-> >
->  "roadmap" for the writeback changes. Testing 2.6.24-rcX so far has
-> > been
-> >
->  showing quite nice improvement of the overall writeback situation and
-> > it
-> >
->  would be sad to see this [partially] gone in 2.6.24-final.
-> > Linus
-> >
->  apparently already has reverted  "...2250b". I will definitely repeat my
-> > tests
-> >
->  with -rc8. and report.
-> >
-> > Thank you, Martin. Can you help test this patch on 2.6.24-rc7?
-> > Maybe we can push it to 2.6.24 after your testing.
-> >
-> Hi Fengguang,
->
->  something really bad has happened between -rc3 and -rc6. Embarrassingly I did not catch that earlier :-(
->
->  Compared to the numbers I posted in http://lkml.org/lkml/2007/10/26/208 , dd1 is now at 60 MB/sec (slight plus), while dd2/dd3 suck the same way as in pre 2.6.24. The only test that is still good is mix3, which I attribute to the per-BDI stuff.
->
->  At the moment I am frantically trying to find when things went down. I did run -rc8 and rc8+yourpatch. No difference to what I see with -rc6. Sorry that I cannot provide any input to your patch.
->
-> Depressed
-> Martin
+Hi,
 
-Martin,
+I finally found the piece of code that prevents me from booting Xen DomU
+with vallina kernel > 2.6.23.1.
 
-I've backported Peter's perbdi patchset to 2.6.22.x.  I can share it
-with anyone who might be interested.
+The problem is that with every kernel (> 2.6.32.1 including 2.6.24 RCs)
+will just hang with "too much" console activity. Sometimes (well most
+of the time) boot msg is too much. When I can boot into the kernel,
+generating a lots of cosole out it will hang, no oops, no more
+console/network. Generating with the same way through ssh will not
+hang the domU.
 
-As expected, it has yielded 2.6.24-rcX level scaling.  Given the test
-result matrix you previously posted, 2.6.22.x+perbdi might give you
-what you're looking for (sans improved writeback that 2.6.24 was
-thought to be providing).  That is, much improved scaling with better
-O_DIRECT and network throughput.  Just a thought...
+When I reverse the following patch, things work as before, tried this
+with 2.6.23.14 and 2.6.14-rc8. But I don't have the knowledge to
+understand the reason behind this.
 
-Unfortunately, my priorities (and computing resources) have shifted
-and I won't be able to thoroughly test Fengguang's new writeback patch
-on 2.6.24-rc8... whereby missing out on providing
-justification/testing to others on _some_ improved writeback being
-included in 2.6.24 final.
+BTW, I am not subscribed.
 
-Not to mention the window for writeback improvement is all but closed
-considering the 2.6.24-rc8 announcement's 2.6.24 final release
-timetable.
+--- a/include/xen/interface/vcpu.h
++++ b/include/xen/interface/vcpu.h
+@@ -160,8 +160,9 @@ struct vcpu_set_singleshot_timer {
+  */
+ #define VCPUOP_register_vcpu_info   10  /* arg == struct vcpu_info */
+ struct vcpu_register_vcpu_info {
+-    uint32_t mfn;               /* mfn of page to place vcpu_info */
+-    uint32_t offset;            /* offset within page */
++    uint64_t mfn;    /* mfn of page to place vcpu_info */
++    uint32_t offset; /* offset within page */
++    uint32_t rsvd;   /* unused */
+ };
 
-regards,
-Mike
+ #endif /* __XEN_PUBLIC_VCPU_H__ */
+
+I am running Xen 3.1.2 PAE
+
+# uname -a
+Linux builder 2.6.24-rc8 #2 SMP Thu Jan 17 16:37:19 CET 2008 i686
+AMD Athlon(tm) X2 Dual Core Processor BE-2300 AuthenticAMD GNU/Linux
+
+# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 107
+model name      : AMD Athlon(tm) X2 Dual Core Processor BE-2300
+stepping        : 1
+cpu MHz         : 1899.930
+cache size      : 512 KB
+physical id     : 0
+siblings        : 2
+core id         : 1
+cpu cores       : 2
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu tsc msr pae mce cx8 mca cmov pat pse36 clflush
+mmx fxsr sse sse2 ht nx mmxext fxsr_opt lm 3dnowext 3dnow pni cx16
+lahf_lm cmp_legacy svm extapic cr8_legacy 3dnowprefetch ts fid vid ttp
+tm stc 100mhzsteps
+bogomips        : 3829.72
+clflush size    : 64
+
+processor       : 1
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 107
+model name      : AMD Athlon(tm) X2 Dual Core Processor BE-2300
+stepping        : 1
+cpu MHz         : 1899.930
+cache size      : 512 KB
+physical id     : 0
+siblings        : 2
+core id         : 1
+cpu cores       : 2
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu tsc msr pae mce cx8 mca cmov pat pse36 clflush
+mmx fxsr sse sse2 ht nx mmxext fxsr_opt lm 3dnowext 3dnow pni cx16
+lahf_lm cmp_legacy svm extapic cr8_legacy 3dnowprefetch ts fid vid ttp
+tm stc 100mhzsteps
+bogomips        : 3829.72
+clflush size    : 64
