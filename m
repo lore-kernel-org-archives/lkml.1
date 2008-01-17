@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbYAQSqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbYAQSwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756884AbYAQSqb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 13:46:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbYAQSqW
+	id S1755889AbYAQSwD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 13:52:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbYAQSvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 13:46:22 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:42371 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752661AbYAQSqV (ORCPT
+	Thu, 17 Jan 2008 13:51:54 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48948 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751925AbYAQSvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 13:46:21 -0500
-X-Auth-Info: 8pEdplNpAM6Fk8NTFyTsOUGpE8mZ2207Ao1A0Ni2Dzw=
-X-Auth-Info: 8pEdplNpAM6Fk8NTFyTsOUGpE8mZ2207Ao1A0Ni2Dzw=
-X-Auth-Info: 8pEdplNpAM6Fk8NTFyTsOUGpE8mZ2207Ao1A0Ni2Dzw=
-X-Auth-Info: 8pEdplNpAM6Fk8NTFyTsOUGpE8mZ2207Ao1A0Ni2Dzw=
-X-Auth-Info: 8pEdplNpAM6Fk8NTFyTsOUGpE8mZ2207Ao1A0Ni2Dzw=
-X-Auth-Info: 8pEdplNpAM6Fk8NTFyTsOUGpE8mZ2207Ao1A0Ni2Dzw=
-Message-ID: <478FA27A.9030507@grandegger.com>
-Date: Thu, 17 Jan 2008 19:46:18 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Thu, 17 Jan 2008 13:51:53 -0500
+Message-ID: <478FA3C6.5060401@sgi.com>
+Date: Thu, 17 Jan 2008 10:51:50 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-rt1
-References: <1200544050.318.18.camel@localhost.localdomain>	 <478F2A46.5070506@grandegger.com>	 <1200586632.18731.141.camel@imap.mvista.com>	 <478F9BCE.4030301@grandegger.com> <1200594655.18731.148.camel@imap.mvista.com>
-In-Reply-To: <1200594655.18731.148.camel@imap.mvista.com>
-X-Enigmail-Version: 0.94.4.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Andi Kleen <ak@suse.de>, mingo@elte.hu, Eric Dumazet <dada1@cosmosbay.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] x86: Fixup NR-CPUS patch for numa
+References: <20080116183438.506737000@sgi.com>	<20080116183438.636758000@sgi.com> <20080117103000.5e97dcd2.akpm@linux-foundation.org>
+In-Reply-To: <20080117103000.5e97dcd2.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-> On Thu, 2008-01-17 at 19:17 +0100, Wolfgang Grandegger wrote:
->> [    0.733248] TCP bind hash table entries: 2048 (order: 3, 57344
->> bytes)
->> [    0.741132] TCP: Hash tables configured (established 2048 bind
->> 2048)
->> [    0.747981] TCP reno registered
->> [    0.805896] krcupreemptd setsched 0
->> [    0.809657]   prio = 98
+Andrew Morton wrote:
+> On Wed, 16 Jan 2008 10:34:39 -0800 travis@sgi.com wrote:
 > 
-> That's interesting .. You chould try running cyclictest at priority 99
-> to eliminate other threads that might get involved (using -p99 instead
-> of -p80 , I think) ..
+>> This patch removes the EXPORT_SYMBOL for:
+>>
+>> 	x86_cpu_to_node_map_init
+>> 	x86_cpu_to_node_map_early_ptr
+>>
+>> ... thus fixing the section mismatch problem.
+> 
+> Which section mismatch problem?  Please always quote the error message when
+> fixing things like this.
 
-I already tried that but I did not realize any difference. If I run
-"while ls; do ls /bin; done" on the console I even get:
+Will do.  Basically, it's the error that caused you to add 
 
-  #./cyclictest -n -p99 -i1000
-  2.82 1.70 0.90 2/45 3168
+	arch-x86-mm-numa_64c-section-fix.patch
+> 
+>> Also, the mem -> node hash lookup is fixed.
+>>
+>> Based on 2.6.24-rc6-mm1 + change-NR_CPUS-V3 patchset
+>>
+> 
+> hm, I've been hiding from those patches.
+> 
+> Are they ready?
 
-  T: 0 ( 2426) P:99 I:1000 C: 135995 Min:     57 Act:  110 Avg:  106
-Max:     911
+Please wait a moment.  I'm resolving the conflicts between what's
+in 2.6.24-rc8-mm1 and what's not.  I'll resubmit everything shortly.
 
-Wolfgang.
+Thanks!
+Mike
