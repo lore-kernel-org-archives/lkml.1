@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbYAQRaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbYAQRai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbYAQRaJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 12:30:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYAQR35
+	id S1755819AbYAQRai (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 12:30:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYAQRaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 12:29:57 -0500
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:45824 "EHLO
+	Thu, 17 Jan 2008 12:30:25 -0500
+Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:45876 "EHLO
 	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750926AbYAQR34 (ORCPT
+	by vger.kernel.org with ESMTP id S1751861AbYAQRaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 12:29:56 -0500
+	Thu, 17 Jan 2008 12:30:23 -0500
 X-IronPort-Anti-Spam-Filtered: true
 X-IronPort-Anti-Spam-Result: Ah4FACofj0dMROHU/2dsb2JhbACBV6w4
-Date: Wed, 16 Jan 2008 23:22:59 -0500
+Date: Wed, 16 Jan 2008 23:25:03 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: Paul Mackerras <paulus@samba.org>, john stultz <johnstul@us.ibm.com>,
        LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
@@ -27,7 +28,7 @@ Cc: Paul Mackerras <paulus@samba.org>, john stultz <johnstul@us.ibm.com>,
        Steven Rostedt <srostedt@redhat.com>,
        Daniel Walker <dwalker@mvista.com>
 Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
-Message-ID: <20080117042259.GC9513@Krystal>
+Message-ID: <20080117042503.GD9513@Krystal>
 References: <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com> <20080116145604.GB31329@Krystal> <1f1b08da0801161436k4a7ac1e3kd83590951e7bebb9@mail.gmail.com> <1200523867.6127.5.camel@localhost.localdomain> <Pine.LNX.4.58.0801161827450.17781@gandalf.stny.rr.com> <1200536889.6127.52.camel@localhost.localdomain> <20080117024000.GD2322@Krystal> <20080117025004.GE2322@Krystal> <18318.51622.37470.246611@cargo.ozlabs.ibm.com> <Pine.LNX.4.58.0801162234340.21116@gandalf.stny.rr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,10 +38,9 @@ In-Reply-To: <Pine.LNX.4.58.0801162234340.21116@gandalf.stny.rr.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:15:24 up 74 days,  9:20,  4 users,  load average: 0.49, 0.38,
-	0.39
+X-Uptime: 23:24:07 up 74 days,  9:29,  4 users,  load average: 0.94, 0.78,
+	0.56
 User-Agent: Mutt/1.5.16 (2007-06-11)
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -81,6 +81,8 @@ algorithms that helps getting the cpu id and knowing it's been valid for
 a period of time without pinning to a particular CPU.
 
 Mathieu
+
+(sorry for repost, messed up with my mail client)
 
 -- 
 Mathieu Desnoyers
