@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760318AbYAQWkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760671AbYAQWko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760318AbYAQWkU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:40:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759812AbYAQWgk
+	id S1760671AbYAQWko (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:40:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760107AbYAQWgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:36:40 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:36240 "EHLO
+	Thu, 17 Jan 2008 17:36:41 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:36241 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758194AbYAQWgg (ORCPT
+	with ESMTP id S1760090AbYAQWgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jan 2008 17:36:36 -0500
 From: Mark Fasheh <mark.fasheh@oracle.com>
 To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joonwoo Park <joonwpark81@gmail.com>
-Subject: [PATCH 30/30] configfs: file.c fix possible recursive locking
-Date: Thu, 17 Jan 2008 14:35:56 -0800
-Message-Id: <1200609356-17788-31-git-send-email-mark.fasheh@oracle.com>
+Cc: ocfs2-devel@oss.oracle.com, Sunil Mushran <sunil.mushran@oracle.com>
+Subject: [PATCH 24/30] ocfs2: Update default cluster timeouts
+Date: Thu, 17 Jan 2008 14:35:50 -0800
+Message-Id: <1200609356-17788-25-git-send-email-mark.fasheh@oracle.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
 References: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
@@ -27,64 +27,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joonwoo Park <joonwpark81@gmail.com>
+From: Sunil Mushran <sunil.mushran@oracle.com>
 
-configfs_register_subsystem() with default_groups triggers recursive locking.
-it seems that mutex_lock_nested is needed.
+Lots of people are having trouble with the default timeouts, which are too
+low. These new values are derived from an informal survey taken on
+ocfs2-users, as well as data from bug reports. This should reduce the amount
+of cluster disconnects and subsequent fencing seen during normal workloads.
 
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.24-rc6 #145
----------------------------------------------
-swapper/1 is trying to acquire lock:
- (&sb->s_type->i_mutex_key#3){--..}, at: [<c40c9a9e>] configfs_add_file+0x2e/0x70
-
-but task is already holding lock:
- (&sb->s_type->i_mutex_key#3){--..}, at: [<c40ca985>] configfs_register_subsystem+0x55/0x130
-
-other info that might help us debug this:
-1 lock held by swapper/1:
- #0:  (&sb->s_type->i_mutex_key#3){--..}, at: [<c40ca985>] configfs_register_subsystem+0x55/0x130
-
-stack backtrace:
-Pid: 1, comm: swapper Not tainted 2.6.24-rc6 #145
- [<c40053ba>] show_trace_log_lvl+0x1a/0x30
- [<c4005e82>] show_trace+0x12/0x20
- [<c400687e>] dump_stack+0x6e/0x80
- [<c404ec72>] __lock_acquire+0xe62/0x1120
- [<c404efb2>] lock_acquire+0x82/0xa0
- [<c43fda88>] mutex_lock_nested+0x98/0x2e0
- [<c40c9a9e>] configfs_add_file+0x2e/0x70
- [<c40c9b0c>] configfs_create_file+0x2c/0x40
- [<c40ca639>] configfs_attach_item+0x139/0x220
- [<c40ca734>] configfs_attach_group+0x14/0x140
- [<c40ca7e9>] configfs_attach_group+0xc9/0x140
- [<c40ca9f6>] configfs_register_subsystem+0xc6/0x130
- [<c45c8186>] init_netconsole+0x2b6/0x300
- [<c45a75f2>] kernel_init+0x142/0x320
- [<c4004fb3>] kernel_thread_helper+0x7/0x14
- =======================
-
-Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
+Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
 Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
 ---
- fs/configfs/file.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/ocfs2/cluster/heartbeat.h |    2 +-
+ fs/ocfs2/cluster/tcp.h       |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/fs/configfs/file.c b/fs/configfs/file.c
-index a3658f9..397cb50 100644
---- a/fs/configfs/file.c
-+++ b/fs/configfs/file.c
-@@ -320,7 +320,7 @@ int configfs_add_file(struct dentry * dir, const struct configfs_attribute * att
- 	umode_t mode = (attr->ca_mode & S_IALLUGO) | S_IFREG;
- 	int error = 0;
+diff --git a/fs/ocfs2/cluster/heartbeat.h b/fs/ocfs2/cluster/heartbeat.h
+index 35397dd..e511339 100644
+--- a/fs/ocfs2/cluster/heartbeat.h
++++ b/fs/ocfs2/cluster/heartbeat.h
+@@ -35,7 +35,7 @@
+ #define O2HB_LIVE_THRESHOLD	   2
+ /* number of equal samples to be seen as dead */
+ extern unsigned int o2hb_dead_threshold;
+-#define O2HB_DEFAULT_DEAD_THRESHOLD	   7
++#define O2HB_DEFAULT_DEAD_THRESHOLD	   31
+ /* Otherwise MAX_WRITE_TIMEOUT will be zero... */
+ #define O2HB_MIN_DEAD_THRESHOLD	  2
+ #define O2HB_MAX_WRITE_TIMEOUT_MS (O2HB_REGION_TIMEOUT_MS * (o2hb_dead_threshold - 1))
+diff --git a/fs/ocfs2/cluster/tcp.h b/fs/ocfs2/cluster/tcp.h
+index da880fc..f36f66a 100644
+--- a/fs/ocfs2/cluster/tcp.h
++++ b/fs/ocfs2/cluster/tcp.h
+@@ -60,8 +60,8 @@ typedef void (o2net_post_msg_handler_func)(int status, void *data,
+ /* same as hb delay, we're waiting for another node to recognize our hb */
+ #define O2NET_RECONNECT_DELAY_MS_DEFAULT	2000
  
--	mutex_lock(&dir->d_inode->i_mutex);
-+	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_NORMAL);
- 	error = configfs_make_dirent(parent_sd, NULL, (void *) attr, mode, type);
- 	mutex_unlock(&dir->d_inode->i_mutex);
+-#define O2NET_KEEPALIVE_DELAY_MS_DEFAULT	5000
+-#define O2NET_IDLE_TIMEOUT_MS_DEFAULT		10000
++#define O2NET_KEEPALIVE_DELAY_MS_DEFAULT	2000
++#define O2NET_IDLE_TIMEOUT_MS_DEFAULT		30000
  
+ 
+ /* TODO: figure this out.... */
 -- 
 1.5.3.6
 
