@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbYAQUqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757751AbYAQUql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400AbYAQUqB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 15:46:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757548AbYAQUpu
+	id S1757751AbYAQUql (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:46:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYAQUqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 15:45:50 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40242 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755439AbYAQUpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 15:45:49 -0500
-Date: Thu, 17 Jan 2008 21:44:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Herrmann3 <andreas.herrmann3@amd.com>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>, ak@muc.de,
-       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
-       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
-       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
-       jesse.barnes@intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
-Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
-	fixes
-Message-ID: <20080117204449.GA1292@elte.hu>
-References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com> <20080116203328.GA17869@linux-os.sc.intel.com> <20080117191211.GA12631@alberich.amd.com> <20080117203600.GB27778@elte.hu>
+	Thu, 17 Jan 2008 15:46:33 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:36704 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754030AbYAQUqc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 15:46:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=dGvuLds0l+b/31Dec6kwLHkdLS+V1E69zfOh9cCF2pK5DLUQmI9XcS4Ei27o8wmsA1FelhvZCvdC26cH+WgcxrdQOfEtA1vU1dR/qXOgaqs+Sq+zvRjxtdKEVRMDN5Md22MGjaPVvvTiB/dKRrPH0Sf7E5t0DPyqO2t0r7K6osI=
+Message-ID: <478FBEA0.9090203@gmail.com>
+Date: Thu, 17 Jan 2008 21:46:24 +0100
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080117203600.GB27778@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: paulmck@linux.vnet.ibm.com
+Subject: [PATCH 0/2] Make RCU lists use the RCU API
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+After reading the nice article contributed by Paul on LWN, I took a look
+to the kernel RCU-protected list implementation to get a good idea on
+how RCU protection mechanism can be used.
 
-> I.e. something like below?
+And it appears that the implementation doesn't use the RCU API as much
+as it could: every updates of "->next" field could have been done by
+using rcu_assign_pointer(), the main point being readability.
 
-or the one below. (it even builds)
+So this patchset does that. However when cooking the patch, I noticed
+that it's hard to import RCU API without creating some circular
+dependencies. This is mainly explained by the fact that list.h defines a
+couple of very primitive types used all over the kernel.
 
-	Ingo
+The easiest thing I could come up with is to create a new header file
+rculist.h, which keeps all RCU-protected list definitions. list.h still
+keeps the basic list stuffs and still has very few dependencies. OTOH
+RCU-protected list is a more complex type of list and can have more
+dependencies. Therefore it needs more careful in including it.
 
----
- arch/x86/mm/pat.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+I don't know if any header dependency rules exist for the kernel, so
+please any suggestions are welcome to deal with such issue.
 
-Index: linux-x86.q/arch/x86/mm/pat.c
-===================================================================
---- linux-x86.q.orig/arch/x86/mm/pat.c
-+++ linux-x86.q/arch/x86/mm/pat.c
-@@ -174,7 +174,12 @@ int reserve_mattr(u64 start, u64 end, un
- 					current->comm, current->pid,
- 					start, end,
- 					cattr_name(attr), cattr_name(ml->attr));
--				err = -EBUSY;
-+				/*
-+				 * Force the already existing attribute:
-+				 */
-+				ma->attr = ml->attr;
-+				if (*fattr)
-+					*fattr = ml->attr;
- 				break;
- 			}
- 		} else if (ml->start >= end) {
+"make allyesconfig" builds and boots fine on x86 architecture, this
+patchset being applied on top of Linus' v2.6.24-rc7 tag.
+
+Please consider,
+
+		Franck
+
+--
+
+ arch/ia64/sn/kernel/irq.c                       |    1 +
+ drivers/infiniband/hw/ipath/ipath_verbs_mcast.c |    3 +-
+ include/linux/dcache.h                          |    1 +
+ include/linux/list.h                            |  385 ----------------------
+ include/linux/rculist.h                         |  391 +++++++++++++++++++++++
+ lib/textsearch.c                                |    2 +-
+ 6 files changed, 395 insertions(+), 388 deletions(-)
