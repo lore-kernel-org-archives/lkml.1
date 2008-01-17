@@ -1,126 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756700AbYAQTVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbYAQTX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756700AbYAQTVg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 14:21:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbYAQTV1
+	id S1756737AbYAQTX7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 14:23:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbYAQTXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 14:21:27 -0500
-Received: from mga02.intel.com ([134.134.136.20]:23910 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752202AbYAQTV0 convert rfc822-to-8bit (ORCPT
+	Thu, 17 Jan 2008 14:23:51 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58983 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752281AbYAQTXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 14:21:26 -0500
-X-ExtLoop1: 1
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.24-rc8-mm1
-Date: Thu, 17 Jan 2008 11:22:19 -0800
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE5E909A@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <20080117104021.25a8e562.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.24-rc8-mm1
-Thread-Index: AchZOGu4DqZO84g+TRWr0K7agkpjEgABQe5w
-References: <20080117023514.9df393cf.akpm@linux-foundation.org><20080117124622.GA18450@balbir.in.ibm.com> <20080117104021.25a8e562.akpm@linux-foundation.org>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>, <balbir@linux.vnet.ibm.com>
-Cc: <linux-kernel@vger.kernel.org>,
-       "Linux ACPI mailing list" <linux-acpi@vger.kernel.org>,
-       "Intel E/100 mailing list" <e1000-devel@lists.sourceforge.net>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
-X-OriginalArrivalTime: 17 Jan 2008 19:21:22.0505 (UTC) FILETIME=[25153390:01C8593E]
+	Thu, 17 Jan 2008 14:23:50 -0500
+Date: Thu, 17 Jan 2008 11:23:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: nigel@nigel.suspend2.net, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       TuxOnIce-devel <tuxonice-devel@lists.tuxonice.net>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] (2.4.25 material?) Fix unbalanced helper_lock in
+ kernel/kmod.c
+Message-Id: <20080117112332.9e34b7d9.akpm@linux-foundation.org>
+In-Reply-To: <200801171902.44133.rjw@sisk.pl>
+References: <478EA17B.30601@nigel.suspend2.net>
+	<200801171902.44133.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 17 Jan 2008 19:02:43 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Thursday, 17 of January 2008, Nigel Cunningham wrote:
+> > Hi all.
+> 
+> Hi,
+> 
+> > First up, sorry for not inlining the patch - trouble with line wrapping.
+> 
+> No big deal.
+> 
+> > In 2.6.24-rc8, call_usermodehelper_exec has an exit path that can leave
+> > the helper_lock() call at the top of the routine unbalanced. The
+> > attached patch fixes this issue.
+> 
+> Thanks a lot for the patch (reproduced below), I think it's 2.6.24 material.
+> Andrew?
+> 
+> > Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+> 
+> ---
+> From: Nigel Cunningham <nigel@tuxonice.net>
+> 
+> In 2.6.24-rc8, call_usermodehelper_exec has an exit path that can leave
+> the helper_lock() call at the top of the routine unbalanced.  Fix it.
+> 
+> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+> diff --git a/kernel/kmod.c b/kernel/kmod.c
+> index c6a4f8a..de27e15 100644
+> --- a/kernel/kmod.c
+> +++ b/kernel/kmod.c
+> @@ -468,8 +468,10 @@ int call_usermodehelper_exec(struct subprocess_info *sub_info,
+>  	sub_info->wait = wait;
+>  
+>  	queue_work(khelper_wq, &sub_info->work);
+> -	if (wait == UMH_NO_WAIT) /* task has freed sub_info */
+> +	if (wait == UMH_NO_WAIT) { /* task has freed sub_info */
+> +		helper_unlock();
+>  		return 0;
+> +	}
+>  	wait_for_completion(&done);
+>  	retval = sub_info->retval;
+>  
+
+Yup, I ended up queueing this:
+
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+
+call_usermodehelper_exec() has an exit path that can leave the
+helper_lock() call at the top of the routine unbalanced.  The attached
+patch fixes this issue.
+
+Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/kmod.c |   13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+diff -puN kernel/kmod.c~fix-unbalanced-helper_lock-in-kernel-kmodc kernel/kmod.c
+--- a/kernel/kmod.c~fix-unbalanced-helper_lock-in-kernel-kmodc
++++ a/kernel/kmod.c
+@@ -451,13 +451,11 @@ int call_usermodehelper_exec(struct subp
+ 			     enum umh_wait wait)
+ {
+ 	DECLARE_COMPLETION_ONSTACK(done);
+-	int retval;
++	int retval = 0;
  
+ 	helper_lock();
+-	if (sub_info->path[0] == '\0') {
+-		retval = 0;
++	if (sub_info->path[0] == '\0')
+ 		goto out;
+-	}
+ 
+ 	if (!khelper_wq || usermodehelper_disabled) {
+ 		retval = -EBUSY;
+@@ -468,13 +466,14 @@ int call_usermodehelper_exec(struct subp
+ 	sub_info->wait = wait;
+ 
+ 	queue_work(khelper_wq, &sub_info->work);
+-	if (wait == UMH_NO_WAIT) /* task has freed sub_info */
+-		return 0;
++	if (wait == UMH_NO_WAIT)	/* task has freed sub_info */
++		goto unlock;
+ 	wait_for_completion(&done);
+ 	retval = sub_info->retval;
+ 
+-  out:
++out:
+ 	call_usermodehelper_freeinfo(sub_info);
++unlock:
+ 	helper_unlock();
+ 	return retval;
+ }
+_
 
->-----Original Message-----
->From: Andrew Morton [mailto:akpm@linux-foundation.org] 
->Sent: Thursday, January 17, 2008 10:40 AM
->To: balbir@linux.vnet.ibm.com
->Cc: linux-kernel@vger.kernel.org; Linux ACPI mailing list; 
->Intel E/100 mailing list; Ingo Molnar; Thomas Gleixner; 
->Pallipadi, Venkatesh
->Subject: Re: 2.6.24-rc8-mm1
->
->On Thu, 17 Jan 2008 18:16:22 +0530 Balbir Singh 
-><balbir@linux.vnet.ibm.com> wrote:
->
->> * Andrew Morton <akpm@linux-foundation.org> [2008-01-17 02:35:14]:
->> 
->> > 
->> > 
->ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2
->.6.24-rc8/2.6.24-rc8-mm1/
->> > 
->> > - selinux is busted on one of my two selinux-enabled test machines.
->> > 
->> > - suspend-to-ram and suspend-to-disk are totally hosed on 
->one of my test
->> >   machines.  I guess I get to bisect this.
->> > 
->> > - git-nfsd is dropped due to conflicts with git-nfs
->> > 
->> > - git-newsetup is dropped due to conflicts with git-x86 (I think)
->> > 
->> > - git-perfmon is dropped due to conflicts with git-x86 (I think)
->> > 
->> > - git-kgdb is dropped due to conflicts with 
->git-damn-near-everything
->> > 
->> > - git-block is dropped due to conflicts with the IDE tree
->> > 
->> > - kvm probably doesn't work properly because I couldn't be 
->bothered fixing
->> >   the conflicts between git-kvm and the driver tree
->> > 
->> > - the volume of rejects and build errors which are caused 
->by subsystem
->> >   maintainers fiddling with other people's stuff is quite 
->out of control. 
->> >   Something needs to happen here.
->> 
->> Hi, Andrew,
->> 
->> May be it was one of the conflicts, but my system fails to get
->> ethernet working with this version. I see
->> 
->> e100: Intel(R) PRO/100 Network Driver, 3. 5.23-k4-NAPI
->> e100: Copyright(c) 1999-2006 Intel Corporation
->> ACPI: PCI Interrupt 0000:04:08.0[A] -> GSI 20 (level, low) -> IRQ 20
->> modprobe:2584 conflicting cache attribute 50000000-50001000
->> uncached<->default
->> e100: 0000:04:08.0: e100_probe: Cannot map device registers, 
->aborting.
->> ACPI: PCI interrupt for device 0000:04:08.0 disabled
->> e100: probe of 0000:04:08.0 failed with error -12
->> 
->It appears that the new PAT code didn't like e100's 
->pci_iomap().  Venki, can you
->take a look please?
->
-
-This seems similar to one problem we saw yday. May not be specific to
-e1000. May be at some generic pci code.
-
-The problem is
->> modprobe:2584 conflicting cache attribute 50000000-50001000
->> uncached<->default
-
-Some address range here is being mapped with conflicting types.
-Somewhere the range was mapped with default (write-back). Later
-pci_iomap() is mapping that region as uncacheable which is basically
-aliasing. PAT code detects the aliasing and fails the second uncacheable
-request which leads in the failure.
-
-We are trying to find who exactly is mapping this with default at the
-beginning.
-Balbir: Full dmesg with debug boot parameter may help.
-
-Thanks,
-Venki
