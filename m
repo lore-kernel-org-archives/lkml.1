@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYAQFr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbYAQGAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbYAQFr3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 00:47:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYAQFrV
+	id S1754097AbYAQGAg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 01:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYAQGA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 00:47:21 -0500
-Received: from elasmtp-curtail.atl.sa.earthlink.net ([209.86.89.64]:34909 "EHLO
-	elasmtp-curtail.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751132AbYAQFrU (ORCPT
+	Thu, 17 Jan 2008 01:00:26 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:36676 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750887AbYAQGAZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 00:47:20 -0500
-Message-ID: <478EEBE4.40400@gmail.com>
-Date: Wed, 16 Jan 2008 21:47:16 -0800
-From: John Hubbard <john.hubbard@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Pravin Nanaware <p.nanaware@nihilent.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Bitops source problem
-References: <1145971D427D7F43B0DBDAE22221C4B5035FDDAC@nipns00a210.FPS.NIHILENT.COM>
-In-Reply-To: <1145971D427D7F43B0DBDAE22221C4B5035FDDAC@nipns00a210.FPS.NIHILENT.COM>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: a340b2e653f5c7e365dae0426e8fce169ef193a6bfc3dd488ada3a64a724b7f3a692ff6d7a9294dc7510c956a98deb90350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 70.231.151.186
+	Thu, 17 Jan 2008 01:00:25 -0500
+Date: Thu, 17 Jan 2008 06:00:17 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       hch@infradead.org, viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [UNIONFS] 00/29 Unionfs and related patches pre-merge review (v2)
+Message-ID: <20080117060017.GC27894@ZenIV.linux.org.uk>
+References: <11999771882152-git-send-email-ezk@cs.sunysb.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11999771882152-git-send-email-ezk@cs.sunysb.edu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pravin Nanaware wrote:
-> Hi,
-> 
-> I was just going through the include file in the /usr/include/asm/bitops.h
-> 
-> The function description describes it as non-atomic but it seems it is not. 
-> 
-> static __inline__ void __change_bit(int nr, volatile void * addr)
-> {
->         __asm__ __volatile__(
->                 "btcl %1,%0"
->                 :"=m" (ADDR)
->                 :"Ir" (nr));
-> }
-> 
-> The kernel version I am using is 2.6.9-42. Is it right or am I missing something ?  
-> 
-> Thanks,
-> Pravin
-> 
+After grep for locking-related things:
 
-The bitops.h comments are correct: the btc IA-32 instruction is only 
-atomic if used with the lock prefix. The function above does not use the 
-lock prefix, so it is not atomic.
+	* lock_parent(): who said that you won't get dentry moved
+before managing to grab i_mutex on parent?  While we are at it,
+who said that you won't get dentry moved between fetching d_parent
+and doing dget()?  In that case parent could've been _freed_ before
+you get to dget().
 
-thanks,
-John Hubbard
+	* in create_parents():
++                       struct inode *inode = lower_dentry->d_inode;
++                       /*
++                        * If we get here, it means that we created a new
++                        * dentry+inode, but copying permissions failed.
++                        * Therefore, we should delete this inode and dput
++                        * the dentry so as not to leave cruft behind.
++                        */
++                       if (lower_dentry->d_op && lower_dentry->d_op->d_iput)
++                               lower_dentry->d_op->d_iput(lower_dentry,
++                                                          inode);
++                       else
++                               iput(inode);
++                       lower_dentry->d_inode = NULL;
++                       dput(lower_dentry);
++                       lower_dentry = ERR_PTR(err);
++                       goto out;
+Really?  So what happens if it had become positive after your test and
+somebody had looked it up in lower layer and just now happens to be
+in the middle of operations on it?  Will be thucking frilled by that...
 
+	* __unionfs_rename():
++       lock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
++       err = vfs_rename(lower_old_dir_dentry->d_inode, lower_old_dentry,
++                        lower_new_dir_dentry->d_inode, lower_new_dentry);
++       unlock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
+
+Uh-huh...  To start with, what guarantees that your lower_old_dentry
+is still a child of your lower_old_dir_dentry?  What's more, you are
+not checking the result of lock_rename(), i.e. asking for serious trouble.
+
+	* revalidation stuff: err...  how the devil can it work for
+directories, when there's nothing to prevent changes in underlying
+layers between ->d_revalidate() and operation itself?  For the upper
+layer (unionfs itself) everything's more or less fine, but the rest
+of that...
