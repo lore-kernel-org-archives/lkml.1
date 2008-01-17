@@ -1,82 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbYAQSdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbYAQSeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbYAQSdP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 13:33:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbYAQSdA
+	id S1756777AbYAQSeS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 13:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYAQSeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 13:33:00 -0500
-Received: from free-electrons.com ([88.191.23.47]:38863 "EHLO
-	sd-2511.dedibox.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbYAQSc7 (ORCPT
+	Thu, 17 Jan 2008 13:34:05 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:50394 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751581AbYAQSeE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 13:32:59 -0500
-Message-ID: <478F9F4C.2090302@free-electrons.com>
-Date: Thu, 17 Jan 2008 19:32:44 +0100
-From: Michael Opdenacker <michael-lists@free-electrons.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: linux-kernel@vger.kernel.org, Linux-tiny@selenic.com,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: fix unconditional	arch/x86/kernel/pcspeaker.c	compiling
-References: <200801171643.49301.michael-lists@free-electrons.com>	 <1200587774.5332.11.camel@cinder.waste.org>	 <478F8AEC.1080209@free-electrons.com> <1200590031.5332.19.camel@cinder.waste.org>
-In-Reply-To: <1200590031.5332.19.camel@cinder.waste.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 17 Jan 2008 13:34:04 -0500
+Subject: Re: 2.6.24-rc8-rt1
+From: Daniel Walker <dwalker@mvista.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <478F9BCE.4030301@grandegger.com>
+References: <1200544050.318.18.camel@localhost.localdomain>
+	 <478F2A46.5070506@grandegger.com>
+	 <1200586632.18731.141.camel@imap.mvista.com>
+	 <478F9BCE.4030301@grandegger.com>
+Content-Type: text/plain
+Date: Thu, 17 Jan 2008 10:30:54 -0800
+Message-Id: <1200594655.18731.148.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/17/2008 06:13 PM, Matt Mackall wrote:
-> On Thu, 2008-01-17 at 18:05 +0100, Michael Opdenacker wrote:
->   
->> Hi Matt,
->>
->> Thanks for your feedback!
->>
->> On 01/17/2008 05:36 PM, Matt Mackall wrote:
->>     
->>> On Thu, 2008-01-17 at 16:43 +0100, Michael Opdenacker wrote:
->>>   
->>>       
->>>> diff -Naur linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32 linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32
->>>> --- linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32	2008-01-17 09:48:58.000000000 +0100
->>>> +++ linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32	2008-01-17 10:06:56.000000000 +0100
->>>> @@ -45,10 +45,13 @@
->>>>  
->>>>  obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
->>>>  obj-$(CONFIG_PARAVIRT)		+= paravirt_32.o
->>>> -obj-y				+= pcspeaker.o
->>>> -
->>>>  obj-$(CONFIG_SCx200)		+= scx200_32.o
->>>>  
->>>> +ifeq ($(CONFIG_INPUT_PCSPKR),y)
->>>> +	obj-y			+= pcspeaker.o
->>>> +endif
->>>>     
->>>>         
->>> I'm not sure this does what you want. What if CONFIG_INPUT_PCSPKR = m?
->>>   
->>>       
->> Does it make sense to compile arch/x86/kernel/pcspeaker.c as a module?
->> It defines no init and exit functions, and it defines an initcall, which
->> only makes sense at boot time.
->>     
->
-> Probably not. However, the above code won't build pcspeaker.o if
-> CONFIG_INPUT_PCSPKR = m. In other words, it'll break.
->
->   
-Oops, I got it. I will post a fix soon. Thanks!
 
-:-)
+On Thu, 2008-01-17 at 19:17 +0100, Wolfgang Grandegger wrote:
+> [    0.733248] TCP bind hash table entries: 2048 (order: 3, 57344
+> bytes)
+> [    0.741132] TCP: Hash tables configured (established 2048 bind
+> 2048)
+> [    0.747981] TCP reno registered
+> [    0.805896] krcupreemptd setsched 0
+> [    0.809657]   prio = 98
 
-Michael.
+That's interesting .. You chould try running cyclictest at priority 99
+to eliminate other threads that might get involved (using -p99 instead
+of -p80 , I think) ..
 
--- 
-Michael Opdenacker, Free Electrons
-Free Embedded Linux Training Materials
-on http://free-electrons.com/training
-(More than 1500 pages!)
+Daniel
 
