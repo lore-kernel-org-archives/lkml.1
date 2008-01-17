@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYAQT5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYAQUBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755294AbYAQT5u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 14:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbYAQT5i
+	id S1756042AbYAQUBx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:01:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbYAQUBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 14:57:38 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:58033 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752061AbYAQT5h (ORCPT
+	Thu, 17 Jan 2008 15:01:45 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:34761 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645AbYAQUBo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 14:57:37 -0500
-Date: Thu, 17 Jan 2008 14:57:36 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jarek Poplawski <jarkao2@gmail.com>
-cc: Dave Young <hidave.darkstar@gmail.com>, Greg KH <gregkh@suse.de>,
-       <stefanr@s5r6.in-berlin.de>, David Brownell <david-b@pacbell.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct
- class
-In-Reply-To: <20080117194728.GA2598@ami.dom.local>
-Message-ID: <Pine.LNX.4.44L0.0801171448590.5731-100000@iolanthe.rowland.org>
+	Thu, 17 Jan 2008 15:01:44 -0500
+X-Auth-Info: uxp8r1X5X2ehf2i/6TPkkoayFvruL48lfdjVHJRo3iU=
+X-Auth-Info: uxp8r1X5X2ehf2i/6TPkkoayFvruL48lfdjVHJRo3iU=
+X-Auth-Info: uxp8r1X5X2ehf2i/6TPkkoayFvruL48lfdjVHJRo3iU=
+X-Auth-Info: uxp8r1X5X2ehf2i/6TPkkoayFvruL48lfdjVHJRo3iU=
+X-Auth-Info: uxp8r1X5X2ehf2i/6TPkkoayFvruL48lfdjVHJRo3iU=
+X-Auth-Info: uxp8r1X5X2ehf2i/6TPkkoayFvruL48lfdjVHJRo3iU=
+Message-ID: <478FB425.6050406@grandegger.com>
+Date: Thu, 17 Jan 2008 21:01:41 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Daniel Walker <dwalker@mvista.com>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-rt1
+References: <1200544050.318.18.camel@localhost.localdomain>  <478F2A46.5070506@grandegger.com>  <1200586632.18731.141.camel@imap.mvista.com>  <478F9BCE.4030301@grandegger.com> <1200594655.18731.148.camel@imap.mvista.com> <Pine.LNX.4.58.0801171344290.28350@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0801171344290.28350@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.94.4.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008, Jarek Poplawski wrote:
-
-> On Thu, Jan 17, 2008 at 10:16:30AM -0500, Alan Stern wrote:
-> > On Thu, 17 Jan 2008, Dave Young wrote:
-> > 
-> > > > Your meaning isn't clear.  Do you mean that your patch doesn't generate
-> > > > any lockdep warnings at all?  Or do you mean that it generates a single
-> > > > lockdep warning at boot time and then no more warnings afterward?
-> > > 
-> > > I means the latter one.
-> > 
-> > That's very bad.
-> > 
-> > For each type of violation, lockdep only gives one error message.  So
-> > the fact that you get one message at boot time and then no more doesn't
-> > mean the code is almost right -- it probably means the code has lots of
-> > errors and you're seeing only the first one.
+Steven Rostedt wrote:
+> On Thu, 17 Jan 2008, Daniel Walker wrote:
 > 
-> I hope it's better than this: lockdep really stops checking after first
-> warning, but I've understood from David's description that after fixing
-> this one place lockdep seems to be pleased.
+>> On Thu, 2008-01-17 at 19:17 +0100, Wolfgang Grandegger wrote:
+>>> [    0.733248] TCP bind hash table entries: 2048 (order: 3, 57344
+>>> bytes)
+>>> [    0.741132] TCP: Hash tables configured (established 2048 bind
+>>> 2048)
+>>> [    0.747981] TCP reno registered
+>>> [    0.805896] krcupreemptd setsched 0
+>>> [    0.809657]   prio = 98
+>> That's interesting .. You chould try running cyclictest at priority 99
+>> to eliminate other threads that might get involved (using -p99 instead
+>> of -p80 , I think) ..
+>>
+> 
+> But, anotherthing to try is disabling CONFIG_PREEMPT_RCU_BOOST, and see if
+> that fixes anything.
 
-That isn't what Dave said above; he said that lockdep produces a single
-warning at bootup.  If he did mention anything about one place being
-fixed up or lockdep being pleased, it was a while back and I've lost 
-track of it.
+It did not really help:
 
-If I recall correctly the nature of the warning was that a method
-routine for one class (called with the class's mutex held) was creating
-a second class and locking that class's mutex.  In principle this is
-perfectly legal and should be allowed for arbitrary depths of nesting,
-even though it is the sort of thing lockdep is currently unable to
-handle.
+   /cyclictest -n -p99 -i1000
+  3.89 3.46 1.77 1/43 3830
 
-> On the other hand, according to Greg the code is OK, so if there are any
-> such warnings they simply have to be false! (...Unless you trust lockdep
-> more?!)
+  T: 0 (  916) P:99 I:1000 C: 520752 Min:     52 Act:  112 Avg:  105
+Max:     960
 
-It's not a matter of trust or of false warnings.  People shouldn't 
-tolerate any lockdep warnings at all; otherwise they will start to 
-ignore the valid ones.
+Any other idea?
 
-Alan Stern
-
-P.S.: Just because Greg says the code is okay doesn't mean it will 
-please lockdep -- it doesn't even mean the code really is okay!  I've 
-known Greg to make an occasional mistake.
+Wolfgang.
 
