@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759818AbYAQXO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbYAQXP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759818AbYAQXO3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 18:14:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbYAQXOU
+	id S1759542AbYAQXP5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 18:15:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYAQXPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 18:14:20 -0500
-Received: from carmdsmtp.sierrawireless.com ([208.81.121.7]:43157 "EHLO
-	mx1.sierrawireless.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751993AbYAQXOS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 18:14:18 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 17 Jan 2008 18:15:47 -0500
+Received: from ns.suse.de ([195.135.220.2]:45668 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752086AbYAQXPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 18:15:46 -0500
+From: Neil Brown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 18 Jan 2008 10:15:32 +1100
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] usb-serial: Sierra driver - add devices and update dtr
-Date: Thu, 17 Jan 2008 15:15:23 -0800
-Message-ID: <3415E2A2AB26944B9159CDB22001004D02296DC3@nestea.sierrawireless.local>
-In-Reply-To: <20080117180453.GA7780@suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] usb-serial: Sierra driver - add devices and update dtr
-Thread-Index: AchZS6qBomBITVnkQQSlyFvveyCuIgAD9n1g
-References: <1199992265.9266.19.camel@linux-z60t> <20080110195403.GA29384@suse.de> <3415E2A2AB26944B9159CDB22001004D022572F5@nestea.sierrawireless.local> <20080111210234.GA3070@suse.de> <3415E2A2AB26944B9159CDB22001004D022577B3@nestea.sierrawireless.local> <20080117180453.GA7780@suse.de>
-From: "Kevin Lloyd" <klloyd@sierrawireless.com>
-To: "Greg KH" <gregkh@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
-       <linux-usb-devel@lists.sourceforge.net>
-X-OriginalArrivalTime: 17 Jan 2008 23:15:24.0335 (UTC) FILETIME=[D6AA6BF0:01C8595E]
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18319.57748.532354.179523@notabene.brown>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       Torsten Kaiser <just.for.lkml@googlemail.com>, mingo@redhat.com,
+       linux-raid@vger.kernel.org
+Subject: Re: do_md_run returned -22 [Was: 2.6.24-rc8-mm1]
+In-Reply-To: message from Andrew Morton on Thursday January 17
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<478F72F2.6000707@gmail.com>
+	<20080117110153.f224f24e.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Correct, the 0x0023 is the only newly added device that requires the
-new
-> > features.
->
-> Does that mean things will not work for this device if it is added to
-> the device table, without the code updates?
-Adding the device will not break the driver (assuming you remove the
-tag).
+On Thursday January 17, akpm@linux-foundation.org wrote:
+> On Thu, 17 Jan 2008 16:23:30 +0100 Jiri Slaby <jirislaby@gmail.com> wrote:
+> 
+> > On 01/17/2008 11:35 AM, Andrew Morton wrote:
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
+> > 
+> > still the same md issue (do_md_run returns -22=EINVAL) as in -rc6-mm1 reported 
+> > by Thorsten here:
+> > http://lkml.org/lkml/2007/12/27/45
+> 
+> hm, I must have been asleep when that was reported.  Neil, did you see it?
 
-> And is this device even public yet?
+No, even though it was Cc:ed to me - sorry.
+Maybe a revised subject line would have helped... maybe not.
 
-No, but we are trying to add native support for devices into kernels
-well 
-before they are released in an effort give better native support to
-end-users.
+> 
+> > Is there around any fix for this?
+> 
+> Well, we could bitbucket md-allow-devices-to-be-shared-between-md-arrays.patch
 
-> > When do you expect the other changes will be propagated to the
-kernel?
-> > Would it be in a 2.6.24.x point release or will they have to wait
-until
-> > 2.6.25?
->
-> They will have to wait until 2.6.25, they are too big to go into
-2.6.24
-> (we are in severe bug-fix mode only right now for .24).
-Darn.
+Yeah, do that.  I'll send you something new.
+I'll move that chunk into a different patch and add the extra bits
+needed to make that test correct in *all* cases rather than just the
+ones I was thinking about at the time.
+My test suit does try in-kernel-autodetect (the problem case) but it
+didn't catch this bug due to another bug.  I'll fix that too.
 
 Thanks,
- -Kevin
-
+NeilBrown
