@@ -1,55 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbYAQG7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbYAQHAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754519AbYAQG7d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 01:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbYAQG7Y
+	id S1754755AbYAQHAv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 02:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbYAQHAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 01:59:24 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50882 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751821AbYAQG7X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 01:59:23 -0500
-Date: Thu, 17 Jan 2008 15:59:24 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: Bitops source problem
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       "Pravin Nanaware" <p.nanaware@nihilent.com>,
-       "John Hubbard" <john.hubbard@gmail.com>,
-       "LKML" <linux-kernel@vger.kernel.org>
-In-Reply-To: <adamyr5x86k.fsf@cisco.com>
-References: <1145971D427D7F43B0DBDAE22221C4B502CCE22D@nipns00a210.FPS.NIHILENT.COM> <adamyr5x86k.fsf@cisco.com>
-Message-Id: <20080117155723.11DC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 17 Jan 2008 02:00:38 -0500
+Received: from ozlabs.org ([203.10.76.45]:36575 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751570AbYAQHAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 02:00:37 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH] request_irq() always returns -EINVAL with a NULL handler.
+Date: Thu, 17 Jan 2008 17:57:58 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Disposition: inline
+Message-Id: <200801171757.59026.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+I assume that these ancient network drivers were trying to find out if
+an irq is available.  eepro.c expecting +EBUSY was doubly wrong.
 
-> If that is indeed the source of your change_bit function then there is
-> a problem.  However in my kernel tree there is a LOCK_PREFIX in the
-> definition of the atomic version.  I don't have your exact source tree
-> handy, but on a local RHEL4 system, the LOCK_PREFIX is still there:
-> 
-> static inline void change_bit(int nr, volatile unsigned long * addr)
-> {
->         __asm__ __volatile__( LOCK_PREFIX
->                 "btcl %1,%0"
->                 :"=m" (ADDR)
->                 :"Ir" (nr));
-> }
+I'm not sure that can_request_irq() is the right thing, but these drivers
+are definitely wrong.
 
-2.6.24-rc6-mm1 have LOCK_PREFIX too :)
+request_irq should BUG() on bad input, and these would have been found
+earlier.
 
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ drivers/net/3c503.c |    2 +-
+ drivers/net/e2100.c |    2 +-
+ drivers/net/eepro.c |    2 +-
+ drivers/net/hp.c    |    2 +-
+ kernel/irq/manage.c |    1 +
+ 5 files changed, 5 insertions(+), 4 deletions(-)
 
-static inline void change_bit(int nr, volatile void *addr)
-{
-        asm volatile(LOCK_PREFIX "btc %1,%0"
-                     : ADDR : "Ir" (nr));
-}
-
+diff -r 0b7e4fbb6238 drivers/net/3c503.c
+--- a/drivers/net/3c503.c	Thu Jan 17 15:49:34 2008 +1100
++++ b/drivers/net/3c503.c	Thu Jan 17 16:40:28 2008 +1100
+@@ -379,7 +379,7 @@ el2_open(struct net_device *dev)
+ 
+ 	outb(EGACFR_NORM, E33G_GACFR);	/* Enable RAM and interrupts. */
+ 	do {
+-	    if (request_irq (*irqp, NULL, 0, "bogus", dev) != -EBUSY) {
++	    if (can_request_irq(*irqp, 0)) {
+ 		/* Twinkle the interrupt, and check if it's seen. */
+ 		unsigned long cookie = probe_irq_on();
+ 		outb_p(0x04 << ((*irqp == 9) ? 2 : *irqp), E33G_IDCFR);
+diff -r 0b7e4fbb6238 drivers/net/e2100.c
+--- a/drivers/net/e2100.c	Thu Jan 17 15:49:34 2008 +1100
++++ b/drivers/net/e2100.c	Thu Jan 17 16:40:28 2008 +1100
+@@ -202,7 +202,7 @@ static int __init e21_probe1(struct net_
+ 	if (dev->irq < 2) {
+ 		int irqlist[] = {15,11,10,12,5,9,3,4}, i;
+ 		for (i = 0; i < 8; i++)
+-			if (request_irq (irqlist[i], NULL, 0, "bogus", NULL) != -EBUSY) {
++			if (can_request_irq(irqlist[i], 0)) {
+ 				dev->irq = irqlist[i];
+ 				break;
+ 			}
+diff -r 0b7e4fbb6238 drivers/net/eepro.c
+--- a/drivers/net/eepro.c	Thu Jan 17 15:49:34 2008 +1100
++++ b/drivers/net/eepro.c	Thu Jan 17 16:40:28 2008 +1100
+@@ -914,7 +914,7 @@ static int	eepro_grab_irq(struct net_dev
+ 
+ 		eepro_sw2bank0(ioaddr); /* Switch back to Bank 0 */
+ 
+-		if (request_irq (*irqp, NULL, IRQF_SHARED, "bogus", dev) != EBUSY) {
++		if (can_request_irq(*irqp, IRQF_SHARED)) {
+ 			unsigned long irq_mask;
+ 			/* Twinkle the interrupt, and check if it's seen */
+ 			irq_mask = probe_irq_on();
+diff -r 0b7e4fbb6238 drivers/net/hp.c
+--- a/drivers/net/hp.c	Thu Jan 17 15:49:34 2008 +1100
++++ b/drivers/net/hp.c	Thu Jan 17 16:40:28 2008 +1100
+@@ -170,7 +170,7 @@ static int __init hp_probe1(struct net_d
+ 		int *irqp = wordmode ? irq_16list : irq_8list;
+ 		do {
+ 			int irq = *irqp;
+-			if (request_irq (irq, NULL, 0, "bogus", NULL) != -EBUSY) {
++			if (can_request_irq(irq, 0)) {
+ 				unsigned long cookie = probe_irq_on();
+ 				/* Twinkle the interrupt, and check if it's seen. */
+ 				outb_p(irqmap[irq] | HP_RUN, ioaddr + HP_CONFIGURE);
+diff -r 0b7e4fbb6238 kernel/irq/manage.c
+--- a/kernel/irq/manage.c	Thu Jan 17 15:49:34 2008 +1100
++++ b/kernel/irq/manage.c	Thu Jan 17 16:40:28 2008 +1100
+@@ -252,6 +252,7 @@ int can_request_irq(unsigned int irq, un
+ 
+ 	return !action;
+ }
++EXPORT_SYMBOL(can_request_irq);
+ 
+ void compat_irq_chip_set_default_handler(struct irq_desc *desc)
+ {
