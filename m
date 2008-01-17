@@ -1,93 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYAQBab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbYAQBSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbYAQBab (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 20:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYAQBaX
+	id S1755212AbYAQBSS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 20:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754371AbYAQBRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 20:30:23 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:53443 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750858AbYAQBaW (ORCPT
+	Wed, 16 Jan 2008 20:17:47 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42852 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752773AbYAQBRq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 20:30:22 -0500
-Date: Wed, 16 Jan 2008 20:29:37 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frank Rowand <frank.rowand@am.sony.com>
-cc: linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de
-Subject: Re: [PATCH 1/4] RT: remove duplicate time/Kconfig
-In-Reply-To: <1200530798.3939.17.camel@bx740>
-Message-ID: <Pine.LNX.4.58.0801162027110.19540@gandalf.stny.rr.com>
-References: <1200435525.4092.14.camel@bx740>  <20080116004051.GF30532@goodmis.org>
- <1200530798.3939.17.camel@bx740>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 Jan 2008 20:17:46 -0500
+Date: Wed, 16 Jan 2008 17:17:13 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Olof Johansson <olof@lixom.net>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 3/3]  Add bug/warn marker to generic report_bug()
+Message-ID: <20080116171713.4d5f2f61@laptopd505.fenrus.org>
+In-Reply-To: <20080117011000.GC24766@lixom.net>
+References: <20080117010130.GA24663@lixom.net>
+	<20080117011000.GC24766@lixom.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 16 Jan 2008 19:10:00 -0600
+Olof Johansson <olof@lixom.net> wrote:
 
-On Wed, 16 Jan 2008, Frank Rowand wrote:
+> Powerpc uses the generic report_bug() from lib/bug.c to report
+> warnings, and I'm guessing other arches do as well.
+> 
+> Add the module list as well as the end-of-trace marker to the output.
+> This required making print_oops_end_marker() nonstatic.
+> 
+> 
+> Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
+> 
 
->
-> time/Kconfig added by preempt-realtime-mips.patch duplicates other entry,
-> resulting in kernel make error:
->
-> Signed-off-by: Frank Rowand <frank.rowand@am.sony.com>
-> ---
->  arch/mips/Kconfig |    2 	0 +	2 -	0 !
->  1 files changed, 2 deletions(-)
->
-> Index: linux-2.6.24-rc7/arch/mips/Kconfig
-> ===================================================================
-> --- linux-2.6.24-rc7.orig/arch/mips/Kconfig
-> +++ linux-2.6.24-rc7/arch/mips/Kconfig
-> @@ -1001,8 +1001,6 @@ config BOOT_ELF64
->
->  menu "CPU selection"
->
-> -source "kernel/time/Kconfig"
-> -
->  choice
->  	prompt "CPU type"
->  	default CPU_R4X00
-
-heh, This doesn't apply either. Or is this to be done before the patches
-are added?
-
-Anyway, I did find the two konfig references:
-
-...
-
-          This is purely to save memory - each supported CPU adds
-          approximately eight kilobytes to the kernel image.  For best
-          performance should round up your number of processors to the next
-          power of two.
-
-source "kernel/time/Kconfig"
-
-#
-# Timer Interrupt Frequency Configuration
-#
-
-...
-
-config GENERIC_TIME
-        bool
-        default y
-
-source "kernel/time/Kconfig"
-
-config CPU_SPEED
-        int "CPU speed used for clocksource/clockevent calculations"
-        default 600
-endmenu
-
-...
-
-
-I'll apply your patch in quilt and then make the proper change. Which
-Kconfig do you want gone?
-
--- Steve
-
+All three are
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
