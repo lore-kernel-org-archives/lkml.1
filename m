@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758837AbYAQWm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760239AbYAQWnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758837AbYAQWm6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760135AbYAQWgu
+	id S1760239AbYAQWnY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760140AbYAQWgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:36:50 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:10808 "EHLO
+	Thu, 17 Jan 2008 17:36:52 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:10823 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757406AbYAQWgk (ORCPT
+	with ESMTP id S1759960AbYAQWgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 17:36:40 -0500
+	Thu, 17 Jan 2008 17:36:41 -0500
 From: Mark Fasheh <mark.fasheh@oracle.com>
 To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Mark Fasheh <mark.fasheh@oracle.com>
-Subject: [PATCH 04/30] ocfs2: Add data downconvert worker to inode lock
-Date: Thu, 17 Jan 2008 14:35:30 -0800
-Message-Id: <1200609356-17788-5-git-send-email-mark.fasheh@oracle.com>
+Cc: ocfs2-devel@oss.oracle.com, Tao Ma <tao.ma@oracle.com>
+Subject: [PATCH 10/30] ocfs2: Initalize bitmap_cpg of ocfs2_super to be the maximum.
+Date: Thu, 17 Jan 2008 14:35:36 -0800
+Message-Id: <1200609356-17788-11-git-send-email-mark.fasheh@oracle.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
 References: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
@@ -27,45 +27,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to extend inode lock coverage to inode data, we use the same data
-downconvert worker with only a small modification to only do work for
-regular files.
+From: Tao Ma <tao.ma@oracle.com>
 
+This value is initialized from global_bitmap->id2.i_chain.cl_cpg. If there
+is only 1 group, it will be equal to the total clusters in the volume. So
+as for online resize, it should change for all the nodes in the cluster.
+It isn't easy and there is no corresponding lock for it.
+
+bitmap_cpg is only used in 2 areas:
+1. Check whether the suballoc is too large for us to allocate from the global
+   bitmap, so it is little used. And now the suballoc size is 2048, it rarely
+   meet this situation and the check is almost useless.
+2. Calculate which group a cluster belongs to. We use it during truncate to
+   figure out which cluster group an extent belongs too. But we should be OK
+   if we increase it though as the cluster group calculated shouldn't change
+   and we only ever have a small bitmap_cpg on file systems with a single
+   cluster group.
+
+Signed-off-by: Tao Ma <tao.ma@oracle.com>
 Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
 ---
- fs/ocfs2/dlmglue.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ fs/ocfs2/super.c |   19 +------------------
+ 1 files changed, 1 insertions(+), 18 deletions(-)
 
-diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index 64d6ff4..840aeda 100644
---- a/fs/ocfs2/dlmglue.c
-+++ b/fs/ocfs2/dlmglue.c
-@@ -228,6 +228,7 @@ static struct ocfs2_lock_res_ops ocfs2_inode_meta_lops = {
- 	.get_osb	= ocfs2_get_inode_osb,
- 	.check_downconvert = ocfs2_check_meta_downconvert,
- 	.set_lvb	= ocfs2_set_meta_lvb,
-+	.downconvert_worker = ocfs2_data_convert_worker,
- 	.flags		= LOCK_TYPE_REQUIRES_REFRESH|LOCK_TYPE_USES_LVB,
- };
- 
-@@ -2851,6 +2852,9 @@ static int ocfs2_data_convert_worker(struct ocfs2_lock_res *lockres,
-        	inode = ocfs2_lock_res_inode(lockres);
- 	mapping = inode->i_mapping;
- 
-+	if (S_ISREG(inode->i_mode))
-+		goto out;
-+
- 	/*
- 	 * We need this before the filemap_fdatawrite() so that it can
- 	 * transfer the dirty bit from the PTE to the
-@@ -2876,6 +2880,7 @@ static int ocfs2_data_convert_worker(struct ocfs2_lock_res *lockres,
- 		filemap_fdatawait(mapping);
+diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+index 7708df3..479ac50 100644
+--- a/fs/ocfs2/super.c
++++ b/fs/ocfs2/super.c
+@@ -1280,7 +1280,6 @@ static int ocfs2_initialize_super(struct super_block *sb,
+ 	int i, cbits, bbits;
+ 	struct ocfs2_dinode *di = (struct ocfs2_dinode *)bh->b_data;
+ 	struct inode *inode = NULL;
+-	struct buffer_head *bitmap_bh = NULL;
+ 	struct ocfs2_journal *journal;
+ 	__le32 uuid_net_key;
+ 	struct ocfs2_super *osb;
+@@ -1497,25 +1496,9 @@ static int ocfs2_initialize_super(struct super_block *sb,
  	}
  
-+out:
- 	return UNBLOCK_CONTINUE;
- }
+ 	osb->bitmap_blkno = OCFS2_I(inode)->ip_blkno;
+-
+-	/* We don't have a cluster lock on the bitmap here because
+-	 * we're only interested in static information and the extra
+-	 * complexity at mount time isn't worht it. Don't pass the
+-	 * inode in to the read function though as we don't want it to
+-	 * be put in the cache. */
+-	status = ocfs2_read_block(osb, osb->bitmap_blkno, &bitmap_bh, 0,
+-				  NULL);
+ 	iput(inode);
+-	if (status < 0) {
+-		mlog_errno(status);
+-		goto bail;
+-	}
  
+-	di = (struct ocfs2_dinode *) bitmap_bh->b_data;
+-	osb->bitmap_cpg = le16_to_cpu(di->id2.i_chain.cl_cpg);
+-	brelse(bitmap_bh);
+-	mlog(0, "cluster bitmap inode: %llu, clusters per group: %u\n",
+-	     (unsigned long long)osb->bitmap_blkno, osb->bitmap_cpg);
++	osb->bitmap_cpg = ocfs2_group_bitmap_size(sb) * 8;
+ 
+ 	status = ocfs2_init_slot_info(osb);
+ 	if (status < 0) {
 -- 
 1.5.3.6
 
