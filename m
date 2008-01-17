@@ -1,162 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbYAQXeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbYAQXjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759998AbYAQXeX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 18:34:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbYAQXeO
+	id S1758458AbYAQXjJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 18:39:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYAQXi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 18:34:14 -0500
-Received: from mga02.intel.com ([134.134.136.20]:2606 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754304AbYAQXeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 18:34:12 -0500
-X-ExtLoop1: 1
-Date: Thu, 17 Jan 2008 15:33:55 -0800
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Linux ACPI mailing list <linux-acpi@vger.kernel.org>,
-       Intel E/100 mailing list <e1000-devel@lists.sourceforge.net>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-mm1
-Message-ID: <20080117233355.GA13590@linux-os.sc.intel.com>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org> <20080117124622.GA18450@balbir.in.ibm.com> <20080117104021.25a8e562.akpm@linux-foundation.org> <924EFEDD5F540B4284297C4DC59F3DEE5E909A@orsmsx423.amr.corp.intel.com> <20080117114032.1f9f1df5.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080117114032.1f9f1df5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	Thu, 17 Jan 2008 18:38:56 -0500
+Received: from slowhand.arndnet.de ([88.198.19.76]:33892 "EHLO mail.unitix.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753410AbYAQXi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 18:38:56 -0500
+Message-ID: <478FE733.2030806@i4.informatik.rwth-aachen.de>
+Date: Fri, 18 Jan 2008 00:39:31 +0100
+From: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Jordan Crouse <jordan.crouse@amd.com>
+CC: Andres Salomon <dilinger@queued.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
+References: <478E4267.7020509@i4.informatik.rwth-aachen.de> <20080116161912.7b449466@ephemeral> <20080116165606.3ebc06a4@ephemeral> <478F25D6.3060503@i4.informatik.rwth-aachen.de> <20080117134032.4cc1a1cf@ephemeral> <478FB255.5040001@i4.informatik.rwth-aachen.de> <20080117211917.GF8244@cosmic.amd.com> <478FCDB6.4010708@i4.informatik.rwth-aachen.de> <20080117223644.GK8244@cosmic.amd.com> <478FDC12.6020505@i4.informatik.rwth-aachen.de> <20080117225744.GL8244@cosmic.amd.com>
+In-Reply-To: <20080117225744.GL8244@cosmic.amd.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 11:40:32AM -0800, Andrew Morton wrote:
-> On Thu, 17 Jan 2008 11:22:19 -0800 "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
+Jordan Crouse schrieb:
+> On 17/01/08 23:52 +0100, Arnd Hannemann wrote:
 > 
-> >  
-> > The problem is
-> > >> modprobe:2584 conflicting cache attribute 50000000-50001000
-> > >> uncached<->default
-> > 
-> > Some address range here is being mapped with conflicting types.
-> > Somewhere the range was mapped with default (write-back). Later
-> > pci_iomap() is mapping that region as uncacheable which is basically
-> > aliasing. PAT code detects the aliasing and fails the second uncacheable
-> > request which leads in the failure.
+> <snip>
 > 
-> It sounds to me like you need considerably more runtime debugging and
-> reporting support in that code.  Ensure that it generates enough output
-> both during regular operation and during failures for you to be able to
-> diagnose things in a single iteration.
+>>> Hmmm - not sure whats happening here.  I wonder if we're stuck in an
+>>> interrupt storm of some sort as soon as you register the interrupt handler.
+>>> But I would think that whatever was causing the interrupt storm would be
+>>> running well before we hit setup_irq(), and you would be recording "nobody
+>>> cared" interrupts left and right.
+>> Interesting thing is that it hangs not in setup_irq() but later, right
+>> after printing the newline of the printk.
 > 
-> We can always take it out later.
+> THat makes me think interrupt storm even more.
 > 
+>>> The thing that scares me is that the TinyBIOS seems to know that we want
+>>> to use the MFGPT timers, and I wonder if they did anything behind the scenes
+>>> to "help us out" even though we didn't ask for it.
+>>>
+>>> I don't know how easy it would be for you - but can you try reading 
+>>> MSRs 0x51400020 - 0x51400023?   If you need a command line app to do it,
+>>> you can use rdmsr from here:
+>>>
+>>> http://wiki.laptop.org/go/Flashing_LinuxBIOS_on_A-Test_Boards
+>> MSR register 0x51400020 => b7:ef:5f:f4:bf:d1:95:68
+>> MSR register 0x51400021 => b7:fd:1f:f4:bf:cf:5a:d8
+>> MSR register 0x51400022 => b7:f3:bf:f4:bf:f5:fb:a8
+>> MSR register 0x51400023 => b7:fb:9f:f4:bf:fd:d9:f8
 > 
+> Hmmm - those look wrong.  Is /dev/cpu/0/msr there?  The applet on the
+> wiki has a bug that doesn't check for it.
+I'm sorry, I should have checked: I didn't execute rdmsr as root.
+The correct ones:
 
-Patch below makes the interesting printks from PAT non DEBUG.
+MSR register 0x51400020 => 00:00:00:00:00:00:0f:00
+MSR register 0x51400021 => 00:00:00:00:04:00:00:00
+MSR register 0x51400022 => 00:00:00:00:00:00:00:00
+MSR register 0x51400023 => 00:00:00:00:00:0c:ba:90
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-
-Index: linux-2.6.git/arch/x86/mm/ioremap.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/mm/ioremap.c	2008-01-17 03:18:59.000000000 -0800
-+++ linux-2.6.git/arch/x86/mm/ioremap.c	2008-01-17 08:11:51.000000000 -0800
-@@ -25,10 +25,13 @@
-  */
- void __iomem *ioremap_wc(unsigned long phys_addr, unsigned long size)
- {
--	if (pat_wc_enabled)
-+	if (pat_wc_enabled) {
-+		printk(KERN_INFO "ioremap_wc: addr %lx, size %lx\n",
-+		       phys_addr, size);
- 		return __ioremap(phys_addr, size, _PAGE_WC);
--	else
-+	} else {
- 		return ioremap_nocache(phys_addr, size);
-+	}
- }
- EXPORT_SYMBOL(ioremap_wc);
- 
-Index: linux-2.6.git/arch/x86/mm/ioremap_32.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/mm/ioremap_32.c	2008-01-17 03:18:59.000000000 -0800
-+++ linux-2.6.git/arch/x86/mm/ioremap_32.c	2008-01-17 08:10:58.000000000 -0800
-@@ -164,6 +164,8 @@
- 
- void __iomem *ioremap_nocache (unsigned long phys_addr, unsigned long size)
- {
-+	printk(KERN_INFO "ioremap_nocache: addr %lx, size %lx\n",
-+	       phys_addr, size);
- 	return __ioremap(phys_addr, size, _PAGE_UC);
- }
- EXPORT_SYMBOL(ioremap_nocache);
-Index: linux-2.6.git/arch/x86/mm/ioremap_64.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/mm/ioremap_64.c	2008-01-17 03:18:59.000000000 -0800
-+++ linux-2.6.git/arch/x86/mm/ioremap_64.c	2008-01-17 08:10:13.000000000 -0800
-@@ -144,7 +144,7 @@
- 
- void __iomem *ioremap_nocache (unsigned long phys_addr, unsigned long size)
- {
--	printk(KERN_DEBUG "ioremap_nocache: addr %lx, size %lx\n",
-+	printk(KERN_INFO "ioremap_nocache: addr %lx, size %lx\n",
- 	       phys_addr, size);
- 	return __ioremap(phys_addr, size, _PAGE_UC);
- }
-Index: linux-2.6.git/arch/x86/mm/pat.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/mm/pat.c	2008-01-17 03:18:59.000000000 -0800
-+++ linux-2.6.git/arch/x86/mm/pat.c	2008-01-17 08:06:23.000000000 -0800
-@@ -170,7 +170,7 @@
- 
- 			if (!fattr && attr != ml->attr) {
- 				printk(
--	KERN_DEBUG "%s:%d conflicting cache attribute %Lx-%Lx %s<->%s\n",
-+	KERN_WARNING "%s:%d conflicting cache attribute %Lx-%Lx %s<->%s\n",
- 					current->comm, current->pid,
- 					start, end,
- 					cattr_name(attr), cattr_name(ml->attr));
-@@ -205,7 +205,7 @@
- 	list_for_each_entry(ml, &mattr_list, nd) {
- 		if (ml->start == start && ml->end == end) {
- 			if (ml->attr != attr)
--				printk(KERN_DEBUG
-+				printk(KERN_WARNING
- 	"%s:%d conflicting cache attributes on free %Lx-%Lx %s<->%s\n",
- 			current->comm, current->pid, start, end,
- 			cattr_name(attr), cattr_name(ml->attr));
-@@ -217,7 +217,7 @@
- 	}
- 	spin_unlock(&mattr_lock);
- 	if (err)
--		printk(KERN_DEBUG "%s:%d freeing invalid mattr %Lx-%Lx %s\n",
-+		printk(KERN_WARNING "%s:%d freeing invalid mattr %Lx-%Lx %s\n",
- 			current->comm, current->pid,
- 			start, end, cattr_name(attr));
- 	return err;
-Index: linux-2.6.git/include/asm-x86/io_32.h
-===================================================================
---- linux-2.6.git.orig/include/asm-x86/io_32.h	2008-01-17 06:28:06.000000000 -0800
-+++ linux-2.6.git/include/asm-x86/io_32.h	2008-01-17 08:09:30.000000000 -0800
-@@ -113,6 +113,8 @@
- 
- static inline void __iomem * ioremap(unsigned long offset, unsigned long size)
- {
-+	printk(KERN_INFO "ioremap: addr %lx, size %lx\n",
-+	       offset, size);
- 	return __ioremap(offset, size, 0);
- }
- 
-Index: linux-2.6.git/include/asm-x86/io_64.h
-===================================================================
---- linux-2.6.git.orig/include/asm-x86/io_64.h	2008-01-17 08:08:23.000000000 -0800
-+++ linux-2.6.git/include/asm-x86/io_64.h	2008-01-17 08:08:44.000000000 -0800
-@@ -154,7 +154,7 @@
- 
- static inline void __iomem * ioremap (unsigned long offset, unsigned long size)
- {
--	printk(KERN_DEBUG "ioremap: addr %lx, size %lx\n",
-+	printk(KERN_INFO "ioremap: addr %lx, size %lx\n",
- 	       offset, size);
- 	return __ioremap(offset, size, 0);
- }
+Arnd
