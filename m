@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbYAQXKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759818AbYAQXO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759463AbYAQXKw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 18:10:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761391AbYAQXKa
+	id S1759818AbYAQXO3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 18:14:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbYAQXOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 18:10:30 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48163 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761155AbYAQXK3 (ORCPT
+	Thu, 17 Jan 2008 18:14:20 -0500
+Received: from carmdsmtp.sierrawireless.com ([208.81.121.7]:43157 "EHLO
+	mx1.sierrawireless.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993AbYAQXOS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 18:10:29 -0500
-Date: Thu, 17 Jan 2008 15:10:13 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Schwartz <davids@webmaster.com>
-cc: Johannes Weiner <hannes@saeurebad.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       clameter@sgi.com, penberg@cs.helsinki.fi
-Subject: RE: Why is the kfree() argument const?
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEHDJJAC.davids@webmaster.com>
-Message-ID: <alpine.LFD.1.00.0801171507570.2957@woody.linux-foundation.org>
-References: <MDEHLPKNGKAHNMBLJOLKKEHDJJAC.davids@webmaster.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 17 Jan 2008 18:14:18 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] usb-serial: Sierra driver - add devices and update dtr
+Date: Thu, 17 Jan 2008 15:15:23 -0800
+Message-ID: <3415E2A2AB26944B9159CDB22001004D02296DC3@nestea.sierrawireless.local>
+In-Reply-To: <20080117180453.GA7780@suse.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] usb-serial: Sierra driver - add devices and update dtr
+Thread-Index: AchZS6qBomBITVnkQQSlyFvveyCuIgAD9n1g
+References: <1199992265.9266.19.camel@linux-z60t> <20080110195403.GA29384@suse.de> <3415E2A2AB26944B9159CDB22001004D022572F5@nestea.sierrawireless.local> <20080111210234.GA3070@suse.de> <3415E2A2AB26944B9159CDB22001004D022577B3@nestea.sierrawireless.local> <20080117180453.GA7780@suse.de>
+From: "Kevin Lloyd" <klloyd@sierrawireless.com>
+To: "Greg KH" <gregkh@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
+       <linux-usb-devel@lists.sourceforge.net>
+X-OriginalArrivalTime: 17 Jan 2008 23:15:24.0335 (UTC) FILETIME=[D6AA6BF0:01C8595E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > Correct, the 0x0023 is the only newly added device that requires the
+new
+> > features.
+>
+> Does that mean things will not work for this device if it is added to
+> the device table, without the code updates?
+Adding the device will not break the driver (assuming you remove the
+tag).
 
+> And is this device even public yet?
 
-On Thu, 17 Jan 2008, David Schwartz wrote:
-> 
-> No, that's not what it means. It has nothing to do with memory. It has to do
-> with logical state.
+No, but we are trying to add native support for devices into kernels
+well 
+before they are released in an effort give better native support to
+end-users.
 
-Blah. That's just your own made-up explanation of what you think "const"
-should mean. It has no logical background or any basis in the C language.
+> > When do you expect the other changes will be propagated to the
+kernel?
+> > Would it be in a 2.6.24.x point release or will they have to wait
+until
+> > 2.6.25?
+>
+> They will have to wait until 2.6.25, they are too big to go into
+2.6.24
+> (we are in severe bug-fix mode only right now for .24).
+Darn.
 
-"const" has nothing to do with "logical state".  It has one meaning, and 
-one meaning only: the compiler should complain if that particular type is 
-used to do a write access.
+Thanks,
+ -Kevin
 
-It says nothing at all about the "logical state of the object". It cannot, 
-since a single object can - and does - have multiple pointers to it.
-
-So your standpoint not only has no relevant background to it, it's also 
-not even logically consistent.
-
-		Linus
