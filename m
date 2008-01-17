@@ -1,106 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758767AbYAQX0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbYAQXam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758767AbYAQX0j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 18:26:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbYAQX0b
+	id S1758280AbYAQXam (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 18:30:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbYAQXad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 18:26:31 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:40991 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756559AbYAQX0a (ORCPT
+	Thu, 17 Jan 2008 18:30:33 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:31151 "EHLO
+	outbound4-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752022AbYAQXab (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 18:26:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=liK48xBgKyhFcdZodhoca5aUmQ9rYOq6twa+r9Css7f6Erizv4IOus52S1U3wtOIkZEogZ8ckct0VOuf5dFuZcJfIiSiuTdi6QVgYwDb9U9Zz2sLNazSauFTdF+L2nOSNqGIGqJMtnv6rJw042ndJYhHsvppMtO2sj/xPOeJ3KM=
-Subject: Re: [PATCH] x86: Use v8086_mode helper, trivial unification
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <478FDE76.3070309@zytor.com>
-References: <1200611078.5724.46.camel@brick>  <478FDE76.3070309@zytor.com>
-Content-Type: text/plain
-Date: Thu, 17 Jan 2008 15:26:29 -0800
-Message-Id: <1200612389.5724.63.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Thu, 17 Jan 2008 18:30:31 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
+Date: Fri, 18 Jan 2008 00:24:48 +0100
+From: "Andreas Herrmann3" <andreas.herrmann3@amd.com>
+To: "Venki Pallipadi" <venkatesh.pallipadi@intel.com>
+cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, ak@muc.de,
+       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
+       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       jesse.barnes@intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
+ fixes
+Message-ID: <20080117232448.GJ12631@alberich.amd.com>
+References: <20080117191211.GA12631@alberich.amd.com>
+ <20080117203600.GB27778@elte.hu>
+ <20080117210301.GC12631@alberich.amd.com>
+ <20080117211308.GA7858@elte.hu>
+ <20080117213131.GA25389@linux-os.sc.intel.com>
+ <20080117214209.GA12811@elte.hu>
+ <20080117220650.GE12631@alberich.amd.com>
+ <20080117221505.GB18883@elte.hu>
+ <20080117225243.GH12631@alberich.amd.com>
+ <20080117230410.GA8694@linux-os.sc.intel.com>
+MIME-Version: 1.0
+In-Reply-To: <20080117230410.GA8694@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 17 Jan 2008 23:24:32.0594 (UTC)
+ FILETIME=[1D741B20:01C85960]
+X-WSS-ID: 6B913C3924S8213286-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-17 at 18:02 -0500, H. Peter Anvin wrote:
-> Harvey Harrison wrote:
-> > Use v8086_mode inline in fault_32.c, no functional change
-> > also ifdef the section for 32-bit only and add to fault_64.c
+On Thu, Jan 17, 2008 at 03:04:10PM -0800, Venki Pallipadi wrote:
 > 
-> The #ifdef is unnecessary, since v8086_mode() is now a constant zero on 
-> x86-64.  gcc will remove the if clause.
+> Below is another potential fix for the problem here. Going through ACPI
+> ioremap usages, we found at one place the mapping is cached for possible
+> optimization reason and not unmapped later. Patch below always unmaps
+> ioremap at this place in ACPICA.
 > 
+> Thanks,
+> Venki
+> 
+> 
+> Index: linux-2.6.git/drivers/acpi/executer/exregion.c
+> ===================================================================
+> --- linux-2.6.git.orig/drivers/acpi/executer/exregion.c	2008-01-17 03:18:39.000000000 -0800
+> +++ linux-2.6.git/drivers/acpi/executer/exregion.c	2008-01-17 07:34:33.000000000 -0800
+> @@ -48,6 +48,8 @@
+>  #define _COMPONENT          ACPI_EXECUTER
+>  ACPI_MODULE_NAME("exregion")
+>  
+> +static int ioremap_cache;
+> +
+>  /*******************************************************************************
+>   *
+>   * FUNCTION:    acpi_ex_system_memory_space_handler
+> @@ -249,6 +251,13 @@
+>  		break;
+>  	}
+>  
+> +	if (!ioremap_cache) {
+> +		acpi_os_unmap_memory(mem_info->mapped_logical_address,
+> +		                     window_size);
+> +		mem_info->mapped_logical_address = 0;
+> +		mem_info->mapped_physical_address = 0;
+> +		mem_info->mapped_length = 0;
+> +	}
+>  	return_ACPI_STATUS(status);
+>  }
+>  
 
-Sorry, missed that detail in ptrace.h, I notice now.
 
-Is there some better way this could be organized, would the following
-be an improvement, as opposed to two long ifdef sections?
+Applying and compiling your patch I see:
 
-Patch will follow if you think it's a good idea.
+  CC      drivers/acpi/executer/exregion.o
+drivers/acpi/executer/exregion.c: In function 'acpi_ex_system_memory_space_handler':
+drivers/acpi/executer/exregion.c:81: warning: 'window_size' may be used uninitialized in this function
+ 
 
-static inline int user_mode(struct pt_regs *regs)
-{
-#ifdef CONFIG_X86_32
-	return (regs->cs & SEGMENT_RPL_MASK) == USER_RPL;
-#else
-	return !!(regs->cs & 3);
-#endif
-}
+After glancing through this file it seems that ioremap_cache is always 0
+and acpi_os_unmap_memory will unconditionally be executed at end of this function.
+I am not familiar with that code. But I just want to reinsure that this
+is what you want. And if so, why is that variable needed?
+But maybe I missed something ...
+(I'll test it tomorrow, or I better should say later today.)
 
-static inline int user_mode_vm(struct pt_regs *regs)
-{
-#ifdef CONFIG_X86_32
-	return ((regs->cs & SEGMENT_RPL_MASK) |
-		(regs->flags & VM_MASK)) >= USER_RPL;
-#else
-	return user_mode(regs);
-#endif
-}
 
-static inline int v8086_mode(struct pt_regs *regs)
-{
-#ifdef CONFIG_X86_32
-	return (regs->flags & VM_MASK);
-#else
-	return 0;
-#endif
-}
+Andreas
 
-/* OK, maybe this should just be deleted, and use
-regs->ip directly in code*/
-static inline unsigned long instruction_pointer(struct pt_regs *regs)
-{
-	return regs->ip;
-}
 
-/* OK, maybe this should just be deleted, and use
-regs->bp directly in code*/
-static inline unsigned long frame_pointer(struct pt_regs *regs)
-{
-	return regs->bp;
-}
-
-static inline unsigned long stack_pointer(struct pt_regs *regs)
-{
-#ifdef CONFIG_X86_32
-	return (unsigned long)regs;
-#else
-	return regs->sp;
-#endif
-}
-
-/* still need a define here, as one is long and one is unsigned long.
- * but this is another target for unification I guess. */
-#define regs_return_value(regs) ((regs)->ax)
-
-Harvey
 
