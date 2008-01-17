@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbYAQTL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756274AbYAQTOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756078AbYAQTL6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 14:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbYAQTLs
+	id S1756274AbYAQTOI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 14:14:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYAQTN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 14:11:48 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55314 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751790AbYAQTLr (ORCPT
+	Thu, 17 Jan 2008 14:13:56 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:61837 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554AbYAQTN4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 14:11:47 -0500
-Date: Thu, 17 Jan 2008 11:11:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       fischer@norbit.de, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Samuel Ortiz <samuel@sortiz.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: 2.6.24-rc8-mm1 Build Failure on scsi driver
-Message-Id: <20080117111104.3baa878e.akpm@linux-foundation.org>
-In-Reply-To: <478F7F2B.9000801@linux.vnet.ibm.com>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<478F7F2B.9000801@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Jan 2008 14:13:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WM9pWMWcBilM1u+5iT81lE5wSlLdkGsiLaKZsE+/YiudXZDBQ1x8k92w+VXfdgJFUeYoI7pIdkdSJy6DAgnpeh0h7u4ULDl54WgFOqJBCSfXzCjqxMH8SdcTWpx8VA4PnRQjrlS4Ig8Z+ryjz1ZN4/rtZjg3I4Dv2eK+lzqdb6A=
+Message-ID: <519a8b110801171113y20a3bedfg446e29a30712a26d@mail.gmail.com>
+Date: Thu, 17 Jan 2008 20:13:54 +0100
+From: xming <xmingske@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Cannot boot xen DomU > 2.6.23.1
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>
+In-Reply-To: <478F8D22.60004@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <519a8b110801170813h96b8f2by795e6d8b72a00ba4@mail.gmail.com>
+	 <478F8D22.60004@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 21:45:39 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+On Jan 17, 2008 6:15 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> Hi Andrew,
-> 
-> The kernel build fails with following error
-> 
-> drivers/scsi/aha152x.o: In function `aha152x_host_reset_host':
-> /home/kamalesh/scrap/linux-2.6.24-rc8/drivers/scsi/aha152x.c:1324: multiple definition of `aha152x_host_reset_host'
-> drivers/scsi/pcmcia/built-in.o:/home/kamalesh/scrap/linux-2.6.24-rc8/drivers/scsi/aha152x.c:1324: first defined here
-> drivers/scsi/aha152x.o: In function `aha152x_release':
-> /home/kamalesh/scrap/linux-2.6.24-rc8/drivers/scsi/aha152x.c:908: multiple definition of `aha152x_release'
-> drivers/scsi/pcmcia/built-in.o:/home/kamalesh/scrap/linux-2.6.24-rc8/drivers/scsi/aha152x.c:908: first defined here
-> ld: Warning: size of symbol `aha152x_release' changed from 68 in drivers/scsi/pcmcia/built-in.o to 100 in drivers/scsi/aha152x.o
-> drivers/scsi/aha152x.o: In function `aha152x_probe_one':
+> Uh, that's very strange.  That patch fixes an outright bug, unless
+> you're using one specific changeset out of the xen-unstable mercurial
+> tree.  What version of Xen are you using?  Is it one you've built from
+> xenbits, or distributed by someone?  Are you using a 32 or 64 bit xen/dom0?
+>
+> I don't understand where the "too much console activity" message comes
+> from.  Could you post an actual cut'n'paste of the message, or a
+> screenshot?  Are you using a serial console on your dom0?
 
-Neat.  Seems that the scsi build system is linking together two copies of
-drivers/scsi/aha152x.o.  One via drivers/scsi/aha152x.o directly and the
-other via drivers/scsi/pcmcia/built-in.o.
+I am running Xen 3.1.2 from Gentoo, tried 3.1.1. 32 bit PAE as I wrote in the
+previous post
 
-Please send the .config.
+> > I am running Xen 3.1.2 PAE
 
-I'm looking suspiciously at this, from git-scsi-misc:
+I never had any problem (at least THIS problem) with any PV DomU (2.6.18,
+2.6.20, 2.6.21, 2.6.23-RCs and 2.6.23.1). The problem started with 2.6.23.3
+and today I finally found time to track it down.
 
-commit 8ae732a91df051aba6820068a47b631a06599d84
-Author: Tejun Heo <htejun@gmail.com>
-Date:   Fri Dec 7 22:36:23 2007 +0900
+This only affects PV domU, so I don't undestand your question about serial
+console of Dom0.
 
-    [SCSI] make pcmcia directory use obj-y|m instead of subdir-y|m
-    
-    subdir-y|m isn't supposed to contain modules or built-in components.
-    Change subdir-$(CONFIG_PCMCIA) to obj-$(CONFIG_PCMCIA).
-    
-    Signed-off-by: Tejun Heo <htejun@gmail.com>
-    Acked-by: Sam Ravnborg <sam@ravnborg.org>
-    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+The symptom is (with a lot of subjective judgment) when there is a lot (or
+too quick) output on the console of the domU (hvc0 connected with either
+"xm crea file.cfg -c" or "xm cons id") the whole PV domU hangs. It will
+really hang at random places, sometimes right after init and sometime
+after I logged in and just generate some ouput (on hvc0) like "find /". IIRC
+I have never seen a hang before init.
 
-diff --git a/drivers/scsi/Makefile b/drivers/scsi/Makefile
-index b5441f5..93e1428 100644
---- a/drivers/scsi/Makefile
-+++ b/drivers/scsi/Makefile
-@@ -17,7 +17,7 @@
- CFLAGS_aha152x.o =   -DAHA152X_STAT -DAUTOCONF
- CFLAGS_gdth.o    = # -DDEBUG_GDTH=2 -D__SERIAL__ -D__COM2__ -DGDTH_STATISTICS
- 
--subdir-$(CONFIG_PCMCIA)		+= pcmcia
-+obj-$(CONFIG_PCMCIA)		+= pcmcia/
- 
- obj-$(CONFIG_SCSI)		+= scsi_mod.o
- obj-$(CONFIG_SCSI_TGT)		+= scsi_tgt.o
+When it hangs there is no output on console any more and network to
+that domU is dead too, nothing affects dom0. "xm list" still reports the
+domU as "r", nothing special in the logs (of dom0 xen logs) and no
+OOPS nor panic reported in the domU. It's seem that it's running in a
+infinite loop.
 
+So, I can make screenshots, but they won't tell you anything, the is no
+message, it's just dead.
+
+Gentoo's xen is just a src tarball made from the mercurial repro, w/o
+any patches (AFAIK).
+
+cheers
+
+Ming-Wei Shih
