@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760239AbYAQWnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760972AbYAQWno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760239AbYAQWnY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:43:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760140AbYAQWgw
+	id S1760972AbYAQWno (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760145AbYAQWgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:36:52 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:10823 "EHLO
+	Thu, 17 Jan 2008 17:36:53 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:10833 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759960AbYAQWgl (ORCPT
+	with ESMTP id S1760110AbYAQWgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 17:36:41 -0500
+	Thu, 17 Jan 2008 17:36:42 -0500
 From: Mark Fasheh <mark.fasheh@oracle.com>
 To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Tao Ma <tao.ma@oracle.com>
-Subject: [PATCH 10/30] ocfs2: Initalize bitmap_cpg of ocfs2_super to be the maximum.
-Date: Thu, 17 Jan 2008 14:35:36 -0800
-Message-Id: <1200609356-17788-11-git-send-email-mark.fasheh@oracle.com>
+Cc: ocfs2-devel@oss.oracle.com, Jan Kara <jack@suse.cz>
+Subject: [PATCH 21/30] ocfs2: Safer read_inline_data()
+Date: Thu, 17 Jan 2008 14:35:47 -0800
+Message-Id: <1200609356-17788-22-git-send-email-mark.fasheh@oracle.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
 References: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
@@ -27,68 +27,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tao Ma <tao.ma@oracle.com>
+From: Jan Kara <jack@suse.cz>
 
-This value is initialized from global_bitmap->id2.i_chain.cl_cpg. If there
-is only 1 group, it will be equal to the total clusters in the volume. So
-as for online resize, it should change for all the nodes in the cluster.
-It isn't easy and there is no corresponding lock for it.
+In ocfs2_read_inline_data() we should store file size in loff_t. Although
+the file size should fit in 32 bits we cannot be sure in case filesystem is
+corrupted.
 
-bitmap_cpg is only used in 2 areas:
-1. Check whether the suballoc is too large for us to allocate from the global
-   bitmap, so it is little used. And now the suballoc size is 2048, it rarely
-   meet this situation and the check is almost useless.
-2. Calculate which group a cluster belongs to. We use it during truncate to
-   figure out which cluster group an extent belongs too. But we should be OK
-   if we increase it though as the cluster group calculated shouldn't change
-   and we only ever have a small bitmap_cpg on file systems with a single
-   cluster group.
-
-Signed-off-by: Tao Ma <tao.ma@oracle.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
 ---
- fs/ocfs2/super.c |   19 +------------------
- 1 files changed, 1 insertions(+), 18 deletions(-)
+ fs/ocfs2/aops.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-index 7708df3..479ac50 100644
---- a/fs/ocfs2/super.c
-+++ b/fs/ocfs2/super.c
-@@ -1280,7 +1280,6 @@ static int ocfs2_initialize_super(struct super_block *sb,
- 	int i, cbits, bbits;
- 	struct ocfs2_dinode *di = (struct ocfs2_dinode *)bh->b_data;
- 	struct inode *inode = NULL;
--	struct buffer_head *bitmap_bh = NULL;
- 	struct ocfs2_journal *journal;
- 	__le32 uuid_net_key;
- 	struct ocfs2_super *osb;
-@@ -1497,25 +1496,9 @@ static int ocfs2_initialize_super(struct super_block *sb,
+diff --git a/fs/ocfs2/aops.c b/fs/ocfs2/aops.c
+index 2a0eaac..865684f 100644
+--- a/fs/ocfs2/aops.c
++++ b/fs/ocfs2/aops.c
+@@ -217,7 +217,7 @@ int ocfs2_read_inline_data(struct inode *inode, struct page *page,
+ 			   struct buffer_head *di_bh)
+ {
+ 	void *kaddr;
+-	unsigned int size;
++	loff_t size;
+ 	struct ocfs2_dinode *di = (struct ocfs2_dinode *)di_bh->b_data;
+ 
+ 	if (!(le16_to_cpu(di->i_dyn_features) & OCFS2_INLINE_DATA_FL)) {
+@@ -231,8 +231,9 @@ int ocfs2_read_inline_data(struct inode *inode, struct page *page,
+ 	if (size > PAGE_CACHE_SIZE ||
+ 	    size > ocfs2_max_inline_data(inode->i_sb)) {
+ 		ocfs2_error(inode->i_sb,
+-			    "Inode %llu has with inline data has bad size: %u",
+-			    (unsigned long long)OCFS2_I(inode)->ip_blkno, size);
++			    "Inode %llu has with inline data has bad size: %Lu",
++			    (unsigned long long)OCFS2_I(inode)->ip_blkno,
++			    (unsigned long long)size);
+ 		return -EROFS;
  	}
  
- 	osb->bitmap_blkno = OCFS2_I(inode)->ip_blkno;
--
--	/* We don't have a cluster lock on the bitmap here because
--	 * we're only interested in static information and the extra
--	 * complexity at mount time isn't worht it. Don't pass the
--	 * inode in to the read function though as we don't want it to
--	 * be put in the cache. */
--	status = ocfs2_read_block(osb, osb->bitmap_blkno, &bitmap_bh, 0,
--				  NULL);
- 	iput(inode);
--	if (status < 0) {
--		mlog_errno(status);
--		goto bail;
--	}
- 
--	di = (struct ocfs2_dinode *) bitmap_bh->b_data;
--	osb->bitmap_cpg = le16_to_cpu(di->id2.i_chain.cl_cpg);
--	brelse(bitmap_bh);
--	mlog(0, "cluster bitmap inode: %llu, clusters per group: %u\n",
--	     (unsigned long long)osb->bitmap_blkno, osb->bitmap_cpg);
-+	osb->bitmap_cpg = ocfs2_group_bitmap_size(sb) * 8;
- 
- 	status = ocfs2_init_slot_info(osb);
- 	if (status < 0) {
 -- 
 1.5.3.6
 
