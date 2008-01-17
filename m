@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761530AbYAQWq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761414AbYAQWrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761530AbYAQWq7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:46:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759962AbYAQWhJ
+	id S1761414AbYAQWrY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760157AbYAQWhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:37:09 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:10997 "EHLO
+	Thu, 17 Jan 2008 17:37:11 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:11013 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760144AbYAQWgx (ORCPT
+	with ESMTP id S1759998AbYAQWgy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 17:36:53 -0500
+	Thu, 17 Jan 2008 17:36:54 -0500
 From: Mark Fasheh <mark.fasheh@oracle.com>
 To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Mark Fasheh <mark.fasheh@oracle.com>
-Subject: [PATCH 01/30] ocfs2_dlm: Call node eviction callbacks from heartbeat handler
-Date: Thu, 17 Jan 2008 14:35:27 -0800
-Message-Id: <1200609356-17788-2-git-send-email-mark.fasheh@oracle.com>
+Cc: ocfs2-devel@oss.oracle.com, Joonwoo Park <joonwpark81@gmail.com>
+Subject: [PATCH 29/30] configfs: dir.c fix possible recursive locking
+Date: Thu, 17 Jan 2008 14:35:55 -0800
+Message-Id: <1200609356-17788-30-git-send-email-mark.fasheh@oracle.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
 References: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
@@ -27,33 +27,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With this, a dlm client can take advantage of the group protocol in the dlm
-to get full notification whenever a node within the dlm domain leaves
-unexpectedly.
+From: Joonwoo Park <joonwpark81@gmail.com>
 
+configfs_register_subsystem() with default_groups triggers recursive locking.
+it seems that mutex_lock_nested is needed.
+
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.24-rc6 #141
+---------------------------------------------
+swapper/1 is trying to acquire lock:
+ (&sb->s_type->i_mutex_key#3){--..}, at: [<c40ca76f>] configfs_attach_group+0x4f/0x190
+
+but task is already holding lock:
+ (&sb->s_type->i_mutex_key#3){--..}, at: [<c40ca9d5>] configfs_register_subsystem+0x55/0x130
+
+other info that might help us debug this:
+1 lock held by swapper/1:
+ #0:  (&sb->s_type->i_mutex_key#3){--..}, at: [<c40ca9d5>] configfs_register_subsystem+0x55/0x130
+
+stack backtrace:
+Pid: 1, comm: swapper Not tainted 2.6.24-rc6 #141
+ [<c40053ba>] show_trace_log_lvl+0x1a/0x30
+ [<c4005e82>] show_trace+0x12/0x20
+ [<c400687e>] dump_stack+0x6e/0x80
+ [<c404ec72>] __lock_acquire+0xe62/0x1120
+ [<c404efb2>] lock_acquire+0x82/0xa0
+ [<c43fdad8>] mutex_lock_nested+0x98/0x2e0
+ [<c40ca76f>] configfs_attach_group+0x4f/0x190
+ [<c40caa46>] configfs_register_subsystem+0xc6/0x130
+ [<c45c8186>] init_netconsole+0x2b6/0x300
+ [<c45a75f2>] kernel_init+0x142/0x320
+ [<c4004fb3>] kernel_thread_helper+0x7/0x14
+ =======================
+
+Signed-off-by: Joonwoo Park <joonwpark81@gmail.com>
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
 ---
- fs/ocfs2/dlm/dlmrecovery.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ fs/configfs/dir.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/fs/ocfs2/dlm/dlmrecovery.c b/fs/ocfs2/dlm/dlmrecovery.c
-index 2fde7bf..b10f3e3 100644
---- a/fs/ocfs2/dlm/dlmrecovery.c
-+++ b/fs/ocfs2/dlm/dlmrecovery.c
-@@ -2321,6 +2321,13 @@ void dlm_hb_node_down_cb(struct o2nm_node *node, int idx, void *data)
- 	if (!dlm_grab(dlm))
- 		return;
+diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
+index 50ed691..a48dc7d 100644
+--- a/fs/configfs/dir.c
++++ b/fs/configfs/dir.c
+@@ -546,7 +546,7 @@ static int populate_groups(struct config_group *group)
+ 		 * That said, taking our i_mutex is closer to mkdir
+ 		 * emulation, and shouldn't hurt.
+ 		 */
+-		mutex_lock(&dentry->d_inode->i_mutex);
++		mutex_lock_nested(&dentry->d_inode->i_mutex, I_MUTEX_CHILD);
  
-+	/*
-+	 * This will notify any dlm users that a node in our domain
-+	 * went away without notifying us first.
-+	 */
-+	if (test_bit(idx, dlm->domain_map))
-+		dlm_fire_domain_eviction_callbacks(dlm, idx);
-+
- 	spin_lock(&dlm->spinlock);
- 	__dlm_hb_node_down(dlm, idx);
- 	spin_unlock(&dlm->spinlock);
+ 		for (i = 0; group->default_groups[i]; i++) {
+ 			new_group = group->default_groups[i];
+@@ -1405,7 +1405,8 @@ int configfs_register_subsystem(struct configfs_subsystem *subsys)
+ 	sd = configfs_sb->s_root->d_fsdata;
+ 	link_group(to_config_group(sd->s_element), group);
+ 
+-	mutex_lock(&configfs_sb->s_root->d_inode->i_mutex);
++	mutex_lock_nested(&configfs_sb->s_root->d_inode->i_mutex,
++			I_MUTEX_PARENT);
+ 
+ 	name.name = group->cg_item.ci_name;
+ 	name.len = strlen(name.name);
 -- 
 1.5.3.6
 
