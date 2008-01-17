@@ -1,230 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbYAQMoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbYAQMqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbYAQMoh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 07:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbYAQMoN
+	id S1756760AbYAQMqv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 07:46:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbYAQMqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 07:44:13 -0500
-Received: from bde.crans.org ([138.231.137.76]:58726 "EHLO bde.crans.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751530AbYAQMoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 07:44:10 -0500
-From: Mathieu Segaud <mathieu.segaud@regala.cx>
-To: reiserfs-devel@vger.kernel.org
-Cc: reiserfs-devel@namesys.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Mathieu Segaud <mathieu.segaud@regala.cx>
-Subject: [PATCH] Convert reiserfs_ioctl() to an unlocked_ioctl
-Date: Thu, 17 Jan 2008 13:44:07 +0100
-Message-Id: <1200573848-1382-1-git-send-email-mathieu.segaud@regala.cx>
-X-Mailer: git-send-email 1.5.3.8
+	Thu, 17 Jan 2008 07:46:42 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:34233 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756201AbYAQMqk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 07:46:40 -0500
+Date: Thu, 17 Jan 2008 18:16:22 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linux ACPI mailing list <linux-acpi@vger.kernel.org>,
+       Intel E/100 mailing list <e1000-devel@lists.sourceforge.net>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-mm1
+Message-ID: <20080117124622.GA18450@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org,
+	Linux ACPI mailing list <linux-acpi@vger.kernel.org>,
+	Intel E/100 mailing list <e1000-devel@lists.sourceforge.net>,
+	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
----
- fs/reiserfs/dir.c           |    2 +-
- fs/reiserfs/file.c          |    2 +-
- fs/reiserfs/ioctl.c         |   96 +++++++++++++++++++++++++++---------------
- include/linux/reiserfs_fs.h |    2 +-
- 4 files changed, 65 insertions(+), 37 deletions(-)
+* Andrew Morton <akpm@linux-foundation.org> [2008-01-17 02:35:14]:
 
-diff --git a/fs/reiserfs/dir.c b/fs/reiserfs/dir.c
-index e6b03d2..f267cf9 100644
---- a/fs/reiserfs/dir.c
-+++ b/fs/reiserfs/dir.c
-@@ -20,7 +20,7 @@ const struct file_operations reiserfs_dir_operations = {
- 	.read = generic_read_dir,
- 	.readdir = reiserfs_readdir,
- 	.fsync = reiserfs_dir_fsync,
--	.ioctl = reiserfs_ioctl,
-+	.unlocked_ioctl = reiserfs_ioctl,
- #ifdef CONFIG_COMPAT
- 	.compat_ioctl = reiserfs_compat_ioctl,
- #endif
-diff --git a/fs/reiserfs/file.c b/fs/reiserfs/file.c
-index a804903..e4d415c 100644
---- a/fs/reiserfs/file.c
-+++ b/fs/reiserfs/file.c
-@@ -284,7 +284,7 @@ static ssize_t reiserfs_file_write(struct file *file,	/* the file we are going t
- const struct file_operations reiserfs_file_operations = {
- 	.read = do_sync_read,
- 	.write = reiserfs_file_write,
--	.ioctl = reiserfs_ioctl,
-+	.unlocked_ioctl = reiserfs_ioctl,
- #ifdef CONFIG_COMPAT
- 	.compat_ioctl = reiserfs_compat_ioctl,
- #endif
-diff --git a/fs/reiserfs/ioctl.c b/fs/reiserfs/ioctl.c
-index e0f0f09..691008d 100644
---- a/fs/reiserfs/ioctl.c
-+++ b/fs/reiserfs/ioctl.c
-@@ -21,80 +21,110 @@ static int reiserfs_unpack(struct inode *inode, struct file *filp);
- **  2) REISERFS_IOC_[GS]ETFLAGS, REISERFS_IOC_[GS]ETVERSION
- **  3) That's all for a while ...
- */
--int reiserfs_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
--		   unsigned long arg)
-+long reiserfs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- {
- 	unsigned int flags;
-+	struct inode *inode;
-+	long retval = 0;
-+
-+	lock_kernel();
-+	inode = filp->f_dentry->d_inode;
- 
- 	switch (cmd) {
- 	case REISERFS_IOC_UNPACK:
- 		if (S_ISREG(inode->i_mode)) {
- 			if (arg)
--				return reiserfs_unpack(inode, filp);
--			else
--				return 0;
-+				retval = reiserfs_unpack(inode, filp);
- 		} else
--			return -ENOTTY;
-+			retval = -ENOTTY;
-+		goto out;
- 		/* following two cases are taken from fs/ext2/ioctl.c by Remy
- 		   Card (card@masi.ibp.fr) */
- 	case REISERFS_IOC_GETFLAGS:
--		if (!reiserfs_attrs(inode->i_sb))
--			return -ENOTTY;
-+		if (!reiserfs_attrs(inode->i_sb)) {
-+			retval = -ENOTTY;
-+			goto out;
-+		}
- 
- 		flags = REISERFS_I(inode)->i_attrs;
- 		i_attrs_to_sd_attrs(inode, (__u16 *) & flags);
--		return put_user(flags, (int __user *)arg);
-+		retval = put_user(flags, (int __user *)arg);
-+		goto out;
- 	case REISERFS_IOC_SETFLAGS:{
--			if (!reiserfs_attrs(inode->i_sb))
--				return -ENOTTY;
-+			if (!reiserfs_attrs(inode->i_sb)) {
-+				retval = -ENOTTY;
-+				goto out;
-+			}
- 
--			if (IS_RDONLY(inode))
--				return -EROFS;
-+			if (IS_RDONLY(inode)) {
-+				retval = -EROFS;
-+				goto out;
-+			}
- 
--			if (!is_owner_or_cap(inode))
--				return -EPERM;
-+			if (!is_owner_or_cap(inode)) {
-+				retval = -EPERM;
-+				goto out;
-+			}
- 
--			if (get_user(flags, (int __user *)arg))
--				return -EFAULT;
-+			if (get_user(flags, (int __user *)arg)) {
-+				retval = -EFAULT;
-+				goto out;
-+			}
- 
- 			/* Is it quota file? Do not allow user to mess with it. */
--			if (IS_NOQUOTA(inode))
--				return -EPERM;
-+			if (IS_NOQUOTA(inode)) {
-+				retval = -EPERM;
-+				goto out;
-+			}
- 			if (((flags ^ REISERFS_I(inode)->
- 			      i_attrs) & (REISERFS_IMMUTABLE_FL |
- 					  REISERFS_APPEND_FL))
--			    && !capable(CAP_LINUX_IMMUTABLE))
--				return -EPERM;
-+			    && !capable(CAP_LINUX_IMMUTABLE)) {
-+				retval = -EPERM;
-+				goto out;
-+			}
- 
- 			if ((flags & REISERFS_NOTAIL_FL) &&
- 			    S_ISREG(inode->i_mode)) {
- 				int result;
- 
- 				result = reiserfs_unpack(inode, filp);
--				if (result)
-+				if (result) {
-+					unlock_kernel();
- 					return result;
-+				}
- 			}
- 			sd_attrs_to_i_attrs(flags, inode);
- 			REISERFS_I(inode)->i_attrs = flags;
- 			inode->i_ctime = CURRENT_TIME_SEC;
- 			mark_inode_dirty(inode);
--			return 0;
-+			goto out;
- 		}
- 	case REISERFS_IOC_GETVERSION:
--		return put_user(inode->i_generation, (int __user *)arg);
-+		retval = put_user(inode->i_generation, (int __user *)arg);
-+		goto out;
- 	case REISERFS_IOC_SETVERSION:
--		if (!is_owner_or_cap(inode))
--			return -EPERM;
--		if (IS_RDONLY(inode))
--			return -EROFS;
--		if (get_user(inode->i_generation, (int __user *)arg))
--			return -EFAULT;
-+		if (!is_owner_or_cap(inode)) {
-+			retval = -EPERM;
-+			goto out;
-+		}
-+		if (IS_RDONLY(inode)) {
-+			retval = -EROFS;
-+			goto out;
-+		}
-+		if (get_user(inode->i_generation, (int __user *)arg)) {
-+			retval = -EFAULT;
-+			goto out;
-+		}
- 		inode->i_ctime = CURRENT_TIME_SEC;
- 		mark_inode_dirty(inode);
--		return 0;
-+		goto out;
- 	default:
--		return -ENOTTY;
-+		retval = -ENOTTY;
- 	}
-+out:
-+	unlock_kernel();
-+	return retval;
- }
- 
- #ifdef CONFIG_COMPAT
-@@ -124,9 +154,7 @@ long reiserfs_compat_ioctl(struct file *file, unsigned int cmd,
- 	default:
- 		return -ENOIOCTLCMD;
- 	}
--	lock_kernel();
- 	ret = reiserfs_ioctl(inode, file, cmd, (unsigned long) compat_ptr(arg));
--	unlock_kernel();
- 	return ret;
- }
- #endif
-diff --git a/include/linux/reiserfs_fs.h b/include/linux/reiserfs_fs.h
-index 422eab4..4994327 100644
---- a/include/linux/reiserfs_fs.h
-+++ b/include/linux/reiserfs_fs.h
-@@ -2172,7 +2172,7 @@ __u32 r5_hash(const signed char *msg, int len);
- #define SPARE_SPACE 500
- 
- /* prototypes from ioctl.c */
--int reiserfs_ioctl(struct inode *inode, struct file *filp,
-+long reiserfs_ioctl(struct file *filp,
- 		   unsigned int cmd, unsigned long arg);
- long reiserfs_compat_ioctl(struct file *filp,
- 		   unsigned int cmd, unsigned long arg);
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
+> 
+> - selinux is busted on one of my two selinux-enabled test machines.
+> 
+> - suspend-to-ram and suspend-to-disk are totally hosed on one of my test
+>   machines.  I guess I get to bisect this.
+> 
+> - git-nfsd is dropped due to conflicts with git-nfs
+> 
+> - git-newsetup is dropped due to conflicts with git-x86 (I think)
+> 
+> - git-perfmon is dropped due to conflicts with git-x86 (I think)
+> 
+> - git-kgdb is dropped due to conflicts with git-damn-near-everything
+> 
+> - git-block is dropped due to conflicts with the IDE tree
+> 
+> - kvm probably doesn't work properly because I couldn't be bothered fixing
+>   the conflicts between git-kvm and the driver tree
+> 
+> - the volume of rejects and build errors which are caused by subsystem
+>   maintainers fiddling with other people's stuff is quite out of control. 
+>   Something needs to happen here.
+
+Hi, Andrew,
+
+May be it was one of the conflicts, but my system fails to get
+ethernet working with this version. I see
+
+e100: Intel(R) PRO/100 Network Driver, 3. 5.23-k4-NAPI
+e100: Copyright(c) 1999-2006 Intel Corporation
+ACPI: PCI Interrupt 0000:04:08.0[A] -> GSI 20 (level, low) -> IRQ 20
+modprobe:2584 conflicting cache attribute 50000000-50001000
+uncached<->default
+e100: 0000:04:08.0: e100_probe: Cannot map device registers, aborting.
+ACPI: PCI interrupt for device 0000:04:08.0 disabled
+e100: probe of 0000:04:08.0 failed with error -12
+
+Other interesting boot information
+
+Using ACPI (MADT) for SMP configuration information
+PM: Registered nosave memory: 000000000008f000 - 00000000000a0000
+PM: Registered nosave memory: 00000000000a0000 - 00000000000e0000
+PM: Registered nosave memory: 00000000000e0000 - 0000000000100000
+PM: Registered nosave memory: 000000003e5d1000 - 000000003e6e5000
+PM: Registered nosave memory: 000000003f574000 - 000000003f57c000
+PM: Registered nosave memory: 000000003f62d000 - 000000003f631000
+PM: Registered nosave memory: 000000003f6a7000 - 000000003f6e9000
+PM: Registered nosave memory: 000000003f6ed000 - 000000003f6ff000
+Allocating PCI resources starting at 50000000 (gap: 40000000:bff80000)
+
+ PCI: Bridge: 0000:00:1c.0
+   IO window: disabled.
+   MEM window:
+0x50300000-0x503fffff
+   PREFETCH window: disabled.
+ PCI: Bridge: 0000:00:1c.2
+   IO window: disabled.
+   MEM window:
+0x50400000-0x504fffff
+   PREFETCH window: disabled.
+ PCI: Bridge: 0000:00:1c.3
+   IO window: disabled.
+   MEM window:
+0x50500000-0x505fffff
+   PREFETCH window: disabled.
+ PCI: Bridge: 0000:00:1e.0
+   IO window: 1000-1fff
+   MEM window:
+0x50000000-0x500fffff
+   PREFETCH window: disabled.
+
+I am yet to get down to the root cause, thought I'd report it first to
+the x86 and ACPI list to see if someone has seen the problem before.
+
 -- 
-1.5.3.8
-
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
