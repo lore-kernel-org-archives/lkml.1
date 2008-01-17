@@ -1,62 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbYAQQd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYAQQeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754956AbYAQQd0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 11:33:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYAQQdS
+	id S1755961AbYAQQeq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 11:34:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYAQQei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 11:33:18 -0500
-Received: from ro-out-1112.google.com ([72.14.202.177]:36941 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbYAQQdR (ORCPT
+	Thu, 17 Jan 2008 11:34:38 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:38917
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751263AbYAQQeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 11:33:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SfYm3w6EaIYxaAS5pWFZSxM9jrZNWQtFH6Lhr1I+glE9wN04HCL2EX1m7+M6k4MBpNyzteZlkkGyphtwoI5UD/M9QeljsXjlddFMT/+9lLTd4iJWA+y22sidCYM681PLuyn0wGaE1U/GE9HSVwIj0FEp/+9dlmCJ5obPlj7rwL8=
-Message-ID: <4df4ef0c0801170833p4b416b50h495c2b34a17ef77f@mail.gmail.com>
-Date: Thu, 17 Jan 2008 19:33:15 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [PATCH -v5 2/2] Updating ctime and mtime at syncing
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
-       hidave.darkstar@gmail.com, hch@infradead.org
-In-Reply-To: <E1JFXZd-0006pP-Sn@pomaz-ex.szeredi.hu>
+	Thu, 17 Jan 2008 11:34:37 -0500
+X-Greylist: delayed 671 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jan 2008 11:34:37 EST
+Date: Thu, 17 Jan 2008 17:23:02 +0100
+From: Andrea Arcangeli <andrea@cpushare.com>
+To: Izik Eidus <izike@qumranet.com>
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm-devel@lists.sourceforge.net,
+       Avi Kivity <avi@qumranet.com>, clameter@sgi.com,
+       daniel.blueman@quadrics.com, holt@sgi.com, steiner@sgi.com,
+       Andrew Morton <akpm@osdl.org>, Hugh Dickins <hugh@veritas.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, andrea@qumranet.com
+Subject: Re: [PATCH] mmu notifiers #v2
+Message-ID: <20080117162302.GI7170@v2.random>
+References: <20080113162418.GE8736@v2.random> <20080116124256.44033d48@bree.surriel.com> <478E4356.7030303@qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <12005314662518-git-send-email-salikhmetov@gmail.com>
-	 <E1JFSgG-0006G1-6V@pomaz-ex.szeredi.hu>
-	 <4df4ef0c0801170416s5581ae28h90d91578baa77738@mail.gmail.com>
-	 <E1JFU7r-0006PK-So@pomaz-ex.szeredi.hu>
-	 <4df4ef0c0801170516k3f82dc69ieee836b5633378a@mail.gmail.com>
-	 <E1JFUrm-0006XG-SB@pomaz-ex.szeredi.hu>
-	 <4df4ef0c0801170540p36d3c566w973251527fc3bca1@mail.gmail.com>
-	 <E1JFWvy-0006kJ-I2@pomaz-ex.szeredi.hu>
-	 <4df4ef0c0801170820i6af58e8u15e3c3b8e944c0c6@mail.gmail.com>
-	 <E1JFXZd-0006pP-Sn@pomaz-ex.szeredi.hu>
+In-Reply-To: <478E4356.7030303@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/17, Miklos Szeredi <miklos@szeredi.hu>:
-> > The do_wp_page() function is called in mm/memory.c after locking PTE.
-> > And the file_update_time() routine calls the filesystem operation that can
-> > sleep. It's not accepted, I guess.
->
-> do_wp_page() is called with the pte lock but drops it, so that's fine.
+On Wed, Jan 16, 2008 at 07:48:06PM +0200, Izik Eidus wrote:
+> Rik van Riel wrote:
+>> On Sun, 13 Jan 2008 17:24:18 +0100
+>> Andrea Arcangeli <andrea@qumranet.com> wrote:
+>>
+>>   
+>>> In my basic initial patch I only track the tlb flushes which should be
+>>> the minimum required to have a nice linux-VM controlled swapping
+>>> behavior of the KVM gphysical memory.     
+>>
+>> I have a vaguely related question on KVM swapping.
+>>
+>> Do page accesses inside KVM guests get propagated to the host
+>> OS, so Linux can choose a reasonable page for eviction, or is
+>> the pageout of KVM guest pages essentially random?
 
-OK, I agree.
+Right, selection of the guest OS pages to swap is partly random but
+wait: _only_ for the long-cached and hot spte entries. It's certainly
+not entirely random.
 
-I'll take into account your suggestion to move updating time stamps from
-the __set_page_dirty() and __set_page_dirty_nobuffers() routines to
-do_wp_page(). Thank you!
+As the shadow-cache is a bit dynamic, every new instantiated spte will
+refresh the PG_referenced bit in follow_page already (through minor
+faults). not-present fault of swapped non-present sptes, can trigger
+minor faults from swapcache too and they'll refresh young regular
+ptes.
 
->
-> Miklos
->
+> right now when kvm remove pte from the shadow cache, it mark as access the 
+> page that this pte pointed to.
+
+Yes: the referenced bit in the mmu-notifier invalidate case isn't
+useful because it's set right before freeing the page.
+
+> it was a good solution untill the mmut notifiers beacuse the pages were 
+> pinned and couldnt be swapped to disk
+
+It probably still makes sense for sptes removed because of other
+reasons (not mmu notifier invalidates).
+
+> so now it will have to do something more sophisticated or at least mark as 
+> access every page pointed by pte
+> that get insrted to the shadow cache....
+
+I think that should already be the case, see the mark_page_accessed in
+follow_page, isn't FOLL_TOUCH set, isn't it?
+
+The only thing we clearly miss is a logic that refreshes the
+PG_referenced bitflag for "hot" sptes that remains instantiated and
+cached for a long time. For regular linux ptes this is done by the cpu
+through the young bitflag. But note that not all architectures have
+the young bitflag support in hardware! So I suppose the swapping of
+the KVM task, is like the swapping any other task but on an alpha
+CPU. It works good enough in practice even if we clearly have room for
+further optimizations in this area (like there would be on archs w/o
+young bit updated in hardware too).
+
+To refresh the PG_referenced bit for long lived hot sptes, I think the
+easiest solution is to chain the sptes in a lru, and to start dropping
+them when memory pressure start. We could drop one spte every X pages
+collected by the VM. So the "age" time factor depends on the VM
+velocity and we totally avoid useless shadow page faults when there's
+no VM pressure. When VM pressure increases, the kvm non-present fault
+will then take care to refresh the PG_referenced bit. This should
+solve the aging-issue for long lived and hot sptes. This should
+improve the responsiveness of the guest OS during "initial" swap
+pressure (after the initial swap pressure, the working set finds
+itself in ram again). So it should avoid some swapout/swapin not
+required jitter during the initial swap. I see this mostly as a kvm
+internal optimization, not strictly related to the mmu notifiers
+though.
