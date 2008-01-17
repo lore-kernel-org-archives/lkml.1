@@ -1,125 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYAQVEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYAQVH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbYAQVEQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 16:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYAQVEA
+	id S1757354AbYAQVH2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 16:07:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbYAQVHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 16:04:00 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:35695 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbYAQVD7 (ORCPT
+	Thu, 17 Jan 2008 16:07:17 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:58320 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752022AbYAQVHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 16:03:59 -0500
-Date: Thu, 17 Jan 2008 16:03:50 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Frank Ch. Eigler" <fche@redhat.com>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Steven Rostedt <srostedt@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Daniel Walker <dwalker@mvista.com>
-Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
-In-Reply-To: <20080117203740.GA24397@redhat.com>
-Message-ID: <Pine.LNX.4.58.0801171555120.28350@gandalf.stny.rr.com>
-References: <20080116031730.GA2164@Krystal> <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com>
- <20080116145604.GB31329@Krystal> <Pine.LNX.4.58.0801161003010.15758@gandalf.stny.rr.com>
- <20080116152838.GA970@Krystal> <Pine.LNX.4.58.0801161041010.15998@gandalf.stny.rr.com>
- <20080116170011.GA3651@Krystal> <Pine.LNX.4.58.0801161428180.14368@gandalf.stny.rr.com>
- <20080116201713.GA14336@Krystal> <Pine.LNX.4.58.0801171440360.28350@gandalf.stny.rr.com>
- <20080117203740.GA24397@redhat.com>
+	Thu, 17 Jan 2008 16:07:15 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Pf/SBOI6txN/y9To6mftNP24SJ047YPhKoWY+igJew5lAWqF38SDXGZV883cJKHt8
+	YQJJeinDGBy8CuitOcsaA==
+Message-ID: <532480950801171307q4b540ewa3acb6bfbea5dbc8@mail.gmail.com>
+Date: Thu, 17 Jan 2008 13:07:05 -0800
+From: "Michael Rubin" <mrubin@google.com>
+To: "Fengguang Wu" <wfg@mail.ustc.edu.cn>
+Subject: Re: [patch] Converting writeback linked lists to a tree based data structure
+Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <400562938.07583@ustc.edu.cn>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080115080921.70E3810653@localhost> <400562938.07583@ustc.edu.cn>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 17, 2008 1:41 AM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> On Tue, Jan 15, 2008 at 12:09:21AM -0800, Michael Rubin wrote:
+> The main benefit of rbtree is possibly better support of future policies.
+> Can you demonstrate an example?
 
-On Thu, 17 Jan 2008, Frank Ch. Eigler wrote:
+These are ill-formed thoughts as of now on my end but the idea was
+that keeping one tree sorted via a scheme might be simpler than
+multiple list_heads.
 
-> Hi -
+> Bugs can only be avoided by good understanding of all possible cases.)
+
+I take the above statement as a tautology.  And am trying my best to do so. :-)
+
+> The most tricky writeback issues could be starvation prevention
+> between
+
+
+>         - small/large files
+>         - new/old files
+>         - superblocks
+
+So I have written tests and believe I have covered these issues. If
+you are concerned in specific on any and have a test case please let
+me know.
+
+> Some kind of limit should be applied for each. They used to be:
+>         - requeue to s_more_io whenever MAX_WRITEBACK_PAGES is reached
+>           this preempts big files
+
+The patch uses th same limit.
+
+>         - refill s_io iif it is drained
+>           this prevents promotion of big/old files
+
+Once a big file gets its first do_writepages it is moved behind the
+other smaller files via i_flushed_when. And the same in reverse for
+big vs old.
+
+>         - return from sync_sb_inodes() after one go of s_io
+
+I am not sure how this limit helps things out. Is this for superblock
+starvation? Can you elaborate?
+
+> Michael, could you sort out and document the new starvation prevention schemes?
+
+The basic idea behind the writeback algorithm to handle starvation.
+The over arching idea is that we want to preserve order of writeback
+based on when an inode was dirtied and also preserve the dirtied_when
+contents until the inode has been written back (partially or fully)
+
+Every sync_sb_inodes we find the least recent inodes dirtied. To deal
+with large or small starvation we have a s_flush_gen for each
+iteration of sync_sb_inodes every time we issue a writeback we mark
+that the inode cannot be processed until the next s_flush_gen. This
+way we don't process one get to the rest since we keep pushing them
+into subsequent s_fush_gen's.
+
+Let me know if you want more detail or structured responses.
+
+> Introduce i_flush_gen to help restarting from the last inode?
+> Well, it's not as simple as list_heads.
 >
-> On Thu, Jan 17, 2008 at 03:08:33PM -0500, Steven Rostedt wrote:
-> > [...]
-> > +       trace_mark(kernel_sched_schedule,
-> > +               "prev_pid %d next_pid %d prev_state %ld",
-> > +               prev->pid, next->pid, prev->state);
-> > [...]
-> > But...
+> > 2) Added an inode flag to allow inodes to be marked so that they
+> >    are never written back to disk.
 > >
-> > Tracers that want to do a bit more work, like recording timings and seeing
-> > if we hit some max somewhere, can't do much with that pretty print data.
+> >    The motivation behind this change is several fold. The first is
+> >    to insure fairness in the writeback algorithm. The second is to
 >
-> If you find yourself wanting to perform computations like finding
-> maxima, or responding right there as opposed to later during userspace
-> trace data extraction, then you're trending toward a tool like
-> systemtap.
+> What do you mean by fairness?
 
-Yes, very much so. I'm working on getting the latency_tracer from the -rt
-patch into something suitable for mainline. We need to calculate the max
-latencies on the fly. If we hit a max, then we save it off, otherwise, we
-blow away the trace and start again.
+So originally this comment was written when I was trying to fix a bug
+in 2.6.23. The one where we were starving large files from being
+flushed. There was a fairness issue where small files were being
+flushed but the large ones were just ballooning in memory.
 
->
-> > [...]
-> > So, at a minimum, I'd like to at least have meta data attached:
-> > 	trace_mark(kernel_sched_schedule,
-> > 		"prev_pid %d next_pid %d prev_state %ld\0"
-> > 		"prev %p next %p",
-> > 		prev->pid, next->pid, prev->state,
-> > 		prev, next);
-> >
-> > This would allow for both the nice pretty print of your trace, as well as
-> > allowing other tracers to get to better meta data.
->
-> Yes, more self-contained marker events are necessary for meaningful
-> in-situ processing.  That needs to be balanced by the increased cost
-> for computing and passing the extra parameters, multiplied the event
-> occurrence rate.
+> Why cannot I_WRITEBACK_NEVER be in a decoupled standalone patch?
 
-The cost is only done when the marker is armed. Since the marker is an
-unlikely, and will be placed at the end of the function.
+The WRITEBACK_NEVER could be in a previous patch to the rbtree. But
+not a subsequent patch to the rbtree. The rbtree depends on the
+WRITEBACK_NEVER patch otherwise we run in to problems in
+generic_delete_inode. Now that you point it out I think I can split
+this patch into two patches and make the WRITEBACK_NEVER in the first
+one.
 
->
-> In this case, the prev/next pointers are sufficient to compute the
-> other values.  For particularly performance-critical markers, it may
-> not be unreasonable to expect the callback functions to dereference
-> such pointers for pretty-printing or other processing.
+> More details about the fixings, please?
 
-This was exactly my point to Mathieu, but I think he has LTTng very much
-coupled with the markers. I haven't played with LTTng (yet), but from what
-I've read (Mathieu, correct me if I'm wrong), it seems that all the
-markers become visible to userspace, and the user can simple turn them on
-or off. LTTng doesn't need any knowledge of the marker since the marker
-contains how to print the information.
-
-So* by placing a "prev %p next %p" as the only information, we lose out on
-this automated way LTTng works. Because the two pointers are just
-meaningless numbers to the user.
-
->
-> > The '\0' would keep your tracer from recording the extra data, and we
-> > could add some way to ignore the parameters in the printf to let other
-> > traces get straight to the meta data.
->
-> This \0 hack is perhaps too clever.  Much of the cost of the extra
-> parameters is already paid by the time that a simpleminded tracing
-> callback function starts going through the string.  Also, I believe
-> the systemtap marker interface would break if the format strings were
-> not singly terminated ordinary strings.
-
-Well, actually when I first wrote this letter, I used "--" as a delimiter
-to allow a tool to hide the pretty stuff. But then I thought about the
-"clever hack" with the '\0',  The "--" may be better since it wont break
-systemtap.
-
--- Steve
-
-* dvhart - bah!
-
+So again this comment was written against 2.6.23. The biggest fix is
+the starving of big files. I remember there were other smaller issues,
+but there have been so many changes in the patch sets that I need to
+go back to quantify.
