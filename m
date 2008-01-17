@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYAQNYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbYAQNYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbYAQNYl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 08:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYAQNYc
+	id S1755085AbYAQNYy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 08:24:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYAQNYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 17 Jan 2008 08:24:33 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55584 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751588AbYAQNYc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jan 2008 08:24:32 -0500
-Received: from dtp.xs4all.nl ([80.126.206.180]:33099 "HELO abra2.bitwizard.nl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1750952AbYAQNYb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 08:24:31 -0500
-Date: Thu, 17 Jan 2008 14:24:29 +0100
-From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
-To: Anton Salikhmetov <salikhmetov@gmail.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-mm@kvack.org,
-       jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@BitWizard.nl,
-       hidave.darkstar@gmail.com, hch@infradead.org
-Subject: Re: [PATCH -v5 2/2] Updating ctime and mtime at syncing
-Message-ID: <20080117132429.GB14692@bitwizard.nl>
-References: <12005314662518-git-send-email-salikhmetov@gmail.com> <1200531471556-git-send-email-salikhmetov@gmail.com> <E1JFSgG-0006G1-6V@pomaz-ex.szeredi.hu> <4df4ef0c0801170416s5581ae28h90d91578baa77738@mail.gmail.com> <E1JFU7r-0006PK-So@pomaz-ex.szeredi.hu> <4df4ef0c0801170516k3f82dc69ieee836b5633378a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4df4ef0c0801170516k3f82dc69ieee836b5633378a@mail.gmail.com>
-Organization: BitWizard.nl
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Subject: Re: runqueue locks in schedule()
+From: Peter Zijlstra <peterz@infradead.org>
+To: stephane eranian <eranian@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, ia64 <linux-ia64@vger.kernel.org>,
+       Stephane Eranian <eranian@gmail.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <7c86c4470801161629t3870da59hb6ac371c44126b07@mail.gmail.com>
+References: <7c86c4470801161629t3870da59hb6ac371c44126b07@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 17 Jan 2008 14:24:26 +0100
+Message-Id: <1200576266.28661.27.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 04:16:47PM +0300, Anton Salikhmetov wrote:
-> 2008/1/17, Miklos Szeredi <miklos@szeredi.hu>:
-> > > > 4. Recording the time was the file data changed
-> > > >
-> > > > Finally, I noticed yet another issue with the previous version of my patch.
-> > > > Specifically, the time stamps were set to the current time of the moment
-> > > > when syncing but not the write reference was being done. This led to the
-> > > > following adverse effect on my development system:
-> > > >
-> > > > 1) a text file A was updated by process B;
-> > > > 2) process B exits without calling any of the *sync() functions;
-> > > > 3) vi editor opens the file A;
-> > > > 4) file data synced, file times updated;
-> > > > 5) vi is confused by "thinking" that the file was changed after 3).
-> >
-> > Updating the time in remove_vma() would fix this, no?
+
+[ At the very least CC'ing the scheduler maintainer would be
+helpful :-) ]
+
+On Wed, 2008-01-16 at 16:29 -0800, stephane eranian wrote:
+> Hello,
 > 
-> We need to save modification time. Otherwise, updating time stamps
-> will be confusing the vi editor.
+> As suggested by people on this list, I have changed perfmon2 to use
+> the high resolution timers as the interface to allow timeout-based
+> event set multiplexing. This works around the problems I had with
+> tickless-enabled kernels.
+> 
+> Multiplexing is supported in per-thread as well. In that case, the
+> timeout measures virtual time. When the thread is context switched
+> out, we need to save the remainder of the timeout and cancel the
+> timer. When the thread is context switched in, we need to reinstall
+> the timer. These timer save/restore operations have to be done in the
+> switch_to() code near the end of schedule().
+> 
+> There are situations where hrtimer_start() may end up trying to
+> acquire the runqueue lock. This happens on a context switch where the
+> current thread is blocking (not preempted) and the new timeout happens
+> to be either in the past or just expiring. We've run into such
+> situations with simple tests.
+> 
+> On all architectures, but IA-64, it seems thet the runqueue lock is
+> held until the end of schedule(). On IA-64, the lock is released
+> BEFORE switch_to() for some reason I don't quite remember. That may
+> not even be needed anymore.
+> 
+> The early unlocking is controlled by a macro named
+> __ARCH_WANT_UNLOCKED_CTXSW. Defining this macros on X86 (or PPC) fixed
+> our problem.
+> 
+> It is not clear to me why the runqueue lock needs to be held up until
+> the end of schedule() on some platforms and not on others. Not that
+> releasing the lock earlier does not necessarily introduce more
+> overhead because the lock is never re-acquired later in the schedule()
+> function.
+> 
+> Question:
+>    - is it safe to release the lock before switch_to() on all architectures?
 
-If process B exits before vi opens the file, the timestamp should at
-the latest be the time that process B exits. There is no excuse for
-setting the timestamp later than the time that B exits.
+I had similar problem when using hrtimers from the scheduler, I extended
+the HRTIMER_CB_IRQSAFE_NO_SOFTIRQ time type to run with cpu_base->lock
+unlocked.
 
-If process B no longer modifies the file, but still keeps it mapped
-until after vi starts, then the system can't help the
-situation. Wether or not B acesses those pages is unknown to the
-system. So you get what you deserve.
+http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-sched-devel.git;a=commitdiff;h=7e7cbd617833dde5b442e03f69aac39d17d02ec7
+http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-sched-devel.git;a=commitdiff;h=45d10aad580a5cdd376e80848aeeaaaf1f97cc18
+http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-sched-devel.git;a=commitdiff;h=5ae5d6c5850d4735798bc0e4526d8c61199e9f93
 
-	Roger. 
+As for your __ARCH_WANT_UNLOCKED_CTXSW question I have to defer to Ingo,
+as I'm unaware of the arch ramifications there.
 
--- 
-** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
-**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
-*-- BitWizard writes Linux device drivers for any device you may have! --*
-Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
-Does it sit on the couch all day? Is it unemployed? Please be specific! 
-Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
+
+
