@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbYAQA6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYAQA6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753953AbYAQA6A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 19:58:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYAQA5v
+	id S1754597AbYAQA6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 19:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbYAQA5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 19:57:51 -0500
-Received: from smtp05.mtu.ru ([62.5.255.52]:60614 "EHLO smtp05.mtu.ru"
+	Wed, 16 Jan 2008 19:57:52 -0500
+Received: from smtp05.mtu.ru ([62.5.255.52]:60632 "EHLO smtp05.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbYAQA5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751080AbYAQA5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 Jan 2008 19:57:51 -0500
 From: Anton Salikhmetov <salikhmetov@gmail.com>
 To: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
@@ -16,52 +16,164 @@ To: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
        torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
        akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
        r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
-Subject: [PATCH -v5 0/2] Updating ctime and mtime for memory-mapped files
-Date: Thu, 17 Jan 2008 03:57:44 +0300
-Message-Id: <12005314662518-git-send-email-salikhmetov@gmail.com>
+Subject: [PATCH -v5 1/2] Massive code cleanup of sys_msync()
+Date: Thu, 17 Jan 2008 03:57:45 +0300
+Message-Id: <12005314711867-git-send-email-salikhmetov@gmail.com>
 X-Mailer: git-send-email 1.4.4.4
+In-Reply-To: <12005314662518-git-send-email-salikhmetov@gmail.com>
+References: <12005314662518-git-send-email-salikhmetov@gmail.com>
 X-DCC-STREAM-Metrics: smtp05.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the fifth version of my solution for the bug #2645:
+Substantial code cleanup of the sys_msync() function:
 
-http://bugzilla.kernel.org/show_bug.cgi?id=2645
+1) using the PAGE_ALIGN() macro instead of "manual" alignment;
+2) improved readability of the loop traversing the process memory regions.
 
-New since the previous version:
+Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
+---
+ mm/msync.c |   74 +++++++++++++++++++++++++++++------------------------------
+ 1 files changed, 36 insertions(+), 38 deletions(-)
 
-1) the case of retouching an already-dirty page pointed out
-   by Miklos Szeredi has been correctly addressed;
+diff --git a/mm/msync.c b/mm/msync.c
+index 144a757..44997bf 100644
+--- a/mm/msync.c
++++ b/mm/msync.c
+@@ -1,24 +1,22 @@
+ /*
+- *	linux/mm/msync.c
++ * The msync() system call.
+  *
+- * Copyright (C) 1994-1999  Linus Torvalds
++ * Copyright (C) 1994-1999 Linus Torvalds
++ * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
+  */
+ 
+-/*
+- * The msync() system call.
+- */
++#include <linux/file.h>
+ #include <linux/fs.h>
+ #include <linux/mm.h>
+ #include <linux/mman.h>
+-#include <linux/file.h>
+-#include <linux/syscalls.h>
+ #include <linux/sched.h>
++#include <linux/syscalls.h>
+ 
+ /*
+  * MS_SYNC syncs the entire file - including mappings.
+  *
+  * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
+- * Nor does it marks the relevant pages dirty (it used to up to 2.6.17).
++ * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
+  * Now it doesn't do anything, since dirty pages are properly tracked.
+  *
+  * The application may now run fsync() to
+@@ -33,8 +31,7 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+ 	unsigned long end;
+ 	struct mm_struct *mm = current->mm;
+ 	struct vm_area_struct *vma;
+-	int unmapped_error = 0;
+-	int error = -EINVAL;
++	int error = -EINVAL, unmapped_error = 0;
+ 
+ 	if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
+ 		goto out;
+@@ -42,62 +39,63 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+ 		goto out;
+ 	if ((flags & MS_ASYNC) && (flags & MS_SYNC))
+ 		goto out;
+-	error = -ENOMEM;
+-	len = (len + ~PAGE_MASK) & PAGE_MASK;
++
++	len = PAGE_ALIGN(len);
+ 	end = start + len;
+-	if (end < start)
++	if (end < start) {
++		error = -ENOMEM;
+ 		goto out;
++	}
++
+ 	error = 0;
++
+ 	if (end == start)
+ 		goto out;
++
+ 	/*
+ 	 * If the interval [start,end) covers some unmapped address ranges,
+ 	 * just ignore them, but return -ENOMEM at the end.
+ 	 */
+ 	down_read(&mm->mmap_sem);
+ 	vma = find_vma(mm, start);
+-	for (;;) {
++	do {
+ 		struct file *file;
+ 
+-		/* Still start < end. */
+-		error = -ENOMEM;
+-		if (!vma)
+-			goto out_unlock;
+-		/* Here start < vma->vm_end. */
++		if (!vma) {
++			error = -ENOMEM;
++			break;
++		}
+ 		if (start < vma->vm_start) {
+ 			start = vma->vm_start;
+-			if (start >= end)
+-				goto out_unlock;
++			if (start >= end) {
++				error = -ENOMEM;
++				break;
++			}
+ 			unmapped_error = -ENOMEM;
+ 		}
+-		/* Here vma->vm_start <= start < vma->vm_end. */
+-		if ((flags & MS_INVALIDATE) &&
+-				(vma->vm_flags & VM_LOCKED)) {
++		if ((flags & MS_INVALIDATE) && (vma->vm_flags & VM_LOCKED)) {
+ 			error = -EBUSY;
+-			goto out_unlock;
++			break;
+ 		}
+-		file = vma->vm_file;
+ 		start = vma->vm_end;
+-		if ((flags & MS_SYNC) && file &&
+-				(vma->vm_flags & VM_SHARED)) {
++
++		file = vma->vm_file;
++		if (file && (vma->vm_flags & VM_SHARED) && (flags & MS_SYNC)) {
+ 			get_file(file);
+ 			up_read(&mm->mmap_sem);
+ 			error = do_fsync(file, 0);
+ 			fput(file);
+-			if (error || start >= end)
++			if (error)
+ 				goto out;
+ 			down_read(&mm->mmap_sem);
+ 			vma = find_vma(mm, start);
+-		} else {
+-			if (start >= end) {
+-				error = 0;
+-				goto out_unlock;
+-			}
+-			vma = vma->vm_next;
++			continue;
+ 		}
+-	}
+-out_unlock:
++
++		vma = vma->vm_next;
++	} while (start < end);
+ 	up_read(&mm->mmap_sem);
++
+ out:
+-	return error ? : unmapped_error;
++	return error ? error : unmapped_error;
+ }
+-- 
+1.4.4.4
 
-2) a few cosmetic changes according to the latest feedback;
-
-3) fixed the error of calling a possibly sleeping function
-   from an atomic context.
-
-The design for the first item above was suggested by Peter Zijlstra:
-
-> It would require scanning the PTEs and marking them read-only again on
-> MS_ASYNC, and some more logic in set_page_dirty() because that currently
-> bails out early if the page in question is already dirty.
-
-Miklos' test program now produces the following output for
-the repeated calls to msync() with the MS_ASYNC flag:
-
-debian:~/miklos# ./miklos_test file
-begin   1200529196      1200529196      1200528798
-write   1200529197      1200529197      1200528798
-mmap    1200529197      1200529197      1200529198
-b       1200529197      1200529197      1200529198
-msync b 1200529199      1200529199      1200529198
-c       1200529199      1200529199      1200529198
-msync c 1200529201      1200529201      1200529198
-d       1200529201      1200529201      1200529198
-munmap  1200529201      1200529201      1200529198
-close   1200529201      1200529201      1200529198
-sync    1200529204      1200529204      1200529198
-debian:~/miklos#
-
-Miklos' test program can be found using the following link:
-
-http://lkml.org/lkml/2008/1/14/104
