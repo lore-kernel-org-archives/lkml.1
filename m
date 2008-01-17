@@ -1,43 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752213AbYAQL1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752310AbYAQLgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752213AbYAQL1n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 06:27:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbYAQL1f
+	id S1752310AbYAQLgV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 06:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbYAQLgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 06:27:35 -0500
-Received: from mail.suse.de ([195.135.220.2]:49924 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751279AbYAQL1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 06:27:34 -0500
-From: Andi Kleen <ak@suse.de>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH] [3/7] Use shorter addresses in i386 segfault printks
-Date: Thu, 17 Jan 2008 12:27:05 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <200801161127.268350000@suse.de> <20080116222706.8074A14EE3@wotan.suse.de> <1200538738.17967.4.camel@brick>
-In-Reply-To: <1200538738.17967.4.camel@brick>
+	Thu, 17 Jan 2008 06:36:10 -0500
+Received: from mail.clusterfs.com ([74.0.229.162]:54909 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbYAQLgJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 06:36:09 -0500
+Date: Thu, 17 Jan 2008 04:36:05 -0700
+From: Andreas Dilger <adilger@sun.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Abhishek Rai <abhishekrai@google.com>, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, linux-ext4@vger.kernel.org
+Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm
+	patch]
+Message-ID: <20080117113605.GT3351@webber.adilger.int>
+Mail-Followup-To: Valdis.Kletnieks@vt.edu,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Abhishek Rai <abhishekrai@google.com>, linux-kernel@vger.kernel.org,
+	rohitseth@google.com, linux-ext4@vger.kernel.org
+References: <200801140839.01986.abhishekrai@google.com> <20080114163412.83a8b18d.akpm@linux-foundation.org> <20080115030441.a0270609.akpm@linux-foundation.org> <25815.1200457538@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801171227.06307.ak@suse.de>
+In-Reply-To: <25815.1200457538@turing-police.cc.vt.edu>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 January 2008 03:58:58 Harvey Harrison wrote:
-> On Wed, 2008-01-16 at 23:27 +0100, Andi Kleen wrote:
-> > Signed-off-by: Andi Kleen <ak@suse.de>
-> >
-> > ---
-> >  arch/x86/mm/fault_32.c |    2 +-
->
-> Could use exactly the same in fault_64.c
+On Jan 15, 2008  23:25 -0500, Valdis.Kletnieks@vt.edu wrote:
+> I've got multiple boxes across the hall that have 50T of disk on them, in one
+> case as one large filesystem, and the users want *more* *bigger* still (damned
+> researchers - you put a 15 teraflop supercomputer in the room, and then they
+> want someplace to *put* all the numbers that come spewing out of there.. ;)
+> 
+> There comes a point where that downtime gets too long to be politically
+> expedient.  6->2 may not be a biggie, because you can likely get a 6 hour
+> window.  24->8 suddenly looks a lot different.
+> 
+> (Having said that, I'll admit the one 52T filesystem is an SGI Itanium box
+> running Suse and using XFS rather than ext3).
+> 
+> Has anybody done a back-of-envelope of what this would do for fsck times for
+> a "max realistically achievable ext3 filesystem" (i.e. 100T-200T or ext3
+> design limit, whichever is smaller)?
 
-Hmm, I had this somewhere but it might have gotten lost during 
-some merge step again.
+This is exactly the kind of environment that Lustre is designed for.
+Not only do you get parallel IO performance, but you can also do parallel
+e2fsck on the individual filesystems when you need it.  Not that we aren't
+also working on improving e2fsck performance, but 100 * 4TB e2fsck in
+parallel is much better than 1 * 400TB e2fsck (probably not possible on
+a system today due to RAM constraints though I haven't really done any
+calculations either way).  I know customers were having RAM problems with
+3 * 2TB e2fsck in parallel on a 2GB node.
 
--Andi
+Most customers these days use 2-4 4-8TB filesystems per server
+(inexpensive SMP node with 2-4GB RAM instead of a single monstrous SGI box).
+
+We have many Lustre filesystems in the 100-200TB range today, some over 1PB
+already and much larger ones being planned.
+
+> (And one of the research crew had a not-totally-on-crack proposal to get a
+> petabyte of spinning oxide.  Figuring out how to back that up would probably
+> have landed firmly in my lap.  Ouch. ;)
+
+Charge them for 2PB of storage, and use rsync :-).
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
