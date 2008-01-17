@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYAQMvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbYAQNA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbYAQMvt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 07:51:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYAQMvl
+	id S1753634AbYAQNA2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 08:00:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbYAQNAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 07:51:41 -0500
-Received: from dtp.xs4all.nl ([80.126.206.180]:29923 "HELO abra2.bitwizard.nl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1750862AbYAQMvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 07:51:40 -0500
-Date: Thu, 17 Jan 2008 13:51:37 +0100
-From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: salikhmetov@gmail.com, linux-mm@kvack.org, jakob@unthought.net,
-       linux-kernel@vger.kernel.org, valdis.kletnieks@vt.edu, riel@redhat.com,
-       ksm@42.dk, staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@BitWizard.nl,
-       hidave.darkstar@gmail.com, hch@infradead.org
-Subject: Re: [PATCH -v5 2/2] Updating ctime and mtime at syncing
-Message-ID: <20080117125137.GA12191@bitwizard.nl>
-References: <12005314662518-git-send-email-salikhmetov@gmail.com> <1200531471556-git-send-email-salikhmetov@gmail.com> <E1JFSgG-0006G1-6V@pomaz-ex.szeredi.hu> <4df4ef0c0801170416s5581ae28h90d91578baa77738@mail.gmail.com> <E1JFU7r-0006PK-So@pomaz-ex.szeredi.hu>
+	Thu, 17 Jan 2008 08:00:10 -0500
+Received: from tamago.serverit.net ([91.189.209.155]:49156 "EHLO
+	mail.hosting2.serverit.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750965AbYAQNAI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 08:00:08 -0500
+X-Greylist: delayed 1768 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jan 2008 08:00:08 EST
+Date: Thu, 17 Jan 2008 14:29:47 +0200 (EET)
+From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
+X-X-Sender: szaka@tamago.serverit.net
+To: Daniel Phillips <phillips@google.com>
+cc: Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Theodore Tso <tytso@mit.edu>, Al Boldi <a1426z@gawab.com>,
+       Valerie Henson <val.henson@gmail.com>, Rik van Riel <riel@redhat.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental
+ fsck)
+In-Reply-To: <4d47a5d10801151744t378ecdcbj1c326181b4360452@mail.gmail.com>
+Message-ID: <Pine.LNX.4.62.0801171130560.12451@tamago.serverit.net>
+References: <200801090022.55589.a1426z@gawab.com>  <200801090740.12989.a1426z@gawab.com>
+  <70b6f0bf0801082345vf57951ey642e35c3d6e5194f@mail.gmail.com> 
+ <200801091452.14890.a1426z@gawab.com> <20080112145140.GB6751@mit.edu> 
+ <20080113171916.GB4132@ucw.cz>  <20080113174125.5f39ac64@lxorguk.ukuu.org.uk>
+  <20080115201653.GA5639@elf.ucw.cz> <4d47a5d10801151744t378ecdcbj1c326181b4360452@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JFU7r-0006PK-So@pomaz-ex.szeredi.hu>
-Organization: BitWizard.nl
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 01:45:43PM +0100, Miklos Szeredi wrote:
-> > > 4. Recording the time was the file data changed
-> > >
-> > > Finally, I noticed yet another issue with the previous version of my patch.
-> > > Specifically, the time stamps were set to the current time of the moment
-> > > when syncing but not the write reference was being done. This led to the
-> > > following adverse effect on my development system:
-> > >
-> > > 1) a text file A was updated by process B;
-> > > 2) process B exits without calling any of the *sync() functions;
-> > > 3) vi editor opens the file A;
-> > > 4) file data synced, file times updated;
-> > > 5) vi is confused by "thinking" that the file was changed after 3).
-> 
-> Updating the time in remove_vma() would fix this, no?
 
-That sounds to me as the right thing to do. Although not explcitly
-mentioned in the standard, it is the logical (latest allowable)
-timestamp to put on the modifications by process B. 
+On Tue, 15 Jan 2008, Daniel Phillips wrote:
 
-	Roger. 
+> Along with this effort, could you let me know if the world actually
+> cares about online fsck?  Now we know how to do it I think, but is it
+> worth the effort.
 
--- 
-** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
-**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
-*-- BitWizard writes Linux device drivers for any device you may have! --*
-Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
-Does it sit on the couch all day? Is it unemployed? Please be specific! 
-Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
+Most users seem to care deeply about "things just work". Here is why 
+ntfs-3g also took the online fsck path some time ago.
+
+NTFS support had a highly bad reputation on Linux thus the new code was 
+written with rigid sanity checks and extensive automatic, regression 
+testing. One of the consequences is that we're detecting way too many 
+inconsistencies left behind by the Windows and other NTFS drivers, 
+hardware faults, device drivers.
+
+To better utilize the non-existing developer resources, it was obvious to 
+suggest the already existing Windows fsck (chkdsk) in such cases. Simple 
+and safe as most people like us would think who never used Windows. 
+
+However years of experience shows that depending on several factors chkdsk 
+may start or not, may report the real problems or not, but on the other 
+hand it may report bogus issues, it may run long or just forever, and it 
+may even remove completely valid files. So one could perhaps even consider 
+suggestions to run chkdsk a call to play Russian roulette.
+
+Thankfully NTFS has some level of metadata redundancy with signatures and 
+weak "checksums" which make possible to correct some common and obvious 
+corruptions on the fly.
+
+Similarly to ZFS, Windows Server 2008 also has self-healing NTFS:
+http://technet2.microsoft.com/windowsserver2008/en/library/6f883d0d-3668-4e15-b7ad-4df0f6e6805d1033.mspx?mfr=true
+
+	Szaka
+
+--
+NTFS-3G:  http://ntfs-3g.org
