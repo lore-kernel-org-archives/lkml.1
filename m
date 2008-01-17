@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760874AbYAQWmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760901AbYAQWmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760874AbYAQWmA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:42:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760121AbYAQWgq
+	id S1760901AbYAQWmY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:42:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbYAQWgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:36:46 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:10767 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760079AbYAQWgh (ORCPT
+	Thu, 17 Jan 2008 17:36:48 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:36254 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760103AbYAQWgi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 17:36:37 -0500
+	Thu, 17 Jan 2008 17:36:38 -0500
 From: Mark Fasheh <mark.fasheh@oracle.com>
 To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 07/30] dlm: Split lock mode and flag constants into a sharable header.
-Date: Thu, 17 Jan 2008 14:35:33 -0800
-Message-Id: <1200609356-17788-8-git-send-email-mark.fasheh@oracle.com>
+Cc: ocfs2-devel@oss.oracle.com, Jan Kara <jack@suse.cz>
+Subject: [PATCH 20/30] ocfs2: Silence false lockdep warnings
+Date: Thu, 17 Jan 2008 14:35:46 -0800
+Message-Id: <1200609356-17788-21-git-send-email-mark.fasheh@oracle.com>
 X-Mailer: git-send-email 1.5.3.4
 In-Reply-To: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
 References: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
@@ -27,354 +27,169 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joel Becker <joel.becker@oracle.com>
+From: Jan Kara <jack@suse.cz>
 
-This allows others to use the DLM constants without being tied to the
-function API of fs/dlm.
+Create separate lockdep lock classes for system file's i_mutexes. They are
+used to guard allocations and similar things and thus rank differently
+than i_mutex of a regular file or directory.
 
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-Signed-off-by: David Teigland <teigland@redhat.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
 ---
- include/linux/Kbuild         |    1 +
- include/linux/dlm.h          |  140 +------------------------------------
- include/linux/dlmconstants.h |  159 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 162 insertions(+), 138 deletions(-)
- create mode 100644 include/linux/dlmconstants.h
+ fs/ocfs2/export.c  |    4 ++--
+ fs/ocfs2/inode.c   |   10 +++++++++-
+ fs/ocfs2/inode.h   |    7 ++++---
+ fs/ocfs2/journal.c |    2 +-
+ fs/ocfs2/namei.c   |    2 +-
+ fs/ocfs2/super.c   |    4 ++--
+ fs/ocfs2/sysfile.c |    2 +-
+ 7 files changed, 20 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index f30fa92..bd694f7 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -49,6 +49,7 @@ header-y += comstats.h
- header-y += const.h
- header-y += cgroupstats.h
- header-y += cycx_cfm.h
-+header-y += dlmconstants.h
- header-y += dlm_device.h
- header-y += dlm_netlink.h
- header-y += dm-ioctl.h
-diff --git a/include/linux/dlm.h b/include/linux/dlm.h
-index be9d278..c743fbc 100644
---- a/include/linux/dlm.h
-+++ b/include/linux/dlm.h
-@@ -19,148 +19,12 @@
-  * routines and structures to use DLM lockspaces
-  */
+diff --git a/fs/ocfs2/export.c b/fs/ocfs2/export.c
+index 1f9e353..67527ce 100644
+--- a/fs/ocfs2/export.c
++++ b/fs/ocfs2/export.c
+@@ -58,7 +58,7 @@ static struct dentry *ocfs2_get_dentry(struct super_block *sb,
+ 		return ERR_PTR(-ESTALE);
+ 	}
  
--/*
-- * Lock Modes
-- */
-+/* Lock levels and flags are here */
-+#include <linux/dlmconstants.h>
+-	inode = ocfs2_iget(OCFS2_SB(sb), handle->ih_blkno, 0);
++	inode = ocfs2_iget(OCFS2_SB(sb), handle->ih_blkno, 0, 0);
  
--#define DLM_LOCK_IV		-1	/* invalid */
--#define DLM_LOCK_NL		0	/* null */
--#define DLM_LOCK_CR		1	/* concurrent read */
--#define DLM_LOCK_CW		2	/* concurrent write */
--#define DLM_LOCK_PR		3	/* protected read */
--#define DLM_LOCK_PW		4	/* protected write */
--#define DLM_LOCK_EX		5	/* exclusive */
--
--/*
-- * Maximum size in bytes of a dlm_lock name
-- */
+ 	if (IS_ERR(inode))
+ 		return (void *)inode;
+@@ -109,7 +109,7 @@ static struct dentry *ocfs2_get_parent(struct dentry *child)
+ 		goto bail_unlock;
+ 	}
  
- #define DLM_RESNAME_MAXLEN	64
+-	inode = ocfs2_iget(OCFS2_SB(dir->i_sb), blkno, 0);
++	inode = ocfs2_iget(OCFS2_SB(dir->i_sb), blkno, 0, 0);
+ 	if (IS_ERR(inode)) {
+ 		mlog(ML_ERROR, "Unable to create inode %llu\n",
+ 		     (unsigned long long)blkno);
+diff --git a/fs/ocfs2/inode.c b/fs/ocfs2/inode.c
+index 00cd5b7..5e19c11 100644
+--- a/fs/ocfs2/inode.c
++++ b/fs/ocfs2/inode.c
+@@ -57,8 +57,11 @@ struct ocfs2_find_inode_args
+ 	u64		fi_blkno;
+ 	unsigned long	fi_ino;
+ 	unsigned int	fi_flags;
++	unsigned int	fi_sysfile_type;
+ };
  
--/*
-- * Flags to dlm_lock
-- *
-- * DLM_LKF_NOQUEUE
-- *
-- * Do not queue the lock request on the wait queue if it cannot be granted
-- * immediately.  If the lock cannot be granted because of this flag, DLM will
-- * either return -EAGAIN from the dlm_lock call or will return 0 from
-- * dlm_lock and -EAGAIN in the lock status block when the AST is executed.
-- *
-- * DLM_LKF_CANCEL
-- *
-- * Used to cancel a pending lock request or conversion.  A converting lock is
-- * returned to its previously granted mode.
-- *
-- * DLM_LKF_CONVERT
-- *
-- * Indicates a lock conversion request.  For conversions the name and namelen
-- * are ignored and the lock ID in the LKSB is used to identify the lock.
-- *
-- * DLM_LKF_VALBLK
-- *
-- * Requests DLM to return the current contents of the lock value block in the
-- * lock status block.  When this flag is set in a lock conversion from PW or EX
-- * modes, DLM assigns the value specified in the lock status block to the lock
-- * value block of the lock resource.  The LVB is a DLM_LVB_LEN size array
-- * containing application-specific information.
-- *
-- * DLM_LKF_QUECVT
-- *
-- * Force a conversion request to be queued, even if it is compatible with
-- * the granted modes of other locks on the same resource.
-- *
-- * DLM_LKF_IVVALBLK
-- *
-- * Invalidate the lock value block.
-- *
-- * DLM_LKF_CONVDEADLK
-- *
-- * Allows the dlm to resolve conversion deadlocks internally by demoting the
-- * granted mode of a converting lock to NL.  The DLM_SBF_DEMOTED flag is
-- * returned for a conversion that's been effected by this.
-- *
-- * DLM_LKF_PERSISTENT
-- *
-- * Only relevant to locks originating in userspace.  A persistent lock will not
-- * be removed if the process holding the lock exits.
-- *
-- * DLM_LKF_NODLCKWT
-- *
-- * Do not cancel the lock if it gets into conversion deadlock.
-- * Exclude this lock from being monitored due to DLM_LSFL_TIMEWARN.
-- *
-- * DLM_LKF_NODLCKBLK
-- *
-- * net yet implemented
-- *
-- * DLM_LKF_EXPEDITE
-- *
-- * Used only with new requests for NL mode locks.  Tells the lock manager
-- * to grant the lock, ignoring other locks in convert and wait queues.
-- *
-- * DLM_LKF_NOQUEUEBAST
-- *
-- * Send blocking AST's before returning -EAGAIN to the caller.  It is only
-- * used along with the NOQUEUE flag.  Blocking AST's are not sent for failed
-- * NOQUEUE requests otherwise.
-- *
-- * DLM_LKF_HEADQUE
-- *
-- * Add a lock to the head of the convert or wait queue rather than the tail.
-- *
-- * DLM_LKF_NOORDER
-- *
-- * Disregard the standard grant order rules and grant a lock as soon as it
-- * is compatible with other granted locks.
-- *
-- * DLM_LKF_ORPHAN
-- *
-- * not yet implemented
-- *
-- * DLM_LKF_ALTPR
-- *
-- * If the requested mode cannot be granted immediately, try to grant the lock
-- * in PR mode instead.  If this alternate mode is granted instead of the
-- * requested mode, DLM_SBF_ALTMODE is returned in the lksb.
-- *
-- * DLM_LKF_ALTCW
-- *
-- * The same as ALTPR, but the alternate mode is CW.
-- *
-- * DLM_LKF_FORCEUNLOCK
-- *
-- * Unlock the lock even if it is converting or waiting or has sublocks.
-- * Only really for use by the userland device.c code.
-- *
-- */
--
--#define DLM_LKF_NOQUEUE		0x00000001
--#define DLM_LKF_CANCEL		0x00000002
--#define DLM_LKF_CONVERT		0x00000004
--#define DLM_LKF_VALBLK		0x00000008
--#define DLM_LKF_QUECVT		0x00000010
--#define DLM_LKF_IVVALBLK	0x00000020
--#define DLM_LKF_CONVDEADLK	0x00000040
--#define DLM_LKF_PERSISTENT	0x00000080
--#define DLM_LKF_NODLCKWT	0x00000100
--#define DLM_LKF_NODLCKBLK	0x00000200
--#define DLM_LKF_EXPEDITE	0x00000400
--#define DLM_LKF_NOQUEUEBAST	0x00000800
--#define DLM_LKF_HEADQUE		0x00001000
--#define DLM_LKF_NOORDER		0x00002000
--#define DLM_LKF_ORPHAN		0x00004000
--#define DLM_LKF_ALTPR		0x00008000
--#define DLM_LKF_ALTCW		0x00010000
--#define DLM_LKF_FORCEUNLOCK	0x00020000
--#define DLM_LKF_TIMEOUT		0x00040000
--
--/*
-- * Some return codes that are not in errno.h
-- */
--
--#define DLM_ECANCEL		0x10001
--#define DLM_EUNLOCK		0x10002
++static struct lock_class_key ocfs2_sysfile_lock_key[NUM_SYSTEM_INODES];
++
+ static int ocfs2_read_locked_inode(struct inode *inode,
+ 				   struct ocfs2_find_inode_args *args);
+ static int ocfs2_init_locked_inode(struct inode *inode, void *opaque);
+@@ -106,7 +109,8 @@ void ocfs2_get_inode_flags(struct ocfs2_inode_info *oi)
+ 		oi->ip_attr |= OCFS2_DIRSYNC_FL;
+ }
  
- typedef void dlm_lockspace_t;
+-struct inode *ocfs2_iget(struct ocfs2_super *osb, u64 blkno, int flags)
++struct inode *ocfs2_iget(struct ocfs2_super *osb, u64 blkno, unsigned flags,
++			 int sysfile_type)
+ {
+ 	struct inode *inode = NULL;
+ 	struct super_block *sb = osb->sb;
+@@ -126,6 +130,7 @@ struct inode *ocfs2_iget(struct ocfs2_super *osb, u64 blkno, int flags)
+ 	args.fi_blkno = blkno;
+ 	args.fi_flags = flags;
+ 	args.fi_ino = ino_from_blkno(sb, blkno);
++	args.fi_sysfile_type = sysfile_type;
  
-diff --git a/include/linux/dlmconstants.h b/include/linux/dlmconstants.h
-new file mode 100644
-index 0000000..fddb3d3
---- /dev/null
-+++ b/include/linux/dlmconstants.h
-@@ -0,0 +1,159 @@
-+/******************************************************************************
-+*******************************************************************************
-+**
-+**  Copyright (C) Sistina Software, Inc.  1997-2003  All rights reserved.
-+**  Copyright (C) 2004-2007 Red Hat, Inc.  All rights reserved.
-+**
-+**  This copyrighted material is made available to anyone wishing to use,
-+**  modify, copy, or redistribute it subject to the terms and conditions
-+**  of the GNU General Public License v.2.
-+**
-+*******************************************************************************
-+******************************************************************************/
-+
-+#ifndef __DLMCONSTANTS_DOT_H__
-+#define __DLMCONSTANTS_DOT_H__
-+
-+/*
-+ * Constants used by DLM interface.
-+ */
-+
-+/*
-+ * Lock Modes
-+ */
-+
-+#define DLM_LOCK_IV		(-1)	/* invalid */
-+#define DLM_LOCK_NL		0	/* null */
-+#define DLM_LOCK_CR		1	/* concurrent read */
-+#define DLM_LOCK_CW		2	/* concurrent write */
-+#define DLM_LOCK_PR		3	/* protected read */
-+#define DLM_LOCK_PW		4	/* protected write */
-+#define DLM_LOCK_EX		5	/* exclusive */
-+
-+
-+/*
-+ * Flags to dlm_lock
-+ *
-+ * DLM_LKF_NOQUEUE
-+ *
-+ * Do not queue the lock request on the wait queue if it cannot be granted
-+ * immediately.  If the lock cannot be granted because of this flag, DLM will
-+ * either return -EAGAIN from the dlm_lock call or will return 0 from
-+ * dlm_lock and -EAGAIN in the lock status block when the AST is executed.
-+ *
-+ * DLM_LKF_CANCEL
-+ *
-+ * Used to cancel a pending lock request or conversion.  A converting lock is
-+ * returned to its previously granted mode.
-+ *
-+ * DLM_LKF_CONVERT
-+ *
-+ * Indicates a lock conversion request.  For conversions the name and namelen
-+ * are ignored and the lock ID in the LKSB is used to identify the lock.
-+ *
-+ * DLM_LKF_VALBLK
-+ *
-+ * Requests DLM to return the current contents of the lock value block in the
-+ * lock status block.  When this flag is set in a lock conversion from PW or EX
-+ * modes, DLM assigns the value specified in the lock status block to the lock
-+ * value block of the lock resource.  The LVB is a DLM_LVB_LEN size array
-+ * containing application-specific information.
-+ *
-+ * DLM_LKF_QUECVT
-+ *
-+ * Force a conversion request to be queued, even if it is compatible with
-+ * the granted modes of other locks on the same resource.
-+ *
-+ * DLM_LKF_IVVALBLK
-+ *
-+ * Invalidate the lock value block.
-+ *
-+ * DLM_LKF_CONVDEADLK
-+ *
-+ * Allows the dlm to resolve conversion deadlocks internally by demoting the
-+ * granted mode of a converting lock to NL.  The DLM_SBF_DEMOTED flag is
-+ * returned for a conversion that's been effected by this.
-+ *
-+ * DLM_LKF_PERSISTENT
-+ *
-+ * Only relevant to locks originating in userspace.  A persistent lock will not
-+ * be removed if the process holding the lock exits.
-+ *
-+ * DLM_LKF_NODLCKWT
-+ *
-+ * Do not cancel the lock if it gets into conversion deadlock.
-+ * Exclude this lock from being monitored due to DLM_LSFL_TIMEWARN.
-+ *
-+ * DLM_LKF_NODLCKBLK
-+ *
-+ * net yet implemented
-+ *
-+ * DLM_LKF_EXPEDITE
-+ *
-+ * Used only with new requests for NL mode locks.  Tells the lock manager
-+ * to grant the lock, ignoring other locks in convert and wait queues.
-+ *
-+ * DLM_LKF_NOQUEUEBAST
-+ *
-+ * Send blocking AST's before returning -EAGAIN to the caller.  It is only
-+ * used along with the NOQUEUE flag.  Blocking AST's are not sent for failed
-+ * NOQUEUE requests otherwise.
-+ *
-+ * DLM_LKF_HEADQUE
-+ *
-+ * Add a lock to the head of the convert or wait queue rather than the tail.
-+ *
-+ * DLM_LKF_NOORDER
-+ *
-+ * Disregard the standard grant order rules and grant a lock as soon as it
-+ * is compatible with other granted locks.
-+ *
-+ * DLM_LKF_ORPHAN
-+ *
-+ * not yet implemented
-+ *
-+ * DLM_LKF_ALTPR
-+ *
-+ * If the requested mode cannot be granted immediately, try to grant the lock
-+ * in PR mode instead.  If this alternate mode is granted instead of the
-+ * requested mode, DLM_SBF_ALTMODE is returned in the lksb.
-+ *
-+ * DLM_LKF_ALTCW
-+ *
-+ * The same as ALTPR, but the alternate mode is CW.
-+ *
-+ * DLM_LKF_FORCEUNLOCK
-+ *
-+ * Unlock the lock even if it is converting or waiting or has sublocks.
-+ * Only really for use by the userland device.c code.
-+ *
-+ */
-+
-+#define DLM_LKF_NOQUEUE		0x00000001
-+#define DLM_LKF_CANCEL		0x00000002
-+#define DLM_LKF_CONVERT		0x00000004
-+#define DLM_LKF_VALBLK		0x00000008
-+#define DLM_LKF_QUECVT		0x00000010
-+#define DLM_LKF_IVVALBLK	0x00000020
-+#define DLM_LKF_CONVDEADLK	0x00000040
-+#define DLM_LKF_PERSISTENT	0x00000080
-+#define DLM_LKF_NODLCKWT	0x00000100
-+#define DLM_LKF_NODLCKBLK	0x00000200
-+#define DLM_LKF_EXPEDITE	0x00000400
-+#define DLM_LKF_NOQUEUEBAST	0x00000800
-+#define DLM_LKF_HEADQUE		0x00001000
-+#define DLM_LKF_NOORDER		0x00002000
-+#define DLM_LKF_ORPHAN		0x00004000
-+#define DLM_LKF_ALTPR		0x00008000
-+#define DLM_LKF_ALTCW		0x00010000
-+#define DLM_LKF_FORCEUNLOCK	0x00020000
-+#define DLM_LKF_TIMEOUT		0x00040000
-+
-+/*
-+ * Some return codes that are not in errno.h
-+ */
-+
-+#define DLM_ECANCEL		0x10001
-+#define DLM_EUNLOCK		0x10002
-+
-+#endif  /* __DLMCONSTANTS_DOT_H__ */
+ 	inode = iget5_locked(sb, args.fi_ino, ocfs2_find_actor,
+ 			     ocfs2_init_locked_inode, &args);
+@@ -200,6 +205,9 @@ static int ocfs2_init_locked_inode(struct inode *inode, void *opaque)
+ 
+ 	inode->i_ino = args->fi_ino;
+ 	OCFS2_I(inode)->ip_blkno = args->fi_blkno;
++	if (args->fi_sysfile_type != 0)
++		lockdep_set_class(&inode->i_mutex,
++			&ocfs2_sysfile_lock_key[args->fi_sysfile_type]);
+ 
+ 	mlog_exit(0);
+ 	return 0;
+diff --git a/fs/ocfs2/inode.h b/fs/ocfs2/inode.h
+index a61c044..390a855 100644
+--- a/fs/ocfs2/inode.h
++++ b/fs/ocfs2/inode.h
+@@ -120,9 +120,10 @@ void ocfs2_delete_inode(struct inode *inode);
+ void ocfs2_drop_inode(struct inode *inode);
+ 
+ /* Flags for ocfs2_iget() */
+-#define OCFS2_FI_FLAG_SYSFILE		0x4
+-#define OCFS2_FI_FLAG_ORPHAN_RECOVERY	0x8
+-struct inode *ocfs2_iget(struct ocfs2_super *osb, u64 feoff, int flags);
++#define OCFS2_FI_FLAG_SYSFILE		0x1
++#define OCFS2_FI_FLAG_ORPHAN_RECOVERY	0x2
++struct inode *ocfs2_iget(struct ocfs2_super *osb, u64 feoff, unsigned flags,
++			 int sysfile_type);
+ int ocfs2_inode_init_private(struct inode *inode);
+ int ocfs2_inode_revalidate(struct dentry *dentry);
+ int ocfs2_populate_inode(struct inode *inode, struct ocfs2_dinode *fe,
+diff --git a/fs/ocfs2/journal.c b/fs/ocfs2/journal.c
+index 8b9ce2a..f31c7e8 100644
+--- a/fs/ocfs2/journal.c
++++ b/fs/ocfs2/journal.c
+@@ -1244,7 +1244,7 @@ static int ocfs2_orphan_filldir(void *priv, const char *name, int name_len,
+ 
+ 	/* Skip bad inodes so that recovery can continue */
+ 	iter = ocfs2_iget(p->osb, ino,
+-			  OCFS2_FI_FLAG_ORPHAN_RECOVERY);
++			  OCFS2_FI_FLAG_ORPHAN_RECOVERY, 0);
+ 	if (IS_ERR(iter))
+ 		return 0;
+ 
+diff --git a/fs/ocfs2/namei.c b/fs/ocfs2/namei.c
+index 74018ca..ae9ad95 100644
+--- a/fs/ocfs2/namei.c
++++ b/fs/ocfs2/namei.c
+@@ -128,7 +128,7 @@ static struct dentry *ocfs2_lookup(struct inode *dir, struct dentry *dentry,
+ 	if (status < 0)
+ 		goto bail_add;
+ 
+-	inode = ocfs2_iget(OCFS2_SB(dir->i_sb), blkno, 0);
++	inode = ocfs2_iget(OCFS2_SB(dir->i_sb), blkno, 0, 0);
+ 	if (IS_ERR(inode)) {
+ 		ret = ERR_PTR(-EACCES);
+ 		goto bail_unlock;
+diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
+index 4a091f5..01fe40e 100644
+--- a/fs/ocfs2/super.c
++++ b/fs/ocfs2/super.c
+@@ -220,7 +220,7 @@ static int ocfs2_init_global_system_inodes(struct ocfs2_super *osb)
+ 
+ 	mlog_entry_void();
+ 
+-	new = ocfs2_iget(osb, osb->root_blkno, OCFS2_FI_FLAG_SYSFILE);
++	new = ocfs2_iget(osb, osb->root_blkno, OCFS2_FI_FLAG_SYSFILE, 0);
+ 	if (IS_ERR(new)) {
+ 		status = PTR_ERR(new);
+ 		mlog_errno(status);
+@@ -228,7 +228,7 @@ static int ocfs2_init_global_system_inodes(struct ocfs2_super *osb)
+ 	}
+ 	osb->root_inode = new;
+ 
+-	new = ocfs2_iget(osb, osb->system_dir_blkno, OCFS2_FI_FLAG_SYSFILE);
++	new = ocfs2_iget(osb, osb->system_dir_blkno, OCFS2_FI_FLAG_SYSFILE, 0);
+ 	if (IS_ERR(new)) {
+ 		status = PTR_ERR(new);
+ 		mlog_errno(status);
+diff --git a/fs/ocfs2/sysfile.c b/fs/ocfs2/sysfile.c
+index fd2e846..ab713eb 100644
+--- a/fs/ocfs2/sysfile.c
++++ b/fs/ocfs2/sysfile.c
+@@ -112,7 +112,7 @@ static struct inode * _ocfs2_get_system_file_inode(struct ocfs2_super *osb,
+ 		goto bail;
+ 	}
+ 
+-	inode = ocfs2_iget(osb, blkno, OCFS2_FI_FLAG_SYSFILE);
++	inode = ocfs2_iget(osb, blkno, OCFS2_FI_FLAG_SYSFILE, type);
+ 	if (IS_ERR(inode)) {
+ 		mlog_errno(PTR_ERR(inode));
+ 		inode = NULL;
 -- 
 1.5.3.6
 
