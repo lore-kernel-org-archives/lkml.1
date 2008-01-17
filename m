@@ -1,97 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbYAQTiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbYAQTjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbYAQTiL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 14:38:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbYAQTh7
+	id S1756999AbYAQTjx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 14:39:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYAQTjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 14:37:59 -0500
-Received: from mga03.intel.com ([143.182.124.21]:45236 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbYAQTh5 convert rfc822-to-8bit (ORCPT
+	Thu, 17 Jan 2008 14:39:45 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55399 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751481AbYAQTjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 14:37:57 -0500
-X-ExtLoop1: 1
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [-mm Patch] uml: fix a building error
-Date: Thu, 17 Jan 2008 11:38:53 -0800
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE5E90DF@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <20080117105606.ff89e9e9.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [-mm Patch] uml: fix a building error
-Thread-Index: AchZOp3yRYwEYYuDRDCinMrWzOdevgABW0OQ
-References: <20080117023514.9df393cf.akpm@linux-foundation.org><20080117135641.GD2693@hacking><200801171911.16230.m.kozlowski@tuxland.pl> <20080117105606.ff89e9e9.akpm@linux-foundation.org>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>
-Cc: "WANG Cong" <xiyou.wangcong@gmail.com>, <linux-kernel@vger.kernel.org>,
-       "Jeff Dike" <jdike@addtoit.com>,
-       <user-mode-linux-devel@lists.sourceforge.net>,
-       "David Miller" <davem@davemloft.net>, <sparclinux@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
-X-OriginalArrivalTime: 17 Jan 2008 19:37:56.0180 (UTC) FILETIME=[755BF940:01C85940]
+	Thu, 17 Jan 2008 14:39:44 -0500
+Date: Thu, 17 Jan 2008 11:38:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: 2.6.24-rc8-mm1 (BUG: sched_rt)
+Message-Id: <20080117113822.f45d4da3.akpm@linux-foundation.org>
+In-Reply-To: <20080117111401.354f8949.randy.dunlap@oracle.com>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<20080117084833.dc946466.randy.dunlap@oracle.com>
+	<1200589864.5159.6.camel@twins>
+	<20080117111401.354f8949.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Thu, 17 Jan 2008 11:14:01 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
->-----Original Message-----
->From: Andrew Morton [mailto:akpm@linux-foundation.org] 
->Sent: Thursday, January 17, 2008 10:56 AM
->To: Mariusz Kozlowski
->Cc: WANG Cong; linux-kernel@vger.kernel.org; Jeff Dike; 
->user-mode-linux-devel@lists.sourceforge.net; David Miller; 
->sparclinux@vger.kernel.org; Ingo Molnar; Thomas Gleixner; 
->Pallipadi, Venkatesh
->Subject: Re: [-mm Patch] uml: fix a building error
->
->On Thu, 17 Jan 2008 19:11:13 +0100 Mariusz Kozlowski 
-><m.kozlowski@tuxland.pl> wrote:
->
->> Hello,
->> 
->> > This patch fixes this building error:
->> > ...
->> > drivers/char/mem.c: In function 'read_mem':
->> > drivers/char/mem.c:136: error: implicit declaration of 
->function 'unxlate_dev_mem_ptr'
->> > ...
->> 
->> I see this on sparc64 as well:
->> 
->>   CC      drivers/char/mem.o
->> drivers/char/mem.c: In function 'read_mem':
->> drivers/char/mem.c:136: error: implicit declaration of 
->function 'unxlate_dev_mem_ptr'
->> make[2]: *** [drivers/char/mem.o] Error 1
->> make[1]: *** [drivers/char] Error 2
->> make: *** [drivers] Error 2
->> 
->> Does sparc64 need similar fix?
->> 
->
->The PAT patches strike again.
->
->Ingo, I think you might need to toss some cross-compilers into 
->that build
->test setup of yours.
->
+> > Does reverting that fix it?
+> 
+> Ack.  Andrew, do you want this hotfix?
+> 
+> ---
+> From:   Peter Zijlstra <peterz@infradead.org>
+>                                             
+> Revert the BUG_ON(). Condition is OK and happens.
+> 
+> Tested-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-These functions were defined for other archs in asm-generic/iomap.h.
-We need all archs including it in io.h. I now see only few archs are
-including it..
+Thanks - I already added that to
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/hot-fixes/
 
-Apart from unxlate, there is also ioremap_wc which is defined in the
-same way.
+There are quite a few fixes there so I'd remind people to apply those as
+well before testing.
 
-I can send a patch for this. But, I don't have cross compiler setup for
-all archs to test. Andrew, I will need your help.
-
-Thanks,
-Venki
