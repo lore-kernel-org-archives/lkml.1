@@ -1,110 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbYAQWgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbYAQWgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760042AbYAQWgX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:36:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbYAQWfQ
+	id S1759966AbYAQWgq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:36:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757784AbYAQWfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:35:16 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:50951 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755880AbYAQWfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 17:35:17 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57825 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756304AbYAQWfJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 Jan 2008 17:35:09 -0500
-Message-Id: <20080117223506.036437000@sgi.com>
+Message-Id: <20080117223505.906275000@sgi.com>
 References: <20080117223505.203884000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 17 Jan 2008 14:35:11 -0800
+Date: Thu, 17 Jan 2008 14:35:10 -0800
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        mingo@elte.hu
 Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com
-Subject: [PATCH 6/6] s390: Use generic percpu
-Content-Disposition: inline; filename=s390_generic_percpu
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 5/6] Powerpc: Use generic per cpu
+Content-Disposition: inline; filename=power_generic_percpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change s390 percpu.h to use asm-generic/percpu.h
+Powerpc has a way to determine the address of the per cpu area of the
+currently executing processor via the paca and the array of per cpu
+offsets is avoided by looking up the per cpu area from the remote
+paca's (copying x86_64).
 
-Cc: schwidefsky@de.ibm.com
+Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
 
+V1->V2:
+- add missing #endif
+
 V2->V3:
-
-On Thu, 29 Nov 2007, Martin Schwidefsky wrote:
-
-> On Wed, 2007-11-28 at 13:09 -0800, Christoph Lameter wrote:
-> > s390 has a special way to determine the pointer to a per cpu area
-> > plus there is a way to access the base of the per cpu area of the
-> > currently executing processor.
-> > 
-> > Note: I had to do a minor change to ASM code. Please check that
-> > this was done right.
-> 
-> Hi Christoph,
-> 
-> after fixing the trainwreck with Gregs kset changes I've got rc3-mm2
-> compiled with your percpu patches. The new s390 percpu code works fine:
-> 
-> Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+- use generic percpy_modcopy()
 
 ---
- include/asm-s390/percpu.h |   33 +++++++++------------------------
- 1 file changed, 9 insertions(+), 24 deletions(-)
+ include/asm-powerpc/percpu.h |   20 ++------------------
+ 1 file changed, 2 insertions(+), 18 deletions(-)
 
---- a/include/asm-s390/percpu.h
-+++ b/include/asm-s390/percpu.h
-@@ -13,40 +13,25 @@
-  */
- #if defined(__s390x__) && defined(MODULE)
+--- a/include/asm-powerpc/percpu.h
++++ b/include/asm-powerpc/percpu.h
+@@ -16,25 +16,9 @@
+ #define __my_cpu_offset() get_paca()->data_offset
+ #define per_cpu_offset(x) (__per_cpu_offset(x))
  
--#define __reloc_hide(var,offset) (*({			\
-+#define SHIFT_PERCPU_PTR(ptr,offset) (({			\
- 	extern int simple_identifier_##var(void);	\
- 	unsigned long *__ptr;				\
--	asm ( "larl %0,per_cpu__"#var"@GOTENT"		\
--	    : "=a" (__ptr) : "X" (per_cpu__##var) );	\
--	(typeof(&per_cpu__##var))((*__ptr) + (offset));	}))
-+	asm ( "larl %0, %1@GOTENT"		\
-+	    : "=a" (__ptr) : "X" (ptr) );		\
-+	(typeof(ptr))((*__ptr) + (offset));	}))
+-/* var is in discarded region: offset to particular copy we want */
+-#define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset(cpu)))
+-#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
+-#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, local_paca->data_offset))
++#endif /* CONFIG_SMP */
++#endif /* __powerpc64__ */
  
- #else
- 
--#define __reloc_hide(var, offset) (*({				\
-+#define SHIFT_PERCPU_PTR(ptr, offset) (({				\
- 	extern int simple_identifier_##var(void);		\
- 	unsigned long __ptr;					\
--	asm ( "" : "=a" (__ptr) : "0" (&per_cpu__##var) );	\
--	(typeof(&per_cpu__##var)) (__ptr + (offset)); }))
-+	asm ( "" : "=a" (__ptr) : "0" (ptr) );			\
-+	(typeof(ptr)) (__ptr + (offset)); }))
- 
- #endif
- 
--#ifdef CONFIG_SMP
-+#define __my_cpu_offset S390_lowcore.percpu_offset
- 
--extern unsigned long __per_cpu_offset[NR_CPUS];
--
--#define __get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
--#define __raw_get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
--#define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
--#define per_cpu_offset(x) (__per_cpu_offset[x])
+-extern void setup_per_cpu_areas(void);
 -
 -#else /* ! SMP */
 -
--#define __get_cpu_var(var) __reloc_hide(var,0)
--#define __raw_get_cpu_var(var) __reloc_hide(var,0)
--#define per_cpu(var,cpu) __reloc_hide(var,0)
+-#define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
+-#define __get_cpu_var(var)			per_cpu__##var
+-#define __raw_get_cpu_var(var)			per_cpu__##var
 -
--#endif /* SMP */
+-#endif	/* SMP */
 -
 -#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
-+#include <asm-generic/percpu.h>
+-
+-#else
+ #include <asm-generic/percpu.h>
+-#endif
  
- #endif /* __ARCH_S390_PERCPU__ */
+ #endif /* _ASM_POWERPC_PERCPU_H_ */
 
 -- 
