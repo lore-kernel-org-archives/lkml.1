@@ -1,77 +1,1550 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYAQObJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbYAQOci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbYAQObJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 09:31:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYAQOa4
+	id S1755452AbYAQOci (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 09:32:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYAQOc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 09:30:56 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:56764 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751328AbYAQOaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 09:30:55 -0500
-Date: Thu, 17 Jan 2008 06:30:53 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Olaf Hering <olaf@aepfle.de>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Linux MM <linux-mm@kvack.org>
-Subject: Re: crash in kmem_cache_init
-In-Reply-To: <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
-References: <20080115150949.GA14089@aepfle.de>
- <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
+	Thu, 17 Jan 2008 09:32:29 -0500
+Received: from gecko.sbs.de ([194.138.37.40]:18790 "EHLO gecko.sbs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752564AbYAQOc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 09:32:27 -0500
+Message-ID: <478F66F6.40107@siemens.com>
+Date: Thu, 17 Jan 2008 15:32:22 +0100
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jason Wessel <jason.wessel@windriver.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] kgdb:unify x86-kgdb
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008, Pekka Enberg wrote:
+diff -up arch/x86/kernel/kgdb_32.c arch/x86/kernel/kgdb_64.c
 
-> Looks similar to the one discussed on linux-mm ("[BUG] at
-> mm/slab.c:3320" thread). Christoph?
+screamed for unification. Here it is.
 
-Right. Try the latest version of the patch to fix it:
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
 
-Index: linux-2.6/mm/slab.c
+---
+ arch/x86/kernel/Makefile_32 |    2 
+ arch/x86/kernel/Makefile_64 |    2 
+ arch/x86/kernel/kgdb.c      |  561 ++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/kgdb_32.c   |  414 --------------------------------
+ arch/x86/kernel/kgdb_64.c   |  495 --------------------------------------
+ 5 files changed, 563 insertions(+), 911 deletions(-)
+
+Index: b/arch/x86/kernel/Makefile_32
 ===================================================================
---- linux-2.6.orig/mm/slab.c	2008-01-03 12:26:42.000000000 -0800
-+++ linux-2.6/mm/slab.c	2008-01-09 15:59:49.000000000 -0800
-@@ -2977,7 +2977,10 @@ retry:
- 	}
- 	l3 = cachep->nodelists[node];
- 
--	BUG_ON(ac->avail > 0 || !l3);
-+	if (!l3)
-+		return NULL;
+--- a/arch/x86/kernel/Makefile_32
++++ b/arch/x86/kernel/Makefile_32
+@@ -37,7 +37,7 @@ obj-y				+= sysenter_32.o vsyscall_32.o
+ obj-$(CONFIG_ACPI_SRAT) 	+= srat_32.o
+ obj-$(CONFIG_EFI) 		+= efi_32.o efi_stub_32.o
+ obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault_32.o
+-obj-$(CONFIG_KGDB)		+= kgdb_32.o kgdb-jmp_32.o
++obj-$(CONFIG_KGDB)		+= kgdb.o kgdb-jmp_32.o
+ obj-$(CONFIG_VM86)		+= vm86_32.o
+ obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
+ obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
+Index: b/arch/x86/kernel/Makefile_64
+===================================================================
+--- a/arch/x86/kernel/Makefile_64
++++ b/arch/x86/kernel/Makefile_64
+@@ -31,7 +31,7 @@ obj-$(CONFIG_GART_IOMMU)	+= pci-gart_64.
+ obj-$(CONFIG_CALGARY_IOMMU)	+= pci-calgary_64.o tce_64.o
+ obj-$(CONFIG_SWIOTLB)		+= pci-swiotlb_64.o
+ obj-$(CONFIG_KPROBES)		+= kprobes_64.o
+-obj-$(CONFIG_KGDB)		+= kgdb_64.o kgdb-jmp_64.o
++obj-$(CONFIG_KGDB)		+= kgdb.o kgdb-jmp_64.o
+ obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
+ obj-$(CONFIG_X86_VSMP)		+= vsmp_64.o
+ obj-$(CONFIG_K8_NB)		+= k8.o
+Index: b/arch/x86/kernel/kgdb.c
+===================================================================
+--- /dev/null
++++ b/arch/x86/kernel/kgdb.c
+@@ -0,0 +1,561 @@
++/*
++ * arch/x86/kernel/kgdb.c
++ *
++ * Copyright (C) 2000-2001 VERITAS Software Corporation.
++ * Copyright (C) 2002 Andi Kleen, SuSE Labs
++ * Copyright (C) 2004 Amit S. Kale <amitkale@linsyssoft.com>
++ * Copyright (C) 2004 LinSysSoft Technologies Pvt. Ltd.
++ * Copyright (C) 2007 Jason Wessel, Wind River Systems, Inc.
++ * Copyright (C) 2007 MontaVista Software, Inc.
++ *
++ *
++ * Contributors at various stages not listed above:
++ *  Lake Stevens Instrument Division (Glenn Engel)
++ *  Tom Rini <trini@kernel.crashing.org>
++ *  Jim Kingdon, Cygnus Support.
++ *  David Grothe <dave@gcom.com>
++ *  Tigran Aivazian <tigran@sco.com>
++ *  Jim Houston
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
 +
-+	BUG_ON(ac->avail > 0);
- 	spin_lock(&l3->list_lock);
- 
- 	/* See if we can refill from the shared array */
-@@ -3224,7 +3227,7 @@ static void *alternate_node_alloc(struct
- 		nid_alloc = cpuset_mem_spread_node();
- 	else if (current->mempolicy)
- 		nid_alloc = slab_node(current->mempolicy);
--	if (nid_alloc != nid_here)
-+	if (nid_alloc != nid_here && node_state(nid_alloc, N_NORMAL_MEMORY))
- 		return ____cache_alloc_node(cachep, flags, nid_alloc);
- 	return NULL;
- }
-@@ -3439,8 +3442,14 @@ __do_cache_alloc(struct kmem_cache *cach
- 	 * We may just have run out of memory on the local node.
- 	 * ____cache_alloc_node() knows how to locate memory on other nodes
- 	 */
-- 	if (!objp)
-- 		objp = ____cache_alloc_node(cache, flags, numa_node_id());
-+ 	if (!objp) {
-+		int node_id = numa_node_id();
-+		if (likely(cache->nodelists[node_id])) /* fast path */
-+ 			objp = ____cache_alloc_node(cache, flags, node_id);
-+		else /* this function can do good fallback */
-+			objp = __cache_alloc_node(cache, flags, node_id,
-+					__builtin_return_address(0));
++#include <linux/string.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/smp.h>
++#include <linux/spinlock.h>
++#include <linux/delay.h>
++#include <asm/system.h>
++#include <linux/ptrace.h>		/* for linux pt_regs struct */
++#include <linux/kgdb.h>
++#include <linux/init.h>
++#include <linux/kdebug.h>
++#ifdef CONFIG_X86_32
++#include <mach_ipi.h>
++#else /* !CONFIG_X86_32 */
++#include <asm/mach_apic.h>
++#endif /* !CONFIG_X86_32 */
++
++/* Put the error code here just in case the user cares.  */
++int gdb_x86_errcode;
++/* Likewise, the vector number here (since GDB only gets the signal
++   number through the usual means, and that's not very specific).  */
++int gdb_x86_vector = -1;
++
++#ifdef CONFIG_X86_32
++void regs_to_gdb_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++	gdb_regs[_EAX] = regs->eax;
++	gdb_regs[_EBX] = regs->ebx;
++	gdb_regs[_ECX] = regs->ecx;
++	gdb_regs[_EDX] = regs->edx;
++	gdb_regs[_ESI] = regs->esi;
++	gdb_regs[_EDI] = regs->edi;
++	gdb_regs[_EBP] = regs->ebp;
++	gdb_regs[_DS] = regs->xds;
++	gdb_regs[_ES] = regs->xes;
++	gdb_regs[_PS] = regs->eflags;
++	gdb_regs[_CS] = regs->xcs;
++	gdb_regs[_PC] = regs->eip;
++	gdb_regs[_ESP] = (int)(&regs->esp);
++	gdb_regs[_SS] = __KERNEL_DS;
++	gdb_regs[_FS] = 0xFFFF;
++	gdb_regs[_GS] = 0xFFFF;
++}
++
++/*
++ * Extracts ebp, esp and eip values understandable by gdb from the values
++ * saved by switch_to.
++ * thread.esp points to ebp. flags and ebp are pushed in switch_to hence esp
++ * prior to entering switch_to is 8 greater then the value that is saved.
++ * If switch_to changes, change following code appropriately.
++ */
++void sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *p)
++{
++	gdb_regs[_EAX] = 0;
++	gdb_regs[_EBX] = 0;
++	gdb_regs[_ECX] = 0;
++	gdb_regs[_EDX] = 0;
++	gdb_regs[_ESI] = 0;
++	gdb_regs[_EDI] = 0;
++	gdb_regs[_EBP] = *(unsigned long *)p->thread.esp;
++	gdb_regs[_DS] = __KERNEL_DS;
++	gdb_regs[_ES] = __KERNEL_DS;
++	gdb_regs[_PS] = 0;
++	gdb_regs[_CS] = __KERNEL_CS;
++	gdb_regs[_PC] = p->thread.eip;
++	gdb_regs[_ESP] = p->thread.esp;
++	gdb_regs[_SS] = __KERNEL_DS;
++	gdb_regs[_FS] = 0xFFFF;
++	gdb_regs[_GS] = 0xFFFF;
++}
++
++void gdb_regs_to_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++	regs->eax = gdb_regs[_EAX];
++	regs->ebx = gdb_regs[_EBX];
++	regs->ecx = gdb_regs[_ECX];
++	regs->edx = gdb_regs[_EDX];
++	regs->esi = gdb_regs[_ESI];
++	regs->edi = gdb_regs[_EDI];
++	regs->ebp = gdb_regs[_EBP];
++	regs->xds = gdb_regs[_DS];
++	regs->xes = gdb_regs[_ES];
++	regs->eflags = gdb_regs[_PS];
++	regs->xcs = gdb_regs[_CS];
++	regs->eip = gdb_regs[_PC];
++}
++
++#else /* CONFIG_X86_64 */
++
++void regs_to_gdb_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++	gdb_regs[_RAX] = regs->rax;
++	gdb_regs[_RBX] = regs->rbx;
++	gdb_regs[_RCX] = regs->rcx;
++	gdb_regs[_RDX] = regs->rdx;
++	gdb_regs[_RSI] = regs->rsi;
++	gdb_regs[_RDI] = regs->rdi;
++	gdb_regs[_RBP] = regs->rbp;
++	gdb_regs[_PS] = regs->eflags;
++	gdb_regs[_PC] = regs->rip;
++	gdb_regs[_R8] = regs->r8;
++	gdb_regs[_R9] = regs->r9;
++	gdb_regs[_R10] = regs->r10;
++	gdb_regs[_R11] = regs->r11;
++	gdb_regs[_R12] = regs->r12;
++	gdb_regs[_R13] = regs->r13;
++	gdb_regs[_R14] = regs->r14;
++	gdb_regs[_R15] = regs->r15;
++	gdb_regs[_RSP] = regs->rsp;
++}
++
++extern void thread_return(void);
++void sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *p)
++{
++	gdb_regs[_RAX] = 0;
++	gdb_regs[_RBX] = 0;
++	gdb_regs[_RCX] = 0;
++	gdb_regs[_RDX] = 0;
++	gdb_regs[_RSI] = 0;
++	gdb_regs[_RDI] = 0;
++	gdb_regs[_RBP] = *(unsigned long *)p->thread.rsp;
++	gdb_regs[_PS] = *(unsigned long *)(p->thread.rsp + 8);
++	gdb_regs[_PC] = (unsigned long)&thread_return;
++	gdb_regs[_R8] = 0;
++	gdb_regs[_R9] = 0;
++	gdb_regs[_R10] = 0;
++	gdb_regs[_R11] = 0;
++	gdb_regs[_R12] = 0;
++	gdb_regs[_R13] = 0;
++	gdb_regs[_R14] = 0;
++	gdb_regs[_R15] = 0;
++	gdb_regs[_RSP] = p->thread.rsp;
++}
++
++void gdb_regs_to_regs(unsigned long *gdb_regs, struct pt_regs *regs)
++{
++	regs->rax = gdb_regs[_RAX];
++	regs->rbx = gdb_regs[_RBX];
++	regs->rcx = gdb_regs[_RCX];
++	regs->rdx = gdb_regs[_RDX];
++	regs->rsi = gdb_regs[_RSI];
++	regs->rdi = gdb_regs[_RDI];
++	regs->rbp = gdb_regs[_RBP];
++	regs->eflags = gdb_regs[_PS];
++	regs->rip = gdb_regs[_PC];
++	regs->r8 = gdb_regs[_R8];
++	regs->r9 = gdb_regs[_R9];
++	regs->r10 = gdb_regs[_R10];
++	regs->r11 = gdb_regs[_R11];
++	regs->r12 = gdb_regs[_R12];
++	regs->r13 = gdb_regs[_R13];
++	regs->r14 = gdb_regs[_R14];
++	regs->r15 = gdb_regs[_R15];
++}
++#endif /* CONFIG_X86_64 */
++
++static struct hw_breakpoint {
++	unsigned enabled;
++	unsigned type;
++	unsigned len;
++	unsigned long addr;
++} breakinfo[4] = {
++	{ .enabled = 0 },
++	{ .enabled = 0 },
++	{ .enabled = 0 },
++	{ .enabled = 0 },
++};
++
++static void kgdb_correct_hw_break(void)
++{
++	int breakno;
++	int breakbit;
++	int correctit = 0;
++	unsigned long dr7;
++
++	get_debugreg(dr7, 7);
++	for (breakno = 0; breakno < 4; breakno++) {
++		breakbit = 2 << (breakno << 1);
++		if (!(dr7 & breakbit) && breakinfo[breakno].enabled) {
++			correctit = 1;
++			dr7 |= breakbit;
++			dr7 &= ~(0xf0000 << (breakno << 2));
++			dr7 |= ((breakinfo[breakno].len << 2) |
++				 breakinfo[breakno].type) <<
++			       ((breakno << 2) + 16);
++			switch (breakno) {
++			case 0:
++				set_debugreg(breakinfo[0].addr, 0);
++				break;
++
++			case 1:
++				set_debugreg(breakinfo[1].addr, 1);
++				break;
++
++			case 2:
++				set_debugreg(breakinfo[2].addr, 2);
++				break;
++
++			case 3:
++				set_debugreg(breakinfo[3].addr, 3);
++				break;
++			}
++		} else if ((dr7 & breakbit) && !breakinfo[breakno].enabled) {
++			correctit = 1;
++			dr7 &= ~breakbit;
++			dr7 &= ~(0xf0000 << (breakno << 2));
++		}
 +	}
- 
-   out:
- 	return objp;
++	if (correctit)
++		set_debugreg(dr7, 7);
++}
++
++static int kgdb_remove_hw_break(unsigned long addr, int len,
++				enum kgdb_bptype bptype)
++{
++	int i;
++
++	for (i = 0; i < 4; i++)
++		if (breakinfo[i].addr == addr && breakinfo[i].enabled)
++			break;
++	if (i == 4)
++		return -1;
++
++	breakinfo[i].enabled = 0;
++	return 0;
++}
++
++static void kgdb_remove_all_hw_break(void)
++{
++	int i;
++
++	for (i = 0; i < 4; i++)
++		memset(&breakinfo[i], 0, sizeof(struct hw_breakpoint));
++}
++
++static int kgdb_set_hw_break(unsigned long addr, int len,
++			     enum kgdb_bptype bptype)
++{
++	int i;
++	unsigned type;
++
++	for (i = 0; i < 4; i++)
++		if (!breakinfo[i].enabled)
++			break;
++	if (i == 4)
++		return -1;
++
++	switch (bptype) {
++	case bp_hardware_breakpoint:
++		type = 0;
++		len  = 1;
++		break;
++	case bp_write_watchpoint:
++		type = 1;
++		break;
++	case bp_access_watchpoint:
++		type = 3;
++		break;
++	default:
++		return -1;
++	}
++
++	if (len == 1 || len == 2 || len == 4)
++		breakinfo[i].len  = len - 1;
++	else
++		return -1;
++
++	breakinfo[i].enabled = 1;
++	breakinfo[i].addr = addr;
++	breakinfo[i].type = type;
++	return 0;
++}
++
++void kgdb_disable_hw_debug(struct pt_regs *regs)
++{
++	/* Disable hardware debugging while we are in kgdb */
++	set_debugreg(0UL, 7);
++}
++
++void kgdb_post_master_code(struct pt_regs *regs, int e_vector, int err_code)
++{
++	/* Master processor is completely in the debugger */
++	gdb_x86_vector = e_vector;
++	gdb_x86_errcode = err_code;
++}
++
++#ifdef CONFIG_SMP
++void kgdb_roundup_cpus(unsigned long flags)
++{
++	send_IPI_allbutself(APIC_DM_NMI);
++}
++#endif
++
++int kgdb_arch_handle_exception(int e_vector, int signo, int err_code,
++			       char *remcom_in_buffer, char *remcom_out_buffer,
++			       struct pt_regs *linux_regs)
++{
++	unsigned long addr;
++	char *ptr;
++	int newPC;
++	unsigned long dr6;
++
++	switch (remcom_in_buffer[0]) {
++	case 'c':
++	case 's':
++		/* try to read optional parameter, pc unchanged if no parm */
++		ptr = &remcom_in_buffer[1];
++		if (kgdb_hex2long(&ptr, &addr))
++			instruction_pointer(linux_regs) = addr;
++		newPC = instruction_pointer(linux_regs);
++
++		/* clear the trace bit */
++		linux_regs->eflags &= ~TF_MASK;
++		atomic_set(&cpu_doing_single_step, -1);
++
++		/* set the trace bit if we're stepping */
++		if (remcom_in_buffer[0] == 's') {
++			linux_regs->eflags |= TF_MASK;
++			debugger_step = 1;
++			if (kgdb_contthread)
++				atomic_set(&cpu_doing_single_step,
++					   raw_smp_processor_id());
++
++		}
++
++		get_debugreg(dr6, 6);
++		if (!(dr6 & 0x4000)) {
++			int breakno;
++
++			for (breakno = 0; breakno < 4; ++breakno) {
++				if (dr6 & (1 << breakno) &&
++				    breakinfo[breakno].type == 0) {
++					/* Set restore flag */
++					linux_regs->eflags |= X86_EFLAGS_RF;
++					break;
++				}
++			}
++		}
++		set_debugreg(0UL, 6);
++		kgdb_correct_hw_break();
++
++		return 0;
++	}
++	/* this means that we do not want to exit from the handler */
++	return -1;
++}
++
++#ifdef CONFIG_X86_64
++static struct pt_regs *in_interrupt_stack(unsigned long rsp, int cpu)
++{
++	struct pt_regs *regs = NULL;
++	unsigned long end = (unsigned long)cpu_pda(cpu)->irqstackptr;
++
++	if (rsp <= end && rsp >= end - IRQSTACKSIZE + 8)
++		regs = *(((struct pt_regs **)end) - 1);
++
++	return regs;
++}
++
++static struct pt_regs *in_exception_stack(unsigned long rsp, int cpu)
++{
++	struct tss_struct *init_tss = &__get_cpu_var(init_tss);
++	struct pt_regs *regs;
++	int i;
++
++	for (i = 0; i < N_EXCEPTION_STACKS; i++)
++		if (rsp >= init_tss[cpu].ist[i] &&
++		    rsp <= init_tss[cpu].ist[i] + EXCEPTION_STKSZ) {
++			regs = (void *) init_tss[cpu].ist[i] + EXCEPTION_STKSZ;
++			return regs - 1;
++		}
++
++	return NULL;
++}
++
++void kgdb_shadowinfo(struct pt_regs *regs, char *buffer, unsigned threadid)
++{
++	static char intr_desc[] = "Stack at interrupt entrypoint";
++	static char exc_desc[] = "Stack at exception entrypoint";
++	struct pt_regs *stregs;
++	int cpu = raw_smp_processor_id();
++	stregs = in_interrupt_stack(regs->rsp, cpu);
++	if (stregs)
++		kgdb_mem2hex(intr_desc, buffer, strlen(intr_desc));
++	else {
++		stregs = in_exception_stack(regs->rsp, cpu);
++		if (stregs)
++			kgdb_mem2hex(exc_desc, buffer, strlen(exc_desc));
++	}
++}
++
++struct task_struct *kgdb_get_shadow_thread(struct pt_regs *regs, int threadid)
++{
++	struct pt_regs *stregs;
++	int cpu = raw_smp_processor_id();
++
++	stregs = in_interrupt_stack(regs->rsp, cpu);
++	if (stregs)
++		return current;
++	else {
++		stregs = in_exception_stack(regs->rsp, cpu);
++		if (stregs)
++			return current;
++	}
++
++	return NULL;
++}
++
++struct pt_regs *kgdb_shadow_regs(struct pt_regs *regs, int threadid)
++{
++	struct pt_regs *stregs;
++	int cpu = raw_smp_processor_id();
++
++	stregs = in_interrupt_stack(regs->rsp, cpu);
++	if (stregs)
++		return stregs;
++	else {
++		stregs = in_exception_stack(regs->rsp, cpu);
++		if (stregs)
++			return stregs;
++	}
++
++	return NULL;
++}
++#endif /* CONFIG_X86_64 */
++
++static inline int single_step_cont(struct pt_regs *regs,
++			struct die_args *args)
++{
++	/* single step exception from kernel space to user space so
++	 * eat the exception and continue the process
++	 */
++	printk(KERN_ERR "KGDB: trap/step from kernel to user space,"
++			" resuming...\n");
++	kgdb_arch_handle_exception(args->trapnr, args->signr,
++				   args->err, "c", "", regs);
++
++	return NOTIFY_STOP;
++}
++
++static int kgdb_notify(struct notifier_block *self, unsigned long cmd,
++		       void *ptr)
++{
++	struct die_args *args = ptr;
++	struct pt_regs *regs = args->regs;
++
++	switch (cmd) {
++	case DIE_NMI:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup */
++			kgdb_nmihook(raw_smp_processor_id(), regs);
++			return NOTIFY_STOP;
++		}
++		return NOTIFY_DONE;
++	case DIE_NMI_IPI:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup */
++			if (kgdb_nmihook(raw_smp_processor_id(), regs))
++				return NOTIFY_DONE;
++			return NOTIFY_STOP;
++		}
++		return NOTIFY_DONE;
++	case DIE_NMIWATCHDOG:
++		if (atomic_read(&debugger_active)) {
++			/* KGDB CPU roundup */
++			kgdb_nmihook(raw_smp_processor_id(), regs);
++			return NOTIFY_STOP;
++		}
++		/* Enter debugger */
++		break;
++	case DIE_DEBUG:
++		if (atomic_read(&cpu_doing_single_step) ==
++			raw_smp_processor_id() && user_mode(regs))
++			return single_step_cont(regs, args);
++		/* fall through */
++	default:
++		if (user_mode(regs))
++			return NOTIFY_DONE;
++	}
++
++	if (kgdb_may_fault) {
++		kgdb_fault_longjmp(kgdb_fault_jmp_regs);
++		return NOTIFY_STOP;
++	}
++
++	if (kgdb_handle_exception(args->trapnr, args->signr,
++				  args->err, regs))
++		return NOTIFY_DONE;
++
++	return NOTIFY_STOP;
++}
++
++static struct notifier_block kgdb_notifier = {
++	.notifier_call = kgdb_notify,
++	.priority = 0x7fffffff,	/* we need to be notified first */
++};
++
++int kgdb_arch_init(void)
++{
++	register_die_notifier(&kgdb_notifier);
++	return 0;
++}
++
++/*
++ * Skip an int3 exception when it occurs after a breakpoint has been
++ * removed. Backtrack eip by 1 since the int3 would have caused it to
++ * increment by 1.
++ */
++
++int kgdb_skipexception(int exception, struct pt_regs *regs)
++{
++	if (exception == 3 &&
++	    kgdb_isremovedbreak(instruction_pointer(regs) - 1)) {
++		instruction_pointer(regs) -= 1;
++		return 1;
++	}
++	return 0;
++}
++
++unsigned long kgdb_arch_pc(int exception, struct pt_regs *regs)
++{
++	if (exception == 3)
++		return instruction_pointer(regs) - 1;
++	return instruction_pointer(regs);
++}
++
++struct kgdb_arch arch_kgdb_ops = {
++	.gdb_bpt_instr = {0xcc},
++	.flags = KGDB_HW_BREAKPOINT,
++#ifdef CONFIG_X86_64
++	.shadowth = 1,
++#endif
++	.set_hw_breakpoint = kgdb_set_hw_break,
++	.remove_hw_breakpoint = kgdb_remove_hw_break,
++	.remove_all_hw_break = kgdb_remove_all_hw_break,
++	.correct_hw_break = kgdb_correct_hw_break,
++};
+Index: b/arch/x86/kernel/kgdb_32.c
+===================================================================
+--- a/arch/x86/kernel/kgdb_32.c
++++ /dev/null
+@@ -1,414 +0,0 @@
+-/*
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License as published by the
+- * Free Software Foundation; either version 2, or (at your option) any
+- * later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- */
+-
+-/*
+- * Copyright (C) 2000-2001 VERITAS Software Corporation.
+- * Copyright (C) 2007 Wind River Systems, Inc.
+- * Copyright (C) 2007 MontaVista Software, Inc.
+- */
+-/*
+- *  Contributor:     Lake Stevens Instrument Division$
+- *  Written by:      Glenn Engel $
+- *  Updated by:	     Amit Kale<akale@veritas.com>
+- *  Updated by:	     Tom Rini <trini@kernel.crashing.org>
+- *  Updated by:	     Jason Wessel <jason.wessel@windriver.com>
+- *  Modified for 386 by Jim Kingdon, Cygnus Support.
+- *  Origianl kgdb, compatibility with 2.1.xx kernel by
+- *  David Grothe <dave@gcom.com>
+- *  Additional support from Tigran Aivazian <tigran@sco.com>
+- */
+-
+-#include <linux/string.h>
+-#include <linux/kernel.h>
+-#include <linux/sched.h>
+-#include <linux/smp.h>
+-#include <linux/spinlock.h>
+-#include <linux/delay.h>
+-#include <asm/vm86.h>
+-#include <asm/system.h>
+-#include <linux/ptrace.h>		/* for linux pt_regs struct */
+-#include <linux/kgdb.h>
+-#include <linux/init.h>
+-#include <linux/kdebug.h>
+-#include <asm/apicdef.h>
+-#include <asm/desc.h>
+-
+-#include "mach_ipi.h"
+-
+-/* Put the error code here just in case the user cares.  */
+-int gdb_i386errcode;
+-/* Likewise, the vector number here (since GDB only gets the signal
+-   number through the usual means, and that's not very specific).  */
+-int gdb_i386vector = -1;
+-
+-void regs_to_gdb_regs(unsigned long *gdb_regs, struct pt_regs *regs)
+-{
+-	gdb_regs[_EAX] = regs->eax;
+-	gdb_regs[_EBX] = regs->ebx;
+-	gdb_regs[_ECX] = regs->ecx;
+-	gdb_regs[_EDX] = regs->edx;
+-	gdb_regs[_ESI] = regs->esi;
+-	gdb_regs[_EDI] = regs->edi;
+-	gdb_regs[_EBP] = regs->ebp;
+-	gdb_regs[_DS] = regs->xds;
+-	gdb_regs[_ES] = regs->xes;
+-	gdb_regs[_PS] = regs->eflags;
+-	gdb_regs[_CS] = regs->xcs;
+-	gdb_regs[_PC] = regs->eip;
+-	gdb_regs[_ESP] = (int)(&regs->esp);
+-	gdb_regs[_SS] = __KERNEL_DS;
+-	gdb_regs[_FS] = 0xFFFF;
+-	gdb_regs[_GS] = 0xFFFF;
+-}
+-
+-/*
+- * Extracts ebp, esp and eip values understandable by gdb from the values
+- * saved by switch_to.
+- * thread.esp points to ebp. flags and ebp are pushed in switch_to hence esp
+- * prior to entering switch_to is 8 greater then the value that is saved.
+- * If switch_to changes, change following code appropriately.
+- */
+-void sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *p)
+-{
+-	gdb_regs[_EAX] = 0;
+-	gdb_regs[_EBX] = 0;
+-	gdb_regs[_ECX] = 0;
+-	gdb_regs[_EDX] = 0;
+-	gdb_regs[_ESI] = 0;
+-	gdb_regs[_EDI] = 0;
+-	gdb_regs[_EBP] = *(unsigned long *)p->thread.esp;
+-	gdb_regs[_DS] = __KERNEL_DS;
+-	gdb_regs[_ES] = __KERNEL_DS;
+-	gdb_regs[_PS] = 0;
+-	gdb_regs[_CS] = __KERNEL_CS;
+-	gdb_regs[_PC] = p->thread.eip;
+-	gdb_regs[_ESP] = p->thread.esp;
+-	gdb_regs[_SS] = __KERNEL_DS;
+-	gdb_regs[_FS] = 0xFFFF;
+-	gdb_regs[_GS] = 0xFFFF;
+-}
+-
+-void gdb_regs_to_regs(unsigned long *gdb_regs, struct pt_regs *regs)
+-{
+-	regs->eax = gdb_regs[_EAX];
+-	regs->ebx = gdb_regs[_EBX];
+-	regs->ecx = gdb_regs[_ECX];
+-	regs->edx = gdb_regs[_EDX];
+-	regs->esi = gdb_regs[_ESI];
+-	regs->edi = gdb_regs[_EDI];
+-	regs->ebp = gdb_regs[_EBP];
+-	regs->xds = gdb_regs[_DS];
+-	regs->xes = gdb_regs[_ES];
+-	regs->eflags = gdb_regs[_PS];
+-	regs->xcs = gdb_regs[_CS];
+-	regs->eip = gdb_regs[_PC];
+-}
+-
+-static struct hw_breakpoint {
+-	unsigned enabled;
+-	unsigned type;
+-	unsigned len;
+-	unsigned addr;
+-} breakinfo[4] = {
+-	{ .enabled = 0 },
+-	{ .enabled = 0 },
+-	{ .enabled = 0 },
+-	{ .enabled = 0 },
+-};
+-
+-static void kgdb_correct_hw_break(void)
+-{
+-	int breakno;
+-	int breakbit;
+-	int correctit = 0;
+-	unsigned long dr7;
+-
+-	get_debugreg(dr7, 7);
+-	for (breakno = 0; breakno < 4; breakno++) {
+-		breakbit = 2 << (breakno << 1);
+-		if (!(dr7 & breakbit) && breakinfo[breakno].enabled) {
+-			correctit = 1;
+-			dr7 |= breakbit;
+-			dr7 &= ~(0xf0000 << (breakno << 2));
+-			dr7 |= ((breakinfo[breakno].len << 2) |
+-				 breakinfo[breakno].type) <<
+-			       ((breakno << 2) + 16);
+-			switch (breakno) {
+-			case 0:
+-				set_debugreg(breakinfo[0].addr, 0);
+-				break;
+-
+-			case 1:
+-				set_debugreg(breakinfo[1].addr, 1);
+-				break;
+-
+-			case 2:
+-				set_debugreg(breakinfo[2].addr, 2);
+-				break;
+-
+-			case 3:
+-				set_debugreg(breakinfo[3].addr, 3);
+-				break;
+-			}
+-		} else if ((dr7 & breakbit) && !breakinfo[breakno].enabled) {
+-			correctit = 1;
+-			dr7 &= ~breakbit;
+-			dr7 &= ~(0xf0000 << (breakno << 2));
+-		}
+-	}
+-	if (correctit)
+-		set_debugreg(dr7, 7);
+-}
+-
+-static int kgdb_remove_hw_break(unsigned long addr, int len,
+-				enum kgdb_bptype bptype)
+-{
+-	int i;
+-
+-	for (i = 0; i < 4; i++)
+-		if (breakinfo[i].addr == addr && breakinfo[i].enabled)
+-			break;
+-	if (i == 4)
+-		return -1;
+-
+-	breakinfo[i].enabled = 0;
+-	return 0;
+-}
+-
+-static void kgdb_remove_all_hw_break(void)
+-{
+-	int i;
+-
+-	for (i = 0; i < 4; i++)
+-		memset(&breakinfo[i], 0, sizeof(struct hw_breakpoint));
+-}
+-
+-static int kgdb_set_hw_break(unsigned long addr, int len,
+-			     enum kgdb_bptype bptype)
+-{
+-	int i;
+-	unsigned type;
+-
+-	for (i = 0; i < 4; i++)
+-		if (!breakinfo[i].enabled)
+-			break;
+-	if (i == 4)
+-		return -1;
+-
+-	switch (bptype) {
+-	case bp_hardware_breakpoint:
+-		type = 0;
+-		len  = 1;
+-		break;
+-	case bp_write_watchpoint:
+-		type = 1;
+-		break;
+-	case bp_access_watchpoint:
+-		type = 3;
+-		break;
+-	default:
+-		return -1;
+-	}
+-
+-	if (len == 1 || len == 2 || len == 4)
+-		breakinfo[i].len  = len - 1;
+-	else
+-		return -1;
+-
+-	breakinfo[i].enabled = 1;
+-	breakinfo[i].addr = addr;
+-	breakinfo[i].type = type;
+-	return 0;
+-}
+-
+-void kgdb_disable_hw_debug(struct pt_regs *regs)
+-{
+-	/* Disable hardware debugging while we are in kgdb */
+-	set_debugreg(0, 7);
+-}
+-
+-void kgdb_post_master_code(struct pt_regs *regs, int e_vector, int err_code)
+-{
+-	/* Master processor is completely in the debugger */
+-	gdb_i386vector = e_vector;
+-	gdb_i386errcode = err_code;
+-}
+-
+-#ifdef CONFIG_SMP
+-void kgdb_roundup_cpus(unsigned long flags)
+-{
+-	send_IPI_allbutself(APIC_DM_NMI);
+-}
+-#endif
+-
+-int kgdb_arch_handle_exception(int e_vector, int signo,
+-			       int err_code, char *remcom_in_buffer,
+-			       char *remcom_out_buffer,
+-			       struct pt_regs *linux_regs)
+-{
+-	long addr;
+-	char *ptr;
+-	int newPC;
+-	int dr6;
+-
+-	switch (remcom_in_buffer[0]) {
+-	case 'c':
+-	case 's':
+-		/* try to read optional parameter, pc unchanged if no parm */
+-		ptr = &remcom_in_buffer[1];
+-		if (kgdb_hex2long(&ptr, &addr))
+-			linux_regs->eip = addr;
+-		newPC = linux_regs->eip;
+-
+-		/* clear the trace bit */
+-		linux_regs->eflags &= ~TF_MASK;
+-		atomic_set(&cpu_doing_single_step, -1);
+-
+-		/* set the trace bit if we're stepping */
+-		if (remcom_in_buffer[0] == 's') {
+-			linux_regs->eflags |= TF_MASK;
+-			debugger_step = 1;
+-			atomic_set(&cpu_doing_single_step,
+-				   raw_smp_processor_id());
+-		}
+-
+-		get_debugreg(dr6, 6);
+-		if (!(dr6 & 0x4000)) {
+-			int breakno;
+-			for (breakno = 0; breakno < 4; ++breakno) {
+-				if (dr6 & (1 << breakno) &&
+-				    breakinfo[breakno].type == 0) {
+-					/* Set restore flag */
+-					linux_regs->eflags |= X86_EFLAGS_RF;
+-					break;
+-				}
+-			}
+-		}
+-		set_debugreg(0, 6);
+-		kgdb_correct_hw_break();
+-
+-		return 0;
+-	}
+-	/* this means that we do not want to exit from the handler */
+-	return -1;
+-}
+-
+-static inline int single_step_cont(struct pt_regs *regs,
+-			struct die_args *args)
+-{
+-	/* single step exception from kernel space to user space so
+-	 * eat the exception and continue the process
+-	 */
+-	printk(KERN_ERR "KGDB: trap/step from kernel to user space,"
+-			" resuming...\n");
+-	kgdb_arch_handle_exception(args->trapnr, args->signr,
+-			args->err, "c", "", regs);
+-
+-	return NOTIFY_STOP;
+-}
+-
+-static int kgdb_notify(struct notifier_block *self, unsigned long cmd,
+-		       void *ptr)
+-{
+-	struct die_args *args = ptr;
+-	struct pt_regs *regs = args->regs;
+-
+-	switch (cmd) {
+-	case DIE_NMI:
+-		if (atomic_read(&debugger_active)) {
+-			/* KGDB CPU roundup */
+-			kgdb_nmihook(raw_smp_processor_id(), regs);
+-			return NOTIFY_STOP;
+-		}
+-		return NOTIFY_DONE;
+-	case DIE_NMI_IPI:
+-		if (atomic_read(&debugger_active)) {
+-			/* KGDB CPU roundup */
+-			if (kgdb_nmihook(raw_smp_processor_id(), regs))
+-				return NOTIFY_DONE;
+-			return NOTIFY_STOP;
+-		}
+-		return NOTIFY_DONE;
+-	case DIE_NMIWATCHDOG:
+-		if (atomic_read(&debugger_active)) {
+-			/* KGDB CPU roundup */
+-			kgdb_nmihook(raw_smp_processor_id(), regs);
+-			return NOTIFY_STOP;
+-		}
+-		/* Enter debugger */
+-		break;
+-	case DIE_DEBUG:
+-		if (atomic_read(&cpu_doing_single_step) ==
+-			raw_smp_processor_id() &&
+-			user_mode(regs))
+-			return single_step_cont(regs, args);
+-		/* fall through */
+-	default:
+-		if (user_mode(regs))
+-			return NOTIFY_DONE;
+-	}
+-
+-	if (kgdb_may_fault) {
+-		kgdb_fault_longjmp(kgdb_fault_jmp_regs);
+-		return NOTIFY_STOP;
+-	}
+-
+-	if (kgdb_handle_exception(args->trapnr, args->signr,
+-	   args->err, regs))
+-		return NOTIFY_DONE;
+-
+-	return NOTIFY_STOP;
+-}
+-
+-static struct notifier_block kgdb_notifier = {
+-	.notifier_call = kgdb_notify,
+-};
+-
+-int kgdb_arch_init(void)
+-{
+-	register_die_notifier(&kgdb_notifier);
+-	return 0;
+-}
+-
+-/*
+- * Skip an int3 exception when it occurs after a breakpoint has been
+- * removed. Backtrack eip by 1 since the int3 would have caused it to
+- * increment by 1.
+- */
+-
+-int kgdb_skipexception(int exception, struct pt_regs *regs)
+-{
+-	if (exception == 3 && kgdb_isremovedbreak(regs->eip - 1)) {
+-		regs->eip -= 1;
+-		return 1;
+-	}
+-	return 0;
+-}
+-
+-unsigned long kgdb_arch_pc(int exception, struct pt_regs *regs)
+-{
+-	if (exception == 3)
+-		return instruction_pointer(regs) - 1;
+-
+-	return instruction_pointer(regs);
+-}
+-
+-struct kgdb_arch arch_kgdb_ops = {
+-	.gdb_bpt_instr = {0xcc},
+-	.flags = KGDB_HW_BREAKPOINT,
+-	.set_hw_breakpoint = kgdb_set_hw_break,
+-	.remove_hw_breakpoint = kgdb_remove_hw_break,
+-	.remove_all_hw_break = kgdb_remove_all_hw_break,
+-	.correct_hw_break = kgdb_correct_hw_break,
+-};
+Index: b/arch/x86/kernel/kgdb_64.c
+===================================================================
+--- a/arch/x86/kernel/kgdb_64.c
++++ /dev/null
+@@ -1,495 +0,0 @@
+-/*
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of the GNU General Public License as published by the
+- * Free Software Foundation; either version 2, or (at your option) any
+- * later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- */
+-
+-/*
+- * Copyright (C) 2004 Amit S. Kale <amitkale@linsyssoft.com>
+- * Copyright (C) 2000-2001 VERITAS Software Corporation.
+- * Copyright (C) 2002 Andi Kleen, SuSE Labs
+- * Copyright (C) 2004 LinSysSoft Technologies Pvt. Ltd.
+- * Copyright (C) 2007 Jason Wessel, Wind River Systems, Inc.
+- * Copyright (C) 2007 MontaVista Software, Inc.
+- */
+-/****************************************************************************
+- *  Contributor:     Lake Stevens Instrument Division$
+- *  Written by:      Glenn Engel $
+- *  Updated by:	     Amit Kale<akale@veritas.com>
+- *  Modified for 386 by Jim Kingdon, Cygnus Support.
+- *  Origianl kgdb, compatibility with 2.1.xx kernel by
+- *  David Grothe <dave@gcom.com>
+- *  Integrated into 2.2.5 kernel by Tigran Aivazian <tigran@sco.com>
+- *  X86_64 changes from Andi Kleen's patch merged by Jim Houston
+- */
+-
+-#include <linux/string.h>
+-#include <linux/kernel.h>
+-#include <linux/sched.h>
+-#include <linux/smp.h>
+-#include <linux/spinlock.h>
+-#include <linux/delay.h>
+-#include <asm/system.h>
+-#include <linux/ptrace.h>		/* for linux pt_regs struct */
+-#include <linux/kgdb.h>
+-#include <linux/init.h>
+-#include <linux/kdebug.h>
+-#include <asm/apicdef.h>
+-#include <asm/mach_apic.h>
+-#include <asm/debugreg.h>
+-
+-/* Put the error code here just in case the user cares.  */
+-int gdb_x86_64errcode;
+-/* Likewise, the vector number here (since GDB only gets the signal
+-   number through the usual means, and that's not very specific).  */
+-int gdb_x86_64vector = -1;
+-
+-void regs_to_gdb_regs(unsigned long *gdb_regs, struct pt_regs *regs)
+-{
+-	gdb_regs[_RAX] = regs->rax;
+-	gdb_regs[_RBX] = regs->rbx;
+-	gdb_regs[_RCX] = regs->rcx;
+-	gdb_regs[_RDX] = regs->rdx;
+-	gdb_regs[_RSI] = regs->rsi;
+-	gdb_regs[_RDI] = regs->rdi;
+-	gdb_regs[_RBP] = regs->rbp;
+-	gdb_regs[_PS] = regs->eflags;
+-	gdb_regs[_PC] = regs->rip;
+-	gdb_regs[_R8] = regs->r8;
+-	gdb_regs[_R9] = regs->r9;
+-	gdb_regs[_R10] = regs->r10;
+-	gdb_regs[_R11] = regs->r11;
+-	gdb_regs[_R12] = regs->r12;
+-	gdb_regs[_R13] = regs->r13;
+-	gdb_regs[_R14] = regs->r14;
+-	gdb_regs[_R15] = regs->r15;
+-	gdb_regs[_RSP] = regs->rsp;
+-}
+-
+-extern void thread_return(void);
+-void sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *p)
+-{
+-	gdb_regs[_RAX] = 0;
+-	gdb_regs[_RBX] = 0;
+-	gdb_regs[_RCX] = 0;
+-	gdb_regs[_RDX] = 0;
+-	gdb_regs[_RSI] = 0;
+-	gdb_regs[_RDI] = 0;
+-	gdb_regs[_RBP] = *(unsigned long *)p->thread.rsp;
+-	gdb_regs[_PS] = *(unsigned long *)(p->thread.rsp + 8);
+-	gdb_regs[_PC] = (unsigned long)&thread_return;
+-	gdb_regs[_R8] = 0;
+-	gdb_regs[_R9] = 0;
+-	gdb_regs[_R10] = 0;
+-	gdb_regs[_R11] = 0;
+-	gdb_regs[_R12] = 0;
+-	gdb_regs[_R13] = 0;
+-	gdb_regs[_R14] = 0;
+-	gdb_regs[_R15] = 0;
+-	gdb_regs[_RSP] = p->thread.rsp;
+-}
+-
+-void gdb_regs_to_regs(unsigned long *gdb_regs, struct pt_regs *regs)
+-{
+-	regs->rax = gdb_regs[_RAX];
+-	regs->rbx = gdb_regs[_RBX];
+-	regs->rcx = gdb_regs[_RCX];
+-	regs->rdx = gdb_regs[_RDX];
+-	regs->rsi = gdb_regs[_RSI];
+-	regs->rdi = gdb_regs[_RDI];
+-	regs->rbp = gdb_regs[_RBP];
+-	regs->eflags = gdb_regs[_PS];
+-	regs->rip = gdb_regs[_PC];
+-	regs->r8 = gdb_regs[_R8];
+-	regs->r9 = gdb_regs[_R9];
+-	regs->r10 = gdb_regs[_R10];
+-	regs->r11 = gdb_regs[_R11];
+-	regs->r12 = gdb_regs[_R12];
+-	regs->r13 = gdb_regs[_R13];
+-	regs->r14 = gdb_regs[_R14];
+-	regs->r15 = gdb_regs[_R15];
+-}				/* gdb_regs_to_regs */
+-
+-static struct hw_breakpoint {
+-	unsigned enabled;
+-	unsigned type;
+-	unsigned len;
+-	unsigned long addr;
+-} breakinfo[4] = {
+-	{ .enabled = 0 },
+-	{ .enabled = 0 },
+-	{ .enabled = 0 },
+-	{ .enabled = 0 },
+-};
+-
+-static void kgdb_correct_hw_break(void)
+-{
+-	int breakno;
+-	int breakbit;
+-	int correctit = 0;
+-	unsigned long dr7;
+-
+-	get_debugreg(dr7, 7);
+-	for (breakno = 0; breakno < 4; breakno++) {
+-		breakbit = 2 << (breakno << 1);
+-		if (!(dr7 & breakbit) && breakinfo[breakno].enabled) {
+-			correctit = 1;
+-			dr7 |= breakbit;
+-			dr7 &= ~(0xf0000 << (breakno << 2));
+-			dr7 |= ((breakinfo[breakno].len << 2) |
+-				 breakinfo[breakno].type) <<
+-			       ((breakno << 2) + 16);
+-			switch (breakno) {
+-			case 0:
+-				set_debugreg(breakinfo[0].addr, 0);
+-				break;
+-
+-			case 1:
+-				set_debugreg(breakinfo[1].addr, 1);
+-				break;
+-
+-			case 2:
+-				set_debugreg(breakinfo[2].addr, 2);
+-				break;
+-
+-			case 3:
+-				set_debugreg(breakinfo[3].addr, 3);
+-				break;
+-			}
+-		} else if ((dr7 & breakbit) && !breakinfo[breakno].enabled) {
+-			correctit = 1;
+-			dr7 &= ~breakbit;
+-			dr7 &= ~(0xf0000 << (breakno << 2));
+-		}
+-	}
+-	if (correctit)
+-		set_debugreg(dr7, 7);
+-}
+-
+-static int kgdb_remove_hw_break(unsigned long addr, int len,
+-				enum kgdb_bptype bptype)
+-{
+-	int i;
+-
+-	for (i = 0; i < 4; i++)
+-		if (breakinfo[i].addr == addr && breakinfo[i].enabled)
+-			break;
+-	if (i == 4)
+-		return -1;
+-
+-	breakinfo[i].enabled = 0;
+-	return 0;
+-}
+-
+-static void kgdb_remove_all_hw_break(void)
+-{
+-	int i;
+-
+-	for (i = 0; i < 4; i++)
+-		memset(&breakinfo[i], 0, sizeof(struct hw_breakpoint));
+-}
+-
+-static int kgdb_set_hw_break(unsigned long addr, int len,
+-			     enum kgdb_bptype bptype)
+-{
+-	int i;
+-	unsigned type;
+-
+-	for (i = 0; i < 4; i++)
+-		if (!breakinfo[i].enabled)
+-			break;
+-	if (i == 4)
+-		return -1;
+-
+-	switch (bptype) {
+-	case bp_hardware_breakpoint:
+-		type = 0;
+-		len  = 1;
+-		break;
+-	case bp_write_watchpoint:
+-		type = 1;
+-		break;
+-	case bp_access_watchpoint:
+-		type = 3;
+-		break;
+-	default:
+-		return -1;
+-	}
+-
+-	if (len == 1 || len == 2 || len == 4)
+-		breakinfo[i].len  = len - 1;
+-	else
+-		return -1;
+-
+-	breakinfo[i].enabled = 1;
+-	breakinfo[i].addr = addr;
+-	breakinfo[i].type = type;
+-	return 0;
+-}
+-
+-void kgdb_disable_hw_debug(struct pt_regs *regs)
+-{
+-	/* Disable hardware debugging while we are in kgdb */
+-	set_debugreg(0UL, 7);
+-}
+-
+-void kgdb_post_master_code(struct pt_regs *regs, int e_vector, int err_code)
+-{
+-	/* Master processor is completely in the debugger */
+-	gdb_x86_64vector = e_vector;
+-	gdb_x86_64errcode = err_code;
+-}
+-
+-void kgdb_roundup_cpus(unsigned long flags)
+-{
+-	send_IPI_allbutself(APIC_DM_NMI);
+-}
+-
+-int kgdb_arch_handle_exception(int e_vector, int signo, int err_code,
+-			       char *remcomInBuffer, char *remcomOutBuffer,
+-			       struct pt_regs *linux_regs)
+-{
+-	unsigned long addr;
+-	char *ptr;
+-	int newPC;
+-	unsigned long dr6;
+-
+-	switch (remcomInBuffer[0]) {
+-	case 'c':
+-	case 's':
+-		/* try to read optional parameter, pc unchanged if no parm */
+-		ptr = &remcomInBuffer[1];
+-		if (kgdb_hex2long(&ptr, &addr))
+-			linux_regs->rip = addr;
+-		newPC = linux_regs->rip;
+-
+-		/* clear the trace bit */
+-		linux_regs->eflags &= ~TF_MASK;
+-		atomic_set(&cpu_doing_single_step, -1);
+-
+-		/* set the trace bit if we're stepping */
+-		if (remcomInBuffer[0] == 's') {
+-			linux_regs->eflags |= TF_MASK;
+-			debugger_step = 1;
+-			if (kgdb_contthread)
+-				atomic_set(&cpu_doing_single_step,
+-					   raw_smp_processor_id());
+-
+-		}
+-
+-		get_debugreg(dr6, 6);
+-		if (!(dr6 & 0x4000)) {
+-			int breakno;
+-
+-			for (breakno = 0; breakno < 4; ++breakno) {
+-				if (dr6 & (1 << breakno) &&
+-				    breakinfo[breakno].type == 0) {
+-					/* Set restore flag */
+-					linux_regs->eflags |= X86_EFLAGS_RF;
+-					break;
+-				}
+-			}
+-		}
+-		set_debugreg(0UL, 6);
+-		kgdb_correct_hw_break();
+-
+-		return 0;
+-	}
+-	/* this means that we do not want to exit from the handler */
+-	return -1;
+-}
+-
+-static struct pt_regs *in_interrupt_stack(unsigned long rsp, int cpu)
+-{
+-	struct pt_regs *regs = NULL;
+-	unsigned long end = (unsigned long)cpu_pda(cpu)->irqstackptr;
+-
+-	if (rsp <= end && rsp >= end - IRQSTACKSIZE + 8)
+-		regs = *(((struct pt_regs **)end) - 1);
+-
+-	return regs;
+-}
+-
+-static struct pt_regs *in_exception_stack(unsigned long rsp, int cpu)
+-{
+-	struct tss_struct *init_tss = &__get_cpu_var(init_tss);
+-	struct pt_regs *regs;
+-	int i;
+-
+-	for (i = 0; i < N_EXCEPTION_STACKS; i++)
+-		if (rsp >= init_tss[cpu].ist[i] &&
+-		    rsp <= init_tss[cpu].ist[i] + EXCEPTION_STKSZ) {
+-			regs = (void *) init_tss[cpu].ist[i] + EXCEPTION_STKSZ;
+-			return regs - 1;
+-		}
+-
+-	return NULL;
+-}
+-
+-void kgdb_shadowinfo(struct pt_regs *regs, char *buffer, unsigned threadid)
+-{
+-	static char intr_desc[] = "Stack at interrupt entrypoint";
+-	static char exc_desc[] = "Stack at exception entrypoint";
+-	struct pt_regs *stregs;
+-	int cpu = raw_smp_processor_id();
+-	stregs = in_interrupt_stack(regs->rsp, cpu);
+-	if (stregs)
+-		kgdb_mem2hex(intr_desc, buffer, strlen(intr_desc));
+-	else {
+-		stregs = in_exception_stack(regs->rsp, cpu);
+-		if (stregs)
+-			kgdb_mem2hex(exc_desc, buffer, strlen(exc_desc));
+-	}
+-}
+-
+-struct task_struct *kgdb_get_shadow_thread(struct pt_regs *regs, int threadid)
+-{
+-	struct pt_regs *stregs;
+-	int cpu = raw_smp_processor_id();
+-
+-	stregs = in_interrupt_stack(regs->rsp, cpu);
+-	if (stregs)
+-		return current;
+-	else {
+-		stregs = in_exception_stack(regs->rsp, cpu);
+-		if (stregs)
+-			return current;
+-	}
+-
+-	return NULL;
+-}
+-
+-struct pt_regs *kgdb_shadow_regs(struct pt_regs *regs, int threadid)
+-{
+-	struct pt_regs *stregs;
+-	int cpu = raw_smp_processor_id();
+-
+-	stregs = in_interrupt_stack(regs->rsp, cpu);
+-	if (stregs)
+-		return stregs;
+-	else {
+-		stregs = in_exception_stack(regs->rsp, cpu);
+-		if (stregs)
+-			return stregs;
+-	}
+-
+-	return NULL;
+-}
+-
+-static inline int single_step_cont(struct pt_regs *regs,
+-			struct die_args *args)
+-{
+-	/* single step exception from kernel space to user space so
+-	 * eat the exception and continue the process
+-	 */
+-	printk(KERN_ERR "KGDB: trap/step from kernel to user space,"
+-			" resuming...\n");
+-	kgdb_arch_handle_exception(args->trapnr, args->signr,
+-			args->err, "c", "", regs);
+-
+-	return NOTIFY_STOP;
+-}
+-
+-static int kgdb_notify(struct notifier_block *self, unsigned long cmd,
+-		       void *ptr)
+-{
+-	struct die_args *args = ptr;
+-	struct pt_regs *regs = args->regs;
+-
+-	switch (cmd) {
+-	case DIE_NMI:
+-		if (atomic_read(&debugger_active)) {
+-			/* KGDB CPU roundup */
+-			kgdb_nmihook(raw_smp_processor_id(), regs);
+-			return NOTIFY_STOP;
+-		}
+-		return NOTIFY_DONE;
+-	case DIE_NMI_IPI:
+-		if (atomic_read(&debugger_active)) {
+-			/* KGDB CPU roundup */
+-			if (kgdb_nmihook(raw_smp_processor_id(), regs))
+-				return NOTIFY_DONE;
+-			return NOTIFY_STOP;
+-		}
+-		return NOTIFY_DONE;
+-	case DIE_NMIWATCHDOG:
+-		if (atomic_read(&debugger_active)) {
+-			/* KGDB CPU roundup */
+-			kgdb_nmihook(raw_smp_processor_id(), regs);
+-			return NOTIFY_STOP;
+-		}
+-		/* Enter debugger */
+-		break;
+-	case DIE_DEBUG:
+-		if (atomic_read(&cpu_doing_single_step) ==
+-			raw_smp_processor_id() &&
+-			user_mode(regs))
+-			return single_step_cont(regs, args);
+-		/* fall through */
+-	default:
+-		if (user_mode(regs))
+-			return NOTIFY_DONE;
+-	}
+-
+-	if (kgdb_may_fault) {
+-		kgdb_fault_longjmp(kgdb_fault_jmp_regs);
+-		return NOTIFY_STOP;
+-	}
+-
+-	if (kgdb_handle_exception(args->trapnr, args->signr,
+-		args->err, regs))
+-		return NOTIFY_DONE;
+-
+-	return NOTIFY_STOP;
+-}
+-
+-static struct notifier_block kgdb_notifier = {
+-	.notifier_call = kgdb_notify,
+-	.priority = 0x7fffffff,	/* we need to be notified first */
+-};
+-
+-int kgdb_arch_init(void)
+-{
+-	register_die_notifier(&kgdb_notifier);
+-	return 0;
+-}
+-
+-/*
+- * Skip an int3 exception when it occurs after a breakpoint has been
+- * removed. Backtrack eip by 1 since the int3 would have caused it to
+- * increment by 1.
+- */
+-
+-int kgdb_skipexception(int exception, struct pt_regs *regs)
+-{
+-	if (exception == 3 && kgdb_isremovedbreak(regs->rip - 1)) {
+-		regs->rip -= 1;
+-		return 1;
+-	}
+-	return 0;
+-}
+-
+-unsigned long kgdb_arch_pc(int exception, struct pt_regs *regs)
+-{
+-	if (exception == 3)
+-		return instruction_pointer(regs) - 1;
+-	return instruction_pointer(regs);
+-}
+-
+-struct kgdb_arch arch_kgdb_ops = {
+-	.gdb_bpt_instr = {0xcc},
+-	.flags = KGDB_HW_BREAKPOINT,
+-	.shadowth = 1,
+-	.set_hw_breakpoint = kgdb_set_hw_break,
+-	.remove_hw_breakpoint = kgdb_remove_hw_break,
+-	.remove_all_hw_break = kgdb_remove_all_hw_break,
+-	.correct_hw_break = kgdb_correct_hw_break,
+-};
