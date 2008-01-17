@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbYAQS5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbYAQS7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757124AbYAQS5J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 13:57:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbYAQS4z
+	id S1756896AbYAQS7J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 13:59:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbYAQS64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 13:56:55 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:43535 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754502AbYAQS4y (ORCPT
+	Thu, 17 Jan 2008 13:58:56 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49237 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754343AbYAQS6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 13:56:54 -0500
-Date: Thu, 17 Jan 2008 13:56:25 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org
-Subject: Re: [-mm Patch] uml: fix a building error
-Message-ID: <20080117185625.GA5724@c2.user-mode-linux.org>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org> <20080117135641.GD2693@hacking> <200801171911.16230.m.kozlowski@tuxland.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801171911.16230.m.kozlowski@tuxland.pl>
-User-Agent: Mutt/1.4.2.3i
+	Thu, 17 Jan 2008 13:58:55 -0500
+Date: Thu, 17 Jan 2008 10:58:53 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Olaf Hering <olaf@aepfle.de>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Linux MM <linux-mm@kvack.org>
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <20080117181222.GA24411@aepfle.de>
+Message-ID: <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+References: <20080115150949.GA14089@aepfle.de>
+ <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
+ <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
+ <20080117181222.GA24411@aepfle.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 07:11:13PM +0100, Mariusz Kozlowski wrote:
-> I see this on sparc64 as well:
+On Thu, 17 Jan 2008, Olaf Hering wrote:
+
+> The patch does not help.
+
+Duh. We need to know more about the problem.
+
+> > --- linux-2.6.orig/mm/slab.c	2008-01-03 12:26:42.000000000 -0800
+> > +++ linux-2.6/mm/slab.c	2008-01-09 15:59:49.000000000 -0800
+> > @@ -2977,7 +2977,10 @@ retry:
+> >  	}
+> >  	l3 = cachep->nodelists[node];
+> >  
+> > -	BUG_ON(ac->avail > 0 || !l3);
+> > +	if (!l3)
+> > +		return NULL;
+> > +
+> > +	BUG_ON(ac->avail > 0);
+> >  	spin_lock(&l3->list_lock);
+> >  
+> >  	/* See if we can refill from the shared array */
 > 
->   CC      drivers/char/mem.o
-> drivers/char/mem.c: In function 'read_mem':
-> drivers/char/mem.c:136: error: implicit declaration of function 'unxlate_dev_mem_ptr'
-> make[2]: *** [drivers/char/mem.o] Error 1
-> make[1]: *** [drivers/char] Error 2
-> make: *** [drivers] Error 2
-> 
-> Does sparc64 need similar fix?
+> Is this hsupposed to go into cache_grow()? There is no NULL check
+> for l3.
 
-Probably - it seems that xlate_dev_mem_ptr can now introduce
-side-effects which need to be undone with unxlate_dev_mem_ptr.
+No its for cache_alloc_refill. cache_grow should only be called for
+nodes that have memory. l3 is always used before cache_grow is called.
 
-				Jeff
+> freeing bootmem node 1
+> Memory: 3496632k/3571712k available (6188k kernel code, 75080k reserved, 1324k data, 1220k bss, 304k init)
+> cache_grow(2781) swapper(0):c0,j4294937299 cp c0000000006a4fb8 !l3
 
--- 
-Work email - jdike at linux dot intel dot com
+Is there more backtrace information? What function called cache_grow?
+
