@@ -1,94 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbYAQPo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbYAQPpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707AbYAQPo1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 10:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbYAQPoT
+	id S1755562AbYAQPpz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 10:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbYAQPpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 10:44:19 -0500
-Received: from free-electrons.com ([88.191.23.47]:55308 "EHLO
-	sd-2511.dedibox.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbYAQPoS (ORCPT
+	Thu, 17 Jan 2008 10:45:47 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:57224 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752169AbYAQPpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 10:44:18 -0500
-From: Michael Opdenacker <michael-lists@free-electrons.com>
-Organization: Free Electrons
-To: linux-kernel@vger.kernel.org, Linux-tiny@selenic.com
-Subject: [PATCH] x86: fix unconditional arch/x86/kernel/pcspeaker.c compiling
-Date: Thu, 17 Jan 2008 16:43:48 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801171643.49301.michael-lists@free-electrons.com>
+	Thu, 17 Jan 2008 10:45:46 -0500
+To: salikhmetov@gmail.com
+CC: miklos@szeredi.hu, linux-mm@kvack.org, jakob@unthought.net,
+       linux-kernel@vger.kernel.org, valdis.kletnieks@vt.edu, riel@redhat.com,
+       ksm@42.dk, staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
+       hidave.darkstar@gmail.com, hch@infradead.org
+In-reply-to: <4df4ef0c0801170540p36d3c566w973251527fc3bca1@mail.gmail.com>
+	(salikhmetov@gmail.com)
+Subject: Re: [PATCH -v5 2/2] Updating ctime and mtime at syncing
+References: <12005314662518-git-send-email-salikhmetov@gmail.com>
+	 <1200531471556-git-send-email-salikhmetov@gmail.com>
+	 <E1JFSgG-0006G1-6V@pomaz-ex.szeredi.hu>
+	 <4df4ef0c0801170416s5581ae28h90d91578baa77738@mail.gmail.com>
+	 <E1JFU7r-0006PK-So@pomaz-ex.szeredi.hu>
+	 <4df4ef0c0801170516k3f82dc69ieee836b5633378a@mail.gmail.com>
+	 <E1JFUrm-0006XG-SB@pomaz-ex.szeredi.hu> <4df4ef0c0801170540p36d3c566w973251527fc3bca1@mail.gmail.com>
+Message-Id: <E1JFWvy-0006kJ-I2@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 17 Jan 2008 16:45:38 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86: fix unconditional arch/x86/kernel/pcspeaker.c compiling
+> > I'm not sure this auto-updating is really needed (POSIX doesn't
+> > mandate it).
+> 
+> Peter Shtaubach, author of the first solution for this bug,
+> and Jacob Ostergaard, the reporter of this bug, insist the "auto-update"
+> feature to be implemented.
 
-Applies to 2.6.24-rc8-git1
+Can they state their reasons for the insistence?
 
-This patch results from Linux Tiny's efforts to hunt for unnecessary
-code added unconditionally with "obj-y +="
+>  1) a base patch: update time just from fsync() and remove_vma()
+>  2) update time on sync(2) as well
+>  3) update time on MS_ASYNC as well
 
-This patch make the compilation of arch/x86/kernel/pcspeaker.c
-depend on PC speaker support. Before that, this file was always
-compiled even if pc speaker support wasn't enabled.
+Oh, and the four-liner I posted the other day will give you 1) + 2) +
+even more at a small fraction of the complexity.  And tacking on the
+reprotect code will solve the MS_ASYNC issue just the same.
 
-I'm checking that CONFIG_INPUT_PCSPKR is not set to "m",
-as arch/x86/kernel/pcspeaker.c shouldn't be compiled as a module:
-- It defines no init and exit functions
-- It defines an initcall which only makes sense at
-  kernel boot time.
+I agree, that having the timestamp updated on sync() is nice, and that
+trivial patch will give you that, and will also update the timestamp
+at least each 30 seconds if the file is being constantly modified,
+even if no explicit syncing is done.
 
-Results: if PC speaker support is disabled
-- It reduces the uncompressed kernel size by 218 bytes!!! ;)
-- It must also bring a tiny reduction in boot time
-  but suppressing a useless initcall.
+So maybe it's worth a little effort benchmarking how much that patch
+affects the cost of writing to a page.
 
-Your comments?
+You could write a little test program like this (if somebody hasn't
+yet done so):
 
----
-Signed-off-by: Michael Opdenacker <michael@free-electrons.com>
+ - do some preparation:
 
-diff -Naur linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32 linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32
---- linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32	2008-01-17 09:48:58.000000000 +0100
-+++ linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32	2008-01-17 10:06:56.000000000 +0100
-@@ -45,10 +45,13 @@
- 
- obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt_32.o
--obj-y				+= pcspeaker.o
--
- obj-$(CONFIG_SCx200)		+= scx200_32.o
- 
-+ifeq ($(CONFIG_INPUT_PCSPKR),y)
-+	obj-y			+= pcspeaker.o
-+endif
-+
-+
- # vsyscall_32.o contains the vsyscall DSO images as __initdata.
- # We must build both images before we can assemble it.
- # Note: kbuild does not track this dependency due to usage of .incbin
-diff -Naur linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_64 linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_64
---- linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_64	2008-01-17 09:48:58.000000000 +0100
-+++ linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_64	2008-01-17 10:19:08.000000000 +0100
-@@ -40,6 +40,9 @@
- obj-$(CONFIG_PCI)		+= early-quirks.o
- 
- obj-y				+= topology.o
--obj-y				+= pcspeaker.o
-+
-+ifeq ($(CONFIG_INPUT_PCSPKR),y)
-+        obj-y                   += pcspeaker.o
-+endif
- 
- CFLAGS_vsyscall_64.o		:= $(PROFILING) -g0
+   echo 80 > dirty_ratio
+   echo 80 > dirty_background_ratio
+   echo 30000 > dirty_expire_centisecs
+   sync
 
--- 
-Michael Opdenacker, Free Electrons
-Free Embedded Linux Training Materials
-on http://free-electrons.com/training
-(More than 1500 pages!)
+ - map a large file, one that fits comfortably into free memory
+ - bring the whole file in, by reading a byte from each page
+ - start the timer
+ - write a byte to each page
+ - stop the timer
+
+It would be most interesting to try this on a filesystem supporting
+nanosecond timestamps.  Anyone know which these are?
+
+Miklos
+----
+
+Index: linux/mm/memory.c
+===================================================================
+--- linux.orig/mm/memory.c	2008-01-09 21:16:30.000000000 +0100
++++ linux/mm/memory.c	2008-01-15 21:16:14.000000000 +0100
+@@ -1680,6 +1680,8 @@ gotten:
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+ 	if (dirty_page) {
++		if (vma->vm_file)
++			file_update_time(vma->vm_file);
+ 		/*
+ 		 * Yes, Virginia, this is actually required to prevent a race
+ 		 * with clear_page_dirty_for_io() from clearing the page dirty
+@@ -2313,6 +2315,8 @@ out_unlocked:
+ 	if (anon)
+ 		page_cache_release(vmf.page);
+ 	else if (dirty_page) {
++		if (vma->vm_file)
++			file_update_time(vma->vm_file);
+ 		set_page_dirty_balance(dirty_page, page_mkwrite);
+ 		put_page(dirty_page);
+ 	}
+
+
