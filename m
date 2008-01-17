@@ -1,49 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759409AbYAQWen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758686AbYAQWf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759409AbYAQWen (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:34:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYAQWef
+	id S1758686AbYAQWf1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757000AbYAQWfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:34:35 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50670 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751993AbYAQWee (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 17:34:34 -0500
-Date: Thu, 17 Jan 2008 23:34:33 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Daniel Walker <dwalker@mvista.com>
-cc: Balaji Rao <balajirrao@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: setting jiffies as the clocksource stops time
-In-Reply-To: <1200518450.18731.129.camel@imap.mvista.com>
-Message-ID: <Pine.LNX.4.64.0801172333130.18447@fbirervta.pbzchgretzou.qr>
-References: <200801170209.42138.balajirrao@gmail.com>
- <1200518450.18731.129.camel@imap.mvista.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 Jan 2008 17:35:11 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:47366 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752088AbYAQWfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 17:35:08 -0500
+Message-Id: <20080117223505.380465000@sgi.com>
+References: <20080117223505.203884000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 17 Jan 2008 14:35:06 -0800
+From: travis@sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu
+Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH 1/6] Modules: Fold percpu_modcopy into module.c
+Content-Disposition: inline; filename=fold-percpu_modcopy
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+percpu_modcopy() is defined multiple times in arch files. However, the only
+user is module.c. Put a static definition into module.c and remove
+the definitions from the arch files.
 
-On Jan 16 2008 13:20, Daniel Walker wrote:
->On Thu, 2008-01-17 at 02:09 +0530, Balaji Rao wrote:
->> Hi,
->> 
->> When i set jiffies as the current_clocksource, date(1) tells me
->> that wallclock time has stopped, and soon after that, the system
->> becomes unresponsive. This is not seen with CONFIG_NO_HZ disabled.
->> 
->> I wonder how can jiffies be used as a clocksource.. Its value
->> depends on the tick and when we turn off ticks, we would stop
->> incrementing jiffies and when we come come out of idle, we update
->> the jiffies by reading the current_clocksource which now is
->> 'jiffies', and hence jiffies wouldn't get updated. Could this be
->> the explanation ?
->
->Your right, It can't be used as a clocksource with nohz , and the system
->will refuse to automatically switch to it ..
 
-I think that manually changing to jiffies by echoing into sysfs
-should also be prohibited.
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Mike Travis <travis@sgi.com>
+
+---
+ arch/ia64/kernel/module.c    |   11 -----------
+ include/asm-generic/percpu.h |    8 --------
+ include/asm-ia64/percpu.h    |    5 -----
+ include/asm-powerpc/percpu.h |    9 ---------
+ include/asm-s390/percpu.h    |    9 ---------
+ kernel/module.c              |    8 ++++++++
+ 6 files changed, 8 insertions(+), 42 deletions(-)
+
+--- a/arch/ia64/kernel/module.c
++++ b/arch/ia64/kernel/module.c
+@@ -940,14 +940,3 @@ module_arch_cleanup (struct module *mod)
+ 	if (mod->arch.core_unw_table)
+ 		unw_remove_unwind_table(mod->arch.core_unw_table);
+ }
+-
+-#ifdef CONFIG_SMP
+-void
+-percpu_modcopy (void *pcpudst, const void *src, unsigned long size)
+-{
+-	unsigned int i;
+-	for_each_possible_cpu(i) {
+-		memcpy(pcpudst + per_cpu_offset(i), src, size);
+-	}
+-}
+-#endif /* CONFIG_SMP */
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -63,14 +63,6 @@ extern unsigned long __per_cpu_offset[NR
+ extern void setup_per_cpu_areas(void);
+ #endif
+ 
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+per_cpu_offset(__i),		\
+-		       (src), (size));				\
+-} while (0)
+ #else /* ! SMP */
+ 
+ #define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu_var(var)))
+--- a/include/asm-ia64/percpu.h
++++ b/include/asm-ia64/percpu.h
+@@ -22,10 +22,6 @@
+ #define DECLARE_PER_CPU(type, name)				\
+ 	extern PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+ 
+-/*
+- * Pretty much a literal copy of asm-generic/percpu.h, except that percpu_modcopy() is an
+- * external routine, to avoid include-hell.
+- */
+ #ifdef CONFIG_SMP
+ 
+ extern unsigned long __per_cpu_offset[NR_CPUS];
+@@ -38,7 +34,6 @@ DECLARE_PER_CPU(unsigned long, local_per
+ #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
+ #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
+ 
+-extern void percpu_modcopy(void *pcpudst, const void *src, unsigned long size);
+ extern void setup_per_cpu_areas (void);
+ extern void *per_cpu_init(void);
+ 
+--- a/include/asm-powerpc/percpu.h
++++ b/include/asm-powerpc/percpu.h
+@@ -21,15 +21,6 @@
+ #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
+ #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, local_paca->data_offset))
+ 
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+__per_cpu_offset(__i),		\
+-		       (src), (size));				\
+-} while (0)
+-
+ extern void setup_per_cpu_areas(void);
+ 
+ #else /* ! SMP */
+--- a/include/asm-s390/percpu.h
++++ b/include/asm-s390/percpu.h
+@@ -39,15 +39,6 @@ extern unsigned long __per_cpu_offset[NR
+ #define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
+ #define per_cpu_offset(x) (__per_cpu_offset[x])
+ 
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+__per_cpu_offset[__i],		\
+-		       (src), (size));				\
+-} while (0)
+-
+ #else /* ! SMP */
+ 
+ #define __get_cpu_var(var) __reloc_hide(var,0)
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -422,6 +422,14 @@ static unsigned int find_pcpusec(Elf_Ehd
+ 	return find_sec(hdr, sechdrs, secstrings, ".data.percpu");
+ }
+ 
++static void percpu_modcopy(void *pcpudest, const void *from, unsigned long size)
++{
++	int cpu;
++
++	for_each_possible_cpu(cpu)
++		memcpy(pcpudest + per_cpu_offset(cpu), from, size);
++}
++
+ static int percpu_modinit(void)
+ {
+ 	pcpu_num_used = 2;
+
+-- 
