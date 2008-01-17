@@ -1,53 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754853AbYAQEzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbYAQFWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754853AbYAQEzz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 23:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbYAQEzp
+	id S1752721AbYAQFWQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 00:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbYAQFWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 23:55:45 -0500
-Received: from ms1.nttdata.co.jp ([163.135.193.232]:57151 "EHLO
-	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbYAQEzo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 23:55:44 -0500
-Message-ID: <478EDFC9.6050808@nttdata.co.jp>
-Date: Thu, 17 Jan 2008 13:55:37 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.9) Gecko/20071031 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>, Johansen@suse.de
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [TOMOYO #6 retry 02/21] Add struct vfsmount to struct task_struct.
-References: <20080109005320.323184643@nttdata.co.jp> <20080109005418.469053691@nttdata.co.jp> <20080115211656.GA10644@sergelap.austin.ibm.com> <478D4E35.8000208@nttdata.co.jp> <20080116143943.GB19305@sergelap.austin.ibm.com>
-In-Reply-To: <20080116143943.GB19305@sergelap.austin.ibm.com>
+	Thu, 17 Jan 2008 00:22:05 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53318 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750866AbYAQFWE (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 00:22:04 -0500
+Date: Thu, 17 Jan 2008 16:21:29 +1100
+From: David Chinner <dgc@sgi.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Michael Rubin <mrubin@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch] Converting writeback linked lists to a tree based data structure
+Message-ID: <20080117052129.GJ155259@sgi.com>
+References: <532480950801150953g5a25f041ge1ad4eeb1b9bc04b@mail.gmail.com> <400452490.28636@ustc.edu.cn> <20080115194415.64ba95f2.akpm@linux-foundation.org> <400457571.32162@ustc.edu.cn> <20080115204236.6349ac48.akpm@linux-foundation.org> <400459376.04290@ustc.edu.cn> <20080115215149.a881efff.akpm@linux-foundation.org> <E1JF4Ey-0000x4-5p@localhost.localdomain> <20080116223510.GY155407@sgi.com> <E1JFLEW-0002oE-G1@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Jan 2008 04:55:41.0138 (UTC) FILETIME=[359D9320:01C858C5]
+Content-Disposition: inline
+In-Reply-To: <E1JFLEW-0002oE-G1@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge:
-> Right, but one will be preferred by the community - and while I have my
-> own preference, I wouldn't put too much faith on that, rather talk with
-> the apparmor folks, look over the lkml logs for previous submissions,
-> and then decide.
-Thanks for your advice.
-We got the same advice from Jonathan@LWN in Embedded Linux Conference 2007,
-and contacted AppArmor folks but no action occurred. We'll try to contact again.
+On Thu, Jan 17, 2008 at 11:16:00AM +0800, Fengguang Wu wrote:
+> On Thu, Jan 17, 2008 at 09:35:10AM +1100, David Chinner wrote:
+> > On Wed, Jan 16, 2008 at 05:07:20PM +0800, Fengguang Wu wrote:
+> > > On Tue, Jan 15, 2008 at 09:51:49PM -0800, Andrew Morton wrote:
+> > > > > Then to do better ordering by adopting radix tree(or rbtree
+> > > > > if radix tree is not enough),
+> > > > 
+> > > > ordering of what?
+> > > 
+> > > Switch from time to location.
+> > 
+> > Note that data writeback may be adversely affected by location
+> > based writeback rather than time based writeback - think of
+> > the effect of location based data writeback on an app that
+> > creates lots of short term (<30s) temp files and then removes
+> > them before they are written back.
+> 
+> A small(e.g. 5s) time window can still be enforced, but...
 
-John Johansen:
-Both AppArmor and TOMOYO need vfsmount in LSM hooks. Although we suggested
-another solution in [TOMOYO #6], we can use AppArmor's approach.
-How about submitting only vfsmount patches before submitting AppArmor/TOMOYO
-main module?
+Yes, you could, but that will then result in non-deterministic
+performance for repeated workloads because the order of file
+writeback will not be consistent.
 
-We think the patches relate to not only LSM folks but also fsdevel folks.
-So we are going to post the brief description of the patches to fsdevel.
+e.g.  the first run is fast because the output file is at lower
+offset than the temp file meaning the temp file gets deleted
+without being written.
 
-Regards,
-Kentaro Takeda
+The second run is slow because the location of the files is
+reversed and the temp file is written to disk before the
+final output file and hence the run is much slower because
+it writes much more.
 
+The third run is also slow, but the files are like the first
+fast run. However, pdflush tries to write the temp file back
+within 5s of it being dirtied so it skips it and writes
+the output file first.
+
+The difference between the first+second case can be found by
+knowing that inode number determines writeback order, but
+there is no obvious clue as to why the first+third runs are
+different.
+
+This is exactly the sort of non-deterministic behaviour we 
+want to avoid in a writeback algorithm.
+
+> > Hmmmm - I'm wondering if we'd do better to split data writeback from
+> > inode writeback. i.e. we do two passes.  The first pass writes all
+> > the data back in time order, the second pass writes all the inodes
+> > back in location order.
+> > 
+> > Right now we interleave data and inode writeback, (i.e.  we do data,
+> > inode, data, inode, data, inode, ....). I'd much prefer to see all
+> > data written out first, then the inodes. ->writepage often dirties
+> > the inode and hence if we need to do multiple do_writepages() calls
+> > on an inode to flush all the data (e.g. congestion, large amounts of
+> > data to be written, etc), we really shouldn't be calling
+> > write_inode() after every do_writepages() call. The inode
+> > should not be written until all the data is written....
+> 
+> That may do good to XFS. Another case is documented as follows:
+> "the write_inode() function of a typical fs will perform no I/O, but
+> will mark buffers in the blockdev mapping as dirty."
+
+Yup, but in that situation ->write_inode() does not do any I/O, so
+it will work with any high level inode writeback ordering or timing
+scheme equally well.  As a result, that's not the case we need to
+optimise at all.
+
+FWIW, the NFS client is likely to work better with split data/
+inode writeback as it also has to mark the inode dirty on async
+write completion (to get ->write_inode called to issue a commit
+RPC). Hence delaying the inode write until after all the data
+is written makes sense there as well....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
