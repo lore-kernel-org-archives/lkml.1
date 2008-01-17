@@ -1,43 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbYAQKsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751634AbYAQLBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbYAQKsV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 05:48:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbYAQKsL
+	id S1751634AbYAQLBi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 06:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbYAQLB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 05:48:11 -0500
-Received: from web52003.mail.re2.yahoo.com ([206.190.49.250]:28461 "HELO
-	web52003.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751588AbYAQKsK (ORCPT
+	Thu, 17 Jan 2008 06:01:29 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:43490 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751012AbYAQLB2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 05:48:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=Gacf1tIsboUZTGQKmjBQBZJjl1wsAR2k5s23RuYt7oRQxEMCC9iJTM3wBDM3cmmEzE2Z2o7PtGZ/gZ57C2OZsRUcYuKII6hHdmPxL+UX2/fEFGbodqkDlFu2fMjptFEOFSGekCP2RtV7EWIF9u2wgV2OsoT+jR5q18MKCZtugJ8=;
-X-YMail-OSG: 6BOvOQYVM1lPmjCItiS8GcGZljw9r4RwAeVeVLVO78DxKQxwVVPS8K6q13fHxNXNyYQsMDmzW6NE5nBD_qX67gwiVJqAZC.BKKhU2lUxFnA_r3htgAQ-
-X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
-Date: Thu, 17 Jan 2008 02:48:08 -0800 (PST)
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Subject: PIT clocksource makes invalid assumptions
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <823179.48268.qm@web52003.mail.re2.yahoo.com>
+	Thu, 17 Jan 2008 06:01:28 -0500
+To: salikhmetov@gmail.com
+CC: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
+       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
+In-reply-to: <12005314711867-git-send-email-salikhmetov@gmail.com> (message
+	from Anton Salikhmetov on Thu, 17 Jan 2008 03:57:45 +0300)
+Subject: Re: [PATCH -v5 1/2] Massive code cleanup of sys_msync()
+References: <12005314662518-git-send-email-salikhmetov@gmail.com> <12005314711867-git-send-email-salikhmetov@gmail.com>
+Message-Id: <E1JFSUo-0006Ev-Fm@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 17 Jan 2008 12:01:18 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I thought the following bug might be caused by PIT:
-ifconfig eth1 showed UP and RUNNING even though traffic did not work.
+> Substantial code cleanup of the sys_msync() function:
+> 
+> 1) using the PAGE_ALIGN() macro instead of "manual" alignment;
+> 2) improved readability of the loop traversing the process memory regions.
+> 
+> Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
+> ---
+>  mm/msync.c |   74 +++++++++++++++++++++++++++++------------------------------
+>  1 files changed, 36 insertions(+), 38 deletions(-)
+> 
+> diff --git a/mm/msync.c b/mm/msync.c
+> index 144a757..44997bf 100644
+> --- a/mm/msync.c
+> +++ b/mm/msync.c
+> @@ -1,24 +1,22 @@
+>  /*
+> - *	linux/mm/msync.c
+> + * The msync() system call.
+>   *
+> - * Copyright (C) 1994-1999  Linus Torvalds
+> + * Copyright (C) 1994-1999 Linus Torvalds
+> + * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
+>   */
+>  
+> -/*
+> - * The msync() system call.
+> - */
+> +#include <linux/file.h>
+>  #include <linux/fs.h>
+>  #include <linux/mm.h>
+>  #include <linux/mman.h>
+> -#include <linux/file.h>
+> -#include <linux/syscalls.h>
+>  #include <linux/sched.h>
+> +#include <linux/syscalls.h>
+>  
+>  /*
+>   * MS_SYNC syncs the entire file - including mappings.
+>   *
+>   * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
+> - * Nor does it marks the relevant pages dirty (it used to up to 2.6.17).
+> + * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
+>   * Now it doesn't do anything, since dirty pages are properly tracked.
+>   *
+>   * The application may now run fsync() to
+> @@ -33,8 +31,7 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+>  	unsigned long end;
+>  	struct mm_struct *mm = current->mm;
+>  	struct vm_area_struct *vma;
+> -	int unmapped_error = 0;
+> -	int error = -EINVAL;
+> +	int error = -EINVAL, unmapped_error = 0;
 
-The following lines in dmesg look suspicious:
-[   83.017954] Clocksource tsc unstable (delta = 111864067 ns)
-[   83.018930] Time: pit clocksource has been installed.
-http://bugzilla.kernel.org/show_bug.cgi?id=9336
+I prefer multi-line variable declarations, especially for ones with an
+initializer.
 
+>  
+>  	if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
+>  		goto out;
+> @@ -42,62 +39,63 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+>  		goto out;
+>  	if ((flags & MS_ASYNC) && (flags & MS_SYNC))
+>  		goto out;
+> -	error = -ENOMEM;
+> -	len = (len + ~PAGE_MASK) & PAGE_MASK;
+> +
+> +	len = PAGE_ALIGN(len);
+>  	end = start + len;
+> -	if (end < start)
+> +	if (end < start) {
+> +		error = -ENOMEM;
 
+The usual style is to have the error assignment outside the
+conditional.  That way is shorter, clearer, as well as possibly
+generating better code.
 
+>  		goto out;
+> +	}
+> +
+>  	error = 0;
+> +
 
-      ____________________________________________________________________________________
-Never miss a thing.  Make Yahoo your home page. 
-http://www.yahoo.com/r/hs
+Unnecessary empty line here, these two statements actually belong
+together.
+
+>  	if (end == start)
+>  		goto out;
+> +
+>  	/*
+>  	 * If the interval [start,end) covers some unmapped address ranges,
+>  	 * just ignore them, but return -ENOMEM at the end.
+>  	 */
+>  	down_read(&mm->mmap_sem);
+>  	vma = find_vma(mm, start);
+> -	for (;;) {
+> +	do {
+>  		struct file *file;
+>  
+> -		/* Still start < end. */
+> -		error = -ENOMEM;
+> -		if (!vma)
+> -			goto out_unlock;
+> -		/* Here start < vma->vm_end. */
+> +		if (!vma) {
+> +			error = -ENOMEM;
+> +			break;
+> +		}
+
+Again, error asignment should be outside the conditional.  This of
+course means, you'll have to set the error back to zero at the end of
+the loop, but that's fine.
+
+>  		if (start < vma->vm_start) {
+>  			start = vma->vm_start;
+> -			if (start >= end)
+> -				goto out_unlock;
+> +			if (start >= end) {
+> +				error = -ENOMEM;
+> +				break;
+> +			}
+
+Ditto.
+
+>  			unmapped_error = -ENOMEM;
+>  		}
+> -		/* Here vma->vm_start <= start < vma->vm_end. */
+> -		if ((flags & MS_INVALIDATE) &&
+> -				(vma->vm_flags & VM_LOCKED)) {
+> +		if ((flags & MS_INVALIDATE) && (vma->vm_flags & VM_LOCKED)) {
+>  			error = -EBUSY;
+
+Ditto2.
+
+> -			goto out_unlock;
+> +			break;
+>  		}
+> -		file = vma->vm_file;
+>  		start = vma->vm_end;
+> -		if ((flags & MS_SYNC) && file &&
+> -				(vma->vm_flags & VM_SHARED)) {
+> +
+> +		file = vma->vm_file;
+> +		if (file && (vma->vm_flags & VM_SHARED) && (flags & MS_SYNC)) {
+>  			get_file(file);
+>  			up_read(&mm->mmap_sem);
+>  			error = do_fsync(file, 0);
+>  			fput(file);
+> -			if (error || start >= end)
+> +			if (error)
+
+This simplifies, but also does unnecessary down/find_vma/up.
+
+>  				goto out;
+>  			down_read(&mm->mmap_sem);
+>  			vma = find_vma(mm, start);
+> -		} else {
+> -			if (start >= end) {
+> -				error = 0;
+> -				goto out_unlock;
+> -			}
+> -			vma = vma->vm_next;
+> +			continue;
+>  		}
+> -	}
+> -out_unlock:
+> +
+> +		vma = vma->vm_next;
+> +	} while (start < end);
+>  	up_read(&mm->mmap_sem);
+> +
+>  out:
+> -	return error ? : unmapped_error;
+> +	return error ? error : unmapped_error;
+>  }
