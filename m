@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759691AbYAQVsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759836AbYAQVsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759691AbYAQVsh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 16:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758538AbYAQVmR
+	id S1759836AbYAQVsw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 16:48:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758613AbYAQVmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 16:42:17 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:44825 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758531AbYAQVmQ (ORCPT
+	Thu, 17 Jan 2008 16:42:36 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:29985 "EHLO
+	outbound6-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758619AbYAQVme (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 16:42:16 -0500
-Date: Thu, 17 Jan 2008 16:40:50 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Daniel Walker <dwalker@mvista.com>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 19/20] UML - port mutex conversion
-Message-ID: <20080117214050.GA6782@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 Jan 2008 16:42:34 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
+Date: Thu, 17 Jan 2008 22:42:28 +0100
+From: "Andreas Herrmann3" <andreas.herrmann3@amd.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+cc: "Venki Pallipadi" <venkatesh.pallipadi@intel.com>, ak@muc.de,
+       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
+       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       jesse.barnes@intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
+Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
+ fixes
+Message-ID: <20080117214228.GD12631@alberich.amd.com>
+References: <20080116023955.597433000@intel.com>
+ <20080116185748.GA11244@alberich.amd.com>
+ <20080116203328.GA17869@linux-os.sc.intel.com>
+ <20080117191211.GA12631@alberich.amd.com>
+ <20080117203600.GB27778@elte.hu>
+ <20080117210301.GC12631@alberich.amd.com>
+ <20080117211308.GA7858@elte.hu>
+MIME-Version: 1.0
+In-Reply-To: <20080117211308.GA7858@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 17 Jan 2008 21:42:12.0882 (UTC)
+ FILETIME=[D1E66720:01C85951]
+X-WSS-ID: 6B91143C24S8203847-03-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daniel Walker <dwalker@mvista.com>
+On Thu, Jan 17, 2008 at 10:13:08PM +0100, Ingo Molnar wrote:
+> 
+> * Andreas Herrmann3 <andreas.herrmann3@amd.com> wrote:
+> 
+> > Yes.
+> > 
+> > Meanwhile I have figured out that it is some ACPI stuff that maps the 
+> > page cached. I've changed the ioremap's in drivers/acpi/osl.c to 
+> > ioremap_nocache. See attached patch.
+> > 
+> > Now the machine boots without conflicts.
+> 
+> ah, nice!
+> 
+> but in general we must be robust enough in this case and just degrade 
+> any overlapping page to UC (and emit a warning perhaps) - instead of 
+> failing the ioremap and thus failing the driver (and the bootup).
+> 
+> Does my third patch (which falls back to UC in case of attribute 
+> conflicts, also attached below) instead of your ioremap_nocache() patch 
+> solve your bootup problem too?
 
-The port_sem is already used as a mutex since it's using DECLARE_MUTEX(),
-but the underlying construct is still a semaphore .. This patch switches
-it over to a struct mutex.
+I'll check this asap
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
----
- arch/um/drivers/port_kern.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+> but i have not seen this message in your boot log. Could you boot with 
+> early_ioremap_debug and send us the dmesg - i'm curious which ACPI 
+> tables are actively mapped while those devices are initialized.
 
-Index: linux-2.6.22/arch/um/drivers/port_kern.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/port_kern.c	2008-01-17 13:44:46.000000000 -0500
-+++ linux-2.6.22/arch/um/drivers/port_kern.c	2008-01-17 13:47:39.000000000 -0500
-@@ -6,6 +6,7 @@
- #include "linux/completion.h"
- #include "linux/interrupt.h"
- #include "linux/list.h"
-+#include "linux/mutex.h"
- #include "asm/atomic.h"
- #include "init.h"
- #include "irq_kern.h"
-@@ -120,7 +121,7 @@ static int port_accept(struct port_list 
- 	return 0;
- }
- 
--static DECLARE_MUTEX(ports_sem);
-+static DEFINE_MUTEX(ports_mutex);
- static LIST_HEAD(ports);
- 
- static void port_work_proc(struct work_struct *unused)
-@@ -161,7 +162,7 @@ void *port_data(int port_num)
- 	struct port_dev *dev = NULL;
- 	int fd;
- 
--	down(&ports_sem);
-+	mutex_lock(&ports_mutex);
- 	list_for_each(ele, &ports) {
- 		port = list_entry(ele, struct port_list, list);
- 		if (port->port == port_num)
-@@ -216,7 +217,7 @@ void *port_data(int port_num)
-  out_free:
- 	kfree(port);
-  out:
--	up(&ports_sem);
-+	mutex_unlock(&ports_mutex);
- 	return dev;
- }
- 
+Hmm, early_ioremap_debug exists only in ioremap_32.c
+Have to adapt  the 64-bit version first.
+
+But wait the 64-bit code contains already debug output for this.  See
+the boot-logs that I have attached to my previous mails.
+(Interestingly the code for 64-bit early_io(re/un)map resides not in
+ioremap_64.c but in init_64.c.)
+
+
+Andreas
+
+
+
