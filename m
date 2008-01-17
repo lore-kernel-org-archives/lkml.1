@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbYAQMH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752988AbYAQMNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754210AbYAQMH2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 07:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYAQMHS
+	id S1752988AbYAQMNA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 07:13:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbYAQMMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 07:07:18 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58638 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751607AbYAQMHR (ORCPT
+	Thu, 17 Jan 2008 07:12:50 -0500
+Received: from def92-3-81-56-114-101.fbx.proxad.net ([81.56.114.101]:60093
+	"EHLO barad-dur.regala.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751178AbYAQMMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 07:07:17 -0500
-Subject: Re: 2.6.24-rc7: memory leak?
-From: Peter Zijlstra <peterz@infradead.org>
-To: CaT <cat@zip.com.au>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080117114050.GR3940@zip.com.au>
-References: <20080117063410.GQ3940@zip.com.au>
-	 <1200568923.28661.9.camel@twins>  <20080117114050.GR3940@zip.com.au>
-Content-Type: text/plain
-Date: Thu, 17 Jan 2008 13:07:12 +0100
-Message-Id: <1200571632.28661.13.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jan 2008 07:12:49 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, sct@redhat.com
+Subject: Re: [PATCH] Convert EXT2 to use unlocked_ioctl
+References: <1200565824-362-1-git-send-email-mathieu.segaud@regala.cx>
+	<200801171254.04071.arnd@arndb.de>
+	<87myr4ek82.fsf@barad-dur.regala.cx>
+From: Mathieu SEGAUD <mathieu.segaud@regala.cx>
+Date: Thu, 17 Jan 2008 13:12:48 +0100
+In-Reply-To: <87myr4ek82.fsf@barad-dur.regala.cx> (Mathieu SEGAUD's message of "Thu\, 17 Jan 2008 12\:59\:25 +0100")
+Message-ID: <87fxwwejlr.fsf@barad-dur.regala.cx>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Vous m'avez dit récemment :
 
-On Thu, 2008-01-17 at 22:40 +1100, CaT wrote:
-> On Thu, Jan 17, 2008 at 12:22:03PM +0100, Peter Zijlstra wrote:
-> > On Thu, 2008-01-17 at 17:34 +1100, CaT wrote:
-> > > cache). During the rsync the memory used grew to just shy of 1.6gig and
-> > > now, about 2 hours after the rsync has well and truly finished, the used
-> > > memory is at 1.23gig. This is what free reports:
-> > > 
-> > >              total       used       free     shared    buffers cached
-> > > Mem:       2058128    1994468      63660          0     688604 11432
-> > > -/+ buffers/cache:    1294432     763696
-> > > Swap:      1048568          0    1048568
-> > 
-> > How much memory does:
-> > 
-> >   echo 3 > /proc/sys/vm/drop_caches
-> > 
-> > gain you?
-> 
-> 56M used now. 
+> Vous m'avez dit récemment :
+>
+>> On Thursday 17 January 2008, you wrote:
+>>> 
+>>> Change ext_ioctl() to be an unlocked_ioctl(), explicitly
+>>> exposing BKL's uses.
+>>> 
+>>> Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
+>>
+>> You are now calling lock_kernel() twice in case of ext2_compat_ioctl(),
+>> which calls back into ext2_ioctl with the BKL already held.
+>>
+>> This is allowed with the BKL, but really bad style that you should
+>> avoid. I assume the ext3 and ext4dev versions of your patch have
+>> the same issue, but I didn't check in detail.
+>
+> yep, they do. I noticed this nested calls. I guess I will add
+> _extX_compat_ioctl() running with no BKL's which would be used by both
+> extX_ioctl() and extX_compat_ioctl().
+> Any comments on such a strategy ? thanks a lot for the reminder :)
 
-Good :-)
+Well as I am not awake enough, this would sum up to get rid of
+lock/unlock_kernel() around extX_ioctl() calls...
+Will repost with theses changes.
+Thanks.
 
-> Should all this cache usage not be counted towards the
-> 'Cached' entry in meminfo rather then getting counted as part of used
-> ram. 
-
-Cached is only the page-cache, not all the other caches we have..
-This someones confuses people, but one gets used to it. slabinfo allows
-one to easily view others.
-
-> I assume that this would not cause an oom situation and would be
-> freed up if all that memory really did need to be used.
-
-Correct.
-
-
+-- 
+Mathieu
