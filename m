@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYAQDEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbYAQDF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbYAQDEV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 22:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYAQDEM
+	id S1754976AbYAQDF7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 22:05:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYAQDFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 22:04:12 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46891 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbYAQDEK (ORCPT
+	Wed, 16 Jan 2008 22:05:52 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50778 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbYAQDFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 22:04:10 -0500
-Message-ID: <478EC131.8030103@zytor.com>
-Date: Wed, 16 Jan 2008 21:45:05 -0500
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 16 Jan 2008 22:05:51 -0500
+Date: Thu, 17 Jan 2008 12:04:46 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: =?ISO-2022-JP?B?IkRhbmllbCBTcBskQmlPGyhCZyI=?= 
+	<daniel.spang@gmail.com>
+Subject: Re: [RFC][PATCH 3/5] add /dev/mem_notify device
+Cc: kosaki.motohiro@jp.fujitsu.com, "Pavel Machek" <pavel@ucw.cz>,
+       "Marcelo Tosatti" <marcelo@kvack.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, "Rik van Riel" <riel@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <cfd9edbf0801160351i2b819f31j65cc16b1e694168f@mail.gmail.com>
+References: <20080116114234.GA22460@elf.ucw.cz> <cfd9edbf0801160351i2b819f31j65cc16b1e694168f@mail.gmail.com>
+Message-Id: <20080117120243.11D1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Miklos Szeredi <miklos@szeredi.hu>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, util-linux-ng@vger.kernel.org,
-       linuxram@us.ibm.com, viro@ftp.linux.org.uk, hch@infradead.org,
-       a.p.zijlstra@chello.nl
-Subject: Re: [patch] VFS: extend /proc/mounts
-References: <E1JFGUp-00054z-KQ@pomaz-ex.szeredi.hu> <20080116143051.ec488f3d.akpm@linux-foundation.org>
-In-Reply-To: <20080116143051.ec488f3d.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> 
-> Seems like a plain bad idea to me.  There will be any number of home-made
-> /proc/mounts parsers and we don't know what they do.
-> 
+Hi
 
-There is a lot of precedent for adding fields at the end.  Since the 
-last fields in current /proc/*/mounts are dummy fields anyway, it 
-doesn't matter if the homegrown parsers concatenate the additional 
-information to those.
+> > I'd read mem_notify as "tell me when new memory is unplugged" or
+> > something. /dev/oom_notify? Plus, /dev/ names usually do not have "_"
+> > in them.
+> 
+> I don't think we should use oom in the name, since the notification is
+> sent long before oom.
 
-	-hpa
+OK, I don't change name.
+Of cource, I will change soon if anyone propose more good name.
+
+thanks
+
+- kosaki
+
+
