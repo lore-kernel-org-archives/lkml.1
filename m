@@ -1,92 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757094AbYAQUmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbYAQUmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757094AbYAQUmS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 15:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbYAQUmH
+	id S1753913AbYAQUmb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:42:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757113AbYAQUmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 15:42:07 -0500
-Received: from mail.queued.net ([207.210.101.209]:1091 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752503AbYAQUmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 15:42:06 -0500
-Date: Thu, 17 Jan 2008 15:42:22 -0500
-From: Andres Salomon <dilinger@queued.net>
-To: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
-Cc: linux-kernel@vger.kernel.org, Jordan Crouse <jordan.crouse@amd.com>
-Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
-Message-ID: <20080117154222.6587864b@ephemeral>
-In-Reply-To: <478FB255.5040001@i4.informatik.rwth-aachen.de>
-References: <478E4267.7020509@i4.informatik.rwth-aachen.de>
-	<20080116161912.7b449466@ephemeral>
-	<20080116165606.3ebc06a4@ephemeral>
-	<478F25D6.3060503@i4.informatik.rwth-aachen.de>
-	<20080117134032.4cc1a1cf@ephemeral>
-	<478FB255.5040001@i4.informatik.rwth-aachen.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Jan 2008 15:42:19 -0500
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1956 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757062AbYAQUmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 15:42:17 -0500
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [-mm Patch] uml: fix a building error
+Date: Thu, 17 Jan 2008 21:42:12 +0100
+User-Agent: KMail/1.9.7
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "WANG Cong" <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
+       "Jeff Dike" <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       "David Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org> <20080117105606.ff89e9e9.akpm@linux-foundation.org> <924EFEDD5F540B4284297C4DC59F3DEE5E90DF@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE5E90DF@orsmsx423.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801172142.14326.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 20:53:57 +0100
-Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
+Hello,
 
-> Andres Salomon schrieb:
-> > On Thu, 17 Jan 2008 10:54:30 +0100
-> > Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
-> > 
-> >> Andres Salomon schrieb:
-> >>> On Wed, 16 Jan 2008 16:19:12 -0500
-> >>> Andres Salomon <dilinger@queued.net> wrote:
-> >>>
-> >>>> On Wed, 16 Jan 2008 18:44:07 +0100
-> >>>> Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
-> >>>>
-> >>>>> Hi,
-> >>>>>
-> >>>>> I'm trying to boot 2.6.24-rc8 on a GEODE LX board (ALIX.3),
-> >>>>> and it hangs during boot:
-> >>>>>
-> >>>>> [   12.689971] NET: Registered protocol family 16
-> >>>>> [   12.703329] geode-mfgpt:  Registered timer 0
-> >>>>> [   12.716149] mfgpt-timer:  registering the MFGT timer as a clock event...
-> >>>>>
-> >>>> What BIOS are you using?  It's possible that our detection code is
-> >>>> failing to detect in-use timers.
-> >> I'm using v0.99 (latest available).
-> > 
-> > 
-> > v0.99 of what?  Jordan seems to think it's an Award BIOS, but I'd like
-> > to make sure.
+> >> > This patch fixes this building error:
+> >> > ...
+> >> > drivers/char/mem.c: In function 'read_mem':
+> >> > drivers/char/mem.c:136: error: implicit declaration of 
+> >function 'unxlate_dev_mem_ptr'
+> >> > ...
+> >> 
+> >> I see this on sparc64 as well:
+> >> 
+> >>   CC      drivers/char/mem.o
+> >> drivers/char/mem.c: In function 'read_mem':
+> >> drivers/char/mem.c:136: error: implicit declaration of 
+> >function 'unxlate_dev_mem_ptr'
+> >> make[2]: *** [drivers/char/mem.o] Error 1
+> >> make[1]: *** [drivers/char] Error 2
+> >> make: *** [drivers] Error 2
+> >> 
+> >> Does sparc64 need similar fix?
+> >> 
+> >
+> >The PAT patches strike again.
+> >
+> >Ingo, I think you might need to toss some cross-compilers into 
+> >that build
+> >test setup of yours.
 > 
-> Its an ALIX board from PCEngines, they have their own BIOS
-> implementation (tinyBios).
-> http://www.pcengines.ch/alix.htm
+> These functions were defined for other archs in asm-generic/iomap.h.
+> We need all archs including it in io.h. I now see only few archs are
+> including it..
+>
+> Apart from unxlate, there is also ioremap_wc which is defined in the
+> same way.
 > 
+> I can send a patch for this. But, I don't have cross compiler setup for
+> all archs to test. Andrew, I will need your help.
 
-Ah, okay.  I couldn't find anything about MFGPTs in the available
-source, but I did find the following:
+I can confirm that this fixes the build problem for sparc64 here.
 
-http://article.gmane.org/gmane.linux.distributions.voyage.general/1824
+Regards,
 
-It would appear that something between 0.90 and 0.92 changed that
-has broken things.  There's also a changelog here:
-
-http://forum.pfsense.org/index.php?topic=6729.15
-
-Note two MFGPT-related entries in 0.92:
-	
-	- disable CS5536 diverse device power management to avoid
-MFGPT /
-	  interrupt issues.
-	
-	- MFGPT issues: please observe AMD CS5536 data book section
-5.16.3,
-	  incorrect initialization sequence can HANG the system.
-
-
-I'm assuming the first is messing w/ DIVIL_GLD_MSR_PM...
-
-
+	Mariusz
