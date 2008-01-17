@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756336AbYAQSMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYAQSQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756336AbYAQSMY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 13:12:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYAQSMP
+	id S1754907AbYAQSQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 13:16:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbYAQSQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 13:12:15 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:34813 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752610AbYAQSMO (ORCPT
+	Thu, 17 Jan 2008 13:16:51 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60987 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752202AbYAQSQu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 13:12:14 -0500
-Date: Thu, 17 Jan 2008 19:12:22 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Linux MM <linux-mm@kvack.org>
-Subject: Re: crash in kmem_cache_init
-Message-ID: <20080117181222.GA24411@aepfle.de>
-References: <20080115150949.GA14089@aepfle.de> <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com> <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 17 Jan 2008 13:16:50 -0500
+Date: Thu, 17 Jan 2008 10:16:13 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: phil.el@wanadoo.fr, mingo@elte.hu
+Subject: x86: Add support for the latest Intel processors to Oprofile
+Message-ID: <20080117101613.65bf008b@laptopd505.fenrus.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, Christoph Lameter wrote:
 
-> On Thu, 17 Jan 2008, Pekka Enberg wrote:
-> 
-> > Looks similar to the one discussed on linux-mm ("[BUG] at
-> > mm/slab.c:3320" thread). Christoph?
-> 
-> Right. Try the latest version of the patch to fix it:
+Subject: x86: Add support for the latest Intel processors to Oprofile
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-The patch does not help.
+The latest Intel processors (the 45nm ones) have a model number of 23
+(old ones had 15); they're otherwise compatible on the oprofile side.
+This patch adds the new model number to the oprofile code.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+
+---
+ arch/x86/oprofile/nmi_int.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.24-rc7-oprofile/arch/x86/oprofile/nmi_int.c
+===================================================================
+--- linux-2.6.24-rc7-oprofile.orig/arch/x86/oprofile/nmi_int.c
++++ linux-2.6.24-rc7-oprofile/arch/x86/oprofile/nmi_int.c
+@@ -380,7 +380,7 @@ static int __init ppro_init(char ** cpu_
  
-> Index: linux-2.6/mm/slab.c
-> ===================================================================
-> --- linux-2.6.orig/mm/slab.c	2008-01-03 12:26:42.000000000 -0800
-> +++ linux-2.6/mm/slab.c	2008-01-09 15:59:49.000000000 -0800
-> @@ -2977,7 +2977,10 @@ retry:
->  	}
->  	l3 = cachep->nodelists[node];
->  
-> -	BUG_ON(ac->avail > 0 || !l3);
-> +	if (!l3)
-> +		return NULL;
-> +
-> +	BUG_ON(ac->avail > 0);
->  	spin_lock(&l3->list_lock);
->  
->  	/* See if we can refill from the shared array */
+ 	if (cpu_model == 14)
+ 		*cpu_type = "i386/core";
+-	else if (cpu_model == 15)
++	else if (cpu_model == 15 || cpu_model == 23)
+ 		*cpu_type = "i386/core_2";
+ 	else if (cpu_model > 0xd)
+ 		return 0;
 
-Is this hunk supposed to go into cache_grow()? There is no NULL check
-for l3.
-
-But if I do that, it does not help:
-
-freeing bootmem node 1
-Memory: 3496632k/3571712k available (6188k kernel code, 75080k reserved, 1324k data, 1220k bss, 304k init)
-cache_grow(2781) swapper(0):c0,j4294937299 cp c0000000006a4fb8 !l3
-Kernel panic - not syncing: kmem_cache_create(): failed to create slab `size-32'
-
-Rebooting in 1 seconds..    
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
