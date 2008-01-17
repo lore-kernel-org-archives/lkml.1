@@ -1,125 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYAQVH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbYAQVIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757354AbYAQVH2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 16:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbYAQVHR
+	id S1757895AbYAQVIR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 16:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbYAQVIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 16:07:17 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:58320 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752022AbYAQVHP (ORCPT
+	Thu, 17 Jan 2008 16:08:04 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:47015 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752548AbYAQVID (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 16:07:15 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Pf/SBOI6txN/y9To6mftNP24SJ047YPhKoWY+igJew5lAWqF38SDXGZV883cJKHt8
-	YQJJeinDGBy8CuitOcsaA==
-Message-ID: <532480950801171307q4b540ewa3acb6bfbea5dbc8@mail.gmail.com>
-Date: Thu, 17 Jan 2008 13:07:05 -0800
-From: "Michael Rubin" <mrubin@google.com>
-To: "Fengguang Wu" <wfg@mail.ustc.edu.cn>
-Subject: Re: [patch] Converting writeback linked lists to a tree based data structure
-Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <400562938.07583@ustc.edu.cn>
+	Thu, 17 Jan 2008 16:08:03 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 17 Jan 2008 22:07:56 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: What's in linux1394-2.6.git?
+To: linux-kernel@vger.kernel.org
+cc: linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.99a95666fea52a5e@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080115080921.70E3810653@localhost> <400562938.07583@ustc.edu.cn>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 17, 2008 1:41 AM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> On Tue, Jan 15, 2008 at 12:09:21AM -0800, Michael Rubin wrote:
-> The main benefit of rbtree is possibly better support of future policies.
-> Can you demonstrate an example?
+Not much, and all of it is meant to be merged post 2.6.24.  The most
+notable updates are fixes to firewire-ohci which fundamentally improve
+isochronous reception via libdc1394 v2.
 
-These are ill-formed thoughts as of now on my end but the idea was
-that keeping one tree sorted via a scheme might be simpler than
-multiple list_heads.
+After these fixes, the most notable remaining issues with
+drivers/firewire are:
+  - difficulties to detect SBP-2 (storage) devices on some hosts
+    (need to collect debug data for this ASAP),
+  - DV reception broken on OHCI 1.0 variants of VIA VT630x,
+  - IP over 1394 still not implemented/ ported.
 
-> Bugs can only be avoided by good understanding of all possible cases.)
+So, distributors of kernel packages, be advised that the firewire
+drivers are still not as functional as the classic ieee1394 driver
+stack.  As always, more details on this are captured at
+wiki.linux1394.org.
 
-I take the above statement as a tautology.  And am trying my best to do so. :-)
+I will follow up to this post with two combo patches, reflecting the
+merge queue for drivers/ieee1394 and drivers/firewire respectively,
+because several of the patches have not been seen on lkml yet, only on
+linux1394-devel.  All of the patches have been in -mm though (except for
+a refresh of two small patches which happened after -rc8-mm1).
 
-> The most tricky writeback issues could be starvation prevention
-> between
+Shortlog and diffstat:
+
+David Moore (3):
+      firewire: fw-ohci: Fix for dualbuffer three-or-more buffers
+      firewire: fw-ohci: Bug fixes for packet-per-buffer support
+      firewire: fw-ohci: Dynamically allocate buffers for DMA descriptors
+
+Jay Fenlason (1):
+      firewire: fw-sbp2: quiet logout errors on device removal
+
+Joe Perches (1):
+      ieee1394: Add missing "space"
+
+Nick Piggin (1):
+      ieee1394: nopage
+
+Rabin Vincent (1):
+      firewire: Fix extraction of source node id
+
+Stefan Richter (11):
+      ieee1394: sbp2: prepare for s/g chaining
+      ieee1394: sbp2: s/g list access cosmetics
+      ieee1394: small cleanup after "nopage"
+      ieee1394: remove unused code
+      ieee1394: sbp2: raise default transfer size limit
+      ieee1394: ohci1394: don't schedule IT tasklets on IR events
+      firewire: fw-sbp2: refactor workq and kref handling
+      firewire: fw-sbp2: prepare for s/g chaining
+      firewire: fw-sbp2: remove unused misleading macro
+      firewire: fw-ohci: CycleTooLong interrupt management
+      firewire vs. ieee1394: clarify MAINTAINERS
 
 
->         - small/large files
->         - new/old files
->         - superblocks
+ MAINTAINERS                              |    4 +-
+ drivers/firewire/fw-ohci.c               |  390 +++++++++++++---------
+ drivers/firewire/fw-sbp2.c               |   84 +++--
+ drivers/firewire/fw-transaction.c        |    2 +-
+ drivers/ieee1394/dma.c                   |   39 +--
+ drivers/ieee1394/ieee1394_transactions.c |   68 ----
+ drivers/ieee1394/ohci1394.c              |   12 +-
+ drivers/ieee1394/raw1394.c               |    4 +-
+ drivers/ieee1394/sbp2.c                  |   52 ++--
+ drivers/ieee1394/sbp2.h                  |    1 -
+ 10 files changed, 340 insertions(+), 316 deletions(-)
 
-So I have written tests and believe I have covered these issues. If
-you are concerned in specific on any and have a test case please let
-me know.
+-- 
+Stefan Richter
+-=====-==--- ---= =---=
+http://arcgraph.de/sr/
 
-> Some kind of limit should be applied for each. They used to be:
->         - requeue to s_more_io whenever MAX_WRITEBACK_PAGES is reached
->           this preempts big files
-
-The patch uses th same limit.
-
->         - refill s_io iif it is drained
->           this prevents promotion of big/old files
-
-Once a big file gets its first do_writepages it is moved behind the
-other smaller files via i_flushed_when. And the same in reverse for
-big vs old.
-
->         - return from sync_sb_inodes() after one go of s_io
-
-I am not sure how this limit helps things out. Is this for superblock
-starvation? Can you elaborate?
-
-> Michael, could you sort out and document the new starvation prevention schemes?
-
-The basic idea behind the writeback algorithm to handle starvation.
-The over arching idea is that we want to preserve order of writeback
-based on when an inode was dirtied and also preserve the dirtied_when
-contents until the inode has been written back (partially or fully)
-
-Every sync_sb_inodes we find the least recent inodes dirtied. To deal
-with large or small starvation we have a s_flush_gen for each
-iteration of sync_sb_inodes every time we issue a writeback we mark
-that the inode cannot be processed until the next s_flush_gen. This
-way we don't process one get to the rest since we keep pushing them
-into subsequent s_fush_gen's.
-
-Let me know if you want more detail or structured responses.
-
-> Introduce i_flush_gen to help restarting from the last inode?
-> Well, it's not as simple as list_heads.
->
-> > 2) Added an inode flag to allow inodes to be marked so that they
-> >    are never written back to disk.
-> >
-> >    The motivation behind this change is several fold. The first is
-> >    to insure fairness in the writeback algorithm. The second is to
->
-> What do you mean by fairness?
-
-So originally this comment was written when I was trying to fix a bug
-in 2.6.23. The one where we were starving large files from being
-flushed. There was a fairness issue where small files were being
-flushed but the large ones were just ballooning in memory.
-
-> Why cannot I_WRITEBACK_NEVER be in a decoupled standalone patch?
-
-The WRITEBACK_NEVER could be in a previous patch to the rbtree. But
-not a subsequent patch to the rbtree. The rbtree depends on the
-WRITEBACK_NEVER patch otherwise we run in to problems in
-generic_delete_inode. Now that you point it out I think I can split
-this patch into two patches and make the WRITEBACK_NEVER in the first
-one.
-
-> More details about the fixings, please?
-
-So again this comment was written against 2.6.23. The biggest fix is
-the starving of big files. I remember there were other smaller issues,
-but there have been so many changes in the patch sets that I need to
-go back to quantify.
