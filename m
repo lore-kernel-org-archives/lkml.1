@@ -1,975 +1,375 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbYAQUr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbYAQUso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757563AbYAQUr6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 15:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYAQUru
+	id S1757855AbYAQUso (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:48:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbYAQUsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 15:47:50 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:36525 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753504AbYAQUrs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 15:47:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=qOmzuJOzlKo6AovxqP9UNA3BLICy84Hy6MSdASn50X7v/4D1kyahak+vsupMUPQ6n1u98iwvWoBA4zUD3lJk2qYWquPo0ML4PczMS/gTW68SMNhdHhTipp10bCUgNyFU17DsfSwif48T+jDeOCZHxqstakrFlfX5BtfElBgnAT4=
-Message-ID: <478FBEEA.6040000@gmail.com>
-Date: Thu, 17 Jan 2008 21:47:38 +0100
-From: Franck Bui-Huu <vagabon.xyz@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 17 Jan 2008 15:48:35 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:57405 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754851AbYAQUsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 15:48:33 -0500
+Date: Thu, 17 Jan 2008 15:48:04 -0500
+To: David Howells <dhowells@redhat.com>
+Cc: sds@tycho.nsa.gov, casey@schaufler-ca.com, Trond.Myklebust@netapp.com,
+       neilb@suse.de, linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, nfs@lists.sourceforge.net
+Subject: Re: [PATCH 06b/26] Security: Make NFSD work with detached security
+Message-ID: <20080117204804.GC6416@fieldses.org>
+References: <20080115234724.22183.9603.stgit@warthog.procyon.org.uk> <20080115234652.22183.24850.stgit@warthog.procyon.org.uk> <20849.1200590240@redhat.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: paulmck@linux.vnet.ibm.com
-Subject: [PATCH 1/2] Split list.h and move rcu-protected lists into rculist.h
-References: <478FBEA0.9090203@gmail.com>
-In-Reply-To: <478FBEA0.9090203@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20849.1200590240@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-12-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Franck Bui-Huu <fbuihuu@gmail.com>
+On Thu, Jan 17, 2008 at 05:17:20PM +0000, David Howells wrote:
+> 
+> Make NFSD work with detached security, using the patches that excise the
+> security information from task_struct to struct task_security as a base.
+> 
+> Each time NFSD wants a new security descriptor (to do NFS4 recovery or just to
+> do NFS operations), a task_security record is derived from NFSD's *objective*
+> security, modified and then applied as the *subjective* security.  This means
+> (a) the changes are not visible to anyone looking at NFSD through /proc, (b)
+> there is no leakage between two consecutive ops with different security
+> configurations.
+> 
+> Consideration should probably be given to caching the task_security record on
+> the basis that there'll probably be several ops that will want to use any
+> particular security configuration.
 
-This patch moves rcu-protected lists from list.h into a new header
-file rculist.h.
+Just curious--why?  Are get_kernel_security(), etc., particularly
+expensive?
 
-This is done because list are a very used primitive structure all over
-the kernel and it's currently impossible to include other header files
-in this list.h without creating some circular dependencies.
+--b.
 
-For example, list.h implements rcu-protected list and uses
-rcu_dereference() without including rcupdate.h. It actually compiles
-because users of rcu_dereference() are macros. Others RCU functions
-could be used too but aren't probably because of this.
-
-Therefore this patch creates rculist.h which includes rcupdates
-without to many changes/troubles.
-
-Signed-off-by: Franck Bui-Huu <fbuihuu@gmail.com>
----
- arch/ia64/sn/kernel/irq.c                       |    1 +
- drivers/infiniband/hw/ipath/ipath_verbs_mcast.c |    3 +-
- include/linux/dcache.h                          |    1 +
- include/linux/list.h                            |  385 ----------------------
- include/linux/rculist.h                         |  396 +++++++++++++++++++++++
- lib/textsearch.c                                |    2 +-
- 6 files changed, 400 insertions(+), 388 deletions(-)
- create mode 100644 include/linux/rculist.h
-
-diff --git a/arch/ia64/sn/kernel/irq.c b/arch/ia64/sn/kernel/irq.c
-index 53351c3..96c31b4 100644
---- a/arch/ia64/sn/kernel/irq.c
-+++ b/arch/ia64/sn/kernel/irq.c
-@@ -11,6 +11,7 @@
- #include <linux/irq.h>
- #include <linux/spinlock.h>
- #include <linux/init.h>
-+#include <linux/rculist.h>
- #include <asm/sn/addrs.h>
- #include <asm/sn/arch.h>
- #include <asm/sn/intr.h>
-diff --git a/drivers/infiniband/hw/ipath/ipath_verbs_mcast.c b/drivers/infiniband/hw/ipath/ipath_verbs_mcast.c
-index 9e5abf9..d73e322 100644
---- a/drivers/infiniband/hw/ipath/ipath_verbs_mcast.c
-+++ b/drivers/infiniband/hw/ipath/ipath_verbs_mcast.c
-@@ -31,8 +31,7 @@
-  * SOFTWARE.
-  */
- 
--#include <linux/list.h>
--#include <linux/rcupdate.h>
-+#include <linux/rculist.h>
- 
- #include "ipath_verbs.h"
- 
-diff --git a/include/linux/dcache.h b/include/linux/dcache.h
-index c2c153f..e4fa047 100644
---- a/include/linux/dcache.h
-+++ b/include/linux/dcache.h
-@@ -5,6 +5,7 @@
- 
- #include <asm/atomic.h>
- #include <linux/list.h>
-+#include <linux/rculist.h>
- #include <linux/spinlock.h>
- #include <linux/cache.h>
- #include <linux/rcupdate.h>
-diff --git a/include/linux/list.h b/include/linux/list.h
-index 75ce2cb..2d870fc 100644
---- a/include/linux/list.h
-+++ b/include/linux/list.h
-@@ -87,65 +87,6 @@ static inline void list_add_tail(struct list_head *new, struct list_head *head)
- }
- 
- /*
-- * Insert a new entry between two known consecutive entries.
-- *
-- * This is only for internal list manipulation where we know
-- * the prev/next entries already!
-- */
--static inline void __list_add_rcu(struct list_head * new,
--		struct list_head * prev, struct list_head * next)
--{
--	new->next = next;
--	new->prev = prev;
--	smp_wmb();
--	next->prev = new;
--	prev->next = new;
--}
--
--/**
-- * list_add_rcu - add a new entry to rcu-protected list
-- * @new: new entry to be added
-- * @head: list head to add it after
-- *
-- * Insert a new entry after the specified head.
-- * This is good for implementing stacks.
-- *
-- * The caller must take whatever precautions are necessary
-- * (such as holding appropriate locks) to avoid racing
-- * with another list-mutation primitive, such as list_add_rcu()
-- * or list_del_rcu(), running on this same list.
-- * However, it is perfectly legal to run concurrently with
-- * the _rcu list-traversal primitives, such as
-- * list_for_each_entry_rcu().
-- */
--static inline void list_add_rcu(struct list_head *new, struct list_head *head)
--{
--	__list_add_rcu(new, head, head->next);
--}
--
--/**
-- * list_add_tail_rcu - add a new entry to rcu-protected list
-- * @new: new entry to be added
-- * @head: list head to add it before
-- *
-- * Insert a new entry before the specified head.
-- * This is useful for implementing queues.
-- *
-- * The caller must take whatever precautions are necessary
-- * (such as holding appropriate locks) to avoid racing
-- * with another list-mutation primitive, such as list_add_tail_rcu()
-- * or list_del_rcu(), running on this same list.
-- * However, it is perfectly legal to run concurrently with
-- * the _rcu list-traversal primitives, such as
-- * list_for_each_entry_rcu().
-- */
--static inline void list_add_tail_rcu(struct list_head *new,
--					struct list_head *head)
--{
--	__list_add_rcu(new, head->prev, head);
--}
--
--/*
-  * Delete a list entry by making the prev/next entries
-  * point to each other.
-  *
-@@ -176,36 +117,6 @@ extern void list_del(struct list_head *entry);
- #endif
- 
- /**
-- * list_del_rcu - deletes entry from list without re-initialization
-- * @entry: the element to delete from the list.
-- *
-- * Note: list_empty() on entry does not return true after this,
-- * the entry is in an undefined state. It is useful for RCU based
-- * lockfree traversal.
-- *
-- * In particular, it means that we can not poison the forward
-- * pointers that may still be used for walking the list.
-- *
-- * The caller must take whatever precautions are necessary
-- * (such as holding appropriate locks) to avoid racing
-- * with another list-mutation primitive, such as list_del_rcu()
-- * or list_add_rcu(), running on this same list.
-- * However, it is perfectly legal to run concurrently with
-- * the _rcu list-traversal primitives, such as
-- * list_for_each_entry_rcu().
-- *
-- * Note that the caller is not permitted to immediately free
-- * the newly deleted entry.  Instead, either synchronize_rcu()
-- * or call_rcu() must be used to defer freeing until an RCU
-- * grace period has elapsed.
-- */
--static inline void list_del_rcu(struct list_head *entry)
--{
--	__list_del(entry->prev, entry->next);
--	entry->prev = LIST_POISON2;
--}
--
--/**
-  * list_replace - replace old entry by new one
-  * @old : the element to be replaced
-  * @new : the new element to insert
-@@ -229,25 +140,6 @@ static inline void list_replace_init(struct list_head *old,
- }
- 
- /**
-- * list_replace_rcu - replace old entry by new one
-- * @old : the element to be replaced
-- * @new : the new element to insert
-- *
-- * The @old entry will be replaced with the @new entry atomically.
-- * Note: @old should not be empty.
-- */
--static inline void list_replace_rcu(struct list_head *old,
--				struct list_head *new)
--{
--	new->next = old->next;
--	new->prev = old->prev;
--	smp_wmb();
--	new->next->prev = new;
--	new->prev->next = new;
--	old->prev = LIST_POISON2;
--}
--
--/**
-  * list_del_init - deletes entry from list and reinitialize it.
-  * @entry: the element to delete from the list.
-  */
-@@ -361,62 +253,6 @@ static inline void list_splice_init(struct list_head *list,
- }
- 
- /**
-- * list_splice_init_rcu - splice an RCU-protected list into an existing list.
-- * @list:	the RCU-protected list to splice
-- * @head:	the place in the list to splice the first list into
-- * @sync:	function to sync: synchronize_rcu(), synchronize_sched(), ...
-- *
-- * @head can be RCU-read traversed concurrently with this function.
-- *
-- * Note that this function blocks.
-- *
-- * Important note: the caller must take whatever action is necessary to
-- *	prevent any other updates to @head.  In principle, it is possible
-- *	to modify the list as soon as sync() begins execution.
-- *	If this sort of thing becomes necessary, an alternative version
-- *	based on call_rcu() could be created.  But only if -really-
-- *	needed -- there is no shortage of RCU API members.
-- */
--static inline void list_splice_init_rcu(struct list_head *list,
--					struct list_head *head,
--					void (*sync)(void))
--{
--	struct list_head *first = list->next;
--	struct list_head *last = list->prev;
--	struct list_head *at = head->next;
--
--	if (list_empty(head))
--		return;
--
--	/* "first" and "last" tracking list, so initialize it. */
--
--	INIT_LIST_HEAD(list);
--
--	/*
--	 * At this point, the list body still points to the source list.
--	 * Wait for any readers to finish using the list before splicing
--	 * the list body into the new list.  Any new readers will see
--	 * an empty list.
--	 */
--
--	sync();
--
--	/*
--	 * Readers are finished with the source list, so perform splice.
--	 * The order is important if the new list is global and accessible
--	 * to concurrent RCU readers.  Note that RCU readers are not
--	 * permitted to traverse the prev pointers without excluding
--	 * this function.
--	 */
--
--	last->next = at;
--	smp_wmb();
--	head->next = first;
--	first->prev = head;
--	at->prev = last;
--}
--
--/**
-  * list_entry - get the struct for this entry
-  * @ptr:	the &struct list_head pointer.
-  * @type:	the type of the struct this is embedded in.
-@@ -621,75 +457,6 @@ static inline void list_splice_init_rcu(struct list_head *list,
- 	     &pos->member != (head); 					\
- 	     pos = n, n = list_entry(n->member.prev, typeof(*n), member))
- 
--/**
-- * list_for_each_rcu	-	iterate over an rcu-protected list
-- * @pos:	the &struct list_head to use as a loop cursor.
-- * @head:	the head for your list.
-- *
-- * This list-traversal primitive may safely run concurrently with
-- * the _rcu list-mutation primitives such as list_add_rcu()
-- * as long as the traversal is guarded by rcu_read_lock().
-- */
--#define list_for_each_rcu(pos, head) \
--	for (pos = (head)->next; \
--		prefetch(rcu_dereference(pos)->next), pos != (head); \
--        	pos = pos->next)
--
--#define __list_for_each_rcu(pos, head) \
--	for (pos = (head)->next; \
--		rcu_dereference(pos) != (head); \
--        	pos = pos->next)
--
--/**
-- * list_for_each_safe_rcu
-- * @pos:	the &struct list_head to use as a loop cursor.
-- * @n:		another &struct list_head to use as temporary storage
-- * @head:	the head for your list.
-- *
-- * Iterate over an rcu-protected list, safe against removal of list entry.
-- *
-- * This list-traversal primitive may safely run concurrently with
-- * the _rcu list-mutation primitives such as list_add_rcu()
-- * as long as the traversal is guarded by rcu_read_lock().
-- */
--#define list_for_each_safe_rcu(pos, n, head) \
--	for (pos = (head)->next; \
--		n = rcu_dereference(pos)->next, pos != (head); \
--		pos = n)
--
--/**
-- * list_for_each_entry_rcu	-	iterate over rcu list of given type
-- * @pos:	the type * to use as a loop cursor.
-- * @head:	the head for your list.
-- * @member:	the name of the list_struct within the struct.
-- *
-- * This list-traversal primitive may safely run concurrently with
-- * the _rcu list-mutation primitives such as list_add_rcu()
-- * as long as the traversal is guarded by rcu_read_lock().
-- */
--#define list_for_each_entry_rcu(pos, head, member) \
--	for (pos = list_entry((head)->next, typeof(*pos), member); \
--		prefetch(rcu_dereference(pos)->member.next), \
--			&pos->member != (head); \
--		pos = list_entry(pos->member.next, typeof(*pos), member))
--
--
--/**
-- * list_for_each_continue_rcu
-- * @pos:	the &struct list_head to use as a loop cursor.
-- * @head:	the head for your list.
-- *
-- * Iterate over an rcu-protected list, continuing after current point.
-- *
-- * This list-traversal primitive may safely run concurrently with
-- * the _rcu list-mutation primitives such as list_add_rcu()
-- * as long as the traversal is guarded by rcu_read_lock().
-- */
--#define list_for_each_continue_rcu(pos, head) \
--	for ((pos) = (pos)->next; \
--		prefetch(rcu_dereference((pos))->next), (pos) != (head); \
--        	(pos) = (pos)->next)
--
- /*
-  * Double linked lists with a single pointer list head.
-  * Mostly useful for hash tables where the two pointer list head is
-@@ -740,31 +507,6 @@ static inline void hlist_del(struct hlist_node *n)
- 	n->pprev = LIST_POISON2;
- }
- 
--/**
-- * hlist_del_rcu - deletes entry from hash list without re-initialization
-- * @n: the element to delete from the hash list.
-- *
-- * Note: list_unhashed() on entry does not return true after this,
-- * the entry is in an undefined state. It is useful for RCU based
-- * lockfree traversal.
-- *
-- * In particular, it means that we can not poison the forward
-- * pointers that may still be used for walking the hash list.
-- *
-- * The caller must take whatever precautions are necessary
-- * (such as holding appropriate locks) to avoid racing
-- * with another list-mutation primitive, such as hlist_add_head_rcu()
-- * or hlist_del_rcu(), running on this same list.
-- * However, it is perfectly legal to run concurrently with
-- * the _rcu list-traversal primitives, such as
-- * hlist_for_each_entry().
-- */
--static inline void hlist_del_rcu(struct hlist_node *n)
--{
--	__hlist_del(n);
--	n->pprev = LIST_POISON2;
--}
--
- static inline void hlist_del_init(struct hlist_node *n)
- {
- 	if (!hlist_unhashed(n)) {
-@@ -773,27 +515,6 @@ static inline void hlist_del_init(struct hlist_node *n)
- 	}
- }
- 
--/**
-- * hlist_replace_rcu - replace old entry by new one
-- * @old : the element to be replaced
-- * @new : the new element to insert
-- *
-- * The @old entry will be replaced with the @new entry atomically.
-- */
--static inline void hlist_replace_rcu(struct hlist_node *old,
--					struct hlist_node *new)
--{
--	struct hlist_node *next = old->next;
--
--	new->next = next;
--	new->pprev = old->pprev;
--	smp_wmb();
--	if (next)
--		new->next->pprev = &new->next;
--	*new->pprev = new;
--	old->pprev = LIST_POISON2;
--}
--
- static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
- {
- 	struct hlist_node *first = h->first;
-@@ -804,38 +525,6 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
- 	n->pprev = &h->first;
- }
- 
--
--/**
-- * hlist_add_head_rcu
-- * @n: the element to add to the hash list.
-- * @h: the list to add to.
-- *
-- * Description:
-- * Adds the specified element to the specified hlist,
-- * while permitting racing traversals.
-- *
-- * The caller must take whatever precautions are necessary
-- * (such as holding appropriate locks) to avoid racing
-- * with another list-mutation primitive, such as hlist_add_head_rcu()
-- * or hlist_del_rcu(), running on this same list.
-- * However, it is perfectly legal to run concurrently with
-- * the _rcu list-traversal primitives, such as
-- * hlist_for_each_entry_rcu(), used to prevent memory-consistency
-- * problems on Alpha CPUs.  Regardless of the type of CPU, the
-- * list-traversal primitive must be guarded by rcu_read_lock().
-- */
--static inline void hlist_add_head_rcu(struct hlist_node *n,
--					struct hlist_head *h)
--{
--	struct hlist_node *first = h->first;
--	n->next = first;
--	n->pprev = &h->first;
--	smp_wmb();
--	if (first)
--		first->pprev = &n->next;
--	h->first = n;
--}
--
- /* next must be != NULL */
- static inline void hlist_add_before(struct hlist_node *n,
- 					struct hlist_node *next)
-@@ -857,63 +546,6 @@ static inline void hlist_add_after(struct hlist_node *n,
- 		next->next->pprev  = &next->next;
- }
- 
--/**
-- * hlist_add_before_rcu
-- * @n: the new element to add to the hash list.
-- * @next: the existing element to add the new element before.
-- *
-- * Description:
-- * Adds the specified element to the specified hlist
-- * before the specified node while permitting racing traversals.
-- *
-- * The caller must take whatever precautions are necessary
-- * (such as holding appropriate locks) to avoid racing
-- * with another list-mutation primitive, such as hlist_add_head_rcu()
-- * or hlist_del_rcu(), running on this same list.
-- * However, it is perfectly legal to run concurrently with
-- * the _rcu list-traversal primitives, such as
-- * hlist_for_each_entry_rcu(), used to prevent memory-consistency
-- * problems on Alpha CPUs.
-- */
--static inline void hlist_add_before_rcu(struct hlist_node *n,
--					struct hlist_node *next)
--{
--	n->pprev = next->pprev;
--	n->next = next;
--	smp_wmb();
--	next->pprev = &n->next;
--	*(n->pprev) = n;
--}
--
--/**
-- * hlist_add_after_rcu
-- * @prev: the existing element to add the new element after.
-- * @n: the new element to add to the hash list.
-- *
-- * Description:
-- * Adds the specified element to the specified hlist
-- * after the specified node while permitting racing traversals.
-- *
-- * The caller must take whatever precautions are necessary
-- * (such as holding appropriate locks) to avoid racing
-- * with another list-mutation primitive, such as hlist_add_head_rcu()
-- * or hlist_del_rcu(), running on this same list.
-- * However, it is perfectly legal to run concurrently with
-- * the _rcu list-traversal primitives, such as
-- * hlist_for_each_entry_rcu(), used to prevent memory-consistency
-- * problems on Alpha CPUs.
-- */
--static inline void hlist_add_after_rcu(struct hlist_node *prev,
--				       struct hlist_node *n)
--{
--	n->next = prev->next;
--	n->pprev = &prev->next;
--	smp_wmb();
--	prev->next = n;
--	if (n->next)
--		n->next->pprev = &n->next;
--}
--
- #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
- 
- #define hlist_for_each(pos, head) \
-@@ -974,23 +606,6 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
- 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
- 	     pos = n)
- 
--/**
-- * hlist_for_each_entry_rcu - iterate over rcu list of given type
-- * @tpos:	the type * to use as a loop cursor.
-- * @pos:	the &struct hlist_node to use as a loop cursor.
-- * @head:	the head for your list.
-- * @member:	the name of the hlist_node within the struct.
-- *
-- * This list-traversal primitive may safely run concurrently with
-- * the _rcu list-mutation primitives such as hlist_add_head_rcu()
-- * as long as the traversal is guarded by rcu_read_lock().
-- */
--#define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
--	for (pos = (head)->first;					 \
--	     rcu_dereference(pos) && ({ prefetch(pos->next); 1;}) &&	 \
--		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
--	     pos = pos->next)
--
- #else
- #warning "don't include kernel headers in userspace"
- #endif /* __KERNEL__ */
-diff --git a/include/linux/rculist.h b/include/linux/rculist.h
-new file mode 100644
-index 0000000..8056d38
---- /dev/null
-+++ b/include/linux/rculist.h
-@@ -0,0 +1,396 @@
-+#ifndef _LINUX_RCULIST_H
-+#define _LINUX_RCULIST_H
-+
-+#ifdef __KERNEL__
-+
-+/*
-+ * RCU-protected list version
-+ */
-+#include <linux/list.h>
-+
-+/*
-+ * Insert a new entry between two known consecutive entries.
-+ *
-+ * This is only for internal list manipulation where we know
-+ * the prev/next entries already!
-+ */
-+static inline void __list_add_rcu(struct list_head * new,
-+		struct list_head * prev, struct list_head * next)
-+{
-+	new->next = next;
-+	new->prev = prev;
-+	smp_wmb();
-+	next->prev = new;
-+	prev->next = new;
-+}
-+
-+/**
-+ * list_add_rcu - add a new entry to rcu-protected list
-+ * @new: new entry to be added
-+ * @head: list head to add it after
-+ *
-+ * Insert a new entry after the specified head.
-+ * This is good for implementing stacks.
-+ *
-+ * The caller must take whatever precautions are necessary
-+ * (such as holding appropriate locks) to avoid racing
-+ * with another list-mutation primitive, such as list_add_rcu()
-+ * or list_del_rcu(), running on this same list.
-+ * However, it is perfectly legal to run concurrently with
-+ * the _rcu list-traversal primitives, such as
-+ * list_for_each_entry_rcu().
-+ */
-+static inline void list_add_rcu(struct list_head *new, struct list_head *head)
-+{
-+	__list_add_rcu(new, head, head->next);
-+}
-+
-+/**
-+ * list_add_tail_rcu - add a new entry to rcu-protected list
-+ * @new: new entry to be added
-+ * @head: list head to add it before
-+ *
-+ * Insert a new entry before the specified head.
-+ * This is useful for implementing queues.
-+ *
-+ * The caller must take whatever precautions are necessary
-+ * (such as holding appropriate locks) to avoid racing
-+ * with another list-mutation primitive, such as list_add_tail_rcu()
-+ * or list_del_rcu(), running on this same list.
-+ * However, it is perfectly legal to run concurrently with
-+ * the _rcu list-traversal primitives, such as
-+ * list_for_each_entry_rcu().
-+ */
-+static inline void list_add_tail_rcu(struct list_head *new,
-+					struct list_head *head)
-+{
-+	__list_add_rcu(new, head->prev, head);
-+}
-+
-+/**
-+ * list_del_rcu - deletes entry from list without re-initialization
-+ * @entry: the element to delete from the list.
-+ *
-+ * Note: list_empty() on entry does not return true after this,
-+ * the entry is in an undefined state. It is useful for RCU based
-+ * lockfree traversal.
-+ *
-+ * In particular, it means that we can not poison the forward
-+ * pointers that may still be used for walking the list.
-+ *
-+ * The caller must take whatever precautions are necessary
-+ * (such as holding appropriate locks) to avoid racing
-+ * with another list-mutation primitive, such as list_del_rcu()
-+ * or list_add_rcu(), running on this same list.
-+ * However, it is perfectly legal to run concurrently with
-+ * the _rcu list-traversal primitives, such as
-+ * list_for_each_entry_rcu().
-+ *
-+ * Note that the caller is not permitted to immediately free
-+ * the newly deleted entry.  Instead, either synchronize_rcu()
-+ * or call_rcu() must be used to defer freeing until an RCU
-+ * grace period has elapsed.
-+ */
-+static inline void list_del_rcu(struct list_head *entry)
-+{
-+	__list_del(entry->prev, entry->next);
-+	entry->prev = LIST_POISON2;
-+}
-+
-+/**
-+ * list_replace_rcu - replace old entry by new one
-+ * @old : the element to be replaced
-+ * @new : the new element to insert
-+ *
-+ * The @old entry will be replaced with the @new entry atomically.
-+ * Note: @old should not be empty.
-+ */
-+static inline void list_replace_rcu(struct list_head *old,
-+				struct list_head *new)
-+{
-+	new->next = old->next;
-+	new->prev = old->prev;
-+	smp_wmb();
-+	new->next->prev = new;
-+	new->prev->next = new;
-+	old->prev = LIST_POISON2;
-+}
-+
-+/**
-+ * list_splice_init_rcu - splice an RCU-protected list into an existing list.
-+ * @list:	the RCU-protected list to splice
-+ * @head:	the place in the list to splice the first list into
-+ * @sync:	function to sync: synchronize_rcu(), synchronize_sched(), ...
-+ *
-+ * @head can be RCU-read traversed concurrently with this function.
-+ *
-+ * Note that this function blocks.
-+ *
-+ * Important note: the caller must take whatever action is necessary to
-+ *	prevent any other updates to @head.  In principle, it is possible
-+ *	to modify the list as soon as sync() begins execution.
-+ *	If this sort of thing becomes necessary, an alternative version
-+ *	based on call_rcu() could be created.  But only if -really-
-+ *	needed -- there is no shortage of RCU API members.
-+ */
-+static inline void list_splice_init_rcu(struct list_head *list,
-+					struct list_head *head,
-+					void (*sync)(void))
-+{
-+	struct list_head *first = list->next;
-+	struct list_head *last = list->prev;
-+	struct list_head *at = head->next;
-+
-+	if (list_empty(head))
-+		return;
-+
-+	/* "first" and "last" tracking list, so initialize it. */
-+
-+	INIT_LIST_HEAD(list);
-+
-+	/*
-+	 * At this point, the list body still points to the source list.
-+	 * Wait for any readers to finish using the list before splicing
-+	 * the list body into the new list.  Any new readers will see
-+	 * an empty list.
-+	 */
-+
-+	sync();
-+
-+	/*
-+	 * Readers are finished with the source list, so perform splice.
-+	 * The order is important if the new list is global and accessible
-+	 * to concurrent RCU readers.  Note that RCU readers are not
-+	 * permitted to traverse the prev pointers without excluding
-+	 * this function.
-+	 */
-+
-+	last->next = at;
-+	smp_wmb();
-+	head->next = first;
-+	first->prev = head;
-+	at->prev = last;
-+}
-+
-+/**
-+ * list_for_each_rcu	-	iterate over an rcu-protected list
-+ * @pos:	the &struct list_head to use as a loop cursor.
-+ * @head:	the head for your list.
-+ *
-+ * This list-traversal primitive may safely run concurrently with
-+ * the _rcu list-mutation primitives such as list_add_rcu()
-+ * as long as the traversal is guarded by rcu_read_lock().
-+ */
-+#define list_for_each_rcu(pos, head) \
-+	for (pos = (head)->next; \
-+		prefetch(rcu_dereference(pos)->next), pos != (head); \
-+		pos = pos->next)
-+
-+#define __list_for_each_rcu(pos, head) \
-+	for (pos = (head)->next; \
-+		rcu_dereference(pos) != (head); \
-+		pos = pos->next)
-+
-+/**
-+ * list_for_each_safe_rcu
-+ * @pos:	the &struct list_head to use as a loop cursor.
-+ * @n:		another &struct list_head to use as temporary storage
-+ * @head:	the head for your list.
-+ *
-+ * Iterate over an rcu-protected list, safe against removal of list entry.
-+ *
-+ * This list-traversal primitive may safely run concurrently with
-+ * the _rcu list-mutation primitives such as list_add_rcu()
-+ * as long as the traversal is guarded by rcu_read_lock().
-+ */
-+#define list_for_each_safe_rcu(pos, n, head) \
-+	for (pos = (head)->next; \
-+		n = rcu_dereference(pos)->next, pos != (head); \
-+		pos = n)
-+
-+/**
-+ * list_for_each_entry_rcu	-	iterate over rcu list of given type
-+ * @pos:	the type * to use as a loop cursor.
-+ * @head:	the head for your list.
-+ * @member:	the name of the list_struct within the struct.
-+ *
-+ * This list-traversal primitive may safely run concurrently with
-+ * the _rcu list-mutation primitives such as list_add_rcu()
-+ * as long as the traversal is guarded by rcu_read_lock().
-+ */
-+#define list_for_each_entry_rcu(pos, head, member) \
-+	for (pos = list_entry((head)->next, typeof(*pos), member); \
-+		prefetch(rcu_dereference(pos)->member.next), \
-+			&pos->member != (head); \
-+		pos = list_entry(pos->member.next, typeof(*pos), member))
-+
-+
-+/**
-+ * list_for_each_continue_rcu
-+ * @pos:	the &struct list_head to use as a loop cursor.
-+ * @head:	the head for your list.
-+ *
-+ * Iterate over an rcu-protected list, continuing after current point.
-+ *
-+ * This list-traversal primitive may safely run concurrently with
-+ * the _rcu list-mutation primitives such as list_add_rcu()
-+ * as long as the traversal is guarded by rcu_read_lock().
-+ */
-+#define list_for_each_continue_rcu(pos, head) \
-+	for ((pos) = (pos)->next; \
-+		prefetch(rcu_dereference((pos))->next), (pos) != (head); \
-+		(pos) = (pos)->next)
-+
-+/**
-+ * hlist_del_rcu - deletes entry from hash list without re-initialization
-+ * @n: the element to delete from the hash list.
-+ *
-+ * Note: list_unhashed() on entry does not return true after this,
-+ * the entry is in an undefined state. It is useful for RCU based
-+ * lockfree traversal.
-+ *
-+ * In particular, it means that we can not poison the forward
-+ * pointers that may still be used for walking the hash list.
-+ *
-+ * The caller must take whatever precautions are necessary
-+ * (such as holding appropriate locks) to avoid racing
-+ * with another list-mutation primitive, such as hlist_add_head_rcu()
-+ * or hlist_del_rcu(), running on this same list.
-+ * However, it is perfectly legal to run concurrently with
-+ * the _rcu list-traversal primitives, such as
-+ * hlist_for_each_entry().
-+ */
-+static inline void hlist_del_rcu(struct hlist_node *n)
-+{
-+	__hlist_del(n);
-+	n->pprev = LIST_POISON2;
-+}
-+
-+/**
-+ * hlist_replace_rcu - replace old entry by new one
-+ * @old : the element to be replaced
-+ * @new : the new element to insert
-+ *
-+ * The @old entry will be replaced with the @new entry atomically.
-+ */
-+static inline void hlist_replace_rcu(struct hlist_node *old,
-+					struct hlist_node *new)
-+{
-+	struct hlist_node *next = old->next;
-+
-+	new->next = next;
-+	new->pprev = old->pprev;
-+	smp_wmb();
-+	if (next)
-+		new->next->pprev = &new->next;
-+	*new->pprev = new;
-+	old->pprev = LIST_POISON2;
-+}
-+
-+/**
-+ * hlist_add_head_rcu
-+ * @n: the element to add to the hash list.
-+ * @h: the list to add to.
-+ *
-+ * Description:
-+ * Adds the specified element to the specified hlist,
-+ * while permitting racing traversals.
-+ *
-+ * The caller must take whatever precautions are necessary
-+ * (such as holding appropriate locks) to avoid racing
-+ * with another list-mutation primitive, such as hlist_add_head_rcu()
-+ * or hlist_del_rcu(), running on this same list.
-+ * However, it is perfectly legal to run concurrently with
-+ * the _rcu list-traversal primitives, such as
-+ * hlist_for_each_entry_rcu(), used to prevent memory-consistency
-+ * problems on Alpha CPUs.  Regardless of the type of CPU, the
-+ * list-traversal primitive must be guarded by rcu_read_lock().
-+ */
-+static inline void hlist_add_head_rcu(struct hlist_node *n,
-+					struct hlist_head *h)
-+{
-+	struct hlist_node *first = h->first;
-+	n->next = first;
-+	n->pprev = &h->first;
-+	smp_wmb();
-+	if (first)
-+		first->pprev = &n->next;
-+	h->first = n;
-+}
-+
-+/**
-+ * hlist_add_before_rcu
-+ * @n: the new element to add to the hash list.
-+ * @next: the existing element to add the new element before.
-+ *
-+ * Description:
-+ * Adds the specified element to the specified hlist
-+ * before the specified node while permitting racing traversals.
-+ *
-+ * The caller must take whatever precautions are necessary
-+ * (such as holding appropriate locks) to avoid racing
-+ * with another list-mutation primitive, such as hlist_add_head_rcu()
-+ * or hlist_del_rcu(), running on this same list.
-+ * However, it is perfectly legal to run concurrently with
-+ * the _rcu list-traversal primitives, such as
-+ * hlist_for_each_entry_rcu(), used to prevent memory-consistency
-+ * problems on Alpha CPUs.
-+ */
-+static inline void hlist_add_before_rcu(struct hlist_node *n,
-+					struct hlist_node *next)
-+{
-+	n->pprev = next->pprev;
-+	n->next = next;
-+	smp_wmb();
-+	next->pprev = &n->next;
-+	*(n->pprev) = n;
-+}
-+
-+/**
-+ * hlist_add_after_rcu
-+ * @prev: the existing element to add the new element after.
-+ * @n: the new element to add to the hash list.
-+ *
-+ * Description:
-+ * Adds the specified element to the specified hlist
-+ * after the specified node while permitting racing traversals.
-+ *
-+ * The caller must take whatever precautions are necessary
-+ * (such as holding appropriate locks) to avoid racing
-+ * with another list-mutation primitive, such as hlist_add_head_rcu()
-+ * or hlist_del_rcu(), running on this same list.
-+ * However, it is perfectly legal to run concurrently with
-+ * the _rcu list-traversal primitives, such as
-+ * hlist_for_each_entry_rcu(), used to prevent memory-consistency
-+ * problems on Alpha CPUs.
-+ */
-+static inline void hlist_add_after_rcu(struct hlist_node *prev,
-+				       struct hlist_node *n)
-+{
-+	n->next = prev->next;
-+	n->pprev = &prev->next;
-+	smp_wmb();
-+	prev->next = n;
-+	if (n->next)
-+		n->next->pprev = &n->next;
-+}
-+
-+/**
-+ * hlist_for_each_entry_rcu - iterate over rcu list of given type
-+ * @tpos:	the type * to use as a loop cursor.
-+ * @pos:	the &struct hlist_node to use as a loop cursor.
-+ * @head:	the head for your list.
-+ * @member:	the name of the hlist_node within the struct.
-+ *
-+ * This list-traversal primitive may safely run concurrently with
-+ * the _rcu list-mutation primitives such as hlist_add_head_rcu()
-+ * as long as the traversal is guarded by rcu_read_lock().
-+ */
-+#define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
-+	for (pos = (head)->first;					 \
-+	     rcu_dereference(pos) && ({ prefetch(pos->next); 1;}) &&	 \
-+		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
-+	     pos = pos->next)
-+
-+#endif	/* __KERNEL__ */
-+#endif
-diff --git a/lib/textsearch.c b/lib/textsearch.c
-index be8bda3..f7652ec 100644
---- a/lib/textsearch.c
-+++ b/lib/textsearch.c
-@@ -97,7 +97,7 @@
- #include <linux/types.h>
- #include <linux/string.h>
- #include <linux/init.h>
--#include <linux/rcupdate.h>
-+#include <linux/rculist.h>
- #include <linux/err.h>
- #include <linux/textsearch.h>
- 
--- 
-1.5.3.7
-
+> 
+> Furthermore, nfs4recover.c perhaps ought to set an appropriate LSM context on
+> the record pointed to by rec_security so that the disk is accessed
+> appropriately (see set_security_override[_from_ctx]()).
+> 
+> NOTE!  This patch must be and will be rolled in to patch 06 of 26 to make the
+> latter compile fully, however it may be useful to the nfsd maintainers to see
+> it as a separate patch.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
+> 
+>  fs/nfsd/auth.c        |   31 +++++++++++++++++-------
+>  fs/nfsd/nfs4recover.c |   64 +++++++++++++++++++++++++++++++------------------
+>  include/linux/sched.h |    1 +
+>  kernel/sys.c          |   27 ++++++++++++++++++---
+>  4 files changed, 86 insertions(+), 37 deletions(-)
+> 
+> 
+> diff --git a/fs/nfsd/auth.c b/fs/nfsd/auth.c
+> index 2192805..462d989 100644
+> --- a/fs/nfsd/auth.c
+> +++ b/fs/nfsd/auth.c
+> @@ -6,6 +6,7 @@
+>  
+>  #include <linux/types.h>
+>  #include <linux/sched.h>
+> +#include <linux/cred.h>
+>  #include <linux/sunrpc/svc.h>
+>  #include <linux/sunrpc/svcauth.h>
+>  #include <linux/nfsd/nfsd.h>
+> @@ -28,11 +29,17 @@ int nfsexp_flags(struct svc_rqst *rqstp, struct svc_export *exp)
+>  
+>  int nfsd_setuser(struct svc_rqst *rqstp, struct svc_export *exp)
+>  {
+> +	struct task_security *sec, *old;
+>  	struct svc_cred	cred = rqstp->rq_cred;
+>  	int i;
+>  	int flags = nfsexp_flags(rqstp, exp);
+>  	int ret;
+>  
+> +	/* derive the new security record from nfsd's objective security */
+> +	sec = get_kernel_security(current);
+> +	if (!sec)
+> +		return -ENOMEM;
+> +
+>  	if (flags & NFSEXP_ALLSQUASH) {
+>  		cred.cr_uid = exp->ex_anon_uid;
+>  		cred.cr_gid = exp->ex_anon_gid;
+> @@ -56,23 +63,29 @@ int nfsd_setuser(struct svc_rqst *rqstp, struct svc_export *exp)
+>  		get_group_info(cred.cr_group_info);
+>  
+>  	if (cred.cr_uid != (uid_t) -1)
+> -		current->fsuid = cred.cr_uid;
+> +		sec->fsuid = cred.cr_uid;
+>  	else
+> -		current->fsuid = exp->ex_anon_uid;
+> +		sec->fsuid = exp->ex_anon_uid;
+>  	if (cred.cr_gid != (gid_t) -1)
+> -		current->fsgid = cred.cr_gid;
+> +		sec->fsgid = cred.cr_gid;
+>  	else
+> -		current->fsgid = exp->ex_anon_gid;
+> +		sec->fsgid = exp->ex_anon_gid;
+>  
+> -	if (!cred.cr_group_info)
+> +	if (!cred.cr_group_info) {
+> +		put_task_security(sec);
+>  		return -ENOMEM;
+> -	ret = set_current_groups(cred.cr_group_info);
+> +	}
+> +	ret = set_groups(sec, cred.cr_group_info);
+>  	put_group_info(cred.cr_group_info);
+>  	if ((cred.cr_uid)) {
+> -		cap_t(current->cap_effective) &= ~CAP_NFSD_MASK;
+> +		cap_t(sec->cap_effective) &= ~CAP_NFSD_MASK;
+>  	} else {
+> -		cap_t(current->cap_effective) |= (CAP_NFSD_MASK &
+> -						  current->cap_permitted);
+> +		cap_t(sec->cap_effective) |= CAP_NFSD_MASK & sec->cap_permitted;
+>  	}
+> +
+> +	/* set the new security as nfsd's subjective security */
+> +	old = current->act_as;
+> +	current->act_as = sec;
+> +	put_task_security(old);
+>  	return ret;
+>  }
+> diff --git a/fs/nfsd/nfs4recover.c b/fs/nfsd/nfs4recover.c
+> index 1602cd0..ae91262 100644
+> --- a/fs/nfsd/nfs4recover.c
+> +++ b/fs/nfsd/nfs4recover.c
+> @@ -46,27 +46,37 @@
+>  #include <linux/scatterlist.h>
+>  #include <linux/crypto.h>
+>  #include <linux/sched.h>
+> +#include <linux/cred.h>
+>  
+>  #define NFSDDBG_FACILITY                NFSDDBG_PROC
+>  
+>  /* Globals */
+>  static struct nameidata rec_dir;
+>  static int rec_dir_init = 0;
+> +static struct task_security *rec_security;
+>  
+> +/*
+> + * switch the special recovery access security in on the current task's
+> + * subjective security
+> + */
+>  static void
+> -nfs4_save_user(uid_t *saveuid, gid_t *savegid)
+> +nfs4_begin_secure(struct task_security **saved_sec)
+>  {
+> -	*saveuid = current->fsuid;
+> -	*savegid = current->fsgid;
+> -	current->fsuid = 0;
+> -	current->fsgid = 0;
+> +	*saved_sec = current->act_as;
+> +	current->act_as = get_task_security(rec_security);
+>  }
+>  
+> +/*
+> + * return the current task's subjective security to its former glory
+> + */
+>  static void
+> -nfs4_reset_user(uid_t saveuid, gid_t savegid)
+> +nfs4_end_secure(struct task_security *saved_sec)
+>  {
+> -	current->fsuid = saveuid;
+> -	current->fsgid = savegid;
+> +	struct task_security *discard;
+> +
+> +	discard = current->act_as;
+> +	current->act_as = saved_sec;
+> +	put_task_security(discard);
+>  }
+>  
+>  static void
+> @@ -128,10 +138,9 @@ nfsd4_sync_rec_dir(void)
+>  int
+>  nfsd4_create_clid_dir(struct nfs4_client *clp)
+>  {
+> +	struct task_security *saved_sec;
+>  	char *dname = clp->cl_recdir;
+>  	struct dentry *dentry;
+> -	uid_t uid;
+> -	gid_t gid;
+>  	int status;
+>  
+>  	dprintk("NFSD: nfsd4_create_clid_dir for \"%s\"\n", dname);
+> @@ -139,7 +148,7 @@ nfsd4_create_clid_dir(struct nfs4_client *clp)
+>  	if (!rec_dir_init || clp->cl_firststate)
+>  		return 0;
+>  
+> -	nfs4_save_user(&uid, &gid);
+> +	nfs4_begin_secure(&saved_sec);
+>  
+>  	/* lock the parent */
+>  	mutex_lock(&rec_dir.dentry->d_inode->i_mutex);
+> @@ -163,7 +172,7 @@ out_unlock:
+>  		clp->cl_firststate = 1;
+>  		nfsd4_sync_rec_dir();
+>  	}
+> -	nfs4_reset_user(uid, gid);
+> +	nfs4_end_secure(saved_sec);
+>  	dprintk("NFSD: nfsd4_create_clid_dir returns %d\n", status);
+>  	return status;
+>  }
+> @@ -206,20 +215,19 @@ nfsd4_build_dentrylist(void *arg, const char *name, int namlen,
+>  static int
+>  nfsd4_list_rec_dir(struct dentry *dir, recdir_func *f)
+>  {
+> +	struct task_security *saved_sec;
+>  	struct file *filp;
+>  	struct dentry_list_arg dla = {
+>  		.parent = dir,
+>  	};
+>  	struct list_head *dentries = &dla.dentries;
+>  	struct dentry_list *child;
+> -	uid_t uid;
+> -	gid_t gid;
+>  	int status;
+>  
+>  	if (!rec_dir_init)
+>  		return 0;
+>  
+> -	nfs4_save_user(&uid, &gid);
+> +	nfs4_begin_secure(&saved_sec);
+>  
+>  	filp = dentry_open(dget(dir), mntget(rec_dir.mnt), O_RDONLY);
+>  	status = PTR_ERR(filp);
+> @@ -244,7 +252,7 @@ out:
+>  		dput(child->dentry);
+>  		kfree(child);
+>  	}
+> -	nfs4_reset_user(uid, gid);
+> +	nfs4_end_secure(saved_sec);
+>  	return status;
+>  }
+>  
+> @@ -306,17 +314,16 @@ out:
+>  void
+>  nfsd4_remove_clid_dir(struct nfs4_client *clp)
+>  {
+> -	uid_t uid;
+> -	gid_t gid;
+> +	struct task_security *saved_sec;
+>  	int status;
+>  
+>  	if (!rec_dir_init || !clp->cl_firststate)
+>  		return;
+>  
+>  	clp->cl_firststate = 0;
+> -	nfs4_save_user(&uid, &gid);
+> +	nfs4_begin_secure(&saved_sec);
+>  	status = nfsd4_unlink_clid_dir(clp->cl_recdir, HEXDIR_LEN-1);
+> -	nfs4_reset_user(uid, gid);
+> +	nfs4_end_secure(saved_sec);
+>  	if (status == 0)
+>  		nfsd4_sync_rec_dir();
+>  	if (status)
+> @@ -387,8 +394,7 @@ nfsd4_recdir_load(void) {
+>  void
+>  nfsd4_init_recdir(char *rec_dirname)
+>  {
+> -	uid_t			uid = 0;
+> -	gid_t			gid = 0;
+> +	struct task_security	*saved_sec;
+>  	int 			status;
+>  
+>  	printk("NFSD: Using %s as the NFSv4 state recovery directory\n",
+> @@ -396,7 +402,15 @@ nfsd4_init_recdir(char *rec_dirname)
+>  
+>  	BUG_ON(rec_dir_init);
+>  
+> -	nfs4_save_user(&uid, &gid);
+> +	/* derive the security record from this task's objective security */
+> +	rec_security = get_kernel_security(current);
+> +	if (!rec_security) {
+> +		printk("NFSD:"
+> +		       " unable to allocate recovery directory security\n");
+> +		return;
+> +	}
+> +
+> +	nfs4_begin_secure(&saved_sec);
+>  
+>  	status = path_lookup(rec_dirname, LOOKUP_FOLLOW | LOOKUP_DIRECTORY,
+>  			&rec_dir);
+> @@ -406,7 +420,8 @@ nfsd4_init_recdir(char *rec_dirname)
+>  
+>  	if (!status)
+>  		rec_dir_init = 1;
+> -	nfs4_reset_user(uid, gid);
+> +
+> +	nfs4_end_secure(saved_sec);
+>  }
+>  
+>  void
+> @@ -416,4 +431,5 @@ nfsd4_shutdown_recdir(void)
+>  		return;
+>  	rec_dir_init = 0;
+>  	path_release(&rec_dir);
+> +	put_task_security(rec_security);
+>  }
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 697e707..d079b85 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -886,6 +886,7 @@ struct group_info {
+>  extern struct group_info *groups_alloc(int gidsetsize);
+>  extern void groups_free(struct group_info *group_info);
+>  extern int set_current_groups(struct group_info *group_info);
+> +extern int set_groups(struct task_security *sec, struct group_info *group_info);
+>  extern int groups_search(struct group_info *group_info, gid_t grp);
+>  /* access the groups "array" with this macro */
+>  #define GROUP_AT(gi, i) \
+> diff --git a/kernel/sys.c b/kernel/sys.c
+> index e331b6f..790639f 100644
+> --- a/kernel/sys.c
+> +++ b/kernel/sys.c
+> @@ -1245,10 +1245,16 @@ int groups_search(struct group_info *group_info, gid_t grp)
+>  	return 0;
+>  }
+>  
+> -/* validate and set current->group_info */
+> -int set_current_groups(struct group_info *group_info)
+> +/**
+> + * set_groups - Change a group subscription in a security record
+> + * @sec: The security record to alter
+> + * @group_info: The group list to impose
+> + *
+> + * Validate a group subscription and, if valid, impose it upon a task security
+> + * record.
+> + */
+> +int set_groups(struct task_security *sec, struct group_info *group_info)
+>  {
+> -	struct task_security *sec = current->sec;
+>  	int retval;
+>  	struct group_info *old_info;
+>  
+> @@ -1265,10 +1271,23 @@ int set_current_groups(struct group_info *group_info)
+>  	spin_unlock(&sec->lock);
+>  
+>  	put_group_info(old_info);
+> -
+>  	return 0;
+>  }
+>  
+> +EXPORT_SYMBOL(set_groups);
+> +
+> +/**
+> + * set_current_groups - Change current's group subscription
+> + * @group_info: The group list to impose
+> + *
+> + * Validate a group subscription and, if valid, impose it upon current's task
+> + * security record.
+> + */
+> +int set_current_groups(struct group_info *group_info)
+> +{
+> +	return set_groups(current->sec, group_info);
+> +}
+> +
+>  EXPORT_SYMBOL(set_current_groups);
+>  
+>  asmlinkage long sys_getgroups(int gidsetsize, gid_t __user *grouplist)
