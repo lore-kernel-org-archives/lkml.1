@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYAQSba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbYAQSdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbYAQSba (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 13:31:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbYAQSbV
+	id S1756687AbYAQSdP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 13:33:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbYAQSdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 13:31:21 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35863 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751621AbYAQSbU (ORCPT
+	Thu, 17 Jan 2008 13:33:00 -0500
+Received: from free-electrons.com ([88.191.23.47]:38863 "EHLO
+	sd-2511.dedibox.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751581AbYAQSc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 13:31:20 -0500
-Date: Thu, 17 Jan 2008 10:30:00 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: travis@sgi.com
-Cc: Andi Kleen <ak@suse.de>, mingo@elte.hu, Eric Dumazet <dada1@cosmosbay.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] x86: Fixup NR-CPUS patch for numa
-Message-Id: <20080117103000.5e97dcd2.akpm@linux-foundation.org>
-In-Reply-To: <20080116183438.636758000@sgi.com>
-References: <20080116183438.506737000@sgi.com>
-	<20080116183438.636758000@sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Jan 2008 13:32:59 -0500
+Message-ID: <478F9F4C.2090302@free-electrons.com>
+Date: Thu, 17 Jan 2008 19:32:44 +0100
+From: Michael Opdenacker <michael-lists@free-electrons.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Matt Mackall <mpm@selenic.com>
+CC: linux-kernel@vger.kernel.org, Linux-tiny@selenic.com,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86: fix unconditional	arch/x86/kernel/pcspeaker.c	compiling
+References: <200801171643.49301.michael-lists@free-electrons.com>	 <1200587774.5332.11.camel@cinder.waste.org>	 <478F8AEC.1080209@free-electrons.com> <1200590031.5332.19.camel@cinder.waste.org>
+In-Reply-To: <1200590031.5332.19.camel@cinder.waste.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jan 2008 10:34:39 -0800 travis@sgi.com wrote:
+On 01/17/2008 06:13 PM, Matt Mackall wrote:
+> On Thu, 2008-01-17 at 18:05 +0100, Michael Opdenacker wrote:
+>   
+>> Hi Matt,
+>>
+>> Thanks for your feedback!
+>>
+>> On 01/17/2008 05:36 PM, Matt Mackall wrote:
+>>     
+>>> On Thu, 2008-01-17 at 16:43 +0100, Michael Opdenacker wrote:
+>>>   
+>>>       
+>>>> diff -Naur linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32 linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32
+>>>> --- linux-2.6.24-rc8-git1/arch/x86/kernel/Makefile_32	2008-01-17 09:48:58.000000000 +0100
+>>>> +++ linux-2.6.24-rc8-git1-nopcspeaker/arch/x86/kernel/Makefile_32	2008-01-17 10:06:56.000000000 +0100
+>>>> @@ -45,10 +45,13 @@
+>>>>  
+>>>>  obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
+>>>>  obj-$(CONFIG_PARAVIRT)		+= paravirt_32.o
+>>>> -obj-y				+= pcspeaker.o
+>>>> -
+>>>>  obj-$(CONFIG_SCx200)		+= scx200_32.o
+>>>>  
+>>>> +ifeq ($(CONFIG_INPUT_PCSPKR),y)
+>>>> +	obj-y			+= pcspeaker.o
+>>>> +endif
+>>>>     
+>>>>         
+>>> I'm not sure this does what you want. What if CONFIG_INPUT_PCSPKR = m?
+>>>   
+>>>       
+>> Does it make sense to compile arch/x86/kernel/pcspeaker.c as a module?
+>> It defines no init and exit functions, and it defines an initcall, which
+>> only makes sense at boot time.
+>>     
+>
+> Probably not. However, the above code won't build pcspeaker.o if
+> CONFIG_INPUT_PCSPKR = m. In other words, it'll break.
+>
+>   
+Oops, I got it. I will post a fix soon. Thanks!
 
-> This patch removes the EXPORT_SYMBOL for:
-> 
-> 	x86_cpu_to_node_map_init
-> 	x86_cpu_to_node_map_early_ptr
-> 
-> ... thus fixing the section mismatch problem.
+:-)
 
-Which section mismatch problem?  Please always quote the error message when
-fixing things like this.
+Michael.
 
-> Also, the mem -> node hash lookup is fixed.
-> 
-> Based on 2.6.24-rc6-mm1 + change-NR_CPUS-V3 patchset
-> 
-
-hm, I've been hiding from those patches.
-
-Are they ready?
+-- 
+Michael Opdenacker, Free Electrons
+Free Embedded Linux Training Materials
+on http://free-electrons.com/training
+(More than 1500 pages!)
 
