@@ -1,102 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbYAQV0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbYAQVbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757544AbYAQV0G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 16:26:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYAQVZz
+	id S1756807AbYAQVbl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 16:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYAQVbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 16:25:55 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48482 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750999AbYAQVZy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 16:25:54 -0500
-Date: Thu, 17 Jan 2008 13:25:39 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Schwartz <davids@webmaster.com>
-cc: Johannes Weiner <hannes@saeurebad.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       clameter@sgi.com, penberg@cs.helsinki.fi
-Subject: RE: Why is the kfree() argument const?
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIEGIJJAC.davids@webmaster.com>
-Message-ID: <alpine.LFD.1.00.0801171316390.14959@woody.linux-foundation.org>
-References: <MDEHLPKNGKAHNMBLJOLKIEGIJJAC.davids@webmaster.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 Jan 2008 16:31:33 -0500
+Received: from mga11.intel.com ([192.55.52.93]:57147 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751300AbYAQVbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 16:31:32 -0500
+X-ExtLoop1: 1
+Date: Thu, 17 Jan 2008 13:31:31 -0800
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andreas Herrmann3 <andreas.herrmann3@amd.com>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>, ak@muc.de,
+       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
+       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       jesse.barnes@intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com
+Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug fixes
+Message-ID: <20080117213131.GA25389@linux-os.sc.intel.com>
+References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com> <20080116203328.GA17869@linux-os.sc.intel.com> <20080117191211.GA12631@alberich.amd.com> <20080117203600.GB27778@elte.hu> <20080117210301.GC12631@alberich.amd.com> <20080117211308.GA7858@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080117211308.GA7858@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 17, 2008 at 10:13:08PM +0100, Ingo Molnar wrote:
+> but in general we must be robust enough in this case and just degrade 
+> any overlapping page to UC (and emit a warning perhaps) - instead of 
+> failing the ioremap and thus failing the driver (and the bootup).
 
+But then, this will cause an attribute conflicit. Old one was specifying
+WB in PAT (ioremap with noflags) and the new ioremap specifies UC.
 
-On Thu, 17 Jan 2008, David Schwartz wrote:
+As Linus mentioned, main problem is to figure out the correct attribute
+for ioremap() which doesn't specify the actual attribute to be used.
+
+One mechanism to fix the issue generically (somewhat atleast) is to use
+MTRR's and figure out the default MTRR attribute for that physical address
+and use it for ioremap().
+
+> no, there should be no such need. There can be "mapping leaks", in that 
+> the mapped object is not unmapped. There's detection code in today's 
+> x86.git that should report something like this if it occurs:
 > 
-> Which does change the thing the pointer points to. It goes from being a
-> valid object to not existing.
+>   Debug warning: early ioremap leak of 1 areas detected.
+>   please boot with early_ioremap_debug and report the dmesg.
+>   ------------[ cut here ]------------
+>   WARNING: at arch/x86/mm/ioremap_32.c:346 ()
+> 
+> but i have not seen this message in your boot log. Could you boot with 
+> early_ioremap_debug and send us the dmesg - i'm curious which ACPI 
+> tables are actively mapped while those devices are initialized.
 
-No. It's the *pointer* that is no longer valid.
+In this scenario, ACPI is using ioremap() leaving some dangling references.
+Venki is looking to fix this code. Getting the attribute for MTRR
+for ioremap noflags, might solve some of these issues aswell. Will look into
+this.
 
-There's definitely a difference between "exists and is changed" and 
-"doesn't exist any more".
-
-> How is ceasing to exist not a change?
-
-It's not a change to the data behind it, it's a change to the *metadata*. 
-Which is somethign that "const" doesn't talk about at all.
-
-> >    Why? Because we want the types to be as tight as possible, and normal 
-> >    code should need as few casts as possible.
->  
-> Right, and that's why you are wrong.
-
-No, it's why I'm right.
-
-"kmalloc/kfree" (or any memory manager) by definition has to play games 
-with pointers and do things like cast them. But the users shouldn't need 
-to, not for something like this.
-
-> No, it's both correct and useful. This code is the exception to a rule. The
-> rule is that the object remain unchanged and this violates that rule.
-
-No. 
-
-You are continuing to make the mistake that you think that "const" means 
-that the memory behind the pointer is not going to change.
-
-Why do you make that mistake, when it is PROVABLY NOT TRUE!
-
-Try this trivial program:
-
-	int main(int argc, char **argv)
-	{
-	        int i;
-	        const int *c;
-	
-	        i = 5;
-	        c = &i;
-	        i = 10;
-	        return *c;
-	}
-
-and realize that according to the C rules, if it returns anything but 10, 
-the compiler is *buggy*.
-
-The fact is, that in spite of us having a "const int *", the data behind 
-that pointer may change.
-
-So it doesn't matter ONE WHIT if you pass in a "const *" to "kfree()": it 
-does not guarantee that the data doesn't change, because the object you 
-point to has other pointers pointing to it.
-
-This isn't worth discussing. It's really simple: a conforming program 
-CANNOT POSSIBLY TELL whether "kfree()" modified the data or not. As such, 
-AS FAR AS THE PROGRAM IS CONCERNED, kfree() takes a const pointer, and the 
-rule that "if it can be considered const, it should be marked const" comes 
-and says that kfree() should take a const pointer.
-
-In other words - anythign that could ever disagree with "const *" is BY 
-DEFINITION buggy.
-
-It really is that simple. 
-
-		Linus
+thanks,
+suresh
