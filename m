@@ -1,62 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbYAQS3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbYAQSbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756622AbYAQS3z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 13:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYAQS3p
+	id S1756397AbYAQSbP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 13:31:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYAQSa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 13:29:45 -0500
-Received: from gw.goop.org ([64.81.55.164]:53742 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753153AbYAQS3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 13:29:44 -0500
-Message-ID: <478F9E91.7050009@goop.org>
-Date: Thu, 17 Jan 2008 10:29:37 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+	Thu, 17 Jan 2008 13:30:59 -0500
+Received: from mis011.exch011.intermedia.net ([64.78.21.10]:12346 "EHLO
+	mis011.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751621AbYAQSa6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 13:30:58 -0500
+Message-ID: <478F9C9C.7070500@qumranet.com>
+Date: Thu, 17 Jan 2008 20:21:16 +0200
+From: Izik Eidus <izike@qumranet.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: link error in today's x86.git
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andrea Arcangeli <andrea@cpushare.com>
+CC: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm-devel@lists.sourceforge.net,
+       Avi Kivity <avi@qumranet.com>, clameter@sgi.com,
+       daniel.blueman@quadrics.com, holt@sgi.com, steiner@sgi.com,
+       Andrew Morton <akpm@osdl.org>, Hugh Dickins <hugh@veritas.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, andrea@qumranet.com
+Subject: Re: [PATCH] mmu notifiers #v2
+References: <20080113162418.GE8736@v2.random> <20080116124256.44033d48@bree.surriel.com> <478E4356.7030303@qumranet.com> <20080117162302.GI7170@v2.random>
+In-Reply-To: <20080117162302.GI7170@v2.random>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Jan 2008 18:30:56.0929 (UTC) FILETIME=[19B2F110:01C85937]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm seeing this with the current x86.git:
+Andrea Arcangeli wrote:
+> On Wed, Jan 16, 2008 at 07:48:06PM +0200, Izik Eidus wrote:
+>   
+>> Rik van Riel wrote:
+>>     
+>>> On Sun, 13 Jan 2008 17:24:18 +0100
+>>> Andrea Arcangeli <andrea@qumranet.com> wrote:
+>>>
+>>>   
+>>>       
+>>>> In my basic initial patch I only track the tlb flushes which should be
+>>>> the minimum required to have a nice linux-VM controlled swapping
+>>>> behavior of the KVM gphysical memory.     
+>>>>         
+>>> I have a vaguely related question on KVM swapping.
+>>>
+>>> Do page accesses inside KVM guests get propagated to the host
+>>> OS, so Linux can choose a reasonable page for eviction, or is
+>>> the pageout of KVM guest pages essentially random?
+>>>       
+>
+> Right, selection of the guest OS pages to swap is partly random but
+> wait: _only_ for the long-cached and hot spte entries. It's certainly
+> not entirely random.
+>   
+> As the shadow-cache is a bit dynamic, every new instantiated spte will
+> refresh the PG_referenced bit in follow_page already (through minor
+> faults). not-present fault of swapped non-present sptes, can trigger
+> minor faults from swapcache too and they'll refresh young regular
+> ptes.
+>
+>   
+>> right now when kvm remove pte from the shadow cache, it mark as access the 
+>> page that this pte pointed to.
+>>     
+>
+> Yes: the referenced bit in the mmu-notifier invalidate case isn't
+> useful because it's set right before freeing the page.
+>
+>   
+>> it was a good solution untill the mmut notifiers beacuse the pages were 
+>> pinned and couldnt be swapped to disk
+>>     
+>
+> It probably still makes sense for sptes removed because of other
+> reasons (not mmu notifier invalidates).
+>   
+agree
+>   
+>> so now it will have to do something more sophisticated or at least mark as 
+>> access every page pointed by pte
+>> that get insrted to the shadow cache....
+>>     
+>
+> I think that should already be the case, see the mark_page_accessed in
+> follow_page, isn't FOLL_TOUCH set, isn't it?
+>   
+yes you are right FOLL_TOUCH is set.
+> The only thing we clearly miss is a logic that refreshes the
+> PG_referenced bitflag for "hot" sptes that remains instantiated and
+> cached for a long time. For regular linux ptes this is done by the cpu
+> through the young bitflag. But note that not all architectures have
+> the young bitflag support in hardware! So I suppose the swapping of
+> the KVM task, is like the swapping any other task but on an alpha
+> CPU. It works good enough in practice even if we clearly have room for
+> further optimizations in this area (like there would be on archs w/o
+> young bit updated in hardware too).
+>
+> To refresh the PG_referenced bit for long lived hot sptes, I think the
+> easiest solution is to chain the sptes in a lru, and to start dropping
+> them when memory pressure start. We could drop one spte every X pages
+> collected by the VM. So the "age" time factor depends on the VM
+> velocity and we totally avoid useless shadow page faults when there's
+> no VM pressure. When VM pressure increases, the kvm non-present fault
+> will then take care to refresh the PG_referenced bit. This should
+> solve the aging-issue for long lived and hot sptes. This should
+> improve the responsiveness of the guest OS during "initial" swap
+> pressure (after the initial swap pressure, the working set finds
+> itself in ram again). So it should avoid some swapout/swapin not
+> required jitter during the initial swap. I see this mostly as a kvm
+> internal optimization, not strictly related to the mmu notifiers
+> though.
+>   
+ohh i like it, this is cleaver solution, and i guess the cost of the 
+vmexits wont be too high if it will
+be not too much aggressive....
 
-arch/x86/mm/built-in.o: In function `fix_to_virt': /home/jeremy/hg/xen/paravirt/linux-i386/include2/asm/fixmap_32.h:157: undefined reference to `__this_fixmap_does_not_exist'
 
-It appears to be coming from ioremap_32.c.
-
-I can't see any particular change which would have caused this, but this 
-loop in early_ioremap_reset:
-
-	for (idx = FIX_BTMAP_BEGIN; idx <= FIX_BTMAP_END; idx--) {
-		addr = fix_to_virt(idx);
-		pte = early_ioremap_pte(addr);
-		if (!*pte & _PAGE_PRESENT) {
-			phys = *pte & PAGE_MASK;
-			set_fixmap(idx, phys);
-		}
-	}
-
-seems incompatible with the test in fix_to_virt:
-
-	/*
-	 * this branch gets completely eliminated after inlining,
-	 * except when someone tries to use fixaddr indices in an
-	 * illegal way. (such as mixing up address types or using
-	 * out-of-range indices).
-	 *
-	 * If it doesn't get removed, the linker will complain
-	 * loudly with a reasonably clear error message..
-	 */
-	if (idx >= __end_of_fixed_addresses)
-		__this_fixmap_does_not_exist();
-
-While the compiler could prove that idx is within range here, it seems a 
-bit much to require it to.
-
-    J
