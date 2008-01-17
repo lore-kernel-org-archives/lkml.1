@@ -1,112 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbYAQFWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbYAQF0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752721AbYAQFWQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 00:22:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbYAQFWF
+	id S1753642AbYAQF0v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 00:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYAQF0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 00:22:05 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53318 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750866AbYAQFWE (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 00:22:04 -0500
-Date: Thu, 17 Jan 2008 16:21:29 +1100
-From: David Chinner <dgc@sgi.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Michael Rubin <mrubin@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch] Converting writeback linked lists to a tree based data structure
-Message-ID: <20080117052129.GJ155259@sgi.com>
-References: <532480950801150953g5a25f041ge1ad4eeb1b9bc04b@mail.gmail.com> <400452490.28636@ustc.edu.cn> <20080115194415.64ba95f2.akpm@linux-foundation.org> <400457571.32162@ustc.edu.cn> <20080115204236.6349ac48.akpm@linux-foundation.org> <400459376.04290@ustc.edu.cn> <20080115215149.a881efff.akpm@linux-foundation.org> <E1JF4Ey-0000x4-5p@localhost.localdomain> <20080116223510.GY155407@sgi.com> <E1JFLEW-0002oE-G1@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 Jan 2008 00:26:42 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:3780 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750820AbYAQF0l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 00:26:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=vHtsXQwnaP6sxMhE7/++N/vMbrwI3pCfcIpIqARatQLXpqqO6+W3FriDcoCNZSHiZ6q8lL7D2+XKbvRtyeqm5suI3H8mhOfCK5ooKwAvJtArk5ZJSyu2krtL0jeZEHe3GyrDduDnx+RKy2Mc5zC0LkfwwRKrnwYM4q2rdzW8Wzc=
+Message-ID: <5bdc1c8b0801162126i115ba2d0rc47f6651fda1c10a@mail.gmail.com>
+Date: Wed, 16 Jan 2008 21:26:39 -0800
+From: "Mark Knecht" <markknecht@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: 2.6.24-rc8-rt1
+Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <1200544050.318.18.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1JFLEW-0002oE-G1@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+References: <1200544050.318.18.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 11:16:00AM +0800, Fengguang Wu wrote:
-> On Thu, Jan 17, 2008 at 09:35:10AM +1100, David Chinner wrote:
-> > On Wed, Jan 16, 2008 at 05:07:20PM +0800, Fengguang Wu wrote:
-> > > On Tue, Jan 15, 2008 at 09:51:49PM -0800, Andrew Morton wrote:
-> > > > > Then to do better ordering by adopting radix tree(or rbtree
-> > > > > if radix tree is not enough),
-> > > > 
-> > > > ordering of what?
-> > > 
-> > > Switch from time to location.
-> > 
-> > Note that data writeback may be adversely affected by location
-> > based writeback rather than time based writeback - think of
-> > the effect of location based data writeback on an app that
-> > creates lots of short term (<30s) temp files and then removes
-> > them before they are written back.
-> 
-> A small(e.g. 5s) time window can still be enforced, but...
+On Jan 16, 2008 8:27 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> We are pleased to announce the 2.6.24-rc8-rt1 tree, which can be
+> downloaded from the location:
+>
+>   http://rt.et.redhat.com/download/
+>
 
-Yes, you could, but that will then result in non-deterministic
-performance for repeated workloads because the order of file
-writeback will not be consistent.
+Up and running fine here:
 
-e.g.  the first run is fast because the output file is at lower
-offset than the temp file meaning the temp file gets deleted
-without being written.
-
-The second run is slow because the location of the files is
-reversed and the temp file is written to disk before the
-final output file and hence the run is much slower because
-it writes much more.
-
-The third run is also slow, but the files are like the first
-fast run. However, pdflush tries to write the temp file back
-within 5s of it being dirtied so it skips it and writes
-the output file first.
-
-The difference between the first+second case can be found by
-knowing that inode number determines writeback order, but
-there is no obvious clue as to why the first+third runs are
-different.
-
-This is exactly the sort of non-deterministic behaviour we 
-want to avoid in a writeback algorithm.
-
-> > Hmmmm - I'm wondering if we'd do better to split data writeback from
-> > inode writeback. i.e. we do two passes.  The first pass writes all
-> > the data back in time order, the second pass writes all the inodes
-> > back in location order.
-> > 
-> > Right now we interleave data and inode writeback, (i.e.  we do data,
-> > inode, data, inode, data, inode, ....). I'd much prefer to see all
-> > data written out first, then the inodes. ->writepage often dirties
-> > the inode and hence if we need to do multiple do_writepages() calls
-> > on an inode to flush all the data (e.g. congestion, large amounts of
-> > data to be written, etc), we really shouldn't be calling
-> > write_inode() after every do_writepages() call. The inode
-> > should not be written until all the data is written....
-> 
-> That may do good to XFS. Another case is documented as follows:
-> "the write_inode() function of a typical fs will perform no I/O, but
-> will mark buffers in the blockdev mapping as dirty."
-
-Yup, but in that situation ->write_inode() does not do any I/O, so
-it will work with any high level inode writeback ordering or timing
-scheme equally well.  As a result, that's not the case we need to
-optimise at all.
-
-FWIW, the NFS client is likely to work better with split data/
-inode writeback as it also has to mark the inode dirty on async
-write completion (to get ->write_inode called to issue a commit
-RPC). Hence delaying the inode write until after all the data
-is written makes sense there as well....
+mark@lightning ~ $ uname -a
+Linux lightning 2.6.24-rc8-rt1 #1 PREEMPT RT Wed Jan 16 21:11:05 PST
+2008 x86_64 AMD Athlon(tm) 64 Processor 3000+ AuthenticAMD GNU/Linux
+mark@lightning ~ $
 
 Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Mark
