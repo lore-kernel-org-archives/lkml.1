@@ -1,70 +1,975 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757751AbYAQUql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbYAQUr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757751AbYAQUql (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 15:46:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYAQUqd
+	id S1757563AbYAQUr6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbYAQUru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 15:46:33 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:36704 "EHLO
+	Thu, 17 Jan 2008 15:47:50 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:36525 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754030AbYAQUqc (ORCPT
+	with ESMTP id S1753504AbYAQUrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 15:46:32 -0500
+	Thu, 17 Jan 2008 15:47:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=dGvuLds0l+b/31Dec6kwLHkdLS+V1E69zfOh9cCF2pK5DLUQmI9XcS4Ei27o8wmsA1FelhvZCvdC26cH+WgcxrdQOfEtA1vU1dR/qXOgaqs+Sq+zvRjxtdKEVRMDN5Md22MGjaPVvvTiB/dKRrPH0Sf7E5t0DPyqO2t0r7K6osI=
-Message-ID: <478FBEA0.9090203@gmail.com>
-Date: Thu, 17 Jan 2008 21:46:24 +0100
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=qOmzuJOzlKo6AovxqP9UNA3BLICy84Hy6MSdASn50X7v/4D1kyahak+vsupMUPQ6n1u98iwvWoBA4zUD3lJk2qYWquPo0ML4PczMS/gTW68SMNhdHhTipp10bCUgNyFU17DsfSwif48T+jDeOCZHxqstakrFlfX5BtfElBgnAT4=
+Message-ID: <478FBEEA.6040000@gmail.com>
+Date: Thu, 17 Jan 2008 21:47:38 +0100
 From: Franck Bui-Huu <vagabon.xyz@gmail.com>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 CC: paulmck@linux.vnet.ibm.com
-Subject: [PATCH 0/2] Make RCU lists use the RCU API
+Subject: [PATCH 1/2] Split list.h and move rcu-protected lists into rculist.h
+References: <478FBEA0.9090203@gmail.com>
+In-Reply-To: <478FBEA0.9090203@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Franck Bui-Huu <fbuihuu@gmail.com>
 
-After reading the nice article contributed by Paul on LWN, I took a look
-to the kernel RCU-protected list implementation to get a good idea on
-how RCU protection mechanism can be used.
+This patch moves rcu-protected lists from list.h into a new header
+file rculist.h.
 
-And it appears that the implementation doesn't use the RCU API as much
-as it could: every updates of "->next" field could have been done by
-using rcu_assign_pointer(), the main point being readability.
+This is done because list are a very used primitive structure all over
+the kernel and it's currently impossible to include other header files
+in this list.h without creating some circular dependencies.
 
-So this patchset does that. However when cooking the patch, I noticed
-that it's hard to import RCU API without creating some circular
-dependencies. This is mainly explained by the fact that list.h defines a
-couple of very primitive types used all over the kernel.
+For example, list.h implements rcu-protected list and uses
+rcu_dereference() without including rcupdate.h. It actually compiles
+because users of rcu_dereference() are macros. Others RCU functions
+could be used too but aren't probably because of this.
 
-The easiest thing I could come up with is to create a new header file
-rculist.h, which keeps all RCU-protected list definitions. list.h still
-keeps the basic list stuffs and still has very few dependencies. OTOH
-RCU-protected list is a more complex type of list and can have more
-dependencies. Therefore it needs more careful in including it.
+Therefore this patch creates rculist.h which includes rcupdates
+without to many changes/troubles.
 
-I don't know if any header dependency rules exist for the kernel, so
-please any suggestions are welcome to deal with such issue.
-
-"make allyesconfig" builds and boots fine on x86 architecture, this
-patchset being applied on top of Linus' v2.6.24-rc7 tag.
-
-Please consider,
-
-		Franck
-
---
-
+Signed-off-by: Franck Bui-Huu <fbuihuu@gmail.com>
+---
  arch/ia64/sn/kernel/irq.c                       |    1 +
  drivers/infiniband/hw/ipath/ipath_verbs_mcast.c |    3 +-
  include/linux/dcache.h                          |    1 +
  include/linux/list.h                            |  385 ----------------------
- include/linux/rculist.h                         |  391 +++++++++++++++++++++++
+ include/linux/rculist.h                         |  396 +++++++++++++++++++++++
  lib/textsearch.c                                |    2 +-
- 6 files changed, 395 insertions(+), 388 deletions(-)
+ 6 files changed, 400 insertions(+), 388 deletions(-)
+ create mode 100644 include/linux/rculist.h
+
+diff --git a/arch/ia64/sn/kernel/irq.c b/arch/ia64/sn/kernel/irq.c
+index 53351c3..96c31b4 100644
+--- a/arch/ia64/sn/kernel/irq.c
++++ b/arch/ia64/sn/kernel/irq.c
+@@ -11,6 +11,7 @@
+ #include <linux/irq.h>
+ #include <linux/spinlock.h>
+ #include <linux/init.h>
++#include <linux/rculist.h>
+ #include <asm/sn/addrs.h>
+ #include <asm/sn/arch.h>
+ #include <asm/sn/intr.h>
+diff --git a/drivers/infiniband/hw/ipath/ipath_verbs_mcast.c b/drivers/infiniband/hw/ipath/ipath_verbs_mcast.c
+index 9e5abf9..d73e322 100644
+--- a/drivers/infiniband/hw/ipath/ipath_verbs_mcast.c
++++ b/drivers/infiniband/hw/ipath/ipath_verbs_mcast.c
+@@ -31,8 +31,7 @@
+  * SOFTWARE.
+  */
+ 
+-#include <linux/list.h>
+-#include <linux/rcupdate.h>
++#include <linux/rculist.h>
+ 
+ #include "ipath_verbs.h"
+ 
+diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+index c2c153f..e4fa047 100644
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -5,6 +5,7 @@
+ 
+ #include <asm/atomic.h>
+ #include <linux/list.h>
++#include <linux/rculist.h>
+ #include <linux/spinlock.h>
+ #include <linux/cache.h>
+ #include <linux/rcupdate.h>
+diff --git a/include/linux/list.h b/include/linux/list.h
+index 75ce2cb..2d870fc 100644
+--- a/include/linux/list.h
++++ b/include/linux/list.h
+@@ -87,65 +87,6 @@ static inline void list_add_tail(struct list_head *new, struct list_head *head)
+ }
+ 
+ /*
+- * Insert a new entry between two known consecutive entries.
+- *
+- * This is only for internal list manipulation where we know
+- * the prev/next entries already!
+- */
+-static inline void __list_add_rcu(struct list_head * new,
+-		struct list_head * prev, struct list_head * next)
+-{
+-	new->next = next;
+-	new->prev = prev;
+-	smp_wmb();
+-	next->prev = new;
+-	prev->next = new;
+-}
+-
+-/**
+- * list_add_rcu - add a new entry to rcu-protected list
+- * @new: new entry to be added
+- * @head: list head to add it after
+- *
+- * Insert a new entry after the specified head.
+- * This is good for implementing stacks.
+- *
+- * The caller must take whatever precautions are necessary
+- * (such as holding appropriate locks) to avoid racing
+- * with another list-mutation primitive, such as list_add_rcu()
+- * or list_del_rcu(), running on this same list.
+- * However, it is perfectly legal to run concurrently with
+- * the _rcu list-traversal primitives, such as
+- * list_for_each_entry_rcu().
+- */
+-static inline void list_add_rcu(struct list_head *new, struct list_head *head)
+-{
+-	__list_add_rcu(new, head, head->next);
+-}
+-
+-/**
+- * list_add_tail_rcu - add a new entry to rcu-protected list
+- * @new: new entry to be added
+- * @head: list head to add it before
+- *
+- * Insert a new entry before the specified head.
+- * This is useful for implementing queues.
+- *
+- * The caller must take whatever precautions are necessary
+- * (such as holding appropriate locks) to avoid racing
+- * with another list-mutation primitive, such as list_add_tail_rcu()
+- * or list_del_rcu(), running on this same list.
+- * However, it is perfectly legal to run concurrently with
+- * the _rcu list-traversal primitives, such as
+- * list_for_each_entry_rcu().
+- */
+-static inline void list_add_tail_rcu(struct list_head *new,
+-					struct list_head *head)
+-{
+-	__list_add_rcu(new, head->prev, head);
+-}
+-
+-/*
+  * Delete a list entry by making the prev/next entries
+  * point to each other.
+  *
+@@ -176,36 +117,6 @@ extern void list_del(struct list_head *entry);
+ #endif
+ 
+ /**
+- * list_del_rcu - deletes entry from list without re-initialization
+- * @entry: the element to delete from the list.
+- *
+- * Note: list_empty() on entry does not return true after this,
+- * the entry is in an undefined state. It is useful for RCU based
+- * lockfree traversal.
+- *
+- * In particular, it means that we can not poison the forward
+- * pointers that may still be used for walking the list.
+- *
+- * The caller must take whatever precautions are necessary
+- * (such as holding appropriate locks) to avoid racing
+- * with another list-mutation primitive, such as list_del_rcu()
+- * or list_add_rcu(), running on this same list.
+- * However, it is perfectly legal to run concurrently with
+- * the _rcu list-traversal primitives, such as
+- * list_for_each_entry_rcu().
+- *
+- * Note that the caller is not permitted to immediately free
+- * the newly deleted entry.  Instead, either synchronize_rcu()
+- * or call_rcu() must be used to defer freeing until an RCU
+- * grace period has elapsed.
+- */
+-static inline void list_del_rcu(struct list_head *entry)
+-{
+-	__list_del(entry->prev, entry->next);
+-	entry->prev = LIST_POISON2;
+-}
+-
+-/**
+  * list_replace - replace old entry by new one
+  * @old : the element to be replaced
+  * @new : the new element to insert
+@@ -229,25 +140,6 @@ static inline void list_replace_init(struct list_head *old,
+ }
+ 
+ /**
+- * list_replace_rcu - replace old entry by new one
+- * @old : the element to be replaced
+- * @new : the new element to insert
+- *
+- * The @old entry will be replaced with the @new entry atomically.
+- * Note: @old should not be empty.
+- */
+-static inline void list_replace_rcu(struct list_head *old,
+-				struct list_head *new)
+-{
+-	new->next = old->next;
+-	new->prev = old->prev;
+-	smp_wmb();
+-	new->next->prev = new;
+-	new->prev->next = new;
+-	old->prev = LIST_POISON2;
+-}
+-
+-/**
+  * list_del_init - deletes entry from list and reinitialize it.
+  * @entry: the element to delete from the list.
+  */
+@@ -361,62 +253,6 @@ static inline void list_splice_init(struct list_head *list,
+ }
+ 
+ /**
+- * list_splice_init_rcu - splice an RCU-protected list into an existing list.
+- * @list:	the RCU-protected list to splice
+- * @head:	the place in the list to splice the first list into
+- * @sync:	function to sync: synchronize_rcu(), synchronize_sched(), ...
+- *
+- * @head can be RCU-read traversed concurrently with this function.
+- *
+- * Note that this function blocks.
+- *
+- * Important note: the caller must take whatever action is necessary to
+- *	prevent any other updates to @head.  In principle, it is possible
+- *	to modify the list as soon as sync() begins execution.
+- *	If this sort of thing becomes necessary, an alternative version
+- *	based on call_rcu() could be created.  But only if -really-
+- *	needed -- there is no shortage of RCU API members.
+- */
+-static inline void list_splice_init_rcu(struct list_head *list,
+-					struct list_head *head,
+-					void (*sync)(void))
+-{
+-	struct list_head *first = list->next;
+-	struct list_head *last = list->prev;
+-	struct list_head *at = head->next;
+-
+-	if (list_empty(head))
+-		return;
+-
+-	/* "first" and "last" tracking list, so initialize it. */
+-
+-	INIT_LIST_HEAD(list);
+-
+-	/*
+-	 * At this point, the list body still points to the source list.
+-	 * Wait for any readers to finish using the list before splicing
+-	 * the list body into the new list.  Any new readers will see
+-	 * an empty list.
+-	 */
+-
+-	sync();
+-
+-	/*
+-	 * Readers are finished with the source list, so perform splice.
+-	 * The order is important if the new list is global and accessible
+-	 * to concurrent RCU readers.  Note that RCU readers are not
+-	 * permitted to traverse the prev pointers without excluding
+-	 * this function.
+-	 */
+-
+-	last->next = at;
+-	smp_wmb();
+-	head->next = first;
+-	first->prev = head;
+-	at->prev = last;
+-}
+-
+-/**
+  * list_entry - get the struct for this entry
+  * @ptr:	the &struct list_head pointer.
+  * @type:	the type of the struct this is embedded in.
+@@ -621,75 +457,6 @@ static inline void list_splice_init_rcu(struct list_head *list,
+ 	     &pos->member != (head); 					\
+ 	     pos = n, n = list_entry(n->member.prev, typeof(*n), member))
+ 
+-/**
+- * list_for_each_rcu	-	iterate over an rcu-protected list
+- * @pos:	the &struct list_head to use as a loop cursor.
+- * @head:	the head for your list.
+- *
+- * This list-traversal primitive may safely run concurrently with
+- * the _rcu list-mutation primitives such as list_add_rcu()
+- * as long as the traversal is guarded by rcu_read_lock().
+- */
+-#define list_for_each_rcu(pos, head) \
+-	for (pos = (head)->next; \
+-		prefetch(rcu_dereference(pos)->next), pos != (head); \
+-        	pos = pos->next)
+-
+-#define __list_for_each_rcu(pos, head) \
+-	for (pos = (head)->next; \
+-		rcu_dereference(pos) != (head); \
+-        	pos = pos->next)
+-
+-/**
+- * list_for_each_safe_rcu
+- * @pos:	the &struct list_head to use as a loop cursor.
+- * @n:		another &struct list_head to use as temporary storage
+- * @head:	the head for your list.
+- *
+- * Iterate over an rcu-protected list, safe against removal of list entry.
+- *
+- * This list-traversal primitive may safely run concurrently with
+- * the _rcu list-mutation primitives such as list_add_rcu()
+- * as long as the traversal is guarded by rcu_read_lock().
+- */
+-#define list_for_each_safe_rcu(pos, n, head) \
+-	for (pos = (head)->next; \
+-		n = rcu_dereference(pos)->next, pos != (head); \
+-		pos = n)
+-
+-/**
+- * list_for_each_entry_rcu	-	iterate over rcu list of given type
+- * @pos:	the type * to use as a loop cursor.
+- * @head:	the head for your list.
+- * @member:	the name of the list_struct within the struct.
+- *
+- * This list-traversal primitive may safely run concurrently with
+- * the _rcu list-mutation primitives such as list_add_rcu()
+- * as long as the traversal is guarded by rcu_read_lock().
+- */
+-#define list_for_each_entry_rcu(pos, head, member) \
+-	for (pos = list_entry((head)->next, typeof(*pos), member); \
+-		prefetch(rcu_dereference(pos)->member.next), \
+-			&pos->member != (head); \
+-		pos = list_entry(pos->member.next, typeof(*pos), member))
+-
+-
+-/**
+- * list_for_each_continue_rcu
+- * @pos:	the &struct list_head to use as a loop cursor.
+- * @head:	the head for your list.
+- *
+- * Iterate over an rcu-protected list, continuing after current point.
+- *
+- * This list-traversal primitive may safely run concurrently with
+- * the _rcu list-mutation primitives such as list_add_rcu()
+- * as long as the traversal is guarded by rcu_read_lock().
+- */
+-#define list_for_each_continue_rcu(pos, head) \
+-	for ((pos) = (pos)->next; \
+-		prefetch(rcu_dereference((pos))->next), (pos) != (head); \
+-        	(pos) = (pos)->next)
+-
+ /*
+  * Double linked lists with a single pointer list head.
+  * Mostly useful for hash tables where the two pointer list head is
+@@ -740,31 +507,6 @@ static inline void hlist_del(struct hlist_node *n)
+ 	n->pprev = LIST_POISON2;
+ }
+ 
+-/**
+- * hlist_del_rcu - deletes entry from hash list without re-initialization
+- * @n: the element to delete from the hash list.
+- *
+- * Note: list_unhashed() on entry does not return true after this,
+- * the entry is in an undefined state. It is useful for RCU based
+- * lockfree traversal.
+- *
+- * In particular, it means that we can not poison the forward
+- * pointers that may still be used for walking the hash list.
+- *
+- * The caller must take whatever precautions are necessary
+- * (such as holding appropriate locks) to avoid racing
+- * with another list-mutation primitive, such as hlist_add_head_rcu()
+- * or hlist_del_rcu(), running on this same list.
+- * However, it is perfectly legal to run concurrently with
+- * the _rcu list-traversal primitives, such as
+- * hlist_for_each_entry().
+- */
+-static inline void hlist_del_rcu(struct hlist_node *n)
+-{
+-	__hlist_del(n);
+-	n->pprev = LIST_POISON2;
+-}
+-
+ static inline void hlist_del_init(struct hlist_node *n)
+ {
+ 	if (!hlist_unhashed(n)) {
+@@ -773,27 +515,6 @@ static inline void hlist_del_init(struct hlist_node *n)
+ 	}
+ }
+ 
+-/**
+- * hlist_replace_rcu - replace old entry by new one
+- * @old : the element to be replaced
+- * @new : the new element to insert
+- *
+- * The @old entry will be replaced with the @new entry atomically.
+- */
+-static inline void hlist_replace_rcu(struct hlist_node *old,
+-					struct hlist_node *new)
+-{
+-	struct hlist_node *next = old->next;
+-
+-	new->next = next;
+-	new->pprev = old->pprev;
+-	smp_wmb();
+-	if (next)
+-		new->next->pprev = &new->next;
+-	*new->pprev = new;
+-	old->pprev = LIST_POISON2;
+-}
+-
+ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+ {
+ 	struct hlist_node *first = h->first;
+@@ -804,38 +525,6 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
+ 	n->pprev = &h->first;
+ }
+ 
+-
+-/**
+- * hlist_add_head_rcu
+- * @n: the element to add to the hash list.
+- * @h: the list to add to.
+- *
+- * Description:
+- * Adds the specified element to the specified hlist,
+- * while permitting racing traversals.
+- *
+- * The caller must take whatever precautions are necessary
+- * (such as holding appropriate locks) to avoid racing
+- * with another list-mutation primitive, such as hlist_add_head_rcu()
+- * or hlist_del_rcu(), running on this same list.
+- * However, it is perfectly legal to run concurrently with
+- * the _rcu list-traversal primitives, such as
+- * hlist_for_each_entry_rcu(), used to prevent memory-consistency
+- * problems on Alpha CPUs.  Regardless of the type of CPU, the
+- * list-traversal primitive must be guarded by rcu_read_lock().
+- */
+-static inline void hlist_add_head_rcu(struct hlist_node *n,
+-					struct hlist_head *h)
+-{
+-	struct hlist_node *first = h->first;
+-	n->next = first;
+-	n->pprev = &h->first;
+-	smp_wmb();
+-	if (first)
+-		first->pprev = &n->next;
+-	h->first = n;
+-}
+-
+ /* next must be != NULL */
+ static inline void hlist_add_before(struct hlist_node *n,
+ 					struct hlist_node *next)
+@@ -857,63 +546,6 @@ static inline void hlist_add_after(struct hlist_node *n,
+ 		next->next->pprev  = &next->next;
+ }
+ 
+-/**
+- * hlist_add_before_rcu
+- * @n: the new element to add to the hash list.
+- * @next: the existing element to add the new element before.
+- *
+- * Description:
+- * Adds the specified element to the specified hlist
+- * before the specified node while permitting racing traversals.
+- *
+- * The caller must take whatever precautions are necessary
+- * (such as holding appropriate locks) to avoid racing
+- * with another list-mutation primitive, such as hlist_add_head_rcu()
+- * or hlist_del_rcu(), running on this same list.
+- * However, it is perfectly legal to run concurrently with
+- * the _rcu list-traversal primitives, such as
+- * hlist_for_each_entry_rcu(), used to prevent memory-consistency
+- * problems on Alpha CPUs.
+- */
+-static inline void hlist_add_before_rcu(struct hlist_node *n,
+-					struct hlist_node *next)
+-{
+-	n->pprev = next->pprev;
+-	n->next = next;
+-	smp_wmb();
+-	next->pprev = &n->next;
+-	*(n->pprev) = n;
+-}
+-
+-/**
+- * hlist_add_after_rcu
+- * @prev: the existing element to add the new element after.
+- * @n: the new element to add to the hash list.
+- *
+- * Description:
+- * Adds the specified element to the specified hlist
+- * after the specified node while permitting racing traversals.
+- *
+- * The caller must take whatever precautions are necessary
+- * (such as holding appropriate locks) to avoid racing
+- * with another list-mutation primitive, such as hlist_add_head_rcu()
+- * or hlist_del_rcu(), running on this same list.
+- * However, it is perfectly legal to run concurrently with
+- * the _rcu list-traversal primitives, such as
+- * hlist_for_each_entry_rcu(), used to prevent memory-consistency
+- * problems on Alpha CPUs.
+- */
+-static inline void hlist_add_after_rcu(struct hlist_node *prev,
+-				       struct hlist_node *n)
+-{
+-	n->next = prev->next;
+-	n->pprev = &prev->next;
+-	smp_wmb();
+-	prev->next = n;
+-	if (n->next)
+-		n->next->pprev = &n->next;
+-}
+-
+ #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
+ 
+ #define hlist_for_each(pos, head) \
+@@ -974,23 +606,6 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+ 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
+ 	     pos = n)
+ 
+-/**
+- * hlist_for_each_entry_rcu - iterate over rcu list of given type
+- * @tpos:	the type * to use as a loop cursor.
+- * @pos:	the &struct hlist_node to use as a loop cursor.
+- * @head:	the head for your list.
+- * @member:	the name of the hlist_node within the struct.
+- *
+- * This list-traversal primitive may safely run concurrently with
+- * the _rcu list-mutation primitives such as hlist_add_head_rcu()
+- * as long as the traversal is guarded by rcu_read_lock().
+- */
+-#define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
+-	for (pos = (head)->first;					 \
+-	     rcu_dereference(pos) && ({ prefetch(pos->next); 1;}) &&	 \
+-		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
+-	     pos = pos->next)
+-
+ #else
+ #warning "don't include kernel headers in userspace"
+ #endif /* __KERNEL__ */
+diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+new file mode 100644
+index 0000000..8056d38
+--- /dev/null
++++ b/include/linux/rculist.h
+@@ -0,0 +1,396 @@
++#ifndef _LINUX_RCULIST_H
++#define _LINUX_RCULIST_H
++
++#ifdef __KERNEL__
++
++/*
++ * RCU-protected list version
++ */
++#include <linux/list.h>
++
++/*
++ * Insert a new entry between two known consecutive entries.
++ *
++ * This is only for internal list manipulation where we know
++ * the prev/next entries already!
++ */
++static inline void __list_add_rcu(struct list_head * new,
++		struct list_head * prev, struct list_head * next)
++{
++	new->next = next;
++	new->prev = prev;
++	smp_wmb();
++	next->prev = new;
++	prev->next = new;
++}
++
++/**
++ * list_add_rcu - add a new entry to rcu-protected list
++ * @new: new entry to be added
++ * @head: list head to add it after
++ *
++ * Insert a new entry after the specified head.
++ * This is good for implementing stacks.
++ *
++ * The caller must take whatever precautions are necessary
++ * (such as holding appropriate locks) to avoid racing
++ * with another list-mutation primitive, such as list_add_rcu()
++ * or list_del_rcu(), running on this same list.
++ * However, it is perfectly legal to run concurrently with
++ * the _rcu list-traversal primitives, such as
++ * list_for_each_entry_rcu().
++ */
++static inline void list_add_rcu(struct list_head *new, struct list_head *head)
++{
++	__list_add_rcu(new, head, head->next);
++}
++
++/**
++ * list_add_tail_rcu - add a new entry to rcu-protected list
++ * @new: new entry to be added
++ * @head: list head to add it before
++ *
++ * Insert a new entry before the specified head.
++ * This is useful for implementing queues.
++ *
++ * The caller must take whatever precautions are necessary
++ * (such as holding appropriate locks) to avoid racing
++ * with another list-mutation primitive, such as list_add_tail_rcu()
++ * or list_del_rcu(), running on this same list.
++ * However, it is perfectly legal to run concurrently with
++ * the _rcu list-traversal primitives, such as
++ * list_for_each_entry_rcu().
++ */
++static inline void list_add_tail_rcu(struct list_head *new,
++					struct list_head *head)
++{
++	__list_add_rcu(new, head->prev, head);
++}
++
++/**
++ * list_del_rcu - deletes entry from list without re-initialization
++ * @entry: the element to delete from the list.
++ *
++ * Note: list_empty() on entry does not return true after this,
++ * the entry is in an undefined state. It is useful for RCU based
++ * lockfree traversal.
++ *
++ * In particular, it means that we can not poison the forward
++ * pointers that may still be used for walking the list.
++ *
++ * The caller must take whatever precautions are necessary
++ * (such as holding appropriate locks) to avoid racing
++ * with another list-mutation primitive, such as list_del_rcu()
++ * or list_add_rcu(), running on this same list.
++ * However, it is perfectly legal to run concurrently with
++ * the _rcu list-traversal primitives, such as
++ * list_for_each_entry_rcu().
++ *
++ * Note that the caller is not permitted to immediately free
++ * the newly deleted entry.  Instead, either synchronize_rcu()
++ * or call_rcu() must be used to defer freeing until an RCU
++ * grace period has elapsed.
++ */
++static inline void list_del_rcu(struct list_head *entry)
++{
++	__list_del(entry->prev, entry->next);
++	entry->prev = LIST_POISON2;
++}
++
++/**
++ * list_replace_rcu - replace old entry by new one
++ * @old : the element to be replaced
++ * @new : the new element to insert
++ *
++ * The @old entry will be replaced with the @new entry atomically.
++ * Note: @old should not be empty.
++ */
++static inline void list_replace_rcu(struct list_head *old,
++				struct list_head *new)
++{
++	new->next = old->next;
++	new->prev = old->prev;
++	smp_wmb();
++	new->next->prev = new;
++	new->prev->next = new;
++	old->prev = LIST_POISON2;
++}
++
++/**
++ * list_splice_init_rcu - splice an RCU-protected list into an existing list.
++ * @list:	the RCU-protected list to splice
++ * @head:	the place in the list to splice the first list into
++ * @sync:	function to sync: synchronize_rcu(), synchronize_sched(), ...
++ *
++ * @head can be RCU-read traversed concurrently with this function.
++ *
++ * Note that this function blocks.
++ *
++ * Important note: the caller must take whatever action is necessary to
++ *	prevent any other updates to @head.  In principle, it is possible
++ *	to modify the list as soon as sync() begins execution.
++ *	If this sort of thing becomes necessary, an alternative version
++ *	based on call_rcu() could be created.  But only if -really-
++ *	needed -- there is no shortage of RCU API members.
++ */
++static inline void list_splice_init_rcu(struct list_head *list,
++					struct list_head *head,
++					void (*sync)(void))
++{
++	struct list_head *first = list->next;
++	struct list_head *last = list->prev;
++	struct list_head *at = head->next;
++
++	if (list_empty(head))
++		return;
++
++	/* "first" and "last" tracking list, so initialize it. */
++
++	INIT_LIST_HEAD(list);
++
++	/*
++	 * At this point, the list body still points to the source list.
++	 * Wait for any readers to finish using the list before splicing
++	 * the list body into the new list.  Any new readers will see
++	 * an empty list.
++	 */
++
++	sync();
++
++	/*
++	 * Readers are finished with the source list, so perform splice.
++	 * The order is important if the new list is global and accessible
++	 * to concurrent RCU readers.  Note that RCU readers are not
++	 * permitted to traverse the prev pointers without excluding
++	 * this function.
++	 */
++
++	last->next = at;
++	smp_wmb();
++	head->next = first;
++	first->prev = head;
++	at->prev = last;
++}
++
++/**
++ * list_for_each_rcu	-	iterate over an rcu-protected list
++ * @pos:	the &struct list_head to use as a loop cursor.
++ * @head:	the head for your list.
++ *
++ * This list-traversal primitive may safely run concurrently with
++ * the _rcu list-mutation primitives such as list_add_rcu()
++ * as long as the traversal is guarded by rcu_read_lock().
++ */
++#define list_for_each_rcu(pos, head) \
++	for (pos = (head)->next; \
++		prefetch(rcu_dereference(pos)->next), pos != (head); \
++		pos = pos->next)
++
++#define __list_for_each_rcu(pos, head) \
++	for (pos = (head)->next; \
++		rcu_dereference(pos) != (head); \
++		pos = pos->next)
++
++/**
++ * list_for_each_safe_rcu
++ * @pos:	the &struct list_head to use as a loop cursor.
++ * @n:		another &struct list_head to use as temporary storage
++ * @head:	the head for your list.
++ *
++ * Iterate over an rcu-protected list, safe against removal of list entry.
++ *
++ * This list-traversal primitive may safely run concurrently with
++ * the _rcu list-mutation primitives such as list_add_rcu()
++ * as long as the traversal is guarded by rcu_read_lock().
++ */
++#define list_for_each_safe_rcu(pos, n, head) \
++	for (pos = (head)->next; \
++		n = rcu_dereference(pos)->next, pos != (head); \
++		pos = n)
++
++/**
++ * list_for_each_entry_rcu	-	iterate over rcu list of given type
++ * @pos:	the type * to use as a loop cursor.
++ * @head:	the head for your list.
++ * @member:	the name of the list_struct within the struct.
++ *
++ * This list-traversal primitive may safely run concurrently with
++ * the _rcu list-mutation primitives such as list_add_rcu()
++ * as long as the traversal is guarded by rcu_read_lock().
++ */
++#define list_for_each_entry_rcu(pos, head, member) \
++	for (pos = list_entry((head)->next, typeof(*pos), member); \
++		prefetch(rcu_dereference(pos)->member.next), \
++			&pos->member != (head); \
++		pos = list_entry(pos->member.next, typeof(*pos), member))
++
++
++/**
++ * list_for_each_continue_rcu
++ * @pos:	the &struct list_head to use as a loop cursor.
++ * @head:	the head for your list.
++ *
++ * Iterate over an rcu-protected list, continuing after current point.
++ *
++ * This list-traversal primitive may safely run concurrently with
++ * the _rcu list-mutation primitives such as list_add_rcu()
++ * as long as the traversal is guarded by rcu_read_lock().
++ */
++#define list_for_each_continue_rcu(pos, head) \
++	for ((pos) = (pos)->next; \
++		prefetch(rcu_dereference((pos))->next), (pos) != (head); \
++		(pos) = (pos)->next)
++
++/**
++ * hlist_del_rcu - deletes entry from hash list without re-initialization
++ * @n: the element to delete from the hash list.
++ *
++ * Note: list_unhashed() on entry does not return true after this,
++ * the entry is in an undefined state. It is useful for RCU based
++ * lockfree traversal.
++ *
++ * In particular, it means that we can not poison the forward
++ * pointers that may still be used for walking the hash list.
++ *
++ * The caller must take whatever precautions are necessary
++ * (such as holding appropriate locks) to avoid racing
++ * with another list-mutation primitive, such as hlist_add_head_rcu()
++ * or hlist_del_rcu(), running on this same list.
++ * However, it is perfectly legal to run concurrently with
++ * the _rcu list-traversal primitives, such as
++ * hlist_for_each_entry().
++ */
++static inline void hlist_del_rcu(struct hlist_node *n)
++{
++	__hlist_del(n);
++	n->pprev = LIST_POISON2;
++}
++
++/**
++ * hlist_replace_rcu - replace old entry by new one
++ * @old : the element to be replaced
++ * @new : the new element to insert
++ *
++ * The @old entry will be replaced with the @new entry atomically.
++ */
++static inline void hlist_replace_rcu(struct hlist_node *old,
++					struct hlist_node *new)
++{
++	struct hlist_node *next = old->next;
++
++	new->next = next;
++	new->pprev = old->pprev;
++	smp_wmb();
++	if (next)
++		new->next->pprev = &new->next;
++	*new->pprev = new;
++	old->pprev = LIST_POISON2;
++}
++
++/**
++ * hlist_add_head_rcu
++ * @n: the element to add to the hash list.
++ * @h: the list to add to.
++ *
++ * Description:
++ * Adds the specified element to the specified hlist,
++ * while permitting racing traversals.
++ *
++ * The caller must take whatever precautions are necessary
++ * (such as holding appropriate locks) to avoid racing
++ * with another list-mutation primitive, such as hlist_add_head_rcu()
++ * or hlist_del_rcu(), running on this same list.
++ * However, it is perfectly legal to run concurrently with
++ * the _rcu list-traversal primitives, such as
++ * hlist_for_each_entry_rcu(), used to prevent memory-consistency
++ * problems on Alpha CPUs.  Regardless of the type of CPU, the
++ * list-traversal primitive must be guarded by rcu_read_lock().
++ */
++static inline void hlist_add_head_rcu(struct hlist_node *n,
++					struct hlist_head *h)
++{
++	struct hlist_node *first = h->first;
++	n->next = first;
++	n->pprev = &h->first;
++	smp_wmb();
++	if (first)
++		first->pprev = &n->next;
++	h->first = n;
++}
++
++/**
++ * hlist_add_before_rcu
++ * @n: the new element to add to the hash list.
++ * @next: the existing element to add the new element before.
++ *
++ * Description:
++ * Adds the specified element to the specified hlist
++ * before the specified node while permitting racing traversals.
++ *
++ * The caller must take whatever precautions are necessary
++ * (such as holding appropriate locks) to avoid racing
++ * with another list-mutation primitive, such as hlist_add_head_rcu()
++ * or hlist_del_rcu(), running on this same list.
++ * However, it is perfectly legal to run concurrently with
++ * the _rcu list-traversal primitives, such as
++ * hlist_for_each_entry_rcu(), used to prevent memory-consistency
++ * problems on Alpha CPUs.
++ */
++static inline void hlist_add_before_rcu(struct hlist_node *n,
++					struct hlist_node *next)
++{
++	n->pprev = next->pprev;
++	n->next = next;
++	smp_wmb();
++	next->pprev = &n->next;
++	*(n->pprev) = n;
++}
++
++/**
++ * hlist_add_after_rcu
++ * @prev: the existing element to add the new element after.
++ * @n: the new element to add to the hash list.
++ *
++ * Description:
++ * Adds the specified element to the specified hlist
++ * after the specified node while permitting racing traversals.
++ *
++ * The caller must take whatever precautions are necessary
++ * (such as holding appropriate locks) to avoid racing
++ * with another list-mutation primitive, such as hlist_add_head_rcu()
++ * or hlist_del_rcu(), running on this same list.
++ * However, it is perfectly legal to run concurrently with
++ * the _rcu list-traversal primitives, such as
++ * hlist_for_each_entry_rcu(), used to prevent memory-consistency
++ * problems on Alpha CPUs.
++ */
++static inline void hlist_add_after_rcu(struct hlist_node *prev,
++				       struct hlist_node *n)
++{
++	n->next = prev->next;
++	n->pprev = &prev->next;
++	smp_wmb();
++	prev->next = n;
++	if (n->next)
++		n->next->pprev = &n->next;
++}
++
++/**
++ * hlist_for_each_entry_rcu - iterate over rcu list of given type
++ * @tpos:	the type * to use as a loop cursor.
++ * @pos:	the &struct hlist_node to use as a loop cursor.
++ * @head:	the head for your list.
++ * @member:	the name of the hlist_node within the struct.
++ *
++ * This list-traversal primitive may safely run concurrently with
++ * the _rcu list-mutation primitives such as hlist_add_head_rcu()
++ * as long as the traversal is guarded by rcu_read_lock().
++ */
++#define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
++	for (pos = (head)->first;					 \
++	     rcu_dereference(pos) && ({ prefetch(pos->next); 1;}) &&	 \
++		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
++	     pos = pos->next)
++
++#endif	/* __KERNEL__ */
++#endif
+diff --git a/lib/textsearch.c b/lib/textsearch.c
+index be8bda3..f7652ec 100644
+--- a/lib/textsearch.c
++++ b/lib/textsearch.c
+@@ -97,7 +97,7 @@
+ #include <linux/types.h>
+ #include <linux/string.h>
+ #include <linux/init.h>
+-#include <linux/rcupdate.h>
++#include <linux/rculist.h>
+ #include <linux/err.h>
+ #include <linux/textsearch.h>
+ 
+-- 
+1.5.3.7
+
