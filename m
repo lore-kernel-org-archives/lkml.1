@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758289AbYAQVPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758523AbYAQVQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758289AbYAQVPn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 16:15:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbYAQVPc
+	id S1758523AbYAQVQY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 16:16:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbYAQVQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 16:15:32 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:44496 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751993AbYAQVPb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 16:15:31 -0500
-Date: Thu, 17 Jan 2008 16:14:37 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
-       Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [-mm Patch] uml: fix a building error
-Message-ID: <20080117211437.GA7573@c2.user-mode-linux.org>
-References: <20080117105606.ff89e9e9.akpm@linux-foundation.org> <924EFEDD5F540B4284297C4DC59F3DEE5E90DF@orsmsx423.amr.corp.intel.com>
-Mime-Version: 1.0
+	Thu, 17 Jan 2008 16:16:14 -0500
+Received: from mx2.suse.de ([195.135.220.15]:53539 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756683AbYAQVQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 16:16:13 -0500
+Date: Thu, 17 Jan 2008 13:11:01 -0800
+From: Greg KH <gregkh@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jarek Poplawski <jarkao2@gmail.com>,
+       Dave Young <hidave.darkstar@gmail.com>, stefanr@s5r6.in-berlin.de,
+       David Brownell <david-b@pacbell.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct
+	class
+Message-ID: <20080117211101.GA11853@suse.de>
+References: <20080117194728.GA2598@ami.dom.local> <Pine.LNX.4.44L0.0801171448590.5731-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE5E90DF@orsmsx423.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <Pine.LNX.4.44L0.0801171448590.5731-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 11:38:53AM -0800, Pallipadi, Venkatesh wrote:
-> Apart from unxlate, there is also ioremap_wc which is defined in the
-> same way.
+On Thu, Jan 17, 2008 at 02:57:36PM -0500, Alan Stern wrote:
+> On Thu, 17 Jan 2008, Jarek Poplawski wrote:
+> > On the other hand, according to Greg the code is OK, so if there are any
+> > such warnings they simply have to be false! (...Unless you trust lockdep
+> > more?!)
+> 
+> It's not a matter of trust or of false warnings.  People shouldn't 
+> tolerate any lockdep warnings at all; otherwise they will start to 
+> ignore the valid ones.
+> 
+> Alan Stern
+> 
+> P.S.: Just because Greg says the code is okay doesn't mean it will 
+> please lockdep -- it doesn't even mean the code really is okay!  I've 
+> known Greg to make an occasional mistake.
 
-And while we're on the subject, what's the deal with these, in
-include/asm-x86/io.h?
+I've known Greg to make lots of mistakes :)
 
-#define ioremap_wc ioremap_wc
-#define unxlate_dev_mem_ptr unxlate_dev_mem_ptr
+I don't remember ever saying that the "code is correct with the lockdep
+warnings", I think I said, "Make sure there are no lockdep warnings with
+any conversion you do."
 
-				Jeff
+thanks,
 
--- 
-Work email - jdike at linux dot intel dot com
+greg k-h
