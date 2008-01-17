@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYAQDWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYAQDYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbYAQDWd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 22:22:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbYAQDWZ
+	id S1755004AbYAQDYV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 22:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYAQDYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 22:22:25 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:58485 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbYAQDWY (ORCPT
+	Wed, 16 Jan 2008 22:24:13 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40985 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbYAQDYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 22:22:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=nV+nAy4ptJotJIv6/y59enLdAnomn6AZVtF7KgEmk8lWkMvuF8s0rz+QshSCB7fEG+ez87aGTLXVNYA/TJvrWOzmX/WGqDQojpijkMXucZQMLnQLOT1lVOWkmuJewkxVvBEu2+n0MBv7WZe9j4NEfoRkWV09lldcCjMu3xXtheU=
-Subject: Re: [PATCH] [3/7] Use shorter addresses in i386 segfault printks
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <ak@suse.de>, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <478EC77E.8090103@zytor.com>
-References: <200801161127.268350000@suse.de>
-	 <20080116222706.8074A14EE3@wotan.suse.de> <1200538738.17967.4.camel@brick>
-	 <478EC77E.8090103@zytor.com>
-Content-Type: text/plain
-Date: Wed, 16 Jan 2008 19:22:21 -0800
-Message-Id: <1200540141.17967.8.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 16 Jan 2008 22:24:12 -0500
+Date: Thu, 17 Jan 2008 12:23:16 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Paulo Marques <pmarques@grupopie.com>
+Subject: Re: [RFC] mmaped copy too slow?
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080116110200.11B4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <478CAB25.30300@grupopie.com> <20080116110200.11B4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20080117121231.11D4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-16 at 22:11 -0500, H. Peter Anvin wrote:
-> Harvey Harrison wrote:
-> > On Wed, 2008-01-16 at 23:27 +0100, Andi Kleen wrote:
-> >> Signed-off-by: Andi Kleen <ak@suse.de>
-> >>
-> >> ---
-> >>  arch/x86/mm/fault_32.c |    2 +-
-> > 
-> > Could use exactly the same in fault_64.c
-> > 
-> >>  #ifdef CONFIG_X86_32
-> >> -			"%s%s[%d]: segfault at %08lx ip %08lx sp %08lx error %lx\n",
-> >> +			"%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx\n",
-> >>  #else
-> >>  			"%s%s[%d]: segfault at %lx ip %lx sp %lx error %lx\n",
-> >>  #endif
-> > 
-> > With the ongoing unification work, it would be nice if we could come
-> > up with a way to unify printks like this.  Anyone have any bright ideas
-> > on a format that will keep the current alignment on 32 and 64 bit with
-> > the same syntax, or will these tiny ifdefs keep sprouting?
+Hi
+
+> > One thing you could also try is to pass MAP_POPULATE to mmap so that the 
+> > page tables are filled in at the time of the mmap, avoiding a lot of 
+> > page faults later.
 > > 
 > 
-> Casting to (void *) and using %p is probably your best bet.  That's what 
-> it really is anyway.
-> 
-> Note: in the kernel right now, %p doesn't have the leading 0x prefix, 
-> which it probably should...
+> OK, I will test your idea and report about tomorrow.
+> but I don't think page fault is major performance impact.
 
-Well, that won't exactly be the nicest looking solution in places, maybe
-a shorthand could be developed for this, or could another format
-specifier be added that implicitly does the (void *) cast? (%P perhaps)
+I got more interesting result :)
+MAP_POPULATE is harmful result at large copy.
 
-Harvey
+
+1G copy
+                             elapse(sec)
+--------------------------------------------
+mmap                          71.54
+mmap + madvice                69.63
+mmap + populate              100.87
+mmap + populate + madvice    101.16
+
+
+more detail:
+time command output of mmap copy
+	0.50user 3.59system 1:11.54elapsed 5%CPU (0avgtext+0avgdata 0maxresident)k
+	2101192inputs+2097160outputs (32776major+491573minor)pagefaults 0swaps
+
+time command output of mmap+populate copy
+	0.53user 5.13system 1:40.87elapsed 5%CPU (0avgtext+0avgdata 0maxresident)k
+	4200808inputs+2097160outputs (49164major+737340minor)pagefaults 0swaps
+
+
+input blocks increase about x2.
+in fact, mmap(MAP_POPULATE) read disk to memory and drop it just after,
+thus read again. 
+
+
+of cource, when copy file size is enough small, MAP_POPULATE is effective.
+
+
+100M copy
+                             elapse(sec)
+--------------------------------------------
+mmap                          7.38
+mmap + madvice                7.29
+mmap + populate               7.13
+mmap + populate + madvice     6.65
+
+
+- kosaki
+
 
