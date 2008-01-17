@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbYAQQSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbYAQQU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbYAQQSM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 11:18:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYAQQR6
+	id S1756036AbYAQQU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 11:20:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYAQQUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 11:17:58 -0500
-Received: from mail.physik.uni-muenchen.de ([192.54.42.129]:55019 "EHLO
-	mail.physik.uni-muenchen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751617AbYAQQR6 (ORCPT
+	Thu, 17 Jan 2008 11:20:20 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:49780 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752590AbYAQQUT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 11:17:58 -0500
-X-Greylist: delayed 1622 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jan 2008 11:17:57 EST
-Subject: kexec, initramdisk and dmcrypt questions
-From: Christoph Anton Mitterer 
-	<christoph.anton.mitterer@physik.uni-muenchen.de>
-To: linux-kernel@vger.kernel.org
+	Thu, 17 Jan 2008 11:20:19 -0500
+Subject: Re: 2.6.24-rc8-rt1
+From: Daniel Walker <dwalker@mvista.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <478F2A46.5070506@grandegger.com>
+References: <1200544050.318.18.camel@localhost.localdomain>
+	 <478F2A46.5070506@grandegger.com>
 Content-Type: text/plain
-Organization: =?ISO-8859-1?Q?Ludwig-Maximilians-Unive?=
-	=?ISO-8859-1?Q?rsit=E4t?= =?ISO-8859-1?Q?_M=FCnchen?=
-Date: Thu, 17 Jan 2008 16:50:53 +0100
-Message-Id: <1200585053.3265.33.camel@etppc19>
+Date: Thu, 17 Jan 2008 08:17:12 -0800
+Message-Id: <1200586632.18731.141.camel@imap.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-I'd like to setup a system where all partitions (including the root file
-system) are encrypted using dmcrypt.
-Of course I need some place where I can boot from, and I intended to use
-an USB-stick for that purpose.
+On Thu, 2008-01-17 at 11:13 +0100, Wolfgang Grandegger wrote:
+> Steven Rostedt wrote:
+> > We are pleased to announce the 2.6.24-rc8-rt1 tree, which can be
+> > downloaded from the location:
+> > 
+> >   http://rt.et.redhat.com/download/
+> 
+> It builds and runs fine on my Icecube-MPC5200 board, now also with the
+> latency tracer enabled. That's great. Still, "cyclictest -n -p80 -i1000"
+> reports latencies up to 400 us and therefore I tried to trigger and save
+> a high latency trace using:
 
-Now I think there are (at least) the following two ways of doing this:
+Do you happen to have a boot log (dmesg) for this system?
 
-1) Traditional way
-Boot from the USB-Stick with and initramsdisk,.. that sets up dmcrypt
-and mounts the root-filesystem.
-
--Has the advantages that it's pretty well supported by some distros
-(e.g. Debian) and it's very easy to setup.
--Has the disadvantages, that I'll always have to update the contents of
-the stick when I install a new kernel (btw: does anybody know of an
-write-once USB-Stick? ;) )
-
-After booting it should be possible to just plug out the stick (as the
-kernel and the modules are already loaded), or not?
-
-
-
-2) using kexec.
-I could imagine that my USB-stick serves just as loader,... having a
-kernel and initrd that sets up dmcrypt/mounts root and calls kexec for
-the "real" working kernel and the corresponding initramdisk, that are
-both stored encrypted on e.g. the root filesystem in /boot/ or so...
-The initrd of the working kernel contains the dmcrypt keys and
-automatically sets up the mappings and mounts the filesystems.
-
--Has the advantage that this is nearly transparent for the system,
-especially for tools that automatically create the initramdisk (stuff
-like update-initramfs in Debian)
--And I would (nearly) never have to change the contents of the
-loader-USB-stick.
-
-Now I've read through the kexec documentation and I wonder wheter using
-kexec might have some negative impact?
-As the firmware is already initialised (by the loader kernel??) and the
-working kernel must be put on different addresses.
-
-I'm also not sure how to use the "architecture options" from the kexec
-userspace tools?
-
-Any ideas, help, suggestions, or threads ;) ?
-
-Thanks and best wishes,
-Chris.
+Daniel
 
