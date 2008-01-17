@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758390AbYAQWG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758549AbYAQWH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758390AbYAQWG6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 17:06:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYAQWGt
+	id S1758549AbYAQWH0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 17:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757986AbYAQWG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 17:06:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44657 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752715AbYAQWGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 17:06:48 -0500
-Date: Thu, 17 Jan 2008 23:06:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: copy srat table and unmap in acpi_parse_table
-Message-ID: <20080117220638.GA18883@elte.hu>
-References: <200801171244.46228.yinghai.lu@sun.com> <20080117204343.GA32175@elte.hu> <200801171409.56611.yinghai.lu@sun.com>
+	Thu, 17 Jan 2008 17:06:56 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:43369 "EHLO
+	outbound5-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757876AbYAQWGy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 17:06:54 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
+Date: Thu, 17 Jan 2008 23:06:50 +0100
+From: "Andreas Herrmann3" <andreas.herrmann3@AMD.COM>
+To: "Ingo Molnar" <mingo@elte.hu>
+cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Venki Pallipadi" <venkatesh.pallipadi@intel.com>, ak@muc.de,
+       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
+       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       jesse.barnes@intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
+ fixes
+Message-ID: <20080117220650.GE12631@alberich.amd.com>
+References: <20080116023955.597433000@intel.com>
+ <20080116185748.GA11244@alberich.amd.com>
+ <20080116203328.GA17869@linux-os.sc.intel.com>
+ <20080117191211.GA12631@alberich.amd.com>
+ <20080117203600.GB27778@elte.hu>
+ <20080117210301.GC12631@alberich.amd.com>
+ <20080117211308.GA7858@elte.hu>
+ <20080117213131.GA25389@linux-os.sc.intel.com>
+ <20080117214209.GA12811@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080117214209.GA12811@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 17 Jan 2008 22:06:34.0614 (UTC)
+ FILETIME=[39290160:01C85955]
+X-WSS-ID: 6B910EE707S8365221-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801171409.56611.yinghai.lu@sun.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
-
-> > Or if d8d28f25f33c6a03 really needs to be reverted to get your 
-> > system to boot properly, which particular bit of it was causing 
-> > trouble for you? (or the whole thing?)
+On Thu, Jan 17, 2008 at 10:42:09PM +0100, Ingo Molnar wrote:
 > 
-> we need to call acpi_os_unmap_memory in acpi_table_parse or just after 
-> it.
+> * Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
 > 
-> call it in acpi_table_parse is much cleaner
+> > On Thu, Jan 17, 2008 at 10:13:08PM +0100, Ingo Molnar wrote:
+> > > but in general we must be robust enough in this case and just degrade 
+> > > any overlapping page to UC (and emit a warning perhaps) - instead of 
+> > > failing the ioremap and thus failing the driver (and the bootup).
+> > 
+> > But then, this will cause an attribute conflicit. Old one was 
+> > specifying WB in PAT (ioremap with noflags) and the new ioremap 
+> > specifies UC.
+> 
+> we could fix up all aliases of that page as well and degrade them to UC?
 
-agreed - i had a second look at your patch and it's much cleaner.
+Yes, we must fix all aliases or reject the conflicting mapping.
+But fixing all aliases might not be that easy.
+(I've just seen a panic when using your patch ;-(
 
-> the problem is that acpi_numa_slit_init do bad assumaption that it 
-> still can use address after it's callback function. so we need to copy 
-> the slit.
 
-ok. I've applied your patch and boot-tested it already - it should show 
-up soon in the next x86.git drop.
+Andreas
 
-	Ingo
+
+
