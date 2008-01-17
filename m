@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYAQAUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbYAQA3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbYAQAUe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 19:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbYAQAU0
+	id S1753998AbYAQA3Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 19:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbYAQA3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 19:20:26 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58655 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbYAQAUZ (ORCPT
+	Wed, 16 Jan 2008 19:29:12 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:46629 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752448AbYAQA3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 19:20:25 -0500
-Date: Wed, 16 Jan 2008 16:26:19 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH 2/2] x86: MMCONF enable MCFG early
-In-reply-to: <200801161409.02591.yinghai.lu@sun.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Jeff Garzik <jeff@garzik.org>,
-       Greg KH <greg@kroah.com>, Robert Hancock <hancockr@shaw.ca>,
-       Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>
-Message-id: <200801161626.19991.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200801161405.17889.yinghai.lu@sun.com>
- <200801161406.38946.yinghai.lu@sun.com> <200801161409.02591.yinghai.lu@sun.com>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Wed, 16 Jan 2008 19:29:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=sVHEHhhnlTujOJyqU1cvGWW5mwoishQ0iBPrkfGZh466Lul9E6+1dnB2nrcaxTtgpSeRVnhUORWalKuUyqHikkiPzI459qN8hAotpKO5FxLoeVWx0ceMJDNfc9csj6/+5HQ24dVHVRD883qlnwHeDHd8H3RuvXlGjKI8MS1xBTQ=
+Message-ID: <7c86c4470801161629t3870da59hb6ac371c44126b07@mail.gmail.com>
+Date: Wed, 16 Jan 2008 16:29:10 -0800
+From: "stephane eranian" <eranian@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Subject: runqueue locks in schedule()
+Cc: ia64 <linux-ia64@vger.kernel.org>, "Stephane Eranian" <eranian@gmail.com>,
+       "Corey J Ashford" <cjashfor@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 January 2008 02:09:02 pm Yinghai Lu wrote:
-> [PATCH] x86: MMCONF enable MCFG early
-> 
-> patch
-> 	x86: validate against ACPI motherboard resources
-> 
-> changed the mmconf init sequence, and init MMCONF late in acpi_init.
-> 
-> here change it back to old sequence
-> 1. check hostbridge in early
-> 2. check MCFG with e820 in early
-> 3. if all fail, will check MCFg with acpi _CRS in acpi_init
-> 
-> So we can make MCONF working again when acpi=off is set if hostbridge support that.
-> 
+Hello,
 
-Ingo,
-it seems you removed
-> patch
-> 	x86: validate against ACPI motherboard resources
-last night. 
+As suggested by people on this list, I have changed perfmon2 to use
+the high resolution
+timers as the interface to allow timeout-based event set multiplexing.
+This works around
+the problems I had with tickless-enabled kernels.
 
-was it dropped?
+Multiplexing is supported in per-thread as well. In that case, the
+timeout measures virtual
+time. When the thread is context switched out, we need to save the
+remainder of the timeout
+and cancel the timer. When the thread is context switched in, we need
+to reinstall the timer.
+These timer save/restore operations have to be done in the switch_to()
+code near the end
+of schedule().
 
-YH
+There are situations where hrtimer_start() may end up trying to
+acquire the runqueue lock.
+This happens on a context switch where the current thread is blocking
+(not preempted) and
+the new timeout happens to be either in the past or just expiring.
+We've run into such situations
+with simple tests.
+
+On all architectures, but IA-64, it seems thet the runqueue lock is
+held until the end of schedule().
+On IA-64, the lock is released BEFORE switch_to() for some reason I
+don't quite remember. That
+may not even be needed anymore.
+
+The early unlocking is controlled by a macro named __ARCH_WANT_UNLOCKED_CTXSW.
+Defining this macros on X86 (or PPC) fixed our problem.
+
+It is not clear to me why the runqueue lock needs to be held up until
+the end of schedule() on some
+platforms and not on others. Not that releasing the lock earlier does
+not necessarily introduce
+more overhead because the lock is never re-acquired later in the
+schedule() function.
+
+Question:
+   - is it safe to release the lock before switch_to() on all architectures?
+
+Thanks.
