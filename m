@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbYAQS1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbYAQS16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755071AbYAQS1U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 13:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYAQS1H
+	id S1756131AbYAQS16 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 13:27:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYAQS1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 13:27:07 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:19054 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751701AbYAQS1F (ORCPT
+	Thu, 17 Jan 2008 13:27:50 -0500
+Received: from wr-out-0506.google.com ([64.233.184.239]:39359 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751884AbYAQS1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 13:27:05 -0500
-From: Chris mason <chris.mason@oracle.com>
-To: btrfs-devel@oss.oracle.com
-Subject: Re: [Btrfs-devel] [ANNOUNCE] Btrfs v0.10 (online growing/shrinking, ext3 conversion, and more)
-Date: Thu, 17 Jan 2008 13:25:55 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <20080115105238.4fc3e992@think.oraclecorp.com>
-In-Reply-To: <20080115105238.4fc3e992@think.oraclecorp.com>
+	Thu, 17 Jan 2008 13:27:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=X2EeqGX9/jUauFiDo1oU6z9028q6IzG7McfiG6yX2O75D/QSMgJ1CGZEWj6tsAfRT3Eh0b8SNQ4+SVz+8xN+bu+3+SC+dVP9dH31S8Rz7xlXjP446o3KhJ5OiW/a6AOEWmjWBHCthZ86LzX8l/DXmN0yEJClOK0m4naRnePBXx4=
+Date: Thu, 17 Jan 2008 13:27:42 -0500
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.24-rc8
+Message-ID: <20080117132644.ZZRA012@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801171325.55406.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 January 2008, Chris Mason wrote:
-> Hello everyone,
->
-> Btrfs v0.10 is now available for download from:
->
-> http://oss.oracle.com/projects/btrfs/
+Hi Linus,
 
-Well, it turns out this release had a few small problems:
+Please pull from:
 
-* data=ordered deadlock on older kernels (including 2.6.23)
-* Compile problems when ACLs were not enabled in the kernel
+        git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+        master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
-So, I've put v0.11 out there.  It fixes those two problems and will also 
-compile on older (2.6.18) enterprise kernels.
+to receive more updates for the input subsystem.
 
-v0.11 does not have any disk format changes.
+Changelog:
+---------
 
--chris
+Andres Salomon (2):
+      Input: psmouse - fix potential memory leak in psmouse_connect()
+      Input: psmouse - fix input_dev leak in lifebook driver
 
+Daniel Ritz (1):
+      Input: usbtouchscreen - fix buffer overflow, make more egalax work
 
+Dmitry Torokhov (1):
+      Input: ALPS - fix sync loss on Acer Aspire 5720ZG
+
+Micah Parrish (1):
+      Input: mousedev - handle mice that use absolute coordinates
+
+Diffstat:
+--------
+
+ drivers/input/mouse/alps.c                 |    2 +-
+ drivers/input/mouse/lifebook.c             |    7 +++-
+ drivers/input/mouse/psmouse-base.c         |    2 +
+ drivers/input/mousedev.c                   |    9 +++++
+ drivers/input/touchscreen/usbtouchscreen.c |   55 +++++++++++++++++-----------
+ 5 files changed, 51 insertions(+), 24 deletions(-)
+
+-- 
+Dmitry
