@@ -1,192 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbYAQCbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbYAQCgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbYAQCbz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 Jan 2008 21:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbYAQC3c
+	id S1754183AbYAQCgS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 Jan 2008 21:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbYAQCgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 Jan 2008 21:29:32 -0500
-Received: from gw.goop.org ([64.81.55.164]:46849 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753071AbYAQC31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 Jan 2008 21:29:27 -0500
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+	Wed, 16 Jan 2008 21:36:03 -0500
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:51675 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750926AbYAQCgA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 Jan 2008 21:36:00 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq4HAOBNjkdMROHU/2dsb2JhbACBWKxe
+Date: Wed, 16 Jan 2008 21:35:57 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>, Paul Mackerras <paulus@samba.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
+Message-ID: <20080117023557.GC2322@Krystal>
+References: <Pine.LNX.4.58.0801151658190.29090@gandalf.stny.rr.com> <20080115220824.GB22242@Krystal> <Pine.LNX.4.58.0801151717250.29090@gandalf.stny.rr.com> <20080116031730.GA2164@Krystal> <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com> <20080116145604.GB31329@Krystal> <1f1b08da0801161436k4a7ac1e3kd83590951e7bebb9@mail.gmail.com> <1200523867.6127.5.camel@localhost.localdomain> <20080116233927.GB23895@Krystal> <1200536409.6127.47.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 6 of 8] x86/paravirt: make set_pte operations common
-X-Mercurial-Node: 3ba5016002e84434af8b3d0b21078805371d590d
-Message-Id: <3ba5016002e84434af8b.1200526044@localhost>
-In-Reply-To: <patchbomb.1200526038@localhost>
-Date: Wed, 16 Jan 2008 15:27:24 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
+Content-Disposition: inline
+In-Reply-To: <1200536409.6127.47.camel@localhost.localdomain>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 21:23:29 up 74 days,  7:28,  5 users,  load average: 0.20, 0.42,
+	0.52
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove duplicate set_pte* operations.  PAE still needs to have special
-variants of some of these because it can't atomically update a 64-bit
-pte, so there's still some duplication.
+* john stultz (johnstul@us.ibm.com) wrote:
+> On Wed, 2008-01-16 at 18:39 -0500, Mathieu Desnoyers wrote:
+> > I would disable preemption in clocksource_get_basecycles. We would not
+> > want to be scheduled out while we hold a pointer to the old array
+> > element.
+> > 
+> > > +	int num = cs->base_num;
+> > 
+> > Since you deal with base_num in a shared manner (not per cpu), you will
+> > need a smp_read_barrier_depend() here after the cs->base_num read.
+> > 
+> > You should think about reading the cs->base_num first, and _after_ that
+> > read the real clocksource. Here, the clocksource value is passed as
+> > parameter. It means that the read clocksource may have been read in the
+> > previous RCU window.
+> 
+> Here's an updated version of the patch w/ the suggested memory barrier
+> changes and favored (1-x) inversion change. ;)  Let me know if you see
+> any other holes, or have any other suggestions or ideas.
+> 
+> Still un-tested (my test box will free up soon, I promise!), but builds.
+> 
+> Signed-off-by: John Stultz <johstul@us.ibm.com>
+> 
+> Index: monotonic-cleanup/include/linux/clocksource.h
+> ===================================================================
+> --- monotonic-cleanup.orig/include/linux/clocksource.h	2008-01-16 12:22:04.000000000 -0800
+> +++ monotonic-cleanup/include/linux/clocksource.h	2008-01-16 18:12:53.000000000 -0800
+> @@ -87,9 +87,17 @@
+>  	 * more than one cache line.
+>  	 */
+>  	struct {
+> -		cycle_t cycle_last, cycle_accumulated, cycle_raw;
+> -	} ____cacheline_aligned_in_smp;
+> +		cycle_t cycle_last, cycle_accumulated;
+>  
+> +		/* base structure provides lock-free read
+> +		 * access to a virtualized 64bit counter
+> +		 * Uses RCU-like update.
+> +		 */
+> +		struct {
+> +			cycle_t cycle_base_last, cycle_base;
+> +		} base[2];
+> +		int base_num;
+> +	} ____cacheline_aligned_in_smp;
+>  	u64 xtime_nsec;
+>  	s64 error;
+>  
+> @@ -175,19 +183,29 @@
+>  }
+>  
+>  /**
+> - * clocksource_get_cycles: - Access the clocksource's accumulated cycle value
+> + * clocksource_get_basecycles: - get the clocksource's accumulated cycle value
+>   * @cs:		pointer to clocksource being read
+>   * @now:	current cycle value
+>   *
+>   * Uses the clocksource to return the current cycle_t value.
+>   * NOTE!!!: This is different from clocksource_read, because it
+> - * returns the accumulated cycle value! Must hold xtime lock!
+> + * returns a 64bit wide accumulated value.
+>   */
+>  static inline cycle_t
+> -clocksource_get_cycles(struct clocksource *cs, cycle_t now)
+> +clocksource_get_basecycles(struct clocksource *cs)
+>  {
+> -	cycle_t offset = (now - cs->cycle_last) & cs->mask;
+> -	offset += cs->cycle_accumulated;
+> +	int num;
+> +	cycle_t now, offset;
+> +
+> +	preempt_disable();
+> +	num = cs->base_num;
+> +	smp_read_barrier_depends();
+> +	now = clocksource_read(cs);
+> +	offset = (now - cs->base[num].cycle_base_last);
+> +	offset &= cs->mask;
+> +	offset += cs->base[num].cycle_base;
+> +	preempt_enable();
+> +
+>  	return offset;
+>  }
+>  
+> @@ -197,14 +215,26 @@
+>   * @now:	current cycle value
+>   *
+>   * Used to avoids clocksource hardware overflow by periodically
+> - * accumulating the current cycle delta. Must hold xtime write lock!
+> + * accumulating the current cycle delta. Uses RCU-like update, but
+> + * ***still requires the xtime_lock is held for writing!***
+>   */
+>  static inline void clocksource_accumulate(struct clocksource *cs, cycle_t now)
+>  {
+> -	cycle_t offset = (now - cs->cycle_last) & cs->mask;
+> +	/* First update the monotonic base portion.
+> +	 * The dual array update method allows for lock-free reading.
+> +	 */
+> +	int num = 1 - cs->base_num;
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
----
- include/asm-x86/paravirt.h |  116 ++++++++++++++++++++++----------------------
- 1 file changed, 60 insertions(+), 56 deletions(-)
+(nitpick)
+right here, you could probably express 1-num with cs->base_num, since we
+are the only ones supposed to touch it.
 
-diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
---- a/include/asm-x86/paravirt.h
-+++ b/include/asm-x86/paravirt.h
-@@ -978,6 +978,66 @@ static inline pgdval_t pgd_val(pgd_t pgd
- 	return ret;
- }
- 
-+static inline void set_pte(pte_t *ptep, pte_t pte)
-+{
-+	if (sizeof(pteval_t) > sizeof(long))
-+		PVOP_VCALL3(pv_mmu_ops.set_pte, ptep,
-+			    pte.pte, (u64)pte.pte >> 32);
-+	else
-+		PVOP_VCALL2(pv_mmu_ops.set_pte, ptep,
-+			    pte.pte);
-+}
-+
-+static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
-+			      pte_t *ptep, pte_t pte)
-+{
-+	if (sizeof(pteval_t) > sizeof(long))
-+		/* 5 arg words */
-+		pv_mmu_ops.set_pte_at(mm, addr, ptep, pte);
-+	else
-+		PVOP_VCALL4(pv_mmu_ops.set_pte_at, mm, addr, ptep, pte.pte);
-+}
-+
-+#ifdef CONFIG_X86_PAE
-+/* Special-case pte-setting operations for PAE, which can't update a
-+   64-bit pte atomically */
-+static inline void set_pte_atomic(pte_t *ptep, pte_t pte)
-+{
-+	PVOP_VCALL3(pv_mmu_ops.set_pte_atomic, ptep,
-+		    pte.pte, pte.pte >> 32);
-+}
-+
-+static inline void set_pte_present(struct mm_struct *mm, unsigned long addr,
-+				   pte_t *ptep, pte_t pte)
-+{
-+	/* 5 arg words */
-+	pv_mmu_ops.set_pte_present(mm, addr, ptep, pte);
-+}
-+
-+static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
-+			     pte_t *ptep)
-+{
-+	PVOP_VCALL3(pv_mmu_ops.pte_clear, mm, addr, ptep);
-+}
-+#else  /* !CONFIG_X86_PAE */
-+static inline void set_pte_atomic(pte_t *ptep, pte_t pte)
-+{
-+	set_pte(ptep, pte);
-+}
-+
-+static inline void set_pte_present(struct mm_struct *mm, unsigned long addr,
-+				   pte_t *ptep, pte_t pte)
-+{
-+	set_pte(ptep, pte);
-+}
-+
-+static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
-+			     pte_t *ptep)
-+{
-+	set_pte_at(mm, addr, ptep, __pte(0));
-+}
-+#endif	/* CONFIG_X86_PAE */
-+
- #if PAGETABLE_LEVELS >= 3
- static inline pmd_t __pmd(pmdval_t val)
- {
-@@ -1010,31 +1070,6 @@ static inline pmdval_t pmd_val(pmd_t pmd
- 
- #ifdef CONFIG_X86_PAE
- 
--static inline void set_pte(pte_t *ptep, pte_t pteval)
--{
--	PVOP_VCALL3(pv_mmu_ops.set_pte, ptep, pteval.pte_low, pteval.pte_high);
--}
--
--static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
--			      pte_t *ptep, pte_t pteval)
--{
--	/* 5 arg words */
--	pv_mmu_ops.set_pte_at(mm, addr, ptep, pteval);
--}
--
--static inline void set_pte_atomic(pte_t *ptep, pte_t pteval)
--{
--	PVOP_VCALL3(pv_mmu_ops.set_pte_atomic, ptep,
--		    pteval.pte_low, pteval.pte_high);
--}
--
--static inline void set_pte_present(struct mm_struct *mm, unsigned long addr,
--				   pte_t *ptep, pte_t pte)
--{
--	/* 5 arg words */
--	pv_mmu_ops.set_pte_present(mm, addr, ptep, pte);
--}
--
- static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
- {
- 	PVOP_VCALL3(pv_mmu_ops.set_pmd, pmdp,
-@@ -1047,28 +1082,12 @@ static inline void set_pud(pud_t *pudp, 
- 		    pudval.pgd.pgd, pudval.pgd.pgd >> 32);
- }
- 
--static inline void pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
--{
--	PVOP_VCALL3(pv_mmu_ops.pte_clear, mm, addr, ptep);
--}
--
- static inline void pmd_clear(pmd_t *pmdp)
- {
- 	PVOP_VCALL1(pv_mmu_ops.pmd_clear, pmdp);
- }
- 
- #else  /* !CONFIG_X86_PAE */
--
--static inline void set_pte(pte_t *ptep, pte_t pteval)
--{
--	PVOP_VCALL2(pv_mmu_ops.set_pte, ptep, pteval.pte_low);
--}
--
--static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
--			      pte_t *ptep, pte_t pteval)
--{
--	PVOP_VCALL4(pv_mmu_ops.set_pte_at, mm, addr, ptep, pteval.pte_low);
--}
- 
- static inline void set_pmd(pmd_t *pmdp, pmd_t pmdval)
- {
-@@ -1080,21 +1099,6 @@ static inline void pmd_clear(pmd_t *pmdp
- 	set_pmd(pmdp, __pmd(0));
- }
- 
--static inline void pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
--{
--	set_pte_at(mm, addr, ptep, __pte(0));
--}
--
--static inline void set_pte_atomic(pte_t *ptep, pte_t pte)
--{
--	set_pte(ptep, pte);
--}
--
--static inline void set_pte_present(struct mm_struct *mm, unsigned long addr,
--				   pte_t *ptep, pte_t pte)
--{
--	set_pte(ptep, pte);
--}
- #endif	/* CONFIG_X86_PAE */
- 
- /* Lazy mode for batching updates / context switch */
+> +	cycle_t offset = (now - cs->base[1-num].cycle_base_last);
+> +	offset &= cs->mask;
 
+here too.
 
+> +	cs->base[num].cycle_base = cs->base[1-num].cycle_base + offset;
+> +	cs->base[num].cycle_base_last = now;
+> +	wmb();
+
+As I just emailed : smp_smb() *should* be enough. I don't see which
+architecture could reorder writes wrt local interrupts ? (please tell me
+if I am grossly mistaken)
+
+Mathieu
+
+> +	cs->base_num = num;
+> +
+> +	/* Now update the cycle_accumulated portion */
+> +	offset = (now - cs->cycle_last) & cs->mask;
+>  	cs->cycle_last = now;
+>  	cs->cycle_accumulated += offset;
+> -	cs->cycle_raw += offset;
+>  }
+>  
+>  /**
+> Index: monotonic-cleanup/kernel/time/timekeeping.c
+> ===================================================================
+> --- monotonic-cleanup.orig/kernel/time/timekeeping.c	2008-01-16 12:21:46.000000000 -0800
+> +++ monotonic-cleanup/kernel/time/timekeeping.c	2008-01-16 17:51:50.000000000 -0800
+> @@ -71,10 +71,12 @@
+>   */
+>  static inline s64 __get_nsec_offset(void)
+>  {
+> -	cycle_t cycle_delta;
+> +	cycle_t now, cycle_delta;
+>  	s64 ns_offset;
+>  
+> -	cycle_delta = clocksource_get_cycles(clock, clocksource_read(clock));
+> +	now = clocksource_read(clock);
+> +	cycle_delta = (now - clock->cycle_last) & clock->mask;
+> +	cycle_delta += clock->cycle_accumulated;
+>  	ns_offset = cyc2ns(clock, cycle_delta);
+>  
+>  	return ns_offset;
+> @@ -105,35 +107,7 @@
+>  
+>  cycle_t notrace get_monotonic_cycles(void)
+>  {
+> -	cycle_t cycle_now, cycle_delta, cycle_raw, cycle_last;
+> -
+> -	do {
+> -		/*
+> -		 * cycle_raw and cycle_last can change on
+> -		 * another CPU and we need the delta calculation
+> -		 * of cycle_now and cycle_last happen atomic, as well
+> -		 * as the adding to cycle_raw. We don't need to grab
+> -		 * any locks, we just keep trying until get all the
+> -		 * calculations together in one state.
+> -		 *
+> -		 * In fact, we __cant__ grab any locks. This
+> -		 * function is called from the latency_tracer which can
+> -		 * be called anywhere. To grab any locks (including
+> -		 * seq_locks) we risk putting ourselves into a deadlock.
+> -		 */
+> -		cycle_raw = clock->cycle_raw;
+> -		cycle_last = clock->cycle_last;
+> -
+> -		/* read clocksource: */
+> -		cycle_now = clocksource_read(clock);
+> -
+> -		/* calculate the delta since the last update_wall_time: */
+> -		cycle_delta = (cycle_now - cycle_last) & clock->mask;
+> -
+> -	} while (cycle_raw != clock->cycle_raw ||
+> -		 cycle_last != clock->cycle_last);
+> -
+> -	return cycle_raw + cycle_delta;
+> +	return clocksource_get_basecycles(clock);
+>  }
+>  
+>  unsigned long notrace cycles_to_usecs(cycle_t cycles)
+> 
+> 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
