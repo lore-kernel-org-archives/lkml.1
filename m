@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbYAQN4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbYAQN6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755883AbYAQN4x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 08:56:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYAQN4h
+	id S1754965AbYAQN6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 08:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbYAQN6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 08:56:37 -0500
-Received: from free-electrons.com ([88.191.23.47]:48192 "EHLO
-	sd-2511.dedibox.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752759AbYAQN4f (ORCPT
+	Thu, 17 Jan 2008 08:58:10 -0500
+Received: from ag-out-0708.google.com ([72.14.246.250]:47310 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752226AbYAQN6J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 08:56:35 -0500
-X-Greylist: delayed 1137 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jan 2008 08:56:35 EST
-From: Michael Opdenacker <michael-lists@free-electrons.com>
-Organization: Free Electrons
-To: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com
-Subject: [PATCH] x86: clean arch/[i386|x86_64] in make mrproper
-Date: Thu, 17 Jan 2008 14:37:23 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
+	Thu, 17 Jan 2008 08:58:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
+        b=YbcXQQ/KwgVHRQsQJbZEFb3Jbe/MSEJ1DX4ea8UM1UcvBC8lhj+nlZLq87TtPbQG6eyUl3KVXEjm5ykC9Kk+852UcDII1sbQ/38kD05oLIkAOoiW8kCgX7VfZ6BNLliatcaKxNhPVwJLWM/gTNR2NHIJlUcEu+DQ6k6FEdz7PnM=
+Date: Thu, 17 Jan 2008 21:56:41 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: [-mm Patch] uml: fix a building error
+Message-ID: <20080117135641.GD2693@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200801171437.25038.michael-lists@free-electrons.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applies to: 2.6.24-rc8-git1
 
-For backward compatibility with earlier (< 2.6.24) kernels,
-arch/i386/boot/bzImage or arch/x86_64/boot/bzImage
-symbolic links to arch/x86/boot/bzImage
-are created when you build an x86 kernel.
-The arch/i386 or arch/x86_64 directories are then
-created for this only purpose.
+This patch fixes this building error:
+...
+drivers/char/mem.c: In function ‘read_mem’:
+drivers/char/mem.c:136: error: implicit declaration of function ‘unxlate_dev_mem_ptr’
+...
 
-Issue: these generated directories and symbolic
-links are *not cleaned up* when you run
-"make mrproper" (and thus "make distclean").
-This disturbs the production of patches,
-because the source tree is left with generated files
-and directories.
+Cc: Jeff Dike <jdike@addtoit.com>
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-Proposed fix: add arch/i386 and arch/x86_84 to
-the list of directories cleaned by "make mrproper"
+---
 
-Cleaner solution: stop creating these symbolic
-links, but this could cause issues with scripts
-still expecting bzImage in arch/i386/boot/bzImage
-or in arch/x86_64/boot/bzImage.
-
-What do you think? I can submit another patch for
-the second option.
-
-Michael.
-
-Signed-off-by: Michael Opdenacker <michael@free-electrons.com>
---- linux-2.6.24-rc8-git1/Makefile	2008-01-17 09:54:22.000000000 +0100
-+++ linux-2.6.24-rc8-git1-mrproper-x86/Makefile	2008-01-17 10:49:19.000000000 +0100
-@@ -1088,7 +1088,7 @@
-                 .tmp_kallsyms* .tmp_version .tmp_vmlinux* .tmp_System.map
+Index: linux/include/asm-um/io.h
+===================================================================
+--- linux.orig/include/asm-um/io.h
++++ linux/include/asm-um/io.h
+@@ -27,6 +27,7 @@ static inline void * phys_to_virt(unsign
+  * access
+  */
+ #define xlate_dev_mem_ptr(p)	__va(p)
++#define unxlate_dev_mem_ptr(p, ptr)
  
- # Directories & files removed with 'make mrproper'
--MRPROPER_DIRS  += include/config include2 usr/include
-+MRPROPER_DIRS  += include/config include2 usr/include arch/i386 arch/x86_64
- MRPROPER_FILES += .config .config.old include/asm .version .old_version \
-                   include/linux/autoconf.h include/linux/version.h      \
-                   include/linux/utsrelease.h                            \
-
-
--- 
-Michael Opdenacker, Free Electrons
-Free Embedded Linux Training Materials
-on http://free-electrons.com/training
-(More than 1500 pages!)
+ /*
+  * Convert a virtual cached pointer to an uncached pointer
