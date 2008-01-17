@@ -1,109 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbYAQLnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752482AbYAQLrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751551AbYAQLnd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 06:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbYAQLnG
+	id S1752482AbYAQLrs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 06:47:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYAQLrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 06:43:06 -0500
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:4904 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbYAQLnD (ORCPT
+	Thu, 17 Jan 2008 06:47:41 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:41332 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751328AbYAQLrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 06:43:03 -0500
-Date: Thu, 17 Jan 2008 12:42:59 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Gabor Gombas <gombasg@sztaki.hu>, Tejun Heo <htejun@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net, kay.sievers@vrfy.org,
-       Greg KH <greg@kroah.com>, Marcel Holtmann <marcel@holtmann.org>,
-       davem@davemloft.net
-Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
-Message-ID: <20080117124259.19a88129@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20080117081504.GA3123@darkstar.te-china.tietoenator.com>
-References: <20080108133215.GA15814@boogie.lpds.sztaki.hu>
-	<478490D2.5050902@gmail.com>
-	<20080110011117.GA3968@darkstar.te-china.tietoenator.com>
-	<20080111230929.GA7052@boogie.lpds.sztaki.hu>
-	<a8e1da0801132305s4f0c3d7asa268382bb6e44777@mail.gmail.com>
-	<20080114135228.6b9a8da2@gondolin.boeblingen.de.ibm.com>
-	<20080115015741.GB2780@darkstar.te-china.tietoenator.com>
-	<20080116010205.GA2970@darkstar.te-china.tietoenator.com>
-	<20080116230646.GB6715@boogie.lpds.sztaki.hu>
-	<a8e1da0801162324r2cd82684iede3fc8c2f8c391c@mail.gmail.com>
-	<20080117081504.GA3123@darkstar.te-china.tietoenator.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 Jan 2008 06:47:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=d/bJczNpyQqtcxmLU/2sOiB0kQ2weBQFy23R5uYvy6GQd9mXFFX09YDqrWa99IHr4cBMzQjjCVVvkImlWOfgN8yBq9iD4F5I7HjTbszHIYXq/KTGtNKHD+S1KjigK/IjkU+nyg+2QuQa7NM/J6m0/sWQtXi/4tTBjCn0hx+fu58=
+Message-ID: <4df4ef0c0801170347n7560c604l5a352791a73aa@mail.gmail.com>
+Date: Thu, 17 Jan 2008 14:47:39 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: [PATCH -v5 1/2] Massive code cleanup of sys_msync()
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
+       hidave.darkstar@gmail.com, hch@infradead.org
+In-Reply-To: <E1JFSUo-0006Ev-Fm@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12005314662518-git-send-email-salikhmetov@gmail.com>
+	 <12005314711867-git-send-email-salikhmetov@gmail.com>
+	 <E1JFSUo-0006Ev-Fm@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 16:15:04 +0800,
-Dave Young <hidave.darkstar@gmail.com> wrote:
+2008/1/17, Miklos Szeredi <miklos@szeredi.hu>:
+> > Substantial code cleanup of the sys_msync() function:
+> >
+> > 1) using the PAGE_ALIGN() macro instead of "manual" alignment;
+> > 2) improved readability of the loop traversing the process memory regions.
+> >
+> > Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
+> > ---
+> >  mm/msync.c |   74 +++++++++++++++++++++++++++++------------------------------
+> >  1 files changed, 36 insertions(+), 38 deletions(-)
+> >
+> > diff --git a/mm/msync.c b/mm/msync.c
+> > index 144a757..44997bf 100644
+> > --- a/mm/msync.c
+> > +++ b/mm/msync.c
+> > @@ -1,24 +1,22 @@
+> >  /*
+> > - *   linux/mm/msync.c
+> > + * The msync() system call.
+> >   *
+> > - * Copyright (C) 1994-1999  Linus Torvalds
+> > + * Copyright (C) 1994-1999 Linus Torvalds
+> > + * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
+> >   */
+> >
+> > -/*
+> > - * The msync() system call.
+> > - */
+> > +#include <linux/file.h>
+> >  #include <linux/fs.h>
+> >  #include <linux/mm.h>
+> >  #include <linux/mman.h>
+> > -#include <linux/file.h>
+> > -#include <linux/syscalls.h>
+> >  #include <linux/sched.h>
+> > +#include <linux/syscalls.h>
+> >
+> >  /*
+> >   * MS_SYNC syncs the entire file - including mappings.
+> >   *
+> >   * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
+> > - * Nor does it marks the relevant pages dirty (it used to up to 2.6.17).
+> > + * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
+> >   * Now it doesn't do anything, since dirty pages are properly tracked.
+> >   *
+> >   * The application may now run fsync() to
+> > @@ -33,8 +31,7 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+> >       unsigned long end;
+> >       struct mm_struct *mm = current->mm;
+> >       struct vm_area_struct *vma;
+> > -     int unmapped_error = 0;
+> > -     int error = -EINVAL;
+> > +     int error = -EINVAL, unmapped_error = 0;
+>
+> I prefer multi-line variable declarations, especially for ones with an
+> initializer.
+>
+> >
+> >       if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
+> >               goto out;
+> > @@ -42,62 +39,63 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+> >               goto out;
+> >       if ((flags & MS_ASYNC) && (flags & MS_SYNC))
+> >               goto out;
+> > -     error = -ENOMEM;
+> > -     len = (len + ~PAGE_MASK) & PAGE_MASK;
+> > +
+> > +     len = PAGE_ALIGN(len);
+> >       end = start + len;
+> > -     if (end < start)
+> > +     if (end < start) {
+> > +             error = -ENOMEM;
+>
+> The usual style is to have the error assignment outside the
+> conditional.  That way is shorter, clearer, as well as possibly
+> generating better code.
+>
+> >               goto out;
+> > +     }
+> > +
+> >       error = 0;
+> > +
+>
+> Unnecessary empty line here, these two statements actually belong
+> together.
+>
+> >       if (end == start)
+> >               goto out;
+> > +
+> >       /*
+> >        * If the interval [start,end) covers some unmapped address ranges,
+> >        * just ignore them, but return -ENOMEM at the end.
+> >        */
+> >       down_read(&mm->mmap_sem);
+> >       vma = find_vma(mm, start);
+> > -     for (;;) {
+> > +     do {
+> >               struct file *file;
+> >
+> > -             /* Still start < end. */
+> > -             error = -ENOMEM;
+> > -             if (!vma)
+> > -                     goto out_unlock;
+> > -             /* Here start < vma->vm_end. */
+> > +             if (!vma) {
+> > +                     error = -ENOMEM;
+> > +                     break;
+> > +             }
+>
+> Again, error asignment should be outside the conditional.  This of
+> course means, you'll have to set the error back to zero at the end of
+> the loop, but that's fine.
+>
+> >               if (start < vma->vm_start) {
+> >                       start = vma->vm_start;
+> > -                     if (start >= end)
+> > -                             goto out_unlock;
+> > +                     if (start >= end) {
+> > +                             error = -ENOMEM;
+> > +                             break;
+> > +                     }
+>
+> Ditto.
+>
+> >                       unmapped_error = -ENOMEM;
+> >               }
+> > -             /* Here vma->vm_start <= start < vma->vm_end. */
+> > -             if ((flags & MS_INVALIDATE) &&
+> > -                             (vma->vm_flags & VM_LOCKED)) {
+> > +             if ((flags & MS_INVALIDATE) && (vma->vm_flags & VM_LOCKED)) {
+> >                       error = -EBUSY;
+>
+> Ditto2.
+>
+> > -                     goto out_unlock;
+> > +                     break;
+> >               }
+> > -             file = vma->vm_file;
+> >               start = vma->vm_end;
+> > -             if ((flags & MS_SYNC) && file &&
+> > -                             (vma->vm_flags & VM_SHARED)) {
+> > +
+> > +             file = vma->vm_file;
+> > +             if (file && (vma->vm_flags & VM_SHARED) && (flags & MS_SYNC)) {
+> >                       get_file(file);
+> >                       up_read(&mm->mmap_sem);
+> >                       error = do_fsync(file, 0);
+> >                       fput(file);
+> > -                     if (error || start >= end)
+> > +                     if (error)
+>
+> This simplifies, but also does unnecessary down/find_vma/up.
+>
+> >                               goto out;
+> >                       down_read(&mm->mmap_sem);
+> >                       vma = find_vma(mm, start);
+> > -             } else {
+> > -                     if (start >= end) {
+> > -                             error = 0;
+> > -                             goto out_unlock;
+> > -                     }
+> > -                     vma = vma->vm_next;
+> > +                     continue;
+> >               }
+> > -     }
+> > -out_unlock:
+> > +
+> > +             vma = vma->vm_next;
+> > +     } while (start < end);
+> >       up_read(&mm->mmap_sem);
+> > +
+> >  out:
+> > -     return error ? : unmapped_error;
+> > +     return error ? error : unmapped_error;
+> >  }
+>
 
-> On Thu, Jan 17, 2008 at 03:24:50PM +0800, Dave Young wrote:
-> > On Jan 17, 2008 7:06 AM, Gabor Gombas <gombasg@sztaki.hu> wrote:
-> > > Hi,
-> > >
-> > > On Wed, Jan 16, 2008 at 09:02:05AM +0800, Dave Young wrote:
-> > >
-> > > > The rfcomm tty device will possibly retain even when conn is down,
-> > > > and sysfs doesn't support zombie device moving, so this patch
-> > > > move the tty device before conn device is destroyed.
-> > > >
-> > > > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-> > >
-> > > This seems to work, both the oops and the hang are gone. I get these
-> > > messages in syslog when the Bluetooth link hangs and I want to kill pppd
-> > > with "poff":
-> > >
-> > > Jan 16 23:55:59 twister kernel: unregister_netdevice: waiting for ppp0 to become free. Usage count = 1
-> > > Jan 16 23:56:09 twister kernel: unregister_netdevice: waiting for ppp0 to become free. Usage count = 1
+Thanks for your recommendations!
 
-Might be helpful to try with CONFIG_DEBUG_DRIVER=y and
-CONFIG_KOBJECT_DEBUG=y to spot where a reference is not dropped.
-
-> > >
-> > > But a "killall -9 pppd" seems to help and then the re-connect (after the
-> > > phone got power-cycled) works.
-> > 
-> > Weird, I guess "device_move(dev, NULL) two times" cause the problem.
-> > 
-> > Anyway, device_move should check the old_parent and new_parent , if
-> > they equal to each other then just return.
-
-sysfs_move_dir() does this (to avoid a loop later in the function).
-Don't know if that's a good thing to check at a higher level as well,
-because the calling code should really know where their devices are.
-
-Anyway, if this "move in place" exposes a refcounting bug, we must fix
-it.
-
-> > 
-> > Am I right?
-> 
-> Could you apply this patch as well to test? Thanks.
-> 
-> diff -upr linux/net/bluetooth/rfcomm/tty.c linux.new/net/bluetooth/rfcomm/tty.c
-> --- linux/net/bluetooth/rfcomm/tty.c	2008-01-17 16:09:34.000000000 +0800
-> +++ linux.new/net/bluetooth/rfcomm/tty.c	2008-01-17 16:10:22.000000000 +0800
-> @@ -692,7 +692,8 @@ static void rfcomm_tty_close(struct tty_
->  	BT_DBG("tty %p dev %p dlc %p opened %d", tty, dev, dev->dlc, dev->opened);
-> 
->  	if (--dev->opened == 0) {
-> -		device_move(dev->tty_dev, NULL);
-> +		if (dev->tty_dev->parent)
-> +			device_move(dev->tty_dev, NULL);
-> 
->  		/* Close DLC and dettach TTY */
->  		rfcomm_dlc_close(dev->dlc, 0);
-> 
-
-Avoiding to move devices when there is nothing to be moved nevertheless
-sounds like a good idea :)
+I'll take them into account for the next version.
