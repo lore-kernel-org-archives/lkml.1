@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbYAQRP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbYAQRPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754800AbYAQRP0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 12:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbYAQRPJ
+	id S1755424AbYAQRPp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 12:15:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYAQRPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 12:15:09 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48460 "EHLO
+	Thu, 17 Jan 2008 12:15:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:48466 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751548AbYAQRPI (ORCPT
+	with ESMTP id S1752416AbYAQRPJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 12:15:08 -0500
+	Thu, 17 Jan 2008 12:15:09 -0500
 Subject: Re: 2.6.24-rc8-mm1 (BUG: sched_rt)
 From: Peter Zijlstra <peterz@infradead.org>
 To: Randy Dunlap <randy.dunlap@oracle.com>
@@ -19,8 +19,8 @@ In-Reply-To: <20080117084833.dc946466.randy.dunlap@oracle.com>
 References: <20080117023514.9df393cf.akpm@linux-foundation.org>
 	 <20080117084833.dc946466.randy.dunlap@oracle.com>
 Content-Type: text/plain
-Date: Thu, 17 Jan 2008 18:11:04 +0100
-Message-Id: <1200589864.5159.6.camel@twins>
+Date: Thu, 17 Jan 2008 18:15:02 +0100
+Message-Id: <1200590102.5920.1.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
@@ -75,15 +75,14 @@ On Thu, 2008-01-17 at 08:48 -0800, Randy Dunlap wrote:
 >  RSP <ffff8101e6805e38>
 > ---[ end trace 792ff0e66da42f45 ]---
 
-
-Hmm, that would be me messing up in : 4c121cce
+Hmm that would be me messing up in: 4c121cce
 
 -       if (!task_has_rt_policy(curr))
 -               return;
 +       BUG_ON(!task_has_rt_policy(curr));
 
+Does reverting that help?
 
-Does reverting that fix it?
-
-
+Strange thing is, at the time I was pretty sure that ought not
+happen... /me reaches for a brown paper bag.
 
