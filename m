@@ -1,219 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752482AbYAQLrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbYAQLy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752482AbYAQLrs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 06:47:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYAQLrl
+	id S1752844AbYAQLy3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 06:54:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbYAQLyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 06:47:41 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:41332 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328AbYAQLrk (ORCPT
+	Thu, 17 Jan 2008 06:54:19 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:58943 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbYAQLyS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 06:47:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d/bJczNpyQqtcxmLU/2sOiB0kQ2weBQFy23R5uYvy6GQd9mXFFX09YDqrWa99IHr4cBMzQjjCVVvkImlWOfgN8yBq9iD4F5I7HjTbszHIYXq/KTGtNKHD+S1KjigK/IjkU+nyg+2QuQa7NM/J6m0/sWQtXi/4tTBjCn0hx+fu58=
-Message-ID: <4df4ef0c0801170347n7560c604l5a352791a73aa@mail.gmail.com>
-Date: Thu, 17 Jan 2008 14:47:39 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [PATCH -v5 1/2] Massive code cleanup of sys_msync()
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
-       hidave.darkstar@gmail.com, hch@infradead.org
-In-Reply-To: <E1JFSUo-0006Ev-Fm@pomaz-ex.szeredi.hu>
+	Thu, 17 Jan 2008 06:54:18 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mathieu Segaud <mathieu.segaud@regala.cx>
+Subject: Re: [PATCH] Convert EXT2 to use unlocked_ioctl
+Date: Thu, 17 Jan 2008 12:54:03 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+References: <1200565824-362-1-git-send-email-mathieu.segaud@regala.cx>
+In-Reply-To: <1200565824-362-1-git-send-email-mathieu.segaud@regala.cx>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, sct@redhat.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <12005314662518-git-send-email-salikhmetov@gmail.com>
-	 <12005314711867-git-send-email-salikhmetov@gmail.com>
-	 <E1JFSUo-0006Ev-Fm@pomaz-ex.szeredi.hu>
+Message-Id: <200801171254.04071.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19FajlPGv5h0e7zJ9BQgJYUEJ8CYZW5PbOR9ZB
+ tMkbPPiZ0Ap9m3YX9vyTa2dJPQjkb6iJez56INSfPsygU/aQTi
+ tATnoaSroNe1FZGN64xbA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/17, Miklos Szeredi <miklos@szeredi.hu>:
-> > Substantial code cleanup of the sys_msync() function:
-> >
-> > 1) using the PAGE_ALIGN() macro instead of "manual" alignment;
-> > 2) improved readability of the loop traversing the process memory regions.
-> >
-> > Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
-> > ---
-> >  mm/msync.c |   74 +++++++++++++++++++++++++++++------------------------------
-> >  1 files changed, 36 insertions(+), 38 deletions(-)
-> >
-> > diff --git a/mm/msync.c b/mm/msync.c
-> > index 144a757..44997bf 100644
-> > --- a/mm/msync.c
-> > +++ b/mm/msync.c
-> > @@ -1,24 +1,22 @@
-> >  /*
-> > - *   linux/mm/msync.c
-> > + * The msync() system call.
-> >   *
-> > - * Copyright (C) 1994-1999  Linus Torvalds
-> > + * Copyright (C) 1994-1999 Linus Torvalds
-> > + * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
-> >   */
-> >
-> > -/*
-> > - * The msync() system call.
-> > - */
-> > +#include <linux/file.h>
-> >  #include <linux/fs.h>
-> >  #include <linux/mm.h>
-> >  #include <linux/mman.h>
-> > -#include <linux/file.h>
-> > -#include <linux/syscalls.h>
-> >  #include <linux/sched.h>
-> > +#include <linux/syscalls.h>
-> >
-> >  /*
-> >   * MS_SYNC syncs the entire file - including mappings.
-> >   *
-> >   * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
-> > - * Nor does it marks the relevant pages dirty (it used to up to 2.6.17).
-> > + * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
-> >   * Now it doesn't do anything, since dirty pages are properly tracked.
-> >   *
-> >   * The application may now run fsync() to
-> > @@ -33,8 +31,7 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
-> >       unsigned long end;
-> >       struct mm_struct *mm = current->mm;
-> >       struct vm_area_struct *vma;
-> > -     int unmapped_error = 0;
-> > -     int error = -EINVAL;
-> > +     int error = -EINVAL, unmapped_error = 0;
->
-> I prefer multi-line variable declarations, especially for ones with an
-> initializer.
->
-> >
-> >       if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
-> >               goto out;
-> > @@ -42,62 +39,63 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
-> >               goto out;
-> >       if ((flags & MS_ASYNC) && (flags & MS_SYNC))
-> >               goto out;
-> > -     error = -ENOMEM;
-> > -     len = (len + ~PAGE_MASK) & PAGE_MASK;
-> > +
-> > +     len = PAGE_ALIGN(len);
-> >       end = start + len;
-> > -     if (end < start)
-> > +     if (end < start) {
-> > +             error = -ENOMEM;
->
-> The usual style is to have the error assignment outside the
-> conditional.  That way is shorter, clearer, as well as possibly
-> generating better code.
->
-> >               goto out;
-> > +     }
-> > +
-> >       error = 0;
-> > +
->
-> Unnecessary empty line here, these two statements actually belong
-> together.
->
-> >       if (end == start)
-> >               goto out;
-> > +
-> >       /*
-> >        * If the interval [start,end) covers some unmapped address ranges,
-> >        * just ignore them, but return -ENOMEM at the end.
-> >        */
-> >       down_read(&mm->mmap_sem);
-> >       vma = find_vma(mm, start);
-> > -     for (;;) {
-> > +     do {
-> >               struct file *file;
-> >
-> > -             /* Still start < end. */
-> > -             error = -ENOMEM;
-> > -             if (!vma)
-> > -                     goto out_unlock;
-> > -             /* Here start < vma->vm_end. */
-> > +             if (!vma) {
-> > +                     error = -ENOMEM;
-> > +                     break;
-> > +             }
->
-> Again, error asignment should be outside the conditional.  This of
-> course means, you'll have to set the error back to zero at the end of
-> the loop, but that's fine.
->
-> >               if (start < vma->vm_start) {
-> >                       start = vma->vm_start;
-> > -                     if (start >= end)
-> > -                             goto out_unlock;
-> > +                     if (start >= end) {
-> > +                             error = -ENOMEM;
-> > +                             break;
-> > +                     }
->
-> Ditto.
->
-> >                       unmapped_error = -ENOMEM;
-> >               }
-> > -             /* Here vma->vm_start <= start < vma->vm_end. */
-> > -             if ((flags & MS_INVALIDATE) &&
-> > -                             (vma->vm_flags & VM_LOCKED)) {
-> > +             if ((flags & MS_INVALIDATE) && (vma->vm_flags & VM_LOCKED)) {
-> >                       error = -EBUSY;
->
-> Ditto2.
->
-> > -                     goto out_unlock;
-> > +                     break;
-> >               }
-> > -             file = vma->vm_file;
-> >               start = vma->vm_end;
-> > -             if ((flags & MS_SYNC) && file &&
-> > -                             (vma->vm_flags & VM_SHARED)) {
-> > +
-> > +             file = vma->vm_file;
-> > +             if (file && (vma->vm_flags & VM_SHARED) && (flags & MS_SYNC)) {
-> >                       get_file(file);
-> >                       up_read(&mm->mmap_sem);
-> >                       error = do_fsync(file, 0);
-> >                       fput(file);
-> > -                     if (error || start >= end)
-> > +                     if (error)
->
-> This simplifies, but also does unnecessary down/find_vma/up.
->
-> >                               goto out;
-> >                       down_read(&mm->mmap_sem);
-> >                       vma = find_vma(mm, start);
-> > -             } else {
-> > -                     if (start >= end) {
-> > -                             error = 0;
-> > -                             goto out_unlock;
-> > -                     }
-> > -                     vma = vma->vm_next;
-> > +                     continue;
-> >               }
-> > -     }
-> > -out_unlock:
-> > +
-> > +             vma = vma->vm_next;
-> > +     } while (start < end);
-> >       up_read(&mm->mmap_sem);
-> > +
-> >  out:
-> > -     return error ? : unmapped_error;
-> > +     return error ? error : unmapped_error;
-> >  }
->
+On Thursday 17 January 2008, you wrote:
+> 
+> Change ext_ioctl() to be an unlocked_ioctl(), explicitly
+> exposing BKL's uses.
+> 
+> Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
 
-Thanks for your recommendations!
+You are now calling lock_kernel() twice in case of ext2_compat_ioctl(),
+which calls back into ext2_ioctl with the BKL already held.
 
-I'll take them into account for the next version.
+This is allowed with the BKL, but really bad style that you should
+avoid. I assume the ext3 and ext4dev versions of your patch have
+the same issue, but I didn't check in detail.
+
+	Arnd <><
