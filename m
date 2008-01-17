@@ -1,76 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbYAQQHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343AbYAQQMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753472AbYAQQHQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 11:07:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbYAQQHD
+	id S1754343AbYAQQMM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 11:12:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYAQQL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 11:07:03 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:37781 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbYAQQHA (ORCPT
+	Thu, 17 Jan 2008 11:11:56 -0500
+Received: from wx-out-0506.google.com ([66.249.82.236]:16594 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768AbYAQQLy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 11:07:00 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [patch 0/2] serial: explicitly request ttyS0-3 for COM1-4
-Date: Thu, 17 Jan 2008 09:07:29 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080116170541.511233227@ldl.fc.hp.com> <200801161259.28723.bjorn.helgaas@hp.com> <20080116201438.GD23371@flint.arm.linux.org.uk>
-In-Reply-To: <20080116201438.GD23371@flint.arm.linux.org.uk>
+	Thu, 17 Jan 2008 11:11:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=w/rGqMpYq5Ur+eGU/fo6PNV5x3GA6uT9eOd/1KU3QBObKTAsDUH8+kyq24M+LLiumE0uyL2ADKDYlXc7iMAmnaFjg12Kgrum7S4mK1B5fVdColC8nzlofLA8oywmzG8EjjdMX0v1zLY4M6wx52nW90HSyoj9lBZtOvSzxgZ4EBI=
+Message-ID: <170fa0d20801170811k4f1fb39by2d793c3351d3cdd9@mail.gmail.com>
+Date: Thu, 17 Jan 2008 11:11:50 -0500
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Martin Knoblauch" <spamtrap@knobisoft.de>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+Cc: "Fengguang Wu" <wfg@mail.ustc.edu.cn>,
+       "Peter Zijlstra" <peterz@infradead.org>, jplatte@naasa.net,
+       "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <400343.10983.qm@web32611.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801170907.31162.bjorn.helgaas@hp.com>
+References: <400343.10983.qm@web32611.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 January 2008 01:14:38 pm Russell King wrote:
-> On Wed, Jan 16, 2008 at 12:59:27PM -0700, Bjorn Helgaas wrote:
-> > On Wednesday 16 January 2008 11:39:34 am Russell King wrote:
-> > > On Wed, Jan 16, 2008 at 10:05:41AM -0700, Bjorn Helgaas wrote:
-> > > > When 8250_pnp discovers COM ports, we only get the correct ttyS names
-> > > > by accident -- we rely on serial8250_isa_init_ports(), which discovers
-> > > > the COM ports earlier using the addresses in SERIAL_PORT_DFNS.
-> > > 
-> > > It's not by accident but by design.  It's quite intentional that it
-> > > remembers the addresses of serial ports, and if another port is
-> > > registered later with the same base address, it gets the same name.
-> > 
-> > It's certainly by design that if we register a port twice, it gets
-> > the same name both times.
-> 
-> Incorrect - if it's not detected first time around (eg, the port isn't
-> accessible at that time), its slot will still be reserved due to the
-> way slots are given out.
-> 
-> Slots are given to users in order of:
-> 
-> 1. does the IO type and base address of a previously known port match
->    the new port?  If so, use that.
-> 2. do we have a slot which has never been used - use that.
-> 3. find the first slot which is not currently in use.
-> 
-> So, the only way we'd get the first set of ttyS slots used is if all of
-> the following are true:
-> 
-> a) the ISA probe doesn't detect them
-> b) some other driver registers many ports which don't correspond with any
->    of the ISA listed addresses and we run out of empty slots
-> c) 8250_pnp initialises after this driver
-> 
-> (c) is unlikely, except in the modular case - we explicitly list 8250_pnp
-> immediately after the 8250 driver so that it gets first call on the
-> slots during initialisation time, before we probe for PCI devices.
+On Jan 17, 2008 8:52 AM, Martin Knoblauch <spamtrap@knobisoft.de> wrote:
+>
+> ----- Original Message ----
+> > From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> > To: Martin Knoblauch <knobi@knobisoft.de>
+> > Cc: Mike Snitzer <snitzer@gmail.com>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>; Linus Torvalds <torvalds@linux-foundation.org>
+> > Sent: Wednesday, January 16, 2008 1:00:04 PM
+> > Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+> >
+> > On Wed, Jan 16, 2008 at 01:26:41AM -0800, Martin Knoblauch wrote:
+> > > > For those interested in using your writeback improvements in
+> > > > production sooner rather than later (primarily with ext3); what
+> > > > recommendations do you have?  Just heavily test our own 2.6.24
+> > +
+> >
+>  your
+> > > > evolving "close, but not ready for merge" -mm writeback patchset?
+> > > >
+> > > Hi Fengguang, Mike,
+> > >
+> > >  I can add myself to Mikes question. It would be good to know
+> > a
+> >
+>  "roadmap" for the writeback changes. Testing 2.6.24-rcX so far has
+> > been
+> >
+>  showing quite nice improvement of the overall writeback situation and
+> > it
+> >
+>  would be sad to see this [partially] gone in 2.6.24-final.
+> > Linus
+> >
+>  apparently already has reverted  "...2250b". I will definitely repeat my
+> > tests
+> >
+>  with -rc8. and report.
+> >
+> > Thank you, Martin. Can you help test this patch on 2.6.24-rc7?
+> > Maybe we can push it to 2.6.24 after your testing.
+> >
+> Hi Fengguang,
+>
+>  something really bad has happened between -rc3 and -rc6. Embarrassingly I did not catch that earlier :-(
+>
+>  Compared to the numbers I posted in http://lkml.org/lkml/2007/10/26/208 , dd1 is now at 60 MB/sec (slight plus), while dd2/dd3 suck the same way as in pre 2.6.24. The only test that is still good is mix3, which I attribute to the per-BDI stuff.
+>
+>  At the moment I am frantically trying to find when things went down. I did run -rc8 and rc8+yourpatch. No difference to what I see with -rc6. Sorry that I cannot provide any input to your patch.
+>
+> Depressed
+> Martin
 
-Let me back up a minute.  I was merely trying to make the point that
-if we skip the ISA probe (which uses SERIAL_PORT_DFNS), the 8250_pnp
-probe will discover the COM ports but won't necessarily name them the
-way we expect (e.g., http://lkml.org/lkml/2007/8/10/409).
+Martin,
 
-Bjorn
+I've backported Peter's perbdi patchset to 2.6.22.x.  I can share it
+with anyone who might be interested.
+
+As expected, it has yielded 2.6.24-rcX level scaling.  Given the test
+result matrix you previously posted, 2.6.22.x+perbdi might give you
+what you're looking for (sans improved writeback that 2.6.24 was
+thought to be providing).  That is, much improved scaling with better
+O_DIRECT and network throughput.  Just a thought...
+
+Unfortunately, my priorities (and computing resources) have shifted
+and I won't be able to thoroughly test Fengguang's new writeback patch
+on 2.6.24-rc8... whereby missing out on providing
+justification/testing to others on _some_ improved writeback being
+included in 2.6.24 final.
+
+Not to mention the window for writeback improvement is all but closed
+considering the 2.6.24-rc8 announcement's 2.6.24 final release
+timetable.
+
+regards,
+Mike
