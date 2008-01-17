@@ -1,99 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbYAQSHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYAQSKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbYAQSHO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 13:07:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbYAQSHB
+	id S1755939AbYAQSKy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 13:10:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYAQSKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 13:07:01 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:10015 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbYAQSHA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 13:07:00 -0500
-Date: Thu, 17 Jan 2008 10:05:15 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: 2.6.24-rc8-mm1 (BUG: sched_rt)
-Message-Id: <20080117100515.99f983fc.randy.dunlap@oracle.com>
-In-Reply-To: <1200589864.5159.6.camel@twins>
+	Thu, 17 Jan 2008 13:10:46 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33266 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752260AbYAQSKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 13:10:46 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc8-mm1: broken suspend
+Date: Thu, 17 Jan 2008 19:13:36 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
 References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<20080117084833.dc946466.randy.dunlap@oracle.com>
-	<1200589864.5159.6.camel@twins>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200801171913.36854.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 18:11:04 +0100 Peter Zijlstra wrote:
+On Thursday, 17 of January 2008, Andrew Morton wrote:
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
+> 
+> - selinux is busted on one of my two selinux-enabled test machines.
+> 
+> - suspend-to-ram and suspend-to-disk are totally hosed on one of my test
+>   machines.  I guess I get to bisect this.
 
-> 
-> On Thu, 2008-01-17 at 08:48 -0800, Randy Dunlap wrote:
-> > On Thu, 17 Jan 2008 02:35:14 -0800 Andrew Morton wrote:
-> > 
-> > > 
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
-> > 
-> > Booting on x86_64 SMP gives me:
-> > 
-> > ------------[ cut here ]------------
-> > kernel BUG at kernel/sched_rt.c:228!
-> > invalid opcode: 0000 [1] SMP
-> > last sysfs file: /sys/devices/pci0000:40/0000:40:0c.0/0000:41:00.0/0000:42:08.0/class
-> > CPU 2
-> > Modules linked in: parport_pc lp parport tg3 cciss ehci_hcd ohci_hcd uhci_hcd
-> > Pid: 12738, comm: 5-1.test Not tainted 2.6.24-rc8-mm1 #1
-> > RIP: 0010:[<ffffffff8023077b>]  [<ffffffff8023077b>] update_curr_rt+0x27/0x87
-> > RSP: 0018:ffff8101e6805e38  EFLAGS: 00010093
-> > RAX: 0000000000000000 RBX: ffff81027f8591e0 RCX: ffff81000100fb80
-> > RDX: 0000000000000000 RSI: ffff81026eb8b1e0 RDI: ffff810001014980
-> > RBP: ffff8101e6805e48 R08: ffffffff8067d960 R09: 00000000000031c1
-> > R10: 0000000000000000 R11: 0000000000000246 R12: ffff81026eb8b1e0
-> > R13: ffff810001014980 R14: 0000000000000001 R15: 00000000ffffffff
-> > FS:  0000000041a07940(0063) GS:ffff81027f80d700(0000) knlGS:0000000000000000
-> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > CR2: 000000338b00c2d0 CR3: 0000000254169000 CR4: 00000000000006e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > Process 5-1.test (pid: 12738, threadinfo ffff8101e6804000, task ffff81026c8de8f0)
-> > Stack:  0000000000000000 ffff81026eb8b348 ffff8101e6805e78 ffffffff80231c9b
-> >  0000000000000000 ffff81026eb8b1e0 ffff810001014980 ffff81026eb8b1e0
-> >  ffff8101e6805e98 ffffffff8022f1bb ffff8101e6805ea8 ffff810001014980
-> > Call Trace:
-> >  [<ffffffff80231c9b>] dequeue_task_rt+0x1f/0x5e
-> >  [<ffffffff8022f1bb>] dequeue_task+0x13/0x1e
-> >  [<ffffffff8022f1e8>] deactivate_task+0x22/0x2a
-> >  [<ffffffff802343f9>] sched_setscheduler+0x22e/0x32f
-> >  [<ffffffff8023486a>] do_sched_setscheduler+0x5f/0x6e
-> >  [<ffffffff802348a0>] sys_sched_setscheduler+0x14/0x18
-> >  [<ffffffff8020c0f9>] tracesys+0xdc/0xe1
-> > 
-> > 
-> > Code: 48 89 c8 c3 55 48 89 e5 53 48 83 ec 08 48 8b 9f a8 07 00 00 8b 83 b0 01 00 00 48 8b 8b 98 01 00 00 83 f8 01 74 09 83 f8 02 74 04 <0f> 0b eb fe 48 8b 97 c8 07 00 00 48 2b 53 68 b8 00 00 00 00 48
-> > RIP  [<ffffffff8023077b>] update_curr_rt+0x27/0x87
-> >  RSP <ffff8101e6805e38>
-> > ---[ end trace 792ff0e66da42f45 ]---
-> 
-> 
-> Hmm, that would be me messing up in : 4c121cce
-> 
-> -       if (!task_has_rt_policy(curr))
-> -               return;
-> +       BUG_ON(!task_has_rt_policy(curr));
-> 
-> 
-> Does reverting that fix it?
+Please see if reverting pm-acquire-device-locks-on-suspend-rev-3.patch helps
+and if it doesn't, please see if reverting git-acpi.patch helps.
 
-Yes, it does.  Thanks.
+Everyone having suspend/hibernation problems with this kernel, please check
+if reverting reverting pm-acquire-device-locks-on-suspend-rev-3.patch (and the
+fixes) helps first.
 
----
-~Randy
+Thanks,
+Rafael
+
