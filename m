@@ -1,139 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbYAQUs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbYAQUwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756830AbYAQUs6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 15:48:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbYAQUsg
+	id S1757188AbYAQUwj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:52:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYAQUwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 15:48:36 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:39042 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753648AbYAQUsd (ORCPT
+	Thu, 17 Jan 2008 15:52:30 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:54479 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752483AbYAQUw3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 15:48:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=AcniWieHjAO7xqL2O/azykVXUc2YsOHDfr3NmtrJsMWqYsHp0fd+UAP3PQpkkOKY+emnQUl3Qvc9mPSJ0yeZzBRtz71cncUD0HgbmwM7N1Bk/937wrIzkmqf0gkV5W/8j01biwvfTCH143bXBK+JYIaWm2QQtvb0URXdN/cyVrQ=
-Message-ID: <478FBF19.1090009@gmail.com>
-Date: Thu, 17 Jan 2008 21:48:25 +0100
-From: Franck Bui-Huu <vagabon.xyz@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 17 Jan 2008 15:52:29 -0500
+Message-ID: <478FBFDB.4000600@oracle.com>
+Date: Thu, 17 Jan 2008 12:51:39 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: paulmck@linux.vnet.ibm.com
-Subject: [PATCH 2/2] rculist.h: use the rcu API
-References: <478FBEA0.9090203@gmail.com>
-In-Reply-To: <478FBEA0.9090203@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Len Brown <lenb@kernel.org>
+CC: Zhang Rui <rui.zhang@intel.com>, linux-acpi@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       sujith.thomas@intel.com
+Subject: Re: [PATCH 9/10] introduce intel_menlow platform specific driver
+References: <1200556278.2935.118.camel@acpi-sony.sh.intel.com> <20080117092030.a9dfe528.randy.dunlap@oracle.com> <200801171451.18613.lenb@kernel.org>
+In-Reply-To: <200801171451.18613.lenb@kernel.org>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Franck Bui-Huu <fbuihuu@gmail.com>
+Len Brown wrote:
+>>> +static int
+>>> +memory_get_int_max_bandwidth(struct thermal_cooling_device *cdev,
+>>> +			     unsigned long *max_state)
+>> Don't put 'static int' (return type etc.) on a line by itself.
+>> That format is not wanted in Linux.   (many places here)
+> 
+> if checkpatch.pl and Lindent are happey (which they are not, totally)
+> then I'm satisifed witht he Linux style of the code.
+> 
+> Randy, if you feel strongly about this this style nit,
+> then change Lindent to implement it -- nagging
+> developers about trivia is a waste of everybody's time.
+> 
+> thanks,
+> -Len
 
-This patch makes almost all list mutation primitives use
-rcu_assign_pointer().
+http://marc.info/?l=linux-kernel&m=105451996829576&w=2
 
-The main point of this being readability improvement.
+Thanks.
 
-Signed-off-by: Franck Bui-Huu <fbuihuu@gmail.com>
----
- include/linux/rculist.h |   23 +++++++++--------------
- 1 files changed, 9 insertions(+), 14 deletions(-)
-
-diff --git a/include/linux/rculist.h b/include/linux/rculist.h
-index 8056d38..038b64f 100644
---- a/include/linux/rculist.h
-+++ b/include/linux/rculist.h
-@@ -7,6 +7,7 @@
-  * RCU-protected list version
-  */
- #include <linux/list.h>
-+#include <linux/rcupdate.h>
- 
- /*
-  * Insert a new entry between two known consecutive entries.
-@@ -19,9 +20,8 @@ static inline void __list_add_rcu(struct list_head * new,
- {
- 	new->next = next;
- 	new->prev = prev;
--	smp_wmb();
-+	rcu_assign_pointer(prev->next, new);
- 	next->prev = new;
--	prev->next = new;
- }
- 
- /**
-@@ -110,9 +110,8 @@ static inline void list_replace_rcu(struct list_head *old,
- {
- 	new->next = old->next;
- 	new->prev = old->prev;
--	smp_wmb();
-+	rcu_assign_pointer(new->prev->next, new);
- 	new->next->prev = new;
--	new->prev->next = new;
- 	old->prev = LIST_POISON2;
- }
- 
-@@ -166,8 +165,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
- 	 */
- 
- 	last->next = at;
--	smp_wmb();
--	head->next = first;
-+	rcu_assign_pointer(head->next, first);
- 	first->prev = head;
- 	at->prev = last;
- }
-@@ -280,10 +278,9 @@ static inline void hlist_replace_rcu(struct hlist_node *old,
- 
- 	new->next = next;
- 	new->pprev = old->pprev;
--	smp_wmb();
-+	rcu_assign_pointer(*new->pprev, new);
- 	if (next)
- 		new->next->pprev = &new->next;
--	*new->pprev = new;
- 	old->pprev = LIST_POISON2;
- }
- 
-@@ -310,12 +307,12 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
- 					struct hlist_head *h)
- {
- 	struct hlist_node *first = h->first;
-+
- 	n->next = first;
- 	n->pprev = &h->first;
--	smp_wmb();
-+	rcu_assign_pointer(h->first, n);
- 	if (first)
- 		first->pprev = &n->next;
--	h->first = n;
- }
- 
- /**
-@@ -341,9 +338,8 @@ static inline void hlist_add_before_rcu(struct hlist_node *n,
- {
- 	n->pprev = next->pprev;
- 	n->next = next;
--	smp_wmb();
-+	rcu_assign_pointer(*(n->pprev), n);
- 	next->pprev = &n->next;
--	*(n->pprev) = n;
- }
- 
- /**
-@@ -369,8 +365,7 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
- {
- 	n->next = prev->next;
- 	n->pprev = &prev->next;
--	smp_wmb();
--	prev->next = n;
-+	rcu_assign_pointer(prev->next, n);
- 	if (n->next)
- 		n->next->pprev = &n->next;
- }
 -- 
-1.5.3.7
-
+~Randy
