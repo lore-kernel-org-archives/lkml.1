@@ -1,77 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbYAQUmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbYAQUm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753913AbYAQUmb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 15:42:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757113AbYAQUmT
+	id S1757524AbYAQUm6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 15:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbYAQUmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 15:42:19 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1956 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757062AbYAQUmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 15:42:17 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [-mm Patch] uml: fix a building error
-Date: Thu, 17 Jan 2008 21:42:12 +0100
-User-Agent: KMail/1.9.7
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "WANG Cong" <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
-       "Jeff Dike" <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       "David Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org> <20080117105606.ff89e9e9.akpm@linux-foundation.org> <924EFEDD5F540B4284297C4DC59F3DEE5E90DF@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE5E90DF@orsmsx423.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jan 2008 15:42:47 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35652 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753921AbYAQUmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 15:42:46 -0500
+Date: Thu, 17 Jan 2008 15:37:40 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>, Paul Mackerras <paulus@samba.org>,
+       Daniel Walker <dwalker@mvista.com>
+Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
+Message-ID: <20080117203740.GA24397@redhat.com>
+References: <20080116031730.GA2164@Krystal> <Pine.LNX.4.58.0801152238130.19680@gandalf.stny.rr.com> <20080116145604.GB31329@Krystal> <Pine.LNX.4.58.0801161003010.15758@gandalf.stny.rr.com> <20080116152838.GA970@Krystal> <Pine.LNX.4.58.0801161041010.15998@gandalf.stny.rr.com> <20080116170011.GA3651@Krystal> <Pine.LNX.4.58.0801161428180.14368@gandalf.stny.rr.com> <20080116201713.GA14336@Krystal> <Pine.LNX.4.58.0801171440360.28350@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801172142.14326.m.kozlowski@tuxland.pl>
+In-Reply-To: <Pine.LNX.4.58.0801171440360.28350@gandalf.stny.rr.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi -
 
-> >> > This patch fixes this building error:
-> >> > ...
-> >> > drivers/char/mem.c: In function 'read_mem':
-> >> > drivers/char/mem.c:136: error: implicit declaration of 
-> >function 'unxlate_dev_mem_ptr'
-> >> > ...
-> >> 
-> >> I see this on sparc64 as well:
-> >> 
-> >>   CC      drivers/char/mem.o
-> >> drivers/char/mem.c: In function 'read_mem':
-> >> drivers/char/mem.c:136: error: implicit declaration of 
-> >function 'unxlate_dev_mem_ptr'
-> >> make[2]: *** [drivers/char/mem.o] Error 1
-> >> make[1]: *** [drivers/char] Error 2
-> >> make: *** [drivers] Error 2
-> >> 
-> >> Does sparc64 need similar fix?
-> >> 
-> >
-> >The PAT patches strike again.
-> >
-> >Ingo, I think you might need to toss some cross-compilers into 
-> >that build
-> >test setup of yours.
+On Thu, Jan 17, 2008 at 03:08:33PM -0500, Steven Rostedt wrote:
+> [...]
+> +       trace_mark(kernel_sched_schedule,
+> +               "prev_pid %d next_pid %d prev_state %ld",
+> +               prev->pid, next->pid, prev->state);
+> [...]
+> But...
 > 
-> These functions were defined for other archs in asm-generic/iomap.h.
-> We need all archs including it in io.h. I now see only few archs are
-> including it..
->
-> Apart from unxlate, there is also ioremap_wc which is defined in the
-> same way.
+> Tracers that want to do a bit more work, like recording timings and seeing
+> if we hit some max somewhere, can't do much with that pretty print data.
+
+If you find yourself wanting to perform computations like finding
+maxima, or responding right there as opposed to later during userspace
+trace data extraction, then you're trending toward a tool like
+systemtap.
+
+> [...]
+> So, at a minimum, I'd like to at least have meta data attached:
+> 	trace_mark(kernel_sched_schedule,
+> 		"prev_pid %d next_pid %d prev_state %ld\0"
+> 		"prev %p next %p",
+> 		prev->pid, next->pid, prev->state,
+> 		prev, next);
 > 
-> I can send a patch for this. But, I don't have cross compiler setup for
-> all archs to test. Andrew, I will need your help.
+> This would allow for both the nice pretty print of your trace, as well as
+> allowing other tracers to get to better meta data.
 
-I can confirm that this fixes the build problem for sparc64 here.
+Yes, more self-contained marker events are necessary for meaningful
+in-situ processing.  That needs to be balanced by the increased cost
+for computing and passing the extra parameters, multiplied the event
+occurrence rate.
 
-Regards,
+In this case, the prev/next pointers are sufficient to compute the
+other values.  For particularly performance-critical markers, it may
+not be unreasonable to expect the callback functions to dereference
+such pointers for pretty-printing or other processing.
 
-	Mariusz
+
+> The '\0' would keep your tracer from recording the extra data, and we
+> could add some way to ignore the parameters in the printf to let other
+> traces get straight to the meta data.
+
+This \0 hack is perhaps too clever.  Much of the cost of the extra
+parameters is already paid by the time that a simpleminded tracing
+callback function starts going through the string.  Also, I believe
+the systemtap marker interface would break if the format strings were
+not singly terminated ordinary strings.
+
+- FChE
