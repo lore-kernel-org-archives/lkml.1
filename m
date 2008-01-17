@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbYAQS4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbYAQS4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756672AbYAQS4Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 13:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbYAQS4C
+	id S1753840AbYAQS4g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 13:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbYAQS4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 13:56:02 -0500
-Received: from lixom.net ([66.141.50.11]:60153 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751645AbYAQS4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 13:56:00 -0500
-Date: Thu, 17 Jan 2008 13:06:39 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-       jgarzik@pobox.com
-Subject: Re: 2.6.24-rc8-mm1 powerpc build errors
-Message-ID: <20080117190639.GA9499@lixom.net>
+	Thu, 17 Jan 2008 13:56:24 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49076 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753295AbYAQS4W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 13:56:22 -0500
+Date: Thu, 17 Jan 2008 10:56:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
+       Jeff Dike <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [-mm Patch] uml: fix a building error
+Message-Id: <20080117105606.ff89e9e9.akpm@linux-foundation.org>
+In-Reply-To: <200801171911.16230.m.kozlowski@tuxland.pl>
 References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	<20080117135641.GD2693@hacking>
+	<200801171911.16230.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 17 Jan 2008 19:11:13 +0100 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-My powerpc build-all-defconfigs script found the following:
+> Hello,
+> 
+> > This patch fixes this building error:
+> > ...
+> > drivers/char/mem.c: In function ‘read_mem’:
+> > drivers/char/mem.c:136: error: implicit declaration of function ‘unxlate_dev_mem_ptr’
+> > ...
+> 
+> I see this on sparc64 as well:
+> 
+>   CC      drivers/char/mem.o
+> drivers/char/mem.c: In function 'read_mem':
+> drivers/char/mem.c:136: error: implicit declaration of function 'unxlate_dev_mem_ptr'
+> make[2]: *** [drivers/char/mem.o] Error 1
+> make[1]: *** [drivers/char] Error 2
+> make: *** [drivers] Error 2
+> 
+> Does sparc64 need similar fix?
+> 
 
-mpc837x_mds_defconfig. Brokage looks like it came from libata's
-for_each_sg() patch.
+The PAT patches strike again.
 
-drivers/ata/sata_fsl.c: In function 'sata_fsl_fill_sg':
-drivers/ata/sata_fsl.c:337: error: redeclaration of 'si' with no linkage
-drivers/ata/sata_fsl.c:326: error: previous declaration of 'si' was here
+Ingo, I think you might need to toss some cross-compilers into that build
+test setup of yours.
 
-powerpc_allyesconfig:
-
-drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_add':
-drivers/net/ehea/ehea_main.c:2812: error: 'struct device_driver' has no member named 'kobj'
-drivers/net/ehea/ehea_main.c:2815: error: 'struct device_driver' has no member named 'kobj'
-drivers/net/ehea/ehea_main.c:2818: error: 'struct device_driver' has no member named 'kobj'
-drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_remove':
-drivers/net/ehea/ehea_main.c:2830: error: 'struct device_driver' has no member named 'kobj'
-
-
--Olof
