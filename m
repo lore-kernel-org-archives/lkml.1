@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763601AbYARRYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763395AbYARR0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763601AbYARRYl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759989AbYARRYe
+	id S1763395AbYARR0a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:26:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759404AbYARR0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:24:34 -0500
-Received: from dspnet.fr.eu.org ([213.186.44.138]:1100 "EHLO dspnet.fr.eu.org"
+	Fri, 18 Jan 2008 12:26:23 -0500
+Received: from gw.goop.org ([64.81.55.164]:46632 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759553AbYARRYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:24:33 -0500
-Date: Fri, 18 Jan 2008 18:24:29 +0100
-From: Olivier Galibert <galibert@pobox.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Why is the kfree() argument const?
-Message-ID: <20080118172428.GB61848@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	linux-kernel@vger.kernel.org
-References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com> <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org> <47905A95.4030500@cateee.net> <47906133.6010301@cateee.net> <4790AF68.8040403@myrealbox.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4790AF68.8040403@myrealbox.com>
-User-Agent: Mutt/1.4.2.3i
+	id S1759374AbYARR0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 12:26:22 -0500
+Message-ID: <4790E13D.5040603@goop.org>
+Date: Fri, 18 Jan 2008 09:26:21 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: xming <xmingske@gmail.com>
+CC: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: Cannot boot xen DomU > 2.6.23.1
+References: <519a8b110801170813h96b8f2by795e6d8b72a00ba4@mail.gmail.com>	 <478F8D22.60004@goop.org>	 <519a8b110801171113y20a3bedfg446e29a30712a26d@mail.gmail.com>	 <4790561E.9040508@goop.org>	 <519a8b110801180438l389ec1d6t7b888b8c78d59dd8@mail.gmail.com>	 <4790D187.8050000@goop.org> <519a8b110801180856o7757889as47106fd3eabcc0de@mail.gmail.com>
+In-Reply-To: <519a8b110801180856o7757889as47106fd3eabcc0de@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 08:53:44AM -0500, Andy Lutomirski wrote:
-> I'd say this implies the exact opposite.  It almost sounds like the 
-> compiler is free to change:
-> 
-> void foo(const int *x);
-> foo(x);
-> printf("%d", x);
-> 
-> to:
-> 
-> void foo(const int *x);
-> printf("%d", x);
-> foo(x);
+xming wrote:
+>> Would it be possible to map the eip and some top parts of the stack back
+>> to kernel symbols?  Seems to be the same place in both traces, which is
+>> interesting.
+>>     
+>
+> Can you tell me how, or show me some pointers?
+>   
 
-That's only if neither function has side effects noticeable by the
-other.  Invalidating the pointer in (k)free is rather noticeable.
+Do "nm -n vmlinux" on the kernel to set an address sorted list of 
+symbols, and then look to see what's near the eip (c037c0c7) and near 
+the top of the stack (c0100add, c0378980, c0101962, ...).  Some of these 
+may be in data, or other strange places, but the ones which correspond 
+to code are interesting.
 
+>>> Scenario 2 (have_vcpu_info_placement = 0)
+>>> --------------------------------------------------------------
+>>>
+>>> test1: no crash
+>>> test2: no crash, but occationally I still get funny output like this
+>>>
+>>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+>>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+>>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+>>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+>>> 0000AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+>>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+>>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+>>> 000AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+>>> 000AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+>>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+>>>
+>>>       
+>> Hm, I guess some of the output is getting dropped.  Does this happen
+>> with 2.6.18-xen?
+>>     
+>
+> yes it does
+>   
 
-> (Note that this isn't just a problem for optimizers -- a programmer 
-> might expect that passing a pointer to a function that takes a const 
-> pointer argument does not, in and of itself, change the pointed-to 
-> value.  Given that const certainly does not mean that no one else 
-> changes the object, I'm not sure what else it could mean.
+OK, good.  I Didn't Break It (tm) ;)
 
-Most of the time, const pointer arguments means "I won't change the
-contents of the object so that you'll notice by reading it in a normal
-way afterwards".  That's pretty much what mutable in a variety of
-languages (including C++) is about, saying "this field is internal
-management stuff not visible from the external interface, so I need to
-be able to change it even through const pointers I got as parameters".
-Reference counters for copy-on-write setups is the usual example of
-use.
-
-In the case of deallocation functions you are not allowed to do
-anything through the pointer or its aliases after the function
-returns.  So we're outside of the "most of the time" case, since
-you're not allowed to try to notice any change.  Pragmatism takes
-over, you want the type that catches as many possible types as
-possible while staying reasonable (volatile is never reasonable), and
-that's const void *.  As simple as that.
-
-As for releasing resources through const pointers, that happens all
-the time as soon as your const use is tight, and if you think forcing
-the systematic addition of a (void *) cast is going to make your code
-more readable, well, you need more experience in maintaining other
-people's applications.
-
-
-> kfree does not have either property, so I'm don't think it makes
-> sense for it to take a const argument.
-
-delete in C++ allows const pointers. Think about it.
-
-  OG.
+    J
