@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbYARI2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbYARI3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbYARI2F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 03:28:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbYARI1y
+	id S1754877AbYARI3E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 03:29:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYARI2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 03:27:54 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:41307 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751707AbYARI1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 03:27:53 -0500
-Message-ID: <400644884.18765@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 18 Jan 2008 16:27:52 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Michael Rubin <mrubin@google.com>
-Cc: Andrew Morton <akpm@osdl.org>, Peter Zijlstra <peterz@infradead.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/13] writeback bug fixes and simplifications take 2
-References: <400401292.24795@ustc.edu.cn> <532480950801172351p7603e8d0icdc8e2b27c1e0051@mail.gmail.com>
+	Fri, 18 Jan 2008 03:28:53 -0500
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:39249 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753910AbYARI2w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 03:28:52 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Utl6HXg8aUWlI36iM/8111XYwrpihGqWgDhsgJJhJTVOdvCLH3yFQsJQ77oDIkJhXm4nV6m1nW9++Rz5+8CMvUZeuCw7j0bJhAMmSDrtTJdl5sNXd8HjhAmSfx6p8Cm8c/i7fLxU9lrwP9AuORMXiNlsb2xF7uKvYAeTqFDHxbU=  ;
+X-YMail-OSG: BBT3eDgVM1kW3dDlHFDDdvQ4aOvgJt9NdveXWIHQM9v_I8ofGITZX73kaYeQPBDlofenJT1tYA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "stephane eranian" <eranian@googlemail.com>
+Subject: Re: runqueue locks in schedule()
+Date: Fri, 18 Jan 2008 19:28:42 +1100
+User-Agent: KMail/1.9.5
+Cc: "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       ia64 <linux-ia64@vger.kernel.org>,
+       "Stephane Eranian" <eranian@gmail.com>,
+       "Corey J Ashford" <cjashfor@us.ibm.com>, "Ingo Molnar" <mingo@elte.hu>
+References: <7c86c4470801161629t3870da59hb6ac371c44126b07@mail.gmail.com> <200801181307.53026.nickpiggin@yahoo.com.au> <7c86c4470801172233s333b5993q8b10e37f8ad151d@mail.gmail.com>
+In-Reply-To: <7c86c4470801172233s333b5993q8b10e37f8ad151d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <532480950801172351p7603e8d0icdc8e2b27c1e0051@mail.gmail.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.12-2006-07-14
-Message-Id: <E1JFmZs-0000wa-3r@localhost.localdomain>
+Message-Id: <200801181928.43249.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 11:51:51PM -0800, Michael Rubin wrote:
-> On Jan 15, 2008 4:36 AM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> > Andrew,
-> >
-> > This patchset mainly polishes the writeback queuing policies.
-> > The main goals are:
-> >
-> > (1) small files should not be starved by big dirty files
-> > (2) sync as fast as possible for not-blocked inodes/pages
-> >     - don't leave them out; no congestion_wait() in between them
-> > (3) avoid busy iowait for blocked inodes
-> >     - retry them in the next go of s_io(maybe at the next wakeup of pdflush)
-> >
-> > The role of the queues:
-> >
-> > s_dirty:   park for dirtied_when expiration
-> > s_io:      park for io submission
-> > s_more_io: for big dirty inodes, they will be retried in this run of pdflush
-> >            (it ensures fairness between small/large files)
-> > s_more_io_wait: for blocked inodes, they will be picked up in next run of s_io
-> 
-> Quick question to make sure I get this. Each queue is sorted as such:
-> 
-> s_dirty - sorted by the dirtied_when field
-> s_io - sorted by  no explicit key but by the order we want to process
-> in sync_sb_inodes
-> s_more_io - held for later they are sorted in the same manner as s_io
-> 
-> Is that it?
+On Friday 18 January 2008 17:33, stephane eranian wrote:
+> Nick,
 
-Yes, exactly. s_io and s_more_io can be considered as one list broken
-up into two - to provide the cursor for sequential iteration.
-And s_more_io_wait is simply a container for blocked inodes.
+> > It is arch specific. If an architecture wants interrupts on during
+> > context switch, or runqueue unlocked, then they set it (btw
+> > INTERRUPTS_ON_CTXSW also implies UNLOCKED_CTXSW).
+>
+> Yes , I noticed that. I am only interested in UNLOCKED_CTXSW.
+> But it appears that the approach suggested my Peter does work. We are
+> running some tests.
 
+OK, that might be OK.
+
+
+> > Although, eg on x86, you would hold off interrupts and runqueue lock for
+> > slightly less time if you defined those, it results in _slightly_ more
+> > complicated context switching... although I did once find a workload
+> > where the reduced runqueue contention improved throughput a bit, it is
+> > not much problem in general to hold the lock.
+>
+> By complicated you mean that now you'd have to make sure you don't
+> need to access runqueue data?
+
+Well, not speaking about the arch-specific code (which may involve
+more complexities), but the core scheduler needs the
+task_struct->oncpu variable wheras that isn't required if the
+runqueue is locked while switching tasks.
