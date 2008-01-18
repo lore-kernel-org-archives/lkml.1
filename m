@@ -1,54 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbYAROjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761052AbYAROnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761502AbYAROjy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 09:39:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbYAROjq
+	id S1761052AbYAROnT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 09:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756685AbYAROnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 09:39:46 -0500
-Received: from unthought.net ([212.97.129.88]:58315 "EHLO unthought.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbYAROjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 09:39:45 -0500
-Date: Fri, 18 Jan 2008 15:39:43 +0100
-From: Jakob Oestergaard <jakob@unthought.net>
-To: "Giacomo A. Catenazzi" <cate@cateee.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Schwartz <davids@webmaster.com>,
-       Johannes Weiner <hannes@saeurebad.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       clameter@sgi.com, penberg@cs.helsinki.fi
-Subject: Re: Why is the kfree() argument const?
-Message-ID: <20080118143943.GQ25527@unthought.net>
-Mail-Followup-To: Jakob Oestergaard <jakob@unthought.net>,
-	"Giacomo A. Catenazzi" <cate@cateee.net>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Schwartz <davids@webmaster.com>,
-	Johannes Weiner <hannes@saeurebad.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	clameter@sgi.com, penberg@cs.helsinki.fi
-References: <MDEHLPKNGKAHNMBLJOLKIEGIJJAC.davids@webmaster.com> <alpine.LFD.1.00.0801171316390.14959@woody.linux-foundation.org> <20080118094826.GN25527@unthought.net> <479091B5.4060700@cateee.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <479091B5.4060700@cateee.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 18 Jan 2008 09:43:12 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:42598 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755306AbYAROnL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 09:43:11 -0500
+To: jdike@addtoit.com
+CC: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: UML is leaking memory in arch_dup_mmap
+Message-Id: <E1JFsQo-0000aG-BZ@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 18 Jan 2008 15:42:54 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 12:47:01PM +0100, Giacomo A. Catenazzi wrote:
-...
-> "restrict" exists for this reason. const is only about lvalue.
+On 2.6.24-rc8-mm1:
 
-You think that I try to put more meaning into const than I do - but I don't.
+uml:~#  grep arch_dup_mmap /proc/slab_allocators
+size-32: 10861 arch_dup_mmap+0x9f/0x130
 
-Please read what I wrote, not what you want to think I wrote.
-
-I agree that if I said what you seem to imply I said, then I would have been
-wrong. But I didn't so I'm not ;)
-
-
--- 
-
- / jakob
-
+Miklos
