@@ -1,75 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757115AbYARFfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbYARFiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757115AbYARFfG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 00:35:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbYARFey
+	id S1758208AbYARFiM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 00:38:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbYARFh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 00:34:54 -0500
-Received: from ozlabs.org ([203.10.76.45]:60607 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750913AbYARFey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 00:34:54 -0500
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-References: <20071207223714.11448.91386.sendpatchset@balbir-laptop>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-LVrVCwTpS2JId/FH7JDu"
-Date: Fri, 18 Jan 2008 16:34:53 +1100
-Message-Id: <1200634493.7806.0.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 18 Jan 2008 00:37:58 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58167 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbYARFh5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 00:37:57 -0500
+Date: Fri, 18 Jan 2008 14:37:18 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: linux-mm <linux-mm@kvack.org>
+Subject: [RFC] Document about lowmem_reserve_ratio
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Andrea Arcangeli <andrea@suse.de>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080118142244.04EF.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
---=-LVrVCwTpS2JId/FH7JDu
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I found the documentation about lowmem_reserve_ratio is not written, and
+the lower_zone_protection's description remains yet. I fixed it.
 
-On Sat, 2007-12-08 at 04:07 +0530, Balbir Singh wrote:
-> Changelog
->=20
-> 1. Get rid of the constant 5 (based on comments from
->                                 Geert.Uytterhoeven@sonycom.com)
-> 2. Implement suggestions from Olof Johannson
-> 3. Check if cmdline is NULL in fake_numa_create_new_node()
->=20
-> Tested with additional parameters from Olof
->=20
-> numa=3Ddebug,fake=3D
-> numa=3Dfoo,fake=3Dbar
+I may be something wrong due to misunderstanding. And probably, sentence
+is not natural. (I'm not native English speaker.)
 
+So, please review it.
 
-I'm not sure why yet, but git bisect tells me it's this patch that's
-causing the for-2.6.25 tree to explode on boot on cell machines.
+Thanks.
 
-cheers
+---
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Though the lower_zone_protection was changed to lowmem_reserve_ratio,
+the document has been not changed.
+The lowmem_reserve_ratio seems quite hard to estimate, but there is
+no guidance. This patch is to change document for it.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+---
+ Documentation/filesystems/proc.txt |   76 +++++++++++++++++++++++++++++--------
+ 1 file changed, 61 insertions(+), 15 deletions(-)
 
---=-LVrVCwTpS2JId/FH7JDu
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Index: current/Documentation/filesystems/proc.txt
+===================================================================
+--- current.orig/Documentation/filesystems/proc.txt	2008-01-17 20:01:37.000000000 +0900
++++ current/Documentation/filesystems/proc.txt	2008-01-18 12:22:10.000000000 +0900
+@@ -1311,7 +1311,7 @@
+ If non-zero, this sysctl disables the new 32-bit mmap mmap layout - the kernel
+ will use the legacy (2.4) layout for all processes.
+ 
+-lower_zone_protection
++lowmem_reserve_ratio
+ ---------------------
+ 
+ For some specialised workloads on highmem machines it is dangerous for
+@@ -1331,25 +1331,71 @@
+ mechanism will also defend that region from allocations which could use
+ highmem or lowmem).
+ 
+-The `lower_zone_protection' tunable determines how aggressive the kernel is
+-in defending these lower zones.  The default value is zero - no
+-protection at all.
++The `lowmem_reserve_ratio' tunable determines how aggressive the kernel is
++in defending these lower zones.
+ 
+ If you have a machine which uses highmem or ISA DMA and your
+ applications are using mlock(), or if you are running with no swap then
+-you probably should increase the lower_zone_protection setting.
++you probably should change the lowmem_reserve_ratio setting.
+ 
+-The units of this tunable are fairly vague.  It is approximately equal
+-to "megabytes," so setting lower_zone_protection=100 will protect around 100
+-megabytes of the lowmem zone from user allocations.  It will also make
+-those 100 megabytes unavailable for use by applications and by
+-pagecache, so there is a cost.
+-
+-The effects of this tunable may be observed by monitoring
+-/proc/meminfo:LowFree.  Write a single huge file and observe the point
+-at which LowFree ceases to fall.
++The lowmem_reserve_ratio is an array. You can see them by reading this file.
++-
++% cat /proc/sys/vm/lowmem_reserve_ratio
++256     256     32
++-
++Note: # of this elements is one fewer than number of zones. Because the highest
++      zone's value is not necessary for following calculation.
++
++But, these values are not used directly. The kernel calculates # of protection
++pages for each zones from them. These are shown as array of protection pages
++in /proc/zoneinfo like followings. (This is an example of x86-64 box).
++Each zone has an array of protection pages like this.
++
++-
++Node 0, zone      DMA
++  pages free     1355
++        min      3
++        low      3
++        high     4
++	:
++	:
++    numa_other   0
++        protection: (0, 2004, 2004, 2004)
++	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++  pagesets
++    cpu: 0 pcp: 0
++        :
++-
++These protections are added to score to judge whether this zone should be used
++for page allocation or should be reclaimed.
++
++In this example, if normal pages (index=2) are required to this DMA zone and
++pages_high is used for watermark, the kernel judges this zone should not be
++used because pages_free(1355) is smaller than watermark + protection[2]
++(4 + 2004 = 2008). If this protection value is 0, this zone would be used for
++normal page requirement. If requirement is DMA zone(index=0), protection[0]
++(=0) is used.
++
++zone[i]'s protection[j] is calculated by following exprssion.
++
++(i < j):
++  zone[i]->protection[j]
++  = (total sums of present_pages from zone[i+1] to zone[j] on the node)
++    / lowmem_reserve_ratio[i];
++(i = j):
++   (should not be protected. = 0;
++(i > j):
++   (not necessary, but looks 0)
++
++The default values of lowmem_reserve_ratio[i] are
++    256 (if zone[i] means DMA or DMA32 zone)
++    32  (others).
++As above expression, they are reciprocal number of ratio.
++256 means 1/256. # of protection pages becomes about "0.39%" of total present
++pages of higher zones on the node.
+ 
+-A reasonable value for lower_zone_protection is 100.
++If you would like to protect more pages, smaller values are effective.
++The minimum value is 1 (1/1 -> 100%).
+ 
+ page-cluster
+ ------------
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+-- 
+Yasunori Goto 
 
-iD8DBQBHkDp9dSjSd0sB4dIRAiIXAKCksXvtF/APrTZ51axudD4PRcXpegCePxck
-AnX8rh+NGgHGeVhx5PjicnA=
-=SHkM
------END PGP SIGNATURE-----
-
---=-LVrVCwTpS2JId/FH7JDu--
 
