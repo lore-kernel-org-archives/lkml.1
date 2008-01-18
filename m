@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbYARDop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbYARDsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758940AbYARDop (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 22:44:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYARDoi
+	id S1758236AbYARDsg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 22:48:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYARDs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 22:44:38 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:49695 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751993AbYARDoh (ORCPT
+	Thu, 17 Jan 2008 22:48:28 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:17083 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751927AbYARDs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 22:44:37 -0500
-Date: Thu, 17 Jan 2008 19:50:32 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] X86: fix typo PAT to X86_PAT
-To: Ingo Molnar <mingo@elte.hu>
-Cc: venkatesh.pallipadi@intel.com, LKML <linux-kernel@vger.kernel.org>
-Message-id: <200801171950.32458.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Thu, 17 Jan 2008 22:48:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wd1/WS3uLOMoVRr2fUqswRMWCEDQCn33QL4y+af/CV8wa0SVJKjieBdn0cupSA9vyJ8O9oNlWrXozKsAgkxNY+iVkHwC4tbn6wooD7jR9RE9+curc2n5AOaqwGwQzgsj4hX+YpwsG0REsPTNVH9rNuj2av+8VwG44NCLodKgPTM=
+Message-ID: <86802c440801171948o152fc82eh6756926ead6882e7@mail.gmail.com>
+Date: Thu, 17 Jan 2008 19:48:25 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: x86.git kexec rhel 5.1
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440801171911p3d82c39ap29da2d81c63c77c2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <86802c440801171911p3d82c39ap29da2d81c63c77c2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] X86: fix typo PAT to X86_PAT
+On Jan 17, 2008 7:11 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> some problem with PAT
+>
+> A: 1/17 x86.git with PAT enable kernel
+> B. 1/17 x86.git with PAT diabled kernel
+> C: RHEL 5.1 stock kernel -53
+>
+> A kexec B : OK
+> B kexec A:  OK
+> A kexec C: very slow
+> B kexec C:  OK
+> C kexec A:  OK
+> C kexec B:  OK
+>
+> Do we need something to disable PAT when kexec calling shutdown?
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+change PAT only, fix that A kexec C problem.
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 1b38c21..980f054 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -953,7 +953,7 @@ config MATH_EMULATION
- 
- config MTRR
- 	bool "MTRR (Memory Type Range Register) support"
--	depends on !PAT
-+	depends on !X86_PAT
- 	---help---
- 	  On Intel P6 family processors (Pentium Pro, Pentium II and later)
- 	  the Memory Type Range Registers (MTRRs) may be used to control
+YH
