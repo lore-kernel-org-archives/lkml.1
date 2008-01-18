@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761078AbYARMqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbYARMqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761078AbYARMqa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 07:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbYARMqW
+	id S1761354AbYARMqo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 07:46:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbYARMqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 07:46:22 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:48464 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756388AbYARMqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 07:46:21 -0500
-Date: Fri, 18 Jan 2008 13:46:27 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
-Subject: Re: build #343 issue for v2.6.24-rc8-29-g03bbe08 : Section mismatch: reference to .init.text.1:start_kernel (between 'is386' and 'check_x87')
-Message-ID: <20080118124627.GA17918@uranus.ravnborg.org>
-References: <200801181318.30009.toralf.foerster@gmx.de> <20080118122917.GH2559@hacking>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080118122917.GH2559@hacking>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 18 Jan 2008 07:46:33 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:36285 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761198AbYARMqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 07:46:31 -0500
+Message-ID: <47909FA4.1020205@sgi.com>
+Date: Fri, 18 Jan 2008 04:46:28 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 2/6] percpu: Change Kconfig ARCH_SETS_UP_PER_CPU_AREA
+ to HAVE_SETUP_PER_CPU_AREA
+References: <20080117223505.203884000@sgi.com> <20080117223505.513183000@sgi.com> <20080118051118.GA14882@uranus.ravnborg.org>
+In-Reply-To: <20080118051118.GA14882@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 08:29:17PM +0800, WANG Cong wrote:
-> On Fri, Jan 18, 2008 at 01:18:27PM +0100, Toralf Förster wrote:
-> >Hello,
-> >
-> >the build with the attached .config was successful however I got during make :
-> >  AS      .tmp_kallsyms2.o
-> >  LD      vmlinux.o
-> >  MODPOST vmlinux.o
-> >WARNING: vmlinux.o(.text.head+0x247): Section mismatch: reference to .init.text.1:start_kernel (between 'is386' and 'check_x87')
-> >  CHK     include/linux/version.h
-> >  HOSTCC  scripts/unifdef
-> >  MKDIR   include
-> >
-> >Does it help / make sense to report such warning ?
-> >
-> >The build was made with :
-> >$> make mrproper && make rndconfig && <tweak config file> && make oldconfig && make
-> >
-> >Here's the config:
+Sam Ravnborg wrote:
+> Hi Mike.
 > 
-> Thanks. You have reported this. ;)
+>> --- a/arch/x86/Kconfig
+>> +++ b/arch/x86/Kconfig
+>> @@ -20,6 +20,7 @@ config X86
+>>  	def_bool y
+>>  	select HAVE_OPROFILE
+>>  	select HAVE_KPROBES
+>> +	select HAVE_SETUP_PER_CPU_AREA if ARCH = "x86_64"
 > 
-> I can't solve this problem. Let's Cc Rusty and Sam to see
-> if they can solve this.
+> It is simpler to just say:
+>> +	select HAVE_SETUP_PER_CPU_AREA if X86_64
+> 
+> And this is the way we do it in the rest of the
+> x86 Kconfig files.
+> 
+> 	Sam
 
-modpost gets confused by the section named ".init.text.1" - the additional '.1'
-is unexpected.
 
-Following untested patch should fix it.
+Thanks.  Done. :-)
 
-	Sam
+And sorry about the premature mailing.  I have a set of scripts that
+package everything up to send to test machines and it wasn't supposed
+to trigger the "sendmail" phase to the distro list.  There are a few
+build errors (as Ingo has noted) and I'm debugging an X86_64 !NUMA
+problem that dies at network startup time.
 
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 93ac52a..b5f1cff 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -736,8 +736,8 @@ static int secref_whitelist(const char *modname, const char *tosec,
- 
- 	/* Check for pattern 3 */
- 	if ((strcmp(fromsec, ".text.head") == 0) &&
--		((strcmp(tosec, ".init.data") == 0) ||
--		(strcmp(tosec, ".init.text") == 0)))
-+		((strncmp(tosec, ".init.data", strlen(".init.data")) == 0) ||
-+		(strncmp(tosec, ".init.text", strlen(".init.text")) == 0)))
- 	return 1;
- 
- 	/* Check for pattern 4 */
+But I'll add in all the suggestions from the "premature" reviews... :-)
+
+Thanks again,
+Mike
