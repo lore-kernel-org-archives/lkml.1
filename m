@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbYARKeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbYARKe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757440AbYARKeL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbYARKdr
+	id S1759541AbYARKe0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 05:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758052AbYARKdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:33:47 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:59868 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755720AbYARKdp (ORCPT
+	Fri, 18 Jan 2008 05:33:49 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:34832 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757417AbYARKdr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:33:45 -0500
-Date: Thu, 17 Jan 2008 23:28:53 +0530
+	Fri, 18 Jan 2008 05:33:47 -0500
+Date: Fri, 18 Jan 2008 11:11:46 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, jlan@sgi.com, nagar@watson.ibm.com,
-       akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] getdelays: fix gcc warnings
-Message-ID: <20080117175853.GA7059@balbir.in.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fake NUMA emulation for PowerPC (Take 2)
+Message-ID: <20080118054146.GA8973@balbir.in.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Randy Dunlap <randy.dunlap@oracle.com>,
-	lkml <linux-kernel@vger.kernel.org>, jlan@sgi.com,
-	nagar@watson.ibm.com, akpm <akpm@linux-foundation.org>
-References: <20080115160506.b1360614.randy.dunlap@oracle.com>
+Mail-Followup-To: Michael Ellerman <michael@ellerman.id.au>,
+	linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+References: <20071207223714.11448.91386.sendpatchset@balbir-laptop> <1200634493.7806.0.camel@concordia.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080115160506.b1360614.randy.dunlap@oracle.com>
+In-Reply-To: <1200634493.7806.0.camel@concordia.ozlabs.ibm.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Randy Dunlap <randy.dunlap@oracle.com> [2008-01-15 16:05:06]:
+* Michael Ellerman <michael@ellerman.id.au> [2008-01-18 16:34:53]:
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+> On Sat, 2007-12-08 at 04:07 +0530, Balbir Singh wrote:
+> > Changelog
+> > 
+> > 1. Get rid of the constant 5 (based on comments from
+> >                                 Geert.Uytterhoeven@sonycom.com)
+> > 2. Implement suggestions from Olof Johannson
+> > 3. Check if cmdline is NULL in fake_numa_create_new_node()
+> > 
+> > Tested with additional parameters from Olof
+> > 
+> > numa=debug,fake=
+> > numa=foo,fake=bar
 > 
-> Fix gcc warnings in getdelays.c:
+> 
+> I'm not sure why yet, but git bisect tells me it's this patch that's
+> causing the for-2.6.25 tree to explode on boot on cell machines.
+>
 
-Hi, Randy,
+Hi,
 
-Thanks for finding these problems and fixing them. The fixes look
-quite straight forward.
-
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Do you boot with numa=<options> on your machine? Could I have your
+machine configuration? Any OOPS/log would be helpful.
 
 -- 
 	Warm Regards,
