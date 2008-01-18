@@ -1,86 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbYARBCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYARBF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbYARBCx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:02:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757637AbYARBCp
+	id S1759481AbYARBF3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYARBFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:02:45 -0500
-Received: from nz-out-0506.google.com ([64.233.162.236]:11956 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757608AbYARBCo (ORCPT
+	Thu, 17 Jan 2008 20:05:19 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:52011 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757242AbYARBFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:02:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=S6k3BPafI/lVIWD5pDa7yPiyby1scW+EDvXfJ8PpuXnGi6kDqjCYpfYe9JS+WrG4jf/F3+feSI1z1DRm3ILK5Dc4tu2Tr5rIVXMoqJrjVGPrRYKMVjPrAa+anBqzR2kS6pPEgd9xWd/BB4LSm5Ryr/Eu6J6pFVPqckmaD6sR7jg=
-Message-ID: <5d6222a80801171702v5b4ef40ai67b5febd4d74c470@mail.gmail.com>
-Date: Thu, 17 Jan 2008 23:02:42 -0200
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Glauber de Oliveira Costa" <gcosta@redhat.com>
-Subject: Re: [PATCH 0/7] More lguest massage.
-Cc: lguest@ozlabs.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       rostedt@goodmis.org
-In-Reply-To: <12006165841070-git-send-email-gcosta@redhat.com>
+	Thu, 17 Jan 2008 20:05:18 -0500
+Date: Thu, 17 Jan 2008 20:04:27 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>, Kirill Korotaev <dev@sw.ru>
+Subject: [PATCH] printk deadlocks if called with runqueue lock held
+Message-ID: <Pine.LNX.4.58.0801172000430.32679@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1200616550283-git-send-email-gcosta@redhat.com>
-	 <12006165571406-git-send-email-gcosta@redhat.com>
-	 <1200616561270-git-send-email-gcosta@redhat.com>
-	 <12006165651341-git-send-email-gcosta@redhat.com>
-	 <12006165701019-git-send-email-gcosta@redhat.com>
-	 <12006165743557-git-send-email-gcosta@redhat.com>
-	 <12006165781954-git-send-email-gcosta@redhat.com>
-	 <12006165841070-git-send-email-gcosta@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't have _any_ idea about what happened to those patches. They
-were sent through the normal git-send-email script, but for
-some reason, all got the same subject. They might be okay for the
-review, but anyone willing to try it more seriously, please grab it
-at http://glommer.net/patches-lguest.tar.gz
 
-On Jan 17, 2008 10:35 PM, Glauber de Oliveira Costa <gcosta@redhat.com> wrote:
-> urrently, lguest module can't be compiled without the PARAVIRT flag being
-> on.This is a fake dependency, since the module itself shouldn't need any
-> paravirtoverride. Reason for that is the reference to pv_info structure
-> ininitial loading tests.
->
-> his patch removes it in favour of a more generic error message.
->
-> Signed-off-by:Glauber de Oliveira Costa <gcosta@redhat.com>
-> ---
-> drivers/lguest/core.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff--git a/drivers/lguest/core.c b/drivers/lguest/core.c
-> indexbb42fd0..97b76d6 100644
-> ---a/drivers/lguest/core.c
-> +++b/drivers/lguest/core.c
-> @@-255,7 +255,7 @@ static int __init init(void)
->
->         /* Lguest can't run under Xen, VMI or itself.  It does Tricky Stuff. */
->         if (paravirt_enabled()) {
-> -               printk("lguestis afraid of %s\n", pv_info.name);
-> +               printk("lguestcan't run under another hypervisor");
->                 return -EPERM;
->         }
->
-> --
-> 1.5.0.6
->
->
+I thought that one could place a printk anywhere without worrying.
+But it seems that it is not wise to place a printk where the runqueue
+lock is held.
 
+I just spent two hours debugging why some of my code was locking up,
+to find that the lockup was caused by some debugging printk's that
+I had in the scheduler.  The printk's were only in rare paths so
+they shouldn't be too much of a problem, but after I hit the printk
+the system locked up.
 
+Thinking that it was locking up on my code I went looking down the
+wrong path. I finally found (after examining an NMI dump) that
+the lockup happened because printk was trying to wakeup the klogd
+daemon, which caused a deadlock when the try_to_wakeup code tries
+to grab the runqueue lock.
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+Since printks are seldom called with interrupts disabled, we can
+hold off the waking of klogd if they are. We don't have access to
+the runqueue locks from printk, but those locks need interrupts
+disabled in order to be held.
 
-"The less confident you are, the more serious you have to act."
+Calling printk with interrupts disabled should only be done for
+emergencies and debugging anyway.
+
+And with this patch, my code ran fine ;-)
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/printk.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+Index: linux-mcount.git/kernel/printk.c
+===================================================================
+--- linux-mcount.git.orig/kernel/printk.c	2008-01-17 09:06:23.000000000 -0500
++++ linux-mcount.git/kernel/printk.c	2008-01-17 19:56:59.000000000 -0500
+@@ -978,7 +978,13 @@ void release_console_sem(void)
+ 	console_locked = 0;
+ 	up(&console_sem);
+ 	spin_unlock_irqrestore(&logbuf_lock, flags);
+-	if (wake_klogd)
++	/*
++	 * If we try to wake up klogd while printing with the runqueue lock
++	 * held, this will deadlock. We don't have access to the runqueue
++	 * lock from here, but just checking for interrupts disabled
++	 * should be enough.
++	 */
++	if (!irqs_disabled() && wake_klogd)
+ 		wake_up_klogd();
+ }
+ EXPORT_SYMBOL(release_console_sem);
+
