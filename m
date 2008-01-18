@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbYARI7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbYARJAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756182AbYARI7j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 03:59:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYARI7c
+	id S1757267AbYARJAH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 04:00:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbYARI7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 03:59:32 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53585 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753324AbYARI7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 03:59:31 -0500
-Date: Fri, 18 Jan 2008 09:59:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Mike Travis <travis@sgi.com>
-Subject: Re: x86 refuses to build [Re: 2.6.24-rc8-mm1]
-Message-ID: <20080118085913.GD19792@elte.hu>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org> <20080117172857.GA24121@linux.vnet.ibm.com> <20080117184406.GA561@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080117184406.GA561@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 18 Jan 2008 03:59:54 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38706 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754843AbYARI7x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 03:59:53 -0500
+Date: Fri, 18 Jan 2008 01:03:37 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH] X86: fix typo PAT to X86_PAT
+In-reply-to: <20080118081040.GB16597@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: venkatesh.pallipadi@intel.com, LKML <linux-kernel@vger.kernel.org>
+Message-id: <200801180103.37771.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200801171950.32458.yinghai.lu@sun.com>
+ <20080118081040.GB16597@elte.hu>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 18 January 2008 12:10:40 am Ingo Molnar wrote:
+> 
+> * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> 
+> >  config MTRR
+> >  	bool "MTRR (Memory Type Range Register) support"
+> > -	depends on !PAT
+> > +	depends on !X86_PAT
+> >  	---help---
+> >  	  On Intel P6 family processors (Pentium Pro, Pentium II and later)
+> >  	  the Memory Type Range Registers (MTRRs) may be used to control
+> 
+> thanks. But, i think we should rather do the following: if X86_PAT is 
+> eanbled then /proc/mtrr should be read-only. There's no problem 
+> _looking_ at MTRR contents, as long as we do not try to modify them. Hm?
 
-* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+anyway 
 
-> grepping around and looking through the code, I notice it is because 
-> these variables just do not exist for 32 bit NUMA. I am not sure how 
-> to go about it, and will just leave it to folks who know what they are 
-> doing there :).
+depends on !PAT
 
-yes, Mike Travis has i think some patches in the works for this build 
-problem. Disabling NUMA on 32-bit is the solution meanwhile.
+need to be removed.
 
-	Ingo
+it seems when PAT is used, some code still touch MTRR.
+
+YH
