@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763540AbYARRoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763961AbYARRqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763540AbYARRoD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:44:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760724AbYARRny
+	id S1763961AbYARRqS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYARRqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:43:54 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:56913 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760160AbYARRnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:43:53 -0500
-In-Reply-To: <4790C0EE.10207@zytor.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Al Boldi <a1426z@gawab.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Daniel Phillips <phillips@google.com>,
-       Ric Wheeler <ric@emc.com>, Rik van Riel <riel@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Valerie Henson <val.henson@gmail.com>
-MIME-Version: 1.0
-Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental fsck)
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OFC2B46E42.BDE3F6A4-ON882573D4.0060B268-882573D4.00615C9C@us.ibm.com>
-From: Bryan Henderson <hbryan@us.ibm.com>
-Date: Fri, 18 Jan 2008 09:43:25 -0800
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.0|August 02, 2007) at 01/18/2008
- 12:43:26,
-	Serialize complete at 01/18/2008 12:43:26
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 18 Jan 2008 12:46:00 -0500
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:21249 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752604AbYARRp6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 12:45:58 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       huang ying <huang.ying.caritas@gmail.com>,
+       "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Stephen Tweedie <sct@redhat.com>
+In-Reply-To: <4790E193.20003@goop.org>
+References: <1200375906.3505.30.camel@caritas-dev.intel.com>
+	 <1200646105.17230.28.camel@cthulhu.hellion.org.uk>
+	 <851fc09e0801180654u6957f966g47c7629db6d4b2b0@mail.gmail.com>
+	 <4790BD90.9060303@zytor.com>
+	 <1200671665.9891.45.camel@localhost.localdomain>
+	 <20080118162257.GB6819@elte.hu>  <4790E193.20003@goop.org>
+Content-Type: text/plain
+Date: Fri, 18 Jan 2008 17:45:46 +0000
+Message-Id: <1200678346.32050.3.camel@cthulhu.hellion.org.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 192.168.1.223
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH -mm 1/3] i386 boot: replace boot_ioremap with enhanced
+	bt_ioremap - enhance bt_ioremap
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> wrote on 01/18/2008 07:08:30 AM:
 
-> Bryan Henderson wrote:
-> > 
-> > We weren't actually talking about writing out the cache.  While that 
-was 
-> > part of an earlier thread which ultimately conceded that disk drives 
-most 
-> > probably do not use the spinning disk energy to write out the cache, 
-the 
-> > claim was then made that the drive at least survives long enough to 
-finish 
-> > writing the sector it was writing, thereby maintaining the integrity 
-of 
-> > the data at the drive level.  People often say that a disk drive 
-> > guarantees atomic writes at the sector level even in the face of a 
-power 
-> > failure.
-> > 
-> > But I heard some years ago from a disk drive engineer that that is a 
-myth 
-> > just like the rotational energy thing.  I added that to the 
-discussion, 
-> > but admitted that I haven't actually seen a disk drive write a partial 
-
-> > sector.
-> > 
+On Fri, 2008-01-18 at 09:27 -0800, Jeremy Fitzhardinge wrote:
+> Ingo Molnar wrote:
+> > * Ian Campbell <ijc@hellion.org.uk> wrote:
+> >
+> >   
+> >>> Eric Biederman had a patchset that makes a PAE kernel use PAE page 
+> >>> tables from the start.  That is really The Right Thing[TM].
+> >>>       
+> >> That's much saner than dup'ing up the early ioremap stuff to support 
+> >> both PAE and non-PAE at runtime, which is about the only idea I've got 
+> >> for fixing this right now...
+> >>
+> >> I think I'll just back out the early_ioremap patches locally for now 
+> >> and wait for Eric's patches which should cause the fix for this issue 
+> >> to just fall out in the wash.
+> >>     
+> >
+> > Eric's patchset is nowhere near being submitted - he _had_ a patchset. 
+> > So this needs to be fixed by the Xen-guest folks. (if the easiest/best 
+> > fix is to pick up Eric's patchset, then plese do it so)
+> >   
 > 
-> A disk drive whose power is cut needs to have enough residual power to 
-> park its heads (or *massive* data loss will occur), and at that point it 
+> This is only relevent to dom0 isn't it?  sct is looking at that at the 
+> moment.  
 
-> might as well keep enough on hand to finish an in-progress sector write.
-> 
-> There are two possible sources of onboard temporary power: a large 
-> enough capacitor, or the rotational energy of the platters (an 
-> electrical motor also being a generator.)  I don't care which one they 
-> use, but they need to do something.
+The early_ioremap stuff gets called on domU too, for example
+get_bios_ebda(). Or was the intention that these should be gated at a
+higher level?
 
-I believe the power for that comes from a third source: a spring.  Parking 
-the heads is too important to leave to active circuits.
+Ian.
+-- 
+Ian Campbell
 
---
-Bryan Henderson                     IBM Almaden Research Center
-San Jose CA                         Filesystems
+Pie are not square.  Pie are round.  Cornbread are square.
 
