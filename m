@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763490AbYARRkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763826AbYARRln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763490AbYARRkc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:40:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760006AbYARRkY
+	id S1763826AbYARRln (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:41:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759846AbYARRlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:40:24 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:47984 "EHLO
+	Fri, 18 Jan 2008 12:41:35 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:47995 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759516AbYARRkX (ORCPT
+	with ESMTP id S1758742AbYARRlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:40:23 -0500
-Date: Fri, 18 Jan 2008 09:39:43 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
+	Fri, 18 Jan 2008 12:41:32 -0500
+Date: Fri, 18 Jan 2008 09:40:48 -0800
+From: Arjan van de Ven <arjan@infradead.org>
 To: Arjan van de Ven <arjan@linux.intel.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 1/3] LatencyTOP infrastructure patch
-Message-ID: <20080118093943.0048d0f7@laptopd505.fenrus.org>
+Subject: [patch 2/3] Latencytop instrumentations part 1
+Message-ID: <20080118094048.10e79ff9@laptopd505.fenrus.org>
 In-Reply-To: <4790E3A6.7060807@linux.intel.com>
 References: <4790E3A6.7060807@linux.intel.com>
 Organization: Intel
@@ -26,588 +26,961 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is the core LatencyTOP kernel infrastructure;
-it measures latencies in the scheduler and tracks it system
-wide and per process
----
- fs/proc/base.c             |   61 +++++++++
- include/linux/latencytop.h |   62 +++++++++
- include/linux/sched.h      |    6 
- kernel/Makefile            |    1 
- kernel/fork.c              |    1 
- kernel/latencytop.c        |  287 +++++++++++++++++++++++++++++++++++++++++++++
- kernel/sched_fair.c        |    8 +
- lib/Kconfig.debug          |   11 +
- 8 files changed, 436 insertions(+), 1 deletion(-)
+This patch contains the first set of instrumentations for latencytop;
+each instrumentation needs to be evaluated for usefulness before this
+can go into mainline; posting here just to show how the infrastructure
+can be used
 
-Index: linux-2.6.24-rc7/include/linux/latencytop.h
+---
+ arch/x86/mm/fault_64.c    |    4 ++++
+ block/ll_rw_blk.c         |    3 +++
+ drivers/scsi/hosts.c      |    1 -
+ drivers/scsi/scsi_error.c |    6 +++++-
+ drivers/scsi/scsi_lib.c   |    4 ++++
+ drivers/scsi/sd.c         |    5 +++++
+ drivers/scsi/sr.c         |   12 +++++++++++-
+ fs/buffer.c               |   22 +++++++++++++++++++++-
+ fs/eventpoll.c            |    5 +++++
+ fs/ext3/inode.c           |   30 ++++++++++++++++++++++++++++--
+ fs/inode.c                |   13 +++++++++++++
+ fs/jbd/checkpoint.c       |    6 ++++++
+ fs/jbd/commit.c           |    5 +++++
+ fs/jbd/journal.c          |    5 +++++
+ fs/jbd/transaction.c      |   13 +++++++++++++
+ fs/pipe.c                 |    5 +++++
+ fs/select.c               |    3 +++
+ fs/sync.c                 |   19 +++++++++++++++++--
+ kernel/fork.c             |    4 ++++
+ kernel/futex.c            |    8 +++++++-
+ kernel/mutex.c            |   13 +++++++++++++
+ kernel/rwsem.c            |   12 +++++++++++-
+ mm/filemap.c              |    6 ++++++
+ mm/slub.c                 |    7 ++++++-
+ 24 files changed, 200 insertions(+), 11 deletions(-)
+
+Index: linux-2.6.24-rc7/arch/x86/mm/fault_64.c
 ===================================================================
---- /dev/null
-+++ linux-2.6.24-rc7/include/linux/latencytop.h
-@@ -0,0 +1,62 @@
-+/*
-+ * latencytop.h: Infrastructure for displaying latency
-+ *
-+ * (C) Copyright 2008 Intel Corporation
-+ * Author: Arjan van de Ven <arjan@linux.intel.com>
-+ *
-+ */
+--- linux-2.6.24-rc7.orig/arch/x86/mm/fault_64.c
++++ linux-2.6.24-rc7/arch/x86/mm/fault_64.c
+@@ -303,6 +303,7 @@ asmlinkage void __kprobes do_page_fault(
+ 	int write, fault;
+ 	unsigned long flags;
+ 	siginfo_t info;
++	struct latency_entry reason;
+ 
+ 	/*
+ 	 * We can fault from pretty much anywhere, with unknown IRQ state.
+@@ -441,7 +442,10 @@ good_area:
+ 	 * make sure we exit gracefully rather than endlessly redo
+ 	 * the fault.
+ 	 */
 +
-+#ifndef _INCLUDE_GUARD_LATENCYTOP_H_
-+#define _INCLUDE_GUARD_LATENCYTOP_H_
-+
-+#ifdef CONFIG_LATENCYTOP
-+
-+#define LT_ARGUMENTSIZE 24
-+#define LT_SAVECOUNT 32
-+
-+struct latency_entry {
-+	char	*reason;
-+	char	argument[LT_ARGUMENTSIZE];
-+	int	maxtime;         /* ignore latencies above this time as
-+				    "user requested" to deal with select() */
-+};
-+
-+struct latency_record {
-+	char 	*reason;
-+	char	argument[LT_ARGUMENTSIZE];
-+	unsigned int count;
-+	unsigned long time;
-+	unsigned long max;
-+};
-+
-+
-+struct task_struct;
-+
-+struct latency_entry *set_latency_reason(char *reason,
-+			struct latency_entry *entry);
-+struct latency_entry *set_latency_reason_user(char *reason,
-+			struct latency_entry *entry, unsigned int max);
-+struct latency_entry *set_latency_reason_param(char *reason,
-+			const char *param, struct latency_entry *entry);
-+void restore_latency_reason(struct latency_entry *entry);
-+void account_scheduler_latency(struct task_struct *task, int usecs, int inter);
-+
-+void clear_all_latency_tracing(struct task_struct *p);
-+#else
-+struct latency_entry {};
-+static inline struct latency_entry *set_latency_reason(char *reason,
-+			struct latency_entry *entry) { return NULL; }
-+static inline struct latency_entry *set_latency_reason_user(char *reason,
-+			struct latency_entry *entry, unsigned int max)
-+				{ return NULL; }
-+static inline struct latency_entry *set_latency_reason_param(char *reason,
-+			const char *param, struct latency_entry *entry)
-+				{ return NULL; }
-+static inline void restore_latency_reason(struct latency_entry *entry) { }
-+static inline void account_scheduler_latency(struct task_struct *task,
-+		int usecs, int inter) {};
-+static inline void clear_all_latency_tracing(struct task_struct *p) {};
-+
-+#endif
-+
-+#endif
-Index: linux-2.6.24-rc7/include/linux/sched.h
++	set_latency_reason("page fault", &reason);
+ 	fault = handle_mm_fault(mm, vma, address, write);
++	restore_latency_reason(&reason);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		if (fault & VM_FAULT_OOM)
+ 			goto out_of_memory;
+Index: linux-2.6.24-rc7/block/ll_rw_blk.c
 ===================================================================
---- linux-2.6.24-rc7.orig/include/linux/sched.h
-+++ linux-2.6.24-rc7/include/linux/sched.h
-@@ -88,6 +88,7 @@ struct sched_param {
- #include <linux/hrtimer.h>
- #include <linux/task_io_accounting.h>
- #include <linux/kobject.h>
+--- linux-2.6.24-rc7.orig/block/ll_rw_blk.c
++++ linux-2.6.24-rc7/block/ll_rw_blk.c
+@@ -2190,7 +2190,9 @@ static struct request *get_request_wait(
+ {
+ 	const int rw = rw_flags & 0x01;
+ 	struct request *rq;
++	struct latency_entry reason;
+ 
++	set_latency_reason("Waiting for a block layer request", &reason);
+ 	rq = get_request(q, rw_flags, bio, GFP_NOIO);
+ 	while (!rq) {
+ 		DEFINE_WAIT(wait);
+@@ -2224,6 +2226,7 @@ static struct request *get_request_wait(
+ 		finish_wait(&rl->wait[rw], &wait);
+ 	}
+ 
++	restore_latency_reason(&reason);
+ 	return rq;
+ }
+ 
+Index: linux-2.6.24-rc7/drivers/scsi/scsi_error.c
+===================================================================
+--- linux-2.6.24-rc7.orig/drivers/scsi/scsi_error.c
++++ linux-2.6.24-rc7/drivers/scsi/scsi_error.c
+@@ -228,11 +227,16 @@ void scsi_times_out(struct scsi_cmnd *sc
+ int scsi_block_when_processing_errors(struct scsi_device *sdev)
+ {
+ 	int online;
++	struct latency_entry reason;
++
++	set_latency_reason("SCSI block due to error recovery", &reason);
+ 
+ 	wait_event(sdev->host->host_wait, !scsi_host_in_recovery(sdev->host));
+ 
+ 	online = scsi_device_online(sdev);
+ 
++	restore_latency_reason(&reason);
++
+ 	SCSI_LOG_ERROR_RECOVERY(5, printk("%s: rtn: %d\n", __FUNCTION__,
+ 					  online));
+ 
+Index: linux-2.6.24-rc7/drivers/scsi/scsi_lib.c
+===================================================================
+--- linux-2.6.24-rc7.orig/drivers/scsi/scsi_lib.c
++++ linux-2.6.24-rc7/drivers/scsi/scsi_lib.c
+@@ -183,6 +183,9 @@ int scsi_execute(struct scsi_device *sde
+ 	struct request *req;
+ 	int write = (data_direction == DMA_TO_DEVICE);
+ 	int ret = DRIVER_ERROR << 24;
++	struct latency_entry reason;
++
++	set_latency_reason("SCSI layer command execute", &reason);
+ 
+ 	req = blk_get_request(sdev->request_queue, write, __GFP_WAIT);
+ 
+@@ -208,6 +211,7 @@ int scsi_execute(struct scsi_device *sde
+  out:
+ 	blk_put_request(req);
+ 
++	restore_latency_reason(&reason);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(scsi_execute);
+Index: linux-2.6.24-rc7/drivers/scsi/sd.c
+===================================================================
+--- linux-2.6.24-rc7.orig/drivers/scsi/sd.c
++++ linux-2.6.24-rc7/drivers/scsi/sd.c
+@@ -47,6 +47,7 @@
+ #include <linux/blkpg.h>
+ #include <linux/delay.h>
+ #include <linux/mutex.h>
++#include <linux/latencytop.h>
+ #include <asm/uaccess.h>
+ 
+ #include <scsi/scsi.h>
+@@ -796,10 +797,13 @@ static int sd_sync_cache(struct scsi_dis
+ 	int retries, res;
+ 	struct scsi_device *sdp = sdkp->device;
+ 	struct scsi_sense_hdr sshdr;
++	struct latency_entry reason;
+ 
+ 	if (!scsi_device_online(sdp))
+ 		return -ENODEV;
+ 
++	set_latency_reason("SCSI disk cache synchronize", &reason);
++
+ 
+ 	for (retries = 3; retries > 0; --retries) {
+ 		unsigned char cmd[10] = { 0 };
+@@ -821,6 +825,7 @@ static int sd_sync_cache(struct scsi_dis
+ 			sd_print_sense_hdr(sdkp, &sshdr);
+ 	}
+ 
++	restore_latency_reason(&reason);
+ 	if (res)
+ 		return -EIO;
+ 	return 0;
+Index: linux-2.6.24-rc7/drivers/scsi/sr.c
+===================================================================
+--- linux-2.6.24-rc7.orig/drivers/scsi/sr.c
++++ linux-2.6.24-rc7/drivers/scsi/sr.c
+@@ -44,6 +44,7 @@
+ #include <linux/init.h>
+ #include <linux/blkdev.h>
+ #include <linux/mutex.h>
++#include <linux/latencytop.h>
+ #include <asm/uaccess.h>
+ 
+ #include <scsi/scsi.h>
+@@ -468,6 +469,7 @@ static int sr_block_ioctl(struct inode *
+ 	struct scsi_device *sdev = cd->device;
+ 	void __user *argp = (void __user *)arg;
+ 	int ret;
++	struct latency_entry reason;
+ 
+ 	/*
+ 	 * Send SCSI addressing ioctls directly to mid level, send other
+@@ -479,7 +481,9 @@ static int sr_block_ioctl(struct inode *
+ 		return scsi_ioctl(sdev, cmd, argp);
+ 	}
+ 
++	set_latency_reason("SCSI cdrom ioctl", &reason);
+ 	ret = cdrom_ioctl(file, &cd->cdi, inode, cmd, arg);
++	restore_latency_reason(&reason);
+ 	if (ret != -ENOSYS)
+ 		return ret;
+ 
+@@ -489,10 +493,16 @@ static int sr_block_ioctl(struct inode *
+ 	 * case fall through to scsi_ioctl, which will return ENDOEV again
+ 	 * if it doesn't recognise the ioctl
+ 	 */
++	set_latency_reason("SCSI nonblockable ioctl", &reason);
+ 	ret = scsi_nonblockable_ioctl(sdev, cmd, argp, NULL);
++	restore_latency_reason(&reason);
+ 	if (ret != -ENODEV)
+ 		return ret;
+-	return scsi_ioctl(sdev, cmd, argp);
++	set_latency_reason("SCSI ioctl", &reason);
++	ret = scsi_ioctl(sdev, cmd, argp);
++	restore_latency_reason(&reason);
++
++	return ret;
+ }
+ 
+ static int sr_block_media_changed(struct gendisk *disk)
+Index: linux-2.6.24-rc7/fs/buffer.c
+===================================================================
+--- linux-2.6.24-rc7.orig/fs/buffer.c
++++ linux-2.6.24-rc7/fs/buffer.c
+@@ -41,6 +41,7 @@
+ #include <linux/bitops.h>
+ #include <linux/mpage.h>
+ #include <linux/bit_spinlock.h>
 +#include <linux/latencytop.h>
  
- #include <asm/processor.h>
+ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list);
  
-@@ -1178,6 +1179,11 @@ struct task_struct {
- 	int make_it_fail;
- #endif
- 	struct prop_local_single dirties;
-+#ifdef CONFIG_LATENCYTOP
-+	struct latency_entry latency_reason;
-+	int latency_record_count;
-+	struct latency_record latency_record[LT_SAVECOUNT];
-+#endif
- };
+@@ -69,8 +70,11 @@ static int sync_buffer(void *word)
+ 
+ void fastcall __lock_buffer(struct buffer_head *bh)
+ {
++	struct latency_entry reason;
++	set_latency_reason("Locking buffer head", &reason);
+ 	wait_on_bit_lock(&bh->b_state, BH_Lock, sync_buffer,
+ 							TASK_UNINTERRUPTIBLE);
++	restore_latency_reason(&reason);
+ }
+ EXPORT_SYMBOL(__lock_buffer);
+ 
+@@ -89,7 +93,10 @@ void fastcall unlock_buffer(struct buffe
+  */
+ void __wait_on_buffer(struct buffer_head * bh)
+ {
++	struct latency_entry reason;
++	set_latency_reason("Waiting for buffer IO", &reason);
+ 	wait_on_bit(&bh->b_state, BH_Lock, sync_buffer, TASK_UNINTERRUPTIBLE);
++	restore_latency_reason(&reason);
+ }
+ 
+ static void
+@@ -606,6 +613,9 @@ static int osync_buffers_list(spinlock_t
+ 	struct buffer_head *bh;
+ 	struct list_head *p;
+ 	int err = 0;
++	struct latency_entry reason;
++
++	set_latency_reason("(O)sync the buffer list", &reason);
+ 
+ 	spin_lock(lock);
+ repeat:
+@@ -623,6 +633,7 @@ repeat:
+ 		}
+ 	}
+ 	spin_unlock(lock);
++	restore_latency_reason(&reason);
+ 	return err;
+ }
+ 
+@@ -1208,19 +1219,25 @@ void __bforget(struct buffer_head *bh)
+ 
+ static struct buffer_head *__bread_slow(struct buffer_head *bh)
+ {
++	struct latency_entry reason;
++	set_latency_reason("Synchronous bufferhead read", &reason);
+ 	lock_buffer(bh);
+ 	if (buffer_uptodate(bh)) {
+ 		unlock_buffer(bh);
++		restore_latency_reason(&reason);
+ 		return bh;
+ 	} else {
+ 		get_bh(bh);
+ 		bh->b_end_io = end_buffer_read_sync;
+ 		submit_bh(READ, bh);
+ 		wait_on_buffer(bh);
+-		if (buffer_uptodate(bh))
++		if (buffer_uptodate(bh)) {
++			restore_latency_reason(&reason);
+ 			return bh;
++		}
+ 	}
+ 	brelse(bh);
++	restore_latency_reason(&reason);
+ 	return NULL;
+ }
+ 
+@@ -2973,6 +2990,8 @@ void ll_rw_block(int rw, int nr, struct 
+ int sync_dirty_buffer(struct buffer_head *bh)
+ {
+ 	int ret = 0;
++	struct latency_entry reason;
++	set_latency_reason("syncing diry buffer", &reason);
+ 
+ 	WARN_ON(atomic_read(&bh->b_count) < 1);
+ 	lock_buffer(bh);
+@@ -2990,6 +3009,7 @@ int sync_dirty_buffer(struct buffer_head
+ 	} else {
+ 		unlock_buffer(bh);
+ 	}
++	restore_latency_reason(&reason);
+ 	return ret;
+ }
+ 
+Index: linux-2.6.24-rc7/fs/eventpoll.c
+===================================================================
+--- linux-2.6.24-rc7.orig/fs/eventpoll.c
++++ linux-2.6.24-rc7/fs/eventpoll.c
+@@ -33,6 +33,7 @@
+ #include <linux/bitops.h>
+ #include <linux/mutex.h>
+ #include <linux/anon_inodes.h>
++#include <linux/latencytop.h>
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+ #include <asm/io.h>
+@@ -1219,6 +1220,7 @@ asmlinkage long sys_epoll_wait(int epfd,
+ 	int error;
+ 	struct file *file;
+ 	struct eventpoll *ep;
++	struct latency_entry reason;
+ 
+ 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_wait(%d, %p, %d, %d)\n",
+ 		     current, epfd, events, maxevents, timeout));
+@@ -1227,6 +1229,8 @@ asmlinkage long sys_epoll_wait(int epfd,
+ 	if (maxevents <= 0 || maxevents > EP_MAX_EVENTS)
+ 		return -EINVAL;
+ 
++	set_latency_reason_user("Waiting for event (epoll)", &reason, 5000);
++
+ 	/* Verify that the area passed by the user is writeable */
+ 	if (!access_ok(VERIFY_WRITE, events, maxevents * sizeof(struct epoll_event))) {
+ 		error = -EFAULT;
+@@ -1262,6 +1266,7 @@ error_return:
+ 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_wait(%d, %p, %d, %d) = %d\n",
+ 		     current, epfd, events, maxevents, timeout, error));
+ 
++	restore_latency_reason(&reason);
+ 	return error;
+ }
+ 
+Index: linux-2.6.24-rc7/fs/ext3/inode.c
+===================================================================
+--- linux-2.6.24-rc7.orig/fs/ext3/inode.c
++++ linux-2.6.24-rc7/fs/ext3/inode.c
+@@ -36,6 +36,7 @@
+ #include <linux/mpage.h>
+ #include <linux/uio.h>
+ #include <linux/bio.h>
++#include <linux/latencytop.h>
+ #include "xattr.h"
+ #include "acl.h"
+ 
+@@ -357,7 +358,9 @@ static Indirect *ext3_get_branch(struct 
+ 	struct super_block *sb = inode->i_sb;
+ 	Indirect *p = chain;
+ 	struct buffer_head *bh;
++	struct latency_entry reason;
+ 
++	set_latency_reason("EXT3 - reading indirect blocks", &reason);
+ 	*err = 0;
+ 	/* i_data is not going away, no lock needed */
+ 	add_chain (chain, NULL, EXT3_I(inode)->i_data + *offsets);
+@@ -375,6 +378,7 @@ static Indirect *ext3_get_branch(struct 
+ 		if (!p->key)
+ 			goto no_block;
+ 	}
++	restore_latency_reason(&reason);
+ 	return NULL;
+ 
+ changed:
+@@ -384,6 +388,7 @@ changed:
+ failure:
+ 	*err = -EIO;
+ no_block:
++	restore_latency_reason(&reason);
+ 	return p;
+ }
+ 
+@@ -1255,6 +1260,9 @@ static int ext3_ordered_write_end(struct
+ 	struct inode *inode = file->f_mapping->host;
+ 	unsigned from, to;
+ 	int ret = 0, ret2;
++	struct latency_entry reason;
++
++	set_latency_reason("EXT3 ordered write", &reason);
+ 
+ 	from = pos & (PAGE_CACHE_SIZE - 1);
+ 	to = from + len;
+@@ -1284,6 +1292,8 @@ static int ext3_ordered_write_end(struct
+ 	unlock_page(page);
+ 	page_cache_release(page);
+ 
++	restore_latency_reason(&reason);
++
+ 	return ret ? ret : copied;
+ }
+ 
+@@ -1641,14 +1651,25 @@ out_unlock:
+ 
+ static int ext3_readpage(struct file *file, struct page *page)
+ {
+-	return mpage_readpage(page, ext3_get_block);
++	int ret;
++	struct latency_entry reason;
++	set_latency_reason("EXT3 readpage", &reason);
++	ret = mpage_readpage(page, ext3_get_block);
++	restore_latency_reason(&reason);
++	return ret;
+ }
+ 
+ static int
+ ext3_readpages(struct file *file, struct address_space *mapping,
+ 		struct list_head *pages, unsigned nr_pages)
+ {
+-	return mpage_readpages(mapping, pages, nr_pages, ext3_get_block);
++	int ret;
++	struct latency_entry reason;
++	set_latency_reason("EXT3 readpages", &reason);
++	ret = mpage_readpages(mapping, pages, nr_pages, ext3_get_block);
++	restore_latency_reason(&reason);
++
++	return ret;
+ }
+ 
+ static void ext3_invalidatepage(struct page *page, unsigned long offset)
+@@ -2665,6 +2686,9 @@ void ext3_read_inode(struct inode * inod
+ 	struct ext3_inode_info *ei = EXT3_I(inode);
+ 	struct buffer_head *bh;
+ 	int block;
++	struct latency_entry reason;
++
++	set_latency_reason("EXT3 reading inode", &reason);
+ 
+ #ifdef CONFIG_EXT3_FS_POSIX_ACL
+ 	ei->i_acl = EXT3_ACL_NOT_CACHED;
+@@ -2787,10 +2811,12 @@ void ext3_read_inode(struct inode * inod
+ 	}
+ 	brelse (iloc.bh);
+ 	ext3_set_inode_flags(inode);
++	restore_latency_reason(&reason);
+ 	return;
+ 
+ bad_inode:
+ 	make_bad_inode(inode);
++	restore_latency_reason(&reason);
+ 	return;
+ }
+ 
+Index: linux-2.6.24-rc7/fs/inode.c
+===================================================================
+--- linux-2.6.24-rc7.orig/fs/inode.c
++++ linux-2.6.24-rc7/fs/inode.c
+@@ -22,6 +22,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/inotify.h>
+ #include <linux/mount.h>
++#include <linux/latencytop.h>
+ 
+ /*
+  * This is needed for the following functions:
+@@ -1202,6 +1203,7 @@ void touch_atime(struct vfsmount *mnt, s
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	struct timespec now;
++	struct latency_entry reason;
+ 
+ 	if (inode->i_flags & S_NOATIME)
+ 		return;
+@@ -1237,8 +1239,10 @@ void touch_atime(struct vfsmount *mnt, s
+ 	if (timespec_equal(&inode->i_atime, &now))
+ 		return;
+ 
++	set_latency_reason("updating atime", &reason);
+ 	inode->i_atime = now;
+ 	mark_inode_dirty_sync(inode);
++	restore_latency_reason(&reason);
+ }
+ EXPORT_SYMBOL(touch_atime);
+ 
+@@ -1314,13 +1318,22 @@ int inode_wait(void *word)
+ static void __wait_on_freeing_inode(struct inode *inode)
+ {
+ 	wait_queue_head_t *wq;
++	char buffer[32];
++	struct latency_entry reason;
+ 	DEFINE_WAIT_BIT(wait, &inode->i_state, __I_LOCK);
++
++	sprintf(buffer, "%x:%x %lu %lx", MAJOR(inode->i_sb->s_dev),
++		MINOR(inode->i_sb->s_dev), inode->i_ino, inode->i_state);
++
++	set_latency_reason_param("Waiting for file delete to complete",
++							buffer, &reason);
+ 	wq = bit_waitqueue(&inode->i_state, __I_LOCK);
+ 	prepare_to_wait(wq, &wait.wait, TASK_UNINTERRUPTIBLE);
+ 	spin_unlock(&inode_lock);
+ 	schedule();
+ 	finish_wait(wq, &wait.wait);
+ 	spin_lock(&inode_lock);
++	restore_latency_reason(&reason);
+ }
+ 
+ /*
+Index: linux-2.6.24-rc7/fs/jbd/checkpoint.c
+===================================================================
+--- linux-2.6.24-rc7.orig/fs/jbd/checkpoint.c
++++ linux-2.6.24-rc7/fs/jbd/checkpoint.c
+@@ -301,9 +301,11 @@ int log_do_checkpoint(journal_t *journal
+ 	transaction_t *transaction;
+ 	tid_t this_tid;
+ 	int result;
++	struct latency_entry reason;
+ 
+ 	jbd_debug(1, "Start checkpoint\n");
+ 
++
+ 	/*
+ 	 * First thing: if there are any transactions in the log which
+ 	 * don't need checkpointing, just eliminate them from the
+@@ -314,6 +316,8 @@ int log_do_checkpoint(journal_t *journal
+ 	if (result <= 0)
+ 		return result;
+ 
++	set_latency_reason("EXT3 (jbd) checkpointing", &reason);
++
+ 	/*
+ 	 * OK, we need to start writing disk blocks.  Take one transaction
+ 	 * and write it.
+@@ -375,6 +379,8 @@ restart:
+ out:
+ 	spin_unlock(&journal->j_list_lock);
+ 	result = cleanup_journal_tail(journal);
++
++	restore_latency_reason(&reason);
+ 	if (result < 0)
+ 		return result;
+ 	return 0;
+Index: linux-2.6.24-rc7/fs/jbd/commit.c
+===================================================================
+--- linux-2.6.24-rc7.orig/fs/jbd/commit.c
++++ linux-2.6.24-rc7/fs/jbd/commit.c
+@@ -104,6 +104,7 @@ static int journal_write_commit_record(j
+ {
+ 	struct journal_head *descriptor;
+ 	struct buffer_head *bh;
++	struct latency_entry reason;
+ 	int i, ret;
+ 	int barrier_done = 0;
+ 
+@@ -129,6 +130,9 @@ static int journal_write_commit_record(j
+ 	if (journal->j_flags & JFS_BARRIER) {
+ 		set_buffer_ordered(bh);
+ 		barrier_done = 1;
++		set_latency_reason("Writing commit block (barrier)", &reason);
++	} else {
++		set_latency_reason("Writing commit block", &reason);
+ 	}
+ 	ret = sync_dirty_buffer(bh);
+ 	/* is it possible for another commit to fail at roughly
+@@ -156,6 +160,7 @@ static int journal_write_commit_record(j
+ 	put_bh(bh);		/* One for getblk() */
+ 	journal_put_journal_head(descriptor);
+ 
++	restore_latency_reason(&reason);
+ 	return (ret == -EIO);
+ }
+ 
+Index: linux-2.6.24-rc7/fs/jbd/journal.c
+===================================================================
+--- linux-2.6.24-rc7.orig/fs/jbd/journal.c
++++ linux-2.6.24-rc7/fs/jbd/journal.c
+@@ -36,6 +36,7 @@
+ #include <linux/poison.h>
+ #include <linux/proc_fs.h>
+ #include <linux/debugfs.h>
++#include <linux/ioprio.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/page.h>
+@@ -1335,6 +1336,9 @@ int journal_flush(journal_t *journal)
+ 	int err = 0;
+ 	transaction_t *transaction = NULL;
+ 	unsigned long old_tail;
++	struct latency_entry reason;
++
++	set_latency_reason("EXT3 (jbd) flushing journal", &reason);
+ 
+ 	spin_lock(&journal->j_state_lock);
+ 
+@@ -1384,6 +1388,7 @@ int journal_flush(journal_t *journal)
+ 	J_ASSERT(journal->j_head == journal->j_tail);
+ 	J_ASSERT(journal->j_tail_sequence == journal->j_transaction_sequence);
+ 	spin_unlock(&journal->j_state_lock);
++	restore_latency_reason(&reason);
+ 	return err;
+ }
+ 
+Index: linux-2.6.24-rc7/fs/jbd/transaction.c
+===================================================================
+--- linux-2.6.24-rc7.orig/fs/jbd/transaction.c
++++ linux-2.6.24-rc7/fs/jbd/transaction.c
+@@ -25,6 +25,7 @@
+ #include <linux/timer.h>
+ #include <linux/mm.h>
+ #include <linux/highmem.h>
++#include <linux/latencytop.h>
+ 
+ static void __journal_temp_unlink_buffer(struct journal_head *jh);
+ 
+@@ -85,6 +86,9 @@ static int start_this_handle(journal_t *
+ 	int nblocks = handle->h_buffer_credits;
+ 	transaction_t *new_transaction = NULL;
+ 	int ret = 0;
++	struct latency_entry reason;
++
++	set_latency_reason("EXT3 (jbd) journal transaction", &reason);
+ 
+ 	if (nblocks > journal->j_max_transaction_buffers) {
+ 		printk(KERN_ERR "JBD: %s wants too many credits (%d > %d)\n",
+@@ -229,6 +233,7 @@ repeat_locked:
+ out:
+ 	if (unlikely(new_transaction))		/* It's usually NULL */
+ 		kfree(new_transaction);
++	restore_latency_reason(&reason);
+ 	return ret;
+ }
+ 
+@@ -431,6 +436,9 @@ int journal_restart(handle_t *handle, in
+ void journal_lock_updates(journal_t *journal)
+ {
+ 	DEFINE_WAIT(wait);
++	struct latency_entry reason;
++
++	set_latency_reason("EXT3 (jbd) transaction barrier", &reason);
+ 
+ 	spin_lock(&journal->j_state_lock);
+ 	++journal->j_barrier_count;
+@@ -464,6 +472,7 @@ void journal_lock_updates(journal_t *jou
+ 	 * too.
+ 	 */
+ 	mutex_lock(&journal->j_barrier);
++	restore_latency_reason(&reason);
+ }
+ 
+ /**
+@@ -535,10 +544,13 @@ do_get_write_access(handle_t *handle, st
+ 	int error;
+ 	char *frozen_buffer = NULL;
+ 	int need_copy = 0;
++	struct latency_entry reason;
+ 
+ 	if (is_handle_aborted(handle))
+ 		return -EROFS;
+ 
++	set_latency_reason("EXT3 (jbd) do_get_write_access", &reason);
++
+ 	transaction = handle->h_transaction;
+ 	journal = transaction->t_journal;
+ 
+@@ -737,6 +749,7 @@ out:
+ 		jbd_free(frozen_buffer, bh->b_size);
+ 
+ 	JBUFFER_TRACE(jh, "exit");
++	restore_latency_reason(&reason);
+ 	return error;
+ }
+ 
+Index: linux-2.6.24-rc7/fs/pipe.c
+===================================================================
+--- linux-2.6.24-rc7.orig/fs/pipe.c
++++ linux-2.6.24-rc7/fs/pipe.c
+@@ -17,6 +17,7 @@
+ #include <linux/highmem.h>
+ #include <linux/pagemap.h>
+ #include <linux/audit.h>
++#include <linux/latencytop.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/ioctls.h>
+@@ -402,12 +403,15 @@ pipe_write(struct kiocb *iocb, const str
+ 	struct iovec *iov = (struct iovec *)_iov;
+ 	size_t total_len;
+ 	ssize_t chars;
++	struct latency_entry reason;
+ 
+ 	total_len = iov_length(iov, nr_segs);
+ 	/* Null write succeeds. */
+ 	if (unlikely(total_len == 0))
+ 		return 0;
+ 
++	set_latency_reason("writing to a pipe", &reason);
++
+ 	do_wakeup = 0;
+ 	ret = 0;
+ 	mutex_lock(&inode->i_mutex);
+@@ -560,6 +564,7 @@ out:
+ 	}
+ 	if (ret > 0)
+ 		file_update_time(filp);
++	restore_latency_reason(&reason);
+ 	return ret;
+ }
+ 
+Index: linux-2.6.24-rc7/fs/select.c
+===================================================================
+--- linux-2.6.24-rc7.orig/fs/select.c
++++ linux-2.6.24-rc7/fs/select.c
+@@ -186,6 +186,7 @@ int do_select(int n, fd_set_bits *fds, s
+ 	struct poll_wqueues table;
+ 	poll_table *wait;
+ 	int retval, i;
++	struct latency_entry reason;
+ 
+ 	rcu_read_lock();
+ 	retval = max_select_fd(n, fds);
+@@ -195,6 +196,7 @@ int do_select(int n, fd_set_bits *fds, s
+ 		return retval;
+ 	n = retval;
+ 
++	set_latency_reason_user("Waiting for event (select)", &reason, 5000);
+ 	poll_initwait(&table);
+ 	wait = &table.pt;
+ 	if (!*timeout)
+@@ -284,6 +286,7 @@ int do_select(int n, fd_set_bits *fds, s
+ 
+ 	poll_freewait(&table);
+ 
++	restore_latency_reason(&reason);
+ 	return retval;
+ }
+ 
+Index: linux-2.6.24-rc7/fs/sync.c
+===================================================================
+--- linux-2.6.24-rc7.orig/fs/sync.c
++++ linux-2.6.24-rc7/fs/sync.c
+@@ -13,6 +13,7 @@
+ #include <linux/pagemap.h>
+ #include <linux/quotaops.h>
+ #include <linux/buffer_head.h>
++#include <linux/latencytop.h>
+ 
+ #define VALID_FLAGS (SYNC_FILE_RANGE_WAIT_BEFORE|SYNC_FILE_RANGE_WRITE| \
+ 			SYNC_FILE_RANGE_WAIT_AFTER)
+@@ -38,7 +39,11 @@ static void do_sync(unsigned long wait)
+ 
+ asmlinkage long sys_sync(void)
+ {
++	struct latency_entry reason;
++	set_latency_reason("sync system call", &reason);
+ 	do_sync(1);
++	restore_latency_reason(&reason);
++
+ 	return 0;
+ }
+ 
+@@ -120,12 +125,22 @@ static long __do_fsync(unsigned int fd, 
+ 
+ asmlinkage long sys_fsync(unsigned int fd)
+ {
+-	return __do_fsync(fd, 0);
++	long ret;
++	struct latency_entry reason;
++	set_latency_reason("fsync system call", &reason);
++	ret = __do_fsync(fd, 0);
++	restore_latency_reason(&reason);
++	return ret;
+ }
+ 
+ asmlinkage long sys_fdatasync(unsigned int fd)
+ {
+-	return __do_fsync(fd, 1);
++	long ret;
++	struct latency_entry reason;
++	set_latency_reason("fdatasync system call", &reason);
++	ret = __do_fsync(fd, 1);
++	restore_latency_reason(&reason);
++	return ret;
+ }
  
  /*
 Index: linux-2.6.24-rc7/kernel/fork.c
 ===================================================================
 --- linux-2.6.24-rc7.orig/kernel/fork.c
 +++ linux-2.6.24-rc7/kernel/fork.c
-@@ -1196,6 +1196,7 @@ static struct task_struct *copy_process(
- #ifdef TIF_SYSCALL_EMU
- 	clear_tsk_thread_flag(p, TIF_SYSCALL_EMU);
- #endif
-+	clear_all_latency_tracing(p);
+@@ -1411,6 +1411,9 @@ long do_fork(unsigned long clone_flags,
+ 	struct task_struct *p;
+ 	int trace = 0;
+ 	long nr;
++	struct latency_entry reason;
++
++	set_latency_reason("process fork", &reason);
  
- 	/* Our parent execution domain becomes current domain
- 	   These must match for thread signalling to apply */
-Index: linux-2.6.24-rc7/kernel/latencytop.c
-===================================================================
---- /dev/null
-+++ linux-2.6.24-rc7/kernel/latencytop.c
-@@ -0,0 +1,287 @@
-+/*
-+ * latencytop.c: Latency display infrastructure
-+ *
-+ * (C) Copyright 2008 Intel Corporation
-+ * Author: Arjan van de Ven <arjan@linux.intel.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ */
-+
-+#include <linux/latencytop.h>
-+#include <linux/list.h>
-+#include <linux/spinlock.h>
-+#include <linux/slab.h>
-+#include <linux/module.h>
-+#include <linux/notifier.h>
-+#include <linux/sched.h>
-+#include <linux/kallsyms.h>
-+#include <linux/seq_file.h>
-+#include <linux/proc_fs.h>
-+
-+static DEFINE_SPINLOCK(latency_lock);
-+
-+#define MAXLR 128
-+static struct latency_record latency_record[MAXLR];
-+
-+struct latency_entry *set_latency_reason(char *reason,
-+				struct latency_entry *entry)
-+{
-+	unsigned long flags;
-+	spin_lock_irqsave(&latency_lock, flags);
-+
-+	*entry = current->latency_reason;
-+	if (current->latency_reason.reason) {
-+		spin_unlock_irqrestore(&latency_lock, flags);
-+		return entry;
-+	}
-+
-+	current->latency_reason.reason = reason;
-+	current->latency_reason.argument[0] = 0;
-+	current->latency_reason.maxtime = 0;
-+	spin_unlock_irqrestore(&latency_lock, flags);
-+	return entry;
-+}
-+
-+struct latency_entry *set_latency_reason_user(char *reason,
-+			struct latency_entry *entry, unsigned int max)
-+{
-+	unsigned long flags;
-+	spin_lock_irqsave(&latency_lock, flags);
-+
-+	*entry = current->latency_reason;
-+	if (current->latency_reason.reason) {
-+		spin_unlock_irqrestore(&latency_lock, flags);
-+		return entry;
-+	}
-+
-+	current->latency_reason.reason = reason;
-+	current->latency_reason.argument[0] = 0;
-+	current->latency_reason.maxtime = max;
-+	spin_unlock_irqrestore(&latency_lock, flags);
-+	return entry;
-+}
-+
-+struct latency_entry *set_latency_reason_param(char *reason,
-+			char const *param, struct latency_entry *entry)
-+{
-+	unsigned long flags;
-+	spin_lock_irqsave(&latency_lock, flags);
-+
-+	*entry = current->latency_reason;
-+	if (current->latency_reason.reason) {
-+		spin_unlock_irqrestore(&latency_lock, flags);
-+		return entry;
-+	}
-+
-+	current->latency_reason.reason = reason;
-+	current->latency_reason.maxtime = 0;
-+	if (param)
-+		strncpy(current->latency_reason.argument, param, 23);
-+	else
-+		current->latency_reason.argument[0] = 0;
-+	spin_unlock_irqrestore(&latency_lock, flags);
-+	return entry;
-+}
-+EXPORT_SYMBOL(set_latency_reason);
-+
-+void restore_latency_reason(struct latency_entry *entry)
-+{
-+	unsigned long flags;
-+	spin_lock_irqsave(&latency_lock, flags);
-+	current->latency_reason = *entry;
-+	spin_unlock_irqrestore(&latency_lock, flags);
-+}
-+EXPORT_SYMBOL(restore_latency_reason);
-+
-+void clear_all_latency_tracing(struct task_struct *p)
-+{
-+	unsigned long flags;
-+	spin_lock_irqsave(&latency_lock, flags);
-+	memset(&p->latency_reason, 0, sizeof(p->latency_reason));
-+	memset(&p->latency_record, 0, sizeof(p->latency_record));
-+	p->latency_record_count = 0;
-+	spin_unlock_irqrestore(&latency_lock, flags);
-+}
-+
-+static void clear_global_latency_tracing(void)
-+{
-+	unsigned long flags;
-+	spin_lock_irqsave(&latency_lock, flags);
-+	memset(&latency_record, 0, sizeof(latency_record));
-+	spin_unlock_irqrestore(&latency_lock, flags);
-+}
-+
-+static void __sched
-+account_global_scheduler_latency(struct task_struct *tsk, int usecs)
-+{
-+	int i;
-+	int firstnonnull = MAXLR + 1;
-+
-+	if (!tsk->latency_reason.reason)
-+		return;
-+
-+	/* skip kernel threads for now */
-+	if (!tsk->mm)
-+		return;
-+
-+	for (i = 0; i < MAXLR; i++) {
-+		/* nothing stored */
-+		if (!latency_record[i].reason) {
-+			if (firstnonnull > i)
-+				firstnonnull = i;
-+			continue;
-+		}
-+		/* mismatch on the reason */
-+		if (strcmp(latency_record[i].reason,
-+				tsk->latency_reason.reason))
-+			continue;
-+		/* mismatch on the argument */
-+		if (strcmp(latency_record[i].argument,
-+				tsk->latency_reason.argument))
-+			continue;
-+		latency_record[i].count++;
-+		latency_record[i].time += usecs;
-+		if (usecs > latency_record[i].max)
-+			latency_record[i].max = usecs;
-+		return;
-+	}
-+
-+	i = firstnonnull;
-+	if (i >= MAXLR - 1)
-+		return;
-+
-+	/* allocted a new one */
-+	latency_record[i].reason = tsk->latency_reason.reason;
-+	strcpy(latency_record[i].argument, tsk->latency_reason.argument);
-+	latency_record[i].count = 1;
-+	latency_record[i].time = usecs;
-+	latency_record[i].max = usecs;
-+}
-+
-+void __sched account_scheduler_latency(struct task_struct *tsk,
-+						int usecs, int inter)
-+{
-+	int i;
-+	unsigned long flags;
-+
-+	/* long interruptible waits are generally user requested.. */
-+	if (inter && usecs > 5000)
-+		return;
-+
-+	/* no reason for the latency... bail for now. Later we'll
-+	 * store a backtrace item instead
-+	 */
-+	if (!tsk->latency_reason.reason && tsk->latency_record_count > 15)
-+		return;
-+
-+	/* if we have a maxtime set (as is the case for select and such),
-+	   and we're waiting longer than that, assume it's a user requested
-+	   delay and don't log it */
-+	if (tsk->latency_reason.maxtime &&
-+		usecs > tsk->latency_reason.maxtime)
-+		return;
-+
-+	spin_lock_irqsave(&latency_lock, flags);
-+	if (!tsk->latency_reason.reason) {
-+		static char str[KSYM_NAME_LEN];
-+		unsigned long EIPV = get_wchan(tsk);
-+		sprint_symbol(str, EIPV);
-+		tsk->latency_reason.reason = "Unknown reason";
-+		strncpy(tsk->latency_reason.argument, str, 23);
-+	}
-+
-+	account_global_scheduler_latency(tsk, usecs);
-+
-+	/* check if the reason is already in the table */
-+	for (i = 0; i < LT_SAVECOUNT; i++) {
-+		/* nothing stored */
-+		if (!tsk->latency_record[i].reason)
-+			continue;
-+		/* mismatch on the reason */
-+		if (strcmp(tsk->latency_record[i].reason,
-+				tsk->latency_reason.reason))
-+			continue;
-+		/* mismatch on the argument */
-+		if (strcmp(tsk->latency_record[i].argument,
-+				tsk->latency_reason.argument))
-+			continue;
-+		tsk->latency_record[i].count++;
-+		tsk->latency_record[i].time += usecs;
-+		if (usecs > tsk->latency_record[i].max)
-+			tsk->latency_record[i].max = usecs;
-+		spin_unlock_irqrestore(&latency_lock, flags);
-+		return;
-+	}
-+	/* short term hack; if we're > 32 we stop; future we recycle */
-+	tsk->latency_record_count++;
-+	if (tsk->latency_record_count >= LT_SAVECOUNT) {
-+		spin_unlock_irqrestore(&latency_lock, flags);
-+		return;
-+	}
-+	/* allocted a new one */
-+	i = tsk->latency_record_count;
-+	tsk->latency_record[i].reason = tsk->latency_reason.reason;
-+	strcpy(tsk->latency_record[i].argument, tsk->latency_reason.argument);
-+	tsk->latency_record[i].count = 1;
-+	tsk->latency_record[i].time = usecs;
-+	tsk->latency_record[i].max = usecs;
-+	spin_unlock_irqrestore(&latency_lock, flags);
-+
-+}
-+
-+
-+
-+static int lstats_show(struct seq_file *m, void *v)
-+{
-+	int i;
-+	seq_puts(m, "Latency Top version : v0.1\n");
-+
-+	for (i = 0; i < MAXLR; i++) {
-+		if (latency_record[i].reason)
-+			seq_printf(m, "%i %li %li %s (%s)\n",
-+				latency_record[i].count,
-+				latency_record[i].time,
-+				latency_record[i].max,
-+				latency_record[i].reason,
-+				latency_record[i].argument);
-+
-+	}
-+	return 0;
-+}
-+
-+static ssize_t lstats_write(struct file *file, const char __user *buf,
-+			    size_t count, loff_t *offs)
-+{
-+	clear_global_latency_tracing();
-+	return count;
-+}
-+
-+static int lstats_open(struct inode *inode, struct file *filp)
-+{
-+	return single_open(filp, lstats_show, NULL);
-+}
-+
-+static struct file_operations lstats_fops = {
-+	.open		= lstats_open,
-+	.read		= seq_read,
-+	.write		= lstats_write,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int __init init_lstats_procfs(void)
-+{
-+	struct proc_dir_entry *pe;
-+
-+	pe = create_proc_entry("latency_stats", 0644, NULL);
-+	if (!pe)
-+		return -ENOMEM;
-+
-+	pe->proc_fops = &lstats_fops;
-+
-+	return 0;
-+}
-+__initcall(init_lstats_procfs);
-Index: linux-2.6.24-rc7/kernel/Makefile
-===================================================================
---- linux-2.6.24-rc7.orig/kernel/Makefile
-+++ linux-2.6.24-rc7/kernel/Makefile
-@@ -57,6 +57,7 @@ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
- obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
- obj-$(CONFIG_MARKERS) += marker.o
-+obj-$(CONFIG_LATENCYTOP) += latencytop.o
- 
- ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-Index: linux-2.6.24-rc7/kernel/sched_fair.c
-===================================================================
---- linux-2.6.24-rc7.orig/kernel/sched_fair.c
-+++ linux-2.6.24-rc7/kernel/sched_fair.c
-@@ -20,6 +20,8 @@
-  *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-  */
- 
-+#include <linux/latencytop.h>
-+
- /*
-  * Targeted preemption latency for CPU-bound tasks:
-  * (default: 20ms * (1 + ilog(ncpus)), units: nanoseconds)
-@@ -434,6 +436,7 @@ static void enqueue_sleeper(struct cfs_r
- #ifdef CONFIG_SCHEDSTATS
- 	if (se->sleep_start) {
- 		u64 delta = rq_of(cfs_rq)->clock - se->sleep_start;
-+		struct task_struct *tsk = task_of(se);
- 
- 		if ((s64)delta < 0)
- 			delta = 0;
-@@ -443,9 +446,12 @@ static void enqueue_sleeper(struct cfs_r
- 
- 		se->sleep_start = 0;
- 		se->sum_sleep_runtime += delta;
-+
-+		account_scheduler_latency(tsk, delta >> 10, 1);
+ 	if (unlikely(current->ptrace)) {
+ 		trace = fork_traceflag (clone_flags);
+@@ -1473,6 +1476,7 @@ long do_fork(unsigned long clone_flags,
+ 	} else {
+ 		nr = PTR_ERR(p);
  	}
- 	if (se->block_start) {
- 		u64 delta = rq_of(cfs_rq)->clock - se->block_start;
-+		struct task_struct *tsk = task_of(se);
- 
- 		if ((s64)delta < 0)
- 			delta = 0;
-@@ -462,11 +468,11 @@ static void enqueue_sleeper(struct cfs_r
- 		 * time that the task spent sleeping:
- 		 */
- 		if (unlikely(prof_on == SLEEP_PROFILING)) {
--			struct task_struct *tsk = task_of(se);
- 
- 			profile_hits(SLEEP_PROFILING, (void *)get_wchan(tsk),
- 				     delta >> 20);
- 		}
-+		account_scheduler_latency(tsk, delta >> 10, 0);
- 	}
- #endif
++	restore_latency_reason(&reason);
+ 	return nr;
  }
-Index: linux-2.6.24-rc7/fs/proc/base.c
+ 
+Index: linux-2.6.24-rc7/kernel/futex.c
 ===================================================================
---- linux-2.6.24-rc7.orig/fs/proc/base.c
-+++ linux-2.6.24-rc7/fs/proc/base.c
-@@ -310,6 +310,60 @@ static int proc_pid_schedstat(struct tas
- }
- #endif
+--- linux-2.6.24-rc7.orig/kernel/futex.c
++++ linux-2.6.24-rc7/kernel/futex.c
+@@ -2051,9 +2051,11 @@ asmlinkage long sys_futex(u32 __user *ua
+ 			  u32 val3)
+ {
+ 	struct timespec ts;
++	long ret;
+ 	ktime_t t, *tp = NULL;
+ 	u32 val2 = 0;
+ 	int cmd = op & FUTEX_CMD_MASK;
++	struct latency_entry reason;
  
-+#ifdef CONFIG_LATENCYTOP
-+static int lstats_show_proc(struct seq_file *m, void *v)
-+{
-+	int i;
-+	struct task_struct *task = m->private;
-+	seq_puts(m, "Latency Top version : v0.1\n");
-+
-+	for (i = 0; i < 32; i++) {
-+		if (task->latency_record[i].reason)
-+			seq_printf(m, "%i %li %li %s (%s)\n",
-+				task->latency_record[i].count,
-+				task->latency_record[i].time,
-+				task->latency_record[i].max,
-+				task->latency_record[i].reason,
-+				task->latency_record[i].argument);
-+
-+	}
-+	return 0;
-+}
-+
-+static int lstats_open(struct inode *inode, struct file *file)
-+{
-+	int ret;
-+	struct seq_file *m;
-+	struct task_struct *task = get_proc_task(inode);
-+	ret = single_open(file, lstats_show_proc, NULL);
-+	if (!ret) {
-+		m = file->private_data;
-+		m->private = task;
-+	}
+ 	if (utime && (cmd == FUTEX_WAIT || cmd == FUTEX_LOCK_PI)) {
+ 		if (copy_from_user(&ts, utime, sizeof(ts)) != 0)
+@@ -2074,7 +2076,11 @@ asmlinkage long sys_futex(u32 __user *ua
+ 	    cmd == FUTEX_WAKE_OP)
+ 		val2 = (u32) (unsigned long) utime;
+ 
+-	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
++	set_latency_reason_user("Userspace lock contention (futex)",
++				&reason, 5000);
++	ret = do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
++	restore_latency_reason(&reason);
 +	return ret;
-+}
-+
-+static ssize_t lstats_write(struct file *file, const char __user *buf,
-+			    size_t count, loff_t *offs)
-+{
-+	struct seq_file *m;
-+	struct task_struct *task;
-+	m = file->private_data;
-+	task = m->private;
-+	clear_all_latency_tracing(task);
-+	return count;
-+}
-+
-+static const struct file_operations proc_lstats_operations = {
-+	.open		= lstats_open,
-+	.read		= seq_read,
-+	.write		= lstats_write,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+#endif
-+
- /* The badness from the OOM killer */
- unsigned long badness(struct task_struct *p, unsigned long uptime);
- static int proc_oom_score(struct task_struct *task, char *buffer)
-@@ -1020,6 +1074,7 @@ static const struct file_operations proc
- };
- #endif
+ }
  
-+
- #ifdef CONFIG_SCHED_DEBUG
- /*
-  * Print out various scheduling related per-task fields:
-@@ -2230,6 +2285,9 @@ static const struct pid_entry tgid_base_
- #ifdef CONFIG_SCHEDSTATS
- 	INF("schedstat",  S_IRUGO, pid_schedstat),
- #endif
-+#ifdef CONFIG_LATENCYTOP
-+	REG("latency",  S_IRUGO, lstats),
-+#endif
- #ifdef CONFIG_PROC_PID_CPUSET
- 	REG("cpuset",     S_IRUGO, cpuset),
- #endif
-@@ -2555,6 +2613,9 @@ static const struct pid_entry tid_base_s
- #ifdef CONFIG_SCHEDSTATS
- 	INF("schedstat", S_IRUGO, pid_schedstat),
- #endif
-+#ifdef CONFIG_LATENCYTOP
-+	REG("latency",  S_IRUGO, lstats),
-+#endif
- #ifdef CONFIG_PROC_PID_CPUSET
- 	REG("cpuset",    S_IRUGO, cpuset),
- #endif
-Index: linux-2.6.24-rc7/lib/Kconfig.debug
+ static int futexfs_get_sb(struct file_system_type *fs_type,
+Index: linux-2.6.24-rc7/kernel/mutex.c
 ===================================================================
---- linux-2.6.24-rc7.orig/lib/Kconfig.debug
-+++ linux-2.6.24-rc7/lib/Kconfig.debug
-@@ -517,4 +517,15 @@ config FAULT_INJECTION_STACKTRACE_FILTER
- 	help
- 	  Provide stacktrace filter for fault-injection capabilities
+--- linux-2.6.24-rc7.orig/kernel/mutex.c
++++ linux-2.6.24-rc7/kernel/mutex.c
+@@ -18,6 +18,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/interrupt.h>
+ #include <linux/debug_locks.h>
++#include <linux/latencytop.h>
  
-+config LATENCYTOP
-+	bool "Latency measuring infrastructure"
-+	select FRAME_POINTER if !X86 && !MIPS
-+	select KALLSYMS
-+	select KALLSYMS_ALL
-+	depends on SCHEDSTATS
-+	help
-+	  Enable this option if you want to use the LatencyTOP tool
-+	  to find out which userspace is blocking on what kernel operations.
+ /*
+  * In the DEBUG case we are using the "NULL fastpath" for mutexes,
+@@ -298,8 +299,20 @@ static void fastcall noinline __sched
+ __mutex_lock_slowpath(atomic_t *lock_count)
+ {
+ 	struct mutex *lock = container_of(lock_count, struct mutex, count);
++	struct latency_entry reason;
+ 
++#ifdef CONFIG_DEBUG_MUTEXES
++	/* do something with ->owner here */
++#endif
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++	char *name;
++	name = lock->dep_map.name;
++	set_latency_reason_param("mutex lock", name, &reason);
++#else
++	set_latency_reason("mutex lock", &reason);
++#endif
+ 	__mutex_lock_common(lock, TASK_UNINTERRUPTIBLE, 0, _RET_IP_);
++	restore_latency_reason(&reason);
+ }
+ 
+ static int fastcall noinline __sched
+Index: linux-2.6.24-rc7/kernel/rwsem.c
+===================================================================
+--- linux-2.6.24-rc7.orig/kernel/rwsem.c
++++ linux-2.6.24-rc7/kernel/rwsem.c
+@@ -9,6 +9,7 @@
+ #include <linux/sched.h>
+ #include <linux/module.h>
+ #include <linux/rwsem.h>
++#include <linux/latencytop.h>
+ 
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+@@ -18,10 +19,15 @@
+  */
+ void __sched down_read(struct rw_semaphore *sem)
+ {
++	struct latency_entry reason;
 +
+ 	might_sleep();
+-	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
++	set_latency_reason("rwsem read lock", &reason);
+ 
++	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
 +
- source "samples/Kconfig"
++	restore_latency_reason(&reason);
+ }
+ 
+ EXPORT_SYMBOL(down_read);
+@@ -45,10 +51,14 @@ EXPORT_SYMBOL(down_read_trylock);
+  */
+ void __sched down_write(struct rw_semaphore *sem)
+ {
++	struct latency_entry reason;
++	set_latency_reason("rwsem write lock", &reason);
+ 	might_sleep();
++
+ 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
+ 
+ 	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
++	restore_latency_reason(&reason);
+ }
+ 
+ EXPORT_SYMBOL(down_write);
+Index: linux-2.6.24-rc7/mm/filemap.c
+===================================================================
+--- linux-2.6.24-rc7.orig/mm/filemap.c
++++ linux-2.6.24-rc7/mm/filemap.c
+@@ -525,10 +525,13 @@ static inline void wake_up_page(struct p
+ void fastcall wait_on_page_bit(struct page *page, int bit_nr)
+ {
+ 	DEFINE_WAIT_BIT(wait, &page->flags, bit_nr);
++	struct latency_entry reason;
++	set_latency_reason("Waiting for page IO/lock", &reason);
+ 
+ 	if (test_bit(bit_nr, &page->flags))
+ 		__wait_on_bit(page_waitqueue(page), &wait, sync_page,
+ 							TASK_UNINTERRUPTIBLE);
++	restore_latency_reason(&reason);
+ }
+ EXPORT_SYMBOL(wait_on_page_bit);
+ 
+@@ -583,9 +586,12 @@ EXPORT_SYMBOL(end_page_writeback);
+ void fastcall __lock_page(struct page *page)
+ {
+ 	DEFINE_WAIT_BIT(wait, &page->flags, PG_locked);
++	struct latency_entry reason;
++	set_latency_reason("locking page", &reason);
+ 
+ 	__wait_on_bit_lock(page_waitqueue(page), &wait, sync_page,
+ 							TASK_UNINTERRUPTIBLE);
++	restore_latency_reason(&reason);
+ }
+ EXPORT_SYMBOL(__lock_page);
+ 
+Index: linux-2.6.24-rc7/mm/slub.c
+===================================================================
+--- linux-2.6.24-rc7.orig/mm/slub.c
++++ linux-2.6.24-rc7/mm/slub.c
+@@ -1566,7 +1566,12 @@ static void __always_inline *slab_alloc(
+ 
+ void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+ {
+-	return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
++	void *ptr;
++	struct latency_entry reason;
++	set_latency_reason("Allocating slab memory", &reason);
++	ptr = slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
++	restore_latency_reason(&reason);
++	return ptr;
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc);
+ 
