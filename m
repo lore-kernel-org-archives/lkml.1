@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765851AbYARTOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765988AbYARTOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765851AbYARTOk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 14:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762106AbYARTOc
+	id S1765988AbYARTOw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 14:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765684AbYARTOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 14:14:32 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:39685 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762085AbYARTOb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 14:14:31 -0500
-Date: Fri, 18 Jan 2008 12:14:30 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: SLUB: Increasing partial pages
-Message-ID: <20080118191430.GD20490@parisc-linux.org>
-References: <20080116195949.GO18741@parisc-linux.org> <Pine.LNX.4.64.0801161219050.9694@schroedinger.engr.sgi.com> <20080116214127.GA11559@parisc-linux.org> <Pine.LNX.4.64.0801161347160.11353@schroedinger.engr.sgi.com> <20080116221618.GB11559@parisc-linux.org> <Pine.LNX.4.64.0801161421240.12024@schroedinger.engr.sgi.com>
+	Fri, 18 Jan 2008 14:14:37 -0500
+Received: from mail.impinj.com ([206.169.229.170]:54334 "EHLO earth.impinj.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765133AbYARTOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 14:14:35 -0500
+From: Vadim Lobanov <vlobanov@speakeasy.net>
+To: Andy Lutomirski <luto@myrealbox.com>
+Subject: Re: Why is the kfree() argument const?
+Date: Fri, 18 Jan 2008 11:14:33 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Schwartz <davids@webmaster.com>,
+       Johannes Weiner <hannes@saeurebad.de>, clameter@sgi.com,
+       penberg@cs.helsinki.fi
+References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com> <47906133.6010301@cateee.net> <4790AF84.2020000@myrealbox.com>
+In-Reply-To: <4790AF84.2020000@myrealbox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801161421240.12024@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200801181114.33513.vlobanov@speakeasy.net>
+X-OriginalArrivalTime: 18 Jan 2008 19:14:34.0743 (UTC) FILETIME=[5C736870:01C85A06]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 02:28:44PM -0800, Christoph Lameter wrote:
-> On Wed, 16 Jan 2008, Matthew Wilcox wrote:
-> > About 0.1-0.2%  0.3% is considered significant.
-> 
-> The results are that stable? A kernel compilation which slightly 
-> rearranges cachelines due to code and data changes typically leads to a 
-> larger variance on my 8 way box (gets even larger under NUMA). I would 
-> expect that the variations on a database load would be more significant.
+On Friday 18 January 2008 05:54:12 am Andy Lutomirski wrote:
+> It almost sounds like the compiler is free to change:
+>
+> void foo(const int *x);
+> foo(x);
+> printf("%d", x);
+>
+> to:
+>
+> void foo(const int *x);
+> printf("%d", x);
+> foo(x);
+>
+> especially if it can prove that the pointer to x doesn't otherwise
+> escape or that foo doesn't call anything that could see the pointer (and
+> given that gcc has special magical markings for malloc, one way this
+> could be "proven" is to have x be some freshly malloced object.
 
-The load runs for a long time.  You can reduce variance by increasing
-your sample size (ok, it's twelve years since I've done a stats course ...)
+That's absolutely not true.
 
-> I repeatedly saw patches from Intel to do minor changes to SLAB that 
-> increase performance by 0.5% or so (like the recent removal of a BUG_ON 
-> for performance reasons). These do not regress again when you build a 
-> newer kernel release?
+Let's unravel the code, by fixing usage of 'x' (which seems to vary at will 
+between value and pointer in the above example), and by replacing printf with 
+another opaque function. Our decls:
+	void foo(const int *ptr);
+	void bar(int val);
+You're saying that this:
+	foo(&x);
+	bar(x);
+can be reordered into this:
+	bar(x);
+	foo(&x);
 
-No, they don't.  Unless someone's broken something (eg putting pages on
-the LRU in the wrong order so we don't get merges any more ;-)
+No way. First, the way that const is currently defined, the compiler cannot 
+assume that the value of x did not change while foo was executing. So, it 
+will not only be forced to leave the two functions in that order, it will 
+even reload the value of x before passing it into bar. Go figure.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Second, even if const did have stronger semantics that forbade the value of x 
+from being modified during execution of foo, the compiler still could not 
+reorder the two function calls, before it cannot assume that the two 
+functions (in their internal implementations) do not touch some other, 
+unknown to this code, global variable.
+
+-- Vadim Lobanov
