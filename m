@@ -1,70 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764787AbYARTbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763635AbYARTh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764787AbYARTbY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 14:31:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761728AbYARTbQ
+	id S1763635AbYARTh2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 14:37:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbYARThS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 14:31:16 -0500
-Received: from threatwall.zlynx.org ([199.45.143.218]:33379 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761639AbYARTbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 14:31:16 -0500
-Subject: Re: Why is the kfree() argument const?
-From: Zan Lynx <zlynx@acm.org>
-To: Vadim Lobanov <vlobanov@speakeasy.net>
-Cc: Andy Lutomirski <luto@myrealbox.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Schwartz <davids@webmaster.com>,
-       Johannes Weiner <hannes@saeurebad.de>, clameter@sgi.com,
-       penberg@cs.helsinki.fi
-In-Reply-To: <200801181114.33513.vlobanov@speakeasy.net>
-References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com>
-	 <47906133.6010301@cateee.net> <4790AF84.2020000@myrealbox.com>
-	 <200801181114.33513.vlobanov@speakeasy.net>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-nu+E8wWgMOcvn6WUSJ3f"
-Date: Fri, 18 Jan 2008 12:31:05 -0700
-Message-Id: <1200684666.7735.22.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20080118/1JFwvj-0005ib-EF-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
+	Fri, 18 Jan 2008 14:37:18 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39746 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751798AbYARThQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 14:37:16 -0500
+Date: Fri, 18 Jan 2008 11:35:51 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: peterz@infradead.org, salikhmetov@gmail.com, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
+       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
+ files
+In-Reply-To: <E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>
+Message-ID: <alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org>
+References: <12006091182260-git-send-email-salikhmetov@gmail.com>  <12006091211208-git-send-email-salikhmetov@gmail.com>  <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu>  <1200651337.5920.9.camel@twins> <1200651958.5920.12.camel@twins>
+ <alpine.LFD.1.00.0801180949040.2957@woody.linux-foundation.org> <E1JFvgx-0000zz-2C@pomaz-ex.szeredi.hu> <alpine.LFD.1.00.0801181033580.2957@woody.linux-foundation.org> <E1JFwOz-00019k-Uo@pomaz-ex.szeredi.hu> <alpine.LFD.1.00.0801181106340.2957@woody.linux-foundation.org>
+ <E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-nu+E8wWgMOcvn6WUSJ3f
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
+On Fri, 18 Jan 2008, Miklos Szeredi wrote:
+> 
+> What I'm saying is that the times could be left un-updated for a long
+> time if program doesn't do munmap() or msync(MS_SYNC) for a long time.
 
-On Fri, 2008-01-18 at 11:14 -0800, Vadim Lobanov wrote:
-[cut]
-> Second, even if const did have stronger semantics that forbade the value =
-of x=20
-> from being modified during execution of foo, the compiler still could not=
-=20
-> reorder the two function calls, before it cannot assume that the two=20
-> functions (in their internal implementations) do not touch some other,=20
-> unknown to this code, global variable.
+Sure.
 
-This is why GCC has the pure and const function attributes.  These
-attributes are more powerful than the "const" keyword, and do allow
-optimizations with assumptions about global state.
---=20
-Zan Lynx <zlynx@acm.org>
+But in those circumstances, the programmer cannot depend on the mtime 
+*anyway* (because there is no synchronization), so what's the downside?
 
---=-nu+E8wWgMOcvn6WUSJ3f
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Let's face it, there's exactly three possible solutions:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
+ - the insane one: trap EVERY SINGLE instruction that does a write to the 
+   page, and update mtime each and every time.
 
-iD8DBQBHkP55G8fHaOLTWwgRAq1+AJ9lWIB6gzHEI1PF9z5gd3ck8bx+6QCggx/G
-6uk0qgdAKWbPqblLAf9GcPQ=
-=V6Mi
------END PGP SIGNATURE-----
+   This one is so obviously STUPID that it's not even worth discussing 
+   further, except to say that "yes, there is an 'exact' algorithm, but 
+   no, we are never EVER going to use it".
 
---=-nu+E8wWgMOcvn6WUSJ3f--
+ - the non-exact solutions that don't give you mtime updates every time 
+   a write to the page happens, but give *some* guarantees for things that 
+   will update it.
 
+   This is the one I think we can do, and the only things a programmer can 
+   impact using it is "msync()" and "munmap()", since no other operations 
+   really have any thing to do with it in a programmer-visible way (ie a 
+   normal "sync" operation may happen in the background and has no 
+   progam-relevant timing information)
+
+   Other things *may* or may not update mtime (some filesystems - take
+   most networked one as an example - will *always* update mtime on the 
+   server on writeback, so we cannot ever guarantee that nothing but 
+   msync/munmap does so), but at least we'll have a minimum set of things 
+   that people can depend on.
+
+ - the "we don't care at all solutions".
+
+   mmap(MAP_WRITE) doesn't really update times reliably after the write 
+   has happened (but might do it *before* - maybe the mmap() itself does).
+
+Those are the three choices, I think. We currently approximate #3. We 
+*can* do #2 (and there are various flavors of it). And even *aiming* for 
+#1 is totally insane and stupid.
+
+			Linus
