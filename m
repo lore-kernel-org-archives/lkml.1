@@ -1,91 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764856AbYARUz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbYARUzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764856AbYARUz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759664AbYARUzR
+	id S932260AbYARUzk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:55:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763547AbYARUzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:55:17 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37752 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757303AbYARUzQ (ORCPT
+	Fri, 18 Jan 2008 15:55:25 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:1621 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763257AbYARUzY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:55:16 -0500
-Message-ID: <4791122E.8070205@sgi.com>
-Date: Fri, 18 Jan 2008 12:55:10 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 18 Jan 2008 15:55:24 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: <torvalds@linux-foundation.org>
+Cc: "Johannes Weiner" <hannes@saeurebad.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       <clameter@sgi.com>, <penberg@cs.helsinki.fi>
+Subject: RE: Why is the kfree() argument const?
+Date: Fri, 18 Jan 2008 12:55:09 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKGEPKJJAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ingo Oeser <ioe-lkml@rameria.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
-References: <20080118183011.354965000@sgi.com> <20080118183011.917801000@sgi.com> <200801182104.22486.ioe-lkml@rameria.de> <479108C3.1010800@sgi.com> <20080118204845.GD3079@elte.hu>
-In-Reply-To: <20080118204845.GD3079@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <alpine.LFD.1.00.0801180754050.2957@woody.linux-foundation.org>
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Fri, 18 Jan 2008 12:56:37 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Fri, 18 Jan 2008 12:56:38 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->>>> +config THREAD_ORDER
->>>> +	int "Kernel stack size (in page order)"
->>>> +	range 1 3
->>>> +	depends on X86_64_SMP
->>>> +	default "3" if X86_SMP_MAX
->>>> +	default "1"
->>>> +	help
->>>> +	  Increases kernel stack size.
->>>> +
->>> Could you please elaborate, why this is needed and put more info 
->>> about this requirement into this patch description?
->>>
->>> People worked hard to push data allocation from stack to heap to 
->>> make THREAD_ORDER of 0 and 1 possible. So why increase it again and 
->>> why does this help scalability?
->>>
->>> Many thanks and Best Regards
->>>
->>> Ingo Oeser, puzzled a bit :-)
->>
->> The primary problem arises because of cpumask_t local variables.  
->> Until I can deal with these, increasing NR_CPUS to a really large 
->> value increases stack size dramatically.
-> 
-> those should be fixed:
-> 
->> Here are the top stack consumers with NR_CPUS = 4k.
->>
->>                          16392 isolated_cpu_setup
->>                          10328 build_sched_domains
->>                           8248 numa_initmem_init
->>                           4664 cpu_attach_domain
->>                           4104 show_shared_cpu_map
->>                           3656 centrino_target
->>                           3608 powernowk8_cpu_init
->>                           3192 sched_domain_node_span
->>                           3144 acpi_cpufreq_target
->>                           2584 __svc_create_thread
->>                           2568 cpu_idle_wait
->>                           2136 netxen_nic_flash_print
->>                           2104 powernowk8_target
->>                           2088 _cpu_down
->>                           2072 cache_add_dev
->>                           2056 get_cur_freq
->>                              0 acpi_processor_ffh_cstate_probe
->>                           2056 microcode_write
->>                              0 acpi_processor_get_throttling
->>                           2048 check_supported_cpu
-> 
-> (and most of that is performance-uncritical.)
-> 
-> 	Ingo
 
-How big is the stack during early startup?
+> On Thu, 17 Jan 2008, David Schwartz wrote:
 
-Thanks,
-Mike
+> > Nonsense. The 'kfree' function *destroys* the object pointer to by the
+> > pointer. How can you describe that as not doing anything to the object?
+>
+> Here's an idea. Think it through.
+>
+> Why don't we need write permissions to a file to unlink it?
+
+You cannot unlink a file. Given a file, if you were to attempt to unlink it,
+what directory would you remove it from?
+
+Unlinking a file is an operation on the directory the file is in, not on the
+directory itself. We do need write permissions to the directory.
+
+If you had only a const pointer to the data in the file, you should
+definitely not be able to use that pointer to find a directory the file is
+in and remove it without clearly indicating you know *exactly* what you're
+doing. Given just that 'const' pointer, you're not supposed to be modifying
+the data and certainly using that pointer to modify anything logically above
+it.
+
+> Here's a hint: because unlinking doesn't *write* to it. In fact, it
+> doesn't read from it either. It doesn't do any access at all to that
+> object, it just *removes* it.
+
+Right. It's an operation on the directory the file is in that might have
+consequences for the file.
+
+> Is the file gone after you unlink it? Yes (modulo refcounting for
+> aliasing
+> "pointers" aka filenames, but that's the same for any memory manager -
+> malloc/free just doesn't have any, so you could think of it as a
+> non-hardlinking filesystem).
+
+The file is gone if and only if the directory was the only thing that needed
+the file to exist. A file that is only on one directory "belongs to" that
+directory. So write permission to the directory is all that is needed.
+
+What you are arguing is essentially that you should be able to remove a file
+from any directory it is in just because you have write access to the file's
+data.
+
+> So you're the one who are speaking nonsense. Making something "not exist"
+> is not at all the same thing as accessing it for a write (or a read). It
+> is a metadata operation that doesn't conceptually change the data in any
+> way, shape or form - it just makes it go away.
+
+Making something "not exist" is a modification operation on that thing.
+
+> And btw, exactly as with kfree(), a unlink() may well do something like
+> "disk scrubbing" for security purposes, or cancel pending writes to the
+> backing store. But even though it may write (or, by undoing a pending
+> write, effectively "change the state") to the disk sectors that used to
+> contain the file data, ONLY AN IDIOT would call it "writing to the file".
+> Because "the file" is gone. Writing to the place where the file
+> used to be
+> is a different thing.
+
+I agree with you about that part. I can't understand why you keep thinking
+this is where our disagreement lies when I've stated at least three times
+that I agree about this. The issue has nothing to do with whether or not
+'kfree' modifies the particular bytes pointed to. It has to do with whether
+or not 'kfree' is the kind of operation one would normally want to allow on
+a 'const' object.
+
+> So give it up. You're wrong. Freeing a memory area is not "writing to it"
+> or accessing it in *any* manner, it's an operation on another level
+> entirely.
+
+Nevertheless, it's a modification operation on an object that's not supposed
+to be modified.
+
+By the way, I did think of one argument that supports your position: Suppose
+you have a reference counted object. You have a 'release reference and free
+if zero' function. Should it be 'const'? If not, how can a 'lookup and
+reference for read' function return a const pointer to the object?
+
+However, on balance, I think a 'release reference and free if zero' function
+that operates on a const pointer is sufficiently unusual that a cast to show
+you know what you're doing is not a bad thing. In this case, you know it's
+safe to destroy the object through a const pointer because you *know* nobody
+gave you the 'const' pointer trusting you not to destroy the object. A cast
+to show you have that special knowledge is, IMO, reasonable.
+
+DS
+
+
