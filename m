@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbYARQVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763109AbYARQVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762750AbYARQVg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 11:21:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760872AbYARQV2
+	id S1763109AbYARQVt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 11:21:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762369AbYARQVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 11:21:28 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:60153 "EHLO mx1.redhat.com"
+	Fri, 18 Jan 2008 11:21:35 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33394 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760142AbYARQV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 11:21:26 -0500
-Message-ID: <4790D1DE.8030700@redhat.com>
-Date: Fri, 18 Jan 2008 11:20:46 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1762215AbYARQVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 11:21:33 -0500
+Date: Fri, 18 Jan 2008 17:21:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, jbeulich@novell.com,
+       venkatesh.pallipadi@intel.com
+Subject: Re: CPA boot crash (was: [PATCH] [0/36] Great change_page_attr
+	patch series v3)
+Message-ID: <20080118162118.GA6819@elte.hu>
+References: <200801161114.239449000@suse.de> <200801181701.04549.ak@suse.de> <20080118160757.GA24507@elte.hu> <200801181716.06093.ak@suse.de>
 MIME-Version: 1.0
-To: tony.luck@intel.com, Shaohua Li <shaohua.li@intel.com>
-CC: ia64 <linux-ia64@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: [PATCH]Fix the order of atomic operations in restore_previous_kprobes
- on ia64
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801181716.06093.ak@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Masami Hiramatsu <mhiramat@redhat.com>
 
-Fix the order of atomic operations to prevent overwriting prev_kprobe[0].
-To pop values from stack, we must decrement stack index right AFTER
-reading values.
+* Andi Kleen <ak@suse.de> wrote:
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
----
-Details of this issue was reported to
-http://sources.redhat.com/bugzilla/show_bug.cgi?id=2071
+> > > (except for the white space changes, but that can be redone once 
+> > > everything settled down again). Then it will be bisectable.
+> > 
+> > it's a revert barrier (within v2.6.25),
+> 
+> What is a revert barrier?
+>
+> Anyways of course the way to handle that is the same as with the other 
+> undo patches: drop the original white space changes 
+> (ddb53b5735793a19dc17bcd98b050f672f) completely and then drop that 
+> undo patch too. The white space changes haven't reached Linus yet so 
+> you can just make them disappear completely from known history.
 
-   arch/ia64/kernel/kprobes.c |    7 ++++---
-   1 file changed, 4 insertions(+), 3 deletions(-)
+we dont want them to disappear, due to the second half of:
 
-Index: 2.6.24-rc8/arch/ia64/kernel/kprobes.c
-===================================================================
---- 2.6.24-rc8.orig/arch/ia64/kernel/kprobes.c	2008-01-17 21:14:01.000000000 -0500
-+++ 2.6.24-rc8/arch/ia64/kernel/kprobes.c	2008-01-17 21:14:01.000000000 -0500
-@@ -381,9 +381,10 @@
-   static void __kprobes restore_previous_kprobe(struct kprobe_ctlblk *kcb)
-   {
-   	unsigned int i;
--	i = atomic_sub_return(1, &kcb->prev_kprobe_index);
--	__get_cpu_var(current_kprobe) = kcb->prev_kprobe[i].kp;
--	kcb->kprobe_status = kcb->prev_kprobe[i].status;
-+	i = atomic_read(&kcb->prev_kprobe_index);
-+	__get_cpu_var(current_kprobe) = kcb->prev_kprobe[i-1].kp;
-+	kcb->kprobe_status = kcb->prev_kprobe[i-1].status;
-+	atomic_sub(1, &kcb->prev_kprobe_index);
-   }
+   http://lkml.org/lkml/2008/1/18/112
 
-   static void __kprobes set_current_kprobe(struct kprobe *p,
+we want easy-cleanups first, difficult changes applied second. It's a 
+well-established concept.
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
-
-
+	Ingo
