@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765050AbYARVKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932400AbYARVKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765050AbYARVKB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 16:10:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761375AbYARVJy
+	id S932400AbYARVKd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 16:10:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761375AbYARVKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 16:09:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55634 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759708AbYARVJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 16:09:53 -0500
-Date: Fri, 18 Jan 2008 22:09:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Michael Opdenacker <michael-lists@free-electrons.com>,
-       linux-kernel@vger.kernel.org, Linux-tiny@selenic.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: fix unconditional
-	arch/x86/kernel/pcspeaker.c?compiling
-Message-ID: <20080118210938.GE10717@elte.hu>
-References: <1200590031.5332.19.camel@cinder.waste.org> <200801172315.29976.michael-lists@free-electrons.com> <20080118110252.GA17397@elte.hu> <47909821.1090907@free-electrons.com> <20080118122540.GH11044@elte.hu> <20080118122926.GA15216@elte.hu> <4790A385.800@free-electrons.com> <1200664214.4001.24.camel@cinder.waste.org> <4790D3E3.4060409@free-electrons.com> <1200676219.3835.8.camel@cinder.waste.org>
+	Fri, 18 Jan 2008 16:10:22 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:43898 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762184AbYARVKV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 16:10:21 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 18 Jan 2008 13:10:18 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Pierre Habouzit <madcoder@debian.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: epoll and shared fd's
+In-Reply-To: <20080118134318.GD9607@artemis.madism.org>
+Message-ID: <Pine.LNX.4.64.0801181257240.24685@alien.or.mcafeemobile.com>
+References: <20080118134318.GD9607@artemis.madism.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1200676219.3835.8.camel@cinder.waste.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Jan 2008, Pierre Habouzit wrote:
 
-* Matt Mackall <mpm@selenic.com> wrote:
-
-> > Sounds fine! Don't hesitate to let us know about the lower-hanging 
-> > fruit you're thinking about. Here are the main things I have so far:
-> > 
-> >     * Ideas in the existing Linux-Tiny patchset.
-> >     * Disable support for non-Intel processors in x86 (cyrix.c,
-> >       centaur.c, transmeta.c, nexgen.c, umc.c in arch/x86/kernel/cpu).
-> >       As far as I remember, I saved 15 KB when I first experimented with
-> >       this).
+>   Hi,
 > 
-> Isn't that already in -tiny?
+>   I just came across a strange behavior of epoll that seems to
+> contradict the documentation. Here is what happens:
+> 
+> * I have two processes P1 and P2, P1 accept()s connections, and send the
+>   resulting file descriptors to P2 through a unix socket.
+> 
+> * P2 registers the received socket in his epollfd.
+> 
+>   [time passes]
+> 
+> * P2 is done with the socket and closes it
+> 
+> * P2 gets events for the socket again !
+> 
+> 
+>   Though the documentation says that if a process closes a file
+> descriptor, it gets unregistered. And yes I'm sure that P2 doens't dup()
+> the file descriptor. Though (because of a bug) it was still open in
+> P1[0], hence the referenced socket still live at the kernel level.
+> 
+>   Of course the userland workaround is to force the EPOLL_CTL_DEL before
+> the close, which I now do, but costs me a syscall where I wanted to
+> spare one :|
 
-btw., are there any pending arch/x86 bits in -tiny? (stupid question: 
-were can i get the most uptodate version of -tiny from?)
+For epoll, a close is when the kernel file* is released (that is, when all 
+its instances are gone).
+We could put a special handling in filp_close(), but I don't think is a 
+good idea, and we're better live with the current behaviour.
 
-	Ingo
+
+
+- Davide
+
+
