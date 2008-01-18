@@ -1,77 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761402AbYARNwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760162AbYARNyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761402AbYARNwx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 08:52:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080AbYARNwp
+	id S1760162AbYARNyQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 08:54:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758226AbYARNyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 08:52:45 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:35130 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754138AbYARNwo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 08:52:44 -0500
-Subject: Re: 2.6.24-rc8-git1: Reported regressions from 2.6.23
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, bunk@kernel.org, Takashi Iwai <tiwai@suse.de>,
-       Shaohua Li <shaohua.li@intel.com>, Jay Vosburgh <fubar@us.ibm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-In-Reply-To: <alpine.LFD.1.00.0801171606300.2957@woody.linux-foundation.org>
-References: <200801180035.42878.rjw@sisk.pl>
-	 <20080117155809.7ebc3bb7.akpm@linux-foundation.org>
-	 <alpine.LFD.1.00.0801171606300.2957@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 07:52:20 -0600
-Message-Id: <1200664340.7524.7.camel@norville.austin.ibm.com>
+	Fri, 18 Jan 2008 08:54:00 -0500
+Received: from main.gmane.org ([80.91.229.2]:42185 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758882AbYARNx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 08:53:59 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Andy Lutomirski <luto@myrealbox.com>
+Subject: Re: Why is the kfree() argument const?
+Date: Fri, 18 Jan 2008 08:53:44 -0500
+Message-ID: <4790AF68.8040403@myrealbox.com>
+References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com> <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org> <47905A95.4030500@cateee.net> <47906133.6010301@cateee.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Schwartz <davids@webmaster.com>,
+       Johannes Weiner <hannes@saeurebad.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       clameter@sgi.com, penberg@cs.helsinki.fi
+X-Gmane-NNTP-Posting-Host: sydneypacific-one-fifty-nine.mit.edu
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+In-Reply-To: <47906133.6010301@cateee.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-01-17 at 16:18 -0800, Linus Torvalds wrote:
+Giacomo Catenazzi wrote:
+> And to demostrate that Linus is not the only person
+> with this view, I copy some paragraphs from C99 rationale
+> (you can find standard, rationale and other documents
+> in http://clc-wiki.net/wiki/C_standardisation:ISO )
 > 
-> On Thu, 17 Jan 2008, Andrew Morton wrote:
-> > 
-> > There are thirteen regressions for which we have patches but they aren't
-> > merged.  That seems rather high.
+> Page 75 of C99 rationale:
 > 
-> I think a number of them have been merged, or the thing that caused them 
-> reverted. For example.
+> Type qualifiers were introduced in part to provide greater control over optimization. Several
+> important optimization techniques are based on the principle of "cacheing": under certain
+> circumstances the compiler can remember the last value accessed (read or written) from a
+> location, and use this retained value the next time that location is read. (The memory, or
+> "cache", is typically a hardware register.) If this memory is a machine register, for instance, the
+> code can be smaller and faster using the register rather than accessing external memory.
+> The basic qualifiers can be characterized by the restrictions they impose on access and
+> cacheing:
 > 
-> > > Subject		: [2.6.24-rc6] pdflush still stuck in D state regression
-> > > Submitter	: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-> > > Date		: 2007-11-02 09:54
-> > > References	: http://bugzilla.kernel.org/show_bug.cgi?id=9291
-> > > Handled-By	: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-> > > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=14219&action=view
+> const          No writes through this lvalue. In the absence of this qualifier, writes may occur
+>                through this lvalue.
 > 
-> Isn't this the same write-back-related thing, reverted by 
-> c23f72cae9523d29ff94eec8f30ccbdaf234b20e?
 
-The bug originally described a problem on reiserfs, which I believe is
-fixed.  A second problem was found on jfs, which probably should have
-resulted in a new bug being opened.  The jfs patch is not in mainline
-yet.  There are 3 jfs bug fixes ready for mainline in:
-git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git
-for-linus
+I'd say this implies the exact opposite.  It almost sounds like the 
+compiler is free to change:
 
-Alternately, you could pull just
-29a424f28390752a4ca2349633aaacc6be494db5 from that tree.  (Can you do
-this without a tag?)  It is the first unmerged patch in the tree.
+void foo(const int *x);
+foo(x);
+printf("%d", x);
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+to:
+
+void foo(const int *x);
+printf("%d", x);
+foo(x);
+
+especially if it can prove that the pointer to x doesn't otherwise 
+escape or that foo doesn't call anything that could see the pointer (and 
+given that gcc has special magical markings for malloc, one way this 
+could be "proven" is to have x be some freshly malloced object.
+
+If foo is kfree, then the above transformation is clearly invalid.
+
+(Note that this isn't just a problem for optimizers -- a programmer 
+might expect that passing a pointer to a function that takes a const 
+pointer argument does not, in and of itself, change the pointed-to 
+value.  Given that const certainly does not mean that no one else 
+changes the object, I'm not sure what else it could mean.  kfree does 
+not have either property, so I'm don't think it makes sense for it to 
+take a const argument.)
+
+--Andy
+
+> volatile       No cacheing through this lvalue: each operation in the abstract semantics must
+>                be performed (that is, no cacheing assumptions may be made, since the location
+>                is not guaranteed to contain any previous value). In the absence of this qualifier,
+>                the contents of the designated location may be assumed to be unchanged except
+>                for possible aliasing.
+> 
+> restrict       Objects referenced through a restrict-qualified pointer have a special
+>                association with that pointer. All references to that object must directly or
+>                indirectly use the value of this pointer. In the absence of this qualifier, other
+>                pointers can alias this object. Cacheing the value in an object designated through
+>                a restrict-qualified pointer is safe at the beginning of the block in which the
+>                pointer is declared, because no pre-existing aliases may also be used to reference
+>                that object. The cached value must be restored to the object by the end of the
+>                block, where pre-existing aliases again become available. New aliases may be
+>                formed within the block, but these must all depend on the value of the
+>                restrict-qualified pointer, so that they can be identified and adjusted to refer
+>                to the cached value. For a restrict-qualified pointer at file scope, the block
+>                is the body of main.
+> 
+> ciao
+> 	cate
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
