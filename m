@@ -1,129 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765137AbYARUAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765346AbYARUBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765137AbYARUAm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:00:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758982AbYARUAd
+	id S1765346AbYARUBX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762123AbYARUBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:00:33 -0500
-Received: from wx-out-0506.google.com ([66.249.82.227]:29272 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760112AbYARUAb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:00:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nz/omsKln2H7xAAoO8ObHgaRxn34RAPvfrmbR1mWPOcu83Z1jVFM8D5uIjjt6NAlUic7QQ55tg1s44Own9MBsyYxTJX2D6RmRyvqwP/UWS4bX+qQp7sb3AdipZSmP2g0spxKJS84p1H9MhgQ/tRq0EWgIAqsXuae3Q5yR2s3zHA=
-Message-ID: <170fa0d20801181200p50556132v3a9bafc9ad9e8c91@mail.gmail.com>
-Date: Fri, 18 Jan 2008 15:00:28 -0500
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-Cc: "Mel Gorman" <mel@csn.ul.ie>, "Martin Knoblauch" <spamtrap@knobisoft.de>,
-       "Fengguang Wu" <wfg@mail.ustc.edu.cn>,
-       "Peter Zijlstra" <peterz@infradead.org>, jplatte@naasa.net,
-       "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       James.Bottomley@steeleye.com
-In-Reply-To: <alpine.LFD.1.00.0801180931250.2957@woody.linux-foundation.org>
+	Fri, 18 Jan 2008 15:01:07 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:55940 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760847AbYARUBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:01:05 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <166634.14296.qm@web32603.mail.mud.yahoo.com>
-	 <20080118160123.GB11840@csn.ul.ie>
-	 <alpine.LFD.1.00.0801180931250.2957@woody.linux-foundation.org>
+Message-ID: <18321.1383.662315.709280@harpo.it.uu.se>
+Date: Fri, 18 Jan 2008 21:00:39 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: shemminger@linux-foundation.org
+Subject: Re: [BUG] 2.6.24-rc8 broke warm reboots on ASUS P5B-E Plus
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <18319.54046.912597.487844@harpo.it.uu.se>
+References: <18319.54046.912597.487844@harpo.it.uu.se>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 18, 2008 12:46 PM, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
->
-> On Fri, 18 Jan 2008, Mel Gorman wrote:
-> >
-> > Right, and this is consistent with other complaints about the PFN of the
-> > page mattering to some hardware.
->
-> I don't think it's actually the PFN per se.
->
-> I think it's simply that some controllers (quite probably affected by both
-> driver and hardware limits) have some subtle interactions with the size of
-> the IO commands.
->
-> For example, let's say that you have a controller that has some limit X on
-> the size of IO in flight (whether due to hardware or driver issues doesn't
-> really matter) in addition to a limit on the size of the scatter-gather
-> size. They all tend to have limits, and they differ.
->
-> Now, the PFN doesn't matter per se, but the allocation pattern definitely
-> matters for whether the IO's are physically contiguous, and thus matters
-> for the size of the scatter-gather thing.
->
-> Now, generally the rule-of-thumb is that you want big commands, so
-> physical merging is good for you, but I could well imagine that the IO
-> limits interact, and end up hurting each other. Let's say that a better
-> allocation order allows for bigger contiguous physical areas, and thus
-> fewer scatter-gather entries.
->
-> What does that result in? The obvious answer is
->
->   "Better performance obviously, because the controller needs to do fewer
->    scatter-gather lookups, and the requests are bigger, because there are
->    fewer IO's that hit scatter-gather limits!"
->
-> Agreed?
->
-> Except maybe the *real* answer for some controllers end up being
->
->   "Worse performance, because individual commands grow because they don't
->    hit the per-command limits, but now we hit the global size-in-flight
->    limits and have many fewer of these good commands in flight. And while
->    the commands are larger, it means that there are fewer outstanding
->    commands, which can mean that the disk cannot scheduling things
->    as well, or makes high latency of command generation by the controller
->    much more visible because there aren't enough concurrent requests
->    queued up to hide it"
->
-> Is this the reason? I have no idea. But somebody who knows the AACRAID
-> hardware and driver limits might think about interactions like that.
-> Sometimes you actually might want to have smaller individual commands if
-> there is some other limit that means that it can be more advantageous to
-> have many small requests over a few big onees.
->
-> RAID might well make it worse. Maybe small requests work better because
-> they are simpler to schedule because they only hit one disk (eg if you
-> have simple striping)! So that's another reason why one *large* request
-> may actually be slower than two requests half the size, even if it's
-> against the "normal rule".
->
-> And it may be that that AACRAID box takes a big hit on DIO exactly because
-> DIO has been optimized almost purely for making one command as big as
-> possible.
->
-> Just a theory.
+On Thu, 17 Jan 2008 23:13:50 +0100, Mikael Pettersson wrote:
+ > The problematic machine has an Intel P965/ICH8R based ASUS P5B-E Plus
+ > mainboard with a Core2Duo 6600 processor. Kernels up to and including
+ > 2.6.24-rc7 work fine on it.
+ > 
+ > Kernel 2.6.24-rc8 boots Ok, but if I try to do a warm reboot after
+ > having run 2.6.24-rc8, the BIOS hangs. The initial BIOS screen shows:
+ > 
+ > <BIOS version>
+ > <CPU identification>
+ > <lists hotkeys>
+ > <identifies RAM>
+ > <initialises USB controllers>
+ > [here it always hangs after having run 2.6.24-rc8]
+ > <RAM test>
+ > <identifies ATA disks>
+ > 
+ > Pressing reset will not fix the hang, nor will powering the machine
+ > down using the mainboard's power button. The only thing that works is
+ > to switch the PSU off, wait a few seconds, switch the PSU on again,
+ > and then press the mainboard's power button.
+ > 
+ > Both the 32-bit and 64-bit 2.6.24-rc8 x86 kernels cause this problem,
+ > and it's 100% repeatable.
+ > 
+ > I'll try to do some rc7->rc8 bisecting tomorrow.
 
-Oddly enough, I'm seeing the opposite here with 2.6.22.16 w/ AACRAID
-configured with 5 LUNS (each 2disk HW RAID0, 1024k stripesz).  That
-is, with dd the avgrqsiz (from iostat) shows DIO to be ~130k whereas
-non-DIO is a mere ~13k! (NOTE: with aacraid, max_hw_sectors_kb=192)
+I've now narrowed it down to the following change in 2.6.24-rc7-git5:
+84cd2dfb04d23a961c5f537baa243fa54d0987ac
 
-DIO cmdline:  dd if=/dev/zero of=/dev/sdX bs=8192k count=1k
-non-DIO cmdline: dd if=/dev/zero of=/dev/sdX bs=8192k count=1k
+>sky2: remove check for PCI wakeup setting from BIOS
+>
+>The driver checks status of PCI power management to mark
+>default setting of Wake On Lan. On some systems this works, but often
+>it reports a that WOL is disabled when it isn't.
+>
+>This patch gets rid of that check and just reports the wake on
+>lan status based on the hardware capablity.
+>
+>Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+>Signed-off-by: Jeff Garzik <jeff@garzik.org>
 
-DIO is ~80MB/s on all 5 LUNs for a total of ~400MB/s
-non-DIO is only ~12MB on all 5 LUNs for a mere ~70MB/s aggregate
-(deadline w/ nr_requests=32)
+Reverting this eliminates the abovementioned BIOS hang.
 
-Calls into question the theory of small requests being beneficial for
-AACRAID.  Martin, what are you seeing for the avg request size when
-you're conducting your AACRAID tests?
+I added a debug printk to sky2_init_netdev(), and it showed:
 
-I can fire up 2.6.24-rc8 in short order to see if things are vastly
-improved (as Martin seems to indicate that he is happy with AACRAID on
-2.6.24-rc8).  Although even Martin's AACRAID numbers from 2.6.19.2 are
-still quite good (relative to mine).  Martin can you share any tuning
-you may have done to get AACRAID to where it is for you right now?
+sky2_init_netdev: wol == 0x0, (sky2_wol_supported(hw) & WAKE_MAGIC) == 0x20
 
-regards,
-Mike
+That is, 2.6.24-rc7-git4 and earlier drivers would set sky2->wol to 0,
+while 2.6.24-rc7-git5 and newer will set it to 0x20. A quick look through
+sky2.c shows that this will affect HW programming in several places.
+
+Please revert or fix before 2.6.24 final.
+
+lspci -vvxxx included below.
+
+/Mikael
+
+02:00.0 Ethernet controller: Marvell Technology Group Ltd. Unknown device 4364 (rev 12)
+        Subsystem: ASUSTeK Computer Inc. Unknown device 81f8
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0, Cache Line Size 08
+        Interrupt: pin A routed to IRQ 17
+        Region 0: Memory at ff9fc000 (64-bit, non-prefetchable) [size=16K]
+        Region 2: I/O ports at c800 [size=256]
+        Expansion ROM at ff9c0000 [disabled] [size=128K]
+        Capabilities: [48] Power Management version 3
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [50] Vital Product Data
+        Capabilities: [5c] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [e0] Express Legacy Endpoint IRQ 0
+                Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+                Device: Latency L0s unlimited, L1 unlimited
+                Device: AtnBtn- AtnInd- PwrInd-
+                Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+                Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+                Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
+                Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, Port 0
+                Link: Latency L0s <256ns, L1 unlimited
+                Link: ASPM Disabled RCB 128 bytes CommClk+ ExtSynch-
+                Link: Speed 2.5Gb/s, Width x1
+00: ab 11 64 43 07 00 10 00 12 00 00 02 08 00 00 00
+10: 04 c0 9f ff 00 00 00 00 01 c8 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 f8 81
+30: 00 00 9c ff 48 00 00 00 00 00 00 00 0a 01 00 00
+40: 00 00 f0 01 00 80 a0 01 01 50 03 fe 00 20 00 13
+50: 03 5c 00 80 00 00 00 01 00 00 00 01 05 e0 80 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 70 00 00 00 00 00 00 82 a8 e8 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 10 00 11 00 c0 8f 00 00 00 20 19 00 11 ac 07 00
+f0: 48 00 11 10 00 00 00 00 00 00 00 00 00 00 00 00
