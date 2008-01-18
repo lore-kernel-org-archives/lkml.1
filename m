@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762986AbYARSGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763847AbYARSGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762986AbYARSGf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:06:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760160AbYARSG2
+	id S1763847AbYARSGu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:06:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763348AbYARSGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:06:28 -0500
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:11458 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758119AbYARSG1 (ORCPT
+	Fri, 18 Jan 2008 13:06:36 -0500
+Received: from wx-out-0506.google.com ([66.249.82.236]:3631 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762841AbYARSGf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:06:27 -0500
-Date: Fri, 18 Jan 2008 13:06:26 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc8-mm1
-Message-ID: <20080118180626.GA12593@phobos.i.cabal.ca>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	Fri, 18 Jan 2008 13:06:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vs8zYrwd6EMkrIGJeOy1tTIDJ5L2ehq9h1COdhgEHGEExox+NLfs0M37xA9+pxYHvRkmQm2r2BKxmKZnAVOlgLPm7UnpNzIOJlwp4ibMRHDhWTnOz1Q5F8UU+0LEHo4XKJLxg3gp6pPcnrpx/kG+6IWw/DXyjJCYWwFmHBJAgBk=
+Message-ID: <5eeb9ad90801181006r300e23e6t39159f1c1ccde0af@mail.gmail.com>
+Date: Fri, 18 Jan 2008 19:06:28 +0100
+From: DM <dm.n9107@gmail.com>
+To: davids@webmaster.com
+Subject: Re: Why is the kfree() argument const?
+Cc: torvalds@linux-foundation.org, "Johannes Weiner" <hannes@saeurebad.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       clameter@sgi.com, penberg@cs.helsinki.fi
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEKDJJAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org>
+	 <MDEHLPKNGKAHNMBLJOLKKEKDJJAC.davids@webmaster.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 02:35:14AM -0800, Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
-> 
+On Jan 18, 2008 6:02 AM, David Schwartz <davids@webmaster.com> wrote:
+>
+> However, *destroying* an object is not a metadata operation -- it destroys
+> the data as well. This is kind of a philosophical point, but an object does
+> not have a "does this object exist" piece of metadata. If an object does not
+> exist, it has no data. So destroying an object destroys the data and is thus
+> a write/modification operation on the data.
+>
 
-Odd nobody else has seen this... oldconfig fails for me on Debian...
-kconfig/conf.c is using setlocale() without including the locale.h
-header.
+In C++ you can delete a const pointer. Now I know kernel hackers
+aren't especially impressed with C++ but maybe someone could look up
+the rationale for that design decision (I couldn't find it). It might
+shed some light on this discussion.
 
-  HOSTCC  scripts/kconfig/conf.o
-scripts/kconfig/conf.c: In function 'main':
-scripts/kconfig/conf.c:502: warning: implicit declaration of function
-'setlocale'
-scripts/kconfig/conf.c:502: error: 'LC_ALL' undeclared (first use in
-this function)
-scripts/kconfig/conf.c:502: error: (Each undeclared identifier is
-reported only once
-
-Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
-
---- a/scripts/kconfig/conf.c	2008-01-17 15:45:59.000000000 -0800
-+++ b/scripts/kconfig/conf.c	2008-01-18 10:01:54.000000000 -0800
-@@ -3,6 +3,8 @@
-  * Released under the terms of the GNU GPL v2.0.
-  */
- 
-+#include <locale.h>
-+
- #include <ctype.h>
- #include <stdio.h>
- #include <stdlib.h>
+/DM
