@@ -1,117 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbYARHsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYARHtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755029AbYARHsX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 02:48:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbYARHsK
+	id S1755865AbYARHtl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 02:49:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbYARHte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 02:48:10 -0500
-Received: from hs-out-0708.google.com ([64.233.178.251]:19726 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753406AbYARHsG (ORCPT
+	Fri, 18 Jan 2008 02:49:34 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:41413 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753585AbYARHtd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 02:48:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Crb+HJTm0Nxmj4vsEFG0+WmoiysQYf/NNqdZvOdFvizxVcrGurBOo24hEL1duwHRKygzeRBYNjAXM+U/z/1WEyVjG/FsBDbIWDtBS560Dqivfp2JScGEbD1Ysu1dU1O3osxi4M0wRodJSRL2ZCz8vjUSbvKmbS6lcAag6u0yxGc=
-Message-ID: <a8e1da0801172348q575d6c2fs9f51e3e76d41c62@mail.gmail.com>
-Date: Fri, 18 Jan 2008 15:48:02 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Jarek Poplawski" <jarkao2@gmail.com>
-Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct class
-Cc: "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>, "Greg KH" <gregkh@suse.de>,
-       stefanr@s5r6.in-berlin.de, "David Brownell" <david-b@pacbell.net>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080118073836.GA1703@ff.dom.local>
+	Fri, 18 Jan 2008 02:49:33 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:
+	newsgroups:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=WOlIXdZagIiR8cnJk6LeFdoP6TfZ4qkqnnUHv83QkBuV/5f+L+OjpD+wUbRU/4XLI
+	SgdIpKBbAbLvXoFajHOYw==
+Message-ID: <479059E7.6080007@google.com>
+Date: Thu, 17 Jan 2008 23:48:55 -0800
+From: Mike Waychison <mikew@google.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Newsgroups: gmane.linux.kernel,gmane.linux.kernel.mm
+To: Andi Kleen <andi@firstfloor.org>
+CC: Fengguang Wu <wfg@mail.ustc.edu.cn>, Michael Rubin <mrubin@google.com>,
+       a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch] Converting writeback linked lists to a tree based data
+ structure
+References: <20080115080921.70E3810653@localhost>	<400562938.07583@ustc.edu.cn>	<532480950801171307q4b540ewa3acb6bfbea5dbc8@mail.gmail.com>	<400632190.14601@ustc.edu.cn> <p738x2nbsi2.fsf@bingen.suse.de>
+In-Reply-To: <p738x2nbsi2.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080117194728.GA2598@ami.dom.local>
-	 <Pine.LNX.4.44L0.0801171448590.5731-100000@iolanthe.rowland.org>
-	 <20080117203155.GA2791@ami.dom.local>
-	 <20080117232626.GC2905@ami.dom.local>
-	 <a8e1da0801171742o5520c3d9v577979f527f1a977@mail.gmail.com>
-	 <3ae72650801171755k85c4245i3b4c46a84ae8f52d@mail.gmail.com>
-	 <a8e1da0801171828n26b37be0oa8b1c3cbec5f83cb@mail.gmail.com>
-	 <1200626323.5640.21.camel@lov.site>
-	 <a8e1da0801172131h57097622h6d111133b6a0773d@mail.gmail.com>
-	 <20080118073836.GA1703@ff.dom.local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 18, 2008 3:38 PM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> On Fri, Jan 18, 2008 at 01:31:17PM +0800, Dave Young wrote:
-> > On Jan 18, 2008 11:18 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> ...
-> > > Yeah, might be better to wait until class_device is gone, otherwise you
-> > > may need to fix stuff that is just going to be removed. Your change to
-> > > have iterators for the class devices look like a nice preparation for
-> > > future changes though.
-> > >
-> > > Our rough plan is:
-> > >  2.6.25:
-> > >   - get the ~100 patches in Greg's tree (in -mm) merged :)
-> > >  2.6.26:
-> > > ???  - remove the 20 char limit in "struct device"
-> > >   - get rid of "struct class_device"
-> >
-> > Fine, thanks.
-> >
-> > Let's wait for other people's comment.
->
-> Dave, I doubt you'll ever manage to do this if you're going to wait:
-> probably there will be always some new changes like this around...
+We have some code internally that does just this, though it slightly 
+abuses struct page by tagging pages with the highest priority that 
+dirties them.
 
-Maybe you are right.
+I'm not sure what a better solution is, though there has been talk about 
+rewritting it to use a per mapping radix tree to keep mem_map small.
 
->
-> IMHO, it would be nice to get the real state of current lockdep
-> problems here to figure out if there is any chance to do this right &
-> without any warnings with current lockdep. If I got it right from
-> earlier threads it might be impossible with USB, at least.
+The idea is to mark current->ioprio into each page as they are dirtied, 
+higher priority overrides lower priority.  Buffer_heads are done in the 
+same way.
 
-I don't think so, usb doesn't be affected by struct class mutex, they
-only use the lock of struct device. As I replied before, the lockdep
-issue exist only between class_interface and class_device.
+Come IO submission, bio's get the highest IO priority associated with 
+the submitted pages/buffer_heads and these are passed into the the 
+struct request's into the scheduler.
 
->
-> So, since I think these nesting levels seem to be wrong in 7/7 patch,
-> maybe it's better to exclude it from this patchset, and to try this as
-> testing for some time.
+Similar changes are underway for making sure all AIO get the right ioprios.
 
-I may file the updated patch with more nesting changes and test it of
-course. Actually I should have done it, thanks.
+It will take some cleaning to get it ready for lkml submission, though 
+I'm still a bit unsure of what we should do to avoid struct page growth.
 
->
-> My proposal is to do the annotations with mutex_lock_nested(),
-> everywhere in this patch, according to 'real' relations between these
-> classes from thread POV, so e.g.:
->
-> mutex_lock_nested(&some_class->mutex, CLASS_PARENT);
-> mutex_lock_nested(&some_class->mutex, CLASS_CLASS);
-> ...or more if needed:
-> mutex_lock_nested(&some_class->mutex, CLASS_CHILD);
-> mutex_lock_nested(&some_class->mutex, CLASS_ROOT);
-> ...etc.
->
-> using adequate names for these enums, and only after this check what
-> lockdep thinks about it. Then, if there are no obvious mistakes, but
-> lockdep doesn't like it, send the patch and report without trying to
-> 'silence' lockdep, so we could see what's going on, and if there are
-> any chances to make it right.
+Mike Waychison
 
-1) Using CLASS_NORMAL/CLASS_PARENT/CLASS_CHILD will be enough.
-or
-2) Simply add SINGLE_LEVEL_NESTING in class_device_add and other
-class_device functions because it is the only possible nest-lock place
-as I know.
+Andi Kleen wrote:
+> Fengguang Wu <wfg@mail.ustc.edu.cn> writes:
+>> Suppose we want to grant longer expiration window for temp files,
+>> adding a new list named s_dirty_tmpfile would be a handy solution.
+> 
+> How would the kernel know that a file is a tmp file?
+> 
+>> So the question is: should we need more than 3 QoS classes?
+> 
+> [just a random idea; i have not worked out all the implications]
+> 
+> Would it be possible to derive a writeback apriority from the ionice
+> level of the process originating the IO? e.g. we have long standing
+> problems that background jobs even when niced and can cause
+> significant slow downs to foreground processes by starving IO 
+> and pushing out pages. ionice was supposed to help with that
+> but in practice it does not seem to have helped too much and I suspect
+> it needs more prioritization higher up the VM food chain. Adding
+> such priorities to writeback would seem like a step in the right
+> direction, although it would of course not solve the problem
+> completely.
+> 
+> -Andi
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Do you agree?
-
->
-> Thanks,
-> Jarek P.
->
