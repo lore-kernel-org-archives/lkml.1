@@ -1,134 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbYARIyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbYARI4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914AbYARIyk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 03:54:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYARIyd
+	id S1756594AbYARI4S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 03:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbYARI4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 03:54:33 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:53750 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751361AbYARIyc (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 03:54:32 -0500
-Date: Fri, 18 Jan 2008 19:54:07 +1100
-From: David Chinner <dgc@sgi.com>
-To: Michael Rubin <mrubin@google.com>
-Cc: David Chinner <dgc@sgi.com>, Fengguang Wu <wfg@mail.ustc.edu.cn>,
-       a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch] Converting writeback linked lists to a tree based data structure
-Message-ID: <20080118085407.GV155259@sgi.com>
-References: <20080115080921.70E3810653@localhost> <400562938.07583@ustc.edu.cn> <532480950801171307q4b540ewa3acb6bfbea5dbc8@mail.gmail.com> <20080118050107.GS155259@sgi.com> <532480950801172138x44e06780w2b15464845b626fc@mail.gmail.com>
+	Fri, 18 Jan 2008 03:56:08 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:40079 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753616AbYARI4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 03:56:05 -0500
+Date: Fri, 18 Jan 2008 09:56:12 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Young <hidave.darkstar@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       linux-kernel@vger.kernel.org, Zan Lynx <zlynx@acm.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [2.6.24-rc8-mm1] Locking API boot-time self-tests hangs.
+Message-ID: <20080118085612.GC15956@uranus.ravnborg.org>
+References: <200801180120.m0I1KBuC065806@www262.sakura.ne.jp> <20080117181935.02294863.akpm@linux-foundation.org> <200801180319.m0I3Ju9N089501@www262.sakura.ne.jp> <20080117204247.5318e500.akpm@linux-foundation.org> <200801180640.m0I6enPI029212@www262.sakura.ne.jp> <a8e1da0801172259s3377895dwb0b2ca1dd781d11b@mail.gmail.com> <20080118002152.c9e76c51.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <532480950801172138x44e06780w2b15464845b626fc@mail.gmail.com>
+In-Reply-To: <20080118002152.c9e76c51.akpm@linux-foundation.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 09:38:24PM -0800, Michael Rubin wrote:
-> On Jan 17, 2008 9:01 PM, David Chinner <dgc@sgi.com> wrote:
+On Fri, Jan 18, 2008 at 12:21:52AM -0800, Andrew Morton wrote:
+> On Fri, 18 Jan 2008 14:59:32 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
 > 
-> First off thank you for the very detailed reply. This rocks and gives
-> me much to think about.
+> > On Jan 18, 2008 2:40 PM, Tetsuo Handa
+> > <penguin-kernel@i-love.sakura.ne.jp> wrote:
+> > > Hello.
+> > >
+> > > Andrew Morton wrote:
+> > > > It could be compiler version dependent.  I used gcc-4.1.0.  Which version
+> > > > were you and Zan using please?
+> > 
+> > I have the same problem, gcc 3.4.6
+> > 
+> > >
+> > > I'm using gcc 3.3.5 on Debian/Sarge .
+> > >
+> > > By the way, 2.6.24-rc8-mm1 doesn't hang with a kernel config
+> > >
+> > > # make -s allnoconfig
+> > > # make -s menuconfig
+> > >
+> > >   Set [*] to all entries in "Kernel hacking  --->" section
+> > >   (except "KGDB: kernel debugging with remote gdb").
+> > >
+> > > # make -s && make -s install
 > 
-> > On Thu, Jan 17, 2008 at 01:07:05PM -0800, Michael Rubin wrote:
-> > This seems suboptimal for large files. If you keep feeding in
-> > new least recently dirtied files, the large files will never
-> > get an unimpeded go at the disk and hence we'll struggle to
-> > get decent bandwidth under anything but pure large file
-> > write loads.
+> The only machine I have with gcc-3.x takes an amazing amount of time to
+> compile a quite minimal kernel then barfs in headers_install with
 > 
-> You're right. I understand now. I just  changed a dial on my tests,
-> ran it and found pdflush not keeping up like it should. I need to
-> address this.
+>   CHK     include/linux/version.h
+> make[1]: `scripts/unifdef' is up to date.
+> make[1]: *** No rule to make target `|', needed by `asm-generic'.  Stop.
 > 
-> > Switching inodes during writeback implies a seek to the new write
-> > location, while continuing to write the same inode has no seek
-> > penalty because the writeback is sequential.  It follows from this
-> > that allowing larges file a disproportionate amount of data
-> > writeback is desirable.
-> >
-> > Also, cycling rapidly through all the large files to write 4MB to each is
-> > going to cause us to spend time seeking rather than writing compared
-> > to cycling slower and writing 40MB from each large file at a time.
-> >
-> > i.e. servicing one large file for 100ms is going to result in higher
-> > writeback throughput than servicing 10 large files for 10ms each
-> > because there's going to be less seeking and more writing done by
-> > the disks.
-> >
-> > That is, think of large file writes like process scheduler batch
-> > jobs - bulk throughput is what matters, so the larger the time slice
-> > you give them the higher the throughput.
-> >
-> > IMO, the sort of result we should be looking at is a
-> > writeback design that results in cycling somewhat like:
-> >
-> >         slice 1: iterate over small files
-> >         slice 2: flush large file 1
-> >         slice 3: iterate over small files
-> >         slice 4: flush large file 2
-> >         ......
-> >         slice n-1: flush large file N
-> >         slice n: iterate over small files
-> >         slice n+1: flush large file N+1
-> >
-> > So that we keep the disk busy with a relatively fair mix of
-> > small and large I/Os while both are necessary.
-> 
-> I am getting where you are coming from. But if we are going to make
-> changes to optimize for seeks maybe we need to be more aggressive in
-> write back in how we organize both time and location. Right now AFAIK
-> there is no attention to location in the writeback path.
+> which is a mainline bug, too.  ISTR someone else reported it but I don't
+> recall it getting fixed.
 
-True. But IMO, locality ordering really only impacts the small file
-data writes and the inodes themselves because there is typically
-lots of seeks in doing that.
+I know about this bug and I plan to fix it one day.
 
-For large sequential writes to a file, writing a significant
-chunk of data gives that bit of writeback it's own locality
-because it does not cause seeks. Hence simply writing large
-enough chunks avoids any need to order the writeback by locality.
+I have not considered it important because the bug is only triggered
+by following connditions:
+1) In kernel hacking the check headers options is selected
+2) make is older than version 3.80
 
-Hence I writeback ordering by locality more a function of 
-optimising the "iterate over small files" aspect of the writeback.
+Documentation/changes do not require us to use make 3.80.
+ 
+> I think I'll give up on this.  Either someone else fixes it or we merge the
+> bug into mainline.
 
-> >         The higher the bandwidth of the device, the more frequently
-> >         we need to be servicing the inodes with large amounts of
-> >         dirty data to be written to maintain write throughput at a
-> >         significant percentage of the device capability.
-> >
-> 
-> Could you expand that to say it's not the inodes of large files but
-> the ones with data that we can exploit locality?
+One way to fix this is to disable the config option like this.
 
-Not sure I understand what you mean. Can you rephrase that?
+	Sam
 
-> Often large files are fragmented.
+[PATCH] kbuild: disable headers_check
 
-Then the filesystem is not doing it's job. Fragmentation does
-not happen very frequently in XFS for large files - that is one
-of the reasons it is extremely good for large files and high
-throughput applications...
+The headers_check command requires make version 3.80 due to use
+of ordered dependencies. But kernel build does otherwise
+not require this recent make.
+Disable the option until it get properly fixed.
 
-> Would it make more sense to pursue cracking the inodes and
-> grouping their blocks's locations? Or is this all overkill and should
-> be handled at a lower level like the elevator?
-
-For large files it is overkill. For filesystems that do delayed
-allocation, it is often impossible (no block mapping until
-the writeback is executed unless it's an overwrite).
-
-At this point, I'd say it is best to leave it to the filesystem and
-the elevator to do their jobs properly.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index a601093..98b2431 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -67,7 +67,7 @@ config DEBUG_FS
+ 
+ config HEADERS_CHECK
+ 	bool "Run 'make headers_check' when building vmlinux"
+-	depends on !UML
++	depends on !UML || BROKEN
+ 	help
+ 	  This option will extract the user-visible kernel headers whenever
+ 	  building the kernel, and will run basic sanity checks on them to
