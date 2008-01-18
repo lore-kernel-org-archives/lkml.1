@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbYARBSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760786AbYARBUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758070AbYARBSW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757451AbYARBSO
+	id S1760786AbYARBUB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:20:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbYARBTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:18:14 -0500
-Received: from waste.org ([66.93.16.53]:38421 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751993AbYARBSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:18:13 -0500
-Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: m.kozlowski@tuxland.pl, linux-kernel@vger.kernel.org, paulus@samba.org,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <20080117170754.b5dd139b.akpm@linux-foundation.org>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	 <200801172315.28129.m.kozlowski@tuxland.pl>
-	 <20080117145105.ad968ea6.akpm@linux-foundation.org>
-	 <1200613194.3839.22.camel@cinder.waste.org>
-	 <20080117160513.3456b4eb.akpm@linux-foundation.org>
-	 <1200615168.3839.26.camel@cinder.waste.org>
-	 <20080117162913.0323c517.akpm@linux-foundation.org>
-	 <1200617237.3839.32.camel@cinder.waste.org>
-	 <20080117170754.b5dd139b.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 17 Jan 2008 19:16:50 -0600
-Message-Id: <1200619010.13504.2.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Thu, 17 Jan 2008 20:19:53 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39306 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753869AbYARBTw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 20:19:52 -0500
+Message-ID: <478FFD60.8030303@zytor.com>
+Date: Thu, 17 Jan 2008 20:14:08 -0500
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: Use v8086_mode helper, trivial unification
+References: <1200611078.5724.46.camel@brick>  <478FDE76.3070309@zytor.com>	 <1200612389.5724.63.camel@brick>  <478FF9F3.9030604@zytor.com> <1200618869.5724.83.camel@brick>
+In-Reply-To: <1200618869.5724.83.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Harvey Harrison wrote:
+> 
+>>> /* still need a define here, as one is long and one is unsigned long.
+>>>  * but this is another target for unification I guess. */
+>>> #define regs_return_value(regs) ((regs)->ax)
+>> Indeed...
+> 
+> I think this comes out of Roland's patches unifying some names eip/rip,
+> eax/rax, etc.
+> 
+> CC'd in case he felt like more work ;-)
+> 
 
-On Thu, 2008-01-17 at 17:07 -0800, Andrew Morton wrote:
-> That worked out nicely.
+Funny, I thought those were mine :-/
 
-Cool, feel free to add:
-
-Signed-off-by: Matt Mackall <mpm@selenic.com>
-
-> Wasn't the old code potentially pte_unmap()ping the wrong address?  If we
-> enter with addr==end?
-
-Yes, that was busted.
-
--- 
-Mathematics is the supreme nostalgia of our time.
-
+	-hpa
