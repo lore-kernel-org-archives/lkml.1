@@ -1,27 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763109AbYARQVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759401AbYARQXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763109AbYARQVt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 11:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762369AbYARQVf
+	id S1759401AbYARQXr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 11:23:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760263AbYARQXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 11:21:35 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33394 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Jan 2008 11:23:40 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33935 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762215AbYARQVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 11:21:33 -0500
-Date: Fri, 18 Jan 2008 17:21:18 +0100
+	id S1757866AbYARQXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 11:23:39 -0500
+Date: Fri, 18 Jan 2008 17:22:57 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, jbeulich@novell.com,
-       venkatesh.pallipadi@intel.com
-Subject: Re: CPA boot crash (was: [PATCH] [0/36] Great change_page_attr
-	patch series v3)
-Message-ID: <20080118162118.GA6819@elte.hu>
-References: <200801161114.239449000@suse.de> <200801181701.04549.ak@suse.de> <20080118160757.GA24507@elte.hu> <200801181716.06093.ak@suse.de>
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       huang ying <huang.ying.caritas@gmail.com>,
+       "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH -mm 1/3] i386 boot: replace boot_ioremap with enhanced
+	bt_ioremap - enhance bt_ioremap
+Message-ID: <20080118162257.GB6819@elte.hu>
+References: <1200375906.3505.30.camel@caritas-dev.intel.com> <1200646105.17230.28.camel@cthulhu.hellion.org.uk> <851fc09e0801180654u6957f966g47c7629db6d4b2b0@mail.gmail.com> <4790BD90.9060303@zytor.com> <1200671665.9891.45.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801181716.06093.ak@suse.de>
+In-Reply-To: <1200671665.9891.45.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,26 +40,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andi Kleen <ak@suse.de> wrote:
+* Ian Campbell <ijc@hellion.org.uk> wrote:
 
-> > > (except for the white space changes, but that can be redone once 
-> > > everything settled down again). Then it will be bisectable.
-> > 
-> > it's a revert barrier (within v2.6.25),
+> > Eric Biederman had a patchset that makes a PAE kernel use PAE page 
+> > tables from the start.  That is really The Right Thing[TM].
 > 
-> What is a revert barrier?
->
-> Anyways of course the way to handle that is the same as with the other 
-> undo patches: drop the original white space changes 
-> (ddb53b5735793a19dc17bcd98b050f672f) completely and then drop that 
-> undo patch too. The white space changes haven't reached Linus yet so 
-> you can just make them disappear completely from known history.
+> That's much saner than dup'ing up the early ioremap stuff to support 
+> both PAE and non-PAE at runtime, which is about the only idea I've got 
+> for fixing this right now...
+> 
+> I think I'll just back out the early_ioremap patches locally for now 
+> and wait for Eric's patches which should cause the fix for this issue 
+> to just fall out in the wash.
 
-we dont want them to disappear, due to the second half of:
-
-   http://lkml.org/lkml/2008/1/18/112
-
-we want easy-cleanups first, difficult changes applied second. It's a 
-well-established concept.
+Eric's patchset is nowhere near being submitted - he _had_ a patchset. 
+So this needs to be fixed by the Xen-guest folks. (if the easiest/best 
+fix is to pick up Eric's patchset, then plese do it so)
 
 	Ingo
