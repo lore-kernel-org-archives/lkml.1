@@ -1,63 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763688AbYARUXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763541AbYARUZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763688AbYARUXs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759067AbYARUXl
+	id S1763541AbYARUZH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:25:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760074AbYARUYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:23:41 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59199 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759565AbYARUXk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:23:40 -0500
-Date: Fri, 18 Jan 2008 12:22:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Anton Salikhmetov <salikhmetov@gmail.com>
-cc: Miklos Szeredi <miklos@szeredi.hu>, peterz@infradead.org,
-       linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
-       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
-       hch@infradead.org
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
- files
-In-Reply-To: <4df4ef0c0801181158s3f783beaqead3d7049d4d3fa7@mail.gmail.com>
-Message-ID: <alpine.LFD.1.00.0801181214440.2957@woody.linux-foundation.org>
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>  <1200651337.5920.9.camel@twins> <1200651958.5920.12.camel@twins>  <alpine.LFD.1.00.0801180949040.2957@woody.linux-foundation.org>  <E1JFvgx-0000zz-2C@pomaz-ex.szeredi.hu> 
- <alpine.LFD.1.00.0801181033580.2957@woody.linux-foundation.org>  <E1JFwOz-00019k-Uo@pomaz-ex.szeredi.hu>  <alpine.LFD.1.00.0801181106340.2957@woody.linux-foundation.org>  <E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>  <alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org>
- <4df4ef0c0801181158s3f783beaqead3d7049d4d3fa7@mail.gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 18 Jan 2008 15:24:55 -0500
+Received: from gw.goop.org ([64.81.55.164]:58604 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760066AbYARUYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:24:55 -0500
+Message-ID: <47910B0F.5070500@goop.org>
+Date: Fri, 18 Jan 2008 12:24:47 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu, ehabkost@redhat.com,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
+       zach@vmware.com, roland@redhat.com, mtosatti@redhat.com
+Subject: Re: [PATCH 10/10] change function orders in paravirt.h
+References: <12006768251548-git-send-email-gcosta@redhat.com> <12006768362108-git-send-email-gcosta@redhat.com> <1200676842822-git-send-email-gcosta@redhat.com> <12006768473571-git-send-email-gcosta@redhat.com> <12006768521391-git-send-email-gcosta@redhat.com> <1200676857691-git-send-email-gcosta@redhat.com> <12006768631010-git-send-email-gcosta@redhat.com> <12006768683247-git-send-email-gcosta@redhat.com> <12006768732175-git-send-email-gcosta@redhat.com> <12006768793416-git-send-email-gcosta@redhat.com> <12006768843721-git-send-email-gcosta@redhat.com>
+In-Reply-To: <12006768843721-git-send-email-gcosta@redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Glauber de Oliveira Costa wrote:
+> __pmd, pmd_val and set_pud are used before they are defined (as static)
+> We move them a little up in the file, so it doesn't happen.
+>   
 
+Hm, in my original patches I put the #ifdef CONFIG_X86_PAE below the 
+PAGETABLE_LEVELS section.  Does that work?  Or is that an equivalent 
+transform?
 
-On Fri, 18 Jan 2008, Anton Salikhmetov wrote:
-> 
-> The current solution doesn't hit the performance at all when compared to
-> the competitor POSIX-compliant systems. It is faster and does even more
-> than the POSIX standard requires.
+    J
+> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+> ---
+>  include/asm-x86/paravirt.h |   84 ++++++++++++++++++++++----------------------
+>  1 files changed, 42 insertions(+), 42 deletions(-)
+>
+> diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
+> index 3e7ca42..12caaf1 100644
+> --- a/include/asm-x86/paravirt.h
+> +++ b/include/asm-x86/paravirt.h
+> @@ -1023,6 +1023,48 @@ static inline void set_pmd(pmd_t *pmdp, pmd_t pmd)
+>  		PVOP_VCALL2(pv_mmu_ops.set_pmd, pmdp, val);
+>  }
+>  
+> +#if PAGETABLE_LEVELS >= 3
+> +static inline pmd_t __pmd(pmdval_t val)
+> +{
+> +	pmdval_t ret;
+> +
+> +	if (sizeof(pmdval_t) > sizeof(long))
+> +		ret = PVOP_CALL2(pmdval_t, pv_mmu_ops.make_pmd,
+> +				 val, (u64)val >> 32);
+> +	else
+> +		ret = PVOP_CALL1(pmdval_t, pv_mmu_ops.make_pmd,
+> +				 val);
+> +
+> +	return (pmd_t) { ret };
+> +}
+> +
+> +static inline pmdval_t pmd_val(pmd_t pmd)
+> +{
+> +	pmdval_t ret;
+> +
+> +	if (sizeof(pmdval_t) > sizeof(long))
+> +		ret =  PVOP_CALL2(pmdval_t, pv_mmu_ops.pmd_val,
+> +				  pmd.pmd, (u64)pmd.pmd >> 32);
+> +	else
+> +		ret =  PVOP_CALL1(pmdval_t, pv_mmu_ops.pmd_val,
+> +				  pmd.pmd);
+> +
+> +	return ret;
+> +}
+> +
+> +static inline void set_pud(pud_t *pudp, pud_t pud)
+> +{
+> +	pudval_t val = native_pud_val(pud);
+> +
+> +	if (sizeof(pudval_t) > sizeof(long))
+> +		PVOP_VCALL3(pv_mmu_ops.set_pud, pudp,
+> +			    val, (u64)val >> 32);
+> +	else
+> +		PVOP_VCALL2(pv_mmu_ops.set_pud, pudp,
+> +			    val);
+> +}
+> +#endif	/* PAGETABLE_LEVELS >= 3 */
+> +
+>  #ifdef CONFIG_X86_PAE
+>  /* Special-case pte-setting operations for PAE, which can't update a
+>     64-bit pte atomically */
+> @@ -1073,48 +1115,6 @@ static inline void pmd_clear(pmd_t *pmdp)
+>  }
+>  #endif	/* CONFIG_X86_PAE */
+>  
+> -#if PAGETABLE_LEVELS >= 3
+> -static inline pmd_t __pmd(pmdval_t val)
+> -{
+> -	pmdval_t ret;
+> -
+> -	if (sizeof(pmdval_t) > sizeof(long))
+> -		ret = PVOP_CALL2(pmdval_t, pv_mmu_ops.make_pmd,
+> -				 val, (u64)val >> 32);
+> -	else
+> -		ret = PVOP_CALL1(pmdval_t, pv_mmu_ops.make_pmd,
+> -				 val);
+> -
+> -	return (pmd_t) { ret };
+> -}
+> -
+> -static inline pmdval_t pmd_val(pmd_t pmd)
+> -{
+> -	pmdval_t ret;
+> -
+> -	if (sizeof(pmdval_t) > sizeof(long))
+> -		ret =  PVOP_CALL2(pmdval_t, pv_mmu_ops.pmd_val,
+> -				  pmd.pmd, (u64)pmd.pmd >> 32);
+> -	else
+> -		ret =  PVOP_CALL1(pmdval_t, pv_mmu_ops.pmd_val,
+> -				  pmd.pmd);
+> -
+> -	return ret;
+> -}
+> -
+> -static inline void set_pud(pud_t *pudp, pud_t pud)
+> -{
+> -	pudval_t val = native_pud_val(pud);
+> -
+> -	if (sizeof(pudval_t) > sizeof(long))
+> -		PVOP_VCALL3(pv_mmu_ops.set_pud, pudp,
+> -			    val, (u64)val >> 32);
+> -	else
+> -		PVOP_VCALL2(pv_mmu_ops.set_pud, pudp,
+> -			    val);
+> -}
+> -#endif	/* PAGETABLE_LEVELS >= 3 */
+> -
+>  /* Lazy mode for batching updates / context switch */
+>  enum paravirt_lazy_mode {
+>  	PARAVIRT_LAZY_NONE,
+>   
 
-Your current patches have two problems:
- - they are simply unnecessarily invasive for a relatively simple issue
- - all versions I've looked at closer are buggy too
-
-Example:
-
-	+               if (pte_dirty(*pte) && pte_write(*pte))
-	+                       *pte = pte_wrprotect(*pte);
-
-Uhhuh. Looks simple enough. Except it does a non-atomic pte access while 
-other CPU's may be accessing it and updating it from their hw page table 
-walkers. What will happen? Who knows? I can see lost access bits at a 
-minimum.
-
-IOW, this isn't simple code. It's code that it is simple to screw up. In 
-this case, you really need to use ptep_set_wrprotect(), for example.
-
-So why not do it in many fewer lines with that simpler vma->dirty flag?
-
-		Linus
