@@ -1,184 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbYARL1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759968AbYARL27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759519AbYARL1r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 06:27:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbYARL1k
+	id S1759968AbYARL27 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 06:28:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbYARL2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 06:27:40 -0500
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:59545 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754942AbYARL1j (ORCPT
+	Fri, 18 Jan 2008 06:28:51 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:10561 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753141AbYARL2u convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 06:27:39 -0500
-Date: Fri, 18 Jan 2008 12:26:25 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: "Dave Young" <hidave.darkstar@gmail.com>
-Cc: "Gabor Gombas" <gombasg@sztaki.hu>, "Tejun Heo" <htejun@gmail.com>,
-       "Al Viro" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net, kay.sievers@vrfy.org,
-       "Greg KH" <greg@kroah.com>, "Marcel Holtmann" <marcel@holtmann.org>,
-       davem@davemloft.net
-Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
-Message-ID: <20080118122625.370e2fba@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <a8e1da0801180234k4b48fd1axaba6d7d334219430@mail.gmail.com>
-References: <20080108133215.GA15814@boogie.lpds.sztaki.hu>
-	<20080115015741.GB2780@darkstar.te-china.tietoenator.com>
-	<20080116010205.GA2970@darkstar.te-china.tietoenator.com>
-	<20080116230646.GB6715@boogie.lpds.sztaki.hu>
-	<a8e1da0801162324r2cd82684iede3fc8c2f8c391c@mail.gmail.com>
-	<20080117081504.GA3123@darkstar.te-china.tietoenator.com>
-	<20080117124259.19a88129@gondolin.boeblingen.de.ibm.com>
-	<a8e1da0801171937r92a1c32l116315a76f334776@mail.gmail.com>
-	<20080118101933.258bfae9@gondolin.boeblingen.de.ibm.com>
-	<20080118112337.0b457c49@gondolin.boeblingen.de.ibm.com>
-	<a8e1da0801180234k4b48fd1axaba6d7d334219430@mail.gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i486-pc-linux-gnu)
+	Fri, 18 Jan 2008 06:28:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=ikRdWfU5CQb8Ve/qtL2ayVCcocrrK2URlfitgmpMb6WCKHjVECvkpciDXr4mC8X/w7oswczrZDYuvRxt6e4nOad0ZV5QqG/XeZ7En5ZYGfWaUvphHCesviWASLoq0pEGtNgZhSk0C+aUXdO+1xrb5DDWBLnRm1vYFHBBXwV6m5A=
+Date: Fri, 18 Jan 2008 12:26:23 +0100
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Mattias Nissler <mattias.nissler@gmx.de>
+Cc: linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, IvDoorn@gmail.com
+Subject: Re: Spammed logs again rt2500pci 2.6.24-rc8
+Message-ID: <20080118122623.3561b3ed@Varda>
+In-Reply-To: <1200653765.7492.10.camel@localhost>
+References: <20080117225744.29aa214c@Varda>
+	<1200653765.7492.10.camel@localhost>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 18:34:55 +0800,
-"Dave Young" <hidave.darkstar@gmail.com> wrote:
+El Fri, 18 Jan 2008 11:56:05 +0100
+Mattias Nissler <mattias.nissler@gmx.de> escribió:
 
-> On Jan 18, 2008 6:23 PM, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> > On Fri, 18 Jan 2008 10:19:33 +0100,
-> > Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> >
-> > > >
-> > > > 1314         if (IS_ERR(new_parent_kobj)) {
-> > > > 1315                 error = PTR_ERR(new_parent_kobj);
-> > > > 1316                 put_device(new_parent);
-> > > > 1317                 goto out;
-> > > > 1318         }
-> > > > 1319         pr_debug("DEVICE: moving '%s' to '%s'\n", dev->bus_id,
-> > > > 1320                  new_parent ? new_parent->bus_id : "<NULL>");
-> > > > 1321         error = kobject_move(&dev->kobj, new_parent_kobj);
-> > > > 1322         if (error) {
-> > > > 1323                 put_device(new_parent);
-> > > >
-> > > > imagine new_parent is NULL, then the new_parent_kobj should be put
-> > >
-> > > No, we would need a put_device_parent() (crappy name) which puts the
-> > > reference iff get_device_parent() grabbed it.
-> >
-> > And looking at Greg's patchset, it has cleanup_device_parent(), which
-> > does just that. But it is only called in device_del(), not when
-> > device_move() has errors.
-> >
-> > (get_device_parent() also always returns a pointer to a kobject or
-> > NULL, so we can get rid of those IS_ERR() checks in setup_parent() and
-> > device_move() as well.)
-> >
+> Hi,
 > 
-> Hmm, thanks.
-> I will be offline during weekend,  but I will still check the
-> device_move and other code if I have time.
+> we currently think this is due to a race condition in the packet queue
+> code. Ivo is currently reworking the packet queues, which I hope will
+> resolve this situation.
 
-Just hacked together the following against Greg's tree:
+ Thanks for the quick answer. 
 
-COMPLETELY UNTESTED DO NOT APPLY
+> 
+> Mattias
 
----
- drivers/base/core.c |   33 ++++++++++++++++-----------------
- 1 files changed, 16 insertions(+), 17 deletions(-)
+ Regards;
+ Alejandro
 
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -553,6 +553,8 @@ static struct kobject *get_device_parent
- }
- 
- static inline void cleanup_device_parent(struct device *dev) {}
-+static inline void cleanup_glue_dir(struct device *dev,
-+				    struct kobject *kobj) {}
- #else
- static struct kobject *virtual_device_parent(struct device *dev)
- {
-@@ -617,27 +619,27 @@ static struct kobject *get_device_parent
- 	return NULL;
- }
- 
--static void cleanup_device_parent(struct device *dev)
-+static void cleanup_glue_dir(struct device *dev, struct kobject *kobj)
- {
--	struct kobject *glue_dir = dev->kobj.parent;
--
- 	/* see if we live in a "glue" directory */
--	if (!dev->class || glue_dir->kset != &dev->class->class_dirs)
-+	if (!dev->class || kobj->kset != &dev->class->class_dirs)
- 		return;
- 
--	kobject_put(glue_dir);
-+	kobject_put(kobj);
-+}
-+
-+static void cleanup_device_parent(struct device *dev)
-+{
-+	cleanup_glue_dir(dev, dev->kobj.parent);
- }
- #endif
- 
--static int setup_parent(struct device *dev, struct device *parent)
-+static void setup_parent(struct device *dev, struct device *parent)
- {
- 	struct kobject *kobj;
- 	kobj = get_device_parent(dev, parent);
--	if (IS_ERR(kobj))
--		return PTR_ERR(kobj);
- 	if (kobj)
- 		dev->kobj.parent = kobj;
--	return 0;
- }
- 
- static int device_add_class_symlinks(struct device *dev)
-@@ -782,9 +784,7 @@ int device_add(struct device *dev)
- 	pr_debug("device: '%s': %s\n", dev->bus_id, __FUNCTION__);
- 
- 	parent = get_device(dev->parent);
--	error = setup_parent(dev, parent);
--	if (error)
--		goto Error;
-+	setup_parent(dev, parent);
- 
- 	/* first, register with generic layer. */
- 	error = kobject_add(&dev->kobj, dev->kobj.parent, "%s", dev->bus_id);
-@@ -862,6 +862,7 @@ int device_add(struct device *dev)
- 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
- 	kobject_del(&dev->kobj);
-  Error:
-+	cleanup_device_parent(dev);
- 	if (parent)
- 		put_device(parent);
- 	goto Done;
-@@ -1303,15 +1304,12 @@ int device_move(struct device *dev, stru
- 
- 	new_parent = get_device(new_parent);
- 	new_parent_kobj = get_device_parent (dev, new_parent);
--	if (IS_ERR(new_parent_kobj)) {
--		error = PTR_ERR(new_parent_kobj);
--		put_device(new_parent);
--		goto out;
--	}
-+
- 	pr_debug("device: '%s': %s: moving to '%s'\n", dev->bus_id,
- 		 __FUNCTION__, new_parent ? new_parent->bus_id : "<NULL>");
- 	error = kobject_move(&dev->kobj, new_parent_kobj);
- 	if (error) {
-+		cleanup_glue_dir(dev, new_parent_kobj);
- 		put_device(new_parent);
- 		goto out;
- 	}
-@@ -1334,6 +1332,7 @@ int device_move(struct device *dev, stru
- 				klist_add_tail(&dev->knode_parent,
- 					       &old_parent->klist_children);
- 		}
-+		cleanup_glue_dir(dev, new_parent_kobj);
- 		put_device(new_parent);
- 		goto out;
- 	}
+> 
+> On Thu, 2008-01-17 at 22:57 +0100, Alejandro Riveira Fernández wrote:
+> > Running
+> > 
+> > Linux Varda 2.6.24-rc8 #1 SMP PREEMPT Wed Jan 16 15:09:43 CET 2008 x86_64 GNU/Linux
+> > 
+> > my logs are spmmed with:
+> > 
+> > 
+> > [20126.343240] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> > [20126.343242] Please file bug report to http://rt2x00.serialmonkey.com.
+> > [20126.848277] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+>
+> 
