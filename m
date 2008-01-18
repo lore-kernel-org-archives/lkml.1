@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbYARIsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbYARIuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbYARIsS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 03:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbYARIsB
+	id S1755517AbYARIuZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 03:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbYARIuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 03:48:01 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50530 "EHLO
+	Fri, 18 Jan 2008 03:50:13 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39219 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750893AbYARIsA (ORCPT
+	by vger.kernel.org with ESMTP id S1750950AbYARIuL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 03:48:00 -0500
-Date: Fri, 18 Jan 2008 00:47:25 -0800
+	Fri, 18 Jan 2008 03:50:11 -0500
+Date: Fri, 18 Jan 2008 00:44:16 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Zan Lynx <zlynx@acm.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: echo mem > /sys/power/state
-Message-Id: <20080118004725.dcd132ee.akpm@linux-foundation.org>
-In-Reply-To: <20080118083610.GA19792@elte.hu>
-References: <20080116222445.6f7ff66e.akpm@linux-foundation.org>
-	<1200591411.34145.4.camel@localhost>
-	<20080117111355.29554f38.akpm@linux-foundation.org>
-	<200801172238.17176.rjw@sisk.pl>
-	<20080118083610.GA19792@elte.hu>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc8-mm1 Kernel oops will running kernbench
+Message-Id: <20080118004416.6a757169.akpm@linux-foundation.org>
+In-Reply-To: <479064F0.7040305@linux.vnet.ibm.com>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<479064F0.7040305@linux.vnet.ibm.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -32,37 +29,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 09:36:10 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 18 Jan 2008 14:06:00 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
+> Hi Andrew,
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Following oops was seen while running kernbench on one of test machine
+> (power4+ box). I tried reproducing the oops but was unsuccessful. 
+> I will try to reproduce the oops with debug info compiled.
 > 
-> > > Probably it would be more efficient to have the people who wrote the 
-> > > code also test it.
-> > 
-> > Well, that would certainly help.
-> > 
-> > I do test all of my patches and generally all of the patches I sign 
-> > off, but surely that's not enough.
 > 
-> please add a .config option dependent on CONFIG_DEBUG_KERNEL=y [and 
-> default-disabled] that auto-tests suspend/resume functionality 60 
-> seconds after hitting user-space (the suspend/resume cycle kept small 
-> via a small RTC timeout) and s2ram correctness will be tested _a lot_ 
-> more.
-> 
-> (it doesnt matter if graphics does not resume fine - at least for my 
-> tests)
-> 
-> kprobes had similar problems and it now has a few simple smoke-tests - 
-> which i just saw trigger on a patch that i did not notice would break 
-> kprobes. I think this should be done for all functionality that is not 
-> regularly triggered by a normal distro bootup (and which is easy to 
-> overlook in testing).
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> SMP NR_CPUS=32 NUMA pSeries
+> Modules linked in:
+> NIP: 0000000000004570 LR: 000000000fc42dc0 CTR: 0000000000000000
+> REGS: c00000077b6bf8c0 TRAP: 0300   Not tainted  (2.6.24-rc8-mm1-autotest)
+> MSR: 8000000000001000 <ME>  CR: 28022422  XER: 00000000
+> DAR: c00000077b6bfce0, DSISR: 000000000a000000
+> TASK = c000000773164c40[19588] 'as' THREAD: c00000077b6bc000 CPU: 1
+> GPR00: 0000000000004000 c00000077b6bfb40 0000000000007346 000000000000d032 
+> GPR04: 000000000000043a 0000000000000000 000000000000000c 0000000000000004 
+> GPR08: 000000000fd278c8 0000000048022424 c00000077b6bfe30 0000998be2321500 
+> GPR12: 8000000000001030 c0000000005f6280 0000000010030000 0000000010030000 
+> GPR16: 0000000010030000 0000000010050000 000000001006aac0 0000000010053cd0 
+> GPR20: 0000000000000000 0000000000000fe0 0000000010050000 0000000010050000 
+> GPR24: 0000000000000ff8 0000000000000fe8 0000000000000062 000000000fd27490 
+> GPR28: 000000000fd274c8 0000000010099420 000000000fd25ff4 000000001009a400 
+> NIP [0000000000004570] 0x4570
+> LR [000000000fc42dc0] 0xfc42dc0
+> Call Trace:
+> [c00000077b6bfb40] [c00000077b292000] 0xc00000077b292000 (unreliable)
+> Instruction dump:
+> 48000000 XXXXXXXX XXXXXXXX XXXXXXXX 41820008 XXXXXXXX XXXXXXXX XXXXXXXX 
+> 48000010 XXXXXXXX XXXXXXXX XXXXXXXX f92101a0 XXXXXXXX XXXXXXXX XXXXXXXX 
 > 
 
-Seeing as we're so lame about being able to distribute userspace stuff:
-create a shell script in /proc/rc.kernel and start teaching initscripts to
-run it.  Then we can modify it at will.
-
-I hate me.
+odd.  Where did the stack trace go?
