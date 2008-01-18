@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762965AbYARUwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764856AbYARUz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762965AbYARUwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:52:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762317AbYARUwG
+	id S1764856AbYARUz1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:55:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759664AbYARUzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:52:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53435 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765967AbYARUwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:52:03 -0500
-Date: Fri, 18 Jan 2008 21:51:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 fixes for v2.6.24
-Message-ID: <20080118205152.GF3079@elte.hu>
-References: <20080118154809.GA18248@elte.hu> <20080118191249.GA20384@uranus.ravnborg.org>
+	Fri, 18 Jan 2008 15:55:17 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37752 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757303AbYARUzQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:55:16 -0500
+Message-ID: <4791122E.8070205@sgi.com>
+Date: Fri, 18 Jan 2008 12:55:10 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080118191249.GA20384@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Ingo Oeser <ioe-lkml@rameria.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
+References: <20080118183011.354965000@sgi.com> <20080118183011.917801000@sgi.com> <200801182104.22486.ioe-lkml@rameria.de> <479108C3.1010800@sgi.com> <20080118204845.GD3079@elte.hu>
+In-Reply-To: <20080118204845.GD3079@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
+> 
+>>>> +config THREAD_ORDER
+>>>> +	int "Kernel stack size (in page order)"
+>>>> +	range 1 3
+>>>> +	depends on X86_64_SMP
+>>>> +	default "3" if X86_SMP_MAX
+>>>> +	default "1"
+>>>> +	help
+>>>> +	  Increases kernel stack size.
+>>>> +
+>>> Could you please elaborate, why this is needed and put more info 
+>>> about this requirement into this patch description?
+>>>
+>>> People worked hard to push data allocation from stack to heap to 
+>>> make THREAD_ORDER of 0 and 1 possible. So why increase it again and 
+>>> why does this help scalability?
+>>>
+>>> Many thanks and Best Regards
+>>>
+>>> Ingo Oeser, puzzled a bit :-)
+>>
+>> The primary problem arises because of cpumask_t local variables.  
+>> Until I can deal with these, increasing NR_CPUS to a really large 
+>> value increases stack size dramatically.
+> 
+> those should be fixed:
+> 
+>> Here are the top stack consumers with NR_CPUS = 4k.
+>>
+>>                          16392 isolated_cpu_setup
+>>                          10328 build_sched_domains
+>>                           8248 numa_initmem_init
+>>                           4664 cpu_attach_domain
+>>                           4104 show_shared_cpu_map
+>>                           3656 centrino_target
+>>                           3608 powernowk8_cpu_init
+>>                           3192 sched_domain_node_span
+>>                           3144 acpi_cpufreq_target
+>>                           2584 __svc_create_thread
+>>                           2568 cpu_idle_wait
+>>                           2136 netxen_nic_flash_print
+>>                           2104 powernowk8_target
+>>                           2088 _cpu_down
+>>                           2072 cache_add_dev
+>>                           2056 get_cur_freq
+>>                              0 acpi_processor_ffh_cstate_probe
+>>                           2056 microcode_write
+>>                              0 acpi_processor_get_throttling
+>>                           2048 check_supported_cpu
+> 
+> (and most of that is performance-uncritical.)
+> 
+> 	Ingo
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+How big is the stack during early startup?
 
-> > @@ -1088,7 +1088,7 @@ CLEAN_FILES +=	vmlinux System.map \
-> >                  .tmp_kallsyms* .tmp_version .tmp_vmlinux* .tmp_System.map
-> >  
-> >  # Directories & files removed with 'make mrproper'
-> > -MRPROPER_DIRS  += include/config include2 usr/include
-> > +MRPROPER_DIRS  += include/config include2 usr/include arch/i386 arch/x86_64
-> sigh - arch specific stuff in the top-level Makefile.
-> This really belongs in arch/x86/Makefile
-
-is this a NACK? Can clean this up in v2.6.25, but this seemed the only 
-simple solution for v2.6.24.
-
-	Ingo
+Thanks,
+Mike
