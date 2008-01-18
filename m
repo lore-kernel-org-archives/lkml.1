@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764377AbYARVpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763788AbYARVs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764377AbYARVpc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 16:45:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbYARVpY
+	id S1763788AbYARVs1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 16:48:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbYARVsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 16:45:24 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:48114 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757647AbYARVpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 16:45:23 -0500
-Date: Fri, 18 Jan 2008 22:45:17 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: xfs@oss.sgi.com
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.24-rc8: possible circular locking dependency detected
-Message-ID: <alpine.DEB.1.00.0801182240310.6521@sheep.housecafe.de>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	Fri, 18 Jan 2008 16:48:19 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:60348 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757005AbYARVsS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 16:48:18 -0500
+Subject: Re: [PATCH 0/10] Tree fixes for PARAVIRT
+From: Zachary Amsden <zach@vmware.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Glauber de Oliveira Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       glommer@gmail.com, tglx@linutronix.de, ehabkost@redhat.com,
+       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
+       roland@redhat.com, mtosatti@redhat.com
+In-Reply-To: <20080118213711.GA24979@elte.hu>
+References: <12006768251548-git-send-email-gcosta@redhat.com>
+	 <20080118203259.GA3079@elte.hu>  <20080118213711.GA24979@elte.hu>
+Content-Type: text/plain
+Date: Fri, 18 Jan 2008 13:54:08 -0800
+Message-Id: <1200693248.21817.157.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 2008-01-18 at 22:37 +0100, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > The first fix is not even specific for PARAVIRT, and it's actually 
+> > > preventing the whole tree from booting.
+> > 
+> > on CONFIG_EFI, indeed :)
+> 
+> but in exchange you broke all of 32-bit with CONFIG_PARAVIRT=y. Which 
+> means you did not even build-test it on 32-bit, let alone boot test 
+> it...
 
-just FYI, upgrading to -rc8 gave the following messages in kern.log in
-the morning hours, when the backups were run:
+Why are we rushing so much to do 64-bit paravirt that we are breaking
+working configurations?  If the developement is going to be this
+chaotic, it should be done and tested out of tree until it can
+stabilize.
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.24-rc8 #2
--------------------------------------------------------
-rsync/23295 is trying to acquire lock:
-  (iprune_mutex){--..}, at: [<c017a552>] shrink_icache_memory+0x72/0x220
+I do not like having to continuously retest and review the x86 branch
+because the paravirt-ops are constantly in flux and the 32-bit code
+keeps breaking.
 
-but task is already holding lock:
-  (&(&ip->i_iolock)->mr_lock){----}, at: [<c0275056>] xfs_ilock+0x96/0xb0
+We won't be doing 64-bit paravirt-ops for exactly this reason - is there
+a serious justification from the performance angle on modern 64-bit
+hardware?  If not, why justify the complexity and hackery to Linux?
 
-which lock already depends on the new lock.
+Zach
 
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (&(&ip->i_iolock)->mr_lock){----}:
-        [<c0138c01>] __lock_acquire+0xbe1/0x10b0
-        [<c0275056>] xfs_ilock+0x96/0xb0
-        [<c0137b4f>] trace_hardirqs_on+0x9f/0x140
-        [<c013912f>] lock_acquire+0x5f/0x80
-        [<c0275056>] xfs_ilock+0x96/0xb0
-        [<c012f4b1>] down_write_nested+0x41/0x60
-        [<c0275056>] xfs_ilock+0x96/0xb0
-        [<c0275056>] xfs_ilock+0x96/0xb0
-        [<c02751ea>] xfs_ireclaim+0x1a/0x60
-        [<c0294e73>] xfs_finish_reclaim+0x53/0x1a0
-        [<c02a40ce>] xfs_fs_clear_inode+0x5e/0x90
-        [<c017a102>] clear_inode+0x82/0x160
-        [<c017a55c>] shrink_icache_memory+0x7c/0x220
-        [<c017a43a>] dispose_list+0x1a/0xc0
-        [<c017a6c2>] shrink_icache_memory+0x1e2/0x220
-        [<c014f6d1>] shrink_slab+0x101/0x160
-        [<c014fa4a>] kswapd+0x2aa/0x410
-        [<c012c1f0>] autoremove_wake_function+0x0/0x40
-        [<c014f7a0>] kswapd+0x0/0x410
-        [<c012bf42>] kthread+0x42/0x70
-
-Full dmesg and .config: http://nerdbynature.de/bits/2.6.24-rc8/
-
-Thanks,
-Christian.
--- 
-BOFH excuse #18:
-
-excess surge protection
