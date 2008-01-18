@@ -1,74 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbYARKXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759721AbYARKYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759513AbYARKXv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:23:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbYARKXn
+	id S1759721AbYARKYh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 05:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbYARKYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:23:43 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:28672 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754818AbYARKXm (ORCPT
+	Fri, 18 Jan 2008 05:24:30 -0500
+Received: from nz-out-0506.google.com ([64.233.162.224]:15852 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755030AbYARKY3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:23:42 -0500
-Date: Fri, 18 Jan 2008 11:23:37 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: "Dave Young" <hidave.darkstar@gmail.com>
-Cc: "Gabor Gombas" <gombasg@sztaki.hu>, "Tejun Heo" <htejun@gmail.com>,
-       "Al Viro" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net, kay.sievers@vrfy.org,
-       "Greg KH" <greg@kroah.com>, "Marcel Holtmann" <marcel@holtmann.org>,
-       davem@davemloft.net
-Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
-Message-ID: <20080118112337.0b457c49@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20080118101933.258bfae9@gondolin.boeblingen.de.ibm.com>
-References: <20080108133215.GA15814@boogie.lpds.sztaki.hu>
-	<20080111230929.GA7052@boogie.lpds.sztaki.hu>
-	<a8e1da0801132305s4f0c3d7asa268382bb6e44777@mail.gmail.com>
-	<20080114135228.6b9a8da2@gondolin.boeblingen.de.ibm.com>
-	<20080115015741.GB2780@darkstar.te-china.tietoenator.com>
-	<20080116010205.GA2970@darkstar.te-china.tietoenator.com>
-	<20080116230646.GB6715@boogie.lpds.sztaki.hu>
-	<a8e1da0801162324r2cd82684iede3fc8c2f8c391c@mail.gmail.com>
-	<20080117081504.GA3123@darkstar.te-china.tietoenator.com>
-	<20080117124259.19a88129@gondolin.boeblingen.de.ibm.com>
-	<a8e1da0801171937r92a1c32l116315a76f334776@mail.gmail.com>
-	<20080118101933.258bfae9@gondolin.boeblingen.de.ibm.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 Jan 2008 05:24:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KV6IYpf0Jq0QtD8T+vpH1u44uepICZbPNwkZYOBCtZUTTWidyYNnZeiS1A497iDWTMMMJ3wz6wSnXCJQuJtMANmmtQIdVMKM4fxbK31fCL/W9dqLgdPROCqnNjSIt1mZFxa5xdYesRXx1BMLi2fJxFbdLx0AzMDadeNPd0O7U0I=
+Message-ID: <cfd9edbf0801180224r3ddf1940h4245e2feff488486@mail.gmail.com>
+Date: Fri, 18 Jan 2008 11:24:27 +0100
+From: "=?ISO-8859-1?Q?Daniel_Sp=E5ng?=" <daniel.spang@gmail.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 4/5] memory_pressure_notify() caller
+Cc: "Rik van Riel" <riel@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, "Marcelo Tosatti" <marcelo@kvack.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080117120112.11CE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080116104536.11AE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <cfd9edbf0801160303s53237b81yb9d5e374c16cd006@mail.gmail.com>
+	 <20080117120112.11CE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 10:19:33 +0100,
-Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+On 1/17/08, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> Hi Daniel
+>
+> > > Thank you for good point out!
+> > > Could you please post your test program and reproduced method?
+> >
+> > Sure:
+> >
+> > 1. Fill almost all available memory with page cache in a system without swap.
+> > 2. Run attached alloc-test program.
+> > 3. Notification fires when page cache is reclaimed.
+>
+> Unfortunately, I can't reproduce it.
+>
+> my machine
+>         CPU:    Pentium4 2.8GHz with HT
+>         memory: 512M
+>
+>
+> 1. I doubt ZONE_DMA, please shipment ignore zone_dma patch(below).
+> 2. Could you please send your .config and /etc/sysctl.conf?
+>    I hope more reproduce challenge.
+>
+> thanks.
+>
+> - kosaki
+>
+>
+>
+>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>
+> ---
+>  include/linux/mem_notify.h |    3 +++
+>  mm/page_alloc.c            |    6 +++++-
+>  2 files changed, 8 insertions(+), 1 deletion(-)
+>
+> Index: linux-2.6.24-rc6-mm1-memnotify/include/linux/mem_notify.h
+> ===================================================================
+> --- linux-2.6.24-rc6-mm1-memnotify.orig/include/linux/mem_notify.h
+>  2008-01-16 21:31:09.000000000 +0900
+> +++ linux-2.6.24-rc6-mm1-memnotify/include/linux/mem_notify.h
+> 2008-01-16 21:34:24.000000000 +0900
+> @@ -22,6 +22,9 @@ static inline void memory_pressure_notif
+>         unsigned long target;
+>         unsigned long pages_high, pages_free, pages_reserve;
+>
+> +       if (unlikely(zone->mem_notify_status == -1))
+> +               return;
+> +
+>         if (pressure) {
+>                 target = atomic_long_read(&last_mem_notify) + MEM_NOTIFY_FREQ;
+>                 if (likely(time_before(jiffies, target)))
+> Index: linux-2.6.24-rc6-mm1-memnotify/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.24-rc6-mm1-memnotify.orig/mm/page_alloc.c 2008-01-13
+> 19:50:27.000000000 +0900
+> +++ linux-2.6.24-rc6-mm1-memnotify/mm/page_alloc.c      2008-01-16
+> 21:41:58.000000000 +0900
+> @@ -3467,7 +3467,11 @@ static void __meminit free_area_init_cor
+>                 zone->zone_pgdat = pgdat;
+>
+>                 zone->prev_priority = DEF_PRIORITY;
+> -               zone->mem_notify_status = 0;
+> +
+> +               if (zone->present_pages < (pgdat->node_present_pages / 10))
+> +                       zone->mem_notify_status = -1;
+> +               else
+> +                       zone->mem_notify_status = 0;
+>
+>                 zone_pcp_init(zone);
+>                 INIT_LIST_HEAD(&zone->active_list);
 
-> > 
-> > 1314         if (IS_ERR(new_parent_kobj)) {
-> > 1315                 error = PTR_ERR(new_parent_kobj);
-> > 1316                 put_device(new_parent);
-> > 1317                 goto out;
-> > 1318         }
-> > 1319         pr_debug("DEVICE: moving '%s' to '%s'\n", dev->bus_id,
-> > 1320                  new_parent ? new_parent->bus_id : "<NULL>");
-> > 1321         error = kobject_move(&dev->kobj, new_parent_kobj);
-> > 1322         if (error) {
-> > 1323                 put_device(new_parent);
-> > 
-> > imagine new_parent is NULL, then the new_parent_kobj should be put
-> 
-> No, we would need a put_device_parent() (crappy name) which puts the
-> reference iff get_device_parent() grabbed it.
+Your patch above solves the problem I had with early notification.
 
-And looking at Greg's patchset, it has cleanup_device_parent(), which
-does just that. But it is only called in device_del(), not when
-device_move() has errors.
-
-(get_device_parent() also always returns a pointer to a kobject or
-NULL, so we can get rid of those IS_ERR() checks in setup_parent() and
-device_move() as well.)
+Cheers,
+Daniel
