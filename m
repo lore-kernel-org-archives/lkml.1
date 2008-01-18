@@ -1,117 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbYARKTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759488AbYARKTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758803AbYARKTT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbYARKTL
+	id S1759488AbYARKTz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 05:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbYARKTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:19:11 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:45138 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754619AbYARKTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:19:08 -0500
-Message-ID: <400651538.20437@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 18 Jan 2008 17:32:03 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Michael Rubin <mrubin@google.com>
-Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch] Converting writeback linked lists to a tree based data structure
-References: <20080115080921.70E3810653@localhost> <400562938.07583@ustc.edu.cn> <532480950801171307q4b540ewa3acb6bfbea5dbc8@mail.gmail.com> <400632190.14601@ustc.edu.cn> <532480950801172243i21341a02s983a9e59b182c53e@mail.gmail.com>
+	Fri, 18 Jan 2008 05:19:48 -0500
+Received: from ozlabs.org ([203.10.76.45]:33489 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755852AbYARKTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 05:19:47 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <532480950801172243i21341a02s983a9e59b182c53e@mail.gmail.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.12-2006-07-14
-Message-Id: <E1JFnZz-00015z-Vq@localhost.localdomain>
+Content-Transfer-Encoding: 7bit
+Message-ID: <18320.32058.370817.762911@cargo.ozlabs.ibm.com>
+Date: Fri, 18 Jan 2008 21:19:38 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc8-mm1 Kernel oops will running kernbench
+In-Reply-To: <479072BC.3080908@linux.vnet.ibm.com>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<479064F0.7040305@linux.vnet.ibm.com>
+	<20080118004416.6a757169.akpm@linux-foundation.org>
+	<18320.27372.202771.764301@cargo.ozlabs.ibm.com>
+	<479072BC.3080908@linux.vnet.ibm.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 10:43:15PM -0800, Michael Rubin wrote:
-> On Jan 17, 2008 8:56 PM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
-> > On Thu, Jan 17, 2008 at 01:07:05PM -0800, Michael Rubin wrote:
-> > Suppose we want to grant longer expiration window for temp files,
-> > adding a new list named s_dirty_tmpfile would be a handy solution.
-> 
-> When you mean tmp do you mean files that eventually get written to
+Kamalesh Babulal writes:
 
-Yes, they are disk based and can be synced on.
+> I tried reproducing the problem and was successful with following trace
+> in which the pc is at 0x4570 as the above one
 
-> disk? If not I would just use the WRITEBACK_NEVER. If so I am not sure
-> if that feature is worth making a special case. It seems like the
-> location based ideas may be more useful.
+What did you do to trigger it?
 
-I'm not interested in WRITEBACK_NEVER or location based writeback
-for now :-)
+> c000000000004544 <unrecov_slb>:
+> c000000000004544:       71 8a 40 00     andi.   r10,r12,16384
+> c000000000004548:       7c 2a 0b 78     mr      r10,r1  
+> c00000000000454c:       38 21 fd 10     addi    r1,r1,-752
+> c000000000004550:       41 82 00 08     beq-    c000000000004558 <unrecov_slb+0x14>
+> c000000000004554:       e8 2d 01 a8     ld      r1,424(r13)
+> c000000000004558:       2c a1 00 00     cmpdi   cr1,r1,0
+> c00000000000455c:       40 84 00 08     bge-    cr1,c000000000004564 <unrecov_slb+0x20>
+> c000000000004560:       48 00 00 10     b       c000000000004570 <unrecov_slb+0x2c>
+> c000000000004564:       38 20 41 00     li      r1,16640
+> c000000000004568:       b0 2d 01 c8     sth     r1,456(r13)
+> c00000000000456c:       4b ff fb 18     b       c000000000004084 <bad_stack>
+> c000000000004570:       f9 21 01 a0     std     r9,416(r1) 
 
-> > > >         - refill s_io iif it is drained
-> > > >           this prevents promotion of big/old files
-> > >
-> > > Once a big file gets its first do_writepages it is moved behind the
-> > > other smaller files via i_flushed_when. And the same in reverse for
-> > > big vs old.
-> >
-> > You mean i_flush_gen?
-> 
-> Yeah sorry. It was once called i_flush_when. (sheepish)
-> 
-> > No, sync_sb_inodes() will abort on every
-> > MAX_WRITEBACK_PAGES, and s_flush_gen will be updated accordingly.
-> > Hence the sync will restart from big/old files.
-> 
-> If I understand you correctly I am not sure I agree. Here is what I
-> think happens in the patch:
-> 
-> 1) pull big inode off of flush tree
-> 2) sync big inode
-> 3) Hit MAX_WRITEBACK_PAGES
-> 4) Re-insert big inode (without modifying the dirtied_when)
-> 5) update the i_flush_gen on big inode and re-insert behind small
-> inodes we have not synced yet.
-> 
-> In a subsequent sync_sb_inode we end up retrieving the small inode we
-> had not serviced yet.
+So it's in the code that gets called on an unrecoverable SLB fault.
+That's bad, we should never get those.  Does this happen with mainline
+too, or only with -rc8-mm1?  I don't understand why we should start
+seeing this problem unless something has changed in
+arch/powerpc/kernel or arch/powerpc/mm (well I suppose a bug somewhere
+else could cause memory corruption which might be able to lead to
+this).
 
-Yes, exactly. And then it will continue to sync the big one again.
-It will never be able to move forward to the next dirtied_when before
-exhausting the inodes in the current list(with the oldest dirtied_when).
+Does it still happen if you take git-powerpc.patch out of the series?
 
-> > > >         - return from sync_sb_inodes() after one go of s_io
-> > >
-> > > I am not sure how this limit helps things out. Is this for superblock
-> > > starvation? Can you elaborate?
-> >
-> > We should have a way to go to next superblock even if new dirty inodes
-> > or pages are emerging fast in this superblock. Fill and drain s_io
-> > only once and then abort helps.
-> 
-> Got it.
-> 
-> > s_io is a stable and bounded working set in one go of superblock.
-> 
-> Is this necessary with MAX_WRITEBACK_PAGES? It feels like a double limit.
-
-We need a limit and continuing scheme at each level. It was so hard to
-sort them out, that I'm really reluctant to restart all the fuss again.
-
-> > Basically you make one list_head in each rbtree node.
-> > That list_head is recycled cyclic, and is an analog to the old
-> > fashioned s_dirty. We need to know 'where we are' and 'where it ends'.
-> > So an extra indicator must be introduced - i_flush_gen. It's awkward.
-> > We are simply repeating the aged list_heads' problem.
-> 
-> To me they both feel a little awkward. I feel like the original
-> problem in 2.6.23 led to a lot of examination which is bringing new
-> possibilities to light.
-> 
-> BTW the issue that started me on this whole path (starving large
-> files) was still present in 2.6.23-rc8 but now looks fixed in
-> 2.6.24-rc3.
-> Still no idea about your changes in 2.6.24-rc6-mm1. I have given up
-> trying to get that thing to boot.
-
-Hehe, I guess the bug is still there in 2.6.24-rc3. But should be gone
-in the latest patchset.
-
+Paul.
