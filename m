@@ -1,112 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbYARR1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbYARR1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932093AbYARR1m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761586AbYARR1T
+	id S932190AbYARR1z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:27:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761999AbYARR1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:27:19 -0500
-Received: from mx1.suse.de ([195.135.220.2]:53243 "EHLO mx1.suse.de"
+	Fri, 18 Jan 2008 12:27:21 -0500
+Received: from cantor.suse.de ([195.135.220.2]:53249 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760553AbYARR1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:27:18 -0500
+	id S1761464AbYARR1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 12:27:19 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20080118627.198787000@suse.de>
 In-Reply-To: <20080118627.198787000@suse.de>
 To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [1/7] Add frame work to disable CPUID bits on the command line
-Message-Id: <20080118172717.51E3214AAE@wotan.suse.de>
-Date: Fri, 18 Jan 2008 18:27:17 +0100 (CET)
+Subject: [PATCH] [2/7] Convert some existing cpuid disable options to new generic bitmap
+Message-Id: <20080118172718.644F914AAE@wotan.suse.de>
+Date: Fri, 18 Jan 2008 18:27:18 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-There are already various options to disable specific cpuid bits
-on the command line. They all use their own variable. Add a generic
-mask to make this easier in the future.
+This convers nofxsr, mem=nopentium and nosep to use the new
+generic cpuid disable bitmap instead of using own variables.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/kernel/cpu/common.c |    6 ++++++
- arch/x86/kernel/setup_64.c   |    6 ++++++
- include/asm-x86/cpufeature.h |    4 ++++
- include/asm-x86/processor.h  |    1 +
- 4 files changed, 17 insertions(+)
+ arch/x86/kernel/cpu/common.c |   34 ++++------------------------------
+ arch/x86/kernel/setup_32.c   |    5 +----
+ 2 files changed, 5 insertions(+), 34 deletions(-)
 
 Index: linux/arch/x86/kernel/cpu/common.c
 ===================================================================
 --- linux.orig/arch/x86/kernel/cpu/common.c
 +++ linux/arch/x86/kernel/cpu/common.c
-@@ -57,6 +57,8 @@ DEFINE_PER_CPU(struct gdt_page, gdt_page
- } };
- EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
+@@ -60,14 +60,10 @@ EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
+ __u32 cleared_cpu_caps[NCAPINTS] __cpuinitdata;
  
-+__u32 cleared_cpu_caps[NCAPINTS] __cpuinitdata;
-+
  static int cachesize_override __cpuinitdata = -1;
- static int disable_x86_fxsr __cpuinitdata;
+-static int disable_x86_fxsr __cpuinitdata;
  static int disable_x86_serial_nr __cpuinitdata = 1;
-@@ -497,6 +499,10 @@ void __cpuinit identify_cpu(struct cpuin
- 			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
- 	}
+-static int disable_x86_sep __cpuinitdata;
  
-+	/* Clear all flags overriden by options */
-+	for (i = 0; i < NCAPINTS; i++)
-+		c->x86_capability[i] ^= cleared_cpu_caps[i];
-+
- 	/* Init Machine Check Exception if available. */
- 	mcheck_init(c);
+ struct cpu_dev * cpu_devs[X86_VENDOR_NUM] = {};
  
-Index: linux/include/asm-x86/cpufeature.h
-===================================================================
---- linux.orig/include/asm-x86/cpufeature.h
-+++ linux/include/asm-x86/cpufeature.h
-@@ -132,6 +132,10 @@
+-extern int disable_pse;
+-
+ static void __cpuinit default_init(struct cpuinfo_x86 * c)
+ {
+ 	/* Not much we can do here... */
+@@ -216,16 +212,8 @@ static void __cpuinit get_cpu_vendor(str
  
- #define set_cpu_cap(c, bit)	set_bit(bit, (unsigned long *)((c)->x86_capability))
- #define clear_cpu_cap(c, bit)	clear_bit(bit, (unsigned long *)((c)->x86_capability))
-+#define setup_clear_cpu_cap(bit) do { \
-+	clear_cpu_cap(&boot_cpu_data, bit);	\
-+	set_bit(bit, cleared_cpu_caps); 	\
-+} while (0)
+ static int __init x86_fxsr_setup(char * s)
+ {
+-	/* Tell all the other CPUs to not use it... */
+-	disable_x86_fxsr = 1;
+-
+-	/*
+-	 * ... and clear the bits early in the boot_cpu_data
+-	 * so that the bootup process doesn't try to do this
+-	 * either.
+-	 */
+-	clear_bit(X86_FEATURE_FXSR, boot_cpu_data.x86_capability);
+-	clear_bit(X86_FEATURE_XMM, boot_cpu_data.x86_capability);
++	setup_clear_cpu_cap(X86_FEATURE_FXSR);
++	setup_clear_cpu_cap(X86_FEATURE_XMM);
+ 	return 1;
+ }
+ __setup("nofxsr", x86_fxsr_setup);
+@@ -233,7 +221,7 @@ __setup("nofxsr", x86_fxsr_setup);
  
- #define cpu_has_fpu		boot_cpu_has(X86_FEATURE_FPU)
- #define cpu_has_vme		boot_cpu_has(X86_FEATURE_VME)
-Index: linux/include/asm-x86/processor.h
-===================================================================
---- linux.orig/include/asm-x86/processor.h
-+++ linux/include/asm-x86/processor.h
-@@ -118,6 +118,7 @@ struct cpuinfo_x86 {
- extern struct cpuinfo_x86 boot_cpu_data;
- extern struct cpuinfo_x86 new_cpu_data;
- extern struct tss_struct doublefault_tss;
-+extern __u32 cleared_cpu_caps[NCAPINTS];
+ static int __init x86_sep_setup(char * s)
+ {
+-	disable_x86_sep = 1;
++	setup_clear_cpu_cap(X86_FEATURE_SEP);
+ 	return 1;
+ }
+ __setup("nosep", x86_sep_setup);
+@@ -462,19 +450,6 @@ void __cpuinit identify_cpu(struct cpuin
+ 	if ( tsc_disable )
+ 		clear_bit(X86_FEATURE_TSC, c->x86_capability);
  
- #ifdef CONFIG_SMP
- DECLARE_PER_CPU(struct cpuinfo_x86, cpu_info);
-Index: linux/arch/x86/kernel/setup_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/setup_64.c
-+++ linux/arch/x86/kernel/setup_64.c
-@@ -82,6 +82,8 @@
- struct cpuinfo_x86 boot_cpu_data __read_mostly;
- EXPORT_SYMBOL(boot_cpu_data);
- 
-+__u32 cleared_cpu_caps[NCAPINTS] __cpuinitdata;
-+
- unsigned long mmu_cr4_features;
- 
- /* Boot loader ID as an integer, for the benefit of proc_dointvec */
-@@ -1012,6 +1014,10 @@ void __cpuinit identify_cpu(struct cpuin
- 			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
- 	}
- 
-+	/* Clear all flags overriden by options */
-+	for (i = 0; i < NCAPINTS; i++)
-+		c->x86_capability[i] ^= cleared_cpu_caps[i];
-+
- #ifdef CONFIG_X86_MCE
- 	mcheck_init(c);
+-	/* FXSR disabled? */
+-	if (disable_x86_fxsr) {
+-		clear_bit(X86_FEATURE_FXSR, c->x86_capability);
+-		clear_bit(X86_FEATURE_XMM, c->x86_capability);
+-	}
+-
+-	/* SEP disabled? */
+-	if (disable_x86_sep)
+-		clear_bit(X86_FEATURE_SEP, c->x86_capability);
+-
+-	if (disable_pse)
+-		clear_bit(X86_FEATURE_PSE, c->x86_capability);
+-
+ 	/* If the model name is still unset, do table lookup. */
+ 	if ( !c->x86_model_id[0] ) {
+ 		char *p;
+@@ -629,8 +604,7 @@ void __init early_cpu_init(void)
+ 	/* pse is not compatible with on-the-fly unmapping,
+ 	 * disable it even if the cpus claim to support it.
+ 	 */
+-	clear_bit(X86_FEATURE_PSE, boot_cpu_data.x86_capability);
+-	disable_pse = 1;
++	setup_clear_cpu_cap(X86_FEATURE_PSE);
  #endif
+ }
+ 
+Index: linux/arch/x86/kernel/setup_32.c
+===================================================================
+--- linux.orig/arch/x86/kernel/setup_32.c
++++ linux/arch/x86/kernel/setup_32.c
+@@ -70,8 +70,6 @@
+    address, and must not be in the .bss segment! */
+ unsigned long init_pg_tables_end __initdata = ~0UL;
+ 
+-int disable_pse __cpuinitdata = 0;
+-
+ /*
+  * Machine setup..
+  */
+@@ -245,8 +243,7 @@ static int __init parse_mem(char *arg)
+ 		return -EINVAL;
+ 
+ 	if (strcmp(arg, "nopentium") == 0) {
+-		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_PSE);
+-		disable_pse = 1;
++		setup_clear_cpu_cap(X86_FEATURE_PSE);
+ 	} else {
+ 		/* If the user specifies memory size, we
+ 		 * limit the BIOS-provided memory map to
