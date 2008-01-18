@@ -1,135 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbYARWff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932728AbYARWgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbYARWff (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763249AbYARWf2
+	id S932728AbYARWgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760738AbYARWgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:35:28 -0500
-Received: from ro-out-1112.google.com ([72.14.202.176]:46211 "EHLO
-	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762534AbYARWf0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:35:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HM4KQxJuFKpOpQiFKBOWY3CWyVfAGrykWPWYPkxQzxaU6cID3sEBadN0DvLIEsDBVjXv6YCV6dCxjGpWv8oZmzrvncOhZmVqW881/nnGKTiPIKo9RmzYHUcDOf8e6VFB5u3y6sh5y/PSY6rq1eWY+ES9QSAjoc+cP978ZNy0sE8=
-Message-ID: <4df4ef0c0801181435y67fee713h83f8e7f2a5b4e803@mail.gmail.com>
-Date: Sat, 19 Jan 2008 01:35:25 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped files
-Cc: "Miklos Szeredi" <miklos@szeredi.hu>, peterz@infradead.org,
-       linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
-       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
-       hch@infradead.org
-In-Reply-To: <alpine.LFD.1.00.0801181406580.2957@woody.linux-foundation.org>
+	Fri, 18 Jan 2008 17:36:08 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:50711 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762857AbYARWgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 17:36:06 -0500
+In-Reply-To: <47910D6E.3070801@garzik.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Al Boldi <a1426z@gawab.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Daniel Phillips <phillips@google.com>,
+       ric@emc.com, Rik van Riel <riel@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Valerie Henson <val.henson@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>
-	 <alpine.LFD.1.00.0801181106340.2957@woody.linux-foundation.org>
-	 <E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>
-	 <alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org>
-	 <4df4ef0c0801181158s3f783beaqead3d7049d4d3fa7@mail.gmail.com>
-	 <alpine.LFD.1.00.0801181214440.2957@woody.linux-foundation.org>
-	 <4df4ef0c0801181303o6656832g8b63d2a119a86a9c@mail.gmail.com>
-	 <alpine.LFD.1.00.0801181325510.2957@woody.linux-foundation.org>
-	 <4df4ef0c0801181404m186bb847sd556e031e908b0b6@mail.gmail.com>
-	 <alpine.LFD.1.00.0801181406580.2957@woody.linux-foundation.org>
+Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental fsck)
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OFDAE81670.76D5065A-ON882573D4.007A239B-882573D4.007C23CE@us.ibm.com>
+From: Bryan Henderson <hbryan@us.ibm.com>
+Date: Fri, 18 Jan 2008 14:35:55 -0800
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.0|August 02, 2007) at 01/18/2008
+ 17:35:56,
+	Serialize complete at 01/18/2008 17:35:56
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/19, Linus Torvalds <torvalds@linux-foundation.org>:
->
->
-> On Sat, 19 Jan 2008, Anton Salikhmetov wrote:
-> >
-> > The page_check_address() function is called from the
-> > page_mkclean_one() routine as follows:
->
-> .. and the page_mkclean_one() function is totally different.
->
-> Lookie here, this is the correct and complex sequence:
->
-> >                 entry = ptep_clear_flush(vma, address, pte);
-> >                 entry = pte_wrprotect(entry);
-> >                 entry = pte_mkclean(entry);
-> >                 set_pte_at(mm, address, pte, entry);
->
-> That's a rather expensive sequence, but it's done exactly because it has
-> to be done that way. What it does is to
->
->  - *atomically* load the pte entry _and_ clear the old one in memory.
->
->    That's the
->
->         entry = ptep_clear_flush(vma, address, pte);
->
->    thing, and it basically means that it's doing some
->    architecture-specific magic to make sure that another CPU that accesses
->    the PTE at the same time will never actually modify the pte (because
->    it's clear and not valid)
->
->  - it then - while the page table is actually clear and invalid - takes
->    the old value and turns it into the new one:
->
->         entry = pte_wrprotect(entry);
->         entry = pte_mkclean(entry);
->
->  - and finally, it replaces the entry with the new one:
->
->         set_pte_at(mm, address, pte, entry);
->
->    which takes care to write the new entry in some specific way that is
->    atomic wrt other CPU's (ie on 32-bit x86 with a 64-bit page table
->    entry it writes the high word first, see the write barriers in
->    "native_set_pte()" in include/asm-x86/pgtable-3level.h
->
-> Now, compare that subtle and correct thing with what is *not* correct:
->
->         if (pte_dirty(*pte) && pte_write(*pte))
->                 *pte = pte_wrprotect(*pte);
->
-> which makes no effort at all to make sure that it's safe in case another
-> CPU updates the accessed bit.
->
-> Now, arguably it's unlikely to cause horrible problems at least on x86,
-> because:
->
->  - we only do this if the pte is already marked dirty, so while we can
->    lose the accessed bit, we can *not* lose the dirty bit. And the
->    accessed bit isn't such a big deal.
->
->  - it's not doing any of the "be careful about" ordering things, but since
->    the really important bits aren't changing, ordering probably won't
->    practically matter.
->
-> But the problem is that we have something like 24 different architectures,
-> it's hard to make sure that none of them have issues.
->
-> In other words: it may well work in practice. But when these things go
-> subtly wrong, they are *really* nasty to find, and the unsafe sequence is
-> really not how it's supposed to be done. For example, you don't even flush
-> the TLB, so even if there are no cross-CPU issues, there's probably going
-> to be writable entries in the TLB that now don't match the page tables.
->
-> Will it matter? Again, probably impossible to see in practice. But ...
+I just had a talk with a colleague, John Palmer, who worked on disk drive 
+design for about 5 years in the '90s and he gave me a very confident, 
+credible explanation of some of the things we've been wondering about disk 
+drive power loss in this thread, complete with demonstrations of various 
+generations of disk drives, dismantled.
 
-Linus, I am very grateful to you for your extremely clear explanation
-of the issue I have overlooked!
+First of all, it is plain to see that there is no spring capable of 
+parking the head, and there is no capacitor that looks big enough to 
+possibly supply the energy to park the head, in any of the models I looked 
+at.  Since parking of the heads is essential, we can only conclude that 
+the myth of the kinetic energy of the disks being used for that (turned 
+into electricity by the drive motor) is true.  The energy required is not 
+just to move the heads to the parking zone, but to latch them there as 
+well.
 
-Back to the msync() issue, I'm going to come back with a new design
-for the bug fix.
+The myth is probably just that that energy is used for anything else; it's 
+really easy to build a dumb circuit to park the heads using that power; 
+keeping a computer running is something else.
 
-Thank you once again.
+The drive does drop a write in the middle of the sector if it is writing 
+at the time of power loss.  The designers were too conservative to keep 
+writing as power fails -- there's no telling what damage you might do.  So 
+the drive cuts the power to the heads at the first sign of power loss.  If 
+a write was in progress, this means there is one garbage sector on the 
+disk.  It can't be read.
 
-Anton
+Trying to finish writing the sector is something I can image some drive 
+model somewhere trying to do, but if even _some_ take the conservative 
+approach, everyone has to design for it, so it doesn't matter.
 
->
->                 Linus
->
+A device might then reassign that sector the next time you try to write to 
+it (after failing to read it), thinking the medium must be bad.  But there 
+are various algorithms for deciding when to reassign a sector, so it might 
+not too.
+
+--
+Bryan Henderson                     IBM Almaden Research Center
+San Jose CA                         Filesystems
+
