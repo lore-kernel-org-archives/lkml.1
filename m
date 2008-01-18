@@ -1,43 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765511AbYARU6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765727AbYARU74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765511AbYARU6c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:58:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761470AbYARU6Z
+	id S1765727AbYARU74 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:59:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762133AbYARU7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:58:25 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:39618 "EHLO mx2.suse.de"
+	Fri, 18 Jan 2008 15:59:49 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:60134 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761173AbYARU6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:58:24 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
-Date: Fri, 18 Jan 2008 21:58:18 +0100
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, Ingo Oeser <ioe-lkml@rameria.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-References: <20080118183011.354965000@sgi.com> <20080118204845.GD3079@elte.hu> <4791122E.8070205@sgi.com>
-In-Reply-To: <4791122E.8070205@sgi.com>
+	id S1761821AbYARU7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:59:47 -0500
+Date: Fri, 18 Jan 2008 15:59:43 -0500
+To: Jeff Layton <jlayton@redhat.com>
+Cc: neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] SUNRPC: spin svc_rqst initialization to its own
+	function
+Message-ID: <20080118205943.GL15158@fieldses.org>
+References: <1200319518-22422-1-git-send-email-jlayton@redhat.com> <1200319518-22422-2-git-send-email-jlayton@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801182158.18822.ak@suse.de>
+In-Reply-To: <1200319518-22422-2-git-send-email-jlayton@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-12-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 14, 2008 at 09:05:15AM -0500, Jeff Layton wrote:
+> Move the initialzation in __svc_create_thread that happens prior to
+> thread creation to a new function. Export the function to allow
+> services to have better control over the svc_rqst structs.
+> 
+> Also rearrange the rqstp initialization to prevent NULL pointer
+> dereferences in svc_exit_thread in case allocations fail.
 
-> How big is the stack during early startup?
+Those NULL dereferences are from the
 
-THREAD_ORDER (runs on init_stack's stack)
+	list_del(&rqstp->rq_all);
 
-early init stack could be increased in theory with some effort,
-but since that is all single threaded anyways just a few strategic
-static __initdata's should be simple enough.
+?  OK, make sense.  Thanks!
 
--Andi
+--b.
+
+> 
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> ---
+>  include/linux/sunrpc/svc.h |    2 +
+>  net/sunrpc/svc.c           |   59 +++++++++++++++++++++++++++++++------------
+>  2 files changed, 44 insertions(+), 17 deletions(-)
+> 
+> diff --git a/include/linux/sunrpc/svc.h b/include/linux/sunrpc/svc.h
+> index 8531a70..5f07300 100644
+> --- a/include/linux/sunrpc/svc.h
+> +++ b/include/linux/sunrpc/svc.h
+> @@ -382,6 +382,8 @@ struct svc_procedure {
+>   */
+>  struct svc_serv *  svc_create(struct svc_program *, unsigned int,
+>  			      void (*shutdown)(struct svc_serv*));
+> +struct svc_rqst *svc_prepare_thread(struct svc_serv *serv,
+> +					struct svc_pool *pool);
+>  int		   svc_create_thread(svc_thread_fn, struct svc_serv *);
+>  void		   svc_exit_thread(struct svc_rqst *);
+>  struct svc_serv *  svc_create_pooled(struct svc_program *, unsigned int,
+> diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
+> index fca17d0..f9636bf 100644
+> --- a/net/sunrpc/svc.c
+> +++ b/net/sunrpc/svc.c
+> @@ -538,31 +538,17 @@ svc_release_buffer(struct svc_rqst *rqstp)
+>  			put_page(rqstp->rq_pages[i]);
+>  }
+>  
+> -/*
+> - * Create a thread in the given pool.  Caller must hold BKL.
+> - * On a NUMA or SMP machine, with a multi-pool serv, the thread
+> - * will be restricted to run on the cpus belonging to the pool.
+> - */
+> -static int
+> -__svc_create_thread(svc_thread_fn func, struct svc_serv *serv,
+> -		    struct svc_pool *pool)
+> +struct svc_rqst *
+> +svc_prepare_thread(struct svc_serv *serv, struct svc_pool *pool)
+>  {
+>  	struct svc_rqst	*rqstp;
+> -	int		error = -ENOMEM;
+> -	int		have_oldmask = 0;
+> -	cpumask_t	oldmask;
+>  
+>  	rqstp = kzalloc(sizeof(*rqstp), GFP_KERNEL);
+>  	if (!rqstp)
+> -		goto out;
+> +		goto out_enomem;
+>  
+>  	init_waitqueue_head(&rqstp->rq_wait);
+>  
+> -	if (!(rqstp->rq_argp = kmalloc(serv->sv_xdrsize, GFP_KERNEL))
+> -	 || !(rqstp->rq_resp = kmalloc(serv->sv_xdrsize, GFP_KERNEL))
+> -	 || !svc_init_buffer(rqstp, serv->sv_max_mesg))
+> -		goto out_thread;
+> -
+>  	serv->sv_nrthreads++;
+>  	spin_lock_bh(&pool->sp_lock);
+>  	pool->sp_nrthreads++;
+> @@ -571,6 +557,45 @@ __svc_create_thread(svc_thread_fn func, struct svc_serv *serv,
+>  	rqstp->rq_server = serv;
+>  	rqstp->rq_pool = pool;
+>  
+> +	rqstp->rq_argp = kmalloc(serv->sv_xdrsize, GFP_KERNEL);
+> +	if (!rqstp->rq_argp)
+> +		goto out_thread;
+> +
+> +	rqstp->rq_resp = kmalloc(serv->sv_xdrsize, GFP_KERNEL);
+> +	if (!rqstp->rq_resp)
+> +		goto out_thread;
+> +
+> +	if (!svc_init_buffer(rqstp, serv->sv_max_mesg))
+> +		goto out_thread;
+> +
+> +	return rqstp;
+> +out_thread:
+> +	svc_exit_thread(rqstp);
+> +out_enomem:
+> +	return ERR_PTR(-ENOMEM);
+> +}
+> +EXPORT_SYMBOL(svc_prepare_thread);
+> +
+> +/*
+> + * Create a thread in the given pool.  Caller must hold BKL.
+> + * On a NUMA or SMP machine, with a multi-pool serv, the thread
+> + * will be restricted to run on the cpus belonging to the pool.
+> + */
+> +static int
+> +__svc_create_thread(svc_thread_fn func, struct svc_serv *serv,
+> +		    struct svc_pool *pool)
+> +{
+> +	struct svc_rqst	*rqstp;
+> +	int		error = -ENOMEM;
+> +	int		have_oldmask = 0;
+> +	cpumask_t	oldmask;
+> +
+> +	rqstp = svc_prepare_thread(serv, pool);
+> +	if (IS_ERR(rqstp)) {
+> +		error = PTR_ERR(rqstp);
+> +		goto out;
+> +	}
+> +
+>  	if (serv->sv_nrpools > 1)
+>  		have_oldmask = svc_pool_map_set_cpumask(pool->sp_id, &oldmask);
+>  
+> -- 
+> 1.5.3.7
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
