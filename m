@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYARIgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbYARIhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbYARIgT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 03:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYARIgL
+	id S1757503AbYARIhO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 03:37:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYARIhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 03:36:11 -0500
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:44465 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754140AbYARIgK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 03:36:10 -0500
-Message-ID: <479064F0.7040305@linux.vnet.ibm.com>
-Date: Fri, 18 Jan 2008 14:06:00 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Fri, 18 Jan 2008 03:37:01 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60755 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751055AbYARIhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 03:37:00 -0500
+Date: Fri, 18 Jan 2008 09:36:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Zan Lynx <zlynx@acm.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: echo mem > /sys/power/state
+Message-ID: <20080118083610.GA19792@elte.hu>
+References: <20080116222445.6f7ff66e.akpm@linux-foundation.org> <1200591411.34145.4.camel@localhost> <20080117111355.29554f38.akpm@linux-foundation.org> <200801172238.17176.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: 2.6.24-rc8-mm1 Kernel oops will running kernbench
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801172238.17176.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
 
-Following oops was seen while running kernbench on one of test machine
-(power4+ box). I tried reproducing the oops but was unsuccessful. 
-I will try to reproduce the oops with debug info compiled.
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
+> > Probably it would be more efficient to have the people who wrote the 
+> > code also test it.
+> 
+> Well, that would certainly help.
+> 
+> I do test all of my patches and generally all of the patches I sign 
+> off, but surely that's not enough.
 
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=32 NUMA pSeries
-Modules linked in:
-NIP: 0000000000004570 LR: 000000000fc42dc0 CTR: 0000000000000000
-REGS: c00000077b6bf8c0 TRAP: 0300   Not tainted  (2.6.24-rc8-mm1-autotest)
-MSR: 8000000000001000 <ME>  CR: 28022422  XER: 00000000
-DAR: c00000077b6bfce0, DSISR: 000000000a000000
-TASK = c000000773164c40[19588] 'as' THREAD: c00000077b6bc000 CPU: 1
-GPR00: 0000000000004000 c00000077b6bfb40 0000000000007346 000000000000d032 
-GPR04: 000000000000043a 0000000000000000 000000000000000c 0000000000000004 
-GPR08: 000000000fd278c8 0000000048022424 c00000077b6bfe30 0000998be2321500 
-GPR12: 8000000000001030 c0000000005f6280 0000000010030000 0000000010030000 
-GPR16: 0000000010030000 0000000010050000 000000001006aac0 0000000010053cd0 
-GPR20: 0000000000000000 0000000000000fe0 0000000010050000 0000000010050000 
-GPR24: 0000000000000ff8 0000000000000fe8 0000000000000062 000000000fd27490 
-GPR28: 000000000fd274c8 0000000010099420 000000000fd25ff4 000000001009a400 
-NIP [0000000000004570] 0x4570
-LR [000000000fc42dc0] 0xfc42dc0
-Call Trace:
-[c00000077b6bfb40] [c00000077b292000] 0xc00000077b292000 (unreliable)
-Instruction dump:
-48000000 XXXXXXXX XXXXXXXX XXXXXXXX 41820008 XXXXXXXX XXXXXXXX XXXXXXXX 
-48000010 XXXXXXXX XXXXXXXX XXXXXXXX f92101a0 XXXXXXXX XXXXXXXX XXXXXXXX 
+please add a .config option dependent on CONFIG_DEBUG_KERNEL=y [and 
+default-disabled] that auto-tests suspend/resume functionality 60 
+seconds after hitting user-space (the suspend/resume cycle kept small 
+via a small RTC timeout) and s2ram correctness will be tested _a lot_ 
+more.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+(it doesnt matter if graphics does not resume fine - at least for my 
+tests)
+
+kprobes had similar problems and it now has a few simple smoke-tests - 
+which i just saw trigger on a patch that i did not notice would break 
+kprobes. I think this should be done for all functionality that is not 
+regularly triggered by a normal distro bootup (and which is easy to 
+overlook in testing).
+
+	Ingo
