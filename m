@@ -1,46 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759419AbYARFL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759096AbYARFO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759419AbYARFL1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 00:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756203AbYARFLO
+	id S1759096AbYARFO2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 00:14:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbYARFOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 00:11:14 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:59051 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759047AbYARFLN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 00:11:13 -0500
-Date: Fri, 18 Jan 2008 06:11:18 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: travis@sgi.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2/6] percpu: Change Kconfig ARCH_SETS_UP_PER_CPU_AREA to HAVE_SETUP_PER_CPU_AREA
-Message-ID: <20080118051118.GA14882@uranus.ravnborg.org>
-References: <20080117223505.203884000@sgi.com> <20080117223505.513183000@sgi.com>
-Mime-Version: 1.0
+	Fri, 18 Jan 2008 00:14:20 -0500
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:56642 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbYARFOT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 00:14:19 -0500
+Date: Fri, 18 Jan 2008 00:14:19 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com
+Subject: Re: [PATCH] x86: merge asm-x86/alternative.h
+Message-ID: <20080118051419.GD974@phobos.i.cabal.ca>
+References: <20080118050336.GC974@phobos.i.cabal.ca> <479032CD.9040306@zytor.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080117223505.513183000@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <479032CD.9040306@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike.
+On Fri, Jan 18, 2008 at 12:02:05AM -0500, H. Peter Anvin wrote:
+>
 
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -20,6 +20,7 @@ config X86
->  	def_bool y
->  	select HAVE_OPROFILE
->  	select HAVE_KPROBES
-> +	select HAVE_SETUP_PER_CPU_AREA if ARCH = "x86_64"
+Meh. Waste of my time, you've already done it, but the patch wasn't on
+linux-kernel, so I didn't notice.
 
-It is simpler to just say:
-> +	select HAVE_SETUP_PER_CPU_AREA if X86_64
-
-And this is the way we do it in the rest of the
-x86 Kconfig files.
-
-	Sam
+--Kyle
