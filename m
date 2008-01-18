@@ -1,111 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761760AbYARNya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761935AbYARNym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761760AbYARNya (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 08:54:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761527AbYARNyQ
+	id S1761935AbYARNym (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 08:54:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761695AbYARNy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 08:54:16 -0500
-Received: from THAUM.MIT.EDU ([18.95.3.27]:56841 "EHLO luto.stanford.edu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760162AbYARNyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 08:54:14 -0500
-Message-ID: <4790AF84.2020000@myrealbox.com>
-Date: Fri, 18 Jan 2008 08:54:12 -0500
-From: Andy Lutomirski <luto@myrealbox.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 18 Jan 2008 08:54:27 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:52839 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761684AbYARNy0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 08:54:26 -0500
+Date: Fri, 18 Jan 2008 13:52:33 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Glauber de Oliveira Costa <glommer@gmail.com>,
+       Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH 4 of 4] x86: mask NX from pte_pfn
+In-Reply-To: <b27ec2092a01dc15e139.1200435429@localhost>
+Message-ID: <Pine.LNX.4.64.0801181350090.27929@blonde.site>
+References: <b27ec2092a01dc15e139.1200435429@localhost>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Giacomo Catenazzi <cate@cateee.net>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Schwartz <davids@webmaster.com>,
-       Johannes Weiner <hannes@saeurebad.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       clameter@sgi.com, penberg@cs.helsinki.fi
-Subject: Re: Why is the kfree() argument const?
-References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com> <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org> <47905A95.4030500@cateee.net> <47906133.6010301@cateee.net>
-In-Reply-To: <47906133.6010301@cateee.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Giacomo Catenazzi wrote:
-> And to demostrate that Linus is not the only person
-> with this view, I copy some paragraphs from C99 rationale
-> (you can find standard, rationale and other documents
-> in http://clc-wiki.net/wiki/C_standardisation:ISO )
+On Tue, 15 Jan 2008, Jeremy Fitzhardinge wrote:
+> In 32-bit PAE, mask NX from pte_pfn, since it isn't part of the PFN.
+> This code is due for unification anyway, but this fixes a latent bug.
 > 
-> Page 75 of C99 rationale:
+> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 > 
-> Type qualifiers were introduced in part to provide greater control over optimization. Several
-> important optimization techniques are based on the principle of "cacheing": under certain
-> circumstances the compiler can remember the last value accessed (read or written) from a
-> location, and use this retained value the next time that location is read. (The memory, or
-> "cache", is typically a hardware register.) If this memory is a machine register, for instance, the
-> code can be smaller and faster using the register rather than accessing external memory.
-> The basic qualifiers can be characterized by the restrictions they impose on access and
-> cacheing:
+> ---
+>  include/asm-x86/pgtable-3level.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> const          No writes through this lvalue. In the absence of this qualifier, writes may occur
->                through this lvalue.
-> 
+> diff --git a/include/asm-x86/pgtable-3level.h b/include/asm-x86/pgtable-3level.h
+> --- a/include/asm-x86/pgtable-3level.h
+> +++ b/include/asm-x86/pgtable-3level.h
+> @@ -139,7 +139,7 @@ static inline int pte_none(pte_t pte)
+>  
+>  static inline unsigned long pte_pfn(pte_t pte)
+>  {
+> -	return pte_val(pte) >> PAGE_SHIFT;
+> +	return (pte_val(pte) >> PAGE_SHIFT) & ~_PAGE_NX;
+>  }
+>  
+>  /*
 
-I'd say this implies the exact opposite.  It almost sounds like the 
-compiler is free to change:
+Shouldn't that be
 
-void foo(const int *x);
-foo(x);
-printf("%d", x);
+	return (pte_val(pte) & ~_PAGE_NX) >> PAGE_SHIFT;
 
-to:
-
-void foo(const int *x);
-printf("%d", x);
-foo(x);
-
-especially if it can prove that the pointer to x doesn't otherwise 
-escape or that foo doesn't call anything that could see the pointer (and 
-given that gcc has special magical markings for malloc, one way this 
-could be "proven" is to have x be some freshly malloced object.
-
-If foo is kfree, then the above transformation is clearly invalid.
-
-(Note that this isn't just a problem for optimizers -- a programmer 
-might expect that passing a pointer to a function that takes a const 
-pointer argument does not, in and of itself, change the pointed-to 
-value.  Given that const certainly does not mean that no one else 
-changes the object, I'm not sure what else it could mean.  kfree does 
-not have either property, so I'm don't think it makes sense for it to 
-take a const argument.)
-
---Andy
-
-> volatile       No cacheing through this lvalue: each operation in the abstract semantics must
->                be performed (that is, no cacheing assumptions may be made, since the location
->                is not guaranteed to contain any previous value). In the absence of this qualifier,
->                the contents of the designated location may be assumed to be unchanged except
->                for possible aliasing.
-> 
-> restrict       Objects referenced through a restrict-qualified pointer have a special
->                association with that pointer. All references to that object must directly or
->                indirectly use the value of this pointer. In the absence of this qualifier, other
->                pointers can alias this object. Cacheing the value in an object designated through
->                a restrict-qualified pointer is safe at the beginning of the block in which the
->                pointer is declared, because no pre-existing aliases may also be used to reference
->                that object. The cached value must be restored to the object by the end of the
->                block, where pre-existing aliases again become available. New aliases may be
->                formed within the block, but these must all depend on the value of the
->                restrict-qualified pointer, so that they can be identified and adjusted to refer
->                to the cached value. For a restrict-qualified pointer at file scope, the block
->                is the body of main.
-> 
-> ciao
-> 	cate
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+? Hugh
