@@ -1,79 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763961AbYARRqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763557AbYARRsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763961AbYARRqS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYARRqA
+	id S1763557AbYARRsT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760615AbYARRsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:46:00 -0500
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:21249 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752604AbYARRp6 (ORCPT
+	Fri, 18 Jan 2008 12:48:10 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50593 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752604AbYARRsG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:45:58 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       huang ying <huang.ying.caritas@gmail.com>,
-       "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       Stephen Tweedie <sct@redhat.com>
-In-Reply-To: <4790E193.20003@goop.org>
-References: <1200375906.3505.30.camel@caritas-dev.intel.com>
-	 <1200646105.17230.28.camel@cthulhu.hellion.org.uk>
-	 <851fc09e0801180654u6957f966g47c7629db6d4b2b0@mail.gmail.com>
-	 <4790BD90.9060303@zytor.com>
-	 <1200671665.9891.45.camel@localhost.localdomain>
-	 <20080118162257.GB6819@elte.hu>  <4790E193.20003@goop.org>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 17:45:46 +0000
-Message-Id: <1200678346.32050.3.camel@cthulhu.hellion.org.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.223
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH -mm 1/3] i386 boot: replace boot_ioremap with enhanced
-	bt_ioremap - enhance bt_ioremap
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+	Fri, 18 Jan 2008 12:48:06 -0500
+Date: Fri, 18 Jan 2008 09:46:26 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Martin Knoblauch <spamtrap@knobisoft.de>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>, Mike Snitzer <snitzer@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jplatte@naasa.net,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       James.Bottomley@steeleye.com
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+In-Reply-To: <20080118160123.GB11840@csn.ul.ie>
+Message-ID: <alpine.LFD.1.00.0801180931250.2957@woody.linux-foundation.org>
+References: <166634.14296.qm@web32603.mail.mud.yahoo.com> <20080118160123.GB11840@csn.ul.ie>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2008-01-18 at 09:27 -0800, Jeremy Fitzhardinge wrote:
-> Ingo Molnar wrote:
-> > * Ian Campbell <ijc@hellion.org.uk> wrote:
-> >
-> >   
-> >>> Eric Biederman had a patchset that makes a PAE kernel use PAE page 
-> >>> tables from the start.  That is really The Right Thing[TM].
-> >>>       
-> >> That's much saner than dup'ing up the early ioremap stuff to support 
-> >> both PAE and non-PAE at runtime, which is about the only idea I've got 
-> >> for fixing this right now...
-> >>
-> >> I think I'll just back out the early_ioremap patches locally for now 
-> >> and wait for Eric's patches which should cause the fix for this issue 
-> >> to just fall out in the wash.
-> >>     
-> >
-> > Eric's patchset is nowhere near being submitted - he _had_ a patchset. 
-> > So this needs to be fixed by the Xen-guest folks. (if the easiest/best 
-> > fix is to pick up Eric's patchset, then plese do it so)
-> >   
+
+On Fri, 18 Jan 2008, Mel Gorman wrote:
 > 
-> This is only relevent to dom0 isn't it?  sct is looking at that at the 
-> moment.  
+> Right, and this is consistent with other complaints about the PFN of the
+> page mattering to some hardware.
 
-The early_ioremap stuff gets called on domU too, for example
-get_bios_ebda(). Or was the intention that these should be gated at a
-higher level?
+I don't think it's actually the PFN per se.
 
-Ian.
--- 
-Ian Campbell
+I think it's simply that some controllers (quite probably affected by both 
+driver and hardware limits) have some subtle interactions with the size of 
+the IO commands.
 
-Pie are not square.  Pie are round.  Cornbread are square.
+For example, let's say that you have a controller that has some limit X on 
+the size of IO in flight (whether due to hardware or driver issues doesn't 
+really matter) in addition to a limit on the size of the scatter-gather 
+size. They all tend to have limits, and they differ.
 
+Now, the PFN doesn't matter per se, but the allocation pattern definitely 
+matters for whether the IO's are physically contiguous, and thus matters 
+for the size of the scatter-gather thing.
+
+Now, generally the rule-of-thumb is that you want big commands, so 
+physical merging is good for you, but I could well imagine that the IO 
+limits interact, and end up hurting each other. Let's say that a better 
+allocation order allows for bigger contiguous physical areas, and thus 
+fewer scatter-gather entries.
+
+What does that result in? The obvious answer is
+
+  "Better performance obviously, because the controller needs to do fewer 
+   scatter-gather lookups, and the requests are bigger, because there are 
+   fewer IO's that hit scatter-gather limits!"
+
+Agreed?
+
+Except maybe the *real* answer for some controllers end up being
+
+  "Worse performance, because individual commands grow because they don't 
+   hit the per-command limits, but now we hit the global size-in-flight 
+   limits and have many fewer of these good commands in flight. And while 
+   the commands are larger, it means that there are fewer outstanding 
+   commands, which can mean that the disk cannot scheduling things 
+   as well, or makes high latency of command generation by the controller 
+   much more visible because there aren't enough concurrent requests 
+   queued up to hide it"
+
+Is this the reason? I have no idea. But somebody who knows the AACRAID 
+hardware and driver limits might think about interactions like that. 
+Sometimes you actually might want to have smaller individual commands if 
+there is some other limit that means that it can be more advantageous to 
+have many small requests over a few big onees.
+
+RAID might well make it worse. Maybe small requests work better because 
+they are simpler to schedule because they only hit one disk (eg if you 
+have simple striping)! So that's another reason why one *large* request 
+may actually be slower than two requests half the size, even if it's 
+against the "normal rule".
+
+And it may be that that AACRAID box takes a big hit on DIO exactly because 
+DIO has been optimized almost purely for making one command as big as 
+possible.
+
+Just a theory.
+
+		Linus
