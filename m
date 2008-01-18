@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761277AbYARXo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761808AbYARXrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761277AbYARXo7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 18:44:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbYARXou
+	id S1761808AbYARXrU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 18:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbYARXrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 18:44:50 -0500
-Received: from khc.piap.pl ([195.187.100.11]:46289 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757260AbYARXot convert rfc822-to-8bit (ORCPT
+	Fri, 18 Jan 2008 18:47:10 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:32891 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755240AbYARXrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 18:44:49 -0500
-To: =?iso-8859-2?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>
-Cc: "Linux-Kernel\, " <linux-kernel@vger.kernel.org>
-Subject: Re: Why is the kfree() argument const?
-References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com>
-	<alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org>
-	<47905A95.4030500@cateee.net> <47906133.6010301@cateee.net>
-	<4790AF68.8040403@myrealbox.com>
-	<20080118172428.GB61848@dspnet.fr.eu.org>
-	<20080118232911.22c9d8d5@werewolf>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sat, 19 Jan 2008 00:44:46 +0100
-In-Reply-To: <20080118232911.22c9d8d5@werewolf> ("J. A. =?iso-8859-2?Q?Mag?=
- =?iso-8859-2?Q?all=F3n=22's?= message of "Fri\, 18 Jan 2008 23\:29\:11
- +0100")
-Message-ID: <m3ve5qk8b5.fsf@maximus.localdomain>
+	Fri, 18 Jan 2008 18:47:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=La4CzzEzuAg029xkLVMK6Kw5qtMizEQezqS5mYGbTiwuDUZWhi9C6wktza7kwGzaBB8F5X0eAhAU6N0ApQytYUHhOGC2sTVpJIDhBuaQK9Q8UhZRvNsVpogdUlxriO9lMBhWePEig1xFJTl0RqRuNi0S9ELxrLPf4HkJGfTro34=
+Message-ID: <47913A72.5040607@gmail.com>
+Date: Sat, 19 Jan 2008 08:46:58 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 8BIT
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, fischer@norbit.de,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Samuel Ortiz <samuel@sortiz.org>
+Subject: Re: [PATCH] SCSI: fix isa/pcmcia compile problem
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>	 <478F7F2B.9000801@linux.vnet.ibm.com>	 <20080117111104.3baa878e.akpm@linux-foundation.org>	 <47904927.1040000@linux.vnet.ibm.com>  <47905348.1000709@gmail.com>	 <1200668315.3111.3.camel@localhost.localdomain>	 <479135EE.2090009@gmail.com> <1200699173.3111.77.camel@localhost.localdomain>
+In-Reply-To: <1200699173.3111.77.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"J.A. Magallón" <jamagallon@ono.com> writes:
+James Bottomley wrote:
+>> I personally think it's a bit odd to disallow building into kernel
+>> because of the peculiarity of the implementation (including c files and
+>> compiling them slightly differently) and also no one reporting doesn't
+>> necessarily mean no one has attempted it and failed.
+> 
+> Heh ... I'll make you a deal.  Find just one user of one of these
+> drivers who can make use of them built in, and I'll apply the patch.  
 
-> That's what __attribute__ ((pure)) is for, but if none of the
-> functions is pure, the compiler can not be sure about side effects
-> and can not reorder things. Don't forget that functions can do
-> anything apart from mangling with their arguments.
+I don't think I can.  I didn't even know they were isa ones before
+actually looking at the code.
 
-Though it seems it could legally transform:
+> I'm just a bit reluctant to touch these drivers, since they're all
+> incredibly ancient.  We don't have good luck with simple transformation
+> patches on the older drivers ... and it seems to take months before
+> anyone notices there's a problem.
 
-void kfree(const int *x);
+Alright then, please go ahead and disallow built-in.
 
-{
-int v, *ptr = malloc(sizeof(int));
-*ptr = 51;
-v = *ptr;
-kfree(ptr);
-printf("%d", v);
+Thanks.
 
-into:
-
-{
-int v, *ptr = malloc(sizeof(int));
-*ptr = 51;
-kfree(ptr);
-v = *ptr;
-printf("%d", v);
-}
-
-if it knows that malloc generates unaliased pointers, which seems
-reasonable in general.
 -- 
-Krzysztof Halasa
+tejun
