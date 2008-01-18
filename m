@@ -1,85 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933002AbYARWtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764350AbYARWyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933002AbYARWtf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:49:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762987AbYARWt0
+	id S1764350AbYARWyg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:54:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761186AbYARWy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:49:26 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:60263 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762736AbYARWtZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:49:25 -0500
-Date: Fri, 18 Jan 2008 17:49:19 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: "Frank Ch. Eigler" <fche@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Steven Rostedt <srostedt@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Daniel Walker <dwalker@mvista.com>
-Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
-In-Reply-To: <20080118222637.GA30900@Krystal>
-Message-ID: <Pine.LNX.4.58.0801181735140.13971@gandalf.stny.rr.com>
-References: <20080116145604.GB31329@Krystal> <Pine.LNX.4.58.0801161003010.15758@gandalf.stny.rr.com>
- <20080116152838.GA970@Krystal> <Pine.LNX.4.58.0801161041010.15998@gandalf.stny.rr.com>
- <20080116170011.GA3651@Krystal> <Pine.LNX.4.58.0801161428180.14368@gandalf.stny.rr.com>
- <20080116201713.GA14336@Krystal> <Pine.LNX.4.58.0801171440360.28350@gandalf.stny.rr.com>
- <20080117203740.GA24397@redhat.com> <Pine.LNX.4.58.0801171555120.28350@gandalf.stny.rr.com>
- <20080118222637.GA30900@Krystal>
+	Fri, 18 Jan 2008 17:54:28 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:52980 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761288AbYARWy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 17:54:28 -0500
+Message-ID: <47912E1F.3020302@pobox.com>
+Date: Fri, 18 Jan 2008 17:54:23 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ash Willis <ashwillis@programmer.net>, linux-pcmcia@lists.infradead.org
+Subject: Re: [PATCH 1/3] Improve type handling in interrupt handlers
+References: <200801190722.26154.rusty@rustcorp.com.au> <47910F05.8040501@pobox.com> <200801190911.15106.rusty@rustcorp.com.au>
+In-Reply-To: <200801190911.15106.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008, Mathieu Desnoyers wrote:
->
-> But I have not seen a lot of situations where that kind of glue-code was
-> needed, so I think it makes sense to keep markers simple to use and
-> efficient for the common case.
->
-> Then, in this glue-code, we can put trace_mark() and calls to in-kernel
-> tracers.
+Rusty Russell wrote:
+> On Saturday 19 January 2008 07:41:41 Jeff Garzik wrote:
+>> You should be using irq_handler_t for all these.
+> 
+> Well, these are your drivers, but for mine I dislike the obfuscation.
+> 
+> It's not like you can declare the function itself to be an irq_handler_t, so 
+> it's a strange turd to drop in a driver.
 
-I'm almost done with the latency tracer work, and there are only a total
-of 6 hooks that I needed.
+The others need to be irq_handler_t because that's the precise type 
+that's being used in each particularly situation.  Each time the code 
+re-creates that definition creates a problem for future irq handler 
+changes of any type, really.
 
- - schedule context switch
- - try_to_wake_up
- - hard_irqs_off (which is already there for lockdep)
- - hard irqs on (also for lockdep)
- - lock_contention (already in for the lock contention code)
- - lock acquire (also in there for contention code)
+As I noted, I've fixed all this crap already, and read through each one 
+of those drivers.
 
-With the above, we could have this (if this is what I think you are
-recommending). For example in the context_switch case:
+	Jeff
 
-	trace_switch_to(prev, next);
-	switch_to(prev, next, prev);
 
-and in sched.h I could have:
-
-static inline trace_switch_to(struct task_struct *prev,
-			struct task_struct *next)
-{
-	trace_mark(kernel_schedudule,
-		"prev_pid %d next_pid %d prev_state %ld",
-		prev->pid, next->pid, prev->pid);
-
-	trace_context_switch(prev, next);
-}
-
-and have the trace_context_switch code be something that is turned on with
-the latency tracing utility (config option). That way production code can
-keep it off.
-
--- Steve
 
