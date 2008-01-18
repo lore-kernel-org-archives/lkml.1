@@ -1,66 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763054AbYARQ4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763488AbYARQ43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763054AbYARQ4G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 11:56:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758174AbYARQzs
+	id S1763488AbYARQ43 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 11:56:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763258AbYARQ4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 11:55:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51335 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757647AbYARQzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 11:55:47 -0500
-Message-ID: <4790D9F3.2070503@redhat.com>
-Date: Fri, 18 Jan 2008 11:55:15 -0500
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
+	Fri, 18 Jan 2008 11:56:13 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:63791 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763248AbYARQ4K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 11:56:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dnpJuw/NrsXdHY1qJVWXKBjj7XqVEOec28BZ5c4oRmnnG30PsUFuPNp4NStKLH6ssiLBtD49/3kgCLEmMVmTOkm3bvvAaVHGx833sJ0cMCeT9/D7ZgAzI8bX4/LKb2AMlCQy5vtGHSfYdZmafWsfDN4eCGB8DDHFMi9GmxQWEtE=
+Message-ID: <519a8b110801180856o7757889as47106fd3eabcc0de@mail.gmail.com>
+Date: Fri, 18 Jan 2008 17:56:09 +0100
+From: xming <xmingske@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: Cannot boot xen DomU > 2.6.23.1
+Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>
+In-Reply-To: <4790D187.8050000@goop.org>
 MIME-Version: 1.0
-To: Chuck Lever <chuck.lever@oracle.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] enhanced ESTALE error handling
-References: <4790C756.2040704@redhat.com> <63F84201-9D38-4588-B237-A15138E94C5A@oracle.com>
-In-Reply-To: <63F84201-9D38-4588-B237-A15138E94C5A@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <519a8b110801170813h96b8f2by795e6d8b72a00ba4@mail.gmail.com>
+	 <478F8D22.60004@goop.org>
+	 <519a8b110801171113y20a3bedfg446e29a30712a26d@mail.gmail.com>
+	 <4790561E.9040508@goop.org>
+	 <519a8b110801180438l389ec1d6t7b888b8c78d59dd8@mail.gmail.com>
+	 <4790D187.8050000@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Lever wrote:
-> Hi Peter-
->
-> On Jan 18, 2008, at 10:35 AM, Peter Staubach wrote:
->> Hi.
->>
->> Here is a patch set which modifies the system to enhance the
->> ESTALE error handling for system calls which take pathnames
->> as arguments.
->
-> The VFS already handles ESTALE.
->
-> If a pathname resolution encounters an ESTALE at any point, the 
-> resolution is restarted exactly once, and an additional flag is passed 
-> to the file system during each lookup that forces each component in 
-> the path to be revalidated on the server.  This has no possibility of 
-> causing an infinite loop.
->
-> Is there some part of this logic that is no longer working? 
+On Jan 18, 2008 5:19 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-The VFS does not fully handle ESTALE.  An ESTALE error can occur
-during the second pathname resolution attempt.  There are lots of
-reasons, some of which are the 1 second resolution from some file
-systems on the server and the window in between the revalidation
-and the actual use of the file handle associated with each
-dentry/inode pair.
+> > First of all this patch solves the lock-ups, it works as advertised :)
+>
+> OK, good.  I guess events are getting lost somewhere with vcpu_info
+> placement.
 
-Also, there was no support for ESTALE errors which occur during
-subsequent operations to the pathname resolution process.  For
-example, during a mkdir(2) operation, the ESTALE can occur from
-the over the wire MKDIR operation after the LOOKUP operations
-have all succeeded.
 
-    Thanx...
+> Would it be possible to map the eip and some top parts of the stack back
+> to kernel symbols?  Seems to be the same place in both traces, which is
+> interesting.
 
-       ps
+Can you tell me how, or show me some pointers?
+
+
+> > Scenario 2 (have_vcpu_info_placement = 0)
+> > --------------------------------------------------------------
+> >
+> > test1: no crash
+> > test2: no crash, but occationally I still get funny output like this
+> >
+> > 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+> > 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+> > 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+> > 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+> > 0000AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+> > 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+> > 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+> > 000AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+> > 000AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+> > 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+> >
+>
+> Hm, I guess some of the output is getting dropped.  Does this happen
+> with 2.6.18-xen?
+
+yes it does
+
+00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+0000AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
+
+# uname -a
+Linux builder 2.6.18-xen-r8 #3 SMP Thu Dec 20 15:07:20 CET 2007 i686
+AMD Athlon(tm) X2 Dual Core Processor BE-2300 AuthenticAMD GNU/Linux
+
+cheers
+
+xming
