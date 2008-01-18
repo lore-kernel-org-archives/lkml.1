@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765350AbYARTEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759735AbYARTGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765350AbYARTEj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 14:04:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758518AbYARTEc
+	id S1759735AbYARTGa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 14:06:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbYARTGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 14:04:32 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:15448 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753726AbYARTEb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 14:04:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Pe8Agbwja4w7k3d/U/5rrdOnpvlo1CgzLX+4/H/s9r5X5TQQSXBTUayOxuAyHjJEQG1tRXN+fxFEFJmSa2HQquTSAbH9h9SzayJbU8TWiY7PboDUJlyWpD1Dv/p/VN3Y08sAJ8MdHJM2hLbrQSXvfBEmd8YWEb6iD8qgmFsgjuM=
-Subject: Re: [PATCHv2] x86: Use v8086_mode helper, trivial unification
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080118150040.GB31446@elte.hu>
-References: <1200615957.5724.75.camel@brick>
-	 <20080118091208.GE24337@elte.hu>  <20080118150040.GB31446@elte.hu>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 11:04:34 -0800
-Message-Id: <1200683074.5724.137.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 18 Jan 2008 14:06:23 -0500
+Received: from mail.impinj.com ([206.169.229.170]:49918 "EHLO earth.impinj.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752604AbYARTGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 14:06:22 -0500
+From: Vadim Lobanov <vlobanov@speakeasy.net>
+To: "Giacomo A. Catenazzi" <cate@cateee.net>
+Subject: Re: Why is the kfree() argument const?
+Date: Fri, 18 Jan 2008 11:06:08 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Jakob Oestergaard <jakob@unthought.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Schwartz <davids@webmaster.com>,
+       Johannes Weiner <hannes@saeurebad.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       clameter@sgi.com, penberg@cs.helsinki.fi
+References: <MDEHLPKNGKAHNMBLJOLKIEGIJJAC.davids@webmaster.com> <20080118094826.GN25527@unthought.net> <479091B5.4060700@cateee.net>
+In-Reply-To: <479091B5.4060700@cateee.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801181106.08511.vlobanov@speakeasy.net>
+X-OriginalArrivalTime: 18 Jan 2008 19:06:09.0642 (UTC) FILETIME=[2F631CA0:01C85A05]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-01-18 at 16:00 +0100, Ingo Molnar wrote:
-> > > +	/*
-> > > +	 * Did it hit the DOS screen memory VA from vm86 mode?
-> > > +	 */
-> > > +	if (v8086_mode(regs)) {
-> > > +		unsigned long bit = (address - 0xA0000) >> PAGE_SHIFT;
-> > > +		if (bit < 32)
-> > > +			tsk->thread.screen_bitmap |= 1 << bit;
-> > > +	}
-> 
-> this does not build on 64-bit, because screen_bitmap is 32-bit only - so 
-> i had to pull the patch. I suspect a small #ifdef section would look 
-> better here?
-> 
+On Friday 18 January 2008 03:47:01 am Giacomo A. Catenazzi wrote:
+> Changing the name of variables in your example:
+>
+> extern print_int(const int *);
+>
+> int main(int argc, char **argv)
+> {
+>    extern int errno;
+>
+>    errno = 0;
+>    print_int(&i);
+>    return errno;
+> }
 
-My original patch had the ifdef, you can grab that one.
+Except that changing int to extern int makes all the difference in the world: 
+the variable went from being local to being global. The way const is 
+currently defined, however, the compiler cannot take advantage of the fact 
+that the variable was local in the former case.
 
-Harvey
+> Ok, I changed int to extern int, but you see the point?
+> Do you want complex rules about const, depending on
+> context (extern, volatile,...) ?
 
+Sometimes complexity is worth it.
+
+-- Vadim Lobanov
