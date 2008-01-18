@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764964AbYARWSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932103AbYARWUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764964AbYARWSV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762013AbYARWSN
+	id S932103AbYARWUQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:20:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761447AbYARWT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:18:13 -0500
-Received: from ozlabs.org ([203.10.76.45]:47781 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762595AbYARWSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:18:11 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH 3/3] Makes lguest's irq handler typesafe
-Date: Sat, 19 Jan 2008 09:17:38 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ash Willis <ashwillis@programmer.net>, linux-pcmcia@lists.infradead.org,
-       virtualization@lists.linux-foundation.org, Tejun Heo <htejun@gmail.com>
-References: <200801190722.26154.rusty@rustcorp.com.au> <200801190727.36567.rusty@rustcorp.com.au> <47910FF5.20206@pobox.com>
-In-Reply-To: <47910FF5.20206@pobox.com>
+	Fri, 18 Jan 2008 17:19:59 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:20366 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760670AbYARWT4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 17:19:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UT2flm8NruiS/qwGExDzrWt6AODWonL4evGjnOEOJVncha4FF9qGzC+dIwKi2i5RHzy7l3fskBI3FZzRJpD0AE0KMLKfJnJ3batp+GC0U5TlOe5iA8db9P2I5IlqoBh2+4Q39y3W55ObptwcmMJgBHqRCHSAn945d3V4p67rsPQ=
+Message-ID: <29495f1d0801181419q7ec24cc2v3843e5eba27fe207@mail.gmail.com>
+Date: Fri, 18 Jan 2008 14:19:54 -0800
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: crash in kmem_cache_init
+Cc: "Olaf Hering" <olaf@aepfle.de>, "Mel Gorman" <mel@csn.ul.ie>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "hanth Aravamudan" <nacc@us.ibm.com>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, "Linux MM" <linux-mm@kvack.org>
+In-Reply-To: <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801190917.39349.rusty@rustcorp.com.au>
+References: <20080115150949.GA14089@aepfle.de>
+	 <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
+	 <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
+	 <20080117181222.GA24411@aepfle.de>
+	 <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+	 <20080117211511.GA25320@aepfle.de>
+	 <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
+	 <20080118213011.GC10491@csn.ul.ie>
+	 <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 January 2008 07:45:41 Jeff Garzik wrote:
-> Rusty Russell wrote:
-> > -static irqreturn_t lguest_interrupt(int irq, void *_vq)
-> > +static irqreturn_t lguest_interrupt(int irq, struct virtqueue *vq)
-> >  {
-> > -	struct virtqueue *vq = _vq;
-> >  	struct lguest_device_desc *desc = to_lgdev(vq->vdev)->desc;
+On 1/18/08, Christoph Lameter <clameter@sgi.com> wrote:
+> Could you try this patch?
 >
-> Ugh.
+> Memoryless nodes: Set N_NORMAL_MEMORY for a node if we do not support
+> HIGHMEM
 >
-> This will be a compatibility nightmare.  I don't see how void* is so
-> evil for this, or timers.
+> It seems that we only scan through zones to set N_NORMAL_MEMORY only if
+> CONFIG_HIGHMEM and CONFIG_NUMA are set. We need to set
+> N_NORMAL_MEMORY
+> in the !CONFIG_HIGHMEM case.
 
-The compiler checks types, and we should use it (though note that when I 
-typesafed the kthread code I didn't find any bugs, so safety arguments must 
-be muted).  The gratuitous casts back and forth are annoying and silly.
+I'm testing this exact patch right now on the machine Mel saw the issues with.
 
-The compatibility nightmare is one reason for the previous patch (which you  
-didn't understand, I hope it's now clear).
-
-> It's not like there's a huge cost associated with a pointer alias.
-
-True, but this is not about performance.  It's about making code simpler and 
-compiler-checkable.
-
-Rusty.
+Thanks,
+Nish
