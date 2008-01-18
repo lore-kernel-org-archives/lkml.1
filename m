@@ -1,101 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbYARITU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756973AbYARIU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756837AbYARITU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 03:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbYARITK
+	id S1756973AbYARIU1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 03:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbYARIUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 03:19:10 -0500
-Received: from web32603.mail.mud.yahoo.com ([68.142.207.230]:34182 "HELO
-	web32603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753622AbYARITI (ORCPT
+	Fri, 18 Jan 2008 03:20:15 -0500
+Received: from orion2.pixelized.ch ([195.190.190.13]:59218 "EHLO
+	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753259AbYARIUN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 03:19:08 -0500
-X-YMail-OSG: RDGIo8oVM1mPzVm06sxh__6BxCBQfHsJf_VOS1NKEMo6pYGV
-X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
-Date: Fri, 18 Jan 2008 00:19:06 -0800 (PST)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Mike Snitzer <snitzer@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, jplatte@naasa.net,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       James.Bottomley@steeleye.com
+	Fri, 18 Jan 2008 03:20:13 -0500
+Message-ID: <47906133.6010301@cateee.net>
+Date: Fri, 18 Jan 2008 09:20:03 +0100
+From: Giacomo Catenazzi <cate@cateee.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <166634.14296.qm@web32603.mail.mud.yahoo.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: David Schwartz <davids@webmaster.com>,
+       Johannes Weiner <hannes@saeurebad.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       clameter@sgi.com, penberg@cs.helsinki.fi
+Subject: Re: Why is the kfree() argument const?
+References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com> <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org> <47905A95.4030500@cateee.net>
+In-Reply-To: <47905A95.4030500@cateee.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
-> From: Mel Gorman <mel@csn.ul.ie>
-> To: Martin Knoblauch <spamtrap@knobisoft.de>
-> Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>; Mike Snitzer <snitzer@gmail.com>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>; Linus Torvalds <torvalds@linux-foundation.org>; James.Bottomley@steeleye.com
-> Sent: Thursday, January 17, 2008 11:12:21 PM
-> Subject: Re: regression: 100% io-wait with 2.6.24-rcX
-> 
-> On (17/01/08 13:50), Martin Knoblauch didst pronounce:
-> > > 
-> > 
-> > The effect  is  defintely  depending on  the  IO  hardware.
-> > 
- performed the same tests
-> > on a different box with an AACRAID controller and there things
-> > look different.
-> 
-> I take it different also means it does not show this odd performance
-> behaviour and is similar whether the patch is applied or not?
->
+And to demostrate that Linus is not the only person
+with this view, I copy some paragraphs from C99 rationale
+(you can find standard, rationale and other documents
+in http://clc-wiki.net/wiki/C_standardisation:ISO )
 
-Here are the numbers (MB/s) from the AACRAID box, after a fresh boot:
+Page 75 of C99 rationale:
 
-Test           2.6.19.2   2.6.24-rc6  2.6.24-rc6-81eabcbe0b991ddef5216f30ae91c4b226d54b6d
-dd1             325       350             290
-dd1-dir       180       160             160
-dd2             2x90     2x113         2x110
-dd2-dir       2x120   2x92            2x93
-dd3            3x54      3x70           3x70
-dd3-dir      3x83      3x64           3x64
-mix3          55,2x30  400,2x25   310,2x25
+Type qualifiers were introduced in part to provide greater control over optimization. Several
+important optimization techniques are based on the principle of "cacheing": under certain
+circumstances the compiler can remember the last value accessed (read or written) from a
+location, and use this retained value the next time that location is read. (The memory, or
+"cache", is typically a hardware register.) If this memory is a machine register, for instance, the
+code can be smaller and faster using the register rather than accessing external memory.
+The basic qualifiers can be characterized by the restrictions they impose on access and
+cacheing:
 
- What we are seing here is that:
+const          No writes through this lvalue. In the absence of this qualifier, writes may occur
+               through this lvalue.
 
-a) DIRECT IO takes a much bigger hit (2.6.19 vs. 2.6.24) on this IO system compared to the CCISS box
-b) Reverting your patch hurts single stream
-c) dual/triple stream are not affected by your patch and are improved over 2.6.19
-d) the mix3 performance is improved compared to 2.6.19.
-d1) reverting your patch hurts the local-disk part of mix3
-e) the AACRAID setup is definitely faster than the CCISS.
+volatile       No cacheing through this lvalue: each operation in the abstract semantics must
+               be performed (that is, no cacheing assumptions may be made, since the location
+               is not guaranteed to contain any previous value). In the absence of this qualifier,
+               the contents of the designated location may be assumed to be unchanged except
+               for possible aliasing.
 
- So, on this box your patch is definitely needed to get the pre-2.6.24 performance
-when writing a single big file.
+restrict       Objects referenced through a restrict-qualified pointer have a special
+               association with that pointer. All references to that object must directly or
+               indirectly use the value of this pointer. In the absence of this qualifier, other
+               pointers can alias this object. Cacheing the value in an object designated through
+               a restrict-qualified pointer is safe at the beginning of the block in which the
+               pointer is declared, because no pre-existing aliases may also be used to reference
+               that object. The cached value must be restored to the object by the end of the
+               block, where pre-existing aliases again become available. New aliases may be
+               formed within the block, but these must all depend on the value of the
+               restrict-qualified pointer, so that they can be identified and adjusted to refer
+               to the cached value. For a restrict-qualified pointer at file scope, the block
+               is the body of main.
 
- Actually things on the CCISS box might be even more complicated. I forgot the fact
-that on that box we have ext2/LVM/DM/Hardware, while on the AACRAID box we have
-ext2/Hardware. Do you think that the LVM/MD are sensitive to the page order/coloring?
-
- Anyway: does your patch only address this performance issue, or are there also
-data integrity concerns without it? I may consider reverting the patch for my
-production environment. It really helps two thirds of my boxes big time, while it does
-not hurt the other third that much :-)
-
-> > 
-> >  I can certainly stress the box before doing the tests. Please
-> > define "many" for the kernel compiles :-)
-> > 
-> 
-> With 8GiB of RAM, try making 24 copies of the kernel and compiling them
-> all simultaneously. Running that for for 20-30 minutes should be enough
-> 
- to randomise the freelists affecting what color of page is used for the
-> dd  test.
-> 
-
- ouch :-) OK, I will try that.
-
-Martin
-
-
-
+ciao
+	cate
