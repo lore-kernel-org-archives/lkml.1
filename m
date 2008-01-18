@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764831AbYARSns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764694AbYARSpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764831AbYARSns (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:43:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757761AbYARSnj
+	id S1764694AbYARSpQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:45:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762647AbYARSpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:43:39 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34301 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762299AbYARSni (ORCPT
+	Fri, 18 Jan 2008 13:45:00 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:35223 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761461AbYARSo7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:43:38 -0500
-Date: Fri, 18 Jan 2008 18:39:05 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Scott Wood <scottwood@freescale.com>,
-       Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH/RFCv2] [POWERPC] Add support for freescale watchdog to
- CPM serial driver.
-Message-ID: <20080118183905.2d5d8474@lxorguk.ukuu.org.uk>
-In-Reply-To: <478F4AE3.5090803@scram.de>
-References: <478F4AE3.5090803@scram.de>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jan 2008 13:44:59 -0500
+Date: Fri, 18 Jan 2008 11:44:57 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
+       daniel.ritz-ml@swissonline.ch, randy.dunlap@oracle.com, jeff@garzik.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCHSET] printk: implement printk_header() and merging printk
+Message-ID: <20080118184457.GC20490@parisc-linux.org>
+References: <1200445210549-git-send-email-htejun@gmail.com> <1200681668.25782.9.camel@cinder.waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200681668.25782.9.camel@cinder.waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 13:32:35 +0100
-Jochen Friedrich <jochen@scram.de> wrote:
+On Fri, Jan 18, 2008 at 12:41:08PM -0600, Matt Mackall wrote:
+> On Wed, 2008-01-16 at 10:00 +0900, Tejun Heo wrote:
+> > And mprintk the following.
+> > 
+> >  code:
+> >   DEFINE_MPRINTK(mp, 2 * 80);
+> > 
+> >   mprintk_set_header(&mp, KERN_INFO "ata%u.%2u: ", 1, 0);
+> >   mprintk_push(&mp, "ATA %d", 7);
+> >   mprintk_push(&mp, ", %u sectors\n", 1024);
+> >   mprintk(&mp, "everything seems dandy\n");
+> 
+> I prefer Matthew Wilcox's stringbuf approach which does proper memory
+> management and isn't specific to printk:
+> 
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0710.3/0517.html
 
-> If a freescale watchdog device node is present, reset the watchdog
-> while waiting for serial input.
+Do you have any strong feelings whether we should merge my stringbufs or
+rusty's version?  I have no particular preference.
 
-Why ? We normally rely on user space for watchdog management as only the
-fact user space is behaving really proves a box is happy ?
-
-Alan
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
