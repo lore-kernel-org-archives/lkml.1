@@ -1,103 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbYARK4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbYARLBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760260AbYARK4d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:56:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbYARK4L
+	id S1758946AbYARLBt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 06:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbYARLBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:56:11 -0500
-Received: from mail.gmx.net ([213.165.64.20]:37487 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755614AbYARK4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:56:09 -0500
-X-Authenticated: #429267
-X-Provags-ID: V01U2FsdGVkX18eoPdm3SQetLAcyWSVhHIQ+izv25NQ8oDQ/zLgDK
-	gVdLtYp/XmcSRo
-Subject: Re: Spammed logs again rt2500pci 2.6.24-rc8
-From: Mattias Nissler <mattias.nissler@gmx.de>
-To: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
-	<ariveira@gmail.com>
-Cc: linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, IvDoorn@gmail.com
-In-Reply-To: <20080117225744.29aa214c@Varda>
-References: <20080117225744.29aa214c@Varda>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Fri, 18 Jan 2008 11:56:05 +0100
-Message-Id: <1200653765.7492.10.camel@localhost>
+	Fri, 18 Jan 2008 06:01:42 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:19828 "EHLO
+	viefep21-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754011AbYARLBl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 06:01:41 -0500
+Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
+	files
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: salikhmetov@gmail.com, linux-mm@kvack.org, jakob@unthought.net,
+       linux-kernel@vger.kernel.org, valdis.kletnieks@vt.edu, riel@redhat.com,
+       ksm@42.dk, staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+In-Reply-To: <E1JFobo-00009i-Dk@pomaz-ex.szeredi.hu>
+References: <12006091182260-git-send-email-salikhmetov@gmail.com>
+	 <12006091211208-git-send-email-salikhmetov@gmail.com>
+	 <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu> <1200651337.5920.9.camel@twins>
+	 <E1JFobo-00009i-Dk@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Date: Fri, 18 Jan 2008 12:00:50 +0100
+Message-Id: <1200654050.5920.14.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-we currently think this is due to a race condition in the packet queue
-code. Ivo is currently reworking the packet queues, which I hope will
-resolve this situation.
+On Fri, 2008-01-18 at 11:38 +0100, Miklos Szeredi wrote:
+> > On Fri, 2008-01-18 at 10:51 +0100, Miklos Szeredi wrote:
+> > 
+> > > > diff --git a/mm/msync.c b/mm/msync.c
+> > > > index a4de868..a49af28 100644
+> > > > --- a/mm/msync.c
+> > > > +++ b/mm/msync.c
+> > > > @@ -13,11 +13,33 @@
+> > > >  #include <linux/syscalls.h>
+> > > >  
+> > > >  /*
+> > > > + * Scan the PTEs for pages belonging to the VMA and mark them read-only.
+> > > > + * It will force a pagefault on the next write access.
+> > > > + */
+> > > > +static void vma_wrprotect(struct vm_area_struct *vma)
+> > > > +{
+> > > > +	unsigned long addr;
+> > > > +
+> > > > +	for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE) {
+> > > > +		spinlock_t *ptl;
+> > > > +		pgd_t *pgd = pgd_offset(vma->vm_mm, addr);
+> > > > +		pud_t *pud = pud_offset(pgd, addr);
+> > > > +		pmd_t *pmd = pmd_offset(pud, addr);
+> > > > +		pte_t *pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+> > > > +
+> > > > +		if (pte_dirty(*pte) && pte_write(*pte))
+> > > > +			*pte = pte_wrprotect(*pte);
+> > > > +		pte_unmap_unlock(pte, ptl);
+> > > > +	}
+> > > > +}
+> > > 
+> > > What about ram based filesystems?  They don't start out with read-only
+> > > pte's, so I think they don't want them read-protected now either.
+> > > Unless this is essential for correct mtime/ctime accounting on these
+> > > filesystems (I don't think it really is).  But then the mapping should
+> > > start out read-only as well, otherwise the time update will only work
+> > > after an msync(MS_ASYNC).
+> > 
+> > page_mkclean() has all the needed logic for this, it also walks the rmap
+> > and cleans out all other users, which I think is needed too for
+> > consistencies sake:
+> > 
+> > Process A			Process B
+> > 
+> > mmap(foo.txt)			mmap(foo.txt)
+> > 
+> > dirty page
+> > 				dirty page
+> > 
+> > msync(MS_ASYNC)
+> > 
+> > 				dirty page
+> > 
+> > msync(MS_ASYNC) <--- now what?!
 
-Mattias
+how about:
 
-On Thu, 2008-01-17 at 22:57 +0100, Alejandro Riveira Fernández wrote:
-> Running
-> 
-> Linux Varda 2.6.24-rc8 #1 SMP PREEMPT Wed Jan 16 15:09:43 CET 2008 x86_64 GNU/Linux
-> 
-> my logs are spmmed with:
-> 
-> 
-> [20126.343240] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20126.343242] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20126.848277] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20126.848280] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20126.851693] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20126.851696] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20126.851854] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20126.851856] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20126.852082] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20126.852084] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20126.852224] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20126.852226] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20127.349691] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20127.349694] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20127.352425] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20127.352428] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20127.853345] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20127.853348] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20127.853699] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20127.853701] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20128.858569] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20128.858572] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20131.875550] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20131.875554] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20154.693853] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20154.693856] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20185.527974] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20185.527977] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20189.812334] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20189.812337] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20189.812374] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20189.812376] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20189.812507] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20189.812509] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20189.813100] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20189.813102] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20189.813474] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20189.813476] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20189.813909] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20189.813911] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20212.242858] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20212.242861] Please file bug report to http://rt2x00.serialmonkey.com.
-> [20212.243587] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
-> [20212.243589] Please file bug report to http://rt2x00.serialmonkey.com.
-> 
-> 
-> As the last time the thing is triggered with a p2p app making a lot of connections (this time not bt but mldonkey)
-> Back to top 	
-> View user's profile Send private message 	
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/mm/msync.c b/mm/msync.c
+index 144a757..a1b3fc6 100644
+--- a/mm/msync.c
++++ b/mm/msync.c
+@@ -14,6 +14,122 @@
+ #include <linux/syscalls.h>
+ #include <linux/sched.h>
+ 
++unsigned long masync_pte_range(struct vm_area_struct *vma, pmd_t *pdm,
++		unsigned long addr, unsigned long end)
++{
++	pte_t *pte;
++	spinlock_t *ptl;
++
++	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
++	arch_enter_lazy_mmu_mode();
++	do {
++		pte_t ptent = *pte;
++
++		if (pte_none(ptent))
++			continue;
++
++		if (!pte_present(ptent))
++			continue;
++
++		if (pte_dirty(ptent) && pte_write(ptent)) {
++			flush_cache_page(vma, addr, pte_pfn(ptent));
++			ptent = ptep_clear_flush(vma, addr, pte);
++			ptent = pte_wrprotect(ptent);
++			set_pte_at(vma->vm_mnm, addr, pte, ptent);
++		}
++	} while (pte++, addr += PAGE_SIZE, addr != end);
++	arch_leave_lazy_mmu_mode();
++	pte_unmap_unlock(pte - 1, ptl);
++
++	return addr;
++}
++
++unsigned long masync_pmd_range(struct vm_area_struct *vma, pud_t *pud,
++		unsigned long addr, unsigned long end)
++{
++	pmd_t *pmd;
++	unsigned long next;
++
++	pmd = pmd_offset(pud, addr);
++	do {
++		next = pmd_addr_end(addr, end);
++		if (pmd_none_or_clear_bad(pmd))
++			continue;
++		next = masync_pte_range(vma, pmd, addr, next);
++	} while (pmd++, addr = next, addr != end);
++
++	return addr;
++}
++
++unsigned long masync_pud_range(struct vm_area_struct *vma, pgd_t *pgd,
++	       	unsigned long addr, unsigned long end)
++{
++	pud_t *pud;
++	unsigned long next;
++
++	pud = pud_offset(pgd, addr);
++	do {
++		next = pud_addr_end(addr, end);
++		if (pud_none_or_clear_bad(pud))
++			continue;
++		next = masync_pmd_range(vma, pud, addr, next);
++	} while (pud++, addr = next, addr != end);
++
++	return addr;
++}
++
++unsigned long masync_pgd_range()
++{
++	pgd_t *pgd;
++	unsigned long next;
++
++	pgd = pgd_offset(vma->vm_mm, addr);
++	do {
++		next = pgd_addr_end(addr, end);
++		if (pgd_none_of_clear_bad(pgd))
++			continue;
++		next = masync_pud_range(vma, pgd, addr, next);
++	} while (pgd++, addr = next, addr != end);
++
++	return addr;
++}
++
++int masync_vma_one(struct vm_area_struct *vma,
++		unsigned long start, unsigned long end)
++{
++	if (start < vma->vm_start)
++		start = vma->vm_start;
++
++	if (end > vma->vm_end)
++		end = vma->vm_end;
++
++	masync_pgd_range(vma, start, end);
++
++	return 0;
++}
++
++int masync_vma(struct vm_area_struct *vma, 
++		unsigned long start, unsigned long end)
++{
++	struct address_space *mapping;
++	struct vm_area_struct *vma_iter;
++
++	if (!(vma->vm_flags & VM_SHARED))
++		return 0;
++
++	mapping = vma->vm_file->f_mapping;
++
++	if (!mapping_cap_account_dirty(mapping))
++		return 0;
++
++	spin_lock(&mapping->i_mmap_lock);
++	vma_prio_tree_foreach(vma_iter, &iter, &mapping->i_mmap, start, end)
++		masync_vma_one(vma_iter, start, end);
++	spin_unlock(&mapping->i_mmap_lock);
++
++	return 0;
++}
++
+ /*
+  * MS_SYNC syncs the entire file - including mappings.
+  *
+
+
 
