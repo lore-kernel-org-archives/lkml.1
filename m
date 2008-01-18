@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763381AbYARSAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762782AbYARSEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763381AbYARSAZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:00:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbYARSAM
+	id S1762782AbYARSEZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760292AbYARSES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:00:12 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46268 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752292AbYARSAK (ORCPT
+	Fri, 18 Jan 2008 13:04:18 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:34059 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758312AbYARSES (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:00:10 -0500
-Date: Fri, 18 Jan 2008 09:58:04 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Miklos Szeredi <miklos@szeredi.hu>, salikhmetov@gmail.com,
-       linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
-       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
-       hch@infradead.org
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
- files
-In-Reply-To: <1200651958.5920.12.camel@twins>
-Message-ID: <alpine.LFD.1.00.0801180949040.2957@woody.linux-foundation.org>
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>  <12006091211208-git-send-email-salikhmetov@gmail.com>  <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu>  <1200651337.5920.9.camel@twins> <1200651958.5920.12.camel@twins>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 18 Jan 2008 13:04:18 -0500
+Message-ID: <4790E9F4.2000602@bintz.net>
+Date: Fri, 18 Jan 2008 12:03:32 -0600
+Reply-To: lists+lkml@bintz.net
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: CONFIG_PREEMPT and real time kthreads
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Miles Bintz <miles@bintz.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I've been trying to find information about the effects of CONFIG_PREEMPT 
+on real time kernel threads.   The description of CONFIG_PREEMPT says 
+"...allow preemption of user processes that are executing system 
+calls...".  Most of the discussion seems to revolve around the 
+modification of the locking implementation.
+
+Suppose:  I have two or more kernel threads using the SCHED_FIFO policy 
+and they have differing priorities.  Lets pretend the high priority 
+kthread is doing a down_interruptible() and the low priority kthread is 
+cheerfully executing.  An interrupt fires and does an up() enabling the 
+high priority kthread....  Heck, lets say there's no interrupt and the 
+low priority kthread does the up().... Without compiling my kernel with 
+CONFIG_PREEMPT=y, will the high priority task get scheduled during the 
+up()?  Or will the low priority task run until it yields?   In general, 
+I'm assuming the scheduler will always reschedule on return from 
+interrupts and after the release of a synchronization primitive?
+
+       Miles
 
 
-On Fri, 18 Jan 2008, Peter Zijlstra wrote:
-> 
-> Bah, and will break on s390... so we'd need a page_mkclean() variant
-> that doesn't actually clear dirty.
 
-No, we simply want to not play all these very expensive games with dirty 
-in the first place.
 
-Guys, mmap access times aren't important enough for this. It's not 
-specified closely enough, and people don't care enough.
-
-Of the patches around so far, the best one by far seems to be the simple 
-four-liner from Miklos.
-
-And even in that four-liner, I suspect that the *last* two lines are 
-actually incorrect: there's no point in updating the file time when the 
-page *becomes* dirty, we should update the file time when it is marked 
-clean, and "msync(MS_SYNC)" should update it as part of *that*.
-
-So I think the file time update should be part of just the page writeout 
-logic, not by msync() or page faulting itself or anything like that.
-
-		Linus
