@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765383AbYARUov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765283AbYARUpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765383AbYARUov (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:44:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759358AbYARUom
+	id S1765283AbYARUpx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:45:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761384AbYARUpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:44:42 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38605 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757487AbYARUol (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:44:41 -0500
-Date: Fri, 18 Jan 2008 20:40:30 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Scott Wood <scottwood@freescale.com>,
-       Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH/RFCv2] [POWERPC] Add support for freescale watchdog to
- CPM serial driver.
-Message-ID: <20080118204030.48fbb683@lxorguk.ukuu.org.uk>
-In-Reply-To: <4790F44F.8020009@scram.de>
-References: <478F4AE3.5090803@scram.de>
-	<20080118183905.2d5d8474@lxorguk.ukuu.org.uk>
-	<4790F44F.8020009@scram.de>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 Jan 2008 15:45:45 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:57630 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760300AbYARUpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:45:44 -0500
+Message-ID: <47910FF5.20206@pobox.com>
+Date: Fri, 18 Jan 2008 15:45:41 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ash Willis <ashwillis@programmer.net>, linux-pcmcia@lists.infradead.org,
+       virtualization@lists.linux-foundation.org, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 3/3] Makes lguest's irq handler typesafe
+References: <200801190722.26154.rusty@rustcorp.com.au> <200801190725.24271.rusty@rustcorp.com.au> <200801190727.36567.rusty@rustcorp.com.au>
+In-Reply-To: <200801190727.36567.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 19:47:43 +0100
-Jochen Friedrich <jochen@scram.de> wrote:
-
-> Hi Alan,
+Rusty Russell wrote:
+> Just a trivial example.
+> ---
+>  drivers/lguest/lguest_device.c |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> >> If a freescale watchdog device node is present, reset the watchdog
-> >> while waiting for serial input.
-> > 
-> > Why ? We normally rely on user space for watchdog management as only the
-> > fact user space is behaving really proves a box is happy ?
-> 
-> This is in the boot wrapper code, not in the linux kernel.
+> diff -r 00ab7672f658 drivers/lguest/lguest_device.c
+> --- a/drivers/lguest/lguest_device.c	Thu Jan 17 16:54:00 2008 +1100
+> +++ b/drivers/lguest/lguest_device.c	Thu Jan 17 16:59:46 2008 +1100
+> @@ -179,9 +179,8 @@ static void lg_notify(struct virtqueue *
+>  	hcall(LHCALL_NOTIFY, lvq->config.pfn << PAGE_SHIFT, 0, 0);
+>  }
+>  
+> -static irqreturn_t lguest_interrupt(int irq, void *_vq)
+> +static irqreturn_t lguest_interrupt(int irq, struct virtqueue *vq)
+>  {
+> -	struct virtqueue *vq = _vq;
+>  	struct lguest_device_desc *desc = to_lgdev(vq->vdev)->desc;
 
-Ok now that makes sense, thanks
+Ugh.
+
+This will be a compatibility nightmare.  I don't see how void* is so 
+evil for this, or timers.
+
+It's not like there's a huge cost associated with a pointer alias.
+
+	Jeff
+
+
+
