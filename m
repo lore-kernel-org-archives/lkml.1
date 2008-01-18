@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763941AbYARR3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762628AbYARRab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763941AbYARR3z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932101AbYARR1o
+	id S1762628AbYARRab (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932143AbYARR1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:27:44 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:49929 "EHLO smtp5.pp.htv.fi"
+	Fri, 18 Jan 2008 12:27:49 -0500
+Received: from gw.goop.org ([64.81.55.164]:34593 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932091AbYARR1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:27:42 -0500
-Date: Fri, 18 Jan 2008 19:26:30 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.24 patch] x86: allow 64bit setting in Kconfig
-Message-ID: <20080118172630.GD28233@does.not.exist>
-References: <20080117214301.GA28233@does.not.exist> <20080118104401.GA8785@elte.hu> <20080118170037.GA23297@elte.hu>
+	id S932137AbYARR1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 12:27:48 -0500
+Message-ID: <4790E193.20003@goop.org>
+Date: Fri, 18 Jan 2008 09:27:47 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080118170037.GA23297@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Ian Campbell <ijc@hellion.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
+       huang ying <huang.ying.caritas@gmail.com>,
+       "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Stephen Tweedie <sct@redhat.com>
+Subject: Re: [PATCH -mm 1/3] i386 boot: replace boot_ioremap with enhanced
+ bt_ioremap - enhance bt_ioremap
+References: <1200375906.3505.30.camel@caritas-dev.intel.com> <1200646105.17230.28.camel@cthulhu.hellion.org.uk> <851fc09e0801180654u6957f966g47c7629db6d4b2b0@mail.gmail.com> <4790BD90.9060303@zytor.com> <1200671665.9891.45.camel@localhost.localdomain> <20080118162257.GB6819@elte.hu>
+In-Reply-To: <20080118162257.GB6819@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 06:00:37PM +0100, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Adrian Bunk <bunk@kernel.org> wrote:
-> > 
-> > >  # Select 32 or 64 bit
-> > >  config 64BIT
-> > > -	bool "64-bit kernel" if ARCH = "x86"
-> > > +	bool "64-bit kernel"
-> > >  	default ARCH = "x86_64"
-> > >  	help
-> > >  	  Say yes to build a 64-bit kernel - formerly known as x86_64
-> > 
-> > thx, i've added this to x86.git.
-> 
-> this broke "make ARCH=i386 randconfig" from working when there's a 
-> 64-bit .config present. (it will not properly generate a 32-bit config, 
-> but still a 64-bit config)
+Ingo Molnar wrote:
+> * Ian Campbell <ijc@hellion.org.uk> wrote:
+>
+>   
+>>> Eric Biederman had a patchset that makes a PAE kernel use PAE page 
+>>> tables from the start.  That is really The Right Thing[TM].
+>>>       
+>> That's much saner than dup'ing up the early ioremap stuff to support 
+>> both PAE and non-PAE at runtime, which is about the only idea I've got 
+>> for fixing this right now...
+>>
+>> I think I'll just back out the early_ioremap patches locally for now 
+>> and wait for Eric's patches which should cause the fix for this issue 
+>> to just fall out in the wash.
+>>     
+>
+> Eric's patchset is nowhere near being submitted - he _had_ a patchset. 
+> So this needs to be fixed by the Xen-guest folks. (if the easiest/best 
+> fix is to pick up Eric's patchset, then plese do it so)
+>   
 
-Does it always generate a 64bit .config or randomly a 32bit or 64bit 
-.config?
+This is only relevent to dom0 isn't it?  sct is looking at that at the 
+moment.  
 
-As far as I see it's the latter.
-
-If the unified x86 architecture should be presented as one 
-architecture in kconfig that's expected - and it might even reduce the 
-amount of 32bit compile errors that recently occured in the git-x86 
-tree...
-
-> 	Ingo
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+    J
