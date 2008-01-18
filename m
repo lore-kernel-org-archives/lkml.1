@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbYARLgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760796AbYARLg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760693AbYARLgd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 06:36:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756663AbYARLgP
+	id S1760796AbYARLg5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 06:36:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbYARLgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 06:36:15 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:53816 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755399AbYARLgO (ORCPT
+	Fri, 18 Jan 2008 06:36:50 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2122 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756782AbYARLgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 06:36:14 -0500
-To: a.p.zijlstra@chello.nl
-CC: miklos@szeredi.hu, salikhmetov@gmail.com, linux-mm@kvack.org,
-       jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
-       hch@infradead.org
-In-reply-to: <1200655438.5920.21.camel@twins> (message from Peter Zijlstra on
-	Fri, 18 Jan 2008 12:23:58 +0100)
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
-	files
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>
-	 <12006091211208-git-send-email-salikhmetov@gmail.com>
-	 <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu> <1200651337.5920.9.camel@twins>
-	 <E1JFobo-00009i-Dk@pomaz-ex.szeredi.hu> <1200654050.5920.14.camel@twins>
-	 <E1JFpDg-0000F6-12@pomaz-ex.szeredi.hu> <1200655438.5920.21.camel@twins>
-Message-Id: <E1JFpW4-0000Hc-Sp@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 18 Jan 2008 12:36:08 +0100
+	Fri, 18 Jan 2008 06:36:49 -0500
+Date: Fri, 18 Jan 2008 11:37:17 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.13
+Message-ID: <20080118113717.GE18948@shadowen.org>
+References: <1200587031.0@pinky> <20080117111923.c2418586.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080117111923.c2418586.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Possibly, I didn't see a quick way to break that iteration.
-> >From a quick glance at prio_tree.c the iterator isn't valid anymore
-> after releasing i_mmap_lock. Fixing that would be,.. 'fun'.
-
-Maybe i_mmap_lock isn't needed at all, since msync holds mmap_sem,
-which protects the prio tree as well, no?
-
-> I also realized I forgot to copy/paste the prio_tree_iter declaration
-> and ought to make all these functions static.
+On Thu, Jan 17, 2008 at 11:19:23AM -0800, Andrew Morton wrote:
+> On Thu, 17 Jan 2008 16:23:51 -0000 Andy Whitcroft <apw@shadowen.org> wrote:
 > 
-> But for a quick draft it conveys the idea pretty well, I guess :-)
+> > This version brings a large number of fixes which have built up over
+> > the Christmas period.  Mostly these are fixes for false positives, both
+> > through improvments to unary checks and possible type detection.  It
+> > also brings new checks for while location and CVS keywords.
+> 
+> heh.  Doctor, heal thyself.
 
-Yes :)
+Heh, yeah I was feeling pressure to push out the update and forgot to
+check it.  Spanner.
 
-There could also be nasty performance corner cases, like having a huge
-file mapped thousands of times, and having only a couple of pages
-dirtied between MS_ASYNC invocations.  Then most of that page table
-walking would be just unnecessary overhead.
+I have fixed the three lines which have random tabs on them.  Its
+something I do in vi which is adding them, one day I will figure out
+what the heck it is I do.
 
-There's something to be said for walking only the dirty pages, and
-doing page_mkclean on them, even if in some cases that would be
-slower.
+-apw
 
-But I have a strong feeling of deja vu, and last time it ended with
-Andrew not liking the whole thing...
+---
+clean up some space violations in checkpatch.pl
 
-Miklos
+Seems that something I do in vi leaves lines with multiple tabs on
+them lying about.  Clean these up before edit things more.
+
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ checkpatch.pl |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/checkpatch.pl b/checkpatch.pl
+index 07ba401..a2b4c41 100755
+--- a/checkpatch.pl
++++ b/checkpatch.pl
+@@ -341,7 +341,7 @@ sub sanitise_line {
+ 		my $clean = 'X' x length($1);
+ 		$res =~ s@(#\s*(?:error|warning)\s+).*@$1$clean@;
+ 	}
+-		
++
+ 	return $res;
+ }
+ 
+@@ -947,7 +947,7 @@ sub process {
+ 		if ($realcnt) {
+ 			# Ignore goto labels.
+ 			if ($line =~ /$Ident:\*$/) {
+-				
++
+ 			# Ignore functions being called
+ 			} elsif ($line =~ /^.\s*$Ident\s*\(/) {
+ 
+@@ -1190,7 +1190,7 @@ sub process {
+ 
+ 			# Ignore those directives where spaces _are_ permitted.
+ 			if ($name =~ /^(?:if|for|while|switch|return|volatile|__volatile__|__attribute__|format|__extension__|Copyright|case)$/) {
+-			
++
+ 			# cpp #define statements have non-optional spaces, ie
+ 			# if there is a space between the name and the open
+ 			# parenthesis it is simply not a parameter group.
+-- 
