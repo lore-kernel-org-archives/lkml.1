@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbYARMqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760278AbYARMui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761354AbYARMqo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 07:46:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbYARMqd
+	id S1760278AbYARMui (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 07:50:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbYARMu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 07:46:33 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:36285 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761198AbYARMqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 07:46:31 -0500
-Message-ID: <47909FA4.1020205@sgi.com>
-Date: Fri, 18 Jan 2008 04:46:28 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 18 Jan 2008 07:50:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50779 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756517AbYARMu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 07:50:28 -0500
+Date: Fri, 18 Jan 2008 13:50:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH -mm 1/3] i386 boot: replace boot_ioremap with enhanced
+	bt_ioremap - enhance bt_ioremap
+Message-ID: <20080118125007.GM11044@elte.hu>
+References: <1200375906.3505.30.camel@caritas-dev.intel.com> <1200646105.17230.28.camel@cthulhu.hellion.org.uk>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2/6] percpu: Change Kconfig ARCH_SETS_UP_PER_CPU_AREA
- to HAVE_SETUP_PER_CPU_AREA
-References: <20080117223505.203884000@sgi.com> <20080117223505.513183000@sgi.com> <20080118051118.GA14882@uranus.ravnborg.org>
-In-Reply-To: <20080118051118.GA14882@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200646105.17230.28.camel@cthulhu.hellion.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> Hi Mike.
-> 
->> --- a/arch/x86/Kconfig
->> +++ b/arch/x86/Kconfig
->> @@ -20,6 +20,7 @@ config X86
->>  	def_bool y
->>  	select HAVE_OPROFILE
->>  	select HAVE_KPROBES
->> +	select HAVE_SETUP_PER_CPU_AREA if ARCH = "x86_64"
-> 
-> It is simpler to just say:
->> +	select HAVE_SETUP_PER_CPU_AREA if X86_64
-> 
-> And this is the way we do it in the rest of the
-> x86 Kconfig files.
-> 
-> 	Sam
 
+* Ian Campbell <ijc@hellion.org.uk> wrote:
 
-Thanks.  Done. :-)
+> Shouldn't these, and the rest of the file, be using the PTE accessor 
+> macros set_pte,clear_pte etc? The boot_ioremap it replaces seems to 
+> have done. Otherwise these patches don't appear to be paravirt_ops 
+> clean. I haven't had a chance to investigate fully so this might be a 
+> Xen bug or unrelated to this patch but running current x86.git#mm as a 
+> Xen guest ends up with it being shot in the head by the hypervisor 
+> with:
 
-And sorry about the premature mailing.  I have a set of scripts that
-package everything up to send to test machines and it wasn't supposed
-to trigger the "sendmail" phase to the distro list.  There are a few
-build errors (as Ingo has noted) and I'm debugging an X86_64 !NUMA
-problem that dies at network startup time.
+willing to apply patches.
 
-But I'll add in all the suggestions from the "premature" reviews... :-)
-
-Thanks again,
-Mike
+	Ingo
