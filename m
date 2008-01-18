@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932505AbYARVNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764619AbYARVSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932505AbYARVNW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 16:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762361AbYARVNK
+	id S1764619AbYARVSU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 16:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761469AbYARVSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 16:13:10 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:1318 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760745AbYARVNI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 16:13:08 -0500
-Subject: Re: BUG? 2.6.24-rc*[-mm*] - debugfs subdirs missing on x86_64
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, prasanna@in.ibm.com,
-       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net
-In-Reply-To: <20080118201926.GA24225@suse.de>
-References: <1200687154.5043.100.camel@localhost>
-	 <20080118201926.GA24225@suse.de>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 18 Jan 2008 16:13:03 -0500
-Message-Id: <1200690783.8060.18.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Fri, 18 Jan 2008 16:18:05 -0500
+Received: from mx2.suse.de ([195.135.220.15]:43159 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761017AbYARVSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 16:18:04 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: CPA self-test failures
+Date: Fri, 18 Jan 2008 22:18:00 +0100
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <47911646.8030203@goop.org>
+In-Reply-To: <47911646.8030203@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801182218.00103.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-01-18 at 12:19 -0800, Greg KH wrote:
-> On Fri, Jan 18, 2008 at 03:12:33PM -0500, Lee Schermerhorn wrote:
-> > I searched around the archives and web and didn't find any reports on
-> > this [maybe just missed them?], so I MUST be doing something
-> > wrong/stupid.  My config [included] may be the culprit.  Apologies for
-> > the long cc list.  I'm copying the kprobes and blktrace maintainers
-> > [addresses from MAINTAINERS] to verify that they're NOT seeing this
-> > problem.
-> > 
-> > Problem:  I see no sub-directories below /sys/kernel/debug on x86_64
-> 
-> Have you mounted debugfs on /sys/kernel/debug?  Try:
-> 	mount -t debugfs none /sys/kernel/debug
-> as root and see if the files are present or not.
+On Friday 18 January 2008 22:12:38 Jeremy Fitzhardinge wrote:
+> When booting under KVM, I get a pile of messages out of the CPA 
+> self-test.  It makes it to usermode OK though.
 
-D'oh! [or something stronger]  I KNEW it was something stupid.  I
-thought it strange that there were no reports of something this glaring.
-That's why I took so long investigating before I finally asked.
+Yes known problem. On some systems the self test interacts badly
+with the split mappings created by the PAT code I think. I don't have a fix yet.
+But you can ignore it for now -- should be harmless. Or disable CONFIG_CPA_DEBUG.
 
-I've used debugfs+mmtrace on x86_64 in the past and I've had the debugfs
-mount in my test systems' fstab for so long that I don't even think
-about it [obviously!].  I moved to a different test system a couple of
-months ago and apparently brought over an old fstab patch.
-
-Sorry for the noise [he says sheepishly].
-
-Lee
-
+-Andi
