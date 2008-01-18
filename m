@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761348AbYARNor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760756AbYARNvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761348AbYARNor (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 08:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbYARNoj
+	id S1760756AbYARNvZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 08:51:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758100AbYARNvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 08:44:39 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:41015 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756275AbYARNoj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 08:44:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=SQTKHRePtKNRaj1sHzyNtI2q3YHY8gxULEqd+1eTiBhYfBua2idj/5PEA+Skn4U1Rp7MadUyCVypOTUPhMCsWSF89GoiJGxsArR4v3cRit7s+ZORtFeBcnDy5Zf9vUDYahIj6SmJweOsJHPuOEYJrBG+1yQaM1I2gLMs5Kg4tq4=
-Message-ID: <38b2ab8a0801180544j2022af8bl252a118a295b1f34@mail.gmail.com>
-Date: Fri, 18 Jan 2008 14:44:38 +0100
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: rostedt@goodmis.org
-Subject: Why not creating a GIT RT tree ?
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 18 Jan 2008 08:51:16 -0500
+Received: from waste.org ([66.93.16.53]:35056 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757360AbYARNvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 08:51:15 -0500
+Subject: Re: [PATCH] x86: fix
+	unconditional	arch/x86/kernel/pcspeaker.c?compiling
+From: Matt Mackall <mpm@selenic.com>
+To: Michael Opdenacker <michael-lists@free-electrons.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linux-tiny@selenic.com, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <4790A385.800@free-electrons.com>
+References: <200801171643.49301.michael-lists@free-electrons.com>
+	 <478F8AEC.1080209@free-electrons.com>
+	 <1200590031.5332.19.camel@cinder.waste.org>
+	 <200801172315.29976.michael-lists@free-electrons.com>
+	 <20080118110252.GA17397@elte.hu> <47909821.1090907@free-electrons.com>
+	 <20080118122540.GH11044@elte.hu> <20080118122926.GA15216@elte.hu>
+	 <4790A385.800@free-electrons.com>
+Content-Type: text/plain
+Date: Fri, 18 Jan 2008 07:50:14 -0600
+Message-Id: <1200664214.4001.24.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Maybe I missed it but I'm wondering why GIT is not used for
-the RT development ? I can't find a rt tree anywhere and all
-new rt release spoke about a patchset to apply on mainline
-kernels.
+On Fri, 2008-01-18 at 14:03 +0100, Michael Opdenacker wrote:
+> However, wouldn't the Makefile look nicer if we introduced a
+> CONFIG_PCSPEAKER setting as in the mips platform? We would just have:
+> 
+> obj-$(CONFIG_PCSPEAKER)		+= pcspeaker.o
 
-Another question, is there a TODO list somewhere which would
-help to port the RT patch to a new architecture ?
+Yes, that would be cleaner. Not worth it for just x86, but there are
+about 6 other arches that use CONFIG_INPUT_PCSPKR. Do that in one patch
+on top of this one and send it to Andrew (who will pull the above into
+his tree from Ingo shortly).
 
-Sorry if the questions are dumbed but I'm just new to this
-project.
+> I can propose a corresponding patch, and I'd suggest to make
+> CONFIG_PCSPEAKER depend on CONFIG_EMBEDDED.
 
-Thanks
+No, don't. It's fine the way it is. If INPUT_PCSPKR isn't set, we don't
+support the speaker, end of story.
+
+Also, bear in mind that there is a fair amount of lower-hanging fruit
+than this, so bouncing a bunch of patches back and forth to make this
+perfect is not the best use of people's time.
+
 -- 
-Francis
+Mathematics is the supreme nostalgia of our time.
+
