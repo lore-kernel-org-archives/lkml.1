@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759970AbYARBIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759397AbYARBOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759970AbYARBIe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:08:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYARBI0
+	id S1759397AbYARBOO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:14:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYARBNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:08:26 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59619 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751441AbYARBI0 (ORCPT
+	Thu, 17 Jan 2008 20:13:55 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:53110 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbYARBNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:08:26 -0500
-Date: Thu, 17 Jan 2008 17:07:54 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: m.kozlowski@tuxland.pl, linux-kernel@vger.kernel.org, paulus@samba.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
-Message-Id: <20080117170754.b5dd139b.akpm@linux-foundation.org>
-In-Reply-To: <1200617237.3839.32.camel@cinder.waste.org>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<200801172315.28129.m.kozlowski@tuxland.pl>
-	<20080117145105.ad968ea6.akpm@linux-foundation.org>
-	<1200613194.3839.22.camel@cinder.waste.org>
-	<20080117160513.3456b4eb.akpm@linux-foundation.org>
-	<1200615168.3839.26.camel@cinder.waste.org>
-	<20080117162913.0323c517.akpm@linux-foundation.org>
-	<1200617237.3839.32.camel@cinder.waste.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jan 2008 20:13:54 -0500
+Date: Fri, 18 Jan 2008 02:13:52 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "David S. Miller" <davem@davemloft.net>
+cc: Network Development Mailing List <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>,
+       =?UTF-8?Q?YOSHIFUJI_Hideaki_=2F_=E5=90=89=E8=97=A4=E8=8B=B1=E6=98?=
+	 =?UTF-8?Q?=8E?= <yoshfuji@linux-ipv6.org>,
+       Vince Fuller <vaf@cisco.com>
+Subject: [PATCH] IPv4: Enable use of 240/4 address space
+In-Reply-To: <20080108011057.GA21168@cisco.com>
+Message-ID: <Pine.LNX.4.64.0801180023450.18447@fbirervta.pbzchgretzou.qr>
+References: <20080108011057.GA21168@cisco.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 18:47:17 -0600
-Matt Mackall <mpm@selenic.com> wrote:
 
-> 
-> On Thu, 2008-01-17 at 16:29 -0800, Andrew Morton wrote:
-> > Do we need `offset' at all?
-> 
-> Looks like no.
-> 
-> I wonder if there's a good argument for adding a pte_offset_val() which
-> would let us do:
-> 
-> pteval = pte_offset_val(pmd, addr);
-> 
-> and shrink the map/unmap window and overhead here and possibly
-> elsewhere?
-> 
-> Anyway, updated but still untested patch now with revealing comment:
-> 
-> diff -r 5595adaea70f fs/proc/task_mmu.c
-> --- a/fs/proc/task_mmu.c	Thu Jan 17 13:26:54 2008 -0600
-> +++ b/fs/proc/task_mmu.c	Thu Jan 17 18:45:57 2008 -0600
-> @@ -584,18 +585,19 @@
->  	pte_t *pte;
->  	int err = 0;
->  
-> -	pte = pte_offset_map(pmd, addr);
-> -	for (; addr != end; pte++, addr += PAGE_SIZE) {
-> +	for (; addr != end; addr += PAGE_SIZE) {
->  		u64 pfn = PM_NOT_PRESENT;
-> +		pte = pte_offset_map(pmd, addr);
->  		if (is_swap_pte(*pte))
->  			pfn = swap_pte_to_pagemap_entry(*pte);
->  		else if (pte_present(*pte))
->  			pfn = pte_pfn(*pte);
-> +		/* unmap so we're not in atomic when we copy to userspace */
-> +		pte_unmap(pte);
->  		err = add_to_pagemap(addr, pfn, pm);
->  		if (err)
->  			return err;
->  	}
-> -	pte_unmap(pte - 1);
->  
->  	cond_resched();
+On Jan 7 2008 17:10, Vince Fuller wrote:
+>
+>This set of diffs modify the 2.6.20 kernel to enable use of the 240/4
+>(aka "class-E") address space as consistent with the Internet Draft
+>draft-fuller-240space-00.txt.
+>
 
-That worked out nicely.
+Below is a patch against davem/net-2.6.25. It might look very spartan, 
+but that is actually all that is needed on a sane system. No class E 
+macros or so needed.
 
-Wasn't the old code potentially pte_unmap()ping the wrong address?  If we
-enter with addr==end?
+Only the ipv4_is_badclass() might need renaming if you think it really 
+needs a name change. Or maybe a comment. Comments please :)
 
+===
+ancestor 7651a1f7ebe567f9088283f6354a5634b5dccb8e
+commit 44762168d7cbefc4f8753a79d99a761cbd9875d9
+Author: Jan Engelhardt <jengelh@computergmbh.de>
+Date:   Fri Jan 18 02:10:44 2008 +0100
+
+    IPv4: enable use of 240/4 address space
+    
+    This short patch modifies the IPv4 networking to enable use of the
+    240.0.0.0/4 (aka "class-E") address space as propsed in the internet
+    draft draft-fuller-240space-00.txt.
+    
+    Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
+
+diff --git a/include/linux/in.h b/include/linux/in.h
+index 27d8a5a..b01bf75 100644
+--- a/include/linux/in.h
++++ b/include/linux/in.h
+@@ -216,9 +216,6 @@ struct sockaddr_in {
+ #define	IN_MULTICAST(a)		IN_CLASSD(a)
+ #define IN_MULTICAST_NET	0xF0000000
+ 
+-#define	IN_EXPERIMENTAL(a)	((((long int) (a)) & 0xf0000000) == 0xf0000000)
+-#define	IN_BADCLASS(a)		IN_EXPERIMENTAL((a))
+-
+ /* Address to accept any incoming messages. */
+ #define	INADDR_ANY		((unsigned long int) 0x00000000)
+ 
+@@ -264,7 +261,7 @@ static inline bool ipv4_is_local_multicast(__be32 addr)
+ 
+ static inline bool ipv4_is_badclass(__be32 addr)
+ {
+-	return (addr & htonl(0xf0000000)) == htonl(0xf0000000);
++	return addr == 0xFFFFFFFF;
+ }
+ 
+ static inline bool ipv4_is_zeronet(__be32 addr)
