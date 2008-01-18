@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765988AbYARTOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765519AbYARTQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765988AbYARTOw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 14:14:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765684AbYARTOh
+	id S1765519AbYARTQp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 14:16:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761989AbYARTQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 14:14:37 -0500
-Received: from mail.impinj.com ([206.169.229.170]:54334 "EHLO earth.impinj.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765133AbYARTOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 14:14:35 -0500
-From: Vadim Lobanov <vlobanov@speakeasy.net>
-To: Andy Lutomirski <luto@myrealbox.com>
-Subject: Re: Why is the kfree() argument const?
-Date: Fri, 18 Jan 2008 11:14:33 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Schwartz <davids@webmaster.com>,
-       Johannes Weiner <hannes@saeurebad.de>, clameter@sgi.com,
-       penberg@cs.helsinki.fi
-References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com> <47906133.6010301@cateee.net> <4790AF84.2020000@myrealbox.com>
-In-Reply-To: <4790AF84.2020000@myrealbox.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 18 Jan 2008 14:16:37 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47250 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761237AbYARTQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 14:16:36 -0500
+Subject: Re: [PATCH] Shrink ext3_inode_info by 8 bytes for !POSIX_ACL.
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Indan Zupancic <indan@nul.nu>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1200170142-1151-1-git-send-email-indan@nul.nu>
+References: <1200170142-1151-1-git-send-email-indan@nul.nu>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 18 Jan 2008 11:16:09 -0800
+Message-Id: <1200683769.7261.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801181114.33513.vlobanov@speakeasy.net>
-X-OriginalArrivalTime: 18 Jan 2008 19:14:34.0743 (UTC) FILETIME=[5C736870:01C85A06]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 January 2008 05:54:12 am Andy Lutomirski wrote:
-> It almost sounds like the compiler is free to change:
->
-> void foo(const int *x);
-> foo(x);
-> printf("%d", x);
->
-> to:
->
-> void foo(const int *x);
-> printf("%d", x);
-> foo(x);
->
-> especially if it can prove that the pointer to x doesn't otherwise
-> escape or that foo doesn't call anything that could see the pointer (and
-> given that gcc has special magical markings for malloc, one way this
-> could be "proven" is to have x be some freshly malloced object.
+On Sat, 2008-01-12 at 21:35 +0100, Indan Zupancic wrote:
+> i_file_acl and i_dir_acl aren't always needed.
+> 
+> With certain configs this makes 10 ext3_inode_cache objects fit in
+> one slab instead of the current 9, as the size shrinks from 416 to
+> 408 bytes for 32 bit, !POSIX_ACL and !EXT3_FS_XATTR configs.
+> 
+> Signed-off-by: Indan Zupancic <indan@nul.nu>
+> ---
+>  fs/ext3/ialloc.c          |    2 ++
+>  fs/ext3/inode.c           |   29 +++++++++++++++++++----------
+>  include/linux/ext3_fs_i.h |    2 ++
+>  3 files changed, 23 insertions(+), 10 deletions(-)
+> 
+> diff --git a/fs/ext3/ialloc.c b/fs/ext3/ialloc.c
+> index 1bc8cd8..01745bc 100644
+> --- a/fs/ext3/ialloc.c
+> +++ b/fs/ext3/ialloc.c
+> @@ -574,8 +574,10 @@ got:
+>  	ei->i_frag_no = 0;
+>  	ei->i_frag_size = 0;
+>  #endif
+> +#ifdef CONFIG_EXT3_FS_POSIX_ACL
+>  	ei->i_file_acl = 0;
+>  	ei->i_dir_acl = 0;
+> +#endif
 
-That's absolutely not true.
+For regular file, i_dir_acl is being reused as i_size_high to support
+large file.
 
-Let's unravel the code, by fixing usage of 'x' (which seems to vary at will 
-between value and pointer in the above example), and by replacing printf with 
-another opaque function. Our decls:
-	void foo(const int *ptr);
-	void bar(int val);
-You're saying that this:
-	foo(&x);
-	bar(x);
-can be reordered into this:
-	bar(x);
-	foo(&x);
+Mingming
 
-No way. First, the way that const is currently defined, the compiler cannot 
-assume that the value of x did not change while foo was executing. So, it 
-will not only be forced to leave the two functions in that order, it will 
-even reload the value of x before passing it into bar. Go figure.
-
-Second, even if const did have stronger semantics that forbade the value of x 
-from being modified during execution of foo, the compiler still could not 
-reorder the two function calls, before it cannot assume that the two 
-functions (in their internal implementations) do not touch some other, 
-unknown to this code, global variable.
-
--- Vadim Lobanov
