@@ -1,110 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbYARAaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbYARAcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbYARAaP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 19:30:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbYARAaB
+	id S1758961AbYARAcL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 19:32:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbYARAb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 19:30:01 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41927 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755809AbYARAaA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 19:30:00 -0500
-Date: Thu, 17 Jan 2008 16:29:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: m.kozlowski@tuxland.pl, linux-kernel@vger.kernel.org, paulus@samba.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
-Message-Id: <20080117162913.0323c517.akpm@linux-foundation.org>
-In-Reply-To: <1200615168.3839.26.camel@cinder.waste.org>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<200801172315.28129.m.kozlowski@tuxland.pl>
-	<20080117145105.ad968ea6.akpm@linux-foundation.org>
-	<1200613194.3839.22.camel@cinder.waste.org>
-	<20080117160513.3456b4eb.akpm@linux-foundation.org>
-	<1200615168.3839.26.camel@cinder.waste.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jan 2008 19:31:57 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45320 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751759AbYARAb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 19:31:56 -0500
+In-Reply-To: <478FE22D.9030907@emc.com>
+To: Ric Wheeler <ric@emc.com>
+Cc: Al Boldi <a1426z@gawab.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Daniel Phillips <phillips@google.com>,
+       Rik van Riel <riel@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Valerie Henson <val.henson@gmail.com>
+MIME-Version: 1.0
+Subject: Re: [Patch] document ext3 requirements (was Re: [RFD] Incremental fsck)
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF3F61F02C.985CCACC-ON882573D4.0001DCF2-882573D4.0002E9F5@us.ibm.com>
+From: Bryan Henderson <hbryan@us.ibm.com>
+Date: Thu, 17 Jan 2008 16:31:48 -0800
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.0|August 02, 2007) at 01/17/2008
+ 19:31:50,
+	Serialize complete at 01/17/2008 19:31:50
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 18:12:48 -0600
-Matt Mackall <mpm@selenic.com> wrote:
+Ric Wheeler <ric@emc.com> wrote on 01/17/2008 03:18:05 PM:
 
+> Theodore Tso wrote:
+> > On Wed, Jan 16, 2008 at 09:02:50PM -0500, Daniel Phillips wrote:
+> >> Have you observed that in the wild?  A former engineer of a disk 
+drive
+> >> company suggests to me that the capacitors on the board provide 
+enough
+> >> power to complete the last sector, even to park the head.
+> >>
 > 
-> > Do we need the ifdef?  pte_offset_map/pte_unmap should be super-cheap on
-> > !CONFIG_HIGHPTE builds.
+> Even if true (which I doubt), this is not implemented.
 > 
-> In that case, pte_unmap is free, pte_offset_map is just a bit of math.
-> So yeah, we can simplify this. How about:
-> 
-> diff -r 5595adaea70f fs/proc/task_mmu.c
-> --- a/fs/proc/task_mmu.c	Thu Jan 17 13:26:54 2008 -0600
-> +++ b/fs/proc/task_mmu.c	Thu Jan 17 18:11:13 2008 -0600
-> @@ -582,20 +583,20 @@
->  {
->  	struct pagemapread *pm = private;
->  	pte_t *pte;
-> -	int err = 0;
-> +	int offset = 0, err = 0;
->  
-> -	pte = pte_offset_map(pmd, addr);
-> -	for (; addr != end; pte++, addr += PAGE_SIZE) {
-> +	for (; addr != end; offset++, addr += PAGE_SIZE) {
->  		u64 pfn = PM_NOT_PRESENT;
-> -		if (is_swap_pte(*pte))
-> -			pfn = swap_pte_to_pagemap_entry(*pte);
-> -		else if (pte_present(*pte))
-> -			pfn = pte_pfn(*pte);
-> +		pte = pte_offset_map(pmd, addr);
-> +		if (is_swap_pte(pte[offset]))
-> +			pfn = swap_pte_to_pagemap_entry(pte[offset]);
-> +		else if (pte_present(pte[offset]))
-> +			pfn = pte_pfn(pte[offset]);
-> +		pte_unmap(pte);
->  		err = add_to_pagemap(addr, pfn, pm);
->  		if (err)
->  			return err;
->  	}
-> -	pte_unmap(pte - 1);
->  
->  	cond_resched();
-> 
+> A modern drive can have 16-32 MB of write cache. Worst case, those 
+> sectors are not sequential which implies lots of head movement.
 
-Do we need `offset' at all?
+We weren't actually talking about writing out the cache.  While that was 
+part of an earlier thread which ultimately conceded that disk drives most 
+probably do not use the spinning disk energy to write out the cache, the 
+claim was then made that the drive at least survives long enough to finish 
+writing the sector it was writing, thereby maintaining the integrity of 
+the data at the drive level.  People often say that a disk drive 
+guarantees atomic writes at the sector level even in the face of a power 
+failure.
 
-You have
+But I heard some years ago from a disk drive engineer that that is a myth 
+just like the rotational energy thing.  I added that to the discussion, 
+but admitted that I haven't actually seen a disk drive write a partial 
+sector.
 
-static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-			     void *private)
-{
-	struct pagemapread *pm = private;
-	pte_t *pte;
-	int offset = 0, err = 0;
+Ted brought up the separate issue of the host sending garbage to the disk 
+device because its own power is failing at the same time, which makes the 
+integrity at the disk level moot (or even undesirable, as you'd rather 
+write a bad sector than a good one with the wrong data).
 
-	for (; addr != end; offset++, addr += PAGE_SIZE) {
-		u64 pfn = PM_NOT_PRESENT;
-		pte = pte_offset_map(pmd, addr);
-		if (is_swap_pte(pte[offset]))
-			pfn = swap_pte_to_pagemap_entry(pte[offset]);
-		else if (pte_present(pte[offset]))
-			pfn = pte_pfn(pte[offset]);
-		pte_unmap(pte);
-		err = add_to_pagemap(addr, pfn, pm);
-		if (err)
-			return err;
-	}
-
-	cond_resched();
-
-	return err;
-}
-
-but I think we just do s/pte[offset]/*pte/.  The virtual address should be
-the only thing we need to increment as we walk across the addresses here?
-
+--
+Bryan Henderson                     IBM Almaden Research Center
+San Jose CA                         Filesystems
 
