@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761519AbYARODV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761026AbYAROF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761519AbYARODV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 09:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbYARODP
+	id S1761026AbYAROF0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 09:05:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbYAROFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 09:03:15 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60507 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752496AbYARODO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 09:03:14 -0500
-Message-ID: <4790B01B.8020406@zytor.com>
-Date: Fri, 18 Jan 2008 08:56:43 -0500
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Kyle McMartin <kyle@mcmartin.ca>, tglx@linutronix.de, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: make clflush a required feature on x86_64
-References: <20080118045921.GB974@phobos.i.cabal.ca> <p734pdbbrwu.fsf@bingen.suse.de> <20080118060124.GC1726@phobos.i.cabal.ca> <479046BA.7090903@zytor.com> <20080118065428.GA12594@one.firstfloor.org>
-In-Reply-To: <20080118065428.GA12594@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 18 Jan 2008 09:05:17 -0500
+Received: from waste.org ([66.93.16.53]:50904 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750988AbYAROFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 09:05:15 -0500
+Subject: Re: [PATCH] x86: fix unconditional
+	arch/x86/kernel/pcspeaker.c?compiling
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Michael Opdenacker <michael-lists@free-electrons.com>,
+       linux-kernel@vger.kernel.org, Linux-tiny@selenic.com,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20080118135704.GB12702@elte.hu>
+References: <200801171643.49301.michael-lists@free-electrons.com>
+	 <478F8AEC.1080209@free-electrons.com>
+	 <1200590031.5332.19.camel@cinder.waste.org>
+	 <200801172315.29976.michael-lists@free-electrons.com>
+	 <20080118110252.GA17397@elte.hu> <47909821.1090907@free-electrons.com>
+	 <20080118122540.GH11044@elte.hu> <20080118122926.GA15216@elte.hu>
+	 <4790A385.800@free-electrons.com>
+	 <1200664214.4001.24.camel@cinder.waste.org>
+	 <20080118135704.GB12702@elte.hu>
+Content-Type: text/plain
+Date: Fri, 18 Jan 2008 08:04:39 -0600
+Message-Id: <1200665079.4001.32.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> Simulators can be fixed, 
-> 
-> They could, but why? I don't know of a good reason to require CLFLUSH.
 
-Well, simulators are generally expected to follow the architecture, not 
-vice versa.  I would tend to agree with the coupling that recent 
-versions of Bochs appeared to have made here -- I think we're unlikely 
-to see any processors with sse2 sans clflush, so keeping code branches 
-in which will never be executed seems like a bad idea in the long term. 
-  I'm much more worried about the possibility of embedded 64-bit CPUs 
-who try to skimp on SSE2 than CLFLUSH.
+On Fri, 2008-01-18 at 14:57 +0100, Ingo Molnar wrote:
+> [ Sidenote: "too small" and "too insignificant" is not a patch attribute
+>   that is in my vocabulary - by definition the best patches are very
+>   small and very insignificant (they just happen to end up doing
+>   something cool a 1000 steps later ;-) 99% of our problems come from
+>   'too large' and 'too intrusive' patches. ]
 
-Now, that being said, this being encapsulated in the required set (and 
-unified, which means the branches will be executed on 32-bit hardware) 
-it seems the impact of leaving them in is small for now.  We can 
-re-evaluate that as appropriate.  Either way, we should *not* have 
-#ifdef CONFIG_X86_64 around usage sites, circumventing the master 
-switch.  It either goes in the required masks or it doesn't.
+I tend to agree, but it's well-established that not everyone here is so
+patient.
 
->> I just verified that Bochs 2.3.0 lacks this CPUID bit whereas the 
->> current version, 2.3.6, enables CLFLUSH iff SSE2 is enabled.  Qemu 0.9.0 
->> has CLFLUSH.  Andi, do you happen to know of any specific simulators 
->> which are problematic?  I would assume any recent version of SimNow is 
->> up to date.
-> 
-> I don't know of any specific ones that lack CLFLUSH, although Bochs
-> definitely had similar problems in the past.
-
-OK, so we're talking about outdated versions of Bochs, then?
-
-	-hpa
+-- 
+Mathematics is the supreme nostalgia of our time.
 
