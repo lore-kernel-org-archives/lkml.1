@@ -1,27 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759457AbYARCAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbYARCCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759457AbYARCAc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 21:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757047AbYARCAV
+	id S1760341AbYARCCW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 21:02:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbYARCCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 21:00:21 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:39335 "EHLO
+	Thu, 17 Jan 2008 21:02:09 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:42324 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753474AbYARCAT (ORCPT
+	with ESMTP id S1754605AbYARCCH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 21:00:19 -0500
+	Thu, 17 Jan 2008 21:02:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=uX4GsZ6NWY0bvRz+ltYFLqsOybFqEJqo9WamVS+f1NH9mt9VzakFHJu/tQdiqO36az+zMLfDhw3M2bLINJRp6MnE3vhIDjHEnOXY6U3YZnXcpPbl6SN+EkdX4jbF5TaJhwgh1JqhJuckbwdTMGb5lt+SXOL0cbiCGJ64Vg92lrg=
-Subject: [PATCH 2/2] x86: Cleanup ptrace.h
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Uw84ljpFjJ+x2lwVNGfNPV/GiDVaKPoHlOCIeylLTYOkGDWTsv4gj9RHhJNnVsEbgwdNV2R6RHNEKNkDfRaP6Crm7FwBfWscay5eL+ji7dKWG0d5TnYK+tO0NeFbAeUa9jl1MtJZtVZt5klRYdKFIZpkKKUpyIQyAj9ahKlDQ4k=
+Subject: Re: [PATCH] x86: Use v8086_mode helper, trivial unification
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
+Cc: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <479002B6.9030607@zytor.com>
+References: <1200611078.5724.46.camel@brick>	<478FDE76.3070309@zytor.com>
+	 <1200612389.5724.63.camel@brick>	<478FF9F3.9030604@zytor.com>
+	 <1200618952.5724.85.camel@brick>
+	 <20080118013712.4090526FA0B@magilla.localdomain>
+	 <479002B6.9030607@zytor.com>
 Content-Type: text/plain
-Date: Thu, 17 Jan 2008 18:00:19 -0800
-Message-Id: <1200621619.5724.94.camel@brick>
+Date: Thu, 17 Jan 2008 18:02:07 -0800
+Message-Id: <1200621727.5724.96.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -29,92 +36,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Leave definition of pt_regs in its own section, move all kernel
-code to section afterwards, unify prototype definitions, has some
-conditional prototypes to make it clear what was only defined in
-32 and 64 bit.
+On Thu, 2008-01-17 at 20:36 -0500, H. Peter Anvin wrote:
+> Roland McGrath wrote:
+> > It's indeed true that &pt_regs is truly the esp value for x86-32
+> > kernel-mode trap frames.  Because this nonobvious calculation is 
+> > only right for a kernel mode pt_regs and not for a user-mode one,
+> > I think it would be better to use a name for the inline/macro that
+> > makes this quite clear, rather than one so generic as "stack_addr".
+> 
+> Indeed.  This was certainly highly nonobvious in the current code.
+> 
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- include/asm-x86/ptrace.h |   43 ++++++++++++++++---------------------------
- 1 files changed, 16 insertions(+), 27 deletions(-)
+What do you think of kernel_sp()
 
-diff --git a/include/asm-x86/ptrace.h b/include/asm-x86/ptrace.h
-index 0ad9a2b..79d5b8f 100644
---- a/include/asm-x86/ptrace.h
-+++ b/include/asm-x86/ptrace.h
-@@ -7,17 +7,6 @@
- 
- #ifndef __ASSEMBLY__
- 
--#ifdef __KERNEL__
--
--/* the DS BTS struct is used for ptrace as well */
--#include <asm/ds.h>
--
--struct task_struct;
--extern void ptrace_bts_take_timestamp(struct task_struct *, enum bts_qualifier);
--
--#endif /* __KERNEL__ */
--
--
- #ifdef __i386__
- /* this struct defines the way the registers are stored on the
-    stack during a system call. */
-@@ -69,16 +58,6 @@ struct pt_regs {
- #include <asm/vm86.h>
- #include <asm/segment.h>
- 
--struct task_struct;
--
--extern unsigned long
--convert_ip_to_linear(struct task_struct *child, struct pt_regs *regs);
--
--extern void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int error_code);
--
--#define regs_return_value(regs) ((regs)->ax)
--
--extern unsigned long profile_pc(struct pt_regs *regs);
- #endif /* __KERNEL__ */
- 
- #else /* __i386__ */
-@@ -143,20 +122,30 @@ struct pt_regs {
- /* top of stack page */
- };
- 
--#define regs_return_value(regs) ((regs)->ax)
-+#endif /* __KERNEL__ */
-+#endif /* !__i386__ */
- 
--extern unsigned long profile_pc(struct pt_regs *regs);
--void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
-+#ifdef __KERNEL__
-+
-+/* the DS BTS struct is used for ptrace as well */
-+#include <asm/ds.h>
- 
- struct task_struct;
- 
-+extern void ptrace_bts_take_timestamp(struct task_struct *, enum bts_qualifier);
-+
-+extern unsigned long profile_pc(struct pt_regs *regs);
-+
- extern unsigned long
- convert_ip_to_linear(struct task_struct *child, struct pt_regs *regs);
- 
--#endif /* __KERNEL__ */
--#endif /* !__i386__ */
-+#ifdef CONFIG_X86_32
-+extern void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int error_code);
-+#else
-+void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
-+#endif
- 
--#ifdef __KERNEL__
-+#define regs_return_value(regs) ((regs)->ax)
- 
- /*
-  * user_mode_vm(regs) determines whether a register set came from user mode.
--- 
-1.5.4.rc2.1164.g6451
+Harvey
 
