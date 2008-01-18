@@ -1,111 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764872AbYARSce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764939AbYARScr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764872AbYARSce (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:32:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764095AbYARSaG
+	id S1764939AbYARScr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764166AbYARSaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:30:06 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60709 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764020AbYARS3z (ORCPT
+	Fri, 18 Jan 2008 13:30:08 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:35292 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764089AbYARSaB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:29:55 -0500
-Message-Id: <20080118182954.589001000@sgi.com>
-References: <20080118182953.748071000@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 18 Jan 2008 10:29:59 -0800
-From: travis@sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu
-Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com
-Subject: [PATCH 6/7] s390: Use generic percpu
-Content-Disposition: inline; filename=s390_generic_percpu
+	Fri, 18 Jan 2008 13:30:01 -0500
+To: jdike@addtoit.com
+CC: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-reply-to: <20080118180749.GA7688@c2.user-mode-linux.org> (message from Jeff
+	Dike on Fri, 18 Jan 2008 13:07:49 -0500)
+Subject: Re: UML is leaking memory in arch_dup_mmap
+References: <E1JFsQo-0000aG-BZ@pomaz-ex.szeredi.hu> <20080118180749.GA7688@c2.user-mode-linux.org>
+Message-Id: <E1JFvyQ-00014P-Vl@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 18 Jan 2008 19:29:50 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change s390 percpu.h to use asm-generic/percpu.h
-
-Cc: schwidefsky@de.ibm.com
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Mike Travis <travis@sgi.com>
----
-
-V2->V3:
-
-On Thu, 29 Nov 2007, Martin Schwidefsky wrote:
-
-> On Wed, 2007-11-28 at 13:09 -0800, Christoph Lameter wrote:
-> > s390 has a special way to determine the pointer to a per cpu area
-> > plus there is a way to access the base of the per cpu area of the
-> > currently executing processor.
-> > 
-> > Note: I had to do a minor change to ASM code. Please check that
-> > this was done right.
+> On Fri, Jan 18, 2008 at 03:42:54PM +0100, Miklos Szeredi wrote:
+> > uml:~#  grep arch_dup_mmap /proc/slab_allocators
+> > size-32: 10861 arch_dup_mmap+0x9f/0x130
 > 
-> Hi Christoph,
-> 
-> after fixing the trainwreck with Gregs kset changes I've got rc3-mm2
-> compiled with your percpu patches. The new s390 percpu code works fine:
-> 
-> Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Whoops - try the patch below.
 
----
- include/asm-s390/percpu.h |   33 +++++++++------------------------
- 1 file changed, 9 insertions(+), 24 deletions(-)
+Yup, that seems to have solved it.  Thanks.
 
---- a/include/asm-s390/percpu.h
-+++ b/include/asm-s390/percpu.h
-@@ -13,40 +13,25 @@
-  */
- #if defined(__s390x__) && defined(MODULE)
- 
--#define __reloc_hide(var,offset) (*({			\
-+#define SHIFT_PERCPU_PTR(ptr,offset) (({			\
- 	extern int simple_identifier_##var(void);	\
- 	unsigned long *__ptr;				\
--	asm ( "larl %0,per_cpu__"#var"@GOTENT"		\
--	    : "=a" (__ptr) : "X" (per_cpu__##var) );	\
--	(typeof(&per_cpu__##var))((*__ptr) + (offset));	}))
-+	asm ( "larl %0, %1@GOTENT"		\
-+	    : "=a" (__ptr) : "X" (ptr) );		\
-+	(typeof(ptr))((*__ptr) + (offset));	}))
- 
- #else
- 
--#define __reloc_hide(var, offset) (*({				\
-+#define SHIFT_PERCPU_PTR(ptr, offset) (({				\
- 	extern int simple_identifier_##var(void);		\
- 	unsigned long __ptr;					\
--	asm ( "" : "=a" (__ptr) : "0" (&per_cpu__##var) );	\
--	(typeof(&per_cpu__##var)) (__ptr + (offset)); }))
-+	asm ( "" : "=a" (__ptr) : "0" (ptr) );			\
-+	(typeof(ptr)) (__ptr + (offset)); }))
- 
- #endif
- 
--#ifdef CONFIG_SMP
-+#define __my_cpu_offset S390_lowcore.percpu_offset
- 
--extern unsigned long __per_cpu_offset[NR_CPUS];
--
--#define __get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
--#define __raw_get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
--#define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
--#define per_cpu_offset(x) (__per_cpu_offset[x])
--
--#else /* ! SMP */
--
--#define __get_cpu_var(var) __reloc_hide(var,0)
--#define __raw_get_cpu_var(var) __reloc_hide(var,0)
--#define per_cpu(var,cpu) __reloc_hide(var,0)
--
--#endif /* SMP */
--
--#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
-+#include <asm-generic/percpu.h>
- 
- #endif /* __ARCH_S390_PERCPU__ */
-
--- 
+Miklos
