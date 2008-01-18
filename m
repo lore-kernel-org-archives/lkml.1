@@ -1,210 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbYARBqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760047AbYARBwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760918AbYARBqx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbYARBqp
+	id S1760047AbYARBwW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbYARBwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:46:45 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57621 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758143AbYARBqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:46:43 -0500
-Message-ID: <479004F0.10508@redhat.com>
-Date: Fri, 18 Jan 2008 02:46:24 +0100
-From: Miloslav Trmac <mitr@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 17 Jan 2008 20:52:11 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52121 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753826AbYARBwJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 20:52:09 -0500
+Date: Fri, 18 Jan 2008 02:52:08 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ak@suse.de, vaf@cisco.com
+Subject: Re: [PATCH] IPv4: Enable use of 240/4 address space
+In-Reply-To: <20080118.102635.01689255.yoshfuji@linux-ipv6.org>
+Message-ID: <Pine.LNX.4.64.0801180242270.14025@fbirervta.pbzchgretzou.qr>
+References: <20080108011057.GA21168@cisco.com>
+ <Pine.LNX.4.64.0801180023450.18447@fbirervta.pbzchgretzou.qr>
+ <20080118.102635.01689255.yoshfuji@linux-ipv6.org>
 MIME-Version: 1.0
-To: dwmw2@infradead.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] Let userspace fully control TTY input auditing
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------040803030300050407040400"
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040803030300050407040400
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Remove the code that automatically disables TTY input auditing in 
-processes that open TTYs when they have no other TTY open; this 
-heuristic was intended to automatically handle daemons, but it has false 
-positives (e.g. with sshd) that make it impossible to control TTY input 
-auditing from a PAM module.  With this patch, TTY input auditing is 
-controlled from user-space only.
+On Jan 18 2008 10:26, YOSHIFUJI Hideaki / 吉藤英明 wrote:
+>> -#define	IN_EXPERIMENTAL(a)	((((long int) (a)) & 0xf0000000) == 0xf0000000)
+>> -#define	IN_BADCLASS(a)		IN_EXPERIMENTAL((a))
+>
+>No, please keep these macros.
+>
+>> @@ -264,7 +261,7 @@ static inline bool ipv4_is_local_multicast(__be32 addr)
+>>  
+>>  static inline bool ipv4_is_badclass(__be32 addr)
+>>  {
+>> -	return (addr & htonl(0xf0000000)) == htonl(0xf0000000);
+>> +	return addr == 0xFFFFFFFF;
+>>  }
+>>  
+>
+>To (un)align the IN_BADCLASS macro and ipv6_is_badclass() definition,
 
-On the other hand, not even for daemons does it make sense to audit 
-"input" from PTY masters; this data was produced by a program writing to 
-the PTY slave, and does not represent data entered by the user.
+Unalign? IPv6? "Limited" broadcast?
 
---------------040803030300050407040400
-Content-Type: text/x-patch;
- name="linux-upstream.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-upstream.patch"
+>you should change the name anyway, e.g., ipv6_is_limited_broadcast()
+>or some something alike.
 
-From: Miloslav Trmac <mitr@redhat.com>
+===
+Author: Jan Engelhardt <jengelh@computergmbh.de>
+Date:   Fri Jan 18 02:51:34 2008 +0100
 
-Remove the code that automatically disables TTY input auditing in
-processes that open TTYs when they have no other TTY open; this
-heuristic was intended to automatically handle daemons, but it has
-false positives (e.g. with sshd) that make it impossible to control
-TTY input auditing from a PAM module.  With this patch, TTY input
-auditing is controlled from user-space only.
+    IPv4: enable use of 240/4 address space
+    
+    This short patch modifies the IPv4 networking to enable use of the
+    240.0.0.0/4 (aka "class-E") address space as propsed in the internet
+    draft draft-fuller-240space-00.txt.
+    
+    Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
 
-On the other hand, not even for daemons does it make sense to audit
-"input" from PTY masters; this data was produced by a program writing
-to the PTY slave, and does not represent data entered by the user.
-
-Signed-off-by: Miloslav Trmac <mitr@redhat.com>
----
- drivers/char/tty_audit.c |   54 ++-----------------------------------
- drivers/char/tty_io.c    |   14 ---------
- include/linux/tty.h      |    5 ---
- 3 files changed, 5 insertions(+), 68 deletions(-)
-
-diff --git a/drivers/char/tty_audit.c b/drivers/char/tty_audit.c
-index d222012..1691b00 100644
---- a/drivers/char/tty_audit.c
-+++ b/drivers/char/tty_audit.c
-@@ -231,6 +231,10 @@ void tty_audit_add_data(struct tty_struct *tty, unsigned char *data,
- 	if (unlikely(size == 0))
+diff --git a/include/linux/in.h b/include/linux/in.h
+index 27d8a5a..4887768 100644
+--- a/include/linux/in.h
++++ b/include/linux/in.h
+@@ -262,9 +262,9 @@ static inline bool ipv4_is_local_multicast(__be32 addr)
+ 	return (addr & htonl(0xffffff00)) == htonl(0xe0000000);
+ }
+ 
+-static inline bool ipv4_is_badclass(__be32 addr)
++static inline bool ipv4_is_broadcast(__be32 addr)
+ {
+-	return (addr & htonl(0xf0000000)) == htonl(0xf0000000);
++	return addr == 0xFFFFFFFF;
+ }
+ 
+ static inline bool ipv4_is_zeronet(__be32 addr)
+diff --git a/include/net/addrconf.h b/include/net/addrconf.h
+index 8b1509b..f5bd33b 100644
+--- a/include/net/addrconf.h
++++ b/include/net/addrconf.h
+@@ -262,7 +262,7 @@ static inline int ipv6_isatap_eui64(u8 *eui, __be32 addr)
+ 		  ipv4_is_private_172(addr) || ipv4_is_test_192(addr) ||
+ 		  ipv4_is_anycast_6to4(addr) || ipv4_is_private_192(addr) ||
+ 		  ipv4_is_test_198(addr) || ipv4_is_multicast(addr) ||
+-		  ipv4_is_badclass(addr)) ? 0x00 : 0x02;
++		  ipv4_is_broadcast(addr)) ? 0x00 : 0x02;
+ 	eui[1] = 0;
+ 	eui[2] = 0x5E;
+ 	eui[3] = 0xFE;
+diff --git a/net/core/pktgen.c b/net/core/pktgen.c
+index d18fdb1..9d6e7af 100644
+--- a/net/core/pktgen.c
++++ b/net/core/pktgen.c
+@@ -2266,7 +2266,7 @@ static void mod_cur_headers(struct pktgen_dev *pkt_dev)
+ 
+ 					while (ipv4_is_loopback(s) ||
+ 					       ipv4_is_multicast(s) ||
+-					       ipv4_is_badclass(s) ||
++					       ipv4_is_broadcast(s) ||
+ 					       ipv4_is_zeronet(s) ||
+ 					       ipv4_is_local_multicast(s)) {
+ 						t = random32() % (imx - imn) + imn;
+diff --git a/net/ipv4/fib_frontend.c b/net/ipv4/fib_frontend.c
+index 8ddcd3f..367e097 100644
+--- a/net/ipv4/fib_frontend.c
++++ b/net/ipv4/fib_frontend.c
+@@ -176,7 +176,7 @@ static inline unsigned __inet_dev_addr_type(struct net *net,
+ 	unsigned ret = RTN_BROADCAST;
+ 	struct fib_table *local_table;
+ 
+-	if (ipv4_is_zeronet(addr) || ipv4_is_badclass(addr))
++	if (ipv4_is_zeronet(addr) || ipv4_is_broadcast(addr))
+ 		return RTN_BROADCAST;
+ 	if (ipv4_is_multicast(addr))
+ 		return RTN_MULTICAST;
+diff --git a/net/ipv4/route.c b/net/ipv4/route.c
+index 1e59c0d..9f0ea73 100644
+--- a/net/ipv4/route.c
++++ b/net/ipv4/route.c
+@@ -1154,7 +1154,7 @@ void ip_rt_redirect(__be32 old_gw, __be32 daddr, __be32 new_gw,
  		return;
  
-+	if (tty->driver->type == TTY_DRIVER_TYPE_PTY
-+	    && tty->driver->subtype == PTY_TYPE_MASTER)
-+		return;
-+
- 	buf = tty_audit_buf_get(tty);
- 	if (!buf)
- 		return;
-@@ -293,53 +297,3 @@ void tty_audit_push(struct tty_struct *tty)
- 		tty_audit_buf_put(buf);
- 	}
- }
--
--/**
-- *	tty_audit_opening	-	A TTY is being opened.
-- *
-- *	As a special hack, tasks that close all their TTYs and open new ones
-- *	are assumed to be system daemons (e.g. getty) and auditing is
-- *	automatically disabled for them.
-- */
--void tty_audit_opening(void)
--{
--	int disable;
--
--	disable = 1;
--	spin_lock_irq(&current->sighand->siglock);
--	if (current->signal->audit_tty == 0)
--		disable = 0;
--	spin_unlock_irq(&current->sighand->siglock);
--	if (!disable)
--		return;
--
--	task_lock(current);
--	if (current->files) {
--		struct fdtable *fdt;
--		unsigned i;
--
--		/*
--		 * We don't take a ref to the file, so we must hold ->file_lock
--		 * instead.
--		 */
--		spin_lock(&current->files->file_lock);
--		fdt = files_fdtable(current->files);
--		for (i = 0; i < fdt->max_fds; i++) {
--			struct file *filp;
--
--			filp = fcheck_files(current->files, i);
--			if (filp && is_tty(filp)) {
--				disable = 0;
--				break;
--			}
--		}
--		spin_unlock(&current->files->file_lock);
--	}
--	task_unlock(current);
--	if (!disable)
--		return;
--
--	spin_lock_irq(&current->sighand->siglock);
--	current->signal->audit_tty = 0;
--	spin_unlock_irq(&current->sighand->siglock);
--}
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index f36fecd..361f3c5 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1533,15 +1533,6 @@ int tty_hung_up_p(struct file * filp)
+ 	if (new_gw == old_gw || !IN_DEV_RX_REDIRECTS(in_dev)
+-	    || ipv4_is_multicast(new_gw) || ipv4_is_badclass(new_gw)
++	    || ipv4_is_multicast(new_gw) || ipv4_is_broadcast(new_gw)
+ 	    || ipv4_is_zeronet(new_gw))
+ 		goto reject_redirect;
  
- EXPORT_SYMBOL(tty_hung_up_p);
+@@ -1634,7 +1634,7 @@ static int ip_route_input_mc(struct sk_buff *skb, __be32 daddr, __be32 saddr,
+ 	if (in_dev == NULL)
+ 		return -EINVAL;
  
--/**
-- * is_tty	-	checker whether file is a TTY
-- */
--int is_tty(struct file *filp)
--{
--	return filp->f_op->read == tty_read
--		|| filp->f_op->read == hung_up_tty_read;
--}
--
- static void session_clear_tty(struct pid *session)
- {
- 	struct task_struct *p;
-@@ -2710,7 +2701,6 @@ got_driver:
- 		__proc_set_tty(current, tty);
- 	spin_unlock_irq(&current->sighand->siglock);
- 	mutex_unlock(&tty_mutex);
--	tty_audit_opening();
- 	return 0;
- }
+-	if (ipv4_is_multicast(saddr) || ipv4_is_badclass(saddr) ||
++	if (ipv4_is_multicast(saddr) || ipv4_is_broadcast(saddr) ||
+ 	    ipv4_is_loopback(saddr) || skb->protocol != htons(ETH_P_IP))
+ 		goto e_inval;
  
-@@ -2773,10 +2763,8 @@ static int ptmx_open(struct inode * inode, struct file * filp)
+@@ -1891,7 +1891,7 @@ static int ip_route_input_slow(struct sk_buff *skb, __be32 daddr, __be32 saddr,
+ 	   by fib_lookup.
+ 	 */
  
- 	check_tty_count(tty, "tty_open");
- 	retval = ptm_driver->open(tty, filp);
--	if (!retval) {
--		tty_audit_opening();
-+	if (!retval)
- 		return 0;
--	}
- out1:
- 	release_dev(filp);
- 	return retval;
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index c555f54..e9c3f89 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -307,7 +307,6 @@ extern void tty_hangup(struct tty_struct * tty);
- extern void tty_vhangup(struct tty_struct * tty);
- extern void tty_unhangup(struct file *filp);
- extern int tty_hung_up_p(struct file * filp);
--extern int is_tty(struct file *filp);
- extern void do_SAK(struct tty_struct *tty);
- extern void __do_SAK(struct tty_struct *tty);
- extern void disassociate_ctty(int priv);
-@@ -358,7 +357,6 @@ extern void tty_audit_exit(void);
- extern void tty_audit_fork(struct signal_struct *sig);
- extern void tty_audit_push(struct tty_struct *tty);
- extern void tty_audit_push_task(struct task_struct *tsk, uid_t loginuid);
--extern void tty_audit_opening(void);
- #else
- static inline void tty_audit_add_data(struct tty_struct *tty,
- 				      unsigned char *data, size_t size)
-@@ -376,9 +374,6 @@ static inline void tty_audit_push(struct tty_struct *tty)
- static inline void tty_audit_push_task(struct task_struct *tsk, uid_t loginuid)
- {
- }
--static inline void tty_audit_opening(void)
--{
--}
- #endif
+-	if (ipv4_is_multicast(saddr) || ipv4_is_badclass(saddr) ||
++	if (ipv4_is_multicast(saddr) || ipv4_is_broadcast(saddr) ||
+ 	    ipv4_is_loopback(saddr))
+ 		goto martian_source;
  
- /* tty_ioctl.c */
-
---------------040803030300050407040400--
+@@ -1904,7 +1904,7 @@ static int ip_route_input_slow(struct sk_buff *skb, __be32 daddr, __be32 saddr,
+ 	if (ipv4_is_zeronet(saddr))
+ 		goto martian_source;
+ 
+-	if (ipv4_is_badclass(daddr) || ipv4_is_zeronet(daddr) ||
++	if (ipv4_is_broadcast(daddr) || ipv4_is_zeronet(daddr) ||
+ 	    ipv4_is_loopback(daddr))
+ 		goto martian_destination;
+ 
+@@ -2125,7 +2125,7 @@ static inline int __mkroute_output(struct rtable **result,
+ 		res->type = RTN_BROADCAST;
+ 	else if (ipv4_is_multicast(fl->fl4_dst))
+ 		res->type = RTN_MULTICAST;
+-	else if (ipv4_is_badclass(fl->fl4_dst) || ipv4_is_zeronet(fl->fl4_dst))
++	else if (ipv4_is_broadcast(fl->fl4_dst) || ipv4_is_zeronet(fl->fl4_dst))
+ 		return -EINVAL;
+ 
+ 	if (dev_out->flags & IFF_LOOPBACK)
+@@ -2276,7 +2276,7 @@ static int ip_route_output_slow(struct rtable **rp, const struct flowi *oldflp)
+ 	if (oldflp->fl4_src) {
+ 		err = -EINVAL;
+ 		if (ipv4_is_multicast(oldflp->fl4_src) ||
+-		    ipv4_is_badclass(oldflp->fl4_src) ||
++		    ipv4_is_broadcast(oldflp->fl4_src) ||
+ 		    ipv4_is_zeronet(oldflp->fl4_src))
+ 			goto out;
+ 
