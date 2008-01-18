@@ -1,101 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbYARKPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbYARKTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758851AbYARKPx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbYARKPq
+	id S1758803AbYARKTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 05:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbYARKTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:15:46 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:48294 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751004AbYARKPp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:15:45 -0500
-X-SourceIP: 80.56.237.116
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
-	files
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: salikhmetov@gmail.com, linux-mm@kvack.org, jakob@unthought.net,
-       linux-kernel@vger.kernel.org, valdis.kletnieks@vt.edu, riel@redhat.com,
-       ksm@42.dk, staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
-       hch@infradead.org
-In-Reply-To: <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu>
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>
-	 <12006091211208-git-send-email-salikhmetov@gmail.com>
-	 <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 11:15:36 +0100
-Message-Id: <1200651337.5920.9.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jan 2008 05:19:11 -0500
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:45138 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1754619AbYARKTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 05:19:08 -0500
+Message-ID: <400651538.20437@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Fri, 18 Jan 2008 17:32:03 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Michael Rubin <mrubin@google.com>
+Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch] Converting writeback linked lists to a tree based data structure
+References: <20080115080921.70E3810653@localhost> <400562938.07583@ustc.edu.cn> <532480950801171307q4b540ewa3acb6bfbea5dbc8@mail.gmail.com> <400632190.14601@ustc.edu.cn> <532480950801172243i21341a02s983a9e59b182c53e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <532480950801172243i21341a02s983a9e59b182c53e@mail.gmail.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <E1JFnZz-00015z-Vq@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-01-18 at 10:51 +0100, Miklos Szeredi wrote:
-
-> > diff --git a/mm/msync.c b/mm/msync.c
-> > index a4de868..a49af28 100644
-> > --- a/mm/msync.c
-> > +++ b/mm/msync.c
-> > @@ -13,11 +13,33 @@
-> >  #include <linux/syscalls.h>
-> >  
-> >  /*
-> > + * Scan the PTEs for pages belonging to the VMA and mark them read-only.
-> > + * It will force a pagefault on the next write access.
-> > + */
-> > +static void vma_wrprotect(struct vm_area_struct *vma)
-> > +{
-> > +	unsigned long addr;
-> > +
-> > +	for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE) {
-> > +		spinlock_t *ptl;
-> > +		pgd_t *pgd = pgd_offset(vma->vm_mm, addr);
-> > +		pud_t *pud = pud_offset(pgd, addr);
-> > +		pmd_t *pmd = pmd_offset(pud, addr);
-> > +		pte_t *pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
-> > +
-> > +		if (pte_dirty(*pte) && pte_write(*pte))
-> > +			*pte = pte_wrprotect(*pte);
-> > +		pte_unmap_unlock(pte, ptl);
-> > +	}
-> > +}
+On Thu, Jan 17, 2008 at 10:43:15PM -0800, Michael Rubin wrote:
+> On Jan 17, 2008 8:56 PM, Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> > On Thu, Jan 17, 2008 at 01:07:05PM -0800, Michael Rubin wrote:
+> > Suppose we want to grant longer expiration window for temp files,
+> > adding a new list named s_dirty_tmpfile would be a handy solution.
 > 
-> What about ram based filesystems?  They don't start out with read-only
-> pte's, so I think they don't want them read-protected now either.
-> Unless this is essential for correct mtime/ctime accounting on these
-> filesystems (I don't think it really is).  But then the mapping should
-> start out read-only as well, otherwise the time update will only work
-> after an msync(MS_ASYNC).
+> When you mean tmp do you mean files that eventually get written to
 
-page_mkclean() has all the needed logic for this, it also walks the rmap
-and cleans out all other users, which I think is needed too for
-consistencies sake:
+Yes, they are disk based and can be synced on.
 
-Process A			Process B
+> disk? If not I would just use the WRITEBACK_NEVER. If so I am not sure
+> if that feature is worth making a special case. It seems like the
+> location based ideas may be more useful.
 
-mmap(foo.txt)			mmap(foo.txt)
+I'm not interested in WRITEBACK_NEVER or location based writeback
+for now :-)
 
-dirty page
-				dirty page
+> > > >         - refill s_io iif it is drained
+> > > >           this prevents promotion of big/old files
+> > >
+> > > Once a big file gets its first do_writepages it is moved behind the
+> > > other smaller files via i_flushed_when. And the same in reverse for
+> > > big vs old.
+> >
+> > You mean i_flush_gen?
+> 
+> Yeah sorry. It was once called i_flush_when. (sheepish)
+> 
+> > No, sync_sb_inodes() will abort on every
+> > MAX_WRITEBACK_PAGES, and s_flush_gen will be updated accordingly.
+> > Hence the sync will restart from big/old files.
+> 
+> If I understand you correctly I am not sure I agree. Here is what I
+> think happens in the patch:
+> 
+> 1) pull big inode off of flush tree
+> 2) sync big inode
+> 3) Hit MAX_WRITEBACK_PAGES
+> 4) Re-insert big inode (without modifying the dirtied_when)
+> 5) update the i_flush_gen on big inode and re-insert behind small
+> inodes we have not synced yet.
+> 
+> In a subsequent sync_sb_inode we end up retrieving the small inode we
+> had not serviced yet.
 
-msync(MS_ASYNC)
+Yes, exactly. And then it will continue to sync the big one again.
+It will never be able to move forward to the next dirtied_when before
+exhausting the inodes in the current list(with the oldest dirtied_when).
 
-				dirty page
+> > > >         - return from sync_sb_inodes() after one go of s_io
+> > >
+> > > I am not sure how this limit helps things out. Is this for superblock
+> > > starvation? Can you elaborate?
+> >
+> > We should have a way to go to next superblock even if new dirty inodes
+> > or pages are emerging fast in this superblock. Fill and drain s_io
+> > only once and then abort helps.
+> 
+> Got it.
+> 
+> > s_io is a stable and bounded working set in one go of superblock.
+> 
+> Is this necessary with MAX_WRITEBACK_PAGES? It feels like a double limit.
 
-msync(MS_ASYNC) <--- now what?!
+We need a limit and continuing scheme at each level. It was so hard to
+sort them out, that I'm really reluctant to restart all the fuss again.
 
+> > Basically you make one list_head in each rbtree node.
+> > That list_head is recycled cyclic, and is an analog to the old
+> > fashioned s_dirty. We need to know 'where we are' and 'where it ends'.
+> > So an extra indicator must be introduced - i_flush_gen. It's awkward.
+> > We are simply repeating the aged list_heads' problem.
+> 
+> To me they both feel a little awkward. I feel like the original
+> problem in 2.6.23 led to a lot of examination which is bringing new
+> possibilities to light.
+> 
+> BTW the issue that started me on this whole path (starving large
+> files) was still present in 2.6.23-rc8 but now looks fixed in
+> 2.6.24-rc3.
+> Still no idea about your changes in 2.6.24-rc6-mm1. I have given up
+> trying to get that thing to boot.
 
-So what I would suggest is using the page table walkers from mm, and
-walks the page range, obtain the page using vm_normal_page() and call
-page_mkclean(). (Oh, and ensure you don't nest the pte lock :-)
-
-All in all, that sounds rather expensive..
-
-
+Hehe, I guess the bug is still there in 2.6.24-rc3. But should be gone
+in the latest patchset.
 
