@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764243AbYARSZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763444AbYARS3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764243AbYARSZd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:25:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763812AbYARSZO
+	id S1763444AbYARS3j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:29:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760992AbYARS3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:25:14 -0500
-Received: from mx01.xsigo.com ([216.184.49.20]:56345 "EHLO mx01.xsigo.com"
+	Fri, 18 Jan 2008 13:29:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40675 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763746AbYARSZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:25:12 -0500
-Subject: RE: [ofa-general] InfiniBand/RDMA merge plans for 2.6.25
-From: Hal Rosenstock <hrosenstock@xsigo.com>
-To: Sean Hefty <sean.hefty@intel.com>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-In-Reply-To: <000001c859f9$7bc7f590$ff0da8c0@amr.corp.intel.com>
-References: <ada7ii8xaao.fsf@cisco.com>
-	 <1200676232.1486.88.camel@hrosenstock-ws.xsigo.com>
-	 <000001c859f9$7bc7f590$ff0da8c0@amr.corp.intel.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 18 Jan 2008 10:25:11 -0800
-Message-Id: <1200680711.1486.104.camel@hrosenstock-ws.xsigo.com>
+	id S1758104AbYARS3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 13:29:31 -0500
+Date: Fri, 18 Jan 2008 13:28:50 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: torvalds@linux-foundation.org, peterz@infradead.org, miklos@szeredi.hu,
+       salikhmetov@gmail.com, linux-mm@kvack.org, jakob@unthought.net,
+       linux-kernel@vger.kernel.org, valdis.kletnieks@vt.edu, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
+       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
+ files
+Message-ID: <20080118132850.044537e5@bree.surriel.com>
+In-Reply-To: <E1JFvgx-0000zz-2C@pomaz-ex.szeredi.hu>
+References: <12006091182260-git-send-email-salikhmetov@gmail.com>
+	<12006091211208-git-send-email-salikhmetov@gmail.com>
+	<E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu>
+	<1200651337.5920.9.camel@twins>
+	<1200651958.5920.12.camel@twins>
+	<alpine.LFD.1.00.0801180949040.2957@woody.linux-foundation.org>
+	<E1JFvgx-0000zz-2C@pomaz-ex.szeredi.hu>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-01-18 at 09:42 -0800, Sean Hefty wrote:
-> >> Sean Hefty (6):
-> >>       IB/mad: Fix incorrect access to items on local_list
-> >
-> >It wasn't clear to me that this issue was ever really nailed. Was the
-> >loop on this closed ?
+On Fri, 18 Jan 2008 19:11:47 +0100
+Miklos Szeredi <miklos@szeredi.hu> wrote:
+
+> > And even in that four-liner, I suspect that the *last* two lines are 
+> > actually incorrect: there's no point in updating the file time when the 
+> > page *becomes* dirty,
 > 
-> The error that this patches addresses is fairly obvious if you inspect the code.
-
-The bug seems obvious but I'm not sure about the fix. Just my $0.02
-worth.
-
--- Hal
-
-> There's a strong chance that the patch fixes the bug that was reported, but the
-> last I remember, they had trouble reproducing the crash to see if the patch
-> would indeed make it go away.
+> Actually all four lines do that.  The first two for a write access on
+> a present, read-only pte, the other two for a write on a non-present
+> pte.
 > 
-> - Sean
+> > we should update the file time when it is marked 
+> > clean, and "msync(MS_SYNC)" should update it as part of *that*.
+> 
+> That would need a new page flag (PG_mmap_dirty?).  Do we have one
+> available?
+
+I thought the page writing stuff looked at (and cleared) the pte
+dirty bit, too?
+
+-- 
+All rights reversed.
