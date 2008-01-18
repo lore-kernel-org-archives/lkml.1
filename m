@@ -1,148 +1,317 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757768AbYARJvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756957AbYARJzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757768AbYARJvf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 04:51:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbYARJv2
+	id S1756957AbYARJzM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 04:55:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbYARJy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 04:51:28 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:48649 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754619AbYARJv1 (ORCPT
+	Fri, 18 Jan 2008 04:54:59 -0500
+Received: from fk-out-0910.google.com ([209.85.128.187]:63941 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbYARJy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 04:51:27 -0500
-To: salikhmetov@gmail.com
-CC: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
-       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
-In-reply-to: <12006091211208-git-send-email-salikhmetov@gmail.com> (message
-	from Anton Salikhmetov on Fri, 18 Jan 2008 01:31:58 +0300)
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped files
-References: <12006091182260-git-send-email-salikhmetov@gmail.com> <12006091211208-git-send-email-salikhmetov@gmail.com>
-Message-Id: <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 18 Jan 2008 10:51:22 +0100
+	Fri, 18 Jan 2008 04:54:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=VzRnHex5Mc1hKnuPsMMvR6Zb8aBamXB3QgO3CPox9sYydeQOIXn+NrLS2LcpoWO1zVYc/YwVrvUrfOhe21VIDL4HyW6uU9Ddm4EYiAqhh0tdEC2dgrP02LH+ymbmx0y29A996t6DUjf5QdtL6wdQeslkpguGWt13CnCtQ93CTy8=
+Message-ID: <91b13c310801180154s7931a03bh1d78ee60dadb9f9c@mail.gmail.com>
+Date: Fri, 18 Jan 2008 17:54:55 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Subject: [PATCH] module: add modinfo support for all built-in modules
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Updating file times at write references to memory-mapped files and
-> forcing file times update at the next write reference after
-> calling the msync() system call with the MS_ASYNC flag.
-> 
-> Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
-> ---
->  mm/memory.c |    6 ++++++
->  mm/msync.c  |   52 +++++++++++++++++++++++++++++++++++++++-------------
->  2 files changed, 45 insertions(+), 13 deletions(-)
-> 
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 4bf0b6d..13d5bbf 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -1668,6 +1668,9 @@ gotten:
->  unlock:
->  	pte_unmap_unlock(page_table, ptl);
->  	if (dirty_page) {
-> +		if (vma->vm_file)
-> +			file_update_time(vma->vm_file);
-> +
->  		/*
->  		 * Yes, Virginia, this is actually required to prevent a race
->  		 * with clear_page_dirty_for_io() from clearing the page dirty
-> @@ -2341,6 +2344,9 @@ out_unlocked:
->  	if (anon)
->  		page_cache_release(vmf.page);
->  	else if (dirty_page) {
-> +		if (vma->vm_file)
-> +			file_update_time(vma->vm_file);
-> +
->  		set_page_dirty_balance(dirty_page, page_mkwrite);
->  		put_page(dirty_page);
->  	}
-> diff --git a/mm/msync.c b/mm/msync.c
-> index a4de868..a49af28 100644
-> --- a/mm/msync.c
-> +++ b/mm/msync.c
-> @@ -13,11 +13,33 @@
->  #include <linux/syscalls.h>
->  
->  /*
-> + * Scan the PTEs for pages belonging to the VMA and mark them read-only.
-> + * It will force a pagefault on the next write access.
-> + */
-> +static void vma_wrprotect(struct vm_area_struct *vma)
-> +{
-> +	unsigned long addr;
-> +
-> +	for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE) {
-> +		spinlock_t *ptl;
-> +		pgd_t *pgd = pgd_offset(vma->vm_mm, addr);
-> +		pud_t *pud = pud_offset(pgd, addr);
-> +		pmd_t *pmd = pmd_offset(pud, addr);
-> +		pte_t *pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
-> +
-> +		if (pte_dirty(*pte) && pte_write(*pte))
-> +			*pte = pte_wrprotect(*pte);
-> +		pte_unmap_unlock(pte, ptl);
-> +	}
-> +}
+On Jan 16, 2008 8:25 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> I'd love to see patches.  module_parm showed it's possible, if messy.
+>
+> Thanks!
+> Rusty.
 
-What about ram based filesystems?  They don't start out with read-only
-pte's, so I think they don't want them read-protected now either.
-Unless this is essential for correct mtime/ctime accounting on these
-filesystems (I don't think it really is).  But then the mapping should
-start out read-only as well, otherwise the time update will only work
-after an msync(MS_ASYNC).
+here's the patch, I added .modinfo section to the vmlinux, to collect
+built-in module information.
 
-> +
-> +/*
->   * MS_SYNC syncs the entire file - including mappings.
->   *
-> - * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
-> - * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
-> - * Now it doesn't do anything, since dirty pages are properly tracked.
-> + * MS_ASYNC does not start I/O. Instead, it marks the relevant pages
-> + * read-only by calling vma_wrprotect(). This is needed to catch the next
-> + * write reference to the mapped region and update the file times
-> + * accordingly.
->   *
->   * The application may now run fsync() to write out the dirty pages and
->   * wait on the writeout and check the result. Or the application may run
-> @@ -77,16 +99,20 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
->  		error = 0;
->  		start = vma->vm_end;
->  		file = vma->vm_file;
-> -		if (file && (vma->vm_flags & VM_SHARED) && (flags & MS_SYNC)) {
-> -			get_file(file);
-> -			up_read(&mm->mmap_sem);
-> -			error = do_fsync(file, 0);
-> -			fput(file);
-> -			if (error || start >= end)
-> -				goto out;
-> -			down_read(&mm->mmap_sem);
-> -			vma = find_vma(mm, start);
-> -			continue;
-> +		if (file && (vma->vm_flags & VM_SHARED)) {
-> +			if (flags & MS_ASYNC)
-> +				vma_wrprotect(vma);
-> +			if (flags & MS_SYNC) {
-> +				get_file(file);
-> +				up_read(&mm->mmap_sem);
-> +				error = do_fsync(file, 0);
-> +				fput(file);
-> +				if (error || start >= end)
-> +					goto out;
-> +				down_read(&mm->mmap_sem);
-> +				vma = find_vma(mm, start);
-> +				continue;
-> +			}
->  		}
->  
->  		vma = vma->vm_next;
-> -- 
-> 1.4.4.4
-> 
-> 
+I have just define __MODULE_INFO to another meaning while
+CONFIG_MODULES undefined
+(modules compiled built-in), instead of nothing; and so the
+MODULE_LICENSE, MODULE_AUTHOR,
+MODULE_DESCRIPTION's meaning also changed, each macro would define one
+struct kernel_modinfo
+entry in the .modinfo section of vmlinux; and one __initcall converts
+all these information to read-only
+files under /sys/modules/<module-name>/...
+
+but the MODULE_PARM_DESC macro is still different:
+it generates entries with the same tag, that would confuse
+sys_create_group, so I skipped them in the __initcall,
+since the parameters had been in /sys/modules/<>/parameters/(with perm
+non-zero) or didn't appear(with perm 0);
+I think the parameter description might be only useful for external
+module files, not needed in memory(under /sys/module/),
+so a better solution is define MODULE_PARM_DESC to nothing while
+CONFIG_MODULES undefined.
+
+Another possible defect is that it compares two modname with
+(km->modname != modname),
+that depends on a gcc feature: keep same constant string only one copy
+in the image,
+this did work on my test machines, but I'm not sure it's standard or
+not; and if not, I would change it to strcmp.
+
+Apperantly this approach will increase the kernel image size. on a
+moderate system(with 1.8MB bzImage),
+this patch would increase vmlinux 46KB and after compression increase
+bzImage 9.2KB.
+and in the increment of vmlinux, the .modinfo section occupied 5.3KB
+and others are constant strings.
+
+However, the iscsid can now work well when scsi_transport_iscsi module
+built-in without the problem refered in my former email.
+
+please give comments.
+
+>From 50831a260b1ad2c8b495854a58408c1fbc75a3fe Mon Sep 17 00:00:00 2001
+From: Denis Cheng <crquan@gmail.com>
+Date: Fri, 18 Jan 2008 16:37:35 +0800
+Subject: [PATCH] module: add modinfo support for all built-in modules
+
+the current modinfo support is for external modules only, it provided module
+information under /sys/module/<XYZ>/, such as verion, ...;
+now some application(such as iscsid of open-iscsi) has been designed to
+use this module information; but built-in modules don't have modinfo support,
+so these apps would break if modules they depend on are compiled built-in.
+
+this patch add modinfo support for all built-in modules, so now no matter
+whether modules they depends on are built-in or external, modules' information
+could always be accessed from /sys/module/<XYZ>/version, apps won't break.
+
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ include/asm-generic/vmlinux.lds.h |    7 ++
+ include/linux/moduleparam.h       |   18 ++++-
+ kernel/module.c                   |  147 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 170 insertions(+), 2 deletions(-)
+
+diff --git a/include/asm-generic/vmlinux.lds.h
+b/include/asm-generic/vmlinux.lds.h
+index 9f584cc..896f0fe 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -137,6 +137,13 @@
+ 		VMLINUX_SYMBOL(__start___param) = .;			\
+ 		*(__param)						\
+ 		VMLINUX_SYMBOL(__stop___param) = .;			\
++	}								\
++									\
++	/* Built-in module information. */				\
++	.modinfo : AT(ADDR(.modinfo) - LOAD_OFFSET) {			\
++		VMLINUX_SYMBOL(__start___modinfo) = .;			\
++		*(.modinfo)						\
++		VMLINUX_SYMBOL(__stop___modinfo) = .;			\
+ 		VMLINUX_SYMBOL(__end_rodata) = .;			\
+ 	}								\
+ 									\
+diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
+index 13410b2..86ddbd4 100644
+--- a/include/linux/moduleparam.h
++++ b/include/linux/moduleparam.h
+@@ -13,16 +13,30 @@
+ #define MODULE_PARAM_PREFIX KBUILD_MODNAME "."
+ #endif
+
+-#ifdef MODULE
+ #define ___module_cat(a,b) __mod_ ## a ## b
+ #define __module_cat(a,b) ___module_cat(a,b)
++
++#ifdef MODULE
+ #define __MODULE_INFO(tag, name, info)					  \
+ static const char __module_cat(name,__LINE__)[]				  \
+   __attribute_used__							  \
+   __attribute__((section(".modinfo"),unused)) = __stringify(tag) "=" info
+ #else  /* !MODULE */
+-#define __MODULE_INFO(tag, name, info)
++struct kernel_modinfo {
++	char *modname;
++	char *tag;
++	char *info;
++};
++#define __MODULE_INFO(tag, name, info)					  \
++static const struct kernel_modinfo __module_cat(name, __LINE__)	  \
++  __attribute_used__							  \
++  __attribute__((section(".modinfo"), unused)) =			  \
++  { KBUILD_MODNAME, __stringify(tag), info }
++
++extern const struct kernel_modinfo __start___modinfo[], __stop___modinfo[];
++
+ #endif
++
+ #define __MODULE_PARM_TYPE(name, _type)					  \
+   __MODULE_INFO(parmtype, name##type, #name ":" _type)
+
+diff --git a/kernel/module.c b/kernel/module.c
+index c2e3e2e..9828918 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2609,3 +2609,150 @@ void module_update_markers(struct module
+*probe_module, int *refcount)
+ 	mutex_unlock(&module_mutex);
+ }
+ #endif
++
++#ifdef CONFIG_SYSFS
++struct modinfo_attribute {
++	struct module_attribute mattr;
++	const struct kernel_modinfo *modinfo;
++};
++
++struct module_modinfo_attrs {
++	struct attribute_group grp;
++	struct modinfo_attribute attrs[0];
++};
++
++#define to_modinfo_attr(n) container_of(n, struct modinfo_attribute, mattr)
++
++static ssize_t modinfo_attr_show(struct module_attribute *mattr,
++		struct module *mod, char *buf)
++{
++	const struct kernel_modinfo *km = to_modinfo_attr(mattr)->modinfo;
++	return snprintf(buf, PAGE_SIZE, "%s\n", km->info);
++}
++
++/* skip the parameters' description in .modinfo */
++static __init int modinfo_skip(char *name)
++{
++	return (strlen(name) == 4 && !strncmp(name, "parm", 4)) ||
++		(strlen(name) == 8 && !strncmp(name, "parmtype", 8));
++}
++
++static __init void modinfo_sysfs_setup(struct module_kobject *mk,
++		  const struct kernel_modinfo km_begin[],
++		  unsigned int num_params)
++{
++	struct module_modinfo_attrs *mp;
++	unsigned int valid_attrs = 0;
++	unsigned int i, size[2];
++	struct modinfo_attribute *pattr;
++	struct attribute **gattr;
++
++	for (i = 0; i < num_params; ++i) {
++		if (!modinfo_skip(km_begin[i].tag))
++			valid_attrs++;
++	}
++
++	if (!valid_attrs)
++		return;
++
++	size[0] = ALIGN(sizeof(*mp) +
++			valid_attrs * sizeof(mp->attrs[0]),
++			sizeof(mp->grp.attrs[0]));
++	size[1] = (valid_attrs + 1) * sizeof(mp->grp.attrs[0]);
++
++	mp = kzalloc(size[0] + size[1], GFP_KERNEL);
++	if (!mp)
++		return;
++
++	mp->grp.attrs = (void *)mp + size[0];
++
++	pattr = &mp->attrs[0];
++	gattr = &mp->grp.attrs[0];
++	for (i = 0; i < valid_attrs; i++) {
++		const struct kernel_modinfo *km = &km_begin[i];
++		if (!modinfo_skip(km_begin[i].tag)) {
++			pattr->modinfo = km;
++			pattr->mattr.show = modinfo_attr_show;
++			pattr->mattr.attr.name = km->tag;
++			pattr->mattr.attr.mode = S_IRUGO;
++			*(gattr++) = &(pattr++)->mattr.attr;
++		}
++	}
++
++	if (sysfs_create_group(&mk->kobj, &mp->grp))
++		kfree(mp);
++}
++
++static void __init kernel_modinfo_sysfs_setup(const char *modname,
++		const struct kernel_modinfo km_begin[],
++		unsigned int num_params)
++{
++	struct kobject *mkobj;
++	struct module_kobject *mk;
++	int ret;
++
++	mkobj = kset_find_obj(&module_subsys, modname);
++
++	if (mkobj)
++		mk = container_of(mkobj, struct module_kobject, kobj);
++	else {
++		mk = kzalloc(sizeof(struct module_kobject), GFP_KERNEL);
++
++		kobj_set_kset_s(mk, module_subsys);
++		kobject_set_name(&mk->kobj, modname);
++		kobject_init(&mk->kobj);
++		ret = kobject_add(&mk->kobj);
++		if (ret) {
++			printk(KERN_ERR "Module '%s' failed to be added to"
++					" sysfs, error number %d\n",
++					modname, ret);
++			printk(KERN_ERR	"The system will be unstable now.\n");
++			return;
++		}
++	}
++
++	modinfo_sysfs_setup(mk, km_begin, num_params);
++
++	if (mkobj) {
++		/* kset_find_obj incremental a reference on mkobj */
++		kobject_put(mkobj);
++	} else
++		kobject_uevent(&mk->kobj, KOBJ_ADD);
++}
++
++/*
++ * module_info_sysfs_init is for built-in modules
++ *
++ * __initcall("6") is later than subsys_init
++ */
++static int __init builtin_modinfo_sysfs_init(void)
++{
++	const struct kernel_modinfo *km, *km_begin = NULL;
++	unsigned int count = 0;
++	char *modname = NULL;
++
++	for (km = __start___modinfo; km < __stop___modinfo; km++) {
++		/* new kbuild_modname? */
++		if (km->modname != modname) {
++			/* add a new kobject for previous kernel_modinfo . */
++			if (count)
++				kernel_modinfo_sysfs_setup(modname,
++						km_begin,
++						count);
++
++			modname = km->modname;
++			count = 0;
++			km_begin = km;
++		}
++		count++;
++	}
++
++	/* last kernel_modinfo need to be registered as well */
++	if (count)
++		kernel_modinfo_sysfs_setup(modname, km_begin, count);
++
++	return 0;
++}
++__initcall(builtin_modinfo_sysfs_init);
++
++#endif
+-- 
+1.5.3.5
+
+-- 
+Denis Cheng
