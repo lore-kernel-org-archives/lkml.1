@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763395AbYARR0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763764AbYARR0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763395AbYARR0a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:26:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759404AbYARR0X
+	id S1763764AbYARR0p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759404AbYARR0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:26:23 -0500
-Received: from gw.goop.org ([64.81.55.164]:46632 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759374AbYARR0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:26:22 -0500
-Message-ID: <4790E13D.5040603@goop.org>
-Date: Fri, 18 Jan 2008 09:26:21 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 18 Jan 2008 12:26:35 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:41972 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763598AbYARR0e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 12:26:34 -0500
+Date: Fri, 18 Jan 2008 22:56:32 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: Re: 2.6.24-rc8-mm1 (KVM build issues)
+Message-ID: <20080118172632.GB12009@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: xming <xmingske@gmail.com>
-CC: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: Cannot boot xen DomU > 2.6.23.1
-References: <519a8b110801170813h96b8f2by795e6d8b72a00ba4@mail.gmail.com>	 <478F8D22.60004@goop.org>	 <519a8b110801171113y20a3bedfg446e29a30712a26d@mail.gmail.com>	 <4790561E.9040508@goop.org>	 <519a8b110801180438l389ec1d6t7b888b8c78d59dd8@mail.gmail.com>	 <4790D187.8050000@goop.org> <519a8b110801180856o7757889as47106fd3eabcc0de@mail.gmail.com>
-In-Reply-To: <519a8b110801180856o7757889as47106fd3eabcc0de@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-xming wrote:
->> Would it be possible to map the eip and some top parts of the stack back
->> to kernel symbols?  Seems to be the same place in both traces, which is
->> interesting.
->>     
->
-> Can you tell me how, or show me some pointers?
->   
+* Andrew Morton <akpm@linux-foundation.org> [2008-01-17 02:35:14]:
 
-Do "nm -n vmlinux" on the kernel to set an address sorted list of 
-symbols, and then look to see what's near the eip (c037c0c7) and near 
-the top of the stack (c0100add, c0378980, c0101962, ...).  Some of these 
-may be in data, or other strange places, but the ones which correspond 
-to code are interesting.
+> - kvm probably doesn't work properly because I couldn't be bothered fixing
+>   the conflicts between git-kvm and the driver tree
+> 
 
->>> Scenario 2 (have_vcpu_info_placement = 0)
->>> --------------------------------------------------------------
->>>
->>> test1: no crash
->>> test2: no crash, but occationally I still get funny output like this
->>>
->>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
->>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
->>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
->>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
->>> 0000AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
->>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
->>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
->>> 000AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
->>> 000AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
->>> 00AAAAAAAAAAAAAAAAAAAAAAAAAAZZ
->>>
->>>       
->> Hm, I guess some of the output is getting dropped.  Does this happen
->> with 2.6.18-xen?
->>     
->
-> yes it does
->   
+Hi, Andrew,
 
-OK, good.  I Didn't Break It (tm) ;)
+The following changes got KVM up and running for me
 
-    J
+
+This patch fixes the kvm build on 2.6.24-rc8-mm1. First of all, it enables
+the KVM build, the second fix moves kset_set_name to the .name member.
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ arch/x86/Makefile   |    2 +-
+ virt/kvm/kvm_main.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff -puN arch/x86/Makefile~fix-kvm-build arch/x86/Makefile
+--- linux-2.6.24-rc8/arch/x86/Makefile~fix-kvm-build	2008-01-18 22:42:41.000000000 +0530
++++ linux-2.6.24-rc8-balbir/arch/x86/Makefile	2008-01-18 22:42:47.000000000 +0530
+@@ -185,7 +185,7 @@ core-y += arch/x86/vdso/
+ core-$(CONFIG_IA32_EMULATION) += arch/x86/ia32/
+ 
+ # kvm host support - uncomment when merging
+-# core-$(CONFIG_KVM) += arch/x86/kvm/
++core-$(CONFIG_KVM) += arch/x86/kvm/
+ 
+ # drivers-y are linked after core-y
+ drivers-$(CONFIG_MATH_EMULATION) += arch/x86/math-emu/
+diff -puN virt/kvm/kvm_main.c~fix-kvm-build virt/kvm/kvm_main.c
+--- linux-2.6.24-rc8/virt/kvm/kvm_main.c~fix-kvm-build	2008-01-18 22:42:41.000000000 +0530
++++ linux-2.6.24-rc8-balbir/virt/kvm/kvm_main.c	2008-01-18 22:42:47.000000000 +0530
+@@ -1260,7 +1260,7 @@ static int kvm_resume(struct sys_device 
+ }
+ 
+ static struct sysdev_class kvm_sysdev_class = {
+-	set_kset_name("kvm"),
++	.name = "kvm",
+ 	.suspend = kvm_suspend,
+ 	.resume = kvm_resume,
+ };
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
