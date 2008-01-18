@@ -1,150 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbYARANY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758446AbYARATy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759045AbYARANY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 19:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756131AbYARANQ
+	id S1758446AbYARATy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 19:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016AbYARATp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 19:13:16 -0500
-Received: from waste.org ([66.93.16.53]:60581 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754975AbYARANP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 19:13:15 -0500
-Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
-From: Matt Mackall <mpm@selenic.com>
+	Thu, 17 Jan 2008 19:19:45 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48853 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756008AbYARATo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 19:19:44 -0500
+Date: Thu, 17 Jan 2008 16:18:35 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: m.kozlowski@tuxland.pl, linux-kernel@vger.kernel.org, paulus@samba.org,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <20080117160513.3456b4eb.akpm@linux-foundation.org>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	 <200801172315.28129.m.kozlowski@tuxland.pl>
-	 <20080117145105.ad968ea6.akpm@linux-foundation.org>
-	 <1200613194.3839.22.camel@cinder.waste.org>
-	 <20080117160513.3456b4eb.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 17 Jan 2008 18:12:48 -0600
-Message-Id: <1200615168.3839.26.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, bunk@kernel.org, Dave Kleikamp <shaggy@austin.ibm.com>,
+       Takashi Iwai <tiwai@suse.de>, Shaohua Li <shaohua.li@intel.com>,
+       Jay Vosburgh <fubar@us.ibm.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: 2.6.24-rc8-git1: Reported regressions from 2.6.23
+In-Reply-To: <20080117155809.7ebc3bb7.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0801171606300.2957@woody.linux-foundation.org>
+References: <200801180035.42878.rjw@sisk.pl> <20080117155809.7ebc3bb7.akpm@linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 2008-01-17 at 16:05 -0800, Andrew Morton wrote:
-> On Thu, 17 Jan 2008 17:39:54 -0600
-> Matt Mackall <mpm@selenic.com> wrote:
+
+On Thu, 17 Jan 2008, Andrew Morton wrote:
 > 
-> > 
-> > On Thu, 2008-01-17 at 14:51 -0800, Andrew Morton wrote:
-> > > > proc_loop: /proc/3731/task/3731/pagemap
-> > > > kernel: BUG: sleeping function called from invalid context at fs/proc/task_mmu.c:554
-> > > > kernel: in_atomic():1, irqs_disabled():0
-> > > > kernel: Call Trace:
-> > > > kernel: [cf1cddf0] [c000840c] show_stack+0x3c/0x194 (unreliable)
-> > > > kernel: [cf1cde20] [c002b2ec] __might_sleep+0xf4/0x108
-> > > > kernel: [cf1cde30] [c00d2d54] add_to_pagemap+0x40/0x11c
-> > > > kernel: [cf1cde50] [c00d2f44] pagemap_pte_range+0xa8/0x10c
-> > > > kernel: [cf1cde70] [c0081b30] walk_page_range+0x148/0x23c
-> > > > kernel: [cf1cdeb0] [c00d3104] pagemap_read+0x15c/0x244
-> > > > kernel: [cf1cdef0] [c0092144] vfs_read+0xc4/0x16c
-> > > > kernel: [cf1cdf10] [c009261c] sys_read+0x4c/0x90
-> > > > kernel: [cf1cdf40] [c001328c] ret_from_syscall+0x0/0x40
-> > > 
-> > > It's not really an oops - it's a warning.  add_to_pagemap() is doing a
-> > > put_user() inside pagemap_pte_range->pte_offset_map->kmap_atomic.
-> > > 
-> > > A known bug, I'm afraid.
-> > > 
-> > > How to fix?
-> > > 
-> > > - double-buffer the data to be copied to userspace or
-> > > 
-> > > - take a local copy of the pte page then work on that instead or
-> > > 
-> > > - play copy_to_user_inatomic() tricks.
-> > 
-> > Hmm, this fell off my radar. How about something like this as a minimal
-> > fix (untested as -mm is a complete doorstop for me at the moment)?
-> > 
-> > diff -r 5595adaea70f fs/proc/task_mmu.c
-> > --- a/fs/proc/task_mmu.c	Thu Jan 17 13:26:54 2008 -0600
-> > +++ b/fs/proc/task_mmu.c	Thu Jan 17 17:29:21 2008 -0600
-> > @@ -582,20 +583,26 @@
-> >  {
-> >  	struct pagemapread *pm = private;
-> >  	pte_t *pte;
-> > -	int err = 0;
-> > +	int offset = 0, err = 0;
-> >  
-> >  	pte = pte_offset_map(pmd, addr);
-> > -	for (; addr != end; pte++, addr += PAGE_SIZE) {
-> > +	for (; addr != end; offset++, addr += PAGE_SIZE) {
-> >  		u64 pfn = PM_NOT_PRESENT;
-> > -		if (is_swap_pte(*pte))
-> > -			pfn = swap_pte_to_pagemap_entry(*pte);
-> > -		else if (pte_present(*pte))
-> > -			pfn = pte_pfn(*pte);
-> > +		if (is_swap_pte(pte[offset]))
-> > +			pfn = swap_pte_to_pagemap_entry(pte[offset]);
-> > +		else if (pte_present(pte[offset]))
-> > +			pfn = pte_pfn(pte[offset]);
-> > +#ifdef CONFIG_HIGHPTE
-> > +		pte_unmap(pte);
-> >  		err = add_to_pagemap(addr, pfn, pm);
-> > +		pte = pte_offset_map(pmd, addr);
-> > +#else
-> > +		err = add_to_pagemap(addr, pfn, pm);
-> > +#endif
-> >  		if (err)
-> >  			return err;
-> >  	}
-> > -	pte_unmap(pte - 1);
-> > +	pte_unmap(pte);
-> >  
-> >  	cond_resched();
-> >  
-> 
-> Good point, it really can be taht simple.
-> 
-> Do we need the ifdef?  pte_offset_map/pte_unmap should be super-cheap on
-> !CONFIG_HIGHPTE builds.
+> There are thirteen regressions for which we have patches but they aren't
+> merged.  That seems rather high.
 
-In that case, pte_unmap is free, pte_offset_map is just a bit of math.
-So yeah, we can simplify this. How about:
+I think a number of them have been merged, or the thing that caused them 
+reverted. For example.
 
-diff -r 5595adaea70f fs/proc/task_mmu.c
---- a/fs/proc/task_mmu.c	Thu Jan 17 13:26:54 2008 -0600
-+++ b/fs/proc/task_mmu.c	Thu Jan 17 18:11:13 2008 -0600
-@@ -582,20 +583,20 @@
- {
- 	struct pagemapread *pm = private;
- 	pte_t *pte;
--	int err = 0;
-+	int offset = 0, err = 0;
- 
--	pte = pte_offset_map(pmd, addr);
--	for (; addr != end; pte++, addr += PAGE_SIZE) {
-+	for (; addr != end; offset++, addr += PAGE_SIZE) {
- 		u64 pfn = PM_NOT_PRESENT;
--		if (is_swap_pte(*pte))
--			pfn = swap_pte_to_pagemap_entry(*pte);
--		else if (pte_present(*pte))
--			pfn = pte_pfn(*pte);
-+		pte = pte_offset_map(pmd, addr);
-+		if (is_swap_pte(pte[offset]))
-+			pfn = swap_pte_to_pagemap_entry(pte[offset]);
-+		else if (pte_present(pte[offset]))
-+			pfn = pte_pfn(pte[offset]);
-+		pte_unmap(pte);
- 		err = add_to_pagemap(addr, pfn, pm);
- 		if (err)
- 			return err;
- 	}
--	pte_unmap(pte - 1);
- 
- 	cond_resched();
+> > Subject		: [2.6.24-rc6] pdflush still stuck in D state regression
+> > Submitter	: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+> > Date		: 2007-11-02 09:54
+> > References	: http://bugzilla.kernel.org/show_bug.cgi?id=9291
+> > Handled-By	: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=14219&action=view
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Isn't this the same write-back-related thing, reverted by 
+c23f72cae9523d29ff94eec8f30ccbdaf234b20e?
 
+> > Subject		: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
+> > Submitter	: Roland Dreier <rdreier@cisco.com>
+> > Date		: 2007-11-08 14:55
+> > References	: http://lkml.org/lkml/2007/11/8/255
+> > 		  http://bugzilla.kernel.org/show_bug.cgi?id=9332
+> > Handled-By	: Takashi Iwai <tiwai@suse.de>
+> > 		  Ingo Molnar <mingo@elte.hu>
+> > Patch		: http://lkml.org/lkml/2007/11/16/66
+
+This patch went in, but was reverted because it caused more problems than 
+it fixed. And what it "fixed" was somewhat dubious anyway.
+
+> > Subject	: jiffies counter leaps in 2.6.24-rc3
+> > Submitter	: Stefano Brivio <stefano.brivio@polimi.it>
+> > Date	: 2007-11-29 08:36
+> > References	: http://lkml.org/lkml/2007/11/24/53
+> > 		  http://bugzilla.kernel.org/show_bug.cgi?id=9475
+> > Handled-By	: Ingo Molnar <mingo@elte.hu>
+> > Patch	: http://lkml.org/lkml/2007/12/7/132
+
+I think this is just the printk timestamp, no? And I think Ingo fixed it 
+differently.
+
+> > Subject	: PATA_HPT37X embezzles two ports
+> > Submitter	: "Bjoern Olausson" <lkmlist@gmail.com>
+> > Date	: 2007-12-12 11:05
+> > References	: http://lkml.org/lkml/2007/12/12/161
+> > 		  http://bugzilla.kernel.org/show_bug.cgi?id=9551
+> > Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> > Patch	: http://lkml.org/lkml/2007/1/4/161
+
+Fixed by commit 73946f9fc5be1433f1e182d11303188390ff242f, afaik.
+
+			Linus
