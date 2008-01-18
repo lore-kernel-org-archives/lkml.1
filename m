@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762260AbYARRWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763576AbYARRXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762260AbYARRWX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:22:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbYARRWQ
+	id S1763576AbYARRXW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761699AbYARRXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:22:16 -0500
-Received: from mopniei1.ch.govorit.ru ([89.221.56.130]:45880 "EHLO
-	d-fens.mopniei.ru" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752604AbYARRWP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:22:15 -0500
-To: linux-kernel@vger.kernel.org
-Subject: mount: can not restrict mode of iso9660 files
-From: "Ilya N. Golubev" <gin@mo.msk.ru>
-Date: Fri, 18 Jan 2008 19:39:20 +0300
-Message-ID: <518x2n9jgn.fsf@mo.msk.ru>
+	Fri, 18 Jan 2008 12:23:15 -0500
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3237 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761637AbYARRXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 12:23:14 -0500
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
+Date: Fri, 18 Jan 2008 18:23:06 +0100
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       paulus@samba.org, linuxppc-dev@ozlabs.org
+References: <20080117023514.9df393cf.akpm@linux-foundation.org> <20080117162913.0323c517.akpm@linux-foundation.org> <1200617237.3839.32.camel@cinder.waste.org>
+In-Reply-To: <1200617237.3839.32.camel@cinder.waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801181823.07718.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Versions: `2.6.17-1.2142_FC4' (fedora core) for x86_64;
-`kernel-syms-2.6.22.5-31' (opensuse 10.3) for i586.
+Hello,
 
-File system may contain data not to let any logged in user read.  Wish
-to specify more restrictive mode of files in it - files of all types,
-including not only regular ones, but also directories, even root one
-of the file system.  This certainly must occur on mount itself, not in
-subsequent `chmod' calls.  There is at least one obvious reason to
-avoid explicit `chmod', just as many other uses of it: possible race
-condition between it and other process opening the file.
+> > Do we need `offset' at all?
+> 
+> Looks like no.
+> 
+> I wonder if there's a good argument for adding a pte_offset_val() which
+> would let us do:
+> 
+> pteval = pte_offset_val(pmd, addr);
+> 
+> and shrink the map/unmap window and overhead here and possibly
+> elsewhere?
+> 
+> Anyway, updated but still untested patch now with revealing comment:
 
-When mounting read- only iso9660 file system, `mount' ignores
-`mode=0400' file system option, at least for directories.  More
-precisely,
+I patched the ppc32 kernel with this and run tests on /proc.
+This patch helps. No more BUGs and oopses :)
 
-mount -nv -t iso9660 -o ro,norock,mode=0400,uid=ID_OF_REGULAR_USER DEVICE DIR
+Thanks,
 
-completes without error messages and leaves DIR mounted, but with mode
-`r-xr-xr-x'.  DIR uid is as specified.
+	Mariusz
 
-Also ran that command in `strace -emount'.  Its outputs:
+> diff -r 5595adaea70f fs/proc/task_mmu.c
+> --- a/fs/proc/task_mmu.c	Thu Jan 17 13:26:54 2008 -0600
+> +++ b/fs/proc/task_mmu.c	Thu Jan 17 18:45:57 2008 -0600
+> @@ -584,18 +585,19 @@
+>  	pte_t *pte;
+>  	int err = 0;
+>  
+> -	pte = pte_offset_map(pmd, addr);
+> -	for (; addr != end; pte++, addr += PAGE_SIZE) {
+> +	for (; addr != end; addr += PAGE_SIZE) {
+>  		u64 pfn = PM_NOT_PRESENT;
+> +		pte = pte_offset_map(pmd, addr);
+>  		if (is_swap_pte(*pte))
+>  			pfn = swap_pte_to_pagemap_entry(*pte);
+>  		else if (pte_present(*pte))
+>  			pfn = pte_pfn(*pte);
+> +		/* unmap so we're not in atomic when we copy to userspace */
+> +		pte_unmap(pte);
+>  		err = add_to_pagemap(addr, pfn, pm);
+>  		if (err)
+>  			return err;
+>  	}
+> -	pte_unmap(pte - 1);
+>  
+>  	cond_resched();
 
-mount("DEVICE", "DIR", "iso9660", MS_RDONLY|MS_POSIXACL|MS_ACTIVE|MS_NOUSER|0xec0000, 0x50fe60) = 0
-
-suggesting that data converted from `-o' argument are actually passed
-to the kernel.  Permissions of regular files in mounted file system
-are `0400', that is, restricted properly.  This suggests that the
-request to restrict permissions, or at least part of it, is passed to
-kernel.  However, kernel does not honor the request wrt directories in
-mounted file system - or at best needs a separate request for
-permissions of directories, which `mount' program does not make.
