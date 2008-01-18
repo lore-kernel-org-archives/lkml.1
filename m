@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbYARFJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759004AbYARFLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758875AbYARFJX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 00:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYARFJP
+	id S1759004AbYARFLL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 00:11:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYARFK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 00:09:15 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35692 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751153AbYARFJO (ORCPT
+	Fri, 18 Jan 2008 00:10:58 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:58997 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751466AbYARFK5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 00:09:14 -0500
-Date: Thu, 17 Jan 2008 21:08:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-mm1
-Message-Id: <20080117210858.11eeab29.akpm@linux-foundation.org>
-In-Reply-To: <1200619758.4001.0.camel@cinder.waste.org>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	<1200604207.3839.3.camel@cinder.waste.org>
-	<1200619758.4001.0.camel@cinder.waste.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 Jan 2008 00:10:57 -0500
+Message-ID: <47903376.9050204@zytor.com>
+Date: Fri, 18 Jan 2008 00:04:54 -0500
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Kyle McMartin <kyle@mcmartin.ca>
+CC: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: make clflush a required feature on x86_64
+References: <20080118045921.GB974@phobos.i.cabal.ca>
+In-Reply-To: <20080118045921.GB974@phobos.i.cabal.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008 19:29:18 -0600 Matt Mackall <mpm@selenic.com> wrote:
-
+Kyle McMartin wrote:
+> Hopefully nobody will be stupid enough to implement a cpu without
+> it. Frankly, it seems safe enough given we already require SSE2.
 > 
-> On Thu, 2008-01-17 at 15:10 -0600, Matt Mackall wrote:
-> > On Thu, 2008-01-17 at 02:35 -0800, Andrew Morton wrote:
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
-> > 
-> > Hmm. On my Thinkpad R51, this gives me:
-> > 
-> > Uncompressing linux... Ok, booting kernel.
-> > 
-> > ..and nothing more with the attached .config.
+> This means the compiler can optimise away "if (!cpu_has_clflush)"
+> blocks.
 > 
-> Also, both mainline git and x86.git build and boot fine.
+> Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
+> ---
+>  include/asm-x86/cpufeature_64.h     |    3 +++
+>  include/asm-x86/required-features.h |    4 +++-
+>  2 files changed, 6 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/asm-x86/cpufeature_64.h b/include/asm-x86/cpufeature_64.h
+> index e18496b..ef11d27 100644
+> --- a/include/asm-x86/cpufeature_64.h
+> +++ b/include/asm-x86/cpufeature_64.h
+> @@ -18,6 +18,9 @@
+>  #undef  cpu_has_mp
+>  #define cpu_has_mp             1 /* XXX */
+>  
+> +#undef	cpu_has_clflush
+> +#define	cpu_has_clflush        1
+> +
+>  #undef  cpu_has_k6_mtrr
+>  #define cpu_has_k6_mtrr        0
 
-Tried your config on the old PIII.  Boots OK.
+Unnecessary.  These overrides are only needed for the anticases (known 
+to be zero) or for some special hacks.
 
-Then tried it on the Vaio and the machine instantly stops with blinking
-leds.  But it also does this with mainline.  You use pentium-M and so do I
-on that machine.  Odd.
+Stuff that have proper CPUID bits get these defined as constants via the 
+  REQUIRED_MASK macros.
 
+	-hpa
