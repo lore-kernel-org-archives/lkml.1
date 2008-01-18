@@ -1,79 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763576AbYARRXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763633AbYARRXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763576AbYARRXW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761699AbYARRXP
+	id S1763633AbYARRXz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:23:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761637AbYARRXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:23:15 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3237 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761637AbYARRXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:23:14 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
-Date: Fri, 18 Jan 2008 18:23:06 +0100
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       paulus@samba.org, linuxppc-dev@ozlabs.org
-References: <20080117023514.9df393cf.akpm@linux-foundation.org> <20080117162913.0323c517.akpm@linux-foundation.org> <1200617237.3839.32.camel@cinder.waste.org>
-In-Reply-To: <1200617237.3839.32.camel@cinder.waste.org>
+	Fri, 18 Jan 2008 12:23:47 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:32437 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761171AbYARRXp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 12:23:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=syuCBU1ESYiybeBsMnc9SfkdQF1LuTxH1O+3WA+MX7ymw22m/UNB0fiqKWc+DcqWNKejI9yX/bHMIHBIe1q8z4TTcHjM/1D8iZBZQsdUoRgbBxE4trvZJu6YJYfzCNK1eYdikWiGsA/c0aEYTgMudFMPQtKBnBOMzaQ+li8cRKs=
+Date: Fri, 18 Jan 2008 12:23:41 -0500
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+       Mike Arthur <mike.arthur@wolfsonmicro.com>,
+       Stanley Cai <stanley.cai@intel.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Marc Kleine-Budde <mkl@pengutronix.de>, Ian Molton <spyro@f2s.com>,
+       Vincent Sanders <vince@kyllikki.org>,
+       Andrew Zabolotny <zap@homelink.ru>
+Subject: Re: [PATCH] Core driver for WM97xx touchscreens
+Message-ID: <20080118120148.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080118162627.GA28974@rakim.wolfsonmicro.main> <1200673631-366-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801181823.07718.m.kozlowski@tuxland.pl>
+In-Reply-To: <1200673631-366-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Mark,
 
-> > Do we need `offset' at all?
-> 
-> Looks like no.
-> 
-> I wonder if there's a good argument for adding a pte_offset_val() which
-> would let us do:
-> 
-> pteval = pte_offset_val(pmd, addr);
-> 
-> and shrink the map/unmap window and overhead here and possibly
-> elsewhere?
-> 
-> Anyway, updated but still untested patch now with revealing comment:
+On Fri, Jan 18, 2008 at 04:27:06PM +0000, Mark Brown wrote:
+> This patch series adds support for the touchscreen controllers provided
+> by Wolfson Microelectronics WM97xx series chips in both polled and
+> streaming modes.
+>
 
-I patched the ppc32 kernel with this and run tests on /proc.
-This patch helps. No more BUGs and oopses :)
+Thank you for the patches. Some comments below.
 
-Thanks,
+> +static int wm97xx_ts_input_open(struct input_dev *idev)
+> +{
+> +	struct wm97xx *wm = (struct wm97xx *)input_get_drvdata(idev);
 
-	Mariusz
+No need to cast.
 
-> diff -r 5595adaea70f fs/proc/task_mmu.c
-> --- a/fs/proc/task_mmu.c	Thu Jan 17 13:26:54 2008 -0600
-> +++ b/fs/proc/task_mmu.c	Thu Jan 17 18:45:57 2008 -0600
-> @@ -584,18 +585,19 @@
->  	pte_t *pte;
->  	int err = 0;
->  
-> -	pte = pte_offset_map(pmd, addr);
-> -	for (; addr != end; pte++, addr += PAGE_SIZE) {
-> +	for (; addr != end; addr += PAGE_SIZE) {
->  		u64 pfn = PM_NOT_PRESENT;
-> +		pte = pte_offset_map(pmd, addr);
->  		if (is_swap_pte(*pte))
->  			pfn = swap_pte_to_pagemap_entry(*pte);
->  		else if (pte_present(*pte))
->  			pfn = pte_pfn(*pte);
-> +		/* unmap so we're not in atomic when we copy to userspace */
-> +		pte_unmap(pte);
->  		err = add_to_pagemap(addr, pfn, pm);
->  		if (err)
->  			return err;
->  	}
-> -	pte_unmap(pte - 1);
->  
->  	cond_resched();
+> +
+> +	mutex_lock(&wm->ts_mutex);
+> +	/* first time opened ? */
+> +	if (wm->ts_use_count++ == 0) {
 
+You do not need to implement a counter here. Input core makes sure
+that open and close are only called for the fist and last user
+respectivly. ts_mutex can go away as well.
+
+> +	/* set up touch configuration */
+> +	wm->input_dev->name = "wm97xx touchscreen";
+> +	wm->input_dev->open = wm97xx_ts_input_open;
+> +	wm->input_dev->close = wm97xx_ts_input_close;
+> +	set_bit(EV_ABS, wm->input_dev->evbit);
+> +	set_bit(ABS_X, wm->input_dev->absbit);
+> +	set_bit(ABS_Y, wm->input_dev->absbit);
+> +	set_bit(ABS_PRESSURE, wm->input_dev->absbit);
+> +	wm->input_dev->absmax[ABS_X] = abs_x[1];
+> +	wm->input_dev->absmax[ABS_Y] = abs_y[1];
+> +	wm->input_dev->absmax[ABS_PRESSURE] = abs_p[1];
+> +	wm->input_dev->absmin[ABS_X] = abs_x[0];
+> +	wm->input_dev->absmin[ABS_Y] = abs_y[0];
+> +	wm->input_dev->absmin[ABS_PRESSURE] = abs_p[0];
+> +	wm->input_dev->absfuzz[ABS_X] = abs_x[2];
+> +	wm->input_dev->absfuzz[ABS_Y] = abs_y[2];
+> +	wm->input_dev->absfuzz[ABS_PRESSURE] = abs_p[2];
+
+input_set-abs_params(wm->input_dev, ABS_X, ...);
+input_set-abs_params(wm->input_dev, ABS_Y, ...);
+input_set-abs_params(wm->input_dev, ABS_X, ...);
+
+I'd also recoomend using a temp for wm->input_dev, shoudl save a couple
+of bytes.
+
+> +	input_set_drvdata(wm->input_dev, wm);
+
+Also wm->input_dev->dev.parent = &dev; to put it in the proper place
+in sysfs hierarchy.
+
+> +	ret = input_register_device(wm->input_dev);
+> +	if (ret < 0) {
+
+Add input_free_device(); here.
+
+> +		kfree(wm);
+> +		return -ENOMEM;
+> +	}
+
+I will need some more time to review and understand the need for the new bus
+in the driver.
+
+Thanks.
+
+-- 
+Dmitry
