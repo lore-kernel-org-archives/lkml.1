@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761091AbYARBoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbYARBp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761091AbYARBoB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760774AbYARBnn
+	id S1760251AbYARBp6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:45:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbYARBpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:43:43 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:35352 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758162AbYARBnj (ORCPT
+	Thu, 17 Jan 2008 20:45:50 -0500
+Received: from wx-out-0506.google.com ([66.249.82.231]:28016 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753459AbYARBpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:43:39 -0500
+	Thu, 17 Jan 2008 20:45:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nnbsdIDObn5dE3ivTZbmbTa9xpFaT6dVlmcOdiuT50eDGp2/JOjDm54I6ObhZ0jO9mtXHtm3ysOdqVEeLgao/jWdQ+7STwV+tc6ucCPjsTin73oxjFfSdlYQwD5nDT0RcSm/nUgaHWr6tw5Q5W7K5343uUBJI76FnG4N6SXVghQ=
-Message-ID: <70b6f0bf0801171743g610c4a96qf42b268ccc777db4@mail.gmail.com>
-Date: Thu, 17 Jan 2008 17:43:37 -0800
-From: "Valerie Henson" <val.henson@gmail.com>
-To: "David Chinner" <dgc@sgi.com>
-Subject: Re: [RFC] Parallelize IO for e2fsck
-Cc: linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>,
-       "Andreas Dilger" <adilger@clusterfs.com>, "Ric Wheeler" <ric@emc.com>
-In-Reply-To: <20080118011542.GQ155259@sgi.com>
+        b=YeVG/1LJyqYqvksEq8Bvg7aTJJCX4qgG2rMRK3WStr9+B+Vy3ySb/VpG8ekNhXmXalOrrPx+Yd/0aGn8i7cLIfE+T094LXc+7W+qZ4SS+kxCGbP/LMupKo+T0bwYzLTLonfIWyQ+O4r9mH6tzYNmF4DYCe2MhstL9BYkz923Y/E=
+Message-ID: <a8e1da0801171745m3f0aa92bjfdf0a2f1e379ad50@mail.gmail.com>
+Date: Fri, 18 Jan 2008 09:45:48 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct class
+Cc: "Jarek Poplawski" <jarkao2@gmail.com>, "Greg KH" <gregkh@suse.de>,
+       stefanr@s5r6.in-berlin.de, david-b@pacbell.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.44L0.0801171014030.4378-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <70b6f0bf0801161322k2740a8dch6a0d6e6e112cd2d0@mail.gmail.com>
-	 <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com>
-	 <20080118011542.GQ155259@sgi.com>
+References: <a8e1da0801161718w573ac941jc83011e63c47ecf@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0801171014030.4378-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 17, 2008 5:15 PM, David Chinner <dgc@sgi.com> wrote:
-> On Wed, Jan 16, 2008 at 01:30:43PM -0800, Valerie Henson wrote:
-> > Hi y'all,
+On Jan 17, 2008 11:16 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Thu, 17 Jan 2008, Dave Young wrote:
+>
+> > > Your meaning isn't clear.  Do you mean that your patch doesn't generate
+> > > any lockdep warnings at all?  Or do you mean that it generates a single
+> > > lockdep warning at boot time and then no more warnings afterward?
 > >
-> > This is a request for comments on the rewrite of the e2fsck IO
-> > parallelization patches I sent out a few months ago.  The mechanism is
-> > totally different.  Previously IO was parallelized by issuing IOs from
-> > multiple threads; now a single thread issues fadvise(WILLNEED) and
-> > then uses read() to complete the IO.
+> > I means the latter one.
 >
-> Interesting.
+> That's very bad.
 >
-> We ultimately rejected a similar patch to xfs_repair (pre-population
-> the kernel block device cache) mainly because of low memory
-> performance issues and it doesn't really enable you to do anything
-> particularly smart with optimising I/O patterns for larger, high
-> performance RAID arrays.
+> For each type of violation, lockdep only gives one error message.  So
+> the fact that you get one message at boot time and then no more doesn't
+> mean the code is almost right -- it probably means the code has lots of
+> errors and you're seeing only the first one.
+
+You are right, I should have check all possible one.
+
 >
-> The low memory problems were particularly bad; the readahead
-> thrashing cause a slowdown of 2-3x compared to the baseline and
-> often it was due to the repair process requiring all of memory
-> to cache stuff it would need later. IIRC, multi-terabyte ext3
-> filesystems have similar memory usage problems to XFS, so there's
-> a good chance that this patch will see the same sorts of issues.
-
-That was one of my first concerns - how to avoid overflowing memory?
-Whenever I screw it up on e2fsck, it does go, oh, 2 times slower due
-to the minor detail of every single block being read from disk twice.
-:)
-
-I have a partial solution that sort of blindly manages the buffer
-cache.  First, the user passes e2fsck a parameter saying how much
-memory is available as buffer cache.  The readahead thread reads
-things in and immediately throws them away so they are only in buffer
-cache (no double-caching).  Then readahead and e2fsck work together so
-that readahead only reads in new blocks when the main thread is done
-with earlier blocks.  The already-used blocks get kicked out of buffer
-cache to make room for the new ones.
-
-What would be nice is to take into account the current total memory
-usage of the whole fsck process and factor that in.  I don't think it
-would be hard to add to the existing cache management framework.
-Thoughts?
-
-> Promising results, though....
-
-Thanks!  It's solving a rather simpler problem than XFS check/repair. :)
-
--VAL
+> Alan Stern
+>
+>
