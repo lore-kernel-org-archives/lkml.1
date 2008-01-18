@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763653AbYARXM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764475AbYARXNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763653AbYARXM4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 18:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758529AbYARXMr
+	id S1764475AbYARXNW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 18:13:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758529AbYARXNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 18:12:47 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:14331 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759073AbYARXMo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 18:12:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=h0FXp86KwuEhskOhKXHBVm3h1ucn5/r/SsC6wZ1nZmSUs69JiW9ygUyP+iCqwUpXLS3tycnjhvuR2TiXST3NZkVYREkvkn3Pz3pOv235L0g+Iyb6lUtnwtoLyJgBSFBoOsIvvfLpjk7Dkul5N0CdY/YB90uWs5jd99H3F5GmtL4=
-Message-ID: <47913261.5000708@gmail.com>
-Date: Sat, 19 Jan 2008 08:12:33 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, Ash Willis <ashwillis@programmer.net>,
-       linux-pcmcia@lists.infradead.org,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH 3/3] Makes lguest's irq handler typesafe
-References: <200801190722.26154.rusty@rustcorp.com.au> <200801190725.24271.rusty@rustcorp.com.au> <200801190727.36567.rusty@rustcorp.com.au>
-In-Reply-To: <200801190727.36567.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jan 2008 18:13:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52157 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762387AbYARXNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 18:13:09 -0500
+Date: Fri, 18 Jan 2008 18:11:09 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2/3] Latencytop instrumentations part 1
+Message-ID: <20080118231109.GC27193@redhat.com>
+References: <4790E3A6.7060807@linux.intel.com> <20080118094048.10e79ff9@laptopd505.fenrus.org> <y0mmyr2ydmm.fsf@ton.toronto.redhat.com> <20080118143334.28ba08ca@laptopd505.fenrus.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080118143334.28ba08ca@laptopd505.fenrus.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> Just a trivial example.
-> ---
->  drivers/lguest/lguest_device.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+Hi -
+
+On Fri, Jan 18, 2008 at 02:33:34PM -0800, Arjan van de Ven wrote:
+> [...]
+> > Can you suggest of some reason why all this instrumentation could
+> > not be in the form of standard markers (perhaps conditionally
+> > compiled out if necessary)?
 > 
-> diff -r 00ab7672f658 drivers/lguest/lguest_device.c
-> --- a/drivers/lguest/lguest_device.c	Thu Jan 17 16:54:00 2008 +1100
-> +++ b/drivers/lguest/lguest_device.c	Thu Jan 17 16:59:46 2008 +1100
-> @@ -179,9 +179,8 @@ static void lg_notify(struct virtqueue *
->  	hcall(LHCALL_NOTIFY, lvq->config.pfn << PAGE_SHIFT, 0, 0);
->  }
->  
-> -static irqreturn_t lguest_interrupt(int irq, void *_vq)
-> +static irqreturn_t lguest_interrupt(int irq, struct virtqueue *vq)
->  {
-> -	struct virtqueue *vq = _vq;
->  	struct lguest_device_desc *desc = to_lgdev(vq->vdev)->desc;
->  
->  	if (unlikely(desc->config_change)) {
+> sure. Every instrumentation you see is of the nested kind (since the lowest level
+> of nesting is already automatic via wchan).
+> If markers can provide me the following semantics, I'd be MORE than happy to use markers:
+> [...]
+> If markers can provide that semantics ... you sold me.
 
-Type safety is good but I doubt this would be worth the complexity.  It
-has some benefits but there's much larger benefit in keeping things in
-straight C.  People know that functions take fixed types and are also
-familiar with the convention of passing void * for callback arguments.
-IMHO, staying in line with those common knowledges easily trumps having
-type checking on interrupt handler.
+Further to what acme said, markers are semantics-free.  Callback
+functions that implement your entry & exit semantics can be attached
+at run time, at your pleasure.  (So can systemtap probes, for that
+matter.)  The main difference would be that these callback functions
+would have manage the per-thread LIFO data structures themselves,
+instead of allocating backpointers on the kernel stack.  (Bonus marks
+for not modifying task_struct. :-)
 
-Also, how often do we see a bug where things go wrong because interrupt
-handler is given the wrong type of argument?  Even when such bug
-happens, I doubt it can escape the developer's workstation if he/she is
-paying any attention to testing.
-
-Thanks.
-
--- 
-tejun
+- FChE
