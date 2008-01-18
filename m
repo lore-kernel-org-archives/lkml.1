@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765345AbYARWHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762708AbYARWH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765345AbYARWHn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762534AbYARWHd
+	id S1762708AbYARWH4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:07:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764360AbYARWHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:07:33 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34655 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762059AbYARWHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:07:32 -0500
-Date: Fri, 18 Jan 2008 17:07:27 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] NLM: have nlm_shutdown_hosts kill off all NLM RPC
- tasks
-Message-ID: <20080118170727.70a77a6b@tleilax.poochiereds.net>
-In-Reply-To: <20080118214345.GM15158@fieldses.org>
-References: <1200319518-22422-1-git-send-email-jlayton@redhat.com>
-	<1200319518-22422-2-git-send-email-jlayton@redhat.com>
-	<1200319518-22422-3-git-send-email-jlayton@redhat.com>
-	<1200319518-22422-4-git-send-email-jlayton@redhat.com>
-	<1200319518-22422-5-git-send-email-jlayton@redhat.com>
-	<20080118214345.GM15158@fieldses.org>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jan 2008 17:07:41 -0500
+Received: from eagle.jhcloos.com ([207.210.242.212]:3168 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763543AbYARWHi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 17:07:38 -0500
+X-Greylist: delayed 483 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jan 2008 17:07:38 EST
+From: James Cloos <cloos@jhcloos.com>
+To: "Francis Moreau" <francis.moro@gmail.com>
+Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Subject: Re: Why not creating a GIT RT tree ?
+In-Reply-To: <38b2ab8a0801180544j2022af8bl252a118a295b1f34@mail.gmail.com>
+	(Francis Moreau's message of "Fri, 18 Jan 2008 14:44:38 +0100")
+References: <38b2ab8a0801180544j2022af8bl252a118a295b1f34@mail.gmail.com>
+User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/23.0.60 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2007 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+X-Hashcash: 1:23:080118:rostedt@goodmis.org::TxyX7R68pUcigj0H:0000000000000000000000000000000000000000003MOf
+X-Hashcash: 1:23:080118:francis.moro@gmail.com::JuveJtfzWo4m+w+M:0000000000000000000000000000000000000003pWN
+X-Hashcash: 1:23:080118:linux-kernel@vger.kernel.org::2G0oVVXnOemkeQyd:0000000000000000000000000000000004Jew
+Date: Fri, 18 Jan 2008 21:59:22 +0000
+Message-ID: <m3zlv2kd6t.fsf@lugabout.jhcloos.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 16:43:45 -0500
-"J. Bruce Fields" <bfields@fieldses.org> wrote:
+>>>>> "Francis" == Francis Moreau <francis.moro@gmail.com> writes:
 
-> On Mon, Jan 14, 2008 at 09:05:18AM -0500, Jeff Layton wrote:
-> > If we're shutting down all the nlm_hosts anyway, then it doesn't
-> > make sense to allow RPC calls to linger. Allowing them to do so can
-> > mean that the RPC calls can outlive the currently running lockd and
-> > can lead to a use after free situation.
-> 
-> I assume that all new rpc calls are created by the lockd thread itself
-> (which also calls nlm_shutdown_hosts(), which guarantees that there
-> can't be someone about to make an rpc call using the clnt we're
-> destroying here?
-> 
+Francis> I can't find a rt tree anywhere and all new rt release spoke
+Francis> about a patchset to apply on mainline kernels.
 
-I believe that's correct.
+It is not perfect, but I do have a git repo of the rt history-of-patches
+up at:
 
-> By the way, any idea what the nlm_shutdown_hosts() call in exit_nlm()
-> is doing?
-> 
+ git://git.kernel.org/pub/scm/linux/kernel/git/cloos/rt-2.6.git
+http://www.kernel.org/pub/scm/linux/kernel/git/cloos/rt-2.6.git
 
-Before this patchset, it was possible for more than one lockd
-to be up at a time, and I suppose there could have been races that
-would cause both to exit without ever calling nlm_shutdown_hosts.
+Gitweb URL is:
 
-With this patchset, we may be able to remove that. I suspect that it's
-probably a noop now. That said, even after spending a fair bit of time
-in this code, I'm not entirely comfortable with it. I suggest that we
-take the incremental approach to lockd changes unless someone here is
-sure :-).
+http://git.kernel.org/?p=linux/kernel/git/cloos/rt-2.6.git
 
-Cheers,
+It is in the one-head per patch style, and has the single-file patches
+applied rather than the quilt queue.
+
+But it will at least allow comparisons among the various versions.
+
+The master head matches the most current patch.
+
+(I try to keep it updated the same day as patches are announced, but
+it does sometimes lag a day or two.)
+
+-JimC
 -- 
-Jeff Layton <jlayton@redhat.com>
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
