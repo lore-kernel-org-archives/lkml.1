@@ -1,144 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbYARJUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758313AbYARJWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759476AbYARJUS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 04:20:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbYARJTp
+	id S1758313AbYARJWT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 04:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbYARJWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 04:19:45 -0500
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:54290 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755584AbYARJTl (ORCPT
+	Fri, 18 Jan 2008 04:22:01 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:9846 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755263AbYARJV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 04:19:41 -0500
-Date: Fri, 18 Jan 2008 10:19:33 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: "Dave Young" <hidave.darkstar@gmail.com>
-Cc: "Gabor Gombas" <gombasg@sztaki.hu>, "Tejun Heo" <htejun@gmail.com>,
-       "Al Viro" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net, kay.sievers@vrfy.org,
-       "Greg KH" <greg@kroah.com>, "Marcel Holtmann" <marcel@holtmann.org>,
-       davem@davemloft.net
-Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
-Message-ID: <20080118101933.258bfae9@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <a8e1da0801171937r92a1c32l116315a76f334776@mail.gmail.com>
-References: <20080108133215.GA15814@boogie.lpds.sztaki.hu>
-	<20080111230929.GA7052@boogie.lpds.sztaki.hu>
-	<a8e1da0801132305s4f0c3d7asa268382bb6e44777@mail.gmail.com>
-	<20080114135228.6b9a8da2@gondolin.boeblingen.de.ibm.com>
-	<20080115015741.GB2780@darkstar.te-china.tietoenator.com>
-	<20080116010205.GA2970@darkstar.te-china.tietoenator.com>
-	<20080116230646.GB6715@boogie.lpds.sztaki.hu>
-	<a8e1da0801162324r2cd82684iede3fc8c2f8c391c@mail.gmail.com>
-	<20080117081504.GA3123@darkstar.te-china.tietoenator.com>
-	<20080117124259.19a88129@gondolin.boeblingen.de.ibm.com>
-	<a8e1da0801171937r92a1c32l116315a76f334776@mail.gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i486-pc-linux-gnu)
+	Fri, 18 Jan 2008 04:21:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=C4JX5WCFnN3Q+AWx4AUJwyEw9OgmpnZ2YBYmCFl+eITKt+PUdGLsASHOwedNphSQzMF0TwFuLRlKEYare1QDVLg2clGTBpvJDEcM44lTBaSComRBACQvwXrc+ij06jlBbFruZCnuZkKMDJQr/Qkvh8xyKYMbWznEeRstYI/gDbg=
+Subject: Re: [PATCHv2] x86: Use v8086_mode helper, trivial unification
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080118091208.GE24337@elte.hu>
+References: <1200615957.5724.75.camel@brick>
+	 <20080118091208.GE24337@elte.hu>
+Content-Type: text/plain
+Date: Fri, 18 Jan 2008 01:22:00 -0800
+Message-Id: <1200648120.5724.131.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 11:37:21 +0800,
-"Dave Young" <hidave.darkstar@gmail.com> wrote:
-
-
-> Lets see the device_move function, seems there's some problems in it:
+On Fri, 2008-01-18 at 10:12 +0100, Ingo Molnar wrote:
+> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
 > 
-> 1302 int device_move(struct device *dev, struct device *new_parent)
-> 1303 {
-> 1304         int error;
-> 1305         struct device *old_parent;
-> 1306         struct kobject *new_parent_kobj;
-> 1307
-> 1308         dev = get_device(dev);
-> 1309         if (!dev)
-> 1310                 return -EINVAL;
-> 1311
-> 1312         new_parent = get_device(new_parent);
-> 1313         new_parent_kobj = get_device_parent (dev, new_parent);
+> > Use v8086_mode inline in fault_32.c, no functional change also ifdef 
+> > the section for 32-bit only and add to fault_64.c
 > 
-> Here could get kobject reference
-
-Eww. get_device_parent() may inflate the refcount in one case
-for !CONFIG_SYSFS_DEPRECATED, but often won't. (And the function is
-named confusingly, since it hints that we always get a reference, which
-we don't.)
-
+> > -	if (regs->flags & VM_MASK) {
+> > +	if (v8086_mode(regs)) {
 > 
-> 1314         if (IS_ERR(new_parent_kobj)) {
-> 1315                 error = PTR_ERR(new_parent_kobj);
-> 1316                 put_device(new_parent);
-> 1317                 goto out;
-> 1318         }
-> 1319         pr_debug("DEVICE: moving '%s' to '%s'\n", dev->bus_id,
-> 1320                  new_parent ? new_parent->bus_id : "<NULL>");
-> 1321         error = kobject_move(&dev->kobj, new_parent_kobj);
-> 1322         if (error) {
-> 1323                 put_device(new_parent);
+> > --- a/arch/x86/mm/fault_64.c
+> > +++ b/arch/x86/mm/fault_64.c
+> > @@ -551,6 +551,16 @@ good_area:
+> >  		tsk->maj_flt++;
+> >  	else
+> >  		tsk->min_flt++;
+> > +
+> > +	/*
+> > +	 * Did it hit the DOS screen memory VA from vm86 mode?
+> > +	 */
+> > +	if (v8086_mode(regs)) {
+> > +		unsigned long bit = (address - 0xA0000) >> PAGE_SHIFT;
+> > +		if (bit < 32)
+> > +			tsk->thread.screen_bitmap |= 1 << bit;
+> > +	}
 > 
-> imagine new_parent is NULL, then the new_parent_kobj should be put
-
-No, we would need a put_device_parent() (crappy name) which puts the
-reference iff get_device_parent() grabbed it.
-
+> hm, is there even vm86 mode in 64-bit? Anyway, gcc will eliminate it i 
+> guess. I've applied your patch.
 > 
-> 1324                 goto out;
-> 1325         }
-> 1326         old_parent = dev->parent;
-> 1327         dev->parent = new_parent;
-> 1328         if (old_parent)
-> 1329                 klist_remove(&dev->knode_parent);
-> 1330         if (new_parent)
-> 1331                 klist_add_tail(&dev->knode_parent,
-> &new_parent->klist_children);
-> 1332         if (!dev->class)
-> 1333                 goto out_put;
-> 
-> Why not put new_parent | new_parent_kobj?
 
-Because that is the good case :)
+No, it doesn't mean anything to 64-bit, but helps make the diff a little
+bit smaller, getting pretty close now.
 
-> 
-> 1334         error = device_move_class_links(dev, old_parent, new_parent);
-> 1335         if (error) {
-> 1336                 /* We ignore errors on cleanup since we're hosed
-> anyway... */
-> 1337                 device_move_class_links(dev, new_parent, old_parent);
-> 1338                 if (!kobject_move(&dev->kobj, &old_parent->kobj)) {
-> 1339                         if (new_parent)
-> 1340                                 klist_remove(&dev->knode_parent);
-> 1341                         if (old_parent)
-> 1342                                 klist_add_tail(&dev->knode_parent,
-> 1343
-> &old_parent->klist_children);
-> 1344                 }
-> 1345                 put_device(new_parent);
-> 
-> Same doubt as above
+Still needs a bit of work to introduce oops_begin/end from 64-bit to
+32-bit in traps_32.c and introduce a bad_pgtable-like function to
+32bit, then we're down to small differences between 32/64 bit
+do_page_fault and vmalloc_sync_all that should be relatively clean
+to harmonize.
 
-We'd need put_device_parent() or whatever here as well, I guess.
+Got distracted with the ptrace stuff today, but patch coming soon.
 
-> 
-> 1346                 goto out;
-> 1347         }
-> 1348 out_put:
-> 1349         put_device(old_parent);
-> 1350 out:
-> 1351         put_device(dev);
-> 1352         return error;
-> 1353 }
-> 
-> Hope I'm wrong, but if it's indeed bugs, I will send a patch about this.
+Harvey
 
-There are more problems, I'm afraid :( setup_parent() calls
-get_device_parent() as well, so device_add() has the same problems on
-error cleanup...
-
-I'll take a look at it if I find some time, but I'm afraid I'll not
-be able to do so before next week.
