@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbYARJAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbYARJAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbYARJAH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 04:00:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbYARI7y
+	id S1757831AbYARJAc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 04:00:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbYARI74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 03:59:54 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38706 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754843AbYARI7x (ORCPT
+	Fri, 18 Jan 2008 03:59:56 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:55522 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755699AbYARI7y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 03:59:53 -0500
-Date: Fri, 18 Jan 2008 01:03:37 -0800
+	Fri, 18 Jan 2008 03:59:54 -0500
+Date: Fri, 18 Jan 2008 01:05:53 -0800
 From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH] X86: fix typo PAT to X86_PAT
-In-reply-to: <20080118081040.GB16597@elte.hu>
+Subject: [PATCH] x86_64: only call early_init_amd one time
 To: Ingo Molnar <mingo@elte.hu>
-Cc: venkatesh.pallipadi@intel.com, LKML <linux-kernel@vger.kernel.org>
-Message-id: <200801180103.37771.yinghai.lu@sun.com>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Message-id: <200801180105.53434.yinghai.lu@sun.com>
 Organization: Sun
 MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
+Content-type: text/plain; charset=us-ascii
 Content-transfer-encoding: 7BIT
 Content-disposition: inline
-References: <200801171950.32458.yinghai.lu@sun.com>
- <20080118081040.GB16597@elte.hu>
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 January 2008 12:10:40 am Ingo Molnar wrote:
-> 
-> * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
-> 
-> >  config MTRR
-> >  	bool "MTRR (Memory Type Range Register) support"
-> > -	depends on !PAT
-> > +	depends on !X86_PAT
-> >  	---help---
-> >  	  On Intel P6 family processors (Pentium Pro, Pentium II and later)
-> >  	  the Memory Type Range Registers (MTRRs) may be used to control
-> 
-> thanks. But, i think we should rather do the following: if X86_PAT is 
-> eanbled then /proc/mtrr should be read-only. There's no problem 
-> _looking_ at MTRR contents, as long as we do not try to modify them. Hm?
+[PATCH] x86_64: only call early_init_amd one time
 
-anyway 
+Andi's patch
+"
+    x86: move X86_FEATURE_CONSTANT_TSC into early cpu feature detection
 
-depends on !PAT
+    Need this in the next patch in time_init and that happens early.
 
-need to be removed.
+    This includes a minor fix on i386 where early_intel_workarounds()
+    [which is now called early_init_intel] really executes early as
+    the comments say.
+"
+calling early_init_amd in early_identify_cpu and identify_cpu two times.
 
-it seems when PAT is used, some code still touch MTRR.
+this patch remove the one in identify_cpu
 
-YH
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index aeaa17d..d236593 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -1029,6 +1029,9 @@ static void __cpuinit early_identify_cpu(struct cpuinfo_x86 *c)
+ 	case X86_VENDOR_AMD:
+ 		early_init_amd(c);
+ 		break;
++	case X86_VENDOR_INTEL:
++		early_init_intel(c);
++		break;
+ 	}
+ 
+ }
+@@ -1095,14 +1098,6 @@ void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
+ 	numa_add_cpu(smp_processor_id());
+ #endif
+ 
+-	switch (c->x86_vendor) {
+-	case X86_VENDOR_AMD:
+-		early_init_amd(c);
+-		break;
+-	case X86_VENDOR_INTEL:
+-		early_init_intel(c);
+-		break;
+-	}
+ }
+ 
+ void __cpuinit print_cpu_info(struct cpuinfo_x86 *c)
