@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760590AbYARAid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760351AbYARAit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760590AbYARAid (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 19:38:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757720AbYARAg3
+	id S1760351AbYARAit (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 19:38:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760191AbYARAgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 19:36:29 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44432 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759920AbYARAgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 19:36:23 -0500
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: lguest@ozlabs.org
-Cc: glommer@gmail.com, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       rostedt@goodmis.org
-Subject: [PATCH 0/7] More lguest massage.
-Date: Thu, 17 Jan 2008 22:35:50 -0200
-Message-Id: <12006165841070-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <12006165781954-git-send-email-gcosta@redhat.com>
-References: <1200616550283-git-send-email-gcosta@redhat.com> <12006165571406-git-send-email-gcosta@redhat.com> <1200616561270-git-send-email-gcosta@redhat.com> <12006165651341-git-send-email-gcosta@redhat.com> <12006165701019-git-send-email-gcosta@redhat.com> <12006165743557-git-send-email-gcosta@redhat.com> <12006165781954-git-send-email-gcosta@redhat.com>
+	Thu, 17 Jan 2008 19:36:53 -0500
+Received: from shadow.wildlava.net ([67.40.138.81]:36184 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760178AbYARAgw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 19:36:52 -0500
+Message-ID: <478FF4F2.2050004@skyrush.com>
+Date: Thu, 17 Jan 2008 17:38:10 -0700
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071119)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH] (*revised*) Fix IXANY and restart after signal (e.g.
+ ctrl-C) in n_tty line discipline
+References: <476D1D0E.6000302@skyrush.com>	<478FE861.4000705@skyrush.com> <20080117161156.92737c80.akpm@linux-foundation.org>
+In-Reply-To: <20080117161156.92737c80.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-urrently, lguest module can't be compiled without the PARAVIRT flag being
-on.This is a fake dependency, since the module itself shouldn't need any
-paravirtoverride. Reason for that is the reference to pv_info structure
-ininitial loading tests.
+Andrew Morton wrote:
+> What were the "couple of issues"?
 
-his patch removes it in favour of a more generic error message.
+They are the same 2 issues described in the original version of the
+patch and included in the text of this one too (i.e. the text at the
+start of this latest patch version is the same as before).
 
-Signed-off-by:Glauber de Oliveira Costa <gcosta@redhat.com>
----
-drivers/lguest/core.c |    2 +-
-1 files changed, 1 insertions(+), 1 deletions(-)
+>> This patch should *replace* the old version of the patch.
+> 
+> I don't like replacements a lot.  It forces one to re-review the whole
+> thing from scratch.  Which is why I almost always turn the replacement
+> into an incremental patch, as below.
 
-diff--git a/drivers/lguest/core.c b/drivers/lguest/core.c
-indexbb42fd0..97b76d6 100644
----a/drivers/lguest/core.c
-+++b/drivers/lguest/core.c
-@@-255,7 +255,7 @@ static int __init init(void)
+I see your point.  Cool, thanks for making the update patch, and I'll
+submit them like that in the future.
 
-	/* Lguest can't run under Xen, VMI or itself.  It does Tricky Stuff. */
-	if (paravirt_enabled()) {
--		printk("lguestis afraid of %s\n", pv_info.name);
-+		printk("lguestcan't run under another hypervisor");
-		return -EPERM;
-	}
-
---
-1.5.0.6
-
+					-Thanks, Joe
