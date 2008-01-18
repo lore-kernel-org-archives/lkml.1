@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932731AbYARWbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbYARWef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932731AbYARWbR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760738AbYARWbH
+	id S932765AbYARWef (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:34:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760670AbYARWe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:31:07 -0500
-Received: from gw.goop.org ([64.81.55.164]:45271 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758536AbYARWbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:31:05 -0500
-Message-ID: <479128A4.9070509@goop.org>
-Date: Fri, 18 Jan 2008 14:31:00 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Ingo Molnar <mingo@elte.hu>, Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       glommer@gmail.com, tglx@linutronix.de, ehabkost@redhat.com,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       roland@redhat.com, mtosatti@redhat.com
-Subject: Re: [PATCH 0/10] Tree fixes for PARAVIRT
-References: <12006768251548-git-send-email-gcosta@redhat.com>	 <20080118203259.GA3079@elte.hu>  <20080118213711.GA24979@elte.hu> <1200693248.21817.157.camel@bodhitayantram.eng.vmware.com>
-In-Reply-To: <1200693248.21817.157.camel@bodhitayantram.eng.vmware.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Fri, 18 Jan 2008 17:34:27 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57695 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757190AbYARWe0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 17:34:26 -0500
+Date: Fri, 18 Jan 2008 14:33:34 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: fche@redhat.com (Frank Ch. Eigler)
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2/3] Latencytop instrumentations part 1
+Message-ID: <20080118143334.28ba08ca@laptopd505.fenrus.org>
+In-Reply-To: <y0mmyr2ydmm.fsf@ton.toronto.redhat.com>
+References: <4790E3A6.7060807@linux.intel.com>
+	<20080118094048.10e79ff9@laptopd505.fenrus.org>
+	<y0mmyr2ydmm.fsf@ton.toronto.redhat.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> Why are we rushing so much to do 64-bit paravirt that we are breaking
-> working configurations?  If the developement is going to be this
-> chaotic, it should be done and tested out of tree until it can
-> stabilize.
->   
+On Fri, 18 Jan 2008 17:26:09 -0500
+fche@redhat.com (Frank Ch. Eigler) wrote:
 
-x86.git is out of the mainline tree, and it seems to be working fairly 
-smoothly.  I've come to appreciate the "lots of small patches with quick 
-turnaround" model that Ingo has been pushing.
+> Arjan van de Ven <arjan@infradead.org> writes:
+> 
+> > This patch contains the first set of instrumentations for
+> > latencytop; each instrumentation needs to be evaluated for
+> > usefulness before this can go into mainline; posting here just to
+> > show how the infrastructure can be used
+> > [...]
+> 
+> Can you suggest of some reason why all this instrumentation could
+> not be in the form of standard markers (perhaps conditionally
+> compiled out if necessary)?
+> 
 
-> I do not like having to continuously retest and review the x86 branch
-> because the paravirt-ops are constantly in flux and the 32-bit code
-> keeps breaking.
->   
+sure. Every instrumentation you see is of the nested kind (since the lowest level
+of nesting is already automatic via wchan).
 
-Most of the activity is pure unification, with paravirt being part of 
-that.  It doesn't help that it increases the CONFIG_ combinatorial 
-explosion, but "make randconfig" shakes things out fairly quickly.
+If markers can provide me the following semantics, I'd be MORE than happy to use markers:
 
-> We won't be doing 64-bit paravirt-ops for exactly this reason - is there
-> a serious justification from the performance angle on modern 64-bit
-> hardware?  If not, why justify the complexity and hackery to Linux?
->   
+If the code path is like this
 
-A big part of the rationale is to unify 32 and 64 bit, so that paravirt 
-isn't a gratuitous difference between the two.  Also, 32 and 64 bit Xen 
-have almost identical interface requirements, so the work is making 
-64-bit Xen progress (and lguest64, of course).
 
-    J
+set_latency_reason("Reading file");
+    ....
+    ....
+          set_latency_reason("Allocating memory");
+          kmalloc()  <--- blocks for 100 msec
+          restore_latency_reason()
+    ....
+restore_latency_reason();
+
+via several layers of functions, the requirement is that the 100 msec is accounted 
+to "reading file" and not "Allocating memory". But if some other codepath hits the allocating memory function,
+without an outer "set_latency_reason", it should be accounted to "Allocating memory".
+
+If markers can provide that semantics ... you sold me.
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
