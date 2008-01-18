@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760058AbYARB0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbYARB0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760058AbYARB0e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:26:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757265AbYARB0V
+	id S1758426AbYARB0r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:26:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759292AbYARB01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:26:21 -0500
-Received: from mga11.intel.com ([192.55.52.93]:60131 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755961AbYARB0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:26:20 -0500
-X-ExtLoop1: 1
-Subject: Re: [PATCH 6/10] ACPI: register ACPI Video LCD as generic thermal
-	cooling device
-From: Zhang Rui <rui.zhang@intel.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Thomas, Sujith" <sujith.thomas@intel.com>
-In-Reply-To: <20080117122431.GA32133@srcf.ucam.org>
-References: <1200556282.2935.122.camel@acpi-sony.sh.intel.com>
-	 <20080117122431.GA32133@srcf.ucam.org>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 09:31:40 +0800
-Message-Id: <1200619900.2935.161.camel@acpi-sony.sh.intel.com>
+	Thu, 17 Jan 2008 20:26:27 -0500
+Received: from yue.linux-ipv6.org ([203.178.140.15]:35489 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758858AbYARB0Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 20:26:25 -0500
+Date: Fri, 18 Jan 2008 10:26:35 +0900 (JST)
+Message-Id: <20080118.102635.01689255.yoshfuji@linux-ipv6.org>
+To: jengelh@computergmbh.de
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ak@suse.de, vaf@cisco.com, yoshfuji@linux-ipv6.org
+Subject: Re: [PATCH] IPv4: Enable use of 240/4 address space
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <Pine.LNX.4.64.0801180023450.18447@fbirervta.pbzchgretzou.qr>
+References: <20080108011057.GA21168@cisco.com>
+	<Pine.LNX.4.64.0801180023450.18447@fbirervta.pbzchgretzou.qr>
+Organization: USAGI/WIDE Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Mattew,
+In article <Pine.LNX.4.64.0801180023450.18447@fbirervta.pbzchgretzou.qr> (at Fri, 18 Jan 2008 02:13:52 +0100 (CET)), Jan Engelhardt <jengelh@computergmbh.de> says:
 
-thanks for your comments.
+> diff --git a/include/linux/in.h b/include/linux/in.h
+> index 27d8a5a..b01bf75 100644
+> --- a/include/linux/in.h
+> +++ b/include/linux/in.h
+> @@ -216,9 +216,6 @@ struct sockaddr_in {
+>  #define	IN_MULTICAST(a)		IN_CLASSD(a)
+>  #define IN_MULTICAST_NET	0xF0000000
+>  
+> -#define	IN_EXPERIMENTAL(a)	((((long int) (a)) & 0xf0000000) == 0xf0000000)
+> -#define	IN_BADCLASS(a)		IN_EXPERIMENTAL((a))
+> -
+>  /* Address to accept any incoming messages. */
+>  #define	INADDR_ANY		((unsigned long int) 0x00000000)
+>  
 
-On Thu, 2008-01-17 at 20:24 +0800, Matthew Garrett wrote:
-> On Thu, Jan 17, 2008 at 03:51:22PM +0800, Zhang Rui wrote:
-> > From: Zhang Rui <rui.zhang@intel.com>
-> >
-> > Register ACPI video device as thermal cooling devices as they may be
-> listed
-> > in _TZD method and the backlight control can be used for throttling.
-> 
-> I'm worried to some extent about how ungeneric this is. A thermal zone
-> may cover any devices, not just processor and video ones.
->  Perhaps this
-> should be added to the acpi_device struct instead, and then let
-> individual drivers implement whatever callbacks are appropriate?
-Yes, we can do this. But it's kinda early to add the
-thermal_cooling_device struct to the acpi_device struct now.
-I don't think any other individual drivers know whether they can or how
-to throttle the device except processor, fan and lcd currently.
+No, please keep these macros.
 
-Just like I don't think lcd should be used for ACPI thermal management
-before I saw it is listed in _TZD and intel_menlow requires to throttle
-it when overheating, why not let the individual drivers implement the
-callbacks if there is clearly a request to do this.
-And we can add this to the generic acpi_device struct then if this is a
-common feature for all ACPI devices.
-> 
-> > +static int
-> > +video_set_cur_state(struct thermal_cooling_device *cdev, unsigned
-> int state)
-> > +{
-> > +     struct acpi_device *device = cdev->devdata;
-> > +     struct acpi_video_device *video = acpi_driver_data(device);
-> > +     int level;
-> > +
-> > +     if ( state >= video->brightness->count - 2)
-> > +             return -EINVAL;
-> > +
-> > +     state = video->brightness->count - state;
-> > +     level = video->brightness->levels[state -1];
-> > +     return acpi_video_device_lcd_set_level(video, level);
-> 
-> This all seems like duplication of the backlight interface?
-Well, you're right.
-But in order to throttle the lcd, this is reasonable, right?
+> @@ -264,7 +261,7 @@ static inline bool ipv4_is_local_multicast(__be32 addr)
+>  
+>  static inline bool ipv4_is_badclass(__be32 addr)
+>  {
+> -	return (addr & htonl(0xf0000000)) == htonl(0xf0000000);
+> +	return addr == 0xFFFFFFFF;
+>  }
+>  
 
-Thanks,
-Rui
+To (un)align the IN_BADCLASS macro and ipv6_is_badclass() definition,
+you should change the name anyway, e.g., ipv6_is_limited_broadcast()
+or some something alike.
 
+--yoshfuji
