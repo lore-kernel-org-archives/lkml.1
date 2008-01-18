@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759271AbYARKCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbYARKH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759271AbYARKCU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbYARKCH
+	id S1757573AbYARKH1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 05:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbYARKHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:02:07 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58882 "EHLO mx2.mail.elte.hu"
+	Fri, 18 Jan 2008 05:07:21 -0500
+Received: from www.tglx.de ([62.245.132.106]:41126 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754769AbYARKCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:02:06 -0500
-Date: Fri, 18 Jan 2008 11:01:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Jeff Garzik <jeff@garzik.org>,
-       Greg KH <greg@kroah.com>, Robert Hancock <hancockr@shaw.ca>,
-       Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 2/2] x86: MMCONF enable MCFG early
-Message-ID: <20080118100141.GA3654@elte.hu>
-References: <200801161405.17889.yinghai.lu@sun.com> <200801161406.38946.yinghai.lu@sun.com> <200801161409.02591.yinghai.lu@sun.com> <200801161626.19991.yinghai.lu@sun.com> <20080118100044.GC30637@elte.hu>
+	id S1753407AbYARKHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 05:07:20 -0500
+Date: Fri, 18 Jan 2008 11:06:48 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Balaji Rao <balajirrao@gmail.com>
+cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: setting jiffies as the clocksource stops time
+In-Reply-To: <200801181141.55837.balajirrao@gmail.com>
+Message-ID: <alpine.LFD.0.99999.0801181105390.4642@localhost.localdomain>
+References: <200801170209.42138.balajirrao@gmail.com> <1200518450.18731.129.camel@imap.mvista.com> <Pine.LNX.4.64.0801172333130.18447@fbirervta.pbzchgretzou.qr> <200801181141.55837.balajirrao@gmail.com>
+User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080118100044.GC30637@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Jan 2008, Balaji Rao wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > Ingo,
-> > it seems you removed
-> > > patch
-> > > 	x86: validate against ACPI motherboard resources
-> > last night. 
+> On Friday 18 January 2008 04:04:33 am Jan Engelhardt wrote:
 > > 
-> > was it dropped?
-> 
-> yeah, i bounced it over to Greg - but Greg has not indicated it yet 
-> whether he has picked it up. Andrew has it in -rc8-mm1 at the moment.
+> > On Jan 16 2008 13:20, Daniel Walker wrote:
+> > >On Thu, 2008-01-17 at 02:09 +0530, Balaji Rao wrote:
+> > >> Hi,
+> > >> 
+> > >> When i set jiffies as the current_clocksource, date(1) tells me
+> > >> that wallclock time has stopped, and soon after that, the system
+> > >> becomes unresponsive. This is not seen with CONFIG_NO_HZ disabled.
+> > >> 
+> > >> I wonder how can jiffies be used as a clocksource.. Its value
+> > >> depends on the tick and when we turn off ticks, we would stop
+> > >> incrementing jiffies and when we come come out of idle, we update
+> > >> the jiffies by reading the current_clocksource which now is
+> > >> 'jiffies', and hence jiffies wouldn't get updated. Could this be
+> > >> the explanation ?
+> > >
+> > >Your right, It can't be used as a clocksource with nohz , and the system
+> > >will refuse to automatically switch to it ..
+> > 
+> > I think that manually changing to jiffies by echoing into sysfs
+> > should also be prohibited.
+> > 
+> Yea, right. But why not unregister jiffies as a clocksource itself when we get into NO_HZ ? I think it's much cleaner 
+> provided it has no other consequences.
 
-so these two patches of yours:
+As I said before. I have a patch lined up for the same issue vs. PIT
+clocksource and I'm adding that for jiffies as well. It's just not an
+urgent issue, which needs to go into .24
 
- Subject: [PATCH 1/2] x86: clear pci_mmcfg_virt when mmcfg get rejected
- Subject: [PATCH 2/2] x86: MMCONF enable MCFG early
+Thanks
 
-should probably go to Andrew/Greg as well.
+	tglx
 
-	Ingo
