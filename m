@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbYARFHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758463AbYARFIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756536AbYARFHK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 00:07:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYARFG4
+	id S1758463AbYARFIR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 00:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbYARFIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 00:06:56 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:53850 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbYARFGz (ORCPT
+	Fri, 18 Jan 2008 00:08:07 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52824 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750946AbYARFIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 00:06:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=VAHylLcz7sWagy5yuCBeHafrFU5e99/S8GLpnjlHGviXqkfoeSKc6cKrlD94gs7w47brITaJSiPhKT0B/aKfiJyofI7vzkoBPkVKU1LLuAK4ns2kDT+d7MY9D8sxDsDwfn+fXOC1p8u/g09/3GtYEki7xucpd0e0X2yU2rplPm4=
-Message-ID: <661de9470801172106t61c702b8ue9610fe66362965a@mail.gmail.com>
-Date: Fri, 18 Jan 2008 10:36:54 +0530
-From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: 2.6.24-rc8-mm1
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       "Linux ACPI mailing list" <linux-acpi@vger.kernel.org>,
-       "Intel E/100 mailing list" <e1000-devel@lists.sourceforge.net>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       andreas.herrmann3@amd.com
-In-Reply-To: <20080118014223.GB25389@linux-os.sc.intel.com>
+	Fri, 18 Jan 2008 00:08:06 -0500
+Message-ID: <479032CD.9040306@zytor.com>
+Date: Fri, 18 Jan 2008 00:02:05 -0500
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Kyle McMartin <kyle@mcmartin.ca>
+CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com
+Subject: Re: [PATCH] x86: merge asm-x86/alternative.h
+References: <20080118050336.GC974@phobos.i.cabal.ca>
+In-Reply-To: <20080118050336.GC974@phobos.i.cabal.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080117104021.25a8e562.akpm@linux-foundation.org>
-	 <924EFEDD5F540B4284297C4DC59F3DEE5E909A@orsmsx423.amr.corp.intel.com>
-	 <20080117230403.GA5411@balbir.in.ibm.com>
-	 <20080118014223.GB25389@linux-os.sc.intel.com>
-X-Google-Sender-Auth: 71ce9470c8eef83a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 18, 2008 7:12 AM, Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
->
-> On Thu, Jan 17, 2008 at 03:04:03PM -0800, Balbir Singh wrote:
-> > I think I found the root cause of the problem and a fix for it.
-> > The fix works for me.
-> >
->
-> Thanks Balbir. But the appended fix is more clean and appropriate. Can you
-> please check if it works.
-> ---
->
-> From Balbir Singh:
->
-> > With the introduction of reserve_mattr() and free_mattr(), the ioremap*
-> > routines
-> > started exploiting it. The recent 2.6.24-rc8-mm1 kernel has a peculiar
-> > problem
-> > where in, certain devices disappear. In my case for example
-> >
-> > e100: Intel(R) PRO/100 Network Driver, 3. 5.23-k4-NAPI
-> > e100: Copyright(c) 1999-2006 Intel Corporation
-> > ACPI: PCI Interrupt 0000:04:08.0[A] -> GSI 20 (level, low) -> IRQ 20
-> > modprobe:2584 conflicting cache attribute 50000000-50001000
-> > uncached<->default
-> > e100: 0000:04:08.0: e100_probe: Cannot map device registers, aborting.
-> > ACPI: PCI interrupt for device 0000:04:08.0 disabled
-> >
-> > On further analysis, it was discovered that quirk_e100_interrupt() calls
-> > ioremap(), which reserves memory attributes for the e100 card, but
-> > iounmap()
-> > does not free it.
->
-> Fix the iounmap() to call free_matrr() unconditionally.
->
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
->
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Kyle McMartin wrote:
+> Straightforward merge. Kind of a pity that gas doesn't really have the
+> concept of a "long" (long is 4-bytes for some reason.) Nor is it able to
+> pad to a non-power of two boundary (for struct alignment) to get rid
+> of the struct alt_instr padding.
+> 
+> Build tested on i386, i386 with lguest & xen paravirt enabled, and
+> x86_64. Boot tested on x86_64.
+> 
+> 
+> diff --git a/include/asm-x86/alternative.h b/include/asm-x86/alternative.h
+> index 9eef6a3..7047a0f 100644
+> --- a/include/asm-x86/alternative.h
+> +++ b/include/asm-x86/alternative.h
+> @@ -1,5 +1,168 @@
+> -#ifdef CONFIG_X86_32
+> -# include "alternative_32.h"
+> +#ifndef _X86_ALTERNATIVE_H
+> +#define _X86_ALTERNATIVE_H
+> +
+> +#ifdef __KERNEL__
+> +
+> +#include <linux/types.h>
+> +#include <linux/stddef.h>
+> +
+> +#ifdef CONFIG_X86_64
+> +# define ALT_ASMPTR	".quad"
+> +# define ALT_ALIGN	"8"
+> +# define ALT_INSTR_PAD	5
+>  #else
+> -# include "alternative_64.h"
+> +# define ALT_ASMPTR	".long"
+> +# define ALT_ALIGN	"4"
+> +# define ALT_INSTR_PAD	1
+>  #endif
 
-Yes, it looks better. p->flags is always set, so the check was not doing much.
-I also tested it and it works for me!
+Please use existing macros from <asm/asm.h> (in the x86 tree.)
 
-Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-
-Balbir
+	-hpa
