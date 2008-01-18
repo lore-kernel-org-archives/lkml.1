@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbYAREkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757906AbYAREnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757268AbYAREkf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 23:40:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYAREkZ
+	id S1757906AbYAREnA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 23:43:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbYAREmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 23:40:25 -0500
-Received: from imsa.nihilent.com ([203.124.131.74]:52595 "EHLO
-	imsa.nihilent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752281AbYAREkY convert rfc822-to-8bit (ORCPT
+	Thu, 17 Jan 2008 23:42:52 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45315 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751566AbYAREmv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 23:40:24 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
-content-class: urn:content-classes:message
-MIME-Version: 1.0
+	Thu, 17 Jan 2008 23:42:51 -0500
+Date: Thu, 17 Jan 2008 20:42:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: linux-kernel@vger.kernel.org, Zan Lynx <zlynx@acm.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [2.6.24-rc8-mm1] Locking API boot-time self-tests hangs.
+Message-Id: <20080117204247.5318e500.akpm@linux-foundation.org>
+In-Reply-To: <200801180319.m0I3Ju9N089501@www262.sakura.ne.jp>
+References: <200801180120.m0I1KBuC065806@www262.sakura.ne.jp>
+	<20080117181935.02294863.akpm@linux-foundation.org>
+	<200801180319.m0I3Ju9N089501@www262.sakura.ne.jp>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: Bitops source problem
-Date: Fri, 18 Jan 2008 10:10:11 +0530
-Message-ID: <1145971D427D7F43B0DBDAE22221C4B5035FDDAE@nipns00a210.FPS.NIHILENT.COM>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Bitops source problem
-Thread-Index: AchZP7fg1PJ8zfYmRmK1hp5Nj+JCcwAS74gw
-From: "Pravin Nanaware" <p.nanaware@nihilent.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Cc: "John Hubbard" <john.hubbard@gmail.com>,
-       "LKML" <linux-kernel@vger.kernel.org>
-X-TM-AS-Product-Ver: IMSS-7.0.0.1191-5.0.0.1023-15674.002
-X-TM-AS-Result: No--11.831-7.0-31-1
-X-imss-scan-details: No--11.831-7.0-31-1;No--11.831-7.0-31-1
-X-TM-AS-User-Approved-Sender: No;No
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a CentOS 4.4 system with 2.6.9-42 kernel. I will update the kernel to the new one. 
+On Fri, 18 Jan 2008 12:19:56 +0900 Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> wrote:
 
-Regards,
-Pravin
+> Hello.
+> 
+> Andrew Morton wrote:
+> > I'd be suspecting git-sched, so in lieu of a full bisection search it would
+> > be great if one of you could apply
+> > http://userweb.kernel.org/~akpm/git-sched.patch to 2.6.24-rc8 and see if it
+> > fails in the same way.
+> Too bad. It didn't fail.
+> 
 
+I used your exact .config with the current mm lineup (I don't thinlk
+anything relevant has changed) and it booted OK on my old PIII machine.
 
------Original Message-----
-From: Roland Dreier [mailto:rdreier@cisco.com]
-Sent: Friday, January 18, 2008 1:03 AM
-To: Pravin Nanaware
-Cc: John Hubbard; LKML
-Subject: Re: Bitops source problem
+It could be compiler version dependent.  I used gcc-4.1.0.  Which version
+were you and Zan using please?
 
-
- > Yes, indeed none of the atomic bit operations functions has
- > LOCK_PREFIX in my version of Linux kernel.
-
-You have a broken source tree then.  Where did your kernel source come
-from then?  I'm not able to find any version of asm-i386/bitops.h
-where clear_bit() doesn't have LOCK_PREFIX in any of the trees I
-happen to have lying around  (which includes some very old trees like 2.4.21)
-
- - R.
-
--**************Nihilent***************
-" *** All information contained in this communication is confidential, proprietary, privileged
-and is intended for the addressees only. If youhave received this E-mail in error please notify
-mail administrator by telephone on +91-20-39846100 or E-mail the sender by replying to
-this message, and then delete this E-mail and other copies of it from your computer system.
-Any unauthorized dissemination,publication, transfer or use of the contents of this communication,
-with or without modifications is punishable under the relevant law.
-
-Nihilent has scanned this mail with current virus checking technologies. However, Nihilent makes no 
-representations or warranties to the effect that this communication is virus-free.
-
-Nihilent reserves the right to monitor all E-mail communications through its Corporate Network. *** "
-
-*************************************************************************-
