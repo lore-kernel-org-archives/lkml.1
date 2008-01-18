@@ -1,145 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761283AbYARNBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761013AbYARNDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761283AbYARNBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 08:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758197AbYARNBH
+	id S1761013AbYARNDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 08:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759081AbYARNDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 08:01:07 -0500
-Received: from mx1.slu.se ([130.238.96.70]:41621 "EHLO mx1.slu.se"
+	Fri, 18 Jan 2008 08:03:06 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60189 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757594AbYARNBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 08:01:05 -0500
-From: Robert Olsson <Robert.Olsson@data.slu.se>
+	id S1758962AbYARNDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 08:03:04 -0500
+Date: Fri, 18 Jan 2008 14:02:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Lameter <clameter@sgi.com>, ebiederm@xmission.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: checking aperture report for node instead
+	of?cpu v2
+Message-ID: <20080118130243.GS11044@elte.hu>
+References: <200801101914.47967.yinghai.lu@sun.com> <200801141739.35448.yinghai.lu@sun.com> <20080115132253.GC7025@elte.hu> <200801151031.46279.yinghai.lu@sun.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18320.41737.651384.808195@robur.slu.se>
-Date: Fri, 18 Jan 2008 14:00:57 +0100
-To: David Miller <davem@davemloft.net>
-Cc: Robert.Olsson@data.slu.se, elendil@planet.nl, jesse.brandeburg@intel.com,
-       slavon@bigtelecom.ru, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
-In-Reply-To: <20080118.041144.81957249.davem@davemloft.net>
-References: <200801160956.09053.elendil@planet.nl>
-	<20080116.022953.184520911.davem@davemloft.net>
-	<18318.14810.877279.41815@robur.slu.se>
-	<20080118.041144.81957249.davem@davemloft.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <200801151031.46279.yinghai.lu@sun.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-David Miller writes:
+* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
- > > eth0 e1000_irq_enable sem = 1    <- ifconfig eth0 down
- > > eth0 e1000_irq_disable sem = 2
- > > 
- > > **e1000_open                     <- ifconfig eth0 up
- > > eth0 e1000_irq_disable sem = 3      Dead. irq's can't be enabled
- > > e1000_irq_enable miss
- > > eth0 e1000_irq_enable sem = 2
- > > e1000_irq_enable miss
- > > eth0 e1000_irq_enable sem = 1
- > > ADDRCONF(NETDEV_UP): eth0: link is not ready
- > 
- > Yes, this semaphore thing is highly problematic.  In the most crucial
- > areas where network driver consistency matters the most for ease of
- > understanding and debugging, the Intel drivers choose to be different
+> "
+> Checking aperture...
+> CPU 0: aperture @4000000 size 64MB
+> CPU 1: aperture @4000000 size 64MB
+> "
+> we should use use Node instead.
+> 
+> we will get
+> "
+> Checking aperture...
+> Node 0: aperture @4000000 size 64MB
+> Node 1: aperture @4000000 size 64MB
+> "
 
- I don't understand the idea with semaphore for enabling/disabling 
- irq's either the overall logic must safer/better without it.  
- 
- > The way the napi_disable() logic breaks out from high packet load in
- > net_rx_action() is it simply returns even leaving interrupts disabled
- > when a pending napi_disable() is pending.
- > 
- > This is what trips up the semaphore logic.
- > 
- > Robert, give this patch a try.
- > 
- > In the long term this semaphore should be completely eliminated,
- > there is no justification for it.
+thanks, applied.
 
- It's on the testing list...
-
- Cheers
-					--ro
-
-
- > 
- > Signed-off-by: David S. Miller <davem@davemloft.net>
- > 
- > diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
- > index 0c9a6f7..76c0fa6 100644
- > --- a/drivers/net/e1000/e1000_main.c
- > +++ b/drivers/net/e1000/e1000_main.c
- > @@ -632,6 +632,7 @@ e1000_down(struct e1000_adapter *adapter)
- >  
- >  #ifdef CONFIG_E1000_NAPI
- >  	napi_disable(&adapter->napi);
- > +	atomic_set(&adapter->irq_sem, 0);
- >  #endif
- >  	e1000_irq_disable(adapter);
- >  
- > diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
- > index 2ab3bfb..9cc5a6b 100644
- > --- a/drivers/net/e1000e/netdev.c
- > +++ b/drivers/net/e1000e/netdev.c
- > @@ -2183,6 +2183,7 @@ void e1000e_down(struct e1000_adapter *adapter)
- >  	msleep(10);
- >  
- >  	napi_disable(&adapter->napi);
- > +	atomic_set(&adapter->irq_sem, 0);
- >  	e1000_irq_disable(adapter);
- >  
- >  	del_timer_sync(&adapter->watchdog_timer);
- > diff --git a/drivers/net/ixgb/ixgb_main.c b/drivers/net/ixgb/ixgb_main.c
- > index d2fb88d..4f63839 100644
- > --- a/drivers/net/ixgb/ixgb_main.c
- > +++ b/drivers/net/ixgb/ixgb_main.c
- > @@ -296,6 +296,11 @@ ixgb_down(struct ixgb_adapter *adapter, boolean_t kill_watchdog)
- >  {
- >  	struct net_device *netdev = adapter->netdev;
- >  
- > +#ifdef CONFIG_IXGB_NAPI
- > +	napi_disable(&adapter->napi);
- > +	atomic_set(&adapter->irq_sem, 0);
- > +#endif
- > +
- >  	ixgb_irq_disable(adapter);
- >  	free_irq(adapter->pdev->irq, netdev);
- >  
- > @@ -304,9 +309,7 @@ ixgb_down(struct ixgb_adapter *adapter, boolean_t kill_watchdog)
- >  
- >  	if(kill_watchdog)
- >  		del_timer_sync(&adapter->watchdog_timer);
- > -#ifdef CONFIG_IXGB_NAPI
- > -	napi_disable(&adapter->napi);
- > -#endif
- > +
- >  	adapter->link_speed = 0;
- >  	adapter->link_duplex = 0;
- >  	netif_carrier_off(netdev);
- > diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
- > index de3f45e..a4265bc 100644
- > --- a/drivers/net/ixgbe/ixgbe_main.c
- > +++ b/drivers/net/ixgbe/ixgbe_main.c
- > @@ -1409,9 +1409,11 @@ void ixgbe_down(struct ixgbe_adapter *adapter)
- >  	IXGBE_WRITE_FLUSH(&adapter->hw);
- >  	msleep(10);
- >  
- > +	napi_disable(&adapter->napi);
- > +	atomic_set(&adapter->irq_sem, 0);
- > +
- >  	ixgbe_irq_disable(adapter);
- >  
- > -	napi_disable(&adapter->napi);
- >  	del_timer_sync(&adapter->watchdog_timer);
- >  
- >  	netif_carrier_off(netdev);
- > --
- > To unsubscribe from this list: send the line "unsubscribe netdev" in
- > the body of a message to majordomo@vger.kernel.org
- > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+	Ingo
