@@ -1,180 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbYARLYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbYARL1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758519AbYARLYT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 06:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbYARLYH
+	id S1759519AbYARL1r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 06:27:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbYARL1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 06:24:07 -0500
-Received: from viefep31-int.chello.at ([62.179.121.49]:57838 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755126AbYARLYG (ORCPT
+	Fri, 18 Jan 2008 06:27:40 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:59545 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754942AbYARL1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 06:24:06 -0500
-X-Greylist: delayed 1389 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jan 2008 06:24:05 EST
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
-	files
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: salikhmetov@gmail.com, linux-mm@kvack.org, jakob@unthought.net,
-       linux-kernel@vger.kernel.org, valdis.kletnieks@vt.edu, riel@redhat.com,
-       ksm@42.dk, staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
-       hch@infradead.org
-In-Reply-To: <E1JFpDg-0000F6-12@pomaz-ex.szeredi.hu>
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>
-	 <12006091211208-git-send-email-salikhmetov@gmail.com>
-	 <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu> <1200651337.5920.9.camel@twins>
-	 <E1JFobo-00009i-Dk@pomaz-ex.szeredi.hu> <1200654050.5920.14.camel@twins>
-	 <E1JFpDg-0000F6-12@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 12:23:58 +0100
-Message-Id: <1200655438.5920.21.camel@twins>
+	Fri, 18 Jan 2008 06:27:39 -0500
+Date: Fri, 18 Jan 2008 12:26:25 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Cc: "Gabor Gombas" <gombasg@sztaki.hu>, "Tejun Heo" <htejun@gmail.com>,
+       "Al Viro" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net, kay.sievers@vrfy.org,
+       "Greg KH" <greg@kroah.com>, "Marcel Holtmann" <marcel@holtmann.org>,
+       davem@davemloft.net
+Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
+Message-ID: <20080118122625.370e2fba@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <a8e1da0801180234k4b48fd1axaba6d7d334219430@mail.gmail.com>
+References: <20080108133215.GA15814@boogie.lpds.sztaki.hu>
+	<20080115015741.GB2780@darkstar.te-china.tietoenator.com>
+	<20080116010205.GA2970@darkstar.te-china.tietoenator.com>
+	<20080116230646.GB6715@boogie.lpds.sztaki.hu>
+	<a8e1da0801162324r2cd82684iede3fc8c2f8c391c@mail.gmail.com>
+	<20080117081504.GA3123@darkstar.te-china.tietoenator.com>
+	<20080117124259.19a88129@gondolin.boeblingen.de.ibm.com>
+	<a8e1da0801171937r92a1c32l116315a76f334776@mail.gmail.com>
+	<20080118101933.258bfae9@gondolin.boeblingen.de.ibm.com>
+	<20080118112337.0b457c49@gondolin.boeblingen.de.ibm.com>
+	<a8e1da0801180234k4b48fd1axaba6d7d334219430@mail.gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Jan 2008 18:34:55 +0800,
+"Dave Young" <hidave.darkstar@gmail.com> wrote:
 
-On Fri, 2008-01-18 at 12:17 +0100, Miklos Szeredi wrote:
-> > diff --git a/mm/msync.c b/mm/msync.c
-> > index 144a757..a1b3fc6 100644
-> > --- a/mm/msync.c
-> > +++ b/mm/msync.c
-> > @@ -14,6 +14,122 @@
-> >  #include <linux/syscalls.h>
-> >  #include <linux/sched.h>
-> >  
-> > +unsigned long masync_pte_range(struct vm_area_struct *vma, pmd_t *pdm,
-> > +		unsigned long addr, unsigned long end)
-> > +{
-> > +	pte_t *pte;
-> > +	spinlock_t *ptl;
-> > +
-> > +	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
-> > +	arch_enter_lazy_mmu_mode();
-> > +	do {
-> > +		pte_t ptent = *pte;
-> > +
-> > +		if (pte_none(ptent))
-> > +			continue;
-> > +
-> > +		if (!pte_present(ptent))
-> > +			continue;
-> > +
-> > +		if (pte_dirty(ptent) && pte_write(ptent)) {
-> > +			flush_cache_page(vma, addr, pte_pfn(ptent));
+> On Jan 18, 2008 6:23 PM, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> > On Fri, 18 Jan 2008 10:19:33 +0100,
+> > Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> >
+> > > >
+> > > > 1314         if (IS_ERR(new_parent_kobj)) {
+> > > > 1315                 error = PTR_ERR(new_parent_kobj);
+> > > > 1316                 put_device(new_parent);
+> > > > 1317                 goto out;
+> > > > 1318         }
+> > > > 1319         pr_debug("DEVICE: moving '%s' to '%s'\n", dev->bus_id,
+> > > > 1320                  new_parent ? new_parent->bus_id : "<NULL>");
+> > > > 1321         error = kobject_move(&dev->kobj, new_parent_kobj);
+> > > > 1322         if (error) {
+> > > > 1323                 put_device(new_parent);
+> > > >
+> > > > imagine new_parent is NULL, then the new_parent_kobj should be put
+> > >
+> > > No, we would need a put_device_parent() (crappy name) which puts the
+> > > reference iff get_device_parent() grabbed it.
+> >
+> > And looking at Greg's patchset, it has cleanup_device_parent(), which
+> > does just that. But it is only called in device_del(), not when
+> > device_move() has errors.
+> >
+> > (get_device_parent() also always returns a pointer to a kobject or
+> > NULL, so we can get rid of those IS_ERR() checks in setup_parent() and
+> > device_move() as well.)
+> >
 > 
-> Hmm, I'm not sure flush_cache_page() is needed.  Or does does dirty
-> data in the cache somehow interfere with the page protection?
+> Hmm, thanks.
+> I will be offline during weekend,  but I will still check the
+> device_move and other code if I have time.
 
-No, just being paranoid..
+Just hacked together the following against Greg's tree:
 
-> > +			ptent = ptep_clear_flush(vma, addr, pte);
-> > +			ptent = pte_wrprotect(ptent);
-> > +			set_pte_at(vma->vm_mnm, addr, pte, ptent);
-> > +		}
-> > +	} while (pte++, addr += PAGE_SIZE, addr != end);
-> > +	arch_leave_lazy_mmu_mode();
-> > +	pte_unmap_unlock(pte - 1, ptl);
-> > +
-> > +	return addr;
-> > +}
-> > +
-> > +unsigned long masync_pmd_range(struct vm_area_struct *vma, pud_t *pud,
-> > +		unsigned long addr, unsigned long end)
-> > +{
-> > +	pmd_t *pmd;
-> > +	unsigned long next;
-> > +
-> > +	pmd = pmd_offset(pud, addr);
-> > +	do {
-> > +		next = pmd_addr_end(addr, end);
-> > +		if (pmd_none_or_clear_bad(pmd))
-> > +			continue;
-> > +		next = masync_pte_range(vma, pmd, addr, next);
-> > +	} while (pmd++, addr = next, addr != end);
-> > +
-> > +	return addr;
-> > +}
-> > +
-> > +unsigned long masync_pud_range(struct vm_area_struct *vma, pgd_t *pgd,
-> > +	       	unsigned long addr, unsigned long end)
-> > +{
-> > +	pud_t *pud;
-> > +	unsigned long next;
-> > +
-> > +	pud = pud_offset(pgd, addr);
-> > +	do {
-> > +		next = pud_addr_end(addr, end);
-> > +		if (pud_none_or_clear_bad(pud))
-> > +			continue;
-> > +		next = masync_pmd_range(vma, pud, addr, next);
-> > +	} while (pud++, addr = next, addr != end);
-> > +
-> > +	return addr;
-> > +}
-> > +
-> > +unsigned long masync_pgd_range()
-> > +{
-> > +	pgd_t *pgd;
-> > +	unsigned long next;
-> > +
-> > +	pgd = pgd_offset(vma->vm_mm, addr);
-> > +	do {
-> > +		next = pgd_addr_end(addr, end);
-> > +		if (pgd_none_of_clear_bad(pgd))
-> > +			continue;
-> > +		next = masync_pud_range(vma, pgd, addr, next);
-> > +	} while (pgd++, addr = next, addr != end);
-> > +
-> > +	return addr;
-> > +}
-> > +
-> > +int masync_vma_one(struct vm_area_struct *vma,
-> > +		unsigned long start, unsigned long end)
-> > +{
-> > +	if (start < vma->vm_start)
-> > +		start = vma->vm_start;
-> > +
-> > +	if (end > vma->vm_end)
-> > +		end = vma->vm_end;
-> > +
-> > +	masync_pgd_range(vma, start, end);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +int masync_vma(struct vm_area_struct *vma, 
-> > +		unsigned long start, unsigned long end)
-> > +{
-> > +	struct address_space *mapping;
-> > +	struct vm_area_struct *vma_iter;
-> > +
-> > +	if (!(vma->vm_flags & VM_SHARED))
-> > +		return 0;
-> > +
-> > +	mapping = vma->vm_file->f_mapping;
-> > +
-> > +	if (!mapping_cap_account_dirty(mapping))
-> > +		return 0;
-> > +
-> > +	spin_lock(&mapping->i_mmap_lock);
-> > +	vma_prio_tree_foreach(vma_iter, &iter, &mapping->i_mmap, start, end)
-> > +		masync_vma_one(vma_iter, start, end);
-> > +	spin_unlock(&mapping->i_mmap_lock);
-> 
-> This is hoding i_mmap_lock for possibly quite long.  Isn't that going
-> to cause problems?
+COMPLETELY UNTESTED DO NOT APPLY
 
-Possibly, I didn't see a quick way to break that iteration.
->From a quick glance at prio_tree.c the iterator isn't valid anymore
-after releasing i_mmap_lock. Fixing that would be,.. 'fun'.
+---
+ drivers/base/core.c |   33 ++++++++++++++++-----------------
+ 1 files changed, 16 insertions(+), 17 deletions(-)
 
-I also realized I forgot to copy/paste the prio_tree_iter declaration
-and ought to make all these functions static.
-
-But for a quick draft it conveys the idea pretty well, I guess :-)
-
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -553,6 +553,8 @@ static struct kobject *get_device_parent
+ }
+ 
+ static inline void cleanup_device_parent(struct device *dev) {}
++static inline void cleanup_glue_dir(struct device *dev,
++				    struct kobject *kobj) {}
+ #else
+ static struct kobject *virtual_device_parent(struct device *dev)
+ {
+@@ -617,27 +619,27 @@ static struct kobject *get_device_parent
+ 	return NULL;
+ }
+ 
+-static void cleanup_device_parent(struct device *dev)
++static void cleanup_glue_dir(struct device *dev, struct kobject *kobj)
+ {
+-	struct kobject *glue_dir = dev->kobj.parent;
+-
+ 	/* see if we live in a "glue" directory */
+-	if (!dev->class || glue_dir->kset != &dev->class->class_dirs)
++	if (!dev->class || kobj->kset != &dev->class->class_dirs)
+ 		return;
+ 
+-	kobject_put(glue_dir);
++	kobject_put(kobj);
++}
++
++static void cleanup_device_parent(struct device *dev)
++{
++	cleanup_glue_dir(dev, dev->kobj.parent);
+ }
+ #endif
+ 
+-static int setup_parent(struct device *dev, struct device *parent)
++static void setup_parent(struct device *dev, struct device *parent)
+ {
+ 	struct kobject *kobj;
+ 	kobj = get_device_parent(dev, parent);
+-	if (IS_ERR(kobj))
+-		return PTR_ERR(kobj);
+ 	if (kobj)
+ 		dev->kobj.parent = kobj;
+-	return 0;
+ }
+ 
+ static int device_add_class_symlinks(struct device *dev)
+@@ -782,9 +784,7 @@ int device_add(struct device *dev)
+ 	pr_debug("device: '%s': %s\n", dev->bus_id, __FUNCTION__);
+ 
+ 	parent = get_device(dev->parent);
+-	error = setup_parent(dev, parent);
+-	if (error)
+-		goto Error;
++	setup_parent(dev, parent);
+ 
+ 	/* first, register with generic layer. */
+ 	error = kobject_add(&dev->kobj, dev->kobj.parent, "%s", dev->bus_id);
+@@ -862,6 +862,7 @@ int device_add(struct device *dev)
+ 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
+ 	kobject_del(&dev->kobj);
+  Error:
++	cleanup_device_parent(dev);
+ 	if (parent)
+ 		put_device(parent);
+ 	goto Done;
+@@ -1303,15 +1304,12 @@ int device_move(struct device *dev, stru
+ 
+ 	new_parent = get_device(new_parent);
+ 	new_parent_kobj = get_device_parent (dev, new_parent);
+-	if (IS_ERR(new_parent_kobj)) {
+-		error = PTR_ERR(new_parent_kobj);
+-		put_device(new_parent);
+-		goto out;
+-	}
++
+ 	pr_debug("device: '%s': %s: moving to '%s'\n", dev->bus_id,
+ 		 __FUNCTION__, new_parent ? new_parent->bus_id : "<NULL>");
+ 	error = kobject_move(&dev->kobj, new_parent_kobj);
+ 	if (error) {
++		cleanup_glue_dir(dev, new_parent_kobj);
+ 		put_device(new_parent);
+ 		goto out;
+ 	}
+@@ -1334,6 +1332,7 @@ int device_move(struct device *dev, stru
+ 				klist_add_tail(&dev->knode_parent,
+ 					       &old_parent->klist_children);
+ 		}
++		cleanup_glue_dir(dev, new_parent_kobj);
+ 		put_device(new_parent);
+ 		goto out;
+ 	}
