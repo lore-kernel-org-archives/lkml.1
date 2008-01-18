@@ -1,80 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbYARWef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbYARWff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932765AbYARWef (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:34:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760670AbYARWe1
+	id S932167AbYARWff (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763249AbYARWf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:34:27 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57695 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757190AbYARWe0 (ORCPT
+	Fri, 18 Jan 2008 17:35:28 -0500
+Received: from ro-out-1112.google.com ([72.14.202.176]:46211 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762534AbYARWf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:34:26 -0500
-Date: Fri, 18 Jan 2008 14:33:34 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: fche@redhat.com (Frank Ch. Eigler)
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2/3] Latencytop instrumentations part 1
-Message-ID: <20080118143334.28ba08ca@laptopd505.fenrus.org>
-In-Reply-To: <y0mmyr2ydmm.fsf@ton.toronto.redhat.com>
-References: <4790E3A6.7060807@linux.intel.com>
-	<20080118094048.10e79ff9@laptopd505.fenrus.org>
-	<y0mmyr2ydmm.fsf@ton.toronto.redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 Jan 2008 17:35:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HM4KQxJuFKpOpQiFKBOWY3CWyVfAGrykWPWYPkxQzxaU6cID3sEBadN0DvLIEsDBVjXv6YCV6dCxjGpWv8oZmzrvncOhZmVqW881/nnGKTiPIKo9RmzYHUcDOf8e6VFB5u3y6sh5y/PSY6rq1eWY+ES9QSAjoc+cP978ZNy0sE8=
+Message-ID: <4df4ef0c0801181435y67fee713h83f8e7f2a5b4e803@mail.gmail.com>
+Date: Sat, 19 Jan 2008 01:35:25 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped files
+Cc: "Miklos Szeredi" <miklos@szeredi.hu>, peterz@infradead.org,
+       linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
+       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+In-Reply-To: <alpine.LFD.1.00.0801181406580.2957@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <12006091182260-git-send-email-salikhmetov@gmail.com>
+	 <alpine.LFD.1.00.0801181106340.2957@woody.linux-foundation.org>
+	 <E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>
+	 <alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org>
+	 <4df4ef0c0801181158s3f783beaqead3d7049d4d3fa7@mail.gmail.com>
+	 <alpine.LFD.1.00.0801181214440.2957@woody.linux-foundation.org>
+	 <4df4ef0c0801181303o6656832g8b63d2a119a86a9c@mail.gmail.com>
+	 <alpine.LFD.1.00.0801181325510.2957@woody.linux-foundation.org>
+	 <4df4ef0c0801181404m186bb847sd556e031e908b0b6@mail.gmail.com>
+	 <alpine.LFD.1.00.0801181406580.2957@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 17:26:09 -0500
-fche@redhat.com (Frank Ch. Eigler) wrote:
+2008/1/19, Linus Torvalds <torvalds@linux-foundation.org>:
+>
+>
+> On Sat, 19 Jan 2008, Anton Salikhmetov wrote:
+> >
+> > The page_check_address() function is called from the
+> > page_mkclean_one() routine as follows:
+>
+> .. and the page_mkclean_one() function is totally different.
+>
+> Lookie here, this is the correct and complex sequence:
+>
+> >                 entry = ptep_clear_flush(vma, address, pte);
+> >                 entry = pte_wrprotect(entry);
+> >                 entry = pte_mkclean(entry);
+> >                 set_pte_at(mm, address, pte, entry);
+>
+> That's a rather expensive sequence, but it's done exactly because it has
+> to be done that way. What it does is to
+>
+>  - *atomically* load the pte entry _and_ clear the old one in memory.
+>
+>    That's the
+>
+>         entry = ptep_clear_flush(vma, address, pte);
+>
+>    thing, and it basically means that it's doing some
+>    architecture-specific magic to make sure that another CPU that accesses
+>    the PTE at the same time will never actually modify the pte (because
+>    it's clear and not valid)
+>
+>  - it then - while the page table is actually clear and invalid - takes
+>    the old value and turns it into the new one:
+>
+>         entry = pte_wrprotect(entry);
+>         entry = pte_mkclean(entry);
+>
+>  - and finally, it replaces the entry with the new one:
+>
+>         set_pte_at(mm, address, pte, entry);
+>
+>    which takes care to write the new entry in some specific way that is
+>    atomic wrt other CPU's (ie on 32-bit x86 with a 64-bit page table
+>    entry it writes the high word first, see the write barriers in
+>    "native_set_pte()" in include/asm-x86/pgtable-3level.h
+>
+> Now, compare that subtle and correct thing with what is *not* correct:
+>
+>         if (pte_dirty(*pte) && pte_write(*pte))
+>                 *pte = pte_wrprotect(*pte);
+>
+> which makes no effort at all to make sure that it's safe in case another
+> CPU updates the accessed bit.
+>
+> Now, arguably it's unlikely to cause horrible problems at least on x86,
+> because:
+>
+>  - we only do this if the pte is already marked dirty, so while we can
+>    lose the accessed bit, we can *not* lose the dirty bit. And the
+>    accessed bit isn't such a big deal.
+>
+>  - it's not doing any of the "be careful about" ordering things, but since
+>    the really important bits aren't changing, ordering probably won't
+>    practically matter.
+>
+> But the problem is that we have something like 24 different architectures,
+> it's hard to make sure that none of them have issues.
+>
+> In other words: it may well work in practice. But when these things go
+> subtly wrong, they are *really* nasty to find, and the unsafe sequence is
+> really not how it's supposed to be done. For example, you don't even flush
+> the TLB, so even if there are no cross-CPU issues, there's probably going
+> to be writable entries in the TLB that now don't match the page tables.
+>
+> Will it matter? Again, probably impossible to see in practice. But ...
 
-> Arjan van de Ven <arjan@infradead.org> writes:
-> 
-> > This patch contains the first set of instrumentations for
-> > latencytop; each instrumentation needs to be evaluated for
-> > usefulness before this can go into mainline; posting here just to
-> > show how the infrastructure can be used
-> > [...]
-> 
-> Can you suggest of some reason why all this instrumentation could
-> not be in the form of standard markers (perhaps conditionally
-> compiled out if necessary)?
-> 
+Linus, I am very grateful to you for your extremely clear explanation
+of the issue I have overlooked!
 
-sure. Every instrumentation you see is of the nested kind (since the lowest level
-of nesting is already automatic via wchan).
+Back to the msync() issue, I'm going to come back with a new design
+for the bug fix.
 
-If markers can provide me the following semantics, I'd be MORE than happy to use markers:
+Thank you once again.
 
-If the code path is like this
+Anton
 
-
-set_latency_reason("Reading file");
-    ....
-    ....
-          set_latency_reason("Allocating memory");
-          kmalloc()  <--- blocks for 100 msec
-          restore_latency_reason()
-    ....
-restore_latency_reason();
-
-via several layers of functions, the requirement is that the 100 msec is accounted 
-to "reading file" and not "Allocating memory". But if some other codepath hits the allocating memory function,
-without an outer "set_latency_reason", it should be accounted to "Allocating memory".
-
-If markers can provide that semantics ... you sold me.
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+>
+>                 Linus
+>
