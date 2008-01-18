@@ -1,51 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759667AbYARMY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760635AbYARMZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759667AbYARMY1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 07:24:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbYARMYS
+	id S1760635AbYARMZZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 07:25:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbYARMZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 07:24:18 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:40629 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754622AbYARMYR (ORCPT
+	Fri, 18 Jan 2008 07:25:12 -0500
+Received: from mail.transmode.se ([83.241.175.147]:45554 "EHLO
+	tmnt04.transmode.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753587AbYARMZL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 07:24:17 -0500
-X-Sasl-enc: dWi9yStj5jiQyW80fQw1Hvg9yKwm+/BBoSk+Irf2F9hr 1200659056
-Date: Fri, 18 Jan 2008 10:24:11 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Adrian Bunk <bunk@kernel.org>, Jiri Kosina <jikos@jikos.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.16.58
-Message-ID: <20080118122411.GA8301@khazad-dum.debian.net>
-References: <20080115221832.GA4449@does.not.exist> <Pine.LNX.4.64.0801161703190.15647@twin.jikos.cz> <20080117203416.GK23696@does.not.exist> <20080117211205.GE8953@1wt.eu> <20080117214755.GB28233@does.not.exist> <20080117213225.GF8953@1wt.eu> <20080117220219.GA22980@khazad-dum.debian.net> <20080117214836.GG8953@1wt.eu>
+	Fri, 18 Jan 2008 07:25:11 -0500
+X-Greylist: delayed 373 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jan 2008 07:25:10 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6619.12
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080117214836.GG8953@1wt.eu>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17 (2007-12-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Organization: Transmode AB
+X-Mailer: Evolution 2.12.2 
+In-Reply-To: <FBA61160C48B8D438F3323FEFB4EF2C279A908@zin33exm24.fsl.freescale.net>
+content-class: urn:content-classes:message
+Subject: RE: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+Date: Fri, 18 Jan 2008 13:18:38 +0100
+Message-ID: <1200658718.16429.26.camel@gentoo-jocke.transmode.se>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+Thread-Index: AchZzEGebEFRQ357Q62eKSnkJz3UXg==
+References: <FBA61160C48B8D438F3323FEFB4EF2C259F2F6@zin33exm24.fsl.freescale.net> <FBA61160C48B8D438F3323FEFB4EF2C26E7653@zin33exm24.fsl.freescale.net> <20080114120051.3207043b.kim.phillips@freescale.com> <20080114131530.9d33f50a.akpm@linux-foundation.org> <5927F7A4-D42A-40F6-AE9C-EDA34738A752@kernel.crashing.org> <FBA61160C48B8D438F3323FEFB4EF2C279A908@zin33exm24.fsl.freescale.net>
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>
+Cc: "Kumar Gala" <galak@kernel.crashing.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, <sfr@canb.auug.org.au>,
+       "Phillips Kim" <Kim.Phillips@freescale.com>,
+       "Barkowski Michael" <Michael.Barkowski@freescale.com>,
+       <netdev@vger.kernel.org>, "Suresh PV" <pala@freescale.com>,
+       <linux-kernel@vger.kernel.org>, <rubini@vision.unipv.it>,
+       <linuxppc-dev@ozlabs.org>, "Kalra Ashish" <ashish.kalra@freescale.com>,
+       "Cutler Richard" <Rich.Cutler@freescale.com>
+Reply-To: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2008, Willy Tarreau wrote:
-> Well, since there are commands that work on this (push and log at
-> least), I believe that some operations could succeed. I *know* that
-> remote cloning was impossible, and it *looked* like pulling too was
-> during my attempts to fix the problem before understanding its root
-> cause. It is possible that I cumulated problems though, if at least
-> two people could pull from it.
 
-Ah, I think I recalled something about the episode.  I knew the tag was
-there (gitweb), and I did have some trouble to get it, but I *think* what
-worked out was:
+On Fri, 2008-01-18 at 17:28 +0530, Aggrwal Poonam wrote:
+> Hello All
+> 
+> The TDM driver just now does not have a proper framework. Probably the
+> interface cannot be generalised as such. Hence we could not decide
+> whether it would be right to think of a TDM framework. Infact the
+> interface this TDM driver(for MPC8323ERDB) supplies may not be usable
+> for some other client as such. Please suggest on this.
+> 
+> But you are right as far as Freescale PowerPC platforms are concerned
+> which have TDM devices. Like, 8315 also has a TDM driver which also
+> exposes similar interface as 8323 because the client it is talking to is
+> the same.
+> 
+> Following is the small description of the TDM driver along with
+> interface details:
+> 
+> The dts file keeps a track of the TDM devices present on the board.
+> Depending on them the TDM driver initializes those many driver instances
+> while coming up.
+> 
+> The driver on the upper level can plug to more than one tdm clients
+> depending on the availablity  of TDM devices. At every new request of
+> the TDM client to bind with a TDM device, a free driver  instance is
+> allocated to the client.
+> 
+> The interface can be described as follows.
+> 
+> tdm_register_client(struct tdm_client *)
+> 	This API returns a pointer to the structure tdm_client which is
+> of type
+> 	struct tdm_client {
+>                 u32 driver_handle;
+>                 u32 (*tdm_read)(u32 driver_handle, short chn_id, short
+> *pcm_buffer, short len);
+>                 u32 (*tdm_write)(u32 driver_handle, short chn_id, short
+> *pcm_buffer, short len);
+>                 wait_queue_head_t *wakeup_event;
+>         }
+> 
+>    It consists of:
+>    - driver_handle: It is basically to identify the particular TDM
+> device/driver instance.
+>    - tdm_read: It is a function pointer returned by the TDM driver to be
+> used to read TDM data  form a particular TDM channel.
+>    - tdm_write: It is a function pointer returned by the TDM driver to
+> be used to write TDM data  to a particular TDM channel.
+>    - wakeup_event: It is address of a wait_queue event on which the
+> client keeps on sleeping,  and the TDM driver wakes it up periodically.
+> The driver is configured to wake up the client  after every 10ms.
+> 
+> Once the TDM client gets registered to a TDM driver instance and a TDM
+> device, it interfaces  with the driver using tdm_read, tdm_write and
+> wakeup_event.
+> 
+> Note: The TDM driver can be used by only kernel level modules. The
+> driver does not expose any  file interface for User Applications. Can be
+> compared to the spi driver which interfaces with  the SPI clients
+> through some APIs.
+> 
+> 
+> I need your feedback on the interface details. Some changes were
+> suggested by Andrew for 32 bit tdm handle which I will modify.(Thanks
+> Andrew)
+> 
+> Please give your ideas about a TDM framework in the kernel and the
+> interface.
+> 
+> Waiting for your feedback.
+> 
+> Thanks and Regards
+> Poonam 
 
-git fetch <repo> <tag>
+Hi Poonam
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I may have to write a HDLC over QMC driver for 832x in the near future.
+Although I haven't looked at much at the UCCs programming i/f I noticed
+that QMC is supposed to run over TDM. Is your TDM driver suitable for
+hooking up such a driver on top?
+
+  Jocke
+
+
