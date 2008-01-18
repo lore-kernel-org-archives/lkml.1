@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765787AbYARVHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765050AbYARVKB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765787AbYARVHG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 16:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759875AbYARVGz
+	id S1765050AbYARVKB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 16:10:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761375AbYARVJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 16:06:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40277 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Jan 2008 16:09:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55634 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758103AbYARVGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 16:06:54 -0500
-Date: Fri, 18 Jan 2008 22:06:33 +0100
+	id S1759708AbYARVJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 16:09:53 -0500
+Date: Fri, 18 Jan 2008 22:09:38 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.24 patch] x86: allow 64bit setting in Kconfig
-Message-ID: <20080118210633.GD10717@elte.hu>
-References: <20080117214301.GA28233@does.not.exist> <20080118104401.GA8785@elte.hu> <20080118170037.GA23297@elte.hu> <20080118172630.GD28233@does.not.exist>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Michael Opdenacker <michael-lists@free-electrons.com>,
+       linux-kernel@vger.kernel.org, Linux-tiny@selenic.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: fix unconditional
+	arch/x86/kernel/pcspeaker.c?compiling
+Message-ID: <20080118210938.GE10717@elte.hu>
+References: <1200590031.5332.19.camel@cinder.waste.org> <200801172315.29976.michael-lists@free-electrons.com> <20080118110252.GA17397@elte.hu> <47909821.1090907@free-electrons.com> <20080118122540.GH11044@elte.hu> <20080118122926.GA15216@elte.hu> <4790A385.800@free-electrons.com> <1200664214.4001.24.camel@cinder.waste.org> <4790D3E3.4060409@free-electrons.com> <1200676219.3835.8.camel@cinder.waste.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080118172630.GD28233@does.not.exist>
+In-Reply-To: <1200676219.3835.8.camel@cinder.waste.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,22 +37,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Adrian Bunk <bunk@kernel.org> wrote:
+* Matt Mackall <mpm@selenic.com> wrote:
 
-> > > thx, i've added this to x86.git.
+> > Sounds fine! Don't hesitate to let us know about the lower-hanging 
+> > fruit you're thinking about. Here are the main things I have so far:
 > > 
-> > this broke "make ARCH=i386 randconfig" from working when there's a 
-> > 64-bit .config present. (it will not properly generate a 32-bit 
-> > config, but still a 64-bit config)
+> >     * Ideas in the existing Linux-Tiny patchset.
+> >     * Disable support for non-Intel processors in x86 (cyrix.c,
+> >       centaur.c, transmeta.c, nexgen.c, umc.c in arch/x86/kernel/cpu).
+> >       As far as I remember, I saved 15 KB when I first experimented with
+> >       this).
 > 
-> Does it always generate a 64bit .config or randomly a 32bit or 64bit 
-> .config?
-> 
-> As far as I see it's the latter.
+> Isn't that already in -tiny?
 
-it inherits the existing .config's arch setting - and that's what people 
-expect. I use a tree either in 64-bit mode or in 32-bit mode, fully 
-driven via the .config alone. The Kbuild magic picks up the right arch 
-variant and it all just works fine.
+btw., are there any pending arch/x86 bits in -tiny? (stupid question: 
+were can i get the most uptodate version of -tiny from?)
 
 	Ingo
