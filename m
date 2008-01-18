@@ -1,111 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932694AbYARWW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764259AbYARW0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932694AbYARWW6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761350AbYARWWs
+	id S1764259AbYARW0v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbYARW0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:22:48 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55610 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757778AbYARWWr (ORCPT
+	Fri, 18 Jan 2008 17:26:43 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:46423 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755359AbYARW0m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:22:47 -0500
-Date: Fri, 18 Jan 2008 14:21:40 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Anton Salikhmetov <salikhmetov@gmail.com>
-cc: Miklos Szeredi <miklos@szeredi.hu>, peterz@infradead.org,
-       linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
-       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
-       hch@infradead.org
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
- files
-In-Reply-To: <4df4ef0c0801181404m186bb847sd556e031e908b0b6@mail.gmail.com>
-Message-ID: <alpine.LFD.1.00.0801181406580.2957@woody.linux-foundation.org>
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>  <alpine.LFD.1.00.0801181033580.2957@woody.linux-foundation.org>  <E1JFwOz-00019k-Uo@pomaz-ex.szeredi.hu>  <alpine.LFD.1.00.0801181106340.2957@woody.linux-foundation.org> 
- <E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>  <alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org>  <4df4ef0c0801181158s3f783beaqead3d7049d4d3fa7@mail.gmail.com>  <alpine.LFD.1.00.0801181214440.2957@woody.linux-foundation.org> 
- <4df4ef0c0801181303o6656832g8b63d2a119a86a9c@mail.gmail.com>  <alpine.LFD.1.00.0801181325510.2957@woody.linux-foundation.org> <4df4ef0c0801181404m186bb847sd556e031e908b0b6@mail.gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 Jan 2008 17:26:42 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAL+2kEdMROHU/2dsb2JhbACBV5AQnTU
+Date: Fri, 18 Jan 2008 17:26:37 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Steven Rostedt <srostedt@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Daniel Walker <dwalker@mvista.com>
+Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
+Message-ID: <20080118222637.GA30900@Krystal>
+References: <20080116145604.GB31329@Krystal> <Pine.LNX.4.58.0801161003010.15758@gandalf.stny.rr.com> <20080116152838.GA970@Krystal> <Pine.LNX.4.58.0801161041010.15998@gandalf.stny.rr.com> <20080116170011.GA3651@Krystal> <Pine.LNX.4.58.0801161428180.14368@gandalf.stny.rr.com> <20080116201713.GA14336@Krystal> <Pine.LNX.4.58.0801171440360.28350@gandalf.stny.rr.com> <20080117203740.GA24397@redhat.com> <Pine.LNX.4.58.0801171555120.28350@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0801171555120.28350@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:31:29 up 76 days,  2:36,  6 users,  load average: 4.12, 1.71,
+	1.16
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 19 Jan 2008, Anton Salikhmetov wrote:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> The page_check_address() function is called from the
-> page_mkclean_one() routine as follows:
+> On Thu, 17 Jan 2008, Frank Ch. Eigler wrote:
+> 
+> > Hi -
+> >
+> > On Thu, Jan 17, 2008 at 03:08:33PM -0500, Steven Rostedt wrote:
+> > > [...]
+> > > +       trace_mark(kernel_sched_schedule,
+> > > +               "prev_pid %d next_pid %d prev_state %ld",
+> > > +               prev->pid, next->pid, prev->state);
+> > > [...]
+> > > But...
+> > >
+> > > Tracers that want to do a bit more work, like recording timings and seeing
+> > > if we hit some max somewhere, can't do much with that pretty print data.
+> >
+> > If you find yourself wanting to perform computations like finding
+> > maxima, or responding right there as opposed to later during userspace
+> > trace data extraction, then you're trending toward a tool like
+> > systemtap.
+> 
+> Yes, very much so. I'm working on getting the latency_tracer from the -rt
+> patch into something suitable for mainline. We need to calculate the max
+> latencies on the fly. If we hit a max, then we save it off, otherwise, we
+> blow away the trace and start again.
+> 
+> >
+> > > [...]
+> > > So, at a minimum, I'd like to at least have meta data attached:
+> > > 	trace_mark(kernel_sched_schedule,
+> > > 		"prev_pid %d next_pid %d prev_state %ld\0"
+> > > 		"prev %p next %p",
+> > > 		prev->pid, next->pid, prev->state,
+> > > 		prev, next);
+> > >
+> > > This would allow for both the nice pretty print of your trace, as well as
+> > > allowing other tracers to get to better meta data.
+> >
+> > Yes, more self-contained marker events are necessary for meaningful
+> > in-situ processing.  That needs to be balanced by the increased cost
+> > for computing and passing the extra parameters, multiplied the event
+> > occurrence rate.
+> 
+> The cost is only done when the marker is armed. Since the marker is an
+> unlikely, and will be placed at the end of the function.
+> 
+> >
+> > In this case, the prev/next pointers are sufficient to compute the
+> > other values.  For particularly performance-critical markers, it may
+> > not be unreasonable to expect the callback functions to dereference
+> > such pointers for pretty-printing or other processing.
+> 
+> This was exactly my point to Mathieu, but I think he has LTTng very much
+> coupled with the markers. I haven't played with LTTng (yet), but from what
+> I've read (Mathieu, correct me if I'm wrong), it seems that all the
+> markers become visible to userspace, and the user can simple turn them on
+> or off. LTTng doesn't need any knowledge of the marker since the marker
+> contains how to print the information.
+> 
+> So* by placing a "prev %p next %p" as the only information, we lose out on
+> this automated way LTTng works. Because the two pointers are just
+> meaningless numbers to the user.
+> 
 
-.. and the page_mkclean_one() function is totally different.
+Exactly. We have, at the marker site :
 
-Lookie here, this is the correct and complex sequence:
+- a marker identifier
+- format string containing field names and types
+- arguments
 
->                 entry = ptep_clear_flush(vma, address, pte);
->                 entry = pte_wrprotect(entry);
->                 entry = pte_mkclean(entry);
->                 set_pte_at(mm, address, pte, entry);
+I would like to keep that as much in a straight line as possible with
+what ends up in the trace.
 
-That's a rather expensive sequence, but it's done exactly because it has 
-to be done that way. What it does is to
+However, I see that it limits what can be done by in-kernel tracers. And
+by the way, I also suffer from the same kind of limitation in LTTng. Here
+is an example :
 
- - *atomically* load the pte entry _and_ clear the old one in memory.
+I would like to replace blktrace (actually, I already have a quite
+complete implementation). However, there is some code ran in the kernel
+to "prepare" the information for the trace which is blktrace specific.
+Since this code is not required to run when tracing is disabled, it can
+be seen as "glue-code" between the kernel tracing point and the
+extraction of data to trace.
 
-   That's the
+What looked like the less intrusive solution was to create inline
+functions that consist of branches over code considered unlikely (could
+be a function call) where the glue-code is executed to prepare the data.
+It's a bit like what the markers are doing, except that there is no
+marker name associated and no format string : the subsystem being traced
+must enable its tracing features by itself (could be a /proc file). It
+makes sense, since this type of code has to be subsystem-specific
+anyway.
 
-	entry = ptep_clear_flush(vma, address, pte);
+But I have not seen a lot of situations where that kind of glue-code was
+needed, so I think it makes sense to keep markers simple to use and
+efficient for the common case.
 
-   thing, and it basically means that it's doing some 
-   architecture-specific magic to make sure that another CPU that accesses 
-   the PTE at the same time will never actually modify the pte (because 
-   it's clear and not valid)
+Then, in this glue-code, we can put trace_mark() and calls to in-kernel
+tracers.
 
- - it then - while the page table is actually clear and invalid - takes 
-   the old value and turns it into the new one:
+Since the markers are eventually meant to become an API visible from
+user-space, I think it makes sense to keep it clean. If an in-kernel
+tracer needs extra information, I think it would make sense for it to
+get it from a mechanism that does not make the exported information
+visible to user-space.
 
-	entry = pte_wrprotect(entry);
-	entry = pte_mkclean(entry);
+What do you think ?
 
- - and finally, it replaces the entry with the new one:
 
-	set_pte_at(mm, address, pte, entry);
+> >
+> > > The '\0' would keep your tracer from recording the extra data, and we
+> > > could add some way to ignore the parameters in the printf to let other
+> > > traces get straight to the meta data.
+> >
+> > This \0 hack is perhaps too clever.  Much of the cost of the extra
+> > parameters is already paid by the time that a simpleminded tracing
+> > callback function starts going through the string.  Also, I believe
+> > the systemtap marker interface would break if the format strings were
+> > not singly terminated ordinary strings.
+> 
+> Well, actually when I first wrote this letter, I used "--" as a delimiter
+> to allow a tool to hide the pretty stuff. But then I thought about the
+> "clever hack" with the '\0',  The "--" may be better since it wont break
+> systemtap.
+> 
 
-   which takes care to write the new entry in some specific way that is 
-   atomic wrt other CPU's (ie on 32-bit x86 with a 64-bit page table 
-   entry it writes the high word first, see the write barriers in 
-   "native_set_pte()" in include/asm-x86/pgtable-3level.h
+It could be done I guess. But it looks a bit ugly. :) I would rather
+prefer to export the "pretty stuff" through an interface not involving
+markers. Or if there is a way to separate the "callback" mechanism from
+the "export to user-space" API parts of the markers, I am open to
+proposals.
 
-Now, compare that subtle and correct thing with what is *not* correct:
+Mathieu
 
-	if (pte_dirty(*pte) && pte_write(*pte))
-		*pte = pte_wrprotect(*pte);
+> -- Steve
+> 
+> * dvhart - bah!
+> 
 
-which makes no effort at all to make sure that it's safe in case another 
-CPU updates the accessed bit.
-
-Now, arguably it's unlikely to cause horrible problems at least on x86, 
-because:
-
- - we only do this if the pte is already marked dirty, so while we can 
-   lose the accessed bit, we can *not* lose the dirty bit. And the 
-   accessed bit isn't such a big deal.
-
- - it's not doing any of the "be careful about" ordering things, but since 
-   the really important bits aren't changing, ordering probably won't 
-   practically matter.
-
-But the problem is that we have something like 24 different architectures, 
-it's hard to make sure that none of them have issues. 
-
-In other words: it may well work in practice. But when these things go 
-subtly wrong, they are *really* nasty to find, and the unsafe sequence is 
-really not how it's supposed to be done. For example, you don't even flush 
-the TLB, so even if there are no cross-CPU issues, there's probably going 
-to be writable entries in the TLB that now don't match the page tables.
-
-Will it matter? Again, probably impossible to see in practice. But ...
-
-		Linus
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
