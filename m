@@ -1,51 +1,651 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbYARDsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbYARDzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758236AbYARDsg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 22:48:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYARDs2
+	id S1758077AbYARDzi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 22:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYARDz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 22:48:28 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:17083 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751927AbYARDs1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 22:48:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=wd1/WS3uLOMoVRr2fUqswRMWCEDQCn33QL4y+af/CV8wa0SVJKjieBdn0cupSA9vyJ8O9oNlWrXozKsAgkxNY+iVkHwC4tbn6wooD7jR9RE9+curc2n5AOaqwGwQzgsj4hX+YpwsG0REsPTNVH9rNuj2av+8VwG44NCLodKgPTM=
-Message-ID: <86802c440801171948o152fc82eh6756926ead6882e7@mail.gmail.com>
-Date: Thu, 17 Jan 2008 19:48:25 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: x86.git kexec rhel 5.1
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440801171911p3d82c39ap29da2d81c63c77c2@mail.gmail.com>
+	Thu, 17 Jan 2008 22:55:28 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:60354 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751618AbYARDz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 22:55:26 -0500
+Message-ID: <4790231C.1040805@cn.fujitsu.com>
+Date: Fri, 18 Jan 2008 11:55:08 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <86802c440801171911p3d82c39ap29da2d81c63c77c2@mail.gmail.com>
+To: Zhang Rui <rui.zhang@intel.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>, sam@ravnborg.org, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org,
+       "Thomas, Sujith" <sujith.thomas@intel.com>
+Subject: Re: [PATCH 9/10] introduce intel_menlow platform specific driver
+References: <1200556278.2935.118.camel@acpi-sony.sh.intel.com>	 <20080117092030.a9dfe528.randy.dunlap@oracle.com> <1200627175.2935.174.camel@acpi-sony.sh.intel.com>
+In-Reply-To: <1200627175.2935.174.camel@acpi-sony.sh.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 17, 2008 7:11 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> some problem with PAT
->
-> A: 1/17 x86.git with PAT enable kernel
-> B. 1/17 x86.git with PAT diabled kernel
-> C: RHEL 5.1 stock kernel -53
->
-> A kexec B : OK
-> B kexec A:  OK
-> A kexec C: very slow
-> B kexec C:  OK
-> C kexec A:  OK
-> C kexec B:  OK
->
-> Do we need something to disable PAT when kexec calling shutdown?
+Zhang Rui 写道:
+> Hi, Randy and Sam,
+> 
+>>> +             if (result)
+>>> +                     goto end;acpi_bus_get_private_data
+>>> +     }
+>>> +
+>>> +      end:
+> Hah, Lindent always does this for me,
+>> Labels should begin in column 0 or 1.  Only.
+> yes, and checkpatch.pl begins to complain about this
+> after using Lindent...
+> I think we should change one of them, :)
+> 
+>>> +     return result;
+>>> +}
+>>> +
+>>> +
+>>> +const static struct acpi_device_id intel_menlow_memory_ids[] = {
+>>> +     {"INT0002", 0},
+>>> +     {"", 0},
+>> or just {} for the terminating entry, right?
+> Yes, I use this just to be consistent with other ACPI device drivers.
+> 
+> Thanks for your comments, please review the patch below,
+> 
+> From: Thomas Sujith <sujith.thomas@intel.com>
+> 
+> Intel menlow platform specific driver for thermal management extension.
+> 
+> Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/misc/Kconfig        |    9 
+>  drivers/misc/Makefile       |    1 
+>  drivers/misc/intel_menlow.c |  520 ++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 530 insertions(+)
+> 
+> Index: linux-2.6/drivers/misc/intel_menlow.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/drivers/misc/intel_menlow.c
+> @@ -0,0 +1,520 @@
+> +/*
+> +*  intel_menlow.c - Intel menlow Driver for thermal management extension
+> +*
+> +*  Copyright (C) 2008 Intel Corp
+> +*  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
+> +*  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
+> +*  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> +*
+> +*  This program is free software; you can redistribute it and/or modify
+> +*  it under the terms of the GNU General Public License as published by
+> +*  the Free Software Foundation; version 2 of the License.
+> +*
+> +*  This program is distributed in the hope that it will be useful, but
+> +*  WITHOUT ANY WARRANTY; without even the implied warranty of
+> +*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> +*  General Public License for more details.
+> +*
+> +*  You should have received a copy of the GNU General Public License along
+> +*  with this program; if not, write to the Free Software Foundation, Inc.,
+> +*  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+> +*
+> +* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> +*
+> +*  This driver creates the sys I/F for programming the sensors.
+> +*  It also implements the driver for intel menlow memory controller (hardware
+> +*  id is INT0002) which makes use of the platform specific ACPI methods
+> +*  to get/set bandwidth.
+> +*/
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/types.h>
+> +#include <linux/pci.h>
+> +#include <linux/pm.h>
+> +
+> +#include <linux/thermal.h>
+> +#include <acpi/acpi_bus.h>
+> +#include <acpi/acpi_drivers.h>
+> +
+> +MODULE_AUTHOR("Thomas Sujith");
+> +MODULE_AUTHOR("Zhang Rui");
+> +MODULE_DESCRIPTION("Intel Menlow platform specific driver");
+> +MODULE_LICENSE("GPL");
+> +
+> +/*
+> + * Memory controller device control
+> + */
+> +
+> +#define MEMORY_GET_BANDWIDTH "GTHS"
+> +#define MEMORY_SET_BANDWIDTH "STHS"
+> +#define MEMORY_ARG_CUR_BANDWIDTH 1
+> +#define MEMORY_ARG_MAX_BANDWIDTH 0
+> +
+> +static int memory_get_int_max_bandwidth(struct thermal_cooling_device *cdev,
+> +					unsigned long *max_state)
+> +{
+> +	struct acpi_device *device = cdev->devdata;
+> +	acpi_handle handle = device->handle;
+> +	unsigned long value;
+> +	struct acpi_object_list arg_list;
+> +	union acpi_object arg;
+> +	acpi_status status = AE_OK;
+> +
+> +	arg_list.count = 1;
+> +	arg_list.pointer = &arg;
+> +	arg.type = ACPI_TYPE_INTEGER;
+> +	arg.integer.value = MEMORY_ARG_MAX_BANDWIDTH;
+> +	status = acpi_evaluate_integer(handle, MEMORY_GET_BANDWIDTH,
+> +				       &arg_list, &value);
+> +	if (ACPI_FAILURE(status))
+> +		return -EFAULT;
+> +
+> +	*max_state = value - 1;
+> +	return 0;
+> +}
+> +
+> +static int memory_get_max_bandwidth(struct thermal_cooling_device *cdev,
+> +				    char *buf)
+> +{
+> +	unsigned long value;
+> +	if (memory_get_int_max_bandwidth(cdev, &value))
+> +		return -EINVAL;
+> +
+> +	return sprintf(buf, "%ld\n", value);
+> +}
+> +
 
-change PAT only, fix that A kexec C problem.
+<...>
 
-YH
+> +static int memory_get_cur_bandwidth(struct thermal_cooling_device *cdev,
+> +				    char *buf)
+> +{
+> +	struct acpi_device *device = cdev->devdata;
+> +	acpi_handle handle = device->handle;
+> +	unsigned long value;
+> +	struct acpi_object_list arg_list;
+> +	union acpi_object arg;
+> +	acpi_status status = AE_OK;
+> +
+> +	arg_list.count = 1;
+> +	arg_list.pointer = &arg;
+> +	arg.type = ACPI_TYPE_INTEGER;
+> +	arg.integer.value = MEMORY_ARG_CUR_BANDWIDTH;
+> +	status = acpi_evaluate_integer(handle, MEMORY_GET_BANDWIDTH,
+> +				       &arg_list, &value);
+> +	if (ACPI_FAILURE(status))
+> +		return -EFAULT;
+> +
+> +	return sprintf(buf, "%ld\n", value);
+> +}
+> +
+> +static int memory_set_cur_bandwidth(struct thermal_cooling_device *cdev,
+> +				    unsigned int state)
+> +{
+> +	struct acpi_device *device = cdev->devdata;
+> +	acpi_handle handle = device->handle;
+> +	struct acpi_object_list arg_list;
+> +	union acpi_object arg;
+> +	acpi_status status;
+> +	int temp;
+> +	unsigned long max_state;
+> +
+> +	if (memory_get_int_max_bandwidth(cdev, &max_state))
+> +		return -EFAULT;
+> +
+> +	if (max_state < 0 || state > max_state)
+> +		return -EINVAL;
+> +
+> +	arg_list.count = 1;
+> +	arg_list.pointer = &arg;
+> +	arg.type = ACPI_TYPE_INTEGER;
+> +	arg.integer.value = state;
+> +
+> +	status =
+> +	    acpi_evaluate_integer(handle, MEMORY_SET_BANDWIDTH, &arg_list,
+> +				  (unsigned long *)&temp);
+> +
+> +	printk(KERN_INFO
+> +	       "Bandwidth value was %d: status is %d\n", state, status);
+> +	if (ACPI_FAILURE(status))
+> +		return -EFAULT;
+> +
+> +	return 0;
+> +}
+> +
+> +static struct thermal_cooling_device_ops memory_cooling_ops = {
+> +	.get_max_state = memory_get_max_bandwidth,
+> +	.get_cur_state = memory_get_cur_bandwidth,
+> +	.set_cur_state = memory_set_cur_bandwidth,
+> +};
+> +
+
+<...>
+
+> +/*
+> + * Memory Device Management
+> + */
+> +static int intel_menlow_memory_add(struct acpi_device *device)
+> +{
+> +	int result = -ENODEV;
+> +	acpi_status status = AE_OK;
+> +	acpi_handle dummy;
+> +	struct thermal_cooling_device *cdev;
+> +
+> +	if (!device)
+> +		return -EINVAL;
+> +
+> +	status = acpi_get_handle(device->handle, MEMORY_GET_BANDWIDTH, &dummy);
+> +	if (ACPI_FAILURE(status))
+> +		goto end;
+> +
+> +	status = acpi_get_handle(device->handle, MEMORY_SET_BANDWIDTH, &dummy);
+> +	if (ACPI_FAILURE(status))
+> +		goto end;
+> +
+> +	cdev = thermal_cooling_device_register("Memory controller", device,
+> +					       &memory_cooling_ops);
+> +	acpi_driver_data(device) = cdev;
+> +	if (!cdev)
+> +		result = -ENODEV;
+> +	else {
+> +		result =
+> +		    sysfs_create_link(&device->dev.kobj, &cdev->device.kobj,
+> +				      "thermal_cooling");
+> +		if (result)
+> +			goto end;
+> +		result =
+> +		    sysfs_create_link(&cdev->device.kobj, &device->dev.kobj,
+> +				      "device");
+> +		if (result)
+> +			goto end;
+
+This if condition is needless.
+
+> +	}
+> +
+> + end:
+> +	return result;
+
+No need to call thermal_cooling_device_unregister() and sysfs_remove_link() in
+some error routines ?
+
+> +}
+> +
+> +static int intel_menlow_memory_remove(struct acpi_device *device, int type)
+> +{
+> +	struct thermal_cooling_device *cdev = acpi_driver_data(device);
+> +
+> +	if (!device || !cdev)
+> +		return -EINVAL;
+> +
+> +	sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
+> +	sysfs_remove_link(&cdev->device.kobj, "device");
+> +	thermal_cooling_device_unregister(cdev);
+> +
+> +	return 0;
+> +}
+> +
+> +const static struct acpi_device_id intel_menlow_memory_ids[] = {
+> +	{"INT0002", 0},
+> +	{"", 0},
+> +};
+> +
+> +static struct acpi_driver intel_menlow_memory_driver = {
+> +	.name = "intel_menlow_thermal_control",
+> +	.ids = intel_menlow_memory_ids,
+> +	.ops = {
+> +		.add = intel_menlow_memory_add,
+> +		.remove = intel_menlow_memory_remove,
+> +		},
+> +};
+> +
+> +/*
+> + * Sensor control on menlow platform
+> + */
+> +
+> +#define THERMAL_AUX0 0
+> +#define THERMAL_AUX1 1
+> +#define GET_AUX0 "GAX0"
+> +#define GET_AUX1 "GAX1"
+> +#define SET_AUX0 "SAX0"
+> +#define SET_AUX1 "SAX1"
+> +
+> +struct intel_menlow_attribute {
+> +	struct device_attribute attr;
+> +	struct device *device;
+> +	acpi_handle handle;
+> +	struct list_head node;
+> +};
+> +
+> +static LIST_HEAD(intel_menlow_attr_list);
+> +static DEFINE_MUTEX(intel_menlow_attr_lock);
+> +
+> +/*
+> + * sensor_get_auxtrip - get the current auxtrip value from sensor
+> + * @name: Thermalzone name
+> + * @auxtype : AUX0/AUX1
+> + * @buf: syfs buffer
+> + */
+> +static int sensor_get_auxtrip(acpi_handle handle, int index, int *value)
+> +{
+> +	acpi_status status;
+> +
+> +	if ((index != 0 && index != 1) || !value)
+> +		return -EINVAL;
+> +
+> +	status = acpi_evaluate_integer(handle, index ? GET_AUX1 : GET_AUX0,
+> +				       NULL, (unsigned long *)value);
+> +	if (ACPI_FAILURE(status))
+> +		return -EIO;
+> +
+> +	return 0;
+> +}
+> +
+
+<...>
+
+> +/*
+> + * sensor_set_auxtrip - set the new auxtrip value to sensor
+> + * @name: Thermalzone name
+> + * @auxtype : AUX0/AUX1
+> + * @buf: syfs buffer
+> + */
+> +static int sensor_set_auxtrip(acpi_handle handle, int index, int value)
+> +{
+> +	acpi_status status;
+> +	union acpi_object arg = {
+> +		ACPI_TYPE_INTEGER
+> +	};
+> +	struct acpi_object_list args = {
+> +		1, &arg
+> +	};
+> +	int temp;
+> +
+> +	if (index != 0 && index != 1)
+> +		return -EINVAL;
+> +
+> +	status = acpi_evaluate_integer(handle, index ? GET_AUX0 : GET_AUX1,
+> +				       NULL, (unsigned long *)&temp);
+> +	if (ACPI_FAILURE(status))
+> +		return -EIO;
+> +	if ((index && value < temp) || (!index && value > temp))
+> +		return -EINVAL;
+> +
+> +	arg.integer.value = value;
+> +	status = acpi_evaluate_integer(handle, index ? SET_AUX1 : SET_AUX0,
+> +				       &args, (unsigned long *)&temp);
+> +	if (ACPI_FAILURE(status))
+> +		return -EIO;
+> +
+> +	/* do we need to check the return value of SAX0/SAX1 ? */
+> +
+> +	return 0;
+> +}
+> +
+> +#define to_intel_menlow_attr(_attr)	\
+> +	container_of(_attr, struct intel_menlow_attribute, attr)
+> +
+> +static ssize_t aux0_show(struct device *dev,
+> +			 struct device_attribute *dev_attr, char *buf)
+> +{
+> +	struct intel_menlow_attribute *attr = to_intel_menlow_attr(dev_attr);
+> +	int value;
+> +	int result;
+> +
+> +	result = sensor_get_auxtrip(attr->handle, 0, &value);
+> +
+> +	return result ? result : sprintf(buf, "%lu", KELVIN_TO_CELSIUS(value));
+> +}
+> +
+> +static ssize_t aux1_show(struct device *dev,
+> +			 struct device_attribute *dev_attr, char *buf)
+> +{
+> +	struct intel_menlow_attribute *attr = to_intel_menlow_attr(dev_attr);
+> +	int value;
+> +	int result;
+> +
+> +	result = sensor_get_auxtrip(attr->handle, 1, &value);
+> +
+> +	return result ? result : sprintf(buf, "%lu", KELVIN_TO_CELSIUS(value));
+> +}
+> +
+> +static ssize_t aux0_store(struct device *dev,
+> +			  struct device_attribute *dev_attr,
+> +			  const char *buf, size_t count)
+> +{
+> +	struct intel_menlow_attribute *attr = to_intel_menlow_attr(dev_attr);
+> +	int value;
+> +	int result;
+> +
+> +	/*Sanity check; should be a positive integer */
+> +	if (!sscanf(buf, "%d", &value))
+> +		return -EINVAL;
+> +
+> +	if (value < 0)
+> +		return -EINVAL;
+> +
+> +	result = sensor_set_auxtrip(attr->handle, 0, CELSIUS_TO_KELVIN(value));
+> +	return result ? result : count;
+> +}
+> +
+
+<...>
+
+> +static ssize_t aux1_store(struct device *dev,
+> +			  struct device_attribute *dev_attr,
+> +			  const char *buf, size_t count)
+> +{
+> +	struct intel_menlow_attribute *attr = to_intel_menlow_attr(dev_attr);
+> +	int value;
+> +	int result;
+> +
+> +	/*Sanity check; should be a positive integer */
+> +	if (!sscanf(buf, "%d", &value))
+> +		return -EINVAL;
+> +
+> +	if (value < 0)
+> +		return -EINVAL;
+> +
+> +	result = sensor_set_auxtrip(attr->handle, 1, CELSIUS_TO_KELVIN(value));
+> +	return result ? result : count;
+> +}
+> +
+> +/* BIOS can enable/disable the thermal user application in dabney platform */
+> +#define BIOS_ENABLED "\\_TZ.GSTS"
+> +static ssize_t bios_enabled_show(struct device *dev,
+> +				 struct device_attribute *attr, char *buf)
+> +{
+> +	acpi_status status;
+> +	unsigned long bios_enabled;
+> +
+> +	status = acpi_evaluate_integer(NULL, BIOS_ENABLED, NULL, &bios_enabled);
+> +	if (ACPI_FAILURE(status))
+> +		return -ENODEV;
+> +
+> +	return sprintf(buf, "%s\n", bios_enabled ? "enabled" : "disabled");
+> +}
+> +
+> +static int intel_menlow_add_one_attribute(char *name, int mode, void *show,
+> +					  void *store, struct device *dev,
+> +					  acpi_handle handle)
+> +{
+> +	struct intel_menlow_attribute *attr;
+> +	int result;
+> +
+> +	attr = kzalloc(sizeof(struct intel_menlow_attribute), GFP_KERNEL);
+> +	if (!attr)
+> +		return -ENOMEM;
+> +
+> +	attr->attr.attr.name = name;
+> +	attr->attr.attr.mode = mode;
+> +	attr->attr.show = show;
+> +	attr->attr.store = store;
+> +	attr->device = dev;
+> +	attr->handle = handle;
+> +
+> +	result = device_create_file(dev, &attr->attr);
+> +	if (result)
+> +		return result;
+> +
+> +	mutex_lock(&intel_menlow_attr_lock);
+> +	list_add_tail(&attr->node, &intel_menlow_attr_list);
+> +	mutex_unlock(&intel_menlow_attr_lock);
+> +
+> +	return 0;
+> +}
+> +
+
+<...>
+
+> +static acpi_status intel_menlow_register_sensor(acpi_handle handle, u32 lvl,
+> +						void *context, void **rv)
+> +{
+> +	acpi_status status;
+> +	acpi_handle dummy;
+> +	struct thermal_zone_device *thermal;
+> +	int result;
+> +
+> +	result = acpi_bus_get_private_data(handle, (void **)&thermal);
+> +	if (result)
+> +		return 0;
+> +
+> +	/* _TZ must have the AUX0/1 methods */
+> +	status = acpi_get_handle(handle, GET_AUX0, &dummy);
+> +	if (ACPI_FAILURE(status))
+> +		goto not_found;
+> +
+> +	status = acpi_get_handle(handle, SET_AUX0, &dummy);
+> +	if (ACPI_FAILURE(status))
+> +		goto not_found;
+> +
+> +	result = intel_menlow_add_one_attribute("aux0", 0644,
+> +						aux0_show, aux0_store,
+> +						&thermal->device, handle);
+> +	if (result)
+> +		return AE_ERROR;
+> +
+> +	status = acpi_get_handle(handle, GET_AUX1, &dummy);
+> +	if (ACPI_FAILURE(status))
+> +		goto not_found;
+> +
+> +	status = acpi_get_handle(handle, SET_AUX1, &dummy);
+> +	if (ACPI_FAILURE(status))
+> +		goto not_found;
+> +
+> +	result = intel_menlow_add_one_attribute("aux1", 0644,
+> +						aux1_show, aux1_store,
+> +						&thermal->device, handle);
+> +	if (result)
+> +		return AE_ERROR;
+> +
+> +	/*
+> +	 * create the "dabney_enabled" attribute which means the user app
+> +	 * should be loaded or not
+> +	 */
+> +
+> +	result = intel_menlow_add_one_attribute("bios_enabled", 0444,
+> +						bios_enabled_show, NULL,
+> +						&thermal->device, handle);
+> +	if (result)
+> +		return AE_ERROR;
+> +
+> + not_found:
+> +	if (status == AE_NOT_FOUND)
+> +		return AE_OK;
+> +	else
+> +		return status;
+> +}
+> +
+> +static void intel_menlow_unregister_sensor(void)
+> +{
+> +	struct intel_menlow_attribute *pos, *next;
+> +
+> +	mutex_lock(&intel_menlow_attr_lock);
+> +	list_for_each_entry_safe(pos, next, &intel_menlow_attr_list, node) {
+> +		list_del(&pos->node);
+> +		device_remove_file(pos->device, &pos->attr);
+> +		kfree(pos);
+> +	}
+> +	mutex_unlock(&intel_menlow_attr_lock);
+> +
+> +	return;
+> +}
+> +
+> +static int __init intel_menlow_module_init(void)
+> +{
+> +	int result = -ENODEV;
+> +	acpi_status status;
+> +	unsigned long enable;
+> +
+> +	if (acpi_disabled)
+> +		return result;
+> +
+> +	/* Looking for the \_TZ.GSTS method */
+> +	status = acpi_evaluate_integer(NULL, BIOS_ENABLED, NULL, &enable);
+> +	if (ACPI_FAILURE(status) || !enable)
+> +		return -ENODEV;
+> +
+> +	/* Looking for ACPI device MEM0 with hardware id INT0002 */
+> +	result = acpi_bus_register_driver(&intel_menlow_memory_driver);
+> +	if (result)
+> +		return result;
+> +
+> +	/* Looking for sensors in each ACPI thermal zone */
+> +	status = acpi_walk_namespace(ACPI_TYPE_THERMAL, ACPI_ROOT_OBJECT,
+> +				     ACPI_UINT32_MAX,
+> +				     intel_menlow_register_sensor, NULL, NULL);
+> +	if (ACPI_FAILURE(status))
+> +		result = -ENODEV;
+> +
+
+It seems to me this should be 'return -ENODEV;'
+
+You can just eliminate variable result, because result will be
+-ENODEV only.
+
+> +	return 0;
+> +}
+> +
+> +static void __exit intel_menlow_module_exit(void)
+> +{
+> +	acpi_bus_unregister_driver(&intel_menlow_memory_driver);
+> +	intel_menlow_unregister_sensor();
+> +}
+> +
+> +module_init(intel_menlow_module_init);
+> +module_exit(intel_menlow_module_exit);
+> Index: linux-2.6/drivers/misc/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/drivers/misc/Kconfig
+> +++ linux-2.6/drivers/misc/Kconfig
+> @@ -232,4 +232,13 @@ config ATMEL_SSC
+>  
+>  	  If unsure, say N.
+>  
+> +config INTEL_MENLOW
+> +	tristate "Thermal Management driver for Intel menlow platform"
+> +	depends on ACPI_THERMAL
+> +	---help---
+> +	  ACPI thermal management enhancement driver on
+> +	  Intel Menlow platform.
+> +
+> +	  If unsure, say N.
+> +
+>  endif # MISC_DEVICES
+> Index: linux-2.6/drivers/misc/Makefile
+> ===================================================================
+> --- linux-2.6.orig/drivers/misc/Makefile
+> +++ linux-2.6/drivers/misc/Makefile
+> @@ -17,3 +17,4 @@ obj-$(CONFIG_SONY_LAPTOP)	+= sony-laptop
+>  obj-$(CONFIG_THINKPAD_ACPI)	+= thinkpad_acpi.o
+>  obj-$(CONFIG_FUJITSU_LAPTOP)	+= fujitsu-laptop.o
+>  obj-$(CONFIG_EEPROM_93CX6)	+= eeprom_93cx6.o
+> +obj-$(CONFIG_INTEL_MENLOW)	+= intel_menlow.o
+> 
+> 
+
