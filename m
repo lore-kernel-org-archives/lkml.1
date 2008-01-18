@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763012AbYARQyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763054AbYARQ4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763012AbYARQyU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 11:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759386AbYARQyK
+	id S1763054AbYARQ4G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 11:56:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758174AbYARQzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 11:54:10 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54309 "EHLO mx1.redhat.com"
+	Fri, 18 Jan 2008 11:55:48 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51335 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759073AbYARQyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 11:54:08 -0500
-Date: Fri, 18 Jan 2008 11:53:50 -0500
-From: Dave Jones <davej@redhat.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc8-mm1: broken suspend (due to git-cpufreq.patch)
-Message-ID: <20080118165350.GA29889@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <20080117023514.9df393cf.akpm@linux-foundation.org> <200801181435.00364.rjw@sisk.pl>
+	id S1757647AbYARQzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 11:55:47 -0500
+Message-ID: <4790D9F3.2070503@redhat.com>
+Date: Fri, 18 Jan 2008 11:55:15 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801181435.00364.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Chuck Lever <chuck.lever@oracle.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] enhanced ESTALE error handling
+References: <4790C756.2040704@redhat.com> <63F84201-9D38-4588-B237-A15138E94C5A@oracle.com>
+In-Reply-To: <63F84201-9D38-4588-B237-A15138E94C5A@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 02:34:59PM +0100, Rafael J. Wysocki wrote:
- > On Thursday, 17 of January 2008, Andrew Morton wrote:
- > > 
- > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
- > > 
- > > - selinux is busted on one of my two selinux-enabled test machines.
- > > 
- > > - suspend-to-ram and suspend-to-disk are totally hosed on one of my test
- > >   machines.  I guess I get to bisect this.
- > 
- > Suspend and hibernation are also broken on my HP nx6325, which is caused by
- > git-cpufreq.patch.  Reverting this patch and
- > drivers-cpufreq-add-calls-to-cpufreq_cpu_put.patch makes things work again.
- > 
- > I reported this already for 2.6.24-rc6-mm1 and Dave said he would look at it
- > in January.  It's still January, so hopefully he's still going to do that. ;-)
+Chuck Lever wrote:
+> Hi Peter-
+>
+> On Jan 18, 2008, at 10:35 AM, Peter Staubach wrote:
+>> Hi.
+>>
+>> Here is a patch set which modifies the system to enhance the
+>> ESTALE error handling for system calls which take pathnames
+>> as arguments.
+>
+> The VFS already handles ESTALE.
+>
+> If a pathname resolution encounters an ESTALE at any point, the 
+> resolution is restarted exactly once, and an additional flag is passed 
+> to the file system during each lookup that forces each component in 
+> the path to be revalidated on the server.  This has no possibility of 
+> causing an infinite loop.
+>
+> Is there some part of this logic that is no longer working? 
 
-Yeah, I put myself out of action for a few weeks.  I'm back now.
-I'll look at this today.  Thanks for the reminder.
+The VFS does not fully handle ESTALE.  An ESTALE error can occur
+during the second pathname resolution attempt.  There are lots of
+reasons, some of which are the 1 second resolution from some file
+systems on the server and the window in between the revalidation
+and the actual use of the file handle associated with each
+dentry/inode pair.
 
-	Dave
+Also, there was no support for ESTALE errors which occur during
+subsequent operations to the pathname resolution process.  For
+example, during a mkdir(2) operation, the ESTALE can occur from
+the over the wire MKDIR operation after the LOOKUP operations
+have all succeeded.
 
--- 
-http://www.codemonkey.org.uk
+    Thanx...
+
+       ps
