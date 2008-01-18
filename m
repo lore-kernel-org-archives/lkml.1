@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYARH5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbYARIGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbYARH5u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 02:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbYARH5n
+	id S1754656AbYARIGc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 03:06:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYARIGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 02:57:43 -0500
-Received: from orion2.pixelized.ch ([195.190.190.13]:40347 "EHLO
-	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751907AbYARH5m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 02:57:42 -0500
-X-Greylist: delayed 343 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jan 2008 02:57:42 EST
-Message-ID: <47905A95.4030500@cateee.net>
-Date: Fri, 18 Jan 2008 08:51:49 +0100
-From: Giacomo Catenazzi <cate@cateee.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: David Schwartz <davids@webmaster.com>,
-       Johannes Weiner <hannes@saeurebad.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       clameter@sgi.com, penberg@cs.helsinki.fi
-Subject: Re: Why is the kfree() argument const?
-References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com> <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jan 2008 03:06:22 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60215 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750853AbYARIGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 03:06:21 -0500
+Date: Fri, 18 Jan 2008 09:06:27 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc8-mm1 Build Failure at scripts/mkubooting/crc32.c
+Message-ID: <20080118080627.GB15956@uranus.ravnborg.org>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org> <479043CA.90002@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <479043CA.90002@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Fri, Jan 18, 2008 at 11:44:34AM +0530, Kamalesh Babulal wrote:
+> Hi Andrew,
 > 
-> On Thu, 17 Jan 2008, David Schwartz wrote:
->>> "const" has nothing to do with "logical state".  It has one meaning, and
->>> one meaning only: the compiler should complain if that particular type is
->>> used to do a write access.
->> Right, exactly.
+> The kernel build fails with following error message
 > 
-> So why do you complain? 
+> scripts/mkubootimg/crc32.c:15:18: error: zlib.h: No such file or directory
+> scripts/mkubootimg/crc32.c:77: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'crc_table'
+> scripts/mkubootimg/crc32.c:153: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'crc32'
+> make[2]: *** [scripts/mkubootimg/crc32.o] Error 1
+> make[1]: *** [scripts/mkubootimg] Error 2
+> make: *** [scripts] Error 2
 > 
-> kfree() literally doesn't write to the object.
-> 
->> You are the only one who has suggested it has anything to do with changes
->> through other pointers or in other ways. So you are arguing against only
->> yourself here.
-> 
-> No, I'm saying that "const" has absolutely *zero* meaning on writes to an 
-> object through _other_ pointers (or direct access) to the object.
+> The patch causing this build failure may be git-kbuild.patch.
 
-Hints: "restrict" is the C99 keyword for such requirement (or better
-"const restrict")
+The mkubootimg patches in kbuild.git has been reverted - but that was
+after akpm merged kbuild.git.
+So it is fixed in next -mm.
 
-BTW I think C use non const free as a BIG warning about not to be
-to "smart" on optimization.
+The workaround for now is to just remove the line
+containing "mkubootimg" in scripts/Makefile.
 
-ciao
-	cate
+(Assuming you do not need the uImage target).
+
+	Sam
