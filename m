@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763471AbYARRVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762260AbYARRWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763471AbYARRVa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:21:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbYARRVX
+	id S1762260AbYARRWX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:22:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbYARRWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:21:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55539 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759238AbYARRVW (ORCPT
+	Fri, 18 Jan 2008 12:22:16 -0500
+Received: from mopniei1.ch.govorit.ru ([89.221.56.130]:45880 "EHLO
+	d-fens.mopniei.ru" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752604AbYARRWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:21:22 -0500
-Date: Fri, 18 Jan 2008 09:20:39 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, phil.el@wanadoo.fr,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: x86: Add support for the latest Intel processors to Oprofile
-Message-ID: <20080118092039.13579105@laptopd505.fenrus.org>
-In-Reply-To: <20080118123610.GK11044@elte.hu>
-References: <20080117101613.65bf008b@laptopd505.fenrus.org>
-	<20080118123610.GK11044@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 18 Jan 2008 12:22:15 -0500
+To: linux-kernel@vger.kernel.org
+Subject: mount: can not restrict mode of iso9660 files
+From: "Ilya N. Golubev" <gin@mo.msk.ru>
+Date: Fri, 18 Jan 2008 19:39:20 +0300
+Message-ID: <518x2n9jgn.fsf@mo.msk.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 13:36:11 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Versions: `2.6.17-1.2142_FC4' (fedora core) for x86_64;
+`kernel-syms-2.6.22.5-31' (opensuse 10.3) for i586.
 
-> 
-> * Arjan van de Ven <arjan@infradead.org> wrote:
-> 
-> > Subject: x86: Add support for the latest Intel processors to
-> > Oprofile From: Arjan van de Ven <arjan@linux.intel.com>
-> > 
-> > The latest Intel processors (the 45nm ones) have a model number of
-> > 23 (old ones had 15); they're otherwise compatible on the oprofile
-> > side. This patch adds the new model number to the oprofile code.
-> 
-> thanks, applied.
-> 
-> 2.6.24 fix too, right?
-> 
+File system may contain data not to let any logged in user read.  Wish
+to specify more restrictive mode of files in it - files of all types,
+including not only regular ones, but also directories, even root one
+of the file system.  This certainly must occur on mount itself, not in
+subsequent `chmod' calls.  There is at least one obvious reason to
+avoid explicit `chmod', just as many other uses of it: possible race
+condition between it and other process opening the file.
 
-that's a judgement call ... it's sure simple enough
+When mounting read- only iso9660 file system, `mount' ignores
+`mode=0400' file system option, at least for directories.  More
+precisely,
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+mount -nv -t iso9660 -o ro,norock,mode=0400,uid=ID_OF_REGULAR_USER DEVICE DIR
+
+completes without error messages and leaves DIR mounted, but with mode
+`r-xr-xr-x'.  DIR uid is as specified.
+
+Also ran that command in `strace -emount'.  Its outputs:
+
+mount("DEVICE", "DIR", "iso9660", MS_RDONLY|MS_POSIXACL|MS_ACTIVE|MS_NOUSER|0xec0000, 0x50fe60) = 0
+
+suggesting that data converted from `-o' argument are actually passed
+to the kernel.  Permissions of regular files in mounted file system
+are `0400', that is, restricted properly.  This suggests that the
+request to restrict permissions, or at least part of it, is passed to
+kernel.  However, kernel does not honor the request wrt directories in
+mounted file system - or at best needs a separate request for
+permissions of directories, which `mount' program does not make.
