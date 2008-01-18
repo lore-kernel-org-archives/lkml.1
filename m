@@ -1,83 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764491AbYARScD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764872AbYARSce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764491AbYARScD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:32:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762293AbYARSaF
+	id S1764872AbYARSce (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764095AbYARSaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:30:05 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:39510 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764009AbYARS3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 13:30:06 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60709 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764020AbYARS3z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 Jan 2008 13:29:55 -0500
-Message-Id: <20080118182954.718110000@sgi.com>
+Message-Id: <20080118182954.589001000@sgi.com>
 References: <20080118182953.748071000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 Jan 2008 10:30:00 -0800
+Date: Fri, 18 Jan 2008 10:29:59 -0800
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        mingo@elte.hu
 Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 7/7] percpu: Add debug detection of uninitialized usage of per_cpu variable
-Content-Disposition: inline; filename=debug-percpu
+       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com
+Subject: [PATCH 6/7] s390: Use generic percpu
+Content-Disposition: inline; filename=s390_generic_percpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a means to trap usages of per_cpu variables before
-the per_cpu_areas are setup.  Define CONFIG_DEBUG_PER_CPU to activate.
+Change s390 percpu.h to use asm-generic/percpu.h
 
+Cc: schwidefsky@de.ibm.com
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- include/asm-generic/percpu.h |   11 ++++++++++-
- lib/Kconfig.debug            |   12 ++++++++++++
- 2 files changed, 22 insertions(+), 1 deletion(-)
 
---- a/include/asm-generic/percpu.h
-+++ b/include/asm-generic/percpu.h
-@@ -47,12 +47,21 @@ extern unsigned long __per_cpu_offset[NR
+V2->V3:
+
+On Thu, 29 Nov 2007, Martin Schwidefsky wrote:
+
+> On Wed, 2007-11-28 at 13:09 -0800, Christoph Lameter wrote:
+> > s390 has a special way to determine the pointer to a per cpu area
+> > plus there is a way to access the base of the per cpu area of the
+> > currently executing processor.
+> > 
+> > Note: I had to do a minor change to ASM code. Please check that
+> > this was done right.
+> 
+> Hi Christoph,
+> 
+> after fixing the trainwreck with Gregs kset changes I've got rc3-mm2
+> compiled with your percpu patches. The new s390 percpu code works fine:
+> 
+> Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+
+---
+ include/asm-s390/percpu.h |   33 +++++++++------------------------
+ 1 file changed, 9 insertions(+), 24 deletions(-)
+
+--- a/include/asm-s390/percpu.h
++++ b/include/asm-s390/percpu.h
+@@ -13,40 +13,25 @@
+  */
+ #if defined(__s390x__) && defined(MODULE)
+ 
+-#define __reloc_hide(var,offset) (*({			\
++#define SHIFT_PERCPU_PTR(ptr,offset) (({			\
+ 	extern int simple_identifier_##var(void);	\
+ 	unsigned long *__ptr;				\
+-	asm ( "larl %0,per_cpu__"#var"@GOTENT"		\
+-	    : "=a" (__ptr) : "X" (per_cpu__##var) );	\
+-	(typeof(&per_cpu__##var))((*__ptr) + (offset));	}))
++	asm ( "larl %0, %1@GOTENT"		\
++	    : "=a" (__ptr) : "X" (ptr) );		\
++	(typeof(ptr))((*__ptr) + (offset));	}))
+ 
+ #else
+ 
+-#define __reloc_hide(var, offset) (*({				\
++#define SHIFT_PERCPU_PTR(ptr, offset) (({				\
+ 	extern int simple_identifier_##var(void);		\
+ 	unsigned long __ptr;					\
+-	asm ( "" : "=a" (__ptr) : "0" (&per_cpu__##var) );	\
+-	(typeof(&per_cpu__##var)) (__ptr + (offset)); }))
++	asm ( "" : "=a" (__ptr) : "0" (ptr) );			\
++	(typeof(ptr)) (__ptr + (offset)); }))
+ 
  #endif
  
- /*
-- * A percpu variable may point to a discarded reghions. The following are
-+ * A percpu variable may point to a discarded regions. The following are
-  * established ways to produce a usable pointer from the percpu variable
-  * offset.
-  */
-+#ifdef	CONFIG_DEBUG_PER_CPU
-+#define per_cpu(var, cpu) (*({		\
-+	if(!per_cpu_offset(cpu)) {	\
-+		printk("KERN_NOTICE per_cpu(%s,%d): not available!\n", #var, (int)cpu); \
-+		BUG();			\
-+	}				\
-+	SHIFT_PERCPU_PTR(&per_cpu_var(var), per_cpu_offset(cpu));}))
-+#else
- #define per_cpu(var, cpu) \
- 	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), per_cpu_offset(cpu)))
-+#endif
- #define __get_cpu_var(var) \
- 	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), my_cpu_offset))
- #define __raw_get_cpu_var(var) \
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -610,6 +610,18 @@ config PROVIDE_OHCI1394_DMA_INIT
+-#ifdef CONFIG_SMP
++#define __my_cpu_offset S390_lowcore.percpu_offset
  
- 	  See Documentation/debugging-via-ohci1394.txt for more information.
+-extern unsigned long __per_cpu_offset[NR_CPUS];
+-
+-#define __get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
+-#define __raw_get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
+-#define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
+-#define per_cpu_offset(x) (__per_cpu_offset[x])
+-
+-#else /* ! SMP */
+-
+-#define __get_cpu_var(var) __reloc_hide(var,0)
+-#define __raw_get_cpu_var(var) __reloc_hide(var,0)
+-#define per_cpu(var,cpu) __reloc_hide(var,0)
+-
+-#endif /* SMP */
+-
+-#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
++#include <asm-generic/percpu.h>
  
-+config DEBUG_PER_CPU
-+	bool "Debug per_cpu usage"
-+	depends on DEBUG_KERNEL
-+	depends on SMP
-+	default n
-+	help
-+	  Say Y here to add code that verifies the per_cpu area is
-+	  setup before accessing a per_cpu variable.  It does add a
-+	  significant amount of code to kernel memory.
-+
-+	  If unsure, say N.
-+
- source "samples/Kconfig"
- 
- source "lib/Kconfig.kgdb"
+ #endif /* __ARCH_S390_PERCPU__ */
 
 -- 
