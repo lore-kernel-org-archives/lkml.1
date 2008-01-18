@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757771AbYARKBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759271AbYARKCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757771AbYARKBX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:01:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbYARKBP
+	id S1759271AbYARKCU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 05:02:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbYARKCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:01:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58537 "EHLO mx2.mail.elte.hu"
+	Fri, 18 Jan 2008 05:02:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58882 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754134AbYARKBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:01:14 -0500
-Date: Fri, 18 Jan 2008 11:00:44 +0100
+	id S1754769AbYARKCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 05:02:06 -0500
+Date: Fri, 18 Jan 2008 11:01:41 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <Yinghai.Lu@Sun.COM>
 Cc: "H. Peter Anvin" <hpa@zytor.com>,
@@ -19,12 +19,12 @@ Cc: "H. Peter Anvin" <hpa@zytor.com>,
        Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
        Greg Kroah-Hartman <gregkh@suse.de>, Len Brown <lenb@kernel.org>
 Subject: Re: [PATCH 2/2] x86: MMCONF enable MCFG early
-Message-ID: <20080118100044.GC30637@elte.hu>
-References: <200801161405.17889.yinghai.lu@sun.com> <200801161406.38946.yinghai.lu@sun.com> <200801161409.02591.yinghai.lu@sun.com> <200801161626.19991.yinghai.lu@sun.com>
+Message-ID: <20080118100141.GA3654@elte.hu>
+References: <200801161405.17889.yinghai.lu@sun.com> <200801161406.38946.yinghai.lu@sun.com> <200801161409.02591.yinghai.lu@sun.com> <200801161626.19991.yinghai.lu@sun.com> <20080118100044.GC30637@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801161626.19991.yinghai.lu@sun.com>
+In-Reply-To: <20080118100044.GC30637@elte.hu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,17 +39,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> Ingo,
-> it seems you removed
-> > patch
-> > 	x86: validate against ACPI motherboard resources
-> last night. 
+> > Ingo,
+> > it seems you removed
+> > > patch
+> > > 	x86: validate against ACPI motherboard resources
+> > last night. 
+> > 
+> > was it dropped?
 > 
-> was it dropped?
+> yeah, i bounced it over to Greg - but Greg has not indicated it yet 
+> whether he has picked it up. Andrew has it in -rc8-mm1 at the moment.
 
-yeah, i bounced it over to Greg - but Greg has not indicated it yet 
-whether he has picked it up. Andrew has it in -rc8-mm1 at the moment.
+so these two patches of yours:
+
+ Subject: [PATCH 1/2] x86: clear pci_mmcfg_virt when mmcfg get rejected
+ Subject: [PATCH 2/2] x86: MMCONF enable MCFG early
+
+should probably go to Andrew/Greg as well.
 
 	Ingo
