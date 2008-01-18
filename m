@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932631AbYARWQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932658AbYARWRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932631AbYARWQj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760153AbYARWQb
+	id S932658AbYARWRu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:17:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762013AbYARWRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:16:31 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:52251 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755379AbYARWQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:16:30 -0500
-Date: Fri, 18 Jan 2008 14:16:29 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Olaf Hering <olaf@aepfle.de>
-cc: Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>
-Subject: Re: crash in kmem_cache_init
-In-Reply-To: <20080118213011.GC10491@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-References: <20080115150949.GA14089@aepfle.de>
- <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
- <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
- <20080117181222.GA24411@aepfle.de> <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
- <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
- <20080118213011.GC10491@csn.ul.ie>
+	Fri, 18 Jan 2008 17:17:41 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:58674 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761683AbYARWRk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 17:17:40 -0500
+Date: Fri, 18 Jan 2008 17:17:28 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: James Cloos <cloos@jhcloos.com>
+cc: Francis Moreau <francis.moro@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Subject: Re: Why not creating a GIT RT tree ?
+In-Reply-To: <m3zlv2kd6t.fsf@lugabout.jhcloos.org>
+Message-ID: <Pine.LNX.4.58.0801181714340.13971@gandalf.stny.rr.com>
+References: <38b2ab8a0801180544j2022af8bl252a118a295b1f34@mail.gmail.com>
+ <m3zlv2kd6t.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Could you try this patch?
 
-Memoryless nodes: Set N_NORMAL_MEMORY for a node if we do not support HIGHMEM
+On Fri, 18 Jan 2008, James Cloos wrote:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/cloos/rt-2.6.git
+> http://www.kernel.org/pub/scm/linux/kernel/git/cloos/rt-2.6.git
 
-It seems that we only scan through zones to set N_NORMAL_MEMORY only if
-CONFIG_HIGHMEM and CONFIG_NUMA are set. We need to set N_NORMAL_MEMORY
-in the !CONFIG_HIGHMEM case.
+Thanks for doing this. We might want to add this to the wiki.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+   http://rt.wiki.kernel.org/index.php/Main_Page
 
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c	2008-01-18 14:08:41.000000000 -0800
-+++ linux-2.6/mm/page_alloc.c	2008-01-18 14:13:34.000000000 -0800
-@@ -3812,7 +3812,6 @@ restart:
- /* Any regular memory on that node ? */
- static void check_for_regular_memory(pg_data_t *pgdat)
- {
--#ifdef CONFIG_HIGHMEM
- 	enum zone_type zone_type;
- 
- 	for (zone_type = 0; zone_type <= ZONE_NORMAL; zone_type++) {
-@@ -3820,7 +3819,6 @@ static void check_for_regular_memory(pg_
- 		if (zone->present_pages)
- 			node_set_state(zone_to_nid(zone), N_NORMAL_MEMORY);
- 	}
--#endif
- }
- 
- /**
+-- Steve
 
