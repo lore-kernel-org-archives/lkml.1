@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbYARWz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbYARW5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbYARWz5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762575AbYARWzs
+	id S932832AbYARW5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:57:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbYARW5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:55:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50947 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761186AbYARWzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:55:47 -0500
-Date: Fri, 18 Jan 2008 17:54:50 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, Miklos Szeredi <miklos@szeredi.hu>,
-       peterz@infradead.org, salikhmetov@gmail.com, linux-mm@kvack.org,
-       jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, ksm@42.dk, staubach@redhat.com,
-       jesper.juhl@gmail.com, akpm@linux-foundation.org, protasnb@gmail.com,
-       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
- files
-Message-ID: <20080118175450.715ded60@bree.surriel.com>
-In-Reply-To: <alpine.LFD.1.00.0801181439330.2957@woody.linux-foundation.org>
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>
-	<E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>
-	<alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org>
-	<200801182332.02945.ioe-lkml@rameria.de>
-	<alpine.LFD.1.00.0801181439330.2957@woody.linux-foundation.org>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jan 2008 17:57:01 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:44031 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932148AbYARW5A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 17:57:00 -0500
+Date: Fri, 18 Jan 2008 23:57:13 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       hanth Aravamudan <nacc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>
+Subject: Re: crash in kmem_cache_init
+Message-ID: <20080118225713.GA31128@aepfle.de>
+References: <20080115150949.GA14089@aepfle.de> <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com> <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com> <20080117181222.GA24411@aepfle.de> <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com> <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com> <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 14:47:33 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Fri, Jan 18, Christoph Lameter wrote:
 
->  - keep it simple. Let's face it, Linux has never ever given those 
->    guarantees before, and it's not is if anybody has really cared. Even 
->    now, the issue seems to be more about paper standards conformance than 
->    anything else.
+> Could you try this patch?
 
-There is one issue which is way more than just standards conformance.
-
-When a program changes file data through mmap(), at some point the
-mtime needs to be update so that backup programs know to back up the
-new version of the file.
-
-Backup programs not seeing an updated mtime is a really big deal.
-
--- 
-All rights reversed.
+Does not help, same crash.
