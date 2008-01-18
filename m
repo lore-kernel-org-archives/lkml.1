@@ -1,161 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760880AbYARBUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760840AbYARBUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760880AbYARBUf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:20:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbYARBUZ
+	id S1760840AbYARBUt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:20:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758472AbYARBUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:20:25 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:57321 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753869AbYARBUX (ORCPT
+	Thu, 17 Jan 2008 20:20:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47004 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760902AbYARBUg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:20:23 -0500
-Message-Id: <200801180120.m0I1KBuC065806@www262.sakura.ne.jp>
-Subject: [2.6.24-rc8-mm1] Locking API boot-time self-tests hangs.
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
+	Thu, 17 Jan 2008 20:20:36 -0500
+Date: Thu, 17 Jan 2008 17:19:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       adobriyan@openvz.org, dev@sw.ru
+Subject: Re: [PATCH] printk deadlocks if called with runqueue lock held
+Message-Id: <20080117171950.ca4ea87f.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.58.0801172000430.32679@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0801172000430.32679@gandalf.stny.rr.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Fri, 18 Jan 2008 10:20:11 +0900
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, 17 Jan 2008 20:04:27 -0500 (EST)
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-I found the CONFIG_DEBUG_LOCKING_API_SELFTESTS hangs
-at (A-A deadlock)-(wlock) pair.
+> 
+> I thought that one could place a printk anywhere without worrying.
+> But it seems that it is not wise to place a printk where the runqueue
+> lock is held.
+> 
+> I just spent two hours debugging why some of my code was locking up,
+> to find that the lockup was caused by some debugging printk's that
+> I had in the scheduler.  The printk's were only in rare paths so
+> they shouldn't be too much of a problem, but after I hit the printk
+> the system locked up.
+> 
+> Thinking that it was locking up on my code I went looking down the
+> wrong path. I finally found (after examining an NMI dump) that
+> the lockup happened because printk was trying to wakeup the klogd
+> daemon, which caused a deadlock when the try_to_wakeup code tries
+> to grab the runqueue lock.
 
-2.6.24-rc8 doesn't hang.
-So, I think the bug is in 2.6.24-rc8-mm1.bz2 .
+A "well-known" problem which few know about ;) 
 
-The kernel configs are at
+Anyway you should be developing with all debug options enabled and that
+includes NMI watchdog so there.
 
-  http://I-love.SAKURA.ne.jp/tmp/config-2.6.24-rc8
-  http://I-love.SAKURA.ne.jp/tmp/config-2.6.24-rc8-mm1
+> Since printks are seldom called with interrupts disabled, we can
+> hold off the waking of klogd if they are. We don't have access to
+> the runqueue locks from printk, but those locks need interrupts
+> disabled in order to be held.
+> 
+> Calling printk with interrupts disabled should only be done for
+> emergencies and debugging anyway.
+> 
+> And with this patch, my code ran fine ;-)
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  kernel/printk.c |    8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> Index: linux-mcount.git/kernel/printk.c
+> ===================================================================
+> --- linux-mcount.git.orig/kernel/printk.c	2008-01-17 09:06:23.000000000 -0500
+> +++ linux-mcount.git/kernel/printk.c	2008-01-17 19:56:59.000000000 -0500
+> @@ -978,7 +978,13 @@ void release_console_sem(void)
+>  	console_locked = 0;
+>  	up(&console_sem);
+>  	spin_unlock_irqrestore(&logbuf_lock, flags);
+> -	if (wake_klogd)
+> +	/*
+> +	 * If we try to wake up klogd while printing with the runqueue lock
+> +	 * held, this will deadlock. We don't have access to the runqueue
+> +	 * lock from here, but just checking for interrupts disabled
+> +	 * should be enough.
+> +	 */
+> +	if (!irqs_disabled() && wake_klogd)
+>  		wake_up_klogd();
+>  }
+>  EXPORT_SYMBOL(release_console_sem);
 
-Regards.
+this looks fairly foul.  Might cause problems if one CPU is stuck with
+interrupts off spewing printks?  
 
----------- 2.6.24-rc8-mm1 ----------
-Linux version 2.6.24-rc8-mm1 (root@tomoyo) (gcc version 3.3.5 (Debian 1:3.3.5-13)) #2 SMP Fri Jan 18 10:13:09 JST 2008
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
- BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000ca000 - 00000000000cc000 (reserved)
- BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000001fef0000 (usable)
- BIOS-e820: 000000001fef0000 - 000000001feff000 (ACPI data)
- BIOS-e820: 000000001feff000 - 000000001ff00000 (ACPI NVS)
- BIOS-e820: 000000001ff00000 - 0000000020000000 (usable)
- BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
- BIOS-e820: 00000000fffe0000 - 0000000100000000 (reserved)
-0MB HIGHMEM available.
-512MB LOWMEM available.
-found SMP MP-table at 000f6c90
-Zone PFN ranges:
-  DMA             0 ->     4096
-  Normal       4096 ->   131072
-  HighMem    131072 ->   131072
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0:        0 ->   131072
-DMI present.
-Intel MultiProcessor Specification v1.4
-    Virtual Wire compatibility mode.
-OEM ID: INTEL    Product ID: 440BX        APIC at: 0xFEE00000
-Processor #0 6:15 APIC version 17
-Processor #1 6:15 APIC version 17
-I/O APIC #2 Version 17 at 0xFEC00000.
-Enabling APIC mode:  Flat.  Using 1 I/O APICs
-Processors: 2
-Allocating PCI resources starting at 30000000 (gap: 20000000:dec00000)
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 130048
-Kernel command line: root=/dev/sda1 ro noapic nolapic console=ttyS0,115200n8
-Enabling fast FPU save and restore... done.
-Enabling unmasked SIMD FPU exception support... done.
-Initializing CPU#0
-CPU 0 irqstacks, hard=c0523000 soft=c0521000
-PID hash table entries: 2048 (order: 11, 8192 bytes)
-Detected 1993.105 MHz processor.
-Console: colour VGA+ 80x25
-console [ttyS0] enabled
-Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-... MAX_LOCKDEP_SUBCLASSES:    8
-... MAX_LOCK_DEPTH:          30
-... MAX_LOCKDEP_KEYS:        2048
-... CLASSHASH_SIZE:           1024
-... MAX_LOCKDEP_ENTRIES:     8192
-... MAX_LOCKDEP_CHAINS:      16384
-... CHAINHASH_SIZE:          8192
- memory used by lock dependency info: 1024 kB
- per task-struct memory footprint: 1680 bytes
-------------------------
-| Locking API testsuite:
-----------------------------------------------------------------------------
-                                 | spin |wlock |rlock |mutex | wsem | rsem |
-  --------------------------------------------------------------------------
-                     A-A deadlock:  ok  |
+Couldn't you maintain a sched-hackers-only printk patch which adds a
+sched_printk() which avoids the wakeup or something like that?
 
----------- 2.6.24-rc8 ----------
-Linux version 2.6.24-rc8 (root@tomoyo) (gcc version 3.3.5 (Debian 1:3.3.5-13)) #1 SMP Fri Jan 18 09:51:40 JST 2008
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
- BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000ca000 - 00000000000cc000 (reserved)
- BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000001fef0000 (usable)
- BIOS-e820: 000000001fef0000 - 000000001feff000 (ACPI data)
- BIOS-e820: 000000001feff000 - 000000001ff00000 (ACPI NVS)
- BIOS-e820: 000000001ff00000 - 0000000020000000 (usable)
- BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
- BIOS-e820: 00000000fffe0000 - 0000000100000000 (reserved)
-0MB HIGHMEM available.
-512MB LOWMEM available.
-found SMP MP-table at 000f6c90
-Zone PFN ranges:
-  DMA             0 ->     4096
-  Normal       4096 ->   131072
-  HighMem    131072 ->   131072
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    0:        0 ->   131072
-DMI present.
-Intel MultiProcessor Specification v1.4
-    Virtual Wire compatibility mode.
-OEM ID: INTEL    Product ID: 440BX        APIC at: 0xFEE00000
-Processor #0 6:15 APIC version 17
-Processor #1 6:15 APIC version 17
-I/O APIC #2 Version 17 at 0xFEC00000.
-Enabling APIC mode:  Flat.  Using 1 I/O APICs
-Processors: 2
-Allocating PCI resources starting at 30000000 (gap: 20000000:dec00000)
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 130048
-Kernel command line: root=/dev/sda1 ro noapic nolapic console=ttyS0,115200n8
-Enabling fast FPU save and restore... done.
-Enabling unmasked SIMD FPU exception support... done.
-Initializing CPU#0
-CPU 0 irqstacks, hard=c052c000 soft=c052a000
-PID hash table entries: 2048 (order: 11, 8192 bytes)
-Detected 1994.813 MHz processor.
-Console: colour VGA+ 80x25
-console [ttyS0] enabled
-Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-... MAX_LOCKDEP_SUBCLASSES:    8
-... MAX_LOCK_DEPTH:          30
-... MAX_LOCKDEP_KEYS:        2048
-... CLASSHASH_SIZE:           1024
-... MAX_LOCKDEP_ENTRIES:     8192
-... MAX_LOCKDEP_CHAINS:      16384
-... CHAINHASH_SIZE:          8192
- memory used by lock dependency info: 1024 kB
- per task-struct memory footprint: 1680 bytes
-------------------------
-| Locking API testsuite:
-----------------------------------------------------------------------------
-                                 | spin |wlock |rlock |mutex | wsem | rsem |
-  --------------------------------------------------------------------------
-                     A-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
