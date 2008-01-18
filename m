@@ -1,64 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760428AbYARLsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbYARL7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760428AbYARLsv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 06:48:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbYARLsp
+	id S1757921AbYARL7r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 06:59:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388AbYARL7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 06:48:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52539 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754552AbYARLso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 06:48:44 -0500
-Date: Fri, 18 Jan 2008 12:48:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.24 patch] x86: allow 64bit setting in Kconfig
-Message-ID: <20080118114823.GA8583@elte.hu>
-References: <20080117214301.GA28233@does.not.exist> <20080118104401.GA8785@elte.hu> <1200653448.5724.135.camel@brick>
+	Fri, 18 Jan 2008 06:59:37 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:63260 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754011AbYARL7f convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 06:59:35 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1200653448.5724.135.camel@brick>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+Date: Fri, 18 Jan 2008 17:28:41 +0530
+Message-ID: <FBA61160C48B8D438F3323FEFB4EF2C279A908@zin33exm24.fsl.freescale.net>
+In-Reply-To: <5927F7A4-D42A-40F6-AE9C-EDA34738A752@kernel.crashing.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+Thread-Index: AchXJyJ+yMkecJGPSrm9co55J3kxvACoIZFg
+References: <FBA61160C48B8D438F3323FEFB4EF2C259F2F6@zin33exm24.fsl.freescale.net> <FBA61160C48B8D438F3323FEFB4EF2C26E7653@zin33exm24.fsl.freescale.net> <20080114120051.3207043b.kim.phillips@freescale.com> <20080114131530.9d33f50a.akpm@linux-foundation.org> <5927F7A4-D42A-40F6-AE9C-EDA34738A752@kernel.crashing.org>
+From: "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Phillips Kim" <Kim.Phillips@freescale.com>, <sfr@canb.auug.org.au>,
+       <rubini@vision.unipv.it>, <linuxppc-dev@ozlabs.org>,
+       <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "Barkowski Michael" <Michael.Barkowski@freescale.com>,
+       "Kalra Ashish" <ashish.kalra@freescale.com>,
+       "Cutler Richard" <Rich.Cutler@freescale.com>,
+       "Suresh PV" <pala@freescale.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello All
 
-* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+The TDM driver just now does not have a proper framework. Probably the
+interface cannot be generalised as such. Hence we could not decide
+whether it would be right to think of a TDM framework. Infact the
+interface this TDM driver(for MPC8323ERDB) supplies may not be usable
+for some other client as such. Please suggest on this.
 
-> 
-> On Fri, 2008-01-18 at 11:44 +0100, Ingo Molnar wrote:
-> > * Adrian Bunk <bunk@kernel.org> wrote:
-> > 
-> > >  # Select 32 or 64 bit
-> > >  config 64BIT
-> > > -	bool "64-bit kernel" if ARCH = "x86"
-> > > +	bool "64-bit kernel"
-> > >  	default ARCH = "x86_64"
-> > >  	help
-> > >  	  Say yes to build a 64-bit kernel - formerly known as x86_64
-> > 
-> > thx, i've added this to x86.git.
-> 
-> Style question, would the following be preferred?
-> 
-> config 64BIT
-> 	def_bool ARCH = "x86_64"
-> 	prompt "64-bit kernel"
-> 	help...
+But you are right as far as Freescale PowerPC platforms are concerned
+which have TDM devices. Like, 8315 also has a TDM driver which also
+exposes similar interface as 8323 because the client it is talking to is
+the same.
 
-sure, we could do that too.
+Following is the small description of the TDM driver along with
+interface details:
 
-	Ingo
+The dts file keeps a track of the TDM devices present on the board.
+Depending on them the TDM driver initializes those many driver instances
+while coming up.
+
+The driver on the upper level can plug to more than one tdm clients
+depending on the availablity  of TDM devices. At every new request of
+the TDM client to bind with a TDM device, a free driver  instance is
+allocated to the client.
+
+The interface can be described as follows.
+
+tdm_register_client(struct tdm_client *)
+	This API returns a pointer to the structure tdm_client which is
+of type
+	struct tdm_client {
+                u32 driver_handle;
+                u32 (*tdm_read)(u32 driver_handle, short chn_id, short
+*pcm_buffer, short len);
+                u32 (*tdm_write)(u32 driver_handle, short chn_id, short
+*pcm_buffer, short len);
+                wait_queue_head_t *wakeup_event;
+        }
+
+   It consists of:
+   - driver_handle: It is basically to identify the particular TDM
+device/driver instance.
+   - tdm_read: It is a function pointer returned by the TDM driver to be
+used to read TDM data  form a particular TDM channel.
+   - tdm_write: It is a function pointer returned by the TDM driver to
+be used to write TDM data  to a particular TDM channel.
+   - wakeup_event: It is address of a wait_queue event on which the
+client keeps on sleeping,  and the TDM driver wakes it up periodically.
+The driver is configured to wake up the client  after every 10ms.
+
+Once the TDM client gets registered to a TDM driver instance and a TDM
+device, it interfaces  with the driver using tdm_read, tdm_write and
+wakeup_event.
+
+Note: The TDM driver can be used by only kernel level modules. The
+driver does not expose any  file interface for User Applications. Can be
+compared to the spi driver which interfaces with  the SPI clients
+through some APIs.
+
+
+I need your feedback on the interface details. Some changes were
+suggested by Andrew for 32 bit tdm handle which I will modify.(Thanks
+Andrew)
+
+Please give your ideas about a TDM framework in the kernel and the
+interface.
+
+Waiting for your feedback.
+
+Thanks and Regards
+Poonam 
+ 
+ 
+
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org] 
+Sent: Tuesday, January 15, 2008 9:01 AM
+To: Andrew Morton
+Cc: Phillips Kim; Aggrwal Poonam; sfr@canb.auug.org.au;
+rubini@vision.unipv.it; linux-ppcdev@ozlabs.kernel.org;
+netdev@vger.kernel.org; linux-kernel@vger.kernel.org; Barkowski Michael;
+Kalra Ashish; Cutler Richard
+Subject: Re: [PATCH 0/3] UCC TDM driver for MPC83xx platforms
+
+
+On Jan 14, 2008, at 3:15 PM, Andrew Morton wrote:
+
+> On Mon, 14 Jan 2008 12:00:51 -0600
+> Kim Phillips <kim.phillips@freescale.com> wrote:
+>
+>> On Thu, 10 Jan 2008 21:41:20 -0700
+>> "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com> wrote:
+>>
+>>> Hello  All
+>>>
+>>> I am waiting for more feedback on the patches.
+>>>
+>>> If there are no objections please consider them for 2.6.25.
+>>>
+>> if this isn't going to go through Alessandro Rubini/misc drivers, can
+
+>> it go through the akpm/mm tree?
+>>
+>
+> That would work.  But it might be more appropriate to go Kumar-
+> >paulus->Linus.
+
+I'm ok w/taking the arch/powerpc bits, but I"m a bit concerned about  
+the driver itself.  I'm wondering if we need a TDM framework in the  
+kernel.
+
+I guess if Poonam could possibly describe how this driver is actually  
+used that would be helpful.  I see we have 8315 with a discrete TDM  
+block and I'm guessing 82xx/85xx based CPM parts of some form of TDM  
+as well.
+
+- k
