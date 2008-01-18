@@ -1,138 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbYARMLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760283AbYARMOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760645AbYARMLz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 07:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756931AbYARMLo
+	id S1760283AbYARMOs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 07:14:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbYARMOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 07:11:44 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36276
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754769AbYARMLn (ORCPT
+	Fri, 18 Jan 2008 07:14:40 -0500
+Received: from free-electrons.com ([88.191.23.47]:56778 "EHLO
+	sd-2511.dedibox.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755190AbYARMOk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 07:11:43 -0500
-Date: Fri, 18 Jan 2008 04:11:44 -0800 (PST)
-Message-Id: <20080118.041144.81957249.davem@davemloft.net>
-To: Robert.Olsson@data.slu.se
-Cc: elendil@planet.nl, jesse.brandeburg@intel.com, slavon@bigtelecom.ru,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18318.14810.877279.41815@robur.slu.se>
-References: <200801160956.09053.elendil@planet.nl>
-	<20080116.022953.184520911.davem@davemloft.net>
-	<18318.14810.877279.41815@robur.slu.se>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 18 Jan 2008 07:14:40 -0500
+Message-ID: <47909821.1090907@free-electrons.com>
+Date: Fri, 18 Jan 2008 13:14:25 +0100
+From: Michael Opdenacker <michael-lists@free-electrons.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       Linux-tiny@selenic.com
+Subject: Re: [PATCH] x86: fix unconditional	arch/x86/kernel/pcspeaker.c?compiling
+References: <200801171643.49301.michael-lists@free-electrons.com> <478F8AEC.1080209@free-electrons.com> <1200590031.5332.19.camel@cinder.waste.org> <200801172315.29976.michael-lists@free-electrons.com> <20080118110252.GA17397@elte.hu>
+In-Reply-To: <20080118110252.GA17397@elte.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robert Olsson <Robert.Olsson@data.slu.se>
-Date: Wed, 16 Jan 2008 18:07:38 +0100
+On 01/18/2008 12:02 PM, Ingo Molnar wrote:
+>
+> why didnt you make this:
+>
+>   obj-$(CONFIG_INPUT_PCSPKR)		+= pcspeaker.o
+>
+> ?
+>   
+Many thanks for your feedback.
 
-> 
-> eth0 e1000_irq_enable sem = 1    <- High netload
-> eth0 e1000_irq_enable sem = 1
-> eth0 e1000_irq_enable sem = 1
-> eth0 e1000_irq_enable sem = 1
-> eth0 e1000_irq_enable sem = 1
-> eth0 e1000_irq_enable sem = 1
-> eth0 e1000_irq_enable sem = 1    <- ifconfig eth0 down
-> eth0 e1000_irq_disable sem = 2
-> 
-> **e1000_open                     <- ifconfig eth0 up
-> eth0 e1000_irq_disable sem = 3      Dead. irq's can't be enabled
-> e1000_irq_enable miss
-> eth0 e1000_irq_enable sem = 2
-> e1000_irq_enable miss
-> eth0 e1000_irq_enable sem = 1
-> ADDRCONF(NETDEV_UP): eth0: link is not ready
+That's what I did first, but if  CONFIG_INPUT_PCSPKR=m,
+arch/x86/kernel/pcspeaker.c gets compiled as a module. While compiling
+doesn't fail, is this still a valid module? It defines no init and exit
+functions, and it defines an initcall, which only makes sense at boot time.
 
-Yes, this semaphore thing is highly problematic.  In the most crucial
-areas where network driver consistency matters the most for ease of
-understanding and debugging, the Intel drivers choose to be different
-:-(
+We could make pcspeaker.c depend on another switch, like
+CONFIG_PCSPEAKER on mips. We could offer the possibility to disable it
+when CONFIG_EMBEDDED is set.
 
-The way the napi_disable() logic breaks out from high packet load in
-net_rx_action() is it simply returns even leaving interrupts disabled
-when a pending napi_disable() is pending.
+What do you think?
 
-This is what trips up the semaphore logic.
+Michael.
 
-Robert, give this patch a try.
+-- 
+Michael Opdenacker, Free Electrons
+Free Embedded Linux Training Materials
+on http://free-electrons.com/training
+(More than 1500 pages!)
 
-In the long term this semaphore should be completely eliminated,
-there is no justification for it.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index 0c9a6f7..76c0fa6 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -632,6 +632,7 @@ e1000_down(struct e1000_adapter *adapter)
- 
- #ifdef CONFIG_E1000_NAPI
- 	napi_disable(&adapter->napi);
-+	atomic_set(&adapter->irq_sem, 0);
- #endif
- 	e1000_irq_disable(adapter);
- 
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index 2ab3bfb..9cc5a6b 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -2183,6 +2183,7 @@ void e1000e_down(struct e1000_adapter *adapter)
- 	msleep(10);
- 
- 	napi_disable(&adapter->napi);
-+	atomic_set(&adapter->irq_sem, 0);
- 	e1000_irq_disable(adapter);
- 
- 	del_timer_sync(&adapter->watchdog_timer);
-diff --git a/drivers/net/ixgb/ixgb_main.c b/drivers/net/ixgb/ixgb_main.c
-index d2fb88d..4f63839 100644
---- a/drivers/net/ixgb/ixgb_main.c
-+++ b/drivers/net/ixgb/ixgb_main.c
-@@ -296,6 +296,11 @@ ixgb_down(struct ixgb_adapter *adapter, boolean_t kill_watchdog)
- {
- 	struct net_device *netdev = adapter->netdev;
- 
-+#ifdef CONFIG_IXGB_NAPI
-+	napi_disable(&adapter->napi);
-+	atomic_set(&adapter->irq_sem, 0);
-+#endif
-+
- 	ixgb_irq_disable(adapter);
- 	free_irq(adapter->pdev->irq, netdev);
- 
-@@ -304,9 +309,7 @@ ixgb_down(struct ixgb_adapter *adapter, boolean_t kill_watchdog)
- 
- 	if(kill_watchdog)
- 		del_timer_sync(&adapter->watchdog_timer);
--#ifdef CONFIG_IXGB_NAPI
--	napi_disable(&adapter->napi);
--#endif
-+
- 	adapter->link_speed = 0;
- 	adapter->link_duplex = 0;
- 	netif_carrier_off(netdev);
-diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
-index de3f45e..a4265bc 100644
---- a/drivers/net/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ixgbe/ixgbe_main.c
-@@ -1409,9 +1409,11 @@ void ixgbe_down(struct ixgbe_adapter *adapter)
- 	IXGBE_WRITE_FLUSH(&adapter->hw);
- 	msleep(10);
- 
-+	napi_disable(&adapter->napi);
-+	atomic_set(&adapter->irq_sem, 0);
-+
- 	ixgbe_irq_disable(adapter);
- 
--	napi_disable(&adapter->napi);
- 	del_timer_sync(&adapter->watchdog_timer);
- 
- 	netif_carrier_off(netdev);
