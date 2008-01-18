@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762412AbYARXvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763102AbYARXyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762412AbYARXvm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 18:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758742AbYARXvd
+	id S1763102AbYARXyu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 18:54:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759374AbYARXyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 18:51:33 -0500
-Received: from neon.samage.net ([85.17.153.66]:45493 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757143AbYARXvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 18:51:32 -0500
-Message-ID: <43651.81.207.0.53.1200700286.squirrel@secure.samage.net>
-In-Reply-To: <1200683769.7261.5.camel@localhost.localdomain>
-References: <1200170142-1151-1-git-send-email-indan@nul.nu>
-    <1200683769.7261.5.camel@localhost.localdomain>
-Date: Sat, 19 Jan 2008 00:51:26 +0100 (CET)
-Subject: Re: [PATCH] Shrink ext3_inode_info by 8 bytes for !POSIX_ACL.
-From: "Indan Zupancic" <indan@nul.nu>
-To: cmm@us.ibm.com
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8
+	Fri, 18 Jan 2008 18:54:41 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:52513 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757317AbYARXyk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 18:54:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=i4VqdY4hsy8ivRGZdvfa+Gwnb9XNS1BfxER4MliwjpSI0zo0ziuIlmq/fZhvTYFyDBGouWju0SR+w6POakFHJB+uYTzxU/bjR338sOkivEMqWZpBo1icHCVBr6qYUUxtjyKdBSdreZAxJQrRy2Q6QeeeKoIuhm/PKPRb7YBU/7U=
+Message-ID: <47913C39.2070100@gmail.com>
+Date: Sat, 19 Jan 2008 08:54:33 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: 8b3222cd26cce149ddb9ffa05c4da76e
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, fischer@norbit.de,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Samuel Ortiz <samuel@sortiz.org>
+Subject: Re: [PATCH] SCSI: fix isa/pcmcia compile problem
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>	 <478F7F2B.9000801@linux.vnet.ibm.com>	 <20080117111104.3baa878e.akpm@linux-foundation.org>	 <47904927.1040000@linux.vnet.ibm.com>  <47905348.1000709@gmail.com>	 <1200668315.3111.3.camel@localhost.localdomain>	 <479135EE.2090009@gmail.com>	 <1200699173.3111.77.camel@localhost.localdomain> <1200700076.3111.80.camel@localhost.localdomain>
+In-Reply-To: <1200700076.3111.80.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, January 18, 2008 20:16, Mingming Cao wrote:
-> On Sat, 2008-01-12 at 21:35 +0100, Indan Zupancic wrote:
->> i_file_acl and i_dir_acl aren't always needed.
->>
->> With certain configs this makes 10 ext3_inode_cache objects fit in
->> one slab instead of the current 9, as the size shrinks from 416 to
->> 408 bytes for 32 bit, !POSIX_ACL and !EXT3_FS_XATTR configs.
->>
->> Signed-off-by: Indan Zupancic <indan@nul.nu>
->> ---
->>  fs/ext3/ialloc.c          |    2 ++
->>  fs/ext3/inode.c           |   29 +++++++++++++++++++----------
->>  include/linux/ext3_fs_i.h |    2 ++
->>  3 files changed, 23 insertions(+), 10 deletions(-)
->>
->> diff --git a/fs/ext3/ialloc.c b/fs/ext3/ialloc.c
->> index 1bc8cd8..01745bc 100644
->> --- a/fs/ext3/ialloc.c
->> +++ b/fs/ext3/ialloc.c
->> @@ -574,8 +574,10 @@ got:
->>  	ei->i_frag_no = 0;
->>  	ei->i_frag_size = 0;
->>  #endif
->> +#ifdef CONFIG_EXT3_FS_POSIX_ACL
->>  	ei->i_file_acl = 0;
->>  	ei->i_dir_acl = 0;
->> +#endif
->
-> For regular file, i_dir_acl is being reused as i_size_high to support
-> large file.
+James Bottomley wrote:
+>> I'm just a bit reluctant to touch these drivers, since they're all
+>> incredibly ancient.  We don't have good luck with simple transformation
+>> patches on the older drivers ... and it seems to take months before
+>> anyone notices there's a problem.
+> 
+> This is the patch that will return them to their original behaviour.
+> 
+> James
+> 
+> ---
+> diff --git a/drivers/scsi/pcmcia/Kconfig b/drivers/scsi/pcmcia/Kconfig
+> index fa481b5..53857c6 100644
+> --- a/drivers/scsi/pcmcia/Kconfig
+> +++ b/drivers/scsi/pcmcia/Kconfig
+> @@ -6,7 +6,8 @@ menuconfig SCSI_LOWLEVEL_PCMCIA
+>  	bool "PCMCIA SCSI adapter support"
+>  	depends on SCSI!=n && PCMCIA!=n
+>  
+> -if SCSI_LOWLEVEL_PCMCIA && SCSI && PCMCIA
+> +# drivers have problems when build in, so require modules
+> +if SCSI_LOWLEVEL_PCMCIA && SCSI && PCMCIA && m
+>  
+>  config PCMCIA_AHA152X
+>  	tristate "Adaptec AHA152X PCMCIA support"
+> 
+> 
 
-Only the i_dir_acl of struct ext3_inode, not the one from ext3_inode_info.
+Looks good to me.
 
-Thanks,
-
-Indan
-
-
+-- 
+tejun
