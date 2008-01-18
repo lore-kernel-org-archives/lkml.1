@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763681AbYARSSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763598AbYARSUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763681AbYARSSi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:18:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760917AbYARSS3
+	id S1763598AbYARSUy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbYARSUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:18:29 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:28619 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757642AbYARSS1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:18:27 -0500
-In-Reply-To: <4790E227.506@redhat.com>
-References: <4790C756.2040704@redhat.com> <63F84201-9D38-4588-B237-A15138E94C5A@oracle.com> <4790D9F3.2070503@redhat.com> <451AC300-674E-4DBE-869F-08A9184051B3@oracle.com> <4790E227.506@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v753)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <247ED9F6-F190-4493-B5BA-76A2904179F4@oracle.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Chuck Lever <chuck.lever@oracle.com>
-Subject: Re: [PATCH 0/3] enhanced ESTALE error handling
-Date: Fri, 18 Jan 2008 13:17:24 -0500
-To: Peter Staubach <staubach@redhat.com>
-X-Mailer: Apple Mail (2.753)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 18 Jan 2008 13:20:46 -0500
+Received: from dspnet.fr.eu.org ([213.186.44.138]:1679 "EHLO dspnet.fr.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757642AbYARSUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 13:20:45 -0500
+Date: Fri, 18 Jan 2008 19:20:43 +0100
+From: Olivier Galibert <galibert@pobox.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Why is the kfree() argument const?
+Message-ID: <20080118182042.GA79879@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	linux-kernel@vger.kernel.org
+References: <2895123.436161200674749664.JavaMail.www@wwinf4611>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2895123.436161200674749664.JavaMail.www@wwinf4611>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter-
+On Fri, Jan 18, 2008 at 05:45:49PM +0100, ecolbus@voila.fr wrote:
+> The malloc attribute is exactly about this : giving the compiler the
+> indication that no other pointer aliases this object, allowing for
+> better optimizations.
 
-On Jan 18, 2008, at 12:30 PM, Peter Staubach wrote:
-> Chuck Lever wrote:
->> On Jan 18, 2008, at 11:55 AM, Peter Staubach wrote:
->>> Chuck Lever wrote:
->>>> Hi Peter-
->>>>
->>>> On Jan 18, 2008, at 10:35 AM, Peter Staubach wrote:
->>> and the window in between the revalidation
->>> and the actual use of the file handle associated with each
->>> dentry/inode pair.
->>
->> A use case or two would be useful to explore (on linux-nfs or  
->> linux-fsdevel, rather than lkml).
->
-> I created a bunch of use cases in the gensyscall.c program that
-> I attached to the original description of the problem and my
-> proposed solution.  It was very useful in generating many, many
-> ESTALE errors over the wire from a variety of different over the
-> wire operations, which were originally getting returned to the
-> user level.
+If you put a malloc attribute on the allocator and no free attribute
+on the deallocator, you can get bugs indeed.  GIGO.
 
-The gensyscall.c program is what I would call a set of unit test, btw.
 
-This is not the same as a use case, which would include information  
-about the application environment, its users, a detailed description  
-of current system behavior, and some discussion of alternatives for  
-improving it (including doing nothing).
+> Yes. Bad things start to happen when users add wrong indications to
+> the compiler. By adding the "const" indication to kfree(), the programmer
+> wrongly tells that it can optimize reading the values pointed to before or
+> after calling the function (if it is also sure that they cannot be
+> read/written otherwise). Current gcc implementations seem quite
+> conservative in this regard, and don't optimize that much, but what about
+> the future?
 
-A test case is written in a programming language, a use case is  
-written in a natural language.
+The future should be quite nice because:
 
---
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+- the compiler can not know that kmalloc does not have an alias to
+  the pointer tucked somewhere accessible by other non-inline functions
+  (as kfree is), especially since it does have aliases in practice, so
+  it cannot prove to "not read/written otherwise" part without the
+  malloc attribute
+
+- if you add the (non-standard C) malloc attribute to kmalloc, then
+  you also add the free attribute to kfree which tells the compiler
+  that the pointer is invalid after the call, which ensures no
+  accesses will be moved after it
+
+  OG.
