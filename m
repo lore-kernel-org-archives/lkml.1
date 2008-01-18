@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763788AbYARVs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932121AbYARVsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763788AbYARVs1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 16:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbYARVsT
+	id S932121AbYARVsm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 16:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764991AbYARVsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 16:48:19 -0500
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:60348 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757005AbYARVsS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 16:48:18 -0500
-Subject: Re: [PATCH 0/10] Tree fixes for PARAVIRT
-From: Zachary Amsden <zach@vmware.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       glommer@gmail.com, tglx@linutronix.de, ehabkost@redhat.com,
-       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       roland@redhat.com, mtosatti@redhat.com
-In-Reply-To: <20080118213711.GA24979@elte.hu>
-References: <12006768251548-git-send-email-gcosta@redhat.com>
-	 <20080118203259.GA3079@elte.hu>  <20080118213711.GA24979@elte.hu>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 13:54:08 -0800
-Message-Id: <1200693248.21817.157.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jan 2008 16:48:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34653 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764219AbYARVs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 16:48:28 -0500
+Date: Fri, 18 Jan 2008 22:47:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 fixes for v2.6.24
+Message-ID: <20080118214749.GA13058@elte.hu>
+References: <20080118154809.GA18248@elte.hu> <20080118191249.GA20384@uranus.ravnborg.org> <20080118205152.GF3079@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080118205152.GF3079@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-01-18 at 22:37 +0100, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> > >  # Directories & files removed with 'make mrproper'
+> > > -MRPROPER_DIRS  += include/config include2 usr/include
+> > > +MRPROPER_DIRS  += include/config include2 usr/include arch/i386 arch/x86_64
+> > sigh - arch specific stuff in the top-level Makefile.
+> > This really belongs in arch/x86/Makefile
 > 
-> > > The first fix is not even specific for PARAVIRT, and it's actually 
-> > > preventing the whole tree from booting.
-> > 
-> > on CONFIG_EFI, indeed :)
-> 
-> but in exchange you broke all of 32-bit with CONFIG_PARAVIRT=y. Which 
-> means you did not even build-test it on 32-bit, let alone boot test 
-> it...
+> is this a NACK? Can clean this up in v2.6.25, but this seemed the only 
+> simple solution for v2.6.24.
 
-Why are we rushing so much to do 64-bit paravirt that we are breaking
-working configurations?  If the developement is going to be this
-chaotic, it should be done and tested out of tree until it can
-stabilize.
+ok, since it's admittedly ugly, and all we have in arch/i386/kernel/boot 
+is a symbolic link, i've removed that commit from the .24 updates 
+portion of x86.git.
 
-I do not like having to continuously retest and review the x86 branch
-because the paravirt-ops are constantly in flux and the 32-bit code
-keeps breaking.
+Linus, could you please pull this single fix instead:
 
-We won't be doing 64-bit paravirt-ops for exactly this reason - is there
-a serious justification from the performance angle on modern 64-bit
-hardware?  If not, why justify the complexity and hackery to Linux?
+   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-Zach
+Arjan van de Ven (1):
+      x86: add support for the latest Intel processors to Oprofile
 
+ nmi_int.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index 2d0eeac..944bbcd 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -380,7 +380,7 @@ static int __init ppro_init(char ** cpu_type)
+ 
+ 	if (cpu_model == 14)
+ 		*cpu_type = "i386/core";
+-	else if (cpu_model == 15)
++	else if (cpu_model == 15 || cpu_model == 23)
+ 		*cpu_type = "i386/core_2";
+ 	else if (cpu_model > 0xd)
+ 		return 0;
