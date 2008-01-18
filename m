@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbYARKoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760567AbYARKog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759755AbYARKoR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:44:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYARKoI
+	id S1760567AbYARKog (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 05:44:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760054AbYARKoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:44:08 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:57537 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752881AbYARKoH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:44:07 -0500
-Message-ID: <479082F0.2040109@linux.vnet.ibm.com>
-Date: Fri, 18 Jan 2008 16:14:00 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Fri, 18 Jan 2008 05:44:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44004 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753563AbYARKoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 05:44:23 -0500
+Date: Fri, 18 Jan 2008 11:44:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.24 patch] x86: allow 64bit setting in Kconfig
+Message-ID: <20080118104401.GA8785@elte.hu>
+References: <20080117214301.GA28233@does.not.exist>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: 2.6.24-rc8-mm1 Kernel oops will running kernbench
-References: <20080117023514.9df393cf.akpm@linux-foundation.org> <479064F0.7040305@linux.vnet.ibm.com> <20080118004416.6a757169.akpm@linux-foundation.org> <18320.27372.202771.764301@cargo.ozlabs.ibm.com> <479072BC.3080908@linux.vnet.ibm.com> <18320.32464.634534.415458@cargo.ozlabs.ibm.com>
-In-Reply-To: <18320.32464.634534.415458@cargo.ozlabs.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080117214301.GA28233@does.not.exist>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras wrote:
-> Kamalesh Babulal writes:
-> 
->>>>> NIP: 0000000000004570 LR: 000000000fc42dc0 CTR: 0000000000000000
->>>>> REGS: c00000077b6bf8c0 TRAP: 0300   Not tainted  (2.6.24-rc8-mm1-autotest)
->>>>> MSR: 8000000000001000 <ME>  CR: 28022422  XER: 00000000
->>>>> DAR: c00000077b6bfce0, DSISR: 000000000a000000
-> 
-> Actually, how much RAM does this machine have?  If it has less than
-> 32GB, then the problem is that the kernel stack pointer is bogus.
-> (How it got to be bogus is the interesting question, of course. :)
-> 
-> Paul.
-> 
-Hi Paul,
 
-The machine has around 30GB of RAM, do you want me to try, by taking 
-the git-powerpc.patch out of the series and try reproducing the oops.
+* Adrian Bunk <bunk@kernel.org> wrote:
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+>  # Select 32 or 64 bit
+>  config 64BIT
+> -	bool "64-bit kernel" if ARCH = "x86"
+> +	bool "64-bit kernel"
+>  	default ARCH = "x86_64"
+>  	help
+>  	  Say yes to build a 64-bit kernel - formerly known as x86_64
+
+thx, i've added this to x86.git.
+
+	Ingo
