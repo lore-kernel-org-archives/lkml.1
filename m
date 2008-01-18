@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762739AbYARRAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763170AbYARRBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762739AbYARRAB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:00:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758959AbYARQ7y
+	id S1763170AbYARRBQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:01:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761241AbYARRBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 11:59:54 -0500
-Received: from sd-6163.dedibox.fr ([88.191.46.45]:4084 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757777AbYARQ7x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 11:59:53 -0500
-X-Greylist: delayed 1798 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jan 2008 11:59:52 EST
-Message-ID: <4790D3E3.4060409@free-electrons.com>
-Date: Fri, 18 Jan 2008 17:29:23 +0100
-From: Michael Opdenacker <michael-lists@free-electrons.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Fri, 18 Jan 2008 12:01:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57634 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761076AbYARRBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 12:01:01 -0500
+Date: Fri, 18 Jan 2008 18:00:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.24 patch] x86: allow 64bit setting in Kconfig
+Message-ID: <20080118170037.GA23297@elte.hu>
+References: <20080117214301.GA28233@does.not.exist> <20080118104401.GA8785@elte.hu>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linux-tiny@selenic.com, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: fix	unconditional	arch/x86/kernel/pcspeaker.c?compiling
-References: <200801171643.49301.michael-lists@free-electrons.com>	 <478F8AEC.1080209@free-electrons.com>	 <1200590031.5332.19.camel@cinder.waste.org>	 <200801172315.29976.michael-lists@free-electrons.com>	 <20080118110252.GA17397@elte.hu> <47909821.1090907@free-electrons.com>	 <20080118122540.GH11044@elte.hu> <20080118122926.GA15216@elte.hu>	 <4790A385.800@free-electrons.com> <1200664214.4001.24.camel@cinder.waste.org>
-In-Reply-To: <1200664214.4001.24.camel@cinder.waste.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080118104401.GA8785@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/18/2008 02:50 PM, Matt Mackall wrote:
-> On Fri, 2008-01-18 at 14:03 +0100, Michael Opdenacker wrote:
->   
->> However, wouldn't the Makefile look nicer if we introduced a
->> CONFIG_PCSPEAKER setting as in the mips platform? We would just have:
->>
->> obj-$(CONFIG_PCSPEAKER)		+= pcspeaker.o
->>     
->
-> Yes, that would be cleaner. Not worth it for just x86, but there are
-> about 6 other arches that use CONFIG_INPUT_PCSPKR. Do that in one patch
-> on top of this one and send it to Andrew (who will pull the above into
-> his tree from Ingo shortly).
->   
-Well, sorry for consuming your time with this very small change, but I'm
-not sure I understand what you're suggesting... Here's what I'd do:
 
-    * I'd define  CONFIG_PCSPEAKER for x86 (typically in
-      arch/x86/Kconfig), to be set to "y"  when CONFIG_INPUT_SPKR is
-      set. This is what minimizes the changes to make.
-    * This way, we can just have:
-      obj-$(CONFIG_PCSPEAKER) += pcspeaker.o
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Did I understand things right? Anyway, the current situation is not so
-bad either.
-> Also, bear in mind that there is a fair amount of lower-hanging fruit
-> than this, so bouncing a bunch of patches back and forth to make this
-> perfect is not the best use of people's time.
->   
-Sounds fine! Don't hesitate to let us know about the lower-hanging fruit
-you're thinking about. Here are the main things I have so far:
+> 
+> * Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> >  # Select 32 or 64 bit
+> >  config 64BIT
+> > -	bool "64-bit kernel" if ARCH = "x86"
+> > +	bool "64-bit kernel"
+> >  	default ARCH = "x86_64"
+> >  	help
+> >  	  Say yes to build a 64-bit kernel - formerly known as x86_64
+> 
+> thx, i've added this to x86.git.
 
-    * Ideas in the existing Linux-Tiny patchset.
-    * Disable support for non-Intel processors in x86 (cyrix.c,
-      centaur.c, transmeta.c, nexgen.c, umc.c in arch/x86/kernel/cpu).
-      As far as I remember, I saved 15 KB when I first experimented with
-      this).
-    * Disable support for readahead, page writeback, pdflush and swap
-      when we have no storage at all (typically booting from an
-      initramfs). This corresponds to 69 KB of source code!
+this broke "make ARCH=i386 randconfig" from working when there's a 
+64-bit .config present. (it will not properly generate a 32-bit config, 
+but still a 64-bit config)
 
-So, more ideas are welcome!
-
-Thanks for your time,
-
-Michael.
-
--- 
-Michael Opdenacker, Free Electrons
-Free Embedded Linux Training Materials
-on http://free-electrons.com/training
-(More than 1500 pages!)
-
+	Ingo
