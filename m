@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbYARK1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbYARKa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760183AbYARK1f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:27:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbYARK11
+	id S1759441AbYARKa2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 05:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbYARKaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:27:27 -0500
-Received: from www.tglx.de ([62.245.132.106]:56756 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760066AbYARK10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:27:26 -0500
-Date: Fri, 18 Jan 2008 11:26:30 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Paprocki <andrew@ishiboo.com>
-cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Balaji Rao <balajirrao@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       clemens@ladisch.de, venkatesh.pallipadi@intel.com, bob.picco@hp.com
-Subject: Re: HPET timer broken using 2.6.23.13 / nanosleep() hangs
-In-Reply-To: <76366b180801161139o24599152obb01cd6e9cc6148@mail.gmail.com>
-Message-ID: <alpine.LFD.0.99999.0801181111430.4642@localhost.localdomain>
-References: <76366b180801130310x57f24cc8s641d3ccb2415524c@mail.gmail.com>  <20080113120337.GA5548@linux.vnet.ibm.com>  <76366b180801130510w2af714fevf03f59164f90806f@mail.gmail.com>  <20080113140620.GA22507@linux.vnet.ibm.com> 
- <alpine.LFD.0.99999.0801161458470.3764@localhost.localdomain>  <alpine.LFD.0.99999.0801161524250.3764@localhost.localdomain>  <alpine.LFD.0.99999.0801161618380.3764@localhost.localdomain> <76366b180801161139o24599152obb01cd6e9cc6148@mail.gmail.com>
-User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
+	Fri, 18 Jan 2008 05:30:21 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:21946 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753733AbYARKaU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 05:30:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LZN4GG9tv7iWV9fQj/HHB+tiqVLAuXXAkXSZFNhmYNvNf+3z7tiNHURRH6fzPRueUWO9W42NDQHHMhho5MXUP4QZLHcHgGZTHfRGHSm8au7wIz8lccJVtxelEXXwIHy9f550xftFYtlIReHCvMJZ37Xml1jfBn9ITddC9q5jEU8=
+Message-ID: <4df4ef0c0801180230r516085f0s3e6b919c395f33d2@mail.gmail.com>
+Date: Fri, 18 Jan 2008 13:30:19 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: [PATCH -v6 1/2] Massive code cleanup of sys_msync()
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
+       hidave.darkstar@gmail.com, hch@infradead.org
+In-Reply-To: <E1JFnbj-0008SD-57@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12006091182260-git-send-email-salikhmetov@gmail.com>
+	 <12006091213248-git-send-email-salikhmetov@gmail.com>
+	 <E1JFnbj-0008SD-57@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Jan 2008, Andrew Paprocki wrote:
+2008/1/18, Miklos Szeredi <miklos@szeredi.hu>:
+> >       unsigned long end;
+> > -     struct mm_struct *mm = current->mm;
+> > +     int error, unmapped_error;
+> >       struct vm_area_struct *vma;
+> > -     int unmapped_error = 0;
+> > -     int error = -EINVAL;
+> > +     struct mm_struct *mm;
+> >
+> > +     error = -EINVAL;
+>
+> I think you may have misunderstood my last comment.  These are OK:
+>
+>         struct mm_struct *mm = current->mm;
+>         int unmapped_error = 0;
+>         int error = -EINVAL;
+>
+> This is not so good:
+>
+>         int error, unmapped_error;
+>
+> This is the worst:
+>
+>         int error = -EINVAL, unmapped_error = 0;
+>
+> So I think the original code is fine as it is.
+>
+> Othewise patch looks OK now.
 
-> I applied the patch and I am still locking up after
-> Time: hpet clocksource has been installed.
+I moved the initialization of the variables to the code where they are needed.
 
-That was expected :)
- 
-> I rebooted with "clocksource=tsc" to get the logs of the trace which
-> was added. I'm assuming the grep below gets all the interesting parts.
-> I enabled the HPET character device as mentioned before, which is why
-> the hpet0 lines appear now.
-> 
-> # dmesg | egrep -i "(hpet|time|clock)"
-> ACPI: HPET 37FE7400, 0038 (r1 RS690  AWRDACPI 42302E31 AWRD       98)
-> ATI board detected. Disabling timer routing over 8254.
-> ACPI: PM-Timer IO Port: 0x4008
-> ACPI: HPET id: 0x10b9a201 base: 0xfed00000
-> Kernel command line: vga=0x31a root=/dev/sda1 ro clocksource=tsc
-> HPET check: t1=5 t2=1139 s=56226339975 n=56226539985
+I don't agree that "int a; int b;" is better than "int a, b".
 
-Ok, the counter works when we initialize the HPET.
-
-t2-t1 = 1134 ticks ~= 79us
-s-n = 200010 ~= 2525MHz --> That should be the frequency of your CPU.
-
-> Jan 16 14:44:43 am2 kernel: Call Trace:
-> Jan 16 14:44:48 am2 kernel:  [<c01371be>] enqueue_hrtimer+0xd7/0xe2
-> Jan 16 14:44:48 am2 kernel:  [<c0137803>] hrtimer_start+0xe8/0xf4
-> Jan 16 14:44:48 am2 kernel:  [<c03ac8d3>] do_nanosleep+0x48/0x73
-> Jan 16 14:44:48 am2 kernel:  [<c03ac932>] hrtimer_nanosleep_restart+0x34/0xa1
-> Jan 16 14:44:48 am2 kernel:  [<c013735d>] hrtimer_wakeup+0x0/0x18
-> Jan 16 14:44:48 am2 kernel:  [<c012e837>] sys_restart_syscall+0xe/0xf
-> Jan 16 14:44:48 am2 kernel:  [<c0103d0a>] sysenter_past_esp+0x5f/0x85
-
-When the system is hung, can you please hit SysRq-Q wait a bit and hit
-SysRq-Q again. Please provide the output.
-
-Thanks,
-	tglx
+>
+> Miklos
+>
