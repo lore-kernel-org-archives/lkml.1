@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbYARIam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756349AbYARId0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757496AbYARIam (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 03:30:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbYARIaf
+	id S1756349AbYARId0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 03:33:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbYARIdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 03:30:35 -0500
-Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:43842 "EHLO
-	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753406AbYARIae (ORCPT
+	Fri, 18 Jan 2008 03:33:19 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:65161 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752313AbYARIdS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 03:30:34 -0500
-From: Vadim Lobanov <vlobanov@speakeasy.net>
-To: Giacomo Catenazzi <cate@cateee.net>
-Subject: Re: Why is the kfree() argument const?
-Date: Fri, 18 Jan 2008 00:30:29 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Schwartz <davids@webmaster.com>,
-       Johannes Weiner <hannes@saeurebad.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       clameter@sgi.com, penberg@cs.helsinki.fi
-References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com> <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org> <47905A95.4030500@cateee.net>
-In-Reply-To: <47905A95.4030500@cateee.net>
+	Fri, 18 Jan 2008 03:33:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=KTxq804l9hfGfs05Y1kzweR31TYh7EefTVYb1getXask0tHQeJlCcm/Oj2IAjWcbzmQJflJ01BPid0FRRpRNeYKrYewjvLKtGgavfJ7+uwansBo4Tka7gqnZrrTxIk86rr4MxvdzTSbfqw/Jvk9v8oIsFM1Ero4Ihgl/hakXWmU=
+Date: Fri, 18 Jan 2008 09:39:41 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
+       stefanr@s5r6.in-berlin.de, David Brownell <david-b@pacbell.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct
+	class
+Message-ID: <20080118083941.GD1703@ff.dom.local>
+References: <20080117194728.GA2598@ami.dom.local> <Pine.LNX.4.44L0.0801171448590.5731-100000@iolanthe.rowland.org> <20080117203155.GA2791@ami.dom.local> <20080117232626.GC2905@ami.dom.local> <a8e1da0801171742o5520c3d9v577979f527f1a977@mail.gmail.com> <20080118080034.GB1703@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801180030.30801.vlobanov@speakeasy.net>
+In-Reply-To: <20080118080034.GB1703@ff.dom.local>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 January 2008 11:51:49 pm Giacomo Catenazzi wrote:
-> Linus Torvalds wrote:
-> > No, I'm saying that "const" has absolutely *zero* meaning on writes to an
-> > object through _other_ pointers (or direct access) to the object.
->
-> Hints: "restrict" is the C99 keyword for such requirement (or better
-> "const restrict")
+On Fri, Jan 18, 2008 at 09:00:34AM +0100, Jarek Poplawski wrote:
+> On Fri, Jan 18, 2008 at 09:42:25AM +0800, Dave Young wrote:
+> ...
+> > After digging the class usage code again, I found that the only
+> > possible double lock place is the class_interface_register/unregister
+> > in which the class_device api could be called.
+> 
+> OK, but currently after using mostly:
+> mutex_lock(&parent_class)
+> 
+> and once:
+> mutex_lock_nested(&parent_class, SINGLE_DEPTH_NESTING)
+> 
+> lockdep mostly thinks these parent classes are 2 different objects,
+> with only 2 possible levels of nesting, so this parent_class has
+> to have wrong name (2 parents can't be locked from the same thread,
+> so maybe it's class_grandparent sometimes?).
 
-The restrict keyword controls aliasing, to be exact. And I'm skeptical that 
-inserting const there would do anything at all.
+...Hmm... I was probably wrong: this could be right if there are only
+two levels of nesting used and class locks it's parent only!
 
-> BTW I think C use non const free as a BIG warning about not to be
-> to "smart" on optimization.
-
-I must ask what relationship you think the const keyword has to compiler 
-optimizations. I know of none, and I've yet to see that keyword cause any 
-difference in the resulting assembly. It forces you to make your code clean 
-and well-structured, but that's about it.
-
-Of course, it would be an interesting experiment to potentially redefine the 
-const keyword to have stronger semantics, such as having the compiler assume 
-that a function taking a const pointer argument will not modify the memory 
-the pointer points to, and thus saving itself a memory load in the caller 
-after the function executes, as long as the data is not global. I imagine 
-that this would lead to some simple and measurable optimizations, all the 
-while (this is where I get into hand-waving territory) breaking a minimum 
-amount of code in current existence.
-
-But that is emphatically not how C is currently defined, and you're basically 
-inventing an entirely new language... C2009 perhaps? :-)
-
--- Vadim Lobanov
+Jarek P.
