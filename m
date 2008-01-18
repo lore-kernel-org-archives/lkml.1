@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763675AbYARVoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764377AbYARVpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763675AbYARVoR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 16:44:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761307AbYARVnu
+	id S1764377AbYARVpc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 16:45:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbYARVpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 16:43:50 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:58816 "EHLO fieldses.org"
+	Fri, 18 Jan 2008 16:45:24 -0500
+Received: from ns2.g-housing.de ([81.169.133.75]:48114 "EHLO mail.g-house.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760432AbYARVnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 16:43:49 -0500
-Date: Fri, 18 Jan 2008 16:43:45 -0500
-To: Jeff Layton <jlayton@redhat.com>
-Cc: neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] NLM: have nlm_shutdown_hosts kill off all NLM RPC
-	tasks
-Message-ID: <20080118214345.GM15158@fieldses.org>
-References: <1200319518-22422-1-git-send-email-jlayton@redhat.com> <1200319518-22422-2-git-send-email-jlayton@redhat.com> <1200319518-22422-3-git-send-email-jlayton@redhat.com> <1200319518-22422-4-git-send-email-jlayton@redhat.com> <1200319518-22422-5-git-send-email-jlayton@redhat.com>
+	id S1757647AbYARVpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 16:45:23 -0500
+Date: Fri, 18 Jan 2008 22:45:17 +0100 (CET)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: xfs@oss.sgi.com
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.24-rc8: possible circular locking dependency detected
+Message-ID: <alpine.DEB.1.00.0801182240310.6521@sheep.housecafe.de>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1200319518-22422-5-git-send-email-jlayton@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-12-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 09:05:18AM -0500, Jeff Layton wrote:
-> If we're shutting down all the nlm_hosts anyway, then it doesn't make
-> sense to allow RPC calls to linger. Allowing them to do so can mean
-> that the RPC calls can outlive the currently running lockd and can lead
-> to a use after free situation.
+Hi,
 
-I assume that all new rpc calls are created by the lockd thread itself
-(which also calls nlm_shutdown_hosts(), which guarantees that there
-can't be someone about to make an rpc call using the clnt we're
-destroying here?
+just FYI, upgrading to -rc8 gave the following messages in kern.log in
+the morning hours, when the backups were run:
 
-By the way, any idea what the nlm_shutdown_hosts() call in exit_nlm() is
-doing?
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.24-rc8 #2
+-------------------------------------------------------
+rsync/23295 is trying to acquire lock:
+  (iprune_mutex){--..}, at: [<c017a552>] shrink_icache_memory+0x72/0x220
 
---b.
+but task is already holding lock:
+  (&(&ip->i_iolock)->mr_lock){----}, at: [<c0275056>] xfs_ilock+0x96/0xb0
 
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> ---
->  fs/lockd/host.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/lockd/host.c b/fs/lockd/host.c
-> index 572601e..8771484 100644
-> --- a/fs/lockd/host.c
-> +++ b/fs/lockd/host.c
-> @@ -377,8 +377,10 @@ nlm_shutdown_hosts(void)
->  	/* First, make all hosts eligible for gc */
->  	dprintk("lockd: nuking all hosts...\n");
->  	for (chain = nlm_hosts; chain < nlm_hosts + NLM_HOST_NRHASH; ++chain) {
-> -		hlist_for_each_entry(host, pos, chain, h_hash)
-> +		hlist_for_each_entry(host, pos, chain, h_hash) {
->  			host->h_expires = jiffies - 1;
-> +			rpc_killall_tasks(host->h_rpcclnt);
-> +		}
->  	}
->  
->  	/* Then, perform a garbage collection pass */
-> -- 
-> 1.5.3.7
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+which lock already depends on the new lock.
+
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (&(&ip->i_iolock)->mr_lock){----}:
+        [<c0138c01>] __lock_acquire+0xbe1/0x10b0
+        [<c0275056>] xfs_ilock+0x96/0xb0
+        [<c0137b4f>] trace_hardirqs_on+0x9f/0x140
+        [<c013912f>] lock_acquire+0x5f/0x80
+        [<c0275056>] xfs_ilock+0x96/0xb0
+        [<c012f4b1>] down_write_nested+0x41/0x60
+        [<c0275056>] xfs_ilock+0x96/0xb0
+        [<c0275056>] xfs_ilock+0x96/0xb0
+        [<c02751ea>] xfs_ireclaim+0x1a/0x60
+        [<c0294e73>] xfs_finish_reclaim+0x53/0x1a0
+        [<c02a40ce>] xfs_fs_clear_inode+0x5e/0x90
+        [<c017a102>] clear_inode+0x82/0x160
+        [<c017a55c>] shrink_icache_memory+0x7c/0x220
+        [<c017a43a>] dispose_list+0x1a/0xc0
+        [<c017a6c2>] shrink_icache_memory+0x1e2/0x220
+        [<c014f6d1>] shrink_slab+0x101/0x160
+        [<c014fa4a>] kswapd+0x2aa/0x410
+        [<c012c1f0>] autoremove_wake_function+0x0/0x40
+        [<c014f7a0>] kswapd+0x0/0x410
+        [<c012bf42>] kthread+0x42/0x70
+
+Full dmesg and .config: http://nerdbynature.de/bits/2.6.24-rc8/
+
+Thanks,
+Christian.
+-- 
+BOFH excuse #18:
+
+excess surge protection
