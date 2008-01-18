@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763215AbYARRL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763133AbYARRM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763215AbYARRL3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762046AbYARRLK
+	id S1763133AbYARRM3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:12:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760299AbYARRMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:11:10 -0500
-Received: from waste.org ([66.93.16.53]:43874 "EHLO waste.org"
+	Fri, 18 Jan 2008 12:12:16 -0500
+Received: from mga02.intel.com ([134.134.136.20]:7666 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761808AbYARRLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:11:08 -0500
-Subject: Re: [PATCH] x86:
-	fix	unconditional	arch/x86/kernel/pcspeaker.c?compiling
-From: Matt Mackall <mpm@selenic.com>
-To: Michael Opdenacker <michael-lists@free-electrons.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linux-tiny@selenic.com, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <4790D3E3.4060409@free-electrons.com>
-References: <200801171643.49301.michael-lists@free-electrons.com>
-	 <478F8AEC.1080209@free-electrons.com>
-	 <1200590031.5332.19.camel@cinder.waste.org>
-	 <200801172315.29976.michael-lists@free-electrons.com>
-	 <20080118110252.GA17397@elte.hu> <47909821.1090907@free-electrons.com>
-	 <20080118122540.GH11044@elte.hu> <20080118122926.GA15216@elte.hu>
-	 <4790A385.800@free-electrons.com>
-	 <1200664214.4001.24.camel@cinder.waste.org>
-	 <4790D3E3.4060409@free-electrons.com>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 11:10:19 -0600
-Message-Id: <1200676219.3835.8.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	id S1759854AbYARRMO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 12:12:14 -0500
+X-ExtLoop1: 1
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [patch 0/4] x86: PAT followup - Incremental changes and bug fixes
+Date: Fri, 18 Jan 2008 09:13:10 -0800
+Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE62B6BE@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <20080118161057.GB4636@alberich.amd.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 0/4] x86: PAT followup - Incremental changes and bug fixes
+Thread-Index: AchZ7LhtywMcUYz0RKu3m/HOifXYQwACHZmQ
+References: <20080117191211.GA12631@alberich.amd.com> <20080117203600.GB27778@elte.hu> <20080117210301.GC12631@alberich.amd.com> <20080117211308.GA7858@elte.hu> <20080117213131.GA25389@linux-os.sc.intel.com> <20080117214209.GA12811@elte.hu> <20080117220650.GE12631@alberich.amd.com> <20080117221505.GB18883@elte.hu> <20080117225243.GH12631@alberich.amd.com> <20080117230410.GA8694@linux-os.sc.intel.com> <20080118161057.GB4636@alberich.amd.com>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Andreas Herrmann3" <andreas.herrmann3@amd.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, <ak@muc.de>,
+       <ebiederm@xmission.com>, <rdreier@cisco.com>,
+       <torvalds@linux-foundation.org>, <gregkh@suse.de>, <airlied@skynet.ie>,
+       <davej@redhat.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
+       <akpm@linux-foundation.org>, <arjan@infradead.org>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>, <davem@davemloft.net>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Jan 2008 17:12:13.0039 (UTC) FILETIME=[447447F0:01C859F5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ 
 
-On Fri, 2008-01-18 at 17:29 +0100, Michael Opdenacker wrote:
-> On 01/18/2008 02:50 PM, Matt Mackall wrote:
-> > On Fri, 2008-01-18 at 14:03 +0100, Michael Opdenacker wrote:
-> >   
-> >> However, wouldn't the Makefile look nicer if we introduced a
-> >> CONFIG_PCSPEAKER setting as in the mips platform? We would just have:
-> >>
-> >> obj-$(CONFIG_PCSPEAKER)		+= pcspeaker.o
-> >>     
-> >
-> > Yes, that would be cleaner. Not worth it for just x86, but there are
-> > about 6 other arches that use CONFIG_INPUT_PCSPKR. Do that in one patch
-> > on top of this one and send it to Andrew (who will pull the above into
-> > his tree from Ingo shortly).
-> >   
-> Well, sorry for consuming your time with this very small change, but I'm
-> not sure I understand what you're suggesting... Here's what I'd do:
-> 
->     * I'd define  CONFIG_PCSPEAKER for x86 (typically in
->       arch/x86/Kconfig), to be set to "y"  when CONFIG_INPUT_SPKR is
->       set. This is what minimizes the changes to make.
->     * This way, we can just have:
->       obj-$(CONFIG_PCSPEAKER) += pcspeaker.o
+>-----Original Message-----
+>From: Andreas Herrmann3 [mailto:andreas.herrmann3@amd.com] 
+>Sent: Friday, January 18, 2008 8:11 AM
+>To: Pallipadi, Venkatesh
+>Cc: Ingo Molnar; Siddha, Suresh B; ak@muc.de; 
+>ebiederm@xmission.com; rdreier@cisco.com; 
+>torvalds@linux-foundation.org; gregkh@suse.de; 
+>airlied@skynet.ie; davej@redhat.com; tglx@linutronix.de; 
+>hpa@zytor.com; akpm@linux-foundation.org; arjan@infradead.org; 
+>Barnes, Jesse; davem@davemloft.net; linux-kernel@vger.kernel.org
+>Subject: Re: [patch 0/4] x86: PAT followup - Incremental 
+>changes and bug fixes
+>
+>On Thu, Jan 17, 2008 at 03:04:10PM -0800, Venki Pallipadi wrote:
+>>
+>> Below is another potential fix for the problem here. Going 
+>through ACPI
+>> ioremap usages, we found at one place the mapping is cached 
+>for possible
+>> optimization reason and not unmapped later. Patch below always unmaps
+>> ioremap at this place in ACPICA.
+>
+>The patch does not fix the problem. The conflicting cache 
+>attributes are
+>still there.
+>
 
-Probably makes sense to define it right next to INPUT_PCSPKR in
-drivers/input/Kconfig.
+Andreas,
 
-Then do the appropriate fix for all arches mentioned in INPUT_PCSPKR.
+Could you also try the patch Suresh Siddha sent out yesterday. That
+covers the case where the attribute was not getting removed even after
+unmap was called.
 
-For extra points, you can move the duplicate pcspeaker.c code out of all
-those arches and stash it somewhere in drivers/input. Presumably it's
-possible to get it to link into the kernel even when INPUT is modular.
-
-> Sounds fine! Don't hesitate to let us know about the lower-hanging fruit
-> you're thinking about. Here are the main things I have so far:
-> 
->     * Ideas in the existing Linux-Tiny patchset.
->     * Disable support for non-Intel processors in x86 (cyrix.c,
->       centaur.c, transmeta.c, nexgen.c, umc.c in arch/x86/kernel/cpu).
->       As far as I remember, I saved 15 KB when I first experimented with
->       this).
-
-Isn't that already in -tiny?
-
->     * Disable support for readahead, page writeback, pdflush and swap
->       when we have no storage at all (typically booting from an
->       initramfs). This corresponds to 69 KB of source code!
-
-That'd be nice, yes. It would probably make sense to be able to disable
-just readahead support when we're working with only solid-state devices.
-
--- 
-Mathematics is the supreme nostalgia of our time.
-
+Thanks,
+Venki
