@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYARHYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbYARH1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbYARHYv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 02:24:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbYARHYn
+	id S1754617AbYARH1q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 02:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYARH1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 02:24:43 -0500
-Received: from mail.cirrusrtps.com.au ([202.171.186.39]:32205 "EHLO
-	mail.cirrusrtps.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752788AbYARHYl convert rfc822-to-8bit (ORCPT
+	Fri, 18 Jan 2008 02:27:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46551 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750988AbYARH1g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 02:24:41 -0500
-X-Greylist: delayed 2570 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jan 2008 02:24:41 EST
-Date: Fri, 18 Jan 2008 17:31:16 +1100
-From: "Mark Hansen" <Mark.Hansen@cirrusrtps.com.au>
-To: linux-kernel@vger.kernel.org
-Message-ID: <L669EA1BDC369453cA3ACCF0A75D0F5A3.1200638498.mail.cirrusrtps.com.au@MHS>
-Subject: priority based thread wakeup
-x-scalix-Hops: 1
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 18 Jan 2008 02:27:36 -0500
+Date: Thu, 17 Jan 2008 23:27:27 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       fischer@norbit.de, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Samuel Ortiz <samuel@sortiz.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: 2.6.24-rc8-mm1 Build Failure on scsi driver
+Message-Id: <20080117232727.7ef194af.akpm@linux-foundation.org>
+In-Reply-To: <47904927.1040000@linux.vnet.ibm.com>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<478F7F2B.9000801@linux.vnet.ibm.com>
+	<20080117111104.3baa878e.akpm@linux-foundation.org>
+	<47904927.1040000@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, 18 Jan 2008 12:07:27 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-Firstly, may I apologise as I am not a member of the LKML, and ask that 
-I be CC'd in any responses that may be forthcoming.
+> Hi Andrew,
+> 
+> Patch from Tejun Heo fixes the aha152x.c build failure, and following second part
+> of the build failure, is still occurring.
+> 
+> drivers/scsi/fdomain.o:(.data+0x0): multiple definition of `fdomain_driver_template'
+> drivers/scsi/pcmcia/built-in.o:(.data+0x5a0): first defined here
+> drivers/scsi/fdomain.o: In function `fdomain_16x0_bus_reset':
+> /home/kamalesh/scrap/linux-2.6.24-rc8/drivers/scsi/fdomain.c:1568: multiple definition of `fdomain_16x0_bus_reset'
+> drivers/scsi/pcmcia/built-in.o:/home/kamalesh/scrap/linux-2.6.24-rc8/drivers/scsi/fdomain.c:1568: first defined here
+> drivers/scsi/fdomain.o: In function `__fdomain_16x0_detect':
+> /home/kamalesh/scrap/linux-2.6.24-rc8/drivers/scsi/fdomain.c:894: multiple definition of `__fdomain_16x0_detect'
+> drivers/scsi/pcmcia/built-in.o:/home/kamalesh/scrap/linux-2.6.24-rc8/drivers/scsi/fdomain.c:894: first defined here
+> ld: Warning: size of symbol `__fdomain_16x0_detect' changed from 1206 in drivers/scsi/pcmcia/built-in.o to 1700 in drivers/scsi/fdomain.o
+> drivers/scsi/fdomain.o: In function `fdomain_setup':
+> /home/kamalesh/scrap/linux-2.6.24-rc8/drivers/scsi/fdomain.c:554: multiple definition of `fdomain_setup'
+> drivers/scsi/pcmcia/built-in.o:/home/kamalesh/scrap/linux-2.6.24-rc8/drivers/scsi/fdomain.c:554: first defined here
 
-My question concerns the following patch which was incorporated into the 
-2.6.22 kernel (quoted from that change log):
+Tejun has more fixing to do, I suspect ;)
 
->Today, all threads waiting for a given futex are woken in FIFO 
->order (first waiter woken first) instead of priority order.
->
->This patch makes use of plist (pirotity ordered lists) instead 
->of simple list in futex_hash_bucket.
->
->All non-RT threads are stored with priority MAX_RT_PRIO, causing
->them to be woken last, in FIFO order (RT-threads are woken first, 
->in priority order).
->
->Signed-off-by: Sebastien Dugue <sebastien.du...@bull.net>
->Signed-off-by: Pierre Peiffer <pierre.peif...@bull.net>
-
-After updating to this version of the kernel, I was able to observe the 
-above fix, where multiple RT threads invoking pthread_cond_wait(), and 
-the highest priority thread will acquire the mutex first, after the 
-thread holding the mutex calls pthread_cond_signal(); 
-pthread_mutex_unlock()
-
-However, since kernel 2.6.23, it seems that the functionality relating 
-to this "priority based wakeup" has disappeared. 
-
-I understand there have been significant changes in this kernel 
-concerning the "Completely Fair Scheduler" replacing the "mainline" 
-scheduler; however my understanding is that the RT functionality would 
-be preserved. This does not appear to be the case based on repeating the 
-experiment described above.
-
-I was wondering if this functionality is considered no longer 
-desirable/necessary?
-
-If not, is it anticipated that this functionality could/would be 
-included in a later kernel?
-
-Regards,
-Mark Hansen
-
-
+I assume a basic allyesconfig will weed out most remaining problems of this
+sort.  Problem is, it needs to be done for all architectures (and even that
+might not suffice).  So old-fashioned code inspection is also needed.
