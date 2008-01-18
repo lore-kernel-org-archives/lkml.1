@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760778AbYARMg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761130AbYARMgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760778AbYARMg1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 07:36:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbYARMgT
+	id S1761130AbYARMgk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 07:36:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760768AbYARMg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 07:36:19 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:40921 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756931AbYARMgS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 07:36:18 -0500
-Date: Fri, 18 Jan 2008 18:06:05 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Andrea Righi <righiandr@users.sourceforge.net>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cgroup: limit block I/O bandwidth
-Message-ID: <20080118123605.GB14339@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <4790904F.5000101@users.sourceforge.net>
+	Fri, 18 Jan 2008 07:36:27 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44064 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760342AbYARMg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 07:36:26 -0500
+Date: Fri, 18 Jan 2008 13:36:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, phil.el@wanadoo.fr,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: x86: Add support for the latest Intel processors to Oprofile
+Message-ID: <20080118123610.GK11044@elte.hu>
+References: <20080117101613.65bf008b@laptopd505.fenrus.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4790904F.5000101@users.sourceforge.net>
+In-Reply-To: <20080117101613.65bf008b@laptopd505.fenrus.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 12:41:03PM +0100, Andrea Righi wrote:
-> Allow to limit the block I/O bandwidth for specific process containers
-> (cgroups) imposing additional delays on I/O requests for those processes
-> that exceed the limits defined in the control group filesystem.
+
+* Arjan van de Ven <arjan@infradead.org> wrote:
+
+> Subject: x86: Add support for the latest Intel processors to Oprofile
+> From: Arjan van de Ven <arjan@linux.intel.com>
 > 
-> Example:
->   # mkdir /dev/cgroup
->   # mount -t cgroup -oio-throttle io-throttle /dev/cgroup
+> The latest Intel processors (the 45nm ones) have a model number of 23 
+> (old ones had 15); they're otherwise compatible on the oprofile side. 
+> This patch adds the new model number to the oprofile code.
 
-Just a minor nit, can't we name it as io, keeping in mind that other
-controllers are known as cpu and memory?
+thanks, applied.
 
-Will try it out and give some more feedback.
+2.6.24 fix too, right?
 
-Thanks,
--- 
-regards,
-Dhaval
+	Ingo
