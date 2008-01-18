@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760762AbYARBQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbYARBQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760762AbYARBQk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:16:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760315AbYARBQH
+	id S1760855AbYARBQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:16:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760554AbYARBQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:16:07 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:52092 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760037AbYARBQD (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:16:03 -0500
-Date: Fri, 18 Jan 2008 12:15:42 +1100
-From: David Chinner <dgc@sgi.com>
-To: Valerie Henson <val@vahconsulting.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>,
-       Andreas Dilger <adilger@clusterfs.com>, Ric Wheeler <ric@emc.com>
-Subject: Re: [RFC] Parallelize IO for e2fsck
-Message-ID: <20080118011542.GQ155259@sgi.com>
-References: <70b6f0bf0801161322k2740a8dch6a0d6e6e112cd2d0@mail.gmail.com> <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 17 Jan 2008 20:16:14 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49214 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760500AbYARBQI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 20:16:08 -0500
+Date: Thu, 17 Jan 2008 17:15:56 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Schwartz <davids@webmaster.com>
+cc: Johannes Weiner <hannes@saeurebad.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       clameter@sgi.com, penberg@cs.helsinki.fi
+Subject: RE: Why is the kfree() argument const?
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com>
+Message-ID: <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org>
+References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 16, 2008 at 01:30:43PM -0800, Valerie Henson wrote:
-> Hi y'all,
+
+
+On Thu, 17 Jan 2008, David Schwartz wrote:
 > 
-> This is a request for comments on the rewrite of the e2fsck IO
-> parallelization patches I sent out a few months ago.  The mechanism is
-> totally different.  Previously IO was parallelized by issuing IOs from
-> multiple threads; now a single thread issues fadvise(WILLNEED) and
-> then uses read() to complete the IO.
+> > "const" has nothing to do with "logical state".  It has one meaning, and
+> > one meaning only: the compiler should complain if that particular type is
+> > used to do a write access.
+> 
+> Right, exactly.
 
-Interesting.
+So why do you complain? 
 
-We ultimately rejected a similar patch to xfs_repair (pre-population
-the kernel block device cache) mainly because of low memory
-performance issues and it doesn't really enable you to do anything
-particularly smart with optimising I/O patterns for larger, high
-performance RAID arrays.
+kfree() literally doesn't write to the object.
 
-The low memory problems were particularly bad; the readahead
-thrashing cause a slowdown of 2-3x compared to the baseline and
-often it was due to the repair process requiring all of memory
-to cache stuff it would need later. IIRC, multi-terabyte ext3
-filesystems have similar memory usage problems to XFS, so there's
-a good chance that this patch will see the same sorts of issues.
+> You are the only one who has suggested it has anything to do with changes
+> through other pointers or in other ways. So you are arguing against only
+> yourself here.
 
-> Single disk performance doesn't change, but elapsed time drops by
-> about 50% on a big RAID-5 box.  Passes 1 and 2 are parallelized.  Pass
-> 5 is left as an exercise for the reader.
+No, I'm saying that "const" has absolutely *zero* meaning on writes to an 
+object through _other_ pointers (or direct access) to the object.
 
-Promising results, though....
+And you're seemingly not understanding that *lack* of meaning.
 
-Cheers,
+kfree() doesn't do *squat* to the object pointed to by the pointer it is 
+passed. It only uses it to look up its own data structures, of which the 
+pointer is but a small detail.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+And those other data structures aren't constant.
+
+> Nobody has said it has anything to do with anything but operations through
+> that pointer.
+
+.. and I'm telling you: kfree() does *nothing* conceptually through that 
+pointer. No writes, and not even any reads! Which is exactly why it's 
+const.
+
+The only thing kfree does through that pointer is to update its own 
+concept of what memory it has free.
+
+Now, what it does to its own free memory is just an implementation detail, 
+and has nothing what-so-ever to do with the pointer you passed it.
+
+See?
+
+		Linus
