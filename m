@@ -1,66 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762307AbYARClw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759242AbYARCwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762307AbYARClw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 21:41:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762066AbYARCkz
+	id S1759242AbYARCwi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 21:52:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbYARCw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 21:40:55 -0500
-Received: from waste.org ([66.93.16.53]:40339 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762158AbYARCkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 21:40:53 -0500
-Subject: Re: [PATCH] ramdisk driver: make rd_size non-static
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Byron Bradley <byron.bbradley@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Nick Piggin <npiggin@suse.de>, Russell King <rmk@arm.linux.org.uk>
-In-Reply-To: <20080117182851.f9177571.akpm@linux-foundation.org>
-References: <1200621737-1458-1-git-send-email-byron.bbradley@gmail.com>
-	 <20080117182851.f9177571.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 17 Jan 2008 20:39:23 -0600
-Message-Id: <1200623963.4001.5.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Thu, 17 Jan 2008 21:52:28 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:34221 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752843AbYARCw1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 21:52:27 -0500
+Message-ID: <4790145C.9060102@ct.jp.nec.com>
+Date: Thu, 17 Jan 2008 18:52:12 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: x86: kdump failure
+References: <478BB226.6090105@ct.jp.nec.com> <20080114190904.GA2288@elte.hu>
+In-Reply-To: <20080114190904.GA2288@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ingo,
 
-On Thu, 2008-01-17 at 18:28 -0800, Andrew Morton wrote:
-> On Fri, 18 Jan 2008 02:02:17 +0000 Byron Bradley <byron.bbradley@gmail.com> wrote:
-> 
-> > In arch/arm/kernel/setup.c:setup_ramdisk(), rd_size is set from the
-> > boot tags. The replacement ramdisk driver has rd_size as static
-> > which causes linking to fail when ramdisk is built-in.
-> > 
-> 
-> but...
-> 
-> > diff --git a/drivers/block/brd.c b/drivers/block/brd.c
-> > index 5ef1d26..8536480 100644
-> > --- a/drivers/block/brd.c
-> > +++ b/drivers/block/brd.c
-> > @@ -385,7 +385,7 @@ static struct block_device_operations brd_fops = {
-> >   * And now the modules code and kernel interface.
-> >   */
-> >  static int rd_nr;
-> > -static int rd_size = CONFIG_BLK_DEV_RAM_SIZE;
-> > +int rd_size = CONFIG_BLK_DEV_RAM_SIZE;
-> >  module_param(rd_nr, int, 0);
-> >  MODULE_PARM_DESC(rd_nr, "Maximum number of brd devices");
-> >  module_param(rd_size, int, 0);
-> 
-> rd_size is a module parameter so it is settable via the
-> syntax-which-i-can-never-remember.  rd.rd_size=1024 or something like that.
-> 
-> If that's all sane, do we have some back-compat reason to continue to
-> support the special and duplicative rd_size parameter?
+on recent x86.git kernel fails to kdump with following BUG.
 
-Only insofar as we're still supporting ramdisks in the first place.
+SysRq : Trigger a crashdump
+------------[ cut here ]------------
+kernel BUG at include/linux/elfcore.h:105!
+invalid opcode: 0000 [1] PREEMPT SMP
 
+In crash_save_cpu(), elf_core_copy_regs() is called and
+ELF_CORE_COPY_REGS macro is required because struct pt_regs
+and elf_gregset_t are different.
+
+---
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Subject: [PATCH] x86: kdump needs ELF_CORE_COPY_REGS macro
+
+kdump needs ELF_CORE_COPY_REGS in crash_save_cpu().
+This lack of the macro causes the following BUG.
+
+SysRq : Trigger a crashdump
+------------[ cut here ]------------
+kernel BUG at include/linux/elfcore.h:105!
+invalid opcode: 0000 [1] PREEMPT SMP
+
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ include/asm-x86/elf.h |   62 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 62 insertions(+), 0 deletions(-)
+
+diff --git a/include/asm-x86/elf.h b/include/asm-x86/elf.h
+index dab4744..d9c94e7 100644
+--- a/include/asm-x86/elf.h
++++ b/include/asm-x86/elf.h
+@@ -106,6 +106,31 @@ extern unsigned int vdso_enabled;
+ 	_r->ax = 0; \
+ } while (0)
+ 
++/*
++ * regs is struct pt_regs, pr_reg is elf_gregset_t (which is
++ * now struct_user_regs, they are different)
++ */
++
++#define ELF_CORE_COPY_REGS(pr_reg, regs) do {		\
++	pr_reg[0] = regs->bx;				\
++	pr_reg[1] = regs->cx;				\
++	pr_reg[2] = regs->dx;				\
++	pr_reg[3] = regs->si;				\
++	pr_reg[4] = regs->di;				\
++	pr_reg[5] = regs->bp;				\
++	pr_reg[6] = regs->ax;				\
++	pr_reg[7] = regs->ds & 0xffff;			\
++	pr_reg[8] = regs->es & 0xffff;			\
++	pr_reg[9] = regs->fs & 0xffff;			\
++	savesegment(gs, pr_reg[10]);			\
++	pr_reg[11] = regs->orig_ax;			\
++	pr_reg[12] = regs->ip;				\
++	pr_reg[13] = regs->cs & 0xffff;			\
++	pr_reg[14] = regs->flags;			\
++	pr_reg[15] = regs->sp;				\
++	pr_reg[16] = regs->ss & 0xffff;			\
++} while (0);
++
+ #define ELF_PLATFORM	(utsname()->machine)
+ #define set_personality_64bit()	do { } while (0)
+ 
+@@ -165,6 +190,43 @@ static inline void elf_common_init(struct thread_struct *t,
+ 	} while (0)
+ #define COMPAT_ELF_PLATFORM			("i686")
+ 
++/*
++ * regs is struct pt_regs, pr_reg is elf_gregset_t (which is
++ * now struct_user_regs, they are different). Assumes current is the process
++ * getting dumped.
++ */
++
++#define ELF_CORE_COPY_REGS(pr_reg, regs)  do {			\
++	unsigned v;						\
++	(pr_reg)[0] = (regs)->r15;				\
++	(pr_reg)[1] = (regs)->r14;				\
++	(pr_reg)[2] = (regs)->r13;				\
++	(pr_reg)[3] = (regs)->r12;				\
++	(pr_reg)[4] = (regs)->bp;				\
++	(pr_reg)[5] = (regs)->bx;				\
++	(pr_reg)[6] = (regs)->r11;				\
++	(pr_reg)[7] = (regs)->r10;				\
++	(pr_reg)[8] = (regs)->r9;				\
++	(pr_reg)[9] = (regs)->r8;				\
++	(pr_reg)[10] = (regs)->ax;				\
++	(pr_reg)[11] = (regs)->cx;				\
++	(pr_reg)[12] = (regs)->dx;				\
++	(pr_reg)[13] = (regs)->si;				\
++	(pr_reg)[14] = (regs)->di;				\
++	(pr_reg)[15] = (regs)->orig_ax;				\
++	(pr_reg)[16] = (regs)->ip;				\
++	(pr_reg)[17] = (regs)->cs;				\
++	(pr_reg)[18] = (regs)->flags;				\
++	(pr_reg)[19] = (regs)->sp;				\
++	(pr_reg)[20] = (regs)->ss;				\
++	(pr_reg)[21] = current->thread.fs;			\
++	(pr_reg)[22] = current->thread.gs;			\
++	asm("movl %%ds,%0" : "=r" (v)); (pr_reg)[23] = v;	\
++	asm("movl %%es,%0" : "=r" (v)); (pr_reg)[24] = v;	\
++	asm("movl %%fs,%0" : "=r" (v)); (pr_reg)[25] = v;	\
++	asm("movl %%gs,%0" : "=r" (v)); (pr_reg)[26] = v;	\
++} while (0);
++
+ /* I'm not sure if we can use '-' here */
+ #define ELF_PLATFORM       ("x86_64")
+ extern void set_personality_64bit(void);
 -- 
-Mathematics is the supreme nostalgia of our time.
+1.5.3.7
+
 
