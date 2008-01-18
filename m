@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760411AbYARMpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761078AbYARMqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760411AbYARMpn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 07:45:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbYARMpg
+	id S1761078AbYARMqa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 07:46:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbYARMqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 07:45:36 -0500
-Received: from bay0-omc3-s30.bay0.hotmail.com ([65.54.246.230]:14962 "EHLO
-	bay0-omc3-s30.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756286AbYARMpf convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 07:45:35 -0500
-X-Greylist: delayed 436 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 Jan 2008 07:45:35 EST
-Message-ID: <BAY133-W31506ED3DE3D365F0ACC6B80420@phx.gbl>
-X-Originating-IP: [194.254.163.24]
-From: antares atlantide <antares.atlantide@hotmail.fr>
-To: <linux-kernel@vger.kernel.org>
-Subject: kernel: EDAC e752x: Non-Fatal Error PCI Express B
-Date: Fri, 18 Jan 2008 13:38:19 +0100
-Importance: Normal
-In-Reply-To: <20080118123324.GJ11044@elte.hu>
-References: <478FAC91.90109@goop.org> <20080118123324.GJ11044@elte.hu>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
-X-OriginalArrivalTime: 18 Jan 2008 12:38:19.0405 (UTC) FILETIME=[013EBBD0:01C859CF]
+	Fri, 18 Jan 2008 07:46:22 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:48464 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756388AbYARMqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 07:46:21 -0500
+Date: Fri, 18 Jan 2008 13:46:27 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
+Subject: Re: build #343 issue for v2.6.24-rc8-29-g03bbe08 : Section mismatch: reference to .init.text.1:start_kernel (between 'is386' and 'check_x87')
+Message-ID: <20080118124627.GA17918@uranus.ravnborg.org>
+References: <200801181318.30009.toralf.foerster@gmx.de> <20080118122917.GH2559@hacking>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080118122917.GH2559@hacking>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 18, 2008 at 08:29:17PM +0800, WANG Cong wrote:
+> On Fri, Jan 18, 2008 at 01:18:27PM +0100, Toralf Förster wrote:
+> >Hello,
+> >
+> >the build with the attached .config was successful however I got during make :
+> >  AS      .tmp_kallsyms2.o
+> >  LD      vmlinux.o
+> >  MODPOST vmlinux.o
+> >WARNING: vmlinux.o(.text.head+0x247): Section mismatch: reference to .init.text.1:start_kernel (between 'is386' and 'check_x87')
+> >  CHK     include/linux/version.h
+> >  HOSTCC  scripts/unifdef
+> >  MKDIR   include
+> >
+> >Does it help / make sense to report such warning ?
+> >
+> >The build was made with :
+> >$> make mrproper && make rndconfig && <tweak config file> && make oldconfig && make
+> >
+> >Here's the config:
+> 
+> Thanks. You have reported this. ;)
+> 
+> I can't solve this problem. Let's Cc Rusty and Sam to see
+> if they can solve this.
 
+modpost gets confused by the section named ".init.text.1" - the additional '.1'
+is unexpected.
 
-I am using this kernel and this OS on PC Dell SMT670 with processor  Intel Corporation E7525 
- 
-Linux l2.6.22-3-686 #1 SMP Mon Oct 22 22:11:56 UTC 2007 i686 GNU/Linux
-Debian GNU/Linux lenny/sid 
- 
-When i am using the printer with the application acroread and evince , sometimes i have no response and I have this error
- 
-root@lyonesse:~# cat /var/log/syslog | grep  EDAC
-Jan 17 11:04:08 lyonesse kernel: EDAC e752x: Non-Fatal Error PCI Express B
-Jan 17 11:04:09 lyonesse kernel: EDAC e752x: Non-Fatal Error PCI Express B
- 
-and the other one
- 
- 
-root@troie:~#  cat /var/log/syslog | grep  EDAC
-Jan 17 15:08:18 troie kernel: EDAC MC: Ver: 2.0.1 Oct 22 2007
-Jan 17 15:08:18 troie kernel: EDAC e752x: tolm = 40000, remapbase =
-ffc000, remaplimit = 0
-Jan 17 15:08:18 troie kernel: EDAC MC0: Giving out device to e752x_edac
-E7525: DEV 0000:00:00.0
+Following untested patch should fix it.
 
-Antares
-_________________________________________________________________
-Microsoft vous offre un logiciel pour classer, retoucher et partager vos photos !
-http://www.windowslive.fr/galerie/
+	Sam
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 93ac52a..b5f1cff 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -736,8 +736,8 @@ static int secref_whitelist(const char *modname, const char *tosec,
+ 
+ 	/* Check for pattern 3 */
+ 	if ((strcmp(fromsec, ".text.head") == 0) &&
+-		((strcmp(tosec, ".init.data") == 0) ||
+-		(strcmp(tosec, ".init.text") == 0)))
++		((strncmp(tosec, ".init.data", strlen(".init.data")) == 0) ||
++		(strncmp(tosec, ".init.text", strlen(".init.text")) == 0)))
+ 	return 1;
+ 
+ 	/* Check for pattern 4 */
