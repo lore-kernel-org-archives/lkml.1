@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765304AbYARUly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764701AbYARUoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765304AbYARUly (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:41:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760945AbYARUlq
+	id S1764701AbYARUoR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:44:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759664AbYARUoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:41:46 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:38620 "EHLO mail.dvmed.net"
+	Fri, 18 Jan 2008 15:44:05 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:57581 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760280AbYARUlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:41:46 -0500
-Message-ID: <47910F05.8040501@pobox.com>
-Date: Fri, 18 Jan 2008 15:41:41 -0500
+	id S1755240AbYARUoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:44:02 -0500
+Message-ID: <47910F8F.3040107@pobox.com>
+Date: Fri, 18 Jan 2008 15:43:59 -0500
 From: Jeff Garzik <jgarzik@pobox.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Rusty Russell <rusty@rustcorp.com.au>
 CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ash Willis <ashwillis@programmer.net>, linux-pcmcia@lists.infradead.org
-Subject: Re: [PATCH 1/3] Improve type handling in interrupt handlers
-References: <200801190722.26154.rusty@rustcorp.com.au>
-In-Reply-To: <200801190722.26154.rusty@rustcorp.com.au>
+       Ash Willis <ashwillis@programmer.net>, linux-pcmcia@lists.infradead.org,
+       virtualization@lists.linux-foundation.org, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 2/3] Make IRQ handlers typesafe.
+References: <200801190722.26154.rusty@rustcorp.com.au> <200801190725.24271.rusty@rustcorp.com.au>
+In-Reply-To: <200801190725.24271.rusty@rustcorp.com.au>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -30,119 +31,64 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Rusty Russell wrote:
-> This improves typechecking of interrupt handlers by removing
-> unnecessary (void *) casts and storing handlers in correctly-typed
-> variables.
+> This patch lets interrupt handler functions have their natural type
+> (ie. exactly match the data pointer type); for transition it allows
+> the old irq_handler_t type as well.
+> 
+> To do this it uses a gcc extension, cast-to-union, which allows a type
+> to be cast to any type within the union.  When used in a wrapper
+> macro, it's a simple way of allowing one of several types.
+> 
+> (Some drivers now need to be cleaned up to compile, previous patch).
 > 
 > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Jeff Garzik <jgarzik@pobox.com>
-> Cc: Ash Willis <ashwillis@programmer.net>
-> Cc: linux-pcmcia@lists.infradead.org
-
-FWIW, I have been working in this area extensively.
-
-Check out the 'irq-cleanups' and 'irq-remove' branches of
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
-
-(irq-remove is built on top of irq-cleanups)
-
-
-> diff -r 0fe1a980708b drivers/net/eth16i.c
-> --- a/drivers/net/eth16i.c	Thu Jan 17 14:48:56 2008 +1100
-> +++ b/drivers/net/eth16i.c	Thu Jan 17 15:42:00 2008 +1100
-> @@ -529,7 +529,7 @@ static int __init eth16i_probe1(struct n
+> ---
+>  include/linux/interrupt.h |   17 +++++++++++++++--
+>  include/linux/kernel.h    |    7 +++++++
+>  kernel/irq/devres.c       |   10 +++++-----
+>  kernel/irq/manage.c       |    6 +++---
+>  4 files changed, 30 insertions(+), 10 deletions(-)
+> 
+> diff -r 0fe1a980708b include/linux/interrupt.h
+> --- a/include/linux/interrupt.h	Thu Jan 17 14:48:56 2008 +1100
+> +++ b/include/linux/interrupt.h	Thu Jan 17 15:42:01 2008 +1100
+> @@ -69,13 +69,26 @@ struct irqaction {
+>  };
 >  
->  	/* Try to obtain interrupt vector */
+>  extern irqreturn_t no_action(int cpl, void *dev_id);
+> -extern int __must_check request_irq(unsigned int, irq_handler_t handler,
+> +
+> +/* Typesafe version of request_irq.  Also takes old-style void * handlers. */
+> +#define request_irq(irq, handler, flags, name, dev_id)			\
+> +	__request_irq((irq),						\
+> +		      check_either_type((handler), irq_handler_t,	\
+> +					int (*)(int, typeof(dev_id))),	\
+> +		      (flags), (name), (dev_id))
+> +
+> +extern int __must_check __request_irq(unsigned int, irq_handler_t handler,
+>  		       unsigned long, const char *, void *);
+>  extern void free_irq(unsigned int, void *);
 >  
-> -	if ((retval = request_irq(dev->irq, (void *)&eth16i_interrupt, 0, cardname, dev))) {
-> +	if ((retval = request_irq(dev->irq, eth16i_interrupt, 0, cardname, dev))) {
->  		printk(KERN_WARNING "%s at %#3x, but is unusable due to conflicting IRQ %d.\n",
->  		       cardname, ioaddr, dev->irq);
->  		goto out;
-> diff -r 0fe1a980708b drivers/net/ewrk3.c
-> --- a/drivers/net/ewrk3.c	Thu Jan 17 14:48:56 2008 +1100
-> +++ b/drivers/net/ewrk3.c	Thu Jan 17 15:42:00 2008 +1100
-> @@ -635,7 +635,7 @@ static int ewrk3_open(struct net_device 
->  	STOP_EWRK3;
+>  struct device;
 >  
->  	if (!lp->hard_strapped) {
-> -		if (request_irq(dev->irq, (void *) ewrk3_interrupt, 0, "ewrk3", dev)) {
-> +		if (request_irq(dev->irq, ewrk3_interrupt, 0, "ewrk3", dev)) {
->  			printk("ewrk3_open(): Requested IRQ%d is busy\n", dev->irq);
->  			status = -EAGAIN;
->  		} else {
-> diff -r 0fe1a980708b drivers/net/skfp/skfddi.c
-> --- a/drivers/net/skfp/skfddi.c	Thu Jan 17 14:48:56 2008 +1100
-> +++ b/drivers/net/skfp/skfddi.c	Thu Jan 17 15:42:00 2008 +1100
-> @@ -495,7 +495,7 @@ static int skfp_open(struct net_device *
->  
->  	PRINTK(KERN_INFO "entering skfp_open\n");
->  	/* Register IRQ - support shared interrupts by passing device ptr */
-> -	err = request_irq(dev->irq, (void *) skfp_interrupt, IRQF_SHARED,
-> +	err = request_irq(dev->irq, skfp_interrupt, IRQF_SHARED,
->  			  dev->name, dev);
->  	if (err)
->  		return err;
+> -extern int __must_check devm_request_irq(struct device *dev, unsigned int irq,
+> +#define devm_request_irq(dev, irq, handler, flags, name, dev_id)	\
+> +	__devm_request_irq((dev), (irq),				\
+> +		      check_either_type((handler), irq_handler_t,	\
+> +					int (*)(int, typeof(dev_id))),	\
+> +		      (flags), (name), (dev_id))
+> +extern int __must_check __devm_request_irq(struct device *dev, unsigned int irq,
+>  			    irq_handler_t handler, unsigned long irqflags,
+>  			    const char *devname, void *dev_id);
 
-ACK all of the above
+This is ugly and unnecessary.
 
+Anything that does not use irq_handler_t is broken and should be fixed 
+(as noted in last email, I think I've covered all this driver work already)
 
-> diff -r 0fe1a980708b include/pcmcia/cs.h
-> --- a/include/pcmcia/cs.h	Thu Jan 17 14:48:56 2008 +1100
-> +++ b/include/pcmcia/cs.h	Thu Jan 17 15:42:01 2008 +1100
-> @@ -170,7 +170,7 @@ typedef struct irq_req_t {
->      u_int	Attributes;
->      u_int	AssignedIRQ;
->      u_int	IRQInfo1, IRQInfo2; /* IRQInfo2 is ignored */
-> -    void	*Handler;
-> +    int		(*Handler)(int, void *);
->      void	*Instance;
->  } irq_req_t;
->  
-> diff -r 0fe1a980708b sound/pci/als300.c
-> --- a/sound/pci/als300.c	Thu Jan 17 14:48:56 2008 +1100
-> +++ b/sound/pci/als300.c	Thu Jan 17 15:42:01 2008 +1100
-> @@ -678,7 +678,7 @@ static int __devinit snd_als300_create(s
->  				       struct snd_als300 **rchip)
->  {
->  	struct snd_als300 *chip;
-> -	void *irq_handler;
-> +	int (*irq_handler)(int, void *);
->  	int err;
->  
->  	static struct snd_device_ops ops = {
-> diff -r 0fe1a980708b drivers/net/e1000e/netdev.c
-> --- a/drivers/net/e1000e/netdev.c	Thu Jan 17 14:48:56 2008 +1100
-> +++ b/drivers/net/e1000e/netdev.c	Thu Jan 17 15:42:00 2008 +1100
-> @@ -935,7 +935,7 @@ static int e1000_request_irq(struct e100
->  static int e1000_request_irq(struct e1000_adapter *adapter)
->  {
->  	struct net_device *netdev = adapter->netdev;
-> -	void (*handler) = &e1000_intr;
-> +	int (*handler)(int, void *) = &e1000_intr;
->  	int irq_flags = IRQF_SHARED;
->  	int err;
->  
-> diff -r 0fe1a980708b drivers/net/e1000/e1000_main.c
-> --- a/drivers/net/e1000/e1000_main.c	Thu Jan 17 14:48:56 2008 +1100
-> +++ b/drivers/net/e1000/e1000_main.c	Thu Jan 17 15:42:00 2008 +1100
-> @@ -299,7 +299,7 @@ static int e1000_request_irq(struct e100
->  static int e1000_request_irq(struct e1000_adapter *adapter)
->  {
->  	struct net_device *netdev = adapter->netdev;
-> -	void (*handler) = &e1000_intr;
-> +	irqreturn_t (*handler)(int, void *) = &e1000_intr;
->  	int irq_flags = IRQF_SHARED;
->  	int err;
-
-NAK the rest.
-
-You should be using irq_handler_t for all these.
-
-(Coincedentally, doing so makes it easier for me to later on remove the 
-almost-never-used 'irq' argument from all irq handlers)
+And if by definition everything uses irq_handler_t, there is no need for 
+any of this "check_either_type" silliness.
 
 	Jeff
-
 
 
