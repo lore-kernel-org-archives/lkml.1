@@ -1,62 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763444AbYARS3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932104AbYARSaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763444AbYARS3j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:29:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760992AbYARS3c
+	id S932104AbYARSaS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:30:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763981AbYARS34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:29:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40675 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758104AbYARS3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:29:31 -0500
-Date: Fri, 18 Jan 2008 13:28:50 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: torvalds@linux-foundation.org, peterz@infradead.org, miklos@szeredi.hu,
-       salikhmetov@gmail.com, linux-mm@kvack.org, jakob@unthought.net,
-       linux-kernel@vger.kernel.org, valdis.kletnieks@vt.edu, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
-       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
-       hch@infradead.org
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
- files
-Message-ID: <20080118132850.044537e5@bree.surriel.com>
-In-Reply-To: <E1JFvgx-0000zz-2C@pomaz-ex.szeredi.hu>
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>
-	<12006091211208-git-send-email-salikhmetov@gmail.com>
-	<E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu>
-	<1200651337.5920.9.camel@twins>
-	<1200651958.5920.12.camel@twins>
-	<alpine.LFD.1.00.0801180949040.2957@woody.linux-foundation.org>
-	<E1JFvgx-0000zz-2C@pomaz-ex.szeredi.hu>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jan 2008 13:29:56 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60689 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758104AbYARS3z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 13:29:55 -0500
+Message-Id: <20080118182953.922370000@sgi.com>
+References: <20080118182953.748071000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 18 Jan 2008 10:29:54 -0800
+From: travis@sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu
+Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH 1/7] Modules: Fold percpu_modcopy into module.c
+Content-Disposition: inline; filename=fold-percpu_modcopy
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 19:11:47 +0100
-Miklos Szeredi <miklos@szeredi.hu> wrote:
+percpu_modcopy() is defined multiple times in arch files. However, the only
+user is module.c. Put a static definition into module.c and remove
+the definitions from the arch files.
 
-> > And even in that four-liner, I suspect that the *last* two lines are 
-> > actually incorrect: there's no point in updating the file time when the 
-> > page *becomes* dirty,
-> 
-> Actually all four lines do that.  The first two for a write access on
-> a present, read-only pte, the other two for a write on a non-present
-> pte.
-> 
-> > we should update the file time when it is marked 
-> > clean, and "msync(MS_SYNC)" should update it as part of *that*.
-> 
-> That would need a new page flag (PG_mmap_dirty?).  Do we have one
-> available?
 
-I thought the page writing stuff looked at (and cleared) the pte
-dirty bit, too?
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Mike Travis <travis@sgi.com>
+
+---
+ arch/ia64/kernel/module.c    |   11 -----------
+ include/asm-generic/percpu.h |    8 --------
+ include/asm-ia64/percpu.h    |    5 -----
+ include/asm-powerpc/percpu.h |    9 ---------
+ include/asm-s390/percpu.h    |    9 ---------
+ kernel/module.c              |    8 ++++++++
+ 6 files changed, 8 insertions(+), 42 deletions(-)
+
+--- a/arch/ia64/kernel/module.c
++++ b/arch/ia64/kernel/module.c
+@@ -940,14 +940,3 @@ module_arch_cleanup (struct module *mod)
+ 	if (mod->arch.core_unw_table)
+ 		unw_remove_unwind_table(mod->arch.core_unw_table);
+ }
+-
+-#ifdef CONFIG_SMP
+-void
+-percpu_modcopy (void *pcpudst, const void *src, unsigned long size)
+-{
+-	unsigned int i;
+-	for_each_possible_cpu(i) {
+-		memcpy(pcpudst + per_cpu_offset(i), src, size);
+-	}
+-}
+-#endif /* CONFIG_SMP */
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -63,14 +63,6 @@ extern unsigned long __per_cpu_offset[NR
+ extern void setup_per_cpu_areas(void);
+ #endif
+ 
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+per_cpu_offset(__i),		\
+-		       (src), (size));				\
+-} while (0)
+ #else /* ! SMP */
+ 
+ #define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu_var(var)))
+--- a/include/asm-ia64/percpu.h
++++ b/include/asm-ia64/percpu.h
+@@ -22,10 +22,6 @@
+ #define DECLARE_PER_CPU(type, name)				\
+ 	extern PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+ 
+-/*
+- * Pretty much a literal copy of asm-generic/percpu.h, except that percpu_modcopy() is an
+- * external routine, to avoid include-hell.
+- */
+ #ifdef CONFIG_SMP
+ 
+ extern unsigned long __per_cpu_offset[NR_CPUS];
+@@ -38,7 +34,6 @@ DECLARE_PER_CPU(unsigned long, local_per
+ #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
+ #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
+ 
+-extern void percpu_modcopy(void *pcpudst, const void *src, unsigned long size);
+ extern void setup_per_cpu_areas (void);
+ extern void *per_cpu_init(void);
+ 
+--- a/include/asm-powerpc/percpu.h
++++ b/include/asm-powerpc/percpu.h
+@@ -21,15 +21,6 @@
+ #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
+ #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, local_paca->data_offset))
+ 
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+__per_cpu_offset(__i),		\
+-		       (src), (size));				\
+-} while (0)
+-
+ extern void setup_per_cpu_areas(void);
+ 
+ #else /* ! SMP */
+--- a/include/asm-s390/percpu.h
++++ b/include/asm-s390/percpu.h
+@@ -39,15 +39,6 @@ extern unsigned long __per_cpu_offset[NR
+ #define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
+ #define per_cpu_offset(x) (__per_cpu_offset[x])
+ 
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+__per_cpu_offset[__i],		\
+-		       (src), (size));				\
+-} while (0)
+-
+ #else /* ! SMP */
+ 
+ #define __get_cpu_var(var) __reloc_hide(var,0)
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -422,6 +422,14 @@ static unsigned int find_pcpusec(Elf_Ehd
+ 	return find_sec(hdr, sechdrs, secstrings, ".data.percpu");
+ }
+ 
++static void percpu_modcopy(void *pcpudest, const void *from, unsigned long size)
++{
++	int cpu;
++
++	for_each_possible_cpu(cpu)
++		memcpy(pcpudest + per_cpu_offset(cpu), from, size);
++}
++
+ static int percpu_modinit(void)
+ {
+ 	pcpu_num_used = 2;
 
 -- 
-All rights reversed.
