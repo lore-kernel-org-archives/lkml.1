@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932232AbYARUFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764183AbYARUFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932232AbYARUFR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765459AbYARUEc
+	id S1764183AbYARUFm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:05:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765590AbYARUEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:04:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35936 "EHLO mx1.redhat.com"
+	Fri, 18 Jan 2008 15:04:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35943 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765329AbYARUEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:04:30 -0500
+	id S1765554AbYARUEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:04:34 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
@@ -17,52 +17,40 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
        rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
        rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
        mtosatti@redhat.com, Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 3/10] provide a native_init_IRQ function to x86_64
-Date: Fri, 18 Jan 2008 15:20:18 -0200
-Message-Id: <12006768473571-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 1/10] add missing parameter for lookup_address
+Date: Fri, 18 Jan 2008 15:20:16 -0200
+Message-Id: <12006768362108-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <1200676842822-git-send-email-gcosta@redhat.com>
-References: <12006768251548-git-send-email-gcosta@redhat.com> <12006768362108-git-send-email-gcosta@redhat.com> <1200676842822-git-send-email-gcosta@redhat.com>
+In-Reply-To: <12006768251548-git-send-email-gcosta@redhat.com>
+References: <12006768251548-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86_64 lacks a native_init_IRQ() function, so we turn the arch's
-init_IRQ() function into a native construct
+lookup_address() receives two parameters, but efi_64.c call
+is passing only one. It's actually preventing the tree from compiling
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 ---
- arch/x86/kernel/i8259_64.c  |    4 +++-
- include/asm-x86/hw_irq_64.h |    1 +
- 2 files changed, 4 insertions(+), 1 deletions(-)
+ arch/x86/kernel/efi_64.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/i8259_64.c b/arch/x86/kernel/i8259_64.c
-index cba13e0..738517e 100644
---- a/arch/x86/kernel/i8259_64.c
-+++ b/arch/x86/kernel/i8259_64.c
-@@ -456,7 +456,9 @@ void __init init_ISA_irqs (void)
- 	}
- }
- 
--void __init init_IRQ(void)
-+void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
-+
-+void __init native_init_IRQ(void)
+diff --git a/arch/x86/kernel/efi_64.c b/arch/x86/kernel/efi_64.c
+index f420819..1f8bbd9 100644
+--- a/arch/x86/kernel/efi_64.c
++++ b/arch/x86/kernel/efi_64.c
+@@ -45,9 +45,10 @@ static void __init early_mapping_set_exec(unsigned long start,
+ 					  int executable)
  {
- 	int i;
+ 	pte_t *kpte;
++	int level;
  
-diff --git a/include/asm-x86/hw_irq_64.h b/include/asm-x86/hw_irq_64.h
-index a346159..312a58d 100644
---- a/include/asm-x86/hw_irq_64.h
-+++ b/include/asm-x86/hw_irq_64.h
-@@ -141,6 +141,7 @@ extern void print_IO_APIC(void);
- extern int IO_APIC_get_PCI_irq_vector(int bus, int slot, int fn);
- extern void send_IPI(int dest, int vector);
- extern void setup_ioapic_dest(void);
-+extern void native_init_IRQ(void);
- 
- extern unsigned long io_apic_irqs;
- 
+ 	while (start < end) {
+-		kpte = lookup_address((unsigned long)__va(start));
++		kpte = lookup_address((unsigned long)__va(start), &level);
+ 		BUG_ON(!kpte);
+ 		if (executable)
+ 			set_pte(kpte, pte_mkexec(*kpte));
 -- 
 1.4.4.2
 
