@@ -1,43 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbYAREZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbYARE3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757339AbYAREZg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 23:25:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbYAREZ1
+	id S1757911AbYARE3G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 23:29:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbYARE24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 23:25:27 -0500
-Received: from colin.muc.de ([193.149.48.1]:3251 "EHLO mail.muc.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752190AbYAREZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 23:25:22 -0500
-Date: 18 Jan 2008 05:25:19 +0100
-Date: Fri, 18 Jan 2008 05:25:19 +0100
-From: Andi Kleen <ak@muc.de>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andreas Herrmann3 <andreas.herrmann3@amd.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>, ebiederm@xmission.com,
-       rdreier@cisco.com, torvalds@linux-foundation.org, gregkh@suse.de,
-       airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de, hpa@zytor.com,
-       akpm@linux-foundation.org, arjan@infradead.org, jesse.barnes@intel.com,
-       davem@davemloft.net, linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug fixes
-Message-ID: <20080118042518.GA12426@muc.de>
-References: <20080116023955.597433000@intel.com> <20080116185748.GA11244@alberich.amd.com> <20080116203328.GA17869@linux-os.sc.intel.com> <20080117191211.GA12631@alberich.amd.com> <20080117203600.GB27778@elte.hu> <20080117210301.GC12631@alberich.amd.com> <20080117211308.GA7858@elte.hu> <20080117213131.GA25389@linux-os.sc.intel.com>
+	Thu, 17 Jan 2008 23:28:56 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:18931 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751246AbYARE2z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 23:28:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=nMKrMBQszq2qpKtgUn3qBFnOgV7sq1+q+zuV72u8ZibdzKSCtAzF+VbaYgBu7Qzy8Obq2yi5bfwm74RXXZP6mfpB7Z4GW9oNq4OQyCdgm0Sq6nd+IUH8lbCsK+6N+W9JSCMZzQwBx5Qz67xLcPUCTS5H7ZcieqSr9iMmlfmNuok=
+Subject: [PATCH] x86: Rename stack_pointer to kernel_trap_sp
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <47901E89.4060001@zytor.com>
+References: <1200611078.5724.46.camel@brick>	<478FDE76.3070309@zytor.com>
+	 <1200612389.5724.63.camel@brick>	<478FF9F3.9030604@zytor.com>
+	 <1200618952.5724.85.camel@brick>
+	 <20080118013712.4090526FA0B@magilla.localdomain>
+	 <479002B6.9030607@zytor.com> <1200622862.5724.106.camel@brick>
+	 <47901E89.4060001@zytor.com>
+Content-Type: text/plain
+Date: Thu, 17 Jan 2008 20:28:49 -0800
+Message-Id: <1200630529.5724.116.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080117213131.GA25389@linux-os.sc.intel.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As Linus mentioned, main problem is to figure out the correct attribute
-> for ioremap() which doesn't specify the actual attribute to be used.
+Choose a less generic name for such a special case.  Add
+a comment explaining the odd use in X86_32.
 
-In this case the correct attribute is the one of the underlying MTRR.
+Change the one user of stack_pointer.
 
-And if it conflicts with some other mapping that overrides an MTRR
-the driver was always broken and it should probably error out and be
-reevaluated/fixed.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/oprofile/backtrace.c |    2 +-
+ include/asm-x86/ptrace.h      |    8 +++++++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
--Andi
+diff --git a/arch/x86/oprofile/backtrace.c b/arch/x86/oprofile/backtrace.c
+index 0ca4815..e2095cb 100644
+--- a/arch/x86/oprofile/backtrace.c
++++ b/arch/x86/oprofile/backtrace.c
+@@ -77,7 +77,7 @@ void
+ x86_backtrace(struct pt_regs * const regs, unsigned int depth)
+ {
+ 	struct frame_head *head = (struct frame_head *)frame_pointer(regs);
+-	unsigned long stack = stack_pointer(regs);
++	unsigned long stack = kernel_trap_sp(regs);
+ 
+ 	if (!user_mode_vm(regs)) {
+ 		if (depth)
+diff --git a/include/asm-x86/ptrace.h b/include/asm-x86/ptrace.h
+index 79d5b8f..d9e04b4 100644
+--- a/include/asm-x86/ptrace.h
++++ b/include/asm-x86/ptrace.h
+@@ -182,7 +182,13 @@ static inline int v8086_mode(struct pt_regs *regs)
+ #endif
+ }
+ 
+-static inline unsigned long stack_pointer(struct pt_regs *regs)
++/*
++ * X86_32 CPUs don't save ss and esp if the CPU is already in kernel mode
++ * when it traps.  So regs will be the current sp.
++ *
++ * This is valid only for kernel mode traps.
++ */
++static inline unsigned long kernel_trap_sp(struct pt_regs *regs)
+ {
+ #ifdef CONFIG_X86_32
+ 	return (unsigned long)regs;
+-- 
+1.5.4.rc2.1164.g6451
+
+
+
