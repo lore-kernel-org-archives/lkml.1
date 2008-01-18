@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765283AbYARUpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761365AbYARUql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765283AbYARUpx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:45:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761384AbYARUpp
+	id S1761365AbYARUql (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:46:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759564AbYARUqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:45:45 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:57630 "EHLO mail.dvmed.net"
+	Fri, 18 Jan 2008 15:46:34 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40388 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760300AbYARUpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:45:44 -0500
-Message-ID: <47910FF5.20206@pobox.com>
-Date: Fri, 18 Jan 2008 15:45:41 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1758568AbYARUqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:46:33 -0500
+Date: Fri, 18 Jan 2008 21:46:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: travis@sgi.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
+Message-ID: <20080118204605.GC3079@elte.hu>
+References: <20080118183011.354965000@sgi.com> <20080118183011.917801000@sgi.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ash Willis <ashwillis@programmer.net>, linux-pcmcia@lists.infradead.org,
-       virtualization@lists.linux-foundation.org, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 3/3] Makes lguest's irq handler typesafe
-References: <200801190722.26154.rusty@rustcorp.com.au> <200801190725.24271.rusty@rustcorp.com.au> <200801190727.36567.rusty@rustcorp.com.au>
-In-Reply-To: <200801190727.36567.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080118183011.917801000@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> Just a trivial example.
-> ---
->  drivers/lguest/lguest_device.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff -r 00ab7672f658 drivers/lguest/lguest_device.c
-> --- a/drivers/lguest/lguest_device.c	Thu Jan 17 16:54:00 2008 +1100
-> +++ b/drivers/lguest/lguest_device.c	Thu Jan 17 16:59:46 2008 +1100
-> @@ -179,9 +179,8 @@ static void lg_notify(struct virtqueue *
->  	hcall(LHCALL_NOTIFY, lvq->config.pfn << PAGE_SHIFT, 0, 0);
->  }
->  
-> -static irqreturn_t lguest_interrupt(int irq, void *_vq)
-> +static irqreturn_t lguest_interrupt(int irq, struct virtqueue *vq)
->  {
-> -	struct virtqueue *vq = _vq;
->  	struct lguest_device_desc *desc = to_lgdev(vq->vdev)->desc;
 
-Ugh.
+* travis@sgi.com <travis@sgi.com> wrote:
 
-This will be a compatibility nightmare.  I don't see how void* is so 
-evil for this, or timers.
+> +config THREAD_ORDER
+> +	int "Kernel stack size (in page order)"
+> +	range 1 3
+> +	depends on X86_64_SMP
+> +	default "3" if X86_SMP_MAX
+> +	default "1"
+> +	help
+> +	  Increases kernel stack size.
 
-It's not like there's a huge cost associated with a pointer alias.
+nack on kernel stack bloat. We worked hard to get the kernel stack 
+footprint down to 4K on x86. (and it is 4K on most distros, despite 
+there still being a legacy 8K stack size) No way are we going to throw 
+away all that now ...
 
-	Jeff
-
-
-
+	Ingo
