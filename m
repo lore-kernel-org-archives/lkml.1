@@ -1,56 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765495AbYARS5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764547AbYARTBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765495AbYARS5e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:57:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762445AbYARS5X
+	id S1764547AbYARTBY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 14:01:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758982AbYARTBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:57:23 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:58705 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761813AbYARS5W (ORCPT
+	Fri, 18 Jan 2008 14:01:15 -0500
+Received: from web32611.mail.mud.yahoo.com ([68.142.207.238]:28690 "HELO
+	web32611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758254AbYARTBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:57:22 -0500
-To: torvalds@linux-foundation.org
-CC: miklos@szeredi.hu, peterz@infradead.org, salikhmetov@gmail.com,
-       linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
-       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
-       hch@infradead.org
-In-reply-to: <alpine.LFD.1.00.0801181033580.2957@woody.linux-foundation.org>
-	(message from Linus Torvalds on Fri, 18 Jan 2008 10:43:35 -0800 (PST))
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
- files
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>  <12006091211208-git-send-email-salikhmetov@gmail.com>  <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu>  <1200651337.5920.9.camel@twins> <1200651958.5920.12.camel@twins>
- <alpine.LFD.1.00.0801180949040.2957@woody.linux-foundation.org> <E1JFvgx-0000zz-2C@pomaz-ex.szeredi.hu> <alpine.LFD.1.00.0801181033580.2957@woody.linux-foundation.org>
-Message-Id: <E1JFwOz-00019k-Uo@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 18 Jan 2008 19:57:17 +0100
+	Fri, 18 Jan 2008 14:01:13 -0500
+X-YMail-OSG: BxZ_yC4VM1npLTd9hV1f9NR6dle9vY9qiVFDKfLbm0owued7aCuXNO3o3dQzR5awEL0hyDAH5YnUIAXzzR9YdCJNGw--
+X-RocketYMMF: knobi.rm
+Date: Fri, 18 Jan 2008 11:01:11 -0800 (PST)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Reply-To: spamtrap@knobisoft.de
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+To: Linus Torvalds <torvalds@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>
+Cc: Martin Knoblauch <spamtrap@knobisoft.de>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>, Mike Snitzer <snitzer@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jplatte@naasa.net,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       James.Bottomley@steeleye.com
+In-Reply-To: <alpine.LFD.1.00.0801180931250.2957@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <903015.63912.qm@web32611.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > That would need a new page flag (PG_mmap_dirty?).  Do we have one
-> > available?
-> 
-> Yeah, that would be bad. We probably have flags free, but those page flags 
-> are always a pain. Scratch that.
-> 
-> How about just setting a per-vma dirty flag, and then instead of updating 
-> the mtime when taking the dirty-page fault, we just set that flag?
-> 
-> Then, on unmap and msync, we just do
-> 
-> 	if (vma->dirty-flag) {
-> 		vma->dirty_flag = 0;
-> 		update_file_times(vma->vm_file);
-> 	}
-> 
-> and be done with it? 
 
-But then background writeout, sync(2), etc, wouldn't update the times.
-Dunno.  I don't think actual _physical_ writeout matters much, so it's
-not worse to be 30s early with the timestamp, than to be 30s or more
-late.
+--- Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Miklos
+> 
+> 
+> On Fri, 18 Jan 2008, Mel Gorman wrote:
+> > 
+> > Right, and this is consistent with other complaints about the PFN
+> > of the page mattering to some hardware.
+> 
+> I don't think it's actually the PFN per se.
+> 
+> I think it's simply that some controllers (quite probably affected by
+> both  driver and hardware limits) have some subtle interactions with
+> the size of  the IO commands.
+> 
+> For example, let's say that you have a controller that has some limit
+> X on  the size of IO in flight (whether due to hardware or driver
+> issues doesn't  really matter) in addition to a limit on the size
+> of the scatter-gather  size. They all tend to have limits, and
+> they differ.
+> 
+> Now, the PFN doesn't matter per se, but the allocation pattern
+> definitely  matters for whether the IO's are physically
+> contiguous, and thus matters  for the size of the scatter-gather
+> thing.
+> 
+> Now, generally the rule-of-thumb is that you want big commands, so 
+> physical merging is good for you, but I could well imagine that the
+> IO  limits interact, and end up hurting each other. Let's say that a
+> better  allocation order allows for bigger contiguous physical areas,
+> and thus  fewer scatter-gather entries.
+> 
+> What does that result in? The obvious answer is
+> 
+>   "Better performance obviously, because the controller needs to do
+> fewer scatter-gather lookups, and the requests are bigger, because
+> there are     fewer IO's that hit scatter-gather limits!"
+> 
+> Agreed?
+> 
+> Except maybe the *real* answer for some controllers end up being
+> 
+>   "Worse performance, because individual commands grow because they
+> don't  hit the per-command limits, but now we hit the global
+> size-in-flight limits and have many fewer of these good commands in
+> flight. And while the commands are larger, it means that there
+> are fewer outstanding commands, which can mean that the disk
+> cannot scheduling things as well, or makes high latency of command
+> generation by the controller much more visible because there aren't
+> enough concurrent requests queued up to hide it"
+> 
+> Is this the reason? I have no idea. But somebody who knows the
+> AACRAID hardware and driver limits might think about interactions
+> like that. Sometimes you actually might want to have smaller 
+> individual commands if there is some other limit that means that
+> it can be more advantageous to have many small requests over a
+> few big onees.
+> 
+> RAID might well make it worse. Maybe small requests work better
+> because they are simpler to schedule because they only hit one
+> disk (eg if you have simple striping)! So that's another reason
+> why one *large* request may actually be slower than two requests
+> half the size, even if it's against the "normal rule".
+> 
+> And it may be that that AACRAID box takes a big hit on DIO
+> exactly because DIO has been optimized almost purely for making
+> one command as big as possible.
+> 
+> Just a theory.
+> 
+> 		Linus
+
+ just to make one thing clear - I am not so much concerned about the
+performance of AACRAID. It is OK with or without Mel's patch. It is
+better with Mel's patch. The regression in DIO compared to 2.6.19.2 is
+completely independent of Mel's stuff.
+
+ What interests me much more is the behaviour of the CCISS+LVM based
+system. Here I see a huge benefit of reverting Mel's patch.
+
+ I dirtied the system after reboot as Mel suggested (24 parallel kernel
+build) and repeated the tests. The dirtying did not make any
+difference. Here are the results:
+
+Test      -rc8    -rc8-without-Mels-Patch
+dd1       57      94
+dd1-dir   87      86
+dd2       2x8.5   2x45
+dd2-dir   2x43    2x43
+dd3       3x7     3x30
+dd3-dir   3x28.5  3x28.5
+mix3      59,2x25 98,2x24
+
+ The big IO size with Mel's patch really has a devastating effect on
+the parallel write. Nowhere near the value one would expect, while the
+numbers are perfect without Mel's patch as in rc1-rc5. To bad I did not
+see this earlier. Maybe we could have found a solution for .24.
+
+ At least, rc1-rc5 have shown that the CCISS system can do well. Now
+the question is which part of the system does not cope well with the
+larger IO sizes? Is it the CCISS controller, LVM or both. I am open to
+suggestions on how to debug that. 
+
+Cheers
+Martin
+
+------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
