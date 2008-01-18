@@ -1,81 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYARAr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbYARAwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759430AbYARAr6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 19:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbYARArt
+	id S1759480AbYARAwX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 19:52:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757220AbYARAwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 19:47:49 -0500
-Received: from waste.org ([66.93.16.53]:55749 "EHLO waste.org"
+	Thu, 17 Jan 2008 19:52:15 -0500
+Received: from ozlabs.org ([203.10.76.45]:43228 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757332AbYARArs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 19:47:48 -0500
-Subject: Re: 2.6.24-rc8-mm1: powerpc oopses
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: m.kozlowski@tuxland.pl, linux-kernel@vger.kernel.org, paulus@samba.org,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <20080117162913.0323c517.akpm@linux-foundation.org>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	 <200801172315.28129.m.kozlowski@tuxland.pl>
-	 <20080117145105.ad968ea6.akpm@linux-foundation.org>
-	 <1200613194.3839.22.camel@cinder.waste.org>
-	 <20080117160513.3456b4eb.akpm@linux-foundation.org>
-	 <1200615168.3839.26.camel@cinder.waste.org>
-	 <20080117162913.0323c517.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 17 Jan 2008 18:47:17 -0600
-Message-Id: <1200617237.3839.32.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	id S1756319AbYARAwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 19:52:14 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] Make kthread_create and kthread_run typesafe
+Date: Fri, 18 Jan 2008 11:51:39 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801181151.40141.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+With a little macro ugliness, we can make kthread_create() and
+kthread_run() typesafe: avoid the casts to and from void *.  To do
+this we use a temporary function pointer which takes the type of the
+data as a callback: if the function doesn't match, we get:
 
-On Thu, 2008-01-17 at 16:29 -0800, Andrew Morton wrote:
-> Do we need `offset' at all?
+	warning: initialization from incompatible pointer type
 
-Looks like no.
+It's actually slightly over-strict, since a void * would be compatible
+with any function type, but there's only one such case in the kernel
+anyway.
 
-I wonder if there's a good argument for adding a pte_offset_val() which
-would let us do:
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ include/linux/kthread.h |   30 +++++++++++++++++++++++++++---
+ kernel/kthread.c        |   29 +++++------------------------
+ 2 files changed, 32 insertions(+), 27 deletions(-)
 
-pteval = pte_offset_val(pmd, addr);
-
-and shrink the map/unmap window and overhead here and possibly
-elsewhere?
-
-Anyway, updated but still untested patch now with revealing comment:
-
-diff -r 5595adaea70f fs/proc/task_mmu.c
---- a/fs/proc/task_mmu.c	Thu Jan 17 13:26:54 2008 -0600
-+++ b/fs/proc/task_mmu.c	Thu Jan 17 18:45:57 2008 -0600
-@@ -584,18 +585,19 @@
- 	pte_t *pte;
- 	int err = 0;
+diff -r 110aa94129d0 include/linux/kthread.h
+--- a/include/linux/kthread.h	Fri Jan 18 10:32:31 2008 +1100
++++ b/include/linux/kthread.h	Fri Jan 18 11:31:49 2008 +1100
+@@ -4,9 +4,33 @@
+ #include <linux/err.h>
+ #include <linux/sched.h>
  
--	pte = pte_offset_map(pmd, addr);
--	for (; addr != end; pte++, addr += PAGE_SIZE) {
-+	for (; addr != end; addr += PAGE_SIZE) {
- 		u64 pfn = PM_NOT_PRESENT;
-+		pte = pte_offset_map(pmd, addr);
- 		if (is_swap_pte(*pte))
- 			pfn = swap_pte_to_pagemap_entry(*pte);
- 		else if (pte_present(*pte))
- 			pfn = pte_pfn(*pte);
-+		/* unmap so we're not in atomic when we copy to userspace */
-+		pte_unmap(pte);
- 		err = add_to_pagemap(addr, pfn, pm);
- 		if (err)
- 			return err;
+-struct task_struct *kthread_create(int (*threadfn)(void *data),
+-				   void *data,
+-				   const char namefmt[], ...);
++/**
++ * kthread_create - create a kthread.
++ * @threadfn: the function to run until signal_pending(current).
++ * @data: data ptr for @threadfn.
++ * @namefmt: printf-style name for the thread.
++ *
++ * Description: This helper function creates and names a kernel
++ * thread.  The thread will be stopped: use wake_up_process() to start
++ * it.  See also kthread_run(), kthread_create_on_cpu().
++ *
++ * When woken, the thread will run @threadfn() with @data as its
++ * argument. @threadfn() can either call do_exit() directly if it is a
++ * standalone thread for which noone will call kthread_stop(), or
++ * return when 'kthread_should_stop()' is true (which means
++ * kthread_stop() has been called).  The return value should be zero
++ * or a negative error number; it will be passed to kthread_stop().
++ *
++ * Returns a task_struct or ERR_PTR(-ENOMEM).
++ */
++#define kthread_create(threadfn, data, namefmt...) ({		\
++	int (*_threadfn)(typeof(data)) = (threadfn);		\
++	__kthread_create((void *)_threadfn, (data), namefmt);	\
++})
++
++struct task_struct *__kthread_create(int (*threadfn)(void *data),
++				     void *data,
++				     const char namefmt[], ...);
+ 
+ /**
+  * kthread_run - create and wake a thread.
+diff -r 110aa94129d0 kernel/kthread.c
+--- a/kernel/kthread.c	Fri Jan 18 10:32:31 2008 +1100
++++ b/kernel/kthread.c	Fri Jan 18 11:31:49 2008 +1100
+@@ -102,29 +102,10 @@ static void create_kthread(struct kthrea
+ 	complete(&create->done);
+ }
+ 
+-/**
+- * kthread_create - create a kthread.
+- * @threadfn: the function to run until signal_pending(current).
+- * @data: data ptr for @threadfn.
+- * @namefmt: printf-style name for the thread.
+- *
+- * Description: This helper function creates and names a kernel
+- * thread.  The thread will be stopped: use wake_up_process() to start
+- * it.  See also kthread_run(), kthread_create_on_cpu().
+- *
+- * When woken, the thread will run @threadfn() with @data as its
+- * argument. @threadfn() can either call do_exit() directly if it is a
+- * standalone thread for which noone will call kthread_stop(), or
+- * return when 'kthread_should_stop()' is true (which means
+- * kthread_stop() has been called).  The return value should be zero
+- * or a negative error number; it will be passed to kthread_stop().
+- *
+- * Returns a task_struct or ERR_PTR(-ENOMEM).
+- */
+-struct task_struct *kthread_create(int (*threadfn)(void *data),
+-				   void *data,
+-				   const char namefmt[],
+-				   ...)
++struct task_struct *__kthread_create(int (*threadfn)(void *data),
++				     void *data,
++				     const char namefmt[],
++				     ...)
+ {
+ 	struct kthread_create_info create;
+ 
+@@ -149,7 +130,7 @@ struct task_struct *kthread_create(int (
  	}
--	pte_unmap(pte - 1);
+ 	return create.result;
+ }
+-EXPORT_SYMBOL(kthread_create);
++EXPORT_SYMBOL(__kthread_create);
  
- 	cond_resched();
- 
-
-
--- 
-Mathematics is the supreme nostalgia of our time.
+ /**
+  * kthread_bind - bind a just-created kthread to a cpu.
 
