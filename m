@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932562AbYARWGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765345AbYARWHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932562AbYARWGw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762059AbYARWGo
+	id S1765345AbYARWHn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:07:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762534AbYARWHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:06:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40721 "EHLO mx2.mail.elte.hu"
+	Fri, 18 Jan 2008 17:07:33 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34655 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761373AbYARWGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:06:44 -0500
-Date: Fri, 18 Jan 2008 23:06:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [5/7] Remove CONFIG_X86_TSC for 32bit II
-Message-ID: <20080118220628.GA17542@elte.hu>
-References: <20080118627.198787000@suse.de> <20080118172721.96C8B14AAE@wotan.suse.de> <p73tzlaalq3.fsf_-_@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73tzlaalq3.fsf_-_@bingen.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1762059AbYARWHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 17:07:32 -0500
+Date: Fri, 18 Jan 2008 17:07:27 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] NLM: have nlm_shutdown_hosts kill off all NLM RPC
+ tasks
+Message-ID: <20080118170727.70a77a6b@tleilax.poochiereds.net>
+In-Reply-To: <20080118214345.GM15158@fieldses.org>
+References: <1200319518-22422-1-git-send-email-jlayton@redhat.com>
+	<1200319518-22422-2-git-send-email-jlayton@redhat.com>
+	<1200319518-22422-3-git-send-email-jlayton@redhat.com>
+	<1200319518-22422-4-git-send-email-jlayton@redhat.com>
+	<1200319518-22422-5-git-send-email-jlayton@redhat.com>
+	<20080118214345.GM15158@fieldses.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Jan 2008 16:43:45 -0500
+"J. Bruce Fields" <bfields@fieldses.org> wrote:
 
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> Andi Kleen <ak@suse.de> writes:
+> On Mon, Jan 14, 2008 at 09:05:18AM -0500, Jeff Layton wrote:
+> > If we're shutting down all the nlm_hosts anyway, then it doesn't
+> > make sense to allow RPC calls to linger. Allowing them to do so can
+> > mean that the RPC calls can outlive the currently running lockd and
+> > can lead to a use after free situation.
 > 
-> > The config option protects so little code that it is fairly pointless.
-> > Also a lot of its code was related to itself only (as in panicing without
-> > TSC). And TSC less CPUs are completely handled at runtime anyways.
-> >
-> > This makes 32bit behaviour match x86-64.
-> >
-> > I also removed an #if defined(CONFIG_X86_GENERIC) in get_cycles. Not 
-> > sure what that was good for, it didn't make any sense.
+> I assume that all new rpc calls are created by the lockd thread itself
+> (which also calls nlm_shutdown_hosts(), which guarantees that there
+> can't be someone about to make an rpc call using the clnt we're
+> destroying here?
 > 
-> Hmm, during further testing i found that the patch causes boot 
-> failures in some configuration. I withdraw this one for now.
 
-ok, pulled. In what situations did it fail? It worked fine on a (small) 
-number of systems here.
+I believe that's correct.
 
-> The other patches in the series are independent and should be still 
-> considered for merging.
+> By the way, any idea what the nlm_shutdown_hosts() call in exit_nlm()
+> is doing?
+> 
 
-yep, they are in and have caused no problems so far.
+Before this patchset, it was possible for more than one lockd
+to be up at a time, and I suppose there could have been races that
+would cause both to exit without ever calling nlm_shutdown_hosts.
 
-	Ingo
+With this patchset, we may be able to remove that. I suspect that it's
+probably a noop now. That said, even after spending a fair bit of time
+in this code, I'm not entirely comfortable with it. I suggest that we
+take the incremental approach to lockd changes unless someone here is
+sure :-).
+
+Cheers,
+-- 
+Jeff Layton <jlayton@redhat.com>
