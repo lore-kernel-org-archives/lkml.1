@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760315AbYARL3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbYARLdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760315AbYARL3a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 06:29:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbYARL3X
+	id S1759447AbYARLdn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 06:33:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbYARLdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 06:29:23 -0500
-Received: from ns1.suse.de ([195.135.220.2]:48767 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754818AbYARL3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 06:29:22 -0500
-Date: Fri, 18 Jan 2008 12:29:20 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Byron Bradley <byron.bbradley@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [PATCH] ramdisk driver: make rd_size non-static
-Message-ID: <20080118112920.GA27344@wotan.suse.de>
-References: <1200621737-1458-1-git-send-email-byron.bbradley@gmail.com> <20080117182851.f9177571.akpm@linux-foundation.org> <1200623963.4001.5.camel@cinder.waste.org>
-Mime-Version: 1.0
+	Fri, 18 Jan 2008 06:33:36 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:18980 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754034AbYARLdf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 06:33:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=YQw90lZuKZkPeLFv1rgLoTVQg+wb6zRUDZTVg/m7HikahMGAvGKQZJeTkd003yiP6lFXF0hBHswtPCy8LFcSZFhY65PBEFx0/AYI62cFPP1Xs3/aZr3AxfHAdap9a8CmPY00QaoRQRD/R7bcajOEfOury5ptnvbzogbuZYRenho=
+Date: Fri, 18 Jan 2008 12:40:01 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Dave Young <hidave.darkstar@gmail.com>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
+       stefanr@s5r6.in-berlin.de, David Brownell <david-b@pacbell.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct
+	class
+Message-ID: <20080118114001.GA2610@ff.dom.local>
+References: <Pine.LNX.4.44L0.0801171448590.5731-100000@iolanthe.rowland.org> <20080117203155.GA2791@ami.dom.local> <20080117232626.GC2905@ami.dom.local> <a8e1da0801171742o5520c3d9v577979f527f1a977@mail.gmail.com> <3ae72650801171755k85c4245i3b4c46a84ae8f52d@mail.gmail.com> <a8e1da0801171828n26b37be0oa8b1c3cbec5f83cb@mail.gmail.com> <1200626323.5640.21.camel@lov.site> <a8e1da0801172131h57097622h6d111133b6a0773d@mail.gmail.com> <20080118073836.GA1703@ff.dom.local> <1200653112.8706.21.camel@lov.site>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1200623963.4001.5.camel@cinder.waste.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1200653112.8706.21.camel@lov.site>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 08:39:23PM -0600, Matt Mackall wrote:
-> 
-> On Thu, 2008-01-17 at 18:28 -0800, Andrew Morton wrote:
-> > On Fri, 18 Jan 2008 02:02:17 +0000 Byron Bradley <byron.bbradley@gmail.com> wrote:
-> > 
-> > > In arch/arm/kernel/setup.c:setup_ramdisk(), rd_size is set from the
-> > > boot tags. The replacement ramdisk driver has rd_size as static
-> > > which causes linking to fail when ramdisk is built-in.
+On Fri, Jan 18, 2008 at 11:45:12AM +0100, Kay Sievers wrote:
+> On Fri, 2008-01-18 at 08:38 +0100, Jarek Poplawski wrote:
+> > On Fri, Jan 18, 2008 at 01:31:17PM +0800, Dave Young wrote:
+> > > On Jan 18, 2008 11:18 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> > ...
+> > > > Yeah, might be better to wait until class_device is gone, otherwise you
+> > > > may need to fix stuff that is just going to be removed. Your change to
+> > > > have iterators for the class devices look like a nice preparation for
+> > > > future changes though.
+> > > >
+> > > > Our rough plan is:
+> > > >  2.6.25:
+> > > >   - get the ~100 patches in Greg's tree (in -mm) merged :)
+> > > >  2.6.26:
+> > > > ???  - remove the 20 char limit in "struct device"
+> > > >   - get rid of "struct class_device"
 > > > 
+> > > Fine, thanks.
+> > > 
+> > > Let's wait for other people's comment.
 > > 
-> > but...
-> > 
-> > > diff --git a/drivers/block/brd.c b/drivers/block/brd.c
-> > > index 5ef1d26..8536480 100644
-> > > --- a/drivers/block/brd.c
-> > > +++ b/drivers/block/brd.c
-> > > @@ -385,7 +385,7 @@ static struct block_device_operations brd_fops = {
-> > >   * And now the modules code and kernel interface.
-> > >   */
-> > >  static int rd_nr;
-> > > -static int rd_size = CONFIG_BLK_DEV_RAM_SIZE;
-> > > +int rd_size = CONFIG_BLK_DEV_RAM_SIZE;
-> > >  module_param(rd_nr, int, 0);
-> > >  MODULE_PARM_DESC(rd_nr, "Maximum number of brd devices");
-> > >  module_param(rd_size, int, 0);
-> > 
-> > rd_size is a module parameter so it is settable via the
-> > syntax-which-i-can-never-remember.  rd.rd_size=1024 or something like that.
-> > 
-> > If that's all sane, do we have some back-compat reason to continue to
-> > support the special and duplicative rd_size parameter?
+> > Dave, I doubt you'll ever manage to do this if you're going to wait:
+> > probably there will be always some new changes like this around...
 > 
-> Only insofar as we're still supporting ramdisks in the first place.
+> Well there are not "changes" in that sense, the class_device stuff will
+> be entirely ripped out, and I doubt we will want to change anything
+> there, just shortly before it's deleted.
 
-I don't care about initrd or even a backward compatible API myself, I
-do have my own reason want this new rd driver in the tree...
+So, 2.6.26 means shortly... And this all needs some time for testing,
+debugging or maybe some change of concept, so this would take a while...
+Well, it's not my problem, but since this stuff will go away, shouldn't
+we care more about the staff that will stay?
 
-Would be nice to get rid of the arch stuff, but it's not too terrible
-(at least from the POV of drivers/block/brd.c. So thanks for the patch,
-Byron.
+> Also your assumptions about device nesting are not really true, there is
+> no limit, even when there are no current users nesting deeper, and
+> "struct device" can be any nesting depth, and that's where it gets
+> interesting.
 
+I'm just trying to figure this out. It seems this is a real problem
+while freezing, but not necessarily here (but I can miss something).
+ 
+Regards,
+Jarek P.
