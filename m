@@ -1,109 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbYARIuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbYARIwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756279AbYARIuu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 03:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYARIul
+	id S1755821AbYARIwR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 03:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYARIwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 03:50:41 -0500
-Received: from queueout03-winn.ispmail.ntl.com ([81.103.221.33]:11828 "EHLO
-	queueout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753487AbYARIuk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 03:50:40 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: akpm@linux-foundation.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <1200375906.3505.30.camel@caritas-dev.intel.com>
-References: <1200375906.3505.30.camel@caritas-dev.intel.com>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 08:48:25 +0000
-Message-Id: <1200646105.17230.28.camel@cthulhu.hellion.org.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.223
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH -mm 1/3] i386 boot: replace boot_ioremap with enhanced
-	bt_ioremap - enhance bt_ioremap
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+	Fri, 18 Jan 2008 03:52:08 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44356 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751017AbYARIwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 03:52:05 -0500
+Date: Fri, 18 Jan 2008 09:51:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Zan Lynx <zlynx@acm.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: echo mem > /sys/power/state
+Message-ID: <20080118085139.GB19792@elte.hu>
+References: <20080116222445.6f7ff66e.akpm@linux-foundation.org> <1200591411.34145.4.camel@localhost> <20080117111355.29554f38.akpm@linux-foundation.org> <478FCD1F.4090704@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <478FCD1F.4090704@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-01-15 at 13:45 +0800, Huang, Ying wrote:
-> +void __init bt_ioremap_init(void)
-> +{
-> [...]
-> +	*pgd = __pa(bm_pte) | _PAGE_TABLE;
-> +}
-> [...]
-> +static void __init __bt_set_fixmap(enum fixed_addresses idx,
-> +				   unsigned long phys, pgprot_t flags)
-> +{
-> [...]
-> +	if (pgprot_val(flags))
-> +		*pte = (phys & PAGE_MASK) | pgprot_val(flags);
-> +	else
-> +		*pte = 0;
-[...]
+* Jiri Slaby <jirislaby@gmail.com> wrote:
 
-Shouldn't these, and the rest of the file, be using the PTE accessor
-macros set_pte,clear_pte etc? The boot_ioremap it replaces seems to have
-done. Otherwise these patches don't appear to be paravirt_ops clean. I
-haven't had a chance to investigate fully so this might be a Xen bug or
-unrelated to this patch but running current x86.git#mm as a Xen guest
-ends up with it being shot in the head by the hypervisor with:
+> On 01/17/2008 08:13 PM, Andrew Morton wrote:
+>> On Thu, 17 Jan 2008 10:36:51 -0700 Zan Lynx <zlynx@acm.org> wrote:
+>>> Heh.  Laptop suspend to anything has been so broken for so long in the
+>>> -mm series on my Compaq R3000 that I didn't even know it was ever
+>>> supposed to work.
+>>
+>> It gets broken more often than anything else.  I do test each release on
+>> two laptops and I get to do a lot of bisection searching and
+>> grumpygramming as a result.
+>>
+>> Probably it would be more efficient to have the people who wrote the code
+>> also test it.
+>
+> Big fat ACK from here. Suspend issues in past few -mms were *very* 
+> hard (and time consuming) to track down.
 
-        (XEN) Unhandled page fault in domain 16 on VCPU 0 (ec=0000)
-        (XEN) Pagetable walk from 00000000f54fe40e:
-        (XEN)  L4[0x000] = 000000010c187027 00000000000003b2
-        (XEN)  L3[0x003] = 000000010c186027 00000000000003b3
-        (XEN)  L2[0x1aa] = 0000000000000000 ffffffffffffffff
-        (XEN) domain_crash_sync called from entry.S
-        (XEN) Domain 16 (vcpu#0) crashed on cpu#1:
-        (XEN) ----[ Xen-3.2.0-rc5  x86_64  debug=y  Not tainted ]----
-        (XEN) CPU:    1
-        (XEN) RIP:    e019:[<00000000c02601b1>]
-        (XEN) RFLAGS: 0000000000000282   CONTEXT: guest
-        (XEN) rax: 00000000f54fe40e   rbx: 0000000000005b00   rcx: 0000000000000000
-        (XEN) rdx: 0000000000000000   rsi: 0000000000000000   rdi: 00000000c0255b00
-        (XEN) rbp: 0000000000000000   rsp: 00000000c0257f68   r8:  0000000000000000
-        (XEN) r9:  0000000000000000   r10: 0000000000000000   r11: 0000000000000000
-        (XEN) r12: 0000000000000000   r13: 0000000000000000   r14: 0000000000000000
-        (XEN) r15: 0000000000000000   cr0: 000000008005003b   cr4: 00000000000006f0
-        (XEN) cr3: 000000011b240000   cr2: 00000000f54fe40e
-        (XEN) ds: e021   es: e021   fs: e021   gs: e021   ss: e021   cs: e019
-        (XEN) Guest stack trace from esp=c0257f68:
-        (XEN)   00000000 c02601b1 0001e019 00010082 c0223566 c0257fc8 00000000 c0260675
-        (XEN)   c0223566 000002d7 c0257fec c02230fe 00000000 c03af000 c0257fec c02230fe
-        (XEN)   00000000 c025ba84 c0203000 c026317f c0257fe4 c0257fe8 c0257fec bfebcbf5
-        (XEN)   c02766a0 c03af000 c0257fec c02230fe 00000000 c025f151 9fabc9f5 0000649d
-        (XEN)   01020800 00000f44 f5800000 00000000 c03af000 00000000
-        
-This corresponds to the dereference of *bp in get_bios_ebda():
-        static inline unsigned long get_bios_ebda(void)
-        {
-                unsigned short *bp;
-                unsigned long address;
-        
-                bp = early_ioremap(0x40EUL, 2);
-                if (!bp)
-                        return 0;
-        
-                address = *bp;
-        
+it's really all a matter of reducing latencies. Testing suspend/resume 
+is manual work currently (it either needs me hit a key on the laptop or 
+necessiates the use of a test-script that might or might not work 
+depending on whether the new /dev/rtc driver is enabled). So few people 
+besides those that rely on it will do it. The more a patch that breaks 
+suspend is out in the open unidentified, the more damage it does: it 
+gets into more trees, gets harder to bisect, etc.
 
-Ian.
+So please give us overworked maintainers an easy to use .config option 
+dependent on CONFIG_DEBUG_KERNEL=y that automatically triggers a simple 
+suspend+resume sequence 60 seconds after bootup. It would be godsent. 
+(dont worry about proper gx resume) I compile and boot up every patch i 
+add to x86.git, so this would catch crap the moment we add it to the 
+tree.
 
--- 
-Ian Campbell
+The other, more long-term trick is to make rarely used functionality 
+more widely used. Consolidate code. Try to merge as much of 
+suspend/resume with bootup/module-insert/shutdown sequences as possible. 
+Suspend unused devices more agressively - such as non-mounted block 
+devices or downed networking ports. Try create more network effects with 
+other functionality, suspend and resume is not just about suspending 
+laptops, it can/could be used for so much more stuff. Try to get Pavel's 
+"Sleepy Linux" concept to work reasonably well - so that more people 
+(including developers) would use it in a daily basis.
 
-Most people can't understand how others can blow their noses differently
-than they do.
-		-- Turgenev
+Test coverage of a given piece of code is a direct function of its 
+utility and of its ease of testing. Decreeing "this is important" really 
+wont get more testing done. What you should realize i think is that this 
+is not a social/mindset problem (so no need to get frustrated about it), 
+this is a mostly technology problem: you can gradually _code_ your way 
+into people's test efforts.
 
+	Ingo
