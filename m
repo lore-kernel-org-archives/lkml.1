@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932382AbYARUG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765923AbYARUH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932382AbYARUG6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:06:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763767AbYARUEr
+	id S1765923AbYARUH3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764307AbYARUE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:04:47 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35966 "EHLO mx1.redhat.com"
+	Fri, 18 Jan 2008 15:04:56 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46300 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763843AbYARUEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:04:46 -0500
+	id S1763904AbYARUEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:04:55 -0500
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
@@ -17,74 +17,126 @@ Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
        rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
        rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
        mtosatti@redhat.com, Glauber de Oliveira Costa <gcosta@redhat.com>
-Subject: [PATCH 6/10] provide read and write cr8 paravirt hooks
-Date: Fri, 18 Jan 2008 15:20:21 -0200
-Message-Id: <12006768631010-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 10/10] change function orders in paravirt.h
+Date: Fri, 18 Jan 2008 15:20:25 -0200
+Message-Id: <12006768843721-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <1200676857691-git-send-email-gcosta@redhat.com>
-References: <12006768251548-git-send-email-gcosta@redhat.com> <12006768362108-git-send-email-gcosta@redhat.com> <1200676842822-git-send-email-gcosta@redhat.com> <12006768473571-git-send-email-gcosta@redhat.com> <12006768521391-git-send-email-gcosta@redhat.com> <1200676857691-git-send-email-gcosta@redhat.com>
+In-Reply-To: <12006768793416-git-send-email-gcosta@redhat.com>
+References: <12006768251548-git-send-email-gcosta@redhat.com> <12006768362108-git-send-email-gcosta@redhat.com> <1200676842822-git-send-email-gcosta@redhat.com> <12006768473571-git-send-email-gcosta@redhat.com> <12006768521391-git-send-email-gcosta@redhat.com> <1200676857691-git-send-email-gcosta@redhat.com> <12006768631010-git-send-email-gcosta@redhat.com> <12006768683247-git-send-email-gcosta@redhat.com> <12006768732175-git-send-email-gcosta@redhat.com> <12006768793416-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the cr8 manipulation functions ended up staying in the tree,
-they can't be defined just when PARAVIRT is off: In this patch,
-those functions are defined for the PARAVIRT case too.
+__pmd, pmd_val and set_pud are used before they are defined (as static)
+We move them a little up in the file, so it doesn't happen.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 ---
- include/asm-x86/system.h |   30 ++++++++++++++++--------------
- 1 files changed, 16 insertions(+), 14 deletions(-)
+ include/asm-x86/paravirt.h |   84 ++++++++++++++++++++++----------------------
+ 1 files changed, 42 insertions(+), 42 deletions(-)
 
-diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
-index 692c28c..a33c3f4 100644
---- a/include/asm-x86/system.h
-+++ b/include/asm-x86/system.h
-@@ -236,6 +236,20 @@ static inline void native_write_cr4(unsigned long val)
- 	asm volatile("mov %0,%%cr4": :"r" (val), "m" (__force_order));
+diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
+index 3e7ca42..12caaf1 100644
+--- a/include/asm-x86/paravirt.h
++++ b/include/asm-x86/paravirt.h
+@@ -1023,6 +1023,48 @@ static inline void set_pmd(pmd_t *pmdp, pmd_t pmd)
+ 		PVOP_VCALL2(pv_mmu_ops.set_pmd, pmdp, val);
  }
  
-+#ifdef CONFIG_X86_64
-+static inline unsigned long native_read_cr8(void)
++#if PAGETABLE_LEVELS >= 3
++static inline pmd_t __pmd(pmdval_t val)
 +{
-+	unsigned long cr8;
-+	asm volatile("movq %%cr8,%0" : "=r" (cr8));
-+	return cr8;
++	pmdval_t ret;
++
++	if (sizeof(pmdval_t) > sizeof(long))
++		ret = PVOP_CALL2(pmdval_t, pv_mmu_ops.make_pmd,
++				 val, (u64)val >> 32);
++	else
++		ret = PVOP_CALL1(pmdval_t, pv_mmu_ops.make_pmd,
++				 val);
++
++	return (pmd_t) { ret };
 +}
 +
-+static inline void native_write_cr8(unsigned long val)
++static inline pmdval_t pmd_val(pmd_t pmd)
 +{
-+	asm volatile("movq %0,%%cr8" :: "r" (val) : "memory");
-+}
-+#endif
++	pmdval_t ret;
 +
- static inline void native_wbinvd(void)
- {
- 	asm volatile("wbinvd": : :"memory");
-@@ -253,21 +267,9 @@ static inline void native_wbinvd(void)
- #define read_cr4_safe()	(native_read_cr4_safe())
- #define write_cr4(x)	(native_write_cr4(x))
- #define wbinvd()	(native_wbinvd())
--
- #ifdef CONFIG_X86_64
--
--static inline unsigned long read_cr8(void)
--{
--	unsigned long cr8;
--	asm volatile("movq %%cr8,%0" : "=r" (cr8));
--	return cr8;
--}
--
--static inline void write_cr8(unsigned long val)
--{
--	asm volatile("movq %0,%%cr8" :: "r" (val) : "memory");
--}
--
-+#define read_cr8()	(native_read_cr8())
-+#define write_cr8(x)	(native_write_cr8(x))
- #endif
++	if (sizeof(pmdval_t) > sizeof(long))
++		ret =  PVOP_CALL2(pmdval_t, pv_mmu_ops.pmd_val,
++				  pmd.pmd, (u64)pmd.pmd >> 32);
++	else
++		ret =  PVOP_CALL1(pmdval_t, pv_mmu_ops.pmd_val,
++				  pmd.pmd);
++
++	return ret;
++}
++
++static inline void set_pud(pud_t *pudp, pud_t pud)
++{
++	pudval_t val = native_pud_val(pud);
++
++	if (sizeof(pudval_t) > sizeof(long))
++		PVOP_VCALL3(pv_mmu_ops.set_pud, pudp,
++			    val, (u64)val >> 32);
++	else
++		PVOP_VCALL2(pv_mmu_ops.set_pud, pudp,
++			    val);
++}
++#endif	/* PAGETABLE_LEVELS >= 3 */
++
+ #ifdef CONFIG_X86_PAE
+ /* Special-case pte-setting operations for PAE, which can't update a
+    64-bit pte atomically */
+@@ -1073,48 +1115,6 @@ static inline void pmd_clear(pmd_t *pmdp)
+ }
+ #endif	/* CONFIG_X86_PAE */
  
- /* Clear the 'TS' bit */
+-#if PAGETABLE_LEVELS >= 3
+-static inline pmd_t __pmd(pmdval_t val)
+-{
+-	pmdval_t ret;
+-
+-	if (sizeof(pmdval_t) > sizeof(long))
+-		ret = PVOP_CALL2(pmdval_t, pv_mmu_ops.make_pmd,
+-				 val, (u64)val >> 32);
+-	else
+-		ret = PVOP_CALL1(pmdval_t, pv_mmu_ops.make_pmd,
+-				 val);
+-
+-	return (pmd_t) { ret };
+-}
+-
+-static inline pmdval_t pmd_val(pmd_t pmd)
+-{
+-	pmdval_t ret;
+-
+-	if (sizeof(pmdval_t) > sizeof(long))
+-		ret =  PVOP_CALL2(pmdval_t, pv_mmu_ops.pmd_val,
+-				  pmd.pmd, (u64)pmd.pmd >> 32);
+-	else
+-		ret =  PVOP_CALL1(pmdval_t, pv_mmu_ops.pmd_val,
+-				  pmd.pmd);
+-
+-	return ret;
+-}
+-
+-static inline void set_pud(pud_t *pudp, pud_t pud)
+-{
+-	pudval_t val = native_pud_val(pud);
+-
+-	if (sizeof(pudval_t) > sizeof(long))
+-		PVOP_VCALL3(pv_mmu_ops.set_pud, pudp,
+-			    val, (u64)val >> 32);
+-	else
+-		PVOP_VCALL2(pv_mmu_ops.set_pud, pudp,
+-			    val);
+-}
+-#endif	/* PAGETABLE_LEVELS >= 3 */
+-
+ /* Lazy mode for batching updates / context switch */
+ enum paravirt_lazy_mode {
+ 	PARAVIRT_LAZY_NONE,
 -- 
 1.4.4.2
 
