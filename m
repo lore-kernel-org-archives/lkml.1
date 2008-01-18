@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760512AbYARAjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760200AbYARAk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760512AbYARAjR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 19:39:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760135AbYARAiO
+	id S1760200AbYARAk7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 19:40:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbYARAks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 19:38:14 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43784 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760411AbYARAiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 19:38:11 -0500
-Date: Fri, 18 Jan 2008 11:38:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>,
+	Thu, 17 Jan 2008 19:40:48 -0500
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:37755 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753097AbYARAkq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 19:40:46 -0500
+X-Greylist: delayed 571 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jan 2008 19:40:46 EST
+X-IronPort-AV: E=Sophos;i="4.25,213,1199692800"; 
+   d="scan'208";a="3516937"
+Date: Thu, 17 Jan 2008 16:28:59 -0800
+From: Vince Fuller <vaf@cisco.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Vince Fuller <vaf@cisco.com>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFCv2] [POWERPC] Add support for freescale watchdog to
- CPM serial driver.
-Message-Id: <20080118113804.4d4fdcc5.sfr@canb.auug.org.au>
-In-Reply-To: <478F4AE3.5090803@scram.de>
-References: <478F4AE3.5090803@scram.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__18_Jan_2008_11_38_04_+1100_hhjUuxYvI1oUHO91"
+Subject: Re: [PATCH 001/001] ipv4: enable use of 240/4 address space
+Message-ID: <20080118002859.GA10947@cisco.com>
+References: <20080108011057.GA21168@cisco.com> <Pine.LNX.4.64.0801180003330.18447@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801180003330.18447@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Authentication-Results: sj-dkim-3; header.From=vaf@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__18_Jan_2008_11_38_04_+1100_hhjUuxYvI1oUHO91
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jan 18, 2008 at 12:04:06AM +0100, Jan Engelhardt wrote:
+> 
+> On Jan 7 2008 17:10, Vince Fuller wrote:
+> >--- net/ipv4/devinet.c.orig	2007-04-12 10:16:23.000000000 -0700
+> >+++ net/ipv4/devinet.c	2008-01-07 16:55:59.000000000 -0800
+> >@@ -594,6 +594,8 @@ static __inline__ int inet_abc_len(__be3
+> > 			rc = 16;
+> > 		else if (IN_CLASSC(haddr))
+> > 			rc = 24;
+> >+		else if (IN_CLASSE(haddr))
+> >+			rc = 24;
+> > 	}
+> > 
+> >   	return rc;
+> 
+> Any particular reason why 24?
 
-On Thu, 17 Jan 2008 13:32:35 +0100 Jochen Friedrich <jochen@scram.de> wrote:
->
-> If a freescale watchdog device node is present, reset the watchdog
-> while waiting for serial input.
->=20
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> ---
->  arch/powerpc/boot/Makefile     |    2 +-
->  arch/powerpc/boot/cpm-serial.c |    6 ++++
->  arch/powerpc/boot/cuboot-8xx.c |    1 +
->  arch/powerpc/boot/ops.h        |    2 +
->  arch/powerpc/boot/watchdog.c   |   65 ++++++++++++++++++++++++++++++++++=
-++++++
+Using the same default as old-style "class-C" seemed to be the most expedient
+thing to do.
 
-I am just wondering if maybe that file name is to generic.
+In normal practice, the mask should be explicitly configured so this case
+should not be frequently encountered.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__18_Jan_2008_11_38_04_+1100_hhjUuxYvI1oUHO91
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHj/TwTgG2atn1QN8RAtjeAJ9OK5TKKqICD1rV+bHfx+HLknUxgACfcp98
-hgnGoOHVPdSDbhN0wzfJ7cU=
-=2Xdv
------END PGP SIGNATURE-----
-
---Signature=_Fri__18_Jan_2008_11_38_04_+1100_hhjUuxYvI1oUHO91--
+	--Vince
