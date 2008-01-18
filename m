@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765688AbYARTN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765851AbYARTOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765688AbYARTN6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 14:13:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762106AbYARTNt
+	id S1765851AbYARTOk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 14:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762106AbYARTOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 14:13:49 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54805 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762168AbYARTNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 14:13:47 -0500
-Message-ID: <4790FA23.90706@redhat.com>
-Date: Fri, 18 Jan 2008 14:12:35 -0500
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
+	Fri, 18 Jan 2008 14:14:32 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:39685 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762085AbYARTOb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 14:14:31 -0500
+Date: Fri, 18 Jan 2008 12:14:30 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: SLUB: Increasing partial pages
+Message-ID: <20080118191430.GD20490@parisc-linux.org>
+References: <20080116195949.GO18741@parisc-linux.org> <Pine.LNX.4.64.0801161219050.9694@schroedinger.engr.sgi.com> <20080116214127.GA11559@parisc-linux.org> <Pine.LNX.4.64.0801161347160.11353@schroedinger.engr.sgi.com> <20080116221618.GB11559@parisc-linux.org> <Pine.LNX.4.64.0801161421240.12024@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Chuck Lever <chuck.lever@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] enhanced ESTALE error handling
-References: <4790C756.2040704@redhat.com> <63F84201-9D38-4588-B237-A15138E94C5A@oracle.com> <4790D9F3.2070503@redhat.com> <451AC300-674E-4DBE-869F-08A9184051B3@oracle.com> <4790E227.506@redhat.com> <D4189D74-D4AB-42CA-A788-40A50518E7DA@oracle.com> <4790EBF3.4060707@redhat.com> <20080118183757.GE15158@fieldses.org>
-In-Reply-To: <20080118183757.GE15158@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801161421240.12024@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> On Fri, Jan 18, 2008 at 01:12:03PM -0500, Peter Staubach wrote:
->   
->> Chuck Lever wrote:
->>     
->>> On Jan 18, 2008, at 12:30 PM, Peter Staubach wrote:
->>>       
->>>> I can probably imagine a situation where the pathname resolution
->>>> would never finish, but I am not sure that it could ever happen
->>>> in nature.
->>>>         
->>> Unless someone is doing something malicious.  Or if the server is  
->>> repeatedly returning ESTALE for some reason.
->>>
->>>       
->> If the server is repeatedly returning ESTALE, then the pathname
->> resolution will fail to make progress and give up, return ENOENT
->> to the user level.
->>
->> A malicious user on the network can cause so many other problems
->> than just something like this too.  But, in this case, the user
->> would have to predict why and when the client was issuing a
->> specific operation and know whether or not to return ESTALE.
->> This seems quite far fetched and quite unlikely to me.
->>     
->
-> Any idea what the consequences would be in this case?  It at least
-> shouldn't overflow the stack, or freeze the whole machine (because it
-> spins indefinitely under some crucial lock), or panic, etc.  (If the one
-> filesystem just becomes unusable--well, fine, what better can you hope
-> for in the presence of a malicious server or network?)
+On Wed, Jan 16, 2008 at 02:28:44PM -0800, Christoph Lameter wrote:
+> On Wed, 16 Jan 2008, Matthew Wilcox wrote:
+> > About 0.1-0.2%  0.3% is considered significant.
+> 
+> The results are that stable? A kernel compilation which slightly 
+> rearranges cachelines due to code and data changes typically leads to a 
+> larger variance on my 8 way box (gets even larger under NUMA). I would 
+> expect that the variations on a database load would be more significant.
 
-Assuming that such a user could precisely and accurately predict
-when to return ESTALE, the particular system call would just stay
-in the kernel, sending out requests to the NFS server.
+The load runs for a long time.  You can reduce variance by increasing
+your sample size (ok, it's twelve years since I've done a stats course ...)
 
-It wouldn't overflow the stack because the recovery is done by
-looping and not by recursion and unless there is a bug that needs
-to be fixed, all necessary resources are released before the
-retries occur.  The machine wouldn't freeze because as soon as
-the request is sent, the process blocks and some other process
-can be scheduled.  The process should be interruptible, so even
-it could be signaled to stop the activity.
+> I repeatedly saw patches from Intel to do minor changes to SLAB that 
+> increase performance by 0.5% or so (like the recent removal of a BUG_ON 
+> for performance reasons). These do not regress again when you build a 
+> newer kernel release?
 
-It seems to me that mostly, the file system will become unusable,
-but as Bruce points out, what do you expect in the presence of a
-malicious entity?  If such are a concern, then measures such as
-stronger security can be employed to prevent them from wreaking
-havoc.
+No, they don't.  Unless someone's broken something (eg putting pages on
+the LRU in the wrong order so we don't get merges any more ;-)
 
-    Thanx...
-
-       ps
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
