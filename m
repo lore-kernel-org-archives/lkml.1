@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764840AbYARV4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932471AbYARV5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764840AbYARV4S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 16:56:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbYARV4F
+	id S932471AbYARV5Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 16:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbYARV5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 16:56:05 -0500
-Received: from mail0.scram.de ([78.47.204.202]:57530 "EHLO mail0.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751623AbYARV4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 16:56:03 -0500
-X-Spam-Score: -4.058
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.3 AWL AWL: From: address is in the auto white-list
-Message-ID: <47912088.4040507@scram.de>
-Date: Fri, 18 Jan 2008 22:56:24 +0100
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Fri, 18 Jan 2008 16:57:18 -0500
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:61541 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761501AbYARV5R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 16:57:17 -0500
+Date: Fri, 18 Jan 2008 21:57:15 +0000
+From: Ben Dooks <ben@fluff.org>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Re: [PATCH] Core driver for WM97xx touchscreens
+Message-ID: <20080118215715.GB27399@fluff.org.uk>
+References: <20080118162627.GA28974@rakim.wolfsonmicro.main> <1200673631-366-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20080118120148.ZZRA012@mailhub.coreip.homeip.net> <fmqq50$te0$1@ger.gmane.org>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
-       Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH/RFCv2] [POWERPC] Add support for freescale watchdog to
- CPM serial driver.
-References: <478F4AE3.5090803@scram.de> <20080118183905.2d5d8474@lxorguk.ukuu.org.uk> <4790F44F.8020009@scram.de> <20080118204030.48fbb683@lxorguk.ukuu.org.uk> <EC416CBA-9200-4D71-8D95-39798937203D@kernel.crashing.org>
-In-Reply-To: <EC416CBA-9200-4D71-8D95-39798937203D@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fmqq50$te0$1@ger.gmane.org>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kumar,
-
->> Ok now that makes sense, thanks
+On Fri, Jan 18, 2008 at 06:11:45PM +0000, Dmitry Baryshkov wrote:
+> Hi,
 > 
-> So I'll ask, what serial input are you waiting for from the boot wrapper?
+> Dmitry Torokhov wrote:
+> 
+> > I will need some more time to review and understand the need for the new
+> > bus in the driver.
+> 
+> Most likely this can be converted to platform_bus. Maybe this can also get
+> help from soon-to-be posted MFD (multi function devices) helpers.
 
-It's the editor for the kernel command line.
+Is there any current discussion of these in public? I'm interested
+mainly due to my involvement in the SM501 core and FB driver. Can
+I also request to be Cc'd when these are posted?
 
-Thanks,
-Jochen
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
