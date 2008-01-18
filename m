@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbYARBQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760762AbYARBQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760631AbYARBQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:16:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758372AbYARBP4
+	id S1760762AbYARBQk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760315AbYARBQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:15:56 -0500
-Received: from ozlabs.org ([203.10.76.45]:46853 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758273AbYARBPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:15:55 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove vfs_init_caches_early()
-Date: Fri, 18 Jan 2008 12:15:19 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Paul Mackerras <paulus@samba.org>
-References: <200801181041.22157.rusty@rustcorp.com.au>
-In-Reply-To: <200801181041.22157.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jan 2008 20:16:07 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:52092 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760037AbYARBQD (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 20:16:03 -0500
+Date: Fri, 18 Jan 2008 12:15:42 +1100
+From: David Chinner <dgc@sgi.com>
+To: Valerie Henson <val@vahconsulting.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>,
+       Andreas Dilger <adilger@clusterfs.com>, Ric Wheeler <ric@emc.com>
+Subject: Re: [RFC] Parallelize IO for e2fsck
+Message-ID: <20080118011542.GQ155259@sgi.com>
+References: <70b6f0bf0801161322k2740a8dch6a0d6e6e112cd2d0@mail.gmail.com> <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801181215.20491.rusty@rustcorp.com.au>
+In-Reply-To: <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 January 2008 10:41:21 Rusty Russell wrote:
-> vfs_init_caches_early() does nothing on IA-64 and x86-64 (unless you
-> turn off CONFIG_NUMA): hashdist is set by default on these platforms.
->
-> Maybe some obscure feature which requires VFS to be set up v. early
-> (hence is broken in this configuration), or something arch-specific
-> (which seems unlikely).  Most likely this is a relic.
->
-> Unless someone has inside knowledge, the easiest way to find out is to
-> rip it out and see if anyone screams.  Boots fine on my 32-bit x86 box
-> here.
+On Wed, Jan 16, 2008 at 01:30:43PM -0800, Valerie Henson wrote:
+> Hi y'all,
+> 
+> This is a request for comments on the rewrite of the e2fsck IO
+> parallelization patches I sent out a few months ago.  The mechanism is
+> totally different.  Previously IO was parallelized by issuing IOs from
+> multiple threads; now a single thread issues fadvise(WILLNEED) and
+> then uses read() to complete the IO.
 
-Ok, Chris Wright pointed me to the justification: it was because on 64G 
-powerpc machines, MAX_ORDER of 11 was too small to allocate sufficient 
-hashes.
+Interesting.
 
-See 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commitdiff;h=50c2cb5183e4f101f923212e39a58a66a530cf77
+We ultimately rejected a similar patch to xfs_repair (pre-population
+the kernel block device cache) mainly because of low memory
+performance issues and it doesn't really enable you to do anything
+particularly smart with optimising I/O patterns for larger, high
+performance RAID arrays.
 
-Since MAX_ORDER is now 13 on powerpc, I think we're good.
+The low memory problems were particularly bad; the readahead
+thrashing cause a slowdown of 2-3x compared to the baseline and
+often it was due to the repair process requiring all of memory
+to cache stuff it would need later. IIRC, multi-terabyte ext3
+filesystems have similar memory usage problems to XFS, so there's
+a good chance that this patch will see the same sorts of issues.
 
-Thanks Cdub!
-Rusty.
+> Single disk performance doesn't change, but elapsed time drops by
+> about 50% on a big RAID-5 box.  Passes 1 and 2 are parallelized.  Pass
+> 5 is left as an exercise for the reader.
+
+Promising results, though....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
