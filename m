@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763847AbYARSGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763603AbYARSIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763847AbYARSGu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763348AbYARSGg
+	id S1763603AbYARSIR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761258AbYARSIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:06:36 -0500
-Received: from wx-out-0506.google.com ([66.249.82.236]:3631 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762841AbYARSGf (ORCPT
+	Fri, 18 Jan 2008 13:08:06 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:50878 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761288AbYARSIF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:06:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Vs8zYrwd6EMkrIGJeOy1tTIDJ5L2ehq9h1COdhgEHGEExox+NLfs0M37xA9+pxYHvRkmQm2r2BKxmKZnAVOlgLPm7UnpNzIOJlwp4ibMRHDhWTnOz1Q5F8UU+0LEHo4XKJLxg3gp6pPcnrpx/kG+6IWw/DXyjJCYWwFmHBJAgBk=
-Message-ID: <5eeb9ad90801181006r300e23e6t39159f1c1ccde0af@mail.gmail.com>
-Date: Fri, 18 Jan 2008 19:06:28 +0100
-From: DM <dm.n9107@gmail.com>
-To: davids@webmaster.com
-Subject: Re: Why is the kfree() argument const?
-Cc: torvalds@linux-foundation.org, "Johannes Weiner" <hannes@saeurebad.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       clameter@sgi.com, penberg@cs.helsinki.fi
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKKEKDJJAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jan 2008 13:08:05 -0500
+Date: Fri, 18 Jan 2008 13:07:49 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: UML is leaking memory in arch_dup_mmap
+Message-ID: <20080118180749.GA7688@c2.user-mode-linux.org>
+References: <E1JFsQo-0000aG-BZ@pomaz-ex.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org>
-	 <MDEHLPKNGKAHNMBLJOLKKEKDJJAC.davids@webmaster.com>
+In-Reply-To: <E1JFsQo-0000aG-BZ@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 18, 2008 6:02 AM, David Schwartz <davids@webmaster.com> wrote:
->
-> However, *destroying* an object is not a metadata operation -- it destroys
-> the data as well. This is kind of a philosophical point, but an object does
-> not have a "does this object exist" piece of metadata. If an object does not
-> exist, it has no data. So destroying an object destroys the data and is thus
-> a write/modification operation on the data.
->
+On Fri, Jan 18, 2008 at 03:42:54PM +0100, Miklos Szeredi wrote:
+> uml:~#  grep arch_dup_mmap /proc/slab_allocators
+> size-32: 10861 arch_dup_mmap+0x9f/0x130
 
-In C++ you can delete a const pointer. Now I know kernel hackers
-aren't especially impressed with C++ but maybe someone could look up
-the rationale for that design decision (I couldn't find it). It might
-shed some light on this discussion.
+Whoops - try the patch below.
 
-/DM
+				Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
+
+Index: linux-2.6.22/arch/um/include/um_mmu.h
+===================================================================
+--- linux-2.6.22.orig/arch/um/include/um_mmu.h	2008-01-17 13:44:49.000000000 -0500
++++ linux-2.6.22/arch/um/include/um_mmu.h	2008-01-18 12:53:10.000000000 -0500
+@@ -17,6 +17,7 @@ typedef struct mm_context {
+ 	unsigned long last_pmd;
+ #endif
+ 	struct uml_ldt ldt;
++	struct page **stub_pages;
+ } mm_context_t;
+ 
+ extern void __switch_mm(struct mm_id * mm_idp);
+Index: linux-2.6.22/arch/um/kernel/skas/mmu.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/skas/mmu.c	2008-01-18 13:02:52.000000000 -0500
++++ linux-2.6.22/arch/um/kernel/skas/mmu.c	2008-01-18 13:04:42.000000000 -0500
+@@ -91,6 +91,8 @@ int init_new_context(struct task_struct 
+ 		goto out_free;
+ 	}
+ 
++	to_mm->stub_pages = NULL;
++
+ 	return 0;
+ 
+  out_free:
+@@ -126,6 +128,7 @@ void arch_dup_mmap(struct mm_struct *old
+ 
+ 	pages[0] = virt_to_page(&__syscall_stub_start);
+ 	pages[1] = virt_to_page(mm->context.id.stack);
++	mm->context.stub_pages = pages;
+ 
+ 	/* dup_mmap already holds mmap_sem */
+ 	err = install_special_mapping(mm, STUB_START, STUB_END - STUB_START,
+@@ -147,6 +150,8 @@ void arch_exit_mmap(struct mm_struct *mm
+ {
+ 	pte_t *pte;
+ 
++	if(mm->context.stub_pages != NULL)
++		kfree(mm->context.stub_pages);
+ 	pte = virt_to_pte(mm, STUB_CODE);
+ 	if (pte != NULL)
+ 		pte_clear(mm, STUB_CODE, pte);
