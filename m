@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932381AbYARWNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932631AbYARWQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932381AbYARWNR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:13:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761432AbYARWNE
+	id S932631AbYARWQj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:16:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760153AbYARWQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:13:04 -0500
-Received: from ozlabs.org ([203.10.76.45]:33246 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757611AbYARWND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:13:03 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH 1/3] Improve type handling in interrupt handlers
-Date: Sat, 19 Jan 2008 09:11:14 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ash Willis <ashwillis@programmer.net>, linux-pcmcia@lists.infradead.org
-References: <200801190722.26154.rusty@rustcorp.com.au> <47910F05.8040501@pobox.com>
-In-Reply-To: <47910F05.8040501@pobox.com>
+	Fri, 18 Jan 2008 17:16:31 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:52251 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755379AbYARWQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 17:16:30 -0500
+Date: Fri, 18 Jan 2008 14:16:29 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Olaf Hering <olaf@aepfle.de>
+cc: Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       hanth Aravamudan <nacc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <20080118213011.GC10491@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+References: <20080115150949.GA14089@aepfle.de>
+ <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
+ <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
+ <20080117181222.GA24411@aepfle.de> <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+ <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
+ <20080118213011.GC10491@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801190911.15106.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 January 2008 07:41:41 Jeff Garzik wrote:
-> You should be using irq_handler_t for all these.
+Could you try this patch?
 
-Well, these are your drivers, but for mine I dislike the obfuscation.
+Memoryless nodes: Set N_NORMAL_MEMORY for a node if we do not support HIGHMEM
 
-It's not like you can declare the function itself to be an irq_handler_t, so 
-it's a strange turd to drop in a driver.
+It seems that we only scan through zones to set N_NORMAL_MEMORY only if
+CONFIG_HIGHMEM and CONFIG_NUMA are set. We need to set N_NORMAL_MEMORY
+in the !CONFIG_HIGHMEM case.
 
-> (Coincedentally, doing so makes it easier for me to later on remove the 
-> almost-never-used 'irq' argument from all irq handlers)
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-Slightly, but the compiler would tell you if you miss one, so I don't think 
-this is real.
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c	2008-01-18 14:08:41.000000000 -0800
++++ linux-2.6/mm/page_alloc.c	2008-01-18 14:13:34.000000000 -0800
+@@ -3812,7 +3812,6 @@ restart:
+ /* Any regular memory on that node ? */
+ static void check_for_regular_memory(pg_data_t *pgdat)
+ {
+-#ifdef CONFIG_HIGHMEM
+ 	enum zone_type zone_type;
+ 
+ 	for (zone_type = 0; zone_type <= ZONE_NORMAL; zone_type++) {
+@@ -3820,7 +3819,6 @@ static void check_for_regular_memory(pg_
+ 		if (zone->present_pages)
+ 			node_set_state(zone_to_nid(zone), N_NORMAL_MEMORY);
+ 	}
+-#endif
+ }
+ 
+ /**
 
-Cheers,
-Rusty.
