@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764350AbYARWyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbYARWz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764350AbYARWyg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:54:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761186AbYARWy2
+	id S932619AbYARWz5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762575AbYARWzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:54:28 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:52980 "EHLO mail.dvmed.net"
+	Fri, 18 Jan 2008 17:55:48 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50947 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761288AbYARWy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:54:28 -0500
-Message-ID: <47912E1F.3020302@pobox.com>
-Date: Fri, 18 Jan 2008 17:54:23 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ash Willis <ashwillis@programmer.net>, linux-pcmcia@lists.infradead.org
-Subject: Re: [PATCH 1/3] Improve type handling in interrupt handlers
-References: <200801190722.26154.rusty@rustcorp.com.au> <47910F05.8040501@pobox.com> <200801190911.15106.rusty@rustcorp.com.au>
-In-Reply-To: <200801190911.15106.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1761186AbYARWzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 17:55:47 -0500
+Date: Fri, 18 Jan 2008 17:54:50 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Oeser <ioe-lkml@rameria.de>, Miklos Szeredi <miklos@szeredi.hu>,
+       peterz@infradead.org, salikhmetov@gmail.com, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, ksm@42.dk, staubach@redhat.com,
+       jesper.juhl@gmail.com, akpm@linux-foundation.org, protasnb@gmail.com,
+       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
+Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
+ files
+Message-ID: <20080118175450.715ded60@bree.surriel.com>
+In-Reply-To: <alpine.LFD.1.00.0801181439330.2957@woody.linux-foundation.org>
+References: <12006091182260-git-send-email-salikhmetov@gmail.com>
+	<E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>
+	<alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org>
+	<200801182332.02945.ioe-lkml@rameria.de>
+	<alpine.LFD.1.00.0801181439330.2957@woody.linux-foundation.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Saturday 19 January 2008 07:41:41 Jeff Garzik wrote:
->> You should be using irq_handler_t for all these.
-> 
-> Well, these are your drivers, but for mine I dislike the obfuscation.
-> 
-> It's not like you can declare the function itself to be an irq_handler_t, so 
-> it's a strange turd to drop in a driver.
+On Fri, 18 Jan 2008 14:47:33 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-The others need to be irq_handler_t because that's the precise type 
-that's being used in each particularly situation.  Each time the code 
-re-creates that definition creates a problem for future irq handler 
-changes of any type, really.
+>  - keep it simple. Let's face it, Linux has never ever given those 
+>    guarantees before, and it's not is if anybody has really cared. Even 
+>    now, the issue seems to be more about paper standards conformance than 
+>    anything else.
 
-As I noted, I've fixed all this crap already, and read through each one 
-of those drivers.
+There is one issue which is way more than just standards conformance.
 
-	Jeff
+When a program changes file data through mmap(), at some point the
+mtime needs to be update so that backup programs know to back up the
+new version of the file.
 
+Backup programs not seeing an updated mtime is a really big deal.
 
-
+-- 
+All rights reversed.
