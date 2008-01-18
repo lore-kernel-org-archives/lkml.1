@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYARIIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbYARIK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbYARIIT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 03:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYARIII
+	id S1754727AbYARIK6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 03:10:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYARIKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 03:08:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44094 "EHLO mx2.mail.elte.hu"
+	Fri, 18 Jan 2008 03:10:51 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44594 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbYARIIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 03:08:07 -0500
-Date: Fri, 18 Jan 2008 09:07:49 +0100
+	id S1750853AbYARIKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 03:10:51 -0500
+Date: Fri, 18 Jan 2008 09:10:40 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86_64: remove redundant cpu_has_ definitions
-Message-ID: <20080118080749.GA16597@elte.hu>
-References: <20080118045921.GB974@phobos.i.cabal.ca> <47903376.9050204@zytor.com> <20080118052522.GA1726@phobos.i.cabal.ca>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: venkatesh.pallipadi@intel.com, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] X86: fix typo PAT to X86_PAT
+Message-ID: <20080118081040.GB16597@elte.hu>
+References: <200801171950.32458.yinghai.lu@sun.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080118052522.GA1726@phobos.i.cabal.ca>
+In-Reply-To: <200801171950.32458.yinghai.lu@sun.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,30 +34,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Kyle McMartin <kyle@mcmartin.ca> wrote:
+* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-> --- a/include/asm-x86/cpufeature.h
-> +++ b/include/asm-x86/cpufeature.h
-> @@ -195,21 +195,6 @@
->  #undef  cpu_has_centaur_mcr
->  #define cpu_has_centaur_mcr	0
->  
-> -#undef  cpu_has_pse
-> -#define cpu_has_pse		1
-> -
-> -#undef  cpu_has_pge
-> -#define cpu_has_pge		1
-> -
-> -#undef  cpu_has_xmm
-> -#define cpu_has_xmm		1
-> -
-> -#undef  cpu_has_xmm2
-> -#define cpu_has_xmm2		1
-> -
-> -#undef  cpu_has_fxsr
-> -#define cpu_has_fxsr		1
-> -
+>  config MTRR
+>  	bool "MTRR (Memory Type Range Register) support"
+> -	depends on !PAT
+> +	depends on !X86_PAT
+>  	---help---
+>  	  On Intel P6 family processors (Pentium Pro, Pentium II and later)
+>  	  the Memory Type Range Registers (MTRRs) may be used to control
 
-thanks, applied.
+thanks. But, i think we should rather do the following: if X86_PAT is 
+eanbled then /proc/mtrr should be read-only. There's no problem 
+_looking_ at MTRR contents, as long as we do not try to modify them. Hm?
 
 	Ingo
