@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbYARCCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761328AbYARCCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760341AbYARCCW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 21:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbYARCCJ
+	id S1761328AbYARCCg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 21:02:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759393AbYARCCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 21:02:09 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:42324 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754605AbYARCCH (ORCPT
+	Thu, 17 Jan 2008 21:02:18 -0500
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:42827 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759153AbYARCCR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 21:02:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Uw84ljpFjJ+x2lwVNGfNPV/GiDVaKPoHlOCIeylLTYOkGDWTsv4gj9RHhJNnVsEbgwdNV2R6RHNEKNkDfRaP6Crm7FwBfWscay5eL+ji7dKWG0d5TnYK+tO0NeFbAeUa9jl1MtJZtVZt5klRYdKFIZpkKKUpyIQyAj9ahKlDQ4k=
-Subject: Re: [PATCH] x86: Use v8086_mode helper, trivial unification
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <479002B6.9030607@zytor.com>
-References: <1200611078.5724.46.camel@brick>	<478FDE76.3070309@zytor.com>
-	 <1200612389.5724.63.camel@brick>	<478FF9F3.9030604@zytor.com>
-	 <1200618952.5724.85.camel@brick>
-	 <20080118013712.4090526FA0B@magilla.localdomain>
-	 <479002B6.9030607@zytor.com>
-Content-Type: text/plain
-Date: Thu, 17 Jan 2008 18:02:07 -0800
-Message-Id: <1200621727.5724.96.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jan 2008 21:02:17 -0500
+From: Byron Bradley <byron.bbradley@gmail.com>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Byron Bradley <byron.bbradley@gmail.com>, Nick Piggin <npiggin@suse.de>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: [PATCH] ramdisk driver: make rd_size non-static
+Date: Fri, 18 Jan 2008 02:02:17 +0000
+Message-Id: <1200621737-1458-1-git-send-email-byron.bbradley@gmail.com>
+X-Mailer: git-send-email 1.5.4.rc2.38.gd6da3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-01-17 at 20:36 -0500, H. Peter Anvin wrote:
-> Roland McGrath wrote:
-> > It's indeed true that &pt_regs is truly the esp value for x86-32
-> > kernel-mode trap frames.  Because this nonobvious calculation is 
-> > only right for a kernel mode pt_regs and not for a user-mode one,
-> > I think it would be better to use a name for the inline/macro that
-> > makes this quite clear, rather than one so generic as "stack_addr".
-> 
-> Indeed.  This was certainly highly nonobvious in the current code.
-> 
+In arch/arm/kernel/setup.c:setup_ramdisk(), rd_size is set from the
+boot tags. The replacement ramdisk driver has rd_size as static
+which causes linking to fail when ramdisk is built-in.
 
-What do you think of kernel_sp()
+Signed-off-by: Byron Bradley <byron.bbradley@gmail.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Russell King <rmk@arm.linux.org.uk>
+---
 
-Harvey
+This patch applies against 2.6.24-rc8-mm1 and has not been tested,
+it is only know to compile. I'm not sure if there is a better way
+to set rd_size or if this is OK.
+
+ drivers/block/brd.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/block/brd.c b/drivers/block/brd.c
+index 5ef1d26..8536480 100644
+--- a/drivers/block/brd.c
++++ b/drivers/block/brd.c
+@@ -385,7 +385,7 @@ static struct block_device_operations brd_fops = {
+  * And now the modules code and kernel interface.
+  */
+ static int rd_nr;
+-static int rd_size = CONFIG_BLK_DEV_RAM_SIZE;
++int rd_size = CONFIG_BLK_DEV_RAM_SIZE;
+ module_param(rd_nr, int, 0);
+ MODULE_PARM_DESC(rd_nr, "Maximum number of brd devices");
+ module_param(rd_size, int, 0);
+-- 
+1.5.4.rc2.38.gd6da3
+
 
