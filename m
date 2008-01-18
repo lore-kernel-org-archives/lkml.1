@@ -1,79 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbYARLdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760135AbYARLgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759447AbYARLdn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 06:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbYARLdg
+	id S1760135AbYARLgV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 06:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbYARLgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 06:33:36 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:18980 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754034AbYARLdf (ORCPT
+	Fri, 18 Jan 2008 06:36:14 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:34146 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755354AbYARLgN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 06:33:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=YQw90lZuKZkPeLFv1rgLoTVQg+wb6zRUDZTVg/m7HikahMGAvGKQZJeTkd003yiP6lFXF0hBHswtPCy8LFcSZFhY65PBEFx0/AYI62cFPP1Xs3/aZr3AxfHAdap9a8CmPY00QaoRQRD/R7bcajOEfOury5ptnvbzogbuZYRenho=
-Date: Fri, 18 Jan 2008 12:40:01 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Dave Young <hidave.darkstar@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
-       stefanr@s5r6.in-berlin.de, David Brownell <david-b@pacbell.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct
-	class
-Message-ID: <20080118114001.GA2610@ff.dom.local>
-References: <Pine.LNX.4.44L0.0801171448590.5731-100000@iolanthe.rowland.org> <20080117203155.GA2791@ami.dom.local> <20080117232626.GC2905@ami.dom.local> <a8e1da0801171742o5520c3d9v577979f527f1a977@mail.gmail.com> <3ae72650801171755k85c4245i3b4c46a84ae8f52d@mail.gmail.com> <a8e1da0801171828n26b37be0oa8b1c3cbec5f83cb@mail.gmail.com> <1200626323.5640.21.camel@lov.site> <a8e1da0801172131h57097622h6d111133b6a0773d@mail.gmail.com> <20080118073836.GA1703@ff.dom.local> <1200653112.8706.21.camel@lov.site>
+	Fri, 18 Jan 2008 06:36:13 -0500
+Date: Fri, 18 Jan 2008 06:35:23 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jiri Kosina <jikos@jikos.cz>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>, Kirill Korotaev <dev@sw.ru>
+Subject: Re: [PATCH] printk deadlocks if called with runqueue lock held
+In-Reply-To: <Pine.LNX.4.64.0801181203240.15647@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.58.0801180634040.7574@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0801172000430.32679@gandalf.stny.rr.com>
+ <Pine.LNX.4.64.0801181203240.15647@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1200653112.8706.21.camel@lov.site>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 11:45:12AM +0100, Kay Sievers wrote:
-> On Fri, 2008-01-18 at 08:38 +0100, Jarek Poplawski wrote:
-> > On Fri, Jan 18, 2008 at 01:31:17PM +0800, Dave Young wrote:
-> > > On Jan 18, 2008 11:18 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> > ...
-> > > > Yeah, might be better to wait until class_device is gone, otherwise you
-> > > > may need to fix stuff that is just going to be removed. Your change to
-> > > > have iterators for the class devices look like a nice preparation for
-> > > > future changes though.
-> > > >
-> > > > Our rough plan is:
-> > > >  2.6.25:
-> > > >   - get the ~100 patches in Greg's tree (in -mm) merged :)
-> > > >  2.6.26:
-> > > > ???  - remove the 20 char limit in "struct device"
-> > > >   - get rid of "struct class_device"
-> > > 
-> > > Fine, thanks.
-> > > 
-> > > Let's wait for other people's comment.
-> > 
-> > Dave, I doubt you'll ever manage to do this if you're going to wait:
-> > probably there will be always some new changes like this around...
-> 
-> Well there are not "changes" in that sense, the class_device stuff will
-> be entirely ripped out, and I doubt we will want to change anything
-> there, just shortly before it's deleted.
 
-So, 2.6.26 means shortly... And this all needs some time for testing,
-debugging or maybe some change of concept, so this would take a while...
-Well, it's not my problem, but since this stuff will go away, shouldn't
-we care more about the staff that will stay?
+On Fri, 18 Jan 2008, Jiri Kosina wrote:
+>
+> If this patch is going to be merged, you should perhaps adjust the comment
+> introduced by the above mentioned commit, so that it reflects the new
+> behavior.
 
-> Also your assumptions about device nesting are not really true, there is
-> no limit, even when there are no current users nesting deeper, and
-> "struct device" can be any nesting depth, and that's where it gets
-> interesting.
+Thanks for pointing this out. Updated patch below:
 
-I'm just trying to figure this out. It seems this is a real problem
-while freezing, but not necessarily here (but I can miss something).
- 
-Regards,
-Jarek P.
+-- Steve
+=========
+
+I thought that one could place a printk anywhere without worrying.
+But it seems that it is not wise to place a printk where the runqueue
+lock is held.
+
+I just spent two hours debugging why some of my code was locking up,
+to find that the lockup was caused by some debugging printk's that
+I had in the scheduler.  The printk's were only in rare paths so
+they shouldn't be too much of a problem, but after I hit the printk
+the system locked up.
+
+Thinking that it was locking up on my code I went looking down the
+wrong path. I finally found (after examining an NMI dump) that
+the lockup happened because printk was trying to wakeup the klogd
+daemon, which caused a deadlock when the try_to_wakeup code tries
+to grab the runqueue lock.
+
+Since printks are seldom called with interrupts disabled, we can
+hold off the waking of klogd if they are. We don't have access to
+the runqueue locks from printk, but those locks need interrupts
+disabled in order to be held.
+
+Calling printk with interrupts disabled should only be done for
+emergencies and debugging anyway.
+
+And with this patch, my code ran fine ;-)
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/printk.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+Index: linux-mcount.git/kernel/printk.c
+===================================================================
+--- linux-mcount.git.orig/kernel/printk.c	2008-01-18 06:29:15.000000000 -0500
++++ linux-mcount.git/kernel/printk.c	2008-01-18 06:32:38.000000000 -0500
+@@ -595,9 +595,11 @@ static int have_callable_console(void)
+  * @fmt: format string
+  *
+  * This is printk().  It can be called from any context.  We want it to work.
+- * Be aware of the fact that if oops_in_progress is not set, we might try to
+- * wake klogd up which could deadlock on runqueue lock if printk() is called
+- * from scheduler code.
++ *
++ * Note: if printk() is called with interrupts disabled, it will not wake
++ * up the klogd. This is to avoid a deadlock from calling printk() in schedule
++ * with the runqueue lock held and having the wake_up grab the runqueue lock
++ * as well.
+  *
+  * We try to grab the console_sem.  If we succeed, it's easy - we log the output and
+  * call the console drivers.  If we fail to get the semaphore we place the output
+@@ -978,7 +980,13 @@ void release_console_sem(void)
+ 	console_locked = 0;
+ 	up(&console_sem);
+ 	spin_unlock_irqrestore(&logbuf_lock, flags);
+-	if (wake_klogd)
++	/*
++	 * If we try to wake up klogd while printing with the runqueue lock
++	 * held, this will deadlock. We don't have access to the runqueue
++	 * lock from here, but just checking for interrupts disabled
++	 * should be enough.
++	 */
++	if (!irqs_disabled() && wake_klogd)
+ 		wake_up_klogd();
+ }
+ EXPORT_SYMBOL(release_console_sem);
