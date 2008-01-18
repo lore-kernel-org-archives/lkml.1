@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761650AbYARO6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbYARO7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761650AbYARO6x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 09:58:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbYARO6o
+	id S1761993AbYARO7U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 09:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbYARO7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 09:58:44 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:47418 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753609AbYARO6m (ORCPT
+	Fri, 18 Jan 2008 09:59:12 -0500
+Received: from odyssey.analogic.com ([204.178.40.5]:3014 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755809AbYARO7K convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 09:58:42 -0500
-Subject: Re: [PATCH] SCSI: fix isa/pcmcia compile problem
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, fischer@norbit.de,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Samuel Ortiz <samuel@sortiz.org>
-In-Reply-To: <47905348.1000709@gmail.com>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	 <478F7F2B.9000801@linux.vnet.ibm.com>
-	 <20080117111104.3baa878e.akpm@linux-foundation.org>
-	 <47904927.1040000@linux.vnet.ibm.com>  <47905348.1000709@gmail.com>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 08:58:35 -0600
-Message-Id: <1200668315.3111.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jan 2008 09:59:10 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 18 Jan 2008 14:59:08.0250 (UTC) FILETIME=[AD262BA0:01C859E2]
+Content-class: urn:content-classes:message
+Subject: Re: Communication between user process and kernel modules
+Date: Fri, 18 Jan 2008 09:59:07 -0500
+Message-ID: <Pine.LNX.4.61.0801180954040.7389@chaos.analogic.com>
+in-reply-to: <14947386.post@talk.nabble.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Communication between user process and kernel modules
+thread-index: AchZ4q1MXfsOdSuaSWqH0CWxCo6jbw==
+References: <14947386.post@talk.nabble.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "mokhtar" <mbmessaoud@yahoo.com>
+Cc: <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2008-01-18 at 16:20 +0900, Tejun Heo wrote:
-> aha152x.c and fdomain are built twice - once for the isa driver and
-> once for the PCMCIA one.  Through #ifdefs, the compiled codes are
-> slightly different; thus, global symbols need to be given different
-> names depending on which flavor is being built.  This patch adds
-> GLOBAL() macro to aha152x.h and fdomain.h which change the symbol
-> depending on PCMCIA.
-> 
-> This bug has always existed but has been masked by the fact the
-> drivers/scsi/pcmcia used subdir-(y|m) instead of obj-(y|m) which made
-> drivers/scsi/pcmcia/built_in.o not linked into the kernel and thus
-> avoided the duplicate symbols during compilation.
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> ---
-> Ah... missed that one.  Here's the updated version.
+On Fri, 18 Jan 2008, mokhtar wrote:
 
-Actually, isn't the better fix just to return to the original behaviour?
+>
+> Hi
+>
+> What are the different solution to make a user process communicate with a
+> kernel modules?
+>
+> Whatis the the advantages and disadvanteges of each solutions ?
+>
 
-As you pointed out, using the subdir instead of obj meant that although
-the modules were built, the drivers were never linked into the main
-kernel.  According to the records, this has been the default forever, so
-there can be no-one anywhere relying on these drivers being built in.
-Actually, as old style pcmcia drivers, I'm not sure there's much value
-building them into the kernel anyway.
+ioctl() is the universal Unix mechanism for control of drivers
+(modules). open(), close(), read(), write(), mmap() are the other
+common methods. Some drivers may use sockets for communications.
+I such a case, you use setsockopt() to change things.
 
-So just modify scsi/pcmcia/Kconfig to make them all depend on m.
+Drivers can signal user-space processes as well. Such programs
+use select() and poll().
 
-James
+>
+> --
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
 
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
