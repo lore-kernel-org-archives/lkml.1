@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765545AbYARUBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764844AbYARUEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765545AbYARUBi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:01:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765333AbYARUBX
+	id S1764844AbYARUEX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:04:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758775AbYARUEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:01:23 -0500
-Received: from smtprelay13.ispgateway.de ([80.67.29.43]:45403 "EHLO
-	smtprelay13.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765184AbYARUBV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:01:21 -0500
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: travis@sgi.com
-Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
-Date: Fri, 18 Jan 2008 21:04:21 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-References: <20080118183011.354965000@sgi.com> <20080118183011.917801000@sgi.com>
-In-Reply-To: <20080118183011.917801000@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801182104.22486.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
+	Fri, 18 Jan 2008 15:04:16 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35898 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755359AbYARUEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:04:15 -0500
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
+       rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
+       mtosatti@redhat.com, Glauber de Oliveira Costa <gcosta@redhat.com>
+Subject: [PATCH 2/10] add stringify header
+Date: Fri, 18 Jan 2008 15:20:17 -0200
+Message-Id: <1200676842822-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <12006768362108-git-send-email-gcosta@redhat.com>
+References: <12006768251548-git-send-email-gcosta@redhat.com> <12006768362108-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike,
+We use a __stringify construction at paravirt_patch_64.c.
+It's better practice to include the stringify header directly
 
-On Friday 18 January 2008, travis@sgi.com wrote:
-> +config THREAD_ORDER
-> +	int "Kernel stack size (in page order)"
-> +	range 1 3
-> +	depends on X86_64_SMP
-> +	default "3" if X86_SMP_MAX
-> +	default "1"
-> +	help
-> +	  Increases kernel stack size.
-> +
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/paravirt_patch_64.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Could you please elaborate, why this is needed and put more info about
-this requirement into this patch description?
+diff --git a/arch/x86/kernel/paravirt_patch_64.c b/arch/x86/kernel/paravirt_patch_64.c
+index cbfc4f3..7d904e1 100644
+--- a/arch/x86/kernel/paravirt_patch_64.c
++++ b/arch/x86/kernel/paravirt_patch_64.c
+@@ -1,5 +1,6 @@
+ #include <asm/paravirt.h>
+ #include <asm/asm-offsets.h>
++#include <linux/stringify.h>
+ 
+ DEF_NATIVE(pv_irq_ops, irq_disable, "cli");
+ DEF_NATIVE(pv_irq_ops, irq_enable, "sti");
+-- 
+1.4.4.2
 
-People worked hard to push data allocation from stack to heap to make 
-THREAD_ORDER of 0 and 1 possible. So why increase it again and why does this
-help scalability?
-
-Many thanks and Best Regards
-
-Ingo Oeser, puzzled a bit :-)
