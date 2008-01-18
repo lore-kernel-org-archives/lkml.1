@@ -1,106 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758636AbYARLDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760290AbYARLDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758636AbYARLDj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 06:03:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757166AbYARLCy
+	id S1760290AbYARLDx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 06:03:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760493AbYARLC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 06:02:54 -0500
-Received: from ns2.suse.de ([195.135.220.15]:34760 "EHLO mx2.suse.de"
+	Fri, 18 Jan 2008 06:02:59 -0500
+Received: from ns2.suse.de ([195.135.220.15]:34765 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760161AbYARLCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 06:02:52 -0500
+	id S1760455AbYARLC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 06:02:58 -0500
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 18 Jan 2008 22:02:42 +1100
-Message-Id: <1080118110242.30498@suse.de>
+Date: Fri, 18 Jan 2008 22:02:51 +1100
+Message-Id: <1080118110251.30514@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 003 of 4] md: Change ITERATE_RDEV_GENERIC to rdev_for_each_list, and remove ITERATE_RDEV_PENDING.
+Subject: [PATCH 004 of 4] md: Fix an occasional deadlock in raid5 - FIX
 References: <20080118215531.30136.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Finish ITERATE_ to for_each conversion.
+(This should be merged with fix-occasional-deadlock-in-raid5.patch)
+
+As we don't call stripe_handle in make_request any more, we need to
+clear STRIPE_DELAYED to (previously done by stripe_handle) to ensure
+that we test if the stripe still needs to be delayed or not.
 
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./drivers/md/md.c           |    8 ++++----
- ./include/linux/raid/md_k.h |   14 ++++----------
- 2 files changed, 8 insertions(+), 14 deletions(-)
+ ./drivers/md/raid5.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff .prev/drivers/md/md.c ./drivers/md/md.c
---- .prev/drivers/md/md.c	2008-01-18 11:19:09.000000000 +1100
-+++ ./drivers/md/md.c	2008-01-18 11:19:24.000000000 +1100
-@@ -3766,7 +3766,7 @@ static void autorun_devices(int part)
- 		printk(KERN_INFO "md: considering %s ...\n",
- 			bdevname(rdev0->bdev,b));
- 		INIT_LIST_HEAD(&candidates);
--		ITERATE_RDEV_PENDING(rdev,tmp)
-+		rdev_for_each_list(rdev, tmp, pending_raid_disks)
- 			if (super_90_load(rdev, rdev0, 0) >= 0) {
- 				printk(KERN_INFO "md:  adding %s ...\n",
- 					bdevname(rdev->bdev,b));
-@@ -3810,7 +3810,7 @@ static void autorun_devices(int part)
+diff .prev/drivers/md/raid5.c ./drivers/md/raid5.c
+--- .prev/drivers/md/raid5.c	2008-01-18 14:58:55.000000000 +1100
++++ ./drivers/md/raid5.c	2008-01-18 14:59:53.000000000 +1100
+@@ -3549,6 +3549,7 @@ static int make_request(struct request_q
+ 			}
+ 			finish_wait(&conf->wait_for_overlap, &w);
+ 			set_bit(STRIPE_HANDLE, &sh->state);
++			clear_bit(STRIPE_DELAYED, &sh->state);
+ 			release_stripe(sh);
  		} else {
- 			printk(KERN_INFO "md: created %s\n", mdname(mddev));
- 			mddev->persistent = 1;
--			ITERATE_RDEV_GENERIC(candidates,rdev,tmp) {
-+			rdev_for_each_list(rdev, tmp, candidates) {
- 				list_del_init(&rdev->same_set);
- 				if (bind_rdev_to_array(rdev, mddev))
- 					export_rdev(rdev);
-@@ -3821,7 +3821,7 @@ static void autorun_devices(int part)
- 		/* on success, candidates will be empty, on error
- 		 * it won't...
- 		 */
--		ITERATE_RDEV_GENERIC(candidates,rdev,tmp)
-+		rdev_for_each_list(rdev, tmp, candidates)
- 			export_rdev(rdev);
- 		mddev_put(mddev);
- 	}
-@@ -4936,7 +4936,7 @@ static void status_unused(struct seq_fil
- 
- 	seq_printf(seq, "unused devices: ");
- 
--	ITERATE_RDEV_PENDING(rdev,tmp) {
-+	rdev_for_each_list(rdev, tmp, pending_raid_disks) {
- 		char b[BDEVNAME_SIZE];
- 		i++;
- 		seq_printf(seq, "%s ",
-
-diff .prev/include/linux/raid/md_k.h ./include/linux/raid/md_k.h
---- .prev/include/linux/raid/md_k.h	2008-01-18 11:19:09.000000000 +1100
-+++ ./include/linux/raid/md_k.h	2008-01-18 11:19:24.000000000 +1100
-@@ -313,23 +313,17 @@ static inline char * mdname (mddev_t * m
-  * iterates through some rdev ringlist. It's safe to remove the
-  * current 'rdev'. Dont touch 'tmp' though.
-  */
--#define ITERATE_RDEV_GENERIC(head,rdev,tmp)				\
-+#define rdev_for_each_list(rdev, tmp, list)				\
- 									\
--	for ((tmp) = (head).next;					\
-+	for ((tmp) = (list).next;					\
- 		(rdev) = (list_entry((tmp), mdk_rdev_t, same_set)),	\
--			(tmp) = (tmp)->next, (tmp)->prev != &(head)	\
-+			(tmp) = (tmp)->next, (tmp)->prev != &(list)	\
- 		; )
- /*
-  * iterates through the 'same array disks' ringlist
-  */
- #define rdev_for_each(rdev, tmp, mddev)				\
--	ITERATE_RDEV_GENERIC((mddev)->disks,rdev,tmp)
--
--/*
-- * Iterates through 'pending RAID disks'
-- */
--#define ITERATE_RDEV_PENDING(rdev,tmp)					\
--	ITERATE_RDEV_GENERIC(pending_raid_disks,rdev,tmp)
-+	rdev_for_each_list(rdev, tmp, (mddev)->disks)
- 
- typedef struct mdk_thread_s {
- 	void			(*run) (mddev_t *mddev);
+ 			/* cannot get stripe for read-ahead, just give-up */
