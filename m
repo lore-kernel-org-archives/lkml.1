@@ -1,114 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761815AbYAROcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762008AbYAROdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761815AbYAROcs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 09:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbYAROck
+	id S1762008AbYAROdS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 09:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbYAROdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 09:32:40 -0500
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:37981 "EHLO
-	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754196AbYAROcj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 09:32:39 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>
-Subject: [PATCH 3/7] Char: mxser, reorder mxser_cardinfo fields
-Date: Fri, 18 Jan 2008 15:31:12 +0100
-Message-Id: <1200666676-1234-3-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1200666676-1234-1-git-send-email-jirislaby@gmail.com>
-References: <1200666676-1234-1-git-send-email-jirislaby@gmail.com>
+	Fri, 18 Jan 2008 09:33:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38976 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756933AbYAROdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 09:33:05 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.24-rc8-git1: Reported regressions from 2.6.23
+Date: Fri, 18 Jan 2008 15:35:42 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bunk@kernel.org, Dave Kleikamp <shaggy@austin.ibm.com>,
+       Takashi Iwai <tiwai@suse.de>, Shaohua Li <shaohua.li@intel.com>,
+       Jay Vosburgh <fubar@us.ibm.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Geert Uytterhoeven <geert@linux-m68k.org>
+References: <200801180035.42878.rjw@sisk.pl> <200801181510.10180.rjw@sisk.pl> <20080118141224.GA16963@elte.hu>
+In-Reply-To: <20080118141224.GA16963@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801181535.44380.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reorder fields to save some memory and code on 64bit due to alignment as
-suggested by Jan.
+On Friday, 18 of January 2008, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > > > > Subject		: snd_hda_intel 2.6.24-rc2 bug: interrupts don't always work on Lenovo X60s
+> > > > > Submitter	: Roland Dreier <rdreier@cisco.com>
+> > > > > Date		: 2007-11-08 14:55
+> > > > > References	: http://lkml.org/lkml/2007/11/8/255
+> > > > > 		  http://bugzilla.kernel.org/show_bug.cgi?id=9332
+> > > > > Handled-By	: Takashi Iwai <tiwai@suse.de>
+> > > > > 		  Ingo Molnar <mingo@elte.hu>
+> > > > > Patch		: http://lkml.org/lkml/2007/11/16/66
+> > > 
+> > > This patch went in, but was reverted because it caused more problems than 
+> > > it fixed. And what it "fixed" was somewhat dubious anyway.
+> > 
+> > It was reported to break suspend on one box, but Takashi wants it in, 
+> > AFAICS, as quite some time has been invested into figuring out what's 
+> > going wrong in that case.
+> 
+> since this is about a weird, not fully understood hardware interfacing 
+> and timing problem, and because my original fix was not really a 
+> regression fix (but it indeed _caused_ a real regression in a previously 
+> working setup), i'd lean towards just reverting my patch in .24 and 
+> going with Takashi's fixes in .25. I.e. the current -git status quo.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>
----
- drivers/char/mxser_new.c |   60 +++++++++++++++++++++++-----------------------
- 1 files changed, 30 insertions(+), 30 deletions(-)
+Agreed.
 
-diff --git a/drivers/char/mxser_new.c b/drivers/char/mxser_new.c
-index d2dcc54..9449fba 100644
---- a/drivers/char/mxser_new.c
-+++ b/drivers/char/mxser_new.c
-@@ -106,41 +106,41 @@ static const struct {
- #define UART_INFO_NUM	ARRAY_SIZE(Gpci_uart_info)
- 
- struct mxser_cardinfo {
--	unsigned int nports;
- 	char *name;
-+	unsigned int nports;
- 	unsigned int flags;
- };
- 
- static const struct mxser_cardinfo mxser_cards[] = {
--/* 0*/	{ 8, "C168 series", },
--	{ 4, "C104 series", },
--	{ 4, "CI-104J series", },
--	{ 8, "C168H/PCI series", },
--	{ 4, "C104H/PCI series", },
--/* 5*/	{ 4, "C102 series", MXSER_HAS2 },	/* C102-ISA */
--	{ 4, "CI-132 series", MXSER_HAS2 },
--	{ 4, "CI-134 series", },
--	{ 2, "CP-132 series", },
--	{ 4, "CP-114 series", },
--/*10*/	{ 4, "CT-114 series", },
--	{ 2, "CP-102 series", MXSER_HIGHBAUD },
--	{ 4, "CP-104U series", },
--	{ 8, "CP-168U series", },
--	{ 2, "CP-132U series", },
--/*15*/	{ 4, "CP-134U series", },
--	{ 4, "CP-104JU series", },
--	{ 8, "Moxa UC7000 Serial", },		/* RC7000 */
--	{ 8, "CP-118U series", },
--	{ 2, "CP-102UL series", },
--/*20*/	{ 2, "CP-102U series", },
--	{ 8, "CP-118EL series", },
--	{ 8, "CP-168EL series", },
--	{ 4, "CP-104EL series", },
--	{ 8, "CB-108 series", },
--/*25*/	{ 4, "CB-114 series", },
--	{ 4, "CB-134I series", },
--	{ 8, "CP-138U series", },
--	{ 4, "POS-104UL series", }
-+/* 0*/	{ "C168 series",	8, },
-+	{ "C104 series",	4, },
-+	{ "CI-104J series",	4, },
-+	{ "C168H/PCI series",	8, },
-+	{ "C104H/PCI series",	4, },
-+/* 5*/	{ "C102 series",	4, MXSER_HAS2 },	/* C102-ISA */
-+	{ "CI-132 series",	4, MXSER_HAS2 },
-+	{ "CI-134 series",	4, },
-+	{ "CP-132 series",	2, },
-+	{ "CP-114 series",	4, },
-+/*10*/	{ "CT-114 series",	4, },
-+	{ "CP-102 series",	2, MXSER_HIGHBAUD },
-+	{ "CP-104U series",	4, },
-+	{ "CP-168U series",	8, },
-+	{ "CP-132U series",	2, },
-+/*15*/	{ "CP-134U series",	4, },
-+	{ "CP-104JU series",	4, },
-+	{ "Moxa UC7000 Serial",	8, },		/* RC7000 */
-+	{ "CP-118U series",	8, },
-+	{ "CP-102UL series",	2, },
-+/*20*/	{ "CP-102U series",	2, },
-+	{ "CP-118EL series",	8, },
-+	{ "CP-168EL series",	8, },
-+	{ "CP-104EL series",	4, },
-+	{ "CB-108 series",	8, },
-+/*25*/	{ "CB-114 series",	4, },
-+	{ "CB-134I series",	4, },
-+	{ "CP-138U series",	8, },
-+	{ "POS-104UL series",	4, }
- };
- 
- /* driver_data correspond to the lines in the structure above
--- 
-1.5.3.7
-
+Rafael
