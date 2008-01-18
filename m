@@ -1,64 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759588AbYARK4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbYARK4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759588AbYARK4S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:56:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYARK4E
+	id S1760260AbYARK4d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 05:56:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbYARK4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:56:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42138 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752946AbYARK4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:56:02 -0500
-Date: Fri, 18 Jan 2008 11:55:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Colin Fowler <elethiomel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Performance loss 2.6.22->22.6.23->2.6.24-rc7 on CPU intensive
-	benchmark on 8 Core Xeon
-Message-ID: <20080118105545.GC12228@elte.hu>
-References: <cf3edd8d0801140937w755c3e75me83c214ebc1f4cd3@mail.gmail.com> <20080114185520.GA26540@elte.hu> <cf3edd8d0801141442nedf4ac1p6b1fd6bc94900063@mail.gmail.com> <cf3edd8d0801150901p653edeear62d5bc91d9f46981@mail.gmail.com> <20080115220641.GC2665@elte.hu> <cf3edd8d0801160934u2e39110dv2ccc98081e983b25@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cf3edd8d0801160934u2e39110dv2ccc98081e983b25@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0187]
+	Fri, 18 Jan 2008 05:56:11 -0500
+Received: from mail.gmx.net ([213.165.64.20]:37487 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755614AbYARK4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 05:56:09 -0500
+X-Authenticated: #429267
+X-Provags-ID: V01U2FsdGVkX18eoPdm3SQetLAcyWSVhHIQ+izv25NQ8oDQ/zLgDK
+	gVdLtYp/XmcSRo
+Subject: Re: Spammed logs again rt2500pci 2.6.24-rc8
+From: Mattias Nissler <mattias.nissler@gmx.de>
+To: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>
+Cc: linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, IvDoorn@gmail.com
+In-Reply-To: <20080117225744.29aa214c@Varda>
+References: <20080117225744.29aa214c@Varda>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Fri, 18 Jan 2008 11:56:05 +0100
+Message-Id: <1200653765.7492.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Colin Fowler <elethiomel@gmail.com> wrote:
+we currently think this is due to a race condition in the packet queue
+code. Ivo is currently reworking the packet queues, which I hope will
+resolve this situation.
 
-> > there are a handful of 'scheduler feature bits' in
-> > /proc/sys/kernel/sched_features:
-> >
-> > enum {
-> >         SCHED_FEAT_NEW_FAIR_SLEEPERS    = 1,
-> >         SCHED_FEAT_WAKEUP_PREEMPT       = 2,
-> >         SCHED_FEAT_START_DEBIT          = 4,
-> >         SCHED_FEAT_TREE_AVG             = 8,
-> >         SCHED_FEAT_APPROX_AVG           = 16,
-> > };
-> >
+Mattias
+
+On Thu, 2008-01-17 at 22:57 +0100, Alejandro Riveira Fernández wrote:
+> Running
 > 
-> Toggling SCHED_FEAT_NEW_FAIR_SLEEPERS to 0 or 
-> SCHED_FEAT_WAKEUP_PREEMPT to 0 gives me results more inline with my 
-> 2.6.22 results. Toggling them both to 0 gives me slightly better 
-> results than 2.6.22!
+> Linux Varda 2.6.24-rc8 #1 SMP PREEMPT Wed Jan 16 15:09:43 CET 2008 x86_64 GNU/Linux
+> 
+> my logs are spmmed with:
+> 
+> 
+> [20126.343240] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20126.343242] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20126.848277] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20126.848280] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20126.851693] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20126.851696] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20126.851854] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20126.851856] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20126.852082] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20126.852084] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20126.852224] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20126.852226] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20127.349691] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20127.349694] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20127.352425] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20127.352428] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20127.853345] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20127.853348] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20127.853699] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20127.853701] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20128.858569] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20128.858572] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20131.875550] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20131.875554] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20154.693853] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20154.693856] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20185.527974] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20185.527977] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20189.812334] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20189.812337] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20189.812374] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20189.812376] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20189.812507] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20189.812509] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20189.813100] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20189.813102] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20189.813474] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20189.813476] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20189.813909] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20189.813911] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20212.242858] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20212.242861] Please file bug report to http://rt2x00.serialmonkey.com.
+> [20212.243587] phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 1.
+> [20212.243589] Please file bug report to http://rt2x00.serialmonkey.com.
+> 
+> 
+> As the last time the thing is triggered with a p2p app making a lot of connections (this time not bt but mldonkey)
+> Back to top 	
+> View user's profile Send private message 	
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-ok, but it would be nice to avoid having to turn these off. Could you 
-try whether tuning the /proc/sys/kernel/*granularity* values (in 
-particular wakeup_granularity) has any positive effect on your workload?
-
-also, could you run your workload as SCHED_BATCH [via schedtool -B ], 
-does that improve the results as well on a default-tuned kernel?
-
-	Ingo
