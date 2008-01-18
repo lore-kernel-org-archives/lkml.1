@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYARBF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760134AbYARBFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759481AbYARBF3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:05:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYARBFT
+	id S1760134AbYARBFo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:05:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757985AbYARBFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:05:19 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:52011 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757242AbYARBFS (ORCPT
+	Thu, 17 Jan 2008 20:05:21 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50343 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757339AbYARBFU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:05:18 -0500
-Date: Thu, 17 Jan 2008 20:04:27 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@openvz.org>, Kirill Korotaev <dev@sw.ru>
-Subject: [PATCH] printk deadlocks if called with runqueue lock held
-Message-ID: <Pine.LNX.4.58.0801172000430.32679@gandalf.stny.rr.com>
+	Thu, 17 Jan 2008 20:05:20 -0500
+Message-ID: <478FF9F3.9030604@zytor.com>
+Date: Thu, 17 Jan 2008 19:59:31 -0500
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: Use v8086_mode helper, trivial unification
+References: <1200611078.5724.46.camel@brick>  <478FDE76.3070309@zytor.com> <1200612389.5724.63.camel@brick>
+In-Reply-To: <1200612389.5724.63.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Harvey Harrison wrote:
+> 
+> Sorry, missed that detail in ptrace.h, I notice now.
+> 
+> Is there some better way this could be organized, would the following
+> be an improvement, as opposed to two long ifdef sections?
+> 
+> Patch will follow if you think it's a good idea.
 
-I thought that one could place a printk anywhere without worrying.
-But it seems that it is not wise to place a printk where the runqueue
-lock is held.
+It is actually quite a bit easier to read.
 
-I just spent two hours debugging why some of my code was locking up,
-to find that the lockup was caused by some debugging printk's that
-I had in the scheduler.  The printk's were only in rare paths so
-they shouldn't be too much of a problem, but after I hit the printk
-the system locked up.
+> 
+> static inline unsigned long stack_pointer(struct pt_regs *regs)
+> {
+> #ifdef CONFIG_X86_32
+> 	return (unsigned long)regs;
+> #else
+> 	return regs->sp;
+> #endif
+> }
 
-Thinking that it was locking up on my code I went looking down the
-wrong path. I finally found (after examining an NMI dump) that
-the lockup happened because printk was trying to wakeup the klogd
-daemon, which caused a deadlock when the try_to_wakeup code tries
-to grab the runqueue lock.
+This one is kind of strange.  In particular, the 32-bit definition isn't 
+exactly what one would expect.  It makes me concerned that it actually 
+refers to two different kinds of stack pointers?
 
-Since printks are seldom called with interrupts disabled, we can
-hold off the waking of klogd if they are. We don't have access to
-the runqueue locks from printk, but those locks need interrupts
-disabled in order to be held.
+> /* still need a define here, as one is long and one is unsigned long.
+>  * but this is another target for unification I guess. */
+> #define regs_return_value(regs) ((regs)->ax)
 
-Calling printk with interrupts disabled should only be done for
-emergencies and debugging anyway.
+Indeed...
 
-And with this patch, my code ran fine ;-)
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/printk.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-Index: linux-mcount.git/kernel/printk.c
-===================================================================
---- linux-mcount.git.orig/kernel/printk.c	2008-01-17 09:06:23.000000000 -0500
-+++ linux-mcount.git/kernel/printk.c	2008-01-17 19:56:59.000000000 -0500
-@@ -978,7 +978,13 @@ void release_console_sem(void)
- 	console_locked = 0;
- 	up(&console_sem);
- 	spin_unlock_irqrestore(&logbuf_lock, flags);
--	if (wake_klogd)
-+	/*
-+	 * If we try to wake up klogd while printing with the runqueue lock
-+	 * held, this will deadlock. We don't have access to the runqueue
-+	 * lock from here, but just checking for interrupts disabled
-+	 * should be enough.
-+	 */
-+	if (!irqs_disabled() && wake_klogd)
- 		wake_up_klogd();
- }
- EXPORT_SYMBOL(release_console_sem);
-
+	-hpa
