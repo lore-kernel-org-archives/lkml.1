@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759628AbYARMFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759777AbYARMJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759628AbYARMFP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 07:05:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbYARMFB
+	id S1759777AbYARMJS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 07:09:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756388AbYARMJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 07:05:01 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56622 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Jan 2008 07:09:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44997 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752604AbYARMFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 07:05:01 -0500
-Date: Fri, 18 Jan 2008 13:04:47 +0100
+	id S1756468AbYARMJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 07:09:03 -0500
+Date: Fri, 18 Jan 2008 13:08:40 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: only call early_init_amd one time
-Message-ID: <20080118120447.GC11044@elte.hu>
-References: <200801180105.53434.yinghai.lu@sun.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: travis@sgi.com, Andi Kleen <ak@suse.de>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] x86: Fixup NR-CPUS patch for numa
+Message-ID: <20080118120840.GE11044@elte.hu>
+References: <20080116183438.506737000@sgi.com> <20080116183438.636758000@sgi.com> <20080117103000.5e97dcd2.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801180105.53434.yinghai.lu@sun.com>
+In-Reply-To: <20080117103000.5e97dcd2.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,24 +37,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> [PATCH] x86_64: only call early_init_amd one time
+> > Also, the mem -> node hash lookup is fixed.
+> > 
+> > Based on 2.6.24-rc6-mm1 + change-NR_CPUS-V3 patchset
 > 
-> Andi's patch
-> "
->     x86: move X86_FEATURE_CONSTANT_TSC into early cpu feature detection
+> hm, I've been hiding from those patches.
 > 
->     Need this in the next patch in time_init and that happens early.
-> 
->     This includes a minor fix on i386 where early_intel_workarounds()
->     [which is now called early_init_intel] really executes early as
->     the comments say.
-> "
-> calling early_init_amd in early_identify_cpu and identify_cpu two times.
-> 
-> this patch remove the one in identify_cpu
+> Are they ready?
 
-thanks, applied.
+i'm carrying them in x86.git, and they are pretty robust, with one 
+outstanding build failure.
+
+( and i've asked Mike for a CONFIG_SMP_MAX debug option that selects the
+  baddest high-end features we have with 1024 or 4096 CPUs, etc. - this 
+  way allyesconfig bootups will show us any problems on that scale of 
+  the spectrum. )
 
 	Ingo
