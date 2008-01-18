@@ -1,50 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764321AbYARU2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764940AbYARU2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764321AbYARU2U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:28:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760432AbYARU2M
+	id S1764940AbYARU2i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761558AbYARU2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:28:12 -0500
-Received: from ozlabs.org ([203.10.76.45]:38303 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760362AbYARU2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:28:11 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] Makes lguest's irq handler typesafe
-Date: Sat, 19 Jan 2008 07:27:36 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>,
-       Ash Willis <ashwillis@programmer.net>, linux-pcmcia@lists.infradead.org,
-       virtualization@lists.linux-foundation.org, Tejun Heo <htejun@gmail.com>
-References: <200801190722.26154.rusty@rustcorp.com.au> <200801190725.24271.rusty@rustcorp.com.au>
-In-Reply-To: <200801190725.24271.rusty@rustcorp.com.au>
+	Fri, 18 Jan 2008 15:28:15 -0500
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55509 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761187AbYARU2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:28:14 -0500
+Date: Fri, 18 Jan 2008 12:26:13 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org,
+       avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
+       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
+       zach@vmware.com, roland@redhat.com, mtosatti@redhat.com
+Subject: Re: [PATCH 1/10] add missing parameter for lookup_address
+Message-ID: <20080118202613.GY3627@sequoia.sous-sol.org>
+References: <12006768251548-git-send-email-gcosta@redhat.com> <12006768362108-git-send-email-gcosta@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801190727.36567.rusty@rustcorp.com.au>
+In-Reply-To: <12006768362108-git-send-email-gcosta@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just a trivial example.
----
- drivers/lguest/lguest_device.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+* Glauber de Oliveira Costa (gcosta@redhat.com) wrote:
+> lookup_address() receives two parameters, but efi_64.c call
+> is passing only one. It's actually preventing the tree from compiling
+> 
+> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 
-diff -r 00ab7672f658 drivers/lguest/lguest_device.c
---- a/drivers/lguest/lguest_device.c	Thu Jan 17 16:54:00 2008 +1100
-+++ b/drivers/lguest/lguest_device.c	Thu Jan 17 16:59:46 2008 +1100
-@@ -179,9 +179,8 @@ static void lg_notify(struct virtqueue *
- 	hcall(LHCALL_NOTIFY, lvq->config.pfn << PAGE_SHIFT, 0, 0);
- }
- 
--static irqreturn_t lguest_interrupt(int irq, void *_vq)
-+static irqreturn_t lguest_interrupt(int irq, struct virtqueue *vq)
- {
--	struct virtqueue *vq = _vq;
- 	struct lguest_device_desc *desc = to_lgdev(vq->vdev)->desc;
- 
- 	if (unlikely(desc->config_change)) {
+Good catch, I know I don't test with CONFIG_EFI=y
