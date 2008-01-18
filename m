@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932304AbYARVER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbYARVFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932304AbYARVER (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 16:04:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762664AbYARVD5
+	id S932186AbYARVFZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 16:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759875AbYARVFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 16:03:57 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33634 "EHLO mx2.mail.elte.hu"
+	Fri, 18 Jan 2008 16:05:11 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:40691 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761837AbYARVD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 16:03:56 -0500
-Date: Fri, 18 Jan 2008 22:03:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Dave Jones <davej@redhat.com>, Yinghai Lu <Yinghai.Lu@Sun.COM>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] X86: fix typo PAT to X86_PAT
-Message-ID: <20080118210344.GC10717@elte.hu>
-References: <20080118123140.GI11044@elte.hu> <20080118182437.GA10167@redhat.com> <924EFEDD5F540B4284297C4DC59F3DEE62B7BA@orsmsx423.amr.corp.intel.com>
+	id S1751623AbYARVFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 16:05:09 -0500
+To: mingo@elte.hu
+Cc: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [5/7] Remove CONFIG_X86_TSC for 32bit II
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080118627.198787000@suse.de>
+	<20080118172721.96C8B14AAE@wotan.suse.de>
+Date: Fri, 18 Jan 2008 22:05:08 +0100
+In-Reply-To: <20080118172721.96C8B14AAE@wotan.suse.de> (Andi Kleen's message of "Fri\, 18 Jan 2008 18\:27\:21 +0100 \(CET\)")
+Message-ID: <p73tzlaalq3.fsf_-_@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE62B7BA@orsmsx423.amr.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen <ak@suse.de> writes:
 
-* Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com> wrote:
+> The config option protects so little code that it is fairly pointless.
+> Also a lot of its code was related to itself only (as in panicing without
+> TSC). And TSC less CPUs are completely handled at runtime anyways.
+>
+> This makes 32bit behaviour match x86-64.
+>
+> I also removed an #if defined(CONFIG_X86_GENERIC) in get_cycles. Not sure
+> what that was good for, it didn't make any sense.
 
-> Ingo, can you remove this PAT MTRR exclusion.
+Hmm, during further testing i found that the patch causes boot failures
+in some configuration. I withdraw this one for now.
 
-yeah, already did that.
+The other patches in the series are independent and should be still
+considered for merging.
 
-> Actually, this exclusion will not work at all with the current code. 
-> Infact it should be PAT selects MTRR, for the current code. As 
-> pat_init() is called during mtrr init as the rules for how to change 
-> PAT and how to change MTRR are same. Further, MTRR is always required 
-> on SMP, as we read the MTRR setting from boot CPU and set it on Aps at 
-> boot time. We should only remove the /proc/mtrr write permissions with 
-> CONFIG_PAT. We need to deprecate it for a while before that...
-
-ok.
-
-	Ingo
+-Andi
