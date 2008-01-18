@@ -1,83 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759397AbYARBOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760144AbYARBOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759397AbYARBOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYARBNz
+	id S1760144AbYARBOl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:14:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757472AbYARBOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:13:55 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:53110 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbYARBNy (ORCPT
+	Thu, 17 Jan 2008 20:14:31 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:60317 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757515AbYARBOa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:13:54 -0500
-Date: Fri, 18 Jan 2008 02:13:52 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "David S. Miller" <davem@davemloft.net>
-cc: Network Development Mailing List <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>,
-       =?UTF-8?Q?YOSHIFUJI_Hideaki_=2F_=E5=90=89=E8=97=A4=E8=8B=B1=E6=98?=
-	 =?UTF-8?Q?=8E?= <yoshfuji@linux-ipv6.org>,
-       Vince Fuller <vaf@cisco.com>
-Subject: [PATCH] IPv4: Enable use of 240/4 address space
-In-Reply-To: <20080108011057.GA21168@cisco.com>
-Message-ID: <Pine.LNX.4.64.0801180023450.18447@fbirervta.pbzchgretzou.qr>
-References: <20080108011057.GA21168@cisco.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 Jan 2008 20:14:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=kRSxjYMLRCkgVvHkK5W8FchPRYdOXU6ox6mTrLlrfld6A3SMD75cLVDFrBK9IAENYUoE2Bo8xQ1IBFiJfSi/CdHyfW38engSqGmkQCBw6BfFX9Ac3kBzemXwTWGgHFY23Z+v7DkYob/RyYQenBcUETu0BcbNJSfIDfVH6rOPcwc=
+Subject: Re: [PATCH] x86: Use v8086_mode helper, trivial unification
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <478FF9F3.9030604@zytor.com>
+References: <1200611078.5724.46.camel@brick>  <478FDE76.3070309@zytor.com>
+	 <1200612389.5724.63.camel@brick>  <478FF9F3.9030604@zytor.com>
+Content-Type: text/plain
+Date: Thu, 17 Jan 2008 17:14:29 -0800
+Message-Id: <1200618869.5724.83.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-01-17 at 19:59 -0500, H. Peter Anvin wrote:
+> Harvey Harrison wrote:
+> > 
+> > Sorry, missed that detail in ptrace.h, I notice now.
+> > 
+> > Is there some better way this could be organized, would the following
+> > be an improvement, as opposed to two long ifdef sections?
+> > 
+> > Patch will follow if you think it's a good idea.
+> 
+> It is actually quite a bit easier to read.
 
-On Jan 7 2008 17:10, Vince Fuller wrote:
->
->This set of diffs modify the 2.6.20 kernel to enable use of the 240/4
->(aka "class-E") address space as consistent with the Internet Draft
->draft-fuller-240space-00.txt.
->
+I'll send along a patch along soon, any thoughts on how to order it in
+the file?
 
-Below is a patch against davem/net-2.6.25. It might look very spartan, 
-but that is actually all that is needed on a sane system. No class E 
-macros or so needed.
+> 
+> > 
+> > static inline unsigned long stack_pointer(struct pt_regs *regs)
+> > {
+> > #ifdef CONFIG_X86_32
+> > 	return (unsigned long)regs;
+> > #else
+> > 	return regs->sp;
+> > #endif
+> > }
+> 
+> This one is kind of strange.  In particular, the 32-bit definition isn't 
+> exactly what one would expect.  It makes me concerned that it actually 
+> refers to two different kinds of stack pointers?
 
-Only the ipv4_is_badclass() might need renaming if you think it really 
-needs a name change. Or maybe a comment. Comments please :)
+This tripped up the kprobes unification as well, see the stack_addr()
+helper that was introduced there.  Would be good to figure this out
+and put a big fat comment on it.
 
-===
-ancestor 7651a1f7ebe567f9088283f6354a5634b5dccb8e
-commit 44762168d7cbefc4f8753a79d99a761cbd9875d9
-Author: Jan Engelhardt <jengelh@computergmbh.de>
-Date:   Fri Jan 18 02:10:44 2008 +0100
+kprobes.c
 
-    IPv4: enable use of 240/4 address space
-    
-    This short patch modifies the IPv4 networking to enable use of the
-    240.0.0.0/4 (aka "class-E") address space as propsed in the internet
-    draft draft-fuller-240space-00.txt.
-    
-    Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
+#ifdef CONFIG_X86_64
+#define stack_addr(regs) ((unsigned long *)regs->sp)
+#else
+/*
+ * "&regs->sp" looks wrong, but it's correct for x86_32.  x86_32 CPUs
+ * don't save the ss and esp registers if the CPU is already in kernel
+ * mode when it traps.  So for kprobes, regs->sp and regs->ss are not
+ * the [nonexistent] saved stack pointer and ss register, but rather
+ * the top 8 bytes of the pre-int3 stack.  So &regs->sp happens to
+ * point to the top of the pre-int3 stack.
+ */
+#define stack_addr(regs) ((unsigned long *)&regs->sp)
+#endif
 
-diff --git a/include/linux/in.h b/include/linux/in.h
-index 27d8a5a..b01bf75 100644
---- a/include/linux/in.h
-+++ b/include/linux/in.h
-@@ -216,9 +216,6 @@ struct sockaddr_in {
- #define	IN_MULTICAST(a)		IN_CLASSD(a)
- #define IN_MULTICAST_NET	0xF0000000
- 
--#define	IN_EXPERIMENTAL(a)	((((long int) (a)) & 0xf0000000) == 0xf0000000)
--#define	IN_BADCLASS(a)		IN_EXPERIMENTAL((a))
--
- /* Address to accept any incoming messages. */
- #define	INADDR_ANY		((unsigned long int) 0x00000000)
- 
-@@ -264,7 +261,7 @@ static inline bool ipv4_is_local_multicast(__be32 addr)
- 
- static inline bool ipv4_is_badclass(__be32 addr)
- {
--	return (addr & htonl(0xf0000000)) == htonl(0xf0000000);
-+	return addr == 0xFFFFFFFF;
- }
- 
- static inline bool ipv4_is_zeronet(__be32 addr)
+> > /* still need a define here, as one is long and one is unsigned long.
+> >  * but this is another target for unification I guess. */
+> > #define regs_return_value(regs) ((regs)->ax)
+> 
+> Indeed...
+
+I think this comes out of Roland's patches unifying some names eip/rip,
+eax/rax, etc.
+
+CC'd in case he felt like more work ;-)
+
+Harvey
+
