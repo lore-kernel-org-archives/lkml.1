@@ -1,33 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760162AbYARNyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761760AbYARNya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760162AbYARNyQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 08:54:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758226AbYARNyA
+	id S1761760AbYARNya (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 08:54:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761527AbYARNyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 08:54:00 -0500
-Received: from main.gmane.org ([80.91.229.2]:42185 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758882AbYARNx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 08:53:59 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
+	Fri, 18 Jan 2008 08:54:16 -0500
+Received: from THAUM.MIT.EDU ([18.95.3.27]:56841 "EHLO luto.stanford.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760162AbYARNyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 08:54:14 -0500
+Message-ID: <4790AF84.2020000@myrealbox.com>
+Date: Fri, 18 Jan 2008 08:54:12 -0500
 From: Andy Lutomirski <luto@myrealbox.com>
-Subject: Re: Why is the kfree() argument const?
-Date: Fri, 18 Jan 2008 08:53:44 -0500
-Message-ID: <4790AF68.8040403@myrealbox.com>
-References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com> <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org> <47905A95.4030500@cateee.net> <47906133.6010301@cateee.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+Newsgroups: gmane.linux.kernel
+To: Giacomo Catenazzi <cate@cateee.net>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
        David Schwartz <davids@webmaster.com>,
        Johannes Weiner <hannes@saeurebad.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        clameter@sgi.com, penberg@cs.helsinki.fi
-X-Gmane-NNTP-Posting-Host: sydneypacific-one-fifty-nine.mit.edu
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+Subject: Re: Why is the kfree() argument const?
+References: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com> <alpine.LFD.1.00.0801171710160.2957@woody.linux-foundation.org> <47905A95.4030500@cateee.net> <47906133.6010301@cateee.net>
 In-Reply-To: <47906133.6010301@cateee.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
