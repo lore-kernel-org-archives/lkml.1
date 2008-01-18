@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760593AbYARMdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760778AbYARMg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760593AbYARMdw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 07:33:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbYARMdo
+	id S1760778AbYARMg1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 07:36:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbYARMgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 07:33:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56823 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754769AbYARMdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 07:33:43 -0500
-Date: Fri, 18 Jan 2008 13:33:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Jan Beulich <jbeulich@novell.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]  x86: fold _PAGE_GLOBAL into __PAGE_KERNEL
-Message-ID: <20080118123324.GJ11044@elte.hu>
-References: <478FAC91.90109@goop.org>
+	Fri, 18 Jan 2008 07:36:19 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:40921 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756931AbYARMgS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 07:36:18 -0500
+Date: Fri, 18 Jan 2008 18:06:05 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Andrea Righi <righiandr@users.sourceforge.net>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cgroup: limit block I/O bandwidth
+Message-ID: <20080118123605.GB14339@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <4790904F.5000101@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <478FAC91.90109@goop.org>
+In-Reply-To: <4790904F.5000101@users.sourceforge.net>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0669]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 18, 2008 at 12:41:03PM +0100, Andrea Righi wrote:
+> Allow to limit the block I/O bandwidth for specific process containers
+> (cgroups) imposing additional delays on I/O requests for those processes
+> that exceed the limits defined in the control group filesystem.
+> 
+> Example:
+>   # mkdir /dev/cgroup
+>   # mount -t cgroup -oio-throttle io-throttle /dev/cgroup
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Just a minor nit, can't we name it as io, keeping in mind that other
+controllers are known as cpu and memory?
 
-> With the iounmap problem resolved, it should be OK to always set 
-> _PAGE_GLOBAL in __PAGE_KERNEL*.
+Will try it out and give some more feedback.
 
-thanks Jeremy, applied.
-
-> [ Did this patch cause problems before? ]
-
-not that i remember.
-
-	Ingo
+Thanks,
+-- 
+regards,
+Dhaval
