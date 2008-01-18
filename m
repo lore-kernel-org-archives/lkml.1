@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbYARDl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbYARDop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759383AbYARDl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 22:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbYARDll
+	id S1758940AbYARDop (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 22:44:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYARDoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 22:41:41 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37981 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753642AbYARDlk (ORCPT
+	Thu, 17 Jan 2008 22:44:38 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:49695 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993AbYARDoh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 22:41:40 -0500
-Message-ID: <47901E89.4060001@zytor.com>
-Date: Thu, 17 Jan 2008 22:35:37 -0500
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: Use v8086_mode helper, trivial unification
-References: <1200611078.5724.46.camel@brick>	<478FDE76.3070309@zytor.com>	 <1200612389.5724.63.camel@brick>	<478FF9F3.9030604@zytor.com>	 <1200618952.5724.85.camel@brick>	 <20080118013712.4090526FA0B@magilla.localdomain>	 <479002B6.9030607@zytor.com> <1200622862.5724.106.camel@brick>
-In-Reply-To: <1200622862.5724.106.camel@brick>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 17 Jan 2008 22:44:37 -0500
+Date: Thu, 17 Jan 2008 19:50:32 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] X86: fix typo PAT to X86_PAT
+To: Ingo Molnar <mingo@elte.hu>
+Cc: venkatesh.pallipadi@intel.com, LKML <linux-kernel@vger.kernel.org>
+Message-id: <200801171950.32458.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
-> 
-> What do you think of:
-> 
-> /*
->  * (unsigned long)regs looks strange, but it's correct for x86_32.  x86_32 CPUs
->  * don't save the ss and esp registers if the CPU is already in kernel mode
->  * when it traps.  So &regs happens to be esp.  Valid only for kernel-mode
->  * pt_regs.
->  */
-> static inline unsigned long stack_pointer(struct pt_regs *regs)
-> {
-> #ifdef CONFIG_X86_32
-> 	return (unsigned long)regs;
-> #else
-> 	return regs->sp;
-> #endif
-> }
-> 
+[PATCH] X86: fix typo PAT to X86_PAT
 
-Please highlight the last sentence better.  That's a user restriction 
-and a highly important one.
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-	-hpa
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 1b38c21..980f054 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -953,7 +953,7 @@ config MATH_EMULATION
+ 
+ config MTRR
+ 	bool "MTRR (Memory Type Range Register) support"
+-	depends on !PAT
++	depends on !X86_PAT
+ 	---help---
+ 	  On Intel P6 family processors (Pentium Pro, Pentium II and later)
+ 	  the Memory Type Range Registers (MTRRs) may be used to control
