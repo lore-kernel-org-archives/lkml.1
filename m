@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932446AbYARSfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932494AbYARSfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932446AbYARSfA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:35:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764855AbYARScW
+	id S932494AbYARSfk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:35:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764825AbYARSdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:32:22 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35311 "EHLO mx1.redhat.com"
+	Fri, 18 Jan 2008 13:33:13 -0500
+Received: from ns2.suse.de ([195.135.220.15]:46005 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763176AbYARScT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:32:19 -0500
-Date: Fri, 18 Jan 2008 13:27:27 -0500
-From: Dave Jones <davej@redhat.com>
-To: Valdis.Kletnieks@vt.edu, Linus Torvalds <torvalds@linux-foundation.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, ak@muc.de,
-       ebiederm@xmission.com, rdreier@cisco.com, gregkh@suse.de,
-       airlied@skynet.ie, davej@redhat.com, mingo@elte.hu, tglx@linutronix.de,
-       akpm@linux-foundation.org, arjan@infradead.org,
-       "Barnes, Jesse" <jesse.barnes@intel.com>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [patch 02/11] PAT x86: Map only usable memory in x86_64
-	identity map and kernel text
-Message-ID: <20080118182727.GB10167@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Valdis.Kletnieks@vt.edu,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>, ak@muc.de,
-	ebiederm@xmission.com, rdreier@cisco.com, gregkh@suse.de,
-	airlied@skynet.ie, mingo@elte.hu, tglx@linutronix.de,
-	akpm@linux-foundation.org, arjan@infradead.org,
-	"Barnes, Jesse" <jesse.barnes@intel.com>, davem@davemloft.net,
-	linux-kernel@vger.kernel.org,
-	"Siddha, Suresh B" <suresh.b.siddha@intel.com>
+	id S1764580AbYARSdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 13:33:10 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: travis@sgi.com
+Subject: Re: [PATCH 5/5] x86: Add debug of invalid per_cpu map accesses
+Date: Fri, 18 Jan 2008 19:33:05 +0100
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+References: <20080118183011.354965000@sgi.com> <20080118183012.050317000@sgi.com>
+In-Reply-To: <20080118183012.050317000@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <11912.1200005441@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200801181933.05662.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 10, 2008 at 05:50:41PM -0500, Valdis.Kletnieks@vt.edu wrote:
+On Friday 18 January 2008 19:30:16 travis@sgi.com wrote:
+> Provide a means to trap usages of per_cpu map variables before
+> they are setup.  Define CONFIG_DEBUG_PER_CPU_MAPS to activate.
 
- > (Personally, I keep a copy of Arjan's "restrict devmem" patch from Fedora
- > around, so I guess that says which camp I belong in, and the fact it's a Fedora
- > patch and not mainstream says something too...)
+Are you sure that debug option is generally useful enough
+to merge? It seems very specific to your patchkit, but I'm not
+sure it would be worth carrying forever in the kernel.
 
-The way that patch is right now (and has been for some time) is kind of nasty,
-and could use cleaning up.  I made a half-assed attempt at improving it
-a little over xmas, but it could rewriting from scratch.
-That's the only reason I never bothered pushing it (and I assume, the reason
-that Arjan didn't push it when he wrote the original).
+Better would be probably to just unmap those areas anyways.
 
-     Dave
-
---
-http://www.codemonkey.org.uk
+-Andi
