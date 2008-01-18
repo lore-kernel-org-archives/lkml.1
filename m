@@ -1,81 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758294AbYARE7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752710AbYARFAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758294AbYARE7a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 23:59:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbYARE7W
+	id S1752710AbYARFAr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 00:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750747AbYARFAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 23:59:22 -0500
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:56173 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751566AbYARE7W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 23:59:22 -0500
-Date: Thu, 17 Jan 2008 23:59:21 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: hpa@zytor.com
-Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: make clflush a required feature on x86_64
-Message-ID: <20080118045921.GB974@phobos.i.cabal.ca>
+	Fri, 18 Jan 2008 00:00:40 -0500
+Received: from mx1.suse.de ([195.135.220.2]:57797 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750712AbYARFAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 00:00:39 -0500
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/2] x86: add is_f00f_bug helper to fault_32|64.c
+From: Andi Kleen <andi@firstfloor.org>
+References: <1200610456.5724.41.camel@brick>
+Date: Fri, 18 Jan 2008 06:00:38 +0100
+In-Reply-To: <1200610456.5724.41.camel@brick> (Harvey Harrison's message of "Thu\, 17 Jan 2008 14\:54\:16 -0800")
+Message-ID: <p73d4rzbudl.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hopefully nobody will be stupid enough to implement a cpu without
-it. Frankly, it seems safe enough given we already require SSE2.
+Harvey Harrison <harvey.harrison@gmail.com> writes:
 
-This means the compiler can optimise away "if (!cpu_has_clflush)"
-blocks.
+> Further towards unifying these files, add another helper
+> in same spirit as is_errata93.
 
-Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
----
- include/asm-x86/cpufeature_64.h     |    3 +++
- include/asm-x86/required-features.h |    4 +++-
- 2 files changed, 6 insertions(+), 1 deletions(-)
+The better way to handle this would be to move all these workarounds
+into notifiers that only get registered on the CPUs that actually have
+the bugs.
 
-diff --git a/include/asm-x86/cpufeature_64.h b/include/asm-x86/cpufeature_64.h
-index e18496b..ef11d27 100644
---- a/include/asm-x86/cpufeature_64.h
-+++ b/include/asm-x86/cpufeature_64.h
-@@ -18,6 +18,9 @@
- #undef  cpu_has_mp
- #define cpu_has_mp             1 /* XXX */
- 
-+#undef	cpu_has_clflush
-+#define	cpu_has_clflush        1
-+
- #undef  cpu_has_k6_mtrr
- #define cpu_has_k6_mtrr        0
- 
-diff --git a/include/asm-x86/required-features.h b/include/asm-x86/required-features.h
-index 7400d3a..cc27664 100644
---- a/include/asm-x86/required-features.h
-+++ b/include/asm-x86/required-features.h
-@@ -45,6 +45,7 @@
- #define NEED_XMM	(1<<(X86_FEATURE_XMM & 31))
- #define NEED_XMM2	(1<<(X86_FEATURE_XMM2 & 31))
- #define NEED_LM		(1<<(X86_FEATURE_LM & 31))
-+#define NEED_CLFLSH	(1<<(X86_FEATURE_CLFLSH & 31))
- #else
- #define NEED_PSE	0
- #define NEED_MSR	0
-@@ -53,11 +54,12 @@
- #define NEED_XMM	0
- #define NEED_XMM2	0
- #define NEED_LM		0
-+#define NEED_CLFLSH	0
- #endif
- 
- #define REQUIRED_MASK0	(NEED_FPU|NEED_PSE|NEED_MSR|NEED_PAE|\
- 			 NEED_CX8|NEED_PGE|NEED_FXSR|NEED_CMOV|\
--			 NEED_XMM|NEED_XMM2)
-+			 NEED_XMM|NEED_XMM2|NEED_CLFLSH)
- #define SSE_MASK	(NEED_XMM|NEED_XMM2)
- 
- #define REQUIRED_MASK1	(NEED_LM|NEED_3DNOW)
--- 
-1.5.3.7
+There is right now no die notifier in the right place for this,
+but you could just add one there. This is no performance critical
+place.
 
+-Andi
