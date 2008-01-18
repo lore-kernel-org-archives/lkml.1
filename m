@@ -1,54 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765465AbYARUrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765588AbYARUtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765465AbYARUrx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 15:47:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760316AbYARUrq
+	id S1765588AbYARUtF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 15:49:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760316AbYARUsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 15:47:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40926 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760131AbYARUrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 15:47:45 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dave Jones <davej@redhat.com>
-Subject: Re: 2.6.24-rc8-mm1: broken suspend (due to git-cpufreq.patch)
-Date: Fri, 18 Jan 2008 21:50:35 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <20080117023514.9df393cf.akpm@linux-foundation.org> <200801181435.00364.rjw@sisk.pl> <20080118171036.GB29889@redhat.com>
-In-Reply-To: <20080118171036.GB29889@redhat.com>
+	Fri, 18 Jan 2008 15:48:55 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:51613 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759715AbYARUsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 15:48:54 -0500
+Message-ID: <479110B4.50500@sgi.com>
+Date: Fri, 18 Jan 2008 12:48:52 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andi Kleen <ak@suse.de>
+CC: Ingo Oeser <ioe-lkml@rameria.de>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
+References: <20080118183011.354965000@sgi.com> <200801182104.22486.ioe-lkml@rameria.de> <479108C3.1010800@sgi.com> <200801182136.15213.ak@suse.de>
+In-Reply-To: <200801182136.15213.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801182150.35483.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 18 of January 2008, Dave Jones wrote:
-> On Fri, Jan 18, 2008 at 02:34:59PM +0100, Rafael J. Wysocki wrote:
->  > On Thursday, 17 of January 2008, Andrew Morton wrote:
->  > > 
->  > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
->  > > 
->  > > - selinux is busted on one of my two selinux-enabled test machines.
->  > > 
->  > > - suspend-to-ram and suspend-to-disk are totally hosed on one of my test
->  > >   machines.  I guess I get to bisect this.
->  > 
->  > Suspend and hibernation are also broken on my HP nx6325, which is caused by
->  > git-cpufreq.patch.  Reverting this patch and
->  > drivers-cpufreq-add-calls-to-cpufreq_cpu_put.patch makes things work again.
->  > 
->  > I reported this already for 2.6.24-rc6-mm1 and Dave said he would look at it
->  > in January.  It's still January, so hopefully he's still going to do that. ;-)
+Andi Kleen wrote:
+> First I think you have to get rid of the THREAD_ORDER stuff -- your
+> goal of the whole patchkit after all is to allow distributions to
+> support NR_CPUS==4096 in the standard kernels and I doubt any
+> distribution will over chose a THREAD_ORDER > 1 in their 
+> standard kernels because it would be too unreliable on smaller
+> systems.
 > 
-> Given that laptop has a K8 CPU, it's highly likely that it's this patch..
-> http://userweb.kernel.org/~davej/pn.diff
-> Can you revert just that on top of -mm, (or just try this standalone on top of -rc8)
-> and confirm this is problematic ?
+>> Here are the top stack consumers with NR_CPUS = 4k.
+>>
+>>                          16392 isolated_cpu_setup
+>>                          10328 build_sched_domains
+>>                           8248 numa_initmem_init
+> 
+> These should run single threaded early at boot so you can probably just make
+> the cpumask_t variables static __initdata
+> 
+>>                           4664 cpu_attach_domain
+>>                           4104 show_shared_cpu_map
+> 
+> These above are the real pigs. Fortunately they are all clearly
+> slowpath (except perhaps show_shared_cpu_map) so just using heap
+> allocations or when needed bootmem for them should be fine.
+> 
+>>                           3656 centrino_target
+>>                           3608 powernowk8_cpu_init
+>>                           3192 sched_domain_node_span
+> 
+> x86-64 always has 8k stacks and separate interrupt stack. As long
+> as the calls are not in some stack intensive layered context (like block
+> IO processing path etc.) <3k shouldn't be too big an issue.
+> 
+> BTW there is a trick to get more stack space on x86-64 temporarily:
+> run it in a softirq. They got 16k stacks by default. Just leave
+> enough left over for the hard irqs that might happen if you don't
+> have interrupts disabled.
+> 
+>>                           3144 acpi_cpufreq_target
+>>                           2584 __svc_create_thread
+>>                           2568 cpu_idle_wait
+>>                           2136 netxen_nic_flash_print
+>>                           2104 powernowk8_target
+>>                           2088 _cpu_down
+>>                           2072 cache_add_dev
+>>                           2056 get_cur_freq
+>>                              0 acpi_processor_ffh_cstate_probe
+>>                           2056 microcode_write
+>>                              0 acpi_processor_get_throttling
+>>                           2048 check_supported_cpu
+>>
+>> And I've yet to figure out how to accumulate stack sizes using
+>> call threads.
+> 
+> One way if you don't care about indirect/asm calls is to use cflow and do
+> some post processing that adds up the data from checkstack.pl
+> 
+> The other way is to use mcount, but only for situations you can reproduce
+> of course. I did have a 2.4 mcount based stack instrumentation patch
+> some time ago that I could probably dig out if it was useful.
+> 
+> -Andi
 
-Reverting it from the -mm makes things work.  I'll check if it breaks things
-when applied on top of -rc8.
+Thanks for the great feedback Andi.  Since cpumask changes are the next
+item on my list after NR_CPUS (and friends) are dealt with, perhaps I
+could move the THREAD_ORDER stuff to the "Kernel Hacking" area for the
+interim?
+
+And yes, I'm interested in any tools to help accumulate information.
+
+Btw, there are 116 functions now that have >= 1k stack size.
+
+Cheers,
+Mike
