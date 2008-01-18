@@ -1,118 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764516AbYARRcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764294AbYARRdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764516AbYARRcp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:32:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764328AbYARRcS
+	id S1764294AbYARRdv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 12:33:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761912AbYARRdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:32:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42875 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761912AbYARRcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:32:16 -0500
-Message-ID: <4790E295.6010301@redhat.com>
-Date: Fri, 18 Jan 2008 12:32:05 -0500
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
+	Fri, 18 Jan 2008 12:33:42 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:36706 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762955AbYARRdk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 12:33:40 -0500
+Date: Fri, 18 Jan 2008 23:03:37 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Andreas Herrmann3 <andreas.herrmann3@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, ak@muc.de,
+       ebiederm@xmission.com, rdreier@cisco.com, torvalds@linux-foundation.org,
+       gregkh@suse.de, airlied@skynet.ie, davej@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com, akpm@linux-foundation.org, arjan@infradead.org,
+       "Barnes, Jesse" <jesse.barnes@intel.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/4] x86: PAT followup - Incremental changes and bug
+	fixes
+Message-ID: <20080118173337.GC12009@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+	Andreas Herrmann3 <andreas.herrmann3@amd.com>,
+	Ingo Molnar <mingo@elte.hu>,
+	"Siddha, Suresh B" <suresh.b.siddha@intel.com>, ak@muc.de,
+	ebiederm@xmission.com, rdreier@cisco.com,
+	torvalds@linux-foundation.org, gregkh@suse.de, airlied@skynet.ie,
+	davej@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+	akpm@linux-foundation.org, arjan@infradead.org,
+	"Barnes, Jesse" <jesse.barnes@intel.com>, davem@davemloft.net,
+	linux-kernel@vger.kernel.org
+References: <20080117210301.GC12631@alberich.amd.com> <20080117211308.GA7858@elte.hu> <20080117213131.GA25389@linux-os.sc.intel.com> <20080117214209.GA12811@elte.hu> <20080117220650.GE12631@alberich.amd.com> <20080117221505.GB18883@elte.hu> <20080117225243.GH12631@alberich.amd.com> <20080117230410.GA8694@linux-os.sc.intel.com> <20080118161057.GB4636@alberich.amd.com> <924EFEDD5F540B4284297C4DC59F3DEE62B6BE@orsmsx423.amr.corp.intel.com>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Matthew Wilcox <matthew@wil.cx>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] enhanced ESTALE error handling
-References: <4790C761.1010603@redhat.com> <20080118161443.GB20490@parisc-linux.org> <4790D7C0.30402@redhat.com> <20080118171805.GA15158@fieldses.org>
-In-Reply-To: <20080118171805.GA15158@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE62B6BE@orsmsx423.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> On Fri, Jan 18, 2008 at 11:45:52AM -0500, Peter Staubach wrote:
->   
->> Matthew Wilcox wrote:
->>     
->>> On Fri, Jan 18, 2008 at 10:36:01AM -0500, Peter Staubach wrote:
->>>       
->>>>  static int path_lookup_create(int dfd, const char *name,
->>>> -			      unsigned int lookup_flags, struct nameidata *nd,
->>>> -			      int open_flags, int create_mode)
->>>> +		unsigned int lookup_flags, struct nameidata *nd,
->>>> +		int open_flags, int create_mode)
->>>>     
->>>>         
->>> Gratuitous reformatting?
->>>
->>>   
->>>       
->> Elimination of an overly long line?
->>     
+* Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com> [2008-01-18 09:13:10]:
+
+> 
+> 
+> >-----Original Message-----
+> >From: Andreas Herrmann3 [mailto:andreas.herrmann3@amd.com] 
+> >Sent: Friday, January 18, 2008 8:11 AM
+> >To: Pallipadi, Venkatesh
+> >Cc: Ingo Molnar; Siddha, Suresh B; ak@muc.de; 
+> >ebiederm@xmission.com; rdreier@cisco.com; 
+> >torvalds@linux-foundation.org; gregkh@suse.de; 
+> >airlied@skynet.ie; davej@redhat.com; tglx@linutronix.de; 
+> >hpa@zytor.com; akpm@linux-foundation.org; arjan@infradead.org; 
+> >Barnes, Jesse; davem@davemloft.net; linux-kernel@vger.kernel.org
+> >Subject: Re: [patch 0/4] x86: PAT followup - Incremental 
+> >changes and bug fixes
+> >
+> >On Thu, Jan 17, 2008 at 03:04:10PM -0800, Venki Pallipadi wrote:
+> >>
+> >> Below is another potential fix for the problem here. Going 
+> >through ACPI
+> >> ioremap usages, we found at one place the mapping is cached 
+> >for possible
+> >> optimization reason and not unmapped later. Patch below always unmaps
+> >> ioremap at this place in ACPICA.
+> >
+> >The patch does not fix the problem. The conflicting cache 
+> >attributes are
+> >still there.
+> >
+> 
+> Andreas,
+> 
+> Could you also try the patch Suresh Siddha sent out yesterday. That
+> covers the case where the attribute was not getting removed even after
+> unmap was called.
 >
-> I usually try to gather any coding style, comment grammar, etc., fixes
-> into a single patch or two at the beginning of a series.  That keeps the
-> substantive patches (the hardest to understand) shorter.
->
->   
 
-That's probably great advice.  I can easily enough undo the change
-since it does not affect the functionality of the patch.  It was
-made while I was doing the analysis for the patch and to make the
-style better match the style used in other surrounding routines.
+An easy way for you to figure out if our patch will solve your problem
+is this, look for any quirks for your device in drivers/pci/quirks.c
+and or architecture specific quirks file. If you see your device in
+there, then our patch is likely to solve your problem.
 
-    Thanx...
-
-       ps
-
-> --b.
->
->   
->>>> @@ -1712,7 +1729,10 @@ int open_namei(int dfd, const char *path
->>>>  	int acc_mode, error;
->>>>  	struct path path;
->>>>  	struct dentry *dir;
->>>> -	int count = 0;
->>>> +	int count;
->>>> +
->>>> +top:
->>>> +	count = 0;
->>>>   	acc_mode = ACC_MODE(flag);
->>>>  @@ -1739,7 +1759,8 @@ int open_namei(int dfd, const char *path
->>>>  	/*
->>>>  	 * Create - we need to know the parent.
->>>>  	 */
->>>> -	error = path_lookup_create(dfd,pathname,LOOKUP_PARENT,nd,flag,mode);
->>>> +	error = path_lookup_create(dfd, pathname, LOOKUP_PARENT, nd,
->>>> +				flag, mode);
->>>>  	if (error)
->>>>  		return error;
->>>>  @@ -1812,10 +1833,17 @@ ok:
->>>>  	return 0;
->>>>   exit_dput:
->>>> +	if (error == -ESTALE)
->>>> +		d_drop(path.dentry);
->>>>  	dput_path(&path, nd);
->>>>  exit:
->>>>  	if (!IS_ERR(nd->intent.open.file))
->>>>  		release_open_intent(nd);
->>>> +	if (error == -ESTALE) {
->>>> +		d_drop(nd->dentry);
->>>> +		path_release(nd);
->>>> +		goto top;
->>>> +	}
->>>>     
->>>>         
->>> I wonder if a tail-call might not work better here.
->>>       
->> "Tail-call"?
->>
->>    Thanx...
->>
->>       ps
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>     
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
