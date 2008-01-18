@@ -1,108 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760135AbYARLgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbYARLgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760135AbYARLgV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 06:36:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbYARLgO
+	id S1760693AbYARLgd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 06:36:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756663AbYARLgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 06:36:14 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:34146 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755354AbYARLgN (ORCPT
+	Fri, 18 Jan 2008 06:36:15 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:53816 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755399AbYARLgO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 06:36:13 -0500
-Date: Fri, 18 Jan 2008 06:35:23 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jiri Kosina <jikos@jikos.cz>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@openvz.org>, Kirill Korotaev <dev@sw.ru>
-Subject: Re: [PATCH] printk deadlocks if called with runqueue lock held
-In-Reply-To: <Pine.LNX.4.64.0801181203240.15647@twin.jikos.cz>
-Message-ID: <Pine.LNX.4.58.0801180634040.7574@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0801172000430.32679@gandalf.stny.rr.com>
- <Pine.LNX.4.64.0801181203240.15647@twin.jikos.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 Jan 2008 06:36:14 -0500
+To: a.p.zijlstra@chello.nl
+CC: miklos@szeredi.hu, salikhmetov@gmail.com, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+In-reply-to: <1200655438.5920.21.camel@twins> (message from Peter Zijlstra on
+	Fri, 18 Jan 2008 12:23:58 +0100)
+Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
+	files
+References: <12006091182260-git-send-email-salikhmetov@gmail.com>
+	 <12006091211208-git-send-email-salikhmetov@gmail.com>
+	 <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu> <1200651337.5920.9.camel@twins>
+	 <E1JFobo-00009i-Dk@pomaz-ex.szeredi.hu> <1200654050.5920.14.camel@twins>
+	 <E1JFpDg-0000F6-12@pomaz-ex.szeredi.hu> <1200655438.5920.21.camel@twins>
+Message-Id: <E1JFpW4-0000Hc-Sp@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 18 Jan 2008 12:36:08 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Possibly, I didn't see a quick way to break that iteration.
+> >From a quick glance at prio_tree.c the iterator isn't valid anymore
+> after releasing i_mmap_lock. Fixing that would be,.. 'fun'.
 
-On Fri, 18 Jan 2008, Jiri Kosina wrote:
->
-> If this patch is going to be merged, you should perhaps adjust the comment
-> introduced by the above mentioned commit, so that it reflects the new
-> behavior.
+Maybe i_mmap_lock isn't needed at all, since msync holds mmap_sem,
+which protects the prio tree as well, no?
 
-Thanks for pointing this out. Updated patch below:
+> I also realized I forgot to copy/paste the prio_tree_iter declaration
+> and ought to make all these functions static.
+> 
+> But for a quick draft it conveys the idea pretty well, I guess :-)
 
--- Steve
-=========
+Yes :)
 
-I thought that one could place a printk anywhere without worrying.
-But it seems that it is not wise to place a printk where the runqueue
-lock is held.
+There could also be nasty performance corner cases, like having a huge
+file mapped thousands of times, and having only a couple of pages
+dirtied between MS_ASYNC invocations.  Then most of that page table
+walking would be just unnecessary overhead.
 
-I just spent two hours debugging why some of my code was locking up,
-to find that the lockup was caused by some debugging printk's that
-I had in the scheduler.  The printk's were only in rare paths so
-they shouldn't be too much of a problem, but after I hit the printk
-the system locked up.
+There's something to be said for walking only the dirty pages, and
+doing page_mkclean on them, even if in some cases that would be
+slower.
 
-Thinking that it was locking up on my code I went looking down the
-wrong path. I finally found (after examining an NMI dump) that
-the lockup happened because printk was trying to wakeup the klogd
-daemon, which caused a deadlock when the try_to_wakeup code tries
-to grab the runqueue lock.
+But I have a strong feeling of deja vu, and last time it ended with
+Andrew not liking the whole thing...
 
-Since printks are seldom called with interrupts disabled, we can
-hold off the waking of klogd if they are. We don't have access to
-the runqueue locks from printk, but those locks need interrupts
-disabled in order to be held.
-
-Calling printk with interrupts disabled should only be done for
-emergencies and debugging anyway.
-
-And with this patch, my code ran fine ;-)
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/printk.c |   16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
-
-Index: linux-mcount.git/kernel/printk.c
-===================================================================
---- linux-mcount.git.orig/kernel/printk.c	2008-01-18 06:29:15.000000000 -0500
-+++ linux-mcount.git/kernel/printk.c	2008-01-18 06:32:38.000000000 -0500
-@@ -595,9 +595,11 @@ static int have_callable_console(void)
-  * @fmt: format string
-  *
-  * This is printk().  It can be called from any context.  We want it to work.
-- * Be aware of the fact that if oops_in_progress is not set, we might try to
-- * wake klogd up which could deadlock on runqueue lock if printk() is called
-- * from scheduler code.
-+ *
-+ * Note: if printk() is called with interrupts disabled, it will not wake
-+ * up the klogd. This is to avoid a deadlock from calling printk() in schedule
-+ * with the runqueue lock held and having the wake_up grab the runqueue lock
-+ * as well.
-  *
-  * We try to grab the console_sem.  If we succeed, it's easy - we log the output and
-  * call the console drivers.  If we fail to get the semaphore we place the output
-@@ -978,7 +980,13 @@ void release_console_sem(void)
- 	console_locked = 0;
- 	up(&console_sem);
- 	spin_unlock_irqrestore(&logbuf_lock, flags);
--	if (wake_klogd)
-+	/*
-+	 * If we try to wake up klogd while printing with the runqueue lock
-+	 * held, this will deadlock. We don't have access to the runqueue
-+	 * lock from here, but just checking for interrupts disabled
-+	 * should be enough.
-+	 */
-+	if (!irqs_disabled() && wake_klogd)
- 		wake_up_klogd();
- }
- EXPORT_SYMBOL(release_console_sem);
+Miklos
