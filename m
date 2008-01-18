@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbYARG4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbYARG7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbYARG4U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 01:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbYARG4M
+	id S1754407AbYARG7n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 01:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbYARG7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 01:56:12 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:37395 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751054AbYARG4L (ORCPT
+	Fri, 18 Jan 2008 01:59:36 -0500
+Received: from hs-out-0708.google.com ([64.233.178.245]:50219 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750853AbYARG7e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 01:56:11 -0500
-Date: Fri, 18 Jan 2008 07:56:21 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Linux MM <linux-mm@kvack.org>
-Subject: Re: crash in kmem_cache_init
-Message-ID: <20080118065621.GA27495@aepfle.de>
-References: <20080115150949.GA14089@aepfle.de> <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com> <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com> <20080117181222.GA24411@aepfle.de> <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com> <20080117211511.GA25320@aepfle.de>
+	Fri, 18 Jan 2008 01:59:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aFPriXfyVzZlSaKCzAN2eV4syWOyMrvAQVi6KJvRCVu8eFBB9pIHqQvV1LIohe4QwGEmO9Knrh9dG9h82WVyZWtctfJHMuqyg1QX2PocSGM36qUTx5uLdOouU2lZApQE85PIi1qz37rLzUuTHm5zL7DOWiuILKnbPZ5mDtGZYNc=
+Message-ID: <a8e1da0801172259s3377895dwb0b2ca1dd781d11b@mail.gmail.com>
+Date: Fri, 18 Jan 2008 14:59:32 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Tetsuo Handa" <penguin-kernel@i-love.sakura.ne.jp>
+Subject: Re: [2.6.24-rc8-mm1] Locking API boot-time self-tests hangs.
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Zan Lynx" <zlynx@acm.org>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <200801180640.m0I6enPI029212@www262.sakura.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080117211511.GA25320@aepfle.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <200801180120.m0I1KBuC065806@www262.sakura.ne.jp>
+	 <20080117181935.02294863.akpm@linux-foundation.org>
+	 <200801180319.m0I3Ju9N089501@www262.sakura.ne.jp>
+	 <20080117204247.5318e500.akpm@linux-foundation.org>
+	 <200801180640.m0I6enPI029212@www262.sakura.ne.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, Olaf Hering wrote:
+On Jan 18, 2008 2:40 PM, Tetsuo Handa
+<penguin-kernel@i-love.sakura.ne.jp> wrote:
+> Hello.
+>
+> Andrew Morton wrote:
+> > It could be compiler version dependent.  I used gcc-4.1.0.  Which version
+> > were you and Zan using please?
 
-> On Thu, Jan 17, Christoph Lameter wrote:
-> 
-> > On Thu, 17 Jan 2008, Olaf Hering wrote:
-> > 
-> > > The patch does not help.
-> > 
-> > Duh. We need to know more about the problem.
-> 
-> cache_grow is called from 3 places. The third call has cleared l3 for
-> some reason.
+I have the same problem, gcc 3.4.6
 
-Typo in debug patch.
-
-calls cache_grow with nodeid 0
-> [c00000000075bbd0] [c0000000000f82d0] .cache_alloc_refill+0x234/0x2c0
-calls cache_grow with nodeid 0
-> [c00000000075bbe0] [c0000000000f7f38] .____cache_alloc_node+0x17c/0x1e8
-
-calls cache_grow with nodeid 1
-> [c00000000075bbe0] [c0000000000f7d68] .fallback_alloc+0x1a0/0x1f4
-
+>
+> I'm using gcc 3.3.5 on Debian/Sarge .
+>
+> By the way, 2.6.24-rc8-mm1 doesn't hang with a kernel config
+>
+> # make -s allnoconfig
+> # make -s menuconfig
+>
+>   Set [*] to all entries in "Kernel hacking  --->" section
+>   (except "KGDB: kernel debugging with remote gdb").
+>
+> # make -s && make -s install
+>
+> Regards.
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
