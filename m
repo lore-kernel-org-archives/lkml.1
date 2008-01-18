@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759876AbYARBw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760969AbYARBxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759876AbYARBw5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 20:52:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756789AbYARBws
+	id S1760969AbYARBxz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 20:53:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757242AbYARBxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 20:52:48 -0500
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:48083 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756458AbYARBwr (ORCPT
+	Thu, 17 Jan 2008 20:53:46 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:33509 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753420AbYARBxp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 20:52:47 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=eVdfs7gogeoJQaLeTcWUlDduwmMFdhX+yReDBNxS79fjilie929pSK5Gq+hlqPPXolY8GcYFs8S8NhWOnCbb5SMToUGhXZ3w2ujh0YxiCxDjsbsbnK5qseJmW/3+UBrpLlV9007esDhX0nWOVbFbVJxsQbofFO6UF4thfzQHp+Q=  ;
-X-YMail-OSG: cmEYA18VM1ngeIj.f7iJTNJ152lsZjEW3wx65_9QOdL9MQgZVOsDoanZC6e8vXujeEG_SDgSCQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] Remove vfs_init_caches_early()
-Date: Fri, 18 Jan 2008 12:16:16 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200801181041.22157.rusty@rustcorp.com.au>
-In-Reply-To: <200801181041.22157.rusty@rustcorp.com.au>
+	Thu, 17 Jan 2008 20:53:45 -0500
+Date: Thu, 17 Jan 2008 20:52:47 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>, Kirill Korotaev <dev@sw.ru>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] printk deadlocks if called with runqueue lock held
+In-Reply-To: <alpine.LFD.1.00.0801171724520.2957@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.58.0801172045310.1073@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0801172000430.32679@gandalf.stny.rr.com>
+ <alpine.LFD.1.00.0801171724520.2957@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801181216.16969.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 January 2008 10:41, Rusty Russell wrote:
-> vfs_init_caches_early() does nothing on IA-64 and x86-64 (unless you
-> turn off CONFIG_NUMA): hashdist is set by default on these platforms.
->
-> Maybe some obscure feature which requires VFS to be set up v. early
-> (hence is broken in this configuration), or something arch-specific
-> (which seems unlikely).
 
-The use of hugepage mappings for your hashes rather than vmalloc
-memory? Or did I misunderstand you? ... bootmem is needed for very
-large physically contiguous allocations.
+On Thu, 17 Jan 2008, Linus Torvalds wrote:
+
+> IOW, I think this should be
+>
+> 	if (raw_irqs_disabled_flags(flags) && wake_klogd)
+> 		wake_up_klogd();
+>
+> Of course, not all architectures seem to suport that thing (it's currently
+> only used by the CONFIG_TRACE_IRQFLAGS config option).
+>
+> Damn. So close, yet so far away.
+
+Perhaps we can define something like:
+
+#ifdef CONFIG_HAS_RAW_IRQS_DISABLED_FLAGS
+# define test_irqs_disabled_flags(flags) raw_irqs_disabled_flags(flags)
+#else
+# define test_irqs_disabled_flags(flags) \
+	({ (void)flags; irqs_disabled();})
+#endif
+
+then we could do
+
+	if (test_irqs_disabled_flags(flags) && wake_klogd)
+		wake_up_klogd();
+
+Or is this asking too much ;-)
+
+-- Steve
+
