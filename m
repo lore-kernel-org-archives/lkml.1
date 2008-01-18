@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765975AbYARVvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764676AbYARVwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765975AbYARVvj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 16:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760744AbYARVvc
+	id S1764676AbYARVwQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 16:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762229AbYARVwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 16:51:32 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:36787 "EHLO fieldses.org"
+	Fri, 18 Jan 2008 16:52:00 -0500
+Received: from gate.crashing.org ([63.228.1.57]:38868 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755770AbYARVvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 16:51:31 -0500
-Date: Fri, 18 Jan 2008 16:51:28 -0500
-To: Jeff Layton <jlayton@redhat.com>
-Cc: neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] SUNRPC: spin svc_rqst initialization to its own
-	function
-Message-ID: <20080118215128.GN15158@fieldses.org>
-References: <1200319518-22422-1-git-send-email-jlayton@redhat.com> <1200319518-22422-2-git-send-email-jlayton@redhat.com> <20080118205943.GL15158@fieldses.org> <20080118164844.7f91d6ff@tleilax.poochiereds.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080118164844.7f91d6ff@tleilax.poochiereds.net>
-User-Agent: Mutt/1.5.17 (2007-12-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	id S1761288AbYARVv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 16:51:59 -0500
+Cc: Jochen Friedrich <jochen@scram.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>
+Message-Id: <EC416CBA-9200-4D71-8D95-39798937203D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080118204030.48fbb683@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH/RFCv2] [POWERPC] Add support for freescale watchdog to CPM serial driver.
+Date: Fri, 18 Jan 2008 15:51:38 -0600
+References: <478F4AE3.5090803@scram.de> <20080118183905.2d5d8474@lxorguk.ukuu.org.uk> <4790F44F.8020009@scram.de> <20080118204030.48fbb683@lxorguk.ukuu.org.uk>
+X-Mailer: Apple Mail (2.915)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 04:48:44PM -0500, Jeff Layton wrote:
-> On Fri, 18 Jan 2008 15:59:43 -0500
-> "J. Bruce Fields" <bfields@fieldses.org> wrote:
-> 
-> > On Mon, Jan 14, 2008 at 09:05:15AM -0500, Jeff Layton wrote:
-> > > Move the initialzation in __svc_create_thread that happens prior to
-> > > thread creation to a new function. Export the function to allow
-> > > services to have better control over the svc_rqst structs.
-> > > 
-> > > Also rearrange the rqstp initialization to prevent NULL pointer
-> > > dereferences in svc_exit_thread in case allocations fail.
-> > 
-> > Those NULL dereferences are from the
-> > 
-> > 	list_del(&rqstp->rq_all);
-> > 
-> > ?  OK, make sense.  Thanks!
-> > 
-> > --b.
-> > 
-> 
-> Sorry, I didn't explain that well...
-> 
-> This was the problem that Neil pointed out with the existing code. If
-> the rqstp kzalloc succeeds, but the later kmallocs in
-> __svc_create_thread fail, we goto here:
-> 
->     out_thread:
->             svc_exit_thread(rqstp);
-> 
-> svc_exit_thread does this:
-> 
->     struct svc_pool *pool = rqstp->rq_pool;
-> 
-> ...and then later:
-> 
->    spin_lock_bh(&pool->sp_lock);
-> 
-> ...but rq_pool is set after the kmallocs, so if they fail rq_pool will
-> be NULL, and we'll oops in that spin_lock_bh().
-> 
-> The fix is to move the kmallocs closer to the bottom in the new
-> svc_prepare_thread function.
 
-OK, got it, thanks.
+On Jan 18, 2008, at 2:40 PM, Alan Cox wrote:
 
---b.
+> On Fri, 18 Jan 2008 19:47:43 +0100
+> Jochen Friedrich <jochen@scram.de> wrote:
+>
+>> Hi Alan,
+>>
+>>>> If a freescale watchdog device node is present, reset the watchdog
+>>>> while waiting for serial input.
+>>>
+>>> Why ? We normally rely on user space for watchdog management as  
+>>> only the
+>>> fact user space is behaving really proves a box is happy ?
+>>
+>> This is in the boot wrapper code, not in the linux kernel.
+>
+> Ok now that makes sense, thanks
+
+So I'll ask, what serial input are you waiting for from the boot  
+wrapper?
+
+- k
