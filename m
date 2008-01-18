@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763138AbYARR6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763381AbYARSAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763138AbYARR6q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 12:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbYARR6j
+	id S1763381AbYARSAZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:00:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbYARSAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 12:58:39 -0500
-Received: from an-out-0708.google.com ([209.85.132.247]:48812 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756890AbYARR6i (ORCPT
+	Fri, 18 Jan 2008 13:00:12 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46268 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752292AbYARSAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 12:58:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iVa7DaWgD2fo3cC/YsodIYEY/aTZMp8Wt57hH09j17ohiGFiGA+GVHhvNq56FgpdmU+XZuBeY0HhZ/jxAcL0SJzq0wNUYW+fy6U+t9+fPPKWIU1IWX0TMu3xyBr27Q7RCGJsOB5AuN/GGMk/j/aQrDyPON4BGjNzB1tQfZEhKuU=
-Message-ID: <b4292e150801180958v43350590pc6ed4683bfc478ab@mail.gmail.com>
-Date: Fri, 18 Jan 2008 14:58:37 -0300
-From: "Adolfo R. Brandes" <arbrandes@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: USB HID: Missing keys on Gyration Media Center Universal Remote Control
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <b4292e150801180901wfb55577kc884276622bc869e@mail.gmail.com>
+	Fri, 18 Jan 2008 13:00:10 -0500
+Date: Fri, 18 Jan 2008 09:58:04 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Miklos Szeredi <miklos@szeredi.hu>, salikhmetov@gmail.com,
+       linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
+       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
+ files
+In-Reply-To: <1200651958.5920.12.camel@twins>
+Message-ID: <alpine.LFD.1.00.0801180949040.2957@woody.linux-foundation.org>
+References: <12006091182260-git-send-email-salikhmetov@gmail.com>  <12006091211208-git-send-email-salikhmetov@gmail.com>  <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu>  <1200651337.5920.9.camel@twins> <1200651958.5920.12.camel@twins>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <b4292e150712280848h36a5bbf5k76e121168e8bfd12@mail.gmail.com>
-	 <Pine.LNX.4.64.0801171420400.15647@twin.jikos.cz>
-	 <b4292e150801180901wfb55577kc884276622bc869e@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Me:
->   I'm starting to think that these last 3 keys are broken, or maybe
-> just not designed to be used as PC keys
 
-  I decided to ask the folks at Gyration about this before tearing my
-(and Jiri's) hair out, and it seems that the 3 "missing keys" are
-actually not meant to send USB signals, only IR ones.  I tested it on
-Windows using an usb bus tracer, and as expected (duh) nothing gets
-through for them.
 
-  Sorry about this, Jiri (although the "TV" and "Power" keys are still
-broken :)!
+On Fri, 18 Jan 2008, Peter Zijlstra wrote:
+> 
+> Bah, and will break on s390... so we'd need a page_mkclean() variant
+> that doesn't actually clear dirty.
 
-  If I may, I'd like to add that their online support is pretty neat.
-It might interest any potential buyers for this remote that they have
-a partner that supposedly sells the same model with modified firmware
-especially designed to work with Linux, at fiire.com.  I'm guessing
-they fixed the bugginess Jiri described.
+No, we simply want to not play all these very expensive games with dirty 
+in the first place.
 
-Adolfo
+Guys, mmap access times aren't important enough for this. It's not 
+specified closely enough, and people don't care enough.
+
+Of the patches around so far, the best one by far seems to be the simple 
+four-liner from Miklos.
+
+And even in that four-liner, I suspect that the *last* two lines are 
+actually incorrect: there's no point in updating the file time when the 
+page *becomes* dirty, we should update the file time when it is marked 
+clean, and "msync(MS_SYNC)" should update it as part of *that*.
+
+So I think the file time update should be part of just the page writeout 
+logic, not by msync() or page faulting itself or anything like that.
+
+		Linus
