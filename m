@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932121AbYARVsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932303AbYARVtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932121AbYARVsm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 16:48:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764991AbYARVsa
+	id S932303AbYARVtE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 16:49:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761927AbYARVsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 16:48:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34653 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Jan 2008 16:48:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44192 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764219AbYARVs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 16:48:28 -0500
-Date: Fri, 18 Jan 2008 22:47:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 fixes for v2.6.24
-Message-ID: <20080118214749.GA13058@elte.hu>
-References: <20080118154809.GA18248@elte.hu> <20080118191249.GA20384@uranus.ravnborg.org> <20080118205152.GF3079@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080118205152.GF3079@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1761415AbYARVst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 16:48:49 -0500
+Date: Fri, 18 Jan 2008 16:48:44 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] SUNRPC: spin svc_rqst initialization to its own
+ function
+Message-ID: <20080118164844.7f91d6ff@tleilax.poochiereds.net>
+In-Reply-To: <20080118205943.GL15158@fieldses.org>
+References: <1200319518-22422-1-git-send-email-jlayton@redhat.com>
+	<1200319518-22422-2-git-send-email-jlayton@redhat.com>
+	<20080118205943.GL15158@fieldses.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Jan 2008 15:59:43 -0500
+"J. Bruce Fields" <bfields@fieldses.org> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > >  # Directories & files removed with 'make mrproper'
-> > > -MRPROPER_DIRS  += include/config include2 usr/include
-> > > +MRPROPER_DIRS  += include/config include2 usr/include arch/i386 arch/x86_64
-> > sigh - arch specific stuff in the top-level Makefile.
-> > This really belongs in arch/x86/Makefile
+> On Mon, Jan 14, 2008 at 09:05:15AM -0500, Jeff Layton wrote:
+> > Move the initialzation in __svc_create_thread that happens prior to
+> > thread creation to a new function. Export the function to allow
+> > services to have better control over the svc_rqst structs.
+> > 
+> > Also rearrange the rqstp initialization to prevent NULL pointer
+> > dereferences in svc_exit_thread in case allocations fail.
 > 
-> is this a NACK? Can clean this up in v2.6.25, but this seemed the only 
-> simple solution for v2.6.24.
+> Those NULL dereferences are from the
+> 
+> 	list_del(&rqstp->rq_all);
+> 
+> ?  OK, make sense.  Thanks!
+> 
+> --b.
+> 
 
-ok, since it's admittedly ugly, and all we have in arch/i386/kernel/boot 
-is a symbolic link, i've removed that commit from the .24 updates 
-portion of x86.git.
+Sorry, I didn't explain that well...
 
-Linus, could you please pull this single fix instead:
+This was the problem that Neil pointed out with the existing code. If
+the rqstp kzalloc succeeds, but the later kmallocs in
+__svc_create_thread fail, we goto here:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+    out_thread:
+            svc_exit_thread(rqstp);
 
-Arjan van de Ven (1):
-      x86: add support for the latest Intel processors to Oprofile
+svc_exit_thread does this:
 
- nmi_int.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+    struct svc_pool *pool = rqstp->rq_pool;
 
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index 2d0eeac..944bbcd 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -380,7 +380,7 @@ static int __init ppro_init(char ** cpu_type)
- 
- 	if (cpu_model == 14)
- 		*cpu_type = "i386/core";
--	else if (cpu_model == 15)
-+	else if (cpu_model == 15 || cpu_model == 23)
- 		*cpu_type = "i386/core_2";
- 	else if (cpu_model > 0xd)
- 		return 0;
+...and then later:
+
+   spin_lock_bh(&pool->sp_lock);
+
+...but rq_pool is set after the kmallocs, so if they fail rq_pool will
+be NULL, and we'll oops in that spin_lock_bh().
+
+The fix is to move the kmallocs closer to the bottom in the new
+svc_prepare_thread function.
+
+Thanks,
+-- 
+Jeff Layton <jlayton@redhat.com>
