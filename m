@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932199AbYARWiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932817AbYARWjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932199AbYARWiR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 17:38:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763069AbYARWiF
+	id S932817AbYARWjv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 17:39:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763069AbYARWjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 17:38:05 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:45974 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762970AbYARWiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 17:38:02 -0500
-Date: Fri, 18 Jan 2008 14:38:01 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Olaf Hering <olaf@aepfle.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>
-Subject: Re: crash in kmem_cache_init
-In-Reply-To: <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0801181436230.9169@schroedinger.engr.sgi.com>
-References: <20080115150949.GA14089@aepfle.de>
- <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
- <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
- <20080117181222.GA24411@aepfle.de> <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
- <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
- <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+	Fri, 18 Jan 2008 17:39:45 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:43892 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762050AbYARWjo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 17:39:44 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:mime-version:
+	content-type:content-transfer-encoding:content-disposition;
+	b=qEGhiyYAbK2U+MNWVdCYIJ/ly9eex2ZuJVPRvmJxYIC5Af6Iv0LLwE8jaKRouD5ck
+	xxrvVThHnNvLCCURlCsng==
+Message-ID: <2846be6b0801181439o55dcff09ted2b8f817e7ba682@mail.gmail.com>
+Date: Fri, 18 Jan 2008 14:39:39 -0800
+From: "Naveen Gupta" <ngupta@google.com>
+To: "Andrea Righi" <righiandr@users.sourceforge.net>
+Subject: Re: [PATCH] cgroup: limit block I/O bandwidth
+Cc: "Paul Menage" <menage@google.com>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008, Christoph Lameter wrote:
+>Paul Menage wrote:
+>> On Jan 18,  2008 7:36 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com>  wrote:
+>>> On Fri, Jan 18, 2008 at 12:41:03PM +0100, Andrea Righi  wrote:
+>>>> Allow to limit the  block I/O bandwidth for  specific process containers
+>>>> (cgroups) imposing additional delays  on I/O requests for those processes
+>>>> that exceed the  limits defined in the control group filesystem.
+>>>>
+>>>>  Example:
+>>>>   # mkdir /dev/cgroup
+>>>>   # mount -t cgroup -oio-throttle io-throttle /dev/cgroup
+>>> Just a minor nit, can't we name it as io,  keeping in mind that other
+>>> controllers are known as cpu and  memory?
+>>
+>> Or maybe "blockio"?
+>
+>Agree, blockio seems better. Not all I/O is performed on  block devices
+>and in this case we're  considering block devices only.
 
-> Memoryless nodes: Set N_NORMAL_MEMORY for a node if we do not support HIGHMEM
+Here we want to rate limit in block layer, I would think I/O scheduler
+is the place where we are in much better position to do this kind of
+limiting.
 
-If !CONFIG_HIGHMEM then
+Also we are changing the behavior of application by adding sleeps to
+it during request submission. Moreover, we will prevent requests from
+being merged since we won't allow them to be submitted in this case.
 
-enum node_states {
-#ifdef CONFIG_HIGHMEM
-        N_HIGH_MEMORY,          /* The node has regular or high memory */
-#else
-        N_HIGH_MEMORY = N_NORMAL_MEMORY,
-#endif
-
-So
-	for_each_online_node(nid) {
-                pg_data_t *pgdat = NODE_DATA(nid);
-                free_area_init_node(nid, pgdat, NULL,
-                                find_min_pfn_for_node(nid), NULL);
-
-                /* Any memory on that node */
-                if (pgdat->node_present_pages)
-                        node_set_state(nid, N_HIGH_MEMORY);
-			^^^ sets N_NORMAL_MEMORY      
-          	check_for_regular_memory(pgdat);
-        }
-
+Since bulk of submission for writes is done in background kernel
+threads and we throttle based on limits on current, we will end up
+throttling these threads and not the actual processes submitting i/o.
