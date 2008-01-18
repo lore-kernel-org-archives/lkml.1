@@ -1,114 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762257AbYARClg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762307AbYARClw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762257AbYARClg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 21:41:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758739AbYARChc
+	id S1762307AbYARClw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 21:41:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762066AbYARCkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 21:37:32 -0500
-Received: from waste.org ([66.93.16.53]:40696 "EHLO waste.org"
+	Thu, 17 Jan 2008 21:40:55 -0500
+Received: from waste.org ([66.93.16.53]:40339 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760624AbYARCh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 21:37:29 -0500
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [PATCH 12 of 12] random: simplify and rename credit_entropy_store
-X-Mercurial-Node: 218e9dac90b1b81b167e74d6dbd2dc572c44bee0
-Message-Id: <218e9dac90b1b81b167e.1200623634@cinder.waste.org>
-In-Reply-To: <patchbomb.1200623622@cinder.waste.org>
-Date: Thu, 17 Jan 2008 20:33:54 -0600
+	id S1762158AbYARCkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 21:40:53 -0500
+Subject: Re: [PATCH] ramdisk driver: make rd_size non-static
 From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
+Cc: Byron Bradley <byron.bbradley@gmail.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <20080117182851.f9177571.akpm@linux-foundation.org>
+References: <1200621737-1458-1-git-send-email-byron.bbradley@gmail.com>
+	 <20080117182851.f9177571.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 17 Jan 2008 20:39:23 -0600
+Message-Id: <1200623963.4001.5.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- emphasize bits in the name
-- make zero bits lock-free
-- simplify logic
 
-diff -r a0689714301a -r 218e9dac90b1 drivers/char/random.c
---- a/drivers/char/random.c	Thu Jan 17 20:25:24 2008 -0600
-+++ b/drivers/char/random.c	Thu Jan 17 20:25:24 2008 -0600
-@@ -441,7 +441,7 @@
- /*
-  * This function adds bytes into the entropy "pool".  It does not
-  * update the entropy estimate.  The caller should call
-- * credit_entropy_store if this is appropriate.
-+ * credit_entropy_bits if this is appropriate.
-  *
-  * The pool is stirred with a primitive polynomial of the appropriate
-  * degree, and then twisted.  We twist by three bits at a time because
-@@ -515,24 +515,22 @@
- /*
-  * Credit (or debit) the entropy store with n bits of entropy
-  */
--static void credit_entropy_store(struct entropy_store *r, int nbits)
-+static void credit_entropy_bits(struct entropy_store *r, int nbits)
- {
- 	unsigned long flags;
- 
-+	if (!nbits)
-+		return;
-+
- 	spin_lock_irqsave(&r->lock, flags);
- 
--	if (r->entropy_count + nbits < 0) {
--		DEBUG_ENT("negative entropy/overflow (%d+%d)\n",
--			  r->entropy_count, nbits);
-+	DEBUG_ENT("added %d entropy credits to %s\n", nbits, r->name);
-+	r->entropy_count += nbits;
-+	if (r->entropy_count < 0) {
-+		DEBUG_ENT("negative entropy/overflow\n");
- 		r->entropy_count = 0;
--	} else if (r->entropy_count + nbits > r->poolinfo->POOLBITS) {
-+	} else if (r->entropy_count > r->poolinfo->POOLBITS)
- 		r->entropy_count = r->poolinfo->POOLBITS;
--	} else {
--		r->entropy_count += nbits;
--		if (nbits)
--			DEBUG_ENT("added %d entropy credits to %s\n",
--				  nbits, r->name);
--	}
- 
- 	/* should we wake readers? */
- 	if (r == &input_pool && r->entropy_count >= random_read_wakeup_thresh)
-@@ -619,8 +617,8 @@
- 		 * Round down by 1 bit on general principles,
- 		 * and limit entropy entimate to 12 bits.
- 		 */
--		credit_entropy_store(&input_pool,
--				     min_t(int, fls(delta>>1), 11));
-+		credit_entropy_bits(&input_pool,
-+				    min_t(int, fls(delta>>1), 11));
- 	}
- out:
- 	preempt_enable();
-@@ -703,7 +701,7 @@
- 		bytes = extract_entropy(r->pull, tmp, bytes,
- 					random_read_wakeup_thresh / 8, rsvd);
- 		mix_pool_bytes(r, tmp, bytes);
--		credit_entropy_store(r, bytes*8);
-+		credit_entropy_bits(r, bytes*8);
- 	}
- }
- 
-@@ -1074,7 +1072,7 @@
- 			return -EPERM;
- 		if (get_user(ent_count, p))
- 			return -EFAULT;
--		credit_entropy_store(&input_pool, ent_count);
-+		credit_entropy_bits(&input_pool, ent_count);
- 		return 0;
- 	case RNDADDENTROPY:
- 		if (!capable(CAP_SYS_ADMIN))
-@@ -1089,7 +1087,7 @@
- 				    size);
- 		if (retval < 0)
- 			return retval;
--		credit_entropy_store(&input_pool, ent_count);
-+		credit_entropy_bits(&input_pool, ent_count);
- 		return 0;
- 	case RNDZAPENTCNT:
- 	case RNDCLEARPOOL:
+On Thu, 2008-01-17 at 18:28 -0800, Andrew Morton wrote:
+> On Fri, 18 Jan 2008 02:02:17 +0000 Byron Bradley <byron.bbradley@gmail.com> wrote:
+> 
+> > In arch/arm/kernel/setup.c:setup_ramdisk(), rd_size is set from the
+> > boot tags. The replacement ramdisk driver has rd_size as static
+> > which causes linking to fail when ramdisk is built-in.
+> > 
+> 
+> but...
+> 
+> > diff --git a/drivers/block/brd.c b/drivers/block/brd.c
+> > index 5ef1d26..8536480 100644
+> > --- a/drivers/block/brd.c
+> > +++ b/drivers/block/brd.c
+> > @@ -385,7 +385,7 @@ static struct block_device_operations brd_fops = {
+> >   * And now the modules code and kernel interface.
+> >   */
+> >  static int rd_nr;
+> > -static int rd_size = CONFIG_BLK_DEV_RAM_SIZE;
+> > +int rd_size = CONFIG_BLK_DEV_RAM_SIZE;
+> >  module_param(rd_nr, int, 0);
+> >  MODULE_PARM_DESC(rd_nr, "Maximum number of brd devices");
+> >  module_param(rd_size, int, 0);
+> 
+> rd_size is a module parameter so it is settable via the
+> syntax-which-i-can-never-remember.  rd.rd_size=1024 or something like that.
+> 
+> If that's all sane, do we have some back-compat reason to continue to
+> support the special and duplicative rd_size parameter?
+
+Only insofar as we're still supporting ramdisks in the first place.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
