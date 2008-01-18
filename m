@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760738AbYARLEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760596AbYARLFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760738AbYARLEP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 06:04:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759297AbYARLDI
+	id S1760596AbYARLFv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 06:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbYARLFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 06:03:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48812 "EHLO mx3.mail.elte.hu"
+	Fri, 18 Jan 2008 06:05:42 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:51283 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756377AbYARLDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 06:03:05 -0500
-Date: Fri, 18 Jan 2008 12:02:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Michael Opdenacker <michael-lists@free-electrons.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       Linux-tiny@selenic.com
-Subject: Re: [PATCH] x86: fix unconditional
-	arch/x86/kernel/pcspeaker.c?compiling
-Message-ID: <20080118110252.GA17397@elte.hu>
-References: <200801171643.49301.michael-lists@free-electrons.com> <478F8AEC.1080209@free-electrons.com> <1200590031.5332.19.camel@cinder.waste.org> <200801172315.29976.michael-lists@free-electrons.com>
+	id S1754540AbYARLFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 06:05:41 -0500
+Date: Fri, 18 Jan 2008 12:04:55 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>, Kirill Korotaev <dev@sw.ru>
+Subject: Re: [PATCH] printk deadlocks if called with runqueue lock held
+In-Reply-To: <Pine.LNX.4.58.0801172000430.32679@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.64.0801181203240.15647@twin.jikos.cz>
+References: <Pine.LNX.4.58.0801172000430.32679@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801172315.29976.michael-lists@free-electrons.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 17 Jan 2008, Steven Rostedt wrote:
 
-* Michael Opdenacker <michael-lists@free-electrons.com> wrote:
+> Thinking that it was locking up on my code I went looking down the wrong 
+> path. I finally found (after examining an NMI dump) that the lockup 
+> happened because printk was trying to wakeup the klogd daemon, which 
+> caused a deadlock when the try_to_wakeup code tries to grab the runqueue 
+> lock.
 
->  obj-$(CONFIG_PARAVIRT)		+= paravirt_32.o
-> -obj-y				+= pcspeaker.o
-> -
->  obj-$(CONFIG_SCx200)		+= scx200_32.o
->  
-> +ifdef CONFIG_INPUT_PCSPKR
-> +	obj-y			+= pcspeaker.o
-> +endif
+... which I have documented in the printk() comment's in commit 1492192b
+:)
 
-why didnt you make this:
+> Since printks are seldom called with interrupts disabled, we can
+> hold off the waking of klogd if they are. We don't have access to
+> the runqueue locks from printk, but those locks need interrupts
+> disabled in order to be held.
 
-  obj-$(CONFIG_INPUT_PCSPKR)		+= pcspeaker.o
+If this patch is going to be merged, you should perhaps adjust the comment 
+introduced by the above mentioned commit, so that it reflects the new 
+behavior.
 
-?
+Thanks,
 
-Your patch looks fine to me otherwise, obviously if someone disables 
-PCSPKR intentionally in the .config, the kernel should just do that. 
-Could you resend it with the above thing fixed, and against x86.git#mm? 
-The x86.git coordinates are at:
-
- http://redhat.com/~mingo/x86.git/README
-
-	Ingo
+-- 
+Jiri Kosina
