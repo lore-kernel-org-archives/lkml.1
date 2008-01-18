@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbYARKH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbYARKOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757573AbYARKH1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbYARKHV
+	id S1757256AbYARKOJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 05:14:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbYARKN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:07:21 -0500
-Received: from www.tglx.de ([62.245.132.106]:41126 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753407AbYARKHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:07:20 -0500
-Date: Fri, 18 Jan 2008 11:06:48 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Balaji Rao <balajirrao@gmail.com>
-cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: setting jiffies as the clocksource stops time
-In-Reply-To: <200801181141.55837.balajirrao@gmail.com>
-Message-ID: <alpine.LFD.0.99999.0801181105390.4642@localhost.localdomain>
-References: <200801170209.42138.balajirrao@gmail.com> <1200518450.18731.129.camel@imap.mvista.com> <Pine.LNX.4.64.0801172333130.18447@fbirervta.pbzchgretzou.qr> <200801181141.55837.balajirrao@gmail.com>
-User-Agent: Alpine 0.99999 (LFD 796 2007-11-08)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 Jan 2008 05:13:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60719 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754133AbYARKN4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 05:13:56 -0500
+Date: Fri, 18 Jan 2008 08:13:39 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] fix wrong sized spinlock flags argument
+Message-ID: <20080118081339.3da1dceb@areia>
+In-Reply-To: <1200614706.18731.170.camel@imap.mvista.com>
+References: <20080117205205.878723737@mvista.com>
+	<alpine.LFD.1.00.0801171542390.2957@woody.linux-foundation.org>
+	<1200614706.18731.170.camel@imap.mvista.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008, Balaji Rao wrote:
+On Thu, 17 Jan 2008 16:05:06 -0800
+Daniel Walker <dwalker@mvista.com> wrote:
 
-> On Friday 18 January 2008 04:04:33 am Jan Engelhardt wrote:
+> 
+> On Thu, 2008-01-17 at 15:48 -0800, Linus Torvalds wrote:
+> > Applied.
 > > 
-> > On Jan 16 2008 13:20, Daniel Walker wrote:
-> > >On Thu, 2008-01-17 at 02:09 +0530, Balaji Rao wrote:
-> > >> Hi,
-> > >> 
-> > >> When i set jiffies as the current_clocksource, date(1) tells me
-> > >> that wallclock time has stopped, and soon after that, the system
-> > >> becomes unresponsive. This is not seen with CONFIG_NO_HZ disabled.
-> > >> 
-> > >> I wonder how can jiffies be used as a clocksource.. Its value
-> > >> depends on the tick and when we turn off ticks, we would stop
-> > >> incrementing jiffies and when we come come out of idle, we update
-> > >> the jiffies by reading the current_clocksource which now is
-> > >> 'jiffies', and hence jiffies wouldn't get updated. Could this be
-> > >> the explanation ?
-> > >
-> > >Your right, It can't be used as a clocksource with nohz , and the system
-> > >will refuse to automatically switch to it ..
+> > However, the patch itself didn't apply cleanly, because in my souce tree, 
+> > these two lines are in a different order:
 > > 
-> > I think that manually changing to jiffies by echoing into sysfs
-> > should also be prohibited.
+> > On Thu, 17 Jan 2008, Daniel Walker wrote:
+> > >  
+> > >  	pci_set_power_state(pci_dev, PCI_D0);
+> > >  	pci_restore_state(pci_dev);
 > > 
-> Yea, right. But why not unregister jiffies as a clocksource itself when we get into NO_HZ ? I think it's much cleaner 
-> provided it has no other consequences.
+> > but I actually think your order is the *correct* one (because I'm not at 
+> > all sure that config space writes are even guaranteed to make a difference 
+> > when in D3cold).
+> 
+> I was actually using 2.6.24-rc8-mm1 . The code looked similar enough,
+> but I must have overlooked the fact that the lines above got switched..
 
-As I said before. I have a patch lined up for the same issue vs. PIT
-clocksource and I'm adding that for jiffies as well. It's just not an
-urgent issue, which needs to go into .24
+There were lots of change on saa7134, including the implementation of S1/S3.
+I'll run some tests here fixing the order and apply Daniel's patch.
 
-Thanks
-
-	tglx
-
+Cheers,
+Mauro
