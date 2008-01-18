@@ -1,199 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbYARGaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbYARGdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753262AbYARGaJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 01:30:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbYARG3y
+	id S1753087AbYARGdt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 01:33:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbYARGdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 01:29:54 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:46679 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750829AbYARG3x (ORCPT
+	Fri, 18 Jan 2008 01:33:39 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:61804 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbYARGdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 01:29:53 -0500
-Date: Fri, 18 Jan 2008 11:59:26 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       fischer@norbit.de, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Samuel Ortiz <samuel@sortiz.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [PATCH] aha152x: fix isa/pcmcia compile problem
-Message-ID: <20080118062926.GA6883@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org> <478F7F2B.9000801@linux.vnet.ibm.com> <20080117111104.3baa878e.akpm@linux-foundation.org> <478FF87C.2050307@gmail.com>
+	Fri, 18 Jan 2008 01:33:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Rgy1SPZGNO4vrX8adOv+37+8JCDMKMsa2w0aXHkkvYJdqyobv337jsbitOaQDj2XG5kzIJs9DBIDkbNc1iqt7VDsN1f+eMitz8o7KfB23bkuBO5XLBPnMAFlmGfovAt5ywjwdab+DYx+kXKCdmPWvPVSUxkurOZqjeHA/FXYhf0=
+Message-ID: <7c86c4470801172233s333b5993q8b10e37f8ad151d@mail.gmail.com>
+Date: Fri, 18 Jan 2008 07:33:35 +0100
+From: "stephane eranian" <eranian@googlemail.com>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: runqueue locks in schedule()
+Cc: "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       ia64 <linux-ia64@vger.kernel.org>,
+       "Stephane Eranian" <eranian@gmail.com>,
+       "Corey J Ashford" <cjashfor@us.ibm.com>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <200801181307.53026.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <478FF87C.2050307@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <7c86c4470801161629t3870da59hb6ac371c44126b07@mail.gmail.com>
+	 <1200576266.28661.27.camel@twins>
+	 <200801181307.53026.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 09:53:16AM +0900, Tejun Heo wrote:
-> aha152x.c is built twice - once for the isa driver and once for the
-> PCMCIA one.  Through #ifdefs, the compiled codes are slightly
-> different; thus, global symbols need to be given different names
-> depending on which flavor is being built.  This patch adds GLOBAL()
-> macro to aha152x.h which changes the symbol depending on PCMCIA.
-> 
-> This bug has always existed but has been masked by the fact the
-> drivers/scsi/pcmcia used subdir-(y|m) instead of obj-(y|m) which made
-> drivers/scsi/pcmcia/built_in.o not linked into the kernel and thus
-> avoided the duplicate symbols during compilation.
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> ---
->  drivers/scsi/aha152x.c             |   12 ++++++------
->  drivers/scsi/aha152x.h             |   20 +++++++++++++++++---
->  drivers/scsi/pcmcia/aha152x_stub.c |   10 ++++++----
->  3 files changed, 29 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/scsi/aha152x.c b/drivers/scsi/aha152x.c
-> index ea8c699..0204f44 100644
-> --- a/drivers/scsi/aha152x.c
-> +++ b/drivers/scsi/aha152x.c
-> @@ -769,7 +769,7 @@ static irqreturn_t swintr(int irqno, void *dev_id)
->  	return IRQ_HANDLED;
->  }
-> 
-> -struct Scsi_Host *aha152x_probe_one(struct aha152x_setup *setup)
-> +struct Scsi_Host *GLOBAL(aha152x_probe_one)(struct aha152x_setup *setup)
->  {
->  	struct Scsi_Host *shpnt;
-> 
-> @@ -905,7 +905,7 @@ out_host_put:
->  	return NULL;
->  }
-> 
-> -void aha152x_release(struct Scsi_Host *shpnt)
-> +void GLOBAL(aha152x_release)(struct Scsi_Host *shpnt)
->  {
->  	if (!shpnt)
->  		return;
-> @@ -1327,7 +1327,7 @@ static void reset_ports(struct Scsi_Host *shpnt)
->   * Reset the host (bus and controller)
->   *
->   */
-> -int aha152x_host_reset_host(struct Scsi_Host *shpnt)
-> +int GLOBAL(aha152x_host_reset_host)(struct Scsi_Host *shpnt)
->  {
->  	DPRINTK(debug_eh, KERN_DEBUG "scsi%d: host reset\n", shpnt->host_no);
-> 
-> @@ -1345,7 +1345,7 @@ int aha152x_host_reset_host(struct Scsi_Host *shpnt)
->   */
->  static int aha152x_host_reset(Scsi_Cmnd *SCpnt)
->  {
-> -	return aha152x_host_reset_host(SCpnt->device->host);
-> +	return GLOBAL(aha152x_host_reset_host)(SCpnt->device->host);
->  }
-> 
->  /*
-> @@ -3916,7 +3916,7 @@ static int __init aha152x_init(void)
-> 
->  	for (i=0; i<setup_count; i++) {
->  		if ( request_region(setup[i].io_port, IO_RANGE, "aha152x") ) {
-> -			struct Scsi_Host *shpnt = aha152x_probe_one(&setup[i]);
-> +			struct Scsi_Host *shpnt = GLOBAL(aha152x_probe_one)(&setup[i]);
-> 
->  			if( !shpnt ) {
->  				release_region(setup[i].io_port, IO_RANGE);
-> @@ -3946,7 +3946,7 @@ static void __exit aha152x_exit(void)
->  	list_for_each_entry(hd, &aha152x_host_list, host_list) {
->  		struct Scsi_Host *shost = container_of((void *)hd, struct Scsi_Host, hostdata);
-> 
-> -		aha152x_release(shost);
-> +		GLOBAL(aha152x_release)(shost);
->  	}
->  }
-> 
-> diff --git a/drivers/scsi/aha152x.h b/drivers/scsi/aha152x.h
-> index ac4bfa4..7db6c47 100644
-> --- a/drivers/scsi/aha152x.h
-> +++ b/drivers/scsi/aha152x.h
-> @@ -330,8 +330,22 @@ struct aha152x_setup {
->  	char *conf;
->  };
-> 
-> -struct Scsi_Host *aha152x_probe_one(struct aha152x_setup *);
-> -void aha152x_release(struct Scsi_Host *);
-> -int aha152x_host_reset_host(struct Scsi_Host *);
-> +/*
-> + * This file and aha152x.c are compiled in two different ways - for
-> + * the isa driver and pcmcia one.  When building the pcmcia one, the
-> + * file is slightly modified, so they can't share the same object
-> + * file.  The following macro alters a symbol depending on whether
-> + * pcmcia driver is being built or not and should be used for any
-> + * global symbol.
-> + */
-> +#if defined(PCMCIA)
-> +#define GLOBAL(x)	CS_##x
-> +#else
-> +#define GLOBAL(x)	x
-> +#endif
-> +
-> +struct Scsi_Host *GLOBAL(aha152x_probe_one)(struct aha152x_setup *);
-> +void GLOBAL(aha152x_release)(struct Scsi_Host *);
-> +int GLOBAL(aha152x_host_reset_host)(struct Scsi_Host *);
-> 
->  #endif /* _AHA152X_H */
-> diff --git a/drivers/scsi/pcmcia/aha152x_stub.c b/drivers/scsi/pcmcia/aha152x_stub.c
-> index 2dd0dc9..57f83d1 100644
-> --- a/drivers/scsi/pcmcia/aha152x_stub.c
-> +++ b/drivers/scsi/pcmcia/aha152x_stub.c
-> @@ -47,13 +47,15 @@
-> 
->  #include "scsi.h"
->  #include <scsi/scsi_host.h>
-> -#include "aha152x.h"
-> 
->  #include <pcmcia/cs_types.h>
->  #include <pcmcia/cs.h>
->  #include <pcmcia/cistpl.h>
->  #include <pcmcia/ds.h>
-> 
-> +#define PCMCIA	1
-> +#include "aha152x.h"
-> +
->  #ifdef PCMCIA_DEBUG
->  static int pc_debug = PCMCIA_DEBUG;
->  module_param(pc_debug, int, 0644);
-> @@ -194,7 +196,7 @@ static int aha152x_config_cs(struct pcmcia_device *link)
->      if (ext_trans)
->          s.ext_trans = ext_trans;
-> 
-> -    host = aha152x_probe_one(&s);
-> +    host = GLOBAL(aha152x_probe_one)(&s);
->      if (host == NULL) {
->  	printk(KERN_INFO "aha152x_cs: no SCSI devices found\n");
->  	goto cs_failed;
-> @@ -216,7 +218,7 @@ static void aha152x_release_cs(struct pcmcia_device *link)
->  {
->  	scsi_info_t *info = link->priv;
-> 
-> -	aha152x_release(info->host);
-> +	GLOBAL(aha152x_release)(info->host);
->  	pcmcia_disable_device(link);
->  }
-> 
-> @@ -224,7 +226,7 @@ static int aha152x_resume(struct pcmcia_device *link)
->  {
->  	scsi_info_t *info = link->priv;
-> 
-> -	aha152x_host_reset_host(info->host);
-> +	GLOBAL(aha152x_host_reset_host)(info->host);
-> 
->  	return 0;
->  }
-> diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-> --
-Hi Tejun Heo,
+Nick,
 
-Thanks, I have tested the patch fixes the build failure on aha152x.c.
-Tested-By: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+On Jan 18, 2008 3:07 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+>
+> On Friday 18 January 2008 00:24, Peter Zijlstra wrote:
+> > [ At the very least CC'ing the scheduler maintainer would be
+> > helpful :-) ]
+> >
+> > On Wed, 2008-01-16 at 16:29 -0800, stephane eranian wrote:
+> > > Hello,
+> > >
+> > > As suggested by people on this list, I have changed perfmon2 to use
+> > > the high resolution timers as the interface to allow timeout-based
+> > > event set multiplexing. This works around the problems I had with
+> > > tickless-enabled kernels.
+> > >
+> > > Multiplexing is supported in per-thread as well. In that case, the
+> > > timeout measures virtual time. When the thread is context switched
+> > > out, we need to save the remainder of the timeout and cancel the
+> > > timer. When the thread is context switched in, we need to reinstall
+> > > the timer. These timer save/restore operations have to be done in the
+> > > switch_to() code near the end of schedule().
+> > >
+> > > There are situations where hrtimer_start() may end up trying to
+> > > acquire the runqueue lock. This happens on a context switch where the
+> > > current thread is blocking (not preempted) and the new timeout happens
+> > > to be either in the past or just expiring. We've run into such
+> > > situations with simple tests.
+> > >
+> > > On all architectures, but IA-64, it seems thet the runqueue lock is
+> > > held until the end of schedule(). On IA-64, the lock is released
+> > > BEFORE switch_to() for some reason I don't quite remember. That may
+> > > not even be needed anymore.
+> > >
+> > > The early unlocking is controlled by a macro named
+> > > __ARCH_WANT_UNLOCKED_CTXSW. Defining this macros on X86 (or PPC) fixed
+> > > our problem.
+> > >
+> > > It is not clear to me why the runqueue lock needs to be held up until
+> > > the end of schedule() on some platforms and not on others. Not that
+> > > releasing the lock earlier does not necessarily introduce more
+> > > overhead because the lock is never re-acquired later in the schedule()
+> > > function.
+> > >
+> > > Question:
+> > >    - is it safe to release the lock before switch_to() on all
+> > > architectures?
+> >
+> > I had similar problem when using hrtimers from the scheduler, I extended
+> > the HRTIMER_CB_IRQSAFE_NO_SOFTIRQ time type to run with cpu_base->lock
+> > unlocked.
+> >
+> > http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-sched-devel.git;a
+> >=commitdiff;h=7e7cbd617833dde5b442e03f69aac39d17d02ec7
+> > http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-sched-devel.git;a
+> >=commitdiff;h=45d10aad580a5cdd376e80848aeeaaaf1f97cc18
+> > http://git.kernel.org/?p=linux/kernel/git/mingo/linux-2.6-sched-devel.git;a
+> >=commitdiff;h=5ae5d6c5850d4735798bc0e4526d8c61199e9f93
+> >
+> > As for your __ARCH_WANT_UNLOCKED_CTXSW question I have to defer to Ingo,
+> > as I'm unaware of the arch ramifications there.
+>
+> It is arch specific. If an architecture wants interrupts on during context
+> switch, or runqueue unlocked, then they set it (btw INTERRUPTS_ON_CTXSW
+> also implies UNLOCKED_CTXSW).
+>
+Yes , I noticed that. I am only interested in UNLOCKED_CTXSW.
+But it appears that the approach suggested my Peter does work. We are
+running some tests.
 
-Thanks & Regards,
-Kamalesh Babulal.
+> Although, eg on x86, you would hold off interrupts and runqueue lock for
+> slightly less time if you defined those, it results in _slightly_ more
+> complicated context switching... although I did once find a workload
+> where the reduced runqueue contention improved throughput a bit, it is
+> not much problem in general to hold the lock.
+>
+By complicated you mean that now you'd have to make sure you don't
+need to access runqueue data?
+
+Thanks.
