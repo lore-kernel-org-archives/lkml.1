@@ -1,193 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760228AbYARAxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759318AbYARA5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760228AbYARAxq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 19:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758154AbYARAxe
+	id S1759318AbYARA5T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 19:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756533AbYARA5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 19:53:34 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:1077 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758369AbYARAxc (ORCPT
+	Thu, 17 Jan 2008 19:57:08 -0500
+Received: from mail1.webmaster.com ([216.152.64.169]:4072 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753826AbYARA5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 19:53:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=XybH1bnx42YsAYoaRqGebZ5x7UnZwL27OGL7g6IQoG/ATfKaKCdk3XMiOCQXkv8vWXVCWM917S2Qi95XcH2qC6L4cOfF1hKG/sXHDiNQkuPQhoUnqWz7BVQ+oodtNJA4nF0M+c+iTzDTbyHqNEPFK/XIJ6zewrfpUZWJOR72tbU=
-Message-ID: <478FF87C.2050307@gmail.com>
-Date: Fri, 18 Jan 2008 09:53:16 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 17 Jan 2008 19:57:07 -0500
+From: "David Schwartz" <davids@webmaster.com>
+To: <torvalds@linux-foundation.org>
+Cc: "Johannes Weiner" <hannes@saeurebad.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       <clameter@sgi.com>, <penberg@cs.helsinki.fi>
+Subject: RE: Why is the kfree() argument const?
+Date: Thu, 17 Jan 2008 16:56:02 -0800
+Message-ID: <MDEHLPKNGKAHNMBLJOLKOEIPJJAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       fischer@norbit.de, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Samuel Ortiz <samuel@sortiz.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH] aha152x: fix isa/pcmcia compile problem
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>	<478F7F2B.9000801@linux.vnet.ibm.com> <20080117111104.3baa878e.akpm@linux-foundation.org>
-In-Reply-To: <20080117111104.3baa878e.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <alpine.LFD.1.00.0801171507570.2957@woody.linux-foundation.org>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Thu, 17 Jan 2008 16:57:15 -0800
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Thu, 17 Jan 2008 16:57:16 -0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-aha152x.c is built twice - once for the isa driver and once for the
-PCMCIA one.  Through #ifdefs, the compiled codes are slightly
-different; thus, global symbols need to be given different names
-depending on which flavor is being built.  This patch adds GLOBAL()
-macro to aha152x.h which changes the symbol depending on PCMCIA.
 
-This bug has always existed but has been masked by the fact the
-drivers/scsi/pcmcia used subdir-(y|m) instead of obj-(y|m) which made
-drivers/scsi/pcmcia/built_in.o not linked into the kernel and thus
-avoided the duplicate symbols during compilation.
+> On Thu, 17 Jan 2008, David Schwartz wrote:
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- drivers/scsi/aha152x.c             |   12 ++++++------
- drivers/scsi/aha152x.h             |   20 +++++++++++++++++---
- drivers/scsi/pcmcia/aha152x_stub.c |   10 ++++++----
- 3 files changed, 29 insertions(+), 13 deletions(-)
+> > No, that's not what it means. It has nothing to do with memory.
+> > It has to do
+> > with logical state.
 
-diff --git a/drivers/scsi/aha152x.c b/drivers/scsi/aha152x.c
-index ea8c699..0204f44 100644
---- a/drivers/scsi/aha152x.c
-+++ b/drivers/scsi/aha152x.c
-@@ -769,7 +769,7 @@ static irqreturn_t swintr(int irqno, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--struct Scsi_Host *aha152x_probe_one(struct aha152x_setup *setup)
-+struct Scsi_Host *GLOBAL(aha152x_probe_one)(struct aha152x_setup *setup)
- {
- 	struct Scsi_Host *shpnt;
- 
-@@ -905,7 +905,7 @@ out_host_put:
- 	return NULL;
- }
- 
--void aha152x_release(struct Scsi_Host *shpnt)
-+void GLOBAL(aha152x_release)(struct Scsi_Host *shpnt)
- {
- 	if (!shpnt)
- 		return;
-@@ -1327,7 +1327,7 @@ static void reset_ports(struct Scsi_Host *shpnt)
-  * Reset the host (bus and controller)
-  *
-  */
--int aha152x_host_reset_host(struct Scsi_Host *shpnt)
-+int GLOBAL(aha152x_host_reset_host)(struct Scsi_Host *shpnt)
- {
- 	DPRINTK(debug_eh, KERN_DEBUG "scsi%d: host reset\n", shpnt->host_no);
- 
-@@ -1345,7 +1345,7 @@ int aha152x_host_reset_host(struct Scsi_Host *shpnt)
-  */
- static int aha152x_host_reset(Scsi_Cmnd *SCpnt)
- {
--	return aha152x_host_reset_host(SCpnt->device->host);
-+	return GLOBAL(aha152x_host_reset_host)(SCpnt->device->host);
- }
- 
- /*
-@@ -3916,7 +3916,7 @@ static int __init aha152x_init(void)
- 
- 	for (i=0; i<setup_count; i++) {
- 		if ( request_region(setup[i].io_port, IO_RANGE, "aha152x") ) {
--			struct Scsi_Host *shpnt = aha152x_probe_one(&setup[i]);
-+			struct Scsi_Host *shpnt = GLOBAL(aha152x_probe_one)(&setup[i]);
- 
- 			if( !shpnt ) {
- 				release_region(setup[i].io_port, IO_RANGE);
-@@ -3946,7 +3946,7 @@ static void __exit aha152x_exit(void)
- 	list_for_each_entry(hd, &aha152x_host_list, host_list) {
- 		struct Scsi_Host *shost = container_of((void *)hd, struct Scsi_Host, hostdata);
- 
--		aha152x_release(shost);
-+		GLOBAL(aha152x_release)(shost);
- 	}
- }
- 
-diff --git a/drivers/scsi/aha152x.h b/drivers/scsi/aha152x.h
-index ac4bfa4..7db6c47 100644
---- a/drivers/scsi/aha152x.h
-+++ b/drivers/scsi/aha152x.h
-@@ -330,8 +330,22 @@ struct aha152x_setup {
- 	char *conf;
- };
- 
--struct Scsi_Host *aha152x_probe_one(struct aha152x_setup *);
--void aha152x_release(struct Scsi_Host *);
--int aha152x_host_reset_host(struct Scsi_Host *);
-+/*
-+ * This file and aha152x.c are compiled in two different ways - for
-+ * the isa driver and pcmcia one.  When building the pcmcia one, the
-+ * file is slightly modified, so they can't share the same object
-+ * file.  The following macro alters a symbol depending on whether
-+ * pcmcia driver is being built or not and should be used for any
-+ * global symbol.
-+ */
-+#if defined(PCMCIA)
-+#define GLOBAL(x)	CS_##x
-+#else
-+#define GLOBAL(x)	x
-+#endif
-+
-+struct Scsi_Host *GLOBAL(aha152x_probe_one)(struct aha152x_setup *);
-+void GLOBAL(aha152x_release)(struct Scsi_Host *);
-+int GLOBAL(aha152x_host_reset_host)(struct Scsi_Host *);
- 
- #endif /* _AHA152X_H */
-diff --git a/drivers/scsi/pcmcia/aha152x_stub.c b/drivers/scsi/pcmcia/aha152x_stub.c
-index 2dd0dc9..57f83d1 100644
---- a/drivers/scsi/pcmcia/aha152x_stub.c
-+++ b/drivers/scsi/pcmcia/aha152x_stub.c
-@@ -47,13 +47,15 @@
- 
- #include "scsi.h"
- #include <scsi/scsi_host.h>
--#include "aha152x.h"
- 
- #include <pcmcia/cs_types.h>
- #include <pcmcia/cs.h>
- #include <pcmcia/cistpl.h>
- #include <pcmcia/ds.h>
- 
-+#define PCMCIA	1
-+#include "aha152x.h"
-+
- #ifdef PCMCIA_DEBUG
- static int pc_debug = PCMCIA_DEBUG;
- module_param(pc_debug, int, 0644);
-@@ -194,7 +196,7 @@ static int aha152x_config_cs(struct pcmcia_device *link)
-     if (ext_trans)
-         s.ext_trans = ext_trans;
- 
--    host = aha152x_probe_one(&s);
-+    host = GLOBAL(aha152x_probe_one)(&s);
-     if (host == NULL) {
- 	printk(KERN_INFO "aha152x_cs: no SCSI devices found\n");
- 	goto cs_failed;
-@@ -216,7 +218,7 @@ static void aha152x_release_cs(struct pcmcia_device *link)
- {
- 	scsi_info_t *info = link->priv;
- 
--	aha152x_release(info->host);
-+	GLOBAL(aha152x_release)(info->host);
- 	pcmcia_disable_device(link);
- }
- 
-@@ -224,7 +226,7 @@ static int aha152x_resume(struct pcmcia_device *link)
- {
- 	scsi_info_t *info = link->priv;
- 
--	aha152x_host_reset_host(info->host);
-+	GLOBAL(aha152x_host_reset_host)(info->host);
- 
- 	return 0;
- }
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+> Blah. That's just your own made-up explanation of what you think "const"
+> should mean. It has no logical background or any basis in the C language.
+
+To some extent, I agree. You can use "const" for pretty much any reason.
+It's just a way to say that you have a pointer and you would like an error
+if certain things are done with it.
+
+You could use it to mean anything you want it to mean. The most common use,
+and the one intended, is to indicate that an object's logical state will not
+be changed through that pointer.
+
+> "const" has nothing to do with "logical state".  It has one meaning, and
+> one meaning only: the compiler should complain if that particular type is
+> used to do a write access.
+
+Right, exactly.
+
+> It says nothing at all about the "logical state of the object".
+> It cannot,
+> since a single object can - and does - have multiple pointers to it.
+
+You are the only one who has suggested it has anything to do with changes
+through other pointers or in other ways. So you are arguing against only
+yourself here.
+
+Nobody has said it has anything to do with anything but operations through
+that pointer.
+
+> So your standpoint not only has no relevant background to it, it's also
+> not even logically consistent.
+
+Actually, that is true of your position. On the one hand, you defend it
+because kfree does not change the data. On the other hand, you claim that it
+has nothing to do with whether or not the data is changed.
+
+The normal use of "const" is to indicate that the logical state of the
+object should not be changed through that pointer. The 'kfree' function
+changes the logical state of the object. So, logically, 'kfree' should not
+be const.
+
+The usefulness of "const" is that you get an error if you unexpectedly
+modify something you weren't expected to modify. If you are 'kfree'ing an
+object that is supposed to be logically immutable, you should be made to
+indicate that you are aware the object is logically immutable.
+
+Simply put, you you have to cast in any case where you mean to do something
+that you want to get an error in if you do not cast. I would like to get an
+error if I call 'kfree' through a const pointer, because that often is an
+error. I may have a const pointer because my caller still plans to use the
+object.
+
+Honestly, I find your position bizarre.
+
+DS
+
+
