@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759735AbYARTGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765521AbYARTG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759735AbYARTGa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 14:06:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbYARTGX
+	id S1765521AbYARTG7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 14:06:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbYARTGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 14:06:23 -0500
-Received: from mail.impinj.com ([206.169.229.170]:49918 "EHLO earth.impinj.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752604AbYARTGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 14:06:22 -0500
-From: Vadim Lobanov <vlobanov@speakeasy.net>
-To: "Giacomo A. Catenazzi" <cate@cateee.net>
-Subject: Re: Why is the kfree() argument const?
-Date: Fri, 18 Jan 2008 11:06:08 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Jakob Oestergaard <jakob@unthought.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Schwartz <davids@webmaster.com>,
-       Johannes Weiner <hannes@saeurebad.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       clameter@sgi.com, penberg@cs.helsinki.fi
-References: <MDEHLPKNGKAHNMBLJOLKIEGIJJAC.davids@webmaster.com> <20080118094826.GN25527@unthought.net> <479091B5.4060700@cateee.net>
-In-Reply-To: <479091B5.4060700@cateee.net>
+	Fri, 18 Jan 2008 14:06:52 -0500
+Received: from etm005.nl.ded.neolocation.net ([85.17.111.100]:55878 "EHLO
+	office.one.by" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752604AbYARTGv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 14:06:51 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801181106.08511.vlobanov@speakeasy.net>
-X-OriginalArrivalTime: 18 Jan 2008 19:06:09.0642 (UTC) FILETIME=[2F631CA0:01C85A05]
+Date: Fri, 18 Jan 2008 21:06:43 +0200
+From: Chodorenko Michail <misha@one.by>
+To: linux-kernel@vger.kernel.org
+Subject: PROBLEM: Celeron Core
+Message-ID: <3ed23423adebae08e8f75b6a6a7ce7ff@one.by>
+User-Agent: RoundCube Webmail on office.one.by
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 January 2008 03:47:01 am Giacomo A. Catenazzi wrote:
-> Changing the name of variables in your example:
->
-> extern print_int(const int *);
->
-> int main(int argc, char **argv)
-> {
->    extern int errno;
->
->    errno = 0;
->    print_int(&i);
->    return errno;
-> }
+I have a laptop "Extensa 5220", with the processor Celeron based on 'core'
+technology.
+There is ~ / arch/i386/kernel/cpu/cpufreq/p4-clockmod.c in the kernel
+source code
+but there's no line identification of my CPU for apply freqency change
+need to add a ID line 0х16
+                       
+ 
+    "that instead of p4-clockmod, if possible.\n");
+               switch (c->x86_model) {
+               case 0x0E: /* Core */
++              case 0x16: /* Celeron Core */
+               case 0x0F: /* Core Duo */
+                      p4clockmod_driver.flags |= CPUFREQ_CONST_LOOPS;
+                      return
+speedstep_get_processor_frequency(SPEEDSTEP_PROCESSOR_PCORE);
 
-Except that changing int to extern int makes all the difference in the world: 
-the variable went from being local to being global. The way const is 
-currently defined, however, the compiler cannot take advantage of the fact 
-that the variable was local in the former case.
 
-> Ok, I changed int to extern int, but you see the point?
-> Do you want complex rules about const, depending on
-> context (extern, volatile,...) ?
 
-Sometimes complexity is worth it.
-
--- Vadim Lobanov
