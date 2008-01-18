@@ -1,184 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764216AbYARSMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764071AbYARSOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764216AbYARSMv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:12:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761921AbYARSMl
+	id S1764071AbYARSOT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761464AbYARSOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:12:41 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56543 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761728AbYARSMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:12:39 -0500
-Message-ID: <4790EBF3.4060707@redhat.com>
-Date: Fri, 18 Jan 2008 13:12:03 -0500
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
+	Fri, 18 Jan 2008 13:14:10 -0500
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:58414 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761198AbYARSOI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 13:14:08 -0500
+Message-ID: <4790EC2D.4050201@vmware.com>
+Date: Fri, 18 Jan 2008 10:13:01 -0800
+From: Daniel Arai <arai@vmware.com>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060524)
 MIME-Version: 1.0
-To: Chuck Lever <chuck.lever@oracle.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] enhanced ESTALE error handling
-References: <4790C756.2040704@redhat.com> <63F84201-9D38-4588-B237-A15138E94C5A@oracle.com> <4790D9F3.2070503@redhat.com> <451AC300-674E-4DBE-869F-08A9184051B3@oracle.com> <4790E227.506@redhat.com> <D4189D74-D4AB-42CA-A788-40A50518E7DA@oracle.com>
-In-Reply-To: <D4189D74-D4AB-42CA-A788-40A50518E7DA@oracle.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: ACPI CPU hot removal: Problem with automatic scripting in response
+ to hotplug events
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Lever wrote:
-> On Jan 18, 2008, at 12:30 PM, Peter Staubach wrote:
->> Chuck Lever wrote:
->>> On Jan 18, 2008, at 11:55 AM, Peter Staubach wrote:
->>>> Chuck Lever wrote:
->>>>> Hi Peter-
->>>>>
->>>>> On Jan 18, 2008, at 10:35 AM, Peter Staubach wrote:
->>>>>> Hi.
->>>>>>
->>>>>> Here is a patch set which modifies the system to enhance the
->>>>>> ESTALE error handling for system calls which take pathnames
->>>>>> as arguments.
->>>>>
->>>>> The VFS already handles ESTALE.
->>>>>
->>>>> If a pathname resolution encounters an ESTALE at any point, the 
->>>>> resolution is restarted exactly once, and an additional flag is 
->>>>> passed to the file system during each lookup that forces each 
->>>>> component in the path to be revalidated on the server.  This has 
->>>>> no possibility of causing an infinite loop.
->>>>>
->>>>> Is there some part of this logic that is no longer working?
->>>>
->>>> The VFS does not fully handle ESTALE.  An ESTALE error can occur
->>>> during the second pathname resolution attempt.
->>>
->>> If an ESTALE occurs during the second resolution attempt, we should 
->>> give up.  When I addressed this issue two years ago, the two-try 
->>> logic was the only acceptable solution because there's no way to 
->>> guarantee the pathname resolution will ever finish unless we put a 
->>> hard limit on it.
->>>
->>
->> I can probably imagine a situation where the pathname resolution
->> would never finish, but I am not sure that it could ever happen
->> in nature.
->
-> Unless someone is doing something malicious.  Or if the server is 
-> repeatedly returning ESTALE for some reason.
->
+I have an x86_64 system that's capable of doing ACPI CPU hot removal.
+One issue that's worrying me right now is that there isn't enough
+information to automatically script CPU removal when it's requested by
+the hardware platform.
 
-If the server is repeatedly returning ESTALE, then the pathname
-resolution will fail to make progress and give up, return ENOENT
-to the user level.
+I'm doing my testing with 2.6.24-rc8 from kernel.org.  I have applied
+the patch series from http://bugzilla.kernel.org/show_bug.cgi?id=2884
+to avoid running into deadlocks on CPU removal.  This issue is almost
+certainly independent of these patches.
 
-A malicious user on the network can cause so many other problems
-than just something like this too.  But, in this case, the user
-would have to predict why and when the client was issuing a
-specific operation and know whether or not to return ESTALE.
-This seems quite far fetched and quite unlikely to me.
+/sbin/hotplug does get invoked for CPU ejection requests that are sent
+from the platform.  It only gets a pointer to the ACPI /sys node
+describing the ACPI processor object for which ejection has been
+requested.  There doesn't seem to be a way to map from this device
+node to a CPU number so the processor can be taken offline before
+actually requesting removal of the physical processor.  An online
+processor cannot be removed from the system, so it's a requirement
+that I first offline the CPU.
 
->>>> There are lots of
->>>> reasons, some of which are the 1 second resolution from some file
->>>> systems on the server
->>>
->>> Which is a server bug, AFAICS.  It's simply impossible to close all 
->>> the windows that result from sloppy file time stamps without 
->>> completely disabling client-side caching.  The NFS protocol relies 
->>> on file time stamps to manage cache coherence.  If the server is 
->>> lying about time stamps, there's no way the client can cache 
->>> coherently.
->>>
->>
->> Server bug or not, it is something that the client has to live
->> with.  We can't get the server file system fixed, so it is
->> something that we should find a way to live with.  This support
->> can help.
->
-> We haven't identified a server-side solution yet, but that doesn't 
-> mean it doesn't exist.
->
+Here's the environment that gets passed to /sbin/hotplug when an eject
+request comes in:
 
-No, it doesn't and I, and most everyone else, would also like to
-see such a solution.  That said, I am pretty sure that we are not
-going to get a fix for ext3 and forcing everyone to move away from
-ext3 is not a good solution either.
+SUBSYSTEM=acpi
+DRIVER=processor
+DEVPATH=/devices/LNXSYSTM:00/device:00/ACPI0007:02
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+ACTION=offline
+MODALIAS=acpi:ACPI0007:
+PWD=/
+SHLVL=1
+HOME=/
+PHYSDEVDRIVER=processor
+PHYSDEVBUS=acpi
+SEQNUM=1437
+_=/usr/bin/env
 
-> If we address the time stamp problem in the client, should we also go 
-> to lengths to address it in every other corner of the NFS client?  
-> Should we also address every other server bug we discover with a 
-> client side fix?
->
+And the argument vector contains:
+ARGV[0] acpi
 
-These aren't asked seriously, are they?
+There is a path node under the processor's object node that contains
+the ACPI path to the processor device.  However, the ACPI processor
+number does not necessarily correspond to the CPU number Linux assigns
+to the CPU.
 
-When possible, we get the server bug fixed.  When not possible,
-such as the time stamp issue with ext3, we attempt work around
-it as best as possible.
+The kernel does have the CPU number available in the device object,
+but I don't see any place that this CPU number is made available to
+user space.
 
+The code that invokes /sbin/hotplug is in
+devices/acpi/processor_core.c:
 
->>>> Also, there was no support for ESTALE errors which occur during
->>>> subsequent operations to the pathname resolution process.  For
->>>> example, during a mkdir(2) operation, the ESTALE can occur from
->>>> the over the wire MKDIR operation after the LOOKUP operations
->>>> have all succeeded.
->>>
->>> If the final operation fails after a pathname resolution, then it's 
->>> a real error.  Is there a fixed and valid recovery script for the 
->>> client in this case that will allow the mkdir to proceed?
->>>
->>
->> Why do you think that it is an error?
->
-> Because this is a problem that sometimes requires application-level 
-> recovery.  Can we guarantee that retrying the mkdir is the right thing 
-> to do every time?
->
+	case ACPI_NOTIFY_EJECT_REQUEST:
+		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+				  "received ACPI_NOTIFY_EJECT_REQUEST\n"));
 
-When would not retrying the MKDIR be the right thing to do?
-When doing a mkdir("a/b"), the user can not tell nor cares
-which instance of directory "a" is the one that gets "b" created
-in it.
+		if (acpi_bus_get_device(handle, &device)) {
+			printk(KERN_ERR PREFIX
+				    "Device don't exist, dropping EJECT\n");
+			break;
+		}
+		pr = acpi_driver_data(device);
+		if (!pr) {
+			printk(KERN_ERR PREFIX
+				    "Driver data is NULL, dropping EJECT\n");
+			return;
+		}
 
-Which cases are the ones that you see that require user
-level recovery?
+		if ((pr->id < NR_CPUS) && (cpu_present(pr->id)))
+			kobject_uevent(&device->dev.kobj, KOBJ_OFFLINE);
+		break;
 
->> It can easily occur if the directory in which the new directory
->> is to be created disppears after it is looked up and before the
->> MKDIR is issued.
->>
->> The recovery is to perform the lookup again.
->
-> Have you tried this client against a file server when you unexport the 
-> filesystem under test?  The server returns ESTALE no matter what the 
-> client does.  Should the client continue to retry the request if the 
-> file system has been permanently taken offline?
->
+I see three reasonable ways of fixing this problem.  There are
+probably more ways as well.
 
-Since the NFS client supports "intr", then why not continue to
-retry the request?  It certainly won't hurt the network, trying
-at most once every acdirmin timeout seconds.  This, by default,
-would be once every 30 seconds.
+1. Automatically take a CPU offline if it is online when ejection is
+requested.  I don't see any particular drawback to this approach, but
+maybe someone out there knows why this is not done.  Presumably, both
+offlining the CPU and requesting ejection require root access, so I
+don't think that there are any security implications.  And if someone
+is attempting to eject a CPU, they almost certainly meant to offline it
+anyway.  This seems slightly more friendly than failing the eject
+request.
 
-This would alleviate a long standing complaint that when an
-admin uses a poor administrative procedure that users become
-completely hosed.
+2. Provide the CPU number in the environment passed to /sbin/hotplug
+when an eject request comes from the platform.  This definitely seems
+like the easiest solution.  You would basically have to replace the
+call to kobject_uevent above with a call to kobject_uevent_env, with
+an additional environment variable set giving the CPU number or the
+path to the CPU sys node.  The drawback I see to this approach is that
+it may be useful in general to be able to look up the correlation
+between ACPI object and CPU number at runtime, and not just when an
+eject request comes in.
 
->>> Admittedly, the NFS client could recover more cleanly from some of 
->>> these problems, but given the architecture of the Linux VFS, it will 
->>> be difficult to address some of the corner cases.
->>
->> Could you outline some of these corner cases that this proposal
->> would not address, please?
->
-> I think we have one right here: should the client retry a mkdir if 
-> gets an ESTALE? 
+3. Provide a symbolic link from the ACPI device tree to the
+appropriate CPU device, and possibly the reverse link as well.  This
+would enable /sbin/hotplug to find the appropriate CPU node to take
+the CPU offline by itself, and would also be usefil for a system
+administrator who needs to know the mapping from ACPI device to CPU
+number.  What I don't know is how hard it is to construct these new
+nodes.  It also gets slightly messy because ACPI processor objects can
+appear at different levels in the /sys node hierarchy depending on how
+they're represented in the ACPI tables, so constructing relative
+symlinks isn't a trivial matter.
 
-Yes.  Why not?  Please describe more specifically why you think
-that it should not.
+I think that overall the third approach seems the most appealing,
+because it provides additional information to the system administrator
+without adding special information just there for /sbin/hotplug.  I
+think #1 is probably a nice thing to have just in general, though I
+don't understand the rationale for the code being the way it is now.
+Sadly, #2 is the only one I'm sure I know how to implement.
 
-    Thanx...
+So any suggestions on the best way to go about solving this problem?
 
-       ps
+I've also noticed one other minor anomaly.  CPUs get device nodes
+named ACPI0007:00, ACPI0007:01, ACPI0007:02, etc.  If I remove a CPU
+from the system, then add another cpu to the system, the removed
+device node goes away, but its number doesn't get reused.  So if I
+remove and then re-add the same CPU over and over, I end up getting
+nodes named ACPI0007:03, then that gets deleted, then I get
+ACPI0007:04, and so on.  Is this supposed to happen?  What happens if
+I remove and add the same CPU more than 99 times?
+
+Dan.
