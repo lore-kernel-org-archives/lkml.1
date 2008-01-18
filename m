@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763598AbYARSUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764047AbYARSVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763598AbYARSUy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 13:20:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbYARSUq
+	id S1764047AbYARSVP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 13:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762331AbYARSUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 13:20:46 -0500
-Received: from dspnet.fr.eu.org ([213.186.44.138]:1679 "EHLO dspnet.fr.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757642AbYARSUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 13:20:45 -0500
-Date: Fri, 18 Jan 2008 19:20:43 +0100
-From: Olivier Galibert <galibert@pobox.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Why is the kfree() argument const?
-Message-ID: <20080118182042.GA79879@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	linux-kernel@vger.kernel.org
-References: <2895123.436161200674749664.JavaMail.www@wwinf4611>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2895123.436161200674749664.JavaMail.www@wwinf4611>
-User-Agent: Mutt/1.4.2.3i
+	Fri, 18 Jan 2008 13:20:50 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44483 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762071AbYARSUs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 13:20:48 -0500
+Message-ID: <4790EB95.203@zytor.com>
+Date: Fri, 18 Jan 2008 13:10:29 -0500
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: 7eggert@gmx.de, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       Russell King <rmk+serial@arm.linux.org.uk>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch 2/2] 8250_pnp: register x86 COM ports at the conventional
+ ttyS names
+References: <9MjWa-VI-9@gated-at.bofh.it> <9MjWb-VI-11@gated-at.bofh.it> <9MlEG-3Mx-13@gated-at.bofh.it> <9Mmra-56f-29@gated-at.bofh.it> <E1JFEwb-0000zs-2q@be1.7eggert.dyndns.org> <478E6C20.2030005@zytor.com> <478E946D.9040105@keyaccess.nl>
+In-Reply-To: <478E946D.9040105@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 05:45:49PM +0100, ecolbus@voila.fr wrote:
-> The malloc attribute is exactly about this : giving the compiler the
-> indication that no other pointer aliases this object, allowing for
-> better optimizations.
+Rene Herman wrote:
+> 
+> The number of places expected to contain something sensible should I 
+> believe first be verified at 0x410 -- the equipment word. Bits 11-9 
+> (0x0e00) should be the number of serial ports, 0 to 4 (so 5-7 is also a 
+> sanity check) and if BIOSes can be expected to zero out the non-used 
+> base-addresses (at 0x400, 0x402, 0x404, 0x406) that's another sanity 
+> check. Don't know if they can though...
+> 
 
-If you put a malloc attribute on the allocator and no free attribute
-on the deallocator, you can get bugs indeed.  GIGO.
+Probably not.  However, the ports marked valid should be nonzero and 
+aligned-8.
 
+	-hpa
 
-> Yes. Bad things start to happen when users add wrong indications to
-> the compiler. By adding the "const" indication to kfree(), the programmer
-> wrongly tells that it can optimize reading the values pointed to before or
-> after calling the function (if it is also sure that they cannot be
-> read/written otherwise). Current gcc implementations seem quite
-> conservative in this regard, and don't optimize that much, but what about
-> the future?
-
-The future should be quite nice because:
-
-- the compiler can not know that kmalloc does not have an alias to
-  the pointer tucked somewhere accessible by other non-inline functions
-  (as kfree is), especially since it does have aliases in practice, so
-  it cannot prove to "not read/written otherwise" part without the
-  malloc attribute
-
-- if you add the (non-standard C) malloc attribute to kmalloc, then
-  you also add the free attribute to kfree which tells the compiler
-  that the pointer is invalid after the call, which ensures no
-  accesses will be moved after it
-
-  OG.
