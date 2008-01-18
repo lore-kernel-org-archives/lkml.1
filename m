@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758463AbYARFIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbYARFJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758463AbYARFIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 00:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbYARFIH
+	id S1758875AbYARFJX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 00:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYARFJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 00:08:07 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52824 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750946AbYARFIG (ORCPT
+	Fri, 18 Jan 2008 00:09:15 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35692 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751153AbYARFJO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 00:08:06 -0500
-Message-ID: <479032CD.9040306@zytor.com>
-Date: Fri, 18 Jan 2008 00:02:05 -0500
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Kyle McMartin <kyle@mcmartin.ca>
-CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com
-Subject: Re: [PATCH] x86: merge asm-x86/alternative.h
-References: <20080118050336.GC974@phobos.i.cabal.ca>
-In-Reply-To: <20080118050336.GC974@phobos.i.cabal.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 18 Jan 2008 00:09:14 -0500
+Date: Thu, 17 Jan 2008 21:08:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-mm1
+Message-Id: <20080117210858.11eeab29.akpm@linux-foundation.org>
+In-Reply-To: <1200619758.4001.0.camel@cinder.waste.org>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	<1200604207.3839.3.camel@cinder.waste.org>
+	<1200619758.4001.0.camel@cinder.waste.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle McMartin wrote:
-> Straightforward merge. Kind of a pity that gas doesn't really have the
-> concept of a "long" (long is 4-bytes for some reason.) Nor is it able to
-> pad to a non-power of two boundary (for struct alignment) to get rid
-> of the struct alt_instr padding.
-> 
-> Build tested on i386, i386 with lguest & xen paravirt enabled, and
-> x86_64. Boot tested on x86_64.
-> 
-> 
-> diff --git a/include/asm-x86/alternative.h b/include/asm-x86/alternative.h
-> index 9eef6a3..7047a0f 100644
-> --- a/include/asm-x86/alternative.h
-> +++ b/include/asm-x86/alternative.h
-> @@ -1,5 +1,168 @@
-> -#ifdef CONFIG_X86_32
-> -# include "alternative_32.h"
-> +#ifndef _X86_ALTERNATIVE_H
-> +#define _X86_ALTERNATIVE_H
-> +
-> +#ifdef __KERNEL__
-> +
-> +#include <linux/types.h>
-> +#include <linux/stddef.h>
-> +
-> +#ifdef CONFIG_X86_64
-> +# define ALT_ASMPTR	".quad"
-> +# define ALT_ALIGN	"8"
-> +# define ALT_INSTR_PAD	5
->  #else
-> -# include "alternative_64.h"
-> +# define ALT_ASMPTR	".long"
-> +# define ALT_ALIGN	"4"
-> +# define ALT_INSTR_PAD	1
->  #endif
+On Thu, 17 Jan 2008 19:29:18 -0600 Matt Mackall <mpm@selenic.com> wrote:
 
-Please use existing macros from <asm/asm.h> (in the x86 tree.)
+> 
+> On Thu, 2008-01-17 at 15:10 -0600, Matt Mackall wrote:
+> > On Thu, 2008-01-17 at 02:35 -0800, Andrew Morton wrote:
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
+> > 
+> > Hmm. On my Thinkpad R51, this gives me:
+> > 
+> > Uncompressing linux... Ok, booting kernel.
+> > 
+> > ..and nothing more with the attached .config.
+> 
+> Also, both mainline git and x86.git build and boot fine.
 
-	-hpa
+Tried your config on the old PIII.  Boots OK.
+
+Then tried it on the Vaio and the machine instantly stops with blinking
+leds.  But it also does this with mainline.  You use pentium-M and so do I
+on that machine.  Odd.
+
