@@ -1,39 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759258AbYARJTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbYARJUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759258AbYARJTy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 04:19:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbYARJTk
+	id S1759476AbYARJUS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 04:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbYARJTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 04:19:40 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:57430 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754595AbYARJTi (ORCPT
+	Fri, 18 Jan 2008 04:19:45 -0500
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:54290 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755584AbYARJTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 04:19:38 -0500
-Message-Id: <200801180919.m0I9JEOV060912@www262.sakura.ne.jp>
-Subject: Re: [2.6.24-rc8-mm1] Locking API boot-time self-tests hangs.
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Zan Lynx <zlynx@acm.org>,
-       Ingo Molnar <mingo@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
+	Fri, 18 Jan 2008 04:19:41 -0500
+Date: Fri, 18 Jan 2008 10:19:33 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Cc: "Gabor Gombas" <gombasg@sztaki.hu>, "Tejun Heo" <htejun@gmail.com>,
+       "Al Viro" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net, kay.sievers@vrfy.org,
+       "Greg KH" <greg@kroah.com>, "Marcel Holtmann" <marcel@holtmann.org>,
+       davem@davemloft.net
+Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
+Message-ID: <20080118101933.258bfae9@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <a8e1da0801171937r92a1c32l116315a76f334776@mail.gmail.com>
+References: <20080108133215.GA15814@boogie.lpds.sztaki.hu>
+	<20080111230929.GA7052@boogie.lpds.sztaki.hu>
+	<a8e1da0801132305s4f0c3d7asa268382bb6e44777@mail.gmail.com>
+	<20080114135228.6b9a8da2@gondolin.boeblingen.de.ibm.com>
+	<20080115015741.GB2780@darkstar.te-china.tietoenator.com>
+	<20080116010205.GA2970@darkstar.te-china.tietoenator.com>
+	<20080116230646.GB6715@boogie.lpds.sztaki.hu>
+	<a8e1da0801162324r2cd82684iede3fc8c2f8c391c@mail.gmail.com>
+	<20080117081504.GA3123@darkstar.te-china.tietoenator.com>
+	<20080117124259.19a88129@gondolin.boeblingen.de.ibm.com>
+	<a8e1da0801171937r92a1c32l116315a76f334776@mail.gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Fri, 18 Jan 2008 18:19:14 +0900
-References: <200801180120.m0I1KBuC065806@www262.sakura.ne.jp> <20080117181935.02294863.akpm@linux-foundation.org> <200801180319.m0I3Ju9N089501@www262.sakura.ne.jp> <20080117204247.5318e500.akpm@linux-foundation.org> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Fri, 18 Jan 2008 11:37:21 +0800,
+"Dave Young" <hidave.darkstar@gmail.com> wrote:
 
-I tried gcc 4.1.2 on Fedora 8 using
-http://I-love.SAKURA.ne.jp/tmp/config-2.6.24-rc8-mm1 .
-Same result as gcc 3.3.5 on Debian/Sarge.
 
-It seems kernel config (and possibly hardware) dependent
-rather than gcc version dependent.
+> Lets see the device_move function, seems there's some problems in it:
+> 
+> 1302 int device_move(struct device *dev, struct device *new_parent)
+> 1303 {
+> 1304         int error;
+> 1305         struct device *old_parent;
+> 1306         struct kobject *new_parent_kobj;
+> 1307
+> 1308         dev = get_device(dev);
+> 1309         if (!dev)
+> 1310                 return -EINVAL;
+> 1311
+> 1312         new_parent = get_device(new_parent);
+> 1313         new_parent_kobj = get_device_parent (dev, new_parent);
+> 
+> Here could get kobject reference
 
-This is VMware workstation 6.0.0 on Thinkpad X60 (Core 2 Duo).
+Eww. get_device_parent() may inflate the refcount in one case
+for !CONFIG_SYSFS_DEPRECATED, but often won't. (And the function is
+named confusingly, since it hints that we always get a reference, which
+we don't.)
 
-Regards.
+> 
+> 1314         if (IS_ERR(new_parent_kobj)) {
+> 1315                 error = PTR_ERR(new_parent_kobj);
+> 1316                 put_device(new_parent);
+> 1317                 goto out;
+> 1318         }
+> 1319         pr_debug("DEVICE: moving '%s' to '%s'\n", dev->bus_id,
+> 1320                  new_parent ? new_parent->bus_id : "<NULL>");
+> 1321         error = kobject_move(&dev->kobj, new_parent_kobj);
+> 1322         if (error) {
+> 1323                 put_device(new_parent);
+> 
+> imagine new_parent is NULL, then the new_parent_kobj should be put
+
+No, we would need a put_device_parent() (crappy name) which puts the
+reference iff get_device_parent() grabbed it.
+
+> 
+> 1324                 goto out;
+> 1325         }
+> 1326         old_parent = dev->parent;
+> 1327         dev->parent = new_parent;
+> 1328         if (old_parent)
+> 1329                 klist_remove(&dev->knode_parent);
+> 1330         if (new_parent)
+> 1331                 klist_add_tail(&dev->knode_parent,
+> &new_parent->klist_children);
+> 1332         if (!dev->class)
+> 1333                 goto out_put;
+> 
+> Why not put new_parent | new_parent_kobj?
+
+Because that is the good case :)
+
+> 
+> 1334         error = device_move_class_links(dev, old_parent, new_parent);
+> 1335         if (error) {
+> 1336                 /* We ignore errors on cleanup since we're hosed
+> anyway... */
+> 1337                 device_move_class_links(dev, new_parent, old_parent);
+> 1338                 if (!kobject_move(&dev->kobj, &old_parent->kobj)) {
+> 1339                         if (new_parent)
+> 1340                                 klist_remove(&dev->knode_parent);
+> 1341                         if (old_parent)
+> 1342                                 klist_add_tail(&dev->knode_parent,
+> 1343
+> &old_parent->klist_children);
+> 1344                 }
+> 1345                 put_device(new_parent);
+> 
+> Same doubt as above
+
+We'd need put_device_parent() or whatever here as well, I guess.
+
+> 
+> 1346                 goto out;
+> 1347         }
+> 1348 out_put:
+> 1349         put_device(old_parent);
+> 1350 out:
+> 1351         put_device(dev);
+> 1352         return error;
+> 1353 }
+> 
+> Hope I'm wrong, but if it's indeed bugs, I will send a patch about this.
+
+There are more problems, I'm afraid :( setup_parent() calls
+get_device_parent() as well, so device_add() has the same problems on
+error cleanup...
+
+I'll take a look at it if I find some time, but I'm afraid I'll not
+be able to do so before next week.
