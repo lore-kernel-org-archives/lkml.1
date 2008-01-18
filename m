@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760473AbYARKfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760094AbYARKiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760473AbYARKfW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 05:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760818AbYARKe6
+	id S1760094AbYARKiT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 05:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbYARKiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 05:34:58 -0500
-Received: from wx-out-0506.google.com ([66.249.82.238]:34394 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760387AbYARKe4 (ORCPT
+	Fri, 18 Jan 2008 05:38:10 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36717 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754133AbYARKiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 05:34:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sLeZkBVlVX6snXjJY3XOYCa2aAWBikYQXTXl2j3fClZl+H7ytGEgSzc2Tj2DWJ3ZwjgsEfFNU9LKf9Thn+ADK9j9GAFUO7hNHgxZl7e1JCV1LNEuMhU8G3ml1rp62Tuc252UzyWQta6n+66U5HBUofA/kWFFpRFJZ2lVthLubRQ=
-Message-ID: <a8e1da0801180234k4b48fd1axaba6d7d334219430@mail.gmail.com>
-Date: Fri, 18 Jan 2008 18:34:55 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
-Subject: Re: [Bluez-devel] Oops involving RFCOMM and sysfs
-Cc: "Gabor Gombas" <gombasg@sztaki.hu>, "Tejun Heo" <htejun@gmail.com>,
-       "Al Viro" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net, kay.sievers@vrfy.org,
-       "Greg KH" <greg@kroah.com>, "Marcel Holtmann" <marcel@holtmann.org>,
-       davem@davemloft.net
-In-Reply-To: <20080118112337.0b457c49@gondolin.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080108133215.GA15814@boogie.lpds.sztaki.hu>
-	 <20080115015741.GB2780@darkstar.te-china.tietoenator.com>
-	 <20080116010205.GA2970@darkstar.te-china.tietoenator.com>
-	 <20080116230646.GB6715@boogie.lpds.sztaki.hu>
-	 <a8e1da0801162324r2cd82684iede3fc8c2f8c391c@mail.gmail.com>
-	 <20080117081504.GA3123@darkstar.te-china.tietoenator.com>
-	 <20080117124259.19a88129@gondolin.boeblingen.de.ibm.com>
-	 <a8e1da0801171937r92a1c32l116315a76f334776@mail.gmail.com>
-	 <20080118101933.258bfae9@gondolin.boeblingen.de.ibm.com>
-	 <20080118112337.0b457c49@gondolin.boeblingen.de.ibm.com>
+	Fri, 18 Jan 2008 05:38:09 -0500
+To: a.p.zijlstra@chello.nl
+CC: miklos@szeredi.hu, salikhmetov@gmail.com, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+In-reply-to: <1200651337.5920.9.camel@twins> (message from Peter Zijlstra on
+	Fri, 18 Jan 2008 11:15:36 +0100)
+Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
+	files
+References: <12006091182260-git-send-email-salikhmetov@gmail.com>
+	 <12006091211208-git-send-email-salikhmetov@gmail.com>
+	 <E1JFnsg-0008UU-LU@pomaz-ex.szeredi.hu> <1200651337.5920.9.camel@twins>
+Message-Id: <E1JFobo-00009i-Dk@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 18 Jan 2008 11:38:00 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 18, 2008 6:23 PM, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> On Fri, 18 Jan 2008 10:19:33 +0100,
-> Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
->
-> > >
-> > > 1314         if (IS_ERR(new_parent_kobj)) {
-> > > 1315                 error = PTR_ERR(new_parent_kobj);
-> > > 1316                 put_device(new_parent);
-> > > 1317                 goto out;
-> > > 1318         }
-> > > 1319         pr_debug("DEVICE: moving '%s' to '%s'\n", dev->bus_id,
-> > > 1320                  new_parent ? new_parent->bus_id : "<NULL>");
-> > > 1321         error = kobject_move(&dev->kobj, new_parent_kobj);
-> > > 1322         if (error) {
-> > > 1323                 put_device(new_parent);
-> > >
-> > > imagine new_parent is NULL, then the new_parent_kobj should be put
-> >
-> > No, we would need a put_device_parent() (crappy name) which puts the
-> > reference iff get_device_parent() grabbed it.
->
-> And looking at Greg's patchset, it has cleanup_device_parent(), which
-> does just that. But it is only called in device_del(), not when
-> device_move() has errors.
->
-> (get_device_parent() also always returns a pointer to a kobject or
-> NULL, so we can get rid of those IS_ERR() checks in setup_parent() and
-> device_move() as well.)
->
+> On Fri, 2008-01-18 at 10:51 +0100, Miklos Szeredi wrote:
+> 
+> > > diff --git a/mm/msync.c b/mm/msync.c
+> > > index a4de868..a49af28 100644
+> > > --- a/mm/msync.c
+> > > +++ b/mm/msync.c
+> > > @@ -13,11 +13,33 @@
+> > >  #include <linux/syscalls.h>
+> > >  
+> > >  /*
+> > > + * Scan the PTEs for pages belonging to the VMA and mark them read-only.
+> > > + * It will force a pagefault on the next write access.
+> > > + */
+> > > +static void vma_wrprotect(struct vm_area_struct *vma)
+> > > +{
+> > > +	unsigned long addr;
+> > > +
+> > > +	for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE) {
+> > > +		spinlock_t *ptl;
+> > > +		pgd_t *pgd = pgd_offset(vma->vm_mm, addr);
+> > > +		pud_t *pud = pud_offset(pgd, addr);
+> > > +		pmd_t *pmd = pmd_offset(pud, addr);
+> > > +		pte_t *pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+> > > +
+> > > +		if (pte_dirty(*pte) && pte_write(*pte))
+> > > +			*pte = pte_wrprotect(*pte);
+> > > +		pte_unmap_unlock(pte, ptl);
+> > > +	}
+> > > +}
+> > 
+> > What about ram based filesystems?  They don't start out with read-only
+> > pte's, so I think they don't want them read-protected now either.
+> > Unless this is essential for correct mtime/ctime accounting on these
+> > filesystems (I don't think it really is).  But then the mapping should
+> > start out read-only as well, otherwise the time update will only work
+> > after an msync(MS_ASYNC).
+> 
+> page_mkclean() has all the needed logic for this, it also walks the rmap
+> and cleans out all other users, which I think is needed too for
+> consistencies sake:
+> 
+> Process A			Process B
+> 
+> mmap(foo.txt)			mmap(foo.txt)
+> 
+> dirty page
+> 				dirty page
+> 
+> msync(MS_ASYNC)
+> 
+> 				dirty page
+> 
+> msync(MS_ASYNC) <--- now what?!
 
-Hmm, thanks.
-I will be offline during weekend,  but I will still check the
-device_move and other code if I have time.
+Nothing.  I think it's perfectly acceptable behavior, if msync in
+process A doesn't care about any dirtying in process B.
+
+> All in all, that sounds rather expensive..
+
+Right.  The advantage of Anton's current approach, is that it's at
+least simple, and possibly not so expensive, while providing same
+quite sane semantics for MS_ASYNC vs. mtime updates.
+
+Miklos
