@@ -1,97 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757681AbYARABR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbYARADy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757681AbYARABR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 Jan 2008 19:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYARABE
+	id S1757995AbYARADy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 Jan 2008 19:03:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbYARADr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 19:01:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35596 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751558AbYARABC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 19:01:02 -0500
-Message-ID: <478FEC37.2010702@redhat.com>
-Date: Thu, 17 Jan 2008 19:00:55 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
-MIME-Version: 1.0
-To: shannon.nelson@intel.com
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: IOATDMA: driver oopses on request_irq()
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 17 Jan 2008 19:03:47 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52411 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751441AbYARADq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 Jan 2008 19:03:46 -0500
+Subject: Merge Candidate tree for the 2.6 kernel
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 17 Jan 2008 18:03:41 -0600
+Message-Id: <1200614621.3255.59.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-https://bugzilla.redhat.com/show_bug.cgi?id=311991
-[still present in 2.6.23.8]
+Yes, I know ... another tree, just what everyone wants.
 
-[Drivers really need to actually be ready to receive interrupts when
-they call request_irq(). We keep finding drivers that aren't because
-we enable CONFIG_DEBUG_SHIRQ]
+This one has a specific purpose: It's my tree tracking everyone else's
+git and quilt trees so I get early warning if there are going to be any
+merge issues.  However, it struck me it might be useful to anyone
+wishing to track what's going upstream more closely.
 
-kernel version: 2.6.22.7-85.fc7debug
-modprobe ioatdma during bootup sez:
+I'm currently autobuilding it every night with a cron job.  The
+resulting log (and patches) are here:
 
-[  142.497353] Module ioatdma cannot be unloaded due to unsafe usage in
-drivers/dma/ioatdma.c:829
-[  142.497906] ACPI: PCI Interrupt 0000:00:08.0[A] -> GSI 16 (level, low) -> IRQ 16
-[  142.497945] Unable to handle kernel NULL pointer dereference at
-0000000000000003 RIP: 
-[  142.498002]  [<ffffffff8835adc0>] :ioatdma:ioat_do_interrupt+0xd/0x50
-[  142.498770] PGD 10fc46067 PUD 114a56067 PMD 0 
-[  142.499156] Oops: 0000 [1] SMP 
-[  142.499498] last sysfs file: /block/sr0/removable
-[  142.499753] CPU 3 
-[  142.500049] Modules linked in: ioatdma dell_rbu nfsd exportfs lockd nfs_acl
-ipmi_devintf ipmi_si ipmi_msghandler hidp l2cap bluetooth sunr
-pc xt_length ipt_TOS xt_state xt_tcpudp ipt_REJECT ipt_LOG xt_limit
-iptable_mangle iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack nfnetlin
-k iptable_filter ip_tables x_tables ppp_deflate zlib_deflate ppp_synctty
-ppp_async crc_ccitt ppp_generic slhc bridge dm_mirror dm_multipath d
-m_mod video sbs button dock battery ac tcp_westwood kvm_intel kvm sr_mod cdrom
-ata_generic ata_piix serio_raw libata bnx2 rtc_cmos sg joydev 
-usb_storage shpchp megaraid_sas sd_mod scsi_mod ext3 jbd mbcache ehci_hcd
-ohci_hcd uhci_hcd
-[  142.505129] Pid: 5239, comm: modprobe Not tainted 2.6.22.7-85.fc7debug #1
-[  142.505386] RIP: 0010:[<ffffffff8835adc0>]  [<ffffffff8835adc0>]
-:ioatdma:ioat_do_interrupt+0xd/0x50
-[  142.505892] RSP: 0018:ffff81010ff83c48  EFLAGS: 00010096
-[  142.506146] RAX: 0000000000001214 RBX: 0000000000000202 RCX: ffffffff8835b0f5
-[  142.506405] RDX: 0000000000000000 RSI: ffff81012cc11700 RDI: 00000000000008f4
-[  142.506663] RBP: ffff81012cc11700 R08: ffff81012cc11700 R09: ffff81012cc11700
-[  142.506919] R10: 000000000000005a R11: ffffffff811f2016 R12: 0000000000000020
-[  142.507176] R13: ffff81012cc11700 R14: ffffffff8835adb3 R15: 00000000000008f4
-[  142.507434] FS:  00002aaaaaae0250(0000) GS:ffff810105855900(0000)
-knlGS:0000000000000000
-[  142.507892] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-[  142.508147] CR2: 0000000000000003 CR3: 0000000110281000 CR4: 00000000000026e0
-[  142.508406] Process modprobe (pid: 5239, threadinfo ffff81010ff82000, task
-ffff8101106dcf60)
-[  142.508866] Stack:  ffff81012cc11700 0000000000000202 ffff81012447ab40
-ffffffff81069bd8
-[  142.509544]  ffff81012447ac80 ffffffff8835b0f5 01ff81012f971070 ffff81012f971070
-[  142.510176]  ffff81012cc11700 ffff81012f971000 00000000fffffff4 0000000000000000
-[  142.510566] Call Trace:
-[  142.511063]  [<ffffffff81069bd8>] request_irq+0xcc/0x120
-[  142.511321]  [<ffffffff8835aab7>] :ioatdma:ioat_probe+0x15b/0x457
-[  142.511581]  [<ffffffff8126a916>] _spin_unlock+0x17/0x20
-[  142.511839]  [<ffffffff8112c1be>] pci_device_probe+0xcd/0x134
-[  142.512097]  [<ffffffff811a54a3>] driver_probe_device+0xff/0x17c
-[  142.512354]  [<ffffffff811a5668>] __driver_attach+0x90/0xcc
-[  142.512609]  [<ffffffff811a55d8>] __driver_attach+0x0/0xcc
-[  142.512865]  [<ffffffff811a55d8>] __driver_attach+0x0/0xcc
-[  142.513120]  [<ffffffff811a4824>] bus_for_each_dev+0x43/0x6e
-[  142.513378]  [<ffffffff811a4b9c>] bus_add_driver+0x7b/0x19d
-[  142.513634]  [<ffffffff8112c3a0>] __pci_register_driver+0x68/0x9a
-[  142.513892]  [<ffffffff81055f70>] sys_init_module+0x163f/0x17a1
-[  142.514153]  [<ffffffff81067540>] audit_syscall_entry+0x141/0x174
-[  142.514414]  [<ffffffff81009d2e>] tracesys+0xd5/0xda
-[  142.514673] 
-[  142.514920] 
-[  142.514920] Code: 8a 42 03 0f b6 d8 31 c0 f6 c3 01 74 31 f6 c3 02 75 0a 0f b6 
-[  142.516541] RIP  [<ffffffff8835adc0>] :ioatdma:ioat_do_interrupt+0xd/0x50
-[  142.516841]  RSP <ffff81010ff83c48>
-[  142.517091] CR2: 0000000000000003
+http://www.kernel.org/pub/linux/kernel/people/jejb/merge-tree/
+
+And if you want a git tree, it's here:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/jejb/merge-tree 2.6.24-rc8-mc1
+
+fully labelled as <kernel version>-mc<n> and the place I began from as
+<kernel version>-mc<n>-base.
+
+The file that drives the build is this one:
+
+http://www.kernel.org/pub/linux/kernel/people/jejb/merge-tree-build
+
+As you can see from the reverts and the skips, we have trouble even now
+(and that's after I fixed up most of the failures in SCSI).
+
+ACPI and the x86 trees clash hideously, so I kicked out x86
+
+Jens' block tree has two patches which clash with Bart's ide quilt
+
+Greg actually has one patch in his tree that clashes with one of mine.
+
+Please note, this tree is currently very storage centric (i.e. I haven't
+included net trees or quilts because I didn't think they'd be likely to
+clash with my SCSI trees).  However, if it could be more generally
+useful, I could add other trees and quilts to it.
+
+The script that's doing all of this (if you want to try it at home) is:
+
+http://www.kernel.org/pub/linux/kernel/people/jejb/build.pl
+
+James
+
 
