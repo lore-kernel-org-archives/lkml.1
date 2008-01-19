@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbYASWSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYASWSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758089AbYASWSa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 17:18:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbYASWSX
+	id S1758701AbYASWSx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 17:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758259AbYASWSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 17:18:23 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:50958 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751043AbYASWSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 17:18:22 -0500
-Message-ID: <4792772C.6040201@sgi.com>
-Date: Sat, 19 Jan 2008 14:18:20 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sat, 19 Jan 2008 17:18:44 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:44796 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751222AbYASWSm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 17:18:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YmPWS1WC9BThzMZF4LBzvm++VIK5Ujr2rKGFYT2623+5PbEVauZZI3GhGCqewbyOCLnelirhUjb8+3tRZr/PTwUYmjaQNKHAqwHPHIcbq3vy7AeGy7kIr4RIJuUhAIuaI/xmkYpN/XAS+z6CS3nv8RbBgGP8aIl09jZsu21uI1E=
+Message-ID: <bc64b4640801191418m6b8197c8l498e181d267bb200@mail.gmail.com>
+Date: Sun, 20 Jan 2008 01:18:40 +0300
+From: Dmitry <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       liam.girdwood@wolfsonmicro.com
+Subject: Re: [PATCH] Core driver for WM97xx touchscreens
+In-Reply-To: <20080119215506.GA7400@sirena.org.uk>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <andi@firstfloor.org>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, dada1@cosmosbay.com, clameter@sgi.com
-Subject: Re: " Change size of node ids from u8 to u16 fixup" causes early
- panic in __build_all_zonelists
-References: <20080119062912.GA15850@basil.nowhere.org> <20080119081941.GC12995@elte.hu>
-In-Reply-To: <20080119081941.GC12995@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080118162627.GA28974@rakim.wolfsonmicro.main>
+	 <1200673631-366-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	 <20080118120148.ZZRA012@mailhub.coreip.homeip.net>
+	 <fmqq50$te0$1@ger.gmane.org> <20080119170030.GA469@sirena.org.uk>
+	 <bc64b4640801191148m39ae5cd6ra190ac8e9c40fba7@mail.gmail.com>
+	 <20080119215506.GA7400@sirena.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Andi Kleen <andi@firstfloor.org> wrote:
-> 
->> One of my test systems didn't boot with latest git-x86. I bisected it 
->> down to f1321f875910172bcc3e1f302fe145a9e4d3bdf7
->>
->> With later patches the fault seemed to happen even earlier before 
->> other initialization messages.
->>
->> Config is available at http://halobates.de/config
-> 
-> i've reverted that patch for now, but we need to figure this crash out - 
-> the patch looks a trivial extension so it's probably some bad assumption 
-> elsewhere, which we want to fix.
-> 
-> 	Ingo
+Hi,
 
-I'm testing the new version of the patch using:
+2008/1/20, Mark Brown <broonie@opensource.wolfsonmicro.com>:
+> On Sat, Jan 19, 2008 at 10:48:32PM +0300, Dmitry wrote:
+>
+> > Well... It's a common suggestion not to duplicate code. The wm97xx bus
+> > looks mostly like platform. The only difference is the name. To help
+> > visualisation, devices can have parents. Just set (in pseudocode)
+> > wm97xx-touchscreen->parent to wm97xx, do the same for wm97xx-battery
+> > and so on. Thus all devices would be on the platform device but with
+> > proper parent <-> child notation.
+>
+> That's exactly what I had understood you to mean.  I guess it's just
+> that using the platform bus for this purpose feels like an abstraction
+> violation to me due to having platform devices parented off a device on
+> another bus.  Obviously it's just my model of a platform device that's
+> wrong here.  I will change the driver to use the platform bus for my
+> next submission.
+
+Hmm. I forgot about rooting this onto ac97 bus. But I would still suggest
+using platform bus just for the sake of code clarity and simplicity.
+
+>
+> > git://git.mnementh.co.uk/linux-2.6-im.git#tmio_dev_try3. Look for
+>
+> Thanks, I'll take a look.
+>
+> > 2008/1/19, Mark Brown <broonie@opensource.wolfsonmicro.com>:
+>
+> > > current patch series these chips all also provide an audio codec which
+> > > requires a reasonably substantial driver for full support.
+>
+> > This would only touch child devices organisation.
+>
+> Indeed - I mention it mostly for additional motivation.
+>
 
 
-git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git mm
-
-
-The straight mm version doesn't like your .config file.
+-- 
+With best wishes
+Dmitry
