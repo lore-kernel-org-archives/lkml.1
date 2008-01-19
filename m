@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764905AbYASB3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764359AbYASBak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764905AbYASB3n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 20:29:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760045AbYASB3H
+	id S1764359AbYASBak (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 20:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760171AbYASBac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 20:29:07 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42316 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759619AbYASB3E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 20:29:04 -0500
-Date: Fri, 18 Jan 2008 17:28:07 -0800
-From: Greg KH <greg@kroah.com>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <GregKH@novell.com>
-Subject: Re: [PATCH 3/4] introduce __devinitconst
-Message-ID: <20080119012807.GB6150@kroah.com>
-References: <47873D110200007800068158@novell.com> <47873D87.76E4.0078.0@novell.com>
+	Fri, 18 Jan 2008 20:30:32 -0500
+Received: from ozlabs.org ([203.10.76.45]:48969 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760074AbYASBac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 20:30:32 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH 1/3] Improve type handling in interrupt handlers
+Date: Sat, 19 Jan 2008 12:29:58 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ash Willis <ashwillis@programmer.net>, linux-pcmcia@lists.infradead.org
+References: <200801190722.26154.rusty@rustcorp.com.au> <47910F05.8040501@pobox.com>
+In-Reply-To: <47910F05.8040501@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47873D87.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200801191229.59179.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 11, 2008 at 01:57:27AM -0700, Jan Beulich wrote:
-> The drivers picked just serve as examples (which I routinely build and
-> hence am able to easily verify), i.e. as before he patch doesn't change
-> all instances where 'const' could have been added as a result of the
-> base change, only where the change has a real effect (the module loader
-> doesn't enforce read-only section attributes at present, so only
-> built-in files make a real difference).
+On Saturday 19 January 2008 07:41:41 Jeff Garzik wrote:
+> FWIW, I have been working in this area extensively.
 
-What does this buy us?
+Excellent...
 
-> --- 2.6.24-rc7-initconst.orig/include/linux/init.h
-> +++ 2.6.24-rc7-initconst/include/linux/init.h
-> @@ -257,11 +257,13 @@ void __init parse_early_param(void);
->  #ifdef CONFIG_HOTPLUG
->  #define __devinit
->  #define __devinitdata
-> +#define __devinitconst const
->  #define __devexit
->  #define __devexitdata
->  #else
->  #define __devinit __init
->  #define __devinitdata __initdata
-> +#define __devinitconst __initdata
+> Check out the 'irq-cleanups' and 'irq-remove' branches of
+> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
 
-Shoudn't that be "__initdata const" or something like that?
+Your irq-cleanups branch is nice work!  But AFAICT these patches are not 
+included in your irq-cleanups branch.  Did you want me to switch my patch 
+over to irqreturn_t and send them for you to roll in?
 
-thanks,
-
-greg k-h
+Cheers,
+Rusty.
