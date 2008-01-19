@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932347AbYASEWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763914AbYASEYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932347AbYASEWi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 23:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbYASEW3
+	id S1763914AbYASEYh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 23:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbYASEYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 23:22:29 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:27662 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757890AbYASEW3 (ORCPT
+	Fri, 18 Jan 2008 23:24:31 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:44528 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757890AbYASEYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 23:22:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=G8SE2NUHKwUTLGKJdr0Y4bM/l2TVRuU1JstwkKXC9MA3Nm4matzgYPLf504i3Mi2Q5suGNyg/4Sf06Oo9iJHq9mGpJTMB9nmqcqOz962GQNEt8lauwIXXr8CsYLvbLdGZ+ZyaczfkK0cYR+cUuKGyGxXbqrxzhrQrs+6mMYjBMM=
-Subject: [PATCH] x86: Unify printk strings in fault_32|64.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 20:22:29 -0800
-Message-Id: <1200716549.5724.150.camel@brick>
+	Fri, 18 Jan 2008 23:24:30 -0500
+Date: Sat, 19 Jan 2008 05:27:50 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Chodorenko Michail <misha@one.by>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: Celeron Core
+Message-ID: <20080119042750.GA24481@one.firstfloor.org>
+References: <3ed23423adebae08e8f75b6a6a7ce7ff@one.by> <p73prvyalfl.fsf@bingen.suse.de> <1200702477.25782.41.camel@cinder.waste.org> <20080119011506.GA23798@one.firstfloor.org> <1200715842.25782.95.camel@cinder.waste.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200715842.25782.95.camel@cinder.waste.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding the address of the faulting library missed removing a
-line ending from X86_32.
+> So while throttling may be less efficient in terms of watt seconds used
+> to compile something than running at full speed, it is incorrect to say
+> it uses less power. One machine running for an hour throttled to 50%
+> uses less power (and therefore less battery and cooling) than another
+> running at full speed for that same hour.
 
-Also update the shorter printk format for X86_32 in fault_64.c
-to make it easier to se the remaining differences.
+Not for the same unit of work. If you just run endless loops you 
+might be true, but most systems don't do that. 
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Ingo, trivial printk update after Andi's patches.
+In terms of laptops (or rather in most other systems too) you usually care 
+about battery life time while the system is mostly idling (waiting
+for your key strokes etc.). In this case enabling throttling
+as a cpufreq driver will not make your battery last longer.
 
- arch/x86/mm/fault_32.c |    2 +-
- arch/x86/mm/fault_64.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Also skipping the clocks does not actually safe all very much power
+compared to the other measures C-states or speedstep do (like dropping voltage) 
 
-diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
-index 793e830..0bd2417 100644
---- a/arch/x86/mm/fault_32.c
-+++ b/arch/x86/mm/fault_32.c
-@@ -589,7 +589,7 @@ bad_area_nosemaphore:
- 		    printk_ratelimit()) {
- 			printk(
- #ifdef CONFIG_X86_32
--			"%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx\n",
-+			"%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx",
- #else
- 			"%s%s[%d]: segfault at %lx ip %lx sp %lx error %lx",
- #endif
-diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
-index 9270a7d..9ac449e 100644
---- a/arch/x86/mm/fault_64.c
-+++ b/arch/x86/mm/fault_64.c
-@@ -591,7 +591,7 @@ bad_area_nosemaphore:
- 		    printk_ratelimit()) {
- 			printk(
- #ifdef CONFIG_X86_32
--			"%s%s[%d]: segfault at %08lx ip %08lx sp %08lx error %lx\n",
-+			"%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx",
- #else
- 			"%s%s[%d]: segfault at %lx ip %lx sp %lx error %lx",
- #endif
--- 
-1.5.4.rc3.1118.gf6754c
+This means enabling it will likely make your laptop battery last shorter.
 
-
-
+-Andi
