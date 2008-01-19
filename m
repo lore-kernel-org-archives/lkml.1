@@ -1,101 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbYASXZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbYASXZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758759AbYASXZU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 18:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYASXZG
+	id S1759343AbYASXZn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 18:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbYASXZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 18:25:06 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:49149 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751981AbYASXZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 18:25:05 -0500
-Message-ID: <479286CA.3080705@sgi.com>
-Date: Sat, 19 Jan 2008 15:24:58 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
+	Sat, 19 Jan 2008 18:25:33 -0500
+Received: from ozlabs.org ([203.10.76.45]:42630 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752920AbYASXZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 18:25:32 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
-References: <20080118183011.354965000@sgi.com> <20080118183011.917801000@sgi.com> <20080119145243.GA27974@elte.hu> <20080119151522.GA7774@elte.hu> <20080119152357.GA11706@elte.hu>
-In-Reply-To: <20080119152357.GA11706@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [lguest build regression fix] Re: 2.6.24-rc8-git1: Reported regressions from 2.6.23
+Date: Sun, 20 Jan 2008 10:24:47 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <200801180035.42878.rjw@sisk.pl> <20080119180604.GA6224@elte.hu>
+In-Reply-To: <20080119180604.GA6224@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801201024.47825.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
->> and then it crashes with:
->>
->>  [    0.000000] Bootmem setup node 0 0000000000000000-000000003fff0000
->>  [    0.000000] KERN_NOTICE cpu_to_node(0): usage too early!
->>  PANIC: early exception 06 rip 10:ffffffff81f77f30 error 0 cr2 f06f53
->>  [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.24-rc8 #422
->>  [    0.000000]
->>  [    0.000000] Call Trace:
->>  [    0.000000]  [<ffffffff81f76b4a>] ? setup_node_bootmem+0x1a0/0x1b8
->>  [    0.000000]  [<ffffffff81f77f30>] ? acpi_scan_nodes+0x204/0x255
->>  [    0.000000]  [<ffffffff81f77f30>] ? acpi_scan_nodes+0x204/0x255
->>  [    0.000000]  [<ffffffff81f77103>] ? numa_initmem_init+0x343/0x471
->>
->> moral: PLEASE do not use BUG() on in early init code, unless 
->> absolutely necessary.
-> 
-> the right fix is below.
-> 
-> 	Ingo
-> 
-> ---
->  include/asm-x86/topology.h |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux/include/asm-x86/topology.h
-> ===================================================================
-> --- linux.orig/include/asm-x86/topology.h
-> +++ linux/include/asm-x86/topology.h
-> @@ -70,10 +70,10 @@ static inline int cpu_to_node(int cpu)
->  	if(x86_cpu_to_node_map_early_ptr) {
->  		printk("KERN_NOTICE cpu_to_node(%d): usage too early!\n",
->  			(int)cpu);
-> -		BUG();
-> +		dump_stack();
->  	}
->  #endif
-> -	if(per_cpu_offset(cpu))
-> +	if (per_cpu_offset(cpu))
->  		return per_cpu(x86_cpu_to_node_map, cpu);
->  	else
->  		return NUMA_NO_NODE;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+On Sunday 20 January 2008 05:06:04 Ingo Molnar wrote:
+> x86 randconfig testing found the following build failure:
+>
+>  arch/x86/lguest/boot.c: In function 'lazy_hcall':
+>  arch/x86/lguest/boot.c:151: error: implicit declaration of function
+> 'paravirt_get_lazy_mode' arch/x86/lguest/boot.c:151: error:
+> 'PARAVIRT_LAZY_NONE' undeclared (first use in this function)
+>
+> which i bisected down to this very fresh commit:
+>
+>  commit 84f7466ee20cc094aa38617abfa2f3834871f054
+>  Author: Rusty Russell <rusty@rustcorp.com.au>
+>  Date:   Sat Jan 19 07:02:29 2008 +1100
+>
+>      Selecting LGUEST should turn on Guest support, as in 2.6.23.
+>
+> which allows the following .config variation:
+>
+>  # CONFIG_PARAVIRT_GUEST is not set
+>  CONFIG_LGUEST_GUEST=y
 
-Except the function needs to return a valid node id if it's to continue:
+This looks like a "randconfig" bug, to be honest.
 
---- linux.orig/include/asm-x86/topology.h       2008-01-19 15:23:04.996551867 -0800
-+++ linux/include/asm-x86/topology.h    2008-01-19 15:23:05.208564537 -0800
-@@ -67,10 +67,11 @@ static inline int early_cpu_to_node(int
- static inline int cpu_to_node(int cpu)
- {
- #ifdef CONFIG_DEBUG_PER_CPU_MAPS
--       if(x86_cpu_to_node_map_early_ptr) {
-+       if (x86_cpu_to_node_map_early_ptr) {
-                printk("KERN_NOTICE cpu_to_node(%d): usage too early!\n",
-                        (int)cpu);
-                dump_stack();
-+               return ((numanode_t *)x86_cpu_to_node_map_early_ptr)[cpu];
-        }
- #endif
-        if (per_cpu_offset(cpu))
+CONFIG_LGUEST_GUEST and CONFIG_LGUEST are within "if PARAVIRT_GUEST" (include 
+is in arch/x86/Kconfig).
 
-??
-
-Thannks,
-Mike
+Rusty.
