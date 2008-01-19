@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758810AbYASWjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbYASWnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758810AbYASWjf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 17:39:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbYASWj1
+	id S1756881AbYASWnT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 17:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbYASWnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 17:39:27 -0500
-Received: from eagle.jhcloos.com ([207.210.242.212]:3173 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbYASWj0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 17:39:26 -0500
-From: James Cloos <cloos@jhcloos.com>
-To: "Francis Moreau" <francis.moro@gmail.com>
-Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Subject: Re: Why not creating a GIT RT tree ?
-In-Reply-To: <38b2ab8a0801191217m6d4a44edw28dfc6f60b5bf9f8@mail.gmail.com>
-	(Francis Moreau's message of "Sat, 19 Jan 2008 21:17:15 +0100")
-References: <38b2ab8a0801180544j2022af8bl252a118a295b1f34@mail.gmail.com>
-	<m3zlv2kd6t.fsf@lugabout.jhcloos.org>
-	<38b2ab8a0801191217m6d4a44edw28dfc6f60b5bf9f8@mail.gmail.com>
-User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/23.0.60 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2007 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-X-Hashcash: 1:23:080119:francis.moro@gmail.com::wfQ1Iz//H9rIv7dO:000000000000000000000000000000000000000BDqE
-X-Hashcash: 1:23:080119:linux-kernel@vger.kernel.org::HFIgHny/XMRCMyZ/:000000000000000000000000000000000NPfk
-X-Hashcash: 1:23:080119:rostedt@goodmis.org::w9VjZd3oewtaurh6:000000000000000000000000000000000000000001W/9t
-Date: Sat, 19 Jan 2008 22:39:12 +0000
-Message-ID: <m3zlv1fnjj.fsf@lugabout.jhcloos.org>
-MIME-Version: 1.0
+	Sat, 19 Jan 2008 17:43:10 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57815 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752608AbYASWnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 17:43:10 -0500
+Date: Sat, 19 Jan 2008 23:43:17 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+Cc: Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       WANG Cong <xiyou.wangcong@gmail.com>
+Subject: Re: [updated PATCH] xen: fix section usage in xen-head.S and setup.c
+Message-ID: <20080119224317.GA29768@uranus.ravnborg.org>
+References: <200801181318.30009.toralf.foerster@gmx.de> <20080118122917.GH2559@hacking> <20080118124627.GA17918@uranus.ravnborg.org> <20080118125144.GI2559@hacking> <20080118132242.GA18183@uranus.ravnborg.org> <20080118161452.GJ2559@hacking> <20080119131743.GA26615@uranus.ravnborg.org> <20080119212019.GB29070@uranus.ravnborg.org> <47927877.5090209@citrix.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47927877.5090209@citrix.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Francis" == Francis Moreau <francis.moro@gmail.com> writes:
+On Sat, Jan 19, 2008 at 02:23:51PM -0800, Jeremy Fitzhardinge wrote:
+> Sam Ravnborg wrote:
+> >Failing to specify "ax" in the pushsection caused ld to generate
+> >an additional section for .init.text appending a number.
+> >  
+> 
+> Thanks for tracking this down.  I think the "ax" appeared and 
+> disappeared over time, but this looks like the proper solution.
+> 
+> Are you going to submit this, or do you want me to pick it up?
 
->> It is in the one-head per patch style, and has the single-file
->> patches applied rather than the quilt queue.
+Please pick it up as this is xen specific.
 
-Francis> Why don't you have one commit per patch ?
-
-I started it before they had the broken out patches and haven't spent
-the time to put together a process for the broken out patches akin to
-what I figured out for the all-in-one patches.
-
-In other words, intertia.
-
--JimC
--- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+	Sam
