@@ -1,235 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbYASKGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYASKRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbYASKGQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 05:06:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbYASKGE
+	id S1756740AbYASKRW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 05:17:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbYASKRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 05:06:04 -0500
-Received: from web32608.mail.mud.yahoo.com ([68.142.207.235]:41741 "HELO
-	web32608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752693AbYASKGA (ORCPT
+	Sat, 19 Jan 2008 05:17:13 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:31398 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750942AbYASKRL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 05:06:00 -0500
-X-YMail-OSG: SlzgXc8VM1mbdZl1.TvemseJ3KcVdaf0YI1AQ0X.2xwA9sxc
-X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
-Date: Sat, 19 Jan 2008 02:05:59 -0800 (PST)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: [PATCH] writeback: speed up writeback of big dirty files
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mike Snitzer <snitzer@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
-       jplatte@naasa.net, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <981671.64816.qm@web32608.mail.mud.yahoo.com>
+	Sat, 19 Jan 2008 05:17:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=wBbUuAM9qAn3moCLRD51z8pH72J/ym1pYu3cZy9pdfCSfcNqJcPDuWILR08MjntANiltQS2WKEtITWYrZfD09ipCN9quN16wBramnJuzu+W99/ajXHqhQ3EvMH8tSiCs3kv5tRpaX6NyNGXfGs7SjWEEzGDXThLVrnIbVH8mwI8=
+Subject: [RFC PATCH] x86: Pull out oops printing helper from do_page_fault
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20080119081331.GB12995@elte.hu>
+References: <1200716549.5724.150.camel@brick>
+	 <20080119081331.GB12995@elte.hu>
+Content-Type: text/plain
+Date: Sat, 19 Jan 2008 02:17:14 -0800
+Message-Id: <1200737834.5724.173.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----- Original Message ----
-> From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> To: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: Mike Snitzer <snitzer@gmail.com>; Martin Knoblauch <spamtrap@knobisoft.de>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-> Sent: Thursday, January 17, 2008 6:28:18 AM
-> Subject: [PATCH] writeback: speed up writeback of big dirty files
-> 
-> On Jan 16, 2008 9:15 AM, Martin Knoblauch
-> 
-> 
- wrote:
-> > Fengguang's latest writeback patch applies cleanly, builds, boots
-> on
-> 
- 2.6.24-rc8.
-> 
-> Linus, if possible, I'd suggest this patch be merged for 2.6.24.
-> 
-> It's a safer version of the reverted patch. It was tested on
-> ext2/ext3/jfs/xfs/reiserfs and won't 100% iowait even without the
-> other bug fixing patches.
-> 
-> Fengguang
-> ---
-> 
-> writeback: speed up writeback of big dirty files
-> 
-> After making dirty a 100M file, the normal behavior is to
-> start the writeback for all data after 30s delays. But
-> sometimes the following happens instead:
-> 
->     - after 30s:    ~4M
->     - after 5s:     ~4M
->     - after 5s:     all remaining 92M
-> 
-> Some analyze shows that the internal io dispatch queues goes like this:
-> 
->         s_io            s_more_io
->         -------------------------
->     1)    100M,1K         0
->     2)    1K              96M
->     3)    0               96M
-> 1) initial state with a 100M file and a 1K file
-> 2) 4M written, nr_to_write <= 0, so write more
-> 3) 1K written, nr_to_write > 0, no more writes(BUG)
-> nr_to_write > 0 in (3) fools the upper layer to think that data
-> have
-> 
- all been
-> written out. The big dirty file is actually still sitting in
-> s_more_io.
-> 
- We
-> cannot simply splice s_more_io back to s_io as soon as s_io
-> becomes
-> 
- empty, and
-> let the loop in generic_sync_sb_inodes() continue: this may
-> starve
-> 
- newly
-> expired inodes in s_dirty.  It is also not an option to draw
-> inodes
-> 
- from both
-> s_more_io and s_dirty, an let the loop go on: this might lead to
-> live
-> 
- locks,
-> and might also starve other superblocks in sync time(well kupdate
-> may
-> 
- still
-> starve some superblocks, that's another bug).
-> We have to return when a full scan of s_io completes. So nr_to_write
-> >
-> 
- 0 does
-> not necessarily mean that "all data are written". This patch
-> introduces
-> 
- a flag
-> writeback_control.more_io to indicate that more io should be done.
-> With
-> 
- it the
-> big dirty file no longer has to wait for the next kupdate invocation
-> 5s
-> 
- later.
-> 
-> In sync_sb_inodes() we only set more_io on super_blocks we
-> actually
-> 
- visited.
-> This aviods the interaction between two pdflush deamons.
-> 
-> Also in __sync_single_inode() we don't blindly keep requeuing the io
-> if
-> 
- the
-> filesystem cannot progress. Failing to do so may lead to 100% iowait.
-> 
-> Tested-by: Mike Snitzer 
-> Signed-off-by: Fengguang Wu 
-> ---
->  fs/fs-writeback.c         |   18 ++++++++++++++++--
->  include/linux/writeback.h |    1 +
->  mm/page-writeback.c       |    9 ++++++---
->  3 files changed, 23 insertions(+), 5 deletions(-)
-> 
-> --- linux.orig/fs/fs-writeback.c
-> +++ linux/fs/fs-writeback.c
-> @@ -284,7 +284,17 @@ __sync_single_inode(struct inode *inode,
->                   * soon as the queue becomes uncongested.
->                   */
->                  inode->i_state |= I_DIRTY_PAGES;
-> -                requeue_io(inode);
-> +                if (wbc->nr_to_write <= 0) {
-> +                    /*
-> +                     * slice used up: queue for next turn
-> +                     */
-> +                    requeue_io(inode);
-> +                } else {
-> +                    /*
-> +                     * somehow blocked: retry later
-> +                     */
-> +                    redirty_tail(inode);
-> +                }
->              } else {
->                  /*
->                   * Otherwise fully redirty the inode so that
-> @@ -479,8 +489,12 @@ sync_sb_inodes(struct super_block *sb, s
->          iput(inode);
->          cond_resched();
->          spin_lock(&inode_lock);
-> -        if (wbc->nr_to_write <= 0)
-> +        if (wbc->nr_to_write <= 0) {
-> +            wbc->more_io = 1;
->              break;
-> +        }
-> +        if (!list_empty(&sb->s_more_io))
-> +            wbc->more_io = 1;
->      }
->      return;        /* Leave any unwritten inodes on s_io */
->  }
-> --- linux.orig/include/linux/writeback.h
-> +++ linux/include/linux/writeback.h
-> @@ -62,6 +62,7 @@ struct writeback_control {
->      unsigned for_reclaim:1;        /* Invoked from the page
-> allocator
-> 
- */
->      unsigned for_writepages:1;    /* This is a writepages() call */
->      unsigned range_cyclic:1;    /* range_start is cyclic */
-> +    unsigned more_io:1;        /* more io to be dispatched */
->  };
->  
->  /*
-> --- linux.orig/mm/page-writeback.c
-> +++ linux/mm/page-writeback.c
-> @@ -558,6 +558,7 @@ static void background_writeout(unsigned
->              global_page_state(NR_UNSTABLE_NFS) < background_thresh
->                  && min_pages <= 0)
->              break;
-> +        wbc.more_io = 0;
->          wbc.encountered_congestion = 0;
->          wbc.nr_to_write = MAX_WRITEBACK_PAGES;
->          wbc.pages_skipped = 0;
-> @@ -565,8 +566,9 @@ static void background_writeout(unsigned
->          min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
->          if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
->              /* Wrote less than expected */
-> -            congestion_wait(WRITE, HZ/10);
-> -            if (!wbc.encountered_congestion)
-> +            if (wbc.encountered_congestion || wbc.more_io)
-> +                congestion_wait(WRITE, HZ/10);
-> +            else
->                  break;
->          }
->      }
-> @@ -631,11 +633,12 @@ static void wb_kupdate(unsigned long arg
->              global_page_state(NR_UNSTABLE_NFS) +
->              (inodes_stat.nr_inodes - inodes_stat.nr_unused);
->      while (nr_to_write > 0) {
-> +        wbc.more_io = 0;
->          wbc.encountered_congestion = 0;
->          wbc.nr_to_write = MAX_WRITEBACK_PAGES;
->          writeback_inodes(&wbc);
->          if (wbc.nr_to_write > 0) {
-> -            if (wbc.encountered_congestion)
-> +            if (wbc.encountered_congestion || wbc.more_io)
->                  congestion_wait(WRITE, HZ/10);
->              else
->                  break;    /* All the old data is written */
-> 
-> 
-> 
-Hi Fenguang,
+Pull out an show_fault_oops() helper out from the oops printing
+code in do_page_fault.
 
- sorry for not coming back earlier. I compiled -rc8 with your patch. It boots and works with my test cases. More I cannot say. The performance decrease I see compared to -rc5 has been discussed elsewhere in this thread and is not related to your work.
+Try to make 32/64 bit oops traces have more similar format.
 
-Cheers
-Martin
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Ingo, for discussion about how the oops traces should look,
+pull out a helper function.  This changes the existing format.
+
+ arch/x86/mm/fault_32.c |   53 ++++++++++++++++++++++++++---------------------
+ arch/x86/mm/fault_64.c |   24 +++++++++++++++------
+ 2 files changed, 46 insertions(+), 31 deletions(-)
+
+diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+index 0bd2417..e15b80b 100644
+--- a/arch/x86/mm/fault_32.c
++++ b/arch/x86/mm/fault_32.c
+@@ -396,6 +396,34 @@ static inline int vmalloc_fault(unsigned long address)
+ #endif
+ }
+ 
++static void show_fault_oops(struct pt_regs *regs, unsigned long error_code
++			    unsigned long address)
++{
++	if (!oops_may_print())
++		return;
++
++#ifdef CONFIG_X86_PAE
++	if (error_code & PF_INSTR) {
++		int level;
++		pte_t *pte = lookup_address(address, &level);
++
++		if (pte && pte_present(*pte) && !pte_exec(*pte))
++			printk(KERN_CRIT "kernel tried to execute "
++				"NX-protected page - exploit attempt? "
++				"(uid: %d)\n", current->uid);
++	}
++#endif
++	printk(KERN_ALERT "BUG: unable to handle kernel ");
++	if (address < PAGE_SIZE)
++		printk(KERN_CONT "NULL pointer dereference");
++	else
++		printk(KERN_CONT "paging request");
++
++	printk(KERN_CONT " at: %08lx IP: %08lx\n", address, regs->ip);
++
++	dump_pagetable(address);
++}
++
+ int show_unhandled_signals = 1;
+ 
+ /*
+@@ -633,30 +661,7 @@ no_context:
+ 
+ 	bust_spinlocks(1);
+ 
+-	if (oops_may_print()) {
+-
+-#ifdef CONFIG_X86_PAE
+-		if (error_code & PF_INSTR) {
+-			int level;
+-			pte_t *pte = lookup_address(address, &level);
+-
+-			if (pte && pte_present(*pte) && !pte_exec(*pte))
+-				printk(KERN_CRIT "kernel tried to execute "
+-					"NX-protected page - exploit attempt? "
+-					"(uid: %d)\n", current->uid);
+-		}
+-#endif
+-		if (address < PAGE_SIZE)
+-			printk(KERN_ALERT "BUG: unable to handle kernel NULL "
+-					"pointer dereference");
+-		else
+-			printk(KERN_ALERT "BUG: unable to handle kernel paging"
+-					" request");
+-		printk(" at virtual address %08lx\n", address);
+-		printk(KERN_ALERT "printing ip: %08lx ", regs->ip);
+-
+-		dump_pagetable(address);
+-	}
++	show_fault_oops(regs, error_code, address);
+ 
+ 	tsk->thread.cr2 = address;
+ 	tsk->thread.trap_no = 14;
+diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
+index ccbb8e3..dce2893 100644
+--- a/arch/x86/mm/fault_64.c
++++ b/arch/x86/mm/fault_64.c
+@@ -384,6 +384,21 @@ static int vmalloc_fault(unsigned long address)
+ #endif
+ }
+ 
++static void show_fault_oops(struct pt_regs *regs, unsigned long error_code
++			    unsigned long address)
++{
++	printk(KERN_ALERT "BUG: unable to handle kernel ");
++	if (address < PAGE_SIZE)
++		printk(KERN_CONT "NULL pointer dereference");
++	else
++		printk(KERN_CONT "paging request");
++
++	printk(KERN_CONT " at %016lx IP: \n", address);
++	printk_address(regs->ip, 1);
++
++	dump_pagetable(address);
++}
++
+ int show_unhandled_signals = 1;
+ 
+ /*
+@@ -636,13 +651,8 @@ no_context:
+ 
+ 	flags = oops_begin();
+ 
+-	if (address < PAGE_SIZE)
+-		printk(KERN_ALERT "Unable to handle kernel NULL pointer dereference");
+-	else
+-		printk(KERN_ALERT "Unable to handle kernel paging request");
+-	printk(" at %016lx RIP: \n" KERN_ALERT, address);
+-	printk_address(regs->ip, 1);
+-	dump_pagetable(address);
++	show_fault_oops(regs, error_code, address);
++
+ 	tsk->thread.cr2 = address;
+ 	tsk->thread.trap_no = 14;
+ 	tsk->thread.error_code = error_code;
+-- 
+1.5.4.rc3.1118.gf6754c
+
+
 
