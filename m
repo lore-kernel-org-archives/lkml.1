@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbYASW1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbYASW3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758540AbYASW1S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 17:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbYASW1H
+	id S1758577AbYASW3i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 17:29:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYASW3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 17:27:07 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:53915 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751542AbYASW1H (ORCPT
+	Sat, 19 Jan 2008 17:29:31 -0500
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:31122 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751222AbYASW3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 17:27:07 -0500
-Date: Sat, 19 Jan 2008 23:30:29 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Steve French <smfrench@gmail.com>
-Cc: simo <idra@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org,
-       samba-technical@lists.samba.org
-Subject: Re: [linux-cifs-client] [PATCH] Remove information leak in Linux CIFS clientg
-Message-ID: <20080119223029.GA5786@one.firstfloor.org>
-References: <20080119045552.GA11134@basil.nowhere.org> <1200730722.28706.70.camel@localhost.localdomain> <524f69650801191406j440e52afsb9b80efed4fa15da@mail.gmail.com>
+	Sat, 19 Jan 2008 17:29:30 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Andi Kleen <ak@suse.de>
+Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200801191957.21832.ak@suse.de>
+References: <20080118627.198787000@suse.de>
+	 <20080118172720.86C4F14AAE@wotan.suse.de>
+	 <1200766548.32050.32.camel@cthulhu.hellion.org.uk>
+	 <200801191957.21832.ak@suse.de>
+Content-Type: text/plain
+Date: Sat, 19 Jan 2008 22:29:13 +0000
+Message-Id: <1200781753.32050.42.camel@cthulhu.hellion.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <524f69650801191406j440e52afsb9b80efed4fa15da@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 192.168.1.223
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH] [4/7] Convert TSC disabling to generic cpuid disable
+	bitmap
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 19, 2008 at 04:06:57PM -0600, Steve French wrote:
-> The access denied message in the dmesg log reveals no more information
-> than strace on stat of a local file does (which also returns access
 
-You can't strace a process you don't own. And you might not be able
-to access the directory below which the file is.
-
-But there is no such access control on "dmesg". So if there is an
-access error you leak the potentially protected information in 
-the file name
-
-> denied and displays access denied), but I agree that logging on
-> -EACCESS on lookup does clutter the log.
+On Sat, 2008-01-19 at 19:57 +0100, Andi Kleen wrote:
+> On Saturday 19 January 2008 19:15:48 Ian Campbell wrote:
+> > diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
+> > index 6f5c74a..b3721fd 100644
+> > --- a/arch/x86/xen/time.c
+> > +++ b/arch/x86/xen/time.c
+> > @@ -592,7 +592,7 @@ __init void xen_time_init(void)
+> >  	set_normalized_timespec(&wall_to_monotonic,
+> >  				-xtime.tv_sec, -xtime.tv_nsec);
+> >  
+> > -	setup_clear_cpu_cap(X86_FEATURE_TSC);
+> > +	setup_force_cpu_cap(X86_FEATURE_TSC);
 > 
-> I think it is ok to log a message on unexpected errors (for
-> QueryPathInfo those would include anything other than ENOENT and
-> EACCESS - Simo, can you think of others?)  I don't mind ratelimiting
-> logging on this clause (for errors other than ENOENT and EACCESS) but
-> it would complicate the code for a case I have not seen in the wild.
+> Actually that would be only needed if someone else disabled TSC explicitely before.
 > 
-> I prefer the following to remove the log cluttering on this case:
+> Simply deleting this should be sufficient. Does this patch work for you?
 
-That would still be an information leak for other errors.
+Yes.
 
-Logging the path would be only safe if you determine that the
-file and all its parent directories were world read (and accessable)able,
-but that would be probably difficult.
+> It would break if someone passes notsc to a Xen kernel, but then a lot of options make the kernel
+> break if you don't know what you're doing so that doesn't seem like a big issue.
 
--Andi
+I'm happy either way. I think the Xen paravirt subsystem will use TSC
+where it has to due to the Xen architecture regardless of this setting.
+
+Ian.
+-- 
+Ian Campbell
+
+Good day for overcoming obstacles.  Try a steeplechase.
+
