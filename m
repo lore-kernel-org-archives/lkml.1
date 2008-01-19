@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761719AbYASFRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763289AbYASFSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761719AbYASFRz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 00:17:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYASFRs
+	id S1763289AbYASFSv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 00:18:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYASFSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 00:17:48 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:24484 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751048AbYASFRr (ORCPT
+	Sat, 19 Jan 2008 00:18:45 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:2109 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751483AbYASFSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 00:17:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dqebeOdzw2HzJCJtOaZrq2cg2HbxHCrliiwiiGt/CTg8xCawYqSnChYFFstSqdkEidzUCcron8W+PpYXD7GyhcC1AajF0w+SDw8WmwPWsKtUonNjPMhMLvIsMuFk/bLkZzwEF05miEp3ujdJttBGJ8kKskfl0JWJqyC0nLho27Y=
-Message-ID: <ee3dc96c0801182117t6e40b46fr1b2d5826e22a7124@mail.gmail.com>
-Date: Sat, 19 Jan 2008 02:17:46 -0300
-From: "Rafael Sisto" <rafael.sisto@gmail.com>
-To: "Linux kernel" <linux-kernel@vger.kernel.org>
-Subject: create a file in kernel mode. help please!
-In-Reply-To: <ee3dc96c0801182116q3d54148dl6773d76ff3160d91@mail.gmail.com>
+	Sat, 19 Jan 2008 00:18:44 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=L+UmnWE+lzoZissqruVCwO2SC2PQqJVMBFQT5TzDmlje3KimoDXxM70nm3Kd+xzlF
+	RThQl5PGS90xVhA1fxceg==
+Date: Fri, 18 Jan 2008 21:17:04 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: travis@sgi.com, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, mingo@elte.hu,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [PATCH 1/5] x86: Change size of node ids from u8 to u16 fixup
+In-Reply-To: <86802c440801182043l1f36086bq51d1fa0528e6bd74@mail.gmail.com>
+Message-ID: <alpine.DEB.0.9999.0801182116380.10040@chino.kir.corp.google.com>
+References: <20080118183011.354965000@sgi.com>  <20080118183011.527888000@sgi.com>  <86802c440801182003vd94044ex7fb13e61e5f79c81@mail.gmail.com>  <alpine.DEB.0.9999.0801182026130.32726@chino.kir.corp.google.com>
+ <86802c440801182043l1f36086bq51d1fa0528e6bd74@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ee3dc96c0801182116q3d54148dl6773d76ff3160d91@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
-obviously this is a newbie question, but I couldn't find any
-documentation on how to do it.. I tried several ways but couldnt do
-it.
-I designed a system call, so a user will call it, and a new file will
-be created ('/tmp/filexx'). After that, I have another system call,
-that will map the file into the maps of the user process. The idea is
-the same as IPC...
+On Fri, 18 Jan 2008, Yinghai Lu wrote:
 
-I managed to create the file with this function (in the first system call):
-        fd = filp_open(path, O_CREAT | O_RDWR , 777);
+> > > I got
+> > > SART: PXM 0 -> APIC 0 -> Node 255
+> > > SART: PXM 0 -> APIC 1 -> Node 255
+> > > SART: PXM 1 -> APIC 2 -> Node 255
+> > > SART: PXM 1 -> APIC 3 -> Node 255
+> > >
+> >
+> > I assume this is a typo and those proximity mappings are actually from the
+> > SRAT.
+> 
+> SRAT for processor only have
+> PXM and APIC id. setup_node(pxm) will get node id for pxm, start from 0...
+> 
 
-After that, the user will call another system call, and it will map
-this file to the process maps.
-something like this:
-         filp_open(route, O_RDWR,0 );
-         do_mmap(fp, 0, tamano, PROT_READ | PROT_WRITE | PROT_EXEC,
-MAP_SHARED, 0);
-
-After I call the second system call, the user tries to access the
-memory, but gets the message "Bus Error".
-I tried to manually create a file with vi, and then use the second
-system call, and worked perfectly. I could use the shared memory
-without problems.
-
-The problems seems to be in the first system call (with filp_open),
-when I try to create a new file... Can somebody suggest me something,
-on how I could fix this issue?? It is very important because it is for
-a college projects.
-
-Greetings, and thanks in advance for the answers.
-Rafael Sisto - Uruguay.-
+I was referring to "SART" in your log.
