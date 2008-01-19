@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763531AbYASBZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763623AbYASB3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763531AbYASBZG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 20:25:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757260AbYASBYy
+	id S1763623AbYASB3S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 20:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759460AbYASB3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 20:24:54 -0500
-Received: from py-out-1112.google.com ([64.233.166.182]:25254 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756295AbYASBYx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 20:24:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AfuLRnLCZVaYQiCNOYY7BAkgfDqmZE4O5tcZh5s8X1bJzZyR17SqdtJB9TPsHnMP84gZ/+CHkbSqyWvlNh5HVCO0bKEPqRk75fnKc5Ud6j3BAP5IG6DO9Sh89Sf2tfO8IwajzbM9BDN1FxFJkgp3ViQyXa1Z0ap4MNEvVadVmu8=
-Message-ID: <5d6222a80801181724p40bdedebgded1d43b052d168e@mail.gmail.com>
-Date: Fri, 18 Jan 2008 23:24:51 -0200
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 0/10] Tree fixes for PARAVIRT
-Cc: "Zachary Amsden" <zach@vmware.com>,
-       "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       roland@redhat.com, mtosatti@redhat.com
-In-Reply-To: <20080118220200.GA1071@elte.hu>
+	Fri, 18 Jan 2008 20:29:05 -0500
+Received: from ozlabs.org ([203.10.76.45]:48932 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757260AbYASB3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 20:29:03 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 3/3] Makes lguest's irq handler typesafe
+Date: Sat, 19 Jan 2008 12:28:29 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Ash Willis <ashwillis@programmer.net>,
+       linux-pcmcia@lists.infradead.org,
+       virtualization@lists.linux-foundation.org
+References: <200801190722.26154.rusty@rustcorp.com.au> <200801190727.36567.rusty@rustcorp.com.au> <47913261.5000708@gmail.com>
+In-Reply-To: <47913261.5000708@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <12006768251548-git-send-email-gcosta@redhat.com>
-	 <20080118203259.GA3079@elte.hu> <20080118213711.GA24979@elte.hu>
-	 <1200693248.21817.157.camel@bodhitayantram.eng.vmware.com>
-	 <20080118220200.GA1071@elte.hu>
+Message-Id: <200801191228.30363.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 18, 2008 8:02 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Zachary Amsden <zach@vmware.com> wrote:
->
-> > > but in exchange you broke all of 32-bit with CONFIG_PARAVIRT=y.
-> > > Which means you did not even build-test it on 32-bit, let alone boot
-> > > test it...
-> >
-> > Why are we rushing so much to do 64-bit paravirt that we are breaking
-> > working configurations?  If the developement is going to be this
-> > chaotic, it should be done and tested out of tree until it can
-> > stabilize.
->
-> what you see is a open feedback cycle conducted on lkml. People send
-> patches for arch/x86, and we tell them if it breaks something. The bug
-> was found before i pushed out the x86.git devel tree (and the fix is
-> below - but this shouldnt matter to you because the bug never hit a
-> public x86.git tree).
->
->         Ingo
->
-Other than this, it seems to build and boot fine.
+On Saturday 19 January 2008 10:12:33 Tejun Heo wrote:
+> Type safety is good but I doubt this would be worth the complexity.  It
+> has some benefits but there's much larger benefit in keeping things in
+> straight C.  People know that functions take fixed types and are also
+> familiar with the convention of passing void * for callback arguments.
+> IMHO, staying in line with those common knowledges easily trumps having
+> type checking on interrupt handler.
 
-Do you want me to resend ?
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+I sympathise with this argument, but I think just because people are familiar 
+with existing hacks shouldn't prevent improvement.  I think the resulting 
+code is clearer and more readable.
 
-"The less confident you are, the more serious you have to act."
+Even in the implementation, the tricky part is the check_either_type() macro: 
+the rest is straight-forward.
+
+> Also, how often do we see a bug where things go wrong because interrupt
+> handler is given the wrong type of argument?  Even when such bug
+> happens, I doubt it can escape the developer's workstation if he/she is
+> paying any attention to testing.
+
+I agree this one is unlikely.  But I am trying to spread type-safety more 
+widely (see previous kthread patches).
+
+I like changing the kernel to make life simpler for developers.  We don't do 
+enough of it.
+
+Cheers,
+Rusty.
