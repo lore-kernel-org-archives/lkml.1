@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828AbYASSmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYASSqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752828AbYASSmO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 13:42:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYASSl7
+	id S1753402AbYASSqP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 13:46:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbYASSqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 13:41:59 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:20597 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751103AbYASSl6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 13:41:58 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: pnpacpi : exceeded the max number of IO resources
-Date: Sat, 19 Jan 2008 11:38:53 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Dave Young <hidave.darkstar@gmail.com>, akpm@osdl.org,
-       cholvenstot@comcast.net, lenb@kernel.org, linux-kernel@vger.kernel.org,
-       rene.herman@keyaccess.nl, shaohua.li@intel.com, trenn@suse.de,
-       yakui.zhao@intel.com
-References: <1196428488.7066.6.camel@localhost> <a8e1da0801152155x18cfd0dcvfe638323275e539d@mail.gmail.com> <E1JGBUB-0003HA-1e@faramir.fjphome.nl>
-In-Reply-To: <E1JGBUB-0003HA-1e@faramir.fjphome.nl>
+	Sat, 19 Jan 2008 13:46:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41031 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750929AbYASSp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 13:45:59 -0500
+Date: Sat, 19 Jan 2008 19:45:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: ACPI early ioremap problems
+Message-ID: <20080119184543.GA3751@elte.hu>
+References: <20080119030843.GA2028@basil.nowhere.org> <20080119150328.GA32370@elte.hu> <20080119152649.GA1375@one.firstfloor.org> <20080119153055.GA12054@elte.hu> <20080119154651.GA1626@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801191138.54978.bjorn.helgaas@hp.com>
+In-Reply-To: <20080119154651.GA1626@one.firstfloor.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 January 2008 4:03:39 am Frans Pop wrote:
-> Dave Young wrote:
-> > I noticed the port number changed to 40 in 2.6.24-rc8, but it's not
-> > enough for me still.
->
-> Same here, though the extreme noise has gone.
-> From /proc/ioports and dmesg it looks like I'm short by either 1, or 3 :-(
 
-Yup.  It should be no worse than in 2.6.23, where we silently ignored
-excess resources.  We plan to fix it for real in 2.6.25.
+* Andi Kleen <andi@firstfloor.org> wrote:
+
+> On Sat, Jan 19, 2008 at 04:30:55PM +0100, Ingo Molnar wrote:
+> > > > that case it's a 64-bit early_ioremap() bug that we want to find 
+> > > > even if ACPI didnt use early_ioremap().
+> > > > 
+> > > > and this all runs before zap_low_mappings(), right?
+> > > 
+> > > No after. Since some time x86-64 does the equivalent of z_l_m() in 
+> > > head64(); this means before start_kernel and definitely before 
+> > > setup_arch which sets up ACPI.
+> > 
+> > that would mean early_ioremap() should switch to ioremap() after that 
+> > point. Could you try that, does it resolve the failure you are seeing? 
+> 
+> ioremap() does alloc_page and that won't work before paging_init(). 
+> Early ACPI scan is before paging_init() because paging_init() needs 
+> node discovery at at least; which requires some ACPI tables.
+
+hm, so are you saying that on 64-bit there's in essence no usable 
+ioremap facility between zap_low_mappings() and paging_init()? 
+(early_ioremap() is not usable anymore, and ioremap() is not yet 
+usable.) I guess we'll have to pick up the 32-bit early_ioremap() code 
+for 64-bit as well.
+
+	Ingo
