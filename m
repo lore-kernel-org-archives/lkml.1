@@ -1,46 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751683AbYASTmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYASTrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751683AbYASTmJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 14:42:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYASTlz
+	id S1754596AbYASTrt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 14:47:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbYASTrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 14:41:55 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:59208 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751437AbYASTly (ORCPT
+	Sat, 19 Jan 2008 14:47:42 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:28789 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbYASTrl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 14:41:54 -0500
-Date: Sat, 19 Jan 2008 20:41:53 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
-	<oliver.pntr@gmail.com>
-cc: Lars Callenbach <lars.callenbach@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: linux device ordering at boot time
-In-Reply-To: <6101e8c40801191114v4492d8fer4da13477ef2d5626@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0801192040540.4780@fbirervta.pbzchgretzou.qr>
-References: <20080119185520.208350@gmx.net> <6101e8c40801191114v4492d8fer4da13477ef2d5626@mail.gmail.com>
+	Sat, 19 Jan 2008 14:47:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=YBTWiqGvOZBDqbpOVPbo9tFxPS1BbDRPw3/6U9ACSoQClZkg6WX7jXXCjdH8kUQjWEMuhfvXRb75KKVPkb3r59Js85IJQJSv9y3W0RT+dKKSkRXJzGZcpKiM9IxS/z5SCni5NjCaazOZCMzZzYD9zHucf1mv4YHWngmvpXkRMl0=
+Message-ID: <479253D3.4020608@gmail.com>
+Date: Sat, 19 Jan 2008 21:47:31 +0200
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] LatencyTop: make reason (blk_execute_rq+0x7a/0xd) known
+References: <47922B2A.7070709@gmail.com> <479241B0.8010500@linux.intel.com>
+In-Reply-To: <479241B0.8010500@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Jan 19 2008 20:14, Oliver Pinter (PintÃ©r OlivÃ©r) wrote:
+Arjan van de Ven wrote:
+> Török Edwin wrote:
+>>
+>> Cause                                               Maximum         
+>> Average
+>> SCSI device ioctl                                  34.2 msec       
+>> 14.4 msec
 >
->I don't know, what the proble, but the fstab workaround  functioniert:
->form:
->/dev/sda3       /               xfs     defaults        0       1
->to:
->UUID=7c167a53-30ff-4d47-a206-ce8caf2397ba       /               xfs
-> defaults        0       1
->
->in this fix switched form device name to UUID based fstab.
->
->the uuid-s queried with /lib/udev/vol_id program
+> great! I'll put this into my patchkit!
 
-Any distro that uses udev can use /dev/disk/by-.../...
-without having to resort to per-program specific implementations
-(or lack thereof) of UUID= or LABEL=.
+Thanks.
 
+>> I also noticed some unsigned overflows, my top latency was sometimes a
+>> very large number (18................................), which
+>> was probably -1, or some other negative number.  I haven't found a way
+>> to reproduce it yet (it happens very rarely).
+>
+>
+> I've not seen this; I'll take another peak at the code.
+
+I just captured this:
+
+Cause                                               Maximum          Average
+Waiting for userspace lock                        18446744073638300.0
+msec        9223372036783524.0 msec
+Waiting for processes to die (waitpid)            18446744073638296.0
+msec        9223372036783520.0 msec
+Waiting for event (poll)                          18446744073565216.0
+msec        764505121372.0 msec
+SCSI device ioctl                                  35.2 msec        
+13.7 msec
+Application requested delay                        19.5 msec         
+0.0 msec
+page fault                                         18.6 msec         
+4.0 msec
+Reading from file                                  16.6 msec         
+1.5 msec
+Waiting for buffer IO                              15.2 msec         
+3.0 msec
+mutex lock                                         15.0 msec        
+15.0 msec
+
+I was also looking at /proc/latency_stats using watch, and I've seen
+that there were negative number.
+Unfortunately I couldn't copy+paste it, because it was gone too fast.
+
+I was running a program with 4 threads doing usleep(0) in an inf-loop.
+However I can't reproduce the overflow now with the same program.
+
+Best regards,
+--Edwin
