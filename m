@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbYASKXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbYASKYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757206AbYASKXQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 05:23:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYASKW7
+	id S1757592AbYASKYZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 05:24:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbYASKYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 05:22:59 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:49199 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbYASKW6 (ORCPT
+	Sat, 19 Jan 2008 05:24:17 -0500
+Received: from web32602.mail.mud.yahoo.com ([68.142.207.229]:45623 "HELO
+	web32602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753448AbYASKYQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 05:22:58 -0500
-To: mpm@selenic.com
-CC: riel@redhat.com, torvalds@linux-foundation.org, ioe-lkml@rameria.de,
-       miklos@szeredi.hu, peterz@infradead.org, salikhmetov@gmail.com,
-       linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, ksm@42.dk, staubach@redhat.com,
-       jesper.juhl@gmail.com, akpm@linux-foundation.org, protasnb@gmail.com,
-       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
-In-reply-to: <1200703803.25782.45.camel@cinder.waste.org> (message from Matt
-	Mackall on Fri, 18 Jan 2008 18:50:03 -0600)
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
-	files
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>
-	 <E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>
-	 <alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org>
-	 <200801182332.02945.ioe-lkml@rameria.de>
-	 <alpine.LFD.1.00.0801181439330.2957@woody.linux-foundation.org>
-	 <20080118175450.715ded60@bree.surriel.com> <1200703803.25782.45.camel@cinder.waste.org>
-Message-Id: <E1JGAqW-0002Ia-UD@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sat, 19 Jan 2008 11:22:40 +0100
+	Sat, 19 Jan 2008 05:24:16 -0500
+X-YMail-OSG: HQ1ii7cVM1lsvnlKMgSdgkLwd.JwPRV5QrgKbBs135pMPcx.klNOh6ElWRif5FU7wQ--
+X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
+Date: Sat, 19 Jan 2008 02:24:15 -0800 (PST)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+To: Mike Snitzer <snitzer@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mel Gorman <mel@csn.ul.ie>, Fengguang Wu <wfg@mail.ustc.edu.cn>,
+       Peter Zijlstra <peterz@infradead.org>, jplatte@naasa.net,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       James.Bottomley@steeleye.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <544455.59143.qm@web32602.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Reminds me, I've got a patch here for addressing that problem with loop mounts:
+----- Original Message ----
+> From: Mike Snitzer <snitzer@gmail.com>
+> To: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Mel Gorman <mel@csn.ul.ie>; Martin Knoblauch <spamtrap@knobisoft.de>; Fengguang Wu <wfg@mail.ustc.edu.cn>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>; James.Bottomley@steeleye.com
+> Sent: Friday, January 18, 2008 11:47:02 PM
+> Subject: Re: regression: 100% io-wait with 2.6.24-rcX
 > 
-> Writes to loop should update the mtime of the underlying file.
+> > I can fire up 2.6.24-rc8 in short order to see if things are vastly
+> > improved (as Martin seems to indicate that he is happy with
+> > AACRAID on 2.6.24-rc8).  Although even Martin's AACRAID
+> > numbers from 2.6.19.2
 > 
-> Signed-off-by: Matt Mackall <mpm@selenic.com>
-> 
-> Index: l/drivers/block/loop.c
-> ===================================================================
-> --- l.orig/drivers/block/loop.c	2007-11-05 17:50:07.000000000 -0600
-> +++ l/drivers/block/loop.c	2007-11-05 19:03:51.000000000 -0600
-> @@ -221,6 +221,7 @@ static int do_lo_send_aops(struct loop_d
->  	offset = pos & ((pgoff_t)PAGE_CACHE_SIZE - 1);
->  	bv_offs = bvec->bv_offset;
->  	len = bvec->bv_len;
-> +	file_update_time(file);
->  	while (len > 0) {
->  		sector_t IV;
->  		unsigned size;
-> @@ -299,6 +300,7 @@ static int __do_lo_send_write(struct fil
->  
->  	set_fs(get_ds());
->  	bw = file->f_op->write(file, buf, len, &pos);
-> +	file_update_time(file);
+ > are still quite good (relative to mine).  Martin can you share any tuning
+> > you may have done to get AACRAID to where it is for you right now?
+Mike,
 
-->write should have already updated the times, no?
+ I have always been happy with the AACRAID box compared to the CCISS system. Even with the "regression" in 2.6.24-rc1..rc5 it was more than acceptable to me. For me the differences between 2.6.19  and 2.6.24-rc8 on the AACRAID setup are:
 
->  	set_fs(old_fs);
->  	if (likely(bw == len))
->  		return 0;
-> 
-> 
+- 11% (single stream) to 25% (dual/triple stream) regression in DIO. Something I do not care much about. I just measure it for reference.
++ the very nice behaviour when writing to different targets (mix3), which I attribute to Peter's per-dbi stuff.
+
+ And until -rc6 I was extremely pleased with the cool speedup I saw on my CCISS boxes. This would have been the next "production" kernel for me. But lets discuss this under a seperate topic. It has nothing to do with the original wait-io issue.
+
+ Oh, before I forget. There has been no tuning for the AACRAID. The system is an IBM x3650 with built in AACRAID and battery backed write cache. The disks are 6x142GB/15krpm in a RAID5 setup. I see one big difference between your an my tests. I do 1MB writes to simulate the behaviour of the real applications, while yours seem to be much smaller.
+ 
+Cheers
+Martin
+
+
+
