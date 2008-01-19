@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764704AbYASEIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764931AbYASELb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764704AbYASEIp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 23:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760798AbYASEIi
+	id S1764931AbYASELb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 23:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761599AbYASELY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 23:08:38 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:7823 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760385AbYASEIi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 23:08:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=YrhHDQGItGcPGicF5gbLTmZ1jdlT8uJ8o0HIgpmmB9l4sxmDsvW1sREGGabbvsh86jDDQeaxfCqWAvOqdQauFqqX1L6La47Hy8qHG9NTV6JrKZpRSp0dzjZchajANf+rFJ30MldEBr506aJxHyHKWe6x6CGi23+hR8EyV/xCP18=
-Message-ID: <479177BC.8030200@gmail.com>
-Date: Sat, 19 Jan 2008 13:08:28 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, Ash Willis <ashwillis@programmer.net>,
-       linux-pcmcia@lists.infradead.org,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH 3/3] Makes lguest's irq handler typesafe
-References: <200801190722.26154.rusty@rustcorp.com.au> <47915515.1020905@gmail.com> <47915614.7080608@gmail.com> <200801191459.49735.rusty@rustcorp.com.au>
-In-Reply-To: <200801191459.49735.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 18 Jan 2008 23:11:24 -0500
+Received: from waste.org ([66.93.16.53]:46312 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760687AbYASELX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 23:11:23 -0500
+Subject: Re: PROBLEM: Celeron Core
+From: Matt Mackall <mpm@selenic.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Chodorenko Michail <misha@one.by>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080119011506.GA23798@one.firstfloor.org>
+References: <3ed23423adebae08e8f75b6a6a7ce7ff@one.by>
+	 <p73prvyalfl.fsf@bingen.suse.de>
+	 <1200702477.25782.41.camel@cinder.waste.org>
+	 <20080119011506.GA23798@one.firstfloor.org>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 18 Jan 2008 22:10:42 -0600
+Message-Id: <1200715842.25782.95.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Rusty Russell wrote:
->     There are three possibilities: (1) force everyone to use void *, (2) force 
-> everyone to be type-correct, (3) allow both with some tricks.  Currently 
-> we're on (1).  For kthread, with only dozens of users, I chose (2) (very 
-> simple, easy to understand).  I think for widespread things like timer and 
-> interrupt handlers, I think (3) is the right way to go.
+On Sat, 2008-01-19 at 02:15 +0100, Andi Kleen wrote:
+> On Fri, Jan 18, 2008 at 06:27:57PM -0600, Matt Mackall wrote:
+> > 
+> > On Fri, 2008-01-18 at 22:11 +0100, Andi Kleen wrote:
+> > > Chodorenko Michail <misha@one.by> writes:
+> > > 
+> > > > I have a laptop "Extensa 5220", with the processor Celeron based on 'core'
+> > > > technology.
+> > > > There is ~ / arch/i386/kernel/cpu/cpufreq/p4-clockmod.c in the kernel
+> > > > source code
+> > > > but there's no line identification of my CPU for apply freqency change
+> > > > need to add a ID line 0х16
+> > > 
+> > > Note that driver will likely do clock throttling on your CPU.
+> > > Using that is usually a bad idea because it does not actually
+> > > safe power. It's only intended to let the CPU cool down in some situations.
+> > 
+> > Power consumption is more or less exactly equal to heat production
+> > (that's where the power goes, after all!), so either clock throttling
+> > DOES save power or it DOES NOT cool the CPU.
+> 
+> No actually the way it works on modern x86 CPUs is that the best
+> strategy for saving power is to do things quickly and then
+> idle longer. That means on anything that has reasonably
+> deep sleep modi e.g. on older server/desktop systems things might
+> be slightly different because they had very little power saving
+> features enabled, but it's definitely true for all
+> laptop systems from the last several years. But even
+> on desktop/server throttling tends to be a bad idea.
 
-Yeah, during transition, we definitely want (3).
+Dominik is measuring energy expended (watts * seconds) vs work done (CPU
+cycles). But your claim above is "clock throttling...does not save power
+[but it lets] the CPU cool down", which talks about power (watts) and
+heat (also watts, in fact the *very same* watts) and is physically
+impossible. A CPU turns power into heat. Less heat out implies less
+power in.
 
->     I wanted to get this patch out there and see what the reaction was.  I can 
-> do timers next, if that's going to add fuel to the discussion.
+So while throttling may be less efficient in terms of watt seconds used
+to compile something than running at full speed, it is incorrect to say
+it uses less power. One machine running for an hour throttled to 50%
+uses less power (and therefore less battery and cooling) than another
+running at full speed for that same hour.
 
-I think you successfully got a very small sample of possible reactions.
- Jeff vetoing it (and for good reasons) and me a bit more positive but
-not quite sold.  Yeah, I think we need a good flame war to determine our
-heading and converting timer shouldn't take too much of your time, right?
-
-Thanks.
+The first machine may take significantly longer to complete its task (or
+it may not, if the task is reading email or watching video), but that's
+another matter entirely. And whether it's more or less efficient than
+other power-saving approaches is also another matter. Throttling does
+save power.
 
 -- 
-tejun
+Mathematics is the supreme nostalgia of our time.
+
