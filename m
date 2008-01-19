@@ -1,79 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759875AbYASN3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbYASNmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759875AbYASN3V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 08:29:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759249AbYASN27
+	id S1758723AbYASNmx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 08:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbYASNmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 08:28:59 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42558 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758987AbYASN25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 08:28:57 -0500
-Date: Sat, 19 Jan 2008 14:29:04 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: chas@cmf.nrl.navy.mil, jgarzik@pobox.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] atm/suni.c: fix section mismatch
-Message-ID: <20080119132904.GC26615@uranus.ravnborg.org>
-References: <20080119131851.GB8669@does.not.exist>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 19 Jan 2008 08:42:43 -0500
+Received: from nz-out-0506.google.com ([64.233.162.229]:23850 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751818AbYASNmn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 08:42:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=cql1joz0QJ0rqf7+y/h57+CXPrk7HmVdLg2ulcXy+MnU+yQnuvxsgLanFiwZLrpngZcP9V+G/BbwQa7zklk2OEAv2aAl76BMN8181p8axyY023OKNXaQMbWdNdjxrhoTsz0ymegEgU+/mFN/61FKdjTPUHpyaXCGi6dclkKEq9c=
+Message-ID: <ee3dc96c0801190542u2f91a2eax3bcfd0268d4850b4@mail.gmail.com>
+Date: Sat, 19 Jan 2008 10:42:40 -0300
+From: "Rafael Sisto" <rafael.sisto@gmail.com>
+To: "Linux kernel" <linux-kernel@vger.kernel.org>
+Subject: new file in kernel.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080119131851.GB8669@does.not.exist>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 19, 2008 at 03:18:51PM +0200, Adrian Bunk wrote:
-> EXPORT_SYMBOL'ed code mustn't be __*init.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> 
-> ---
-> --- linux-2.6/drivers/atm/suni.c.old	2008-01-19 12:16:41.000000000 +0200
-> +++ linux-2.6/drivers/atm/suni.c	2008-01-19 12:17:23.000000000 +0200
-> @@ -275,35 +275,35 @@ static int suni_stop(struct atm_dev *dev
->  	*walk = PRIV((*walk)->dev)->next;
->  	if (!sunis) del_timer_sync(&poll_timer);
->  	spin_unlock_irqrestore(&sunis_lock,flags);
->  	kfree(PRIV(dev));
->  
->  	return 0;
->  }
->  
->  
->  static const struct atmphy_ops suni_ops = {
->  	.start		= suni_start,
->  	.ioctl		= suni_ioctl,
->  	.interrupt	= suni_int,
->  	.stop		= suni_stop,
->  };
->  
->  
-> -int __devinit suni_init(struct atm_dev *dev)
-> +int suni_init(struct atm_dev *dev)
->  {
->  	unsigned char mri;
->  
->  	mri = GET(MRI); /* reset SUNI */
->  	PUT(mri | SUNI_MRI_RESET,MRI);
->  	PUT(mri,MRI);
->  	PUT((GET(MT) & SUNI_MT_DS27_53),MT); /* disable all tests */
->  	REG_CHANGE(SUNI_TPOP_APM_S,SUNI_TPOP_APM_S_SHIFT,SUNI_TPOP_S_SONET,
->  	    TPOP_APM); /* use SONET */
->  	REG_CHANGE(SUNI_TACP_IUCHP_CLP,0,SUNI_TACP_IUCHP_CLP,
->  	    TACP_IUCHP); /* idle cells */
->  	PUT(SUNI_IDLE_PATTERN,TACP_IUCPOP);
->  	dev->phy = &suni_ops;
->  	return 0;
->  }
->  
->  EXPORT_SYMBOL(suni_init);
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Dear forum,
+can anybody help me with this issue?
+
+How do I create a new file in kernel mode?
+I am trying to create a file in a system call I am building.
+
+thanks in advance,
+Rafael Sisto.
