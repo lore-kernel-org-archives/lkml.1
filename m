@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbYASM1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbYASMin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbYASM1j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 07:27:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYASM1c
+	id S1757040AbYASMin (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 07:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYASMif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 07:27:32 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:25060 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751800AbYASM1b (ORCPT
+	Sat, 19 Jan 2008 07:38:35 -0500
+Received: from ns4.abinetworks.biz ([216.218.212.66]:49745 "EHLO
+	ns4.abinetworks.biz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752680AbYASMie (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 07:27:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=vC1Y0wICWnU2AEBp+oNmN6KhO3LCzPiStkgVUhl/gi82rbIOX613w0QJVG9+hymTMIldxi78nz7lkskmO+WZQ7ZuKuExjKfoYPh1Of+aHaboyDcRJfynyz7c0iDPmxAbqQrdRZ4eTe2JEnVu+aHWoVIabAdiYoRorl0ot4tnRFE=
-Message-ID: <46f38fe70801190427p7d50beaeo67571b935a896283@mail.gmail.com>
-Date: Sat, 19 Jan 2008 20:27:30 +0800
-From: "goodmen zy" <goodmenkernel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: About the saa7146 driver
+	Sat, 19 Jan 2008 07:38:34 -0500
+Message-ID: <4791EE99.3030802@abinetworks.biz>
+Date: Sat, 19 Jan 2008 13:35:37 +0100
+From: Gianluca Alberici <gianluca@abinetworks.biz>
+User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Chuck Lever <chuck.lever@oracle.com>
+CC: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: NFS EINVAL on open(... | O_TRUNC) on 2.6.23.9
+References: <476CEC5E.9070002@abinetworks.biz> <838DE9A2-59B2-49FA-B3E8-89B26368B1CF@bluecamel.eml.cc> <476E47F5.4090807@abinetworks.biz> <20071225140431.9264970a.akpm@linux-foundation.org> <199BEBA7-E46E-4B1F-9D36-91BB43331B75@oracle.com>
+In-Reply-To: <199BEBA7-E46E-4B1F-9D36-91BB43331B75@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I have a PCI video capture card, and the command `lspci` tell me the
-following info:
+Hello Chuck,
 
-     00:09.0 Multimedia controller: Philips Semiconductors SAA7146 (rev 01)
+As you requested i have finally found out that the problem was 
+introduced in 2.6.22 (2.6.21.7 works, after 2.6.21.7 theres 2.6.22)
 
-In the kernel source, I compiled the module saa7146.ko and saa7146_vv.ko.
-Those modules were inserted into kernel successfully.
-But I can't find any new device file in /dev.
+I have also examined the changeslogs: 2.6.22 introduce a certain number 
+of patches into NFS client. Many of them are yours and Trond's.
 
-Can you tell me the reason?
+Pls can you help with this ?
 
-Does the saa1746 module plays as a common driver for all the device
-with that chip?
+TIA
 
-Thanks!
+Gianluca
