@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYAST6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbYAST6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755250AbYAST6U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 14:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYAST6H
+	id S1756637AbYAST6e (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 14:58:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYAST6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 14:58:07 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:22030 "EHLO
+	Sat, 19 Jan 2008 14:58:08 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:22047 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751393AbYAST6G (ORCPT
+	with ESMTP id S1751530AbYAST6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 14:58:06 -0500
-Date: Sat, 19 Jan 2008 11:56:43 -0800
+	Sat, 19 Jan 2008 14:58:07 -0500
+Date: Sat, 19 Jan 2008 11:57:15 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
-Cc: dipankar@in.ibm.com, akpm <akpm@linux-foundation.org>,
+Cc: tglx <tglx@linutronix.de>, akpm <akpm@linux-foundation.org>,
        samr <sam@ravnborg.org>
-Subject: [PATCH] rcu: fix section mismatch
-Message-Id: <20080119115643.43236e70.randy.dunlap@oracle.com>
+Subject: [PATCH] timer: fix section mismatch
+Message-Id: <20080119115715.7efac363.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -32,23 +32,25 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-rcu_online_cpu() should be __cpuinit instead of __devinit.
+The caller is __cpuinit.
+Also, this code block and its caller are inside #ifdef CONFIG_HOTPLUG_CPU
+blocks, so this code should reflect that config symbol's usage.
 
-WARNING: vmlinux.o(.text+0x4b6d5): Section mismatch: reference to .init.text: (between 'rcu_cpu_notify' and 'wakeme_after_rcu')
+WARNING: vmlinux.o(.text+0x4252f): Section mismatch: reference to .init.text: (between 'timer_cpu_notify' and 'msleep')
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- kernel/rcupdate.c |    2 +-
+ kernel/timer.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.24-rc8-git2.orig/kernel/rcupdate.c
-+++ linux-2.6.24-rc8-git2/kernel/rcupdate.c
-@@ -549,7 +549,7 @@ static void rcu_init_percpu_data(int cpu
- 	rdp->blimit = blimit;
+--- linux-2.6.24-rc8-git2.orig/kernel/timer.c
++++ linux-2.6.24-rc8-git2/kernel/timer.c
+@@ -1289,7 +1289,7 @@ static void migrate_timer_list(tvec_base
+ 	}
  }
  
--static void __devinit rcu_online_cpu(int cpu)
-+static void __cpuinit rcu_online_cpu(int cpu)
+-static void __devinit migrate_timers(int cpu)
++static void __cpuinit migrate_timers(int cpu)
  {
- 	struct rcu_data *rdp = &per_cpu(rcu_data, cpu);
- 	struct rcu_data *bh_rdp = &per_cpu(rcu_bh_data, cpu);
+ 	tvec_base_t *old_base;
+ 	tvec_base_t *new_base;
