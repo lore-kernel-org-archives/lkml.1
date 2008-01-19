@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbYASSxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbYASSz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411AbYASSxn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 13:53:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbYASSxd
+	id S1753877AbYASSz3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 13:55:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYASSzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 13:53:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56198 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753776AbYASSx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 13:53:28 -0500
-Date: Sat, 19 Jan 2008 19:53:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] [7/8] CPA: Implement GBpages support in
-	change_page_attr()
-Message-ID: <20080119185314.GB3751@elte.hu>
-References: <20080119748.170864000@suse.de> <20080119064835.A68D614EAD@wotan.suse.de>
+	Sat, 19 Jan 2008 13:55:22 -0500
+Received: from mail.gmx.net ([213.165.64.20]:35621 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751043AbYASSzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 13:55:22 -0500
+Content-Type: text/plain; charset="us-ascii"
+Date: Sat, 19 Jan 2008 19:55:20 +0100
+From: "Lars Callenbach" <lars.callenbach@gmx.de>
+Message-ID: <20080119185520.208350@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080119064835.A68D614EAD@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Subject: linux device ordering at boot time
+To: linux-kernel@vger.kernel.org
+X-Authenticated: #7374987
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX188c4AqV2Y8o2UhWfMcctRYax0lpD/La/Cha9675S
+ RHyawSevxOEjWYrYMd90SgIO+aWdyO1Gu6RQ== 
+Content-Transfer-Encoding: 7bit
+X-GMX-UID: oHWrclgceWUoQePpA3VzOQ8xU3U4N08k
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have a question concerning the ordering of devices during the boot process and I hope that the kernel mailing list is the right place for this question.
+In my computer are two raid controllers with one raid array connected to each of them (/dev/sda, /dev/sdb). In the debian 2.6.18 boot process the ordering is root @ /dev/sda and data are on /dev/sdb. This behaviour has changed in the plain 2.6.23.1 (and 2.6.23.8) kernel. The /dev/sd(a|b) devices have switched so that root @ /dev/sdb. So my standard fstab does not work.
+What determines the device ordering during the boot process? What is a workaround for this problem?
 
-* Andi Kleen <ak@suse.de> wrote:
+Thank you very much for some hints,
+   Lars
 
->  arch/x86/mm/pageattr_64.c | 150 
->  ++++++++++++++++++++++++++++++++++++----------
->  1 file changed, 119 insertions(+), 31 deletions(-)
-
-please unify the files first, we dont want to let pageattr_32.c and 
-pageattr_64.c diverge even more. Once we get these files unified we 
-layer more features ontop of it. While gbpages is not available on 
-32-bit and probably wont ever be, this code has been historically very 
-fragile, so having a single codebase to look at is very important.
-
-	Ingo
+-- 
+Ist Ihr Browser Vista-kompatibel? Jetzt die neuesten 
+Browser-Versionen downloaden: http://www.gmx.net/de/go/browser
