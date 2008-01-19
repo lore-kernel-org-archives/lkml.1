@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbYASGtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbYASGth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbYASGtX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 01:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbYASGsv
+	id S1756702AbYASGth (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 01:49:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYASGsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 01:48:51 -0500
-Received: from mail.suse.de ([195.135.220.2]:33224 "EHLO mx1.suse.de"
+	Sat, 19 Jan 2008 01:48:52 -0500
+Received: from ns.suse.de ([195.135.220.2]:33230 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751667AbYASGsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 01:48:31 -0500
+	id S1751881AbYASGsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 01:48:33 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20080119748.170864000@suse.de>
 In-Reply-To: <20080119748.170864000@suse.de>
 To: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/8] GBPAGES: Add feature macros for the gbpages cpuid bit
-Message-Id: <20080119064830.5B00814EAD@wotan.suse.de>
-Date: Sat, 19 Jan 2008 07:48:30 +0100 (CET)
+Subject: [PATCH] [4/8] Add pgtable accessor functions for GB pages
+Message-Id: <20080119064832.786F614EAD@wotan.suse.de>
+Date: Sat, 19 Jan 2008 07:48:32 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -24,26 +24,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- include/asm-x86/cpufeature.h |    2 ++
- 1 file changed, 2 insertions(+)
+ include/asm-x86/pgtable_64.h |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Index: linux/include/asm-x86/cpufeature.h
+Index: linux/include/asm-x86/pgtable_64.h
 ===================================================================
---- linux.orig/include/asm-x86/cpufeature.h
-+++ linux/include/asm-x86/cpufeature.h
-@@ -49,6 +49,7 @@
- #define X86_FEATURE_MP		(1*32+19) /* MP Capable. */
- #define X86_FEATURE_NX		(1*32+20) /* Execute Disable */
- #define X86_FEATURE_MMXEXT	(1*32+22) /* AMD MMX extensions */
-+#define X86_FEATURE_GBPAGES	(1*32+26) /* GB pages */
- #define X86_FEATURE_RDTSCP	(1*32+27) /* RDTSCP */
- #define X86_FEATURE_LM		(1*32+29) /* Long Mode (x86-64) */
- #define X86_FEATURE_3DNOWEXT	(1*32+30) /* AMD 3DNow! extensions */
-@@ -173,6 +174,7 @@
- #define cpu_has_bts		boot_cpu_has(X86_FEATURE_BTS)
- #define cpu_has_pat		boot_cpu_has(X86_FEATURE_PAT)
- #define cpu_has_ss		boot_cpu_has(X86_FEATURE_SELFSNOOP)
-+#define cpu_has_gbpages 	boot_cpu_has(X86_FEATURE_GBPAGES)
+--- linux.orig/include/asm-x86/pgtable_64.h
++++ linux/include/asm-x86/pgtable_64.h
+@@ -208,6 +208,12 @@ static inline unsigned long pmd_bad(pmd_
+ #define pud_offset(pgd, address) ((pud_t *) pgd_page_vaddr(*(pgd)) + pud_index(address))
+ #define pud_present(pud) (pud_val(pud) & _PAGE_PRESENT)
  
- #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
- # define cpu_has_invlpg 	1
++static inline int pud_large(pud_t pte)
++{
++	return (pud_val(pte) & (_PAGE_PSE|_PAGE_PRESENT)) ==
++		(_PAGE_PSE|_PAGE_PRESENT);
++}
++
+ /* PMD  - Level 2 access */
+ #define pmd_page_vaddr(pmd) ((unsigned long) __va(pmd_val(pmd) & PTE_MASK))
+ #define pmd_page(pmd)		(pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT))
