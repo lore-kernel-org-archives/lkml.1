@@ -1,175 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbYASXXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbYASXZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755235AbYASXXh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 18:23:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYASXXa
+	id S1758759AbYASXZU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 18:25:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYASXZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 18:23:30 -0500
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:32396 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753160AbYASXX3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 18:23:29 -0500
-X-Greylist: delayed 976 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Jan 2008 18:23:28 EST
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native format.
-References: <1200758937-22386-1-git-send-email-ijc@hellion.org.uk>
-	<1200758937-22386-2-git-send-email-ijc@hellion.org.uk>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 20 Jan 2008 00:07:09 +0100
-In-Reply-To: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>
-Message-ID: <87prvxct42.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Sat, 19 Jan 2008 18:25:06 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49149 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751981AbYASXZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 18:25:05 -0500
+Message-ID: <479286CA.3080705@sgi.com>
+Date: Sat, 19 Jan 2008 15:24:58 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 19 Jan 2008 23:00:56.0793 (UTC) FILETIME=[26658490:01C85AEF]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
+References: <20080118183011.354965000@sgi.com> <20080118183011.917801000@sgi.com> <20080119145243.GA27974@elte.hu> <20080119151522.GA7774@elte.hu> <20080119152357.GA11706@elte.hu>
+In-Reply-To: <20080119152357.GA11706@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell <ijc@hellion.org.uk> writes:
-> +1:
-> +#ifdef CONFIG_X86_PAE
-> +	btl $5, %eax
-> +	jnc err_no_pae
-> +#endif
->  
->  	xorl %ebx,%ebx				/* This is the boot CPU (BSP) */
->  	jmp 3f
-> +
-> +#ifdef CONFIG_X86_PAE
-> +err_no_pae:
-> +	/* It is probably too early but we might as well try... */
-
-Without a low identity mapping early_printk will not work and printk
-definitely not.
-
-> +#ifdef CONFIG_PRINTK
-
-You should do the test in the 16 bit boot code. In fact it should
-already do it by testing the CPUID REQUIRED_MASK.
-
-The only way this could be entered is if someone skips the 16bit boot code
-by using kexec, but has the wrong flags. I'm not sure how to handle
-it there.
-
-> +/*
-> + * Since a paravirt guest will never come down this path we want
-> + * native style page table accessors here.
-> + */
-> +#undef CONFIG_PARAVIRT
-
-Seems quite fragile. I'm sure that would hurt later.
-
-
-> +
-> +static inline __init pud_t *early_pud_offset(pgd_t *pgd, unsigned long vaddr)
-> +{
-> +	return (pud_t *)(pgd + pgd_index(vaddr));
-> +}
-> +
-> +static inline __init pmd_t *early_pmd_offset(pud_t *pud, unsigned long vaddr)
-> +{
-> +#ifndef CONFIG_X86_PAE
-> +	return (pmd_t *)pud;
-> +#else
-> +	return ((pmd_t *)(u32)(pud_val(*pud) & PAGE_MASK))
-> +		+ pmd_index(vaddr);
-> +#endif
-> +}
-> +
-> +static inline __init pte_t *early_pte_offset(pmd_t *pmd, unsigned long vaddr)
-> +{
-> +	return ((pte_t *)(u32)(pmd_val(*pmd) & PAGE_MASK))
-
-That will break if the kernel is > 4GB won't it? Also same for pmd.
-
-Also not handling NX is dubious, although you can probably get away from it there.
-
-> +		+ pte_index(vaddr);
-> +}
-> +
-> +static inline __init pmd_t *
-> +early_pmd_alloc(pgd_t *pgd_base, unsigned long vaddr, unsigned long *end)
-> +{
-> +	pud_t *pud = early_pud_offset(pgd_base, vaddr);
-> +
-> +#ifdef CONFIG_X86_PAE
-> +	if (!(pud_val(*pud) & _PAGE_PRESENT)) {
-
-
-Why not set it in the pgd which is identical? Also the proper test is !pgd_none()
-
-
-
-> +{
-> +	pmd_t *pmd;
-> +
-> +	pmd = early_pmd_alloc(pgd_base, vaddr, end);
-> +	if (!(pmd_val(*pmd) & _PAGE_PRESENT)) {
-
-!pmd_none()
-
-> +		unsigned long phys = *end;
-> +		memset((void *)phys, 0, PAGE_SIZE);
-> +		set_pmd(pmd, __pmd(phys | _PAGE_TABLE));
-> +		*end += PAGE_SIZE;
-> +	}
-> +	return early_pte_offset(pmd, vaddr);
-> +}
-> +
-> +static __init void early_set_pte_phys(pgd_t *pgd_base, unsigned long vaddr,
-> +				      unsigned long phys, unsigned long *end)
-> +{
-> +	pte_t *pte;
-> +	pte = early_pte_alloc(pgd_base, vaddr, end);
-> +	set_pte(pte, __pte(phys | _PAGE_KERNEL_EXEC));
-> +}
-> +
-> +void __init early_pgtable_init(void)
-> +{
-> +	unsigned long addr, end;
-> +	pgd_t *pgd_base;
-> +
-> +	pgd_base = __pavar(swapper_pg_dir);
-> +	end = __pa_symbol(pg0);
-
-Are you sure there will be enough memory here? You might need to use
-an e820 allocator similar to x86-64.
-
-Typical problems is you running into some other memory used by
-someone else.
-
->  {
->  	enum fixed_addresses idx;
-> -	unsigned long *pte, phys, addr;
-> +	unsigned long addr, phys;
-> +	pte_t *pte;
->  
->  	after_paging_init = 1;
->  	for (idx = FIX_BTMAP_BEGIN; idx <= FIX_BTMAP_END; idx--) {
->  		addr = fix_to_virt(idx);
->  		pte = early_ioremap_pte(addr);
-> -		if (!*pte & _PAGE_PRESENT) {
-> -			phys = *pte & PAGE_MASK;
-> +		if (!(pte_val(*pte) & _PAGE_PRESENT)) {
-
-pte_present(). Ok the old code was wrong too, but no need to do that again.
-
->  			set_fixmap(idx, phys);
->  		}
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+>> and then it crashes with:
+>>
+>>  [    0.000000] Bootmem setup node 0 0000000000000000-000000003fff0000
+>>  [    0.000000] KERN_NOTICE cpu_to_node(0): usage too early!
+>>  PANIC: early exception 06 rip 10:ffffffff81f77f30 error 0 cr2 f06f53
+>>  [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.24-rc8 #422
+>>  [    0.000000]
+>>  [    0.000000] Call Trace:
+>>  [    0.000000]  [<ffffffff81f76b4a>] ? setup_node_bootmem+0x1a0/0x1b8
+>>  [    0.000000]  [<ffffffff81f77f30>] ? acpi_scan_nodes+0x204/0x255
+>>  [    0.000000]  [<ffffffff81f77f30>] ? acpi_scan_nodes+0x204/0x255
+>>  [    0.000000]  [<ffffffff81f77103>] ? numa_initmem_init+0x343/0x471
+>>
+>> moral: PLEASE do not use BUG() on in early init code, unless 
+>> absolutely necessary.
+> 
+> the right fix is below.
+> 
+> 	Ingo
+> 
+> ---
+>  include/asm-x86/topology.h |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux/include/asm-x86/topology.h
+> ===================================================================
+> --- linux.orig/include/asm-x86/topology.h
+> +++ linux/include/asm-x86/topology.h
+> @@ -70,10 +70,10 @@ static inline int cpu_to_node(int cpu)
+>  	if(x86_cpu_to_node_map_early_ptr) {
+>  		printk("KERN_NOTICE cpu_to_node(%d): usage too early!\n",
+>  			(int)cpu);
+> -		BUG();
+> +		dump_stack();
 >  	}
-> @@ -298,7 +304,8 @@ void __init early_ioremap_reset(void)
->  static void __init __early_set_fixmap(enum fixed_addresses idx,
->  				   unsigned long phys, pgprot_t flags)
->  {
-> -	unsigned long *pte, addr = __fix_to_virt(idx);
-> +	unsigned long addr = __fix_to_virt(idx);
-> +	pte_t *pte;
+>  #endif
+> -	if(per_cpu_offset(cpu))
+> +	if (per_cpu_offset(cpu))
+>  		return per_cpu(x86_cpu_to_node_map, cpu);
+>  	else
+>  		return NUMA_NO_NODE;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Unrelated?
+Except the function needs to return a valid node id if it's to continue:
 
--Andi
+--- linux.orig/include/asm-x86/topology.h       2008-01-19 15:23:04.996551867 -0800
++++ linux/include/asm-x86/topology.h    2008-01-19 15:23:05.208564537 -0800
+@@ -67,10 +67,11 @@ static inline int early_cpu_to_node(int
+ static inline int cpu_to_node(int cpu)
+ {
+ #ifdef CONFIG_DEBUG_PER_CPU_MAPS
+-       if(x86_cpu_to_node_map_early_ptr) {
++       if (x86_cpu_to_node_map_early_ptr) {
+                printk("KERN_NOTICE cpu_to_node(%d): usage too early!\n",
+                        (int)cpu);
+                dump_stack();
++               return ((numanode_t *)x86_cpu_to_node_map_early_ptr)[cpu];
+        }
+ #endif
+        if (per_cpu_offset(cpu))
+
+??
+
+Thannks,
+Mike
