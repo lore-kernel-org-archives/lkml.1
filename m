@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757679AbYASWYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbYASW1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757679AbYASWYr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 17:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYASWYi
+	id S1758540AbYASW1S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 17:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbYASW1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 17:24:38 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:27935 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751609AbYASWYh (ORCPT
+	Sat, 19 Jan 2008 17:27:07 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:53915 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751542AbYASW1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 17:24:37 -0500
-X-SBRS: None
-X-MesageID: 38452084
-X-Ironport-Server: ftlpip02.citrite.net
-X-Remote-IP: 216.142.71.134
-X-Policy: $Relay
-X-IronPort-AV: E=Sophos;i="4.25,222,1199682000"; 
-   d="scan'208";a="38452084"
-Message-ID: <47927877.5090209@citrix.com>
-Date: Sat, 19 Jan 2008 14:23:51 -0800
-From: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
-       WANG Cong <xiyou.wangcong@gmail.com>
-Subject: Re: [updated PATCH] xen: fix section usage in xen-head.S and setup.c
-References: <200801181318.30009.toralf.foerster@gmx.de> <20080118122917.GH2559@hacking> <20080118124627.GA17918@uranus.ravnborg.org> <20080118125144.GI2559@hacking> <20080118132242.GA18183@uranus.ravnborg.org> <20080118161452.GJ2559@hacking> <20080119131743.GA26615@uranus.ravnborg.org> <20080119212019.GB29070@uranus.ravnborg.org>
-In-Reply-To: <20080119212019.GB29070@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 19 Jan 2008 17:27:07 -0500
+Date: Sat, 19 Jan 2008 23:30:29 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Steve French <smfrench@gmail.com>
+Cc: simo <idra@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org,
+       samba-technical@lists.samba.org
+Subject: Re: [linux-cifs-client] [PATCH] Remove information leak in Linux CIFS clientg
+Message-ID: <20080119223029.GA5786@one.firstfloor.org>
+References: <20080119045552.GA11134@basil.nowhere.org> <1200730722.28706.70.camel@localhost.localdomain> <524f69650801191406j440e52afsb9b80efed4fa15da@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <524f69650801191406j440e52afsb9b80efed4fa15da@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> Failing to specify "ax" in the pushsection caused ld to generate
-> an additional section for .init.text appending a number.
->   
+On Sat, Jan 19, 2008 at 04:06:57PM -0600, Steve French wrote:
+> The access denied message in the dmesg log reveals no more information
+> than strace on stat of a local file does (which also returns access
 
-Thanks for tracking this down.  I think the "ax" appeared and 
-disappeared over time, but this looks like the proper solution.
+You can't strace a process you don't own. And you might not be able
+to access the directory below which the file is.
 
-Are you going to submit this, or do you want me to pick it up?
+But there is no such access control on "dmesg". So if there is an
+access error you leak the potentially protected information in 
+the file name
 
-> A side effect of this was a section mismatch warning because modpost
-> did not recognize a .init.text section named .init.text.1:
-> WARNING: vmlinux.o(.text.head+0x247): Section mismatch: reference to .init.text.1:start_kernel (between 'is386' and 'check_x87')
->
-> Fix this by hardcoding the "ax" in the pushsection.
-> Thanks to Torlaf for reporting this.
->
-> Alan Modra provided the hint that made me able to
-> locate the root cause of this warning.
-> And Mike Frysinger told me how to properly fix it
-> using __INIT/__FINIT.
->
-> Fix following Section mismatch warning in addition:
-> WARNING: vmlinux.o(.text+0x14c8): Section mismatch: reference to .init.data:vsyscall_int80_start (between 'fiddle_vdso' and 'xen_setup_features')
->
-> fiddle_vdso was only used from a __init function - so declare it __init.
->
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
->   
+> denied and displays access denied), but I agree that logging on
+> -EACCESS on lookup does clutter the log.
+> 
+> I think it is ok to log a message on unexpected errors (for
+> QueryPathInfo those would include anything other than ENOENT and
+> EACCESS - Simo, can you think of others?)  I don't mind ratelimiting
+> logging on this clause (for errors other than ENOENT and EACCESS) but
+> it would complicate the code for a case I have not seen in the wild.
+> 
+> I prefer the following to remove the log cluttering on this case:
 
-Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+That would still be an information leak for other errors.
 
-Thanks,
-    J
+Logging the path would be only safe if you determine that the
+file and all its parent directories were world read (and accessable)able,
+but that would be probably difficult.
+
+-Andi
