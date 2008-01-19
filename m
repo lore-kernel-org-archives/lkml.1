@@ -1,96 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbYASVZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbYASV0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756789AbYASVZr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 16:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbYASVZj
+	id S1757587AbYASV0D (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 16:26:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYASVZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 16:25:39 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:59515 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751416AbYASVZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 16:25:38 -0500
-Message-ID: <47926ACC.4060707@sgi.com>
-Date: Sat, 19 Jan 2008 13:25:32 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [PATCH 1/5] x86: Change size of node ids from u8 to u16 fixup
-References: <20080118183011.354965000@sgi.com>  <20080118183011.527888000@sgi.com> <86802c440801182003vd94044ex7fb13e61e5f79c81@mail.gmail.com> <alpine.DEB.0.9999.0801182026130.32726@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.0.9999.0801182026130.32726@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 19 Jan 2008 16:25:43 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:49506 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752002AbYASVZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 16:25:42 -0500
+Date: Sat, 19 Jan 2008 22:25:49 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, dipankar@in.ibm.com,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] rcu: fix section mismatch
+Message-ID: <20080119212549.GD29070@uranus.ravnborg.org>
+References: <20080119115643.43236e70.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080119115643.43236e70.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> On Fri, 18 Jan 2008, Yinghai Lu wrote:
+On Sat, Jan 19, 2008 at 11:56:43AM -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
->>> +#if MAX_NUMNODES > 256
->>> +typedef u16 numanode_t;
->>> +#else
->>> +typedef u8 numanode_t;
->>> +#endif
->>> +
->>>  #endif /* _LINUX_NUMA_H */
->> that is wrong, you can not change pxm_to_node_map from int to u8 or u16.
->>
-
-Thanks for finding this!
-
+> rcu_online_cpu() should be __cpuinit instead of __devinit.
 > 
-> Yeah, NID_INVAL is negative so no unsigned type will work here, 
-> unfortunately.  And that reduces the intended savings of your change since 
-> the smaller type can only be used with a smaller CONFIG_NODES_SHIFT.
+> WARNING: vmlinux.o(.text+0x4b6d5): Section mismatch: reference to .init.text: (between 'rcu_cpu_notify' and 'wakeme_after_rcu')
 > 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-Excuse my ignorance but why wouldn't this work:
+So if we have:
+CONFIG_HOTPLUG=n
+CONFIG_HOTPLUG_CPU=y
 
-static numanode_t pxm_to_node_map[MAX_PXM_DOMAINS]
-                                = { [0 ... MAX_PXM_DOMAINS - 1] = NUMA_NO_NODE };
-...
->> int acpi_map_pxm_to_node(int pxm)
->> {
->         int node = pxm_to_node_map[pxm];
+then this is a oops candidate.
+
+Andrew - this looks like a 2.6.24 candidate.
+
+	Sam
+
+
+> ---
+>  kernel/rcupdate.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
->         if (node < 0)
-
-	   numanode_t node = pxm_to_node_map[pxm];
-
-	   if (node != NUMA_NO_NODE) {
->>                 if (nodes_weight(nodes_found_map) >= MAX_NUMNODES)
->>                         return NID_INVAL;
->>                 node = first_unset_node(nodes_found_map);
->>                 __acpi_map_pxm_to_node(pxm, node);
->>                 node_set(node, nodes_found_map);
->>         }
-
-or change:
-	#define NID_INVAL       (-1)
-to
-	#define NID_INVAL       ((numanode_t)(-1))
-...
-	   if (node != NID_INVAL) {
->>                 if (nodes_weight(nodes_found_map) >= MAX_NUMNODES)
->>                         return NID_INVAL;
->>                 node = first_unset_node(nodes_found_map);
->>                 __acpi_map_pxm_to_node(pxm, node);
->>                 node_set(node, nodes_found_map);
->>         }
-
-Though why there two "node invalid" values I'm not sure... ?
-
->>
->>         return node;
->> }
-
-And btw, shouldn't the pxm value be sized to numanode_t size as well?
-Will it ever be larger than the largest node id?
-
-Thanks,
-Mike
+> --- linux-2.6.24-rc8-git2.orig/kernel/rcupdate.c
+> +++ linux-2.6.24-rc8-git2/kernel/rcupdate.c
+> @@ -549,7 +549,7 @@ static void rcu_init_percpu_data(int cpu
+>  	rdp->blimit = blimit;
+>  }
+>  
+> -static void __devinit rcu_online_cpu(int cpu)
+> +static void __cpuinit rcu_online_cpu(int cpu)
+>  {
+>  	struct rcu_data *rdp = &per_cpu(rcu_data, cpu);
+>  	struct rcu_data *bh_rdp = &per_cpu(rcu_bh_data, cpu);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
