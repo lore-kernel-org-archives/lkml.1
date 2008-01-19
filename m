@@ -1,111 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761942AbYASPMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761813AbYASPPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761942AbYASPMU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 10:12:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758205AbYASPMN
+	id S1761813AbYASPPt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 10:15:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758822AbYASPPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 10:12:13 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:18302 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758110AbYASPMM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 10:12:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=U4uy/AFp0sLnZKoAPijGVZ1K+Zrzcln1lBpD0RjQV1T2rZIE58qgjy/HndAX1kcAHJCSkbk2hA4nJoafni8nmllx2TXzmnkreoSBx2YSb2hmH4QUiM00EGv7lLTCoLZUN5SGEDxHOTss3gs+2+pcr67Tt8QZ1oYCVoJMSLtWmWA=
-Message-ID: <ee3dc96c0801190712v56bcfde5qa015888f2bcbde98@mail.gmail.com>
-Date: Sat, 19 Jan 2008 12:12:10 -0300
-From: "Rafael Sisto" <rafael.sisto@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: new file in kernel.
-Cc: "Linux kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0801191526200.27831@fbirervta.pbzchgretzou.qr>
+	Sat, 19 Jan 2008 10:15:41 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50699 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758866AbYASPPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 10:15:41 -0500
+Date: Sat, 19 Jan 2008 16:15:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: travis@sgi.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
+Message-ID: <20080119151522.GA7774@elte.hu>
+References: <20080118183011.354965000@sgi.com> <20080118183011.917801000@sgi.com> <20080119145243.GA27974@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <ee3dc96c0801190542u2f91a2eax3bcfd0268d4850b4@mail.gmail.com>
-	 <Pine.LNX.4.64.0801191448140.27831@fbirervta.pbzchgretzou.qr>
-	 <ee3dc96c0801190608q33aee0aer133611a1fc392bb4@mail.gmail.com>
-	 <Pine.LNX.4.64.0801191526200.27831@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <20080119145243.GA27974@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Jan,
 
-The idea of the indirection is to make it transparent for the user.
-The idea is to do almost the same as what IPC does. The user calls
-"get", then "attach". In the "get" syscall I create a tmp file and
-return some id. Then the user calls an "attach" syscall with the
-returned id.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-The result is that he gets a shared memorymapped to his vma.
+> > 	NR_CPUS:      max limit now 4096
+> > 	NODES_SHIFT:  max limit now 9
+> > 	THREAD_ORDER: max limit now 3
+> > 	X86_SMP_MAX:  say Y to enable possible cpus == NR_CPUS
+> > 
+> > Signed-off-by: Mike Travis <travis@sgi.com>
+> 
+> i've bisected a boot failure down to this patch (sans the THREAD_ORDER 
+> bits): it causes an instant reboot of the 64-bit kernel upon bootup. 
+> Failing config attached.
 
-Is my idea clearer now?
+and then it crashes with:
 
-As for the snippet, thank you. But I read somewhere that it is not
-recommended to call system calls inside another system call, right?
+ [    0.000000] Bootmem setup node 0 0000000000000000-000000003fff0000
+ [    0.000000] KERN_NOTICE cpu_to_node(0): usage too early!
+ PANIC: early exception 06 rip 10:ffffffff81f77f30 error 0 cr2 f06f53
+ [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.24-rc8 #422
+ [    0.000000]
+ [    0.000000] Call Trace:
+ [    0.000000]  [<ffffffff81f76b4a>] ? setup_node_bootmem+0x1a0/0x1b8
+ [    0.000000]  [<ffffffff81f77f30>] ? acpi_scan_nodes+0x204/0x255
+ [    0.000000]  [<ffffffff81f77f30>] ? acpi_scan_nodes+0x204/0x255
+ [    0.000000]  [<ffffffff81f77103>] ? numa_initmem_init+0x343/0x471
 
-So, I think somthing like this code would do, right?
+moral: PLEASE do not use BUG() on in early init code, unless absolutely 
+necessary.
 
-asmlinkage long sys_my_shmget(int size)
-{
-       long ret;
+	Ingo
 
-       ret = sys_open("/tmp/shmfile", O_CREAT | O_RDWR  , 777);
-       if (ret < 0)
-               return ret;
-       sys_close(fd);
-       return 0;
-}
+---
+ include/asm-x86/topology.h |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-what do you think??
-
-
-
-Greetings, Rafael Sisto
-
-On Jan 19, 2008 11:30 AM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->
-> On Jan 19 2008 11:08, Rafael Sisto wrote:
-> >
-> >I had already read that webpage, but I dont need to change the data on
-> >that file. I just want to create a new file and then close it, so I
-> >can use it later in another system call, to mmap it to a user space.
-> >Is it clearer now?
-> >Can you please give me some code snippet?
->
-> I don't get what your indirection is supposed to do.
->
->  userspace -> sys_open -> kernel space -> create file
->            -> sys_close -> kernel space -> close it
->
-> vs
->
->  userspace -> sys_mycall -> kernelspace -> sys_open -> create_file
->                                         -> sys_close -> create_file
->
-> As for code snippets:
->
-> asmlinkage logn sys_mycall(const char __user *filename,
->     unsigned int flags, unsigned int mode)
-> {
->         long ret;
->
->         ret = sys_open(filename, flags, mode);
->         if (ret < 0)
->                 return ret;
->
->         return sys_close(fd);
-> }
->
-> You see, this is currently just too trivial to make sense, but if
-> it helps you, no problem.
->
-> >Sorry for the last mail, I answered to your personal mail only)
->
-> Here, we use Reply-to-all.
->
->
+Index: linux/include/asm-x86/topology.h
+===================================================================
+--- linux.orig/include/asm-x86/topology.h
++++ linux/include/asm-x86/topology.h
+@@ -70,10 +70,11 @@ static inline int cpu_to_node(int cpu)
+ 	if(x86_cpu_to_node_map_early_ptr) {
+ 		printk("KERN_NOTICE cpu_to_node(%d): usage too early!\n",
+ 			(int)cpu);
+-		BUG();
++		dump_stack();
++		return 0;
+ 	}
+ #endif
+-	if(per_cpu_offset(cpu))
++	if (per_cpu_offset(cpu))
+ 		return per_cpu(x86_cpu_to_node_map, cpu);
+ 	else
+ 		return NUMA_NO_NODE;
