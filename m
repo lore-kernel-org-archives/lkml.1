@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760108AbYASOIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbYASOIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760108AbYASOIi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 09:08:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYASOIa
+	id S1760979AbYASOIv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 09:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbYASOIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 09:08:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54526 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751818AbYASOI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 09:08:29 -0500
-Date: Sat, 19 Jan 2008 15:08:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: x86: remove casts
-Message-ID: <20080119140817.GA4405@elte.hu>
-References: <Pine.LNX.4.64.0801162213390.31385@fbirervta.pbzchgretzou.qr> <20080118104553.GB8785@elte.hu> <Pine.LNX.4.64.0801191455180.27831@fbirervta.pbzchgretzou.qr>
+	Sat, 19 Jan 2008 09:08:34 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:38890 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756272AbYASOId (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 09:08:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=h0yYnLaCG2vvC36Gz8HwJWWFV1DTTez15eDqYa74DhNK19F0uJ+KP15TNDt+3n4Vk+0mCHmSucm+tey02h9cd58jKqcBV+GN1uR1RDVOIAzEWPSZRELZ90Sxej1dXFPPtA40p01WpWGx5UqavytB9Vc7YTYY07GBwNG1LnzNMu4=
+Message-ID: <ee3dc96c0801190608q33aee0aer133611a1fc392bb4@mail.gmail.com>
+Date: Sat, 19 Jan 2008 11:08:32 -0300
+From: "Rafael Sisto" <rafael.sisto@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: new file in kernel.
+Cc: "Linux kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0801191448140.27831@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801191455180.27831@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <ee3dc96c0801190542u2f91a2eax3bcfd0268d4850b4@mail.gmail.com>
+	 <Pine.LNX.4.64.0801191448140.27831@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dear Jan,
+I had already read that webpage, but I dont need to change the data on
+that file. I just want to create a new file and then close it, so I
+can use it later in another system call, to mmap it to a user space.
+Is it clearer now?
+Can you please give me some code snippet?
 
-* Jan Engelhardt <jengelh@computergmbh.de> wrote:
+Thanks again in advance and greetings!
+Rafael Sisto.
 
-> On Jan 18 2008 11:45, Ingo Molnar wrote:
-> >* Jan Engelhardt <jengelh@computergmbh.de> wrote:
+(Jan, Sorry for the last mail, I answered to your personal mail only)
+
+
+On Jan 19, 2008 10:49 AM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>
+> On Jan 19 2008 10:42, Rafael Sisto wrote:
+> >Dear forum,
+> >can anybody help me with this issue?
 > >
-> >> This is against x86/mm.
-> >
-> >hm, it has checkpatch failures -
-> 
-> All false positives.
-
-no, not "All false positives", the first checkpatch failure is a blatant 
-ugliness that you introduced:
-
- ERROR: use tabs not spaces
- #137: FILE: arch/x86/kernel/microcode.c:248:
- +^I^I          EXT_SIGNATURE_SIZE * i;$
-
-because you converted a tab to a sequence of 10 spaces:
-
--		ext_sig = (struct extended_signature *)((void *)ext_header
--			+ EXT_HEADER_SIZE + EXT_SIGNATURE_SIZE * i);
-+		ext_sig = (void *)ext_header + EXT_HEADER_SIZE +
-+		          EXT_SIGNATURE_SIZE * i;
-                <........>
-
-(the second checkpatch warning is a false positive.)
-
-and i applied your patch before i notified you, but apparently you 
-couldnt be bothered to check. Please do not bother to send patches with 
-such an attitude, it's just a waste of people's time.
-
-	Ingo
+> >How do I create a new file in kernel mode?
+> >I am trying to create a file in a system call I am building.
+>
+> http://kernelnewbies.org/FAQ/WhyWritingFilesFromKernelIsBad
+>
+> Even then, you are a bit too unspecific. A syscall could
+> very well call a filesystem's create function and create
+> a file that way, though it is a very different use-case.
+>
