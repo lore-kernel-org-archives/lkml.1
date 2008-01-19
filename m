@@ -1,95 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764058AbYASDzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764411AbYASEA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764058AbYASDzy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 22:55:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760687AbYASDzm
+	id S1764411AbYASEA3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 23:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761667AbYASEAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 22:55:42 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:48237 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758975AbYASDzl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 22:55:41 -0500
-Date: Fri, 18 Jan 2008 22:55:27 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Frank Ch. Eigler" <fche@redhat.com>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Steven Rostedt <srostedt@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Daniel Walker <dwalker@mvista.com>
-Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
-In-Reply-To: <20080119033632.GE27193@redhat.com>
-Message-ID: <Pine.LNX.4.58.0801182242440.16333@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0801161041010.15998@gandalf.stny.rr.com>
- <20080116170011.GA3651@Krystal> <Pine.LNX.4.58.0801161428180.14368@gandalf.stny.rr.com>
- <20080116201713.GA14336@Krystal> <Pine.LNX.4.58.0801171440360.28350@gandalf.stny.rr.com>
- <20080117203740.GA24397@redhat.com> <Pine.LNX.4.58.0801171555120.28350@gandalf.stny.rr.com>
- <20080118222637.GA30900@Krystal> <Pine.LNX.4.58.0801181735140.13971@gandalf.stny.rr.com>
- <20080118231928.GA5563@Krystal> <20080119033632.GE27193@redhat.com>
+	Fri, 18 Jan 2008 23:00:22 -0500
+Received: from ozlabs.org ([203.10.76.45]:46944 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760687AbYASEAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 23:00:21 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 3/3] Makes lguest's irq handler typesafe
+Date: Sat, 19 Jan 2008 14:59:49 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Ash Willis <ashwillis@programmer.net>,
+       linux-pcmcia@lists.infradead.org,
+       virtualization@lists.linux-foundation.org
+References: <200801190722.26154.rusty@rustcorp.com.au> <47915515.1020905@gmail.com> <47915614.7080608@gmail.com>
+In-Reply-To: <47915614.7080608@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801191459.49735.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 18 Jan 2008, Frank Ch. Eigler wrote:
+On Saturday 19 January 2008 12:44:52 Tejun Heo wrote:
+> Tejun Heo wrote:
+> > so I think the question is "do we want to change all callbacks to
+> > take native pointer type instead of void pointer?".
 >
-> All this complexity is to be justified by keeping the raw prev/next
-> pointers from being sent to a naive tracer?  It seems to me way out of
-> proportion.
+> Lemme clarity myself a bit.  I'm not saying that we should convert all
+> at once or literally every callback should be converted.  What I'm
+> saying is whether we're headed that way in general and converting big
+> ones - timer for example - and getting the conversion agreed upon should
+> be enough to set the norm.
 
-Damn, and I just blew away all my marker code for something like this ;-)
+Hi Tejun
 
-Actually, you just gave me a great idea that I think can help all of us.
-OK, Mathieu may not be in total agreement, but I think this is the
-ultimate compromise.
+    There are three possibilities: (1) force everyone to use void *, (2) force 
+everyone to be type-correct, (3) allow both with some tricks.  Currently 
+we're on (1).  For kthread, with only dozens of users, I chose (2) (very 
+simple, easy to understand).  I think for widespread things like timer and 
+interrupt handlers, I think (3) is the right way to go.
 
-We have in sched.c the following marker:
+    I wanted to get this patch out there and see what the reaction was.  I can 
+do timers next, if that's going to add fuel to the discussion.
 
- trace_mark(kernel_sched_scheduler, "prev %p next %p", prev, next);
-
-
-Then Mathieu can add in some code somewhere (or a module, or something)
-
-	ret = marker_probe_register("kernel_sched_scheduler",
-				"prev %p next %p",
-				pretty_print_sched_switch, NULL);
-
-static void pretty_print_sched_switch(const struct marker *mdata,
-				void *private_data,
-				const char *format, ...)
-{
-	va_list ap;
-	struct task_struct *prev;
-	struct task_struct *next;
-
-	va_start(ap, format);
-	prev = va_arg(ap, typeof(prev));
-	next = va_arg(ap, typeof(next));
-	va_end;
-
-	trace_mark(kernel_pretty_print_sched_switch,
-		"prev_pid %d next_pid %d prev_state %ld",
-		prev->pid, next->pid, prev->state);
-}
-
-
-Then LTTng on startup could arm the normal kernel_sched_switch code and
-have the user see the nice one. All without adding any more goo or
-overhead to the non tracing case, and keeping a few critical markers with
-enough information to be useful to other tracers!
-
-Thoughts?
-
--- Steve
-
+Thanks!
+Rusty.
