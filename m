@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbYASNUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbYASNVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759333AbYASNUn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 08:20:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbYASNUJ
+	id S1759565AbYASNVP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 08:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYASNU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 08:20:09 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:54556 "EHLO smtp6.pp.htv.fi"
+	Sat, 19 Jan 2008 08:20:58 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:54595 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753604AbYASNUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 08:20:06 -0500
-Date: Sat, 19 Jan 2008 15:18:51 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: chas@cmf.nrl.navy.mil, jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] atm/suni.c: fix section mismatch
-Message-ID: <20080119131851.GB8669@does.not.exist>
+	id S1754087AbYASNU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 08:20:57 -0500
+Date: Sat, 19 Jan 2008 15:19:42 +0200
+From: Adrian Bunk <adrian.bunk@movial.fi>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.59
+Message-ID: <20080119131942.GC8669@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,48 +22,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-EXPORT_SYMBOL'ed code mustn't be __*init.
+Security fixes since 2.6.16.58:
+- CVE-2006-6058: limit minixfs printks on corrupted dir i_size
+- CVE-2007-5500: wait_task_stopped: Check p->exit_state instead of TASK_TRACED
+- CVE-2008-0001: Use access mode instead of open flags to determine needed permissions
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
----
---- linux-2.6/drivers/atm/suni.c.old	2008-01-19 12:16:41.000000000 +0200
-+++ linux-2.6/drivers/atm/suni.c	2008-01-19 12:17:23.000000000 +0200
-@@ -275,35 +275,35 @@ static int suni_stop(struct atm_dev *dev
- 	*walk = PRIV((*walk)->dev)->next;
- 	if (!sunis) del_timer_sync(&poll_timer);
- 	spin_unlock_irqrestore(&sunis_lock,flags);
- 	kfree(PRIV(dev));
- 
- 	return 0;
- }
- 
- 
- static const struct atmphy_ops suni_ops = {
- 	.start		= suni_start,
- 	.ioctl		= suni_ioctl,
- 	.interrupt	= suni_int,
- 	.stop		= suni_stop,
- };
- 
- 
--int __devinit suni_init(struct atm_dev *dev)
-+int suni_init(struct atm_dev *dev)
- {
- 	unsigned char mri;
- 
- 	mri = GET(MRI); /* reset SUNI */
- 	PUT(mri | SUNI_MRI_RESET,MRI);
- 	PUT(mri,MRI);
- 	PUT((GET(MT) & SUNI_MT_DS27_53),MT); /* disable all tests */
- 	REG_CHANGE(SUNI_TPOP_APM_S,SUNI_TPOP_APM_S_SHIFT,SUNI_TPOP_S_SONET,
- 	    TPOP_APM); /* use SONET */
- 	REG_CHANGE(SUNI_TACP_IUCHP_CLP,0,SUNI_TACP_IUCHP_CLP,
- 	    TACP_IUCHP); /* idle cells */
- 	PUT(SUNI_IDLE_PATTERN,TACP_IUCPOP);
- 	dev->phy = &suni_ops;
- 	return 0;
- }
- 
- EXPORT_SYMBOL(suni_init);
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
 
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+
+
+Changes since 2.6.16.58:
+
+Adrian Bunk (3):
+      struct input_device_id mustn't be userspace visible
+      Linux 2.6.16.59-rc1
+      Linux 2.6.16.59
+
+Al Viro (1):
+      missing dma_sync_single_range_for_{cpu,device} on alpha
+
+David S. Miller (1):
+      [SPARC64]: Fix endless loop in cheetah_xcall_deliver().
+
+Denis Vlasenko (1):
+      fix messages in fs/minix
+
+Eric Sandeen (1):
+      limit minixfs printks on corrupted dir i_size (CVE-2006-6058)
+
+Evgeniy Polyakov (1):
+      [IPV6]: Restore IPv6 when MTU is big enough
+
+Herbert Xu (2):
+      [IPV4] raw: Strengthen check on validity of iph->ihl
+      [IPSEC]: Avoid undefined shift operation when testing algorithm ID
+
+Ivan Kokshaysky (1):
+      include/asm-alpha/io_trivial.h build fixes
+
+Li Zefan (1):
+      CONNECTOR: don't touch queue dev after decrement of ref count
+
+Linus Torvalds (1):
+      Use access mode instead of open flags to determine needed permissions (CVE-2008-0001)
+
+Mark McLoughlin (1):
+      [INET]: Fix netdev renaming and inet address labels
+
+Maximilian Attems (1):
+      [IRDA]: irda_create() nuke user triggable printk
+
+Roland McGrath (1):
+      wait_task_stopped: Check p->exit_state instead of TASK_TRACED (CVE-2007-5500)
+
+Russ Dill (1):
+      [NET] kaweth was forgotten in msec switchover of usb_start_wait_urb
+
+
+ Makefile                        |    2 +-
+ arch/sparc64/kernel/smp.c       |   19 +++++++++++++------
+ drivers/connector/cn_queue.c    |    2 +-
+ drivers/usb/net/kaweth.c        |    2 +-
+ fs/minix/bitmap.c               |   10 +++++-----
+ fs/minix/inode.c                |   26 +++++++++++++-------------
+ fs/minix/itree_v1.c             |    9 +++++++--
+ fs/minix/itree_v2.c             |    9 +++++++--
+ fs/namei.c                      |    4 ++--
+ include/asm-alpha/dma-mapping.h |   14 ++++++++------
+ include/asm-alpha/io_trivial.h  |   12 ++++++++----
+ include/linux/input.h           |    3 +++
+ kernel/exit.c                   |    3 +--
+ net/ipv4/devinet.c              |    2 +-
+ net/ipv4/raw.c                  |    4 +++-
+ net/ipv6/addrconf.c             |   11 ++++++++++-
+ net/irda/af_irda.c              |    2 --
+ net/key/af_key.c                |   14 ++++++++++++--
+ 18 files changed, 96 insertions(+), 52 deletions(-)
