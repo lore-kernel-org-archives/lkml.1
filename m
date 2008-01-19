@@ -1,52 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763193AbYASAe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761736AbYASAwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763193AbYASAe7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 19:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbYASAew
+	id S1761736AbYASAwZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 19:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbYASAwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 19:34:52 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34075 "EHLO mx2.suse.de"
+	Fri, 18 Jan 2008 19:52:16 -0500
+Received: from waste.org ([66.93.16.53]:43611 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757047AbYASAev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 19:34:51 -0500
-Date: Fri, 18 Jan 2008 16:35:21 -0800
-From: Greg KH <gregkh@suse.de>
-To: Kevin Lloyd <klloyd@sierrawireless.com>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [PATCH] usb-serial: Sierra driver - add devices and update dtr
-Message-ID: <20080119003521.GA14512@suse.de>
-References: <1199992265.9266.19.camel@linux-z60t> <20080110195403.GA29384@suse.de> <3415E2A2AB26944B9159CDB22001004D022572F5@nestea.sierrawireless.local> <20080111210234.GA3070@suse.de> <3415E2A2AB26944B9159CDB22001004D022577B3@nestea.sierrawireless.local> <20080117180453.GA7780@suse.de> <3415E2A2AB26944B9159CDB22001004D02296DC3@nestea.sierrawireless.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3415E2A2AB26944B9159CDB22001004D02296DC3@nestea.sierrawireless.local>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1757260AbYASAwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 19:52:14 -0500
+Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
+	files
+From: Matt Mackall <mpm@selenic.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Oeser <ioe-lkml@rameria.de>, Miklos Szeredi <miklos@szeredi.hu>,
+       peterz@infradead.org, salikhmetov@gmail.com, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, ksm@42.dk, staubach@redhat.com,
+       jesper.juhl@gmail.com, akpm@linux-foundation.org, protasnb@gmail.com,
+       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
+In-Reply-To: <20080118175450.715ded60@bree.surriel.com>
+References: <12006091182260-git-send-email-salikhmetov@gmail.com>
+	 <E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>
+	 <alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org>
+	 <200801182332.02945.ioe-lkml@rameria.de>
+	 <alpine.LFD.1.00.0801181439330.2957@woody.linux-foundation.org>
+	 <20080118175450.715ded60@bree.surriel.com>
+Content-Type: text/plain
+Date: Fri, 18 Jan 2008 18:50:03 -0600
+Message-Id: <1200703803.25782.45.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 17, 2008 at 03:15:23PM -0800, Kevin Lloyd wrote:
-> > > Correct, the 0x0023 is the only newly added device that requires the
-> new
-> > > features.
-> >
-> > Does that mean things will not work for this device if it is added to
-> > the device table, without the code updates?
-> Adding the device will not break the driver (assuming you remove the
-> tag).
 
-Which "tag"?  The device id?
-
-> > And is this device even public yet?
+On Fri, 2008-01-18 at 17:54 -0500, Rik van Riel wrote:
+> On Fri, 18 Jan 2008 14:47:33 -0800 (PST)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> No, but we are trying to add native support for devices into kernels
-> well before they are released in an effort give better native support
-> to end-users.
+> >  - keep it simple. Let's face it, Linux has never ever given those 
+> >    guarantees before, and it's not is if anybody has really cared. Even 
+> >    now, the issue seems to be more about paper standards conformance than 
+> >    anything else.
+> 
+> There is one issue which is way more than just standards conformance.
+> 
+> When a program changes file data through mmap(), at some point the
+> mtime needs to be update so that backup programs know to back up the
+> new version of the file.
+> 
+> Backup programs not seeing an updated mtime is a really big deal.
 
-Ok, that's great to do, and is what needs to be done, just can't add new
-features during the "bug-fix-only" cycle of development :)
+And that's fixed with the 4-line approach.
 
-thanks,
+Reminds me, I've got a patch here for addressing that problem with loop mounts:
 
-greg k-h
+Writes to loop should update the mtime of the underlying file.
+
+Signed-off-by: Matt Mackall <mpm@selenic.com>
+
+Index: l/drivers/block/loop.c
+===================================================================
+--- l.orig/drivers/block/loop.c	2007-11-05 17:50:07.000000000 -0600
++++ l/drivers/block/loop.c	2007-11-05 19:03:51.000000000 -0600
+@@ -221,6 +221,7 @@ static int do_lo_send_aops(struct loop_d
+ 	offset = pos & ((pgoff_t)PAGE_CACHE_SIZE - 1);
+ 	bv_offs = bvec->bv_offset;
+ 	len = bvec->bv_len;
++	file_update_time(file);
+ 	while (len > 0) {
+ 		sector_t IV;
+ 		unsigned size;
+@@ -299,6 +300,7 @@ static int __do_lo_send_write(struct fil
+ 
+ 	set_fs(get_ds());
+ 	bw = file->f_op->write(file, buf, len, &pos);
++	file_update_time(file);
+ 	set_fs(old_fs);
+ 	if (likely(bw == len))
+ 		return 0;
+
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
