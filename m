@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbYASVih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbYASVjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757242AbYASVih (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 16:38:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYASVi1
+	id S1757499AbYASVjU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 16:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYASVjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 16:38:27 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:35319 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751222AbYASVi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 16:38:27 -0500
-Date: Sat, 19 Jan 2008 22:38:31 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, tglx <tglx@linutronix.de>,
-       akpm <akpm@linux-foundation.org>, johannes@sipsolutions.net
-Subject: Re: [PATCH] hrtimer: fix section mismatch
-Message-ID: <20080119213831.GF29070@uranus.ravnborg.org>
-References: <20080119115710.520090e4.randy.dunlap@oracle.com> <20080119213146.GE29070@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080119213146.GE29070@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 19 Jan 2008 16:39:09 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:42701 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751270AbYASVjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 16:39:08 -0500
+Message-ID: <47926DFA.5020601@sgi.com>
+Date: Sat, 19 Jan 2008 13:39:06 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
+References: <20080118183011.354965000@sgi.com> <20080118183011.917801000@sgi.com> <20080119145243.GA27974@elte.hu>
+In-Reply-To: <20080119145243.GA27974@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 19, 2008 at 10:31:46PM +0100, Sam Ravnborg wrote:
-> On Sat, Jan 19, 2008 at 11:57:10AM -0800, Randy Dunlap wrote:
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Fix section mismatch in hrtimer.c:
-> > 
-> > WARNING: vmlinux.o(.text+0x50c61): Section mismatch: reference to .init.text: (between 'hrtimer_cpu_notify' and 'down_read_trylock')
-> > 
-> > Noticed by Johannes Berg and confirmed by Sam Ravnborg.
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-
-And looking at bit closer this looks like a 2.6.24 candidate.
-With:
-CONFIG_HOTPLUG=n
-CONFIG_HOTPLUG_CPU=y
-
-then we may see a call to init_hrtimers_cpu() from hrtimer_cpu_notify()
-in the:
-      case CPU_UP_PREPARE:
-      case CPU_UP_PREPARE_FROZEN:
-cases.
-
-And this will oops.
-
-[It these a cases will be hit I dunno - I just follow the
-logic of the code here.]
-
-	Sam
-
+Ingo Molnar wrote:
+> * travis@sgi.com <travis@sgi.com> wrote:
 > 
-> > ---
-> >  kernel/hrtimer.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > --- linux-2.6.24-rc8-git2.orig/kernel/hrtimer.c
-> > +++ linux-2.6.24-rc8-git2/kernel/hrtimer.c
-> > @@ -1378,7 +1378,7 @@ sys_nanosleep(struct timespec __user *rq
-> >  /*
-> >   * Functions related to boot-time initialization:
-> >   */
-> > -static void __devinit init_hrtimers_cpu(int cpu)
-> > +static void __cpuinit init_hrtimers_cpu(int cpu)
-> >  {
-> >  	struct hrtimer_cpu_base *cpu_base = &per_cpu(hrtimer_bases, cpu);
-> >  	int i;
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>> Adds and increases some config variables to accomodate larger SMP
+>> configurations:
+>>
+>> 	NR_CPUS:      max limit now 4096
+>> 	NODES_SHIFT:  max limit now 9
+>> 	THREAD_ORDER: max limit now 3
+>> 	X86_SMP_MAX:  say Y to enable possible cpus == NR_CPUS
+>>
+>> Signed-off-by: Mike Travis <travis@sgi.com>
+> 
+> i've bisected a boot failure down to this patch (sans the THREAD_ORDER 
+> bits): it causes an instant reboot of the 64-bit kernel upon bootup. 
+> Failing config attached.
+> 
+> 	Ingo
+> 
+
+Thanks Ingo! 
+
+I've pulled the THREAD_ORDER change from my next version of the patch.
+Seems SMP_MAX is just not ready for prime time yet.
+
+One problem that I'm having appears to be that the !NUMA config of the
+current -mm version also doesn't boot so I haven't been able to verify
+that.  (At least it doesn't seem to make it worse... ;-)
+
+Thanks,
+Mike
