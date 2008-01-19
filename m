@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYASU5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbYASVFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbYASU5b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 15:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbYASU5Z
+	id S1754864AbYASVFK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 16:05:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYASVE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 15:57:25 -0500
-Received: from [212.12.190.230] ([212.12.190.230]:35988 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751359AbYASU5Y convert rfc822-to-8bit (ORCPT
+	Sat, 19 Jan 2008 16:04:58 -0500
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:56353 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbYASVE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 15:57:24 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: "Oliver Pinter (=?iso-8859-1?q?Pint=E9r?= =?iso-8859-1?q?=20Oliv=E9r?=)" 
-	<oliver.pntr@gmail.com>
-Subject: Re: konqueror deadlocks on 2.6.22
-Date: Sat, 19 Jan 2008 23:57:13 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <200801192114.41427.a1426z@gawab.com> <6101e8c40801191053j7e81988fm8aaf0a75fb8bd405@mail.gmail.com>
-In-Reply-To: <6101e8c40801191053j7e81988fm8aaf0a75fb8bd405@mail.gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200801192357.13774.a1426z@gawab.com>
+	Sat, 19 Jan 2008 16:04:57 -0500
+Date: Sat, 19 Jan 2008 16:04:42 -0500
+From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
+Subject: [PATCH 1/1] arch: Ignore arch/i386 and arch/x86_64
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Message-id: <1200776682-23740-1-git-send-email-jeffpc@josefsipek.net>
+X-Mailer: git-send-email 1.5.4.rc2.85.g9de45-dirty
+Content-transfer-encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Pinter (Pintér Olivér) wrote:
-> This kernel is vanilla 2.6.22.y or with CFS?
+The i386 and x86_64 arch directories contain nothing but a generated symlink
+to arch/x86/boot/bzImage when a tree a built.
 
-Yes with CFSv20.4, as in the log.
+Cc: tglx@linutronix.de
+Cc: mingo@redhat.com
+Cc: hpa@zytor.com
+Signed-off-by: Josef 'Jeff' Sipek <jeffpc@josefsipek.net>
+---
+ arch/.gitignore |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+ create mode 100644 arch/.gitignore
 
-It also hangs on 2.6.23.13
-
-> On 1/19/08, Al Boldi <a1426z@gawab.com> wrote:
-> > I was just attacked by some deadlock issue involving sqlite3 and
-> > konqueror. While sqlite3 continues to slowly fill a 7M-record db in
-> > transaction mode, konqueror hangs for a few minutes, then continues only
-> > to hang again and again.
-> >
-> > Looks like an fs/blockIO issue involving fsync.
-> >
-> > As a workaround, is there a way to make fsync soft?
-
-
-Thanks!
-
---
-Al
+diff --git a/arch/.gitignore b/arch/.gitignore
+new file mode 100644
+index 0000000..7414689
+--- /dev/null
++++ b/arch/.gitignore
+@@ -0,0 +1,2 @@
++i386
++x86_64
+-- 
+1.5.4.rc2.85.g9de45-dirty
 
