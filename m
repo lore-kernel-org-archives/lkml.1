@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbYASTl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYASTlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753611AbYASTl3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 14:41:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbYASTlU
+	id S1755115AbYASTlp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 14:41:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbYASTla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 14:41:20 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:19964 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbYASTlU (ORCPT
+	Sat, 19 Jan 2008 14:41:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:60538 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752325AbYASTl2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 14:41:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RQdtiFs5h5V9iM0JX3TuuXx3Heoce4WcSrMmQdCN4UhMPd78AYN4xGbnhYysu3iuBgHBRSSGASFO8sEjiulej2kICSxJF8IcX0Vn5ZYQcAvSdfvXxs3v/hnG0WKlUu/ghfEI8EAr9bhB3ks/wTMcPLrFm+IanPjlsGDnK+wBocs=
-Message-ID: <38b2ab8a0801191141g31137fe5m3b5fff35499588e5@mail.gmail.com>
-Date: Sat, 19 Jan 2008 20:41:18 +0100
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: Why not creating a GIT RT tree ?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.58.0801181400110.10928@gandalf.stny.rr.com>
+	Sat, 19 Jan 2008 14:41:28 -0500
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: =?us-ascii?Q?=3D=3FISO-8859-1=3FQ=3FT=3DF6r=3DF6k=5FEdwin=3F=3D?= 
+	<edwintorok@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] LatencyTop: make reason (blk_execute_rq+0x7a/0xd) known
+References: <47922B2A.7070709@gmail.com> <479241B0.8010500@linux.intel.com>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Sat, 19 Jan 2008 14:40:11 -0500
+In-Reply-To: <479241B0.8010500@linux.intel.com> (Arjan van de Ven's message of "Sat, 19 Jan 2008 10:30:08 -0800")
+Message-ID: <y0mir1py57o.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <38b2ab8a0801180544j2022af8bl252a118a295b1f34@mail.gmail.com>
-	 <Pine.LNX.4.58.0801180947180.7574@gandalf.stny.rr.com>
-	 <38b2ab8a0801180937y4264fc15wd3b91ca74635f679@mail.gmail.com>
-	 <Pine.LNX.4.58.0801181400110.10928@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 18, 2008 8:12 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> True, but then how would you do it. One thing is that most of these
-> branches would interact with each other. Touching the same code quite
-> a bit. So it doesn't always help. But pulling out patches can help us to
-> an extent.
+Arjan van de Ven <arjan@linux.intel.com> writes:
+
+> Török Edwin wrote:
+>> [...]
+>> P.S.: LatencyTop could have a feature to ask for more details on unknown
+>> latency reasons, and it would generate a systemtap script itself, that
+>> would show the backtraces to help figure out whats going on.
 >
+> I've considered having an option inside the code itself that would print a
+> backtrace for, say, an unknown latency larger than 100msec
+> but the code got ugly (the accounting gets done in the scheduler path,
+> where you can't printk). [...]
 
-I see, it would probably be too painful in this context, that's pity.
+Systemtap does not use printk, and can generate decent backtraces from
+the kernel (and into userspace before too long).  (FWIW, it seems to
+be only a small stretch to implement tools like *top via systemtap
+rather than custom-written kernel code.)
 
->
-> Great! Looking forward to it ;-)
->
-
-Well actually it seems already supported. Some files in arch/sh
-are already touched by RT patches.
-
-I took a look to your interesting paper and I have now a question
-about the BKL: Why is it so hard to get ride of it completely ?
-
-Do you have any advices or starting point to get involved in RT kernel ?
-I'm almost new in this area but I'd like to acquire some knowledges and
-try to contribute if possible...
-
-Thanks !
--- 
-Francis
+- FChE
