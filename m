@@ -1,186 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbYASGtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752264AbYASGuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757494AbYASGtt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 01:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbYASGsx
+	id S1752264AbYASGuP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 01:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYASGsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 01:48:53 -0500
-Received: from ns.suse.de ([195.135.220.2]:33226 "EHLO mx1.suse.de"
+	Sat, 19 Jan 2008 01:48:54 -0500
+Received: from mx1.suse.de ([195.135.220.2]:33233 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751775AbYASGsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 01:48:32 -0500
+	id S1751951AbYASGse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 01:48:34 -0500
 From: Andi Kleen <ak@suse.de>
 References: <20080119748.170864000@suse.de>
 In-Reply-To: <20080119748.170864000@suse.de>
 To: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: [PATCH] [3/8] GBPAGES: Split LARGE_PAGE_SIZE/MASK into PUD_PAGE_SIZE/PMD_PAGE_SIZE
-Message-Id: <20080119064831.6AA5614EAD@wotan.suse.de>
-Date: Sat, 19 Jan 2008 07:48:31 +0100 (CET)
+Subject: [PATCH] [5/8] GBPAGES: Support gbpages in pagetable dump
+Message-Id: <20080119064833.878E714EAD@wotan.suse.de>
+Date: Sat, 19 Jan 2008 07:48:33 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Split the existing LARGE_PAGE_SIZE/MASK macro into two new macros
-PUD_PAGE_SIZE/MASK and PMD_PAGE_SIZE/MASK. 
-
-Fix up all callers to use the new names.
-
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/boot/compressed/head_64.S |    8 ++++----
- arch/x86/kernel/head_64.S          |    4 ++--
- arch/x86/kernel/pci-gart_64.c      |    2 +-
- arch/x86/mm/init_64.c              |    6 +++---
- arch/x86/mm/pageattr_64.c          |    4 ++--
- include/asm-x86/page.h             |    4 ++--
- include/asm-x86/page_32.h          |    4 ++++
- include/asm-x86/page_64.h          |    3 +++
- 8 files changed, 21 insertions(+), 14 deletions(-)
+ arch/x86/mm/fault_64.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: linux/include/asm-x86/page_64.h
+Index: linux/arch/x86/mm/fault_64.c
 ===================================================================
---- linux.orig/include/asm-x86/page_64.h
-+++ linux/include/asm-x86/page_64.h
-@@ -23,6 +23,9 @@
- #define MCE_STACK 5
- #define N_EXCEPTION_STACKS 5  /* hw limit: 7 */
+--- linux.orig/arch/x86/mm/fault_64.c
++++ linux/arch/x86/mm/fault_64.c
+@@ -200,7 +200,8 @@ void dump_pagetable(unsigned long addres
+ 	pud = pud_offset(pgd, address);
+ 	if (bad_address(pud)) goto bad;
+ 	printk("PUD %lx ", pud_val(*pud));
+-	if (!pud_present(*pud))	goto ret;
++	if (!pud_present(*pud) || pud_large(*pud))
++		goto ret;
  
-+#define PUD_PAGE_SIZE (_AC(1, UL) << PUD_SHIFT)
-+#define PUD_PAGE_MASK (~(PUD_PAGE_SIZE-1))
-+
- #define __PAGE_OFFSET		_AC(0xffff810000000000, UL)
- 
- #define __PHYSICAL_START	CONFIG_PHYSICAL_START
-Index: linux/arch/x86/boot/compressed/head_64.S
-===================================================================
---- linux.orig/arch/x86/boot/compressed/head_64.S
-+++ linux/arch/x86/boot/compressed/head_64.S
-@@ -80,8 +80,8 @@ startup_32:
- 
- #ifdef CONFIG_RELOCATABLE
- 	movl	%ebp, %ebx
--	addl	$(LARGE_PAGE_SIZE -1), %ebx
--	andl	$LARGE_PAGE_MASK, %ebx
-+	addl	$(PMD_PAGE_SIZE -1), %ebx
-+	andl	$PMD_PAGE_MASK, %ebx
- #else
- 	movl	$CONFIG_PHYSICAL_START, %ebx
- #endif
-@@ -220,8 +220,8 @@ ENTRY(startup_64)
- 	/* Start with the delta to where the kernel will run at. */
- #ifdef CONFIG_RELOCATABLE
- 	leaq	startup_32(%rip) /* - $startup_32 */, %rbp
--	addq	$(LARGE_PAGE_SIZE - 1), %rbp
--	andq	$LARGE_PAGE_MASK, %rbp
-+	addq	$(PMD_PAGE_SIZE - 1), %rbp
-+	andq	$PMD_PAGE_MASK, %rbp
- 	movq	%rbp, %rbx
- #else
- 	movq	$CONFIG_PHYSICAL_START, %rbp
-Index: linux/arch/x86/kernel/pci-gart_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/pci-gart_64.c
-+++ linux/arch/x86/kernel/pci-gart_64.c
-@@ -501,7 +501,7 @@ static __init unsigned long check_iommu_
- 	}
- 
- 	a = aper + iommu_size;
--	iommu_size -= round_up(a, LARGE_PAGE_SIZE) - a;
-+	iommu_size -= round_up(a, PMD_PAGE_SIZE) - a;
- 
- 	if (iommu_size < 64*1024*1024) {
- 		printk(KERN_WARNING
-Index: linux/arch/x86/kernel/head_64.S
-===================================================================
---- linux.orig/arch/x86/kernel/head_64.S
-+++ linux/arch/x86/kernel/head_64.S
-@@ -63,7 +63,7 @@ startup_64:
- 
- 	/* Is the address not 2M aligned? */
- 	movq	%rbp, %rax
--	andl	$~LARGE_PAGE_MASK, %eax
-+	andl	$~PMD_PAGE_MASK, %eax
- 	testl	%eax, %eax
- 	jnz	bad_address
- 
-@@ -88,7 +88,7 @@ startup_64:
- 
- 	/* Add an Identity mapping if I am above 1G */
- 	leaq	_text(%rip), %rdi
--	andq	$LARGE_PAGE_MASK, %rdi
-+	andq	$PMD_PAGE_MASK, %rdi
- 
- 	movq	%rdi, %rax
- 	shrq	$PUD_SHIFT, %rax
-Index: linux/arch/x86/mm/init_64.c
-===================================================================
---- linux.orig/arch/x86/mm/init_64.c
-+++ linux/arch/x86/mm/init_64.c
-@@ -420,10 +420,10 @@ __clear_kernel_mapping(unsigned long add
- {
- 	unsigned long end = address + size;
- 
--	BUG_ON(address & ~LARGE_PAGE_MASK);
--	BUG_ON(size & ~LARGE_PAGE_MASK); 
-+	BUG_ON(address & ~PMD_PAGE_MASK);
-+	BUG_ON(size & ~PMD_PAGE_MASK);
- 	
--	for (; address < end; address += LARGE_PAGE_SIZE) { 
-+	for (; address < end; address += PMD_PAGE_SIZE) {
- 		pgd_t *pgd = pgd_offset_k(address);
- 		pud_t *pud;
- 		pmd_t *pmd;
-Index: linux/arch/x86/mm/pageattr_64.c
-===================================================================
---- linux.orig/arch/x86/mm/pageattr_64.c
-+++ linux/arch/x86/mm/pageattr_64.c
-@@ -70,7 +70,7 @@ static struct page *split_large_page(uns
- 	page_private(base) = 0;
- 
- 	address = __pa(address);
--	addr = address & LARGE_PAGE_MASK; 
-+	addr = address & PMD_PAGE_MASK;
- 	pbase = (pte_t *)page_address(base);
- 	for (i = 0; i < PTRS_PER_PTE; i++, addr += PAGE_SIZE) {
- 		pbase[i] = pfn_pte(addr >> PAGE_SHIFT, 
-@@ -150,7 +150,7 @@ static void revert_page(unsigned long ad
- 	BUG_ON(pud_none(*pud));
  	pmd = pmd_offset(pud, address);
- 	BUG_ON(pmd_val(*pmd) & _PAGE_PSE);
--	pfn = (__pa(address) & LARGE_PAGE_MASK) >> PAGE_SHIFT;
-+	pfn = (__pa(address) & PMD_PAGE_MASK) >> PAGE_SHIFT;
- 	large_pte = pfn_pte(pfn, ref_prot);
- 	large_pte = pte_mkhuge(large_pte);
- 	set_pte((pte_t *)pmd, large_pte);
-Index: linux/include/asm-x86/page_32.h
-===================================================================
---- linux.orig/include/asm-x86/page_32.h
-+++ linux/include/asm-x86/page_32.h
-@@ -13,6 +13,10 @@
-  */
- #define __PAGE_OFFSET		_AC(CONFIG_PAGE_OFFSET, UL)
- 
-+/* Eventually 32bit should be moved over to the new names too */
-+#define LARGE_PAGE_SIZE PMD_PAGE_SIZE
-+#define LARGE_PAGE_MASK PMD_PAGE_MASK
-+
- #ifdef CONFIG_X86_PAE
- #define __PHYSICAL_MASK_SHIFT	36
- #define __VIRTUAL_MASK_SHIFT	32
-Index: linux/include/asm-x86/page.h
-===================================================================
---- linux.orig/include/asm-x86/page.h
-+++ linux/include/asm-x86/page.h
-@@ -13,8 +13,8 @@
- #define PHYSICAL_PAGE_MASK	(PAGE_MASK & __PHYSICAL_MASK)
- #define PTE_MASK		(_AT(long, PHYSICAL_PAGE_MASK))
- 
--#define LARGE_PAGE_SIZE 	(_AC(1,UL) << PMD_SHIFT)
--#define LARGE_PAGE_MASK 	(~(LARGE_PAGE_SIZE-1))
-+#define PMD_PAGE_SIZE		(_AC(1, UL) << PMD_SHIFT)
-+#define PMD_PAGE_MASK		(~(PMD_PAGE_SIZE-1))
- 
- #define HPAGE_SHIFT		PMD_SHIFT
- #define HPAGE_SIZE		(_AC(1,UL) << HPAGE_SHIFT)
+ 	if (bad_address(pmd)) goto bad;
