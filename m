@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbYASFHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbYASFI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752470AbYASFHn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 00:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbYASFHe
+	id S1753084AbYASFI4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 00:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbYASFIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 00:07:34 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:59162 "EHLO mx2.suse.de"
+	Sat, 19 Jan 2008 00:08:49 -0500
+Received: from mx2.suse.de ([195.135.220.15]:59203 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbYASFHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 00:07:33 -0500
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Announce] Development release 0.1 of the LatencyTOP tool
-From: Andi Kleen <andi@firstfloor.org>
-References: <4790E3A6.7060807@linux.intel.com>
-Date: Sat, 19 Jan 2008 06:07:28 +0100
-In-Reply-To: <4790E3A6.7060807@linux.intel.com> (Arjan van de Ven's message of "Fri\, 18 Jan 2008 09\:36\:38 -0800")
-Message-ID: <p73lk6m9ze7.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	id S1750773AbYASFIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 00:08:48 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [PATCH] x86: Unify printk strings in fault_32|64.c
+Date: Sat, 19 Jan 2008 06:08:42 +0100
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <1200716549.5724.150.camel@brick>
+In-Reply-To: <1200716549.5724.150.camel@brick>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801190608.42452.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@linux.intel.com> writes:
+On Saturday 19 January 2008 05:22:29 Harvey Harrison wrote:
+> Adding the address of the faulting library missed removing a
+> line ending from X86_32.
+> 
+> Also update the shorter printk format for X86_32 in fault_64.c
+> to make it easier to se the remaining differences.
 
-> The Intel Open Source Technology Center is pleased to announce the
-> release of version 0.1 of LatencyTOP, a tool for developers to visualize
-> system latencies.
-
-Just for completeness -- Linux already had a way to profile latencies
-since quite some time. It's little known unfortunately and doesn't
-work for modules since it's a special mode in the old non modular kernel
-profiler. 
-
-You enable CONFIG_SCHEDSTATS and boot with profile=sleep and then you can
-use the readprofile command to read the data. Information can be reset with 
-echo > /proc/profile
-
-There's also a profile=sched to profile the scheduler which works even
-without CONFIG_SCHEDSTATS
-
-Latencytop will be probably a little more user friendly though.
+Thanks. I think it was correct initially, but one of the merge steps
+with the changing git-x86 caused some hunks to be dropped and the patch 
+never quite recovered from that.
 
 -Andi
