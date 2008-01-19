@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYASTrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbYASTsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbYASTrt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 14:47:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbYASTrm
+	id S1752262AbYASTsr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 14:48:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYASTsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 14:47:42 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:28789 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751043AbYASTrl (ORCPT
+	Sat, 19 Jan 2008 14:48:37 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:30001 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbYASTsg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 14:47:41 -0500
+	Sat, 19 Jan 2008 14:48:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=YBTWiqGvOZBDqbpOVPbo9tFxPS1BbDRPw3/6U9ACSoQClZkg6WX7jXXCjdH8kUQjWEMuhfvXRb75KKVPkb3r59Js85IJQJSv9y3W0RT+dKKSkRXJzGZcpKiM9IxS/z5SCni5NjCaazOZCMzZzYD9zHucf1mv4YHWngmvpXkRMl0=
-Message-ID: <479253D3.4020608@gmail.com>
-Date: Sat, 19 Jan 2008 21:47:31 +0200
-From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=H7GwgF/OrVTPgK3y8VICr63lcJqp80s7xxAG6eYN8Xc3FsvuJpwyjLR5O8Mh+lOc3da9havOnZhLVvPmzj18FnFpXrtQNMNJSM1X/jJwNWgNoBS6TDSOaahUZ/G6uctddFO57MGdCBD/StEsCnmRTJclKl9Ui7SWZXLItX4PncQ=
+Message-ID: <bc64b4640801191148m39ae5cd6ra190ac8e9c40fba7@mail.gmail.com>
+Date: Sat, 19 Jan 2008 22:48:32 +0300
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Dmitry Baryshkov" <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, liam.girdwood@wolfsonmicro.com
+Subject: Re: [PATCH] Core driver for WM97xx touchscreens
+In-Reply-To: <20080119170030.GA469@sirena.org.uk>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] LatencyTop: make reason (blk_execute_rq+0x7a/0xd) known
-References: <47922B2A.7070709@gmail.com> <479241B0.8010500@linux.intel.com>
-In-Reply-To: <479241B0.8010500@linux.intel.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080118162627.GA28974@rakim.wolfsonmicro.main>
+	 <1200673631-366-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	 <20080118120148.ZZRA012@mailhub.coreip.homeip.net>
+	 <fmqq50$te0$1@ger.gmane.org> <20080119170030.GA469@sirena.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Török Edwin wrote:
->>
->> Cause                                               Maximum         
->> Average
->> SCSI device ioctl                                  34.2 msec       
->> 14.4 msec
+Hi,
+
+2008/1/19, Mark Brown <broonie@opensource.wolfsonmicro.com>:
+> On Fri, Jan 18, 2008 at 06:11:45PM +0000, Dmitry Baryshkov wrote:
+> > Dmitry Torokhov wrote:
 >
-> great! I'll put this into my patchkit!
-
-Thanks.
-
->> I also noticed some unsigned overflows, my top latency was sometimes a
->> very large number (18................................), which
->> was probably -1, or some other negative number.  I haven't found a way
->> to reproduce it yet (it happens very rarely).
+> > > I will need some more time to review and understand the need for the new
+> > > bus in the driver.
 >
+> > Most likely this can be converted to platform_bus. Maybe this can also get
 >
-> I've not seen this; I'll take another peak at the code.
+> Could you expand on how you see that being implemented, please?  It
+> doesn't feel entirely comfortable to me - providing a bus for the chip
+> seems more direct and the platform bus not what I'd think of using for
+> something hanging off another bus - but I think I'm just not visualising
+> what you're thinking of properly.
 
-I just captured this:
+Well... It's a common suggestion not to duplicate code. The wm97xx bus
+looks mostly like platform. The only difference is the name. To help
+visualisation, devices can have parents. Just set (in pseudocode)
+wm97xx-touchscreen->parent to wm97xx, do the same for wm97xx-battery
+and so on. Thus all devices would be on the platform device but with
+proper parent <-> child notation.
 
-Cause                                               Maximum          Average
-Waiting for userspace lock                        18446744073638300.0
-msec        9223372036783524.0 msec
-Waiting for processes to die (waitpid)            18446744073638296.0
-msec        9223372036783520.0 msec
-Waiting for event (poll)                          18446744073565216.0
-msec        764505121372.0 msec
-SCSI device ioctl                                  35.2 msec        
-13.7 msec
-Application requested delay                        19.5 msec         
-0.0 msec
-page fault                                         18.6 msec         
-4.0 msec
-Reading from file                                  16.6 msec         
-1.5 msec
-Waiting for buffer IO                              15.2 msec         
-3.0 msec
-mutex lock                                         15.0 msec        
-15.0 msec
+> > help from soon-to-be posted MFD (multi function devices) helpers.
+>
+> The multi-function device support does feel like it could be a good fit.
+> I'd seen it discussed sometime last year but don't recall seeing
+> anything for quite a while.  Like Ben said, any pointers to current work
+> would be appreciated.
 
-I was also looking at /proc/latency_stats using watch, and I've seen
-that there were negative number.
-Unfortunately I couldn't copy+paste it, because it was gone too fast.
+You can find the current work at
+git://git.mnementh.co.uk/linux-2.6-im.git#tmio_dev_try3. Look for
+"Core MFD support" changeset.
 
-I was running a program with 4 threads doing usleep(0) in an inf-loop.
-However I can't reproduce the overflow now with the same program.
+>
+> It's probably worth mentioning that in addition to what is in the
+> current patch series these chips all also provide an audio codec which
+> requires a reasonably substantial driver for full support.
+>
 
-Best regards,
---Edwin
+This would only touch child devices organisation.
+
+-- 
+With best wishes
+Dmitry
