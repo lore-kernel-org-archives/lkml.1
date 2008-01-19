@@ -1,87 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYASKpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYASLDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbYASKpt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 05:45:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbYASKpl
+	id S1757338AbYASLDx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 06:03:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbYASLDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 05:45:41 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:60672 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753142AbYASKpk (ORCPT
+	Sat, 19 Jan 2008 06:03:45 -0500
+Received: from hpsmtp-eml19.kpnxchange.com ([213.75.38.84]:6125 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753604AbYASLDo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 05:45:40 -0500
-To: salikhmetov@gmail.com
-CC: miklos@szeredi.hu, linux-mm@kvack.org, jakob@unthought.net,
-       linux-kernel@vger.kernel.org, valdis.kletnieks@vt.edu, riel@redhat.com,
-       ksm@42.dk, staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
-       hidave.darkstar@gmail.com, hch@infradead.org
-In-reply-to: <4df4ef0c0801181148y8d446c7ifb23677dbf4ea0c9@mail.gmail.com>
-	(salikhmetov@gmail.com)
-Subject: Re: [PATCH -v6 0/2] Fixing the issue with memory-mapped file times
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>
-	 <E1JFnho-0008TH-5G@pomaz-ex.szeredi.hu> <4df4ef0c0801181148y8d446c7ifb23677dbf4ea0c9@mail.gmail.com>
-Message-Id: <E1JGBCh-0002Li-Ug@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sat, 19 Jan 2008 11:45:35 +0100
+	Sat, 19 Jan 2008 06:03:44 -0500
+To: Dave Young <hidave.darkstar@gmail.com>
+Subject: Re: pnpacpi : exceeded the max number of IO resources
+Cc: akpm@osdl.org, bjorn.helgaas@hp.com, cholvenstot@comcast.net,
+       elendil@planet.nl, lenb@kernel.org, linux-kernel@vger.kernel.org,
+       rene.herman@keyaccess.nl, shaohua.li@intel.com, trenn@suse.de,
+       yakui.zhao@intel.com
+In-reply-To: <a8e1da0801152155x18cfd0dcvfe638323275e539d@mail.gmail.com>
+References: <1196428488.7066.6.camel@localhost> <47508D3C.9050507@keyaccess.nl> <475436A3.90906@keyaccess.nl> <200801082250.51026.lenb@kernel.org> <E1JCXK5-0002GH-0x@faramir.fjphome.nl> <4784DE94.8020508@keyaccess.nl> <a8e1da0801152155x18cfd0dcvfe638323275e539d@mail.gmail.com>
+Message-Id: <E1JGBUB-0003HA-1e@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Sat, 19 Jan 2008 12:03:39 +0100
+X-OriginalArrivalTime: 19 Jan 2008 11:03:41.0184 (UTC) FILETIME=[F32CB800:01C85A8A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 2008/1/18, Miklos Szeredi <miklos@szeredi.hu>:
-> > > 4. Performance test was done using the program available from the
-> > > following link:
-> > >
-> > > http://bugzilla.kernel.org/attachment.cgi?id=14493
-> > >
-> > > Result: the impact of the changes was negligible for files of a few
-> > > hundred megabytes.
-> >
-> > Could you also test with ext4 and post some numbers?  Afaik, ext4 uses
-> > nanosecond timestamps, so the time updating code would be exercised
-> > more during the page faults.
-> >
-> > What about performance impact on msync(MS_ASYNC)?  Could you please do
-> > some measurment of that as well?
-> 
-> Did a quick test on an ext4 partition. This is how it looks like:
+Dave Young wrote:
+> I noticed the port number changed to 40 in 2.6.24-rc8, but it's not
+> enough for me still.
 
-Thanks for running these tests.
+Same here, though the extreme noise has gone.
+>From /proc/ioports and dmesg it looks like I'm short by either 1, or 3 :-(
 
-I was more interested in the slowdown on ext4 (checked with the above
-mentioned program).  Can you do such a test as well, and post
-resulting times with and without the patch?
-
-> Table 1. Reference platforms.
-> 
-> ------------------------------------------------------------
-> |             | HP-UX/PA-RISC | HP-UX/Itanium | FreeBSD    |
-> ------------------------------------------------------------
-> | First run   | 263405 usec   | 202283 usec   | 90 SECONDS |
-> ------------------------------------------------------------
-> | Second run  | 262253 usec   | 172837 usec   | 90 SECONDS |
-> ------------------------------------------------------------
-> | Third run   | 238465 usec   | 238465 usec   | 90 SECONDS |
-> ------------------------------------------------------------
-> 
-> It looks like FreeBSD is a clear outsider here. Note that FreeBSD
-> showed an almost liner depencence of the time spent in the
-> msync(MS_ASYNC) call on the file size.
-> 
-> Table 2. The Qemu system. File size is 512M.
-> 
-> ---------------------------------------------------
-> |            | Before the patch | After the patch |
-> ---------------------------------------------------
-> | First run  |     35 usec      |   5852 usec     |
-> ---------------------------------------------------
-> | Second run |     35 usec      |   4444 usec     |
-> ---------------------------------------------------
-> | Third run  |     35 usec      |   6330 usec     |
-> ---------------------------------------------------
-
-Interesting.
-
-Thanks,
-Miklos
+Cheers,
+FJP
