@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763623AbYASB3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764639AbYASB33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763623AbYASB3S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 20:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759460AbYASB3F
+	id S1764639AbYASB33 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 20:29:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759933AbYASB3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 20:29:05 -0500
-Received: from ozlabs.org ([203.10.76.45]:48932 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757260AbYASB3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 20:29:06 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42313 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757856AbYASB3D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 Jan 2008 20:29:03 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 3/3] Makes lguest's irq handler typesafe
-Date: Sat, 19 Jan 2008 12:28:29 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, Ash Willis <ashwillis@programmer.net>,
-       linux-pcmcia@lists.infradead.org,
-       virtualization@lists.linux-foundation.org
-References: <200801190722.26154.rusty@rustcorp.com.au> <200801190727.36567.rusty@rustcorp.com.au> <47913261.5000708@gmail.com>
-In-Reply-To: <47913261.5000708@gmail.com>
+Date: Fri, 18 Jan 2008 17:26:36 -0800
+From: Greg KH <greg@kroah.com>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, schwidefsky@de.ibm.com,
+       mingo@elte.hu, tony.luck@intel.com, paulus@samba.org, gregkh@suse.de
+Subject: Re: [PATCH 1/3] constify struct attribute_group uses
+Message-ID: <20080119012636.GA6150@kroah.com>
+References: <478738F3.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801191228.30363.rusty@rustcorp.com.au>
+In-Reply-To: <478738F3.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 January 2008 10:12:33 Tejun Heo wrote:
-> Type safety is good but I doubt this would be worth the complexity.  It
-> has some benefits but there's much larger benefit in keeping things in
-> straight C.  People know that functions take fixed types and are also
-> familiar with the convention of passing void * for callback arguments.
-> IMHO, staying in line with those common knowledges easily trumps having
-> type checking on interrupt handler.
+On Fri, Jan 11, 2008 at 08:37:55AM +0000, Jan Beulich wrote:
+> .. as all consumers of it don't require it to be modifiable.
+> 
+> Unfortunately, due to the two-level constifications, this required
+> touching quite many files, not all of which I am able to test - please
+> bare with eventual mistakes or oversights.
+> 
+> The patch doesn't change all instances where 'const' could have been
+> added as a result of the base structure changes, only where either the
+> change has a real effect (the module loader doesn't enforce read-only
+> section attributes at present, so only built-in files matter) or where
+> compiler warnings would result otherwise.
 
-I sympathise with this argument, but I think just because people are familiar 
-with existing hacks shouldn't prevent improvement.  I think the resulting 
-code is clearer and more readable.
+Hm, code in these areas has changed a lot in -mm, can you respin this
+against that tree to catch all of the different attribute changes that
+has happened?
 
-Even in the implementation, the tricky part is the check_either_type() macro: 
-the rest is straight-forward.
+thanks,
 
-> Also, how often do we see a bug where things go wrong because interrupt
-> handler is given the wrong type of argument?  Even when such bug
-> happens, I doubt it can escape the developer's workstation if he/she is
-> paying any attention to testing.
-
-I agree this one is unlikely.  But I am trying to spread type-safety more 
-widely (see previous kthread patches).
-
-I like changing the kernel to make life simpler for developers.  We don't do 
-enough of it.
-
-Cheers,
-Rusty.
+greg k-h
