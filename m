@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765338AbYASEpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764168AbYASEvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765338AbYASEpZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 23:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762050AbYASEpO
+	id S1764168AbYASEvG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 23:51:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761005AbYASEuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 23:45:14 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:3145 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761257AbYASEpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 23:45:13 -0500
-Date: Sat, 19 Jan 2008 05:44:50 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Jan Beulich <jbeulich@novell.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       david-b@pacbell.net, linux-kernel@vger.kernel.org
-Subject: Re: non-choice related config entries within choice
-In-Reply-To: <20080116115233.GA26776@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0801190538510.17507@scrub.home>
-References: <478DF61E.76E4.0078.0@novell.com> <20080116115233.GA26776@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 Jan 2008 23:50:54 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37116 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757867AbYASEux (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 23:50:53 -0500
+Date: Sat, 19 Jan 2008 05:54:15 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Chodorenko Michail <misha@one.by>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: Celeron Core
+Message-ID: <20080119045415.GA27628@one.firstfloor.org>
+References: <3ed23423adebae08e8f75b6a6a7ce7ff@one.by> <p73prvyalfl.fsf@bingen.suse.de> <1200702477.25782.41.camel@cinder.waste.org> <20080119011506.GA23798@one.firstfloor.org> <1200715842.25782.95.camel@cinder.waste.org> <20080119042750.GA24481@one.firstfloor.org> <1200717635.25782.107.camel@cinder.waste.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200717635.25782.107.camel@cinder.waste.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> It will relative to not throttling.
 
-On Wed, 16 Jan 2008, Sam Ravnborg wrote:
+No it will not. Please reread Dominik's mail I linked to. It explains 
+it clearly.
 
-> But one feature I really would like to see is named chocies so we can do stuff like:
-> 
-> choice X86_PROCESSOR
-> 
-> config GENERIC_PROCESSOR
-> 	bool "A generic X86 processor"
-> endchoice
-> 
-> 
-> ...
-> 
-> choice PPC_PROCESSOR
-> 
-> config GENERIC_PROCESSOR
-> 	bool "A generic PowerPC processor
-> 
-> endchoice
-> 
-> The issue here is that we do not today allow the same config option
-> to appear if more than one choice.
+> You made a claim that is -physically impossible- as stated, a claim I've
+> seen here before and I'm correcting it. If something reduces heat, it
+> must save power *by the definition of heat and power*. And if you reduce
+> power usage, you will make your battery last longer.
 
-What I have in mind is slightly different, above choices would simply be 
-called PROCESSOR, which would tell kconfig that all choices belong to the 
-same group.
+I think the misunderstanding on your side is relative to what there
+is less heat. Throttling essentially reduces temporary heat spikes on
+the silicon, but does not make the system overall take less power
+or generate less heat as measured over a longer time because it will
+be idle less.
 
-bye, Roman
+-Andi
