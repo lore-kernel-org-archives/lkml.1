@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYASIwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbYASJEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbYASIwT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 03:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbYASIwK
+	id S1755707AbYASJEn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 04:04:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752405AbYASJEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 03:52:10 -0500
-Received: from mail.samba.org ([66.70.73.150]:44120 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751871AbYASIwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 03:52:09 -0500
-X-Greylist: delayed 1867 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Jan 2008 03:52:09 EST
-Subject: Re: [linux-cifs-client] [PATCH] Remove information leak in Linux
-	CIFS client
-From: simo <idra@samba.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: sfrench@samba.org, linux-kernel@vger.kernel.org,
-       linux-cifs-client@lists.samba.org, samba-technical@lists.samba.org
-In-Reply-To: <20080119045552.GA11134@basil.nowhere.org>
-References: <20080119045552.GA11134@basil.nowhere.org>
+	Sat, 19 Jan 2008 04:04:25 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:58567 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752322AbYASJEW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 04:04:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=gQNf1+RIlizo3IY+sEB8xxdmtQE6CtEhAE7orNocU9jc0R4oMdqb9EFdUWoJrTxcHPuPIE/FXv90mMgVxp8j+F+N75ZK+wKsU2ED3o+jobhjKvvJUmblq2WQ9al+o3ipjT5373wAYLBbxWzO6k5cFn1BgLJR1mljkOr160KHgYs=
+Subject: Re: [PATCH] x86: Unify printk strings in fault_32|64.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20080119081331.GB12995@elte.hu>
+References: <1200716549.5724.150.camel@brick>
+	 <20080119081331.GB12995@elte.hu>
 Content-Type: text/plain
-Organization: Samba Team
-Date: Sat, 19 Jan 2008 03:18:42 -0500
-Message-Id: <1200730722.28706.70.camel@localhost.localdomain>
+Date: Sat, 19 Jan 2008 01:04:24 -0800
+Message-Id: <1200733464.5724.166.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -29,41 +32,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2008-01-19 at 09:13 +0100, Ingo Molnar wrote:
+> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+> 
+> >  #ifdef CONFIG_X86_32
+> > -			"%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx\n",
+> > +			"%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx",
+> >  #else
+> 
+> >  #ifdef CONFIG_X86_32
+> > -			"%s%s[%d]: segfault at %08lx ip %08lx sp %08lx error %lx\n",
+> > +			"%s%s[%d]: segfault at %lx ip %08lx sp %08lx error %lx",
+> >  #else
+> 
+> thanks, applied.
+> 
+> 	Ingo
 
-On Sat, 2008-01-19 at 05:55 +0100, Andi Kleen wrote:
-> Fix information leak in CIFS client lookup
-> 
-> Putting arbitary file names on lookup failures into the system log is not
-> a good idea, because usually everybody can read dmesg and that is thus
-> an information leak if a directory was read protected.
-> 
-> Also changed the error printout for this case to a signed number, because
-> it is normally negative and that makes it easier to read.
-> 
-> I'm not sure the message is all that useful anyways. Perhaps it 
-> should be just removed completely? Or at least rate limited because
-> it allows to spam the kernel log nicely.
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> Index: linux/fs/cifs/dir.c
-> ===================================================================
-> --- linux.orig/fs/cifs/dir.c
-> +++ linux/fs/cifs/dir.c
-> @@ -518,7 +518,7 @@ cifs_lookup(struct inode *parent_dir_ino
->  	/*	if it was once a directory (but how can we tell?) we could do
->  		shrink_dcache_parent(direntry); */
->  	} else {
-> -		cERROR(1, ("Error 0x%x on cifs_get_inode_info in lookup of %s",
-> +		cERROR(1, ("Error %d on cifs_get_inode_info in lookup of file",
->  			   rc, full_path));
+I'm just looking at some of the other printks in do+page_fault right
+now in the oops code.
 
-then please remove also full_path here ^^^^
+What do you prefer:
+	"Unable to handle kernel NULL pointer dereference"
+or
+	"BUG: unable to handle kernel NULL pointer dereference"
 
-Simo.
+Other than that, I think for the most part, the shorter X86_64 strings
+are better.
 
--- 
-Simo Sorce
-Samba Team GPL Compliance Officer <simo@samba.org>
-Senior Software Engineer at Red Hat Inc. <ssorce@redhat.com>
+This does change user-visible output however, but would be nice to have
+a similar format.
+
+Harvey
 
