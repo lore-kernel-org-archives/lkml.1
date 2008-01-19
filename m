@@ -1,66 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbYASJhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbYASKGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753448AbYASJhI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 04:37:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbYASJgq
+	id S1756704AbYASKGQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 05:06:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbYASKGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 04:36:46 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:18252 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753334AbYASJgo (ORCPT
+	Sat, 19 Jan 2008 05:06:04 -0500
+Received: from web32608.mail.mud.yahoo.com ([68.142.207.235]:41741 "HELO
+	web32608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752693AbYASKGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 04:36:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ffERsk+QjETidmNW0mhGsMZfDr3nB0EyVu/nqjJBvYbQeB/+0YQQdPx8wGudMAM4iuvNoHOszetSb1vdu9k6okf82jDBa+vdYkPUSwdSz9LVIstb6PuuWIU5AmHj3g8v6KqRq2uJrSu+BPlSy7ymEfCrQu5to8E4W9acaQp6ke8=
-Message-ID: <4791C555.9050205@gmail.com>
-Date: Sat, 19 Jan 2008 10:39:33 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Icedove 1.5.0.14pre (X11/20071020)
+	Sat, 19 Jan 2008 05:06:00 -0500
+X-YMail-OSG: SlzgXc8VM1mbdZl1.TvemseJ3KcVdaf0YI1AQ0X.2xwA9sxc
+X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
+Date: Sat, 19 Jan 2008 02:05:59 -0800 (PST)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: [PATCH] writeback: speed up writeback of big dirty files
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mike Snitzer <snitzer@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+       jplatte@naasa.net, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
 MIME-Version: 1.0
-To: Dave Young <hidave.darkstar@gmail.com>
-CC: Kay Sievers <kay.sievers@vrfy.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Greg KH <gregkh@suse.de>, stefanr@s5r6.in-berlin.de,
-       David Brownell <david-b@pacbell.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct
- class
-References: <Pine.LNX.4.44L0.0801171448590.5731-100000@iolanthe.rowland.org>	 <20080117232626.GC2905@ami.dom.local>	 <a8e1da0801171742o5520c3d9v577979f527f1a977@mail.gmail.com>	 <3ae72650801171755k85c4245i3b4c46a84ae8f52d@mail.gmail.com>	 <a8e1da0801171828n26b37be0oa8b1c3cbec5f83cb@mail.gmail.com>	 <1200626323.5640.21.camel@lov.site>	 <a8e1da0801172131h57097622h6d111133b6a0773d@mail.gmail.com>	 <20080118073836.GA1703@ff.dom.local>	 <a8e1da0801172348q575d6c2fs9f51e3e76d41c62@mail.gmail.com>	 <20080118082327.GC1703@ff.dom.local> <a8e1da0801180107w2d5a4be2r2b30d57a0d2b85ce@mail.gmail.com>
-In-Reply-To: <a8e1da0801180107w2d5a4be2r2b30d57a0d2b85ce@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <981671.64816.qm@web32608.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Young wrote, On 01/18/2008 10:07 AM:
+---- Original Message ----
+> From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> To: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Mike Snitzer <snitzer@gmail.com>; Martin Knoblauch <spamtrap@knobisoft.de>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+> Sent: Thursday, January 17, 2008 6:28:18 AM
+> Subject: [PATCH] writeback: speed up writeback of big dirty files
+> 
+> On Jan 16, 2008 9:15 AM, Martin Knoblauch
+> 
+> 
+ wrote:
+> > Fengguang's latest writeback patch applies cleanly, builds, boots
+> on
+> 
+ 2.6.24-rc8.
+> 
+> Linus, if possible, I'd suggest this patch be merged for 2.6.24.
+> 
+> It's a safer version of the reverted patch. It was tested on
+> ext2/ext3/jfs/xfs/reiserfs and won't 100% iowait even without the
+> other bug fixing patches.
+> 
+> Fengguang
+> ---
+> 
+> writeback: speed up writeback of big dirty files
+> 
+> After making dirty a 100M file, the normal behavior is to
+> start the writeback for all data after 30s delays. But
+> sometimes the following happens instead:
+> 
+>     - after 30s:    ~4M
+>     - after 5s:     ~4M
+>     - after 5s:     all remaining 92M
+> 
+> Some analyze shows that the internal io dispatch queues goes like this:
+> 
+>         s_io            s_more_io
+>         -------------------------
+>     1)    100M,1K         0
+>     2)    1K              96M
+>     3)    0               96M
+> 1) initial state with a 100M file and a 1K file
+> 2) 4M written, nr_to_write <= 0, so write more
+> 3) 1K written, nr_to_write > 0, no more writes(BUG)
+> nr_to_write > 0 in (3) fools the upper layer to think that data
+> have
+> 
+ all been
+> written out. The big dirty file is actually still sitting in
+> s_more_io.
+> 
+ We
+> cannot simply splice s_more_io back to s_io as soon as s_io
+> becomes
+> 
+ empty, and
+> let the loop in generic_sync_sb_inodes() continue: this may
+> starve
+> 
+ newly
+> expired inodes in s_dirty.  It is also not an option to draw
+> inodes
+> 
+ from both
+> s_more_io and s_dirty, an let the loop go on: this might lead to
+> live
+> 
+ locks,
+> and might also starve other superblocks in sync time(well kupdate
+> may
+> 
+ still
+> starve some superblocks, that's another bug).
+> We have to return when a full scan of s_io completes. So nr_to_write
+> >
+> 
+ 0 does
+> not necessarily mean that "all data are written". This patch
+> introduces
+> 
+ a flag
+> writeback_control.more_io to indicate that more io should be done.
+> With
+> 
+ it the
+> big dirty file no longer has to wait for the next kupdate invocation
+> 5s
+> 
+ later.
+> 
+> In sync_sb_inodes() we only set more_io on super_blocks we
+> actually
+> 
+ visited.
+> This aviods the interaction between two pdflush deamons.
+> 
+> Also in __sync_single_inode() we don't blindly keep requeuing the io
+> if
+> 
+ the
+> filesystem cannot progress. Failing to do so may lead to 100% iowait.
+> 
+> Tested-by: Mike Snitzer 
+> Signed-off-by: Fengguang Wu 
+> ---
+>  fs/fs-writeback.c         |   18 ++++++++++++++++--
+>  include/linux/writeback.h |    1 +
+>  mm/page-writeback.c       |    9 ++++++---
+>  3 files changed, 23 insertions(+), 5 deletions(-)
+> 
+> --- linux.orig/fs/fs-writeback.c
+> +++ linux/fs/fs-writeback.c
+> @@ -284,7 +284,17 @@ __sync_single_inode(struct inode *inode,
+>                   * soon as the queue becomes uncongested.
+>                   */
+>                  inode->i_state |= I_DIRTY_PAGES;
+> -                requeue_io(inode);
+> +                if (wbc->nr_to_write <= 0) {
+> +                    /*
+> +                     * slice used up: queue for next turn
+> +                     */
+> +                    requeue_io(inode);
+> +                } else {
+> +                    /*
+> +                     * somehow blocked: retry later
+> +                     */
+> +                    redirty_tail(inode);
+> +                }
+>              } else {
+>                  /*
+>                   * Otherwise fully redirty the inode so that
+> @@ -479,8 +489,12 @@ sync_sb_inodes(struct super_block *sb, s
+>          iput(inode);
+>          cond_resched();
+>          spin_lock(&inode_lock);
+> -        if (wbc->nr_to_write <= 0)
+> +        if (wbc->nr_to_write <= 0) {
+> +            wbc->more_io = 1;
+>              break;
+> +        }
+> +        if (!list_empty(&sb->s_more_io))
+> +            wbc->more_io = 1;
+>      }
+>      return;        /* Leave any unwritten inodes on s_io */
+>  }
+> --- linux.orig/include/linux/writeback.h
+> +++ linux/include/linux/writeback.h
+> @@ -62,6 +62,7 @@ struct writeback_control {
+>      unsigned for_reclaim:1;        /* Invoked from the page
+> allocator
+> 
+ */
+>      unsigned for_writepages:1;    /* This is a writepages() call */
+>      unsigned range_cyclic:1;    /* range_start is cyclic */
+> +    unsigned more_io:1;        /* more io to be dispatched */
+>  };
+>  
+>  /*
+> --- linux.orig/mm/page-writeback.c
+> +++ linux/mm/page-writeback.c
+> @@ -558,6 +558,7 @@ static void background_writeout(unsigned
+>              global_page_state(NR_UNSTABLE_NFS) < background_thresh
+>                  && min_pages <= 0)
+>              break;
+> +        wbc.more_io = 0;
+>          wbc.encountered_congestion = 0;
+>          wbc.nr_to_write = MAX_WRITEBACK_PAGES;
+>          wbc.pages_skipped = 0;
+> @@ -565,8 +566,9 @@ static void background_writeout(unsigned
+>          min_pages -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
+>          if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+>              /* Wrote less than expected */
+> -            congestion_wait(WRITE, HZ/10);
+> -            if (!wbc.encountered_congestion)
+> +            if (wbc.encountered_congestion || wbc.more_io)
+> +                congestion_wait(WRITE, HZ/10);
+> +            else
+>                  break;
+>          }
+>      }
+> @@ -631,11 +633,12 @@ static void wb_kupdate(unsigned long arg
+>              global_page_state(NR_UNSTABLE_NFS) +
+>              (inodes_stat.nr_inodes - inodes_stat.nr_unused);
+>      while (nr_to_write > 0) {
+> +        wbc.more_io = 0;
+>          wbc.encountered_congestion = 0;
+>          wbc.nr_to_write = MAX_WRITEBACK_PAGES;
+>          writeback_inodes(&wbc);
+>          if (wbc.nr_to_write > 0) {
+> -            if (wbc.encountered_congestion)
+> +            if (wbc.encountered_congestion || wbc.more_io)
+>                  congestion_wait(WRITE, HZ/10);
+>              else
+>                  break;    /* All the old data is written */
+> 
+> 
+> 
+Hi Fenguang,
 
-> On Jan 18, 2008 4:23 PM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+ sorry for not coming back earlier. I compiled -rc8 with your patch. It boots and works with my test cases. More I cannot say. The performance decrease I see compared to -rc5 has been discussed elsewhere in this thread and is not related to your work.
 
->> On Fri, Jan 18, 2008 at 03:48:02PM +0800, Dave Young wrote:
+Cheers
+Martin
 
-...
-
->>> 1) Using CLASS_NORMAL/CLASS_PARENT/CLASS_CHILD will be enough.
->>> or
->>> 2) Simply add SINGLE_LEVEL_NESTING in class_device_add and other
->>> class_device functions because it is the only possible nest-lock place
->>> as I know.
-
-
-Dave, after looking a bit at this it seems you could be "mostly" right
-with this 2). Maybe I've missed something (I didn't verify this yet), but
-it looks like +1 level (SINGLE_LEVEL_NESTING) could be needed in:
-class_device_add() (as you did), but probably also class_device_del() and
-class_device_destroy().
-
-...But, there seems to be "little" problem, if there is used this recursion
-with: class_intf->add()/remove() in class_device_add()/del()?! Then Kay
-is right about possibility of deeper nesting. If this path is really used,
-and any of these class_device_* functions with locking are called, then
-this patch couldn't work like this. So, there is a question: how deep
-nesting is currently used here?
-
-Regards,
-Jarek P.
