@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932481AbYASQE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932251AbYASQFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932481AbYASQE7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 11:04:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760612AbYASQEt
+	id S932251AbYASQFl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 11:05:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759611AbYASQFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 11:04:49 -0500
-Received: from emh01.mail.saunalahti.fi ([62.142.5.107]:35080 "EHLO
-	emh01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758698AbYASQEr (ORCPT
+	Sat, 19 Jan 2008 11:05:33 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37480 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756999AbYASQFc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 11:04:47 -0500
-Date: Sat, 19 Jan 2008 18:05:15 +0200 (MET DST)
-From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-X-X-Sender: szaka@dhcppc1
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: util-linux-ng@vger.kernel.org, akpm@linux-foundation.org,
-       hch@infradead.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
-       kzak@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [patch] util-linux-ng: unprivileged mounts support
-In-Reply-To: <E1JF7Xh-0003q3-Qv@pomaz-ex.szeredi.hu>
-Message-ID: <Pine.LNX.4.61.0801191745520.4482@dhcppc1>
-References: <E1JF7Xh-0003q3-Qv@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Antivirus: VAMS
+	Sat, 19 Jan 2008 11:05:32 -0500
+Date: Sat, 19 Jan 2008 16:03:45 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [RESEND] parisc: New termios definitions
+Message-ID: <20080119160345.4160d8a5@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-On Wed, 16 Jan 2008, Miklos Szeredi wrote:
-
-> This is an experimental patch for supporing unprivileged mounts and
-> umounts.  
-
-User unmount unfortunately still doesn't work if the kernel doesn't have 
-the unprivileged mount support but as we discussed this in last July that 
-shouldn't be needed for this case.
-
-  % mount -t ntfs-3g /dev/hda10 /tmp/test
-  % cat /proc/mounts | grep /tmp/test                                                                         
-  /dev/hda10 /tmp/test fuseblk rw,nosuid,nodev,user_id=501,group_id=501,allow_other 0 0
-  % mount | grep /tmp/test
-  /dev/hda10 on /tmp/test type fuseblk (rw,nosuid,nodev,allow_other,blksize=1024,user=szaka)
-  % umount /tmp/test
-  umount: /dev/hda10: not mounted
-  umount: /tmp/test: must be superuser to umount
-  umount: /dev/hda10: not mounted
-  umount: /tmp/test: must be superuser to umount
-
-	Szaka
-
---
-NTFS-3G:  http://ntfs-3g.org
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc8-mm1/include/asm-parisc/ioctls.h linux-2.6.24-rc8-mm1/include/asm-parisc/ioctls.h
+--- linux.vanilla-2.6.24-rc8-mm1/include/asm-parisc/ioctls.h	2008-01-19 14:19:50.000000000 +0000
++++ linux-2.6.24-rc8-mm1/include/asm-parisc/ioctls.h	2008-01-19 15:07:16.000000000 +0000
+@@ -46,6 +46,10 @@
+ #define TIOCSBRK	0x5427  /* BSD compatibility */
+ #define TIOCCBRK	0x5428  /* BSD compatibility */
+ #define TIOCGSID	_IOR('T', 20, int) /* Return the session ID of FD */
++#define TCGETS2		_IOR('T',0x2A, struct termios2)
++#define TCSETS2		_IOW('T',0x2B, struct termios2)
++#define TCSETSW2	_IOW('T',0x2C, struct termios2)
++#define TCSETSF2	_IOW('T',0x2D, struct termios2)
+ #define TIOCGPTN	_IOR('T',0x30, unsigned int) /* Get Pty Number (of pty-mux device) */
+ #define TIOCSPTLCK	_IOW('T',0x31, int)  /* Lock/unlock Pty */
+ 
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc8-mm1/include/asm-parisc/termbits.h linux-2.6.24-rc8-mm1/include/asm-parisc/termbits.h
+--- linux.vanilla-2.6.24-rc8-mm1/include/asm-parisc/termbits.h	2008-01-19 14:19:50.000000000 +0000
++++ linux-2.6.24-rc8-mm1/include/asm-parisc/termbits.h	2008-01-19 15:07:16.000000000 +0000
+@@ -141,6 +141,7 @@
+ #define HUPCL   0002000
+ #define CLOCAL  0004000
+ #define CBAUDEX 0010000
++#define    BOTHER 0010000
+ #define    B57600 0010001
+ #define   B115200 0010002
+ #define   B230400 0010003
+@@ -156,10 +157,12 @@
+ #define  B3000000 0010015
+ #define  B3500000 0010016
+ #define  B4000000 0010017
+-#define CIBAUD    002003600000  /* input baud rate (not used) */
++#define CIBAUD    002003600000		/* input baud rate */
+ #define CMSPAR    010000000000          /* mark or space (stick) parity */
+ #define CRTSCTS   020000000000          /* flow control */
+ 
++#define IBSHIFT	16		/* Shift from CBAUD to CIBAUD */
++
+ 
+ /* c_lflag bits */
+ #define ISIG    0000001
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc8-mm1/include/asm-parisc/termios.h linux-2.6.24-rc8-mm1/include/asm-parisc/termios.h
+--- linux.vanilla-2.6.24-rc8-mm1/include/asm-parisc/termios.h	2008-01-19 14:19:50.000000000 +0000
++++ linux-2.6.24-rc8-mm1/include/asm-parisc/termios.h	2008-01-19 15:07:16.000000000 +0000
+@@ -80,8 +80,10 @@
+ 	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
+ })
+ 
+-#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
+-#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
++#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios2))
++#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios2))
++#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
++#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
+ 
+ #endif	/* __KERNEL__ */
+ 
