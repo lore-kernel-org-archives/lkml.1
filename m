@@ -1,64 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757387AbYASVzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbYASWHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757387AbYASVzY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 16:55:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYASVzK
+	id S1757225AbYASWHN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 17:07:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbYASWG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 16:55:10 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1900 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751270AbYASVzJ (ORCPT
+	Sat, 19 Jan 2008 17:06:59 -0500
+Received: from py-out-1112.google.com ([64.233.166.176]:28696 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbYASWG7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 16:55:09 -0500
-Date: Sat, 19 Jan 2008 21:55:07 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       liam.girdwood@wolfsonmicro.com
-Subject: Re: [PATCH] Core driver for WM97xx touchscreens
-Message-ID: <20080119215506.GA7400@sirena.org.uk>
-Mail-Followup-To: Dmitry <dbaryshkov@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-	liam.girdwood@wolfsonmicro.com
-References: <20080118162627.GA28974@rakim.wolfsonmicro.main> <1200673631-366-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20080118120148.ZZRA012@mailhub.coreip.homeip.net> <fmqq50$te0$1@ger.gmane.org> <20080119170030.GA469@sirena.org.uk> <bc64b4640801191148m39ae5cd6ra190ac8e9c40fba7@mail.gmail.com>
+	Sat, 19 Jan 2008 17:06:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DhE12gDga/TSgyRZXSuwMOZLX2hb5Ul1PDezWs1a5O0TJWHlyCi2rQ46d0MzAlcWiDf6+ZCOxA7mkZ5uJmCEcFJmes6524VS4Fmb7/Ab9Rcqzqy1QalJz0mnMrekcbsLboTfOlqzrs/L/2cHoaWbnR89hasZnX8za/NVAEZ8bQk=
+Message-ID: <524f69650801191406j440e52afsb9b80efed4fa15da@mail.gmail.com>
+Date: Sat, 19 Jan 2008 16:06:57 -0600
+From: "Steve French" <smfrench@gmail.com>
+To: simo <idra@samba.org>
+Subject: Re: [linux-cifs-client] [PATCH] Remove information leak in Linux CIFS client
+Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-cifs-client@lists.samba.org, samba-technical@lists.samba.org
+In-Reply-To: <1200730722.28706.70.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <bc64b4640801191148m39ae5cd6ra190ac8e9c40fba7@mail.gmail.com>
-X-Cookie: You can't get there from here.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+References: <20080119045552.GA11134@basil.nowhere.org>
+	 <1200730722.28706.70.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 19, 2008 at 10:48:32PM +0300, Dmitry wrote:
+The access denied message in the dmesg log reveals no more information
+than strace on stat of a local file does (which also returns access
+denied and displays access denied), but I agree that logging on
+-EACCESS on lookup does clutter the log.
 
-> Well... It's a common suggestion not to duplicate code. The wm97xx bus
-> looks mostly like platform. The only difference is the name. To help
-> visualisation, devices can have parents. Just set (in pseudocode)
-> wm97xx-touchscreen->parent to wm97xx, do the same for wm97xx-battery
-> and so on. Thus all devices would be on the platform device but with
-> proper parent <-> child notation.
+I think it is ok to log a message on unexpected errors (for
+QueryPathInfo those would include anything other than ENOENT and
+EACCESS - Simo, can you think of others?)  I don't mind ratelimiting
+logging on this clause (for errors other than ENOENT and EACCESS) but
+it would complicate the code for a case I have not seen in the wild.
 
-That's exactly what I had understood you to mean.  I guess it's just
-that using the platform bus for this purpose feels like an abstraction
-violation to me due to having platform devices parented off a device on
-another bus.  Obviously it's just my model of a platform device that's
-wrong here.  I will change the driver to use the platform bus for my
-next submission.
+I prefer the following to remove the log cluttering on this case:
 
-> git://git.mnementh.co.uk/linux-2.6-im.git#tmio_dev_try3. Look for
+diff --git a/fs/cifs/dir.c b/fs/cifs/dir.c
+index 37dc97a..b2802e5 100644
+--- a/fs/cifs/dir.c
++++ b/fs/cifs/dir.c
+@@ -517,12 +517,11 @@ cifs_lookup(struct inode *parent_dir_inode,
+struct dentry *direntry,
+                d_add(direntry, NULL);
+        /*      if it was once a directory (but how can we tell?) we could do
 
-Thanks, I'll take a look.
+                shrink_dcache_parent(direntry); */
+-       } else {
++       } else if (rc != -EACCES) {
 
-> 2008/1/19, Mark Brown <broonie@opensource.wolfsonmicro.com>:
+                cERROR(1, ("Error 0x%x on cifs_get_inode_info in lookup of %s",
+                           rc, full_path));
+-               /* BB special case check for Access Denied - watch security
+-               exposure of returning dir info implicitly via different rc
+-               if file exists or not but no access BB */
++               /* We special case check for Access Denied - since that
++               is a common return code */
+        }
 
-> > current patch series these chips all also provide an audio codec which
-> > requires a reasonably substantial driver for full support.
+        kfree(full_path);
 
-> This would only touch child devices organisation.
+On Jan 19, 2008 2:18 AM, simo <idra@samba.org> wrote:
+>
+>
+> On Sat, 2008-01-19 at 05:55 +0100, Andi Kleen wrote:
+> > Fix information leak in CIFS client lookup
+> >
+> > Putting arbitary file names on lookup failures into the system log is not
+> > a good idea, because usually everybody can read dmesg and that is thus
+> > an information leak if a directory was read protected.
+> >
+> > Also changed the error printout for this case to a signed number, because
+> > it is normally negative and that makes it easier to read.
+> >
+> > I'm not sure the message is all that useful anyways. Perhaps it
+> > should be just removed completely? Or at least rate limited because
+> > it allows to spam the kernel log nicely.
+> >
+> > Signed-off-by: Andi Kleen <ak@suse.de>
+> >
+> > Index: linux/fs/cifs/dir.c
+> > ===================================================================
+> > --- linux.orig/fs/cifs/dir.c
+> > +++ linux/fs/cifs/dir.c
+> > @@ -518,7 +518,7 @@ cifs_lookup(struct inode *parent_dir_ino
+> >       /*      if it was once a directory (but how can we tell?) we could do
+> >               shrink_dcache_parent(direntry); */
+> >       } else {
+> > -             cERROR(1, ("Error 0x%x on cifs_get_inode_info in lookup of %s",
+> > +             cERROR(1, ("Error %d on cifs_get_inode_info in lookup of file",
+> >                          rc, full_path));
+>
+> then please remove also full_path here ^^^^
+>
+> Simo.
+>
+> --
+> Simo Sorce
+> Samba Team GPL Compliance Officer <simo@samba.org>
+> Senior Software Engineer at Red Hat Inc. <ssorce@redhat.com>
+>
+>
 
-Indeed - I mention it mostly for additional motivation.
+
+
+-- 
+Thanks,
+
+Steve
