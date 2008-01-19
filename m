@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763914AbYASEYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764721AbYASE0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763914AbYASEYh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 23:24:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbYASEYb
+	id S1764721AbYASE0t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 23:26:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758640AbYASE0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 23:24:31 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:44528 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757890AbYASEYa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 23:24:30 -0500
-Date: Sat, 19 Jan 2008 05:27:50 +0100
-From: Andi Kleen <andi@firstfloor.org>
+	Fri, 18 Jan 2008 23:26:40 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53537 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758284AbYASE0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 23:26:40 -0500
+Date: Fri, 18 Jan 2008 23:25:19 -0500
+From: Rik van Riel <riel@redhat.com>
 To: Matt Mackall <mpm@selenic.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Chodorenko Michail <misha@one.by>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: Celeron Core
-Message-ID: <20080119042750.GA24481@one.firstfloor.org>
-References: <3ed23423adebae08e8f75b6a6a7ce7ff@one.by> <p73prvyalfl.fsf@bingen.suse.de> <1200702477.25782.41.camel@cinder.waste.org> <20080119011506.GA23798@one.firstfloor.org> <1200715842.25782.95.camel@cinder.waste.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Oeser <ioe-lkml@rameria.de>, Miklos Szeredi <miklos@szeredi.hu>,
+       peterz@infradead.org, salikhmetov@gmail.com, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, ksm@42.dk, staubach@redhat.com,
+       jesper.juhl@gmail.com, akpm@linux-foundation.org, protasnb@gmail.com,
+       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
+Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
+ files
+Message-ID: <20080118232519.4cc65df2@bree.surriel.com>
+In-Reply-To: <1200703803.25782.45.camel@cinder.waste.org>
+References: <12006091182260-git-send-email-salikhmetov@gmail.com>
+	<E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>
+	<alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org>
+	<200801182332.02945.ioe-lkml@rameria.de>
+	<alpine.LFD.1.00.0801181439330.2957@woody.linux-foundation.org>
+	<20080118175450.715ded60@bree.surriel.com>
+	<1200703803.25782.45.camel@cinder.waste.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1200715842.25782.95.camel@cinder.waste.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So while throttling may be less efficient in terms of watt seconds used
-> to compile something than running at full speed, it is incorrect to say
-> it uses less power. One machine running for an hour throttled to 50%
-> uses less power (and therefore less battery and cooling) than another
-> running at full speed for that same hour.
+On Fri, 18 Jan 2008 18:50:03 -0600
+Matt Mackall <mpm@selenic.com> wrote:
+> On Fri, 2008-01-18 at 17:54 -0500, Rik van Riel wrote:
 
-Not for the same unit of work. If you just run endless loops you 
-might be true, but most systems don't do that. 
+> > Backup programs not seeing an updated mtime is a really big deal.
+> 
+> And that's fixed with the 4-line approach.
+> 
+> Reminds me, I've got a patch here for addressing that problem with loop mounts:
+> 
+> Writes to loop should update the mtime of the underlying file.
+> 
+> Signed-off-by: Matt Mackall <mpm@selenic.com>
 
-In terms of laptops (or rather in most other systems too) you usually care 
-about battery life time while the system is mostly idling (waiting
-for your key strokes etc.). In this case enabling throttling
-as a cpufreq driver will not make your battery last longer.
+Acked-by: Rik van Riel <riel@redhat.com>
 
-Also skipping the clocks does not actually safe all very much power
-compared to the other measures C-states or speedstep do (like dropping voltage) 
-
-This means enabling it will likely make your laptop battery last shorter.
-
--Andi
+-- 
+All rights reversed.
