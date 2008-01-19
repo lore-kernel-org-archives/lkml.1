@@ -1,90 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761736AbYASAwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762164AbYASBL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761736AbYASAwZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 19:52:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbYASAwQ
+	id S1762164AbYASBL6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 20:11:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbYASBLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 19:52:16 -0500
-Received: from waste.org ([66.93.16.53]:43611 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757260AbYASAwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 19:52:14 -0500
-Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped
-	files
-From: Matt Mackall <mpm@selenic.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Oeser <ioe-lkml@rameria.de>, Miklos Szeredi <miklos@szeredi.hu>,
-       peterz@infradead.org, salikhmetov@gmail.com, linux-mm@kvack.org,
-       jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, ksm@42.dk, staubach@redhat.com,
-       jesper.juhl@gmail.com, akpm@linux-foundation.org, protasnb@gmail.com,
-       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
-In-Reply-To: <20080118175450.715ded60@bree.surriel.com>
-References: <12006091182260-git-send-email-salikhmetov@gmail.com>
-	 <E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu>
-	 <alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org>
-	 <200801182332.02945.ioe-lkml@rameria.de>
-	 <alpine.LFD.1.00.0801181439330.2957@woody.linux-foundation.org>
-	 <20080118175450.715ded60@bree.surriel.com>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 18:50:03 -0600
-Message-Id: <1200703803.25782.45.camel@cinder.waste.org>
+	Fri, 18 Jan 2008 20:11:49 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:60433 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756454AbYASBLs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 20:11:48 -0500
+Date: Sat, 19 Jan 2008 02:15:06 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Chodorenko Michail <misha@one.by>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: Celeron Core
+Message-ID: <20080119011506.GA23798@one.firstfloor.org>
+References: <3ed23423adebae08e8f75b6a6a7ce7ff@one.by> <p73prvyalfl.fsf@bingen.suse.de> <1200702477.25782.41.camel@cinder.waste.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1200702477.25782.41.camel@cinder.waste.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-01-18 at 17:54 -0500, Rik van Riel wrote:
-> On Fri, 18 Jan 2008 14:47:33 -0800 (PST)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Fri, Jan 18, 2008 at 06:27:57PM -0600, Matt Mackall wrote:
 > 
-> >  - keep it simple. Let's face it, Linux has never ever given those 
-> >    guarantees before, and it's not is if anybody has really cared. Even 
-> >    now, the issue seems to be more about paper standards conformance than 
-> >    anything else.
+> On Fri, 2008-01-18 at 22:11 +0100, Andi Kleen wrote:
+> > Chodorenko Michail <misha@one.by> writes:
+> > 
+> > > I have a laptop "Extensa 5220", with the processor Celeron based on 'core'
+> > > technology.
+> > > There is ~ / arch/i386/kernel/cpu/cpufreq/p4-clockmod.c in the kernel
+> > > source code
+> > > but there's no line identification of my CPU for apply freqency change
+> > > need to add a ID line 0х16
+> > 
+> > Note that driver will likely do clock throttling on your CPU.
+> > Using that is usually a bad idea because it does not actually
+> > safe power. It's only intended to let the CPU cool down in some situations.
 > 
-> There is one issue which is way more than just standards conformance.
-> 
-> When a program changes file data through mmap(), at some point the
-> mtime needs to be update so that backup programs know to back up the
-> new version of the file.
-> 
-> Backup programs not seeing an updated mtime is a really big deal.
+> Power consumption is more or less exactly equal to heat production
+> (that's where the power goes, after all!), so either clock throttling
+> DOES save power or it DOES NOT cool the CPU.
 
-And that's fixed with the 4-line approach.
+No actually the way it works on modern x86 CPUs is that the best
+strategy for saving power is to do things quickly and then
+idle longer. That means on anything that has reasonably
+deep sleep modi e.g. on older server/desktop systems things might
+be slightly different because they had very little power saving
+features enabled, but it's definitely true for all
+laptop systems from the last several years. But even
+on desktop/server throttling tends to be a bad idea.
 
-Reminds me, I've got a patch here for addressing that problem with loop mounts:
+Intel style throttling makes the CPU skip cycles so the maximum built
+up heat for a time unit is less, but it will run active for longer that 
+makes it overall take more power for a given work unit.
 
-Writes to loop should update the mtime of the underlying file.
+Here's a better description from Dominik:
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
+http://article.gmane.org/gmane.linux.kernel.cpufreq/3497
 
-Index: l/drivers/block/loop.c
-===================================================================
---- l.orig/drivers/block/loop.c	2007-11-05 17:50:07.000000000 -0600
-+++ l/drivers/block/loop.c	2007-11-05 19:03:51.000000000 -0600
-@@ -221,6 +221,7 @@ static int do_lo_send_aops(struct loop_d
- 	offset = pos & ((pgoff_t)PAGE_CACHE_SIZE - 1);
- 	bv_offs = bvec->bv_offset;
- 	len = bvec->bv_len;
-+	file_update_time(file);
- 	while (len > 0) {
- 		sector_t IV;
- 		unsigned size;
-@@ -299,6 +300,7 @@ static int __do_lo_send_write(struct fil
- 
- 	set_fs(get_ds());
- 	bw = file->f_op->write(file, buf, len, &pos);
-+	file_update_time(file);
- 	set_fs(old_fs);
- 	if (likely(bw == len))
- 		return 0;
+Note the conditions he describes are quite common. Also the OP
+CPU likely has C2 and even deeper sleep modi.
 
+Another problem with throttling / p4-clockmod is that on
+at least some CPUs (not necessarily P-M, but we saw this on
+some P4s) is that they can create quite long user visible
+latencies. You might actually get "hanging mouse pointers" 
+from it if you use it with an aggressive governour like ondemand.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+The normal use case for Intel throttling is to just do 
+an emergency cool down in case the CPU fails (down to thermal
+shutdown). And that is done transparently behind Linux's back.
+
+-Andi
+
 
