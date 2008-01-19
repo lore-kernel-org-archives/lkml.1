@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbYASPni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932102AbYASPrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932231AbYASPni (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 10:43:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759164AbYASPn3
+	id S932102AbYASPrT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 10:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759384AbYASPrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 10:43:29 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:54229 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757655AbYASPn2 (ORCPT
+	Sat, 19 Jan 2008 10:47:10 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38281 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759156AbYASPrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 10:43:28 -0500
-Date: Sat, 19 Jan 2008 16:46:51 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, venkatesh.pallipadi@intel.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: ACPI early ioremap problems
-Message-ID: <20080119154651.GA1626@one.firstfloor.org>
-References: <20080119030843.GA2028@basil.nowhere.org> <20080119150328.GA32370@elte.hu> <20080119152649.GA1375@one.firstfloor.org> <20080119153055.GA12054@elte.hu>
+	Sat, 19 Jan 2008 10:47:09 -0500
+Date: Sat, 19 Jan 2008 15:44:53 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: mingo@redhat.com, akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86 reboot: Remove inb_p usage
+Message-ID: <20080119154453.1afddbfb@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080119153055.GA12054@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 19, 2008 at 04:30:55PM +0100, Ingo Molnar wrote:
-> > > that case it's a 64-bit early_ioremap() bug that we want to find 
-> > > even if ACPI didnt use early_ioremap().
-> > > 
-> > > and this all runs before zap_low_mappings(), right?
-> > 
-> > No after. Since some time x86-64 does the equivalent of z_l_m() in 
-> > head64(); this means before start_kernel and definitely before 
-> > setup_arch which sets up ACPI.
-> 
-> that would mean early_ioremap() should switch to ioremap() after that 
-> point. Could you try that, does it resolve the failure you are seeing? 
+We are driving a motherboard port so use a 2uS explicit delay at this
+point.
 
-ioremap() does alloc_page and that won't work before 
-paging_init(). Early ACPI scan is before paging_init() because
-paging_init() needs node discovery at at least; which requires
-some ACPI tables.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-> Long-term we want to have a single, uniform ioremap() interface (on 
-> 32-bit and 64-bit x86 as well) that can be used anytime, which just 
-> switches to the right lowlevel method depending on how far we are into 
-> the pagetable and memory subsystem bootstrap - instead of these more 
-> fragile "can we now use early_ioremap() or should we already be using 
-> ioremap()" usages.
-
-I didn't think there were enough early/bt_ioremap() users for this
-to be really worthwhile. The only code that does both I'm aware of
-is the memory setup code.
-
--Andi
-
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc8-mm1/arch/x86/kernel/reboot.c linux-2.6.24-rc8-mm1/arch/x86/kernel/reboot.c
+--- linux.vanilla-2.6.24-rc8-mm1/arch/x86/kernel/reboot.c	2008-01-19 14:47:55.000000000 +0000
++++ linux-2.6.24-rc8-mm1/arch/x86/kernel/reboot.c	2008-01-19 14:53:58.000000000 +0000
+@@ -319,9 +319,11 @@
+ {
+ 	int i;
+ 
+-	for (i = 0; i < 0x10000; i++)
+-		if ((inb_p(0x64) & 0x02) == 0)
++	for (i = 0; i < 0x10000; i++) {
++		if ((inb(0x64) & 0x02) == 0)
+ 			break;
++		udelay(2);
++	}
+ }
+ 
+ void machine_emergency_restart(void)
