@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764986AbYASE2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765012AbYASEc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764986AbYASE2S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 Jan 2008 23:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbYASE2L
+	id S1765012AbYASEc1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 Jan 2008 23:32:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761840AbYASEcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 Jan 2008 23:28:11 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53574 "EHLO mx1.redhat.com"
+	Fri, 18 Jan 2008 23:32:20 -0500
+Received: from ns1.suse.de ([195.135.220.2]:53154 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756454AbYASE2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 Jan 2008 23:28:10 -0500
-Date: Fri, 18 Jan 2008 23:23:52 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Steven Rostedt <srostedt@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Daniel Walker <dwalker@mvista.com>
-Subject: Re: [RFC PATCH 16/22 -v2] add get_monotonic_cycles
-Message-ID: <20080119042352.GF27193@redhat.com>
-References: <Pine.LNX.4.58.0801161428180.14368@gandalf.stny.rr.com> <20080116201713.GA14336@Krystal> <Pine.LNX.4.58.0801171440360.28350@gandalf.stny.rr.com> <20080117203740.GA24397@redhat.com> <Pine.LNX.4.58.0801171555120.28350@gandalf.stny.rr.com> <20080118222637.GA30900@Krystal> <Pine.LNX.4.58.0801181735140.13971@gandalf.stny.rr.com> <20080118231928.GA5563@Krystal> <20080119033632.GE27193@redhat.com> <Pine.LNX.4.58.0801182242440.16333@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0801182242440.16333@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.1i
+	id S1758975AbYASEcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 Jan 2008 23:32:20 -0500
+From: Andi Kleen <ak@suse.de>
+Message-Id: <20080119532.133547000@suse.de>
+To: davej@codemonkey.org.uk, mingo@elte.hu, tglx@linutronix.de,
+       jesse.barnes@intel.com, andreas.herrmann3@amd.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [1/2] Fix some inaccurate comments in MTRR checking code
+Date: Sat, 19 Jan 2008 05:32:18 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
 
-On Fri, Jan 18, 2008 at 10:55:27PM -0500, Steven Rostedt wrote:
-> [...]
-> > All this complexity is to be justified by keeping the raw prev/next
-> > pointers from being sent to a naive tracer?  It seems to me way out of
-> > proportion.
-> 
-> Damn, and I just blew away all my marker code for something like this ;-)
+- is_cpu(INTEL) actually refers only to the MTRR architecture
+and all AMD CPUs since K7 use the Intel MTRR architecture so the
+fixup code runs on AMD too. Remove a comment claiming otherwise.
 
-Sorry! :-)
+[Perhaps is_cpu should be renamed, the name is clearly confusing]
 
-> [...]
-> We have in sched.c the following marker:
->  trace_mark(kernel_sched_scheduler, "prev %p next %p", prev, next);
+- Clarify another incorrect comment.
 
-Fine so far!
+Cc: davej@codemonkey.org.uk
+Signed-off-by: Andi Kleen <ak@suse.de>
 
-> Then Mathieu can add in some code somewhere (or a module, or something)
-> 	ret = marker_probe_register("kernel_sched_scheduler",
-> 				"prev %p next %p",
-> 				pretty_print_sched_switch, NULL);
+---
+ arch/x86/kernel/cpu/mtrr/main.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> static void pretty_print_sched_switch(const struct marker *mdata,
-> 				void *private_data,
-> 				const char *format, ...)
-> {
-> 	[...]
-> 	trace_mark(kernel_pretty_print_sched_switch,
-> 		"prev_pid %d next_pid %d prev_state %ld",
-> 		prev->pid, next->pid, prev->state);
-> }
-
-That marker_probe_register call would need to be done only when the
-embedded (k_p_p_s_s) marker is actually being used.  Otherwise we'd
-lose all the savings of a dormant sched.c marker by always calling
-into pretty_print_sched_switch(), whether or not the k_p_p_s_s marker
-was active.
-
-In any case, if the naive tracer agrees to become educated about some
-of these markers in the form of intermediary functions like that, they
-need not insist on a second hop through marker territory anyway:
-
- static void pretty_print_sched_switch(const struct marker *mdata,
- 				void *private_data,
- 				const char *format, ...)
- {
- 	[...]
- 	lttng_backend_trace(kernel_pretty_print_sched_switch,
- 		            "prev_pid %d next_pid %d prev_state %ld",
-               		    prev->pid, next->pid, prev->state);
- }
-
-
-- FChE
+Index: linux/arch/x86/kernel/cpu/mtrr/main.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mtrr/main.c
++++ linux/arch/x86/kernel/cpu/mtrr/main.c
+@@ -640,6 +640,8 @@ early_param("disable_mtrr_trim", disable
+  * Some buggy BIOSes don't setup the MTRRs properly for systems with certain
+  * memory configurations.  This routine checks to make sure the MTRRs having
+  * a write back type cover all of the memory the kernel is intending to use.
++ * [AK: actually it doesn't check that. It just checks that the highest
++ * MTRR is matching the end of memory. That is not quite the same.]
+  * If not, it'll trim any memory off the end by adjusting end_pfn, removing
+  * it from the kernel's allocation pools, warning the user with an obnoxious
+  * message.
+@@ -649,7 +651,6 @@ void __init mtrr_trim_uncached_memory(vo
+ 	unsigned long i, base, size, highest_addr = 0, def, dummy;
+ 	mtrr_type type;
+ 
+-	/* Make sure we only trim uncachable memory on Intel machines */
+ 	rdmsr(MTRRdefType_MSR, def, dummy);
+ 	def &= 0xff;
+ 	if (!is_cpu(INTEL) || disable_mtrr_trim || def != MTRR_TYPE_UNCACHABLE)
