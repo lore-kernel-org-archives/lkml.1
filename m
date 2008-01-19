@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbYASIUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYASIwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755276AbYASIUT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 03:20:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbYASIUG
+	id S1754508AbYASIwT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 03:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbYASIwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 03:20:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41412 "EHLO mx2.mail.elte.hu"
+	Sat, 19 Jan 2008 03:52:10 -0500
+Received: from mail.samba.org ([66.70.73.150]:44120 "EHLO lists.samba.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751312AbYASIUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 03:20:04 -0500
-Date: Sat, 19 Jan 2008 09:19:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
+	id S1751871AbYASIwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 03:52:09 -0500
+X-Greylist: delayed 1867 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Jan 2008 03:52:09 EST
+Subject: Re: [linux-cifs-client] [PATCH] Remove information leak in Linux
+	CIFS client
+From: simo <idra@samba.org>
 To: Andi Kleen <andi@firstfloor.org>
-Cc: travis@sgi.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       dada1@cosmosbay.com, clameter@sgi.com
-Subject: Re: " Change size of node ids from u8 to u16 fixup" causes early
-	panic in __build_all_zonelists
-Message-ID: <20080119081941.GC12995@elte.hu>
-References: <20080119062912.GA15850@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080119062912.GA15850@basil.nowhere.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Cc: sfrench@samba.org, linux-kernel@vger.kernel.org,
+       linux-cifs-client@lists.samba.org, samba-technical@lists.samba.org
+In-Reply-To: <20080119045552.GA11134@basil.nowhere.org>
+References: <20080119045552.GA11134@basil.nowhere.org>
+Content-Type: text/plain
+Organization: Samba Team
+Date: Sat, 19 Jan 2008 03:18:42 -0500
+Message-Id: <1200730722.28706.70.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> One of my test systems didn't boot with latest git-x86. I bisected it 
-> down to f1321f875910172bcc3e1f302fe145a9e4d3bdf7
+On Sat, 2008-01-19 at 05:55 +0100, Andi Kleen wrote:
+> Fix information leak in CIFS client lookup
 > 
-> With later patches the fault seemed to happen even earlier before 
-> other initialization messages.
+> Putting arbitary file names on lookup failures into the system log is not
+> a good idea, because usually everybody can read dmesg and that is thus
+> an information leak if a directory was read protected.
 > 
-> Config is available at http://halobates.de/config
+> Also changed the error printout for this case to a signed number, because
+> it is normally negative and that makes it easier to read.
+> 
+> I'm not sure the message is all that useful anyways. Perhaps it 
+> should be just removed completely? Or at least rate limited because
+> it allows to spam the kernel log nicely.
+> 
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> Index: linux/fs/cifs/dir.c
+> ===================================================================
+> --- linux.orig/fs/cifs/dir.c
+> +++ linux/fs/cifs/dir.c
+> @@ -518,7 +518,7 @@ cifs_lookup(struct inode *parent_dir_ino
+>  	/*	if it was once a directory (but how can we tell?) we could do
+>  		shrink_dcache_parent(direntry); */
+>  	} else {
+> -		cERROR(1, ("Error 0x%x on cifs_get_inode_info in lookup of %s",
+> +		cERROR(1, ("Error %d on cifs_get_inode_info in lookup of file",
+>  			   rc, full_path));
 
-i've reverted that patch for now, but we need to figure this crash out - 
-the patch looks a trivial extension so it's probably some bad assumption 
-elsewhere, which we want to fix.
+then please remove also full_path here ^^^^
 
-	Ingo
+Simo.
+
+-- 
+Simo Sorce
+Samba Team GPL Compliance Officer <simo@samba.org>
+Senior Software Engineer at Red Hat Inc. <ssorce@redhat.com>
+
