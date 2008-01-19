@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbYASFNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbYASFQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbYASFNI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 00:13:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYASFM4
+	id S1754661AbYASFQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 00:16:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYASFQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 00:12:56 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:39150 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751032AbYASFMz (ORCPT
+	Sat, 19 Jan 2008 00:16:20 -0500
+Received: from mga07.intel.com ([143.182.124.22]:62341 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751185AbYASFQU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 00:12:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=rPw2iFnNrTXH6ZgoAdD4yh0cC+9pP6Yj5CW8Y1xc9ihWnSVtVZGmXFec/hNo952CxiXZhxTuJudm9ir4QVp2jNkOF9v7oiVdADCi+cW+2/dlZ3WnUMZKC91nz400iLKhc/Gid7pwhrVezPjW+6mvD93CAXx2QJhf6eN1ki7bwCg=
-Subject: Re: [PATCH] x86: Unify printk strings in fault_32|64.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <200801190608.42452.ak@suse.de>
-References: <1200716549.5724.150.camel@brick>
-	 <200801190608.42452.ak@suse.de>
-Content-Type: text/plain
-Date: Fri, 18 Jan 2008 21:12:56 -0800
-Message-Id: <1200719576.5724.157.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Sat, 19 Jan 2008 00:16:20 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,219,1199692800"; 
+   d="scan'208";a="369052651"
+Message-ID: <47918792.2080201@linux.intel.com>
+Date: Fri, 18 Jan 2008 21:16:02 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Announce] Development release 0.1 of the LatencyTOP tool
+References: <4790E3A6.7060807@linux.intel.com> <p73lk6m9ze7.fsf@bingen.suse.de>
+In-Reply-To: <p73lk6m9ze7.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-01-19 at 06:08 +0100, Andi Kleen wrote:
-> On Saturday 19 January 2008 05:22:29 Harvey Harrison wrote:
-> > Adding the address of the faulting library missed removing a
-> > line ending from X86_32.
-> > 
-> > Also update the shorter printk format for X86_32 in fault_64.c
-> > to make it easier to se the remaining differences.
+Andi Kleen wrote:
+> Arjan van de Ven <arjan@linux.intel.com> writes:
 > 
-> Thanks. I think it was correct initially, but one of the merge steps
-> with the changing git-x86 caused some hunks to be dropped and the patch 
-> never quite recovered from that.
+>> The Intel Open Source Technology Center is pleased to announce the
+>> release of version 0.1 of LatencyTOP, a tool for developers to visualize
+>> system latencies.
+> 
+> Just for completeness -- Linux already had a way to profile latencies
+> since quite some time. It's little known unfortunately and doesn't
+> work for modules since it's a special mode in the old non modular kernel
+> profiler. 
+> 
+> You enable CONFIG_SCHEDSTATS and boot with profile=sleep and then you can
+> use the readprofile command to read the data. Information can be reset with 
+> echo > /proc/profile
+> 
+> There's also a profile=sched to profile the scheduler which works even
+> without CONFIG_SCHEDSTATS
 
-No worries, hoping to get them unified this weekend, should make this
-easier going forward.
-
-Harvey
-
+yes indeed; I sort of use the same infrastructure inside the scheduler; the biggest
+reason I felt I had to do something different was that I wanted to do per process
+data collection, so that you can see for a specific process what was going on.
