@@ -1,42 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbYASMin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbYASNRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757040AbYASMin (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 07:38:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYASMif
+	id S1756638AbYASNRs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 08:17:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYASNRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 07:38:35 -0500
-Received: from ns4.abinetworks.biz ([216.218.212.66]:49745 "EHLO
-	ns4.abinetworks.biz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbYASMie (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 07:38:34 -0500
-Message-ID: <4791EE99.3030802@abinetworks.biz>
-Date: Sat, 19 Jan 2008 13:35:37 +0100
-From: Gianluca Alberici <gianluca@abinetworks.biz>
-User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Chuck Lever <chuck.lever@oracle.com>
-CC: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: NFS EINVAL on open(... | O_TRUNC) on 2.6.23.9
-References: <476CEC5E.9070002@abinetworks.biz> <838DE9A2-59B2-49FA-B3E8-89B26368B1CF@bluecamel.eml.cc> <476E47F5.4090807@abinetworks.biz> <20071225140431.9264970a.akpm@linux-foundation.org> <199BEBA7-E46E-4B1F-9D36-91BB43331B75@oracle.com>
-In-Reply-To: <199BEBA7-E46E-4B1F-9D36-91BB43331B75@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 19 Jan 2008 08:17:40 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:42213 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751898AbYASNRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 08:17:39 -0500
+Date: Sat, 19 Jan 2008 14:17:43 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>
+Cc: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       WANG Cong <xiyou.wangcong@gmail.com>
+Subject: [PATCH] xen: fix section usage in xen-head.S
+Message-ID: <20080119131743.GA26615@uranus.ravnborg.org>
+References: <200801181318.30009.toralf.foerster@gmx.de> <20080118122917.GH2559@hacking> <20080118124627.GA17918@uranus.ravnborg.org> <20080118125144.GI2559@hacking> <20080118132242.GA18183@uranus.ravnborg.org> <20080118161452.GJ2559@hacking>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080118161452.GJ2559@hacking>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Chuck,
+Failing to specify "ax" in the pushsection caused ld to generate
+an additional section for .init.text appending a number.
 
-As you requested i have finally found out that the problem was 
-introduced in 2.6.22 (2.6.21.7 works, after 2.6.21.7 theres 2.6.22)
+A side effect of this was a section mismatch warning because modpost
+did not recognize a .init.text section named .init.text.1:
+WARNING: vmlinux.o(.text.head+0x247): Section mismatch: reference to .init.text.1:start_kernel (between 'is386' and 'check_x87')
 
-I have also examined the changeslogs: 2.6.22 introduce a certain number 
-of patches into NFS client. Many of them are yours and Trond's.
+Fix this by hardcoding the "ax" in the pushsection.
+Thanks to Torlaf for reporting this.
 
-Pls can you help with this ?
+Alan Modra @ binutils provided the hint that made me
+able to locate the root cause of this warning. 
 
-TIA
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Chris Wright <chrisw@sous-sol.org>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Toralf Förster <toralf.foerster@gmx.de>
+---
 
-Gianluca
+diff --git a/arch/x86/xen/xen-head.S b/arch/x86/xen/xen-head.S
+index f8d6937..b05e85d 100644
+--- a/arch/x86/xen/xen-head.S
++++ b/arch/x86/xen/xen-head.S
+@@ -7,7 +7,7 @@
+ #include <asm/boot.h>
+ #include <xen/interface/elfnote.h>
+ 
+-.pushsection .init.text
++.pushsection .init.text, "ax"
+ ENTRY(startup_xen)
+ 	movl %esi,xen_start_info
+ 	cld
