@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYASTlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751683AbYASTmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115AbYASTlp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 14:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbYASTla
+	id S1751683AbYASTmJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 14:42:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYASTlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 14:41:30 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:60538 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752325AbYASTl2 convert rfc822-to-8bit (ORCPT
+	Sat, 19 Jan 2008 14:41:55 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:59208 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbYASTly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 14:41:28 -0500
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: =?us-ascii?Q?=3D=3FISO-8859-1=3FQ=3FT=3DF6r=3DF6k=5FEdwin=3F=3D?= 
-	<edwintorok@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] LatencyTop: make reason (blk_execute_rq+0x7a/0xd) known
-References: <47922B2A.7070709@gmail.com> <479241B0.8010500@linux.intel.com>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Sat, 19 Jan 2008 14:40:11 -0500
-In-Reply-To: <479241B0.8010500@linux.intel.com> (Arjan van de Ven's message of "Sat, 19 Jan 2008 10:30:08 -0800")
-Message-ID: <y0mir1py57o.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sat, 19 Jan 2008 14:41:54 -0500
+Date: Sat, 19 Jan 2008 20:41:53 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
+	<oliver.pntr@gmail.com>
+cc: Lars Callenbach <lars.callenbach@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: linux device ordering at boot time
+In-Reply-To: <6101e8c40801191114v4492d8fer4da13477ef2d5626@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0801192040540.4780@fbirervta.pbzchgretzou.qr>
+References: <20080119185520.208350@gmx.net> <6101e8c40801191114v4492d8fer4da13477ef2d5626@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@linux.intel.com> writes:
 
-> Török Edwin wrote:
->> [...]
->> P.S.: LatencyTop could have a feature to ask for more details on unknown
->> latency reasons, and it would generate a systemtap script itself, that
->> would show the backtraces to help figure out whats going on.
+On Jan 19 2008 20:14, Oliver Pinter (PintÃ©r OlivÃ©r) wrote:
 >
-> I've considered having an option inside the code itself that would print a
-> backtrace for, say, an unknown latency larger than 100msec
-> but the code got ugly (the accounting gets done in the scheduler path,
-> where you can't printk). [...]
+>I don't know, what the proble, but the fstab workaround  functioniert:
+>form:
+>/dev/sda3       /               xfs     defaults        0       1
+>to:
+>UUID=7c167a53-30ff-4d47-a206-ce8caf2397ba       /               xfs
+> defaults        0       1
+>
+>in this fix switched form device name to UUID based fstab.
+>
+>the uuid-s queried with /lib/udev/vol_id program
 
-Systemtap does not use printk, and can generate decent backtraces from
-the kernel (and into userspace before too long).  (FWIW, it seems to
-be only a small stretch to implement tools like *top via systemtap
-rather than custom-written kernel code.)
+Any distro that uses udev can use /dev/disk/by-.../...
+without having to resort to per-program specific implementations
+(or lack thereof) of UUID= or LABEL=.
 
-- FChE
