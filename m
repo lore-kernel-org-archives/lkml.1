@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050AbYASRlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751823AbYASR5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752050AbYASRlS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 12:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbYASRlH
+	id S1751823AbYASR5u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 12:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbYASR5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 12:41:07 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4702 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750797AbYASRlF (ORCPT
+	Sat, 19 Jan 2008 12:57:41 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:33720 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbYASR5l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 12:41:05 -0500
-X-Greylist: delayed 2431 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 Jan 2008 12:41:05 EST
-Date: Sat, 19 Jan 2008 17:00:31 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       liam.girdwood@wolfsonmicro.com
-Subject: Re: [PATCH] Core driver for WM97xx touchscreens
-Message-ID: <20080119170030.GA469@sirena.org.uk>
-Mail-Followup-To: Dmitry Baryshkov <dbaryshkov@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-	liam.girdwood@wolfsonmicro.com
-References: <20080118162627.GA28974@rakim.wolfsonmicro.main> <1200673631-366-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20080118120148.ZZRA012@mailhub.coreip.homeip.net> <fmqq50$te0$1@ger.gmane.org>
+	Sat, 19 Jan 2008 12:57:41 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <479239F9.6020801@s5r6.in-berlin.de>
+Date: Sat, 19 Jan 2008 18:57:13 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fmqq50$te0$1@ger.gmane.org>
-X-Cookie: Live Free or Live in Massachusetts.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+To: Rafael Sisto <rafael.sisto@gmail.com>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: new file in kernel.
+References: <ee3dc96c0801190542u2f91a2eax3bcfd0268d4850b4@mail.gmail.com>	 <20080119134837.GA15610@ghostprotocols.net>	 <ee3dc96c0801190621p1970086fj218178a7519fe4af@mail.gmail.com>	 <20080119143051.GB9896@lug-owl.de>	 <ee3dc96c0801190657x54edb8cve8a4c09a6efbbb2a@mail.gmail.com>	 <479216AF.2080307@s5r6.in-berlin.de> <ee3dc96c0801190815g1e658606ja982e2b9f1e82e70@mail.gmail.com>
+In-Reply-To: <ee3dc96c0801190815g1e658606ja982e2b9f1e82e70@mail.gmail.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 06:11:45PM +0000, Dmitry Baryshkov wrote:
-> Dmitry Torokhov wrote:
+Rafael Sisto wrote:
+>> Did you already discuss your problems regarding design and
+>> implementation with your teachers before turning to LKML for advice on
+>> your homework?
+> 
+> Yes, the thing is, that this is a research project, and we don't get
+> much information from the teachers...
+> We must research on our own.
 
-> > I will need some more time to review and understand the need for the new
-> > bus in the driver.
+Perhaps the teachers don't prepare you well enough but are not aware of
+this issue.  Also, if you go as far as asking people here to show you
+example code (rather than for example posting your own draft code or
+pseudo code and asking for comments), does this still count as
+researching on your own?
 
-> Most likely this can be converted to platform_bus. Maybe this can also get
+[...]
+> And I think this is a kernel development issue.
 
-Could you expand on how you see that being implemented, please?  It
-doesn't feel entirely comfortable to me - providing a bus for the chip
-seems more direct and the platform bus not what I'd think of using for
-something hanging off another bus - but I think I'm just not visualising
-what you're thinking of properly.
+Yes, but AFAIU with the primary goal of you learning something, rather
+than to advance the Linux program.  So, kernelnewbies might be a better
+list; but still, I am more irritated about /what/ you ask.
 
-> help from soon-to-be posted MFD (multi function devices) helpers.
 
-The multi-function device support does feel like it could be a good fit.
-I'd seen it discussed sometime last year but don't recall seeing
-anything for quite a while.  Like Ben said, any pointers to current work
-would be appreciated.
+A few comments on your earlier posts:
+>>>>> Or else, where can I find some more information about what the
+>>>>> parameters mean?
 
-It's probably worth mentioning that in addition to what is in the
-current patch series these chips all also provide an audio codec which
-requires a reasonably substantial driver for full support.
+To find out how things work in a complex C program like the kernel,
+tools like LXR and cscope/ kscope can be quite helpful.  In particular,
+they help navigate between definitions and call sites.
+http://lxr.free-electrons.com/
+http://lxr.linux.no/linux
+http://kscope.sourceforge.net/
+
+>>> we have to build something
+>>> like IPC, but simpler. we have a "get" system call (we thought we
+>>> would just create a file in /tmp, not use it from the kernel, just
+>>> create it) and then the users that want to access the shared memory
+>>> will call the system call "attach". That will map the file into user
+>>> space, as shared.
+
+Why back the shared memory with a file?  Wouldn't a memory buffer suffice?
+-- 
+Stefan Richter
+-=====-==--- ---= =--==
+http://arcgraph.de/sr/
