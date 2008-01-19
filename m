@@ -1,138 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbYASQyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762560AbYASQ6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761918AbYASQyV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 11:54:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbYASQyM
+	id S1762560AbYASQ6g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 11:58:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbYASQ63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 11:54:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:49676 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753591AbYASQyK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 11:54:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=lUS14tdchxlhFweXu1wAFcMJQebl26KcOaB5O2sk0CBEIhGiECRCdCE5TH9QH3wTRfcK9TccmT51UPwOHPA2lR+usRLn+lOXE3t3jNqZ84P4iLF3BAQdaCppFXDzlvdLuqDevoJw0Zv4Xie8+PeK/ocpVfay1lhp+9J11rduPFI=
-Message-ID: <47922B2A.7070709@gmail.com>
-Date: Sat, 19 Jan 2008 18:54:02 +0200
-From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
+	Sat, 19 Jan 2008 11:58:29 -0500
+Received: from colo.lackof.org ([198.49.126.79]:32853 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755277AbYASQ62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 11:58:28 -0500
+Date: Sat, 19 Jan 2008 09:58:09 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Greg KH <greg@kroah.com>, Loic Prylli <loic@myri.com>,
+       Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>,
+       Tony Camuso <tcamuso@redhat.com>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+	opt-in
+Message-ID: <20080119165809.GB11553@colo.lackof.org>
+References: <20080112002638.GA18710@kroah.com> <20080112144030.GA19279@jurassic.park.msu.ru> <1200208085.6896.134.camel@pasglop> <20080113072415.GB18741@parisc-linux.org> <20080113090108.3224698c@laptopd505.fenrus.org> <20080114225225.GQ18741@parisc-linux.org> <20080114230448.GL9847@does.not.exist> <478CD8A5.5090608@myri.com> <20080115174643.GB28238@kroah.com> <20080115175641.GE18741@parisc-linux.org>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] LatencyTop: make reason (blk_execute_rq+0x7a/0xd) known
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080115175641.GE18741@parisc-linux.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arjan,
+On Tue, Jan 15, 2008 at 10:56:41AM -0700, Matthew Wilcox wrote:
+> On Tue, Jan 15, 2008 at 09:46:43AM -0800, Greg KH wrote:
+> > But so far, we have a zillion patches floating around, claiming
+> > different things, some with signed-off-bys and others without, so for
+> > now, I'll just stick with Arjan's patch in -mm and see if anyone
+> > complains about those releases...
+> 
+> I complain about Arjan's patch.  For reasons which have been adequately
+> gone into already in this thread.
 
-One of the top reasons in latencytop is
-Unknown reason (blk_execute_rq+0x7a/0xd)          152.3 msec        
-49.0 msec
+Agreed.
+Greg, I think at least two better alternatives were proposed already.
+Please review the thread again.
 
-Its from hddtemp, hald-addon-storage, ...
-
-I wrote a simple systemtap script [1] to find out where its called from,
-and its definitely from the ioctl (see below).
-
-1820322406
-hddtemp(3999):                                                                                                      
-<- latency of 153260223 ns
-Returning from: 0xffffffff80311ab0 : blk_execute_rq+0x0/0xd0 []
-Returning to  : 0xffffffff80315580 : sg_io+0x200/0x3c0 []
- 0xffffffff80315a02 : scsi_cmd_ioctl+0x2c2/0x410 []
- 0xffffffff80417153 : ip_queue_xmit+0x2b3/0x420 []
- 0xffffffff880c3be9 : sd_ioctl+0x99/0xf0 [sd_mod]
- 0xffffffff80313839 : blkdev_driver_ioctl+0x39/0x40 []
- 0xffffffff80313ab8 : blkdev_ioctl+0x278/0x710 []
- 0xffffffff803e540d : release_sock+0x8d/0xa0 []
- 0xffffffff803e54b3 : lock_sock_nested+0x93/0xa0 []
- 0xffffffff8029a4ff : d_alloc+0x6f/0x1a0 []
- 0xffffffff802f102f : security_d_instantiate+0x1f/0x30 []
- 0xffffffff803e540d : release_sock+0x8d/0xa0 []
- 0xffffffff8043c8c8 : inet_accept+0x88/0xc0 []
- 0xffffffff803e408e : move_addr_to_user+0x5e/0x70 []
- 0xffffffff802f0bb1 : security_socket_post_accept+0x11/0x20 []
- 0xffffffff803e472e : sys_accept+0x13e/0x1d0 []
- 0xffffffff802af12b : block_ioctl+0x1b/0x20 []
- 0xffffffff8029482b : do_ioctl+0x1b/0x70 []
- 0xffffffff80294a6d : vfs_ioctl+0x1ed/0x290 []
- 0xffffffff80296281 : sys_select+0x41/0x1b0 []
- 0xffffffff80294b92 : sys_ioctl+0x82/0xa0 []
- 0xffffffff8020c18e : system_call+0x7e/0x83 []
-
-
-I suggest adding an annotation to make this reason known to latencytop
-by annotating sd_ioctl/scsi_cmd_ioctl, see my patch below.
-After my patch, instead of blk_execute_rq the real reason is showed:
-
-Cause                                               Maximum          Average
-SCSI device ioctl                                  34.2 msec        
-14.4 msec
-
-I noticed there's a similar annotation in sr.c for cdrom_ioctl, but sr.c
-also has annotations for scsi_nonblockable_ioctl, and scsi_ioctl.
-If they are needed for sd_block_ioctl too, maybe
-scsi_nonblockable_ioctl/scsi_ioctl should have the annotation themselves.
-
-I also noticed some unsigned overflows, my top latency was sometimes a
-very large number (18................................), which
-was probably -1, or some other negative number.  I haven't found a way
-to reproduce it yet (it happens very rarely).
-
-[1] Systemtap script:
-#!/usr/bin/stap -v
-global start
-probe kernel.function("blk_execute_rq") {
-        start[tid()] = gettimeofday_ns()
-}
-
-probe kernel.function("blk_execute_rq").return {
-        # if we have not seen this before
-        if (!([tid()] in start)) next
-        delta = gettimeofday_ns() - start[tid()]
-        # show backtraces for latencies over 1ms
-        if(delta > 1000000) {
-                printf("%s <- latency of %d ns\n", thread_indent(1), delta)
-                print_backtrace ()
-        }
-        delete start[tid()]
-}
-
-P.S.: LatencyTop could have a feature to ask for more details on unknown
-latency reasons, and it would generate a systemtap script itself, that
-would show the backtraces to help figure out whats going on.
-
-Best regards,
---Edwin
-
-----
-
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index a69b155..93ccfc0 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -686,6 +687,7 @@ static int sd_ioctl(struct inode * inode, struct
-file * filp,
-     struct scsi_device *sdp = scsi_disk(disk)->device;
-     void __user *p = (void __user *)arg;
-     int error;
-+    struct latency_entry reason;
-    
-     SCSI_LOG_IOCTL(1, printk("sd_ioctl: disk=%s, cmd=0x%x\n",
-                         disk->disk_name, cmd));
-@@ -710,7 +712,9 @@ static int sd_ioctl(struct inode * inode, struct
-file * filp,
-         case SCSI_IOCTL_GET_BUS_NUMBER:
-             return scsi_ioctl(sdp, cmd, p);
-         default:
-+            set_latency_reason("SCSI device ioctl", &reason);
-             error = scsi_cmd_ioctl(filp, disk->queue, disk, cmd, p);
-+            restore_latency_reason(&reason);
-             if (error != -ENOTTY)
-                 return error;
-     }
+grant
