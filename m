@@ -1,81 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932210AbYASPYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932188AbYASP1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932210AbYASPYX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 10:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbYASPYQ
+	id S932188AbYASP1R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 10:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759224AbYASP1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 10:24:16 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37185 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759733AbYASPYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 10:24:15 -0500
-Date: Sat, 19 Jan 2008 16:24:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: travis@sgi.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
-Message-ID: <20080119152357.GA11706@elte.hu>
-References: <20080118183011.354965000@sgi.com> <20080118183011.917801000@sgi.com> <20080119145243.GA27974@elte.hu> <20080119151522.GA7774@elte.hu>
+	Sat, 19 Jan 2008 10:27:07 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:55475 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754880AbYASP1F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 10:27:05 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <479216AF.2080307@s5r6.in-berlin.de>
+Date: Sat, 19 Jan 2008 16:26:39 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080119151522.GA7774@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Rafael Sisto <rafael.sisto@gmail.com>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: new file in kernel.
+References: <ee3dc96c0801190542u2f91a2eax3bcfd0268d4850b4@mail.gmail.com>	 <20080119134837.GA15610@ghostprotocols.net>	 <ee3dc96c0801190621p1970086fj218178a7519fe4af@mail.gmail.com>	 <20080119143051.GB9896@lug-owl.de> <ee3dc96c0801190657x54edb8cve8a4c09a6efbbb2a@mail.gmail.com>
+In-Reply-To: <ee3dc96c0801190657x54edb8cve8a4c09a6efbbb2a@mail.gmail.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael Sisto wrote:
+> The thing is, it is for a college project. we have to build something
+> like IPC, but simpler.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> and then it crashes with:
-> 
->  [    0.000000] Bootmem setup node 0 0000000000000000-000000003fff0000
->  [    0.000000] KERN_NOTICE cpu_to_node(0): usage too early!
->  PANIC: early exception 06 rip 10:ffffffff81f77f30 error 0 cr2 f06f53
->  [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.24-rc8 #422
->  [    0.000000]
->  [    0.000000] Call Trace:
->  [    0.000000]  [<ffffffff81f76b4a>] ? setup_node_bootmem+0x1a0/0x1b8
->  [    0.000000]  [<ffffffff81f77f30>] ? acpi_scan_nodes+0x204/0x255
->  [    0.000000]  [<ffffffff81f77f30>] ? acpi_scan_nodes+0x204/0x255
->  [    0.000000]  [<ffffffff81f77103>] ? numa_initmem_init+0x343/0x471
-> 
-> moral: PLEASE do not use BUG() on in early init code, unless 
-> absolutely necessary.
-
-the right fix is below.
-
-	Ingo
-
----
- include/asm-x86/topology.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux/include/asm-x86/topology.h
-===================================================================
---- linux.orig/include/asm-x86/topology.h
-+++ linux/include/asm-x86/topology.h
-@@ -70,10 +70,10 @@ static inline int cpu_to_node(int cpu)
- 	if(x86_cpu_to_node_map_early_ptr) {
- 		printk("KERN_NOTICE cpu_to_node(%d): usage too early!\n",
- 			(int)cpu);
--		BUG();
-+		dump_stack();
- 	}
- #endif
--	if(per_cpu_offset(cpu))
-+	if (per_cpu_offset(cpu))
- 		return per_cpu(x86_cpu_to_node_map, cpu);
- 	else
- 		return NUMA_NO_NODE;
+Did you already discuss your problems regarding design and
+implementation with your teachers before turning to LKML for advice on
+your homework?
+-- 
+Stefan Richter
+-=====-==--- ---= =--==
+http://arcgraph.de/sr/
