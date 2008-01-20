@@ -1,41 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbYATEf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbYATEmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbYATEf3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 23:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbYATEfU
+	id S1756466AbYATEmv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 23:42:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYATEmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 23:35:20 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:42123 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752706AbYATEfT (ORCPT
+	Sat, 19 Jan 2008 23:42:42 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:45072 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbYATEml (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 23:35:19 -0500
-Message-ID: <4792CF9A.2030601@davidnewall.com>
-Date: Sun, 20 Jan 2008 15:05:38 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Matt Mackall <mpm@selenic.com>, Chodorenko Michail <misha@one.by>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: Celeron Core
-References: <3ed23423adebae08e8f75b6a6a7ce7ff@one.by> <p73prvyalfl.fsf@bingen.suse.de> <1200702477.25782.41.camel@cinder.waste.org> <20080119011506.GA23798@one.firstfloor.org> <1200715842.25782.95.camel@cinder.waste.org> <20080119042750.GA24481@one.firstfloor.org> <1200717635.25782.107.camel@cinder.waste.org> <20080119045415.GA27628@one.firstfloor.org>
-In-Reply-To: <20080119045415.GA27628@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 19 Jan 2008 23:42:41 -0500
+Date: Sat, 19 Jan 2008 20:45:16 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86: disable_mtrr_trim only need for x86_64
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-id: <200801192045.17291.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> I think the misunderstanding on your side is relative to what there
-> is less heat. Throttling essentially reduces temporary heat spikes on
-> the silicon, but does not make the system overall take less power
-> or generate less heat as measured over a longer time because it will
-> be idle less.
->   
+[PATCH] x86: disable_mtrr_trim only need for x86_64
 
-I don't understand this, and it seems wrong.  Most machines spend most
-of their time doing nothing, or as close to nothing as they're allowed. 
-Idle, in other words.  Isn't it the case that an idle machine will use
-less power when throttled than when not?
+mtrr_trim_uncached_memory is only used in x86_64,
+
+so disable_mtrr_trim is not needed for x86_32
+
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 46763e3..608c88a 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -624,6 +624,7 @@ static struct sysdev_driver mtrr_sysdev_driver = {
+ 	.resume		= mtrr_restore,
+ };
+ 
++#ifdef CONFIG_X86_64
+ static int disable_mtrr_trim;
+ 
+ static int __init disable_mtrr_trim_setup(char *str)
+@@ -633,7 +634,6 @@ static int __init disable_mtrr_trim_setup(char *str)
+ }
+ early_param("disable_mtrr_trim", disable_mtrr_trim_setup);
+ 
+-#ifdef CONFIG_X86_64
+ /**
+  * mtrr_trim_uncached_memory - trim RAM not covered by MTRRs
+  *
