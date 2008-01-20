@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbYATWSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbYATWYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbYATWSS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 17:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755867AbYATWSK
+	id S1756601AbYATWYY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 17:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755807AbYATWYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 17:18:10 -0500
-Received: from ozlabs.org ([203.10.76.45]:39908 "EHLO ozlabs.org"
+	Sun, 20 Jan 2008 17:24:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48548 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755060AbYATWSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 17:18:08 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH 0/6] RFC: Typesafe callbacks
-Date: Mon, 21 Jan 2008 09:17:30 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>
-References: <200801202046.14746.rusty@rustcorp.com.au> <4793450F.40902@gmail.com> <47934604.6080505@gmail.com>
-In-Reply-To: <47934604.6080505@gmail.com>
+	id S1755258AbYATWYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 17:24:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Subject: Re: PROBLEM: Celeron Core
+Date: Sun, 20 Jan 2008 23:26:36 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <4793C5CA.5060100@wpkg.org>
+In-Reply-To: <4793C5CA.5060100@wpkg.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801210917.30977.rusty@rustcorp.com.au>
+Message-Id: <200801202326.37030.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 January 2008 00:00:52 Tejun Heo wrote:
-> What should be do are
->
-> * Check that the threadfn's argument fits into void *.
+On Sunday, 20 of January 2008, Tomasz Chmielewski wrote:
+> >> Clock throttling is not likely to save your battery, unless you have 
+> >> tasks that are running at 100% CPU for an unlimited time or something, 
+> >> and you force your CPU to throttle. Normally most people have tasks that 
+> >> run and then the CPU idles - loading an email, displaying a web page, 
+> >> etc. Clock throttling will just make these tasks utilize the CPU for a 
+> >> longer time proportional to the amount clock throttling and therefore 
+> >> negate any gains in battery usage.
+> 
+> Aren't you forgetting about CPUfreq governors? Which mean: use the 
+> maximum CPU frequency when the system is busy, throttle down (or lower 
+> voltage) when the system is idle.
+> 
+> So yes, throttling will save the battery.
 
-For everything but timer, you'll get a warning if the data isn't assignable to 
-a void *, so you get a warning if you use a non-pointer already.
+In the relevant documentation "throttling" usually means "the reduction of the
+frequency of a CPU that is not idle" in which case it won't (at least on the
+average).
+ 
+> Besides, not all CPUs support power management (voltage control).
+> 
+> 
+> > IMO clock throttling (as opposed to the reduction of the frequency of an idle
+> > CPU) is only useful for preventing the CPU from overheating.
+> 
+> And for reducing power on CPUs that can't do any power management, just 
+> throttling.
+> 
+> For example, a server that doesn't crunch any numbers at night will 
+> certainly use less power when throttled.
 
-But it would be cool to allow functions which take an unsigned long.  To do 
-this, I think that would need to be a special case for the data arg (which 
-we'd really want to wrap in a macro), like:
+You can't use less power, you only can use less energy. :-)
 
-	/* If fn expects an unsigned long, cast the data.  If not, we'll
-	 * get a warning if data is not void * compatible. */
-	__builtin_choose_expr(__builtin_compatible_p(typeof(1?(threadfn):NULL),
-			      int (*)(unsigned long)),
-			      (void *)(unsigned long)(data), (data))
+Anyway, that's "the reduction of the frequency of an idle CPU" mentioned above
+and it makes sense in the majority of cases.
 
-> * Trigger overflow in implicit constant conversion warning if the
-> specified data is too large for the argument type.
-
-Hmm, u64 on 32-bit platforms?  I think that will fail the above test: the type 
-of the function ptr will be "int (*)(u64)" and so you'll end up passing data 
-(a u64) to a void * argument, which will elicit a warning...
-
-I'll test this out and see what I can make...
-
-Thanks!
-Rusty.
+Greetings,
+Rafael
