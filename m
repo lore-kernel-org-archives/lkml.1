@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbYATDhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758075AbYATD4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbYATDhv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 22:37:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYATDhn
+	id S1758075AbYATD4A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 22:56:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYATDzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 22:37:43 -0500
-Received: from jbanks.dsl.xmission.com ([204.228.152.159]:59422 "EHLO
-	mail.bakbone.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751537AbYATDhm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 22:37:42 -0500
-From: Justin Banks <justinb@bakbone.com>
-Date: Sat, 19 Jan 2008 20:31:46 -0700
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Justin Banks <justinb@bakbone.com>, linux-kernel@vger.kernel.org
-Subject: Re: Where's the create() pointer?
-Message-ID: <20080120033146.GA6744@bleen.domain.actdsltmp>
-References: <20080119150718.GA14765@bleen.domain.actdsltmp> <1200759175.8028.6.camel@heimdal.trondhjem.org> <20080119190249.GA4383@bleen.domain.actdsltmp> <1200773162.9095.11.camel@heimdal.trondhjem.org>
+	Sat, 19 Jan 2008 22:55:50 -0500
+Received: from phunq.net ([64.81.85.152]:57465 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752593AbYATDzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 22:55:49 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm patch]
+Date: Sat, 19 Jan 2008 19:55:41 -0800
+User-Agent: KMail/1.9.5
+Cc: Abhishek Rai <abhishekrai@google.com>, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, linux-ext4@vger.kernel.org
+References: <200801140839.01986.abhishekrai@google.com> <20080114163412.83a8b18d.akpm@linux-foundation.org> <20080115030441.a0270609.akpm@linux-foundation.org>
+In-Reply-To: <20080115030441.a0270609.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1200773162.9095.11.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200801191955.41980.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote
-> 
-> On Sat, 2008-01-19 at 12:02 -0700, Justin Banks wrote:
-> > Trond Myklebust wrote
-> > > 
-> > > On Sat, 2008-01-19 at 08:07 -0700, Justin Banks wrote:
-> > > > It's probably been this way for a long time, and I'm just noticing, but
-> > > > I can't seem to find the create() (among others) pointer for NFS filesystems.
-> > > > 
-> > > > Specifically, If I look at sb->s_root->d_inode->i_op there's no create
-> > > > there. How do I find it? I'm guessing that the ability to share mount
-> > > > structures between multiple NFS mounts resulted in some kind of fake
-> > > > superblock, but I just can't figure out where to find the functions.
-> > > 
-> > > Why would you want to do this in the first place?
-> > 
-> > I'm just looking at trapping new creates on NFS, and so I need to find
-> > the pointer.
-> 
-> What is your purpose in trapping creates on the client? Is this for
-> accounting purposes? If so, why wouldn't inotify, or even a systemtap
-> script suffice?
+On Tuesday 15 January 2008 03:04, Andrew Morton wrote:
+> I'm wondering about the real value of this change, really.
+>
+> In any decent environment, people will fsck their ext3 filesystems
+> during planned downtime, and the benefit of reducing that downtime
+> from 6 hours/machine to 2 hours/machine is probably fairly small,
+> given that there is no service interruption.  (The same applies to
+> desktops and laptops).
+>
+> Sure, the benefit is not *zero*, but it's small.  Much less than it
+> would be with ext2.  I mean, the "avoid unplanned fscks" feature is
+> the whole reason why ext3 has journalling (and boy is that feature
+> expensive during normal operation).
+>
+> So...  it's unobvious that the benefit of this feature is worth its
+> risks and costs?
 
-Could do inotify, except on a large-ish filesystem, it's really
-unuseable, if you want to track everything that's going on.
+Since I am waiting for an Ext3 fsck to complete right now, I thought I 
+would while away the time by tagging on my "me too" to the concensus 
+that faster fsck is indeed worth the cost, which is (ahem) free.
 
-> Anyhow, the simplest way to find the pointer is to grep for nfs_create
-> in /proc/kallsyms.
+Regards,
 
-Ugh. That's an ugly way, seems to me. Isn't there a way, given the
-superblock? I mean, the VFS does it that way, doesn't it?
-
--justinb
-
--- 
-Justin Banks
-BakBone Software
-justinb@bakbone.com
+Daniel
