@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbYATXu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757007AbYATXwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885AbYATXu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 18:50:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756189AbYATXuV
+	id S1757007AbYATXwS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 18:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756194AbYATXwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 18:50:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48904 "EHLO mx2.mail.elte.hu"
+	Sun, 20 Jan 2008 18:52:10 -0500
+Received: from gw.goop.org ([64.81.55.164]:49978 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756179AbYATXuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 18:50:20 -0500
-Date: Mon, 21 Jan 2008 00:50:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: ACPI early ioremap problems II
-Message-ID: <20080120235000.GA23512@elte.hu>
-References: <20080119030843.GA2028@basil.nowhere.org> <20080119150328.GA32370@elte.hu> <20080119152649.GA1375@one.firstfloor.org> <20080119153055.GA12054@elte.hu> <20080119154651.GA1626@one.firstfloor.org> <20080119184543.GA3751@elte.hu> <20080119191621.GA3865@one.firstfloor.org> <20080120164817.GA26820@one.firstfloor.org>
+	id S1756161AbYATXwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 18:52:08 -0500
+Message-ID: <4793DEA6.5070403@goop.org>
+Date: Sun, 20 Jan 2008 15:52:06 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080120164817.GA26820@one.firstfloor.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+To: xming <xmingske@gmail.com>
+CC: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: Cannot boot xen DomU > 2.6.23.1
+References: <519a8b110801170813h96b8f2by795e6d8b72a00ba4@mail.gmail.com>	 <478F8D22.60004@goop.org>	 <519a8b110801171113y20a3bedfg446e29a30712a26d@mail.gmail.com>	 <4790561E.9040508@goop.org>	 <519a8b110801180438l389ec1d6t7b888b8c78d59dd8@mail.gmail.com>	 <4790D187.8050000@goop.org>	 <519a8b110801180856o7757889as47106fd3eabcc0de@mail.gmail.com>	 <4790E13D.5040603@goop.org>	 <519a8b110801200508l1fb3dee9ha197f3fc76ccac69@mail.gmail.com>	 <479394D9.50104@goop.org> <519a8b110801201129kd4347d5mf87920f69cf1821e@mail.gmail.com>
+In-Reply-To: <519a8b110801201129kd4347d5mf87920f69cf1821e@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+xming wrote:
+>> Thanks, that answers that particular question; the vcpu is blocked
+>> waiting for something to happen, which probably means it missed the
+>> event which was supposed to wake it up.  Why is another question.  At
+>> least there's a workaround, and that workaround gives me some clue where
+>> to look.
+>>     
+>
+> Want me to test it?
+>   
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+I'll probably look at this when my current batch of work is under 
+control.  In the meantime, I'll submit the workaround patch to keep 
+people happy.  The only downside is a small performance hit.
 
-> As a followup I see this problem on three different 64bit machines 
-> now. Symptom is usually that only one core is active because ACPI 
-> doesn't see the other processors in its tables.
+>> BTW, is it an SMP or UP domain?   Does it make a difference?
+>>     
+>
+> It doesn't matter, I tried vcpu=1 and vcpu=2, unless you want me to try
+> to recompile a UP kernel?
+>   
 
-to be able to have a chance to fix it we need you meet the minimum 
-threshold for bugreports: please send the failing .config and a full 
-boot message of the incident as well. (Please also check latest x86.git, 
-maybe it's something that got fixed today.)
+It would be an interesting datapoint, but I don't think it will make a 
+difference.
 
-I have tested latest x86.git#mm on 3 different 64bit machines and Thomas 
-tested it too, and none of us saw any crashes. So whatever you are 
-seeing, it's unfortunately not very common to trigger.
+>> Maybe when I have nothing else to do.
+>>     
+>
+> I'll wait, or should I poke xen-devel?
+>   
 
-	Ingo
+Poke xen-devel.
+
+    J
