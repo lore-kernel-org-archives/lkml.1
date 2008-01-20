@@ -1,219 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbYATS6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbYATTJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754936AbYATS6a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 13:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127AbYATS6G
+	id S1755568AbYATTJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 14:09:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbYATTJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 13:58:06 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:50745 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754875AbYATS6D (ORCPT
+	Sun, 20 Jan 2008 14:09:19 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34657 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754285AbYATTJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 13:58:03 -0500
-From: Felipe Balbi <me@felipebalbi.com>
-To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-omap@vger.kernel.org
-Cc: Felipe Balbi <me@felipebalbi.com>
-Subject: [PATCH] USB: OTG: Make otg_tpl come from platform_data
-Date: Sun, 20 Jan 2008 20:59:59 +0200
-Message-Id: <1200855599-17509-2-git-send-email-me@felipebalbi.com>
-X-Mailer: git-send-email 1.5.4.rc3.24.gb53139
-In-Reply-To: <1200855599-17509-1-git-send-email-me@felipebalbi.com>
-References: <1200855599-17509-1-git-send-email-me@felipebalbi.com>
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+	Sun, 20 Jan 2008 14:09:18 -0500
+Date: Sun, 20 Jan 2008 20:12:47 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com
+Subject: Re: [PATCH] Fix early_ioremap on x86-64
+Message-ID: <20080120191247.GA28190@one.firstfloor.org>
+References: <20080120172840.GA24608@basil.nowhere.org> <20080120175955.GA4993@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080120175955.GA4993@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is applicable to n8X0. It makes otg tpl come
-from musb_platform_data and be initialized in otg.c
+On Sun, Jan 20, 2008 at 06:59:55PM +0100, Ingo Molnar wrote:
+> 
+> Jeremy did suspect something about this change, as indicated in the 
+> changelog. But because the change was so finegrained, the bisection 
+> almost directly led to the fix. _That_ i think clearly demonstrates the 
+> power of bisection and finegrained changes.
 
-This provides a better code style and better handling
-of otg capable devices.
+Actually it is pretty hard to do bisects in current git-x86 currently because
+you don't ammend original buggy changes but just stuff the fixes 
+at the end. This means there are large windows of breakage inbetween
+that make it hard to pinpoint other bugs during bisection.
 
-Signed-off-by: Felipe Balbi <me@felipebalbi.com>
----
- arch/arm/mach-omap2/board-n800-usb.c |   14 +++++++++++
- drivers/usb/core/otg.c               |   43 ++++------------------------------
- drivers/usb/musb/musb_core.c         |    4 +++
- include/linux/usb/musb.h             |    5 ++++
- include/linux/usb/otg.h              |    5 ++++
- 5 files changed, 33 insertions(+), 38 deletions(-)
+This is why I cannot easily bisect this new breakage.
+Ok I suspect I can cook up some script later that always create a new branch 
+and reapplies the bug fixes. Or ammend the patch locally. But frankly it is 
+very unpleasant.
 
-diff --git a/arch/arm/mach-omap2/board-n800-usb.c b/arch/arm/mach-omap2/board-n800-usb.c
-index 7599f64..fc530f7 100644
---- a/arch/arm/mach-omap2/board-n800-usb.c
-+++ b/arch/arm/mach-omap2/board-n800-usb.c
-@@ -15,6 +15,7 @@
- #include <linux/clk.h>
- #include <linux/err.h>
- #include <linux/usb/musb.h>
-+#include <linux/usb.h>
- #include <asm/arch/gpmc.h>
- #include <asm/arch/gpio.h>
- #include <asm/arch/pm.h>
-@@ -35,6 +36,16 @@ static int tusb_set_clock(struct clk *osc_ck, int state);
- #	define BOARD_MODE	MUSB_HOST
- #endif
- 
-+#ifdef CONFIG_USB_OTG_WHITELIST
-+struct usb_device_id otg_tpl[] = {
-+		/* Support known mass storage devices */
-+		{ USB_DEVICE(0x0421, 0x0431), }, /* N770 */
-+		{ USB_DEVICE(0x0421, 0x04c3), }, /* N800 */
-+		{ USB_DEVICE(0x0421, 0x0096), }, /* RX44 */
-+		{  } /* Terminating entry */
-+};
-+#endif
-+
- static struct musb_hdrc_platform_data tusb_data = {
- 	.mode		= BOARD_MODE,
- 	.multipoint	= 1,
-@@ -43,6 +54,9 @@ static struct musb_hdrc_platform_data tusb_data = {
- 	.min_power	= 25,	/* x2 = 50 mA drawn from VBUS as peripheral */
- 	.power		= 100,	/* Max 100 mA VBUS for host mode */
- 	.clock		= "osc_ck",
-+#ifdef	CONFIG_USB_OTG_WHITELIST
-+	.otg_tpl	= otg_tpl,
-+#endif
- };
- 
- /*
-diff --git a/drivers/usb/core/otg.c b/drivers/usb/core/otg.c
-index 9a2ce7e..8795382 100644
---- a/drivers/usb/core/otg.c
-+++ b/drivers/usb/core/otg.c
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/usb.h>
- #include <linux/usb/otg.h>
-+#include <linux/platform_device.h>
- 
- static struct otg_transceiver *xceiv;
- 
-@@ -60,43 +61,6 @@ EXPORT_SYMBOL(otg_set_error);
- 
- #ifdef	CONFIG_USB_OTG_WHITELIST
- 
--/*
-- * This OTG Whitelist is the OTG "Targeted Peripheral List".  It should
-- * mostly use of USB_DEVICE() or USB_DEVICE_VER() entries..
-- *
-- * YOU _SHOULD_ CHANGE THIS LIST TO MATCH YOUR PRODUCT AND ITS TESTING!
-- */
--
--static struct usb_device_id whitelist_table [] __initdata = {
--
--/* hubs are optional in OTG, but very handy ... */
--{ USB_DEVICE_INFO(USB_CLASS_HUB, 0, 0), },
--{ USB_DEVICE_INFO(USB_CLASS_HUB, 0, 1), },
--
--#ifdef	CONFIG_USB_PRINTER		/* ignoring nonstatic linkage! */
--/* FIXME actually, printers are NOT supposed to use device classes;
-- * they're supposed to use interface classes...
-- */
--{ USB_DEVICE_INFO(7, 1, 1) },
--{ USB_DEVICE_INFO(7, 1, 2) },
--{ USB_DEVICE_INFO(7, 1, 3) },
--#endif
--
--#ifdef	CONFIG_USB_NET_CDCETHER
--/* Linux-USB CDC Ethernet gadget */
--{ USB_DEVICE(0x0525, 0xa4a1), },
--/* Linux-USB CDC Ethernet + RNDIS gadget */
--{ USB_DEVICE(0x0525, 0xa4a2), },
--#endif
--
--#if	defined(CONFIG_USB_TEST) || defined(CONFIG_USB_TEST_MODULE)
--/* gadget zero, for testing */
--{ USB_DEVICE(0x0525, 0xa4a0), },
--#endif
--
--{ }	/* Terminating entry */
--};
--
- struct otg_device {
- 	struct list_head	list;
- 	struct usb_device_id	id;
-@@ -220,10 +184,13 @@ targeted:
- static int __init tpl_init(void)
- {
- 	INIT_LIST_HEAD(&tpl_devices);
--	tpl_add_devices(whitelist_table);
-+
- 	if (xceiv)
- 		xceiv->tpl_enabled = 1;
- 
-+	if (xceiv->otg_tpl != NULL)
-+		tpl_add_devices(xceiv->otg_tpl);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
-index fb37e2c..cf29bde 100644
---- a/drivers/usb/musb/musb_core.c
-+++ b/drivers/usb/musb/musb_core.c
-@@ -1939,6 +1939,10 @@ musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
- 	musb->set_clock = plat->set_clock;
- 	musb->min_power = plat->min_power;
- 
-+#ifdef CONFIG_USB_OTG_WHITELIST
-+	musb->xceiv.otg_tpl = plat->otg_tpl;
-+#endif
-+
- 	/* Clock usage is chip-specific ... functional clock (DaVinci,
- 	 * OMAP2430), or PHY ref (some TUSB6010 boards).  All this core
- 	 * code does is make sure a clock handle is available; platform
-diff --git a/include/linux/usb/musb.h b/include/linux/usb/musb.h
-index d325a0d..76f21b7 100644
---- a/include/linux/usb/musb.h
-+++ b/include/linux/usb/musb.h
-@@ -7,6 +7,8 @@
-  * key configuration differences between boards.
-  */
- 
-+#include <linux/mod_devicetable.h>
-+
- /* The USB role is defined by the connector used on the board, so long as
-  * standards are being followed.  (Developer boards sometimes won't.)
-  */
-@@ -26,6 +28,9 @@ struct musb_hdrc_platform_data {
- 	/* for clk_get() */
- 	const char	*clock;
- 
-+	/* OTG Targeted Peripheral List */
-+	struct usb_device_id	*otg_tpl;
-+
- 	/* (HOST or OTG) switch VBUS on/off */
- 	int		(*set_vbus)(struct device *dev, int is_on);
- 
-diff --git a/include/linux/usb/otg.h b/include/linux/usb/otg.h
-index e748030..79c36fc 100644
---- a/include/linux/usb/otg.h
-+++ b/include/linux/usb/otg.h
-@@ -1,5 +1,7 @@
- // include/linux/usb/otg.h
- 
-+#include <linux/mod_devicetable.h>
-+
- /*
-  * These APIs may be used between USB controllers.  USB device drivers
-  * (for either host or peripheral roles) don't use these calls; they
-@@ -57,6 +59,9 @@ struct otg_transceiver {
- 	struct usb_bus		*host;
- 	struct usb_gadget	*gadget;
- 
-+	/* OTG Target Peripheral List */
-+	struct usb_device_id *otg_tpl;
-+
- 	/* to pass extra port status to the root hub */
- 	u16			port_status;
- 	u16			port_change;
--- 
-1.5.4.rc3.24.gb53139
+> 
+> but note what the fundamental problem is - we've turned a previously 
+> safe flushing API into an unsafe one - __flush_tlb() will only be safe 
+
+It works for user space which is by far the most common case.
+
+> in the rarest of circumstances. There are some other matches:
+> 
+>  ./mm/init_64.c: __flush_tlb();
+>  ./kernel/head64.c:      __flush_tlb();
+
+You're right I missed some. I tried to just redefine it in tlbflush.h
+(which covers user space fork() too so it's too much as a real fix, but
+reasonable for debugging) but it unfortunately still results in the same 
+crash during NUMA node discovery:
+
+There is some garbage in the stack trace; i don't think it's actually
+in bootmem. [My kingdom for Jan's unwinder!]
+
+RAT: Node 0 PXM 0 0-a0000
+SRAT: Node 0 PXM 0 0-d0000000
+SRAT: Node 0 PXM 0 0-130000000
+SRAT: Node 1 PXM 1 130000000-330000000
+early_iounmap(ffffffff828e08d9, 00000150)
+Bootmem setup node 0 0000000000000000-00000000d0000000
+PANIC: early exception 06 rip 10:ffffffff8082df35 error 0 cr2 0
+Pid: 0, comm: swapper Not tainted 2.6.24-rc8-dirty #47
+
+Call Trace:
+ [<ffffffff8082df35>] free_bootmem_core+0x1a/0x6b
+ [<ffffffff8082f14b>] free_bootmem_with_active_regions+0x51/0x67
+ [<ffffffff8082a0fb>] setup_node_bootmem+0x16b/0x1b3
+ [<ffffffff8082b3ac>] acpi_scan_nodes+0x136/0x230
+ [<ffffffff8082a6c3>] numa_initmem_init+0x331/0x459
+ [<ffffffff80234ef6>] release_console_sem+0x1b4/0x1cd
+ [<ffffffff80234ef6>] release_console_sem+0x1b4/0x1cd
+ [<ffffffff80355726>] number+0x10e/0x1f9
+ [<ffffffff802354d8>] printk+0x4e/0x56
+ [<ffffffff80355726>] number+0x10e/0x1f9
+ [<ffffffff803563f8>] vsnprintf+0x53f/0x583
+ [<ffffffff80355726>] number+0x10e/0x1f9
+ [<ffffffff80234ef6>] release_console_sem+0x1b4/0x1cd
+ [<ffffffff803563f8>] vsnprintf+0x53f/0x583
+ [<ffffffff8022468a>] early_serial_write+0x22/0x32
+ [<ffffffff80234b32>] __call_console_drivers+0x5e/0x6c
+ [<ffffffff80234ef6>] release_console_sem+0x1b4/0x1cd
+ [<ffffffff802354d8>] printk+0x4e/0x56
+ [<ffffffff802354d8>] printk+0x4e/0x56
+ [<ffffffff802354d8>] printk+0x4e/0x56
+ [<ffffffff8082b164>] acpi_numa_memory_affinity_init+0x228/0x33a
+ [<ffffffff8022635c>] early_iounmap+0x20/0x70
+ [<ffffffff80836045>] acpi_parse_memory_affinity+0x0/0x1f
+ [<ffffffff8083470c>] acpi_table_parse_entries+0x115/0x126
+ [<ffffffff80836011>] acpi_parse_slit+0x0/0x17
+ [<ffffffff808345d0>] acpi_table_parse+0x4c/0x73
+ [<ffffffff808215af>] setup_arch+0x266/0x414
+ [<ffffffff8081b8b7>] start_kernel+0x6f/0x2bd
+ [<ffffffff8081b1ce>] _sinittext+0x1ce/0x1d5
+
+RIP 0x10
+
+-Andi (seemingly chief QA officer of git-x86 currently) 
 
