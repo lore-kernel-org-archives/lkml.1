@@ -1,123 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbYATPjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYATPmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbYATPjx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 10:39:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbYATPjo
+	id S1754730AbYATPmS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 10:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbYATPmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 10:39:44 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:31827 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754056AbYATPjo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 10:39:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=nIyzGPPbeaPRlBJa67n8CXXRHpS1HpxWj0DFNkaWTOB7vBFBgy4Ox3VLc6PTjGxOGsq5zz2/pFDdTiUPUMCDDXQN5SYSTEoTnkjJd+JCWPGA0zXZKRN1AeFa1Bnhqrc6ZmfjNAjwl1QiQ2qEi6VTIh42A85uV5UrC7VZbAsmem4=
-Message-ID: <9e4733910801200739x502d5407x85f0d950ace80bee@mail.gmail.com>
-Date: Sun, 20 Jan 2008 10:39:43 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Subject: Re: [i2c] [PATCH 19 3/5] Clean up error returns
-Cc: i2c@lm-sensors.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <9e4733910801200718q7304bc29q38e67580613189e4@mail.gmail.com>
+	Sun, 20 Jan 2008 10:42:08 -0500
+Received: from as4.cineca.com ([130.186.84.251]:37774 "EHLO as4.cineca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752084AbYATPmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 10:42:07 -0500
+Message-ID: <47936BC1.9060805@users.sourceforge.net>
+From: Andrea Righi <righiandr@users.sourceforge.net>
+Reply-To: righiandr@users.sourceforge.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_12166_26664924.1200843583547"
-References: <20080112024737.7023.61680.stgit@terra.home>
-	 <20080112024743.7023.23630.stgit@terra.home>
-	 <20080120120730.06dd8a7f@hyperion.delvare>
-	 <9e4733910801200718q7304bc29q38e67580613189e4@mail.gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Naveen Gupta <ngupta@google.com>, Paul Menage <menage@google.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cgroup: limit block I/O bandwidth
+References: <2846be6b0801181439o55dcff09ted2b8f817e7ba682@mail.gmail.com> <4791DC2C.9090405@users.sourceforge.net> <4793507B.6040706@users.sourceforge.net> <20080120143239.GS6258@kernel.dk>
+In-Reply-To: <20080120143239.GS6258@kernel.dk>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=77CEF397;
+	url=keyserver.veridis.com
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Date: Sun, 20 Jan 2008 16:41:54 +0100 (MET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_12166_26664924.1200843583547
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Jens Axboe wrote:
+> Your approach is totally flawed, imho. For instance, you don't want a
+> process to be able to dirty memory at foo mb/sec but only actually
+> write them out at bar mb/sec.
 
-Here' s a version with the compares to zero switched to NO_IRQ. If I
-understand how NO_IRQ works it is the correct change. My understanding
-is that under ppc IRQ zero was legal and NO_IRQ was -1. But then the
-whole kernel switched to NO_IRQ = zero. Powerpc updated to NO_IRQ=0
-and used virtual IRQs to move a physical IRQ 0 to another IRQ number.
-ppc was not changed. This driver does not appear to have been updated
-to track this global change since it didn't initially use the NO_IRQ
-define everywhere.
+Right. Actually my problem here is that the processes that write out
+blocks are different respect to the processes that write bytes in
+memory, and I would be able to add limits on those processes that are
+dirtying memory.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+> The noop-iosched changes are also very buggy. The queue back pointer
+> breaks reference counting and the task pointer storage assumes the task
+> will also always be around. That's of course not the case.
 
-------=_Part_12166_26664924.1200843583547
-Content-Type: application/octet-stream; name=jds-fix-err-returns
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fbnr7wjm
-Content-Disposition: attachment; filename=jds-fix-err-returns
+Yes, this really need a lot of fixes. I simply posted the patch to know
+if such approach (in general) could have sense or not.
 
-Q2xlYW4gdXAgZXJyb3IgcmV0dXJucwoKUmV0dXJuIGVycm9ycyB0aGF0IHdlcmUgYmVpbmcgaWdu
-b3JlZCBpbiB0aGUgbXBjLWkyYyBkcml2ZXIKClNpZ25lZC1vZmYtYnk6IEpvbiBTbWlybCA8am9u
-c21pcmxAZ21haWwuY29tPgotLS0KCiBkcml2ZXJzL2kyYy9idXNzZXMvaTJjLW1wYy5jIHwgICAz
-OCArKysrKysrKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0tLQogMSBmaWxlcyBjaGFuZ2Vk
-LCAyMSBpbnNlcnRpb25zKCspLCAxNyBkZWxldGlvbnMoLSkKCgpkaWZmIC0tZ2l0IGEvZHJpdmVy
-cy9pMmMvYnVzc2VzL2kyYy1tcGMuYyBiL2RyaXZlcnMvaTJjL2J1c3Nlcy9pMmMtbXBjLmMKaW5k
-ZXggZDhkZTRhYy4uYTc3NGNkZiAxMDA2NDQKLS0tIGEvZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1t
-cGMuYworKysgYi9kcml2ZXJzL2kyYy9idXNzZXMvaTJjLW1wYy5jCkBAIC05OSw3ICs5OSw3IEBA
-IHN0YXRpYyBpbnQgaTJjX3dhaXQoc3RydWN0IG1wY19pMmMgKmkyYywgdW5zaWduZWQgdGltZW91
-dCwgaW50IHdyaXRpbmcpCiAJdTMyIHg7CiAJaW50IHJlc3VsdCA9IDA7CiAKLQlpZiAoaTJjLT5p
-cnEgPT0gMCkKKwlpZiAoaTJjLT5pcnEgPT0gTk9fSVJRKQogCXsKIAkJd2hpbGUgKCEocmVhZGIo
-aTJjLT5iYXNlICsgTVBDX0kyQ19TUikgJiBDU1JfTUlGKSkgewogCQkJc2NoZWR1bGUoKTsKQEAg
-LTE4MCw3ICsxODAsNyBAQCBzdGF0aWMgdm9pZCBtcGNfaTJjX3N0b3Aoc3RydWN0IG1wY19pMmMg
-KmkyYykKIHN0YXRpYyBpbnQgbXBjX3dyaXRlKHN0cnVjdCBtcGNfaTJjICppMmMsIGludCB0YXJn
-ZXQsCiAJCSAgICAgY29uc3QgdTggKiBkYXRhLCBpbnQgbGVuZ3RoLCBpbnQgcmVzdGFydCkKIHsK
-LQlpbnQgaTsKKwlpbnQgaSwgcmVzdWx0OwogCXVuc2lnbmVkIHRpbWVvdXQgPSBpMmMtPmFkYXAu
-dGltZW91dDsKIAl1MzIgZmxhZ3MgPSByZXN0YXJ0ID8gQ0NSX1JTVEEgOiAwOwogCkBAIC0xOTIs
-MTUgKzE5MiwxNyBAQCBzdGF0aWMgaW50IG1wY193cml0ZShzdHJ1Y3QgbXBjX2kyYyAqaTJjLCBp
-bnQgdGFyZ2V0LAogCS8qIFdyaXRlIHRhcmdldCBieXRlICovCiAJd3JpdGViKCh0YXJnZXQgPDwg
-MSksIGkyYy0+YmFzZSArIE1QQ19JMkNfRFIpOwogCi0JaWYgKGkyY193YWl0KGkyYywgdGltZW91
-dCwgMSkgPCAwKQotCQlyZXR1cm4gLTE7CisJcmVzdWx0ID0gaTJjX3dhaXQoaTJjLCB0aW1lb3V0
-LCAxKTsKKwlpZiAocmVzdWx0IDwgMCkKKwkJcmV0dXJuIHJlc3VsdDsKIAogCWZvciAoaSA9IDA7
-IGkgPCBsZW5ndGg7IGkrKykgewogCQkvKiBXcml0ZSBkYXRhIGJ5dGUgKi8KIAkJd3JpdGViKGRh
-dGFbaV0sIGkyYy0+YmFzZSArIE1QQ19JMkNfRFIpOwogCi0JCWlmIChpMmNfd2FpdChpMmMsIHRp
-bWVvdXQsIDEpIDwgMCkKLQkJCXJldHVybiAtMTsKKwkJcmVzdWx0ID0gaTJjX3dhaXQoaTJjLCB0
-aW1lb3V0LCAxKTsKKwkJaWYgKHJlc3VsdCA8IDApCisJCQlyZXR1cm4gcmVzdWx0OwogCX0KIAog
-CXJldHVybiAwOwpAQCAtMjEwLDcgKzIxMiw3IEBAIHN0YXRpYyBpbnQgbXBjX3JlYWQoc3RydWN0
-IG1wY19pMmMgKmkyYywgaW50IHRhcmdldCwKIAkJICAgIHU4ICogZGF0YSwgaW50IGxlbmd0aCwg
-aW50IHJlc3RhcnQpCiB7CiAJdW5zaWduZWQgdGltZW91dCA9IGkyYy0+YWRhcC50aW1lb3V0Owot
-CWludCBpOworCWludCBpLCByZXN1bHQ7CiAJdTMyIGZsYWdzID0gcmVzdGFydCA/IENDUl9SU1RB
-IDogMDsKIAogCS8qIFN0YXJ0IHdpdGggTUVOICovCkBAIC0yMjEsOCArMjIzLDkgQEAgc3RhdGlj
-IGludCBtcGNfcmVhZChzdHJ1Y3QgbXBjX2kyYyAqaTJjLCBpbnQgdGFyZ2V0LAogCS8qIFdyaXRl
-IHRhcmdldCBhZGRyZXNzIGJ5dGUgLSB0aGlzIHRpbWUgd2l0aCB0aGUgcmVhZCBmbGFnIHNldCAq
-LwogCXdyaXRlYigodGFyZ2V0IDw8IDEpIHwgMSwgaTJjLT5iYXNlICsgTVBDX0kyQ19EUik7CiAK
-LQlpZiAoaTJjX3dhaXQoaTJjLCB0aW1lb3V0LCAxKSA8IDApCi0JCXJldHVybiAtMTsKKwlyZXN1
-bHQgPSBpMmNfd2FpdChpMmMsIHRpbWVvdXQsIDEpOworCWlmIChyZXN1bHQgPCAwKQorCQlyZXR1
-cm4gcmVzdWx0OwogCiAJaWYgKGxlbmd0aCkgewogCQlpZiAobGVuZ3RoID09IDEpCkBAIC0yMzQs
-OCArMjM3LDkgQEAgc3RhdGljIGludCBtcGNfcmVhZChzdHJ1Y3QgbXBjX2kyYyAqaTJjLCBpbnQg
-dGFyZ2V0LAogCX0KIAogCWZvciAoaSA9IDA7IGkgPCBsZW5ndGg7IGkrKykgewotCQlpZiAoaTJj
-X3dhaXQoaTJjLCB0aW1lb3V0LCAwKSA8IDApCi0JCQlyZXR1cm4gLTE7CisJCXJlc3VsdCA9IGky
-Y193YWl0KGkyYywgdGltZW91dCwgMCk7CisJCWlmIChyZXN1bHQgPCAwKQorCQkJcmV0dXJuIHJl
-c3VsdDsKIAogCQkvKiBHZW5lcmF0ZSB0eGFjayBvbiBuZXh0IHRvIGxhc3QgYnl0ZSAqLwogCQlp
-ZiAoaSA9PSBsZW5ndGggLSAyKQpAQCAtMzIxLDEyICszMjUsMTIgQEAgc3RhdGljIGludCBmc2xf
-aTJjX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCiAKIAlwZGF0YSA9IChzdHJ1
-Y3QgZnNsX2kyY19wbGF0Zm9ybV9kYXRhICopIHBkZXYtPmRldi5wbGF0Zm9ybV9kYXRhOwogCi0J
-aWYgKCEoaTJjID0ga3phbGxvYyhzaXplb2YoKmkyYyksIEdGUF9LRVJORUwpKSkgeworCWkyYyA9
-IGt6YWxsb2Moc2l6ZW9mKCppMmMpLCBHRlBfS0VSTkVMKTsKKwlpZiAoIWkyYykKIAkJcmV0dXJu
-IC1FTk9NRU07Ci0JfQogCiAJaTJjLT5pcnEgPSBwbGF0Zm9ybV9nZXRfaXJxKHBkZXYsIDApOwot
-CWlmIChpMmMtPmlycSA8IDApIHsKKwlpZiAoaTJjLT5pcnEgPCBOT19JUlEpIHsKIAkJcmVzdWx0
-ID0gLUVOWElPOwogCQlnb3RvIGZhaWxfZ2V0X2lycTsKIAl9CkBAIC0zNDEsNyArMzQ1LDcgQEAg
-c3RhdGljIGludCBmc2xfaTJjX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCiAJ
-CWdvdG8gZmFpbF9tYXA7CiAJfQogCi0JaWYgKGkyYy0+aXJxICE9IDApCisJaWYgKGkyYy0+aXJx
-ICE9IE5PX0lSUSkKIAkJaWYgKChyZXN1bHQgPSByZXF1ZXN0X2lycShpMmMtPmlycSwgbXBjX2ky
-Y19pc3IsCiAJCQkJCSAgSVJRRl9TSEFSRUQsICJpMmMtbXBjIiwgaTJjKSkgPCAwKSB7CiAJCQlw
-cmludGsoS0VSTl9FUlIKQEAgLTM2NCw3ICszNjgsNyBAQCBzdGF0aWMgaW50IGZzbF9pMmNfcHJv
-YmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKIAlyZXR1cm4gcmVzdWx0OwogCiAgICAg
-ICBmYWlsX2FkZDoKLQlpZiAoaTJjLT5pcnEgIT0gMCkKKwlpZiAoaTJjLT5pcnEgIT0gTk9fSVJR
-KQogCQlmcmVlX2lycShpMmMtPmlycSwgaTJjKTsKICAgICAgIGZhaWxfaXJxOgogCWlvdW5tYXAo
-aTJjLT5iYXNlKTsKQEAgLTM4MSw3ICszODUsNyBAQCBzdGF0aWMgaW50IGZzbF9pMmNfcmVtb3Zl
-KHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCiAJaTJjX2RlbF9hZGFwdGVyKCZpMmMtPmFk
-YXApOwogCXBsYXRmb3JtX3NldF9kcnZkYXRhKHBkZXYsIE5VTEwpOwogCi0JaWYgKGkyYy0+aXJx
-ICE9IDApCisJaWYgKGkyYy0+aXJxICE9IE5PX0lSUSkKIAkJZnJlZV9pcnEoaTJjLT5pcnEsIGky
-Yyk7CiAKIAlpb3VubWFwKGkyYy0+YmFzZSk7Cg==
-------=_Part_12166_26664924.1200843583547--
+> IOW, you are doing this at the wrong level.
+> 
+> What problem are you trying to solve?
+
+Limiting block I/O bandwidth for tasks that belong to a generic cgroup,
+in order to provide a sort of a QoS on block I/O.
+
+Anyway, I'm quite new in the wonderful land of the I/O scheduling, so
+any help is appreciated.
+
+Thanks,
+-Andrea
