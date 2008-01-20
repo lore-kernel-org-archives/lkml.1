@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbYATEKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbYATEf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbYATEKp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 23:10:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYATEKf
+	id S1756121AbYATEf3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 23:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbYATEfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 23:10:35 -0500
-Received: from phunq.net ([64.81.85.152]:36318 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751908AbYATEKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 23:10:34 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: "Abhishek Rai" <abhishekrai@google.com>
-Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm patch]
-Date: Sat, 19 Jan 2008 20:10:20 -0800
-User-Agent: KMail/1.9.5
-Cc: "Theodore Tso" <tytso@mit.edu>, "Christoph Hellwig" <hch@infradead.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, rohitseth@google.com,
-       linux-ext4@vger.kernel.org
-References: <200801140839.01986.abhishekrai@google.com> <20080115152801.GA7292@mit.edu> <d9885f0f0801170447r1c2bfeb9l6c911bfa0113366f@mail.gmail.com>
-In-Reply-To: <d9885f0f0801170447r1c2bfeb9l6c911bfa0113366f@mail.gmail.com>
+	Sat, 19 Jan 2008 23:35:20 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:42123 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752706AbYATEfT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 23:35:19 -0500
+Message-ID: <4792CF9A.2030601@davidnewall.com>
+Date: Sun, 20 Jan 2008 15:05:38 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andi Kleen <andi@firstfloor.org>
+CC: Matt Mackall <mpm@selenic.com>, Chodorenko Michail <misha@one.by>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: Celeron Core
+References: <3ed23423adebae08e8f75b6a6a7ce7ff@one.by> <p73prvyalfl.fsf@bingen.suse.de> <1200702477.25782.41.camel@cinder.waste.org> <20080119011506.GA23798@one.firstfloor.org> <1200715842.25782.95.camel@cinder.waste.org> <20080119042750.GA24481@one.firstfloor.org> <1200717635.25782.107.camel@cinder.waste.org> <20080119045415.GA27628@one.firstfloor.org>
+In-Reply-To: <20080119045415.GA27628@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801192010.20699.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 January 2008 04:47, Abhishek Rai wrote:
-> > if Abhishek wants to pursue it, would be to pull in all of the
-> > indirect blocks when the file is opened, and create an in-memory
-> > extent tree that would speed up access to the file.  It's rarely
-> > worth doing this without metaclustering, since it doesn't help for
-> > sequential I/O, only random I/O, but with metaclustering it would
-> > also be a win for sequential I/O.  (This would also remove the
-> > minor performance degradation for sequential I/O imposed by
-> > metaclustering, and in fact improve it slightly for really big
-> > files.)
->
-> Also, since the in memory extent tree will now occupy much less
-> space, we can keep them cached for a much longer time which will
-> improve performance of random reads. The new metaclustering patch is
-> more amenable to this trick since it reduces fragmentation thereby
-> reducing the number of extents.
+Andi Kleen wrote:
+> I think the misunderstanding on your side is relative to what there
+> is less heat. Throttling essentially reduces temporary heat spikes on
+> the silicon, but does not make the system overall take less power
+> or generate less heat as measured over a longer time because it will
+> be idle less.
+>   
 
-I can see value in preemptively loading indirect blocks into the buffer 
-cache, but is building a second-order extent tree really worth the 
-effort?  Probing the buffer cache is very fast.
-
-Regards,
-
-Daniel
+I don't understand this, and it seems wrong.  Most machines spend most
+of their time doing nothing, or as close to nothing as they're allowed. 
+Idle, in other words.  Isn't it the case that an idle machine will use
+less power when throttled than when not?
