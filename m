@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbYATSbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbYATSeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbYATSbO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 13:31:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbYATSa6
+	id S1755477AbYATSeI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 13:34:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbYATSd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 13:30:58 -0500
-Received: from smtp.mermit.fi ([194.100.131.6]:47099 "EHLO smtp.mermit.fi"
+	Sun, 20 Jan 2008 13:33:56 -0500
+Received: from vsmtp2.tin.it ([212.216.176.222]:58863 "EHLO vsmtp2.tin.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750971AbYATSa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 13:30:58 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -1.179
-Message-ID: <47939363.8040603@kolumbus.fi>
-Date: Sun, 20 Jan 2008 20:30:59 +0200
-From: =?ISO-8859-1?Q?Mika_Penttil=E4?= <mika.penttila@kolumbus.fi>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	id S1754793AbYATSd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 13:33:56 -0500
+X-Greylist: delayed 331 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jan 2008 13:33:55 EST
+From: Leonardo Potenza <lpotenza@inwind.it>
+To: kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/net/tlan.c: compilation warning fix
+Date: Sun, 20 Jan 2008 19:28:29 +0100
+User-Agent: KMail/1.9.7
+Cc: chessman@tux.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Ian Campbell <ijc@hellion.org.uk>
-CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
- format.
-References: <1200758937-22386-1-git-send-email-ijc@hellion.org.uk> <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>
-In-Reply-To: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801201928.29446.lpotenza@inwind.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Leonardo Potenza <lpotenza@inwind.it>
 
-> + * This is how much memory *in addition to the memory covered up to
-> + * and including _end* we need mapped initially.  We need one bit for
-> + * each possible page, but only in low memory, which means
-> + * 2^32/4096/8 = 128K worst case (4G/4G split.)
-> + *
-> + * Modulo rounding, each megabyte assigned here requires a kilobyte of
-> + * memory, which is currently unreclaimed.
-> + *
-> + * This should be a multiple of a page.
-> + */
-> +#define INIT_MAP_BEYOND_END	(128*1024)
-> +
-> +/*
->   
+Added a check for the pci_register_driver() return value.
+Removed unused variable pad_allocated.
 
-You have dropped the requirement to map all of low memory (the boot 
-allocator is used for instance to construct physical mem mapping). 
-Either you should fix your INIT_MAP_BEYOND_END or make a big comment 
-telling us why it isn't necessary anymore to map low mem.
+Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
+---
 
---Mika
+The aim of this patch is to remove the following warning messages:
+drivers/net/tlan.c: In function 'tlan_probe':
+drivers/net/tlan.c:486: warning: ignoring return value of 'pci_register_driver', declared with attribute warn_unused_result
+
+--- linux-2.6.orig/drivers/net/tlan.c
++++ linux-2.6/drivers/net/tlan.c
+@@ -465,7 +465,7 @@ static struct pci_driver tlan_driver = {
+ 
+ static int __init tlan_probe(void)
+ {
+-	static int	pad_allocated;
++	int rc = -ENODEV;
+ 
+ 	printk(KERN_INFO "%s", tlan_banner);
+ 
+@@ -473,17 +473,22 @@ static int __init tlan_probe(void)
+ 
+ 	if (TLanPadBuffer == NULL) {
+ 		printk(KERN_ERR "TLAN: Could not allocate memory for pad buffer.\n");
+-		return -ENOMEM;
++		rc = -ENOMEM;
++		goto err_out;
+ 	}
+ 
+ 	memset(TLanPadBuffer, 0, TLAN_MIN_FRAME_SIZE);
+-	pad_allocated = 1;
+ 
+ 	TLAN_DBG(TLAN_DEBUG_PROBE, "Starting PCI Probe....\n");
+ 
+ 	/* Use new style PCI probing. Now the kernel will
+ 	   do most of this for us */
+-	pci_register_driver(&tlan_driver);
++	rc = pci_register_driver(&tlan_driver);
++
++	if (rc != 0) {
++		printk(KERN_ERR "TLAN: Could not register pci driver.\n");
++		goto err_out_pci_free;
++	}
+ 
+ 	TLAN_DBG(TLAN_DEBUG_PROBE, "Starting EISA Probe....\n");
+ 	TLan_EisaProbe();
+@@ -493,11 +498,17 @@ static int __init tlan_probe(void)
+ 		 tlan_have_pci, tlan_have_eisa);
+ 
+ 	if (TLanDevicesInstalled == 0) {
+-		pci_unregister_driver(&tlan_driver);
+-		pci_free_consistent(NULL, TLAN_MIN_FRAME_SIZE, TLanPadBuffer, TLanPadBufferDMA);
+-		return -ENODEV;
++		rc = -ENODEV;
++		goto  err_out_pci_unreg;
+ 	}
+ 	return 0;
++
++err_out_pci_unreg:
++	pci_unregister_driver(&tlan_driver);
++err_out_pci_free:
++	pci_free_consistent(NULL, TLAN_MIN_FRAME_SIZE, TLanPadBuffer, TLanPadBufferDMA);
++err_out:
++	return rc;
+ }
+ 
+ 
