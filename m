@@ -1,93 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbYATB3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYATBbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756320AbYATB3p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 20:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYATB3g
+	id S1757487AbYATBbw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 20:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYATBbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 20:29:36 -0500
-Received: from lug-owl.de ([195.71.106.12]:58530 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751674AbYATB3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 20:29:35 -0500
-Date: Sun, 20 Jan 2008 02:29:34 +0100
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Rafael Sisto <rafael.sisto@gmail.com>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: new file in kernel.
-Message-ID: <20080120012934.GE9896@lug-owl.de>
-Mail-Followup-To: Rafael Sisto <rafael.sisto@gmail.com>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	Linux kernel <linux-kernel@vger.kernel.org>
-References: <ee3dc96c0801190542u2f91a2eax3bcfd0268d4850b4@mail.gmail.com> <Pine.LNX.4.64.0801191448140.27831@fbirervta.pbzchgretzou.qr> <ee3dc96c0801190608q33aee0aer133611a1fc392bb4@mail.gmail.com> <Pine.LNX.4.64.0801191526200.27831@fbirervta.pbzchgretzou.qr> <ee3dc96c0801190712v56bcfde5qa015888f2bcbde98@mail.gmail.com>
+	Sat, 19 Jan 2008 20:31:45 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:58103 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751714AbYATBbo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 20:31:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XyeXMooJDYN6upTfKrQcsLxaHasIAufDiLXezK3vCM+MFg0Zq6+ofjoFCLZ9rSnvj+luoF/G3kN1dIKCwGSPLpwL1TwnF/FrcNqrDa1hl75Dz1HHGpYkj+jm0TpASAQ23gGzNw+LYLAz1MORzNurx0WFt8yga2qFsILLK3tJUt0=
+Message-ID: <86802c440801191731h191ed4b3hb2e43ed95c60cb2b@mail.gmail.com>
+Date: Sat, 19 Jan 2008 17:31:43 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Mike Travis" <travis@sgi.com>
+Subject: Re: [PATCH 1/5] x86: Change size of node ids from u8 to u16 fixup
+Cc: "David Rientjes" <rientjes@google.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>, "Andi Kleen" <ak@suse.de>,
+       mingo@elte.hu, "Christoph Lameter" <clameter@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "Eric Dumazet" <dada1@cosmosbay.com>
+In-Reply-To: <479298AF.8040806@sgi.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vR/vnstCraLpx+OT"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <ee3dc96c0801190712v56bcfde5qa015888f2bcbde98@mail.gmail.com>
-X-Operating-System: Linux mail 2.6.18-5-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20080118183011.354965000@sgi.com>
+	 <20080118183011.527888000@sgi.com>
+	 <86802c440801182003vd94044ex7fb13e61e5f79c81@mail.gmail.com>
+	 <alpine.DEB.0.9999.0801182026130.32726@chino.kir.corp.google.com>
+	 <47926ACC.4060707@sgi.com>
+	 <alpine.DEB.0.9999.0801191415360.28596@chino.kir.corp.google.com>
+	 <479298AF.8040806@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 19, 2008 4:41 PM, Mike Travis <travis@sgi.com> wrote:
+> David Rientjes wrote:
+> > On Sat, 19 Jan 2008, Mike Travis wrote:
+> >
+> >>> Yeah, NID_INVAL is negative so no unsigned type will work here,
+> >>> unfortunately.  And that reduces the intended savings of your change since
+> >>> the smaller type can only be used with a smaller CONFIG_NODES_SHIFT.
+> >>>
+> >> Excuse my ignorance but why wouldn't this work:
+> >>
+> >> static numanode_t pxm_to_node_map[MAX_PXM_DOMAINS]
+> >>                                 = { [0 ... MAX_PXM_DOMAINS - 1] = NUMA_NO_NODE };
+> >> ...
+> >>>> int acpi_map_pxm_to_node(int pxm)
+> >>>> {
+> >>>         int node = pxm_to_node_map[pxm];
+> >>>
+> >>>         if (node < 0)
+> >>         numanode_t node = pxm_to_node_map[pxm];
+> >>
+> >
+> > Because NUMA_NO_NODE is 0xff on x86.  That's a valid node id for
+> > configurations with CONFIG_NODES_SHIFT equal to or greater than 8.
+>
+> Perhaps numanode_t should be set to u16 if MAX_NUMNODES > 255 to
+> allow for an invalid value of 255?
+>
+> #if MAX_NUMNODES > 255
+> typedef u16 numanode_t;
+> #else
+> typedef u8 numanode_t;
+> #endif
+>
+> >
+> >>         if (node != NUMA_NO_NODE) {
+> >
+> > Wrong, this should be
+> >
+> >       node == NUMA_NO_NODE
+>
+> Oops, yes you're right.
+>
+>
+> >>>>                 if (nodes_weight(nodes_found_map) >= MAX_NUMNODES)
+> >>>>                         return NID_INVAL;
+> >>>>                 node = first_unset_node(nodes_found_map);
+> >>>>                 __acpi_map_pxm_to_node(pxm, node);
+> >>>>                 node_set(node, nodes_found_map);
+> >>>>         }
+> >
+> > The net result of this is that if a proximity domain is looked up through
+> > acpi_map_pxm_to_node() and already has a mapping to node 255 (legal with
+> > CONFIG_NODES_SHIFT == 8), this function will return NID_INVAL since the
+> > weight of nodes_found_map is equal to MAX_NUMNODES.
+>
+> >
+> > You simply can't use valid node id's to signify invalid or unused node
+> > ids.
+> >
+> >> or change:
+> >>      #define NID_INVAL       (-1)
+> >> to
+> >>      #define NID_INVAL       ((numanode_t)(-1))
+> >> ...
+> >>         if (node != NID_INVAL) {
+> >
+> > You mean
+> >
+> >       node == NID_INVAL
+> >
+> >>>>                 if (nodes_weight(nodes_found_map) >= MAX_NUMNODES)
+> >>>>                         return NID_INVAL;
+> >>>>                 node = first_unset_node(nodes_found_map);
+> >>>>                 __acpi_map_pxm_to_node(pxm, node);
+> >>>>                 node_set(node, nodes_found_map);
+> >>>>         }
+> >
+> > That's the equivalent of your NUMA_NO_NODE code above.  The fact remains
+> > that (numanode_t)-1 is still a valid node id for MAX_NUMNODES >= 256.
+> >
+> > So, as I said in my initial reply, the only way to get the savings you're
+> > looking for is to use u8 for CONFIG_NODES_SHIFT <= 7 and then convert all
+> > NID_INVAL users to use NUMA_NO_NODE.
+>
+> Yes, I agree.  I'll do the changes you're suggesting.
+>
+> > Additionally, Linux has always discouraged typedefs when they do not
+> > define an architecture-specific size.  The savings from your patch for
+> > CONFIG_NODES_SHIFT == 7 would be 256 bytes for this mapping.
+> >
+> > It's simply not worth it.
+>
+> So are you saying that I should just use u16 for all node ids whether
+> CONFIG_NODES_SHIFT > 7 or not?  Othersise, I would think that defining a
+> typedef is a fairly clean solution.
+>
+> A quick grep shows that there are 35 arrays defined by MAX_NUMNODES in
+> x86_64, 38 in X86_32 (not verified.)  So it's not exactly a trivial
+> amount of memory.
 
---vR/vnstCraLpx+OT
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+just use int for node id, and -1 will be NON_VALID...
+or s16?
 
-On Sat, 2008-01-19 12:12:10 -0300, Rafael Sisto <rafael.sisto@gmail.com> wr=
-ote:
-> Dear Jan,
->=20
-> The idea of the indirection is to make it transparent for the user.
-> The idea is to do almost the same as what IPC does. The user calls
-> "get", then "attach". In the "get" syscall I create a tmp file and
-> return some id. Then the user calls an "attach" syscall with the
-> returned id.
->=20
-> The result is that he gets a shared memorymapped to his vma.
-
-So my understanding is that you want to get a "IPC shared memory for
-dummies" API. You're already willing to use custom-numbered system
-calls, requiring to recompile the Linux kernel, having to add these
-system calls to libc (or putting _syscallX macros into the
-application's code) and loosing all portability for the application
-using this API.
-
-My point of view is that this is a planed nightmare :)
-
-I'd suggest to dig into "Unix Network Programming, Volume 2.
-Interprocess Communications" and implement that API as a library
-instead of using a set of new kernel system calls. That way, the
-applications using it will use that API and only that. They won't
-require operatins system specific modifications afterwards. OTOH, this
-library will probably quite portable by itself and shouldn't need
-any kernel changes, independent of the underlying kernel.
-
-MfG, JBG
-
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
- Signature of:                      http://perl.plover.com/Questions.html
- the second  :
-
---vR/vnstCraLpx+OT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHkqP9Hb1edYOZ4bsRAtUzAKCKvKPIgc58hDSL4V1XXny2x6VBgACeNxGF
-nbkSbVGVuP1G6kOM91xrvn4=
-=XzNR
------END PGP SIGNATURE-----
-
---vR/vnstCraLpx+OT--
+YH
