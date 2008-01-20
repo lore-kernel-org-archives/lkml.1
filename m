@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbYATJ6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbYATKC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753337AbYATJ6j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 04:58:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYATJ6b
+	id S1753395AbYATKC1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 05:02:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYATKCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 04:58:31 -0500
-Received: from ozlabs.org ([203.10.76.45]:35299 "EHLO ozlabs.org"
+	Sun, 20 Jan 2008 05:02:21 -0500
+Received: from k66.ru ([87.224.128.21]:53559 "EHLO k66.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751919AbYATJ6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 04:58:30 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 6/6] typesafe: timers
-Date: Sun, 20 Jan 2008 20:57:53 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>
-References: <200801202046.14746.rusty@rustcorp.com.au> <200801202051.42958.rusty@rustcorp.com.au> <200801202054.03484.rusty@rustcorp.com.au>
-In-Reply-To: <200801202054.03484.rusty@rustcorp.com.au>
+	id S1751927AbYATKCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 05:02:20 -0500
+X-Greylist: delayed 1801 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jan 2008 05:02:20 EST
+Date: Sun, 20 Jan 2008 14:28:21 +0500
+From: Andrey Rahmatullin <wrar@altlinux.ru>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Cc: David Miller <davem@davemloft.net>, Robert.Olsson@data.slu.se,
+       elendil@planet.nl, slavon@bigtelecom.ru, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
+Message-ID: <20080120092821.GA12333@wrars-comp.wrarsdomain>
+References: <20080118.053712.195382841.davem@davemloft.net> <36D9DB17C6DE9E40B059440DB8D95F52043A156F@orsmsx418.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="r5Pyd7+fXNt84Ff3"
 Content-Disposition: inline
-Message-Id: <200801202057.53304.rusty@rustcorp.com.au>
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F52043A156F@orsmsx418.amr.corp.intel.com>
+X-Operating-System: ALT Linux Sisyphus
+X-Jabber-Id: wrar@altlinux.org
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch lets timer callback functions have their natural type
-(ie. exactly match the data pointer type); it allows the old "unsigned
-long data" type as well.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+--r5Pyd7+fXNt84Ff3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff -r 142a2cf4a8dc include/linux/timer.h
---- a/include/linux/timer.h	Sun Jan 20 19:01:56 2008 +1100
-+++ b/include/linux/timer.h	Sun Jan 20 19:36:33 2008 +1100
-@@ -24,11 +24,13 @@ struct timer_list {
- 
- extern struct tvec_t_base_s boot_tvec_bases;
- 
--#define TIMER_INITIALIZER(_function, _expires, _data) {		\
--		.function = (_function),			\
--		.expires = (_expires),				\
--		.data = (_data),				\
--		.base = &boot_tvec_bases,			\
-+
-+#define TIMER_INITIALIZER(_function, _expires, _data) {			\
-+		.function = cast_if_type(_function, void (*)(typeof(_data)), \
-+					 void (*)(unsigned long)),	\
-+		.expires = (_expires),					\
-+		.data = (unsigned long)(_data),				\
-+		.base = &boot_tvec_bases,				\
- 	}
- 
- #define DEFINE_TIMER(_name, _function, _expires, _data)		\
-@@ -38,9 +40,15 @@ void fastcall init_timer(struct timer_li
- void fastcall init_timer(struct timer_list * timer);
- void fastcall init_timer_deferrable(struct timer_list *timer);
- 
--static inline void setup_timer(struct timer_list * timer,
--				void (*function)(unsigned long),
--				unsigned long data)
-+#define setup_timer(timer, function, data)				\
-+	__setup_timer((timer),						\
-+		      cast_if_type(function, void (*)(typeof(data)),	\
-+				   void (*)(unsigned long)),		\
-+		      (unsigned long)(data))
-+
-+static inline void __setup_timer(struct timer_list * timer,
-+				 void (*function)(unsigned long),
-+				 unsigned long data)
- {
- 	timer->function = function;
- 	timer->data = data;
+On Sun, Jan 20, 2008 at 01:20:11AM -0800, Brandeburg, Jesse wrote:
+> I continually get the
+>  kernel: unregister_netdevice: waiting for eth2 to become free. Usage
+> count =3D 1
+http://bugzilla.kernel.org/show_bug.cgi?id=3D9778
+
+--=20
+WBR, wRAR (ALT Linux Team)
+
+--r5Pyd7+fXNt84Ff3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+
+iEYEARECAAYFAkeTFDUACgkQB4Vf7hFmt5UfJQCeKvcIM4gpRayR0sDbTtmxIkx6
+Gt0Ani91PQkWMegMERbojpkoLfetlDkr
+=PSLU
+-----END PGP SIGNATURE-----
+
+--r5Pyd7+fXNt84Ff3--
