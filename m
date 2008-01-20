@@ -1,94 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYATMZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbYATMmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748AbYATMZk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 07:25:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYATMZd
+	id S1753708AbYATMmU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 07:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbYATMmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 07:25:33 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:49661
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752626AbYATMZc (ORCPT
+	Sun, 20 Jan 2008 07:42:11 -0500
+Received: from smtp113.plus.mail.re1.yahoo.com ([69.147.102.76]:24035 "HELO
+	smtp113.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752587AbYATMmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 07:25:32 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-tiny@selenic.com
-Subject: Re: [PATCH] x86: =?iso-8859-1?q?fix=09unconditional=09arch/x86/kernel/pcspeaker=2Ec=3Fcomp?=
- =?iso-8859-1?q?iling?=
-Date: Sun, 20 Jan 2008 06:25:28 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Michael Opdenacker <michael-lists@free-electrons.com>,
-       Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-References: <200801171643.49301.michael-lists@free-electrons.com> <1200664214.4001.24.camel@cinder.waste.org> <4790D3E3.4060409@free-electrons.com>
-In-Reply-To: <4790D3E3.4060409@free-electrons.com>
+	Sun, 20 Jan 2008 07:42:10 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:Mail-Followup-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=JGV/lAQok0s68vDWAXo4X7aVR5dYuVnyVb5EAGR51hvqwZBBJdR31M3zq0XipZeeNziQbp6MfsMGx9zFdYo9/wPvMzw8E5tG6GKeLuifZwZASrdyWlThPVJ5PaiH/k2fG/sQGM6I+5GwE0i5jYNelBZGOKGzWYbiIpcFDQAI2Ew=  ;
+X-YMail-OSG: 5VMX8RsVM1mvOsL6sTWPj2PjbNLHqUxEJQmpQ9zBtHGoCG1o9Q36BPmNcaiYTCvJMTvw1D074g--
+X-Yahoo-Newman-Property: ymail-3
+Date: Sun, 20 Jan 2008 13:38:15 +0100
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 0/12] ide-floppy redux v2.5
+Message-ID: <20080120123815.GA20082@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+Mail-Followup-To: bbpetkov@yahoo.de,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1200255505-31418-1-git-send-email-bbpetkov@yahoo.de> <200801142238.17282.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200801200625.29511.rob@landley.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200801142238.17282.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 January 2008 10:29:23 Michael Opdenacker wrote:
-> Sounds fine! Don't hesitate to let us know about the lower-hanging fruit
-> you're thinking about. Here are the main things I have so far:
->
->     * Ideas in the existing Linux-Tiny patchset.
->     * Disable support for non-Intel processors in x86 (cyrix.c,
->       centaur.c, transmeta.c, nexgen.c, umc.c in arch/x86/kernel/cpu).
->       As far as I remember, I saved 15 KB when I first experimented with
->       this).
->     * Disable support for readahead, page writeback, pdflush and swap
->       when we have no storage at all (typically booting from an
->       initramfs). This corresponds to 69 KB of source code!
->
-> So, more ideas are welcome!
+On Mon, Jan 14, 2008 at 10:38:17PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> > By the way, I have an Iomega ZIP 100 drive somewhere in my hardware pile and
+> > will do some testing with the "new" :) driver just in case.
+> 
+> This would be great. :)
+Hi Bart,
 
-Personally, I'm trying to figure out how to build a "hello world" kernel.
+i just whipped rc8 along with your pata-2.6 tree on top and had several test
+runs of the ide-floppy driver (raw reads, software floppy disk eject, etc) and
+everything seems to work fine. I will keep this hardware setup here so that we
+could at least test ide-floppy occasionally. We should probably acknowledge this
+major driver cleanup with a new driver version?
 
-I.E. the minimal set of files I need to compile to get a kernel I can boot 
-under qemu that does something visible.  (Printing "hello world" to the 
-serial port via the early_serial_write(), perhaps?)
+---
+>From 6f948b93839cdf397cb38ca75c3c6cc9a21e6070 Mon Sep 17 00:00:00 2001
+From: Borislav Petkov <bbpetkov@yahoo.de>
+Date: Sun, 20 Jan 2008 13:32:24 +0100
+Subject: [PATCH] ide-floppy: bump driver version number
 
-No VFS, no process management, preferably no memory management...  Just get to 
-a stub start_kernel() that calls early_serial_write() and then does a HLT.  I 
-note that start_kernel() calls 11 things before the first printk(), and that 
-without the early_printk stuff that's just going into a buffer.
+Acknowledge major ide-floppy code refactoring and cleanup by bumping the driver
+version number. Also, remove a wrong comment.
 
-Preferably, I even want to take this out of the kernel's build process and 
-build it from the command line or a small shell script.  (zImage packaging 
-and all.)  I.E. some kind of:
+Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+---
+ drivers/ide/ide-floppy.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-  gcc blah blah blah -o vmlinux
-  wrap.sh vmlinux zImage
+diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
+index 0bf6596..b455cf1 100644
+--- a/drivers/ide/ide-floppy.c
++++ b/drivers/ide/ide-floppy.c
+@@ -5,9 +5,6 @@
+  * Copyright (C) 2000-2002  Paul Bristow <paul@paulbristow.net>
+  * Copyright (C) 2005       Bartlomiej Zolnierkiewicz
+  *
+- * The driver currently doesn't have any fancy features, just the bare
+- * minimum read/write support.
+- *
+  * This driver supports the following IDE floppy drives:
+  *
+  * LS-120/240 SuperDisk
+@@ -18,7 +15,7 @@
+  * Documentation/ide/ChangeLog.ide-floppy.1996-2002
+  */
 
-The reason for this is, of course, that I'm trying to build the kernel with my 
-tinycc fork, and the whole kernel build is kind of intimidating and 
-complicated.  (And I currently need to pregenerate asm-offsets.h until I 
-teach tinycc to produce assembly output or come up with an alternative.)
+-#define IDEFLOPPY_VERSION "0.99.newide"
++#define IDEFLOPPY_VERSION "1.00"
 
-Currently, a "make allnoconfig" build runs for 479 lines, and builds radix 
-tree code and /dev/random and sysfs and all sorts of stuff.  
-Counter-intuitively, allnoconfig _isn't_ the smallest kernel you can build 
-(by a long shot), to do that you have to switch on the embedded menu and then 
-switch off everything in it (and all the stuff that shows up right _after_ 
-it, which smells like a bug to me), and switch to SLOB and switch off the 
-block layer at the top level.  But doing that only gets the build down to 449 
-lines, and the resulting x86-64 kernel is over 400k.  That is _not_ a "hello 
-world" kernel.  Not even close. :)
+ #include <linux/module.h>
+ #include <linux/types.h>
+--
+1.5.3.7
 
-Alas, working from the other end and building your way _up_ isn't trivial 
-either.  (But has the advantage that I'm starting much closer to my goal than 
-the stripping down approach.)
 
-> Thanks for your time,
->
-> Michael.
-
-Rob
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Regards/Gruﬂ,
+    Boris.
