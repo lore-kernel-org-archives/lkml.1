@@ -1,146 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbYATAli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbYATAov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758977AbYATAli (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 19:41:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbYATAl2
+	id S1759358AbYATAov (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 19:44:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYATAoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 19:41:28 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:55721 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752114AbYATAl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 19:41:28 -0500
-Message-ID: <479298AF.8040806@sgi.com>
-Date: Sat, 19 Jan 2008 16:41:19 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu, Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [PATCH 1/5] x86: Change size of node ids from u8 to u16 fixup
-References: <20080118183011.354965000@sgi.com>  <20080118183011.527888000@sgi.com> <86802c440801182003vd94044ex7fb13e61e5f79c81@mail.gmail.com> <alpine.DEB.0.9999.0801182026130.32726@chino.kir.corp.google.com> <47926ACC.4060707@sgi.com> <alpine.DEB.0.9999.0801191415360.28596@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.0.9999.0801191415360.28596@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 19 Jan 2008 19:44:44 -0500
+Received: from SpacedOut.fries.net ([67.64.210.234]:58296 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753931AbYATAon (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 19:44:43 -0500
+Date: Sat, 19 Jan 2008 18:44:40 -0600
+From: David Fries <david@fries.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] W1: w1_therm.c is flagging 0C etc as invalid
+Message-ID: <20080120004440.GA3738@spacedout.fries.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.4i
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Sat, 19 Jan 2008 18:44:41 -0600 (CST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> On Sat, 19 Jan 2008, Mike Travis wrote:
-> 
->>> Yeah, NID_INVAL is negative so no unsigned type will work here, 
->>> unfortunately.  And that reduces the intended savings of your change since 
->>> the smaller type can only be used with a smaller CONFIG_NODES_SHIFT.
->>>
->> Excuse my ignorance but why wouldn't this work:
->>
->> static numanode_t pxm_to_node_map[MAX_PXM_DOMAINS]
->>                                 = { [0 ... MAX_PXM_DOMAINS - 1] = NUMA_NO_NODE };
->> ...
->>>> int acpi_map_pxm_to_node(int pxm)
->>>> {
->>>         int node = pxm_to_node_map[pxm];
->>>
->>>         if (node < 0)
->> 	   numanode_t node = pxm_to_node_map[pxm];
->>
-> 
-> Because NUMA_NO_NODE is 0xff on x86.  That's a valid node id for 
-> configurations with CONFIG_NODES_SHIFT equal to or greater than 8.
+commit d05074b1beb66d40283228bd226f7244407375bb
+Author: David Fries <david@fries.net>
+Date:   Sat Jan 19 18:06:49 2008 -0600
 
-Perhaps numanode_t should be set to u16 if MAX_NUMNODES > 255 to
-allow for an invalid value of 255? 
+The extra rom[0] check is flagging valid temperatures as invalid when
+there is already a CRC data transmission check.
 
-#if MAX_NUMNODES > 255
-typedef u16 numanode_t;
-#else
-typedef u8 numanode_t;
-#endif
+w1_therm_read_bin()
+	if (rom[8] == crc && rom[0])
+		verdict = 1;
 
-> 
->> 	   if (node != NUMA_NO_NODE) {
-> 
-> Wrong, this should be
-> 
-> 	node == NUMA_NO_NODE
+Requiring rom[0] to be non-zero will flag as invalid temperature
+conversions when the low byte is zero, specifically the temperatures
+0C, 16C, 32C, 48C, -16C, -32C, and -48C.
 
-Oops, yes you're right.
+The CRC check is produced on the device for the previous 8 bytes and
+is required to ensure the data integrity in transmission.  I don't see
+why the extra check for rom[0] being non-zero is in there.  Evgeniy
+Polyakov didn't know either.  Just for a check I unplugged the sensor,
+executed a temperature conversion, and read the results.  The read
+was all ff's, which also failed the CRC, so it doesn't need to protect
+against a disconnected sensor.
 
->>>>                 if (nodes_weight(nodes_found_map) >= MAX_NUMNODES)
->>>>                         return NID_INVAL;
->>>>                 node = first_unset_node(nodes_found_map);
->>>>                 __acpi_map_pxm_to_node(pxm, node);
->>>>                 node_set(node, nodes_found_map);
->>>>         }
-> 
-> The net result of this is that if a proximity domain is looked up through 
-> acpi_map_pxm_to_node() and already has a mapping to node 255 (legal with 
-> CONFIG_NODES_SHIFT == 8), this function will return NID_INVAL since the 
-> weight of nodes_found_map is equal to MAX_NUMNODES.
+I have more extensive patches in the work, but these two trivial ones
+will do for today.  I would like to hear from people who use the
+ds2490 USB to one wire dongle.  1 if you would be willing to test the
+patches as I currently only have the one sensor on a short parisite
+powered wire, 2 if there is any cheap sources for the ds2490.
 
-> 
-> You simply can't use valid node id's to signify invalid or unused node 
-> ids.
-> 
->> or change:
->> 	#define NID_INVAL       (-1)
->> to
->> 	#define NID_INVAL       ((numanode_t)(-1))
->> ...
->> 	   if (node != NID_INVAL) {
-> 
-> You mean
-> 
-> 	node == NID_INVAL
-> 
->>>>                 if (nodes_weight(nodes_found_map) >= MAX_NUMNODES)
->>>>                         return NID_INVAL;
->>>>                 node = first_unset_node(nodes_found_map);
->>>>                 __acpi_map_pxm_to_node(pxm, node);
->>>>                 node_set(node, nodes_found_map);
->>>>         }
-> 
-> That's the equivalent of your NUMA_NO_NODE code above.  The fact remains 
-> that (numanode_t)-1 is still a valid node id for MAX_NUMNODES >= 256.
-> 
-> So, as I said in my initial reply, the only way to get the savings you're 
-> looking for is to use u8 for CONFIG_NODES_SHIFT <= 7 and then convert all 
-> NID_INVAL users to use NUMA_NO_NODE.
+Signed-off-by: David Fries <david@fries.net>
 
-Yes, I agree.  I'll do the changes you're suggesting.
+diff --git a/drivers/w1/slaves/w1_therm.c b/drivers/w1/slaves/w1_therm.c
+index feed89e..112f4ec 100644
+--- a/drivers/w1/slaves/w1_therm.c
++++ b/drivers/w1/slaves/w1_therm.c
+@@ -204,7 +204,7 @@ static ssize_t w1_therm_read_bin(struct kobject *kobj,
+ 
+ 				crc = w1_calc_crc8(rom, 8);
+ 
+-				if (rom[8] == crc && rom[0])
++				if (rom[8] == crc)
+ 					verdict = 1;
+ 			}
+ 		}
 
-> Additionally, Linux has always discouraged typedefs when they do not 
-> define an architecture-specific size.  The savings from your patch for 
-> CONFIG_NODES_SHIFT == 7 would be 256 bytes for this mapping.
-> 
-> It's simply not worth it.
-
-So are you saying that I should just use u16 for all node ids whether
-CONFIG_NODES_SHIFT > 7 or not?  Othersise, I would think that defining a
-typedef is a fairly clean solution.
-
-A quick grep shows that there are 35 arrays defined by MAX_NUMNODES in
-x86_64, 38 in X86_32 (not verified.)  So it's not exactly a trivial
-amount of memory.
-
-> 
->> And btw, shouldn't the pxm value be sized to numanode_t size as well?
->> Will it ever be larger than the largest node id?
->>
-> 
-> Section 6.2.9 of ACPI 2.0 states that PXM's return an integer, so that 
-> would be non-conforming to the standard.
-> 
-> Additionally, PXM's are not nodes, so casting them to anything called 
-> numanode_t shows the semantic flaw in your patch.
-
-Thanks for the info.  I wasn't sure exactly what the PXM value represents.
-> 
-> 		David
-
-Thanks again,
-Mike
-
+-- 
+David Fries <david@fries.net>
+http://fries.net/~david/ (PGP encryption key available)
