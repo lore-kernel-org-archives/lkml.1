@@ -1,96 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbYATMmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYATM5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753708AbYATMmU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 07:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbYATMmL
+	id S1753906AbYATM5F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 07:57:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbYATM4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 07:42:11 -0500
-Received: from smtp113.plus.mail.re1.yahoo.com ([69.147.102.76]:24035 "HELO
-	smtp113.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752587AbYATMmK (ORCPT
+	Sun, 20 Jan 2008 07:56:55 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:54693 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbYATM4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 07:42:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:Mail-Followup-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=JGV/lAQok0s68vDWAXo4X7aVR5dYuVnyVb5EAGR51hvqwZBBJdR31M3zq0XipZeeNziQbp6MfsMGx9zFdYo9/wPvMzw8E5tG6GKeLuifZwZASrdyWlThPVJ5PaiH/k2fG/sQGM6I+5GwE0i5jYNelBZGOKGzWYbiIpcFDQAI2Ew=  ;
-X-YMail-OSG: 5VMX8RsVM1mvOsL6sTWPj2PjbNLHqUxEJQmpQ9zBtHGoCG1o9Q36BPmNcaiYTCvJMTvw1D074g--
-X-Yahoo-Newman-Property: ymail-3
-Date: Sun, 20 Jan 2008 13:38:15 +0100
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 0/12] ide-floppy redux v2.5
-Message-ID: <20080120123815.GA20082@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-Mail-Followup-To: bbpetkov@yahoo.de,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1200255505-31418-1-git-send-email-bbpetkov@yahoo.de> <200801142238.17282.bzolnier@gmail.com>
+	Sun, 20 Jan 2008 07:56:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=myfryKJI74pxYtgiozH3xjsKg2c0HBy8+u/xsInD81mN8NcDFd8Pw911fQsDJx7hO0+QROdgf7WZvBUYmCU0YnJs84Ulur3D4bZsWx/t6R8vk1xHHdVdnCPhi/Cm9iI4B9rz9U8STdmO/E1Jmtc6U8JCqQNjhEqL9BIfSKM6RIs=
+Message-ID: <4793450F.40902@gmail.com>
+Date: Sun, 20 Jan 2008 21:56:47 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200801142238.17282.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 0/6] RFC: Typesafe callbacks
+References: <200801202046.14746.rusty@rustcorp.com.au>
+In-Reply-To: <200801202046.14746.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 14, 2008 at 10:38:17PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > By the way, I have an Iomega ZIP 100 drive somewhere in my hardware pile and
-> > will do some testing with the "new" :) driver just in case.
+Rusty Russell wrote:
+> Hi all,
 > 
-> This would be great. :)
-Hi Bart,
+>    Converting to and from void * for callback functions loses type safety: 
+> everywhere else we expect the compiler to catch incorrect pointer types 
+> handed to functions.
+> 
+>    It's pretty simple to create typesafe callback functions using typeof, and 
+> with a little gcc trickery we can allow both old-style and typesafe callbacks 
+> to avoid churn on commonly-used routines.
 
-i just whipped rc8 along with your pata-2.6 tree on top and had several test
-runs of the ide-floppy driver (raw reads, software floppy disk eject, etc) and
-everything seems to work fine. I will keep this hardware setup here so that we
-could at least test ide-floppy occasionally. We should probably acknowledge this
-major driver cleanup with a new driver version?
+I wasn't too convinced with only irq handler conversion but with other
+things converted, I'm liking it very much.  I really like the timer
+conversion as casting between void * and unsigned long is annoying.
+Possible improvements.
 
----
->From 6f948b93839cdf397cb38ca75c3c6cc9a21e6070 Mon Sep 17 00:00:00 2001
-From: Borislav Petkov <bbpetkov@yahoo.de>
-Date: Sun, 20 Jan 2008 13:32:24 +0100
-Subject: [PATCH] ide-floppy: bump driver version number
+* Passing NULL as data to callback which takes non-void pointer
+  triggers warning.  I think this should be allowed.  Something like
+  the following?
 
-Acknowledge major ide-floppy code refactoring and cleanup by bumping the driver
-version number. Also, remove a wrong comment.
+* Allowing non-pointer integral types which fit into pointer would be
+  nice.  It's often convenient to pass integers to simple callbacks.
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
----
- drivers/ide/ide-floppy.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+The following macro kinda-sorta achieves the above two but it doesn't
+consider promotion of integer types and thus is too strict.  There
+gotta be some way.
 
-diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-index 0bf6596..b455cf1 100644
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -5,9 +5,6 @@
-  * Copyright (C) 2000-2002  Paul Bristow <paul@paulbristow.net>
-  * Copyright (C) 2005       Bartlomiej Zolnierkiewicz
-  *
-- * The driver currently doesn't have any fancy features, just the bare
-- * minimum read/write support.
-- *
-  * This driver supports the following IDE floppy drives:
-  *
-  * LS-120/240 SuperDisk
-@@ -18,7 +15,7 @@
-  * Documentation/ide/ChangeLog.ide-floppy.1996-2002
-  */
+#define kthread_create(threadfn, data, namefmt...) ({		\
+	int (*_threadfn)(typeof(data));				\
+	void *_data;						\
+	_threadfn = __builtin_choose_expr(!__builtin_types_compatible_p(typeof(data), typeof(NULL)), \
+			(threadfn), (void *)(threadfn));	\
+	_data = __builtin_choose_expr(sizeof(data) <= sizeof(void *), \
+			(void *)(unsigned long)data, (void *)data); \
+	__kthread_create((void *)_threadfn, _data, namefmt);	\
+})
 
--#define IDEFLOPPY_VERSION "0.99.newide"
-+#define IDEFLOPPY_VERSION "1.00"
-
- #include <linux/module.h>
- #include <linux/types.h>
---
-1.5.3.7
-
+Thanks.
 
 -- 
-Regards/Gruﬂ,
-    Boris.
+tejun
