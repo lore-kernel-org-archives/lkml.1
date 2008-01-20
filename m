@@ -1,79 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbYATO3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379AbYATOdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107AbYATO3X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 09:29:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYATO3O
+	id S1754379AbYATOdA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 09:33:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbYATOcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 09:29:14 -0500
-Received: from powered.by.e-leven.be ([88.82.46.250]:41346 "EHLO
-	queen.hive.selfip.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753395AbYATO3N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 09:29:13 -0500
-X-Greylist: delayed 436 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jan 2008 09:29:12 EST
-Subject: inconsistent high io wait when reading from disk
-From: AL13N <alien999999999@users.sourceforge.net>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.11
+	Sun, 20 Jan 2008 09:32:48 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:14221 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753636AbYATOco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 09:32:44 -0500
+Date: Sun, 20 Jan 2008 15:32:40 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrea Righi <righiandr@users.sourceforge.net>
+Cc: Naveen Gupta <ngupta@google.com>, Paul Menage <menage@google.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cgroup: limit block I/O bandwidth
+Message-ID: <20080120143239.GS6258@kernel.dk>
+References: <2846be6b0801181439o55dcff09ted2b8f817e7ba682@mail.gmail.com> <4791DC2C.9090405@users.sourceforge.net> <4793507B.6040706@users.sourceforge.net>
 MIME-Version: 1.0
-Importance: Normal
-X-Length: 2591
-Date: Sun, 20 Jan 2008 15:21:43 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801201521.43360.alien999999999@users.sourceforge.net>
+In-Reply-To: <4793507B.6040706@users.sourceforge.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(please CC me)
+On Sun, Jan 20 2008, Andrea Righi wrote:
+> Andrea Righi wrote:
+> > Naveen Gupta wrote:
+> >>> Paul Menage wrote:
+> >>>> On Jan 18,  2008 7:36 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com>  wrote:
+> >>>>> On Fri, Jan 18, 2008 at 12:41:03PM +0100, Andrea Righi  wrote:
+> >>>>>> Allow to limit the  block I/O bandwidth for  specific process containers
+> >>>>>> (cgroups) imposing additional delays  on I/O requests for those processes
+> >>>>>> that exceed the  limits defined in the control group filesystem.
+> >>>>>>
+> >>>>>>  Example:
+> >>>>>>   # mkdir /dev/cgroup
+> >>>>>>   # mount -t cgroup -oio-throttle io-throttle /dev/cgroup
+> >>>>> Just a minor nit, can't we name it as io,  keeping in mind that other
+> >>>>> controllers are known as cpu and  memory?
+> >>>> Or maybe "blockio"?
+> >>> Agree, blockio seems better. Not all I/O is performed on  block devices
+> >>> and in this case we're  considering block devices only.
+> >> Here we want to rate limit in block layer, I would think I/O scheduler
+> >> is the place where we are in much better position to do this kind of
+> >> limiting.
+> >>
+> >> Also we are changing the behavior of application by adding sleeps to
+> >> it during request submission. Moreover, we will prevent requests from
+> >> being merged since we won't allow them to be submitted in this case.
+> >>
+> >> Since bulk of submission for writes is done in background kernel
+> >> threads and we throttle based on limits on current, we will end up
+> >> throttling these threads and not the actual processes submitting i/o.
+> > 
+> > Yep, that's true! This works for read operations only... at the very
+> > least, if I've understood well, we could throttle I/O reads in the
+> > submit_bio() path and write operations in __set_page_dirty(). But this
+> > would change the applications behavior, so probably the best approcah
+> > could be to just get I/O statistics from TASK_IO_ACCOUNTING stuff and
+> > implement task delays at the I/O scheduler layer...
+> 
+> OK, to better figure the concept I tried to put the I/O throttling
+> mechanism inside the simplest scheduler: noop. But this raises a new
+> problem: under certain conditions (typically with write requests) a
+> delay imposed on a I/O request of a process could impact on all the
+> other I/O requests of other processes, causing the whole system to hang
+> until the first request is completed, so it seem that we've to deal with
+> a classic priority inversion problem.
+> 
+> Obviously the problem doesn't occur if the limited cgroup performs read
+> operations only.
+> 
+> I'm posting the modified patch below only for discussion purposes, you
+> could test it if you want, but you've been warned that the whole system
+> could hang for certain amounts of time.
 
-I am copying a large file +-1GB to another machine using scp, this was the
-easiest way to reproduce.
+Your approach is totally flawed, imho. For instance, you don't want a
+process to be able to dirty memory at foo mb/sec but only actually
+write them out at bar mb/sec.
 
-I've done this a few dozen times, and there's few odd things about this:
+The noop-iosched changes are also very buggy. The queue back pointer
+breaks reference counting and the task pointer storage assumes the task
+will also always be around. That's of course not the case.
 
-sometimes i have read speeds of around 20MB/s, at that time, the CPU is
-about 60% idle and max 10% io wait.
+IOW, you are doing this at the wrong level.
 
-but mostly, i have read speeds around 5MB/s, and CPU is 0% idle and 70% io
-waiting.
-
-This is a little odd, but one could argue that there are lots of factors,
-etc...
-
-True, however, i should note that, allthough i ran the tests immediately
-after each other; that if i had low IO wait less than 10%, it stayed that
-way, until the file was completely copied. AND if i had IO wait higher
-than 50%, it also stayed that way until the file was copied; immediately
-after all copies, there is no IO wait. even when no other process is
-writing for several seconds, this continues. same things with the speeds,
-either i have a consistent 5MB/s read, or 20MB/s read; never in between or
-fluctuating.
-
-I've tried to eliminate lots of other possibilities, by doing cat
-/path/to/file >/dev/null ; to just do the IO reading; usually this makes a
-extremely high io waiting (around 90%), but the read speeds are the same,
-either around 5 or around 20.
-
-stats are observed through iostat and mpstat. (in slow or normal case:
-iostat -x gives sda total usage 100%)
-
-I would like to trace this io wait to what process and device (I'm fairly
-sure it's the process i'm testing this with (eg: scp or cat)). but i don't
-know such a utility to find it.
-
-I've tried to google on this, but allthough there is lots of stuff with
-high IO wait in it. no solutions seems to be present.
-
-now, i can accept that sometimes, it's just slow. but the inconsistency is
-too consistent to be normal.
-
-can anyone give me some constructive info/help on this?
-
-thanks in advance
+What problem are you trying to solve?
 
 -- 
-AL13N is my name and head-biting is my game.
+Jens Axboe
+
