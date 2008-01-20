@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbYATNIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbYATNWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbYATNIt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 08:08:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYATNIk
+	id S1753675AbYATNWZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 08:22:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbYATNWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 08:08:40 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50380 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752089AbYATNIj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 08:08:39 -0500
-Date: Sun, 20 Jan 2008 13:06:33 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Newall <davidn@davidnewall.com>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for mm] Remove iBCS support
-Message-ID: <20080120130633.76c16d67@lxorguk.ukuu.org.uk>
-In-Reply-To: <4792DD22.4070902@davidnewall.com>
-References: <20080119045918.GA12215@basil.nowhere.org>
-	<4792B191.2060801@davidnewall.com>
-	<20080120031153.GB6275@one.firstfloor.org>
-	<4792D221.1010704@davidnewall.com>
-	<20080120051822.GB19784@one.firstfloor.org>
-	<4792DD22.4070902@davidnewall.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 20 Jan 2008 08:22:16 -0500
+Received: from slowhand.arndnet.de ([88.198.19.76]:58809 "EHLO mail.unitix.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752458AbYATNWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 08:22:15 -0500
+Message-ID: <47934B2E.3020707@i4.informatik.rwth-aachen.de>
+Date: Sun, 20 Jan 2008 14:22:54 +0100
+From: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Jordan Crouse <jordan.crouse@amd.com>
+CC: Andres Salomon <dilinger@queued.net>, marc.jones@amd.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, wim@iguana.be
+Subject: Re: [GEODE] Geode GX/LX watchdog timer (was 2.6.24-rc8 hangs at mfgpt-timer)
+References: <478E4267.7020509@i4.informatik.rwth-aachen.de> <20080116161912.7b449466@ephemeral> <20080116165606.3ebc06a4@ephemeral> <478F25D6.3060503@i4.informatik.rwth-aachen.de> <20080117134032.4cc1a1cf@ephemeral> <478FB255.5040001@i4.informatik.rwth-aachen.de> <20080117211917.GF8244@cosmic.amd.com> <478FCDB6.4010708@i4.informatik.rwth-aachen.de> <20080117223644.GK8244@cosmic.amd.com> <478FDC12.6020505@i4.informatik.rwth-aachen.de> <20080119010624.GA25328@cosmic.amd.com>
+In-Reply-To: <20080119010624.GA25328@cosmic.amd.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It's not necessarily that simple.  It might be for KFC and Dominoes, but
-> for others, SCO is not the complete story.  Many legacy systems are
-> written in COBOL, and must pay a per-seat licence for that on top of the
-> per-seat licence for UNIX.  It is these systems that are most attracted
-> towards SCO compatibility.
+Hi,
 
-And they mostly use microfocus cobol which is available on Linux and uses
-a vm is a trivial port, or they do a quick port to the fujitsu
-cobol->java vm translator.
+Jordan Crouse wrote:
+> On 17/01/08 23:52 +0100, Arnd Hannemann wrote:
+>>>> Watchdog for the new API would be great :-)
+>>> Coming soon.
+> 
+> As promised, a watchdog driver for the Geode GX/LX processors is attached.
+> I basically just ported the previous patch forward to 2.6.24.
 
-There are people in this community who deal day in and day out with
-migrations. I don't hear a whisper of concern from those I deal with
-about losing iBCS. 
+Great work!
 
-Alan
+> 
+> I also have good news or bad news depending on your perspective.  I wanted
+> to test this against 2.6.24, and OLPC is stuck at an older kernel version,
+> so I had to test this with coreboot (LinuxBIOS) on another Geode 
+> platform.  Like all BIOSen execpt for the OLPC firmware, coreboot uses
+> VSA (SMM handler) which consumes all the timers.
+> 
+> So I used the magical MSR and surprise! - the timer tick hung.  
+> I compiled out the timer tick, and tested the watchdog timer instead,
+> and it worked fine on timer 0.  So I don't think the MFGPTs themselves
+> have anything to do with this problem, but I do think it might be 
+> related to VSA and possibly interrupts too.  I'm going to invoke the
+> strong BIOS fu of our LinuxBIOS / BIOS expert Marc Jones, and see what
+> he comes up with.
+> 
+> I don't know how much of a hassle it would be for Andres to get a 2.6.24
+> kernel running on the OLPC to make sure that this isn't a regression
+> in the timer tick code (I suspect it isn't a regression, but you never
+> know).  I also think that it would probably be in our best interest to
+> default CONFIG_GEODE_MFGPT_TIMER to 'n' until we get this figured
+> out.  Since most BIOSen don't have timers available, that shouldn't affect
+> too many people.
+> 
+> So, anyway, enjoy the watchdog timer - I hope it meets everybody's
+> expectations for the 2.6.25 kernel.
+
+Thanks a lot for this, it works great! (with CONFIG_GEODE_MFGPT_TIMER
+not set).
+However some minor issues:
+Could the name of the /dev entry perhaps be changed from
+"geode-watchdog" to "watchdog" instead?
+I think all other watchdogs use "watchdog", and using two different
+watchdogs in the same machine won't work anyway, because of the same
+minor number, right?
+
+As a second point my gcc (4.1.2) issues a warning:
+
+drivers/watchdog/geodewdt.c: In function ‘geodewdt_remove’:
+drivers/watchdog/geodewdt.c:256: warning: control reaches end of
+non-void function
+
+which I think is a valid one.
+
+> 
+> Jordan
+> 
+Best regards,
+Arnd
