@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbYATDIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbYATDeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756884AbYATDIi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 22:08:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYATDI3
+	id S1757453AbYATDeA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 22:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYATDdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 22:08:29 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:40466 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751702AbYATDI3 (ORCPT
+	Sat, 19 Jan 2008 22:33:50 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:53282 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752150AbYATDdt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 22:08:29 -0500
-Date: Sun, 20 Jan 2008 04:11:53 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: David Newall <davidn@davidnewall.com>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for mm] Remove iBCS support
-Message-ID: <20080120031153.GB6275@one.firstfloor.org>
-References: <20080119045918.GA12215@basil.nowhere.org> <4792B191.2060801@davidnewall.com>
-Mime-Version: 1.0
+	Sat, 19 Jan 2008 22:33:49 -0500
+Date: Sun, 20 Jan 2008 09:03:38 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: dAniel hAhler <dhahler@googlemail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Regression with idle cpu cycle handling in 2.6.24 (compared to
+	2.6.22)
+Message-ID: <20080120033337.GA8277@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <bcadbdf50801190605s212ebe26n3035d8664554f636@mail.gmail.com> <bcadbdf50801190652s75f36b1ai422d8b12c5e8ff95@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4792B191.2060801@davidnewall.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <bcadbdf50801190652s75f36b1ai422d8b12c5e8ff95@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 20, 2008 at 12:57:29PM +1030, David Newall wrote:
-> Andi Kleen wrote:
-> > Can you please queue this patch in -mm for .25. It was posted earlier
-> > and nobody complained.
+On Sat, Jan 19, 2008 at 03:52:44PM +0100, dAniel hAhler wrote:
+> Hello,
 > 
-> I'm sure I complained.  I'm sure I said something about SCO
-
-Did you? 
-
-> compatibility.  This is a sleeping giant for Linux.  There are plenty of
-
-Interesting choice of words.
-
-> machines running legacy SCO applications, just waiting for painless
-> migration to some other platform.
+> I've now found the reason and a workaround for this. Apparently, it's
+> related to CONFIG_FAIR_USER_SCHED and can be worked around by
+> assigning a really small value to the boinc users cpu_share (125 is
+> the uid of "boinc"):
+> $ echo 2 | sudo tee /sys/kernel/uids/125/cpu_share
 > 
-> We should not be dismantling the scaffolding that's needed for that.
 
-See the rationale in the patch -- any iBCS application will need a significant
-kernel patch. If people add this kernel patch they can easily patch the three
-more places that detect the executables.
+Correct, that is the way to go about it.
 
-But it does not make sense for all Linux kernels to always check for iBCS executables
-when they don't have to code to run them anyways.
-
-Now if iBCS support is truly as important as you claim I'm sure
-someone will eventually submit a patch for mainline to support it properly.
-If yes the hooks can be readded in a clean way, not in a hackish way
-like they currently exists.
-
--Andi
-
+> While looking around, I've found the following patch, which seems to
+> address this:
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0710.3/3849.html
 > 
+> It has been posted here, but without any response.
+> 
+> btw: writing 1 into "cpu_share" totally locks up the computer!
+> 
+
+Can you please provide some more details. Can you go into another
+console (try ctrl-alt-f1) and try to reproduce the issue there. Could
+you take a photo of the oops/panic and upload it somewhere so that we
+can see it?
+
+Thanks
+-- 
+regards,
+Dhaval
