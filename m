@@ -1,116 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbYATMVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYATMZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbYATMVW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 07:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYATMVK
+	id S1753748AbYATMZk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 07:25:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYATMZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 07:21:10 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46744 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752623AbYATMVJ (ORCPT
+	Sun, 20 Jan 2008 07:25:33 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:49661
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752626AbYATMZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 07:21:09 -0500
-To: jengelh@computergmbh.de
-CC: miklos@szeredi.hu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org, linuxram@us.ibm.com,
-       viro@ftp.linux.org.uk, hch@infradead.org, a.p.zijlstra@chello.nl
-In-reply-to: <Pine.LNX.4.64.0801201207360.14598@fbirervta.pbzchgretzou.qr>
-	(message from Jan Engelhardt on Sun, 20 Jan 2008 12:20:02 +0100 (CET))
-Subject: Re: [RFC][PATCH] VFS: create /proc/<pid>/mountinfo
-References: <E1JGBVq-0002Or-H1@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0801201207360.14598@fbirervta.pbzchgretzou.qr>
-Message-Id: <E1JGZAZ-000414-Jz@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sun, 20 Jan 2008 13:20:59 +0100
+	Sun, 20 Jan 2008 07:25:32 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: linux-tiny@selenic.com
+Subject: Re: [PATCH] x86: =?iso-8859-1?q?fix=09unconditional=09arch/x86/kernel/pcspeaker=2Ec=3Fcomp?=
+ =?iso-8859-1?q?iling?=
+Date: Sun, 20 Jan 2008 06:25:28 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Michael Opdenacker <michael-lists@free-electrons.com>,
+       Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+References: <200801171643.49301.michael-lists@free-electrons.com> <1200664214.4001.24.camel@cinder.waste.org> <4790D3E3.4060409@free-electrons.com>
+In-Reply-To: <4790D3E3.4060409@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801200625.29511.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Jan 19 2008 12:05, Miklos Szeredi wrote:
-> >+
-> >+/*
-> >+ * Write full pathname from the root of the filesystem into the buffer.
-> >+ */
-> >+char *dentry_path(struct dentry *dentry, char *buf, int buflen)
-> 
-> Hm, this functions looks very much like __d_path(). Is it
-> an unintentional copy?
+On Friday 18 January 2008 10:29:23 Michael Opdenacker wrote:
+> Sounds fine! Don't hesitate to let us know about the lower-hanging fruit
+> you're thinking about. Here are the main things I have so far:
+>
+>     * Ideas in the existing Linux-Tiny patchset.
+>     * Disable support for non-Intel processors in x86 (cyrix.c,
+>       centaur.c, transmeta.c, nexgen.c, umc.c in arch/x86/kernel/cpu).
+>       As far as I remember, I saved 15 KB when I first experimented with
+>       this).
+>     * Disable support for readahead, page writeback, pdflush and swap
+>       when we have no storage at all (typically booting from an
+>       initramfs). This corresponds to 69 KB of source code!
+>
+> So, more ideas are welcome!
 
-It is similar, but there is a significant difference: __d_path() shows
-the path relative to the current process's root (possibly crossing
-mount points), while dentry_path() shows the path relative to the
-_filesystem's_ root (ignoring mount points, and current root).
+Personally, I'm trying to figure out how to build a "hello world" kernel.
 
-> >@@ -601,28 +635,29 @@ static inline void mangle(struct seq_fil
-> > 	seq_escape(m, s, " \t\n\\");
-> > }
-> > 
-> >+static struct proc_fs_info {
-> 
-> These do not seem to be static data. Please mark them as const.
-> 
-> static const struct proc_fs_info.
+I.E. the minimal set of files I need to compile to get a kernel I can boot 
+under qemu that does something visible.  (Printing "hello world" to the 
+serial port via the early_serial_write(), perhaps?)
 
-OK.
+No VFS, no process management, preferably no memory management...  Just get to 
+a stub start_kernel() that calls early_serial_write() and then does a HLT.  I 
+note that start_kernel() calls 11 things before the first printk(), and that 
+without the early_printk stuff that's just going into a buffer.
 
-> >+	int flag;
-> >+	char *str;
-> 
-> const char *str.
+Preferably, I even want to take this out of the kernel's build process and 
+build it from the command line or a small shell script.  (zImage packaging 
+and all.)  I.E. some kind of:
 
-OK.
+  gcc blah blah blah -o vmlinux
+  wrap.sh vmlinux zImage
 
-> >+	seq_putc(m, ' ');
-> >+	seq_puts(m, sb->s_flags & MS_RDONLY ? "ro" : "rw");
-> >+	for (fs_infop = fs_info; fs_infop->flag; fs_infop++) {
-> >+		if (sb->s_flags & fs_infop->flag)
-> >+			seq_puts(m, fs_infop->str);
-> >+	}
-> 
-> {} could go.
+The reason for this is, of course, that I'm trying to build the kernel with my 
+tinycc fork, and the whole kernel build is kind of intimidating and 
+complicated.  (And I currently need to pregenerate asm-offsets.h until I 
+teach tinycc to produce assembly output or come up with an alternative.)
 
-The former is more readable, I think.  My rule is: surround anything
-with {} if it's more than one line, even if not strictly necessary.
-This is especially true for nested if/else statements, but makes sense
-for 'for' as well.
+Currently, a "make allnoconfig" build runs for 479 lines, and builds radix 
+tree code and /dev/random and sysfs and all sorts of stuff.  
+Counter-intuitively, allnoconfig _isn't_ the smallest kernel you can build 
+(by a long shot), to do that you have to switch on the embedded menu and then 
+switch off everything in it (and all the stuff that shows up right _after_ 
+it, which smells like a bug to me), and switch to SLOB and switch off the 
+block layer at the top level.  But doing that only gets the build down to 449 
+lines, and the resulting x86-64 kernel is over 400k.  That is _not_ a "hello 
+world" kernel.  Not even close. :)
 
-> >+	if (sb->s_op->show_options)
-> >+		err = sb->s_op->show_options(m, mnt);
-> >+	if (IS_MNT_SHARED(mnt)) {
-> >+		seq_printf(m, " shared:%i", get_peer_group_id(mnt));
-> >+		if (IS_MNT_SLAVE(mnt))
-> >+			seq_printf(m, ",slave:%i", get_master_id(mnt));
-> >+	} else if (IS_MNT_SLAVE(mnt)) {
-> >+		seq_printf(m, " slave:%i", get_master_id(mnt));
-> >+	} else if (IS_MNT_UNBINDABLE(mnt)) {
-> >+		seq_printf(m, " unbindable");
-> >+	} else {
-> >+		seq_printf(m, " private");
-> >+	}
-> >+	seq_putc(m, '\n');
-> >+	return err;
-> >+}
-> >+
-> >+struct seq_operations mountinfo_op = {
-> I think this can go const.
+Alas, working from the other end and building your way _up_ isn't trivial 
+either.  (But has the advantage that I'm starting much closer to my goal than 
+the stripping down approach.)
 
-OK
+> Thanks for your time,
+>
+> Michael.
 
-> >--- linux.orig/include/linux/mount.h	2008-01-18 19:21:38.000000000 +0100
-> >+++ linux/include/linux/mount.h	2008-01-18 23:39:35.000000000 +0100
-> >@@ -56,6 +56,7 @@ struct vfsmount {
-> > 	struct list_head mnt_slave;	/* slave list entry */
-> > 	struct vfsmount *mnt_master;	/* slave is on master->mnt_slave_list */
-> > 	struct mnt_namespace *mnt_ns;	/* containing namespace */
-> >+	int mnt_id;			/* mount identifier */
-> > 	/*
-> > 	 * We put mnt_count & mnt_expiry_mark at the end of struct vfsmount
-> > 	 * to let these frequently modified fields in a separate cache line
-> 
-> Should/could it be unsigned int, or does it need to store -1?
-
-IDA returns int, so why change it?  Going over 2^31 number of mounts
-doesn't seem likely in the near future.
-
-Thanks,
-Miklos
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
