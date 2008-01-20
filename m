@@ -1,173 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYATNlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYATNmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbYATNlf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 08:41:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbYATNl0
+	id S1754224AbYATNmB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 08:42:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbYATNlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 08:41:26 -0500
-Received: from mail.gmx.net ([213.165.64.20]:45792 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753048AbYATNlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 08:41:25 -0500
-X-Authenticated: #36809985
-X-Provags-ID: V01U2FsdGVkX18If+VHydYIQ7RVXpe7nR3gjD6YVcPu44P+5Gx8XU
-	S5+60TBalvvHeL
-Subject: [PATCH] Fix file references in documentation and Kconfig
-From: Johann Felix Soden <johfel@gmx.de>
-To: torvalds@linux-foundation.org
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sun, 20 Jan 2008 14:41:18 +0100
-Message-Id: <1200836478.16588.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Sun, 20 Jan 2008 08:41:52 -0500
+Received: from slowhand.arndnet.de ([88.198.19.76]:57493 "EHLO mail.unitix.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753039AbYATNlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 08:41:51 -0500
+Message-ID: <47934FC8.1030800@i4.informatik.rwth-aachen.de>
+Date: Sun, 20 Jan 2008 14:42:32 +0100
+From: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Willy Tarreau <w@1wt.eu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc8-git does not boot on Geode LX
+References: <20080120081442.GA12713@1wt.eu>
+In-Reply-To: <20080120081442.GA12713@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johann Felix Soden <johfel@users.sourceforge.net>
+Hi,
 
-Fix typo in arch/powerpc/boot/flatdevtree_env.h.
-There is no Documentation/networking/ixgbe.txt.
+Willy Tarreau schrieb:
+> Hi,
+> 
+> I've just pulled latest -git and tried this morning in on one of my ALIX
+> mobos equipped with an AMD Geode LX800 + CS5536. HEAD is a7da60f41551*.
 
-README.cycladesZ is now in Documentation/.
-wavelan.p.h is now in drivers/net/wireless/.
-HFS.txt is now Documentation/filesystems/hfs.txt.
-OSS-files are now in sound/oss/.
+We boot 2.6.24-rc8 on these mainboards, which BIOS version do you use?
 
-Signed-off-by: Johann Felix Soden <johfel@users.sourceforge.net>
----
- Documentation/networking/wavelan.txt |    4 ++--
- arch/powerpc/boot/flatdevtree_env.h  |    2 +-
- drivers/char/Kconfig                 |    2 +-
- drivers/net/Kconfig                  |    3 ---
- drivers/net/wireless/Kconfig         |    2 +-
- drivers/scsi/Kconfig                 |    2 +-
- fs/Kconfig                           |    4 ++--
- sound/oss/Kconfig                    |    4 ++--
- 8 files changed, 10 insertions(+), 13 deletions(-)
+> 
+> Last kernel which runs on it was 2.6.22.14. I've not yet tried intermediate
+> kernels nor tried to bisect yet. Last messages are :
+> 
+> Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)                 
+> Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)                   
+> Memory: 257304k/262144k available (1506k kernel code, 4400k reserved, 370k data,
+>  136k init, 0k highmem)                                                         
+> virtual kernel memory layout:                                                   
+>     fixmap  : 0xffffb000 - 0xfffff000   (  16 kB)                               
+>     vmalloc : 0xd0800000 - 0xffff9000   ( 759 MB)                               
+>     lowmem  : 0xc0000000 - 0xd0000000   ( 256 MB)                               
+>       .init : 0xc02d8000 - 0xc02fa000   ( 136 kB)                               
+>       .data : 0xc0278970 - 0xc02d5504   ( 370 kB)                               
+>       .text : 0xc0100000 - 0xc0278970   (1506 kB)                               
+> Checking if this processor honours the WP bit even in supervisor mode... Ok.    
+> SLUB: Genslabs=11, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1         
+> Calibrating delay using timer specific routine.. 997.59 BogoMIPS (lpj=1995180)  
+> Mount-cache hash table entries: 512                                             
+> CPU: After generic identify, caps: 0088a93d c0c0a13d 00000000 00000000 00000000 
+> 00000000 00000000 00000000                                                      
+> CPU: L1 I Cache: 64K (32 bytes/line), D cache 64K (32 bytes/line)               
+> CPU: L2 Cache: 128K (32 bytes/line)                                             
+> CPU: After all inits, caps: 0088a93d c0c0a13d 00000000 00000000 00000000 0000000
+> 0 00000000 00000000                                                             
+> Compat vDSO mapped to ffffe000.                                                 
+> CPU: AMD Geode(TM) Integrated Processor by AMD PCS stepping 02                  
+> Checking 'hlt' instruction... OK.                                               
+> Freeing SMP alternatives: 0k freed                                              
+> net_namespace: 64 bytes                                                         
+> NET: Registered protocol family 16                                              
+> -----> hangs here <-----
+> 
+> In 2.6.22, the PCI is probed after this last message :
+> 
+> CPU: AMD Geode(TM) Integrated Processor by AMD PCS stepping 02
+> Checking 'hlt' instruction... OK.
+> NET: Registered protocol family 16                                              
+> PCI: Using configuration type 1                                                 
+> Setting up standard PCI resources                                               
+> SCSI subsystem initialized                                                      
+> PCI: Probing PCI hardware                                                       
+> PCI: Probing PCI hardware (bus 00)                                              
+> NET: Registered protocol family 2                                               
+> 
+> So I tried disabling PCI, MFGPT, etc... But no success yet.
 
-diff --git a/Documentation/networking/wavelan.txt b/Documentation/networking/wavelan.txt
-index c1acf5e..afa6e52 100644
---- a/Documentation/networking/wavelan.txt
-+++ b/Documentation/networking/wavelan.txt
-@@ -12,8 +12,8 @@ and many Linux driver to support it.
- "wavelan" driver (old ISA Wavelan)
- ----------------
- 	o Config :	Network device -> Wireless LAN -> AT&T WaveLAN
--	o Location :	.../drivers/net/wavelan*
--	o in-line doc :	.../drivers/net/wavelan.p.h
-+	o Location :	.../drivers/net/wireless/wavelan*
-+	o in-line doc :	.../drivers/net/wireless/wavelan.p.h
- 	o on-line doc :
- 	    http://www.hpl.hp.com/personal/Jean_Tourrilhes/Linux/Wavelan.html
- 
-diff --git a/arch/powerpc/boot/flatdevtree_env.h b/arch/powerpc/boot/flatdevtree_env.h
-index ad0420d..66e0ebb 100644
---- a/arch/powerpc/boot/flatdevtree_env.h
-+++ b/arch/powerpc/boot/flatdevtree_env.h
-@@ -2,7 +2,7 @@
-  * This file adds the header file glue so that the shared files
-  * flatdevicetree.[ch] can compile and work in the powerpc bootwrapper.
-  *
-- * strncmp & strchr copied from <file:lib/strings.c>
-+ * strncmp & strchr copied from <file:lib/string.c>
-  * Copyright (C) 1991, 1992  Linus Torvalds
-  *
-  * Maintained by: Mark A. Greer <mgreer@mvista.com>
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index ef1ed5d..2e3a0d4 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -137,7 +137,7 @@ config CYCLADES
- 	  your Linux box, for instance in order to become a dial-in server.
- 
- 	  For information about the Cyclades-Z card, read
--	  <file:drivers/char/README.cycladesZ>.
-+	  <file:Documentation/README.cycladesZ>.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called cyclades.
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 9ae3166..9af05a2 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2465,9 +2465,6 @@ config IXGBE
- 
- 	  <http://support.intel.com>
- 
--	  More specific information on configuring the driver is in
--	  <file:Documentation/networking/ixgbe.txt>.
--
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called ixgbe.
- 
-diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
-index c98fc62..2c08c0a 100644
---- a/drivers/net/wireless/Kconfig
-+++ b/drivers/net/wireless/Kconfig
-@@ -68,7 +68,7 @@ config WAVELAN
- 	  <http://www.tldp.org/docs.html#howto>. Some more specific
- 	  information is contained in
- 	  <file:Documentation/networking/wavelan.txt> and in the source code
--	  <file:drivers/net/wavelan.p.h>.
-+	  <file:drivers/net/wireless/wavelan.p.h>.
- 
- 	  You will also need the wireless tools package available from
- 	  <http://www.hpl.hp.com/personal/Jean_Tourrilhes/Linux/Tools.html>.
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index a6676be..184c7ae 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -732,7 +732,7 @@ config SCSI_GDTH
- 	  This is a driver for RAID/SCSI Disk Array Controllers (EISA/ISA/PCI) 
- 	  manufactured by Intel Corporation/ICP vortex GmbH. It is documented
- 	  in the kernel source in <file:drivers/scsi/gdth.c> and
--	  <file:drivers/scsi/gdth.h.>
-+	  <file:drivers/scsi/gdth.h>.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called gdth.
-diff --git a/fs/Kconfig b/fs/Kconfig
-index 487236c..781b47d 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1112,8 +1112,8 @@ config HFS_FS
- 	help
- 	  If you say Y here, you will be able to mount Macintosh-formatted
- 	  floppy disks and hard drive partitions with full read-write access.
--	  Please read <file:fs/hfs/HFS.txt> to learn about the available mount
--	  options.
-+	  Please read <file:Documentation/filesystems/hfs.txt> to learn about
-+	  the available mount options.
- 
- 	  To compile this file system support as a module, choose M here: the
- 	  module will be called hfs.
-diff --git a/sound/oss/Kconfig b/sound/oss/Kconfig
-index af37cd0..857008b 100644
---- a/sound/oss/Kconfig
-+++ b/sound/oss/Kconfig
-@@ -75,7 +75,7 @@ config SOUND_TRIDENT
- 
- 
- 	  This driver differs slightly from OSS/Free, so PLEASE READ the
--	  comments at the top of <file:drivers/sound/trident.c>.
-+	  comments at the top of <file:sound/oss/trident.c>.
- 
- config SOUND_MSNDCLAS
- 	tristate "Support for Turtle Beach MultiSound Classic, Tahiti, Monterey"
-@@ -564,7 +564,7 @@ config SOUND_AEDSP16
- 	  questions.
- 
- 	  Read the <file:Documentation/sound/oss/README.OSS> file and the head of
--	  <file:drivers/sound/aedsp16.c> as well as
-+	  <file:sound/oss/aedsp16.c> as well as
- 	  <file:Documentation/sound/oss/AudioExcelDSP16> to get more information
- 	  about this driver and its configuration.
- 
--- 
-1.5.3.8
+Did you try to boot with nomfgpt?
+In my experiments disabling CONFIG_GEODE_MFGPT_TIMER won't be enough to
+boot 2.6.24-rc8 on a v0.98 bios or on a v0.99 bios with MFGPT workaround
+turned on in the bios menu.
+Otherwise the system will hang in arch/x86/kernel/mfgpt_32.c while
+trying to detect MFGPT timers.
+To clearify, for us the following works:
+v0.99 bios, MFGPT workaround turned off in bios and
+CONFIG_GEODE_MFGPT_TIMER=n
 
+--- snip ---
 
+Best regards,
+Arnd Hannemann
