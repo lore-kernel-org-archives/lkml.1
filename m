@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbYATDeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbYATDhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbYATDeA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 22:34:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYATDdu
+	id S1756112AbYATDhv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 22:37:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYATDhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 22:33:50 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:53282 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752150AbYATDdt (ORCPT
+	Sat, 19 Jan 2008 22:37:43 -0500
+Received: from jbanks.dsl.xmission.com ([204.228.152.159]:59422 "EHLO
+	mail.bakbone.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751537AbYATDhm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 22:33:49 -0500
-Date: Sun, 20 Jan 2008 09:03:38 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: dAniel hAhler <dhahler@googlemail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Regression with idle cpu cycle handling in 2.6.24 (compared to
-	2.6.22)
-Message-ID: <20080120033337.GA8277@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <bcadbdf50801190605s212ebe26n3035d8664554f636@mail.gmail.com> <bcadbdf50801190652s75f36b1ai422d8b12c5e8ff95@mail.gmail.com>
+	Sat, 19 Jan 2008 22:37:42 -0500
+From: Justin Banks <justinb@bakbone.com>
+Date: Sat, 19 Jan 2008 20:31:46 -0700
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Justin Banks <justinb@bakbone.com>, linux-kernel@vger.kernel.org
+Subject: Re: Where's the create() pointer?
+Message-ID: <20080120033146.GA6744@bleen.domain.actdsltmp>
+References: <20080119150718.GA14765@bleen.domain.actdsltmp> <1200759175.8028.6.camel@heimdal.trondhjem.org> <20080119190249.GA4383@bleen.domain.actdsltmp> <1200773162.9095.11.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <bcadbdf50801190652s75f36b1ai422d8b12c5e8ff95@mail.gmail.com>
+In-Reply-To: <1200773162.9095.11.camel@heimdal.trondhjem.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 19, 2008 at 03:52:44PM +0100, dAniel hAhler wrote:
-> Hello,
+Trond Myklebust wrote
 > 
-> I've now found the reason and a workaround for this. Apparently, it's
-> related to CONFIG_FAIR_USER_SCHED and can be worked around by
-> assigning a really small value to the boinc users cpu_share (125 is
-> the uid of "boinc"):
-> $ echo 2 | sudo tee /sys/kernel/uids/125/cpu_share
+> On Sat, 2008-01-19 at 12:02 -0700, Justin Banks wrote:
+> > Trond Myklebust wrote
+> > > 
+> > > On Sat, 2008-01-19 at 08:07 -0700, Justin Banks wrote:
+> > > > It's probably been this way for a long time, and I'm just noticing, but
+> > > > I can't seem to find the create() (among others) pointer for NFS filesystems.
+> > > > 
+> > > > Specifically, If I look at sb->s_root->d_inode->i_op there's no create
+> > > > there. How do I find it? I'm guessing that the ability to share mount
+> > > > structures between multiple NFS mounts resulted in some kind of fake
+> > > > superblock, but I just can't figure out where to find the functions.
+> > > 
+> > > Why would you want to do this in the first place?
+> > 
+> > I'm just looking at trapping new creates on NFS, and so I need to find
+> > the pointer.
 > 
+> What is your purpose in trapping creates on the client? Is this for
+> accounting purposes? If so, why wouldn't inotify, or even a systemtap
+> script suffice?
 
-Correct, that is the way to go about it.
+Could do inotify, except on a large-ish filesystem, it's really
+unuseable, if you want to track everything that's going on.
 
-> While looking around, I've found the following patch, which seems to
-> address this:
-> http://www.ussg.iu.edu/hypermail/linux/kernel/0710.3/3849.html
-> 
-> It has been posted here, but without any response.
-> 
-> btw: writing 1 into "cpu_share" totally locks up the computer!
-> 
+> Anyhow, the simplest way to find the pointer is to grep for nfs_create
+> in /proc/kallsyms.
 
-Can you please provide some more details. Can you go into another
-console (try ctrl-alt-f1) and try to reproduce the issue there. Could
-you take a photo of the oops/panic and upload it somewhere so that we
-can see it?
+Ugh. That's an ugly way, seems to me. Isn't there a way, given the
+superblock? I mean, the VFS does it that way, doesn't it?
 
-Thanks
+-justinb
+
 -- 
-regards,
-Dhaval
+Justin Banks
+BakBone Software
+justinb@bakbone.com
