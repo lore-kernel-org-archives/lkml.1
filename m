@@ -1,76 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbYATQxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbYATRSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755025AbYATQxV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 11:53:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYATQxN
+	id S1754977AbYATRSm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 12:18:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbYATRSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 11:53:13 -0500
-Received: from mail.vyatta.com ([216.93.170.194]:34328 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754049AbYATQxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 11:53:12 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -2.599
-Date: Sun, 20 Jan 2008 08:50:08 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Michael Clark <michael@metaparadigm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: hi-res mtime userspace interface
-Message-ID: <20080120085008.5c0e2b64@deepthought>
-In-Reply-To: <47934820.7020209@metaparadigm.com>
-References: <47934820.7020209@metaparadigm.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 20 Jan 2008 12:18:33 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:15665 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbYATRSc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 12:18:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gwq2y/qllcdgIqxobLgTy3vdQSf2U7pdH63SMZAUUFLHTPOrDSKq2cHdhVu1FTt5Vnems40qbCakYoEmVGozn7XF/yprxvAefIv/5yo+Kg5BJNtyGntmbgXVLjeXwicBuH6uQ1xp22a+8fMev6ycH3mnpHqaVUJ3zm5nCOAuJsk=
+Message-ID: <b647ffbd0801200918pe730e07g9f9ef7b811ab254f@mail.gmail.com>
+Date: Sun, 20 Jan 2008 18:18:28 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Arjan van de Ven" <arjan@linux.intel.com>
+Subject: Re: [patch 1/3] LatencyTOP infrastructure patch
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <b647ffbd0801200847k76b3cf2en5b6b9e169d6aefe4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4790E3A6.7060807@linux.intel.com>
+	 <20080118093943.0048d0f7@laptopd505.fenrus.org>
+	 <b647ffbd0801200847k76b3cf2en5b6b9e169d6aefe4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Jan 2008 21:09:52 +0800
-Michael Clark <michael@metaparadigm.com> wrote:
+On 20/01/2008, Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
+> Hello Arjan,
+>
+> a few comments on the current locking scheme.
 
-> Is there an existing linux userspace interface for accessing the 
-> microsecond or nanosecond level (a|m|c)times of filesystems that support 
-> them (e.g. ext4, xfs)? and possibly also the generation counters used by 
-> NFS.
-> 
-> I notice sys_utimes is able to set microsecond (c|a|m)times but I can't 
-> find an associated interface to read them (I've googled to no avail).
-> 
-> (also noticing freebsd and darwin's struct stat contains struct timespec 
-> for these as well as an st_gen field - although I do realise how 
-> incredibly difficult it would be to add these to linux's struct stat).
-> 
+heh... now having read the first message in this series ("[Announce]
+Development release 0.1 of the LatencyTOP tool"), I finally see that
+"fine-grained locking" is still on your todo list :-)
 
-Look at stat.
 
-In /usr/include/bits/stat.h:
-struct stat
-  {
-    __dev_t st_dev;		/* Device.  */
-...
-#ifdef __USE_MISC
-    /* Nanosecond resolution timestamps are stored in a format
-       equivalent to 'struct timespec'.  This is the type used
-       whenever possible but the Unix namespace rules do not allow the
-       identifier 'timespec' to appear in the <sys/stat.h> header.
-       Therefore we have to handle the use of this header in strictly
-       standard-compliant sources special.  */
-    struct timespec st_atim;		/* Time of last access.  */
-    struct timespec st_mtim;		/* Time of last modification.  */
-    struct timespec st_ctim;		/* Time of last status change.  */
-# define st_atime st_atim.tv_sec	/* Backward compatibility.  */
-# define st_mtime st_mtim.tv_sec
-# define st_ctime st_ctim.tv_sec
-#else
-    __time_t st_atime;			/* Time of last access.  */
-    unsigned long int st_atimensec;	/* Nscecs of last access.  */
-    __time_t st_mtime;			/* Time of last modification.  */
-    unsigned long int st_mtimensec;	/* Nsecs of last modification.  */
-    __time_t st_ctime;			/* Time of last status change.  */
-    unsigned long int st_ctimensec;	/* Nsecs of last status change.  */
-#endif
 -- 
-Stephen Hemminger <stephen.hemminger@vyatta.com>
+Best regards,
+Dmitry Adamushko
