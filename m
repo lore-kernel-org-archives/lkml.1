@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYATSYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbYATSYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755325AbYATSYe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 13:24:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYATSYZ
+	id S1755540AbYATSYt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 13:24:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbYATSY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 13:24:25 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:43772 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753578AbYATSYY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 13:24:24 -0500
-Date: Sun, 20 Jan 2008 12:24:09 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: PROBLEM: Celeron Core
-In-reply-to: <fa.LZLUxfR64dAZFPtin9JNet7ieiY@ifi.uio.no>
-To: David Newall <davidn@davidnewall.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Chodorenko Michail <misha@one.by>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <479391C9.9020004@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.2Y+LplM9PCtpiAXzv/aJ3Pcnv4Y@ifi.uio.no>
- <fa.OpXJDCw416yeXEvt0cwrupi/qS0@ifi.uio.no>
- <fa.sj34KNXkf9z/ZO3fVJ+CYcgcuCs@ifi.uio.no>
- <fa.qpK4b5H7lkLeIaPtbJKzKV46yFY@ifi.uio.no>
- <fa.WeBRuL3UPPVPESVzfopvVyNcAw4@ifi.uio.no>
- <fa.LZLUxfR64dAZFPtin9JNet7ieiY@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sun, 20 Jan 2008 13:24:27 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:40090 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754717AbYATSY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 13:24:26 -0500
+Date: Sun, 20 Jan 2008 18:24:24 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com, mingo@elte.hu
+Subject: Re: 2.6.24-rc8-mm1
+Message-ID: <20080120182423.GA23514@csn.ul.ie>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org> <20080120163141.GA10097@csn.ul.ie> <20080120163509.GA28370@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080120163509.GA28370@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote:
-> Andi Kleen wrote:
->>> Isn't it the case that an idle machine will use
->>> less power when throttled than when not?
->>>     
->> No that is not the case (not even on old CPUs) 
->>   
-> Then why would it run cooler?  What generates the heat when not
-> throttled?  What stops generating heat when throttled?  And you say this
-> happens without reducing power consumption?  I'm not convinced.  I'm a
-> long way from that.
+On (20/01/08 22:05), Balbir Singh didst pronounce:
+> * Mel Gorman <mel@csn.ul.ie> [2008-01-20 16:31:42]:
+> 
+> > On (17/01/08 02:35), Andrew Morton didst pronounce:
+> > > 
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24-rc8/2.6.24-rc8-mm1/
+> > > 
+> > 
+> > The e100 network driver is failing to load properly on an old laptop. The
+> > dmesg output is as follows
+> > 
+> > [   68.875508] e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
+> > [   68.877091] e100: Copyright(c) 1999-2006 Intel Corporation
+> > [   68.881216] ACPI: PCI Interrupt 0000:00:03.0[A] -> Link [LNKC] -> GSI 11 (level, low) -> IRQ 11
+> > [   68.893113] modprobe:2736 conflicting cache attribute e8120000-e8121000 uncached<->default
+> > [   68.897090] e100: 0000:00:03.0: e100_probe: Cannot map device registers, aborting.
+> > [   68.901108] ACPI: PCI interrupt for device 0000:00:03.0 disabled
+> > [   68.905106] e100: probe of 0000:00:03.0 failed with error -12
+> > 
+> > The "conflicting cache attribute" message appears to be part of the PAT patches
+> > in the git-x86 tree (cc's added). It may be a co-incidence but reverting
+> > git-net related patches didn't fix it but reverting git-x86 and any
+> > depencies to make quilt work did.
+> >
+> 
+> Hi, Mel,
+> 
+> Found and fixed the problem. The patch is available at
+> 
+> http://lkml.org/lkml/2008/1/17/534 
+> 
 
-I believe that all throttling does is forcibly halt the CPU on a 
-particular duty cycle. This will reduce the rate of power consumption, 
-but reduces the CPU performance by a greater amount (since even at 100% 
-halted the CPU still consumes power) and so actually reduces performance 
-per watt. It will spread the heat and power usage produced from a given 
-workload task out in time (thus its usefulness in limiting CPU 
-temperature) but will consume more power overall.
+Ah, my bad. I missed it when reading the thread earlier. Confirmed, this
+patch fixes the problem. Thanks.
 
-Real CPU clock throttling schemes like SpeedStep, PowerNow, etc. 
-actually do increase performance per watt when they kick in.
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
