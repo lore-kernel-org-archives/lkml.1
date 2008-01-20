@@ -1,146 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYATBbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbYATBjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757487AbYATBbw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 20:31:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYATBbp
+	id S1757347AbYATBjt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 20:39:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYATBjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 20:31:45 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:58103 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751714AbYATBbo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 20:31:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XyeXMooJDYN6upTfKrQcsLxaHasIAufDiLXezK3vCM+MFg0Zq6+ofjoFCLZ9rSnvj+luoF/G3kN1dIKCwGSPLpwL1TwnF/FrcNqrDa1hl75Dz1HHGpYkj+jm0TpASAQ23gGzNw+LYLAz1MORzNurx0WFt8yga2qFsILLK3tJUt0=
-Message-ID: <86802c440801191731h191ed4b3hb2e43ed95c60cb2b@mail.gmail.com>
-Date: Sat, 19 Jan 2008 17:31:43 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Mike Travis" <travis@sgi.com>
-Subject: Re: [PATCH 1/5] x86: Change size of node ids from u8 to u16 fixup
-Cc: "David Rientjes" <rientjes@google.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, "Andi Kleen" <ak@suse.de>,
-       mingo@elte.hu, "Christoph Lameter" <clameter@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "Eric Dumazet" <dada1@cosmosbay.com>
-In-Reply-To: <479298AF.8040806@sgi.com>
+	Sat, 19 Jan 2008 20:39:41 -0500
+Received: from saeurebad.de ([85.214.36.134]:53178 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752601AbYATBjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 20:39:40 -0500
+From: Johannes Weiner <hannes@saeurebad.de>
+To: David Brown <lkml@davidb.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Update emacs indentation instructions.
+References: <1200783192-24399-1-git-send-email-lkml@davidb.org>
+Date: Sun, 20 Jan 2008 02:40:29 +0100
+In-Reply-To: <1200783192-24399-1-git-send-email-lkml@davidb.org> (David
+	Brown's message of "Sat, 19 Jan 2008 14:53:12 -0800")
+Message-ID: <87fxwt5l6a.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080118183011.354965000@sgi.com>
-	 <20080118183011.527888000@sgi.com>
-	 <86802c440801182003vd94044ex7fb13e61e5f79c81@mail.gmail.com>
-	 <alpine.DEB.0.9999.0801182026130.32726@chino.kir.corp.google.com>
-	 <47926ACC.4060707@sgi.com>
-	 <alpine.DEB.0.9999.0801191415360.28596@chino.kir.corp.google.com>
-	 <479298AF.8040806@sgi.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 19, 2008 4:41 PM, Mike Travis <travis@sgi.com> wrote:
-> David Rientjes wrote:
-> > On Sat, 19 Jan 2008, Mike Travis wrote:
-> >
-> >>> Yeah, NID_INVAL is negative so no unsigned type will work here,
-> >>> unfortunately.  And that reduces the intended savings of your change since
-> >>> the smaller type can only be used with a smaller CONFIG_NODES_SHIFT.
-> >>>
-> >> Excuse my ignorance but why wouldn't this work:
-> >>
-> >> static numanode_t pxm_to_node_map[MAX_PXM_DOMAINS]
-> >>                                 = { [0 ... MAX_PXM_DOMAINS - 1] = NUMA_NO_NODE };
-> >> ...
-> >>>> int acpi_map_pxm_to_node(int pxm)
-> >>>> {
-> >>>         int node = pxm_to_node_map[pxm];
-> >>>
-> >>>         if (node < 0)
-> >>         numanode_t node = pxm_to_node_map[pxm];
-> >>
-> >
-> > Because NUMA_NO_NODE is 0xff on x86.  That's a valid node id for
-> > configurations with CONFIG_NODES_SHIFT equal to or greater than 8.
->
-> Perhaps numanode_t should be set to u16 if MAX_NUMNODES > 255 to
-> allow for an invalid value of 255?
->
-> #if MAX_NUMNODES > 255
-> typedef u16 numanode_t;
-> #else
-> typedef u8 numanode_t;
-> #endif
->
-> >
-> >>         if (node != NUMA_NO_NODE) {
-> >
-> > Wrong, this should be
-> >
-> >       node == NUMA_NO_NODE
->
-> Oops, yes you're right.
->
->
-> >>>>                 if (nodes_weight(nodes_found_map) >= MAX_NUMNODES)
-> >>>>                         return NID_INVAL;
-> >>>>                 node = first_unset_node(nodes_found_map);
-> >>>>                 __acpi_map_pxm_to_node(pxm, node);
-> >>>>                 node_set(node, nodes_found_map);
-> >>>>         }
-> >
-> > The net result of this is that if a proximity domain is looked up through
-> > acpi_map_pxm_to_node() and already has a mapping to node 255 (legal with
-> > CONFIG_NODES_SHIFT == 8), this function will return NID_INVAL since the
-> > weight of nodes_found_map is equal to MAX_NUMNODES.
->
-> >
-> > You simply can't use valid node id's to signify invalid or unused node
-> > ids.
-> >
-> >> or change:
-> >>      #define NID_INVAL       (-1)
-> >> to
-> >>      #define NID_INVAL       ((numanode_t)(-1))
-> >> ...
-> >>         if (node != NID_INVAL) {
-> >
-> > You mean
-> >
-> >       node == NID_INVAL
-> >
-> >>>>                 if (nodes_weight(nodes_found_map) >= MAX_NUMNODES)
-> >>>>                         return NID_INVAL;
-> >>>>                 node = first_unset_node(nodes_found_map);
-> >>>>                 __acpi_map_pxm_to_node(pxm, node);
-> >>>>                 node_set(node, nodes_found_map);
-> >>>>         }
-> >
-> > That's the equivalent of your NUMA_NO_NODE code above.  The fact remains
-> > that (numanode_t)-1 is still a valid node id for MAX_NUMNODES >= 256.
-> >
-> > So, as I said in my initial reply, the only way to get the savings you're
-> > looking for is to use u8 for CONFIG_NODES_SHIFT <= 7 and then convert all
-> > NID_INVAL users to use NUMA_NO_NODE.
->
-> Yes, I agree.  I'll do the changes you're suggesting.
->
-> > Additionally, Linux has always discouraged typedefs when they do not
-> > define an architecture-specific size.  The savings from your patch for
-> > CONFIG_NODES_SHIFT == 7 would be 256 bytes for this mapping.
-> >
-> > It's simply not worth it.
->
-> So are you saying that I should just use u16 for all node ids whether
-> CONFIG_NODES_SHIFT > 7 or not?  Othersise, I would think that defining a
-> typedef is a fairly clean solution.
->
-> A quick grep shows that there are 35 arrays defined by MAX_NUMNODES in
-> x86_64, 38 in X86_32 (not verified.)  So it's not exactly a trivial
-> amount of memory.
+Hi,
 
-just use int for node id, and -1 will be NON_VALID...
-or s16?
+David Brown <lkml@davidb.org> writes:
 
-YH
+> +Fortunately, modern versions of GNU emacs support different indentation
+> +styles.  If you want to use the Linux kernel style for all C code, place
+> +the following in your .emacs file:
+> +
+> +(setq c-default-style "linux")
+
+This variable is not defined when emacs starts up.  Best is to always
+use a hook.
+
+So I'd suggest either
+
+	(add-hook 'c-mode-hook (lambda () (c-set-style "linux")))
+
+or for the conditional case
+
+	(add-hook 'c-mode-hook
+                  (lambda ()
+                    (c-set-style
+                      (or (and (string-match "/usr/src/linux"
+                                             (or (buffer-file-name) ""))
+                               "linux")
+                          "free-group-style"))))
+
+Perhaps the logic could be a bit more readable :-)
+
+Other than that, good idea to finally remove this ugly recommendation!
+
+	Hannes
