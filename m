@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbYATWYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbYATW3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756601AbYATWYY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 17:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755807AbYATWYO
+	id S1756612AbYATW3X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 17:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbYATW3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 17:24:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48548 "EHLO ogre.sisk.pl"
+	Sun, 20 Jan 2008 17:29:15 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:40506 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755258AbYATWYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 17:24:13 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Subject: Re: PROBLEM: Celeron Core
-Date: Sun, 20 Jan 2008 23:26:36 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <4793C5CA.5060100@wpkg.org>
-In-Reply-To: <4793C5CA.5060100@wpkg.org>
+	id S1755906AbYATW3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 17:29:14 -0500
+Date: Mon, 21 Jan 2008 00:27:54 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux arch <linux-arch@vger.kernel.org>
+Subject: Re: kbuild: improved Section mismatch detection
+Message-ID: <20080120222754.GK8669@does.not.exist>
+References: <20080120200527.GA23852@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200801202326.37030.rjw@sisk.pl>
+In-Reply-To: <20080120200527.GA23852@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 20 of January 2008, Tomasz Chmielewski wrote:
-> >> Clock throttling is not likely to save your battery, unless you have 
-> >> tasks that are running at 100% CPU for an unlimited time or something, 
-> >> and you force your CPU to throttle. Normally most people have tasks that 
-> >> run and then the CPU idles - loading an email, displaying a web page, 
-> >> etc. Clock throttling will just make these tasks utilize the CPU for a 
-> >> longer time proportional to the amount clock throttling and therefore 
-> >> negate any gains in battery usage.
-> 
-> Aren't you forgetting about CPUfreq governors? Which mean: use the 
-> maximum CPU frequency when the system is busy, throttle down (or lower 
-> voltage) when the system is idle.
-> 
-> So yes, throttling will save the battery.
+On Sun, Jan 20, 2008 at 09:05:27PM +0100, Sam Ravnborg wrote:
+>...
+> Adrian reminded us that KCFLAGS=-fno-inline told
+> another story with more than 100 Section mismatch
+> warnings on 64 bit x86 with an allyesconfig build.
+>...
 
-In the relevant documentation "throttling" usually means "the reduction of the
-frequency of a CPU that is not idle" in which case it won't (at least on the
-average).
- 
-> Besides, not all CPUs support power management (voltage control).
-> 
-> 
-> > IMO clock throttling (as opposed to the reduction of the frequency of an idle
-> > CPU) is only useful for preventing the CPU from overheating.
-> 
-> And for reducing power on CPUs that can't do any power management, just 
-> throttling.
-> 
-> For example, a server that doesn't crunch any numbers at night will 
-> certainly use less power when throttled.
+Not -fno-inline but -fno-inline-functions-called-once
+(completely different option).
 
-You can't use less power, you only can use less energy. :-)
+> 	Sam
 
-Anyway, that's "the reduction of the frequency of an idle CPU" mentioned above
-and it makes sense in the majority of cases.
+cu
+Adrian
 
-Greetings,
-Rafael
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
