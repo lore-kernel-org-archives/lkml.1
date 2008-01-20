@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759734AbYATFio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759992AbYATFnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759734AbYATFio (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 00:38:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYATFig
+	id S1759992AbYATFnh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 00:43:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYATFna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 00:38:36 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45139 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752740AbYATFif (ORCPT
+	Sun, 20 Jan 2008 00:43:30 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:48806 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752430AbYATFna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 00:38:35 -0500
-Date: Sun, 20 Jan 2008 06:42:02 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: David Newall <davidn@davidnewall.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Chodorenko Michail <misha@one.by>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: Celeron Core
-Message-ID: <20080120054202.GA19861@one.firstfloor.org>
-References: <p73prvyalfl.fsf@bingen.suse.de> <1200702477.25782.41.camel@cinder.waste.org> <20080119011506.GA23798@one.firstfloor.org> <1200715842.25782.95.camel@cinder.waste.org> <20080119042750.GA24481@one.firstfloor.org> <1200717635.25782.107.camel@cinder.waste.org> <20080119045415.GA27628@one.firstfloor.org> <4792CF9A.2030601@davidnewall.com> <20080120051338.GA19784@one.firstfloor.org> <4792DADD.70504@davidnewall.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4792DADD.70504@davidnewall.com>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 20 Jan 2008 00:43:30 -0500
+Message-ID: <4792DE0C.9060906@zytor.com>
+Date: Sat, 19 Jan 2008 21:37:16 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: disable_mtrr_trim only need for x86_64
+References: <200801192045.17291.yinghai.lu@sun.com>
+In-Reply-To: <200801192045.17291.yinghai.lu@sun.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 20, 2008 at 03:53:41PM +1030, David Newall wrote:
-> Andi Kleen wrote:
-> >> Isn't it the case that an idle machine will use
-> >> less power when throttled than when not?
-> >>     
-> >
-> > No that is not the case (not even on old CPUs) 
-> >   
-> Then why would it run cooler?  
-
-Ok for one more (but last) time:
-
-Throttling just lowers the short term heat spikes to prevent
-short term damage to the silicon.  For that it focusses on lowering 
-the absolute temperature at a given point.  That only applies
-when the CPU is busy.
-
-But for total power consumption (or rather more concretly conserving
-your battery) you don't care about absolute temperature at a given point
-(as long as it is not high enough that it destroys the CPU)
-you care about how much power is consumed (and heat generated from that) 
-averaged out over a longer time.
-
-And for most typical workloads (not running endless loops; significant
-idle time) throttling makes no difference and in fact often (especially
-on laptop CPUs with deeper sleep modi like the original reported
-had one) makes it likely worse (see previous mails for details why) 
-
-> I'm not convinced.  I'm along way from that.
-
-Frankly that's fine for me. I don't really feel any need to convince you. 
-I can live with your metal model of CPU physics not being accurate.
-
--Andi (feeling a bit like a broken record) 
+Yinghai Lu wrote:
+> [PATCH] x86: disable_mtrr_trim only need for x86_64
 > 
+> mtrr_trim_uncached_memory is only used in x86_64,
+> 
+> so disable_mtrr_trim is not needed for x86_32
+> 
+> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+That seems like a bug, and if so this patch goes the wrong direction. 
+(If the 32-bit code has another solution for the same problem, they 
+should be unified.)
+
+The trimming of uncachable memory affects both 32- and 64-bit kernels; 
+it's the same hardware, and even 32-bit kernels (with PAE) can access 
+memory above 4 GB.
+
+	-hpa
