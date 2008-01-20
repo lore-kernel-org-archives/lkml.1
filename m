@@ -1,116 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755140AbYATRWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbYATR2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755140AbYATRWS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 12:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbYATRWJ
+	id S1754904AbYATR2x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 12:28:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYATR2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 12:22:09 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:59595 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754686AbYATRWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 12:22:08 -0500
-Date: Sun, 20 Jan 2008 18:21:51 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: linux-kernel@vger.kernel.org, WANG Cong <xiyou.wangcong@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: Re: build #344 issue for v2.6.24-rc8-74-ga7da60f Section mismatch: reference to .init.text:lguest_entry
-Message-ID: <20080120172151.GA22524@uranus.ravnborg.org>
-References: <200801201619.01965.toralf.foerster@gmx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sun, 20 Jan 2008 12:28:44 -0500
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:9919 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753428AbYATR2n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 12:28:43 -0500
+Date: Sun, 20 Jan 2008 18:28:40 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: mingo@elte.hu, Jeremy Fitzhardinge <jeremy@goop.org>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com
+Subject: [PATCH] Fix early_ioremap on x86-64
+Message-ID: <20080120172840.GA24608@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200801201619.01965.toralf.foerster@gmx.de>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 20 Jan 2008 17:22:27.0866 (UTC) FILETIME=[07BEEFA0:01C85B89]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 20, 2008 at 04:18:58PM +0100, Toralf Förster wrote:
-> Hello,
-> 
-> although I applied the xen-patch:
-> 
-> ..............................................................................
-> tfoerste@n22 ~/devel/linux-2.6 $ git diff
-> diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-> index f84e772..5e24f67 100644
-> --- a/arch/x86/xen/setup.c
-> +++ b/arch/x86/xen/setup.c
-> @@ -59,7 +59,7 @@ static void xen_idle(void)
->  /*
->   * Set the bit indicating "nosegneg" library variants should be used.
->   */
-> -static void fiddle_vdso(void)
-> +static void __init fiddle_vdso(void)
->  {
->         extern u32 VDSO_NOTE_MASK; /* See ../kernel/vsyscall-note.S.  */
->         extern char vsyscall_int80_start;
-> diff --git a/arch/x86/xen/xen-head.S b/arch/x86/xen/xen-head.S
-> index f8d6937..288d587 100644
-> --- a/arch/x86/xen/xen-head.S
-> +++ b/arch/x86/xen/xen-head.S
-> @@ -4,16 +4,18 @@
->  #ifdef CONFIG_XEN
-> 
->  #include <linux/elfnote.h>
-> +#include <linux/init.h>
->  #include <asm/boot.h>
->  #include <xen/interface/elfnote.h>
-> 
-> -.pushsection .init.text
-> +       __INIT
->  ENTRY(startup_xen)
->         movl %esi,xen_start_info
->         cld
->         movl $(init_thread_union+THREAD_SIZE),%esp
->         jmp xen_start_kernel
-> -.popsection
-> +
-> +       __FINIT
-> 
->  .pushsection .bss.page_aligned
->         .align PAGE_SIZE_asm
-> ..............................................................................
-> 
-> 
-> I got during make :
-> 
->   AS      .tmp_kallsyms3.o
->   LD      vmlinux.o
->   MODPOST vmlinux.o
-> WARNING: vmlinux.o(.data+0x4): Section mismatch: reference to .init.text:lguest_entry (between 'subarch_entries' and 'stack_start')
->   LD      vmlinux
->   SYSMAP  System.map
->   SYSMAP  .tmp_System.map
-> 
-> The build was made with :
-> $> make mrproper && make rndconfig && <tweak config file> && make oldconfig && make
+Fix early_ioremap on x86-64
 
-Different issue. Untested patch below.
+[Venki, sorry for blaming PAT for this earlier. It was innocent.]
+[Note the patch is on top of git-x86 + gbpages applied. I think
+there will be an trivial reject without gbpages-direct applied first]
 
-	Sam
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index fbad51f..f0cacff 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -9,6 +9,7 @@
+I had ACPI failures on several machines since a few days. Symptom
+was NUMA nodes not getting detected or worse cores not getting detected.
+They all came from ACPI not being able to read various of its tables. I finally
+bisected it down to Jeremy's "put _PAGE_GLOBAL into PAGE_KERNEL" change.
+With that the fix was fairly obvious. The problem was that early_ioremap()
+didn't use a "_all" flush that would affect the global PTEs too. So 
+with global bits getting used everywhere now an early_ioremap would
+not actually flush a mapping if something else was mapped previously
+on that slot (which can happen with early_iounmap inbetween)
+
+This patch changes all flushes in init_64.c to be __flush_tlb_all()
+and fixes the problem here.
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/arch/x86/mm/init_64.c
+===================================================================
+--- linux.orig/arch/x86/mm/init_64.c
++++ linux/arch/x86/mm/init_64.c
+@@ -242,7 +242,7 @@ void *early_ioremap(unsigned long addr, 
+ 		addr &= PMD_MASK;
+ 		for (i = 0; i < pmds; i++, addr += PMD_SIZE)
+ 			set_pmd(pmd+i, __pmd(addr | __PAGE_KERNEL_LARGE_EXEC));
+-		__flush_tlb();
++		__flush_tlb_all();
+ 		printk(KERN_CONT "%016ld\n", vaddr);
+ 		return (void *)vaddr;
+ 	next:
+@@ -265,7 +265,7 @@ void early_iounmap(void *addr, unsigned 
+ 	pmd = level2_kernel_pgt + pmd_index(vaddr);
+ 	for (i = 0; i < pmds; i++)
+ 		pmd_clear(pmd + i);
+-	__flush_tlb();
++	__flush_tlb_all();
+ }
  
- .text
- #include <linux/threads.h>
-+#include <linux/init.h>
- #include <linux/linkage.h>
- #include <asm/segment.h>
- #include <asm/page.h>
-@@ -151,7 +152,9 @@ WEAK(xen_entry)
- 	/* Unknown implementation; there's really
- 	   nothing we can do at this point. */
- 	ud2a
--.data
-+
-+	__INITDATA
-+
- subarch_entries:
- 	.long default_entry		/* normal x86/PC */
- 	.long lguest_entry		/* lguest hypervisor */
+ static unsigned long direct_entry(unsigned long paddr)
+@@ -339,7 +339,7 @@ static void __meminit phys_pud_init(pud_
+ 		spin_unlock(&init_mm.page_table_lock);
+ 		unmap_low_page(pmd);
+ 	}
+-	__flush_tlb();
++	__flush_tlb_all();
+ } 
+ 
+ static void __init find_early_table_space(unsigned long end)
