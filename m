@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbYATLTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbYATLT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753626AbYATLTk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 06:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbYATLTb
+	id S1752919AbYATLT4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 06:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbYATLTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 06:19:31 -0500
-Received: from hoefnix.telenet-ops.be ([195.130.132.54]:52250 "EHLO
-	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149AbYATLTa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 06:19:32 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46636 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752338AbYATLTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 20 Jan 2008 06:19:30 -0500
-Date: Sun, 20 Jan 2008 12:18:40 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Matt Mackall <mpm@selenic.com>, Chodorenko Michail <misha@one.by>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: Celeron Core
-In-Reply-To: <20080119042750.GA24481@one.firstfloor.org>
-Message-ID: <Pine.LNX.4.64.0801201216520.28200@anakin>
-References: <3ed23423adebae08e8f75b6a6a7ce7ff@one.by> <p73prvyalfl.fsf@bingen.suse.de>
- <1200702477.25782.41.camel@cinder.waste.org> <20080119011506.GA23798@one.firstfloor.org>
- <1200715842.25782.95.camel@cinder.waste.org> <20080119042750.GA24481@one.firstfloor.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.24-rc8-mm1: WARN_ON() in clockevents_register_device() on HP nx6325
+Date: Sun, 20 Jan 2008 12:21:39 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20080117023514.9df393cf.akpm@linux-foundation.org> <200801200210.38412.rjw@sisk.pl> <20080120102440.GA507@elte.hu>
+In-Reply-To: <20080120102440.GA507@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801201221.40098.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Jan 2008, Andi Kleen wrote:
-> > So while throttling may be less efficient in terms of watt seconds used
-> > to compile something than running at full speed, it is incorrect to say
-> > it uses less power. One machine running for an hour throttled to 50%
-> > uses less power (and therefore less battery and cooling) than another
-> > running at full speed for that same hour.
+On Sunday, 20 of January 2008, Ingo Molnar wrote:
 > 
-> Not for the same unit of work. If you just run endless loops you 
-> might be true, but most systems don't do that. 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > Something goes wrong in the timers land.  I get this on boot:
+> > 
+> > ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+> > Disabling APIC timer
+> > ------------[ cut here ]------------
+> > WARNING: at /home/rafael/src/mm/linux-2.6.24-rc8-mm1/kernel/time/clockevents.c:1
+> > 65 clockevents_register_device+0x36/0xc4()
+> 
+> ok, since we disable the APIC timer, i suspect this warning can be 
+> disregarded - the bootup is otherwise fine, right?
+> 
+> Thomas - why do we register it while it's disabled? I have put in that 
+> warning to detect APIC miscalibrations.
 
-So you mean energy (measured in J).
-Power is energy/time unit (measured in W, i.e. J/s).
+Well, for an unknown reason, there's a ~5 s delay during resume from RAM (in
+fact I can also trigger it in the "core" test mode, ie. without entering the
+sleep state), which I thought might be related.  If not, it might be necessary
+to bisect again.  Sigh.
 
-So I guess what you really want to say is: throttling decreases power
-consumption, but on modern CPUs it increases the amount of energy needed
-to perform the task.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks,
+Rafael
