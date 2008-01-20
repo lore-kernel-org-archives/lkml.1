@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbYATLIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbYATLTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753816AbYATLIW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 06:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbYATLIP
+	id S1753626AbYATLTk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 06:19:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbYATLTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 06:08:15 -0500
-Received: from ananke.telenet-ops.be ([195.130.137.78]:59938 "EHLO
-	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbYATLIO (ORCPT
+	Sun, 20 Jan 2008 06:19:31 -0500
+Received: from hoefnix.telenet-ops.be ([195.130.132.54]:52250 "EHLO
+	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbYATLTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 06:08:14 -0500
-Date: Sun, 20 Jan 2008 12:08:11 +0100 (CET)
+	Sun, 20 Jan 2008 06:19:30 -0500
+Date: Sun, 20 Jan 2008 12:18:40 +0100 (CET)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: devzero@web.de
-cc: mj@ucw.cz,
-       Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: "problem" with mdacon
-In-Reply-To: <112492815@web.de>
-Message-ID: <Pine.LNX.4.64.0801201205050.28200@anakin>
-References: <112492815@web.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Matt Mackall <mpm@selenic.com>, Chodorenko Michail <misha@one.by>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: Celeron Core
+In-Reply-To: <20080119042750.GA24481@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0801201216520.28200@anakin>
+References: <3ed23423adebae08e8f75b6a6a7ce7ff@one.by> <p73prvyalfl.fsf@bingen.suse.de>
+ <1200702477.25782.41.camel@cinder.waste.org> <20080119011506.GA23798@one.firstfloor.org>
+ <1200715842.25782.95.camel@cinder.waste.org> <20080119042750.GA24481@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Roland,
+On Sat, 19 Jan 2008, Andi Kleen wrote:
+> > So while throttling may be less efficient in terms of watt seconds used
+> > to compile something than running at full speed, it is incorrect to say
+> > it uses less power. One machine running for an hour throttled to 50%
+> > uses less power (and therefore less battery and cooling) than another
+> > running at full speed for that same hour.
+> 
+> Not for the same unit of work. If you just run endless loops you 
+> might be true, but most systems don't do that. 
 
-On Fri, 18 Jan 2008, devzero@web.de wrote:
-> sorry for contacting directly, but i was unsure about what list is best to ask questions for console specific stuff.
-> maybe  linux-fbdev or linuxconsole-dev ? the latter looks dead - there is nothing but spam in the recent archive...
+So you mean energy (measured in J).
+Power is energy/time unit (measured in W, i.e. J/s).
 
-I'd use linux-fbdev-devel and cc to lkml (already added).
-
-> ok - my "problem" (not being a real one, but not sure if this is a bug)
-> 
-> if i do "modprobe mdacon" (without any options) the system console output freezes and takes no more keyboard input (no vt switching, too)
-> this happens on any real hardware and also in vmware.
-> 
-> looks weird to me - is this expected behaviour ?
-> 
-> i would have expected some "no such device or adress".
-> 
-> found this by chance by some module load/unload stresstesting and there are not many modules which break my system when loading/unloading - mdacon is one of the very few...
-> 
-> would be nice to get a comment about this.
-
-I think it should just complain with `mdacon: MDA card not detected.',
-if no MDA card is present.
+So I guess what you really want to say is: throttling decreases power
+consumption, but on modern CPUs it increases the amount of energy needed
+to perform the task.
 
 Gr{oetje,eeting}s,
 
