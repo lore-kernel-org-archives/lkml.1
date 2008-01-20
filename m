@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbYATEDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbYATEKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266AbYATEDz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 Jan 2008 23:03:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYATEDr
+	id S1756138AbYATEKp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 Jan 2008 23:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbYATEKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 23:03:47 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:58560 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072AbYATEDr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 23:03:47 -0500
-Date: Sun, 20 Jan 2008 09:33:39 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: dAniel hAhler <dhahler@googlemail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Regression with idle cpu cycle handling in 2.6.24 (compared to
-	2.6.22)
-Message-ID: <20080120040339.GB16692@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <bcadbdf50801190605s212ebe26n3035d8664554f636@mail.gmail.com> <bcadbdf50801190652s75f36b1ai422d8b12c5e8ff95@mail.gmail.com> <20080120033337.GA8277@linux.vnet.ibm.com>
+	Sat, 19 Jan 2008 23:10:35 -0500
+Received: from phunq.net ([64.81.85.152]:36318 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751908AbYATEKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 Jan 2008 23:10:34 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: "Abhishek Rai" <abhishekrai@google.com>
+Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm patch]
+Date: Sat, 19 Jan 2008 20:10:20 -0800
+User-Agent: KMail/1.9.5
+Cc: "Theodore Tso" <tytso@mit.edu>, "Christoph Hellwig" <hch@infradead.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, rohitseth@google.com,
+       linux-ext4@vger.kernel.org
+References: <200801140839.01986.abhishekrai@google.com> <20080115152801.GA7292@mit.edu> <d9885f0f0801170447r1c2bfeb9l6c911bfa0113366f@mail.gmail.com>
+In-Reply-To: <d9885f0f0801170447r1c2bfeb9l6c911bfa0113366f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080120033337.GA8277@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200801192010.20699.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 20, 2008 at 09:03:38AM +0530, Dhaval Giani wrote:
-> On Sat, Jan 19, 2008 at 03:52:44PM +0100, dAniel hAhler wrote:
-> > Hello,
-> > 
-> > I've now found the reason and a workaround for this. Apparently, it's
-> > related to CONFIG_FAIR_USER_SCHED and can be worked around by
-> > assigning a really small value to the boinc users cpu_share (125 is
-> > the uid of "boinc"):
-> > $ echo 2 | sudo tee /sys/kernel/uids/125/cpu_share
-> > 
-> 
-> Correct, that is the way to go about it.
-> 
-> > While looking around, I've found the following patch, which seems to
-> > address this:
-> > http://www.ussg.iu.edu/hypermail/linux/kernel/0710.3/3849.html
-> > 
-> > It has been posted here, but without any response.
-> > 
-> > btw: writing 1 into "cpu_share" totally locks up the computer!
-> > 
-> 
-> Can you please provide some more details. Can you go into another
-> console (try ctrl-alt-f1) and try to reproduce the issue there. Could
-> you take a photo of the oops/panic and upload it somewhere so that we
-> can see it?
-> 
+On Thursday 17 January 2008 04:47, Abhishek Rai wrote:
+> > if Abhishek wants to pursue it, would be to pull in all of the
+> > indirect blocks when the file is opened, and create an in-memory
+> > extent tree that would speed up access to the file.  It's rarely
+> > worth doing this without metaclustering, since it doesn't help for
+> > sequential I/O, only random I/O, but with metaclustering it would
+> > also be a win for sequential I/O.  (This would also remove the
+> > minor performance degradation for sequential I/O imposed by
+> > metaclustering, and in fact improve it slightly for really big
+> > files.)
+>
+> Also, since the in memory extent tree will now occupy much less
+> space, we can keep them cached for a much longer time which will
+> improve performance of random reads. The new metaclustering patch is
+> more amenable to this trick since it reduces fragmentation thereby
+> reducing the number of extents.
 
-I've not been able to reproduce this problem on my system here. Do you
-try to change the cpu_share of the current user?
+I can see value in preemptively loading indirect blocks into the buffer 
+cache, but is building a second-order extent tree really worth the 
+effort?  Probing the buffer cache is very fast.
 
--- 
-regards,
-Dhaval
+Regards,
+
+Daniel
