@@ -1,51 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYATFAC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbYATFF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbYATFAC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 00:00:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbYATE7w
+	id S1754543AbYATFF2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 00:05:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYATFFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 Jan 2008 23:59:52 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:54062
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752335AbYATE7v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 Jan 2008 23:59:51 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-tiny@selenic.com
-Subject: Re: [PATCH] x86: =?utf-8?q?fix=09unconditional=09arch/x86/kernel/pcspeaker=2Ec=3Fcompiling?=
-Date: Sat, 19 Jan 2008 22:59:46 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Matt Mackall <mpm@selenic.com>,
-       Michael Opdenacker <michael-lists@free-electrons.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-References: <200801171643.49301.michael-lists@free-electrons.com> <4790D3E3.4060409@free-electrons.com> <1200676219.3835.8.camel@cinder.waste.org>
-In-Reply-To: <1200676219.3835.8.camel@cinder.waste.org>
+	Sun, 20 Jan 2008 00:05:21 -0500
+Received: from gw.goop.org ([64.81.55.164]:51305 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751164AbYATFFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 00:05:20 -0500
+Message-ID: <4792D68D.8090307@goop.org>
+Date: Sat, 19 Jan 2008 21:05:17 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Marcelo Tosatti <marcelo@kvack.org>
+CC: mingo@elte.hu, gcosta@redhat.com, ehabkost@redhat.com, glommer@gmail.com,
+       chrisw@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fill in missing pv_mmu_ops entries for PAGETABLE_LEVELS
+ >= 3
+References: <12006768251548-git-send-email-gcosta@redhat.com> <20080119181909.GA4640@dmt>
+In-Reply-To: <20080119181909.GA4640@dmt>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801192259.47063.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 January 2008 11:10:19 Matt Mackall wrote:
-> >     * Disable support for readahead, page writeback, pdflush and swap
-> >       when we have no storage at all (typically booting from an
-> >       initramfs). This corresponds to 69 KB of source code!
+Marcelo Tosatti wrote:
+> On Fri, Jan 18, 2008 at 03:20:15PM -0200, Glauber de Oliveira Costa wrote:
+>   
+>> Hi,
+>>
+>> This small series provides some more fixes towards the goal
+>> to have the PARAVIRT selectable for x86_64. After that, just
+>> some more small steps are needed.
+>>
+>> The first fix is not even specific for PARAVIRT, and it's actually
+>> preventing the whole tree from booting.
+>>
+>>     
 >
-> That'd be nice, yes. It would probably make sense to be able to disable
-> just readahead support when we're working with only solid-state devices.
+> And the following allows PARAVIRT kernels to boot on x86_64.
+>
+> -----
+>
+> Fill in missing pagetable manipulation entries in pv_mmu_ops 
+> for PAGETABLE_LEVELS >= 3.
+>
+> Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+>   
 
-Very nice.  From a UI standpoint, shouldn't disabling the block layer take at 
-least some of that out?  (Or disabling the block layer and all network 
-filesystems.  /me tries to remember whether jffs2 depends on the block layer.  
-Now that qemu can fake an mtd, I really need to start playing with that...)
+Looks good, thanks.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Acked-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+
+>
+> Index: linux-2.6-x86/arch/x86/kernel/paravirt.c
+> ===================================================================
+> --- linux-2.6-x86.orig/arch/x86/kernel/paravirt.c
+> +++ linux-2.6-x86/arch/x86/kernel/paravirt.c
+> @@ -396,16 +396,25 @@ struct pv_mmu_ops pv_mmu_ops = {
+>  	.kmap_atomic_pte = kmap_atomic,
+>  #endif
+>  
+> +#if PAGETABLE_LEVELS >= 3
+>  #ifdef CONFIG_X86_PAE
+>  	.set_pte_atomic = native_set_pte_atomic,
+>  	.set_pte_present = native_set_pte_present,
+> -	.set_pud = native_set_pud,
+>  	.pte_clear = native_pte_clear,
+>  	.pmd_clear = native_pmd_clear,
+> -
+> +#endif
+> +	.set_pud = native_set_pud,
+> +	.set_pgd = native_set_pgd,
+> +	.pgd_clear = native_pgd_clear,
+>  	.pmd_val = native_pmd_val,
+>  	.make_pmd = native_make_pmd,
+> +
+> +#if PAGETABLE_LEVELS == 4
+> +	.pud_val = native_pud_val,
+> +	.make_pud = native_make_pud,
+> +	.pud_clear = native_pud_clear,
+>  #endif
+> +#endif /* PAGETABLE_LEVELS >= 3 */
+>  
+>  	.pte_val = native_pte_val,
+>  	.pgd_val = native_pgd_val,
+>
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
+
