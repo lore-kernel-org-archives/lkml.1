@@ -1,24 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbYATNr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbYATNxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306AbYATNr0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 08:47:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbYATNrT
+	id S1754116AbYATNxd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 08:53:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYATNxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 08:47:19 -0500
-Received: from mail-a01.ithnet.com ([217.64.83.96]:55969 "HELO ithnet.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1753039AbYATNrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 08:47:18 -0500
-X-Sender-Authentication: net64
-Date: Sun, 20 Jan 2008 14:47:13 +0100
-From: Stephan von Krawczynski <skraw@ithnet.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Problem with tg3 in 2.6.23.12
-Message-Id: <20080120144713.880701d2.skraw@ithnet.com>
-In-Reply-To: <20080113150407.d2ca967b.skraw@ithnet.com>
-References: <20080113150407.d2ca967b.skraw@ithnet.com>
-Organization: ith Kommunikationstechnik GmbH
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.10; i686-pc-linux-gnu)
+	Sun, 20 Jan 2008 08:53:25 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48961 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753369AbYATNxZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 08:53:25 -0500
+Date: Sun, 20 Jan 2008 13:51:12 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Newall <davidn@davidnewall.com>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for mm] Remove iBCS support
+Message-ID: <20080120135112.7bc317c7@lxorguk.ukuu.org.uk>
+In-Reply-To: <47934FF5.4010904@davidnewall.com>
+References: <20080119045918.GA12215@basil.nowhere.org>
+	<4792B191.2060801@davidnewall.com>
+	<20080120031153.GB6275@one.firstfloor.org>
+	<4792D221.1010704@davidnewall.com>
+	<20080120051822.GB19784@one.firstfloor.org>
+	<4792DD22.4070902@davidnewall.com>
+	<20080120130633.76c16d67@lxorguk.ukuu.org.uk>
+	<47934FF5.4010904@davidnewall.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,17 +37,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Jan 2008 15:04:07 +0100
-Stephan von Krawczynski <skraw@ithnet.com> wrote:
+> Well, I'm whispering:  The cost is that something desirable but
+> incomplete would be removed.  While it's there it's a constant source of
+> irritation to those in the know.  Once removed it can be forgotten.  So
+> the cost is really that iBCS2 compatibility becomes less likely.  What's
+> the benefit in removing it?  Up to 20 cycles per exec?  That's nothing.
 
-> Hello all,
-> 
-> we recently tried to stress several netblk configurations and got this kernel
-> log (amongst others). If additional information is required feel free to ask. We can try patches as well the config is not in production yet.
+Well you whispered many years too late. iBCS support vanished in 2.4
+because nobody cared, nobody wanted to maintain it and not a single
+vendor saw a business demand to justify assigning someone to do any work
+with it.
 
-Does anybody have an idea what my original posting is all about?
+If you want it back then you need to port the 2.4 iBCS emulation layer
+code to 2.6 first. Of course you could probably  also do it all in user
+space with some LD_PRELOAD work and binfmt_misc. That might be a bit
+slower but a lot more portable.
 
-Regards,
-Stephan
-
-
+Alan
