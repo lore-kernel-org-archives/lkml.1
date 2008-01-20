@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbYATO6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754440AbYATPEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754289AbYATO6v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 09:58:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbYATO6m
+	id S1754440AbYATPEI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 10:04:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYATPD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 09:58:42 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:39104 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753282AbYATO6l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 09:58:41 -0500
-Date: Sun, 20 Jan 2008 20:28:44 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrea Righi <righiandr@users.sourceforge.net>,
-       Naveen Gupta <ngupta@google.com>, Paul Menage <menage@google.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH] cgroup: limit block I/O bandwidth
-Message-ID: <20080120145844.GN8973@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
-	Andrea Righi <righiandr@users.sourceforge.net>,
-	Naveen Gupta <ngupta@google.com>, Paul Menage <menage@google.com>,
-	Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Pavel Emelyanov <xemul@openvz.org>
-References: <2846be6b0801181439o55dcff09ted2b8f817e7ba682@mail.gmail.com> <4791DC2C.9090405@users.sourceforge.net> <4793507B.6040706@users.sourceforge.net> <20080120143239.GS6258@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sun, 20 Jan 2008 10:03:56 -0500
+Received: from 1wt.eu ([62.212.114.60]:1430 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753505AbYATPDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 10:03:55 -0500
+Date: Sun, 20 Jan 2008 15:37:37 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-rc8-git does not boot on Geode LX
+Message-ID: <20080120143737.GA9234@1wt.eu>
+References: <20080120081442.GA12713@1wt.eu> <47934FC8.1030800@i4.informatik.rwth-aachen.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080120143239.GS6258@kernel.dk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <47934FC8.1030800@i4.informatik.rwth-aachen.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jens Axboe <jens.axboe@oracle.com> [2008-01-20 15:32:40]:
+Hi Arnd,
 
-> On Sun, Jan 20 2008, Andrea Righi wrote:
-> Your approach is totally flawed, imho. For instance, you don't want a
-> process to be able to dirty memory at foo mb/sec but only actually
-> write them out at bar mb/sec.
+On Sun, Jan 20, 2008 at 02:42:32PM +0100, Arnd Hannemann wrote:
+> Hi,
 > 
-> The noop-iosched changes are also very buggy. The queue back pointer
-> breaks reference counting and the task pointer storage assumes the task
-> will also always be around. That's of course not the case.
+> Willy Tarreau schrieb:
+> > Hi,
+> > 
+> > I've just pulled latest -git and tried this morning in on one of my ALIX
+> > mobos equipped with an AMD Geode LX800 + CS5536. HEAD is a7da60f41551*.
 > 
-> IOW, you are doing this at the wrong level.
+> We boot 2.6.24-rc8 on these mainboards, which BIOS version do you use?
 
-Andrea, Some of the problems pointed out so far have been solved in
-the IO controller from OpenVZ (cc'ing Pavel for inputs).
+I don"t remember and am not at home right now. I had 1.1 in mind but I may
+be wrong.
 
+> > So I tried disabling PCI, MFGPT, etc... But no success yet.
 > 
-> What problem are you trying to solve?
-> 
-> -- 
-> Jens Axboe
-> 
+> Did you try to boot with nomfgpt?
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+no, because I did not know about this one. I will try.
+
+> In my experiments disabling CONFIG_GEODE_MFGPT_TIMER won't be enough to
+> boot 2.6.24-rc8 on a v0.98 bios or on a v0.99 bios with MFGPT workaround
+> turned on in the bios menu.
+
+OK, that's a useful info.
+
+> Otherwise the system will hang in arch/x86/kernel/mfgpt_32.c while
+> trying to detect MFGPT timers.
+> To clearify, for us the following works:
+> v0.99 bios, MFGPT workaround turned off in bios and
+> CONFIG_GEODE_MFGPT_TIMER=n
+
+OK thanks very much. I'll try this ASAP.
+
+Cheers!
+Willy
+
