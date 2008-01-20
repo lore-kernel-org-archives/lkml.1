@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYATRgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbYATRjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbYATRgS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 12:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbYATRgK
+	id S1755297AbYATRjz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 12:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbYATRjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 12:36:10 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:42616 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753822AbYATRgJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 12:36:09 -0500
-Date: Sun, 20 Jan 2008 18:39:38 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native format.
-Message-ID: <20080120173938.GA27247@one.firstfloor.org>
-References: <1200758937-22386-1-git-send-email-ijc@hellion.org.uk> <1200758937-22386-2-git-send-email-ijc@hellion.org.uk> <87prvxct42.fsf@basil.nowhere.org> <1200847490.26633.62.camel@cthulhu.hellion.org.uk>
+	Sun, 20 Jan 2008 12:39:48 -0500
+Received: from 1wt.eu ([62.212.114.60]:1433 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753552AbYATRjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 12:39:48 -0500
+Date: Sun, 20 Jan 2008 18:13:10 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.24-rc8-git does not boot on Geode LX
+Message-ID: <20080120171309.GA12572@1wt.eu>
+References: <20080120081442.GA12713@1wt.eu> <47934FC8.1030800@i4.informatik.rwth-aachen.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1200847490.26633.62.camel@cthulhu.hellion.org.uk>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <47934FC8.1030800@i4.informatik.rwth-aachen.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 20, 2008 at 04:44:50PM +0000, Ian Campbell wrote:
-> Indeed it does. I don't have any non-PAE to test it but I turned the
-> failure case into a simple jmp to hlt_loop since we ought never to get
-> here in any case.
+Hi Arnd,
 
-There are various loaders (kexec, elilo, ...) that skip the 16bit code
-and jump directly to 32bit head.S. So in theory those could hit it.
-But still having the loop only is probably fine.
-
-> > > + * Since a paravirt guest will never come down this path we want
-> > > + * native style page table accessors here.
-> > > + */
-> > > +#undef CONFIG_PARAVIRT
-> > 
-> > Seems quite fragile. I'm sure that would hurt later.
+On Sun, Jan 20, 2008 at 02:42:32PM +0100, Arnd Hannemann wrote:
+> > I've just pulled latest -git and tried this morning in on one of my ALIX
+> > mobos equipped with an AMD Geode LX800 + CS5536. HEAD is a7da60f41551*.
 > 
-> The problem here is that we explicitly want native accessors because
-> it's too early to use the pv ops since we are still running P==V. A PV
-> kernel boot will never come down this path -- it is diverted earlier in
-> head_32.S so using the native versions are appropriate.
+> We boot 2.6.24-rc8 on these mainboards, which BIOS version do you use?
 
-Then i think it would be cleaner to just open code everything without
-any accessors.
+Just checked: 0.98
 
-> As hpa says we can't be above 4G at this point. Probably I can use some
-> variant of make_pte now though.
+> Did you try to boot with nomfgpt?
 
-The 32bit cast still feels unclean. After all the PTE is not 32bit.
+Just did, it works perfectly that way, thanks very much!
 
--Andi
+I will try to investigate why this is necessary now. Last 2.6.22.X I used
+was patched with a geode-mfgpt patch I found which enabled the watchdog
+(and which worked). So I believe that it will not work anymore right now.
+
+> In my experiments disabling CONFIG_GEODE_MFGPT_TIMER won't be enough to
+> boot 2.6.24-rc8 on a v0.98 bios or on a v0.99 bios with MFGPT workaround
+> turned on in the bios menu.
+> Otherwise the system will hang in arch/x86/kernel/mfgpt_32.c while
+> trying to detect MFGPT timers.
+> To clearify, for us the following works:
+> v0.99 bios, MFGPT workaround turned off in bios and
+> CONFIG_GEODE_MFGPT_TIMER=n
+
+I will also check BIOS v0.99 sometime later.
+
+Thanks very much for your quick and insightful response!
+
+Willy
+
