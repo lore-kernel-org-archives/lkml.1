@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbYATKC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbYATKMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753395AbYATKC1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 05:02:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYATKCV
+	id S1753337AbYATKMR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 05:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYATKMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 05:02:21 -0500
-Received: from k66.ru ([87.224.128.21]:53559 "EHLO k66.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751927AbYATKCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 05:02:20 -0500
-X-Greylist: delayed 1801 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jan 2008 05:02:20 EST
-Date: Sun, 20 Jan 2008 14:28:21 +0500
-From: Andrey Rahmatullin <wrar@altlinux.ru>
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-Cc: David Miller <davem@davemloft.net>, Robert.Olsson@data.slu.se,
-       elendil@planet.nl, slavon@bigtelecom.ru, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
-Message-ID: <20080120092821.GA12333@wrars-comp.wrarsdomain>
-References: <20080118.053712.195382841.davem@davemloft.net> <36D9DB17C6DE9E40B059440DB8D95F52043A156F@orsmsx418.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="r5Pyd7+fXNt84Ff3"
-Content-Disposition: inline
-In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F52043A156F@orsmsx418.amr.corp.intel.com>
-X-Operating-System: ALT Linux Sisyphus
-X-Jabber-Id: wrar@altlinux.org
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 20 Jan 2008 05:12:07 -0500
+Received: from smtp-100-sunday.noc.nerim.net ([62.4.17.100]:3227 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752227AbYATKMF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 05:12:05 -0500
+Date: Sun, 20 Jan 2008 11:11:51 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Adam Turk <bofh1234@hotmail.com>
+Cc: <linux-kernel@vger.kernel.org>, <i2c@lm-sensors.org>
+Subject: Re: I2C_PARPORT_LIGHT dependence problem
+Message-ID: <20080120111151.08b0266a@hyperion.delvare>
+In-Reply-To: <BAY101-W29C4113A3B79204F64B0DCC8430@phx.gbl>
+References: <BAY101-W29C4113A3B79204F64B0DCC8430@phx.gbl>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Adam,
 
---r5Pyd7+fXNt84Ff3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 19 Jan 2008 13:37:05 -0500, Adam Turk wrote:
+> I am updating an old config to run on 2.6.23.14 and noticed I am
+> still prompted for I2C_PARPORT_LIGHT even though I don't have
+> the parallel port driver enabled.  Shouldn't I2C_PARPORT_LIGHT
+> depend on the parallel port being selected? (...)
+> 
+> Symbol: I2C_PARPORT_LIGHT [=n]
+>   │ Prompt: Parallel port adapter (light)
+>   │   Defined at drivers/i2c/busses/Kconfig:348
+>   │   Depends on: I2C
+>   │   Location:
+>   │     -> Device Drivers
+>   │       -> I2C support (I2C [=m])
+>   │         -> I2C Hardware Bus support
+>   │   Selects: I2C_ALGOBIT
 
-On Sun, Jan 20, 2008 at 01:20:11AM -0800, Brandeburg, Jesse wrote:
-> I continually get the
->  kernel: unregister_netdevice: waiting for eth2 to become free. Usage
-> count =3D 1
-http://bugzilla.kernel.org/show_bug.cgi?id=3D9778
+The help text says:
 
---=20
-WBR, wRAR (ALT Linux Team)
+"This driver is a light version of i2c-parport.  It doesn't depend on
+the parport driver, and uses direct I/O access instead."
 
---r5Pyd7+fXNt84Ff3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+So I think that the (lack of) dependencies is correct. We don't want to
+force the user to select PARPORT (and built the parport driver) to get
+access to the i2c-parport-light driver which does NOT need this parport
+driver.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-
-iEYEARECAAYFAkeTFDUACgkQB4Vf7hFmt5UfJQCeKvcIM4gpRayR0sDbTtmxIkx6
-Gt0Ani91PQkWMegMERbojpkoLfetlDkr
-=PSLU
------END PGP SIGNATURE-----
-
---r5Pyd7+fXNt84Ff3--
+-- 
+Jean Delvare
