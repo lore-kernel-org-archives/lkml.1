@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbYATJwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYATJwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753404AbYATJwT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 04:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYATJwH
+	id S1753748AbYATJwe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 04:52:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYATJwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 04:52:07 -0500
-Received: from 1wt.eu ([62.212.114.60]:1428 "EHLO 1wt.eu"
+	Sun, 20 Jan 2008 04:52:24 -0500
+Received: from ozlabs.org ([203.10.76.45]:60774 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751300AbYATJwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 04:52:06 -0500
-Date: Sun, 20 Jan 2008 10:25:58 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24-rc8-git does not boot on Geode LX
-Message-ID: <20080120092558.GA6515@1wt.eu>
-References: <20080120081442.GA12713@1wt.eu> <20080120091315.GA8379@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751841AbYATJwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 04:52:23 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 4/6] typesafe: cast_if_type to allow macros functions which take more than one type.
+Date: Sun, 20 Jan 2008 20:51:42 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>
+References: <200801202046.14746.rusty@rustcorp.com.au> <200801202048.34796.rusty@rustcorp.com.au> <200801202050.41495.rusty@rustcorp.com.au>
+In-Reply-To: <200801202050.41495.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080120091315.GA8379@elte.hu>
-User-Agent: Mutt/1.5.11
+Message-Id: <200801202051.42958.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+To create functions which can take two types, but still warn on any
+other types, we need a way of casting one type and no others.
 
-On Sun, Jan 20, 2008 at 10:13:15AM +0100, Ingo Molnar wrote:
-> 
-> * Willy Tarreau <w@1wt.eu> wrote:
-> 
-> > Checking 'hlt' instruction... OK.                                               
-> > Freeing SMP alternatives: 0k freed                                              
-> > net_namespace: 64 bytes                                                         
-> > NET: Registered protocol family 16                                              
-> > -----> hangs here <-----
-> 
-> just a hint: this is near the first piece of code that makes active use 
-> of a timer wakeup, on a typical x86 bootup. So sometimes if timers are 
-> not working at all, hangs happen around here. But the PCI related thing 
-> you suspect could be the reason too. Getting a SysRq-T or an NMI 
-> printout (if that's possible) of the hung site would be nice.
+To make things more complex, it should correctly handle function args,
+NULL, and be usable in initializers.
 
-OK Thanks for the hint, I'll try things like this when I get back home.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Cheers,
-Willy
-
+diff -r e6626cc7bdc2 include/linux/compiler-gcc.h
+--- a/include/linux/compiler-gcc.h	Sun Jan 20 18:51:51 2008 +1100
++++ b/include/linux/compiler-gcc.h	Sun Jan 20 18:57:14 2008 +1100
+@@ -53,3 +53,20 @@
+ #define  noinline			__attribute__((noinline))
+ #define __attribute_const__		__attribute__((__const__))
+ #define __maybe_unused			__attribute__((unused))
++
++/**
++ * cast_if_type - allow an alternate type
++ * @expr: the expression to optionally cast
++ * @oktype: the type to allow.
++ * @desttype: the type to cast to.
++ *
++ * This is used to accept a particular alternate type for an expression:
++ * because any other types will not be cast, they will cause a warning as
++ * normal.
++ *
++ * Note that the unnecessary trinary forces functions to devolve into
++ * function pointers as users expect. */
++#define cast_if_type(expr, oktype, desttype)				\
++  __builtin_choose_expr(__builtin_types_compatible_p(typeof(1?(expr):NULL), \
++						     oktype),		\
++			(desttype)(expr), (expr))
+diff -r e6626cc7bdc2 include/linux/compiler-intel.h
+--- a/include/linux/compiler-intel.h	Sun Jan 20 18:51:51 2008 +1100
++++ b/include/linux/compiler-intel.h	Sun Jan 20 18:57:14 2008 +1100
+@@ -29,3 +29,5 @@
+ #endif
+ 
+ #define uninitialized_var(x) x
++
++#define cast_if_type(expr, oktype, desttype) ((desttype)(expr))
