@@ -1,132 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759070AbYATGnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbYATGzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759070AbYATGnG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 01:43:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbYATGmz
+	id S1759089AbYATGzi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 01:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbYATGz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 01:42:55 -0500
-Received: from nn7.de ([85.214.94.156]:41384 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752341AbYATGmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 01:42:55 -0500
-Subject: Re: 2.6.24-rc8 oops ext3_clear_inode+0x25/0xa0
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4792C767.7010708@sandeen.net>
-References: <1200681573.4252.5.camel@localhost>
-	 <4792C767.7010708@sandeen.net>
-Content-Type: text/plain
+	Sun, 20 Jan 2008 01:55:29 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:33025 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752957AbYATGz2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 01:55:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EbvOtNeaawSHEXm+Q0GXMMtyC/BjzTzavB6ggP1duf1ZBFtoeCPeW7u1vAkPDvLBWJSi5qTukCJy8fO2uMFD2Q2GieezV9HpzvxTC5X/9z17bIJwud9B6o4GCfivuDJrdH6nw7x6qZR/ZoVsPU8fJeIPXJ4K9AJGjG70rUCYgRU=
+Message-ID: <86802c440801192255t3181d4cav7c55fee2b246f356@mail.gmail.com>
+Date: Sat, 19 Jan 2008 22:55:25 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: disable_mtrr_trim only need for x86_64
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Jesse Barnes" <jesse.barnes@intel.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <4792DE0C.9060906@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Sun, 20 Jan 2008 07:42:51 +0100
-Message-Id: <1200811371.3905.30.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+Content-Disposition: inline
+References: <200801192045.17291.yinghai.lu@sun.com>
+	 <4792DE0C.9060906@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-01-19 at 22:00 -0600, Eric Sandeen wrote:
-> Soeren Sonnenburg wrote:
-> > Dear all,
-> > 
-> > I've just got this oops (causing the machine to hang finally)...
-> > 
-> > Any ideas?
-> > Soeren
-> 
-> I've seen an awful lot of oopses out there on this path,
-> kswapd->shrink_icache_memory; some get a little further and oops in
-> ext3_discard_reservation.
-> 
-> A few were chalked up to bad memory, but others were not.  Do you happen
-> to use suspend/resume?
+On Jan 19, 2008 9:37 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+> > [PATCH] x86: disable_mtrr_trim only need for x86_64
+> >
+> > mtrr_trim_uncached_memory is only used in x86_64,
+> >
+> > so disable_mtrr_trim is not needed for x86_32
+> >
+> > Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+>
+> That seems like a bug, and if so this patch goes the wrong direction.
+> (If the 32-bit code has another solution for the same problem, they
+> should be unified.)
+>
+> The trimming of uncachable memory affects both 32- and 64-bit kernels;
+> it's the same hardware, and even 32-bit kernels (with PAE) can access
+> memory above 4 GB.
+>
 
-Indeed, I suspended/resumed this machine a couple of times before seeing
-this... And indeed it sometimes (on high activity, i.e. network/cpu/disk
-load as happens when backups are done) oopses/freezes - but only when I
-have suspended at least once... 
+the trim fix for x86_64 is update end_pfn, and use that as max_pfn,
+and max_low_pfn in setup_arch.
 
-So I am quite confident it is not the memory - but yes if something
-corrupts memory on a suspend/resume cycle on this macbookpro1,1 then the
-effect could be the same :(
+but i386 is setup_arch is only using max_low_pfn.
 
-> Thanks to kerneloops.org... :)
-> 
-> All code
-> ========
->    0:	12 11                	adc    (%ecx),%dl
->    2:	f8                   	clc
->    3:	ff 66 90             	jmp    *0xffffff90(%esi)
->    6:	83 ec 0c             	sub    $0xc,%esp
->    9:	89 1c 24             	mov    %ebx,(%esp)
->    c:	8d 98 60 ff ff ff    	lea    0xffffff60(%eax),%ebx
->   12:	89 74 24 04          	mov    %esi,0x4(%esp)
->   16:	89 c6                	mov    %eax,%esi
->   18:	89 7c 24 08          	mov    %edi,0x8(%esp)
->   1c:	8b 53 70             	mov    0x70(%ebx),%edx
->   1f:	8b 7b 54             	mov    0x54(%ebx),%edi
->   22:	85 d2                	test   %edx,%edx
->   24:	74 16                	je     0x3c
->   26:	83 fa ff             	cmp    $0xffffffff,%edx
->   29:	74 11                	je     0x3c
->   2b:*	f0 ff 0a             	lock decl (%edx)     <-- trapping instruction
-> 
-> Looks like it blew up in (inlined) posix_acl_release(), I think
-> EXT3_I(inode)->i_acl passed to it was 66e88e66, in %edx.
-> 
-> I think %edi is the i_block_alloc_info, 0f01c883, which also looks
-> crunchy.  Use after free perhaps?
-> 
-> > BUG: unable to handle kernel paging request at virtual address 66e88e66
-> 
-> Nice symmetric number, anyway.  :)
-> 
-> I've seen enough of these now, something real seems to be going on but I
-> don't know what yet.
+to make you happy, the simple way is update e820 table so code could
+be unified between i386 and x86_64
 
-And I unfortunately have no idea how to trace this down further/how to
-help you with this...
+update the e820 table by checking mtrr like checking gart hole...
 
-Soeren
+is that OK?
 
-> -Eric
-> 
-> > printing eip: c01fac85 *pde = 00000000 
-> > Oops: 0002 [#1] PREEMPT SMP 
-> > Modules linked in: hci_usb hidp rfcomm l2cap bluetooth tun cpufreq_stats coretemp xfrm_user xfrm4_tunnel tunnel4 ipcomp esp4 ah4 aes_generic hfsplus binfmt_misc fuse ebtable_broute bridge llc ebtable_nat ebtable_filter ebtables eeprom applesmc hwmon input_polldev snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm snd_timer appletouch evdev i2c_i801 snd soundcore snd_page_alloc sky2 video intel_agp output agpgart
-> > 
-> > Pid: 205, comm: kswapd0 Not tainted (2.6.24-rc8-sonne #7)
-> > EIP: 0060:[<c01fac85>] EFLAGS: 00010213 CPU: 1
-> > EIP is at ext3_clear_inode+0x25/0xa0
-> > EAX: c008f0a0 EBX: c008f000 ECX: 00000000 EDX: 66e88e66
-> > ESI: c008f0a0 EDI: 0f01c883 EBP: 0000004d ESP: f7d29ebc
-> >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> > Process kswapd0 (pid: 205, ti=f7d28000 task=f7fdf540 task.ti=f7d28000)
-> > Stack: c008f0a0 00000000 f7d29ef8 c0192d62 0000004d c008f0a0 c008f0a8 c019309a 
-> >        e98b9ac8 00000080 00000080 f7d29ef8 c01932ec 00000000 00000080 c008f2b0 
-> >        ea1bdcd8 0002d438 0000013f c04ac24c 000000d0 c0166e4c 00002e0b 00000000 
-> > Call Trace:
-> >  [<c0192d62>] clear_inode+0x62/0x140
-> >  [<c019309a>] dispose_list+0x1a/0xe0
-> >  [<c01932ec>] shrink_icache_memory+0x18c/0x250
-> >  [<c0166e4c>] shrink_slab+0x12c/0x1a0
-> >  [<c016726d>] kswapd+0x32d/0x4d0
-> >  [<c0142020>] autoremove_wake_function+0x0/0x40
-> >  [<c0127c5d>] complete+0x3d/0x60
-> >  [<c0166f40>] kswapd+0x0/0x4d0
-> >  [<c0141d52>] kthread+0x42/0x70
-> >  [<c0141d10>] kthread+0x0/0x70
-> >  [<c01050b3>] kernel_thread_helper+0x7/0x14
-> >  =======================
-> > Code: 12 11 f8 ff 66 90 83 ec 0c 89 1c 24 8d 98 60 ff ff ff 89 74 24 04 89 c6 89 7c 24 08 8b 53 70 8b 7b 54 85 d2 74 16 83 fa ff 74 11 <f0> ff 0a 0f 94 c0 84 c0 75 51 c7 43 70 ff ff ff ff 8b 53 74 85 
-> > EIP: [<c01fac85>] ext3_clear_inode+0x25/0xa0 SS:ESP 0068:f7d29ebc
-> > ---[ end trace 8dd028de7ae6e34e ]---
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> 
+YH
