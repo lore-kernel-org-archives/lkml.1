@@ -1,96 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379AbYATOdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbYATOfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754379AbYATOdA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 09:33:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbYATOcs
+	id S1754484AbYATOfz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 09:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbYATOft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 09:32:48 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:14221 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753636AbYATOco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 09:32:44 -0500
-Date: Sun, 20 Jan 2008 15:32:40 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrea Righi <righiandr@users.sourceforge.net>
-Cc: Naveen Gupta <ngupta@google.com>, Paul Menage <menage@google.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cgroup: limit block I/O bandwidth
-Message-ID: <20080120143239.GS6258@kernel.dk>
-References: <2846be6b0801181439o55dcff09ted2b8f817e7ba682@mail.gmail.com> <4791DC2C.9090405@users.sourceforge.net> <4793507B.6040706@users.sourceforge.net>
+	Sun, 20 Jan 2008 09:35:49 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:56560 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753539AbYATOfs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 09:35:48 -0500
+Date: Sun, 20 Jan 2008 07:35:47 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Greg KH <greg@kroah.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: Removing PCI CRS code could cause problems
+Message-ID: <20080120143546.GB27250@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4793507B.6040706@users.sourceforge.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 20 2008, Andrea Righi wrote:
-> Andrea Righi wrote:
-> > Naveen Gupta wrote:
-> >>> Paul Menage wrote:
-> >>>> On Jan 18,  2008 7:36 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com>  wrote:
-> >>>>> On Fri, Jan 18, 2008 at 12:41:03PM +0100, Andrea Righi  wrote:
-> >>>>>> Allow to limit the  block I/O bandwidth for  specific process containers
-> >>>>>> (cgroups) imposing additional delays  on I/O requests for those processes
-> >>>>>> that exceed the  limits defined in the control group filesystem.
-> >>>>>>
-> >>>>>>  Example:
-> >>>>>>   # mkdir /dev/cgroup
-> >>>>>>   # mount -t cgroup -oio-throttle io-throttle /dev/cgroup
-> >>>>> Just a minor nit, can't we name it as io,  keeping in mind that other
-> >>>>> controllers are known as cpu and  memory?
-> >>>> Or maybe "blockio"?
-> >>> Agree, blockio seems better. Not all I/O is performed on  block devices
-> >>> and in this case we're  considering block devices only.
-> >> Here we want to rate limit in block layer, I would think I/O scheduler
-> >> is the place where we are in much better position to do this kind of
-> >> limiting.
-> >>
-> >> Also we are changing the behavior of application by adding sleeps to
-> >> it during request submission. Moreover, we will prevent requests from
-> >> being merged since we won't allow them to be submitted in this case.
-> >>
-> >> Since bulk of submission for writes is done in background kernel
-> >> threads and we throttle based on limits on current, we will end up
-> >> throttling these threads and not the actual processes submitting i/o.
-> > 
-> > Yep, that's true! This works for read operations only... at the very
-> > least, if I've understood well, we could throttle I/O reads in the
-> > submit_bio() path and write operations in __set_page_dirty(). But this
-> > would change the applications behavior, so probably the best approcah
-> > could be to just get I/O statistics from TASK_IO_ACCOUNTING stuff and
-> > implement task delays at the I/O scheduler layer...
-> 
-> OK, to better figure the concept I tried to put the I/O throttling
-> mechanism inside the simplest scheduler: noop. But this raises a new
-> problem: under certain conditions (typically with write requests) a
-> delay imposed on a I/O request of a process could impact on all the
-> other I/O requests of other processes, causing the whole system to hang
-> until the first request is completed, so it seem that we've to deal with
-> a classic priority inversion problem.
-> 
-> Obviously the problem doesn't occur if the limited cgroup performs read
-> operations only.
-> 
-> I'm posting the modified patch below only for discussion purposes, you
-> could test it if you want, but you've been warned that the whole system
-> could hang for certain amounts of time.
 
-Your approach is totally flawed, imho. For instance, you don't want a
-process to be able to dirty memory at foo mb/sec but only actually
-write them out at bar mb/sec.
+I just remembered why I put in the software-visible Config Retry Status
+code.  With conventional PCI, devices must return within something like
+2^25 clock cycles (about a second for 33MHz busses).  PCIe devices can
+return CRS to the root complex which will automatically retry -- but to
+the CPU, this looks like a read that hasn't returned yet.
 
-The noop-iosched changes are also very buggy. The queue back pointer
-breaks reference counting and the task pointer storage assumes the task
-will also always be around. That's of course not the case.
+My concern was/is that devices which take a long time to initialise may
+cause watchdog timers to fire.  I don't know if there's some CPUs which
+might enter error recovery, but I think the native Linux watchdog might
+well trigger.
 
-IOW, you are doing this at the wrong level.
+Now, I have no evidence that this is going to happen.  And we definitely
+have buggy hardware to contend with (that caused the initial reversion).
+But the commit ad7edfe0490877864dc0312e5f3315ea37fc4b3a isn't as risk-free
+as it might seem.
 
-What problem are you trying to solve?
+Would you accept a patch which just black-listed the bridge that was
+causing problems?  Or possibly we don't even need that if we take Ivan's
+patch to use conf1 accesses instead of mmconf for conventional config
+space -- I understand the device in question to only have problems when
+CRS is combined with mmconfig.
 
 -- 
-Jens Axboe
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
