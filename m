@@ -1,61 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759241AbYATFz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760052AbYATFz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759241AbYATFz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 00:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbYATFzU
+	id S1760052AbYATFz5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 00:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbYATFzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 00:55:20 -0500
-Received: from [82.147.214.189] ([82.147.214.189]:37741 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751957AbYATFzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 00:55:20 -0500
-X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 Jan 2008 00:55:18 EST
-From: Al Boldi <a1426z@gawab.com>
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: konqueror deadlocks on 2.6.22
-Date: Sun, 20 Jan 2008 08:41:56 +0300
-User-Agent: KMail/1.5
-References: <200801192114.41427.a1426z@gawab.com> <1200802290.4166.2.camel@homer.simson.net>
-In-Reply-To: <1200802290.4166.2.camel@homer.simson.net>
+	Sun, 20 Jan 2008 00:55:48 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:50075 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752646AbYATFzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 00:55:46 -0500
+Message-ID: <4792DF11.7040403@zytor.com>
+Date: Sat, 19 Jan 2008 21:41:37 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200801200831.04964.a1426z@gawab.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, util-linux-ng@vger.kernel.org,
+       linuxram@us.ibm.com, viro@ftp.linux.org.uk, hch@infradead.org,
+       a.p.zijlstra@chello.nl
+Subject: Re: [RFC][PATCH] VFS: create /proc/<pid>/mountinfo
+References: <E1JGBVq-0002Or-H1@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1JGBVq-0002Or-H1@pomaz-ex.szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Galbraith wrote:
-> On Sat, 2008-01-19 at 21:14 +0300, Al Boldi wrote:
-> > I was just attacked by some deadlock issue involving sqlite3 and
-> > konqueror. While sqlite3 continues to slowly fill a 7M-record db in
-> > transaction mode, konqueror hangs for a few minutes, then continues only
-> > to hang again and again.
-> >
-> > Looks like an fs/blockIO issue involving fsync.
-> >
-> > As a workaround, is there a way to make fsync soft?
->
-> Do you have the fs mounted data=writeback?  A while back, I ran into
-> starvation on the order of minutes with my old/full ext2 fs until
-> mounting data=writeback.
+Miklos Szeredi wrote:
+> - for mount ID's use IDA (from the IDR library) instead of a 32bit
+>   counter, which could overflow
 
-You are absolutely right.  With data=writeback the hangs completely 
-disappear, and sqlite3 insert performance increases 10x fold.
+IDAs tend to get reused quickly, which can cause race conditions.  Any 
+reason not to just use a 64-bit counter?
 
-Now data=writeback is known to be faster than data=ordered, but a 10x fold 
-increase probably points to some sync contention within the data=ordered 
-logic.  Any ideas how this could be fixed?
-
-
-Thanks a lot!
-
-BTW Mike: Your server bounces my messages.
-
---
-Al
-
-
+	-hpa
