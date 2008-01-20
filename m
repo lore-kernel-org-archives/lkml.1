@@ -1,45 +1,41 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756286AbYAQIjn (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 17 Jan 2008 03:39:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbYAQIjc
+	id S1757144AbYATXnf (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 20 Jan 2008 18:43:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbYATXnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 Jan 2008 03:39:32 -0500
-Received: from toq2-srv.bellnexxia.net ([209.226.175.121]:44621 "EHLO
-	toq2-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754111AbYAQIjb convert rfc822-to-8bit (ORCPT
+	Sun, 20 Jan 2008 18:43:25 -0500
+Received: from mtai01.charter.net ([209.225.8.181]:43467 "EHLO
+	mtai01.charter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756038AbYATXnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 Jan 2008 03:39:31 -0500
-X-Greylist: delayed 3150 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 Jan 2008 03:39:31 EST
-Message-Id: <6cfv4r$45i8sh@toip37-bus.srvr.bell.ca>
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgoXAEeXjkfR4q+G/2dsb2JhbACKBw
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-From: MICROSOT 2008 ONLINE AWARD <theflowershop@bellnet.ca>
-Reply-To: helenthomason101@hotmail.com
-Organization: MICROSOT 2008 ONLINE AWARD
-To: <info@microsoft.com>
-Subject: Attention:
-Date: Thu, 17 Jan 2008 2:46:57 -0500
+	Sun, 20 Jan 2008 18:43:25 -0500
+Message-ID: <20080120184321.0WDHK.1159588.root@fepweb10>
+Date: Sun, 20 Jan 2008 15:43:20 -0800
+From: "Mr. James Moore." <hbumgarner_1@charter.net>
+Reply-To: gfhplc@live.com
+Subject: Apply For A Private Loan Today.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+X-Originating-IP: from 216.139.176.193 by webmail.charter.net; Sun, 20 Jan 2008 18:43:19 -0500
+X-Chzlrs: 0
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756286AbYAQIjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757144AbYATXnf@vger.kernel.org>
 
-Congratulations!!Your email id was selected and you have therefore been
-awarded the sum of =A3750,000GBP by the Microsoft Promotions.
-contact this email for further instructions:
-helenthomason101@hotmail.com
+Apply For A Private Loan Today.
 
-Thank you
+Hello viewer,
 
+Get your private loans at low % interest rate .If you are
+ interested,contact me now.
 
+We give out personal loans, business loans, home loans and many more.
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Mr. James Moore.
+ gfhplc@live.com
+  +2348052575790
