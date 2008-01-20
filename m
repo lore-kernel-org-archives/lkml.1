@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYATT42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbYATT6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbYATT42 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 14:56:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227AbYATT4U
+	id S1755954AbYATT6q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 14:58:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYATT6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 14:56:20 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:23222 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755212AbYATT4T (ORCPT
+	Sun, 20 Jan 2008 14:58:39 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:42546 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755246AbYATT6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 14:56:19 -0500
-Date: Sun, 20 Jan 2008 11:54:06 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+	Sun, 20 Jan 2008 14:58:38 -0500
+X-Trace: 652733505/mk-filter-1.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.80.29
+X-SBRS: None
+X-RemoteIP: 81.1.80.29
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAB82k0dRAVAd/2dsb2JhbACBV6lo
+Subject: Re: [PATCH] SG - fix SH Kconfig
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Randy Dunlap <randy.dunlap@oracle.com>
 Cc: Paul Mundt <lethal@users.sourceforge.net>,
        LKML <linux-kernel@vger.kernel.org>,
        linux-sh <linux-sh@vger.kernel.org>
-Subject: Re: [PATCH] SG - fix SH Kconfig
-Message-Id: <20080120115406.c092be4e.randy.dunlap@oracle.com>
-In-Reply-To: <1200853109.6331.2.camel@localhost.localdomain>
+In-Reply-To: <20080120115406.c092be4e.randy.dunlap@oracle.com>
 References: <1200853109.6331.2.camel@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	 <20080120115406.c092be4e.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Sun, 20 Jan 2008 19:58:12 +0000
+Message-Id: <1200859092.6331.4.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 Jan 2008 18:18:29 +0000 Adrian McMenamin wrote:
 
-> From: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+On Sun, 2008-01-20 at 11:54 -0800, Randy Dunlap wrote:
+> On Sun, 20 Jan 2008 18:18:29 +0000 Adrian McMenamin wrote:
 > 
+> > From: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+> > 
+> > 
+> > Remove reference to board deleted in commit 758e06ded4c48024835ef0a14627afcde2e25929
+> > 
+> > Submitted-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
 > 
-> Remove reference to board deleted in commit 758e06ded4c48024835ef0a14627afcde2e25929
+> s/Submitted/Signed-off/
 > 
-> Submitted-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+> What is "SG" in $subject for?
 
-s/Submitted/Signed-off/
+Oops. Double error. SG is Badtypist for SH.
 
-What is "SG" in $subject for?
-
-
-> ---
-> 
-> diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-> index 85bd9ac..e94430b 100644
-> --- a/arch/sh/Kconfig
-> +++ b/arch/sh/Kconfig
-> @@ -518,7 +518,6 @@ config SH_CAYMAN
->  
->  endmenu
->  
-> -source "arch/sh/boards/renesas/hs7751rvoip/Kconfig"
->  source "arch/sh/boards/renesas/rts7751r2d/Kconfig"
->  source "arch/sh/boards/renesas/r7780rp/Kconfig"
->  source "arch/sh/boards/magicpanelr2/Kconfig"
-
----
-~Randy
