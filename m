@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbYAUIH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbYAUIIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbYAUIH1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 03:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757789AbYAUIHP
+	id S1758703AbYAUIIY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 03:08:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757867AbYAUIIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 03:07:15 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40591 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757749AbYAUIHN (ORCPT
+	Mon, 21 Jan 2008 03:08:16 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44884
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757863AbYAUIIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 03:07:13 -0500
-Date: Mon, 21 Jan 2008 17:06:53 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: LatencyTOP infrastructure patch
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080118093943.0048d0f7@laptopd505.fenrus.org>
-References: <4790E3A6.7060807@linux.intel.com> <20080118093943.0048d0f7@laptopd505.fenrus.org>
-Message-Id: <20080121170415.125B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 21 Jan 2008 03:08:15 -0500
+Date: Mon, 21 Jan 2008 00:08:20 -0800 (PST)
+Message-Id: <20080121.000820.194841023.davem@davemloft.net>
+To: travis@sgi.com
+Cc: akpm@linux-foundation.org, ak@suse.de, mingo@elte.hu, clameter@sgi.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
+Subject: Re: [PATCH 1/7] Modules: Fold percpu_modcopy into module.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080118182953.922370000@sgi.com>
+References: <20080118182953.748071000@sgi.com>
+	<20080118182953.922370000@sgi.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+From: travis@sgi.com
+Date: Fri, 18 Jan 2008 10:29:54 -0800
 
-> +static void __sched
-> +account_global_scheduler_latency(struct task_struct *tsk, int usecs)
-> +{
-> +	int i;
-> +	int firstnonnull = MAXLR + 1;
-> +
-> +	if (!tsk->latency_reason.reason)
-> +		return;
-> +
-> +	/* skip kernel threads for now */
-> +	if (!tsk->mm)
-> +		return;
+> percpu_modcopy() is defined multiple times in arch files. However, the only
+> user is module.c. Put a static definition into module.c and remove
+> the definitions from the arch files.
+> 
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Andi Kleen <ak@suse.de>
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> Signed-off-by: Mike Travis <travis@sgi.com>
 
-Why do you ignore kernel thread?
+This doesn't build on sparc64.
 
-may be, some network filesystem use kernel thread for local I/O.
-What do you think it?
+The percpu_modcopy() removal from include/asm-sparc64/percpu.h
+leaked into patch #3 instead of being done here in patch #1
+where it belongs (so that this series is properly bisectable).
 
-
-- kosaki
-
+It also seems that the include/asm-x86/percpu_{32,64}.h defines
+aren't removed in this patch either.
