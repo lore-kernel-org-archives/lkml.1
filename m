@@ -1,219 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbYAUCNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbYAUCe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757522AbYAUCNd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 21:13:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbYAUCNY
+	id S1757405AbYAUCe7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 21:34:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbYAUCet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 21:13:24 -0500
-Received: from saeurebad.de ([85.214.36.134]:47130 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756658AbYAUCNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 21:13:23 -0500
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Zan Lynx <zlynx@acm.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: echo mem > /sys/power/state
-References: <20080116222445.6f7ff66e.akpm@linux-foundation.org>
-	<1200591411.34145.4.camel@localhost>
-	<20080117111355.29554f38.akpm@linux-foundation.org>
-	<200801172238.17176.rjw@sisk.pl> <20080118083610.GA19792@elte.hu>
-	<20080118004725.dcd132ee.akpm@linux-foundation.org>
-	<20080118121803.GF11044@elte.hu> <20080120233912.GA4844@elf.ucw.cz>
-	<20080120234208.GA22292@elte.hu> <20080121003106.GA1618@elf.ucw.cz>
-Date: Mon, 21 Jan 2008 03:13:56 +0100
-In-Reply-To: <20080121003106.GA1618@elf.ucw.cz> (Pavel Machek's message of
-	"Mon, 21 Jan 2008 01:31:06 +0100")
-Message-ID: <878x2k53iz.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
+	Sun, 20 Jan 2008 21:34:49 -0500
+Received: from py-out-1112.google.com ([64.233.166.176]:46360 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756058AbYAUCet (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 21:34:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=gw8vjyRZ5SGpcrD7aBA/9b4FTB1jOpa/+Co0NHhioqNqIgGZzhCLx8qVCa0RmbAg3yOGkaxGMfo2W46I2vPfvmUcXiBHovsuOyXkXGwMaQ+rQfZANeXVV9bn8bxmgm+EL3YR2PReeofHquUwL8PT9fGZ9/RqWFmdbxwjiGzn3Vo=
+Message-ID: <3b7d7830801201834o3f03380eu5c9d82912acd0e3c@mail.gmail.com>
+Date: Mon, 21 Jan 2008 10:34:45 +0800
+From: "Lost Garden" <yuanzhiqiang13@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: PCI Interrupt Problems Since Kernel-2.6.19
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Pavel Machek <pavel@ucw.cz> writes:
-
-> diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-> index 29cf145..d830ed2 100644
-> --- a/drivers/rtc/rtc-cmos.c
-> +++ b/drivers/rtc/rtc-cmos.c
-> @@ -78,7 +78,7 @@ static inline int is_intr(u8 rtc_intr)
->  
->  /*----------------------------------------------------------------*/
->  
-> -static int cmos_read_time(struct device *dev, struct rtc_time *t)
-> +int cmos_read_time(struct device *dev, struct rtc_time *t)
->  {
->  	/* REVISIT:  if the clock has a "century" register, use
->  	 * that instead of the heuristic in get_rtc_time().
-> @@ -170,7 +170,7 @@ static int cmos_read_alarm(struct device
->  	return 0;
->  }
->  
-> -static int cmos_set_alarm(struct device *dev, struct rtc_wkalrm *t)
-> +int cmos_set_alarm(struct device *dev, struct rtc_wkalrm *t)
->  {
->  	struct cmos_rtc	*cmos = dev_get_drvdata(dev);
->  	unsigned char	mon, mday, hrs, min, sec;
-> @@ -394,6 +394,7 @@ static const struct rtc_class_ops cmos_r
->  /*----------------------------------------------------------------*/
->  
->  static struct cmos_rtc	cmos_rtc;
-> +struct device *pc_rtc_device;
->  
->  static irqreturn_t cmos_interrupt(int irq, void *p)
->  {
-> @@ -431,6 +432,8 @@ cmos_do_probe(struct device *dev, struct
->  	if (cmos_rtc.dev)
->  		return -EBUSY;
->  
-> +	pc_rtc_device = dev;
-> +
->  	if (!ports)
->  		return -ENODEV;
->  
-> @@ -546,7 +549,7 @@ cleanup0:
->  
->  static void cmos_do_shutdown(void)
->  {
-> -	unsigned char	rtc_control;
-> +	unsigned char rtc_control;
->  
->  	spin_lock_irq(&rtc_lock);
->  	rtc_control = CMOS_READ(RTC_CONTROL);
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index 8e186c6..b719fd3 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -53,14 +53,20 @@ config PM_TRACE
->  	RTC across reboots, so that you can debug a machine that just hangs
->  	during suspend (or more commonly, during resume).
->  
-> -	To use this debugging feature you should attempt to suspend the machine,
-> -	then reboot it, then run
-> +	To use this debugging feature you should attempt to suspend the
-> +	machine, then reboot it, then run
->  
->  		dmesg -s 1000000 | grep 'hash matches'
->  
->  	CAUTION: this option will cause your machine's real-time clock to be
->  	set to an invalid time after a resume.
->  
-> +config PM_SLEEPY_TEST
-> +	bool "Test suspend/resume during bootup"
-> +	depends on PM_DEBUG && PM_SLEEP && RTC_DRV_CMOS
-> +	---help---
-> +	This option will suspend/resume your machine during bootup.
-> +
->  config PM_SLEEP_SMP
->  	bool
->  	depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
-> diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-> index f7dfff2..e5693d6 100644
-> --- a/kernel/power/Makefile
-> +++ b/kernel/power/Makefile
-> @@ -5,7 +5,7 @@ endif
->  
->  obj-y				:= main.o
->  obj-$(CONFIG_PM_LEGACY)		+= pm.o
-> -obj-$(CONFIG_PM_SLEEP)		+= process.o console.o
-> +obj-$(CONFIG_PM_SLEEP)		+= process.o console.o sleepy.o
-
-Why compiling it uncoditionally?  What would be wrong with
-
-obj-$(CONFIG_PM_SLEEPY_TEST		+= sleepy.o
-
-(besides the missing parenthesis, of course)?
-
->  obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
->  
->  obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-> diff --git a/kernel/power/sleepy.c b/kernel/power/sleepy.c
-> new file mode 100644
-> index 0000000..a437054
-> --- /dev/null
-> +++ b/kernel/power/sleepy.c
-> @@ -0,0 +1,70 @@
-> +/*
-> + * Copyright (c) 2007 Pavel Machek <pavel@suse.cz>
-> + * 
-> + * This file is released under the GPLv2
-> + *
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/suspend.h>
-> +#include <linux/kobject.h>
-> +#include <linux/string.h>
-> +#include <linux/delay.h>
-> +#include <linux/errno.h>
-> +#include <linux/init.h>
-> +#include <linux/console.h>
-> +#include <linux/cpu.h>
-> +#include <linux/resume-trace.h>
-> +#include <linux/freezer.h>
-> +#include <linux/vmstat.h>
-> +#include <linux/syscalls.h>
-> +#include <linux/rtc.h>
-> +
-> +#include <asm/percpu.h>
-> +
-> +#include "power.h"
-> +
-> +extern int set_alarm(int length);
-
-Huh?
-
-> +
-> +extern struct device *pc_rtc_device;
-> +extern int cmos_set_alarm(struct device *dev, struct rtc_wkalrm *t);
-> +extern int cmos_read_time(struct device *dev, struct rtc_time *t);
-> +
-> +int set_alarm(int length)
-> +{
-> +	ssize_t retval;
-> +	unsigned long now, alarm;
-> +	struct rtc_wkalrm alm;
-> +	struct rtc_device *rtc = to_rtc_device(pc_rtc_device);
-> +
-> +	retval = cmos_read_time(pc_rtc_device, &alm.time);
-> +	if (retval < 0) {
-> +		printk("Auto sleep: can't get time?\n");
-> +		return retval;
-> +	}
-> +	rtc_tm_to_time(&alm.time, &now);
-> +	printk("Auto sleep: Now %ld\n", now);
-> +
-> +	alarm = now+length;
-> +	rtc_time_to_tm(alarm, &alm.time);
-> +
-> +	retval = cmos_set_alarm(rtc, &alm);
-
-cmos_set_alarm() takes a struct device * too.
-
-> +	if (retval < 0) {
-> +		printk("Auto sleep: can't set alarm.\n");
-> +		return retval;
-> +	}
-> +	printk("Auto sleep: Alarm set\n");
-> +	return 0;
-> +}
-> +
-> +#ifdef CONFIG_PM_SLEEPY_TEST
-> +static int
-> +test_sleep(void)
-> +{
-> +	set_alarm(5);
-> +	pm_suspend(PM_SUSPEND_MEM);
-> +	return 0;
-> +}
-> +
-> +late_initcall(test_sleep);
-> +#endif
-
-	Hannes
+    I'm writing a driver for DVB-C PCI receiving cards these days and
+I found a tricky problem of interrupts. Since kernel-2.6.19 the
+interrupt handlers get rid of "struct pt_regs*" argument  and I think
+it will be easy for me to modify the driver to fit for the recent
+kernel.
+   I simply delete the "struct pt_regs *" argument of my interrupt
+handler and compile the driver again. But then I met a rather tricky
+problem. I cann't get the PCI intterrupt now! I found that the chip on
+the card actually had generate an interrupt and it should not be the
+hardware problem.
+  I'm get seriously confused. My driver works well under kernel-2.6.18
+but not generates a single interrupt signal when works above
+kernel-2.6.19.
+ Does anybody meet similar problems?
+ Sincerely
+ Yours, Lost Graden.
+1,21. 2008
