@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYAUUms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYAUUnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbYAUUms (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 15:42:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbYAUUmM
+	id S1757966AbYAUUnF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 15:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbYAUUmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 15:42:12 -0500
-Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:50207 "EHLO
+	Mon, 21 Jan 2008 15:42:14 -0500
+Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:50214 "EHLO
 	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754263AbYAUUmL (ORCPT
+	by vger.kernel.org with ESMTP id S1754748AbYAUUmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 15:42:11 -0500
+	Mon, 21 Jan 2008 15:42:13 -0500
 From: Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH RESEND 2/3] RDMA/cxgb3: fix page shift calculation in build_phys_page_list()
-Date: Mon, 21 Jan 2008 14:42:11 -0600
+Subject: [PATCH RESEND 3/3] RDMA/cxgb3: Mark qp as privileged based on user capabilities.
+Date: Mon, 21 Jan 2008 14:42:13 -0600
 To: rdreier@cisco.com
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        general@lists.openfabrics.org
-Message-Id: <20080121204211.3820.31337.stgit@dell3.ogc.int>
+Message-Id: <20080121204213.3820.12396.stgit@dell3.ogc.int>
 In-Reply-To: <20080121204130.3820.11053.stgit@dell3.ogc.int>
 References: <20080121204130.3820.11053.stgit@dell3.ogc.int>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -27,43 +27,40 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-RDMA/cxgb3: fix page shift calculation in build_phys_page_list()
+RDMA/cxgb3: Mark qp as privileged based on user capabilities.
 
-The existing logic incorrectly maps this buffer list:
-
-0: addr 0x10001000, size 0x1000
-1: addr 0x10002000, size 0x1000
-
-To this bogus page list:
-
-0: 0x10000000
-1: 0x10002000
-
-The shift calculation must also take into account the address of the first
-entry masked by the page_mask as well as the last address+size rounded
-up to the next page size.
+This is needed for zero-stag support.
 
 Signed-off-by: Steve Wise <swise@opengridcomputing.com>
 ---
 
- drivers/infiniband/hw/cxgb3/iwch_mem.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ drivers/infiniband/hw/cxgb3/cxio_wr.h |    3 ++-
+ drivers/infiniband/hw/cxgb3/iwch_qp.c |    1 +
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_mem.c b/drivers/infiniband/hw/cxgb3/iwch_mem.c
-index a6c2c4b..73bfd16 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_mem.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_mem.c
-@@ -122,6 +122,13 @@ int build_phys_page_list(struct ib_phys_buf *buffer_list,
- 		*total_size += buffer_list[i].size;
- 		if (i > 0)
- 			mask |= buffer_list[i].addr;
-+		else
-+			mask |= buffer_list[i].addr & PAGE_MASK;
-+		if (i != num_phys_buf - 1)
-+			mask |= buffer_list[i].addr + buffer_list[i].size;
-+		else
-+			mask |= (buffer_list[i].addr + buffer_list[i].size +
-+				PAGE_SIZE - 1) & PAGE_MASK;
- 	}
+diff --git a/drivers/infiniband/hw/cxgb3/cxio_wr.h b/drivers/infiniband/hw/cxgb3/cxio_wr.h
+index c84d4ac..d72b584 100644
+--- a/drivers/infiniband/hw/cxgb3/cxio_wr.h
++++ b/drivers/infiniband/hw/cxgb3/cxio_wr.h
+@@ -324,7 +324,8 @@ struct t3_genbit {
+ };
  
- 	if (*total_size > 0xFFFFFFFFULL)
+ enum rdma_init_wr_flags {
+-	RECVS_POSTED = 1,
++	RECVS_POSTED = (1<<0),
++	PRIV_QP = (1<<1),
+ };
+ 
+ union t3_wr {
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_qp.c b/drivers/infiniband/hw/cxgb3/iwch_qp.c
+index 7681fdc..ea2cdd7 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_qp.c
++++ b/drivers/infiniband/hw/cxgb3/iwch_qp.c
+@@ -717,6 +717,7 @@ static int rdma_init(struct iwch_dev *rhp, struct iwch_qp *qhp,
+ 	init_attr.qp_dma_addr = qhp->wq.dma_addr;
+ 	init_attr.qp_dma_size = (1UL << qhp->wq.size_log2);
+ 	init_attr.flags = rqes_posted(qhp) ? RECVS_POSTED : 0;
++	init_attr.flags |= capable(CAP_NET_BIND_SERVICE) ? PRIV_QP : 0;
+ 	init_attr.irs = qhp->ep->rcv_seq;
+ 	PDBG("%s init_attr.rq_addr 0x%x init_attr.rq_size = %d "
+ 	     "flags 0x%x qpcaps 0x%x\n", __FUNCTION__,
