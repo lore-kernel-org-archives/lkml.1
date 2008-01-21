@@ -1,91 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbYAUE2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757844AbYAUEsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757623AbYAUE2a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 23:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756505AbYAUE2V
+	id S1757844AbYAUEsF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 23:48:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbYAUErw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 23:28:21 -0500
-Received: from mail.cirrusrtps.com.au ([202.171.186.39]:21763 "EHLO
-	mail.cirrusrtps.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756276AbYAUE2U convert rfc822-to-8bit (ORCPT
+	Sun, 20 Jan 2008 23:47:52 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:45258 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757027AbYAUEru (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 23:28:20 -0500
-Date: Mon, 21 Jan 2008 15:17:35 +1100
-From: "Mark Hansen" <Mark.Hansen@cirrusrtps.com.au>
-To: linux-kernel@vger.kernel.org
-Message-ID: <L4C947D7AC60C41b8845C6CC0420CE0CB.1200889684.mail.cirrusrtps.com.au@MHS>
-In-Reply-To: <4790AAC7.2080703@gmail.com>
-Subject: RE: priority based thread wakeup
-x-scalix-Hops: 1
+	Sun, 20 Jan 2008 23:47:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=FaXooPnMGGoyaZW++TEoNX3qsU0IE8oRN1qkY9djrvencNrs9+vLijAgaaMw9OxhFIk3Np1wp02bwrvVKz5EOp2QRtKybo4kUqu+ZWkMp8wgRAJy5oYv1QGvYtKSXNMGuPlEpt5aAPvWWn0BxGOTHwcS8kCJIxAAUw48QUyy90o=
+Date: Mon, 21 Jan 2008 12:49:13 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: marcel@holtmann.org
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net
+Subject: [PATCH] bluetooth : move children of connection device to NULL
+	before connection down
+Message-ID: <20080121044913.GA4162@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>My question concerns the following patch which was incorporated into 
-the >>2.6.22 kernel (quoted from that change log):
-... "futex priority based wakeup"
->>After updating to this version of the kernel, I was able to observe 
-the >>above fix, where multiple RT threads invoking pthread_cond_wait(), 
-and the >>highest priority thread will acquire the mutex first, after 
-the thread >>holding the mutex calls pthread_cond_signal(); 
-pthread_mutex_unlock()
+The rfcomm tty device will possibly retain even when conn is down,
+and sysfs doesn't support zombie device moving, so this patch
+move the tty device before conn device is destroyed.
 
->>However, since kernel 2.6.23, it seems that the functionality relating 
-to >>this "priority based wakeup" has disappeared. 
+For the bug refered please see :
+http://lkml.org/lkml/2007/12/28/87
 
->>I understand there have been significant changes in this kernel 
-concerning >>the "Completely Fair Scheduler" replacing the "mainline" 
-scheduler; >>however my understanding is that the RT functionality would 
-be preserved. >>This does not appear to be the case based on repeating 
-the experiment >>described above.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
->Hi,
->   I am not sure if this is whats happening to you (*), but there is a 
->known problem in the mainline tree related to the system allowing lower 
->priority threads to stay on the CPU under certain circumstances.
->
->You can see the problem happening with the following test:
->
->http://rt.wiki.kernel.org/index.php/Preemption_Test
->
->and I know the problem goes back to at least 2.6.16.
->
->Steven Rostedt and I submitted some patches to address the issue, and 
->they have been accepted into Ingo's sched-devel tree.  I would suggest 
->trying your code against Ingo's tree and see if the problem persists. 
->You can get it from:
->
->git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched->de
-vel.git
+---
+ net/bluetooth/hci_sysfs.c  |   17 +++++++++++++++++
+ net/bluetooth/rfcomm/tty.c |    3 ++-
+ 2 files changed, 19 insertions(+), 1 deletion(-)
 
-Thanks for the suggestion, however I've just tried this kernel, but the 
-pthread_cond_wait() behaviour still remains as per 2.6.23 described 
-above (i.e. highest prio thread doesnt get woken first).
-
->>(*) I have no information on whether the futex-plist implemetation was 
-
->>pulled from the tree to cause your regression.  
-
-I've just had a look at the code from the 2.6.24 kernel and it seems as 
-though the futex priority list patch code is still included. 
-
->>It is possible that the changes between 22 and 23 are just tickling 
->>your environment enough to bring out this RT-preempt issue.
-
-Or that the changes between 22 and 23 are bringing out another issue 
-whereby the desired behaviour of futex-plist is somehow being 
-circumvented.
-
-If so, my questions still stand to anyone who might know what has caused 
-the change in pthread_cond_wait() behaviour for RT threads between the 
-22 and 23 kernels.
-
-Cheers,
-Mark
-
-
+diff -upr linux/net/bluetooth/hci_sysfs.c linux.new/net/bluetooth/hci_sysfs.c
+--- linux/net/bluetooth/hci_sysfs.c	2008-01-21 11:29:34.000000000 +0800
++++ linux.new/net/bluetooth/hci_sysfs.c	2008-01-21 11:33:46.000000000 +0800
+@@ -316,9 +316,26 @@ void hci_conn_add_sysfs(struct hci_conn 
+ 	schedule_work(&conn->work);
+ }
+ 
++static int __match_tty(struct device *dev, void *data)
++{
++	/* The rfcomm tty device will possibly retain even when conn
++	 * is down, and sysfs doesn't support move zombie device,
++	 * so we should move the device before conn device is destroyed.
++	 * Due to the only child device of hci_conn dev is rfcomm
++	 * tty_dev, here just return 1
++	 */
++	return 1;
++}
++
+ static void del_conn(struct work_struct *work)
+ {
++	struct device *dev;
+ 	struct hci_conn *conn = container_of(work, struct hci_conn, work);
++
++	while (dev = device_find_child(&conn->dev, NULL, __match_tty)) {
++		device_move(dev, NULL);
++		put_device(dev);
++	}
+ 	device_del(&conn->dev);
+ 	put_device(&conn->dev);
+ }
+diff -upr linux/net/bluetooth/rfcomm/tty.c linux.new/net/bluetooth/rfcomm/tty.c
+--- linux/net/bluetooth/rfcomm/tty.c	2008-01-21 11:30:44.000000000 +0800
++++ linux.new/net/bluetooth/rfcomm/tty.c	2008-01-21 11:32:23.000000000 +0800
+@@ -696,7 +696,8 @@ static void rfcomm_tty_close(struct tty_
+ 	BT_DBG("tty %p dev %p dlc %p opened %d", tty, dev, dev->dlc, dev->opened);
+ 
+ 	if (--dev->opened == 0) {
+-		device_move(dev->tty_dev, NULL);
++		if (dev->tty_dev->parent)
++			device_move(dev->tty_dev, NULL);
+ 
+ 		/* Close DLC and dettach TTY */
+ 		rfcomm_dlc_close(dev->dlc, 0);
