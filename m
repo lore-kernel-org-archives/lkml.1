@@ -1,90 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbYAUXzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbYAUX5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758485AbYAUXzi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 18:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755486AbYAUXza
+	id S1757730AbYAUX5b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 18:57:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYAUX5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 18:55:30 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:57455 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754976AbYAUXz3 (ORCPT
+	Mon, 21 Jan 2008 18:57:24 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54978 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751955AbYAUX5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 18:55:29 -0500
-Date: Mon, 21 Jan 2008 17:54:39 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [HELP]Problem with exit(0) and _exit(0) on RHEL x86
-In-reply-to: <fa.YRcO5m0fsaAu8VNfQMYpdgaX5qk@ifi.uio.no>
-To: Li Xiaodong <lixd@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <479530BF.10606@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.YRcO5m0fsaAu8VNfQMYpdgaX5qk@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Mon, 21 Jan 2008 18:57:24 -0500
+Date: Mon, 21 Jan 2008 15:57:03 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 0/6] RFC: Typesafe callbacks
+In-Reply-To: <200801221027.15002.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.1.00.0801211547160.2957@woody.linux-foundation.org>
+References: <200801202046.14746.rusty@rustcorp.com.au> <200801212233.04989.rusty@rustcorp.com.au> <47949257.1000102@gmail.com> <200801221027.15002.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Xiaodong wrote:
-> I thought the effects of exit(0) and _exit(0) should be different.
-> 
-> ----
-> int main(void)
-> {
->         int var = 0;
->         pid_t pid;
-> 
->         printf("before vfork\n");
->         if ( (pid = vfork()) < 0 )
->                 printf("error\n");
->         else if ( pid == 0 )
->         {
->                 var++;
->                 exit(0);  /* Clear parent's IO */
->         }
-> 
->         printf("%d\n",var);
->         return 0;
-> }
-> 
-> ----
-> 
-> int main(void)
-> {
->         int var = 0;
->         pid_t pid;
-> 
->         printf("before vfork\n");
->         if ( (pid = vfork()) < 0 )
->                 printf("error\n");
->         else if ( pid == 0 )
->         {
->                 var++;
->                 _exit(0);  /* Do not clear parent's IO */
->         }
-> 
->         printf("%d\n",var);
->         return 0;
-> }
-> 
-> ----
-> 
-> But the actual results on RHEL5 x86 were beyond my ken. The outputs of the
-> above two are the same. 
-> 
-> $./a.out
-> before vfork
-> 1
-> 
-> Could anyone help me with this? Thanks.
 
-Why do you expect a different result? Also, calling exit from a vforked 
-child is explicitly not allowed. The only things you can do are execve 
-or _exit.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+On Tue, 22 Jan 2008, Rusty Russell wrote:
+>
+> Attempt to create callbacks which take unsigned long as well as
+> correct pointer types.
 
+I bow down before you.
+
+I thought I had done some rather horrible things with gcc built-ins and 
+macros, but I hereby hand over my crown to you.
+
+As my daughter would say: that patch fell out of the ugly tree, and hit 
+every branch on the way down. Very impressive.
+
+All hail Rusty, undisputed ruler of Ugly-land.
+
+Side note: can you verify that __builtin_choose_expr() exists in gcc-3? I 
+don't think we've relied on it before except on arm, and that one has 
+always had its own compiler version dependencies..
+
+			Linus
