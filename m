@@ -1,62 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbYAUNOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbYAUN1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755369AbYAUNOj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 08:14:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYAUNO2
+	id S1756193AbYAUN1g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 08:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbYAUN1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 08:14:28 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:10446 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751908AbYAUNO1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 08:14:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=izkc+s1FG/kf3YmeoAEJOEO3+W7ZrwiSgHP7EE6D5B9beBCyYt/Lj/Y75gUPBCd7+MixkU41EAsEZ3mNkwUcnUMNN1ua3AQ32QykasN5bv0iSmgyOpz4pGvD5SKBrQopzEDTToK0ONRJKRg3s9EXP03vC6bdzPX927o1vNyVnSw=
-Message-ID: <47949AA4.9090601@gmail.com>
-Date: Mon, 21 Jan 2008 22:14:12 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Mon, 21 Jan 2008 08:27:24 -0500
+Received: from mx1.slu.se ([130.238.96.70]:41280 "EHLO mx1.slu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751961AbYAUN1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 08:27:23 -0500
+From: Robert Olsson <Robert.Olsson@data.slu.se>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Georgi Chulkov <g.chulkov@jacobs-university.de>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Mark Lord <liml@rtr.ca>
-Subject: Re: ATA device reset, shoud I be concerned?
-References: <200801140019.20668.g.chulkov@jacobs-university.de>	<20080115025435.1e21b703.akpm@linux-foundation.org>	<20080115113552.75731bf8@lxorguk.ukuu.org.uk>	<4794501E.90306@gmail.com> <20080121130256.2443d7c1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080121130256.2443d7c1@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18324.40369.984595.651675@robur.slu.se>
+Date: Mon, 21 Jan 2008 14:27:13 +0100
+To: David Miller <davem@davemloft.net>
+Cc: Robert.Olsson@data.slu.se, elendil@planet.nl, jesse.brandeburg@intel.com,
+       slavon@bigtelecom.ru, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
+In-Reply-To: <20080118.041144.81957249.davem@davemloft.net>
+References: <200801160956.09053.elendil@planet.nl>
+	<20080116.022953.184520911.davem@davemloft.net>
+	<18318.14810.877279.41815@robur.slu.se>
+	<20080118.041144.81957249.davem@davemloft.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> transmission failure as timeouts.  Of course, if we're ticking the timer
->> while the command is not in flight, that's a bug.  If there are cases
->> where 30 secs isn't enough, can you please point me to those reports?
-> 
-> I have been, in bugzilla - the raid failure example where old IDE
-> eventually reports a media error while libata keeps timing out,
-> resetting, repeating.
 
-Maybe the difference is not in timeout but what the driver does after
-timeout happens.  After timeout, libata ignores almost everything (it
-considers DMA error reported on BMDMA status) and resets the device
-while IDE thinks that IRQ might be lost and complete the command if the
-TF status register says so.
+David Miller writes:
 
-It could be that the particular device doesn't raise IRQ on certain
-error conditions but updates TF registers.  After timeout, IDE completes
-the command with the indicated error while libata ignores the status and
-resets the device.
+ > Yes, this semaphore thing is highly problematic.  In the most crucial
+ > areas where network driver consistency matters the most for ease of
+ > understanding and debugging, the Intel drivers choose to be different
+ > :-(
+ > 
+ > The way the napi_disable() logic breaks out from high packet load in
+ > net_rx_action() is it simply returns even leaving interrupts disabled
+ > when a pending napi_disable() is pending.
+ > 
+ > This is what trips up the semaphore logic.
+ > 
+ > Robert, give this patch a try.
 
-libata never touches TF register after timeout because some controllers
-lock up hard if TF register is read after certain error conditions
-(event the status register).
 
--- 
-tejun
+ Yes it works. e1000 tested for ~3 hours with high very high load and 
+ interface up/down every 5:th sec. Without the patch the irq's gets 
+ disabled within a couple of seconds
+
+ A resolute way of handling the semaphores. :)
+   
+ Signed-off-by: Robert Olsson <robert.olsson@its.uu.se>
+ 
+ Cheers
+					--ro
+
+
+ > In the long term this semaphore should be completely eliminated,
+ > there is no justification for it.
+ > 
+ > Signed-off-by: David S. Miller <davem@davemloft.net>
+ > 
+ > diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+ > index 0c9a6f7..76c0fa6 100644
+ > --- a/drivers/net/e1000/e1000_main.c
+ > +++ b/drivers/net/e1000/e1000_main.c
+ > @@ -632,6 +632,7 @@ e1000_down(struct e1000_adapter *adapter)
+ >  
+ >  #ifdef CONFIG_E1000_NAPI
+ >  	napi_disable(&adapter->napi);
+ > +	atomic_set(&adapter->irq_sem, 0);
+ >  #endif
+ >  	e1000_irq_disable(adapter);
+ >  
+ > diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+ > index 2ab3bfb..9cc5a6b 100644
+ > --- a/drivers/net/e1000e/netdev.c
+ > +++ b/drivers/net/e1000e/netdev.c
+ > @@ -2183,6 +2183,7 @@ void e1000e_down(struct e1000_adapter *adapter)
+ >  	msleep(10);
+ >  
+ >  	napi_disable(&adapter->napi);
+ > +	atomic_set(&adapter->irq_sem, 0);
+ >  	e1000_irq_disable(adapter);
+ >  
+ >  	del_timer_sync(&adapter->watchdog_timer);
+ > diff --git a/drivers/net/ixgb/ixgb_main.c b/drivers/net/ixgb/ixgb_main.c
+ > index d2fb88d..4f63839 100644
+ > --- a/drivers/net/ixgb/ixgb_main.c
+ > +++ b/drivers/net/ixgb/ixgb_main.c
+ > @@ -296,6 +296,11 @@ ixgb_down(struct ixgb_adapter *adapter, boolean_t kill_watchdog)
+ >  {
+ >  	struct net_device *netdev = adapter->netdev;
+ >  
+ > +#ifdef CONFIG_IXGB_NAPI
+ > +	napi_disable(&adapter->napi);
+ > +	atomic_set(&adapter->irq_sem, 0);
+ > +#endif
+ > +
+ >  	ixgb_irq_disable(adapter);
+ >  	free_irq(adapter->pdev->irq, netdev);
+ >  
+ > @@ -304,9 +309,7 @@ ixgb_down(struct ixgb_adapter *adapter, boolean_t kill_watchdog)
+ >  
+ >  	if(kill_watchdog)
+ >  		del_timer_sync(&adapter->watchdog_timer);
+ > -#ifdef CONFIG_IXGB_NAPI
+ > -	napi_disable(&adapter->napi);
+ > -#endif
+ > +
+ >  	adapter->link_speed = 0;
+ >  	adapter->link_duplex = 0;
+ >  	netif_carrier_off(netdev);
+ > diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
+ > index de3f45e..a4265bc 100644
+ > --- a/drivers/net/ixgbe/ixgbe_main.c
+ > +++ b/drivers/net/ixgbe/ixgbe_main.c
+ > @@ -1409,9 +1409,11 @@ void ixgbe_down(struct ixgbe_adapter *adapter)
+ >  	IXGBE_WRITE_FLUSH(&adapter->hw);
+ >  	msleep(10);
+ >  
+ > +	napi_disable(&adapter->napi);
+ > +	atomic_set(&adapter->irq_sem, 0);
+ > +
+ >  	ixgbe_irq_disable(adapter);
+ >  
+ > -	napi_disable(&adapter->napi);
+ >  	del_timer_sync(&adapter->watchdog_timer);
+ >  
+ >  	netif_carrier_off(netdev);
