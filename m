@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbYAUR3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbYAUR3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752751AbYAUR3N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 12:29:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYAUR27
+	id S1753765AbYAUR3f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 12:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbYAUR3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 12:28:59 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:5493 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751404AbYAUR26 (ORCPT
+	Mon, 21 Jan 2008 12:29:25 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33983 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751109AbYAUR3Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 12:28:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=IYl2wmIDGbmMzHITvUrFQZwPmXa32s4+6Z3x6mLcFOV+2yPFL+rReFbqePDzwztP3dVOVFTn37jl7Guek2OgIpZk9aTuo2G2tAnfwmrPMVHWzPTBsTwWOCmPddoUpsZRI57qi3apWuY9byjbFkj0ztDhOa9yL08M+HmDSKVrGkw=
-Date: Mon, 21 Jan 2008 20:28:39 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, marciobuss@gmail.com
-Subject: Re: [Bugme-new] [Bug 9564] New: Uninitialzed variable fields
-	cvt.h_margin and cvt.v_margin
-Message-ID: <20080121172839.GB6722@cvg>
-References: <bug-9564-10286@http.bugzilla.kernel.org/> <20080118140055.fe862b78.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080118140055.fe862b78.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 21 Jan 2008 12:29:24 -0500
+Date: Mon, 21 Jan 2008 17:27:15 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Georgi Chulkov <g.chulkov@jacobs-university.de>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Mark Lord <liml@rtr.ca>
+Subject: Re: ATA device reset, shoud I be concerned?
+Message-ID: <20080121172715.0e3e5e4d@lxorguk.ukuu.org.uk>
+In-Reply-To: <4794D020.4060204@gmail.com>
+References: <200801140019.20668.g.chulkov@jacobs-university.de>
+	<20080115025435.1e21b703.akpm@linux-foundation.org>
+	<20080115113552.75731bf8@lxorguk.ukuu.org.uk>
+	<4794501E.90306@gmail.com>
+	<20080121130256.2443d7c1@lxorguk.ukuu.org.uk>
+	<47949AA4.9090601@gmail.com>
+	<20080121141425.45aa9c61@lxorguk.ukuu.org.uk>
+	<4794ACAF.70505@gmail.com>
+	<20080121164744.2f7d0ed1@lxorguk.ukuu.org.uk>
+	<4794D020.4060204@gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Andrew Morton - Fri, Jan 18, 2008 at 02:00:55PM -0800]
-| On Fri, 14 Dec 2007 13:54:59 -0800 (PST)
-| bugme-daemon@bugzilla.kernel.org wrote:
-| 
-| > http://bugzilla.kernel.org/show_bug.cgi?id=9564
-| > 
-| >            Summary: Uninitialzed variable fields cvt.h_margin and
-| >                     cvt.v_margin
-| >            Product: Drivers
-| >            Version: 2.5
-| >      KernelVersion: 2.6.23
-| >           Platform: All
-| >         OS/Version: Linux
-| >               Tree: Mainline
-| >             Status: NEW
-| >           Severity: normal
-| >           Priority: P1
-| >          Component: Video(Other)
-| >         AssignedTo: drivers_video-other@kernel-bugs.osdl.org
-| >         ReportedBy: marciobuss@gmail.com
-| > 
-| > 
-| > The errors can be found at drivers/video/fbcvt.c as follows:
-| > 
-| > (1) the test "if (margin)" at line 310 evaluates to false,
-| > (2) this makes the test "if (cvt.flags & FB_CVT_FLAG_MARGINS)" at line 352
-| >     to evaluate to false as well
-| > (3) now cvt.h_margin is uninitialized at line 359, 368, and 370, and
-| >     cvt.v_margin is uninitizalied at line 371.
-| > 
-| > In other words, both cvt.v_margin and cvt.h_margin are initialized conditinally
-| > but used unconditionally. This bug is a false positive only if the parameter
-| > "margins" at line 304 is never 0. However, this would make the test at line
-| > 310 unnecessary -- anyone looking at the code is miled into believing that
-| > 0 is a legal value for "margins". This means the code does require some change
-| > in my humble opinion.
-| > 
-| 
-| Could someone please take a look at this?
+> I still don't think it's worth the trouble.  There's currently only one
+> reported device which forgets to raise IRQ on media error.  The behavior
 
-unfortunelly, it's not really obvious what is the right way of
-calculation. *should* the 1.8% margin be involved in calculation
-all the time or 0 is legal too?
+Most people wouldn't realise what is going on.
 
-		- Cyrill -
+> > Old IDE says it works for PATA. For SATA I can see it might need more
+> > care and you might simply not be able to get the info.
+> 
+> Old IDE often locks up the machine hard after timeouts.  I'm all for
+
+The code paths are racy - it didn't use to in 2.4 (except for the promise
+drain bug)
+
+> gathering more info but benefit vs. risk equation just doesn't look good
+> here.  Why take risk for a rare device which forgets to raise IRQ on
+> media error?  If such behavior is wide spread among PATA drives && we
+> can verify that TF register access after timeout is safe for PATA
+> controllers, sure, but currently we aren't sure about either.
+
+We lose IRQs in lots of other cases. Promise PATA is particularly bad at
+forgetting to give us the completion interrupt.
+
+Alan
