@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763248AbYAUKQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764692AbYAUKQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763248AbYAUKQF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:16:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760040AbYAUKC5
+	id S1764692AbYAUKQf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760051AbYAUKC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:02:57 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35807 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:02:59 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35808 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759981AbYAUKCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:02:54 -0500
+	id S1760017AbYAUKC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:02:56 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Bob Peterson <rpeterso@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 38/58] [GFS2] Run through full bitmaps quicker in gfs2_bitfit
-Date: Mon, 21 Jan 2008 09:21:56 +0000
-Message-Id: <12009074074196-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 39/58] [GFS2] Reorganize function gfs2_glmutex_lock
+Date: Mon, 21 Jan 2008 09:21:57 +0000
+Message-Id: <12009074082286-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <1200907405414-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12009074074196-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -56,7 +56,8 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009074021586-git-send-email-swhiteho@redhat.com>
  <12009074032614-git-send-email-swhiteho@redhat.com>
  <1200907405414-git-send-email-swhiteho@redhat.com>
-Message-Id: <b9c762a12de432548486e9b3ec0a5b657d3fd00a.1200905287.git.swhiteho@redhat.com>
+ <12009074074196-git-send-email-swhiteho@redhat.com>
+Message-Id: <beb922fe3a443dba9e6c23f30689d5f2f0adeca1.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -65,111 +66,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bob Peterson <rpeterso@redhat.com>
 
-I eliminated the passing of an unused parameter into gfs2_bitfit called rgd.
-
-This also changes the gfs2_bitfit code that searches for free (or used) blocks.
-Before, the code was trying to check for bytes that indicated 4 blocks in
-the undesired state.  The problem is, it was spending more time trying to
-do this than it actually was saving.  This version only optimizes the case
-where we're looking for free blocks, and it checks a machine word at a time.
-So on 32-bit machines, it will check 32-bits (16 blocks) and on 64-bit
-machines, it will check 64-bits (32 blocks) at a time.  The compiler
-optimizes that quite well and we save some time, especially when running
-through full bitmaps (like the bitmaps allocated for the journals).
-
-There's probably a more elegant or optimized way to do this, but I haven't
-thought of it yet.  I'm open to suggestions.
+This patch optimizes the function gfs2_glmutex_lock.
+The basic theory is: Why bother initializing a holder, setting up
+wait bits and then waiting on them, if you know the glock can be
+yours.  So the holder stuff is placed inside the if checking if the
+glock is locked.  This one needs careful scrutiny because changing
+anything to do with locking should strike terror into one's heart.
 
 Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
-index e0ee195..d7ff9cf 100644
---- a/fs/gfs2/rgrp.c
-+++ b/fs/gfs2/rgrp.c
-@@ -126,41 +126,46 @@ static unsigned char gfs2_testbit(struct gfs2_rgrpd *rgd, unsigned char *buffer,
-  * Return: the block number (bitmap buffer scope) that was found
-  */
+diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+index a7f3c46..80e09c5 100644
+--- a/fs/gfs2/glock.c
++++ b/fs/gfs2/glock.c
+@@ -1,6 +1,6 @@
+ /*
+  * Copyright (C) Sistina Software, Inc.  1997-2003 All rights reserved.
+- * Copyright (C) 2004-2006 Red Hat, Inc.  All rights reserved.
++ * Copyright (C) 2004-2007 Red Hat, Inc.  All rights reserved.
+  *
+  * This copyrighted material is made available to anyone wishing to use,
+  * modify, copy, or redistribute it subject to the terms and conditions
+@@ -620,26 +620,21 @@ static void run_queue(struct gfs2_glock *gl)
  
--static u32 gfs2_bitfit(struct gfs2_rgrpd *rgd, unsigned char *buffer,
--			    unsigned int buflen, u32 goal,
--			    unsigned char old_state)
-+static u32 gfs2_bitfit(unsigned char *buffer, unsigned int buflen, u32 goal,
-+		       unsigned char old_state)
+ static void gfs2_glmutex_lock(struct gfs2_glock *gl)
  {
--	unsigned char *byte, *end, alloc;
-+	unsigned char *byte;
- 	u32 blk = goal;
--	unsigned int bit;
-+	unsigned int bit, bitlong;
-+	unsigned long *plong, plong55;
-+	static int c = 0;
- 
- 	byte = buffer + (goal / GFS2_NBBY);
-+	plong = buffer + (goal / GFS2_NBBY);
- 	bit = (goal % GFS2_NBBY) * GFS2_BIT_SIZE;
--	end = buffer + buflen;
--	alloc = (old_state == GFS2_BLKST_FREE) ? 0x55 : 0;
+-	struct gfs2_holder gh;
 -
--	while (byte < end) {
--		/* If we're looking for a free block we can eliminate all
--		   bitmap settings with 0x55, which represents four data
--		   blocks in a row.  If we're looking for a data block, we can
--		   eliminate 0x00 which corresponds to four free blocks. */
--		if ((*byte & 0x55) == alloc) {
--			blk += (8 - bit) >> 1;
+-	gfs2_holder_init(gl, 0, 0, &gh);
+-	if (test_and_set_bit(HIF_WAIT, &gh.gh_iflags))
+-		BUG();
 -
--			bit = 0;
--			byte++;
--
-+	bitlong = bit;
-+#if BITS_PER_LONG == 32
-+	plong55 = 0x55555555;
-+#else
-+	plong55 = 0x5555555555555555;
-+#endif
-+	while (byte < buffer + buflen) {
+ 	spin_lock(&gl->gl_spin);
+ 	if (test_and_set_bit(GLF_LOCK, &gl->gl_flags)) {
++		struct gfs2_holder gh;
 +
-+		if (bitlong == 0 && old_state == 0 && *plong == plong55) {
-+			plong++;
-+			byte += sizeof(unsigned long);
-+			blk += sizeof(unsigned long) * GFS2_NBBY;
- 			continue;
- 		}
--
--		if (((*byte >> bit) & GFS2_BIT_MASK) == old_state)
-+		if (((*byte >> bit) & GFS2_BIT_MASK) == old_state) {
-+			c++;
- 			return blk;
--
-+		}
- 		bit += GFS2_BIT_SIZE;
- 		if (bit >= 8) {
- 			bit = 0;
- 			byte++;
- 		}
-+		bitlong += GFS2_BIT_SIZE;
-+		if (bitlong >= sizeof(unsigned long) * 8) {
-+			bitlong = 0;
-+			plong++;
-+		}
- 
- 		blk++;
++		gfs2_holder_init(gl, 0, 0, &gh);
++		set_bit(HIF_WAIT, &gh.gh_iflags);
+ 		list_add_tail(&gh.gh_list, &gl->gl_waiters1);
++		spin_unlock(&gl->gl_spin);
++		wait_on_holder(&gh);
++		gfs2_holder_uninit(&gh);
+ 	} else {
+ 		gl->gl_owner_pid = current->pid;
+ 		gl->gl_ip = (unsigned long)__builtin_return_address(0);
+-		clear_bit(HIF_WAIT, &gh.gh_iflags);
+-		smp_mb();
+-		wake_up_bit(&gh.gh_iflags, HIF_WAIT);
++		spin_unlock(&gl->gl_spin);
  	}
-@@ -1318,11 +1323,10 @@ static u32 rgblk_search(struct gfs2_rgrpd *rgd, u32 goal,
- 		/* The GFS2_BLKST_UNLINKED state doesn't apply to the clone
- 		   bitmaps, so we must search the originals for that. */
- 		if (old_state != GFS2_BLKST_UNLINKED && bi->bi_clone)
--			blk = gfs2_bitfit(rgd, bi->bi_clone + bi->bi_offset,
-+			blk = gfs2_bitfit(bi->bi_clone + bi->bi_offset,
- 					  bi->bi_len, goal, old_state);
- 		else
--			blk = gfs2_bitfit(rgd,
--					  bi->bi_bh->b_data + bi->bi_offset,
-+			blk = gfs2_bitfit(bi->bi_bh->b_data + bi->bi_offset,
- 					  bi->bi_len, goal, old_state);
- 		if (blk != BFITNOENT)
- 			break;
+-	spin_unlock(&gl->gl_spin);
+-
+-	wait_on_holder(&gh);
+-	gfs2_holder_uninit(&gh);
+ }
+ 
+ /**
 -- 
 1.5.1.2
 
