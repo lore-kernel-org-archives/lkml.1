@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764102AbYAUKNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759021AbYAUKOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764102AbYAUKNr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:13:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759919AbYAUKCs
+	id S1759021AbYAUKOL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:14:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759934AbYAUKCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:02:48 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35798 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:02:50 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35800 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758868AbYAUKCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:02:44 -0500
+	id S1758840AbYAUKCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:02:45 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 32/58] [GFS2] Remove unused variable
-Date: Mon, 21 Jan 2008 09:21:50 +0000
-Message-Id: <1200907397123-git-send-email-swhiteho@redhat.com>
+Cc: David Teigland <teigland@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 33/58] [GFS2] use pid for plock owner for nfs clients
+Date: Mon, 21 Jan 2008 09:21:51 +0000
+Message-Id: <12009073981159-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12009073953412-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1200907397123-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -49,29 +50,74 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073913676-git-send-email-swhiteho@redhat.com>
  <12009073933630-git-send-email-swhiteho@redhat.com>
  <12009073953412-git-send-email-swhiteho@redhat.com>
-Message-Id: <247dc1e2ac7f0af8393a0514fc7db99cf6142747.1200905287.git.swhiteho@redhat.com>
+ <1200907397123-git-send-email-swhiteho@redhat.com>
+Message-Id: <ab3bb4dcd58fb0236e220007044ea74b3ca714e7.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Whitehouse <swhiteho@redhat.com>
+From: David Teigland <teigland@redhat.com>
 
+The fl_owner is that of lockd when posix locks arrive from nfs
+clients, so it can't be used to distinguish between lock holders.
+Use fl_pid as owner instead; it's the pid of the process on the
+nfs client.
+
+Signed-off-by: David Teigland <teigland@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/ops_file.c b/fs/gfs2/ops_file.c
-index db76ac1..2569c13 100644
---- a/fs/gfs2/ops_file.c
-+++ b/fs/gfs2/ops_file.c
-@@ -700,7 +700,6 @@ static void do_unflock(struct file *file, struct file_lock *fl)
- static int gfs2_flock(struct file *file, int cmd, struct file_lock *fl)
- {
- 	struct gfs2_inode *ip = GFS2_I(file->f_mapping->host);
--	struct gfs2_sbd *sdp = GFS2_SB(file->f_mapping->host);
+diff --git a/fs/gfs2/locking/dlm/plock.c b/fs/gfs2/locking/dlm/plock.c
+index 1f7b038..2ebd374 100644
+--- a/fs/gfs2/locking/dlm/plock.c
++++ b/fs/gfs2/locking/dlm/plock.c
+@@ -89,15 +89,19 @@ int gdlm_plock(void *lockspace, struct lm_lockname *name,
+ 	op->info.number		= name->ln_number;
+ 	op->info.start		= fl->fl_start;
+ 	op->info.end		= fl->fl_end;
+-	op->info.owner		= (__u64)(long) fl->fl_owner;
+ 	if (fl->fl_lmops && fl->fl_lmops->fl_grant) {
++		/* fl_owner is lockd which doesn't distinguish
++		   processes on the nfs client */
++		op->info.owner	= (__u64) fl->fl_pid;
+ 		xop->callback	= fl->fl_lmops->fl_grant;
+ 		locks_init_lock(&xop->flc);
+ 		locks_copy_lock(&xop->flc, fl);
+ 		xop->fl		= fl;
+ 		xop->file	= file;
+-	} else
++	} else {
++		op->info.owner	= (__u64)(long) fl->fl_owner;
+ 		xop->callback	= NULL;
++	}
  
- 	if (!(fl->fl_flags & FL_FLOCK))
- 		return -ENOLCK;
+ 	send_op(op);
+ 
+@@ -203,7 +207,10 @@ int gdlm_punlock(void *lockspace, struct lm_lockname *name,
+ 	op->info.number		= name->ln_number;
+ 	op->info.start		= fl->fl_start;
+ 	op->info.end		= fl->fl_end;
+-	op->info.owner		= (__u64)(long) fl->fl_owner;
++	if (fl->fl_lmops && fl->fl_lmops->fl_grant)
++		op->info.owner	= (__u64) fl->fl_pid;
++	else
++		op->info.owner	= (__u64)(long) fl->fl_owner;
+ 
+ 	send_op(op);
+ 	wait_event(recv_wq, (op->done != 0));
+@@ -242,7 +249,10 @@ int gdlm_plock_get(void *lockspace, struct lm_lockname *name,
+ 	op->info.number		= name->ln_number;
+ 	op->info.start		= fl->fl_start;
+ 	op->info.end		= fl->fl_end;
+-	op->info.owner		= (__u64)(long) fl->fl_owner;
++	if (fl->fl_lmops && fl->fl_lmops->fl_grant)
++		op->info.owner	= (__u64) fl->fl_pid;
++	else
++		op->info.owner	= (__u64)(long) fl->fl_owner;
+ 
+ 	send_op(op);
+ 	wait_event(recv_wq, (op->done != 0));
 -- 
 1.5.1.2
 
