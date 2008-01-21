@@ -1,151 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbYAUGzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbYAUHep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758248AbYAUGzG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 01:55:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYAUGyx
+	id S1758106AbYAUHep (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 02:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757178AbYAUHeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 01:54:53 -0500
-Received: from mail.bigtelecom.ru ([87.255.0.61]:36655 "EHLO
-	mail.bigtelecom.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849AbYAUGyw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 01:54:52 -0500
-Message-ID: <479441B3.4080909@bigtelecom.ru>
-Date: Mon, 21 Jan 2008 09:54:43 +0300
-From: Badalian Vyacheslav <slavon@bigtelecom.ru>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071129)
+	Mon, 21 Jan 2008 02:34:37 -0500
+Received: from pip15.gyao.ne.jp ([61.122.117.253]:9311 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756949AbYAUHeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 02:34:36 -0500
+Date: Mon, 21 Jan 2008 16:33:41 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       linux-arch@vger.kernel.org, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH] Use separate sections for __dev/__cpu/__mem code/data
+Message-ID: <20080121073341.GA20050@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+	linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
+	Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+	Adrian Bunk <bunk@kernel.org>
+References: <20080120200527.GA23852@uranus.ravnborg.org> <1200859743-24037-1-git-send-email-sam@ravnborg.org> <1200859743-24037-2-git-send-email-sam@ravnborg.org> <1200859743-24037-3-git-send-email-sam@ravnborg.org> <1200859743-24037-4-git-send-email-sam@ravnborg.org> <1200859743-24037-5-git-send-email-sam@ravnborg.org> <1200859743-24037-6-git-send-email-sam@ravnborg.org> <1200859743-24037-7-git-send-email-sam@ravnborg.org> <1200859743-24037-8-git-send-email-sam@ravnborg.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: elendil@planet.nl, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION] 2.6.24-rc7: e1000: Detected Tx Unit Hang
-References: <200801150625.10823.elendil@planet.nl>	<20080114.215317.38045859.davem@davemloft.net>	<478DC824.4030600@bigtelecom.ru> <20080116.042817.143947133.davem@davemloft.net>
-In-Reply-To: <20080116.042817.143947133.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200859743-24037-8-git-send-email-sam@ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello. Its work, thanks for resend it!
-Sorry, i understand that patch 53e52c729cc169db82a6105fac7a166e10c2ec36 
-("[NET]: Make ->poll() breakout consistent in Intel ethernet drivers.") 
-have regression and rollback it, i not see your patch.
-Sorry again.
+On Sun, Jan 20, 2008 at 09:09:03PM +0100, Sam Ravnborg wrote:
+> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> index ded7ca2..e0a56fb 100644
+> --- a/include/asm-generic/vmlinux.lds.h
+> +++ b/include/asm-generic/vmlinux.lds.h
+> @@ -9,10 +9,46 @@
+>  /* Align . to a 8 byte boundary equals to maximum function alignment. */
+>  #define ALIGN_FUNCTION()  . = ALIGN(8)
+>  
+> +/* The actual configuration determine if the init/exit sections
+> + * are handled as text/data or they can be discarded (which
+> + * often happens at runtime)
+> + */
+> +#ifdef CONFIG_HOTPLUG
+> +#define DEV_KEEP(sec)    *(.dev##sec)
+> +#define DEV_DISCARD(sec)
+> +#else
+> +#define DEV_KEEP(sec)
+> +#define DEV_DISCARD(sec) *(.dev##sec)
+> +#endif
+> +
+Using your kbuild.git, these blow up for me:
 
-Thanks!
-> From: Badalian Vyacheslav <slavon@bigtelecom.ru>
-> Date: Wed, 16 Jan 2008 12:02:28 +0300
->
->   
->> Also have regression after apply patch.
->>     
->
-> BTW, if you are using the e1000e driver then this initial
-> patch will not work.
->
-> My more recent patch posting for this problem, will.
->
-> I include it again below for you:
->
-> [NET]: Fix TX timeout regression in Intel drivers.
->
-> This fixes a regression added by changeset
-> 53e52c729cc169db82a6105fac7a166e10c2ec36 ("[NET]: Make ->poll()
-> breakout consistent in Intel ethernet drivers.")
->
-> As pointed out by Jesse Brandeburg, for three of the drivers edited
-> above there is breakout logic in the *_clean_tx_irq() code to prevent
-> running TX reclaim forever.  If this occurs, we have to elide NAPI
-> poll completion or else those TX events will never be serviced.
->
-> Signed-off-by: David S. Miller <davem@davemloft.net>
->
-> diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-> index 13d57b0..0c9a6f7 100644
-> --- a/drivers/net/e1000/e1000_main.c
-> +++ b/drivers/net/e1000/e1000_main.c
-> @@ -3919,7 +3919,7 @@ e1000_clean(struct napi_struct *napi, int budget)
->  {
->  	struct e1000_adapter *adapter = container_of(napi, struct e1000_adapter, napi);
->  	struct net_device *poll_dev = adapter->netdev;
-> -	int work_done = 0;
-> +	int tx_cleaned = 0, work_done = 0;
->  
->  	/* Must NOT use netdev_priv macro here. */
->  	adapter = poll_dev->priv;
-> @@ -3929,14 +3929,17 @@ e1000_clean(struct napi_struct *napi, int budget)
->  	 * simultaneously.  A failure obtaining the lock means
->  	 * tx_ring[0] is currently being cleaned anyway. */
->  	if (spin_trylock(&adapter->tx_queue_lock)) {
-> -		e1000_clean_tx_irq(adapter,
-> -				   &adapter->tx_ring[0]);
-> +		tx_cleaned = e1000_clean_tx_irq(adapter,
-> +						&adapter->tx_ring[0]);
->  		spin_unlock(&adapter->tx_queue_lock);
->  	}
->  
->  	adapter->clean_rx(adapter, &adapter->rx_ring[0],
->  	                  &work_done, budget);
->  
-> +	if (tx_cleaned)
-> +		work_done = budget;
-> +
->  	/* If budget not fully consumed, exit the polling mode */
->  	if (work_done < budget) {
->  		if (likely(adapter->itr_setting & 3))
-> diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-> index 4a6fc74..2ab3bfb 100644
-> --- a/drivers/net/e1000e/netdev.c
-> +++ b/drivers/net/e1000e/netdev.c
-> @@ -1384,7 +1384,7 @@ static int e1000_clean(struct napi_struct *napi, int budget)
->  {
->  	struct e1000_adapter *adapter = container_of(napi, struct e1000_adapter, napi);
->  	struct net_device *poll_dev = adapter->netdev;
-> -	int work_done = 0;
-> +	int tx_cleaned = 0, work_done = 0;
->  
->  	/* Must NOT use netdev_priv macro here. */
->  	adapter = poll_dev->priv;
-> @@ -1394,12 +1394,15 @@ static int e1000_clean(struct napi_struct *napi, int budget)
->  	 * simultaneously.  A failure obtaining the lock means
->  	 * tx_ring is currently being cleaned anyway. */
->  	if (spin_trylock(&adapter->tx_queue_lock)) {
-> -		e1000_clean_tx_irq(adapter);
-> +		tx_cleaned = e1000_clean_tx_irq(adapter);
->  		spin_unlock(&adapter->tx_queue_lock);
->  	}
->  
->  	adapter->clean_rx(adapter, &work_done, budget);
->  
-> +	if (tx_cleaned)
-> +		work_done = budget;
-> +
->  	/* If budget not fully consumed, exit the polling mode */
->  	if (work_done < budget) {
->  		if (adapter->itr_setting & 3)
-> diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
-> index a564916..de3f45e 100644
-> --- a/drivers/net/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ixgbe/ixgbe_main.c
-> @@ -1468,13 +1468,16 @@ static int ixgbe_clean(struct napi_struct *napi, int budget)
->  	struct ixgbe_adapter *adapter = container_of(napi,
->  					struct ixgbe_adapter, napi);
->  	struct net_device *netdev = adapter->netdev;
-> -	int work_done = 0;
-> +	int tx_cleaned = 0, work_done = 0;
->  
->  	/* In non-MSIX case, there is no multi-Tx/Rx queue */
-> -	ixgbe_clean_tx_irq(adapter, adapter->tx_ring);
-> +	tx_cleaned = ixgbe_clean_tx_irq(adapter, adapter->tx_ring);
->  	ixgbe_clean_rx_irq(adapter, &adapter->rx_ring[0], &work_done,
->  			   budget);
->  
-> +	if (tx_cleaned)
-> +		work_done = budget;
-> +
->  	/* If budget not fully consumed, exit the polling mode */
->  	if (work_done < budget) {
->  		netif_rx_complete(netdev, napi);
->
->   
+  LD      .tmp_vmlinux1
+sh4-linux-ld:arch/sh/kernel/vmlinux.lds:364: ignoring invalid character `#' in script
+sh4-linux-ld:arch/sh/kernel/vmlinux.lds:364: ignoring invalid character `#' in script
+sh4-linux-ld:arch/sh/kernel/vmlinux.lds:364: ignoring invalid character `#' in script
+sh4-linux-ld:arch/sh/kernel/vmlinux.lds:364: ignoring invalid character `#' in script
+sh4-linux-ld:arch/sh/kernel/vmlinux.lds:381: ignoring invalid character `#' in script
+sh4-linux-ld:arch/sh/kernel/vmlinux.lds:381: ignoring invalid character `#' in script
+sh4-linux-ld:arch/sh/kernel/vmlinux.lds:381: ignoring invalid character `#' in script
+...
 
+This comes out as:
+
+        .text : {
+                *(.text.head)
+                . = ALIGN(8);                                                   *(.text)                                                                *(.text.init.refok)                                                     *(.exit.text.refok)                                             *(.dev##init.text)
+                                        *(.dev##exit.text)
+
+                . = ALIGN(8);                                                   __sched_text_start = .;                                 *(.sched.text)
+                                                __sched_text_end = .;
+                . = ALIGN(8);                                                   __lock_text_start = .;                                  *(.spinlock.text)
+                                                __lock_text_end = .;
+                . = ALIGN(8);                                                   __kprobes_text_start = .;                               *(.kprobes.text)
+                                                __kprobes_text_end = .;
+                *(.fixup)
+                *(.gnu.warning)
+...
+
+so the ## is being taken directly rather than acting as a concatenation.
