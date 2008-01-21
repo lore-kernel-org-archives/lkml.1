@@ -1,126 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763506AbYAUX2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761050AbYAUX21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763506AbYAUX2H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 18:28:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbYAUX1w
+	id S1761050AbYAUX21 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 18:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763293AbYAUX2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 18:27:52 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:1390 "EHLO
-	outbound5-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758293AbYAUX1u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 18:27:50 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
-Date: Mon, 21 Jan 2008 16:27:09 -0700
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-To: "Arnd Hannemann" <hannemann@i4.informatik.rwth-aachen.de>
-cc: "Andres Salomon" <dilinger@queued.net>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
-Message-ID: <20080121232709.GJ10837@cosmic.amd.com>
-References: <20080116165606.3ebc06a4@ephemeral>
- <478F25D6.3060503@i4.informatik.rwth-aachen.de>
- <20080117134032.4cc1a1cf@ephemeral>
- <478FB255.5040001@i4.informatik.rwth-aachen.de>
- <20080117211917.GF8244@cosmic.amd.com>
- <478FCDB6.4010708@i4.informatik.rwth-aachen.de>
- <20080117223644.GK8244@cosmic.amd.com>
- <478FDC12.6020505@i4.informatik.rwth-aachen.de>
- <20080117225744.GL8244@cosmic.amd.com>
- <478FE733.2030806@i4.informatik.rwth-aachen.de>
+	Mon, 21 Jan 2008 18:28:00 -0500
+Received: from ozlabs.org ([203.10.76.45]:58973 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763043AbYAUX17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 18:27:59 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH 0/6] RFC: Typesafe callbacks
+Date: Tue, 22 Jan 2008 10:27:14 +1100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+References: <200801202046.14746.rusty@rustcorp.com.au> <200801212233.04989.rusty@rustcorp.com.au> <47949257.1000102@gmail.com>
+In-Reply-To: <47949257.1000102@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <478FE733.2030806@i4.informatik.rwth-aachen.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 21 Jan 2008 23:25:58.0499 (UTC)
- FILETIME=[FA4F2B30:01C85C84]
-X-WSS-ID: 6B8BF5A107S8700677-01-01
-Content-Type: multipart/mixed;
- boundary=Nq2Wo0NMKNjxTN9z
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200801221027.15002.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 21 January 2008 23:38:47 Tejun Heo wrote:
+> Rusty Russell wrote:
+> > On Monday 21 January 2008 09:17:30 Rusty Russell wrote:
+> >> But it would be cool to allow functions which take an unsigned long.
+> >> I'll test this out and see what I can make...
+> >
+> > I think this comes under "too ugly", but here's an attempt.
+>
+> Maybe we should be content with pointer type checking.  It seems like
+> it's going too far and after all the clutter it's not possible to use
+> int as argument.  :-(
 
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+It is possible, but the function has to take an unsigned long.
 
-Okay - I've been exploring a little bit more.  I talked to the TinyBIOS
-developer, and he verified that TinyBIOS shouldn't use any MFGPT timers.
-He also told me that the mysterious "MFGPT workaround" was in fact the 
-magic MFGPT erasing MSR that was in the old kernel driver.
+But I share your dislike of this.  Here's my final version, but it's still
+ugly.
 
-So with the "MFGPT workaround" turned off, TinyBIOS should be acting like
-the OLPC firmware with regards to timers, yet it is not.  So that is 
-curious.  I think I might have identified a race condition in the code,
-but I'm not 100% sure thats the same problem that the ALIX platform is
-seeing.
+Rusty.
 
-Anrd and others - will you please try the attached patch on your platform
-with the "MFGPT workaround" turned off and mfgpts enabled, and send out
-the dmesg?
+===
+Attempt to create callbacks which take unsigned long as well as
+correct pointer types.
 
-This will give us some debug information that I can use to ensure that
-the interrupts are set up correctly.  You can leave the timer tick disabled
-if you want.
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ include/linux/compiler-gcc.h   |   61 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/compiler-intel.h |    3 ++
+ include/linux/kernel.h         |   21 ++++++++++++++
+ 3 files changed, 85 insertions(+)
 
-Thanks,
-Jordan
-
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline;
- filename=mfgpt-debug-spew.patch
-Content-Transfer-Encoding: 7bit
-
-diff --git a/arch/x86/kernel/mfgpt_32.c b/arch/x86/kernel/mfgpt_32.c
-index 0ab680f..5b4fa24 100644
---- a/arch/x86/kernel/mfgpt_32.c
-+++ b/arch/x86/kernel/mfgpt_32.c
-@@ -74,18 +74,31 @@ int __init geode_mfgpt_detect(void)
- {
- 	int count = 0, i;
- 	u16 val;
-+	u32 hi, lo;
- 
- 	if (disable) {
- 		printk(KERN_INFO "geode-mfgpt:  Skipping MFGPT setup\n");
- 		return 0;
- 	}
- 
-+	rdmsr(0x51400028, lo, hi);
-+	printk(KERN_INFO "geode-mfgpt:  IRQ MSR=%x:%x\n", hi, lo);
+diff -r 951ffe1c5238 include/linux/compiler-gcc.h
+--- a/include/linux/compiler-gcc.h	Tue Jan 22 09:31:56 2008 +1100
++++ b/include/linux/compiler-gcc.h	Tue Jan 22 10:15:15 2008 +1100
+@@ -53,3 +53,64 @@
+ #define  noinline			__attribute__((noinline))
+ #define __attribute_const__		__attribute__((__const__))
+ #define __maybe_unused			__attribute__((unused))
 +
-+	rdmsr(0x51400029, lo, hi);
-+	printk(KERN_INFO "geode-mfgpt:  NMI MSR=%x:%x\n", hi, lo);
++/* This is not complete: I can't figure out a way to handle enums. */
++#define ulong_compatible(arg)						\
++	(__builtin_types_compatible_p(typeof(arg), char)		\
++	 || __builtin_types_compatible_p(typeof(arg), unsigned char)	\
++	 || __builtin_types_compatible_p(typeof(arg), signed char)	\
++	 || __builtin_types_compatible_p(typeof(arg), unsigned short)	\
++	 || __builtin_types_compatible_p(typeof(arg), short)		\
++	 || __builtin_types_compatible_p(typeof(arg), unsigned int)	\
++	 || __builtin_types_compatible_p(typeof(arg), int)		\
++	 || __builtin_types_compatible_p(typeof(arg), unsigned long)	\
++	 || __builtin_types_compatible_p(typeof(arg), long))
 +
-+	rdmsr(0x51400022, lo, hi);
-+	printk(KERN_INFO "geode-mfgpt:  Unrestricted sources=%x\n", lo);
++/**
++ * typesafe_fn_and_arg - cast function type and arg if compatible
++ * @fn: the function or function pointer
++ * @arg: the function argument.
++ * @ulongtype: the function pointer type if arg is an integer
++ * @safetype: the function pointer type which matches typeof(arg)
++ * @voidtype: the function pointer type which takes a void * (to cast to)
++ *
++ * This macro evaluates to two comma separated values: the function pointer,
++ * then the argument.
++ *
++ * Callback functions are usually declared to take a "void *arg"
++ * argument, which stops the compiler from doing type checking.  We
++ * can freely cast to function pointer which takes "void *" in two
++ * cases: a function which takes a different pointer type or an
++ * unsigned long.
++ *
++ * Typechecking is done by the caller when they assign or pass these
++ * values.  This macro handles the cases where @fn takes an unsigned
++ * long and @arg is compatible with that, and also the case where @fn
++ * and @arg match types.  For other cases, @fn is not cast, so using
++ * the results of this macro should cause a warning unless @fn is
++ * already of if type @voidtype.
++ *
++ * Logic looks like this:
++ * if (typeof(@arg) compatible with unsigned long) {
++ *     if (typeof(@fn) == @ulongtype)
++ *         (@voidtype)@fn and (void *)(unsigned long)@arg; // OK!
++ *     else
++ *         @fn and @arg; // @fn will warn unless it's of @voidtype already.
++ * } else if (typeof(@fn) == @safetype)
++ *     (@voidtype)@fn and @arg; // OK: @arg will warn unless it's a pointer.
++ * else
++ *     @fn and @arg; // @fn will warn unless it's of @voidtype already.
++ */
++#define typesafe_fn_and_arg(fn, arg, ulongtype, safetype, voidtype)	\
++__builtin_choose_expr((ulong_compatible(arg)				\
++		       && __builtin_types_compatible_p(typeof(1?(fn):NULL), \
++						       ulongtype))	\
++		      || (!ulong_compatible(arg)			\
++			  && __builtin_types_compatible_p(typeof(1?(fn):NULL), \
++							  safetype)),	\
++		      ((voidtype)(fn)),					\
++		      (fn)),						\
++__builtin_choose_expr(__builtin_types_compatible_p(typeof(1?(fn):NULL), \
++						   ulongtype),		\
++		      ((void *)(long)(arg)), (arg))
 +
- 	for (i = 0; i < MFGPT_MAX_TIMERS; i++) {
- 		val = geode_mfgpt_read(i, MFGPT_REG_SETUP);
- 		if (!(val & MFGPT_SETUP_SETUP)) {
- 			mfgpt_timers[i].flags = F_AVAIL;
- 			count++;
- 		}
-+		else {
-+			printk(KERN_INFO "geode-mfgpt:  [%d] is already setup=%x\n", i, val);
-+		}
- 	}
+diff -r 951ffe1c5238 include/linux/compiler-intel.h
+--- a/include/linux/compiler-intel.h	Tue Jan 22 09:31:56 2008 +1100
++++ b/include/linux/compiler-intel.h	Tue Jan 22 10:15:15 2008 +1100
+@@ -29,3 +29,6 @@
+ #endif
  
- 	/* set up clock event device, if desired */
-
---Nq2Wo0NMKNjxTN9z--
-
-
+ #define uninitialized_var(x) x
++
++#define typesafe_fn_and_arg(fn, arg, ulongtype, safetype, fntype) \
++	((fntype)(fn)), ((void *)arg)
+diff -r 951ffe1c5238 include/linux/kernel.h
+--- a/include/linux/kernel.h	Tue Jan 22 09:31:56 2008 +1100
++++ b/include/linux/kernel.h	Tue Jan 22 10:15:15 2008 +1100
+@@ -379,6 +379,27 @@ static inline int __attribute__ ((format
+ 	(void)__tmp; \
+ })
+ 
++/**
++ * callback_and_arg - simple one-argument typesafe callback with argument
++ * @fn: the function or function pointer
++ * @arg: the function argument.
++ * @rettype: the return type of fn
++ *
++ * This macro evaluates to two comma separated values: the function pointer,
++ * then the argument.  It will check that @fn and @arg are compatible with
++ * each other and with a void * callback.  One of
++ * - fn takes a void * and arg is a pointer
++ * - fn takes a typeof(arg) and arg is a pointer
++ * - fn takes an unsigned long and arg is an integer type.
++ *
++ * See typesafe_fn_and_arg() for the gory details.
++ */
++#define callback_and_arg(fn, arg, rettype)		\
++	typesafe_fn_and_arg((fn), (arg),		\
++			    rettype (*)(unsigned long),	\
++			    rettype (*)(typeof(arg)),	\
++			    rettype (*)(void *))
++
+ struct sysinfo;
+ extern int do_sysinfo(struct sysinfo *info);
+ 
