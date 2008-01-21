@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbYAUP0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761940AbYAUP0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761626AbYAUP0a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 10:26:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760414AbYAUPYd
+	id S1761940AbYAUP0o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 10:26:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760450AbYAUPYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 10:24:33 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:58841 "EHLO
+	Mon, 21 Jan 2008 10:24:35 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:58863 "EHLO
 	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753720AbYAUPYC (ORCPT
+	with ESMTP id S1755002AbYAUPYD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 10:24:02 -0500
-Message-Id: <20080121152351.522653582@goodmis.org>
+	Mon, 21 Jan 2008 10:24:03 -0500
+Message-Id: <20080121152351.840696107@goodmis.org>
 References: <20080121152231.579118762@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 Jan 2008 10:22:35 -0500
+Date: Mon, 21 Jan 2008 10:22:37 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -28,131 +28,277 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 04/23 -v4] add notrace annotations to vsyscall.
-Content-Disposition: inline; filename=mcount-add-x86-vdso-notrace-annotations.patch
+Subject: [RFC PATCH 06/23 -v4] handle accurate time keeping over long delays
+Content-Disposition: inline; filename=rt-time-starvation-fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the notrace annotations to some of the vsyscall functions.
+Handle accurate time even if there's a long delay between
+accumulated clock cycles.
 
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/vsyscall_64.c  |    3 ++-
- arch/x86/vdso/vclock_gettime.c |   15 ++++++++-------
- arch/x86/vdso/vgetcpu.c        |    3 ++-
- include/asm-x86/vsyscall.h     |    3 ++-
- 4 files changed, 14 insertions(+), 10 deletions(-)
+ arch/x86/kernel/vsyscall_64.c |    5 ++-
+ include/asm-x86/vgtod.h       |    2 -
+ include/linux/clocksource.h   |   58 ++++++++++++++++++++++++++++++++++++++++--
+ kernel/time/timekeeping.c     |   35 +++++++++++++------------
+ 4 files changed, 80 insertions(+), 20 deletions(-)
 
 Index: linux-mcount.git/arch/x86/kernel/vsyscall_64.c
 ===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/vsyscall_64.c	2008-01-17 20:33:16.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/vsyscall_64.c	2008-01-17 20:33:34.000000000 -0500
-@@ -42,7 +42,8 @@
- #include <asm/topology.h>
- #include <asm/vgtod.h>
+--- linux-mcount.git.orig/arch/x86/kernel/vsyscall_64.c	2008-01-17 20:33:34.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/vsyscall_64.c	2008-01-17 20:33:37.000000000 -0500
+@@ -86,6 +86,7 @@ void update_vsyscall(struct timespec *wa
+ 	vsyscall_gtod_data.clock.mask = clock->mask;
+ 	vsyscall_gtod_data.clock.mult = clock->mult;
+ 	vsyscall_gtod_data.clock.shift = clock->shift;
++	vsyscall_gtod_data.clock.cycle_accumulated = clock->cycle_accumulated;
+ 	vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
+ 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
+ 	vsyscall_gtod_data.wall_to_monotonic = wall_to_monotonic;
+@@ -121,7 +122,7 @@ static __always_inline long time_syscall
  
--#define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
-+#define __vsyscall(nr) \
-+		__attribute__ ((unused, __section__(".vsyscall_" #nr))) notrace
- #define __syscall_clobber "r11","rcx","memory"
- #define __pa_vsymbol(x)			\
- 	({unsigned long v;  		\
-Index: linux-mcount.git/arch/x86/vdso/vclock_gettime.c
+ static __always_inline void do_vgettimeofday(struct timeval * tv)
+ {
+-	cycle_t now, base, mask, cycle_delta;
++	cycle_t now, base, accumulated, mask, cycle_delta;
+ 	unsigned seq;
+ 	unsigned long mult, shift, nsec;
+ 	cycle_t (*vread)(void);
+@@ -135,6 +136,7 @@ static __always_inline void do_vgettimeo
+ 		}
+ 		now = vread();
+ 		base = __vsyscall_gtod_data.clock.cycle_last;
++		accumulated  = __vsyscall_gtod_data.clock.cycle_accumulated;
+ 		mask = __vsyscall_gtod_data.clock.mask;
+ 		mult = __vsyscall_gtod_data.clock.mult;
+ 		shift = __vsyscall_gtod_data.clock.shift;
+@@ -145,6 +147,7 @@ static __always_inline void do_vgettimeo
+ 
+ 	/* calculate interval: */
+ 	cycle_delta = (now - base) & mask;
++	cycle_delta += accumulated;
+ 	/* convert to nsecs: */
+ 	nsec += (cycle_delta * mult) >> shift;
+ 
+Index: linux-mcount.git/include/asm-x86/vgtod.h
 ===================================================================
---- linux-mcount.git.orig/arch/x86/vdso/vclock_gettime.c	2008-01-17 20:33:16.000000000 -0500
-+++ linux-mcount.git/arch/x86/vdso/vclock_gettime.c	2008-01-17 20:33:34.000000000 -0500
-@@ -24,7 +24,7 @@
- 
- #define gtod vdso_vsyscall_gtod_data
- 
--static long vdso_fallback_gettime(long clock, struct timespec *ts)
-+notrace static long vdso_fallback_gettime(long clock, struct timespec *ts)
- {
- 	long ret;
- 	asm("syscall" : "=a" (ret) :
-@@ -32,7 +32,7 @@ static long vdso_fallback_gettime(long c
- 	return ret;
- }
- 
--static inline long vgetns(void)
-+notrace static inline long vgetns(void)
- {
- 	long v;
- 	cycles_t (*vread)(void);
-@@ -41,7 +41,7 @@ static inline long vgetns(void)
- 	return (v * gtod->clock.mult) >> gtod->clock.shift;
- }
- 
--static noinline int do_realtime(struct timespec *ts)
-+notrace static noinline int do_realtime(struct timespec *ts)
- {
- 	unsigned long seq, ns;
- 	do {
-@@ -55,7 +55,8 @@ static noinline int do_realtime(struct t
- }
- 
- /* Copy of the version in kernel/time.c which we cannot directly access */
--static void vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
-+notrace static void
-+vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
- {
- 	while (nsec >= NSEC_PER_SEC) {
- 		nsec -= NSEC_PER_SEC;
-@@ -69,7 +70,7 @@ static void vset_normalized_timespec(str
- 	ts->tv_nsec = nsec;
- }
- 
--static noinline int do_monotonic(struct timespec *ts)
-+notrace static noinline int do_monotonic(struct timespec *ts)
- {
- 	unsigned long seq, ns, secs;
- 	do {
-@@ -83,7 +84,7 @@ static noinline int do_monotonic(struct 
- 	return 0;
- }
- 
--int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
-+notrace int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
- {
- 	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
- 		switch (clock) {
-@@ -97,7 +98,7 @@ int __vdso_clock_gettime(clockid_t clock
- int clock_gettime(clockid_t, struct timespec *)
- 	__attribute__((weak, alias("__vdso_clock_gettime")));
- 
--int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
-+notrace int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
- {
- 	long ret;
- 	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
-Index: linux-mcount.git/arch/x86/vdso/vgetcpu.c
+--- linux-mcount.git.orig/include/asm-x86/vgtod.h	2008-01-17 20:33:16.000000000 -0500
++++ linux-mcount.git/include/asm-x86/vgtod.h	2008-01-17 20:33:37.000000000 -0500
+@@ -15,7 +15,7 @@ struct vsyscall_gtod_data {
+ 	struct timezone sys_tz;
+ 	struct { /* extract of a clocksource struct */
+ 		cycle_t (*vread)(void);
+-		cycle_t	cycle_last;
++		cycle_t	cycle_last, cycle_accumulated;
+ 		cycle_t	mask;
+ 		u32	mult;
+ 		u32	shift;
+Index: linux-mcount.git/include/linux/clocksource.h
 ===================================================================
---- linux-mcount.git.orig/arch/x86/vdso/vgetcpu.c	2008-01-17 20:33:16.000000000 -0500
-+++ linux-mcount.git/arch/x86/vdso/vgetcpu.c	2008-01-17 20:33:34.000000000 -0500
-@@ -13,7 +13,8 @@
- #include <asm/vgtod.h>
- #include "vextern.h"
+--- linux-mcount.git.orig/include/linux/clocksource.h	2008-01-17 20:33:16.000000000 -0500
++++ linux-mcount.git/include/linux/clocksource.h	2008-01-17 20:33:37.000000000 -0500
+@@ -50,8 +50,12 @@ struct clocksource;
+  * @flags:		flags describing special properties
+  * @vread:		vsyscall based read
+  * @resume:		resume function for the clocksource, if necessary
++ * @cycle_last:		Used internally by timekeeping core, please ignore.
++ * @cycle_accumulated:	Used internally by timekeeping core, please ignore.
+  * @cycle_interval:	Used internally by timekeeping core, please ignore.
+  * @xtime_interval:	Used internally by timekeeping core, please ignore.
++ * @xtime_nsec:		Used internally by timekeeping core, please ignore.
++ * @error:		Used internally by timekeeping core, please ignore.
+  */
+ struct clocksource {
+ 	/*
+@@ -82,7 +86,10 @@ struct clocksource {
+ 	 * Keep it in a different cache line to dirty no
+ 	 * more than one cache line.
+ 	 */
+-	cycle_t cycle_last ____cacheline_aligned_in_smp;
++	struct {
++		cycle_t cycle_last, cycle_accumulated;
++	} ____cacheline_aligned_in_smp;
++
+ 	u64 xtime_nsec;
+ 	s64 error;
  
--long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
-+notrace long
-+__vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
- {
- 	unsigned int dummy, p;
+@@ -168,11 +175,44 @@ static inline cycle_t clocksource_read(s
+ }
  
-Index: linux-mcount.git/include/asm-x86/vsyscall.h
+ /**
++ * clocksource_get_cycles: - Access the clocksource's accumulated cycle value
++ * @cs:		pointer to clocksource being read
++ * @now:	current cycle value
++ *
++ * Uses the clocksource to return the current cycle_t value.
++ * NOTE!!!: This is different from clocksource_read, because it
++ * returns the accumulated cycle value! Must hold xtime lock!
++ */
++static inline cycle_t
++clocksource_get_cycles(struct clocksource *cs, cycle_t now)
++{
++	cycle_t offset = (now - cs->cycle_last) & cs->mask;
++	offset += cs->cycle_accumulated;
++	return offset;
++}
++
++/**
++ * clocksource_accumulate: - Accumulates clocksource cycles
++ * @cs:		pointer to clocksource being read
++ * @now:	current cycle value
++ *
++ * Used to avoids clocksource hardware overflow by periodically
++ * accumulating the current cycle delta. Must hold xtime write lock!
++ */
++static inline void clocksource_accumulate(struct clocksource *cs, cycle_t now)
++{
++	cycle_t offset = (now - cs->cycle_last) & cs->mask;
++	cs->cycle_last = now;
++	cs->cycle_accumulated += offset;
++}
++
++/**
+  * cyc2ns - converts clocksource cycles to nanoseconds
+  * @cs:		Pointer to clocksource
+  * @cycles:	Cycles
+  *
+  * Uses the clocksource and ntp ajdustment to convert cycle_ts to nanoseconds.
++ * Must hold xtime lock!
+  *
+  * XXX - This could use some mult_lxl_ll() asm optimization
+  */
+@@ -184,13 +224,27 @@ static inline s64 cyc2ns(struct clocksou
+ }
+ 
+ /**
++ * ns2cyc - converts nanoseconds to clocksource cycles
++ * @cs:		Pointer to clocksource
++ * @nsecs:	Nanoseconds
++ */
++static inline cycle_t ns2cyc(struct clocksource *cs, u64 nsecs)
++{
++	cycle_t ret = nsecs << cs->shift;
++
++	do_div(ret, cs->mult + 1);
++
++	return ret;
++}
++
++/**
+  * clocksource_calculate_interval - Calculates a clocksource interval struct
+  *
+  * @c:		Pointer to clocksource.
+  * @length_nsec: Desired interval length in nanoseconds.
+  *
+  * Calculates a fixed cycle/nsec interval for a given clocksource/adjustment
+- * pair and interval request.
++ * pair and interval request. Must hold xtime_lock!
+  *
+  * Unless you're the timekeeping code, you should not be using this!
+  */
+Index: linux-mcount.git/kernel/time/timekeeping.c
 ===================================================================
---- linux-mcount.git.orig/include/asm-x86/vsyscall.h	2008-01-17 20:33:16.000000000 -0500
-+++ linux-mcount.git/include/asm-x86/vsyscall.h	2008-01-17 20:33:34.000000000 -0500
-@@ -24,7 +24,8 @@ enum vsyscall_num {
- 	((unused, __section__ (".vsyscall_gtod_data"),aligned(16)))
- #define __section_vsyscall_clock __attribute__ \
- 	((unused, __section__ (".vsyscall_clock"),aligned(16)))
--#define __vsyscall_fn __attribute__ ((unused,__section__(".vsyscall_fn")))
-+#define __vsyscall_fn \
-+	__attribute__ ((unused, __section__(".vsyscall_fn"))) notrace
+--- linux-mcount.git.orig/kernel/time/timekeeping.c	2008-01-17 20:33:16.000000000 -0500
++++ linux-mcount.git/kernel/time/timekeeping.c	2008-01-17 20:33:37.000000000 -0500
+@@ -66,16 +66,10 @@ static struct clocksource *clock; /* poi
+  */
+ static inline s64 __get_nsec_offset(void)
+ {
+-	cycle_t cycle_now, cycle_delta;
++	cycle_t cycle_delta;
+ 	s64 ns_offset;
  
- #define VGETCPU_RDTSCP	1
- #define VGETCPU_LSL	2
+-	/* read clocksource: */
+-	cycle_now = clocksource_read(clock);
+-
+-	/* calculate the delta since the last update_wall_time: */
+-	cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
+-
+-	/* convert to nanoseconds: */
++	cycle_delta = clocksource_get_cycles(clock, clocksource_read(clock));
+ 	ns_offset = cyc2ns(clock, cycle_delta);
+ 
+ 	return ns_offset;
+@@ -195,7 +189,7 @@ static void change_clocksource(void)
+ 
+ 	clock = new;
+ 	clock->cycle_last = now;
+-
++	clock->cycle_accumulated = 0;
+ 	clock->error = 0;
+ 	clock->xtime_nsec = 0;
+ 	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
+@@ -205,9 +199,15 @@ static void change_clocksource(void)
+ 	printk(KERN_INFO "Time: %s clocksource has been installed.\n",
+ 	       clock->name);
+ }
++
++void timekeeping_accumulate(void)
++{
++	clocksource_accumulate(clock, clocksource_read(clock));
++}
+ #else
+ static inline void change_clocksource(void) { }
+ static inline s64 __get_nsec_offset(void) { return 0; }
++void timekeeping_accumulate(void) { }
+ #endif
+ 
+ /**
+@@ -302,6 +302,7 @@ static int timekeeping_resume(struct sys
+ 	timespec_add_ns(&xtime, timekeeping_suspend_nsecs);
+ 	/* re-base the last cycle value */
+ 	clock->cycle_last = clocksource_read(clock);
++	clock->cycle_accumulated = 0;
+ 	clock->error = 0;
+ 	timekeeping_suspended = 0;
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+@@ -448,27 +449,29 @@ static void clocksource_adjust(s64 offse
+  */
+ void update_wall_time(void)
+ {
+-	cycle_t offset;
++	cycle_t cycle_now, offset;
+ 
+ 	/* Make sure we're fully resumed: */
+ 	if (unlikely(timekeeping_suspended))
+ 		return;
+ 
+ #ifdef CONFIG_GENERIC_TIME
+-	offset = (clocksource_read(clock) - clock->cycle_last) & clock->mask;
++	cycle_now = clocksource_read(clock);
+ #else
+-	offset = clock->cycle_interval;
++	cycle_now = clock->cycle_last + clock->cycle_interval;
+ #endif
++	offset = (cycle_now - clock->cycle_last) & clock->mask;
++	clocksource_accumulate(clock, cycle_now);
++
+ 	clock->xtime_nsec += (s64)xtime.tv_nsec << clock->shift;
+ 
+ 	/* normally this loop will run just once, however in the
+ 	 * case of lost or late ticks, it will accumulate correctly.
+ 	 */
+-	while (offset >= clock->cycle_interval) {
++	while (clock->cycle_accumulated >= clock->cycle_interval) {
+ 		/* accumulate one interval */
+ 		clock->xtime_nsec += clock->xtime_interval;
+-		clock->cycle_last += clock->cycle_interval;
+-		offset -= clock->cycle_interval;
++		clock->cycle_accumulated -= clock->cycle_interval;
+ 
+ 		if (clock->xtime_nsec >= (u64)NSEC_PER_SEC << clock->shift) {
+ 			clock->xtime_nsec -= (u64)NSEC_PER_SEC << clock->shift;
+@@ -482,7 +485,7 @@ void update_wall_time(void)
+ 	}
+ 
+ 	/* correct the clock when NTP error is too big */
+-	clocksource_adjust(offset);
++	clocksource_adjust(clock->cycle_accumulated);
+ 
+ 	/* store full nanoseconds into xtime */
+ 	xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
 
 -- 
