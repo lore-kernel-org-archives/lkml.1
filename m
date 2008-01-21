@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYAUUnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbYAUUsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757966AbYAUUnF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 15:43:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbYAUUmO
+	id S1755978AbYAUUsT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 15:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYAUUsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 15:42:14 -0500
-Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:50214 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754748AbYAUUmN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 15:42:13 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH RESEND 3/3] RDMA/cxgb3: Mark qp as privileged based on user capabilities.
-Date: Mon, 21 Jan 2008 14:42:13 -0600
-To: rdreier@cisco.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Message-Id: <20080121204213.3820.12396.stgit@dell3.ogc.int>
-In-Reply-To: <20080121204130.3820.11053.stgit@dell3.ogc.int>
-References: <20080121204130.3820.11053.stgit@dell3.ogc.int>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.10
+	Mon, 21 Jan 2008 15:48:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49074 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752751AbYAUUsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 15:48:09 -0500
+Message-ID: <479504F6.4080005@redhat.com>
+Date: Mon, 21 Jan 2008 15:47:50 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Gerd Hoffmann <kraxel@redhat.com>
+Subject: The SMP alternatives code breaks exception fixup?
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Looking at the oops report from this bug:
 
-RDMA/cxgb3: Mark qp as privileged based on user capabilities.
+[bugzilla]  https://bugzilla.redhat.com/show_bug.cgi?id=429412
+[oops]      https://bugzilla.redhat.com/attachment.cgi?id=292260
 
-This is needed for zero-stag support.
+It was an unhandled page fault (protection violation.)
 
-Signed-off-by: Steve Wise <swise@opengridcomputing.com>
----
+I tracked it down to the cmpxchg in this code:
 
- drivers/infiniband/hw/cxgb3/cxio_wr.h |    3 ++-
- drivers/infiniband/hw/cxgb3/iwch_qp.c |    1 +
- 2 files changed, 3 insertions(+), 1 deletions(-)
+include/asm-x86/futex_32.h::futex_atomic_cmpxchg_inatomic()
+         __asm__ __volatile__(
+                 "1:     " LOCK_PREFIX "cmpxchgl %3, %1          \n"
+                 "2:     .section .fixup, \"ax\"                 \n"
+                 "3:     mov     %2, %0                          \n"
+                 "       jmp     2b                              \n"
+                 "       .previous                               \n"
+                 "       .section __ex_table, \"a\"              \n"
+                 "       .align  8                               \n"
+                 "       .long   1b,3b                           \n"
+                 "       .previous                               \n"
 
-diff --git a/drivers/infiniband/hw/cxgb3/cxio_wr.h b/drivers/infiniband/hw/cxgb3/cxio_wr.h
-index c84d4ac..d72b584 100644
---- a/drivers/infiniband/hw/cxgb3/cxio_wr.h
-+++ b/drivers/infiniband/hw/cxgb3/cxio_wr.h
-@@ -324,7 +324,8 @@ struct t3_genbit {
- };
- 
- enum rdma_init_wr_flags {
--	RECVS_POSTED = 1,
-+	RECVS_POSTED = (1<<0),
-+	PRIV_QP = (1<<1),
- };
- 
- union t3_wr {
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_qp.c b/drivers/infiniband/hw/cxgb3/iwch_qp.c
-index 7681fdc..ea2cdd7 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_qp.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_qp.c
-@@ -717,6 +717,7 @@ static int rdma_init(struct iwch_dev *rhp, struct iwch_qp *qhp,
- 	init_attr.qp_dma_addr = qhp->wq.dma_addr;
- 	init_attr.qp_dma_size = (1UL << qhp->wq.size_log2);
- 	init_attr.flags = rqes_posted(qhp) ? RECVS_POSTED : 0;
-+	init_attr.flags |= capable(CAP_NET_BIND_SERVICE) ? PRIV_QP : 0;
- 	init_attr.irs = qhp->ep->rcv_seq;
- 	PDBG("%s init_attr.rq_addr 0x%x init_attr.rq_size = %d "
- 	     "flags 0x%x qpcaps 0x%x\n", __FUNCTION__,
+There is a fixup, so this should never happen. But the lock instruction
+was replaced with a nop by the altinstruction code, and that makes the fixup
+address wrong. AFAICT we don't fix up the exception table when we replace
+a lock with a nop, which makes the fixup table point to the nop instead
+of the cmpxchg instruction and causes us to miss the fixup.
+
