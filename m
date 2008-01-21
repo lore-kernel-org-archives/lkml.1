@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765423AbYAUKXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765849AbYAUKXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765423AbYAUKXJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:23:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759787AbYAUKDc
+	id S1765849AbYAUKXd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:23:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760288AbYAUKDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:03:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35835 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:03:34 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35836 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759402AbYAUKDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759746AbYAUKDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 Jan 2008 05:03:23 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 54/58] [GFS2] Fix write alloc required shortcut calculation
-Date: Mon, 21 Jan 2008 09:22:12 +0000
-Message-Id: <12009074341030-git-send-email-swhiteho@redhat.com>
+Cc: Bob Peterson <rpeterso@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 55/58] [GFS2] Fix typo
+Date: Mon, 21 Jan 2008 09:22:13 +0000
+Message-Id: <12009074362909-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12009074321081-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12009074341030-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -71,36 +72,34 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009074291130-git-send-email-swhiteho@redhat.com>
  <12009074312371-git-send-email-swhiteho@redhat.com>
  <12009074321081-git-send-email-swhiteho@redhat.com>
-Message-Id: <bf67702abc309510aad346d4c9511439366f3a2d.1200905287.git.swhiteho@redhat.com>
+ <12009074341030-git-send-email-swhiteho@redhat.com>
+Message-Id: <c2df7196bc9e5f059d0b835cc4ddd37b5a654d5b.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Whitehouse <swhiteho@redhat.com>
+From: Bob Peterson <rpeterso@redhat.com>
 
-The comparison was being made against the wrong quantity.
+This patch fixes a minor typo.  Surprisingly, it still compiled.
 
+Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
-index 4356cc2..e4effc4 100644
---- a/fs/gfs2/bmap.c
-+++ b/fs/gfs2/bmap.c
-@@ -1222,10 +1222,10 @@ int gfs2_write_alloc_required(struct gfs2_inode *ip, u64 offset,
- 		do_div(lblock_stop, bsize);
- 	} else {
- 		unsigned int shift = sdp->sd_sb.sb_bsize_shift;
-+		u64 end_of_file = (ip->i_di.di_size + sdp->sd_sb.sb_bsize - 1) >> shift;
- 		lblock = offset >> shift;
- 		lblock_stop = (offset + len + sdp->sd_sb.sb_bsize - 1) >> shift;
--		if (lblock_stop > ip->i_di.di_blocks) { /* writing past the
--							   last block */
-+		if (lblock_stop > end_of_file) {
- 			*alloc_required = 1;
- 			return 0;
- 		}
+diff --git a/fs/gfs2/meta_io.c b/fs/gfs2/meta_io.c
+index bc28bc6..99c7959 100644
+--- a/fs/gfs2/meta_io.c
++++ b/fs/gfs2/meta_io.c
+@@ -284,7 +284,7 @@ void gfs2_attach_bufdata(struct gfs2_glock *gl, struct buffer_head *bh,
+ 		return;
+ 	}
+ 
+-	bd = kmem_cache_zalloc(gfs2_bufdata_cachep, GFP_NOFS | __GFP_NOFAIL),
++	bd = kmem_cache_zalloc(gfs2_bufdata_cachep, GFP_NOFS | __GFP_NOFAIL);
+ 	bd->bd_bh = bh;
+ 	bd->bd_gl = gl;
+ 
 -- 
 1.5.1.2
 
