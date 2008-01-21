@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764927AbYAUKU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765261AbYAUKVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764927AbYAUKU4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:20:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759719AbYAUKDU
+	id S1765261AbYAUKVb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:21:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759647AbYAUKDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:03:20 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35827 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:03:21 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35829 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760170AbYAUKDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:03:14 -0500
+	id S1759720AbYAUKDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:03:15 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>, Abhijith Das <adas@redhat.com>
-Subject: [PATCH 49/58] [GFS2] Fix problems relating to execution of files on GFS2
-Date: Mon, 21 Jan 2008 09:22:07 +0000
-Message-Id: <12009074263736-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 50/58] [GFS2] Fix assert in log code
+Date: Mon, 21 Jan 2008 09:22:08 +0000
+Message-Id: <12009074271575-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12009074243427-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12009074263736-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -66,7 +66,8 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009074213460-git-send-email-swhiteho@redhat.com>
  <12009074221447-git-send-email-swhiteho@redhat.com>
  <12009074243427-git-send-email-swhiteho@redhat.com>
-Message-Id: <b526ae07f31beb4a17525805f3dfff25465dd02f.1200905287.git.swhiteho@redhat.com>
+ <12009074263736-git-send-email-swhiteho@redhat.com>
+Message-Id: <db2dea335b81b73a856d2dc5bcb13201be4d56e6.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -75,65 +76,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Whitehouse <swhiteho@redhat.com>
 
-This patch fixes a couple of problems which affected the execution of files
-on GFS2. The first is that there was a corner case where inodes were not
-always uptodate at the point at which permissions checks were being carried
-out, this was resulting in refusal of execute permission, but only on the
-first lookup, subsequent requests worked correctly. The second was a problem
-relating to incorrect updating of file sizes which was introduced with the
-write_begin/end code for GFS2 a little while back.
+Although the values were all being calculated correctly, there was a
+race in the assert due to the way it was using atomic variables. This
+changes the value we assert on so that we get the same effect by testing
+a different variable. This prevents the assert triggering when it shouldn't.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Abhijith Das <adas@redhat.com>
 
-diff --git a/fs/gfs2/ops_address.c b/fs/gfs2/ops_address.c
-index e16ad81..37406a3 100644
---- a/fs/gfs2/ops_address.c
-+++ b/fs/gfs2/ops_address.c
-@@ -848,14 +848,11 @@ static int gfs2_write_end(struct file *file, struct address_space *mapping,
+diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
+index 40c51bf..6e6a104 100644
+--- a/fs/gfs2/log.c
++++ b/fs/gfs2/log.c
+@@ -749,7 +749,7 @@ void __gfs2_log_flush(struct gfs2_sbd *sdp, struct gfs2_glock *gl)
+ static void log_refund(struct gfs2_sbd *sdp, struct gfs2_trans *tr)
+ {
+ 	unsigned int reserved;
+-	unsigned int old;
++	unsigned int unused;
  
- 	ret = generic_write_end(file, mapping, pos, len, copied, page, fsdata);
+ 	gfs2_log_lock(sdp);
  
--	if (likely(ret >= 0)) {
--		copied = ret;
--		if  ((pos + copied) > inode->i_size) {
--			di = (struct gfs2_dinode *)dibh->b_data;
--			ip->i_di.di_size = inode->i_size;
--			di->di_size = cpu_to_be64(inode->i_size);
--			mark_inode_dirty(inode);
--		}
-+	if (likely(ret >= 0) && (inode->i_size > ip->i_di.di_size)) {
-+		di = (struct gfs2_dinode *)dibh->b_data;
-+		ip->i_di.di_size = inode->i_size;
-+		di->di_size = cpu_to_be64(inode->i_size);
-+		mark_inode_dirty(inode);
- 	}
+@@ -761,14 +761,11 @@ static void log_refund(struct gfs2_sbd *sdp, struct gfs2_trans *tr)
+ 	sdp->sd_log_commited_revoke += tr->tr_num_revoke - tr->tr_num_revoke_rm;
+ 	gfs2_assert_withdraw(sdp, ((int)sdp->sd_log_commited_revoke) >= 0);
+ 	reserved = calc_reserved(sdp);
+-	old = atomic_read(&sdp->sd_log_blks_free);
+-	atomic_add(tr->tr_reserved - (reserved - sdp->sd_log_blks_reserved),
+-		   &sdp->sd_log_blks_free);
+-
+-	gfs2_assert_withdraw(sdp, atomic_read(&sdp->sd_log_blks_free) >= old);
++	unused = sdp->sd_log_blks_reserved - reserved + tr->tr_reserved;
++	gfs2_assert_withdraw(sdp, unused >= 0);
++	atomic_add(unused, &sdp->sd_log_blks_free);
+ 	gfs2_assert_withdraw(sdp, atomic_read(&sdp->sd_log_blks_free) <=
+ 			     sdp->sd_jdesc->jd_blocks);
+-
+ 	sdp->sd_log_blks_reserved = reserved;
  
- 	if (inode == sdp->sd_rindex)
-diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
-index 291f0c7..8386ab3 100644
---- a/fs/gfs2/ops_inode.c
-+++ b/fs/gfs2/ops_inode.c
-@@ -113,8 +113,18 @@ static struct dentry *gfs2_lookup(struct inode *dir, struct dentry *dentry,
- 	if (inode && IS_ERR(inode))
- 		return ERR_PTR(PTR_ERR(inode));
- 
--	if (inode)
-+	if (inode) {
-+		struct gfs2_glock *gl = GFS2_I(inode)->i_gl;
-+		struct gfs2_holder gh;
-+		int error;
-+		error = gfs2_glock_nq_init(gl, LM_ST_SHARED, LM_FLAG_ANY, &gh);
-+		if (error) {
-+			iput(inode);
-+			return ERR_PTR(error);
-+		}
-+		gfs2_glock_dq_uninit(&gh);
- 		return d_splice_alias(inode, dentry);
-+	}
- 	d_add(dentry, inode);
- 
- 	return NULL;
+ 	gfs2_log_unlock(sdp);
 -- 
 1.5.1.2
 
