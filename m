@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYAUVOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYAUVQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbYAUVOd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 16:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYAUVOV
+	id S1755487AbYAUVQQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 16:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYAUVQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 16:14:21 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35897 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755104AbYAUVOT (ORCPT
+	Mon, 21 Jan 2008 16:16:01 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57255 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751888AbYAUVQA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 16:14:19 -0500
-Date: Mon, 21 Jan 2008 23:14:16 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Dave Young <hidave.darkstar@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc8-mm1 : net tcp_input.c warnings
-In-Reply-To: <20080121075548.GA22177@darkstar.te-china.tietoenator.com>
-Message-ID: <Pine.LNX.4.64.0801212302170.29700@kivilampi-30.cs.helsinki.fi>
-References: <20080121075548.GA22177@darkstar.te-china.tietoenator.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jan 2008 16:16:00 -0500
+Message-Id: <20080121211600.079162000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 21 Jan 2008 13:16:00 -0800
+From: travis@sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       mingo@elte.hu
+Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] x86: Reduce memory usage for large count NR_CPUs fixup V2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Jan 2008, Dave Young wrote:
 
-> Please see the kernel messages following,(trigged while using some qemu session)
-> BTW, seems there's some e100 error message as well.
-> 
-> PCI: Setting latency timer of device 0000:00:1b.0 to 64
-> e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
-> e100: Copyright(c) 1999-2006 Intel Corporation
-> ACPI: PCI Interrupt 0000:03:08.0[A] -> GSI 20 (level, low) -> IRQ 20
-> modprobe:2331 conflicting cache attribute efaff000-efb00000 uncached<->default
-> e100: 0000:03:08.0: e100_probe: Cannot map device registers, aborting.
-> ACPI: PCI interrupt for device 0000:03:08.0 disabled
-> e100: probe of 0000:03:08.0 failed with error -12
-> eth0:  setting full-duplex.
-> ------------[ cut here ]------------
-> WARNING: at net/ipv4/tcp_input.c:2169 tcp_mark_head_lost+0x121/0x150()
-> Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse snd_hda_intel snd_pcm snd_timer btusb rtc_cmos thermal bluetooth rtc_core serio_raw intel_agp button processor sg snd rtc_lib i2c_i801 evdev agpgart soundcore dcdbas 3c59x pcspkr snd_page_alloc
-> Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #4
->  [<c0132100>] ? printk+0x0/0x20
->  [<c0131834>] warn_on_slowpath+0x54/0x80
->  [<c03e8df8>] ? ip_finish_output+0x128/0x2e0
->  [<c03e9527>] ? ip_output+0xe7/0x100
->  [<c03e8a88>] ? ip_local_out+0x18/0x20
->  [<c03e991c>] ? ip_queue_xmit+0x3dc/0x470
->  [<c043641e>] ? _spin_unlock_irqrestore+0x5e/0x70
->  [<c0186be1>] ? check_pad_bytes+0x61/0x80
->  [<c03f6031>] tcp_mark_head_lost+0x121/0x150
->  [<c03f60ac>] tcp_update_scoreboard+0x4c/0x170
->  [<c03f6e0a>] tcp_fastretrans_alert+0x48a/0x6b0
->  [<c03f7d93>] tcp_ack+0x1b3/0x3a0
->  [<c03fa14b>] tcp_rcv_established+0x3eb/0x710
->  [<c04015c5>] tcp_v4_do_rcv+0xe5/0x100
->  [<c0401bbb>] tcp_v4_rcv+0x5db/0x660
+Fixup change NR_CPUS patchset by rebasing on 2.6.24-rc8-mm1
+(from 2.6.24-rc6-mm1) and adding changes suggested by reviews.
 
-Doh, once more these S+L things..., the rest are symptom of the first 
-problem.
+Based on 2.6.24-rc8-mm1
 
-What is strange is that it doesn't show up until now, the last TCP
-changes that could have some significance are from early Dec/Nov. Is
-there some reason why you haven't seen this before this (e.g., not
-tested with similar cfg or so)? I'm a bit worried about its
-reproducability if it takes this far to see it...
+Note there are two versions of this patchset:
+	- 2.6.24-rc8-mm1
+	- 2.6.24-rc8-mm1 + latest (08/1/21) git-x86
 
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+Fixup-V2:
+    - pulled the SMP_MAX patch as it's not strictly needed and some
+      more work on local cpumask_t variables needs to be done before
+      NR_CPUS is allowed to increase.
+
+    - changes to X86_32 have been removed (except for build errors)
 
 -- 
- i.
