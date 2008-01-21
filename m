@@ -1,116 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYAUU2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbYAUU3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbYAUU2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 15:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYAUU15
+	id S1752763AbYAUU3F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 15:29:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYAUU16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 15:27:57 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55916 "EHLO
+	Mon, 21 Jan 2008 15:27:58 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55915 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751557AbYAUU1x (ORCPT
+	with ESMTP id S1751645AbYAUU1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 Jan 2008 15:27:53 -0500
-Message-Id: <20080121202748.310145000@sgi.com>
+Message-Id: <20080121202747.777528000@sgi.com>
 References: <20080121202747.593568000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 Jan 2008 12:27:52 -0800
+Date: Mon, 21 Jan 2008 12:27:48 -0800
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        mingo@elte.hu
 Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       tony.luck@intel.com
-Subject: [PATCH 5/8] ia64: Use generic percpu fixup rc8-mm1-fixup
-Content-Disposition: inline; filename=ia64_generic_percpu
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH 1/8] Modules: Fold percpu_modcopy into module.c rc8-mm1-fixup
+Content-Disposition: inline; filename=fold-percpu_modcopy
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ia64 has a special processor specific mapping that can be used to locate the
-offset for the current per cpu area.
+percpu_modcopy() is defined multiple times in arch files. However, the only
+user is module.c. Put a static definition into module.c and remove
+the definitions from the arch files.
 
 Based on: 2.6.24-rc8-mm1
 
-Cc: linux-ia64@vger.kernel.org
-Cc: tony.luck@intel.com
+Cc: David Miller <davem@davemloft.net>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@suse.de>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Mike Travis <travis@sgi.com>
+
 ---
 rc8-mm1-fixup:
+
   - rebased from 2.6.24-rc6-mm1 to 2.6.24-rc8-mm1
     (removed changes that are in the git-x86.patch)
-
-V1->V2:
-- Merge fixes
-- Remove transitional check for PER_CPU_ATTRIBUTES from linux/percpu.h
-
-V2-.V3:
-- use generic percpy_modcopy()
-
+  - added back in missing fold-percpu_modcopy pieces
 ---
- include/asm-ia64/percpu.h |   24 +++++++-----------------
- include/linux/percpu.h    |    4 ----
- 2 files changed, 7 insertions(+), 21 deletions(-)
+ arch/ia64/kernel/module.c    |   11 -----------
+ include/asm-generic/percpu.h |    8 --------
+ include/asm-ia64/percpu.h    |    5 -----
+ include/asm-powerpc/percpu.h |    9 ---------
+ include/asm-s390/percpu.h    |    9 ---------
+ kernel/module.c              |    8 ++++++++
+ 6 files changed, 8 insertions(+), 42 deletions(-)
 
---- a/include/asm-ia64/percpu.h
-+++ b/include/asm-ia64/percpu.h
-@@ -19,29 +19,14 @@
- # define PER_CPU_ATTRIBUTES	__attribute__((__model__ (__small__)))
+--- a/arch/ia64/kernel/module.c
++++ b/arch/ia64/kernel/module.c
+@@ -940,14 +940,3 @@ module_arch_cleanup (struct module *mod)
+ 	if (mod->arch.core_unw_table)
+ 		unw_remove_unwind_table(mod->arch.core_unw_table);
+ }
+-
+-#ifdef CONFIG_SMP
+-void
+-percpu_modcopy (void *pcpudst, const void *src, unsigned long size)
+-{
+-	unsigned int i;
+-	for_each_possible_cpu(i) {
+-		memcpy(pcpudst + per_cpu_offset(i), src, size);
+-	}
+-}
+-#endif /* CONFIG_SMP */
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -63,14 +63,6 @@ extern unsigned long __per_cpu_offset[NR
+ extern void setup_per_cpu_areas(void);
  #endif
  
--#define DECLARE_PER_CPU(type, name)				\
--	extern PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
--
- #ifdef CONFIG_SMP
- 
--extern unsigned long __per_cpu_offset[NR_CPUS];
--#define per_cpu_offset(x) (__per_cpu_offset[x])
--
--/* Equal to __per_cpu_offset[smp_processor_id()], but faster to access: */
--DECLARE_PER_CPU(unsigned long, local_per_cpu_offset);
--
--#define per_cpu(var, cpu)  (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]))
--#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
--#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
-+#define __my_cpu_offset	__ia64_per_cpu_var(local_per_cpu_offset)
- 
--extern void setup_per_cpu_areas (void);
- extern void *per_cpu_init(void);
- 
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+per_cpu_offset(__i),		\
+-		       (src), (size));				\
+-} while (0)
  #else /* ! SMP */
  
--#define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
--#define __get_cpu_var(var)			per_cpu__##var
--#define __raw_get_cpu_var(var)			per_cpu__##var
- #define per_cpu_init()				(__phys_per_cpu_start)
+ #define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu_var(var)))
+--- a/include/asm-ia64/percpu.h
++++ b/include/asm-ia64/percpu.h
+@@ -22,10 +22,6 @@
+ #define DECLARE_PER_CPU(type, name)				\
+ 	extern PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
  
- #endif	/* SMP */
-@@ -52,7 +37,12 @@ extern void *per_cpu_init(void);
-  * On the positive side, using __ia64_per_cpu_var() instead of __get_cpu_var() is slightly
-  * more efficient.
-  */
--#define __ia64_per_cpu_var(var)	(per_cpu__##var)
-+#define __ia64_per_cpu_var(var)	per_cpu__##var
-+
-+#include <asm-generic/percpu.h>
-+
-+/* Equal to __per_cpu_offset[smp_processor_id()], but faster to access: */
-+DECLARE_PER_CPU(unsigned long, local_per_cpu_offset);
- 
- #endif /* !__ASSEMBLY__ */
- 
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -9,10 +9,6 @@
- 
- #include <asm/percpu.h>
- 
--#ifndef PER_CPU_ATTRIBUTES
--#define PER_CPU_ATTRIBUTES
--#endif
--
+-/*
+- * Pretty much a literal copy of asm-generic/percpu.h, except that percpu_modcopy() is an
+- * external routine, to avoid include-hell.
+- */
  #ifdef CONFIG_SMP
- #define DEFINE_PER_CPU(type, name)					\
- 	__attribute__((__section__(".data.percpu")))			\
+ 
+ extern unsigned long __per_cpu_offset[NR_CPUS];
+@@ -38,7 +34,6 @@ DECLARE_PER_CPU(unsigned long, local_per
+ #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
+ #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
+ 
+-extern void percpu_modcopy(void *pcpudst, const void *src, unsigned long size);
+ extern void setup_per_cpu_areas (void);
+ extern void *per_cpu_init(void);
+ 
+--- a/include/asm-powerpc/percpu.h
++++ b/include/asm-powerpc/percpu.h
+@@ -21,15 +21,6 @@
+ #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
+ #define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, local_paca->data_offset))
+ 
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+__per_cpu_offset(__i),		\
+-		       (src), (size));				\
+-} while (0)
+-
+ extern void setup_per_cpu_areas(void);
+ 
+ #else /* ! SMP */
+--- a/include/asm-s390/percpu.h
++++ b/include/asm-s390/percpu.h
+@@ -39,15 +39,6 @@ extern unsigned long __per_cpu_offset[NR
+ #define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
+ #define per_cpu_offset(x) (__per_cpu_offset[x])
+ 
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+__per_cpu_offset[__i],		\
+-		       (src), (size));				\
+-} while (0)
+-
+ #else /* ! SMP */
+ 
+ #define __get_cpu_var(var) __reloc_hide(var,0)
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -422,6 +422,14 @@ static unsigned int find_pcpusec(Elf_Ehd
+ 	return find_sec(hdr, sechdrs, secstrings, ".data.percpu");
+ }
+ 
++static void percpu_modcopy(void *pcpudest, const void *from, unsigned long size)
++{
++	int cpu;
++
++	for_each_possible_cpu(cpu)
++		memcpy(pcpudest + per_cpu_offset(cpu), from, size);
++}
++
+ static int percpu_modinit(void)
+ {
+ 	pcpu_num_used = 2;
 
 -- 
