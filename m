@@ -1,102 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbYAUTJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbYAUTLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306AbYAUTJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 14:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYAUTJL
+	id S1753974AbYAUTLt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 14:11:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYAUTLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 14:09:11 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60801 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752124AbYAUTJJ (ORCPT
+	Mon, 21 Jan 2008 14:11:42 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:3059 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751865AbYAUTLl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 14:09:09 -0500
-Date: Mon, 21 Jan 2008 11:08:09 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu
-Subject: [patch] sched: Keep total / count stats in addition to the max for
- wait time
-Message-ID: <20080121110809.1b584998@laptopd505.fenrus.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 21 Jan 2008 14:11:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=POanyuNShOVEzb5pOmq7VN+Ie0rMOLZp2pAI2OmVv1mzdpJ2hGpaN7PkbMNEwGe6y9rQdyg5K55eBxC9ADfWw/1sP01NtV0mrIa004Dp+waN6sIgIyKWUKmsGJNjtqwg5P/TKLBK2u3rMob/QLR+ZEsaltfGUC65sG/oqATbsT4=
+Message-ID: <4794EE67.6090508@gmail.com>
+Date: Mon, 21 Jan 2008 20:11:35 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Jiri Kosina <jikos@jikos.cz>
+CC: Dmitry Torokhov <dtor@mail.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org
+Subject: Re: evdev soft lockup 2.6.24-rc5-mm1
+References: <47848CF5.8000107@gmail.com> <Pine.LNX.4.64.0801091107200.25041@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0801091107200.25041@twin.jikos.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: sched: Keep total / count stats in addition to the max for wait time
+On 01/09/2008 11:11 AM, Jiri Kosina wrote:
+> On Wed, 9 Jan 2008, Jiri Slaby wrote:
+> 
+>> BUG: soft lockup - CPU#1 stuck for 11s! [X:2887]
+> [ ... ]
+>> Call Trace:
+>>  [<ffffffff804e7648>] __mutex_lock_slowpath+0x38/0xd0
+>>  [<ffffffff804e747e>] mutex_lock+0x1e/0x30
+>>  [<ffffffff8040c497>] input_release_device+0x27/0x50
+>>  [<ffffffff804102aa>] evdev_ungrab+0x3a/0x50
+>>  [<ffffffff804103eb>] evdev_release+0xcb/0xd0
+>>  [<ffffffff80293460>] __fput+0xc0/0x230
+>>  [<ffffffff802938a6>] fput+0x16/0x20
+>>  [<ffffffff80290296>] filp_close+0x56/0x90
+>>  [<ffffffff80291afa>] sys_close+0x9a/0xf0
+>>  [<ffffffff8020ba4e>] system_call+0x7e/0x83
+>> I was not able to use sysrq keys, the keyboard is obviously defunct. If 
+>> this is not known, I'll try to turn lockdep on and maybe connect through 
+>> ssh next time it happens.
+> 
+> Is this reproducible on your side? 
+> 
+> Running with lockdep would be really helpful, so that we possibly know who 
+> is holding the other instance of dev->mutex.
 
-Right now, the linux kernel (with scheduler statistics enabled) keeps track
-of the maximum time a process is waiting to be scheduled. While the maximum
-is a very useful metric, tracking average and total is equally useful
-(at least for latencytop) to figure out the accumulated effect of scheduler
-delays. The accumulated effect is important to judge the performance impact
-of scheduler tuning/behavior.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-
----
- include/linux/sched.h |    2 ++
- kernel/sched_debug.c  |    4 ++++
- kernel/sched_fair.c   |    3 +++
- 3 files changed, 9 insertions(+)
-
-Index: linux-2.6.24-rc8/include/linux/sched.h
-===================================================================
---- linux-2.6.24-rc8.orig/include/linux/sched.h
-+++ linux-2.6.24-rc8/include/linux/sched.h
-@@ -877,6 +877,8 @@ struct sched_entity {
- #ifdef CONFIG_SCHEDSTATS
- 	u64			wait_start;
- 	u64			wait_max;
-+	u64			wait_count;
-+	u64			wait_sum;
- 
- 	u64			sleep_start;
- 	u64			sleep_max;
-Index: linux-2.6.24-rc8/kernel/sched_debug.c
-===================================================================
---- linux-2.6.24-rc8.orig/kernel/sched_debug.c
-+++ linux-2.6.24-rc8/kernel/sched_debug.c
-@@ -299,6 +299,8 @@ void proc_sched_show_task(struct task_st
- 	PN(se.exec_max);
- 	PN(se.slice_max);
- 	PN(se.wait_max);
-+	PN(se.wait_sum);
-+	P(se.wait_count);
- 	P(sched_info.bkl_count);
- 	P(se.nr_migrations);
- 	P(se.nr_migrations_cold);
-@@ -366,6 +368,8 @@ void proc_sched_set_task(struct task_str
- {
- #ifdef CONFIG_SCHEDSTATS
- 	p->se.wait_max				= 0;
-+	p->se.wait_sum				= 0;
-+	p->se.wait_count			= 0;
- 	p->se.sleep_max				= 0;
- 	p->se.sum_sleep_runtime			= 0;
- 	p->se.block_max				= 0;
-Index: linux-2.6.24-rc8/kernel/sched_fair.c
-===================================================================
---- linux-2.6.24-rc8.orig/kernel/sched_fair.c
-+++ linux-2.6.24-rc8/kernel/sched_fair.c
-@@ -385,6 +385,9 @@ update_stats_wait_end(struct cfs_rq *cfs
- {
- 	schedstat_set(se->wait_max, max(se->wait_max,
- 			rq_of(cfs_rq)->clock - se->wait_start));
-+	schedstat_set(se->wait_count, se->wait_count + 1);
-+	schedstat_set(se->wait_sum, se->wait_sum +
-+			rq_of(cfs_rq)->clock - se->wait_start);
- 	schedstat_set(se->wait_start, 0);
- }
- 
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Seems not to be an issue any longer, but I'll keep an eye on it.
