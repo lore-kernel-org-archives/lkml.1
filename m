@@ -1,67 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbYAUU3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbYAUU35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309AbYAUU3l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 15:29:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbYAUU2C
+	id S1756664AbYAUU35 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 15:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYAUU2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 15:28:02 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:55862 "EHLO relay.sgi.com"
+	Mon, 21 Jan 2008 15:28:04 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:55545 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751775AbYAUU1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751998AbYAUU1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 Jan 2008 15:27:54 -0500
-Message-Id: <20080121202747.593568000@sgi.com>
+Message-Id: <20080121202748.178521000@sgi.com>
+References: <20080121202747.593568000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 Jan 2008 12:27:47 -0800
+Date: Mon, 21 Jan 2008 12:27:51 -0800
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        mingo@elte.hu
 Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 0/8] percpu: Per cpu code simplification rc8-mm1-fixup
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
+Subject: [PATCH 4/8] Sparc64: Use generic percpu fixup rc8-mm1-fixup
+Content-Disposition: inline; filename=sparc64_generic_percpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sparc64 has a way of providing the base address for the per cpu area of the
+currently executing processor in a global register.
 
-This patchset simplifies the code that arches need to maintain to support
-per cpu functionality. Most of the code is moved into arch independent
-code. Only a minimal set of definitions is kept for each arch.
+Sparc64 also provides a way to calculate the address of a per cpu area
+from a base address instead of performing an array lookup.
 
-The patch also unifies the x86 arch so that there is only a single
-asm-x86/percpu.h
+Based on: 2.6.24-rc8-mm1
 
-Based on 2.6.24-rc8-mm1
-
-Note there are two versions of this patchset:
-	- 2.6.24-rc8-mm1
-	- 2.6.24-rc8-mm1 + latest (08/1/21) git-x86
-
+Cc: David Miller <davem@davemloft.net>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
 rc8-mm1-fixup:
-
   - rebased from 2.6.24-rc6-mm1 to 2.6.24-rc8-mm1
     (removed changes that are in the git-x86.patch)
-  - added back in missing fold-percpu_modcopy pieces
+---
+ arch/sparc64/mm/init.c       |    5 +++++
+ include/asm-sparc64/percpu.h |   22 +++-------------------
+ 2 files changed, 8 insertions(+), 19 deletions(-)
 
-V3->V4:
-  - rebased patchset on 2.6.24-rc6-mm1
-    (removes the percpu_modcopy changes that are already in.)
-  - change config ARCH_SETS_UP_PER_CPU_AREA to a global var
-    and use select HAVE_SETUP_PER_CPU_AREA to specify.
-
-V2->V3:
-  - fix x86_64 non-SMP case
-  - change SHIFT_PTR to SHIFT_PERCPU_PTR
-  - fix various percpu_modcopy()'s to reference correct per_cpu_offset()
-  - s390 has a special way to determine the pointer to a per cpu area
-
-V1->V2:
-- Add support for specifying attributes for per cpu declarations (preserves
-  IA64 model(small) attribute).
-  - Drop first patch that removes the model(small) attribute for IA64
-  - Missing #endif in powerpc generic config /  Wrong Kconfig
-  - Follow Randy's suggestions on how to do the Kconfig settings
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -1328,6 +1328,11 @@ pgd_t swapper_pg_dir[2048];
+ static void sun4u_pgprot_init(void);
+ static void sun4v_pgprot_init(void);
+ 
++/* Dummy function */
++void __init setup_per_cpu_areas(void)
++{
++}
++
+ void __init paging_init(void)
+ {
+ 	unsigned long end_pfn, pages_avail, shift, phys_base;
+--- a/include/asm-sparc64/percpu.h
++++ b/include/asm-sparc64/percpu.h
+@@ -7,7 +7,6 @@ register unsigned long __local_per_cpu_o
+ 
+ #ifdef CONFIG_SMP
+ 
+-#define setup_per_cpu_areas()			do { } while (0)
+ extern void real_setup_per_cpu_areas(void);
+ 
+ extern unsigned long __per_cpu_base;
+@@ -16,29 +15,14 @@ extern unsigned long __per_cpu_shift;
+ 	(__per_cpu_base + ((unsigned long)(__cpu) << __per_cpu_shift))
+ #define per_cpu_offset(x) (__per_cpu_offset(x))
+ 
+-/* var is in discarded region: offset to particular copy we want */
+-#define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset(cpu)))
+-#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __local_per_cpu_offset))
+-#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __local_per_cpu_offset))
+-
+-/* A macro to avoid #include hell... */
+-#define percpu_modcopy(pcpudst, src, size)			\
+-do {								\
+-	unsigned int __i;					\
+-	for_each_possible_cpu(__i)				\
+-		memcpy((pcpudst)+__per_cpu_offset(__i),		\
+-		       (src), (size));				\
+-} while (0)
++#define __my_cpu_offset __local_per_cpu_offset
++
+ #else /* ! SMP */
+ 
+ #define real_setup_per_cpu_areas()		do { } while (0)
+ 
+-#define per_cpu(var, cpu)			(*((void)cpu, &per_cpu__##var))
+-#define __get_cpu_var(var)			per_cpu__##var
+-#define __raw_get_cpu_var(var)			per_cpu__##var
+-
+ #endif	/* SMP */
+ 
+-#define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
++#include <asm-generic/percpu.h>
+ 
+ #endif /* __ARCH_SPARC64_PERCPU__ */
 
 -- 
