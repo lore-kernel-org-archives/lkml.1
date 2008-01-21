@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765847AbYAUKXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764422AbYAUKY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765847AbYAUKXw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760298AbYAUKDg
+	id S1764422AbYAUKY0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:24:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760310AbYAUKDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:03:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35839 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:03:37 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35841 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759773AbYAUKDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:03:25 -0500
+	id S1760170AbYAUKD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:03:27 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 56/58] [GFS2] Fix page_mkwrite truncation race path
-Date: Mon, 21 Jan 2008 09:22:14 +0000
-Message-Id: <1200907438887-git-send-email-swhiteho@redhat.com>
+Cc: Bob Peterson <rpeterso@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 57/58] [GFS2] Lockup on error
+Date: Mon, 21 Jan 2008 09:22:15 +0000
+Message-Id: <12009074392527-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12009074362909-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1200907438887-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -73,37 +74,35 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009074321081-git-send-email-swhiteho@redhat.com>
  <12009074341030-git-send-email-swhiteho@redhat.com>
  <12009074362909-git-send-email-swhiteho@redhat.com>
-Message-Id: <3fa0be40338b94030dcf4794198c65cc99e260fa.1200905287.git.swhiteho@redhat.com>
+ <1200907438887-git-send-email-swhiteho@redhat.com>
+Message-Id: <7244134b8007d7ec8f2a93d039a3bb6720e2466f.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Whitehouse <swhiteho@redhat.com>
+From: Bob Peterson <rpeterso@redhat.com>
 
-There was a bug in the truncation/invalidation race path for
-->page_mkwrite for gfs2. It ought to return 0 so that the effect is the
-same as if the page was truncated at any of the other points at which
-the page_lock is dropped. This will result in the restart of the whole
-page fault path. If it was due to a real truncation (as opposed to an
-invalidate because we let a glock go) then the ->fault path will pick
-that up when it gets called again.
+I spotted this bug while I was digging around.  Looks like it could cause
+a lockup in some rare error condition.
 
+Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/ops_file.c b/fs/gfs2/ops_file.c
-index d7f4726..f4842f2 100644
---- a/fs/gfs2/ops_file.c
-+++ b/fs/gfs2/ops_file.c
-@@ -394,6 +394,7 @@ static int gfs2_page_mkwrite(struct vm_area_struct *vma, struct page *page)
- 	last_index = ip->i_inode.i_size >> PAGE_CACHE_SHIFT;
- 	if (page->index > last_index)
- 		goto out_unlock_page;
-+	ret = 0;
- 	if (!PageUptodate(page) || page->mapping != ip->i_inode.i_mapping)
- 		goto out_unlock_page;
- 	if (gfs2_is_stuffed(ip)) {
+diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
+index c84764a..728d316 100644
+--- a/fs/gfs2/inode.c
++++ b/fs/gfs2/inode.c
+@@ -860,7 +860,7 @@ static int link_dinode(struct gfs2_inode *dip, const struct qstr *name,
+ 
+ 	error = alloc_required = gfs2_diradd_alloc_required(&dip->i_inode, name);
+ 	if (alloc_required < 0)
+-		goto fail;
++		goto fail_quota_locks;
+ 	if (alloc_required) {
+ 		error = gfs2_quota_check(dip, dip->i_inode.i_uid, dip->i_inode.i_gid);
+ 		if (error)
 -- 
 1.5.1.2
 
