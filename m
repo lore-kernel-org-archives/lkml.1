@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765849AbYAUKXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765847AbYAUKXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765849AbYAUKXd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:23:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760288AbYAUKDe
+	id S1765847AbYAUKXw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:23:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760298AbYAUKDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:03:34 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35836 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:03:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35839 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759746AbYAUKDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:03:23 -0500
+	id S1759773AbYAUKDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:03:25 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Bob Peterson <rpeterso@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 55/58] [GFS2] Fix typo
-Date: Mon, 21 Jan 2008 09:22:13 +0000
-Message-Id: <12009074362909-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 56/58] [GFS2] Fix page_mkwrite truncation race path
+Date: Mon, 21 Jan 2008 09:22:14 +0000
+Message-Id: <1200907438887-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12009074341030-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12009074362909-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -73,33 +72,38 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009074312371-git-send-email-swhiteho@redhat.com>
  <12009074321081-git-send-email-swhiteho@redhat.com>
  <12009074341030-git-send-email-swhiteho@redhat.com>
-Message-Id: <c2df7196bc9e5f059d0b835cc4ddd37b5a654d5b.1200905287.git.swhiteho@redhat.com>
+ <12009074362909-git-send-email-swhiteho@redhat.com>
+Message-Id: <3fa0be40338b94030dcf4794198c65cc99e260fa.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bob Peterson <rpeterso@redhat.com>
+From: Steven Whitehouse <swhiteho@redhat.com>
 
-This patch fixes a minor typo.  Surprisingly, it still compiled.
+There was a bug in the truncation/invalidation race path for
+->page_mkwrite for gfs2. It ought to return 0 so that the effect is the
+same as if the page was truncated at any of the other points at which
+the page_lock is dropped. This will result in the restart of the whole
+page fault path. If it was due to a real truncation (as opposed to an
+invalidate because we let a glock go) then the ->fault path will pick
+that up when it gets called again.
 
-Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/meta_io.c b/fs/gfs2/meta_io.c
-index bc28bc6..99c7959 100644
---- a/fs/gfs2/meta_io.c
-+++ b/fs/gfs2/meta_io.c
-@@ -284,7 +284,7 @@ void gfs2_attach_bufdata(struct gfs2_glock *gl, struct buffer_head *bh,
- 		return;
- 	}
- 
--	bd = kmem_cache_zalloc(gfs2_bufdata_cachep, GFP_NOFS | __GFP_NOFAIL),
-+	bd = kmem_cache_zalloc(gfs2_bufdata_cachep, GFP_NOFS | __GFP_NOFAIL);
- 	bd->bd_bh = bh;
- 	bd->bd_gl = gl;
- 
+diff --git a/fs/gfs2/ops_file.c b/fs/gfs2/ops_file.c
+index d7f4726..f4842f2 100644
+--- a/fs/gfs2/ops_file.c
++++ b/fs/gfs2/ops_file.c
+@@ -394,6 +394,7 @@ static int gfs2_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+ 	last_index = ip->i_inode.i_size >> PAGE_CACHE_SHIFT;
+ 	if (page->index > last_index)
+ 		goto out_unlock_page;
++	ret = 0;
+ 	if (!PageUptodate(page) || page->mapping != ip->i_inode.i_mapping)
+ 		goto out_unlock_page;
+ 	if (gfs2_is_stuffed(ip)) {
 -- 
 1.5.1.2
 
