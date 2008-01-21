@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758739AbYAUIP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbYAUIVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758739AbYAUIP6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 03:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757908AbYAUIPv
+	id S1758617AbYAUIVq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 03:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbYAUIVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 03:15:51 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:46384 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757945AbYAUIPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 03:15:50 -0500
+	Mon, 21 Jan 2008 03:21:39 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:29548 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755543AbYAUIVi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 03:21:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=tTa+086TT39/aoaQWr0KpIqEYv9rpEAK8VaFdSC8SA+1VdVRi+HvutguYRJ3i+mo4bPVKdQ0GgHAY5ehepJNzzztZ4bx+jGbaY2jeS60Tw99RHLZ7jGnwO8NhmFENTCQlsGR5qaJVYXYGdV53zd36vk8eG0sgFGqT0X3IFAaZAg=
+Message-ID: <4794560C.6010302@gmail.com>
+Date: Mon, 21 Jan 2008 09:21:32 +0100
+From: Joe <zentrale.at.work@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Rafael Sisto <rafael.sisto@gmail.com>
+CC: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: create a file in kernel mode. help please!
+References: <ee3dc96c0801182116q3d54148dl6773d76ff3160d91@mail.gmail.com> <ee3dc96c0801182117t6e40b46fr1b2d5826e22a7124@mail.gmail.com>
+In-Reply-To: <ee3dc96c0801182117t6e40b46fr1b2d5826e22a7124@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18324.21679.979192.4576@harpo.it.uu.se>
-Date: Mon, 21 Jan 2008 09:15:43 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: "william cheng" <opensourcewill@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: modprobing ipmi_si on Dell Power Edge 2600 make the terminal hang kernel ver. >= 2.6.20
-In-Reply-To: <7d34f9680801201740u4eb912eel921e7890b4ac023a@mail.gmail.com>
-References: <7d34f9680801201740u4eb912eel921e7890b4ac023a@mail.gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-william cheng writes:
- > Dear all,
- > 
- >         We got some problem on modprobing the ipmi_si module on Dell
- > Power Edge 2600.
- >         On modprobing the ipmi_si the terminal hang and the process
- > cannot be terminated by control-C.
- >         We got these messages in dmesg
- > 
- >         ipmi message handler version 39.1
- >         IPMI System Interface driver.
- >         ipmi_si: Trying SMBIOS-specified bt state machine at i/o
- > address 0xe4, slave address 0x20, irq 10
- >           Using irq 10
- >         IPMI BT: req2rsp=10 secs retries=3
- >         ipmi_si: Error clearing flags: c6
- > 
- > 
- >         We have tested a few other dell machine (Power Edge 2500,
- > 2900, ....), and this problem only occurs in Power Edge 2600.
- > 
- > 
- >         The problem occurs in the following testes
- >         Debian testing lenny
- >         Ubuntu 7.10
- >         Ubuntu 7.04
- >         Fedore 8
- >         Kernel 2.6.20
- >         Kernel 2.6.21
- >         Kernel 2.6.22
- >         Kernel 2.6.22.5
- >         Kernel 2.6.22.14
- >         Kernel 2.6.22.15
- >         Kernel 2.6.23.12
- > 
- >         While in the following testes we can successfully modprobe the ipmi_si
- >         Ubuntu 6.10
- >         Debian 4.0r2
- >         Kernel 2.6.18.3
- >         Kernel 2.6.18.5
- >         Kernel 2.6.18.8
- >         Kernel 2.6.19
- >         Kernel 2.6.19.7
- > 
- >         It looks like the problem only occurs when using kernel after
- > 2.6.20 with Power Edge 2600.
+Hi Rafael.
 
-I saw the same loop when upgrading a PE2600 from an RHEL4 2.6.9
-kernel to an RHEL5 2.6.18 kernel. Since I had no interest in ipmi_si
-I just de-configured it and wrote it off as yet another RHEL bug.
-Seems now that RedHat backported an upstream bug :-(
+Probably you haven't got any answers yet because you should NEVER EVER 
+(i repeat: NEVER EVER, not even in college projects) go for file I/O in 
+the kernel. You might want to think the whole thing over one or two 
+times, i think.
+
+If it comes to you that it is absolutely necessary (i repeat again: 
+ABSOLUTELY NECESSARY, like a solution to feed the world) then you might 
+google for some ancient FAQ of Greg (K-H) (i think he was) where he 
+tries to give a little more details about this kind of problem, and also 
+gives a possible solution, IIRC. Sorry that i don't remember the exact 
+page/adress anymore, for i intend never to look at it again.
+
+Greetz
+Joe
+
+Rafael Sisto schrieb:
+> Hi there,
+> obviously this is a newbie question, but I couldn't find any
+> documentation on how to do it.. I tried several ways but couldnt do
+> it.
+> I designed a system call, so a user will call it, and a new file will
+> be created ('/tmp/filexx'). After that, I have another system call,
+> that will map the file into the maps of the user process. The idea is
+> the same as IPC...
+> 
+> I managed to create the file with this function (in the first system call):
+>         fd = filp_open(path, O_CREAT | O_RDWR , 777);
+> 
+> After that, the user will call another system call, and it will map
+> this file to the process maps.
+> something like this:
+>          filp_open(route, O_RDWR,0 );
+>          do_mmap(fp, 0, tamano, PROT_READ | PROT_WRITE | PROT_EXEC,
+> MAP_SHARED, 0);
+> 
+> After I call the second system call, the user tries to access the
+> memory, but gets the message "Bus Error".
+> I tried to manually create a file with vi, and then use the second
+> system call, and worked perfectly. I could use the shared memory
+> without problems.
+> 
+> The problems seems to be in the first system call (with filp_open),
+> when I try to create a new file... Can somebody suggest me something,
+> on how I could fix this issue?? It is very important because it is for
+> a college projects.
+> 
+> Greetings, and thanks in advance for the answers.
+> Rafael Sisto - Uruguay.-
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+
+-- 
+Sepp "ZaP" Holzmayr
+
+please reply to:
+zentrale.at.work@gmail.com
+
+watch out for:
+www.rocksociety.de
