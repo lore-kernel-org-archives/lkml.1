@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbYAUFqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbYAUF6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757909AbYAUFqV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 00:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYAUFqK
+	id S1757903AbYAUF6V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 00:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbYAUF6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 00:46:10 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61027 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751624AbYAUFqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 00:46:08 -0500
-Message-ID: <47943186.8030001@cn.fujitsu.com>
-Date: Mon, 21 Jan 2008 13:45:42 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 21 Jan 2008 00:58:09 -0500
+Received: from ns1.suse.de ([195.135.220.2]:56857 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752249AbYAUF6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 00:58:08 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Yinghai Lu <Yinghai.Lu@sun.com>
+Subject: Re: [PATCH] x86_64: update e820 instead of updating end_pfn v2
+Date: Mon, 21 Jan 2008 06:58:03 +0100
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200801192045.17291.yinghai.lu@sun.com> <200801201608.15401.ak@suse.de> <200801202140.57829.yinghai.lu@sun.com>
+In-Reply-To: <200801202140.57829.yinghai.lu@sun.com>
 MIME-Version: 1.0
-To: "Thomas, Sujith" <sujith.thomas@intel.com>
-CC: "Zhang, Rui" <rui.zhang@intel.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       sam@ravnborg.org, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 9/10] introduce intel_menlow platform specific driver
-References: <1200556278.2935.118.camel@acpi-sony.sh.intel.com>	 <20080117092030.a9dfe528.randy.dunlap@oracle.com> <1200627175.2935.174.camel@acpi-sony.sh.intel.com> <4790231C.1040805@cn.fujitsu.com> <05B550FD4BD2014E841D83547B6260080281A8A8@bgsmsx411.gar.corp.intel.com>
-In-Reply-To: <05B550FD4BD2014E841D83547B6260080281A8A8@bgsmsx411.gar.corp.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801210658.04030.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> +static int __init intel_menlow_module_init(void)
->>> +{
->>> +	int result = -ENODEV;
->>> +	acpi_status status;
->>> +	unsigned long enable;
->>> +
->>> +	if (acpi_disabled)
->>> +		return result;
->>> +
->>> +	/* Looking for the \_TZ.GSTS method */
->>> +	status = acpi_evaluate_integer(NULL, BIOS_ENABLED, NULL, &enable);
->>> +	if (ACPI_FAILURE(status) || !enable)
->>> +		return -ENODEV;
->>> +
->>> +	/* Looking for ACPI device MEM0 with hardware id INT0002 */
->>> +	result = acpi_bus_register_driver(&intel_menlow_memory_driver);
->>> +	if (result)
->>> +		return result;
->>> +
->>> +	/* Looking for sensors in each ACPI thermal zone */
->>> +	status = acpi_walk_namespace(ACPI_TYPE_THERMAL, ACPI_ROOT_OBJECT,
->>> +				     ACPI_UINT32_MAX,
->>> +				     intel_menlow_register_sensor, NULL, NULL);
->>> +	if (ACPI_FAILURE(status))
->>> +		result = -ENODEV;
->>> +
->> It seems to me this should be 'return -ENODEV;'
->>
->> You can just eliminate variable result, because result will be
->> -ENODEV only.
-> I disagree. "result" is required to store the return value from acpi_bus_register_driver which may be different from ENODEV. Otherwise it's all -ENODEV.
-> 
-> :-Sujith
 
-Indead, I overlooked it.
+>  {
+>  	u32 l, h;
+>  
+> @@ -661,8 +661,9 @@ static __init int amd_special_default_mt
+>  	 * Memory between 4GB and top of mem is forced WB by this magic bit.
+>  	 * Reserved before K8RevF, but should be zero there.
+>  	 */
+> -	if (l & Tom2ForceMemTypeWB)
+> -		return 1;
+> +	if (l & Tom2Enabled)
+> +		if (l & Tom2ForceMemTypeWB)
+> +			return 1;
 
-But the above 'result = -ENODEV;' should be 'return -ENODEV;', right?
+That change is good agreed, but I would suggest to put it into a separate
+patch with a description
 
->>> +	return 0;
->>> +}
-
+-Andi
