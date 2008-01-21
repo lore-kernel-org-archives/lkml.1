@@ -1,95 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYAUVQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbYAUVRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbYAUVQr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 16:16:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYAUVQG
+	id S1757930AbYAUVRG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 16:17:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYAUVQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 16:16:06 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:39990 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752133AbYAUVQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 16:16:08 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57261 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752337AbYAUVQB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 Jan 2008 16:16:01 -0500
-Message-Id: <20080121211600.536296000@sgi.com>
+Message-Id: <20080121211600.273130000@sgi.com>
 References: <20080121211600.079162000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 Jan 2008 13:16:03 -0800
+Date: Mon, 21 Jan 2008 13:16:01 -0800
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        mingo@elte.hu
 Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] x86: Change bios_cpu_apicid to percpu data variable fixup V2
-Content-Disposition: inline; filename=change-bios_cpu_apicid-to-percpu-fixup
+       linux-kernel@vger.kernel.org, David Rientjes <rientjes@google.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Eric Dumazet <dada1@cosmosbay.com>
+Subject: [PATCH 1/4] x86: Change size of node ids from u8 to s16 fixup V2
+Content-Disposition: inline; filename=big_nodeids-fixup
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change static bios_cpu_apicid array to a per_cpu data variable.
-This includes using a static array used during initialization
-similar to the way x86_cpu_to_apicid[] is handled.
-
-There is one early use of bios_cpu_apicid in apic_is_clustered_box().
-The other reference in cpu_present_to_apicid() is called after
-setup_per_cpu_maps() has setup the percpu version of bios_cpu_apicid.
+Change the size of node ids for X86_64 from u8 to s16 to
+accomodate more than 32k nodes and allow for NUMA_NO_NODE
+(-1) to be sign extended to int.
 
 Based on 2.6.24-rc8-mm1
 
+Cc: David Rientjes <rientjes@google.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>
 Signed-off-by: Mike Travis <travis@sgi.com>
 Reviewed-by: Christoph Lameter <clameter@sgi.com>
 ---
-V1->V2:
-    - Removed extraneous casts
-    - Add slight optimization to apic_is_clustered_box()
-      [don't reference x86_bios_cpu_apicid_early_ptr each pass.]
----
- arch/x86/kernel/apic_64.c  |    6 +++---
- arch/x86/kernel/setup64.c  |    3 +++
- arch/x86/kernel/setup_64.c |    1 +
- 3 files changed, 7 insertions(+), 3 deletions(-)
+fixup-V2:
 
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -1191,9 +1191,9 @@ __cpuinit int apic_is_clustered_box(void
+    - Fixed populate_memnodemap as suggested by Eric.
+    - Change to using s16 for static node id arrays and
+      int for node id's in per_cpu variables and __initdata
+      arrays as suggested by David and Yinghai.
+    - NUMA_NO_NODE is now (-1)
+
+fixup:
+
+    - Size of memnode.embedded_map needs to be changed to
+      accomodate 16-bit node ids as suggested by Eric.
+
+V2->V3:
+    - changed memnode.embedded_map from [64-16] to [64-8]
+      (and size comment to 128 bytes)
+
+V1->V2:
+    - changed pxm_to_node_map to u16
+    - changed memnode map entries to u16
+---
+ arch/x86/Kconfig            |    1 +
+ arch/x86/mm/numa_64.c       |   14 +++++++-------
+ include/asm-x86/mmzone_64.h |    6 +++---
+ include/asm-x86/numa_64.h   |    2 +-
+ include/asm-x86/topology.h  |    8 ++++----
+ 5 files changed, 16 insertions(+), 15 deletions(-)
+
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -882,6 +882,7 @@ config NUMA_EMU
  
- 	/* Problem:  Partially populated chassis may not have CPUs in some of
- 	 * the APIC clusters they have been allocated.  Only present CPUs have
--	 * x86_bios_cpu_apicid entries, thus causing zeroes in the bitmap.  Since
--	 * clusters are allocated sequentially, count zeros only if they are
--	 * bounded by ones.
-+	 * x86_bios_cpu_apicid entries, thus causing zeroes in the bitmap.
-+	 * Since clusters are allocated sequentially, count zeros only if
-+	 * they are bounded by ones.
- 	 */
- 	clusters = 0;
- 	zeros = 0;
---- a/arch/x86/kernel/setup64.c
-+++ b/arch/x86/kernel/setup64.c
-@@ -98,6 +98,8 @@ static void __init setup_per_cpu_maps(vo
- #endif
- 			per_cpu(x86_cpu_to_apicid, cpu) =
- 						x86_cpu_to_apicid_init[cpu];
-+			per_cpu(x86_bios_cpu_apicid, cpu) =
-+						x86_bios_cpu_apicid_init[cpu];
- #ifdef CONFIG_NUMA
- 			per_cpu(x86_cpu_to_node_map, cpu) =
- 						x86_cpu_to_node_map_init[cpu];
-@@ -112,6 +114,7 @@ static void __init setup_per_cpu_maps(vo
+ config NODES_SHIFT
+ 	int
++	range 1 15  if X86_64
+ 	default "6" if X86_64
+ 	default "4" if X86_NUMAQ
+ 	default "3"
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -31,16 +31,16 @@ bootmem_data_t plat_node_bdata[MAX_NUMNO
  
- 	/* indicate the early static arrays will soon be gone */
- 	x86_cpu_to_apicid_early_ptr = NULL;
-+	x86_bios_cpu_apicid_early_ptr = NULL;
- #ifdef CONFIG_NUMA
- 	x86_cpu_to_node_map_early_ptr = NULL;
- #endif
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -390,6 +390,7 @@ void __init setup_arch(char **cmdline_p)
- #ifdef CONFIG_SMP
- 	/* setup to use the early static init tables during kernel startup */
- 	x86_cpu_to_apicid_early_ptr = (void *)&x86_cpu_to_apicid_init;
-+	x86_bios_cpu_apicid_early_ptr = (void *)&x86_bios_cpu_apicid_init;
- #ifdef CONFIG_NUMA
- 	x86_cpu_to_node_map_early_ptr = (void *)&x86_cpu_to_node_map_init;
- #endif
+ struct memnode memnode;
+ 
+-u16 x86_cpu_to_node_map_init[NR_CPUS] = {
++int x86_cpu_to_node_map_init[NR_CPUS] = {
+ 	[0 ... NR_CPUS-1] = NUMA_NO_NODE
+ };
+ void *x86_cpu_to_node_map_early_ptr;
+ EXPORT_SYMBOL(x86_cpu_to_node_map_init);
+ EXPORT_SYMBOL(x86_cpu_to_node_map_early_ptr);
+-DEFINE_PER_CPU(u16, x86_cpu_to_node_map) = NUMA_NO_NODE;
++DEFINE_PER_CPU(int, x86_cpu_to_node_map) = NUMA_NO_NODE;
+ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_node_map);
+ 
+-u16 apicid_to_node[MAX_LOCAL_APIC] __cpuinitdata = {
++s16 apicid_to_node[MAX_LOCAL_APIC] __cpuinitdata = {
+ 	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+ };
+ 
+@@ -64,7 +64,7 @@ static int __init populate_memnodemap(co
+ 	unsigned long addr, end;
+ 	int i, res = -1;
+ 
+-	memset(memnodemap, 0xff, memnodemapsize);
++	memset(memnodemap, 0xff, sizeof(s16)*memnodemapsize);
+ 	for (i = 0; i < numnodes; i++) {
+ 		addr = nodes[i].start;
+ 		end = nodes[i].end;
+@@ -73,7 +73,7 @@ static int __init populate_memnodemap(co
+ 		if ((end >> shift) >= memnodemapsize)
+ 			return 0;
+ 		do {
+-			if (memnodemap[addr >> shift] != 0xff)
++			if (memnodemap[addr >> shift] != NUMA_NO_NODE)
+ 				return -1;
+ 			memnodemap[addr >> shift] = i;
+ 			addr += (1UL << shift);
+@@ -88,7 +88,7 @@ static int __init allocate_cachealigned_
+ 	unsigned long pad, pad_addr;
+ 
+ 	memnodemap = memnode.embedded_map;
+-	if (memnodemapsize <= 48)
++	if (memnodemapsize <= ARRAY_SIZE(memnode.embedded_map))
+ 		return 0;
+ 
+ 	pad = L1_CACHE_BYTES - 1;
+@@ -566,7 +566,7 @@ __cpuinit void numa_add_cpu(int cpu)
+ 
+ void __cpuinit numa_set_node(int cpu, int node)
+ {
+-	u16 *cpu_to_node_map = x86_cpu_to_node_map_early_ptr;
++	int *cpu_to_node_map = x86_cpu_to_node_map_early_ptr;
+ 
+ 	cpu_pda(cpu)->nodenumber = node;
+ 
+--- a/include/asm-x86/mmzone_64.h
++++ b/include/asm-x86/mmzone_64.h
+@@ -15,9 +15,9 @@
+ struct memnode {
+ 	int shift;
+ 	unsigned int mapsize;
+-	u8 *map;
+-	u8 embedded_map[64-16];
+-} ____cacheline_aligned; /* total size = 64 bytes */
++	s16 *map;
++	s16 embedded_map[64-8];
++} ____cacheline_aligned; /* total size = 128 bytes */
+ extern struct memnode memnode;
+ #define memnode_shift memnode.shift
+ #define memnodemap memnode.map
+--- a/include/asm-x86/numa_64.h
++++ b/include/asm-x86/numa_64.h
+@@ -20,7 +20,7 @@ extern void numa_set_node(int cpu, int n
+ extern void srat_reserve_add_area(int nodeid);
+ extern int hotadd_percent;
+ 
+-extern u16 apicid_to_node[MAX_LOCAL_APIC];
++extern s16 apicid_to_node[MAX_LOCAL_APIC];
+ 
+ extern void numa_initmem_init(unsigned long start_pfn, unsigned long end_pfn);
+ extern unsigned long numa_free_all_bootmem(void);
+--- a/include/asm-x86/topology.h
++++ b/include/asm-x86/topology.h
+@@ -30,17 +30,17 @@
+ #include <asm/mpspec.h>
+ 
+ /* Mappings between logical cpu number and node number */
+-DECLARE_PER_CPU(u16, x86_cpu_to_node_map);
+-extern u16 x86_cpu_to_node_map_init[];
++DECLARE_PER_CPU(int, x86_cpu_to_node_map);
++extern int x86_cpu_to_node_map_init[];
+ extern void *x86_cpu_to_node_map_early_ptr;
+ extern cpumask_t node_to_cpumask_map[];
+ 
+-#define NUMA_NO_NODE	((u16)(~0))
++#define NUMA_NO_NODE	(-1)
+ 
+ /* Returns the number of the node containing CPU 'cpu' */
+ static inline int cpu_to_node(int cpu)
+ {
+-	u16 *cpu_to_node_map = x86_cpu_to_node_map_early_ptr;
++	int *cpu_to_node_map = x86_cpu_to_node_map_early_ptr;
+ 
+ 	if (cpu_to_node_map)
+ 		return cpu_to_node_map[cpu];
 
 -- 
