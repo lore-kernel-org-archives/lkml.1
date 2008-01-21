@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765048AbYAUKSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764450AbYAUKTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765048AbYAUKSo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:18:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758622AbYAUKDJ
+	id S1764450AbYAUKTJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:19:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760147AbYAUKDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:03:09 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35816 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:03:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35817 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759674AbYAUKDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:03:05 -0500
+	id S1760104AbYAUKDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:03:06 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Bob Peterson <rpeterso@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 44/58] [GFS2] Minor correction
-Date: Mon, 21 Jan 2008 09:22:02 +0000
-Message-Id: <1200907417194-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 45/58] [GFS2] Fix log block mapper
+Date: Mon, 21 Jan 2008 09:22:03 +0000
+Message-Id: <12009074192015-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12009074163163-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1200907417194-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -62,35 +61,33 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009074121930-git-send-email-swhiteho@redhat.com>
  <12009074142128-git-send-email-swhiteho@redhat.com>
  <12009074163163-git-send-email-swhiteho@redhat.com>
-Message-Id: <b8ee332646d8dd1fb5ea64063ac9d6b804e1652b.1200905287.git.swhiteho@redhat.com>
+ <1200907417194-git-send-email-swhiteho@redhat.com>
+Message-Id: <50ab1e5a407b4e8b1dd9b26e5841965300c17af0.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bob Peterson <rpeterso@redhat.com>
+From: Steven Whitehouse <swhiteho@redhat.com>
 
-This is a small correction to my previously posted patch1.
-It just changes a divide to a shift.  It's faster and doesn't
-introduce odd dependencies on 32-bit compiles.
+A missing offset in the calculation.
 
-Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 22e260e..a77d41f 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -333,7 +333,7 @@ static int map_journal_extents(struct gfs2_sbd *sdp)
- 	INIT_LIST_HEAD(&jd->extent_list);
- 	prev_db = 0;
+diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
+index 0833e27..40c51bf 100644
+--- a/fs/gfs2/log.c
++++ b/fs/gfs2/log.c
+@@ -336,7 +336,7 @@ static u64 log_bmap(struct gfs2_sbd *sdp, unsigned int lbn)
  
--	for (lb = 0; lb < ip->i_di.di_size / sdp->sd_sb.sb_bsize; lb++) {
-+	for (lb = 0; lb < ip->i_di.di_size >> sdp->sd_sb.sb_bsize_shift; lb++) {
- 		bh.b_state = 0;
- 		bh.b_blocknr = 0;
- 		bh.b_size = 1 << ip->i_inode.i_blkbits;
+ 	list_for_each_entry(je, &sdp->sd_jdesc->extent_list, extent_list) {
+ 		if (lbn >= je->lblock && lbn < je->lblock + je->blocks)
+-			return je->dblock + lbn;
++			return je->dblock + lbn - je->lblock;
+ 	}
+ 
+ 	return -1;
 -- 
 1.5.1.2
 
