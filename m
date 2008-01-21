@@ -1,90 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbYAUU2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYAUU2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbYAUU2e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 15:28:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYAUU14
+	id S1755357AbYAUU2r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 15:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYAUU15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 15:27:56 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55918 "EHLO
+	Mon, 21 Jan 2008 15:27:57 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55916 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751302AbYAUU1x (ORCPT
+	with ESMTP id S1751557AbYAUU1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 Jan 2008 15:27:53 -0500
-Message-Id: <20080121202748.713745000@sgi.com>
+Message-Id: <20080121202748.310145000@sgi.com>
 References: <20080121202747.593568000@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 Jan 2008 12:27:55 -0800
+Date: Mon, 21 Jan 2008 12:27:52 -0800
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        mingo@elte.hu
 Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 8/8] percpu: Add debug of invalid per_cpu usage rc8-mm1-fixup
-Content-Disposition: inline; filename=debug-percpu
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       tony.luck@intel.com
+Subject: [PATCH 5/8] ia64: Use generic percpu fixup rc8-mm1-fixup
+Content-Disposition: inline; filename=ia64_generic_percpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a means to trap usages of per_cpu variables before
-the per_cpu_areas are setup.  Define CONFIG_DEBUG_PER_CPU to activate.
+ia64 has a special processor specific mapping that can be used to locate the
+offset for the current per cpu area.
 
 Based on: 2.6.24-rc8-mm1
 
+Cc: linux-ia64@vger.kernel.org
+Cc: tony.luck@intel.com
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
 rc8-mm1-fixup:
   - rebased from 2.6.24-rc6-mm1 to 2.6.24-rc8-mm1
     (removed changes that are in the git-x86.patch)
----
- include/asm-generic/percpu.h |   11 ++++++++++-
- lib/Kconfig.debug            |   12 ++++++++++++
- 2 files changed, 22 insertions(+), 1 deletion(-)
 
---- a/include/asm-generic/percpu.h
-+++ b/include/asm-generic/percpu.h
-@@ -47,12 +47,21 @@ extern unsigned long __per_cpu_offset[NR
+V1->V2:
+- Merge fixes
+- Remove transitional check for PER_CPU_ATTRIBUTES from linux/percpu.h
+
+V2-.V3:
+- use generic percpy_modcopy()
+
+---
+ include/asm-ia64/percpu.h |   24 +++++++-----------------
+ include/linux/percpu.h    |    4 ----
+ 2 files changed, 7 insertions(+), 21 deletions(-)
+
+--- a/include/asm-ia64/percpu.h
++++ b/include/asm-ia64/percpu.h
+@@ -19,29 +19,14 @@
+ # define PER_CPU_ATTRIBUTES	__attribute__((__model__ (__small__)))
  #endif
  
- /*
-- * A percpu variable may point to a discarded reghions. The following are
-+ * A percpu variable may point to a discarded regions. The following are
-  * established ways to produce a usable pointer from the percpu variable
-  * offset.
+-#define DECLARE_PER_CPU(type, name)				\
+-	extern PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+-
+ #ifdef CONFIG_SMP
+ 
+-extern unsigned long __per_cpu_offset[NR_CPUS];
+-#define per_cpu_offset(x) (__per_cpu_offset[x])
+-
+-/* Equal to __per_cpu_offset[smp_processor_id()], but faster to access: */
+-DECLARE_PER_CPU(unsigned long, local_per_cpu_offset);
+-
+-#define per_cpu(var, cpu)  (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset[cpu]))
+-#define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
+-#define __raw_get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __ia64_per_cpu_var(local_per_cpu_offset)))
++#define __my_cpu_offset	__ia64_per_cpu_var(local_per_cpu_offset)
+ 
+-extern void setup_per_cpu_areas (void);
+ extern void *per_cpu_init(void);
+ 
+ #else /* ! SMP */
+ 
+-#define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
+-#define __get_cpu_var(var)			per_cpu__##var
+-#define __raw_get_cpu_var(var)			per_cpu__##var
+ #define per_cpu_init()				(__phys_per_cpu_start)
+ 
+ #endif	/* SMP */
+@@ -52,7 +37,12 @@ extern void *per_cpu_init(void);
+  * On the positive side, using __ia64_per_cpu_var() instead of __get_cpu_var() is slightly
+  * more efficient.
   */
-+#ifdef	CONFIG_DEBUG_PER_CPU
-+#define per_cpu(var, cpu) (*({		\
-+	if (!per_cpu_offset(cpu)) {	\
-+		printk("KERN_NOTICE per_cpu(%s,%d): not available!\n", #var, (int)cpu); \
-+		dump_stack();		\
-+	}				\
-+	SHIFT_PERCPU_PTR(&per_cpu_var(var), per_cpu_offset(cpu));}))
-+#else
- #define per_cpu(var, cpu) \
- 	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), per_cpu_offset(cpu)))
-+#endif
- #define __get_cpu_var(var) \
- 	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), my_cpu_offset))
- #define __raw_get_cpu_var(var) \
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -610,6 +610,18 @@ config PROVIDE_OHCI1394_DMA_INIT
- 
- 	  See Documentation/debugging-via-ohci1394.txt for more information.
- 
-+config DEBUG_PER_CPU
-+	bool "Debug per_cpu usage"
-+	depends on DEBUG_KERNEL
-+	depends on SMP
-+	default n
-+	help
-+	  Say Y here to add code that verifies the per_cpu area is
-+	  setup before accessing a per_cpu variable.  It does add a
-+	  significant amount of code to kernel memory.
+-#define __ia64_per_cpu_var(var)	(per_cpu__##var)
++#define __ia64_per_cpu_var(var)	per_cpu__##var
 +
-+	  If unsure, say N.
++#include <asm-generic/percpu.h>
 +
- source "samples/Kconfig"
++/* Equal to __per_cpu_offset[smp_processor_id()], but faster to access: */
++DECLARE_PER_CPU(unsigned long, local_per_cpu_offset);
  
- source "lib/Kconfig.kgdb"
+ #endif /* !__ASSEMBLY__ */
+ 
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -9,10 +9,6 @@
+ 
+ #include <asm/percpu.h>
+ 
+-#ifndef PER_CPU_ATTRIBUTES
+-#define PER_CPU_ATTRIBUTES
+-#endif
+-
+ #ifdef CONFIG_SMP
+ #define DEFINE_PER_CPU(type, name)					\
+ 	__attribute__((__section__(".data.percpu")))			\
 
 -- 
