@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765587AbYAUKWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765767AbYAUKWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765587AbYAUKWS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760225AbYAUKD1
+	id S1765767AbYAUKWo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:22:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760245AbYAUKD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:03:27 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35831 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:03:29 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35833 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760158AbYAUKDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:03:18 -0500
+	id S1759724AbYAUKDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:03:20 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Bob Peterson <rpeterso@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 52/58] [GFS2] Remove unneeded i_spin
-Date: Mon, 21 Jan 2008 09:22:10 +0000
-Message-Id: <12009074312371-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 53/58] [GFS2] gfs2_alloc_required performance
+Date: Mon, 21 Jan 2008 09:22:11 +0000
+Message-Id: <12009074321081-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12009074291130-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12009074312371-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -70,7 +70,8 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009074263736-git-send-email-swhiteho@redhat.com>
  <12009074271575-git-send-email-swhiteho@redhat.com>
  <12009074291130-git-send-email-swhiteho@redhat.com>
-Message-Id: <9f67c39fd54bd4d77d494854e1a7de0a8afb46aa.1200905287.git.swhiteho@redhat.com>
+ <12009074312371-git-send-email-swhiteho@redhat.com>
+Message-Id: <51b22fb453b7c234ecfee616047d2ccc6ec77f11.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -79,38 +80,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bob Peterson <rpeterso@redhat.com>
 
-This patch removes a vestigial variable "i_spin" from the gfs2_inode
-structure.  This not only saves us memory (>300000 of these in memory
-for the oom test) it also saves us time because we don't have to
-spend time initializing it (i.e. slightly better performance).
+This is a small I/O performance enhancement to gfs2.  (Actually, it is a rework of
+an earlier version I got wrong).  The idea here is to check if the write extends
+past the last block in the file.  If so, the function can save itself a lot of
+time and trouble because it knows an allocate will be required.  Benchmarks like
+iozone should see better performance.
 
 Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index bd92a6d..1339996 100644
---- a/fs/gfs2/incore.h
-+++ b/fs/gfs2/incore.h
-@@ -267,7 +267,6 @@ struct gfs2_inode {
- 	struct gfs2_alloc *i_alloc;
- 	u64 i_last_rg_alloc;
+diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
+index 73dfad7..4356cc2 100644
+--- a/fs/gfs2/bmap.c
++++ b/fs/gfs2/bmap.c
+@@ -1224,6 +1224,11 @@ int gfs2_write_alloc_required(struct gfs2_inode *ip, u64 offset,
+ 		unsigned int shift = sdp->sd_sb.sb_bsize_shift;
+ 		lblock = offset >> shift;
+ 		lblock_stop = (offset + len + sdp->sd_sb.sb_bsize - 1) >> shift;
++		if (lblock_stop > ip->i_di.di_blocks) { /* writing past the
++							   last block */
++			*alloc_required = 1;
++			return 0;
++		}
+ 	}
  
--	spinlock_t i_spin;
- 	struct rw_semaphore i_rw_mutex;
- };
- 
-diff --git a/fs/gfs2/main.c b/fs/gfs2/main.c
-index 88686fc..9c7765c 100644
---- a/fs/gfs2/main.c
-+++ b/fs/gfs2/main.c
-@@ -29,7 +29,6 @@ static void gfs2_init_inode_once(struct kmem_cache *cachep, void *foo)
- 	struct gfs2_inode *ip = foo;
- 
- 	inode_init_once(&ip->i_inode);
--	spin_lock_init(&ip->i_spin);
- 	init_rwsem(&ip->i_rw_mutex);
- 	ip->i_alloc = NULL;
- }
+ 	for (; lblock < lblock_stop; lblock += extlen) {
 -- 
 1.5.1.2
 
