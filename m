@@ -1,42 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763062AbYAUXYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763035AbYAUXZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763062AbYAUXYp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 18:24:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761799AbYAUXWF
+	id S1763035AbYAUXZG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 18:25:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761599AbYAUXWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 18:22:05 -0500
-Received: from ozlabs.org ([203.10.76.45]:57063 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761980AbYAUXWD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 18:22:03 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jon Masters <jonathan@jonmasters.org>
-Subject: Re: [PATCH] add module taint on ndiswrapper
-Date: Tue, 22 Jan 2008 10:21:12 +1100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, jcm@jonmasters.org
-References: <20080121204341.GA29679@dallas.jonmasters.org>
-In-Reply-To: <20080121204341.GA29679@dallas.jonmasters.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801221021.12984.rusty@rustcorp.com.au>
+	Mon, 21 Jan 2008 18:22:37 -0500
+Received: from mrs16.hosteur.com ([193.34.16.133]:45638 "EHLO
+	mrs16.hosteur.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761814AbYAUXWg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 18:22:36 -0500
+To: linux-kernel@vger.kernel.org
+Subject: Plus besoin d'investir dans un PDA...
+X-PHP-Script: www.mysmallnotes.com/mail/mailing.php for 82.239.18.252
+From: webmaster@mysmallnotes.com
+Message-Id: <E1JH5yL-0006ZQ-Tm@mrs16.hosteur.com>
+Date: Tue, 22 Jan 2008 00:22:33 +0100
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - mrs16.hosteur.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [99 99] / [47 12]
+X-AntiAbuse: Sender Address Domain - mrs16.hosteur.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 January 2008 07:43:41 Jon Masters wrote:
-> The struct module taints member is supposed to store per-module taint
-> data. The kernel knows about certain specific external modules that will
-> taint the kernel, such as ndiswrapper. Use of ndiswrapper possibly
-> should set the per-module taint in addition to the global kernel
-> taint flag, unless we're arguing not because wrapper module itself
-> is not what actually causes the kernel to be tainted as such?
->
-> Signed-off-by: Jon Masters <jcm@jonmasters.org>
+...avec le mini agenda maxi pratique My Small Notes c'est gratuit !
 
-Thanks, applied.
+Découvrez le sur le site http://www.mysmallnotes.com?s=mp 
 
-Rusty.
+Le webmaster.
