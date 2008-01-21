@@ -1,60 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbYAUVZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbYAUV0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756439AbYAUVZo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 16:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYAUVZg
+	id S1758730AbYAUV0L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 16:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757314AbYAUVZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 16:25:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49061 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 16:25:56 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:49744 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751727AbYAUVZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 16:25:35 -0500
-Message-ID: <47950DBA.9080906@redhat.com>
-Date: Mon, 21 Jan 2008 16:25:14 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	id S1756760AbYAUVZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 16:25:53 -0500
+Date: Mon, 21 Jan 2008 14:41:21 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, kzak@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       util-linux-ng@vger.kernel.org
+Subject: Re: [patch 08/10] unprivileged mounts: make fuse safe
+Message-ID: <20080121204121.GC5536@sergelap.austin.rr.com>
+References: <20080116123147.466284860@szeredi.hu> <20080116123434.881038854@szeredi.hu>
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Gerd Hoffmann <kraxel@redhat.com>
-Subject: Re: The SMP alternatives code breaks exception fixup?
-References: <479504F6.4080005@redhat.com>
-In-Reply-To: <479504F6.4080005@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080116123434.881038854@szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21/2008 03:47 PM, Chuck Ebbert wrote:
-> Looking at the oops report from this bug:
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> [bugzilla]  https://bugzilla.redhat.com/show_bug.cgi?id=429412
-> [oops]      https://bugzilla.redhat.com/attachment.cgi?id=292260
+> Don't require the "user_id=" and "group_id=" options for unprivileged mounts,
+> but if they are present, verify them for sanity.
 > 
-> It was an unhandled page fault (protection violation.)
+> Disallow the "allow_other" option for unprivileged mounts.
 > 
-> I tracked it down to the cmpxchg in this code:
+> FUSE was designed from the beginning to be safe for unprivileged
+> users.  This has also been verified in practice over many years, with
+> some distributions enabling unprivileged FUSE mounts by default.
 > 
-> include/asm-x86/futex_32.h::futex_atomic_cmpxchg_inatomic()
->          __asm__ __volatile__(
->                  "1:     " LOCK_PREFIX "cmpxchgl %3, %1          \n"
->                  "2:     .section .fixup, \"ax\"                 \n"
->                  "3:     mov     %2, %0                          \n"
->                  "       jmp     2b                              \n"
->                  "       .previous                               \n"
->                  "       .section __ex_table, \"a\"              \n"
->                  "       .align  8                               \n"
->                  "       .long   1b,3b                           \n"
->                  "       .previous                               \n"
+> However there are some properties of FUSE, that could make it unsafe
+> for certain situations (e.g. multiuser system with untrusted users):
 > 
-> There is a fixup, so this should never happen. But the lock instruction
-> was replaced with a nop by the altinstruction code, and that makes the fixup
-> address wrong. AFAICT we don't fix up the exception table when we replace
-> a lock with a nop, which makes the fixup table point to the nop instead
-> of the cmpxchg instruction and causes us to miss the fixup.
+>  - It is not always possible to use kill(2) (not even with SIGKILL) to
+>    terminate a process using a FUSE filesystem.  However it is
+>    possible to use any of the following instead:
+>      o kill the filesystem daemon
+>      o use forced umounting
+>      o use the "fusectl" control filesystem
 > 
+>  - As a special case of the above, killing a self-deadlocked FUSE
+>    process is not possible, and even killall5 will not terminate it.
+> 
+>  - Due to the design of the process freezer, a hanging (due to network
+>    problems, etc) or malicious filesystem may prevent suspending to
+>    ram or hibernation to succeed.  This is not actually unique to
+>    FUSE, as any hanging network filesystem will have the same affect.
+> 
+> If the above could pose a threat to the system, it is recommended,
+> that the '/proc/sys/fs/types/fuse/safe' sysctl tunable is not turned
+> on, and/or '/dev/fuse' is not made world-readable and writable.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 
-The bug reporter has confirmed that booting with "noreplace-smp" prevents
-the kernel oops.
+I was going to say "this should of course be acked by a fuse
+maintainer", then I look at MAINTAINERS :)  So never mind.
+
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+
+> ---
+> 
+> Index: linux/fs/fuse/inode.c
+> ===================================================================
+> --- linux.orig/fs/fuse/inode.c	2008-01-16 13:24:52.000000000 +0100
+> +++ linux/fs/fuse/inode.c	2008-01-16 13:25:10.000000000 +0100
+> @@ -357,6 +357,19 @@ static int parse_fuse_opt(char *opt, str
+>  	d->max_read = ~0;
+>  	d->blksize = 512;
+> 
+> +	/*
+> +	 * For unprivileged mounts use current uid/gid.  Still allow
+> +	 * "user_id" and "group_id" options for compatibility, but
+> +	 * only if they match these values.
+> +	 */
+> +	if (!capable(CAP_SYS_ADMIN)) {
+> +		d->user_id = current->uid;
+> +		d->user_id_present = 1;
+> +		d->group_id = current->gid;
+> +		d->group_id_present = 1;
+> +
+> +	}
+> +
+>  	while ((p = strsep(&opt, ",")) != NULL) {
+>  		int token;
+>  		int value;
+> @@ -385,6 +398,8 @@ static int parse_fuse_opt(char *opt, str
+>  		case OPT_USER_ID:
+>  			if (match_int(&args[0], &value))
+>  				return 0;
+> +			if (d->user_id_present && d->user_id != value)
+> +				return 0;
+>  			d->user_id = value;
+>  			d->user_id_present = 1;
+>  			break;
+> @@ -392,6 +407,8 @@ static int parse_fuse_opt(char *opt, str
+>  		case OPT_GROUP_ID:
+>  			if (match_int(&args[0], &value))
+>  				return 0;
+> +			if (d->group_id_present && d->group_id != value)
+> +				return 0;
+>  			d->group_id = value;
+>  			d->group_id_present = 1;
+>  			break;
+> @@ -596,6 +613,10 @@ static int fuse_fill_super(struct super_
+>  	if (!parse_fuse_opt((char *) data, &d, is_bdev))
+>  		return -EINVAL;
+> 
+> +	/* This is a privileged option */
+> +	if ((d.flags & FUSE_ALLOW_OTHER) && !capable(CAP_SYS_ADMIN))
+> +		return -EPERM;
+> +
+>  	if (is_bdev) {
+>  #ifdef CONFIG_BLOCK
+>  		if (!sb_set_blocksize(sb, d.blksize))
+> 
+> --
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
