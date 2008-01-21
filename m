@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763885AbYAUKMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760826AbYAUKN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763885AbYAUKMz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:12:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759898AbYAUKCp
+	id S1760826AbYAUKN0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759908AbYAUKCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:02:45 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35795 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:02:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35796 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759828AbYAUKCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:02:41 -0500
+	id S1759858AbYAUKCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:02:43 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Wendy Cheng <wcheng@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 30/58] [GFS2] Remove lock methods for lock_nolock protocol
-Date: Mon, 21 Jan 2008 09:21:48 +0000
-Message-Id: <12009073933630-git-send-email-swhiteho@redhat.com>
+Cc: Abhijith Das <adas@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 31/58] [GFS2] patch to check for recursive lock requests in gfs2_rename code path
+Date: Mon, 21 Jan 2008 09:21:49 +0000
+Message-Id: <12009073953412-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12009073913676-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12009073933630-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -47,123 +47,104 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073883125-git-send-email-swhiteho@redhat.com>
  <12009073891848-git-send-email-swhiteho@redhat.com>
  <12009073913676-git-send-email-swhiteho@redhat.com>
-Message-Id: <227a0179e629becefe2057de1af20b1881226067.1200905287.git.swhiteho@redhat.com>
+ <12009073933630-git-send-email-swhiteho@redhat.com>
+Message-Id: <43ddd9bb92c549ac3e7021a1ae5f4657a162c878.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wendy Cheng <wcheng@redhat.com>
+From: Abhijith Das <adas@redhat.com>
 
-GFS2 supports two modes of locking - lock_nolock for single node filesystem
-and lock_dlm for cluster mode locking. The gfs2 lock methods are removed from
-file operation table for lock_nolock protocol. This would allow VFS to handle
-posix lock and flock logics just like other in-tree filesystems without
-duplication.
+A certain scenario in the rename code path triggers a kernel BUG()
+because it accidentally does recursive locking The first lock is
+requested to unlink an already existing inode (replacing a file) and the
+second lock is requested when the destination directory needs to alloc
+some space. It is rare that these two
+events happen during the same rename call, and even more rare that these
+two instances try to lock the same rgrp. It is, however, possible.
+https://bugzilla.redhat.com/show_bug.cgi?id=404711
 
-Signed-off-by: S. Wendy Cheng <wcheng@redhat.com>
+Signed-off-by: Abhijith Das <adas@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index 92959d0..53bca99 100644
---- a/fs/gfs2/inode.c
-+++ b/fs/gfs2/inode.c
-@@ -131,14 +131,21 @@ static struct inode *gfs2_iget_skip(struct super_block *sb,
+diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
+index 09848aa..e0ee195 100644
+--- a/fs/gfs2/rgrp.c
++++ b/fs/gfs2/rgrp.c
+@@ -1063,22 +1063,30 @@ static struct inode *get_local_rgrp(struct gfs2_inode *ip, u64 *last_unlinked)
+ 	int flags = LM_FLAG_TRY;
+ 	int skipped = 0;
+ 	int loops = 0;
+-	int error;
++	int error, rg_locked;
  
- void gfs2_set_iop(struct inode *inode)
- {
-+	struct gfs2_sbd *sdp = GFS2_SB(inode);
- 	umode_t mode = inode->i_mode;
+ 	/* Try recently successful rgrps */
  
- 	if (S_ISREG(mode)) {
- 		inode->i_op = &gfs2_file_iops;
--		inode->i_fop = &gfs2_file_fops;
-+		if (sdp->sd_args.ar_localflocks)
-+			inode->i_fop = &gfs2_file_fops_nolock;
-+		else
-+			inode->i_fop = &gfs2_file_fops;
- 	} else if (S_ISDIR(mode)) {
- 		inode->i_op = &gfs2_dir_iops;
--		inode->i_fop = &gfs2_dir_fops;
-+		if (sdp->sd_args.ar_localflocks)
-+			inode->i_fop = &gfs2_dir_fops_nolock;
-+		else
-+			inode->i_fop = &gfs2_dir_fops;
- 	} else if (S_ISLNK(mode)) {
- 		inode->i_op = &gfs2_symlink_iops;
- 	} else {
-diff --git a/fs/gfs2/ops_file.c b/fs/gfs2/ops_file.c
-index ad5daaa..db76ac1 100644
---- a/fs/gfs2/ops_file.c
-+++ b/fs/gfs2/ops_file.c
-@@ -615,15 +615,6 @@ static int gfs2_lock(struct file *file, int cmd, struct file_lock *fl)
- 	if (__mandatory_lock(&ip->i_inode))
- 		return -ENOLCK;
+ 	rgd = recent_rgrp_first(sdp, ip->i_last_rg_alloc);
  
--	if (sdp->sd_args.ar_localflocks) {
--		if (IS_GETLK(cmd)) {
--			posix_test_lock(file, fl);
--			return 0;
--		} else {
--			return posix_lock_file_wait(file, fl);
--		}
--	}
--
- 	if (cmd == F_CANCELLK) {
- 		/* Hack: */
- 		cmd = F_SETLK;
-@@ -716,9 +707,6 @@ static int gfs2_flock(struct file *file, int cmd, struct file_lock *fl)
- 	if (__mandatory_lock(&ip->i_inode))
- 		return -ENOLCK;
- 
--	if (sdp->sd_args.ar_localflocks)
--		return flock_lock_file_wait(file, fl);
--
- 	if (fl->fl_type == F_UNLCK) {
- 		do_unflock(file, fl);
- 		return 0;
-@@ -755,3 +743,27 @@ const struct file_operations gfs2_dir_fops = {
- 	.flock		= gfs2_flock,
- };
- 
-+const struct file_operations gfs2_file_fops_nolock = {
-+	.llseek		= gfs2_llseek,
-+	.read		= do_sync_read,
-+	.aio_read	= generic_file_aio_read,
-+	.write		= do_sync_write,
-+	.aio_write	= generic_file_aio_write,
-+	.unlocked_ioctl	= gfs2_ioctl,
-+	.mmap		= gfs2_mmap,
-+	.open		= gfs2_open,
-+	.release	= gfs2_close,
-+	.fsync		= gfs2_fsync,
-+	.splice_read	= generic_file_splice_read,
-+	.splice_write	= generic_file_splice_write,
-+	.setlease	= gfs2_setlease,
-+};
+ 	while (rgd) {
+-		error = gfs2_glock_nq_init(rgd->rd_gl, LM_ST_EXCLUSIVE,
+-					   LM_FLAG_TRY, &al->al_rgd_gh);
++		rg_locked = 0;
 +
-+const struct file_operations gfs2_dir_fops_nolock = {
-+	.readdir	= gfs2_readdir,
-+	.unlocked_ioctl	= gfs2_ioctl,
-+	.open		= gfs2_open,
-+	.release	= gfs2_close,
-+	.fsync		= gfs2_fsync,
-+};
++		if (gfs2_glock_is_locked_by_me(rgd->rd_gl)) {
++			rg_locked = 1;
++			error = 0;
++		} else {
++			error = gfs2_glock_nq_init(rgd->rd_gl, LM_ST_EXCLUSIVE,
++						   LM_FLAG_TRY, &al->al_rgd_gh);
++		}
+ 		switch (error) {
+ 		case 0:
+ 			if (try_rgrp_fit(rgd, al))
+ 				goto out;
+ 			if (rgd->rd_flags & GFS2_RDF_CHECK)
+ 				inode = try_rgrp_unlink(rgd, last_unlinked);
+-			gfs2_glock_dq_uninit(&al->al_rgd_gh);
++			if (!rg_locked)
++				gfs2_glock_dq_uninit(&al->al_rgd_gh);
+ 			if (inode)
+ 				return inode;
+ 			rgd = recent_rgrp_next(rgd, 1);
+@@ -1098,15 +1106,23 @@ static struct inode *get_local_rgrp(struct gfs2_inode *ip, u64 *last_unlinked)
+ 	begin = rgd = forward_rgrp_get(sdp);
+ 
+ 	for (;;) {
+-		error = gfs2_glock_nq_init(rgd->rd_gl, LM_ST_EXCLUSIVE, flags,
+-					  &al->al_rgd_gh);
++		rg_locked = 0;
 +
-diff --git a/fs/gfs2/ops_inode.h b/fs/gfs2/ops_inode.h
-index edb519c..fd8cee2 100644
---- a/fs/gfs2/ops_inode.h
-+++ b/fs/gfs2/ops_inode.h
-@@ -18,6 +18,8 @@ extern const struct inode_operations gfs2_symlink_iops;
- extern const struct inode_operations gfs2_dev_iops;
- extern const struct file_operations gfs2_file_fops;
- extern const struct file_operations gfs2_dir_fops;
-+extern const struct file_operations gfs2_file_fops_nolock;
-+extern const struct file_operations gfs2_dir_fops_nolock;
++		if (gfs2_glock_is_locked_by_me(rgd->rd_gl)) {
++			rg_locked = 1;
++			error = 0;
++		} else {
++			error = gfs2_glock_nq_init(rgd->rd_gl, LM_ST_EXCLUSIVE, flags,
++						   &al->al_rgd_gh);
++		}
+ 		switch (error) {
+ 		case 0:
+ 			if (try_rgrp_fit(rgd, al))
+ 				goto out;
+ 			if (rgd->rd_flags & GFS2_RDF_CHECK)
+ 				inode = try_rgrp_unlink(rgd, last_unlinked);
+-			gfs2_glock_dq_uninit(&al->al_rgd_gh);
++			if (!rg_locked)
++				gfs2_glock_dq_uninit(&al->al_rgd_gh);
+ 			if (inode)
+ 				return inode;
+ 			break;
+@@ -1213,7 +1229,8 @@ void gfs2_inplace_release(struct gfs2_inode *ip)
+ 			     al->al_line);
  
- extern void gfs2_set_inode_flags(struct inode *inode);
- 
+ 	al->al_rgd = NULL;
+-	gfs2_glock_dq_uninit(&al->al_rgd_gh);
++	if (al->al_rgd_gh.gh_gl)
++		gfs2_glock_dq_uninit(&al->al_rgd_gh);
+ 	if (ip != GFS2_I(sdp->sd_rindex))
+ 		gfs2_glock_dq_uninit(&al->al_ri_gh);
+ }
 -- 
 1.5.1.2
 
