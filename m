@@ -1,96 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbYAUOUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759005AbYAUO0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757958AbYAUOUS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 09:20:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYAUOUE
+	id S1759005AbYAUO0W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 09:26:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYAUO0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 09:20:04 -0500
-Received: from mga02.intel.com ([134.134.136.20]:17290 "EHLO mga02.intel.com"
+	Mon, 21 Jan 2008 09:26:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:50130 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753077AbYAUOUC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 09:20:02 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,227,1199692800"; 
-   d="scan'208";a="254546739"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1753292AbYAUO0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 09:26:11 -0500
+Message-ID: <4794AB56.60904@redhat.com>
+Date: Mon, 21 Jan 2008 09:25:26 -0500
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071018)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 9/10] introduce intel_menlow platform specific driver
-Date: Mon, 21 Jan 2008 19:49:55 +0530
-Message-ID: <05B550FD4BD2014E841D83547B6260080281AE80@bgsmsx411.gar.corp.intel.com>
-In-Reply-To: <20080121095331.GA5333@infradead.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 9/10] introduce intel_menlow platform specific driver
-Thread-Index: AchcE4C4/PIBJ7+IT+28phBillEmtAAAq2iQ
-References: <1200556278.2935.118.camel@acpi-sony.sh.intel.com> <20080121095331.GA5333@infradead.org>
-From: "Thomas, Sujith" <sujith.thomas@intel.com>
-To: "Christoph Hellwig" <hch@infradead.org>,
-       "Zhang, Rui" <rui.zhang@intel.com>
-Cc: <lenb@kernel.org>, <linux-acpi@vger.kernel.org>,
-       <linux-pm@lists.linux-foundation.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 21 Jan 2008 14:20:00.0848 (UTC) FILETIME=[B53A4D00:01C85C38]
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Oeser <ioe-lkml@rameria.de>, Miklos Szeredi <miklos@szeredi.hu>,
+       peterz@infradead.org, salikhmetov@gmail.com, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       jesper.juhl@gmail.com, akpm@linux-foundation.org, protasnb@gmail.com,
+       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
+Subject: Re: [PATCH -v6 2/2] Updating ctime and mtime for memory-mapped files
+References: <12006091182260-git-send-email-salikhmetov@gmail.com> <E1JFwnQ-0001FB-2c@pomaz-ex.szeredi.hu> <alpine.LFD.1.00.0801181127000.2957@woody.linux-foundation.org> <200801182332.02945.ioe-lkml@rameria.de> <alpine.LFD.1.00.0801181439330.2957@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0801181439330.2957@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> On Fri, 18 Jan 2008, Ingo Oeser wrote:
+>   
+>> Can we get "if the write to the page hits the disk, the mtime has hit the disk
+>> already no less than SOME_GRANULARITY before"? 
+>>
+>> That is very important for computer forensics. Esp. in saving your ass!
+>>
+>> Ok, now back again to making that fast :-)
+>>     
+>
+> I certainly don't mind it if we have some tighter guarantees, but what I'd 
+> want is:
+>
+>  - keep it simple. Let's face it, Linux has never ever given those 
+>    guarantees before, and it's not is if anybody has really cared. Even 
+>    now, the issue seems to be more about paper standards conformance than 
+>    anything else.
+>
+>   
 
+I have been working on getting something supported here for
+because I have some very large Wall Street customers who do
+care about getting the mtime updated because their backups
+are getting corrupted.  They are incomplete because although
+their applications update files, they don't get backed up
+because the mtime never changes.
 
-> -----Original Message-----
-> From: Christoph Hellwig [mailto:hch@infradead.org]
-> Sent: Monday, January 21, 2008 3:24 PM
-> To: Zhang, Rui
-> Cc: lenb@kernel.org; linux-acpi@vger.kernel.org; linux-pm@lists.linux-
-> foundation.org; linux-kernel@vger.kernel.org; Thomas, Sujith
-> Subject: Re: [PATCH 9/10] introduce intel_menlow platform specific
-driver
-> 
-> On Thu, Jan 17, 2008 at 03:51:17PM +0800, Zhang Rui wrote:
-> > From: Thomas Sujith <sujith.thomas@intel.com>
-> >
-> > Intel menlow platform specific driver for thermal management.
-> >
-> > Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > ---
-> >  drivers/misc/Kconfig        |   10
-> >  drivers/misc/Makefile       |    1
-> >  drivers/misc/intel_menlow.c |  527
-> ++++++++++++++++++++++++++++++++++++++++++++
-> 
-> Why is this in drivers/misc?  I don't have a thermal.h in mainline,
-but
-> if this is a new subsystem your adding care to create a directory
-under
-> drivers/ for it?
-This patch series adds a new "thermal" subsystem and is rightly placed
-under drivers/thermal/ . intel_menlow.c isn't fully a thermal driver. It
-does all the platform specific stuff (thermal is one of them). It's not
-fitting under any of the subsystems hence moved to drivers/misc
-> 
-> > +/*
-> > +*  intel_menlow.c - Intel menlow Driver for thermal management
-> extension
-> > +*
-> > +*  Copyright (C) 2008 Intel Corp
-> > +*  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
-> > +*  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
-> 
-> Please add a whitespace before the * so they line up.
-Will take care of this.
-> 
-> > +MODULE_AUTHOR("Thomas Sujith");
-> > +MODULE_AUTHOR("Zhang Rui");
-> 
-> I've never seen a driver with two MODULE_AUTHOR statements before.
-Does
-> this actually work?  What does modinfo -F author say for your module?
-There is nothing wrong in giving 2 MODULE_AUTHORS. Both will be
-displayed in the command modinfo -F author.
+>  - I get worried about people playing around with the dirty bit in 
+>    particular. We have had some really rather nasty bugs here. Most of 
+>    which are totally impossible to trigger under normal loads (for 
+>    example the old random-access utorrent writable mmap issue from about 
+>    a year ago).
+>
+> So these two issues - the big red danger signs flashing in my brain, 
+> coupled with the fact that no application has apparently ever really 
+> noticed in the last 15 years - just makes it a case where I'd like each 
+> step of the way to be obvious and simple and no larger than really 
+> absolutely necessary.
 
-:-Sujith
+Simple is good.  However, too simple is not good.  I would suggest
+that we implement file time updates which make sense and if they
+happen to follow POSIX, then nifty, otherwise, oh well.
 
+    Thanx...
+
+       ps
