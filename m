@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764422AbYAUKY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761423AbYAUKYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764422AbYAUKY0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:24:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760310AbYAUKDh
+	id S1761423AbYAUKYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760340AbYAUKDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:03:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35841 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:03:39 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35843 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760170AbYAUKD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:03:27 -0500
+	id S1759905AbYAUKD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:03:29 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Bob Peterson <rpeterso@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 57/58] [GFS2] Lockup on error
-Date: Mon, 21 Jan 2008 09:22:15 +0000
-Message-Id: <12009074392527-git-send-email-swhiteho@redhat.com>
+Cc: Abhijith Das <adas@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 58/58] [GFS2] Allow journal recovery on read-only mount
+Date: Mon, 21 Jan 2008 09:22:16 +0000
+Message-Id: <12009074411454-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <1200907438887-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12009074392527-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -75,34 +74,57 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009074341030-git-send-email-swhiteho@redhat.com>
  <12009074362909-git-send-email-swhiteho@redhat.com>
  <1200907438887-git-send-email-swhiteho@redhat.com>
-Message-Id: <7244134b8007d7ec8f2a93d039a3bb6720e2466f.1200905287.git.swhiteho@redhat.com>
+ <12009074392527-git-send-email-swhiteho@redhat.com>
+Message-Id: <7ecd8d8b2b13714181d4ae3bde6ce4005e5a304e.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bob Peterson <rpeterso@redhat.com>
+From: Abhijith Das <adas@redhat.com>
 
-I spotted this bug while I was digging around.  Looks like it could cause
-a lockup in some rare error condition.
+This patch allows gfs2 to perform journal recovery even if it is mounted
+read-only. Strictly speaking, a read-only mount should not be writing to
+the filesystem, but we do this only to perform journal recovery. A
+read-only mount will fail if we don't recover the dirty journal. Also,
+when gfs2 is used as a root filesystem, it will be mounted read-only
+before being mounted read-write during the boot sequence. A failed
+read-only mount will panic the machine during bootup.
 
-Signed-off-by: Bob Peterson <rpeterso@redhat.com>
+Signed-off-by: Abhijith Das <adas@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index c84764a..728d316 100644
---- a/fs/gfs2/inode.c
-+++ b/fs/gfs2/inode.c
-@@ -860,7 +860,7 @@ static int link_dinode(struct gfs2_inode *dip, const struct qstr *name,
+diff --git a/fs/gfs2/recovery.c b/fs/gfs2/recovery.c
+index 27c994f..b249e29 100644
+--- a/fs/gfs2/recovery.c
++++ b/fs/gfs2/recovery.c
+@@ -504,13 +504,21 @@ int gfs2_recover_journal(struct gfs2_jdesc *jd)
+ 			if (!test_bit(SDF_JOURNAL_LIVE, &sdp->sd_flags))
+ 				ro = 1;
+ 		} else {
+-			if (sdp->sd_vfs->s_flags & MS_RDONLY)
+-				ro = 1;
++			if (sdp->sd_vfs->s_flags & MS_RDONLY) {
++				/* check if device itself is read-only */
++				ro = bdev_read_only(sdp->sd_vfs->s_bdev);
++				if (!ro) {
++					fs_info(sdp, "recovery required on "
++						"read-only filesystem.\n");
++					fs_info(sdp, "write access will be "
++						"enabled during recovery.\n");
++				}
++			}
+ 		}
  
- 	error = alloc_required = gfs2_diradd_alloc_required(&dip->i_inode, name);
- 	if (alloc_required < 0)
--		goto fail;
-+		goto fail_quota_locks;
- 	if (alloc_required) {
- 		error = gfs2_quota_check(dip, dip->i_inode.i_uid, dip->i_inode.i_gid);
- 		if (error)
+ 		if (ro) {
+-			fs_warn(sdp, "jid=%u: Can't replay: read-only FS\n",
+-				jd->jd_jid);
++			fs_warn(sdp, "jid=%u: Can't replay: read-only block "
++				"device\n", jd->jd_jid);
+ 			error = -EROFS;
+ 			goto fail_gunlock_tr;
+ 		}
 -- 
 1.5.1.2
 
