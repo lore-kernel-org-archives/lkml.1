@@ -1,98 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbYAUW1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbYAUWhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbYAUW1X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 17:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbYAUW1K
+	id S1756280AbYAUWhy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 17:37:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbYAUWhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 17:27:10 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50548 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754544AbYAUW1J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 17:27:09 -0500
-Date: Mon, 21 Jan 2008 22:20:37 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, psybases@gmail.com,
-       linux-scsi@vger.kernel.org, cebbert@redhat.com, bharrosh@panasas.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: INITIO scsi driver fails to work properly
-Message-ID: <20080121222037.3d8b46a1@lxorguk.ukuu.org.uk>
-In-Reply-To: <1200495471.3136.1.camel@localhost.localdomain>
-References: <1200070903.3286.28.camel@localhost.localdomain>
-	<9f00bd9d0801130428s5e4c034apf21052b918470f99@mail.gmail.com>
-	<1200410166.9273.4.camel@localhost.localdomain>
-	<20080116145916A.fujita.tomonori@lab.ntt.co.jp>
-	<1200495471.3136.1.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jan 2008 17:37:45 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59412 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754106AbYAUWho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 17:37:44 -0500
+Date: Mon, 21 Jan 2008 23:37:56 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Zan Lynx <zlynx@acm.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: echo mem > /sys/power/state
+Message-ID: <20080121223756.GA15875@elf.ucw.cz>
+References: <1200591411.34145.4.camel@localhost> <20080117111355.29554f38.akpm@linux-foundation.org> <200801172238.17176.rjw@sisk.pl> <20080118083610.GA19792@elte.hu> <20080118004725.dcd132ee.akpm@linux-foundation.org> <20080118121803.GF11044@elte.hu> <20080120233912.GA4844@elf.ucw.cz> <20080120234208.GA22292@elte.hu> <20080121003106.GA1618@elf.ucw.cz> <878x2k53iz.fsf@saeurebad.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <878x2k53iz.fsf@saeurebad.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok my attempt to get the card failed so we are going to have to do this
-the hard way. See where this patch crashes and what it prints
+Hi!
 
-(On top of the other patches)
+> > index f7dfff2..e5693d6 100644
+> > --- a/kernel/power/Makefile
+> > +++ b/kernel/power/Makefile
+> > @@ -5,7 +5,7 @@ endif
+> >  
+> >  obj-y				:= main.o
+> >  obj-$(CONFIG_PM_LEGACY)		+= pm.o
+> > -obj-$(CONFIG_PM_SLEEP)		+= process.o console.o
+> > +obj-$(CONFIG_PM_SLEEP)		+= process.o console.o sleepy.o
+> 
+> Why compiling it uncoditionally?  What would be wrong with
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.24-rc8-mm1/drivers/scsi/initio.c linux-2.6.24-rc8-mm1/drivers/scsi/initio.c
---- linux.vanilla-2.6.24-rc8-mm1/drivers/scsi/initio.c	2008-01-19 14:22:43.000000000 +0000
-+++ linux-2.6.24-rc8-mm1/drivers/scsi/initio.c	2008-01-21 14:54:48.000000000 +0000
-@@ -2537,10 +2537,12 @@
- 	struct Scsi_Host *dev = dev_id;
- 	unsigned long flags;
- 	int r;
--	
-+
-+	printk("ISR\n");	
- 	spin_lock_irqsave(dev->host_lock, flags);
- 	r = initio_isr((struct initio_host *)dev->hostdata);
- 	spin_unlock_irqrestore(dev->host_lock, flags);
-+	printk("ISR DONE %d\n", r);
- 	if (r)
- 		return IRQ_HANDLED;
- 	else
-@@ -2643,6 +2645,7 @@
- 	struct initio_host *host = (struct initio_host *) cmd->device->host->hostdata;
- 	struct scsi_ctrl_blk *cmnd;
- 
-+	printk("SCB QUEUE\n");
- 	cmd->scsi_done = done;
- 
- 	cmnd = initio_alloc_scb(host);
-@@ -2650,7 +2653,9 @@
- 		return SCSI_MLQUEUE_HOST_BUSY;
- 
- 	initio_build_scb(host, cmnd, cmd);
-+	printk("SCB EXEC\n");
- 	initio_exec_scb(host, cmnd);
-+	printk("SCB EXEC DONE\n");
- 	return 0;
- }
- 
-@@ -2766,6 +2771,8 @@
- 	struct scsi_cmnd *cmnd;	/* Pointer to SCSI request block */
- 	struct initio_host *host;
- 	struct scsi_ctrl_blk *cblk;
-+	
-+	printk("SCB POST\n");
- 
- 	host = (struct initio_host *) host_mem;
- 	cblk = (struct scsi_ctrl_blk *) cblk_mem;
-@@ -2934,9 +2941,11 @@
- 
- 	pci_set_drvdata(pdev, shost);
- 
-+	printk("SAH\n");
- 	error = scsi_add_host(shost, &pdev->dev);
- 	if (error)
- 		goto out_free_irq;
-+	printk("SSH\n");
- 	scsi_scan_host(shost);
- 	return 0;
- out_free_irq:
+Its part of my world domination plan ;-).
+
+> > +extern int set_alarm(int length);
+> 
+> Huh?
+
+Set alarm belongs in drivers/rtc, moved now.
+
+> > +	alarm = now+length;
+> > +	rtc_time_to_tm(alarm, &alm.time);
+> > +
+> > +	retval = cmos_set_alarm(rtc, &alm);
+> 
+> cmos_set_alarm() takes a struct device * too.
+
+Fixed.
+
+Thanks,
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
