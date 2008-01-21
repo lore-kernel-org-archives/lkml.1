@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764750AbYAUKSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765048AbYAUKSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764750AbYAUKSZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:18:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760114AbYAUKDH
+	id S1765048AbYAUKSo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:18:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758622AbYAUKDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:03:07 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35815 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:03:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35816 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759331AbYAUKDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:03:03 -0500
+	id S1759674AbYAUKDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:03:05 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Bob Peterson <rpeterso@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 43/58] [GFS2] Eliminate the no longer needed sd_statfs_mutex
-Date: Mon, 21 Jan 2008 09:22:01 +0000
-Message-Id: <12009074163163-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 44/58] [GFS2] Minor correction
+Date: Mon, 21 Jan 2008 09:22:02 +0000
+Message-Id: <1200907417194-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12009074142128-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12009074163163-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -61,7 +61,8 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009074103982-git-send-email-swhiteho@redhat.com>
  <12009074121930-git-send-email-swhiteho@redhat.com>
  <12009074142128-git-send-email-swhiteho@redhat.com>
-Message-Id: <74bfe16e314ed23a9633debae6a1db7c19202208.1200905287.git.swhiteho@redhat.com>
+ <12009074163163-git-send-email-swhiteho@redhat.com>
+Message-Id: <b8ee332646d8dd1fb5ea64063ac9d6b804e1652b.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -70,60 +71,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bob Peterson <rpeterso@redhat.com>
 
-This patch eliminates the unneeded sd_statfs_mutex mutex but preserves
-the ordering as discussed.
+This is a small correction to my previously posted patch1.
+It just changes a divide to a shift.  It's faster and doesn't
+introduce odd dependencies on 32-bit compiles.
 
 Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index 14862d1..9a83429 100644
---- a/fs/gfs2/incore.h
-+++ b/fs/gfs2/incore.h
-@@ -527,7 +527,6 @@ struct gfs2_sbd {
- 	/* StatFS stuff */
- 
- 	spinlock_t sd_statfs_spin;
--	struct mutex sd_statfs_mutex;
- 	struct gfs2_statfs_change_host sd_statfs_master;
- 	struct gfs2_statfs_change_host sd_statfs_local;
- 	unsigned long sd_statfs_sync_time;
 diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 35ec630..22e260e 100644
+index 22e260e..a77d41f 100644
 --- a/fs/gfs2/ops_fstype.c
 +++ b/fs/gfs2/ops_fstype.c
-@@ -60,7 +60,6 @@ static struct gfs2_sbd *init_sbd(struct super_block *sb)
+@@ -333,7 +333,7 @@ static int map_journal_extents(struct gfs2_sbd *sdp)
+ 	INIT_LIST_HEAD(&jd->extent_list);
+ 	prev_db = 0;
  
- 	mutex_init(&sdp->sd_inum_mutex);
- 	spin_lock_init(&sdp->sd_statfs_spin);
--	mutex_init(&sdp->sd_statfs_mutex);
- 
- 	spin_lock_init(&sdp->sd_rindex_spin);
- 	mutex_init(&sdp->sd_rindex_mutex);
-diff --git a/fs/gfs2/super.c b/fs/gfs2/super.c
-index dda7747..73e49df 100644
---- a/fs/gfs2/super.c
-+++ b/fs/gfs2/super.c
-@@ -686,9 +686,7 @@ void gfs2_statfs_change(struct gfs2_sbd *sdp, s64 total, s64 free,
- 	if (error)
- 		return;
- 
--	mutex_lock(&sdp->sd_statfs_mutex);
- 	gfs2_trans_add_bh(l_ip->i_gl, l_bh, 1);
--	mutex_unlock(&sdp->sd_statfs_mutex);
- 
- 	spin_lock(&sdp->sd_statfs_spin);
- 	l_sc->sc_total += total;
-@@ -736,9 +734,7 @@ int gfs2_statfs_sync(struct gfs2_sbd *sdp)
- 	if (error)
- 		goto out_bh2;
- 
--	mutex_lock(&sdp->sd_statfs_mutex);
- 	gfs2_trans_add_bh(l_ip->i_gl, l_bh, 1);
--	mutex_unlock(&sdp->sd_statfs_mutex);
- 
- 	spin_lock(&sdp->sd_statfs_spin);
- 	m_sc->sc_total += l_sc->sc_total;
+-	for (lb = 0; lb < ip->i_di.di_size / sdp->sd_sb.sb_bsize; lb++) {
++	for (lb = 0; lb < ip->i_di.di_size >> sdp->sd_sb.sb_bsize_shift; lb++) {
+ 		bh.b_state = 0;
+ 		bh.b_blocknr = 0;
+ 		bh.b_size = 1 << ip->i_inode.i_blkbits;
 -- 
 1.5.1.2
 
