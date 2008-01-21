@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbYAUCvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbYAUCwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757623AbYAUCvT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 21:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbYAUCvI
+	id S1757880AbYAUCwW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 21:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbYAUCwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 21:51:08 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:47642 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753236AbYAUCvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 21:51:07 -0500
-Date: Mon, 21 Jan 2008 03:51:11 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>
-Subject: Re: kbuild: improved Section mismatch detection
-Message-ID: <20080121025111.GA26076@uranus.ravnborg.org>
-References: <20080120200527.GA23852@uranus.ravnborg.org> <20080120222754.GK8669@does.not.exist>
-Mime-Version: 1.0
+	Sun, 20 Jan 2008 21:52:13 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:35514 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753236AbYAUCwM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 21:52:12 -0500
+Date: Sun, 20 Jan 2008 21:51:17 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Abhishek Rai <abhishekrai@google.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, linux-ext4@vger.kernel.org
+Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm
+	patch]
+Message-ID: <20080121025117.GB8105@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Daniel Phillips <phillips@phunq.net>,
+	Abhishek Rai <abhishekrai@google.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, rohitseth@google.com,
+	linux-ext4@vger.kernel.org
+References: <200801140839.01986.abhishekrai@google.com> <20080115152801.GA7292@mit.edu> <d9885f0f0801170447r1c2bfeb9l6c911bfa0113366f@mail.gmail.com> <200801192010.20699.phillips@phunq.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080120222754.GK8669@does.not.exist>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200801192010.20699.phillips@phunq.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 21, 2008 at 12:27:54AM +0200, Adrian Bunk wrote:
-> On Sun, Jan 20, 2008 at 09:05:27PM +0100, Sam Ravnborg wrote:
-> >...
-> > Adrian reminded us that KCFLAGS=-fno-inline told
-> > another story with more than 100 Section mismatch
-> > warnings on 64 bit x86 with an allyesconfig build.
-> >...
+On Sat, Jan 19, 2008 at 08:10:20PM -0800, Daniel Phillips wrote:
 > 
-> Not -fno-inline but -fno-inline-functions-called-once
-> (completely different option).
+> I can see value in preemptively loading indirect blocks into the buffer 
+> cache, but is building a second-order extent tree really worth the 
+> effort?  Probing the buffer cache is very fast.
 
-Yep - looked that up after sending the mail.
-A quick test shows no diference in # of generated Section mismatch
-warnings for the two - which is good.
+It's not that much effort, and for a big database (say, like a 50GB
+database file), the indirect blocks would take up 50 megabytes of
+memory.  Collapsing it into an extent tree would save that memory into
+a few kilobytes.  I suppose a database server would probably have
+5-10GB's of memory, so the grand scheme of things it's not a vast
+amount of memory, but the trick is keeping the indirect blocks pinned
+so they don't get pushed out by some vast, gigunndo Java application
+running in the same server as the database.  If you have the indirect
+blocks encoded into the extent tree, then you don't have to worry
+about that.
 
-	Sam
+            	       	     	     	   - Ted
