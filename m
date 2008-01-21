@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760687AbYAUXSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757649AbYAUXSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760687AbYAUXSh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 18:18:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759561AbYAUXRq
+	id S1757649AbYAUXSy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 18:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760115AbYAUXRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 18:17:46 -0500
+	Mon, 21 Jan 2008 18:17:53 -0500
 Received: from ug-out-1314.google.com ([66.249.92.169]:43625 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758012AbYAUXRo (ORCPT
+	with ESMTP id S1759947AbYAUXRv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 18:17:44 -0500
+	Mon, 21 Jan 2008 18:17:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=SlUJsj3V5tyq6XeXFBmaW7Xb1iBpxPtrXYCJ3RhbL+PibqeyxFjzrQGKzfm7EixOGv4J+MKL/CTbctvb1hqqWjp7/wisrDxGsdJyTas+tvYEBbMrbKKlgrFrlIXcQiwj/2f5K+/mEs1REbo3EMe1dIlg5nLbOscqt+OlOB2mX7Q=
+        b=L1lNHk5FiKxjgsSclDnI8TTcNKRMkMi+Ou//ng/cEnMyk8OhyuN1y1Fq7l21a6LP5Hcu4f91zqzFqXx9zuIMdmt/WhvHTyLunQ/WDvyqNCrio674vIMUAD1bOsK8R4vqn3coesAQtx0I8jqcz0CtXYeWkk4BNrE3xWK8/uHvTVI=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Tue, 22 Jan 2008 00:30:50 +0100
-Message-Id: <20080121233050.30311.52949.sendpatchset@localhost.localdomain>
+Date: Tue, 22 Jan 2008 00:30:56 +0100
+Message-Id: <20080121233056.30311.5861.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080121233036.30311.76015.sendpatchset@localhost.localdomain>
 References: <20080121233036.30311.76015.sendpatchset@localhost.localdomain>
-Subject: [PATCH 02/16] ide-scsi: use ide_execute_command()
+Subject: [PATCH 03/16] trm290: use ide_execute_command()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -30,24 +30,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/scsi/ide-scsi.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/ide/pci/trm290.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-Index: b/drivers/scsi/ide-scsi.c
+Index: b/drivers/ide/pci/trm290.c
 ===================================================================
---- a/drivers/scsi/ide-scsi.c
-+++ b/drivers/scsi/ide-scsi.c
-@@ -596,11 +596,8 @@ static ide_startstop_t idescsi_issue_pc 
- 		set_bit(PC_DMA_OK, &pc->flags);
+--- a/drivers/ide/pci/trm290.c
++++ b/drivers/ide/pci/trm290.c
+@@ -177,10 +177,7 @@ static void trm290_selectproc (ide_drive
  
- 	if (test_bit(IDESCSI_DRQ_INTERRUPT, &scsi->flags)) {
--		BUG_ON(HWGROUP(drive)->handler != NULL);
--		ide_set_handler(drive, &idescsi_transfer_pc,
--				get_timeout(pc), idescsi_expiry);
--		/* Issue the packet command */
--		HWIF(drive)->OUTB(WIN_PACKETCMD, IDE_COMMAND_REG);
-+		ide_execute_command(drive, WIN_PACKETCMD, &idescsi_transfer_pc,
-+				    get_timeout(pc), idescsi_expiry);
- 		return ide_started;
- 	} else {
- 		/* Issue the packet command */
+ static void trm290_dma_exec_cmd(ide_drive_t *drive, u8 command)
+ {
+-	BUG_ON(HWGROUP(drive)->handler != NULL);	/* paranoia check */
+-	ide_set_handler(drive, &ide_dma_intr, WAIT_CMD, NULL);
+-	/* issue cmd to drive */
+-	outb(command, IDE_COMMAND_REG);
++	ide_execute_command(drive, command, &ide_dma_intr, WAIT_CMD, NULL);
+ }
+ 
+ static int trm290_dma_setup(ide_drive_t *drive)
