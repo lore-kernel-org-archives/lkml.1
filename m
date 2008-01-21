@@ -1,193 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760193AbYAUV0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759201AbYAUV1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760193AbYAUV0t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 16:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbYAUV0F
+	id S1759201AbYAUV1O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 16:27:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758623AbYAUV0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 16:26:05 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:53721 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751932AbYAUVZy (ORCPT
+	Mon, 21 Jan 2008 16:26:19 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:60546 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755187AbYAUV0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 16:25:54 -0500
-Date: Mon, 21 Jan 2008 14:32:49 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, kzak@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       util-linux-ng@vger.kernel.org
-Subject: Re: [patch 07/10] unprivileged mounts: add sysctl tunable for
-	"safe" property
-Message-ID: <20080121203249.GB5536@sergelap.austin.rr.com>
-References: <20080116123147.466284860@szeredi.hu> <20080116123433.126167584@szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080116123433.126167584@szeredi.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 21 Jan 2008 16:26:04 -0500
+To: linuxram@us.ibm.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org, viro@ftp.linux.org.uk, hch@infradead.org,
+       a.p.zijlstra@chello.nl
+In-reply-to: <1200944886.2988.27.camel@ram.us.ibm.com> (message from Ram Pai
+	on Mon, 21 Jan 2008 11:48:05 -0800)
+Subject: Re: [RFC][PATCH] VFS: create /proc/<pid>/mountinfo
+References: <E1JGBVq-0002Or-H1@pomaz-ex.szeredi.hu> <1200944886.2988.27.camel@ram.us.ibm.com>
+Message-Id: <E1JH49E-0006d6-N9@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 21 Jan 2008 22:25:40 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> Add the following:
-> 
->   /proc/sys/fs/types/${FS_TYPE}/usermount_safe
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> ---
-> 
-> Index: linux/fs/filesystems.c
-> ===================================================================
-> --- linux.orig/fs/filesystems.c	2008-01-16 13:24:52.000000000 +0100
-> +++ linux/fs/filesystems.c	2008-01-16 13:25:09.000000000 +0100
-> @@ -12,6 +12,7 @@
->  #include <linux/kmod.h>
->  #include <linux/init.h>
->  #include <linux/module.h>
-> +#include <linux/sysctl.h>
->  #include <asm/uaccess.h>
-> 
->  /*
-> @@ -51,6 +52,57 @@ static struct file_system_type **find_fi
->  	return p;
->  }
-> 
-> +#define MAX_FILESYSTEM_VARS 1
-> +
-> +struct filesystem_sysctl_table {
-> +	struct ctl_table_header *header;
-> +	struct ctl_table table[MAX_FILESYSTEM_VARS + 1];
-> +};
-> +
-> +/*
-> + * Create /sys/fs/types/${FSNAME} directory with per fs-type tunables.
-> + */
-> +static int filesystem_sysctl_register(struct file_system_type *fs)
-> +{
-> +	struct filesystem_sysctl_table *t;
-> +	struct ctl_path path[] = {
-> +		{ .procname = "fs", .ctl_name = CTL_FS },
-> +		{ .procname = "types", .ctl_name = CTL_UNNUMBERED },
-> +		{ .procname = fs->name, .ctl_name = CTL_UNNUMBERED },
-> +		{ }
-> +	};
-> +
-> +	t = kzalloc(sizeof(*t), GFP_KERNEL);
-> +	if (!t)
-> +		return -ENOMEM;
-> +
-> +
-> +	t->table[0].ctl_name = CTL_UNNUMBERED;
-> +	t->table[0].procname = "usermount_safe";
-> +	t->table[0].maxlen = sizeof(int);
-> +	t->table[0].data = &fs->fs_safe;
-> +	t->table[0].mode = 0644;
-> +	t->table[0].proc_handler = &proc_dointvec;
-> +
-> +	t->header = register_sysctl_paths(path, t->table);
-> +	if (!t->header) {
-> +		kfree(t);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	fs->sysctl_table = t;
-> +
-> +	return 0;
-> +}
-> +
-> +static void filesystem_sysctl_unregister(struct file_system_type *fs)
-> +{
-> +	struct filesystem_sysctl_table *t = fs->sysctl_table;
-> +
-> +	unregister_sysctl_table(t->header);
-> +	kfree(t);
-> +}
-> +
->  /**
->   *	register_filesystem - register a new filesystem
->   *	@fs: the file system structure
-> @@ -80,6 +132,13 @@ int register_filesystem(struct file_syst
->  	else
->  		*p = fs;
->  	write_unlock(&file_systems_lock);
-> +
-> +	if (res == 0) {
-> +		res = filesystem_sysctl_register(fs);
+> 	You have removed the code that checked if the peer or
+> 	master mount was in the same namespace before reporting their
+> 	corresponding mount-ids. One downside of that approach is the
+> 	user will see an mount_id in the output with no corresponding
+> 	line to explain the details of the mount_id.  
 
-What do you think about doing this only if FS_SAFE is also set,
-so for instance at first only FUSE would allow itself to be
-made user-mountable?
+Before the change, the peer and master ID's were basically randomly
+chosen from the peers, which means, it wasn't possible to always
+determine, that two mounts were peers, or that they were slaves to the
+same peer group.
 
-A safe thing to do, or overly intrusive?
+After the change, this is possible, since the peer ID will be the same
+for all mounts which are peers.  This means, that even though the peer
+ID might be in a different namespace, it is possible to determine all
+peers within the same namespace by comparing their peer ID's.
 
-> +		if (res != 0)
-> +			unregister_filesystem(fs);
-> +	}
-> +
->  	return res;
->  }
 > 
-> @@ -108,6 +167,7 @@ int unregister_filesystem(struct file_sy
->  			*tmp = fs->next;
->  			fs->next = NULL;
->  			write_unlock(&file_systems_lock);
-> +			filesystem_sysctl_unregister(fs);
->  			return 0;
->  		}
->  		tmp = &(*tmp)->next;
-> Index: linux/include/linux/fs.h
-> ===================================================================
-> --- linux.orig/include/linux/fs.h	2008-01-16 13:25:09.000000000 +0100
-> +++ linux/include/linux/fs.h	2008-01-16 13:25:09.000000000 +0100
-> @@ -1437,6 +1437,7 @@ struct file_system_type {
->  	struct module *owner;
->  	struct file_system_type * next;
->  	struct list_head fs_supers;
-> +	struct filesystem_sysctl_table *sysctl_table;
+> 	And reporting the mount-id of a mount is some other namespace
+> 	could subtly mean information-leak?
+
+I don't think the mount ID itself can be sensitive, it really doesn't
+contain any information, other than being an identifier.
+
+> 	One other comment I had received offline from Steve French was
+> 	that the patch did not consider the following case:
 > 
->  	struct lock_class_key s_lock_key;
->  	struct lock_class_key s_umount_key;
-> Index: linux/Documentation/filesystems/proc.txt
-> ===================================================================
-> --- linux.orig/Documentation/filesystems/proc.txt	2008-01-16 13:25:07.000000000 +0100
-> +++ linux/Documentation/filesystems/proc.txt	2008-01-16 13:25:09.000000000 +0100
-> @@ -43,6 +43,7 @@ Table of Contents
->    2.13	/proc/<pid>/oom_score - Display current oom-killer score
->    2.14	/proc/<pid>/io - Display the IO accounting fields
->    2.15	/proc/<pid>/coredump_filter - Core dump filtering settings
-> +  2.16	/proc/sys/fs/types - File system type specific parameters
+> 	"Have you thought about whether this could handle the case in which cifs mounts with 
+> 	a relative path e.g. currently
+>          	mount -t cifs //server/share /mnt
 > 
->  ------------------------------------------------------------------------------
->  Preface
-> @@ -2283,4 +2284,21 @@ For example:
->    $ echo 0x7 > /proc/self/coredump_filter
->    $ ./some_program
+> 	can not be distinguished from
+>         	mount -t cifs //server/share/subdirectory /mnt
 > 
-> +2.16 /proc/sys/fs/types/ - File system type specific parameters
-> +----------------------------------------------------------------
-> +
-> +There's a separate directory /proc/sys/fs/types/<type>/ for each
-> +filesystem type, containing the following files:
-> +
-> +usermount_safe
-> +--------------
-> +
-> +Setting this to non-zero will allow filesystems of this type to be
-> +mounted by unprivileged users (note, that there are other
-> +prerequisites as well).
-> +
-> +Care should be taken when enabling this, since most
-> +filesystems haven't been designed with unprivileged mounting
-> +in mind.
-> +
->  ------------------------------------------------------------------------------
-> 
-> --
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 	when you run the mount command (ie the cifs "prefixpath" in this case 
+> 	"/subdirectory" is not displayed)"
+
+Why cifs not displaying '//server/share/subdirectory' as the source of
+the mount?
+
+Miklos
