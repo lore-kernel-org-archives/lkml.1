@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761027AbYAUQSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760160AbYAUQ1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761027AbYAUQSH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 11:18:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbYAUQR5
+	id S1760160AbYAUQ1S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 11:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYAUQ1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 11:17:57 -0500
-Received: from mga07.intel.com ([143.182.124.22]:29656 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755813AbYAUQR4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 11:17:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,227,1199692800"; 
-   d="scan'208";a="369636140"
-Message-ID: <4794C554.4000200@linux.intel.com>
-Date: Mon, 21 Jan 2008 08:16:20 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Mon, 21 Jan 2008 11:27:07 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:35546 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751537AbYAUQ1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 11:27:06 -0500
+Date: Mon, 21 Jan 2008 16:27:02 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, apw@shadowen.org
+Subject: Re: [PATCH 0/2] Relax restrictions on setting CONFIG_NUMA on x86
+Message-ID: <20080121162702.GB8485@csn.ul.ie>
+References: <20080118153529.12646.5260.sendpatchset@skynet.skynet.ie> <20080121093702.8FC2.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080121143508.GA8485@csn.ul.ie> <20080121144923.GA8959@elte.hu>
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: LatencyTOP infrastructure patch
-References: <4790E3A6.7060807@linux.intel.com> <20080118093943.0048d0f7@laptopd505.fenrus.org> <20080121170415.125B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20080121170415.125B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080121144923.GA8959@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-> Hi
+On (21/01/08 15:49), Ingo Molnar didst pronounce:
 > 
->> +static void __sched
->> +account_global_scheduler_latency(struct task_struct *tsk, int usecs)
->> +{
->> +	int i;
->> +	int firstnonnull = MAXLR + 1;
->> +
->> +	if (!tsk->latency_reason.reason)
->> +		return;
->> +
->> +	/* skip kernel threads for now */
->> +	if (!tsk->mm)
->> +		return;
+> * Mel Gorman <mel@csn.ul.ie> wrote:
 > 
-> Why do you ignore kernel thread?
+> > > I think this patch become easy to the porting of fakenuma.
+> > 
+> > It would be great if that was available, particularly if it could fake 
+> > memoryless nodes as that is a place where we've found a few 
+> > difficult-to-reproduce bugs.
 > 
-> may be, some network filesystem use kernel thread for local I/O.
-> What do you think it?
+> yeah. Your previous patch (see below) had build problems - are those 
+> resolved meanwhile?
+> 
 
-kernel threads (by themselves) don't tend to result in user visible latency...
-at least that's my assumption so far... if you think I'm wrong... I'm open to be shown
-that we should count them.
+Odd, I couldn't reproduce it Friday and could today. Clearly I was not
+firing on all cylinders. The problem was because NUMA && FLATMEM are
+incompatible. Thanks for nudging a second time.
+
+However in the patch below addressing the problem below, would it make more
+sense to replace X86_PC with !NUMA instead of having X86_PC && !NUMA?
+
+===
+
+Subject: Do not allow FLATMEM && NUMA to be set on x86 at the same time
+
+The FLATMEM memory model references a global mem_map and max_mapnr. This
+is incompatible with how memory models used for NUMA view the world.
+Builds fail if FLATMEM && NUMA are set on x86. This patch forbids that
+combination of config items. This is consistent with x86_64
+enforcements.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ arch/x86/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc8-020_init_kmem3lists_nodes/arch/x86/Kconfig linux-2.6.24-rc8-025_memmap_reffix/arch/x86/Kconfig
+--- linux-2.6.24-rc8-020_init_kmem3lists_nodes/arch/x86/Kconfig	2008-01-19 15:26:00.000000000 +0000
++++ linux-2.6.24-rc8-025_memmap_reffix/arch/x86/Kconfig	2008-01-21 15:51:03.000000000 +0000
+@@ -891,7 +891,7 @@ config HAVE_ARCH_ALLOC_REMAP
+ 
+ config ARCH_FLATMEM_ENABLE
+ 	def_bool y
+-	depends on (X86_32 && ARCH_SELECT_MEMORY_MODEL && X86_PC) || (X86_64 && !NUMA)
++	depends on (X86_32 && ARCH_SELECT_MEMORY_MODEL && X86_PC && !NUMA) || (X86_64 && !NUMA)
+ 
+ config ARCH_DISCONTIGMEM_ENABLE
+ 	def_bool y
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
