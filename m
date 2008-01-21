@@ -1,72 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbYAUTIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbYAUTJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbYAUTIw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 14:08:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYAUTIo
+	id S1754306AbYAUTJV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 14:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYAUTJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 14:08:44 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:55360 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752101AbYAUTIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 14:08:43 -0500
-Date: Mon, 21 Jan 2008 20:08:51 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, dipankar@in.ibm.com,
-       akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] rcu: fix section mismatch
-Message-ID: <20080121190851.GB32403@uranus.ravnborg.org>
-References: <20080119115643.43236e70.randy.dunlap@oracle.com> <20080119212549.GD29070@uranus.ravnborg.org> <200801211138.38591.rusty@rustcorp.com.au>
+	Mon, 21 Jan 2008 14:09:11 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60801 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752124AbYAUTJJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 14:09:09 -0500
+Date: Mon, 21 Jan 2008 11:08:09 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu
+Subject: [patch] sched: Keep total / count stats in addition to the max for
+ wait time
+Message-ID: <20080121110809.1b584998@laptopd505.fenrus.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801211138.38591.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 21, 2008 at 11:38:38AM +1100, Rusty Russell wrote:
-> On Sunday 20 January 2008 08:25:49 Sam Ravnborg wrote:
-> > On Sat, Jan 19, 2008 at 11:56:43AM -0800, Randy Dunlap wrote:
-> > > rcu_online_cpu() should be __cpuinit instead of __devinit.
-> >
-> > So if we have:
-> > CONFIG_HOTPLUG=n
-> > CONFIG_HOTPLUG_CPU=y
-> >
-> > then this is a oops candidate.
-> 
-> At first glance, this can't happen because all CONFIG_HOTPLUG_CPU depends on 
-> CONFIG_HOTPLUG or selects it, for all archs.
-> 
-> But CONFIG_PM_SLEEP_SMP selects CONFIG_HOTPLUG_CPU, without requiring 
-> CONFIG_HOTPLUG: turning on SUSPEND or HIBERNATION does this.
-For now it is a bug to select a symbol with dependencies...
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: sched: Keep total / count stats in addition to the max for wait time
 
-If we could say that we always have HOTPLUG when we have HOTPLUG_CPU
-that would kill a lot of a lot of Section Mismatch warnings.
-But as things stands out we can build a kernel with HOTPLUG_CPU
-but without HOTPLUG.
+Right now, the linux kernel (with scheduler statistics enabled) keeps track
+of the maximum time a process is waiting to be scheduled. While the maximum
+is a very useful metric, tracking average and total is equally useful
+(at least for latencytop) to figure out the accumulated effect of scheduler
+delays. The accumulated effect is important to judge the performance impact
+of scheduler tuning/behavior.
 
-#if defined(CONFIG_HOTPLUG_CPU && !defined(CONFIG_HOTPLUG)
-# error illegal configuration - talk to the PM guys
-#endif
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-could do it?
+---
+ include/linux/sched.h |    2 ++
+ kernel/sched_debug.c  |    4 ++++
+ kernel/sched_fair.c   |    3 +++
+ 3 files changed, 9 insertions(+)
+
+Index: linux-2.6.24-rc8/include/linux/sched.h
+===================================================================
+--- linux-2.6.24-rc8.orig/include/linux/sched.h
++++ linux-2.6.24-rc8/include/linux/sched.h
+@@ -877,6 +877,8 @@ struct sched_entity {
+ #ifdef CONFIG_SCHEDSTATS
+ 	u64			wait_start;
+ 	u64			wait_max;
++	u64			wait_count;
++	u64			wait_sum;
  
-> 
-> Perhaps it's time to revisit reverse-depends for select?
-Or maybe a higer level solution.
-select is used for three pruposes:
-- to include specific minimalitic functionality as for example done on
-  the ARM Kconfig file with success
-- to enable general functionality (the HAVE_* way to do it)
-- to enable subsystems of different sizes
+ 	u64			sleep_start;
+ 	u64			sleep_max;
+Index: linux-2.6.24-rc8/kernel/sched_debug.c
+===================================================================
+--- linux-2.6.24-rc8.orig/kernel/sched_debug.c
++++ linux-2.6.24-rc8/kernel/sched_debug.c
+@@ -299,6 +299,8 @@ void proc_sched_show_task(struct task_st
+ 	PN(se.exec_max);
+ 	PN(se.slice_max);
+ 	PN(se.wait_max);
++	PN(se.wait_sum);
++	P(se.wait_count);
+ 	P(sched_info.bkl_count);
+ 	P(se.nr_migrations);
+ 	P(se.nr_migrations_cold);
+@@ -366,6 +368,8 @@ void proc_sched_set_task(struct task_str
+ {
+ #ifdef CONFIG_SCHEDSTATS
+ 	p->se.wait_max				= 0;
++	p->se.wait_sum				= 0;
++	p->se.wait_count			= 0;
+ 	p->se.sleep_max				= 0;
+ 	p->se.sum_sleep_runtime			= 0;
+ 	p->se.block_max				= 0;
+Index: linux-2.6.24-rc8/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.24-rc8.orig/kernel/sched_fair.c
++++ linux-2.6.24-rc8/kernel/sched_fair.c
+@@ -385,6 +385,9 @@ update_stats_wait_end(struct cfs_rq *cfs
+ {
+ 	schedstat_set(se->wait_max, max(se->wait_max,
+ 			rq_of(cfs_rq)->clock - se->wait_start));
++	schedstat_set(se->wait_count, se->wait_count + 1);
++	schedstat_set(se->wait_sum, se->wait_sum +
++			rq_of(cfs_rq)->clock - se->wait_start);
+ 	schedstat_set(se->wait_start, 0);
+ }
+ 
 
-And it is only when people try to do the latter it blows up.
-And they do so to make it easier for people to configure the kernel
-but the end result is the opposite.
-
-	Sam
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
