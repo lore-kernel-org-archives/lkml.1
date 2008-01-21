@@ -1,97 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbYAUVq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbYAUVxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbYAUVq7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 16:46:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbYAUVqw
+	id S1755986AbYAUVxY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 16:53:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYAUVxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 16:46:52 -0500
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:42090 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751754AbYAUVqv convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 16:46:51 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Mika =?ISO-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <479510CE.7010706@zytor.com>
-References: <1200758937-22386-1-git-send-email-ijc@hellion.org.uk>
-	 <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>
-	 <47939363.8040603@kolumbus.fi>
-	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>
-	 <479510CE.7010706@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 21 Jan 2008 21:46:36 +0000
-Message-Id: <1200951996.15491.28.camel@cthulhu.hellion.org.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 8BIT
-X-SA-Exim-Connect-IP: 192.168.1.223
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
-	format.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+	Mon, 21 Jan 2008 16:53:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49748 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751775AbYAUVxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 16:53:13 -0500
+From: Eduardo Habkost <ehabkost@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu, ehabkost@redhat.com, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
+       rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
+       mtosatti@redhat.com
+Subject: [PATCH 2/4] include/asm-x86/paravirt.h: x86_64 mmu operations
+Date: Mon, 21 Jan 2008 19:48:51 -0200
+Message-Id: <1200952133-31581-3-git-send-email-ehabkost@redhat.com>
+X-Mailer: git-send-email 1.5.4.rc3
+In-Reply-To: <1200952133-31581-1-git-send-email-ehabkost@redhat.com>
+References: <1200952133-31581-1-git-send-email-ehabkost@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add .set_pgd field to pv_mmu_ops.
 
-On Mon, 2008-01-21 at 13:38 -0800, H. Peter Anvin wrote:
-> Ian Campbell wrote:
-> > On Sun, 2008-01-20 at 20:30 +0200, Mika Penttilä wrote:
-> >>>   
-> >> You have dropped the requirement to map all of low memory (the boot 
-> >> allocator is used for instance to construct physical mem mapping). 
-> >> Either you should fix your INIT_MAP_BEYOND_END or make a big comment 
-> >> telling us why it isn't necessary anymore to map low mem.
-> > 
-> > I think you are right. The patch ensures that all the initial page
-> > tables themselves have mappings but won't map the additional pages
-> > needed for mapping the rest of lowmem.
-> > 
-> > However, I think it is no longer necessary to map a whole new 4G worth
-> > of page table pages because the code in kernel_physical_mapping_init now
-> > extends the initial mappings rather than replacing them (see changes to
-> > native_pagetable_setup_start). So now we only need to map 4G worth of
-> > page tables including the initial page tables. That means we only need
-> > to map a fixed set of extra pages rather than the sliding limit
-> > currently used in the patch.
-> > 
-> 
-> We still need to be able to construct those page tables, which is what 
-> that stuff is about...
+Implement pud_val(), __pud(), set_pgd(), pud_clear(), pgd_clear().
 
-Yes, my initial patch was wrong. However with the patch we no longer
-throw away the non-PAE initial page tables and replace them with PAE
-ones, instead we augment the initial PAE page tables. This means we only
-need initial mappings of 4G worth of page tables rather than 4G plus
-what is needed for the non-PAE initial page tables.
+pud_clear() and pgd_clear() are implemented simply using set_pud()
+and set_pmd(). They don't have a field at pv_mmu_ops.
 
-I don't think I explained that at all well on either attempt...
-Hopefully what I mean will be clearer in patch form -- coming in a
-second...
+Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
+---
+ include/asm-x86/paravirt.h |   55 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 55 insertions(+), 0 deletions(-)
 
-> > I'm not convinced by the additional 16MB for CONFIG_DEBUG_PAGEALLOC --
-> > we map enough pages for page tables for 4G of lowmem -- adding space for
-> > an extra 16M seems pointless.
-> 
-> If so, adjusting the limit should be a separate patch.
-> 
-> Either way, I'm increasingly thinking that setting up the initial page 
-> tables via an assembly loop instead of worrying about the C accessors is 
-> actually cleaner (I prototyped it yesterday, although I still need the 
-> rest of the machinery.)
-
-I'm just preparing to send out a version which uses the native_* way of
-doing things, its not actually as clean as I would like so I'd be
-interested to see the ASM variant.
-
-Ian.
+diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
+index 62cecb7..9f9ff57 100644
+--- a/include/asm-x86/paravirt.h
++++ b/include/asm-x86/paravirt.h
+@@ -259,6 +259,8 @@ struct pv_mmu_ops {
+ #if PAGETABLE_LEVELS == 4
+ 	pudval_t (*pud_val)(pud_t);
+ 	pud_t (*make_pud)(pudval_t pud);
++
++	void (*set_pgd)(pgd_t *pudp, pgd_t pgdval);
+ #endif	/* PAGETABLE_LEVELS == 4 */
+ #endif	/* PAGETABLE_LEVELS >= 3 */
+ 
+@@ -1065,6 +1067,59 @@ static inline void set_pud(pud_t *pudp, pud_t pud)
+ 		PVOP_VCALL2(pv_mmu_ops.set_pud, pudp,
+ 			    val);
+ }
++#if PAGETABLE_LEVELS == 4
++static inline pud_t __pud(pudval_t val)
++{
++	pudval_t ret;
++
++	if (sizeof(pudval_t) > sizeof(long))
++		ret = PVOP_CALL2(pudval_t, pv_mmu_ops.make_pud,
++				 val, (u64)val >> 32);
++	else
++		ret = PVOP_CALL1(pudval_t, pv_mmu_ops.make_pud,
++				 val);
++
++	return (pud_t) { ret };
++}
++
++static inline pudval_t pud_val(pud_t pud)
++{
++	pudval_t ret;
++
++	if (sizeof(pudval_t) > sizeof(long))
++		ret =  PVOP_CALL2(pudval_t, pv_mmu_ops.pud_val,
++				  pud.pud, (u64)pud.pud >> 32);
++	else
++		ret =  PVOP_CALL1(pudval_t, pv_mmu_ops.pud_val,
++				  pud.pud);
++
++	return ret;
++}
++
++static inline void set_pgd(pgd_t *pgdp, pgd_t pgd)
++{
++	pgdval_t val = native_pgd_val(pgd);
++
++	if (sizeof(pgdval_t) > sizeof(long))
++		PVOP_VCALL3(pv_mmu_ops.set_pgd, pgdp,
++			    val, (u64)val >> 32);
++	else
++		PVOP_VCALL2(pv_mmu_ops.set_pgd, pgdp,
++			    val);
++}
++
++static inline void pgd_clear(pgd_t *pgdp)
++{
++	set_pgd(pgdp, __pgd(0));
++}
++
++static inline void pud_clear(pud_t *pudp)
++{
++	set_pud(pudp, __pud(0));
++}
++
++#endif	/* PAGETABLE_LEVELS == 4 */
++
+ #endif	/* PAGETABLE_LEVELS >= 3 */
+ 
+ #ifdef CONFIG_X86_PAE
 -- 
-Ian Campbell
-
-You shall be rewarded for a dastardly deed.
+1.5.3.4
 
