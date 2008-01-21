@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbYAUKZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932408AbYAUKZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932290AbYAUKZW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:25:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761610AbYAUKJW
+	id S932408AbYAUKZy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:25:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760681AbYAUKMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:09:22 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:21477
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761001AbYAUKJT convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:09:19 -0500
-Message-Id: <47947D7E.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Mon, 21 Jan 2008 10:09:50 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Greg KH" <greg@kroah.com>
-Cc: "Greg Kroah-Hartman" <GregKH@novell.com>,
-       "lkml" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/4] introduce __devinitconst
-References: <47873D110200007800068158@novell.com>
- <47873D87.76E4.0078.0@novell.com> <20080119012807.GB6150@kroah.com>
-In-Reply-To: <20080119012807.GB6150@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Mon, 21 Jan 2008 05:12:03 -0500
+Received: from cavan.codon.org.uk ([78.32.9.130]:44153 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761814AbYAUKMA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:12:00 -0500
+Date: Mon, 21 Jan 2008 10:11:48 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-ID: <20080121101147.GB2785@srcf.ucam.org>
+References: <4793C5CA.5060100@wpkg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4793C5CA.5060100@wpkg.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: PROBLEM: Celeron Core
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Greg KH <greg@kroah.com> 19.01.08 02:28 >>>
->On Fri, Jan 11, 2008 at 01:57:27AM -0700, Jan Beulich wrote:
->> The drivers picked just serve as examples (which I routinely build and
->> hence am able to easily verify), i.e. as before he patch doesn't change
->> all instances where 'const' could have been added as a result of the
->> base change, only where the change has a real effect (the module loader
->> doesn't enforce read-only section attributes at present, so only
->> built-in files make a real difference).
->
->What does this buy us?
+On Sun, Jan 20, 2008 at 11:06:02PM +0100, Tomasz Chmielewski wrote:
 
-Not sure what part the question applies to...
+> Aren't you forgetting about CPUfreq governors? Which mean: use the 
+> maximum CPU frequency when the system is busy, throttle down (or lower 
+> voltage) when the system is idle.
+> 
+> So yes, throttling will save the battery.
+> 
+> Besides, not all CPUs support power management (voltage control).
 
->> --- 2.6.24-rc7-initconst.orig/include/linux/init.h
->> +++ 2.6.24-rc7-initconst/include/linux/init.h
->> @@ -257,11 +257,13 @@ void __init parse_early_param(void);
->>  #ifdef CONFIG_HOTPLUG
->>  #define __devinit
->>  #define __devinitdata
->> +#define __devinitconst const
->>  #define __devexit
->>  #define __devexitdata
->>  #else
->>  #define __devinit __init
->>  #define __devinitdata __initdata
->> +#define __devinitconst __initdata
->
->Shoudn't that be "__initdata const" or something like that?
+Voltage scaling isn't the only component of CPU power management. Intels 
+have supported low power states on idle since the Pentium 90 (Cyrix had 
+"Suspend on HALT" earlier than that), which means that an idle processor 
+takes less power than one executing code. On anything even vaguely 
+modern, throttling will not save you any significant power compared to 
+the C state support.
 
-No, specifically not, as otherwise this will report in 'section type conflict'
-compiler (or assembler?) warnings.
+> For example, a server that doesn't crunch any numbers at night will 
+> certainly use less power when throttled.
 
-But Sam's concept addresses this in a neater way anyway, so my current
-take is that I'll resubmit any parts needed after he's got his patch in.
-
-Jan
-
+Have you got benchmark figures for this?
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
