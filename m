@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbYAUP0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbYAUP0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759517AbYAUP0L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 10:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760375AbYAUPYc
+	id S1761626AbYAUP0a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 10:26:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760414AbYAUPYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 10:24:32 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:49238 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753475AbYAUPYB (ORCPT
+	Mon, 21 Jan 2008 10:24:33 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:58841 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753720AbYAUPYC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 10:24:01 -0500
-Message-Id: <20080121152353.916022518@goodmis.org>
+	Mon, 21 Jan 2008 10:24:02 -0500
+Message-Id: <20080121152351.522653582@goodmis.org>
 References: <20080121152231.579118762@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 Jan 2008 10:22:50 -0500
+Date: Mon, 21 Jan 2008 10:22:35 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -28,201 +28,131 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 19/23 -v4] trace generic call to schedule switch
-Content-Disposition: inline; filename=trace-sched-hooks.patch
+Subject: [RFC PATCH 04/23 -v4] add notrace annotations to vsyscall.
+Content-Disposition: inline; filename=mcount-add-x86-vdso-notrace-annotations.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds hooks into the schedule switch tracing to
-allow other latency traces to hook into the schedule switches.
+Add the notrace annotations to some of the vsyscall functions.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- lib/tracing/trace_sched_switch.c |  121 ++++++++++++++++++++++++++++++++++-----
- lib/tracing/tracer.h             |   14 ++++
- 2 files changed, 120 insertions(+), 15 deletions(-)
+ arch/x86/kernel/vsyscall_64.c  |    3 ++-
+ arch/x86/vdso/vclock_gettime.c |   15 ++++++++-------
+ arch/x86/vdso/vgetcpu.c        |    3 ++-
+ include/asm-x86/vsyscall.h     |    3 ++-
+ 4 files changed, 14 insertions(+), 10 deletions(-)
 
-Index: linux-mcount.git/lib/tracing/tracer.h
+Index: linux-mcount.git/arch/x86/kernel/vsyscall_64.c
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/tracer.h	2008-01-18 23:16:28.000000000 -0500
-+++ linux-mcount.git/lib/tracing/tracer.h	2008-01-18 23:24:55.000000000 -0500
-@@ -110,4 +110,18 @@ static inline notrace int page_order(con
- 	return ilog2(roundup_pow_of_two(nr_pages));
- }
+--- linux-mcount.git.orig/arch/x86/kernel/vsyscall_64.c	2008-01-17 20:33:16.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/vsyscall_64.c	2008-01-17 20:33:34.000000000 -0500
+@@ -42,7 +42,8 @@
+ #include <asm/topology.h>
+ #include <asm/vgtod.h>
  
-+#ifdef CONFIG_CONTEXT_SWITCH_TRACER
-+typedef void (*tracer_switch_func_t)(struct tracing_trace *tr,
-+				     struct task_struct *prev,
-+				     struct task_struct *next);
-+struct tracer_switch_ops {
-+	tracer_switch_func_t func;
-+	struct tracing_trace *tr;
-+	struct tracer_switch_ops *next;
-+};
-+
-+extern int register_tracer_switch(struct tracer_switch_ops *ops);
-+extern int unregister_tracer_switch(struct tracer_switch_ops *ops);
-+#endif /* CONFIG_CONTEXT_SWITCH_TRACER */
-+
- #endif /* _LINUX_MCOUNT_TRACER_H */
-Index: linux-mcount.git/lib/tracing/trace_sched_switch.c
+-#define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
++#define __vsyscall(nr) \
++		__attribute__ ((unused, __section__(".vsyscall_" #nr))) notrace
+ #define __syscall_clobber "r11","rcx","memory"
+ #define __pa_vsymbol(x)			\
+ 	({unsigned long v;  		\
+Index: linux-mcount.git/arch/x86/vdso/vclock_gettime.c
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/trace_sched_switch.c	2008-01-18 23:16:28.000000000 -0500
-+++ linux-mcount.git/lib/tracing/trace_sched_switch.c	2008-01-18 23:25:11.000000000 -0500
-@@ -19,6 +19,7 @@ static DEFINE_PER_CPU(struct tracing_tra
+--- linux-mcount.git.orig/arch/x86/vdso/vclock_gettime.c	2008-01-17 20:33:16.000000000 -0500
++++ linux-mcount.git/arch/x86/vdso/vclock_gettime.c	2008-01-17 20:33:34.000000000 -0500
+@@ -24,7 +24,7 @@
  
- static int trace_enabled __read_mostly;
- static unsigned long trace_nr_entries = (16384UL);
-+static DEFINE_SPINLOCK(sched_switch_func_lock);
+ #define gtod vdso_vsyscall_gtod_data
  
- static int __init set_nr_entries(char *str)
+-static long vdso_fallback_gettime(long clock, struct timespec *ts)
++notrace static long vdso_fallback_gettime(long clock, struct timespec *ts)
  {
-@@ -29,22 +30,118 @@ static int __init set_nr_entries(char *s
- }
- __setup("trace_ctx_entries=", set_nr_entries);
- 
-+static void notrace sched_switch_func(struct tracing_trace *tr,
-+				      struct task_struct *prev,
-+				      struct task_struct *next)
-+{
-+	struct tracing_trace_cpu *data;
-+	unsigned long flags;
-+	int cpu;
-+
-+	if (likely(!trace_enabled))
-+		return;
-+
-+	raw_local_irq_save(flags);
-+	cpu = raw_smp_processor_id();
-+	data = tr->data[cpu];
-+	atomic_inc(&data->disabled);
-+
-+	if (likely(atomic_read(&data->disabled) == 1))
-+		tracing_sched_switch_trace(tr, data, prev, next, flags);
-+
-+	atomic_dec(&data->disabled);
-+	raw_local_irq_restore(flags);
-+}
-+
-+static struct tracer_switch_ops sched_switch_ops __read_mostly =
-+{
-+	.func = sched_switch_func,
-+	.tr   = &sched_switch_trace,
-+};
-+
-+static tracer_switch_func_t tracer_switch_func __read_mostly =
-+	sched_switch_func;
-+
-+static struct tracer_switch_ops *tracer_switch_func_ops __read_mostly =
-+	&sched_switch_ops;
-+
-+static void notrace sched_switch_func_loop(struct tracing_trace *tr,
-+					   struct task_struct *prev,
-+					   struct task_struct *next)
-+{
-+	struct tracer_switch_ops *ops = tracer_switch_func_ops;
-+
-+	for (; ops != NULL; ops = ops->next)
-+		ops->func(ops->tr, prev, next);
-+}
-+
-+notrace int register_tracer_switch(struct tracer_switch_ops *ops)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&sched_switch_func_lock, flags);
-+	ops->next = tracer_switch_func_ops;
-+	smp_wmb();
-+	tracer_switch_func_ops = ops;
-+
-+	if (ops->next == &sched_switch_ops)
-+		tracer_switch_func = sched_switch_func_loop;
-+
-+	spin_unlock_irqrestore(&sched_switch_func_lock, flags);
-+
-+	return 0;
-+}
-+
-+notrace int unregister_tracer_switch(struct tracer_switch_ops *ops)
-+{
-+	unsigned long flags;
-+	struct tracer_switch_ops **p = &tracer_switch_func_ops;
-+	int ret;
-+
-+	spin_lock_irqsave(&sched_switch_func_lock, flags);
-+
-+	/*
-+	 * If the sched_switch is the only one left, then
-+	 *  only call that function.
-+	 */
-+	if (*p == ops && ops->next == &sched_switch_ops) {
-+		tracer_switch_func = sched_switch_func;
-+		tracer_switch_func_ops = &sched_switch_ops;
-+		goto out;
-+	}
-+
-+	for (; *p != &sched_switch_ops; p = &(*p)->next)
-+		if (*p == ops)
-+			break;
-+
-+	if (*p != ops) {
-+		ret = -1;
-+		goto out;
-+	}
-+
-+	*p = (*p)->next;
-+
-+ out:
-+	spin_unlock_irqrestore(&sched_switch_func_lock, flags);
-+
-+	return 0;
-+}
-+
- static notrace void sched_switch_callback(const struct marker *mdata,
- 					  void *private_data,
- 					  const char *format, ...)
- {
- 	struct tracing_trace *tr = mdata->private;
--	struct tracing_trace_cpu *data;
- 	struct task_struct *prev;
- 	struct task_struct *next;
--	unsigned long flags;
- 	va_list ap;
--	int cpu;
- 
- 	if (unlikely(atomic_read(&trace_record_cmdline)))
- 		tracing_record_cmdline(current);
- 
--	if (likely(!trace_enabled))
-+	/* short circuit all this if nothing's enabled */
-+	if (likely(tracer_switch_func == sched_switch_func &&
-+		   !trace_enabled))
- 		return;
- 
- 	va_start(ap, format);
-@@ -52,17 +149,11 @@ static notrace void sched_switch_callbac
- 	next = va_arg(ap, typeof(next));
- 	va_end(ap);
- 
--
--	raw_local_irq_save(flags);
--	cpu = raw_smp_processor_id();
--	data = tr->data[cpu];
--	atomic_inc(&data->disabled);
--
--	if (likely(atomic_read(&data->disabled) == 1))
--		tracing_sched_switch_trace(tr, data, prev, next, flags);
--
--	atomic_dec(&data->disabled);
--	raw_local_irq_restore(flags);
-+	/*
-+	 * If tracer_switch_func only points to the local
-+	 * switch func, then it needs the tr passed to it.
-+	 */
-+	tracer_switch_func(tr, prev, next);
+ 	long ret;
+ 	asm("syscall" : "=a" (ret) :
+@@ -32,7 +32,7 @@ static long vdso_fallback_gettime(long c
+ 	return ret;
  }
  
- static notrace void sched_switch_reset(struct tracing_trace *tr)
+-static inline long vgetns(void)
++notrace static inline long vgetns(void)
+ {
+ 	long v;
+ 	cycles_t (*vread)(void);
+@@ -41,7 +41,7 @@ static inline long vgetns(void)
+ 	return (v * gtod->clock.mult) >> gtod->clock.shift;
+ }
+ 
+-static noinline int do_realtime(struct timespec *ts)
++notrace static noinline int do_realtime(struct timespec *ts)
+ {
+ 	unsigned long seq, ns;
+ 	do {
+@@ -55,7 +55,8 @@ static noinline int do_realtime(struct t
+ }
+ 
+ /* Copy of the version in kernel/time.c which we cannot directly access */
+-static void vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
++notrace static void
++vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
+ {
+ 	while (nsec >= NSEC_PER_SEC) {
+ 		nsec -= NSEC_PER_SEC;
+@@ -69,7 +70,7 @@ static void vset_normalized_timespec(str
+ 	ts->tv_nsec = nsec;
+ }
+ 
+-static noinline int do_monotonic(struct timespec *ts)
++notrace static noinline int do_monotonic(struct timespec *ts)
+ {
+ 	unsigned long seq, ns, secs;
+ 	do {
+@@ -83,7 +84,7 @@ static noinline int do_monotonic(struct 
+ 	return 0;
+ }
+ 
+-int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
++notrace int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
+ {
+ 	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
+ 		switch (clock) {
+@@ -97,7 +98,7 @@ int __vdso_clock_gettime(clockid_t clock
+ int clock_gettime(clockid_t, struct timespec *)
+ 	__attribute__((weak, alias("__vdso_clock_gettime")));
+ 
+-int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
++notrace int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
+ {
+ 	long ret;
+ 	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
+Index: linux-mcount.git/arch/x86/vdso/vgetcpu.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/vdso/vgetcpu.c	2008-01-17 20:33:16.000000000 -0500
++++ linux-mcount.git/arch/x86/vdso/vgetcpu.c	2008-01-17 20:33:34.000000000 -0500
+@@ -13,7 +13,8 @@
+ #include <asm/vgtod.h>
+ #include "vextern.h"
+ 
+-long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
++notrace long
++__vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
+ {
+ 	unsigned int dummy, p;
+ 
+Index: linux-mcount.git/include/asm-x86/vsyscall.h
+===================================================================
+--- linux-mcount.git.orig/include/asm-x86/vsyscall.h	2008-01-17 20:33:16.000000000 -0500
++++ linux-mcount.git/include/asm-x86/vsyscall.h	2008-01-17 20:33:34.000000000 -0500
+@@ -24,7 +24,8 @@ enum vsyscall_num {
+ 	((unused, __section__ (".vsyscall_gtod_data"),aligned(16)))
+ #define __section_vsyscall_clock __attribute__ \
+ 	((unused, __section__ (".vsyscall_clock"),aligned(16)))
+-#define __vsyscall_fn __attribute__ ((unused,__section__(".vsyscall_fn")))
++#define __vsyscall_fn \
++	__attribute__ ((unused, __section__(".vsyscall_fn"))) notrace
+ 
+ #define VGETCPU_RDTSCP	1
+ #define VGETCPU_LSL	2
 
 -- 
