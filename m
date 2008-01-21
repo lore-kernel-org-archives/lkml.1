@@ -1,108 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbYAUAVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbYAUAbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756802AbYAUAVN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 19:21:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbYAUAU7
+	id S1756767AbYAUAbQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 19:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755027AbYAUAbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 19:20:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41488 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755402AbYAUAU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 19:20:58 -0500
-Date: Mon, 21 Jan 2008 01:20:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] Fix early_ioremap on x86-64
-Message-ID: <20080121002041.GA31280@elte.hu>
-References: <20080120172840.GA24608@basil.nowhere.org> <20080120175955.GA4993@elte.hu> <20080120191247.GA28190@one.firstfloor.org>
+	Sun, 20 Jan 2008 19:31:00 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58017 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754992AbYAUAa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 19:30:59 -0500
+Date: Mon, 21 Jan 2008 01:31:06 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Zan Lynx <zlynx@acm.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: echo mem > /sys/power/state
+Message-ID: <20080121003106.GA1618@elf.ucw.cz>
+References: <20080116222445.6f7ff66e.akpm@linux-foundation.org> <1200591411.34145.4.camel@localhost> <20080117111355.29554f38.akpm@linux-foundation.org> <200801172238.17176.rjw@sisk.pl> <20080118083610.GA19792@elte.hu> <20080118004725.dcd132ee.akpm@linux-foundation.org> <20080118121803.GF11044@elte.hu> <20080120233912.GA4844@elf.ucw.cz> <20080120234208.GA22292@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080120191247.GA28190@one.firstfloor.org>
+In-Reply-To: <20080120234208.GA22292@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> > Jeremy did suspect something about this change, as indicated in the 
-> > changelog. But because the change was so finegrained, the bisection 
-> > almost directly led to the fix. _That_ i think clearly demonstrates 
-> > the power of bisection and finegrained changes.
+On Mon 2008-01-21 00:42:08, Ingo Molnar wrote:
 > 
-> Actually it is pretty hard to do bisects in current git-x86 currently 
-> because you don't ammend original buggy changes but just stuff the 
-> fixes at the end. [...]
+> * Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > Hi!
+> > 
+> > Ingo wanted simple sleep self-test... Here's something.
+> 
+> thanks :)
+> 
+> threw it into auto-qa, and it got thrown back with:
 
-i backmerge fixes all the time. x86.git consists of more than 800 
-patches and there are less than 10 tail-fixes in it - they are all at 
-the tail for a reason: because they have not all been fully qa-ed yet so 
-they might make things worse than what they try to fix. Once they are 
-proven i backmerge them to their proper spot.
+Ok... it needs to depend on cmos_rtc... Plus timeout needs to be
+longer, because if it fails to suspend within timeout, it will hang.
 
-and i frequently bisect x86.git#mm myself (almost daily) - and others do 
-it frequently too. There have been dozens of successful bisections done 
-on x86.git. (I believe it is so successful partly because we run 
-overnight automated bisectability tests: to make sure x86.git builds and 
-boots at every bisection point.)
+I actually tested this version... and it has some problems with
+nohz. I have to press shift (probably any key will do) to make it
+suspend :-(.
 
-Yours is the first claim of x86.git#mm being hard to bisect - so far all 
-other feedback was to the contrary. I claim that it is one of the most 
-bisectable subsystems in the kernel.
+How big is your autotest farm, btw?
+								Pavel
 
-But we all err: if something slipped through despite all the testing, 
-let us know and we'll fix it up - it's just that your vague complaints 
-about non-bisectability wont help much in resolving the problem. You are 
-ignoring months of track record of excellent bisectability of x86.git 
-and your claims are quite unjust.
 
-Reordering of patches is usually easy and trickling back the tail-fixes 
-to the actual buggy patches is easy and routine as well, except when 
-someone submits conceptually non-bisectable patches, like:
-
-|   Subject: Undo pat cpa patch
-|   From: Andi Kleen <ak@suse.de>
-|
-|   Going to implement this differently
-
-and then 4 patches later you do:
-
-|   Subject: CPA: Implement change_page_attr_addr entry point for i386
-|   From: Andi Kleen <ak@suse.de>
-
-this breaks PAT completely in that window and makes it non-bisectable.
-
-So i find it a bit dishonest from you that you are now complaining about 
-the supposed non-bisectability of x86.git ...
-
-> -Andi (seemingly chief QA officer of git-x86 currently)
-
-Andi, could you please stop these snide remarks? x86.git is the 
-development tip of the new arch/x86 tree and you should know that. I 
-boot it more than a 1000 times a day on my QA-grid, with different 
-kernel configs, so it's far from being unusable.
-
-I update x86.git multiple times a day so that people can see the changes 
-immediately. But you are now abusing this transparency to create a false 
-impression of flakiness. If you cannot stop being negative then please 
-just dont deal with x86.git#mm - it's not obligatory to contribute.
-
-Furthermore, your complaint is doubly unjust because we've fixed a good 
-deal of bugs in x86.git introduced by _you_. You are by far not the only 
-person who fixes bugs in x86.git and you are by far not the most active 
-one either - but you are certainly the loudest one :-(
+diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
+index 29cf145..d830ed2 100644
+--- a/drivers/rtc/rtc-cmos.c
++++ b/drivers/rtc/rtc-cmos.c
+@@ -78,7 +78,7 @@ static inline int is_intr(u8 rtc_intr)
  
-	Ingo
+ /*----------------------------------------------------------------*/
+ 
+-static int cmos_read_time(struct device *dev, struct rtc_time *t)
++int cmos_read_time(struct device *dev, struct rtc_time *t)
+ {
+ 	/* REVISIT:  if the clock has a "century" register, use
+ 	 * that instead of the heuristic in get_rtc_time().
+@@ -170,7 +170,7 @@ static int cmos_read_alarm(struct device
+ 	return 0;
+ }
+ 
+-static int cmos_set_alarm(struct device *dev, struct rtc_wkalrm *t)
++int cmos_set_alarm(struct device *dev, struct rtc_wkalrm *t)
+ {
+ 	struct cmos_rtc	*cmos = dev_get_drvdata(dev);
+ 	unsigned char	mon, mday, hrs, min, sec;
+@@ -394,6 +394,7 @@ static const struct rtc_class_ops cmos_r
+ /*----------------------------------------------------------------*/
+ 
+ static struct cmos_rtc	cmos_rtc;
++struct device *pc_rtc_device;
+ 
+ static irqreturn_t cmos_interrupt(int irq, void *p)
+ {
+@@ -431,6 +432,8 @@ cmos_do_probe(struct device *dev, struct
+ 	if (cmos_rtc.dev)
+ 		return -EBUSY;
+ 
++	pc_rtc_device = dev;
++
+ 	if (!ports)
+ 		return -ENODEV;
+ 
+@@ -546,7 +549,7 @@ cleanup0:
+ 
+ static void cmos_do_shutdown(void)
+ {
+-	unsigned char	rtc_control;
++	unsigned char rtc_control;
+ 
+ 	spin_lock_irq(&rtc_lock);
+ 	rtc_control = CMOS_READ(RTC_CONTROL);
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index 8e186c6..b719fd3 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -53,14 +53,20 @@ config PM_TRACE
+ 	RTC across reboots, so that you can debug a machine that just hangs
+ 	during suspend (or more commonly, during resume).
+ 
+-	To use this debugging feature you should attempt to suspend the machine,
+-	then reboot it, then run
++	To use this debugging feature you should attempt to suspend the
++	machine, then reboot it, then run
+ 
+ 		dmesg -s 1000000 | grep 'hash matches'
+ 
+ 	CAUTION: this option will cause your machine's real-time clock to be
+ 	set to an invalid time after a resume.
+ 
++config PM_SLEEPY_TEST
++	bool "Test suspend/resume during bootup"
++	depends on PM_DEBUG && PM_SLEEP && RTC_DRV_CMOS
++	---help---
++	This option will suspend/resume your machine during bootup.
++
+ config PM_SLEEP_SMP
+ 	bool
+ 	depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
+diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+index f7dfff2..e5693d6 100644
+--- a/kernel/power/Makefile
++++ b/kernel/power/Makefile
+@@ -5,7 +5,7 @@ endif
+ 
+ obj-y				:= main.o
+ obj-$(CONFIG_PM_LEGACY)		+= pm.o
+-obj-$(CONFIG_PM_SLEEP)		+= process.o console.o
++obj-$(CONFIG_PM_SLEEP)		+= process.o console.o sleepy.o
+ obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
+ 
+ obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
+diff --git a/kernel/power/sleepy.c b/kernel/power/sleepy.c
+new file mode 100644
+index 0000000..a437054
+--- /dev/null
++++ b/kernel/power/sleepy.c
+@@ -0,0 +1,70 @@
++/*
++ * Copyright (c) 2007 Pavel Machek <pavel@suse.cz>
++ * 
++ * This file is released under the GPLv2
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/suspend.h>
++#include <linux/kobject.h>
++#include <linux/string.h>
++#include <linux/delay.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/console.h>
++#include <linux/cpu.h>
++#include <linux/resume-trace.h>
++#include <linux/freezer.h>
++#include <linux/vmstat.h>
++#include <linux/syscalls.h>
++#include <linux/rtc.h>
++
++#include <asm/percpu.h>
++
++#include "power.h"
++
++extern int set_alarm(int length);
++
++extern struct device *pc_rtc_device;
++extern int cmos_set_alarm(struct device *dev, struct rtc_wkalrm *t);
++extern int cmos_read_time(struct device *dev, struct rtc_time *t);
++
++int set_alarm(int length)
++{
++	ssize_t retval;
++	unsigned long now, alarm;
++	struct rtc_wkalrm alm;
++	struct rtc_device *rtc = to_rtc_device(pc_rtc_device);
++
++	retval = cmos_read_time(pc_rtc_device, &alm.time);
++	if (retval < 0) {
++		printk("Auto sleep: can't get time?\n");
++		return retval;
++	}
++	rtc_tm_to_time(&alm.time, &now);
++	printk("Auto sleep: Now %ld\n", now);
++
++	alarm = now+length;
++	rtc_time_to_tm(alarm, &alm.time);
++
++	retval = cmos_set_alarm(rtc, &alm);
++	if (retval < 0) {
++		printk("Auto sleep: can't set alarm.\n");
++		return retval;
++	}
++	printk("Auto sleep: Alarm set\n");
++	return 0;
++}
++
++#ifdef CONFIG_PM_SLEEPY_TEST
++static int
++test_sleep(void)
++{
++	set_alarm(5);
++	pm_suspend(PM_SUSPEND_MEM);
++	return 0;
++}
++
++late_initcall(test_sleep);
++#endif
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
