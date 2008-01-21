@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbYAUR3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbYAURkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765AbYAUR3f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 12:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbYAUR3Z
+	id S1752679AbYAURkF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 12:40:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbYAURjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 12:29:25 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33983 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751109AbYAUR3Y (ORCPT
+	Mon, 21 Jan 2008 12:39:54 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:42421 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750817AbYAURjx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 12:29:24 -0500
-Date: Mon, 21 Jan 2008 17:27:15 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Georgi Chulkov <g.chulkov@jacobs-university.de>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Mark Lord <liml@rtr.ca>
-Subject: Re: ATA device reset, shoud I be concerned?
-Message-ID: <20080121172715.0e3e5e4d@lxorguk.ukuu.org.uk>
-In-Reply-To: <4794D020.4060204@gmail.com>
-References: <200801140019.20668.g.chulkov@jacobs-university.de>
-	<20080115025435.1e21b703.akpm@linux-foundation.org>
-	<20080115113552.75731bf8@lxorguk.ukuu.org.uk>
-	<4794501E.90306@gmail.com>
-	<20080121130256.2443d7c1@lxorguk.ukuu.org.uk>
-	<47949AA4.9090601@gmail.com>
-	<20080121141425.45aa9c61@lxorguk.ukuu.org.uk>
-	<4794ACAF.70505@gmail.com>
-	<20080121164744.2f7d0ed1@lxorguk.ukuu.org.uk>
-	<4794D020.4060204@gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 21 Jan 2008 12:39:53 -0500
+Message-ID: <4794D8C4.3000306@zytor.com>
+Date: Mon, 21 Jan 2008 09:39:16 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Yinghai Lu <Yinghai.Lu@Sun.COM>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86_64: check if Tom2 is enabled
+References: <200801192045.17291.yinghai.lu@sun.com> <200801202140.57829.yinghai.lu@sun.com> <200801210658.04030.ak@suse.de> <200801202257.47195.yinghai.lu@sun.com> <20080121172437.GA6722@cvg>
+In-Reply-To: <20080121172437.GA6722@cvg>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I still don't think it's worth the trouble.  There's currently only one
-> reported device which forgets to raise IRQ on media error.  The behavior
-
-Most people wouldn't realise what is going on.
-
-> > Old IDE says it works for PATA. For SATA I can see it might need more
-> > care and you might simply not be able to get the info.
+Cyrill Gorcunov wrote:
 > 
-> Old IDE often locks up the machine hard after timeouts.  I'm all for
+> is it possible to change 'l' and 'h' to 'low' and 'high'?
+> 'cause 'l' does look like '1' (one) number...
+> 
 
-The code paths are racy - it didn't use to in 2.4 (except for the promise
-drain bug)
+I think you should use a different font.  Otherwise we're soon in a 
+position where we can't abbreviate anything that starts with L and keep 
+using lower case throughout.  That doesn't seem like a valid tradeoff to me.
 
-> gathering more info but benefit vs. risk equation just doesn't look good
-> here.  Why take risk for a rare device which forgets to raise IRQ on
-> media error?  If such behavior is wide spread among PATA drives && we
-> can verify that TF register access after timeout is safe for PATA
-> controllers, sure, but currently we aren't sure about either.
+There are plenty of fonts which have good visual distinction between l 
+and 1 and O and 0.
 
-We lose IRQs in lots of other cases. Promise PATA is particularly bad at
-forgetting to give us the completion interrupt.
-
-Alan
+	-hpa
