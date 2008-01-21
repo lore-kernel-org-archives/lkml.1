@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbYAUR7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbYAUSDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753076AbYAUR7S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 12:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYAUR7G
+	id S1754489AbYAUSDo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 13:03:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYAUSDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 12:59:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:49494 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbYAUR7F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 12:59:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=su9wPotu+LZg8mQpLum5+2w6y3jBqvOcgf10E78I5kZGPfnEdNsBLVJkQAkTK5/jBlxq0gMJh/7p1beyijQI2gDOpupOnVaqCSGcp00CN4PaqH9u/GXIdArKd8djSm5FhyFr4UtoRkWG31ImbGUHdWef0WH0DP7/Mhbwr2JnM9c=
-Message-ID: <6101e8c40801210959v1e0f6e55w26187dc93a09a202@mail.gmail.com>
-Date: Mon, 21 Jan 2008 18:59:03 +0100
-From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
-	<oliver.pntr@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>, "David Miller" <davem@davemloft.net>,
-       "Greg KH" <gregkh@suse.de>, "Greg KH" <greg@kroah.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Al Viro" <viro@zeniv.linux.org.uk>, "Arnd Bergmann" <arnd@arndb.de>
-Subject: Add common orderly_poweroff() to 2.6.22?
+	Mon, 21 Jan 2008 13:03:36 -0500
+Received: from mx2.suse.de ([195.135.220.15]:49457 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751666AbYAUSDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 13:03:36 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: [PATCH] x86_64: check if Tom2 is enabled
+Date: Mon, 21 Jan 2008 19:03:27 +0100
+User-Agent: KMail/1.9.6
+Cc: Yinghai Lu <Yinghai.Lu@sun.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200801192045.17291.yinghai.lu@sun.com> <200801202257.47195.yinghai.lu@sun.com> <20080121172437.GA6722@cvg>
+In-Reply-To: <20080121172437.GA6722@cvg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200801211903.27215.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all!
 
-commit in mainline 10a0a8d4e3f6bf2d077f94344441909abe670f5a is go in
-the satble 2.6.22
+> is it possible to change 'l' and 'h' to 'low' and 'high'?
+> 'cause 'l' does look like '1' (one) number...
 
-the grund for this question is http://hup.hu/node/49773 .
+It would be fine for me for someone to implement safe_rdtscll() and get rid
+of l and h everywhere. IMHO all the l and h accesses of MSRs are just harder
+to read and error prone over the ll 64bit variants.
 
--- 
-Thanks,
-Oliver
+But I didn't want to add it just for this.
+
+-Andi
