@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbYAUGJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbYAUGLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbYAUGJQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 01:09:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYAUGJD
+	id S1758125AbYAUGLl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 01:11:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbYAUGLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 01:09:03 -0500
-Received: from ns2.suse.de ([195.135.220.15]:48486 "EHLO mx2.suse.de"
+	Mon, 21 Jan 2008 01:11:33 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:53494 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751527AbYAUGJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 01:09:01 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH] x86_64: update e820 instead of updating end_pfn v2
-Date: Mon, 21 Jan 2008 07:08:55 +0100
-User-Agent: KMail/1.9.6
-Cc: Yinghai Lu <Yinghai.Lu@sun.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200801192045.17291.yinghai.lu@sun.com> <200801210658.04030.ak@suse.de> <1200895558.5724.235.camel@brick>
-In-Reply-To: <1200895558.5724.235.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1751874AbYAUGLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 01:11:32 -0500
+Date: Mon, 21 Jan 2008 07:11:40 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] kbuild: fix so modpost can now check any .o file
+Message-ID: <20080121061140.GA27783@uranus.ravnborg.org>
+References: <20080120200527.GA23852@uranus.ravnborg.org> <1200859743-24037-1-git-send-email-sam@ravnborg.org> <200801211156.32122.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801210708.55798.ak@suse.de>
+In-Reply-To: <200801211156.32122.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > That change is good agreed, but I would suggest to put it into a separate
-> > patch with a description
-> > 
+On Mon, Jan 21, 2008 at 11:56:31AM +1100, Rusty Russell wrote:
+> On Monday 21 January 2008 07:08:56 Sam Ravnborg wrote:
+> > It is very convinient to say:
+> > scripts/mod/modpost mm/built-in.o
+> >
+> > to check if any section mismatch errors occured
+> > in mm/ (as an example).
 > 
-> Perhaps like this:
+> Hi Sam,
 > 
-> if (l & (Tom2Enabled|Tom2ForceMemTypeWB))
-> 	return 1;
+> In an ideal world, wouldn't it be better to split out section analysis into a 
+> different helper program?
 
-That's not equivalent.
+Now whats an ideal world ;-)
+But otherwise yes - I have not just got around to it.
 
--Andi
-
+	Sam
