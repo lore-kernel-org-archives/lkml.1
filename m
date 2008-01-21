@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764692AbYAUKQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764823AbYAUKQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764692AbYAUKQf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760051AbYAUKC7
+	id S1764823AbYAUKQz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760084AbYAUKDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:02:59 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35808 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:03:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35809 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760017AbYAUKC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:02:56 -0500
+	id S1759981AbYAUKC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:02:58 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Bob Peterson <rpeterso@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 39/58] [GFS2] Reorganize function gfs2_glmutex_lock
-Date: Mon, 21 Jan 2008 09:21:57 +0000
-Message-Id: <12009074082286-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 40/58] [GFS2] Only fetch the dinode once in block_map
+Date: Mon, 21 Jan 2008 09:21:58 +0000
+Message-Id: <12009074103982-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12009074074196-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12009074082286-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -57,7 +57,8 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009074032614-git-send-email-swhiteho@redhat.com>
  <1200907405414-git-send-email-swhiteho@redhat.com>
  <12009074074196-git-send-email-swhiteho@redhat.com>
-Message-Id: <beb922fe3a443dba9e6c23f30689d5f2f0adeca1.1200905287.git.swhiteho@redhat.com>
+ <12009074082286-git-send-email-swhiteho@redhat.com>
+Message-Id: <c5ea4a39fe373c8baa74e7a85942d2b959b8f190.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -66,63 +67,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bob Peterson <rpeterso@redhat.com>
 
-This patch optimizes the function gfs2_glmutex_lock.
-The basic theory is: Why bother initializing a holder, setting up
-wait bits and then waiting on them, if you know the glock can be
-yours.  So the holder stuff is placed inside the if checking if the
-glock is locked.  This one needs careful scrutiny because changing
-anything to do with locking should strike terror into one's heart.
+Function gfs2_block_map was often looking up the disk inode twice.
+This optimizes it so that only does it once.
 
 Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index a7f3c46..80e09c5 100644
---- a/fs/gfs2/glock.c
-+++ b/fs/gfs2/glock.c
-@@ -1,6 +1,6 @@
- /*
-  * Copyright (C) Sistina Software, Inc.  1997-2003 All rights reserved.
-- * Copyright (C) 2004-2006 Red Hat, Inc.  All rights reserved.
-+ * Copyright (C) 2004-2007 Red Hat, Inc.  All rights reserved.
-  *
-  * This copyrighted material is made available to anyone wishing to use,
-  * modify, copy, or redistribute it subject to the terms and conditions
-@@ -620,26 +620,21 @@ static void run_queue(struct gfs2_glock *gl)
+diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
+index 4948602..2241141 100644
+--- a/fs/gfs2/bmap.c
++++ b/fs/gfs2/bmap.c
+@@ -469,6 +469,7 @@ int gfs2_block_map(struct inode *inode, sector_t lblock,
+ 	unsigned int maxlen = bh_map->b_size >> inode->i_blkbits;
+ 	struct metapath mp;
+ 	u64 size;
++	struct buffer_head *dibh = NULL;
  
- static void gfs2_glmutex_lock(struct gfs2_glock *gl)
- {
--	struct gfs2_holder gh;
--
--	gfs2_holder_init(gl, 0, 0, &gh);
--	if (test_and_set_bit(HIF_WAIT, &gh.gh_iflags))
--		BUG();
--
- 	spin_lock(&gl->gl_spin);
- 	if (test_and_set_bit(GLF_LOCK, &gl->gl_flags)) {
-+		struct gfs2_holder gh;
-+
-+		gfs2_holder_init(gl, 0, 0, &gh);
-+		set_bit(HIF_WAIT, &gh.gh_iflags);
- 		list_add_tail(&gh.gh_list, &gl->gl_waiters1);
-+		spin_unlock(&gl->gl_spin);
-+		wait_on_holder(&gh);
-+		gfs2_holder_uninit(&gh);
- 	} else {
- 		gl->gl_owner_pid = current->pid;
- 		gl->gl_ip = (unsigned long)__builtin_return_address(0);
--		clear_bit(HIF_WAIT, &gh.gh_iflags);
--		smp_mb();
--		wake_up_bit(&gh.gh_iflags, HIF_WAIT);
-+		spin_unlock(&gl->gl_spin);
- 	}
--	spin_unlock(&gl->gl_spin);
--
--	wait_on_holder(&gh);
--	gfs2_holder_uninit(&gh);
+ 	BUG_ON(maxlen == 0);
+ 
+@@ -499,6 +500,8 @@ int gfs2_block_map(struct inode *inode, sector_t lblock,
+ 	error = gfs2_meta_inode_buffer(ip, &bh);
+ 	if (error)
+ 		goto out_fail;
++	dibh = bh;
++	get_bh(dibh);
+ 
+ 	for (x = 0; x < end_of_metadata; x++) {
+ 		lookup_block(ip, bh, x, &mp, create, &new, &dblock);
+@@ -517,13 +520,8 @@ int gfs2_block_map(struct inode *inode, sector_t lblock,
+ 		if (boundary)
+ 			set_buffer_boundary(bh_map);
+ 		if (new) {
+-			struct buffer_head *dibh;
+-			error = gfs2_meta_inode_buffer(ip, &dibh);
+-			if (!error) {
+-				gfs2_trans_add_bh(ip->i_gl, dibh, 1);
+-				gfs2_dinode_out(ip, dibh->b_data);
+-				brelse(dibh);
+-			}
++			gfs2_trans_add_bh(ip->i_gl, dibh, 1);
++			gfs2_dinode_out(ip, dibh->b_data);
+ 			set_buffer_new(bh_map);
+ 			goto out_brelse;
+ 		}
+@@ -544,6 +542,8 @@ out_brelse:
+ out_ok:
+ 	error = 0;
+ out_fail:
++	if (dibh)
++		brelse(dibh);
+ 	bmap_unlock(inode, create);
+ 	return error;
  }
- 
- /**
 -- 
 1.5.1.2
 
