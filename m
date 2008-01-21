@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763404AbYAUP3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbYAUP3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763404AbYAUP3e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 10:29:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760633AbYAUPYo
+	id S932123AbYAUP3z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 10:29:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760654AbYAUPYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 10:24:44 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:49259 "EHLO
+	Mon, 21 Jan 2008 10:24:46 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:49283 "EHLO
 	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755349AbYAUPYD (ORCPT
+	with ESMTP id S1756791AbYAUPYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 10:24:03 -0500
-Message-Id: <20080121152354.547148651@goodmis.org>
+	Mon, 21 Jan 2008 10:24:04 -0500
+Message-Id: <20080121152352.789802471@goodmis.org>
 References: <20080121152231.579118762@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 Jan 2008 10:22:54 -0500
+Date: Mon, 21 Jan 2008 10:22:43 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -27,343 +27,190 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 23/23 -v4] trace preempt off critical timings
-Content-Disposition: inline; filename=mcount-trace-latency-trace-preempt-off.patch
+       John Stultz <johstul@us.ibm.com>, Steven Rostedt <srostedt@redhat.com>
+Subject: [RFC PATCH 12/23 -v4] Use RCU algorithm for monotonic cycles.
+Content-Disposition: inline; filename=get-monotonic-rcu-experimental.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add preempt off timings. A lot of this code is taken from the RT patch
-latency trace that was written by Ingo Molnar.
+From: john stultz <johnstul@us.ibm.com>
 
-Now instead of just tracing irqs off, preemption off can be selected
-to be recorded.
+On Wed, 2008-01-16 at 18:39 -0500, Mathieu Desnoyers wrote:
+> I would disable preemption in clocksource_get_basecycles. We would not
+> want to be scheduled out while we hold a pointer to the old array
+> element.
+> 
+> > +	int num = cs->base_num;
+> 
+> Since you deal with base_num in a shared manner (not per cpu), you will
+> need a smp_read_barrier_depend() here after the cs->base_num read.
+> 
+> You should think about reading the cs->base_num first, and _after_ that
+> read the real clocksource. Here, the clocksource value is passed as
+> parameter. It means that the read clocksource may have been read in the
+> previous RCU window.
 
-When this is selected, it shares the same files as irqs off timings.
-One can either trace preemption off, irqs off, or one or the other off.
-But once it is configured in the kernel for what to trace, it can't
-be changed.
+Here's an updated version of the patch w/ the suggested memory barrier
+changes and favored (1-x) inversion change. ;)  Let me know if you see
+any other holes, or have any other suggestions or ideas.
 
+Still un-tested (my test box will free up soon, I promise!), but builds.
+
+[ Steven Rostedt has been running this patch with no problems ]
+
+Signed-off-by: John Stultz <johstul@us.ibm.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- arch/x86/kernel/process_32.c |    3 +++
- include/linux/irqflags.h     |    3 ++-
- include/linux/mcount.h       |    8 ++++++++
- include/linux/preempt.h      |    2 +-
- kernel/sched.c               |   24 +++++++++++++++++++++++-
- lib/tracing/Kconfig          |   24 ++++++++++++++++++++++++
- lib/tracing/Makefile         |    1 +
- lib/tracing/trace_irqsoff.c  |   40 ++++++++++++++++++++++++++++++----------
- 8 files changed, 92 insertions(+), 13 deletions(-)
 
-Index: linux-mcount.git/lib/tracing/Kconfig
+---
+ include/linux/clocksource.h |   50 +++++++++++++++++++++++++++++++++++---------
+ kernel/time/timekeeping.c   |   36 ++++---------------------------
+ 2 files changed, 45 insertions(+), 41 deletions(-)
+
+Index: linux-mcount.git/include/linux/clocksource.h
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-18 23:34:56.000000000 -0500
-+++ linux-mcount.git/lib/tracing/Kconfig	2008-01-18 23:39:01.000000000 -0500
-@@ -43,6 +43,30 @@ config CRITICAL_IRQSOFF_TIMING
+--- linux-mcount.git.orig/include/linux/clocksource.h	2008-01-18 23:48:45.000000000 -0500
++++ linux-mcount.git/include/linux/clocksource.h	2008-01-18 23:48:46.000000000 -0500
+@@ -87,9 +87,17 @@ struct clocksource {
+ 	 * more than one cache line.
+ 	 */
+ 	struct {
+-		cycle_t cycle_last, cycle_accumulated, cycle_raw;
+-	} ____cacheline_aligned_in_smp;
++		cycle_t cycle_last, cycle_accumulated;
  
- 	      echo 0 > /debug/tracing/preempt_max_latency
++		/* base structure provides lock-free read
++		 * access to a virtualized 64bit counter
++		 * Uses RCU-like update.
++		 */
++		struct {
++			cycle_t cycle_base_last, cycle_base;
++		} base[2];
++		int base_num;
++	} ____cacheline_aligned_in_smp;
+ 	u64 xtime_nsec;
+ 	s64 error;
  
-+	  (Note that kernel size and overhead increases with this option
-+	  enabled. This option and the preempt-off timing option can be
-+	  used together or separately.)
-+
-+config CRITICAL_PREEMPT_TIMING
-+	bool "Preemption-off critical section latency timing"
-+	default n
-+	depends on GENERIC_TIME
-+	depends on PREEMPT
-+	select TRACING
-+	help
-+	  This option measures the time spent in preemption off critical
-+	  sections, with microsecond accuracy.
-+
-+	  The default measurement method is a maximum search, which is
-+	  disabled by default and can be runtime (re-)started
-+	  via:
-+
-+	      echo 0 > /debug/tracing/preempt_max_latency
-+
-+	  (Note that kernel size and overhead increases with this option
-+	  enabled. This option and the irqs-off timing option can be
-+	  used together or separately.)
-+
- config WAKEUP_TRACER
- 	bool "Trace wakeup latencies"
- 	depends on DEBUG_KERNEL
-Index: linux-mcount.git/lib/tracing/Makefile
-===================================================================
---- linux-mcount.git.orig/lib/tracing/Makefile	2008-01-18 23:34:32.000000000 -0500
-+++ linux-mcount.git/lib/tracing/Makefile	2008-01-18 23:39:32.000000000 -0500
-@@ -4,6 +4,7 @@ obj-$(CONFIG_TRACING) += tracer.o
- obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
- obj-$(CONFIG_FUNCTION_TRACER) += trace_function.o
- obj-$(CONFIG_CRITICAL_IRQSOFF_TIMING) += trace_irqsoff.o
-+obj-$(CONFIG_CRITICAL_PREEMPT_TIMING) += trace_irqsoff.o
- obj-$(CONFIG_WAKEUP_TRACER) += trace_wakeup.o
- 
- libmcount-y := mcount.o
-Index: linux-mcount.git/lib/tracing/trace_irqsoff.c
-===================================================================
---- linux-mcount.git.orig/lib/tracing/trace_irqsoff.c	2008-01-18 23:35:26.000000000 -0500
-+++ linux-mcount.git/lib/tracing/trace_irqsoff.c	2008-01-18 23:38:34.000000000 -0500
-@@ -36,6 +36,12 @@ static int __init set_nr_entries(char *s
+@@ -175,19 +183,29 @@ static inline cycle_t clocksource_read(s
  }
- __setup("trace_irq_entries=", set_nr_entries);
  
-+#ifdef CONFIG_CRITICAL_PREEMPT_TIMING
-+# define preempt_trace() (preempt_count())
-+#else
-+# define preempt_trace() (0)
-+#endif
-+
- /*
-  * max trace is switched with this buffer.
+ /**
+- * clocksource_get_cycles: - Access the clocksource's accumulated cycle value
++ * clocksource_get_basecycles: - get the clocksource's accumulated cycle value
+  * @cs:		pointer to clocksource being read
+  * @now:	current cycle value
+  *
+  * Uses the clocksource to return the current cycle_t value.
+  * NOTE!!!: This is different from clocksource_read, because it
+- * returns the accumulated cycle value! Must hold xtime lock!
++ * returns a 64bit wide accumulated value.
   */
-@@ -206,7 +212,7 @@ start_critical_timing(unsigned long ip, 
- 
- 	data->critical_sequence = max_sequence;
- 	data->preempt_timestamp = now();
--	data->critical_start = parent_ip;
-+	data->critical_start = parent_ip ? : ip;
- 	tracing_reset(data);
- 
- 	local_save_flags(flags);
-@@ -230,18 +236,19 @@ stop_critical_timing(unsigned long ip, u
- 	atomic_inc(&data->disabled);
- 	local_save_flags(flags);
- 	tracing_function_trace(tr, data, ip, parent_ip, flags);
--	check_critical_timing(tr, data, parent_ip, cpu);
-+	check_critical_timing(tr, data, parent_ip ? : ip, cpu);
- 	data->critical_start = 0;
- 	atomic_dec(&data->disabled);
- }
- 
-+/* start and stop critical timings used to for stoppage (in idle) */
- void notrace start_critical_timings(void)
+ static inline cycle_t
+-clocksource_get_cycles(struct clocksource *cs, cycle_t now)
++clocksource_get_basecycles(struct clocksource *cs)
  {
- 	unsigned long flags;
- 
- 	local_save_flags(flags);
- 
--	if (irqs_disabled_flags(flags))
-+	if (preempt_trace() || irqs_disabled_flags(flags))
- 		start_critical_timing(CALLER_ADDR0, 0);
- }
- 
-@@ -251,10 +258,11 @@ void notrace stop_critical_timings(void)
- 
- 	local_save_flags(flags);
- 
--	if (irqs_disabled_flags(flags))
-+	if (preempt_trace() || irqs_disabled_flags(flags))
- 		stop_critical_timing(CALLER_ADDR0, 0);
- }
- 
-+#ifdef CONFIG_CRITICAL_IRQSOFF_TIMING
- #ifdef CONFIG_LOCKDEP
- void notrace time_hardirqs_on(unsigned long a0, unsigned long a1)
- {
-@@ -262,7 +270,7 @@ void notrace time_hardirqs_on(unsigned l
- 
- 	local_save_flags(flags);
- 
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irqs_disabled_flags(flags))
- 		stop_critical_timing(a0, a1);
- }
- 
-@@ -272,7 +280,7 @@ void notrace time_hardirqs_off(unsigned 
- 
- 	local_save_flags(flags);
- 
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irqs_disabled_flags(flags))
- 		start_critical_timing(a0, a1);
- }
- 
-@@ -311,7 +319,7 @@ void notrace trace_hardirqs_on(void)
- 
- 	local_save_flags(flags);
- 
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irqs_disabled_flags(flags))
- 		stop_critical_timing(CALLER_ADDR0, 0);
- }
- EXPORT_SYMBOL(trace_hardirqs_on);
-@@ -322,7 +330,7 @@ void notrace trace_hardirqs_off(void)
- 
- 	local_save_flags(flags);
- 
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irqs_disabled_flags(flags))
- 		start_critical_timing(CALLER_ADDR0, 0);
- }
- EXPORT_SYMBOL(trace_hardirqs_off);
-@@ -333,7 +341,7 @@ void notrace trace_hardirqs_on_caller(un
- 
- 	local_save_flags(flags);
- 
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irqs_disabled_flags(flags))
- 		stop_critical_timing(CALLER_ADDR0, caller_addr);
- }
- EXPORT_SYMBOL(trace_hardirqs_on_caller);
-@@ -344,13 +352,25 @@ void notrace trace_hardirqs_off_caller(u
- 
- 	local_save_flags(flags);
- 
--	if (irqs_disabled_flags(flags))
-+	if (!preempt_trace() && irqs_disabled_flags(flags))
- 		start_critical_timing(CALLER_ADDR0, caller_addr);
- }
- EXPORT_SYMBOL(trace_hardirqs_off_caller);
- 
- #endif /* CONFIG_LOCKDEP */
-+#endif /*  CONFIG_CRITICAL_IRQSOFF_TIMING */
- 
-+#ifdef CONFIG_CRITICAL_PREEMPT_TIMING
-+void notrace trace_preempt_on(unsigned long a0, unsigned long a1)
-+{
-+	stop_critical_timing(a0, a1);
-+}
+-	cycle_t offset = (now - cs->cycle_last) & cs->mask;
+-	offset += cs->cycle_accumulated;
++	int num;
++	cycle_t now, offset;
 +
-+void notrace trace_preempt_off(unsigned long a0, unsigned long a1)
-+{
-+	start_critical_timing(a0, a1);
-+}
-+#endif /* CONFIG_CRITICAL_PREEMPT_TIMING */
- 
- #ifdef CONFIG_MCOUNT
- static void notrace irqsoff_trace_call(unsigned long ip,
-Index: linux-mcount.git/include/linux/preempt.h
-===================================================================
---- linux-mcount.git.orig/include/linux/preempt.h	2008-01-18 22:20:30.000000000 -0500
-+++ linux-mcount.git/include/linux/preempt.h	2008-01-18 23:38:34.000000000 -0500
-@@ -10,7 +10,7 @@
- #include <linux/linkage.h>
- #include <linux/list.h>
- 
--#ifdef CONFIG_DEBUG_PREEMPT
-+#if defined(CONFIG_DEBUG_PREEMPT) || defined(CONFIG_CRITICAL_PREEMPT_TIMING)
-   extern void fastcall add_preempt_count(int val);
-   extern void fastcall sub_preempt_count(int val);
- #else
-Index: linux-mcount.git/kernel/sched.c
-===================================================================
---- linux-mcount.git.orig/kernel/sched.c	2008-01-18 23:26:31.000000000 -0500
-+++ linux-mcount.git/kernel/sched.c	2008-01-18 23:38:34.000000000 -0500
-@@ -63,6 +63,7 @@
- #include <linux/reciprocal_div.h>
- #include <linux/unistd.h>
- #include <linux/pagemap.h>
-+#include <linux/mcount.h>
- 
- #include <asm/tlb.h>
- #include <asm/irq_regs.h>
-@@ -3505,26 +3506,44 @@ void scheduler_tick(void)
- #endif
- }
- 
--#if defined(CONFIG_PREEMPT) && defined(CONFIG_DEBUG_PREEMPT)
-+#if defined(CONFIG_PREEMPT) && (defined(CONFIG_DEBUG_PREEMPT) || \
-+				defined(CONFIG_CRITICAL_PREEMPT_TIMING))
++	preempt_disable();
++	num = cs->base_num;
++	smp_read_barrier_depends();
++	now = clocksource_read(cs);
++	offset = (now - cs->base[num].cycle_base_last);
++	offset &= cs->mask;
++	offset += cs->base[num].cycle_base;
++	preempt_enable();
 +
-+static inline unsigned long get_parent_ip(unsigned long addr)
-+{
-+	if (in_lock_functions(addr)) {
-+		addr = CALLER_ADDR2;
-+		if (in_lock_functions(addr))
-+			addr = CALLER_ADDR3;
-+	}
-+	return addr;
-+}
- 
- void fastcall add_preempt_count(int val)
- {
-+#ifdef CONFIG_DEBUG_PREEMPT
- 	/*
- 	 * Underflow?
- 	 */
- 	if (DEBUG_LOCKS_WARN_ON((preempt_count() < 0)))
- 		return;
-+#endif
- 	preempt_count() += val;
-+#ifdef CONFIG_DEBUG_PREEMPT
- 	/*
- 	 * Spinlock count overflowing soon?
- 	 */
- 	DEBUG_LOCKS_WARN_ON((preempt_count() & PREEMPT_MASK) >=
- 				PREEMPT_MASK - 10);
-+#endif
-+	if (preempt_count() == val)
-+		trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
+ 	return offset;
  }
- EXPORT_SYMBOL(add_preempt_count);
  
- void fastcall sub_preempt_count(int val)
+@@ -197,14 +215,26 @@ clocksource_get_cycles(struct clocksourc
+  * @now:	current cycle value
+  *
+  * Used to avoids clocksource hardware overflow by periodically
+- * accumulating the current cycle delta. Must hold xtime write lock!
++ * accumulating the current cycle delta. Uses RCU-like update, but
++ * ***still requires the xtime_lock is held for writing!***
+  */
+ static inline void clocksource_accumulate(struct clocksource *cs, cycle_t now)
  {
-+#ifdef CONFIG_DEBUG_PREEMPT
- 	/*
- 	 * Underflow?
- 	 */
-@@ -3536,7 +3555,10 @@ void fastcall sub_preempt_count(int val)
- 	if (DEBUG_LOCKS_WARN_ON((val < PREEMPT_MASK) &&
- 			!(preempt_count() & PREEMPT_MASK)))
- 		return;
-+#endif
- 
-+	if (preempt_count() == val)
-+		trace_preempt_on(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
- 	preempt_count() -= val;
- }
- EXPORT_SYMBOL(sub_preempt_count);
-Index: linux-mcount.git/arch/x86/kernel/process_32.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/process_32.c	2008-01-18 22:20:30.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/process_32.c	2008-01-18 23:38:34.000000000 -0500
-@@ -195,7 +195,10 @@ void cpu_idle(void)
- 				play_dead();
- 
- 			__get_cpu_var(irq_stat).idle_timestamp = jiffies;
-+			/* Don't trace irqs off for idle */
-+			stop_critical_timings();
- 			idle();
-+			start_critical_timings();
- 		}
- 		tick_nohz_restart_sched_tick();
- 		preempt_enable_no_resched();
-Index: linux-mcount.git/include/linux/mcount.h
-===================================================================
---- linux-mcount.git.orig/include/linux/mcount.h	2008-01-18 23:33:58.000000000 -0500
-+++ linux-mcount.git/include/linux/mcount.h	2008-01-18 23:38:34.000000000 -0500
-@@ -58,4 +58,12 @@ extern void mcount(void);
- # define time_hardirqs_off(a0, a1)		do { } while (0)
- #endif
- 
-+#ifdef CONFIG_CRITICAL_PREEMPT_TIMING
-+  extern void notrace trace_preempt_on(unsigned long a0, unsigned long a1);
-+  extern void notrace trace_preempt_off(unsigned long a0, unsigned long a1);
-+#else
-+# define trace_preempt_on(a0, a1)		do { } while (0)
-+# define trace_preempt_off(a0, a1)		do { } while (0)
-+#endif
+-	cycle_t offset = (now - cs->cycle_last) & cs->mask;
++	/* First update the monotonic base portion.
++	 * The dual array update method allows for lock-free reading.
++	 */
++	int num = 1 - cs->base_num;
++	cycle_t offset = (now - cs->base[1-num].cycle_base_last);
++	offset &= cs->mask;
++	cs->base[num].cycle_base = cs->base[1-num].cycle_base + offset;
++	cs->base[num].cycle_base_last = now;
++	wmb();
++	cs->base_num = num;
 +
- #endif /* _LINUX_MCOUNT_H */
-Index: linux-mcount.git/include/linux/irqflags.h
-===================================================================
---- linux-mcount.git.orig/include/linux/irqflags.h	2008-01-18 23:33:58.000000000 -0500
-+++ linux-mcount.git/include/linux/irqflags.h	2008-01-18 23:38:34.000000000 -0500
-@@ -54,7 +54,8 @@
- # define INIT_TRACE_IRQFLAGS
- #endif
++	/* Now update the cycle_accumulated portion */
++	offset = (now - cs->cycle_last) & cs->mask;
+ 	cs->cycle_last = now;
+ 	cs->cycle_accumulated += offset;
+-	cs->cycle_raw += offset;
+ }
  
--#ifdef CONFIG_CRITICAL_IRQSOFF_TIMING
-+#if defined(CONFIG_CRITICAL_IRQSOFF_TIMING) || \
-+	defined(CONFIG_CRITICAL_PREEMPT_TIMING)
-  extern void stop_critical_timings(void);
-  extern void start_critical_timings(void);
- #else
+ /**
+Index: linux-mcount.git/kernel/time/timekeeping.c
+===================================================================
+--- linux-mcount.git.orig/kernel/time/timekeeping.c	2008-01-18 23:48:45.000000000 -0500
++++ linux-mcount.git/kernel/time/timekeeping.c	2008-01-18 23:48:46.000000000 -0500
+@@ -71,10 +71,12 @@ static struct clocksource *clock = &cloc
+  */
+ static inline s64 __get_nsec_offset(void)
+ {
+-	cycle_t cycle_delta;
++	cycle_t now, cycle_delta;
+ 	s64 ns_offset;
+ 
+-	cycle_delta = clocksource_get_cycles(clock, clocksource_read(clock));
++	now = clocksource_read(clock);
++	cycle_delta = (now - clock->cycle_last) & clock->mask;
++	cycle_delta += clock->cycle_accumulated;
+ 	ns_offset = cyc2ns(clock, cycle_delta);
+ 
+ 	return ns_offset;
+@@ -105,35 +107,7 @@ static inline void __get_realtime_clock_
+ 
+ cycle_t notrace get_monotonic_cycles(void)
+ {
+-	cycle_t cycle_now, cycle_delta, cycle_raw, cycle_last;
+-
+-	do {
+-		/*
+-		 * cycle_raw and cycle_last can change on
+-		 * another CPU and we need the delta calculation
+-		 * of cycle_now and cycle_last happen atomic, as well
+-		 * as the adding to cycle_raw. We don't need to grab
+-		 * any locks, we just keep trying until get all the
+-		 * calculations together in one state.
+-		 *
+-		 * In fact, we __cant__ grab any locks. This
+-		 * function is called from the latency_tracer which can
+-		 * be called anywhere. To grab any locks (including
+-		 * seq_locks) we risk putting ourselves into a deadlock.
+-		 */
+-		cycle_raw = clock->cycle_raw;
+-		cycle_last = clock->cycle_last;
+-
+-		/* read clocksource: */
+-		cycle_now = clocksource_read(clock);
+-
+-		/* calculate the delta since the last update_wall_time: */
+-		cycle_delta = (cycle_now - cycle_last) & clock->mask;
+-
+-	} while (cycle_raw != clock->cycle_raw ||
+-		 cycle_last != clock->cycle_last);
+-
+-	return cycle_raw + cycle_delta;
++	return clocksource_get_basecycles(clock);
+ }
+ 
+ unsigned long notrace cycles_to_usecs(cycle_t cycles)
 
 -- 
