@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbYAUCwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbYAUCzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbYAUCwW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 21:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbYAUCwN
+	id S1757710AbYAUCzh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 21:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbYAUCz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 21:52:13 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:35514 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753236AbYAUCwM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 21:52:12 -0500
-Date: Sun, 20 Jan 2008 21:51:17 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Abhishek Rai <abhishekrai@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, linux-ext4@vger.kernel.org
-Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm
-	patch]
-Message-ID: <20080121025117.GB8105@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Daniel Phillips <phillips@phunq.net>,
-	Abhishek Rai <abhishekrai@google.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, rohitseth@google.com,
-	linux-ext4@vger.kernel.org
-References: <200801140839.01986.abhishekrai@google.com> <20080115152801.GA7292@mit.edu> <d9885f0f0801170447r1c2bfeb9l6c911bfa0113366f@mail.gmail.com> <200801192010.20699.phillips@phunq.net>
-MIME-Version: 1.0
+	Sun, 20 Jan 2008 21:55:29 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:41627 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752031AbYAUCz3 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 20 Jan 2008 21:55:29 -0500
+Date: Mon, 21 Jan 2008 13:55:10 +1100
+From: David Chinner <dgc@sgi.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: xfs@oss.sgi.com, LKML <linux-kernel@vger.kernel.org>, peterz@infradead.org,
+       mingo@redhat.com
+Subject: Re: 2.6.24-rc8: possible circular locking dependency detected
+Message-ID: <20080121025510.GY155259@sgi.com>
+References: <alpine.DEB.1.00.0801182240310.6521@sheep.housecafe.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801192010.20699.phillips@phunq.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+In-Reply-To: <alpine.DEB.1.00.0801182240310.6521@sheep.housecafe.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 19, 2008 at 08:10:20PM -0800, Daniel Phillips wrote:
+On Fri, Jan 18, 2008 at 10:45:17PM +0100, Christian Kujau wrote:
+> Hi,
 > 
-> I can see value in preemptively loading indirect blocks into the buffer 
-> cache, but is building a second-order extent tree really worth the 
-> effort?  Probing the buffer cache is very fast.
+> just FYI, upgrading to -rc8 gave the following messages in kern.log in
+> the morning hours, when the backups were run:
+> 
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.24-rc8 #2
+> -------------------------------------------------------
+> rsync/23295 is trying to acquire lock:
+>  (iprune_mutex){--..}, at: [<c017a552>] shrink_icache_memory+0x72/0x220
+> 
+> but task is already holding lock:
+>  (&(&ip->i_iolock)->mr_lock){----}, at: [<c0275056>] xfs_ilock+0x96/0xb0
+> 
+> which lock already depends on the new lock.
 
-It's not that much effort, and for a big database (say, like a 50GB
-database file), the indirect blocks would take up 50 megabytes of
-memory.  Collapsing it into an extent tree would save that memory into
-a few kilobytes.  I suppose a database server would probably have
-5-10GB's of memory, so the grand scheme of things it's not a vast
-amount of memory, but the trick is keeping the indirect blocks pinned
-so they don't get pushed out by some vast, gigunndo Java application
-running in the same server as the database.  If you have the indirect
-blocks encoded into the extent tree, then you don't have to worry
-about that.
+memory reclaim can occur when an inode lock is held,
+causing i_iolock -> iprune_mutex to occur. This is quite
+common.
 
-            	       	     	     	   - Ted
+During reclaim, while holding iprune_mutex, we lock a
+different inode to complete the cleaning up of it,
+resulting in iprune_mutex -> i_iolock.
+
+At this point, lockdep gets upset and blats out a warning.
+
+But, there's no problem here as it is always safe for us
+to take the i_iolock in inode reclaim because it can never
+be the same as the i_iolock that we've taken prior to memory
+reclaim being entered. Therefore false positive.
+
+Lockdep folk - we really need an annotation to prevent this false
+positive from being reported because we are getting reports at
+least once a week....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
