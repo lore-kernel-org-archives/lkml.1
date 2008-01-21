@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763187AbYAUP3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763404AbYAUP3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763187AbYAUP3S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 10:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760609AbYAUPYn
+	id S1763404AbYAUP3e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 10:29:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760633AbYAUPYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 10:24:43 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:42894 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755510AbYAUPYD (ORCPT
+	Mon, 21 Jan 2008 10:24:44 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:49259 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755349AbYAUPYD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 Jan 2008 10:24:03 -0500
-Message-Id: <20080121152352.004055444@goodmis.org>
+Message-Id: <20080121152354.547148651@goodmis.org>
 References: <20080121152231.579118762@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 Jan 2008 10:22:38 -0500
+Date: Mon, 21 Jan 2008 10:22:54 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -28,37 +28,342 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 07/23 -v4] ppc clock accumulate fix
-Content-Disposition: inline; filename=ppc-clock-accumulate-update.patch
+Subject: [RFC PATCH 23/23 -v4] trace preempt off critical timings
+Content-Disposition: inline; filename=mcount-trace-latency-trace-preempt-off.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add preempt off timings. A lot of this code is taken from the RT patch
+latency trace that was written by Ingo Molnar.
 
-The following is a quick and dirty fix for powerpc so it includes
-cycle_accumulated in its calculation. It relies on the fact that the
-powerpc clocksource is a 64bit counter (don't have to worry about
-multiple overflows), so the subtraction should be safe.
+Now instead of just tracing irqs off, preemption off can be selected
+to be recorded.
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
+When this is selected, it shares the same files as irqs off timings.
+One can either trace preemption off, irqs off, or one or the other off.
+But once it is configured in the kernel for what to trace, it can't
+be changed.
+
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/powerpc/kernel/time.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/kernel/process_32.c |    3 +++
+ include/linux/irqflags.h     |    3 ++-
+ include/linux/mcount.h       |    8 ++++++++
+ include/linux/preempt.h      |    2 +-
+ kernel/sched.c               |   24 +++++++++++++++++++++++-
+ lib/tracing/Kconfig          |   24 ++++++++++++++++++++++++
+ lib/tracing/Makefile         |    1 +
+ lib/tracing/trace_irqsoff.c  |   40 ++++++++++++++++++++++++++++++----------
+ 8 files changed, 92 insertions(+), 13 deletions(-)
 
-Index: linux-mcount.git/arch/powerpc/kernel/time.c
+Index: linux-mcount.git/lib/tracing/Kconfig
 ===================================================================
---- linux-mcount.git.orig/arch/powerpc/kernel/time.c	2008-01-17 20:33:16.000000000 -0500
-+++ linux-mcount.git/arch/powerpc/kernel/time.c	2008-01-17 20:33:38.000000000 -0500
-@@ -773,7 +773,8 @@ void update_vsyscall(struct timespec *wa
- 	stamp_xsec = (u64) xtime.tv_nsec * XSEC_PER_SEC;
- 	do_div(stamp_xsec, 1000000000);
- 	stamp_xsec += (u64) xtime.tv_sec * XSEC_PER_SEC;
--	update_gtod(clock->cycle_last, stamp_xsec, t2x);
-+	update_gtod(clock->cycle_last-clock->cycle_accumulated,
-+		    stamp_xsec, t2x);
+--- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-18 23:34:56.000000000 -0500
++++ linux-mcount.git/lib/tracing/Kconfig	2008-01-18 23:39:01.000000000 -0500
+@@ -43,6 +43,30 @@ config CRITICAL_IRQSOFF_TIMING
+ 
+ 	      echo 0 > /debug/tracing/preempt_max_latency
+ 
++	  (Note that kernel size and overhead increases with this option
++	  enabled. This option and the preempt-off timing option can be
++	  used together or separately.)
++
++config CRITICAL_PREEMPT_TIMING
++	bool "Preemption-off critical section latency timing"
++	default n
++	depends on GENERIC_TIME
++	depends on PREEMPT
++	select TRACING
++	help
++	  This option measures the time spent in preemption off critical
++	  sections, with microsecond accuracy.
++
++	  The default measurement method is a maximum search, which is
++	  disabled by default and can be runtime (re-)started
++	  via:
++
++	      echo 0 > /debug/tracing/preempt_max_latency
++
++	  (Note that kernel size and overhead increases with this option
++	  enabled. This option and the irqs-off timing option can be
++	  used together or separately.)
++
+ config WAKEUP_TRACER
+ 	bool "Trace wakeup latencies"
+ 	depends on DEBUG_KERNEL
+Index: linux-mcount.git/lib/tracing/Makefile
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/Makefile	2008-01-18 23:34:32.000000000 -0500
++++ linux-mcount.git/lib/tracing/Makefile	2008-01-18 23:39:32.000000000 -0500
+@@ -4,6 +4,7 @@ obj-$(CONFIG_TRACING) += tracer.o
+ obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
+ obj-$(CONFIG_FUNCTION_TRACER) += trace_function.o
+ obj-$(CONFIG_CRITICAL_IRQSOFF_TIMING) += trace_irqsoff.o
++obj-$(CONFIG_CRITICAL_PREEMPT_TIMING) += trace_irqsoff.o
+ obj-$(CONFIG_WAKEUP_TRACER) += trace_wakeup.o
+ 
+ libmcount-y := mcount.o
+Index: linux-mcount.git/lib/tracing/trace_irqsoff.c
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/trace_irqsoff.c	2008-01-18 23:35:26.000000000 -0500
++++ linux-mcount.git/lib/tracing/trace_irqsoff.c	2008-01-18 23:38:34.000000000 -0500
+@@ -36,6 +36,12 @@ static int __init set_nr_entries(char *s
+ }
+ __setup("trace_irq_entries=", set_nr_entries);
+ 
++#ifdef CONFIG_CRITICAL_PREEMPT_TIMING
++# define preempt_trace() (preempt_count())
++#else
++# define preempt_trace() (0)
++#endif
++
+ /*
+  * max trace is switched with this buffer.
+  */
+@@ -206,7 +212,7 @@ start_critical_timing(unsigned long ip, 
+ 
+ 	data->critical_sequence = max_sequence;
+ 	data->preempt_timestamp = now();
+-	data->critical_start = parent_ip;
++	data->critical_start = parent_ip ? : ip;
+ 	tracing_reset(data);
+ 
+ 	local_save_flags(flags);
+@@ -230,18 +236,19 @@ stop_critical_timing(unsigned long ip, u
+ 	atomic_inc(&data->disabled);
+ 	local_save_flags(flags);
+ 	tracing_function_trace(tr, data, ip, parent_ip, flags);
+-	check_critical_timing(tr, data, parent_ip, cpu);
++	check_critical_timing(tr, data, parent_ip ? : ip, cpu);
+ 	data->critical_start = 0;
+ 	atomic_dec(&data->disabled);
  }
  
- void update_vsyscall_tz(void)
++/* start and stop critical timings used to for stoppage (in idle) */
+ void notrace start_critical_timings(void)
+ {
+ 	unsigned long flags;
+ 
+ 	local_save_flags(flags);
+ 
+-	if (irqs_disabled_flags(flags))
++	if (preempt_trace() || irqs_disabled_flags(flags))
+ 		start_critical_timing(CALLER_ADDR0, 0);
+ }
+ 
+@@ -251,10 +258,11 @@ void notrace stop_critical_timings(void)
+ 
+ 	local_save_flags(flags);
+ 
+-	if (irqs_disabled_flags(flags))
++	if (preempt_trace() || irqs_disabled_flags(flags))
+ 		stop_critical_timing(CALLER_ADDR0, 0);
+ }
+ 
++#ifdef CONFIG_CRITICAL_IRQSOFF_TIMING
+ #ifdef CONFIG_LOCKDEP
+ void notrace time_hardirqs_on(unsigned long a0, unsigned long a1)
+ {
+@@ -262,7 +270,7 @@ void notrace time_hardirqs_on(unsigned l
+ 
+ 	local_save_flags(flags);
+ 
+-	if (irqs_disabled_flags(flags))
++	if (!preempt_trace() && irqs_disabled_flags(flags))
+ 		stop_critical_timing(a0, a1);
+ }
+ 
+@@ -272,7 +280,7 @@ void notrace time_hardirqs_off(unsigned 
+ 
+ 	local_save_flags(flags);
+ 
+-	if (irqs_disabled_flags(flags))
++	if (!preempt_trace() && irqs_disabled_flags(flags))
+ 		start_critical_timing(a0, a1);
+ }
+ 
+@@ -311,7 +319,7 @@ void notrace trace_hardirqs_on(void)
+ 
+ 	local_save_flags(flags);
+ 
+-	if (irqs_disabled_flags(flags))
++	if (!preempt_trace() && irqs_disabled_flags(flags))
+ 		stop_critical_timing(CALLER_ADDR0, 0);
+ }
+ EXPORT_SYMBOL(trace_hardirqs_on);
+@@ -322,7 +330,7 @@ void notrace trace_hardirqs_off(void)
+ 
+ 	local_save_flags(flags);
+ 
+-	if (irqs_disabled_flags(flags))
++	if (!preempt_trace() && irqs_disabled_flags(flags))
+ 		start_critical_timing(CALLER_ADDR0, 0);
+ }
+ EXPORT_SYMBOL(trace_hardirqs_off);
+@@ -333,7 +341,7 @@ void notrace trace_hardirqs_on_caller(un
+ 
+ 	local_save_flags(flags);
+ 
+-	if (irqs_disabled_flags(flags))
++	if (!preempt_trace() && irqs_disabled_flags(flags))
+ 		stop_critical_timing(CALLER_ADDR0, caller_addr);
+ }
+ EXPORT_SYMBOL(trace_hardirqs_on_caller);
+@@ -344,13 +352,25 @@ void notrace trace_hardirqs_off_caller(u
+ 
+ 	local_save_flags(flags);
+ 
+-	if (irqs_disabled_flags(flags))
++	if (!preempt_trace() && irqs_disabled_flags(flags))
+ 		start_critical_timing(CALLER_ADDR0, caller_addr);
+ }
+ EXPORT_SYMBOL(trace_hardirqs_off_caller);
+ 
+ #endif /* CONFIG_LOCKDEP */
++#endif /*  CONFIG_CRITICAL_IRQSOFF_TIMING */
+ 
++#ifdef CONFIG_CRITICAL_PREEMPT_TIMING
++void notrace trace_preempt_on(unsigned long a0, unsigned long a1)
++{
++	stop_critical_timing(a0, a1);
++}
++
++void notrace trace_preempt_off(unsigned long a0, unsigned long a1)
++{
++	start_critical_timing(a0, a1);
++}
++#endif /* CONFIG_CRITICAL_PREEMPT_TIMING */
+ 
+ #ifdef CONFIG_MCOUNT
+ static void notrace irqsoff_trace_call(unsigned long ip,
+Index: linux-mcount.git/include/linux/preempt.h
+===================================================================
+--- linux-mcount.git.orig/include/linux/preempt.h	2008-01-18 22:20:30.000000000 -0500
++++ linux-mcount.git/include/linux/preempt.h	2008-01-18 23:38:34.000000000 -0500
+@@ -10,7 +10,7 @@
+ #include <linux/linkage.h>
+ #include <linux/list.h>
+ 
+-#ifdef CONFIG_DEBUG_PREEMPT
++#if defined(CONFIG_DEBUG_PREEMPT) || defined(CONFIG_CRITICAL_PREEMPT_TIMING)
+   extern void fastcall add_preempt_count(int val);
+   extern void fastcall sub_preempt_count(int val);
+ #else
+Index: linux-mcount.git/kernel/sched.c
+===================================================================
+--- linux-mcount.git.orig/kernel/sched.c	2008-01-18 23:26:31.000000000 -0500
++++ linux-mcount.git/kernel/sched.c	2008-01-18 23:38:34.000000000 -0500
+@@ -63,6 +63,7 @@
+ #include <linux/reciprocal_div.h>
+ #include <linux/unistd.h>
+ #include <linux/pagemap.h>
++#include <linux/mcount.h>
+ 
+ #include <asm/tlb.h>
+ #include <asm/irq_regs.h>
+@@ -3505,26 +3506,44 @@ void scheduler_tick(void)
+ #endif
+ }
+ 
+-#if defined(CONFIG_PREEMPT) && defined(CONFIG_DEBUG_PREEMPT)
++#if defined(CONFIG_PREEMPT) && (defined(CONFIG_DEBUG_PREEMPT) || \
++				defined(CONFIG_CRITICAL_PREEMPT_TIMING))
++
++static inline unsigned long get_parent_ip(unsigned long addr)
++{
++	if (in_lock_functions(addr)) {
++		addr = CALLER_ADDR2;
++		if (in_lock_functions(addr))
++			addr = CALLER_ADDR3;
++	}
++	return addr;
++}
+ 
+ void fastcall add_preempt_count(int val)
+ {
++#ifdef CONFIG_DEBUG_PREEMPT
+ 	/*
+ 	 * Underflow?
+ 	 */
+ 	if (DEBUG_LOCKS_WARN_ON((preempt_count() < 0)))
+ 		return;
++#endif
+ 	preempt_count() += val;
++#ifdef CONFIG_DEBUG_PREEMPT
+ 	/*
+ 	 * Spinlock count overflowing soon?
+ 	 */
+ 	DEBUG_LOCKS_WARN_ON((preempt_count() & PREEMPT_MASK) >=
+ 				PREEMPT_MASK - 10);
++#endif
++	if (preempt_count() == val)
++		trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
+ }
+ EXPORT_SYMBOL(add_preempt_count);
+ 
+ void fastcall sub_preempt_count(int val)
+ {
++#ifdef CONFIG_DEBUG_PREEMPT
+ 	/*
+ 	 * Underflow?
+ 	 */
+@@ -3536,7 +3555,10 @@ void fastcall sub_preempt_count(int val)
+ 	if (DEBUG_LOCKS_WARN_ON((val < PREEMPT_MASK) &&
+ 			!(preempt_count() & PREEMPT_MASK)))
+ 		return;
++#endif
+ 
++	if (preempt_count() == val)
++		trace_preempt_on(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
+ 	preempt_count() -= val;
+ }
+ EXPORT_SYMBOL(sub_preempt_count);
+Index: linux-mcount.git/arch/x86/kernel/process_32.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/kernel/process_32.c	2008-01-18 22:20:30.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/process_32.c	2008-01-18 23:38:34.000000000 -0500
+@@ -195,7 +195,10 @@ void cpu_idle(void)
+ 				play_dead();
+ 
+ 			__get_cpu_var(irq_stat).idle_timestamp = jiffies;
++			/* Don't trace irqs off for idle */
++			stop_critical_timings();
+ 			idle();
++			start_critical_timings();
+ 		}
+ 		tick_nohz_restart_sched_tick();
+ 		preempt_enable_no_resched();
+Index: linux-mcount.git/include/linux/mcount.h
+===================================================================
+--- linux-mcount.git.orig/include/linux/mcount.h	2008-01-18 23:33:58.000000000 -0500
++++ linux-mcount.git/include/linux/mcount.h	2008-01-18 23:38:34.000000000 -0500
+@@ -58,4 +58,12 @@ extern void mcount(void);
+ # define time_hardirqs_off(a0, a1)		do { } while (0)
+ #endif
+ 
++#ifdef CONFIG_CRITICAL_PREEMPT_TIMING
++  extern void notrace trace_preempt_on(unsigned long a0, unsigned long a1);
++  extern void notrace trace_preempt_off(unsigned long a0, unsigned long a1);
++#else
++# define trace_preempt_on(a0, a1)		do { } while (0)
++# define trace_preempt_off(a0, a1)		do { } while (0)
++#endif
++
+ #endif /* _LINUX_MCOUNT_H */
+Index: linux-mcount.git/include/linux/irqflags.h
+===================================================================
+--- linux-mcount.git.orig/include/linux/irqflags.h	2008-01-18 23:33:58.000000000 -0500
++++ linux-mcount.git/include/linux/irqflags.h	2008-01-18 23:38:34.000000000 -0500
+@@ -54,7 +54,8 @@
+ # define INIT_TRACE_IRQFLAGS
+ #endif
+ 
+-#ifdef CONFIG_CRITICAL_IRQSOFF_TIMING
++#if defined(CONFIG_CRITICAL_IRQSOFF_TIMING) || \
++	defined(CONFIG_CRITICAL_PREEMPT_TIMING)
+  extern void stop_critical_timings(void);
+  extern void start_critical_timings(void);
+ #else
 
 -- 
