@@ -1,75 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbYAUVSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbYAUVTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757282AbYAUVSp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 16:18:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756395AbYAUVQX
+	id S1758585AbYAUVTz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 16:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYAUVTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 16:16:23 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57300 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756136AbYAUVQT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 16:16:19 -0500
-Message-Id: <20080121211619.044757000@sgi.com>
-References: <20080121211618.599818000@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 21 Jan 2008 13:16:21 -0800
-From: travis@sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu
-Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] x86: Add debug of invalid per_cpu map accesses fixup V2 with git-x86
-Content-Disposition: inline; filename=debug-cpu_to_node
+	Mon, 21 Jan 2008 16:19:46 -0500
+Received: from gw.goop.org ([64.81.55.164]:36948 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752695AbYAUVTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 16:19:45 -0500
+Message-ID: <47950C6F.1080308@goop.org>
+Date: Mon, 21 Jan 2008 13:19:43 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Eduardo Pereira Habkost <ehabkost@redhat.com>
+CC: Marcelo Tosatti <marcelo@kvack.org>, mingo@elte.hu, gcosta@redhat.com,
+       glommer@gmail.com, chrisw@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fill in missing pv_mmu_ops entries for	PAGETABLE_LEVELS
+ >= 3
+References: <12006768251548-git-send-email-gcosta@redhat.com> <20080119181909.GA4640@dmt> <20080121204451.GT7338@blackpad>
+In-Reply-To: <20080121204451.GT7338@blackpad>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a means to trap usages of per_cpu map variables before
-they are setup.  Define CONFIG_DEBUG_PER_CPU_MAPS to activate.
+Eduardo Pereira Habkost wrote:
+>> +	.pud_clear = native_pud_clear,
+>>     
+>
+> On the patches I will send, pud_clear() and pgd_clear() aren't present
+> on pv_mmu_ops and are implemented using set_pud() and set_pgd().
+>   
 
-Based on 2.6.24-rc8-mm1 + latest (08/1/21) git-x86
+Actually, I changed my mind on that.  pud_clear needs special handling 
+with 32-bit PAE, so I'd prefer to keep it a separate operation.
 
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- include/asm-x86/topology.h |   13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
-
---- a/include/asm-x86/topology.h
-+++ b/include/asm-x86/topology.h
-@@ -58,7 +58,7 @@ static inline int early_cpu_to_node(int 
- 
- 	if (cpu_to_node_map)
- 		return cpu_to_node_map[cpu];
--	else if(per_cpu_offset(cpu))
-+	else if (per_cpu_offset(cpu))
- 		return per_cpu(x86_cpu_to_node_map, cpu);
- 	else
- 		return NUMA_NO_NODE;
-@@ -71,7 +71,7 @@ static inline int cpu_to_node(int cpu)
- 		printk("KERN_NOTICE cpu_to_node(%d): usage too early!\n",
- 			(int)cpu);
- 		dump_stack();
--		return ((u16 *)x86_cpu_to_node_map_early_ptr)[cpu];
-+		return ((int *)x86_cpu_to_node_map_early_ptr)[cpu];
- 	}
- #endif
- 	if (per_cpu_offset(cpu))
-@@ -81,15 +81,6 @@ static inline int cpu_to_node(int cpu)
- }
- #endif /* CONFIG_X86_64 */
- 
--static inline int cpu_to_node(int cpu)
--{
--	if(per_cpu_offset(cpu))
--		return per_cpu(x86_cpu_to_node_map, cpu);
--	else
--		return NUMA_NO_NODE;
--}
--#endif /* CONFIG_X86_64 */
--
- /*
-  * Returns the number of the node containing Node 'node'. This
-  * architecture is flat, so it is a pretty simple function!
-
--- 
+    J
