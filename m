@@ -1,183 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbYAUCho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYAUCog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbYAUCho (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 Jan 2008 21:37:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756280AbYAUChf
+	id S1757450AbYAUCog (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 Jan 2008 21:44:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbYAUCo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 Jan 2008 21:37:35 -0500
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:50907 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756136AbYAUChe convert rfc822-to-8bit (ORCPT
+	Sun, 20 Jan 2008 21:44:28 -0500
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:17371 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753228AbYAUCo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 Jan 2008 21:37:34 -0500
-From: Junio C Hamano <gitster@pobox.com>
-To: git@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.4-rc4
-References: <7vsl13wmas.fsf@gitster.siamese.dyndns.org>
-Date: Sun, 20 Jan 2008 18:37:27 -0800
-In-Reply-To: <7vsl13wmas.fsf@gitster.siamese.dyndns.org> (Junio C. Hamano's
-	message of "Fri, 11 Jan 2008 23:11:23 -0800")
-Message-ID: <7vsl0r3nvc.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 20 Jan 2008 21:44:27 -0500
+Date: Mon, 21 Jan 2008 03:44:22 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: venkatesh.pallipadi@intel.com, mingo@elte.hu, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: bad page table when accessing /dev/mem in dmidecode
+Message-ID: <20080121024422.GA23494@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 21 Jan 2008 02:38:09.0597 (UTC) FILETIME=[A8F756D0:01C85BD6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The fourth rc for the next feature release GIT 1.5.4 is available
-at the usual places:
 
-  http://www.kernel.org/pub/software/scm/git/
+When booting git-x86 tip 28a0fcd6b38e247200bd857996375aee91eae8ce
+on a core2 system the userland running dmidecode at boot hits:
 
-  git-1.5.4.rc4.tar.{gz,bz2}			(tarball)
-  git-htmldocs-1.5.4.rc4.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.4.rc4.tar.{gz,bz2}		(preformatted docs)
-  RPMS/$arch/git-*-1.5.4.rc4-1.$arch.rpm	(RPM)
+config: 64bit make defconfig
 
-I was hoping that this would be the last rc before 1.5.4 final,
-and in fact the change between -rc3 and -rc4 is fairly small.
+-Andi
 
-Notable fixes are:
+Failed services in runlevel 3:                                     acpid
+dmidecode: Corrupted page table at address 7f74475d2000
+PGD 7b583067 PUD 7b599067 PMD 7b598067 PTE ffffffff000f0025
+Bad pagetable: 000d [1] SMP
+CPU 0
+Modules linked in:
+Pid: 2724, comm: dmidecode Not tainted 2.6.24-rc8-g28a0fcd6 #1
+RIP: 0033:[<00007f744732423f>]  [<00007f744732423f>]
+RSP: 002b:00007fff4f5f1300  EFLAGS: 00010206
+RAX: 0000000000d21010 RBX: 00007f74475d2000 RCX: 0000000000001000
+RDX: 0000000000010000 RSI: 00007f74475d2000 RDI: 0000000000d21010
+RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f74475f1c60
+R10: 0000000000000001 R11: 0000000000008000 R12: 0000000000010000
+R13: 0000000000000003 R14: 0000000000010000 R15: 00000000004086c4
+FS:  00007f74475e26e0(0000) GS:ffffffff80747000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00007f74475d2000 CR3: 000000007b4a3000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process dmidecode (pid: 2724, threadinfo ffff81007c094000, task ffff81007de917d0)
 
- * http-push fixes (Grégoire Barbier);
- * fix to performance regression during partial commit (Linus);
- * ref/heads are now enforced to point at commit (Linus);
- * fix for fast-import reading some part of its own output (Shawn);
- * "diff --color-words" showed unchanged lines in metainfo color (Jeff King);
-
-Also we have a handful gitk and git-gui updates.
-
-This however still lacks two patches that I think we might want
-in the final (please see "What's not in 'master'" message). I
-asked for comments but I guess they were lost in the noise or
-something.  It's not a very good sign that we had too many
-discussions on the list that are totally unrelated to 1.5.4, and
-I had to scroll back more than 1000 articles to skip them to
-find the announcement for the -rc3 X-<.  So we will either have
-another rc to include those two fixes after getting feedbacks,
-or ship the final one with two known breakages.  The former
-would be preferred, and it would be better if they can be done
-earlier.
-
-Even though we had some RPM specfile changes that I cannot
-easily check myself, nobody reported breakages after -rc3.  I am
-taking this as "no news is a good news", but it may turn out
-that nobody has been testing/double-checking, and it may come
-back and bite us when we do the final one.  That's also
-something I cannot do much about.
-
-But other than that, I think we are in good shape.
-
-----------------------------------------------------------------
-
-Changes since v1.5.4-rc3 are as follows:
-
-Bill Lear (1):
-      Correct spelling in diff.c comment
-
-Brandon Casey (4):
-      close_lock_file(): new function in the lockfile API
-      Improve use of lockfile API
-      refs.c: rework ref_locks by abstracting from underlying struct lock_file
-      fast-import.c: don't try to commit marks file if write failed
-
-Christian Couder (2):
-      git-gui: Initial french translation
-      git-gui: add french glossary: glossary/fr.po
-
-Christian Stimming (4):
-      git-gui: Update glossary: add term "hunk"
-      git-gui: Update German translation
-      git-gui: Fix broken revert confirmation.
-      git-gui: Improve German translation.
-
-Dan McGee (3):
-      Remove usage of git- (dash) commands from email hook
-      cvsimport: remove last use of repo-config from git standard tools
-      Update git-completion for new 'remote rm' option
-
-Dave Peticolas (1):
-      Documentation: fix and clarify grammar in git-merge docs.
-
-Dmitry Potapov (1):
-      treat any file with NUL as binary
-
-Eric Wong (1):
-      git-svn: handle leading/trailing whitespace from svnsync revprops
-
-Grégoire Barbier (4):
-      http-push: disable http-push without USE_CURL_MULTI
-      http-push: fix webdav lock leak.
-      http-push: fail when info/refs exists and is already locked
-      http-push and http-fetch: handle URLs without trailing /
-
-Jakub Narebski (1):
-      autoconf: Add checking for unsetenv function
-
-Jean-Luc Herren (1):
-      Make default pre-commit hook less noisy
-
-Jeff King (5):
-      git-clean: fix off-by-one memory access when given no arguments
-      color unchanged lines as "plain" in "diff --color-words"
-      send-email: detect invocation errors earlier
-      send-email: validate patches before sending anything
-      send-email: add no-validate option
-
-Jim Meyering (2):
-      fast-import: Don't use a maybe-clobbered errno value
-      doc typo: s/prior committing/prior to committing/
-
-Johannes Schindelin (1):
-      gitk: make Ctrl "+" really increase the font size
-
-Junio C Hamano (8):
-      builtin-commit.c: remove useless check added by faulty cut and paste
-      Revert "builtin-commit.c: remove useless check added by faulty cut and paste"
-      Fix git-rerere documentation
-      Squelch bogus progress output from git-rebase--interactive
-      Document lockfile API
-      Officially deprecate repo-config.
-      http-push: clarify the reason of error from the initial PROPFIND request
-      GIT 1.5.4-rc4
-
-Kristian Høgsberg (1):
-      git-commit: fix double close(2) that can close a wrong file descriptor
-
-Lars Hjemli (1):
-      Move sha1_file_to_archive into libgit
-
-Linus Torvalds (4):
-      Fix performance regression for partial commits
-      Make builtin-commit.c more careful about parenthood
-      Make 'git fsck' complain about non-commit branches
-      Be more careful about updating refs
-
-Mark Drago (1):
-      hg-to-git: improve popen calls
-
-Mark Levedahl (1):
-      git-gui: Makefile - Handle $DESTDIR on Cygwin
-
-Martin Koegler (1):
-      parse_commit_buffer: tighten checks while parsing
-
-Miklos Vajna (3):
-      Add using merge subtree How-To
-      ls-remote: add -t and -h options.
-      Include rev-list options in git-log manpage.
-
-Peter Karlsson (1):
-      git-gui: Updated Swedish translation after mailing list review.
-
-Shawn O. Pearce (3):
-      git-gui: Allow 'Create New Repository' on existing directories
-      git-gui: Refresh file status description after hunk application
-      Fix random fast-import errors when compiled with NO_MMAP
-
-Thomas Zander (1):
-      core-tutorial typofix
+RIP  [<00007f744732423f>]
+ RSP <00007fff4f5f1300>
+---[ end trace f63babdc9d8f7076 ]---
 
