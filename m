@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762328AbYAUP2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763187AbYAUP3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762328AbYAUP2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 10:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760596AbYAUPYm
+	id S1763187AbYAUP3S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 10:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760609AbYAUPYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 10:24:42 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:49258 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755039AbYAUPYD (ORCPT
+	Mon, 21 Jan 2008 10:24:43 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:42894 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755510AbYAUPYD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 Jan 2008 10:24:03 -0500
-Message-Id: <20080121152351.679351957@goodmis.org>
+Message-Id: <20080121152352.004055444@goodmis.org>
 References: <20080121152231.579118762@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 Jan 2008 10:22:36 -0500
+Date: Mon, 21 Jan 2008 10:22:38 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -28,74 +28,37 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 05/23 -v4] add notrace annotations for NMI routines
-Content-Disposition: inline; filename=mcount-nmi-notrace-annotations.patch
+Subject: [RFC PATCH 07/23 -v4] ppc clock accumulate fix
+Content-Disposition: inline; filename=ppc-clock-accumulate-update.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This annotates NMI functions with notrace. Some tracers may be able
-to live with this, but some cannot. So we turn off NMI tracing.
 
-One solution might be to make a notrace_nmi which would only turn
-off NMI tracing if a trace utility needed it off.
+The following is a quick and dirty fix for powerpc so it includes
+cycle_accumulated in its calculation. It relies on the fact that the
+powerpc clocksource is a 64bit counter (don't have to worry about
+multiple overflows), so the subtraction should be safe.
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
 ---
- arch/x86/kernel/nmi_32.c   |    2 +-
- arch/x86/kernel/nmi_64.c   |    2 +-
- arch/x86/kernel/traps_32.c |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/time.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: linux-mcount.git/arch/x86/kernel/nmi_32.c
+Index: linux-mcount.git/arch/powerpc/kernel/time.c
 ===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/nmi_32.c	2008-01-17 20:33:16.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/nmi_32.c	2008-01-17 20:33:36.000000000 -0500
-@@ -323,7 +323,7 @@ EXPORT_SYMBOL(touch_nmi_watchdog);
- 
- extern void die_nmi(struct pt_regs *, const char *msg);
- 
--__kprobes int nmi_watchdog_tick(struct pt_regs * regs, unsigned reason)
-+notrace __kprobes int nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
- {
- 
- 	/*
-Index: linux-mcount.git/arch/x86/kernel/nmi_64.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/nmi_64.c	2008-01-17 20:33:16.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/nmi_64.c	2008-01-17 20:33:36.000000000 -0500
-@@ -314,7 +314,7 @@ void touch_nmi_watchdog(void)
-  	touch_softlockup_watchdog();
+--- linux-mcount.git.orig/arch/powerpc/kernel/time.c	2008-01-17 20:33:16.000000000 -0500
++++ linux-mcount.git/arch/powerpc/kernel/time.c	2008-01-17 20:33:38.000000000 -0500
+@@ -773,7 +773,8 @@ void update_vsyscall(struct timespec *wa
+ 	stamp_xsec = (u64) xtime.tv_nsec * XSEC_PER_SEC;
+ 	do_div(stamp_xsec, 1000000000);
+ 	stamp_xsec += (u64) xtime.tv_sec * XSEC_PER_SEC;
+-	update_gtod(clock->cycle_last, stamp_xsec, t2x);
++	update_gtod(clock->cycle_last-clock->cycle_accumulated,
++		    stamp_xsec, t2x);
  }
  
--int __kprobes nmi_watchdog_tick(struct pt_regs * regs, unsigned reason)
-+notrace __kprobes int nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
- {
- 	int sum;
- 	int touched = 0;
-Index: linux-mcount.git/arch/x86/kernel/traps_32.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/traps_32.c	2008-01-17 20:33:16.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/traps_32.c	2008-01-17 20:33:36.000000000 -0500
-@@ -723,7 +723,7 @@ void __kprobes die_nmi(struct pt_regs *r
- 	do_exit(SIGSEGV);
- }
- 
--static __kprobes void default_do_nmi(struct pt_regs * regs)
-+static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
- {
- 	unsigned char reason = 0;
- 
-@@ -763,7 +763,7 @@ static __kprobes void default_do_nmi(str
- 
- static int ignore_nmis;
- 
--fastcall __kprobes void do_nmi(struct pt_regs * regs, long error_code)
-+notrace fastcall __kprobes void do_nmi(struct pt_regs *regs, long error_code)
- {
- 	int cpu;
- 
+ void update_vsyscall_tz(void)
 
 -- 
