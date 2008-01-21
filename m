@@ -1,53 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbYAUUsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbYAUUsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978AbYAUUsT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 15:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYAUUsL
+	id S1757940AbYAUUsf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 15:48:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbYAUUsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 15:48:11 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49074 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 15:48:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49081 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752751AbYAUUsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 15:48:09 -0500
-Message-ID: <479504F6.4080005@redhat.com>
-Date: Mon, 21 Jan 2008 15:47:50 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	id S1755488AbYAUUsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 15:48:17 -0500
+Date: Mon, 21 Jan 2008 18:44:51 -0200
+From: Eduardo Pereira Habkost <ehabkost@redhat.com>
+To: Marcelo Tosatti <marcelo@kvack.org>
+Cc: mingo@elte.hu, gcosta@redhat.com, glommer@gmail.com, jeremy@goop.org,
+       chrisw@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fill in missing pv_mmu_ops entries for
+	PAGETABLE_LEVELS >= 3
+Message-ID: <20080121204451.GT7338@blackpad>
+References: <12006768251548-git-send-email-gcosta@redhat.com> <20080119181909.GA4640@dmt>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Gerd Hoffmann <kraxel@redhat.com>
-Subject: The SMP alternatives code breaks exception fixup?
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080119181909.GA4640@dmt>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looking at the oops report from this bug:
+On Sat, Jan 19, 2008 at 04:19:09PM -0200, Marcelo Tosatti wrote:
+> On Fri, Jan 18, 2008 at 03:20:15PM -0200, Glauber de Oliveira Costa wrote:
+> > Hi,
+> > 
+> > This small series provides some more fixes towards the goal
+> > to have the PARAVIRT selectable for x86_64. After that, just
+> > some more small steps are needed.
+> > 
+> > The first fix is not even specific for PARAVIRT, and it's actually
+> > preventing the whole tree from booting.
+> > 
+> 
+> And the following allows PARAVIRT kernels to boot on x86_64.
+> 
+> -----
+> 
+> Fill in missing pagetable manipulation entries in pv_mmu_ops 
+> for PAGETABLE_LEVELS >= 3.
+> 
+> Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+> 
+> 
+> Index: linux-2.6-x86/arch/x86/kernel/paravirt.c
+> ===================================================================
+> --- linux-2.6-x86.orig/arch/x86/kernel/paravirt.c
+> +++ linux-2.6-x86/arch/x86/kernel/paravirt.c
+> @@ -396,16 +396,25 @@ struct pv_mmu_ops pv_mmu_ops = {
+>  	.kmap_atomic_pte = kmap_atomic,
+>  #endif
+>  
+> +#if PAGETABLE_LEVELS >= 3
+>  #ifdef CONFIG_X86_PAE
+>  	.set_pte_atomic = native_set_pte_atomic,
+>  	.set_pte_present = native_set_pte_present,
+> -	.set_pud = native_set_pud,
+>  	.pte_clear = native_pte_clear,
+>  	.pmd_clear = native_pmd_clear,
+> -
+> +#endif
+> +	.set_pud = native_set_pud,
+> +	.set_pgd = native_set_pgd,
+> +	.pgd_clear = native_pgd_clear,
+>  	.pmd_val = native_pmd_val,
+>  	.make_pmd = native_make_pmd,
 
-[bugzilla]  https://bugzilla.redhat.com/show_bug.cgi?id=429412
-[oops]      https://bugzilla.redhat.com/attachment.cgi?id=292260
+Current x86.git doesn't have .set_pgd or .pgd_clear fields on
+pv_mmu_ops.
 
-It was an unhandled page fault (protection violation.)
+Those fields, and the implementations of set_pgd(), __pud() and pud_val()
+were missing on the last series from Glauber. I will send the missing
+bits today.
 
-I tracked it down to the cmpxchg in this code:
+> +	.pud_clear = native_pud_clear,
 
-include/asm-x86/futex_32.h::futex_atomic_cmpxchg_inatomic()
-         __asm__ __volatile__(
-                 "1:     " LOCK_PREFIX "cmpxchgl %3, %1          \n"
-                 "2:     .section .fixup, \"ax\"                 \n"
-                 "3:     mov     %2, %0                          \n"
-                 "       jmp     2b                              \n"
-                 "       .previous                               \n"
-                 "       .section __ex_table, \"a\"              \n"
-                 "       .align  8                               \n"
-                 "       .long   1b,3b                           \n"
-                 "       .previous                               \n"
+On the patches I will send, pud_clear() and pgd_clear() aren't present
+on pv_mmu_ops and are implemented using set_pud() and set_pgd().
 
-There is a fixup, so this should never happen. But the lock instruction
-was replaced with a nop by the altinstruction code, and that makes the fixup
-address wrong. AFAICT we don't fix up the exception table when we replace
-a lock with a nop, which makes the fixup table point to the nop instead
-of the cmpxchg instruction and causes us to miss the fixup.
-
+-- 
+Eduardo
