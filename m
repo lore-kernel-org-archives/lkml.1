@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbYAUP3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761996AbYAUPa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932123AbYAUP3z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 10:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760654AbYAUPYq
+	id S1761996AbYAUPa0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 10:30:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760677AbYAUPYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 10:24:46 -0500
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:49283 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756791AbYAUPYE (ORCPT
+	Mon, 21 Jan 2008 10:24:47 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:56823 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756464AbYAUPYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 Jan 2008 10:24:04 -0500
-Message-Id: <20080121152352.789802471@goodmis.org>
+Message-Id: <20080121152353.599676730@goodmis.org>
 References: <20080121152231.579118762@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 Jan 2008 10:22:43 -0500
+Date: Mon, 21 Jan 2008 10:22:48 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -27,190 +27,407 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       John Stultz <johstul@us.ibm.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: [RFC PATCH 12/23 -v4] Use RCU algorithm for monotonic cycles.
-Content-Disposition: inline; filename=get-monotonic-rcu-experimental.patch
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [RFC PATCH 17/23 -v4] Add tracing of context switches
+Content-Disposition: inline; filename=trace-add-cmdline-switch.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: john stultz <johnstul@us.ibm.com>
+This patch adds context switch tracing, of the format of:
 
-On Wed, 2008-01-16 at 18:39 -0500, Mathieu Desnoyers wrote:
-> I would disable preemption in clocksource_get_basecycles. We would not
-> want to be scheduled out while we hold a pointer to the old array
-> element.
-> 
-> > +	int num = cs->base_num;
-> 
-> Since you deal with base_num in a shared manner (not per cpu), you will
-> need a smp_read_barrier_depend() here after the cs->base_num read.
-> 
-> You should think about reading the cs->base_num first, and _after_ that
-> read the real clocksource. Here, the clocksource value is passed as
-> parameter. It means that the read clocksource may have been read in the
-> previous RCU window.
+                 _------=> CPU#            
+                / _-----=> irqs-off        
+               | / _----=> need-resched    
+               || / _---=> hardirq/softirq 
+               ||| / _--=> preempt-depth   
+               |||| /                      
+               |||||     delay             
+   cmd     pid ||||| time  |   caller      
+      \   /    |||||   \   |   /           
+ swapper-0     1d..3  137us+:  0:140:R --> 2912:120
+    sshd-2912  1d..3  216us+:  2912:120:S --> 0:140
+ swapper-0     1d..3  261us+:  0:140:R --> 2912:120
+    bash-2920  0d..3  267us+:  2920:120:S --> 0:140
+    sshd-2912  1d..3  330us!:  2912:120:S --> 0:140
+ swapper-0     1d..3 2389us+:  0:140:R --> 2847:120
+yum-upda-2847  1d..3 2411us!:  2847:120:S --> 0:140
+ swapper-0     0d..3 11089us+:  0:140:R --> 3139:120
+gdm-bina-3139  0d..3 11113us!:  3139:120:S --> 0:140
+ swapper-0     1d..3 102328us+:  0:140:R --> 2847:120
+yum-upda-2847  1d..3 102348us!:  2847:120:S --> 0:140
 
-Here's an updated version of the patch w/ the suggested memory barrier
-changes and favored (1-x) inversion change. ;)  Let me know if you see
-any other holes, or have any other suggestions or ideas.
+Two files are added to /debugfs/tracing
 
-Still un-tested (my test box will free up soon, I promise!), but builds.
+  sched_trace - outputs the above format.
 
-[ Steven Rostedt has been running this patch with no problems ]
+  sched_trace_ctrl
+     0 - turns off context switch tracing.
+     1 - turns on context switch tracing.
 
-Signed-off-by: John Stultz <johstul@us.ibm.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- include/linux/clocksource.h |   50 +++++++++++++++++++++++++++++++++++---------
- kernel/time/timekeeping.c   |   36 ++++---------------------------
- 2 files changed, 45 insertions(+), 41 deletions(-)
+ lib/tracing/Kconfig              |   10 +
+ lib/tracing/Makefile             |    1 
+ lib/tracing/trace_sched_switch.c |  205 +++++++++++++++++++++++++++++++++++++++
+ lib/tracing/tracer.c             |   32 ++++++
+ lib/tracing/tracer.h             |   18 +++
+ 5 files changed, 265 insertions(+), 1 deletion(-)
 
-Index: linux-mcount.git/include/linux/clocksource.h
+Index: linux-mcount.git/lib/tracing/Kconfig
 ===================================================================
---- linux-mcount.git.orig/include/linux/clocksource.h	2008-01-18 23:48:45.000000000 -0500
-+++ linux-mcount.git/include/linux/clocksource.h	2008-01-18 23:48:46.000000000 -0500
-@@ -87,9 +87,17 @@ struct clocksource {
- 	 * more than one cache line.
- 	 */
- 	struct {
--		cycle_t cycle_last, cycle_accumulated, cycle_raw;
--	} ____cacheline_aligned_in_smp;
-+		cycle_t cycle_last, cycle_accumulated;
- 
-+		/* base structure provides lock-free read
-+		 * access to a virtualized 64bit counter
-+		 * Uses RCU-like update.
-+		 */
-+		struct {
-+			cycle_t cycle_base_last, cycle_base;
-+		} base[2];
-+		int base_num;
-+	} ____cacheline_aligned_in_smp;
- 	u64 xtime_nsec;
- 	s64 error;
- 
-@@ -175,19 +183,29 @@ static inline cycle_t clocksource_read(s
- }
- 
- /**
-- * clocksource_get_cycles: - Access the clocksource's accumulated cycle value
-+ * clocksource_get_basecycles: - get the clocksource's accumulated cycle value
-  * @cs:		pointer to clocksource being read
-  * @now:	current cycle value
-  *
-  * Uses the clocksource to return the current cycle_t value.
-  * NOTE!!!: This is different from clocksource_read, because it
-- * returns the accumulated cycle value! Must hold xtime lock!
-+ * returns a 64bit wide accumulated value.
-  */
- static inline cycle_t
--clocksource_get_cycles(struct clocksource *cs, cycle_t now)
-+clocksource_get_basecycles(struct clocksource *cs)
- {
--	cycle_t offset = (now - cs->cycle_last) & cs->mask;
--	offset += cs->cycle_accumulated;
-+	int num;
-+	cycle_t now, offset;
+--- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-21 09:59:15.000000000 -0500
++++ linux-mcount.git/lib/tracing/Kconfig	2008-01-21 10:03:57.000000000 -0500
+@@ -24,3 +24,13 @@ config FUNCTION_TRACER
+ 	  insert a call to an architecture specific __mcount routine,
+ 	  that the debugging mechanism using this facility will hook by
+ 	  providing a set of inline routines.
 +
-+	preempt_disable();
-+	num = cs->base_num;
-+	smp_read_barrier_depends();
-+	now = clocksource_read(cs);
-+	offset = (now - cs->base[num].cycle_base_last);
-+	offset &= cs->mask;
-+	offset += cs->base[num].cycle_base;
-+	preempt_enable();
++config CONTEXT_SWITCH_TRACER
++	bool "Trace process context switches"
++	depends on DEBUG_KERNEL
++	default n
++	select TRACING
++	help
++	  This tracer hooks into the context switch and records
++	  all switching of tasks.
 +
- 	return offset;
- }
+Index: linux-mcount.git/lib/tracing/Makefile
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/Makefile	2008-01-21 09:59:15.000000000 -0500
++++ linux-mcount.git/lib/tracing/Makefile	2008-01-21 10:03:57.000000000 -0500
+@@ -1,6 +1,7 @@
+ obj-$(CONFIG_MCOUNT) += libmcount.o
  
-@@ -197,14 +215,26 @@ clocksource_get_cycles(struct clocksourc
-  * @now:	current cycle value
-  *
-  * Used to avoids clocksource hardware overflow by periodically
-- * accumulating the current cycle delta. Must hold xtime write lock!
-+ * accumulating the current cycle delta. Uses RCU-like update, but
-+ * ***still requires the xtime_lock is held for writing!***
-  */
- static inline void clocksource_accumulate(struct clocksource *cs, cycle_t now)
- {
--	cycle_t offset = (now - cs->cycle_last) & cs->mask;
-+	/* First update the monotonic base portion.
-+	 * The dual array update method allows for lock-free reading.
+ obj-$(CONFIG_TRACING) += tracer.o
++obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
+ obj-$(CONFIG_FUNCTION_TRACER) += trace_function.o
+ 
+ libmcount-y := mcount.o
+Index: linux-mcount.git/lib/tracing/trace_sched_switch.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-mcount.git/lib/tracing/trace_sched_switch.c	2008-01-21 10:03:57.000000000 -0500
+@@ -0,0 +1,205 @@
++/*
++ * trace context switch
++ *
++ * Copyright (C) 2007 Steven Rostedt <srostedt@redhat.com>
++ *
++ */
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/debugfs.h>
++#include <linux/kallsyms.h>
++#include <linux/uaccess.h>
++#include <linux/marker.h>
++#include <linux/mcount.h>
++
++#include "tracer.h"
++
++static struct tracing_trace sched_switch_trace __read_mostly;
++static DEFINE_PER_CPU(struct tracing_trace_cpu, sched_switch_trace_cpu);
++
++static int trace_enabled __read_mostly;
++static unsigned long trace_nr_entries = (16384UL);
++
++static int __init set_nr_entries(char *str)
++{
++	if (!str)
++		return 0;
++	trace_nr_entries = simple_strtoul(str, &str, 0);
++	return 1;
++}
++__setup("trace_ctx_entries=", set_nr_entries);
++
++static notrace void sched_switch_callback(const struct marker *mdata,
++					  void *private_data,
++					  const char *format, ...)
++{
++	struct tracing_trace *tr = mdata->private;
++	struct tracing_trace_cpu *data;
++	struct task_struct *prev;
++	struct task_struct *next;
++	unsigned long flags;
++	va_list ap;
++	int cpu;
++
++	if (likely(!trace_enabled))
++		return;
++
++	va_start(ap, format);
++	prev = va_arg(ap, typeof(prev));
++	next = va_arg(ap, typeof(next));
++	va_end(ap);
++
++	raw_local_irq_save(flags);
++	cpu = raw_smp_processor_id();
++	data = tr->data[cpu];
++	atomic_inc(&data->disabled);
++
++	if (likely(atomic_read(&data->disabled) == 1))
++		tracing_sched_switch_trace(tr, data, prev, next, flags);
++
++	atomic_dec(&data->disabled);
++	raw_local_irq_restore(flags);
++}
++
++static notrace void sched_switch_reset(struct tracing_trace *tr)
++{
++	int cpu;
++
++	tr->time_start = now();
++
++	for_each_online_cpu(cpu)
++		tracing_reset(tr->data[cpu]);
++}
++
++#ifdef CONFIG_DEBUG_FS
++static void sched_switch_trace_ctrl_update(struct tracing_trace *tr,
++					   unsigned long val)
++{
++	val = !!val;
++
++	/* When starting a new trace, reset the buffers */
++	if (val)
++		sched_switch_reset(tr);
++
++	if (tr->ctrl ^ val) {
++		if (val)
++			trace_enabled = 1;
++		else
++			trace_enabled = 0;
++		tr->ctrl = val;
++	}
++}
++
++static __init void sched_switch_trace_init_debugfs(void)
++{
++	struct dentry *d_tracer;
++	struct dentry *entry;
++
++	d_tracer = tracing_init_dentry();
++
++	sched_switch_trace.ctrl_update = sched_switch_trace_ctrl_update;
++
++	entry = debugfs_create_file("sched_trace_ctrl", 0644, d_tracer,
++				    &sched_switch_trace, &tracing_ctrl_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'sched_trace_ctrl' entry\n");
++
++	entry = debugfs_create_file("sched_trace", 0444, d_tracer,
++				    &sched_switch_trace, &tracing_lt_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'sched_trace' entry\n");
++}
++
++#else
++static __init void sched_switch_trace_init_debugfs(void)
++{
++	/*
++	 * No way to turn on or off the trace function
++	 * without debugfs, so we just turn it on.
 +	 */
-+	int num = 1 - cs->base_num;
-+	cycle_t offset = (now - cs->base[1-num].cycle_base_last);
-+	offset &= cs->mask;
-+	cs->base[num].cycle_base = cs->base[1-num].cycle_base + offset;
-+	cs->base[num].cycle_base_last = now;
-+	wmb();
-+	cs->base_num = num;
++}
++#endif
 +
-+	/* Now update the cycle_accumulated portion */
-+	offset = (now - cs->cycle_last) & cs->mask;
- 	cs->cycle_last = now;
- 	cs->cycle_accumulated += offset;
--	cs->cycle_raw += offset;
- }
- 
- /**
-Index: linux-mcount.git/kernel/time/timekeeping.c
++static void sched_switch_trace_open(struct tracing_iterator *iter)
++{
++	/* stop the trace while dumping */
++	if (iter->tr->ctrl)
++		trace_enabled = 0;
++}
++
++static void sched_switch_trace_close(struct tracing_iterator *iter)
++{
++	if (iter->tr->ctrl)
++		trace_enabled = 1;
++}
++
++__init static int sched_switch_trace_alloc_buffers(void)
++{
++	const int order = page_order(trace_nr_entries * TRACING_ENTRY_SIZE);
++	const unsigned long size = (1UL << order) << PAGE_SHIFT;
++	struct tracing_entry *array;
++	int ret;
++	int i;
++
++	for_each_possible_cpu(i) {
++		sched_switch_trace.data[i] =
++			&per_cpu(sched_switch_trace_cpu, i);
++		array = (struct tracing_entry *)
++			  __get_free_pages(GFP_KERNEL, order);
++		if (array == NULL) {
++			printk(KERN_ERR "sched_switch tracer: failed to"
++			       " allocate %ld bytes for trace buffer!\n", size);
++			goto free_buffers;
++		}
++		sched_switch_trace.data[i]->trace = array;
++	}
++
++	/*
++	 * Since we allocate by orders of pages, we may be able to
++	 * round up a bit.
++	 */
++	sched_switch_trace.entries = size / TRACING_ENTRY_SIZE;
++
++	pr_info("sched_switch tracer: %ld bytes allocated for %ld",
++		size, trace_nr_entries);
++	pr_info(" entries of %ld bytes\n", (long)TRACING_ENTRY_SIZE);
++	pr_info("   actual entries %ld\n", sched_switch_trace.entries);
++
++	sched_switch_trace_init_debugfs();
++
++	sched_switch_trace.open = sched_switch_trace_open;
++	sched_switch_trace.close = sched_switch_trace_close;
++
++	ret = marker_probe_register("kernel_sched_schedule",
++				    "prev %p next %p",
++				    sched_switch_callback,
++				    &sched_switch_trace);
++	if (ret) {
++		pr_info("sched trace: Couldn't add marker"
++			" probe to switch_to\n");
++		goto out;
++	}
++
++	ret = marker_arm("kernel_sched_schedule");
++	if (ret) {
++		pr_info("sched trace: Couldn't arm probe switch_to\n");
++		goto out;
++	}
++
++ out:
++	return 0;
++
++ free_buffers:
++	for (i-- ; i >= 0; i--) {
++		struct tracing_trace_cpu *data = sched_switch_trace.data[i];
++
++		if (data && data->trace) {
++			free_pages((unsigned long)data->trace, order);
++			data->trace = NULL;
++		}
++	}
++	return -ENOMEM;
++}
++
++device_initcall(sched_switch_trace_alloc_buffers);
+Index: linux-mcount.git/lib/tracing/tracer.c
 ===================================================================
---- linux-mcount.git.orig/kernel/time/timekeeping.c	2008-01-18 23:48:45.000000000 -0500
-+++ linux-mcount.git/kernel/time/timekeeping.c	2008-01-18 23:48:46.000000000 -0500
-@@ -71,10 +71,12 @@ static struct clocksource *clock = &cloc
-  */
- static inline s64 __get_nsec_offset(void)
- {
--	cycle_t cycle_delta;
-+	cycle_t now, cycle_delta;
- 	s64 ns_offset;
+--- linux-mcount.git.orig/lib/tracing/tracer.c	2008-01-21 10:01:49.000000000 -0500
++++ linux-mcount.git/lib/tracing/tracer.c	2008-01-21 10:03:57.000000000 -0500
+@@ -31,6 +31,7 @@ enum trace_type {
+ 	__TRACE_FIRST_TYPE = 0,
  
--	cycle_delta = clocksource_get_cycles(clock, clocksource_read(clock));
-+	now = clocksource_read(clock);
-+	cycle_delta = (now - clock->cycle_last) & clock->mask;
-+	cycle_delta += clock->cycle_accumulated;
- 	ns_offset = cyc2ns(clock, cycle_delta);
+ 	TRACE_FN,
++	TRACE_CTX,
  
- 	return ns_offset;
-@@ -105,35 +107,7 @@ static inline void __get_realtime_clock_
- 
- cycle_t notrace get_monotonic_cycles(void)
- {
--	cycle_t cycle_now, cycle_delta, cycle_raw, cycle_last;
--
--	do {
--		/*
--		 * cycle_raw and cycle_last can change on
--		 * another CPU and we need the delta calculation
--		 * of cycle_now and cycle_last happen atomic, as well
--		 * as the adding to cycle_raw. We don't need to grab
--		 * any locks, we just keep trying until get all the
--		 * calculations together in one state.
--		 *
--		 * In fact, we __cant__ grab any locks. This
--		 * function is called from the latency_tracer which can
--		 * be called anywhere. To grab any locks (including
--		 * seq_locks) we risk putting ourselves into a deadlock.
--		 */
--		cycle_raw = clock->cycle_raw;
--		cycle_last = clock->cycle_last;
--
--		/* read clocksource: */
--		cycle_now = clocksource_read(clock);
--
--		/* calculate the delta since the last update_wall_time: */
--		cycle_delta = (cycle_now - cycle_last) & clock->mask;
--
--	} while (cycle_raw != clock->cycle_raw ||
--		 cycle_last != clock->cycle_last);
--
--	return cycle_raw + cycle_delta;
-+	return clocksource_get_basecycles(clock);
+ 	__TRACE_LAST_TYPE
+ };
+@@ -107,6 +108,24 @@ notrace void tracing_function_trace(stru
+ 	entry->fn.parent_ip = parent_ip;
  }
  
- unsigned long notrace cycles_to_usecs(cycle_t cycles)
++notrace void tracing_sched_switch_trace(struct tracing_trace *tr,
++					struct tracing_trace_cpu *data,
++					struct task_struct *prev,
++					struct task_struct *next,
++					unsigned long flags)
++{
++	struct tracing_entry *entry;
++
++	entry = tracing_get_trace_entry(tr, data);
++	tracing_generic_entry_update(entry, flags);
++	entry->type		= TRACE_CTX;
++	entry->ctx.prev_pid	= prev->pid;
++	entry->ctx.prev_prio	= prev->prio;
++	entry->ctx.prev_state	= prev->state;
++	entry->ctx.next_pid	= next->pid;
++	entry->ctx.next_prio	= next->prio;
++}
++
+ #ifdef CONFIG_DEBUG_FS
+ enum trace_iterator {
+ 	TRACE_ITER_SYM_ONLY	= 1,
+@@ -414,6 +433,8 @@ lat_print_timestamp(struct seq_file *m, 
+ 		seq_puts(m, " : ");
+ }
+ 
++static const char state_to_char[] = TASK_STATE_TO_CHAR_STR;
++
+ static void notrace
+ print_lat_fmt(struct seq_file *m, struct tracing_iterator *iter,
+ 	      unsigned int trace_idx, int cpu)
+@@ -424,6 +445,7 @@ print_lat_fmt(struct seq_file *m, struct
+ 	unsigned long rel_usecs;
+ 	int sym_only = !!(trace_flags & TRACE_ITER_SYM_ONLY);
+ 	int verbose = !!(trace_flags & TRACE_ITER_VERBOSE);
++	int S;
+ 
+ 	if (!next_entry)
+ 		next_entry = entry;
+@@ -450,6 +472,16 @@ print_lat_fmt(struct seq_file *m, struct
+ 		seq_print_ip_sym(m, entry->fn.parent_ip, sym_only);
+ 		seq_puts(m, ")\n");
+ 		break;
++	case TRACE_CTX:
++		S = entry->ctx.prev_state < sizeof(state_to_char) ?
++			state_to_char[entry->ctx.prev_state] : 'X';
++		seq_printf(m, " %d:%d:%c --> %d:%d\n",
++			   entry->ctx.prev_pid,
++			   entry->ctx.prev_prio,
++			   S,
++			   entry->ctx.next_pid,
++			   entry->ctx.next_prio);
++		break;
+ 	}
+ }
+ 
+Index: linux-mcount.git/lib/tracing/tracer.h
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/tracer.h	2008-01-21 09:59:15.000000000 -0500
++++ linux-mcount.git/lib/tracing/tracer.h	2008-01-21 10:03:57.000000000 -0500
+@@ -10,6 +10,14 @@ struct tracing_function {
+ 	unsigned long parent_ip;
+ };
+ 
++struct tracing_sched_switch {
++	unsigned int prev_pid;
++	unsigned char prev_prio;
++	unsigned char prev_state;
++	unsigned int next_pid;
++	unsigned char next_prio;
++};
++
+ struct tracing_entry {
+ 	char type;
+ 	char cpu;  /* who will want to trace more than 256 CPUS? */
+@@ -18,7 +26,10 @@ struct tracing_entry {
+ 	int pid;
+ 	cycle_t t;
+ 	char comm[TASK_COMM_LEN];
+-	struct tracing_function fn;
++	union {
++		struct tracing_function fn;
++		struct tracing_sched_switch ctx;
++	};
+ };
+ 
+ struct tracing_trace_cpu {
+@@ -75,6 +86,11 @@ void tracing_function_trace(struct traci
+ 			    unsigned long ip,
+ 			    unsigned long parent_ip,
+ 			    unsigned long flags);
++void tracing_sched_switch_trace(struct tracing_trace *tr,
++				struct tracing_trace_cpu *data,
++				struct task_struct *prev,
++				struct task_struct *next,
++				unsigned long flags);
+ 
+ extern struct file_operations tracing_fops;
+ extern struct file_operations tracing_lt_fops;
 
 -- 
