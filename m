@@ -1,153 +1,358 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759858AbYAUPJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760128AbYAUPYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759858AbYAUPJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 10:09:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYAUPJu
+	id S1760128AbYAUPYP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 10:24:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbYAUPYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 10:09:50 -0500
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:9207 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752454AbYAUPJt (ORCPT
+	Mon, 21 Jan 2008 10:24:01 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:62573 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752475AbYAUPX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 10:09:49 -0500
-Date: Mon, 21 Jan 2008 16:09:44 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: "Greg KH" <greg@kroah.com>
-Cc: "Dave Young" <hidave.darkstar@gmail.com>,
-       "Gabor Gombas" <gombasg@sztaki.hu>, "Tejun Heo" <htejun@gmail.com>,
-       "Al Viro" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net, kay.sievers@vrfy.org,
-       "Marcel Holtmann" <marcel@holtmann.org>, davem@davemloft.net
-Subject: [Patch] Driver core: Cleanup get_device_parent() in device_add()
- and device_move().
-Message-ID: <20080121160944.1170bc12@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <a8e1da0801201915m5608ec7bnda31bd1db898f7e4@mail.gmail.com>
-References: <20080108133215.GA15814@boogie.lpds.sztaki.hu>
-	<20080116230646.GB6715@boogie.lpds.sztaki.hu>
-	<a8e1da0801162324r2cd82684iede3fc8c2f8c391c@mail.gmail.com>
-	<20080117081504.GA3123@darkstar.te-china.tietoenator.com>
-	<20080117124259.19a88129@gondolin.boeblingen.de.ibm.com>
-	<a8e1da0801171937r92a1c32l116315a76f334776@mail.gmail.com>
-	<20080118101933.258bfae9@gondolin.boeblingen.de.ibm.com>
-	<20080118112337.0b457c49@gondolin.boeblingen.de.ibm.com>
-	<a8e1da0801180234k4b48fd1axaba6d7d334219430@mail.gmail.com>
-	<20080118122625.370e2fba@gondolin.boeblingen.de.ibm.com>
-	<a8e1da0801201915m5608ec7bnda31bd1db898f7e4@mail.gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 21 Jan 2008 10:23:59 -0500
+Message-Id: <20080121152231.579118762@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Mon, 21 Jan 2008 10:22:31 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>
+Subject: [RFC PATCH 00/23 -v4] mcount and latency tracing utility -v4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make setup_parent() void as get_device_parent() will always return
-either a valid kobject or NULL.
-Introduce cleanup_glue_dir() to drop reference grabbed on "glue"
-directory by get_device_parent(). Use it for cleanup in device_move()
-and device_add() on errors.
+[
+  version 4 of mcount patches:
 
-This should fix the refcounting problem reported in
-http://marc.info/?l=linux-kernel&m=120052487909200&w=2
+  changes include:
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+  Folded several patches together that made up tracer.c
 
----
- drivers/base/core.c |   29 ++++++++++++++---------------
- 1 files changed, 14 insertions(+), 15 deletions(-)
+  changed the schedule context switch marker use pointers instead of
+  simply listing pid and state.
 
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -553,6 +553,8 @@ static struct kobject *get_device_parent
- }
- 
- static inline void cleanup_device_parent(struct device *dev) {}
-+static inline void cleanup_glue_dir(struct device *dev,
-+				    struct kobject *glue_dir) {}
- #else
- static struct kobject *virtual_device_parent(struct device *dev)
- {
-@@ -617,27 +619,27 @@ static struct kobject *get_device_parent
- 	return NULL;
- }
- 
--static void cleanup_device_parent(struct device *dev)
-+static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
- {
--	struct kobject *glue_dir = dev->kobj.parent;
--
- 	/* see if we live in a "glue" directory */
- 	if (!dev->class || glue_dir->kset != &dev->class->class_dirs)
- 		return;
- 
- 	kobject_put(glue_dir);
- }
-+
-+static void cleanup_device_parent(struct device *dev)
-+{
-+	cleanup_glue_dir(dev, dev->kobj.parent);
-+}
- #endif
- 
--static int setup_parent(struct device *dev, struct device *parent)
-+static void setup_parent(struct device *dev, struct device *parent)
- {
- 	struct kobject *kobj;
- 	kobj = get_device_parent(dev, parent);
--	if (IS_ERR(kobj))
--		return PTR_ERR(kobj);
- 	if (kobj)
- 		dev->kobj.parent = kobj;
--	return 0;
- }
- 
- static int device_add_class_symlinks(struct device *dev)
-@@ -785,9 +787,7 @@ int device_add(struct device *dev)
- 	pr_debug("device: '%s': %s\n", dev->bus_id, __FUNCTION__);
- 
- 	parent = get_device(dev->parent);
--	error = setup_parent(dev, parent);
--	if (error)
--		goto Error;
-+	setup_parent(dev, parent);
- 
- 	/* first, register with generic layer. */
- 	error = kobject_add(&dev->kobj, dev->kobj.parent, "%s", dev->bus_id);
-@@ -865,6 +865,7 @@ int device_add(struct device *dev)
- 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
- 	kobject_del(&dev->kobj);
-  Error:
-+	cleanup_device_parent(dev);
- 	if (parent)
- 		put_device(parent);
- 	goto Done;
-@@ -1345,15 +1346,12 @@ int device_move(struct device *dev, stru
- 
- 	new_parent = get_device(new_parent);
- 	new_parent_kobj = get_device_parent (dev, new_parent);
--	if (IS_ERR(new_parent_kobj)) {
--		error = PTR_ERR(new_parent_kobj);
--		put_device(new_parent);
--		goto out;
--	}
-+
- 	pr_debug("device: '%s': %s: moving to '%s'\n", dev->bus_id,
- 		 __FUNCTION__, new_parent ? new_parent->bus_id : "<NULL>");
- 	error = kobject_move(&dev->kobj, new_parent_kobj);
- 	if (error) {
-+		cleanup_glue_dir(dev, new_parent_kobj);
- 		put_device(new_parent);
- 		goto out;
- 	}
-@@ -1376,6 +1374,7 @@ int device_move(struct device *dev, stru
- 				klist_add_tail(&dev->knode_parent,
- 					       &old_parent->klist_children);
- 		}
-+		cleanup_glue_dir(dev, new_parent_kobj);
- 		put_device(new_parent);
- 		goto out;
- 	}
+  Added wakeup latency timings.
+
+  Added John Stultz new RCU implementation of get_monotonic_cycles
+    (with special thanks to Mathieu Desnoyers for having the original
+     implementation)
+
+  Thanks also go out to Frank Ch. Eigler for helping out on deciding
+   how to use that scheduler marker.
+]
+
+All released version of these patches can be found at:
+
+   http://people.redhat.com/srostedt/tracing/
+
+
+The following patch series brings to vanilla Linux a bit of the RT kernel
+trace facility. This incorporates the "-pg" profiling option of gcc
+that will call the "mcount" function for all functions called in
+the kernel.
+
+Note: I did investigate using -finstrument-functions but that adds a call
+to both start and end of a function. Using mcount only does the
+beginning of the function. mcount alone adds ~13% overhead. The
+-finstrument-functions added ~19%.  Also it caused me to do tricks with
+inline, because it adds the function calls to inline functions as well.
+
+This patch series implements the code for x86 (32 and 64 bit), but
+other archs can easily be implemented as well (note: ARM and PPC are
+already implemented in -rt)
+
+Some Background:
+----------------
+
+A while back, Ingo Molnar and William Lee Irwin III created a latency tracer
+to find problem latency areas in the kernel for the RT patch.  This tracer
+became a very integral part of the RT kernel in solving where latency hot
+spots were.  One of the features that the latency tracer added was a
+function trace.  This function tracer would record all functions that
+were called (implemented by the gcc "-pg" option) and would show what was
+called when interrupts or preemption was turned off.
+
+This feature is also very helpful in normal debugging. So it's been talked
+about taking bits and pieces from the RT latency tracer and bring them
+to LKML. But no one had the time to do it.
+
+Arnaldo Carvalho de Melo took a crack at it. He pulled out the mcount
+as well as part of the tracing code and made it generic from the point
+of the tracing code.  I'm not sure why this stopped. Probably because
+Arnaldo is a very busy man, and his efforts had to be utilized elsewhere.
+
+While I still maintain my own Logdev utility:
+
+  http://rostedt.homelinux.com/logdev
+
+I came across a need to do the mcount with logdev too. I was successful
+but found that it became very dependent on a lot of code. One thing that
+I liked about my logdev utility was that it was very non-intrusive, and has
+been easy to port from the Linux 2.0 days. I did not want to burden the
+logdev patch with the intrusiveness of mcount (not really that intrusive,
+it just needs to add a "notrace" annotation to functions in the kernel
+that will cause more conflicts in applying patches for me).
+
+Being close to the holidays, I grabbed Arnaldos old patches and started
+massaging them into something that could be useful for logdev, and what
+I found out (and talking this over with Arnaldo too) that this can
+be much more useful for others as well.
+
+The main thing I changed, was that I made the mcount function itself
+generic, and not the dependency on the tracing code.  That is I added
+
+register_mcount_function()
+ and
+clear_mcount_function()
+
+So when ever mcount is enabled and a function is registered that function
+is called for all functions in the kernel that is not labeled with the
+"notrace" annotation.
+
+
+The Simple Tracer:
+------------------
+
+To show the power of this I also massaged the tracer code that Arnaldo pulled
+from the RT patch and made it be a nice example of what can be done
+with this.
+
+The function that is registered to mcount has the prototype:
+
+ void func(unsigned long ip, unsigned long parent_ip);
+
+The ip is the address of the function and parent_ip is the address of
+the parent function that called it.
+
+The x86_64 version has the assembly call the registered function directly
+to save having to do a double function call.
+
+To enable mcount, a sysctl is added:
+
+   /proc/sys/kernel/mcount_enabled
+
+Once mcount is enabled, when a function is registed, it will be called by
+all functions. The tracer in this patch series shows how this is done.
+It adds a directory in the debugfs, called mctracer. With a ctrl file that
+will allow the user have the tracer register its function.  Note, the order
+of enabling mcount and registering a function is not important, but both
+must be done to initiate the tracing. That is, you can disable tracing
+by either disabling mcount or by clearing the registered function.
+
+Only one function may be registered at a time. If another function is
+registered, it will simply override what ever was there previously.
+
+Here's a simple example of the tracer output:
+
+CPU 2: hackbench:11867 preempt_schedule+0xc/0x84 <-- avc_has_perm_noaudit+0x45d/0x52c
+CPU 1: hackbench:12052 selinux_file_permission+0x10/0x11c <-- security_file_permission+0x16/0x18
+CPU 3: hackbench:12017 update_curr+0xe/0x8b <-- put_prev_task_fair+0x24/0x4c
+CPU 2: hackbench:11867 avc_audit+0x16/0x9e3 <-- avc_has_perm+0x51/0x63
+CPU 0: hackbench:12019 socket_has_perm+0x16/0x7c <-- selinux_socket_sendmsg+0x27/0x3e
+CPU 1: hackbench:12052 file_has_perm+0x16/0xbb <-- selinux_file_permission+0x104/0x11c
+
+This is formated like:
+
+ CPU <CPU#>: <task-comm>:<task-pid> <function> <-- <parent-function>
+
+
+Latency Tracer Format:
+----------------------
+
+The format used by the RT patch is a bit more complex. It is designed to
+record a lot of information quickly and dump out a lot too.
+
+There's two versions of the format. Verbose and non-vebose.
+
+verbose:
+
+preemption latency trace v1.1.5 on 2.6.24-rc7-tst
+--------------------------------------------------------------------
+ latency: 89 us, #3/3, CPU#1 | (M:desktop VP:0, KP:0, SP:0 HP:0 #P:4)
+    -----------------
+    | task: kjournald-600 (uid:0 nice:-5 policy:0 rt_prio:0)
+    -----------------
+ => started at: _spin_lock_irqsave+0x2a/0x63 <c06310d2>
+ => ended at:   _spin_unlock_irqrestore+0x32/0x41 <c0631245>
+
+       kjournald   600 1 1 00000000 00000000 [397408f1] 0.003ms (+0.079ms): _spin_lock_irqsave+0x2a/0x63 <c06310d2> (scsi_dispatch_cmd+0x155/0x234 [scsi_mod] <f8867c19>)
+       kjournald   600 1 1 00000000 00000001 [39740940] 0.081ms (+0.005ms): _spin_unlock_irqrestore+0x32/0x41 <c0631245> (scsi_dispatch_cmd+0x1be/0x234 [scsi_mod] <f8867c82>)
+       kjournald   600 1 1 00000000 00000002 [39740945] 0.087ms (+0.000ms): trace_hardirqs_on_caller+0x74/0x86 <c0508bdc> (_spin_unlock_irqrestore+0x32/0x41 <c0631245>)
+
+
+non-verbose:
+
+preemption latency trace v1.1.5 on 2.6.24-rc7-tst
+--------------------------------------------------------------------
+ latency: 89 us, #3/3, CPU#2 | (M:desktop VP:0, KP:0, SP:0 HP:0 #P:4)
+    -----------------
+    | task: kjournald-600 (uid:0 nice:-5 policy:0 rt_prio:0)
+    -----------------
+ => started at: _spin_lock_irqsave+0x2a/0x63 <c06310d2>
+ => ended at:   _spin_unlock_irqrestore+0x32/0x41 <c0631245>
+
+                 _------=> CPU#            
+                / _-----=> irqs-off        
+               | / _----=> need-resched    
+               || / _---=> hardirq/softirq 
+               ||| / _--=> preempt-depth   
+               |||| /                      
+               |||||     delay             
+   cmd     pid ||||| time  |   caller      
+      \   /    |||||   \   |   /           
+kjournal-600   1d...    3us+: _spin_lock_irqsave+0x2a/0x63 <c06310d2> (scsi_dispatch_cmd+0x155/0x234 [scsi_mod] <f8867c19>)
+kjournal-600   1d...   81us+: _spin_unlock_irqrestore+0x32/0x41 <c0631245> (scsi_dispatch_cmd+0x1be/0x234 [scsi_mod] <f8867c82>)
+kjournal-600   1d...   87us : trace_hardirqs_on_caller+0x74/0x86 <c0508bdc> (_spin_unlock_irqrestore+0x32/0x41 <c0631245>)
+
+
+Debug FS:
+---------
+
+Although enabling and disabling mcount is done through the sysctl:
+
+/proc/sys/kernel/mcount_enabled
+
+The rest of the tracing uses debugfs.
+
+/debugfs/tracing
+
+Here's the available files:
+
+fn_trace_ctrl
+  echo 1 to this enables mcount tracing (if mcount_enabled is set)
+  echo 0 to disable the function trace tracing.
+
+function_trace
+  Outputs the function trace in latency_trace format.
+
+preempt_fn_trace_ctrl
+  echo 1 to enable function tracing in critical sections timings
+  echo 0 to disable
+
+preempt_trace
+  Outputs the critical section latency
+
+preempt_thresh
+  echo a number (in usecs) into this to record all traces that are
+  greater than threshold.
+
+iter_ctrl
+  echo "symonly" to not show the instruction pointers in the trace
+  echo "nosymonly" to disable symonly.
+  echo "verbose" for verbose output from latency format.
+  echo "noverbose" to disable verbose ouput.
+  cat iter_ctrl to see the current settings.
+
+preempt_max_latency
+  Holds the current max critical latency.
+  echo 0 to reset and start tracing.
+
+wakeup_max_latency
+  Holds the current max wakeup latency (usecs)
+
+wakeup_thresh
+  Holds the threshold to print after a latency exceeds it (usecs)
+
+wakeup_trace_ctrl
+  Turn on or off wakeup latency
+
+wakeup_trace
+  Holds the output of the highest wakeup latency.
+
+trace
+  simple output format of the function trace code.
+
+
+Overhead:
+---------
+
+Note that having mcount compiled in seems to show a little overhead.
+
+Here's 3 runs of hackbench 50 without the patches:
+Time: 2.137
+Time: 2.283
+Time: 2.245
+
+ Avg: 2.221
+
+and here's 3 runs with the patches (without tracing on):
+Time: 2.738
+Time: 2.469
+Time: 2.388
+
+  Avg: 2.531
+
+So it is a 13% overhead when enabled (according to hackbench).
+
+But full tracing can cause a bit more problems:
+
+# hackbench 50
+Time: 113.350
+
+  113.350!!!!!
+
+But this is tracing *every* function call!
+
+
+Future:
+-------
+The way the mcount hook is done here, other utilities can easily add their
+own functions. Just care needs to be made not to call anything that is not
+marked with notrace, or you will crash the box with recursion. But
+even the simple tracer adds a "disabled" feature so in case it happens
+to call something that is not marked with notrace, it is a safety net
+not to kill the box.
+
+I was originally going to use the relay system to record the data, but
+that had a chance of calling functions not marked with notrace. But, if
+for example LTTng wanted to use this, it could disable tracing on a CPU
+when doing the calls, and this will protect from recusion.
+
+Redesign:
+---------
+This will be the last series that has each of the traces as a separate
+buffer. The next series will be more like the RT patch implementation
+of holding a single buffer for all latency traces. The only disadvantage
+of this is that you can only perform one type of latency at a time.
+But this has never been brought up as an issue with the RT patch.
+
+The user will still be able to switch at runtime which type of latency
+they would like to record.
+
+SystemTap:
+----------
+One thing that Arnaldo and I discussed last year was using systemtap to
+add hooks into the kernel to start and stop tracing.  kprobes is too
+heavy to do on all funtion calls, but it would be perfect to add to
+non hot paths to start the tracer and stop the tracer.
+
+So when debugging the kernel, instead of recompiling with printks
+or other markers, you could simply use systemtap to place a trace start
+and stop locations and trace the problem areas to see what is happening.
+
+
+Latency Tracing:
+----------------
+
+We can also add trace points to record the time the highest priority task
+needs to wait before running. This too is currently done in the RT patch.
+
+
+These are just some of the ideas we have with this. And we are sure others
+could come up with more.
+
+These patches are for the underlining work. We'll see what happens next.
+
+
+
+
