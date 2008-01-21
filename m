@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761905AbYAUXVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762042AbYAUXVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761905AbYAUXVR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 18:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760316AbYAUXS0
+	id S1762042AbYAUXVd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 18:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760186AbYAUXS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 18:18:26 -0500
-Received: from blue.powerfulnet.net ([80.68.94.67]:1347 "EHLO
-	blue.powerfulnet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760586AbYAUXSZ (ORCPT
+	Mon, 21 Jan 2008 18:18:28 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:43625 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760596AbYAUXS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 18:18:25 -0500
-X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 Jan 2008 18:18:25 EST
-From: "J. Pablo =?utf-8?q?Fern=C3=A1ndez?=" <pupeno@pupeno.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Making a USB driver
-Date: Mon, 21 Jan 2008 23:13:13 +0000
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <fn2u8p$gv3$1@ger.gmane.org> <479515FF.3050705@gmail.com>
-In-Reply-To: <479515FF.3050705@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6641735.DZeXHEYdHT";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200801212313.17703.pupeno@pupeno.com>
+	Mon, 21 Jan 2008 18:18:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=AVkBDxuqpBD20wpNl7XL3/kYAoznUq4LZlQtLXI/3a9eUJm6GlCjkw2pHTi0Uj+7xrj6JoTolHiZaHiAtq2vqXCSLWjRVDUIQ9OUJXPRQz0osf8vyIj1QNnGFqguo1vxIhO1QKMj2g3TSIJt/FgIUm7QWYvdt6XAsrevCBCwINU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Tue, 22 Jan 2008 00:31:30 +0100
+Message-Id: <20080121233130.30311.83202.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080121233036.30311.76015.sendpatchset@localhost.localdomain>
+References: <20080121233036.30311.76015.sendpatchset@localhost.localdomain>
+Subject: [PATCH 08/16] ide: remove ->nice0 and ->nice2 fields from ide_drive_t
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6641735.DZeXHEYdHT
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Monday 21 January 2008 22:00:31 Jiri Slaby wrote:
-> On 01/21/2008 09:11 PM, J. Pablo Fern=C3=A1ndez wrote:
-> > Hello,
-> >
-> > I'm interested in making a driver for the Kinesis Savant Elite
-> > Programable USB Foot Switches[1].
->
-> [1]+1 says
-> Linux, Sun and other Non Windows Platforms
-> =C2=B7 Requires available USB port. Uses generic drivers provided by the
-> operating system. Due to the heterogeneity in these platforms, we cannot
-> guarantee compatibility with these systems. However, if your system can u=
-se
-> any USB mouse and keyboard, it will probably work with a Savant or Savant
-> Elite foot switch.
->
-> I guess it's ordinary input device without any special driver needs.
+* ->nice0 and ->nice2 ide_drive_t fields are always zero so remove them.
 
-It sends ordinary mouse and keyboard commands, but you need a driver to=20
-program it what commands to send, and that's the part I want to cover: " it=
-=20
-can be easily reprogrammed on a Windows [and only Windows] PC to perform an=
-y=20
-keyboard action or key combination."
-=2D-=20
-J. Pablo Fern=C3=A1ndez <pupeno@pupeno.com> http://pupeno.com
+* IDE_NICE_0 and IDE_NICE_2 defines from <linux/hdreg.h> are no longer
+  used by any kernel code so cover them with #ifndef/#endif __KERNEL__.
 
---nextPart6641735.DZeXHEYdHT
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide.c     |    5 +----
+ include/linux/hdreg.h |    4 +++-
+ include/linux/ide.h   |    2 --
+ 3 files changed, 4 insertions(+), 7 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHlScNfW48a9PWGkURAjcTAJ9ieBC/Seb4mZLT+psqEL7e9xB4nACdEKH6
-LcX1QcXBDVRJ7tAn3l65ME0=
-=MasH
------END PGP SIGNATURE-----
-
---nextPart6641735.DZeXHEYdHT--
+Index: b/drivers/ide/ide.c
+===================================================================
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -1035,11 +1035,8 @@ int generic_ide_ioctl(ide_drive_t *drive
+ 		case HDIO_GET_NICE:
+ 			return put_user(drive->dsc_overlap	<<	IDE_NICE_DSC_OVERLAP	|
+ 					drive->atapi_overlap	<<	IDE_NICE_ATAPI_OVERLAP	|
+-					drive->nice0		<< 	IDE_NICE_0		|
+-					drive->nice1		<<	IDE_NICE_1		|
+-					drive->nice2		<<	IDE_NICE_2,
++					drive->nice1 << IDE_NICE_1,
+ 					(long __user *) arg);
+-
+ #ifdef CONFIG_IDE_TASK_IOCTL
+ 		case HDIO_DRIVE_TASKFILE:
+ 		        if (!capable(CAP_SYS_ADMIN) || !capable(CAP_SYS_RAWIO))
+Index: b/include/linux/hdreg.h
+===================================================================
+--- a/include/linux/hdreg.h
++++ b/include/linux/hdreg.h
+@@ -706,8 +706,10 @@ struct hd_driveid {
+  */
+ #define IDE_NICE_DSC_OVERLAP	(0)	/* per the DSC overlap protocol */
+ #define IDE_NICE_ATAPI_OVERLAP	(1)	/* not supported yet */
+-#define IDE_NICE_0		(2)	/* when sure that it won't affect us */
+ #define IDE_NICE_1		(3)	/* when probably won't affect us much */
++#ifndef __KERNEL__
++#define IDE_NICE_0		(2)	/* when sure that it won't affect us */
+ #define IDE_NICE_2		(4)	/* when we know it's on our expense */
++#endif
+ 
+ #endif	/* _LINUX_HDREG_H */
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -407,8 +407,6 @@ typedef struct ide_drive_s {
+ 	unsigned no_unmask	: 1;	/* disallow setting unmask bit */
+ 	unsigned no_io_32bit	: 1;	/* disallow enabling 32bit I/O */
+ 	unsigned atapi_overlap	: 1;	/* ATAPI overlap (not supported) */
+-	unsigned nice0		: 1;	/* give obvious excess bandwidth */
+-	unsigned nice2		: 1;	/* give a share in our own bandwidth */
+ 	unsigned doorlocking	: 1;	/* for removable only: door lock/unlock works */
+ 	unsigned nodma		: 1;	/* disallow DMA */
+ 	unsigned autotune	: 2;	/* 0=default, 1=autotune, 2=noautotune */
