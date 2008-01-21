@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765767AbYAUKWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765423AbYAUKXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765767AbYAUKWo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 05:22:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760245AbYAUKD3
+	id S1765423AbYAUKXJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 05:23:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759787AbYAUKDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 05:03:29 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35833 "EHLO mx1.redhat.com"
+	Mon, 21 Jan 2008 05:03:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35835 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759724AbYAUKDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 05:03:20 -0500
+	id S1759402AbYAUKDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 05:03:23 -0500
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Bob Peterson <rpeterso@redhat.com>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 53/58] [GFS2] gfs2_alloc_required performance
-Date: Mon, 21 Jan 2008 09:22:11 +0000
-Message-Id: <12009074321081-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 54/58] [GFS2] Fix write alloc required shortcut calculation
+Date: Mon, 21 Jan 2008 09:22:12 +0000
+Message-Id: <12009074341030-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <12009074312371-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <12009074321081-git-send-email-swhiteho@redhat.com>
 References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009073443813-git-send-email-swhiteho@redhat.com>
  <12009073453549-git-send-email-swhiteho@redhat.com>
@@ -71,40 +70,37 @@ References: <1200907336293-git-send-email-swhiteho@redhat.com>
  <12009074271575-git-send-email-swhiteho@redhat.com>
  <12009074291130-git-send-email-swhiteho@redhat.com>
  <12009074312371-git-send-email-swhiteho@redhat.com>
-Message-Id: <51b22fb453b7c234ecfee616047d2ccc6ec77f11.1200905287.git.swhiteho@redhat.com>
+ <12009074321081-git-send-email-swhiteho@redhat.com>
+Message-Id: <bf67702abc309510aad346d4c9511439366f3a2d.1200905287.git.swhiteho@redhat.com>
 In-Reply-To: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 References: <ba7d43779caabf7d3e6c62c3007564cdff351e40.1200905287.git.swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bob Peterson <rpeterso@redhat.com>
+From: Steven Whitehouse <swhiteho@redhat.com>
 
-This is a small I/O performance enhancement to gfs2.  (Actually, it is a rework of
-an earlier version I got wrong).  The idea here is to check if the write extends
-past the last block in the file.  If so, the function can save itself a lot of
-time and trouble because it knows an allocate will be required.  Benchmarks like
-iozone should see better performance.
+The comparison was being made against the wrong quantity.
 
-Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
 diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
-index 73dfad7..4356cc2 100644
+index 4356cc2..e4effc4 100644
 --- a/fs/gfs2/bmap.c
 +++ b/fs/gfs2/bmap.c
-@@ -1224,6 +1224,11 @@ int gfs2_write_alloc_required(struct gfs2_inode *ip, u64 offset,
+@@ -1222,10 +1222,10 @@ int gfs2_write_alloc_required(struct gfs2_inode *ip, u64 offset,
+ 		do_div(lblock_stop, bsize);
+ 	} else {
  		unsigned int shift = sdp->sd_sb.sb_bsize_shift;
++		u64 end_of_file = (ip->i_di.di_size + sdp->sd_sb.sb_bsize - 1) >> shift;
  		lblock = offset >> shift;
  		lblock_stop = (offset + len + sdp->sd_sb.sb_bsize - 1) >> shift;
-+		if (lblock_stop > ip->i_di.di_blocks) { /* writing past the
-+							   last block */
-+			*alloc_required = 1;
-+			return 0;
-+		}
- 	}
- 
- 	for (; lblock < lblock_stop; lblock += extlen) {
+-		if (lblock_stop > ip->i_di.di_blocks) { /* writing past the
+-							   last block */
++		if (lblock_stop > end_of_file) {
+ 			*alloc_required = 1;
+ 			return 0;
+ 		}
 -- 
 1.5.1.2
 
