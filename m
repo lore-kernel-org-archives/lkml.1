@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbYAUQqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760728AbYAUQuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759627AbYAUQqh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 11:46:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYAUQq2
+	id S1760728AbYAUQuB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 11:50:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbYAUQtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 11:46:28 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48232 "EHLO
+	Mon, 21 Jan 2008 11:49:53 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59514 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753240AbYAUQq0 (ORCPT
+	with ESMTP id S1755165AbYAUQtw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 11:46:26 -0500
-Date: Mon, 21 Jan 2008 16:44:14 +0000
+	Mon, 21 Jan 2008 11:49:52 -0500
+Date: Mon, 21 Jan 2008 16:47:44 +0000
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Tejun Heo <htejun@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -18,8 +18,8 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Mark Lord <liml@rtr.ca>
 Subject: Re: ATA device reset, shoud I be concerned?
-Message-ID: <20080121164414.6cd7d8fc@lxorguk.ukuu.org.uk>
-In-Reply-To: <4794AD3F.40309@gmail.com>
+Message-ID: <20080121164744.2f7d0ed1@lxorguk.ukuu.org.uk>
+In-Reply-To: <4794ACAF.70505@gmail.com>
 References: <200801140019.20668.g.chulkov@jacobs-university.de>
 	<20080115025435.1e21b703.akpm@linux-foundation.org>
 	<20080115113552.75731bf8@lxorguk.ukuu.org.uk>
@@ -28,7 +28,6 @@ References: <200801140019.20668.g.chulkov@jacobs-university.de>
 	<47949AA4.9090601@gmail.com>
 	<20080121141425.45aa9c61@lxorguk.ukuu.org.uk>
 	<4794ACAF.70505@gmail.com>
-	<4794AD3F.40309@gmail.com>
 X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -40,11 +39,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Just a data point, even ICHs lock up after PHY event if the wrong TF
-> register is accessed.  I just don't think tempting with TF regs after
-> timeout is worth the cost.
+> Can you elaborate a bit?  I don't really think completing a command
+> after 30sec timeout contributes a lot to driver stability.
 
-For SATA maybe, for PATA I don't have any controllers with your bug so
-its wrong for libata to cripple the PATA support or working controllers.
+Timeout, timeout, timeout, reset, timeout.. (repeat), failed I/O
+
+This gives the end user no information about the fault, nor does it let
+the upper layers of SCSI and above distinguish between a random passing
+sulk and media errors which need the disk replacing.
+
+> > Should that not then be a per host flag ?
+> 
+> Yeah, that would be the best.  The problem is that there are several
+> different kinds of timeouts and we don't know which controller locks up
+> after which timeout and investigating them is really difficult.
+
+PATA controllers don't lock up in that case so its quite easy. The one
+exception is if the device jams IORDY but in that case you are dead
+anyway the next I/O (except on a SIL680 which has a timer we could use).
+
+Old IDE says it works for PATA. For SATA I can see it might need more
+care and you might simply not be able to get the info.
 
 Alan
