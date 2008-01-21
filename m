@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbYAUW6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbYAUW60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537AbYAUW6G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 17:58:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbYAUW5v
+	id S1757501AbYAUW60 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 17:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757955AbYAUW55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 17:57:51 -0500
+	Mon, 21 Jan 2008 17:57:57 -0500
 Received: from rv-out-0910.google.com ([209.85.198.185]:20454 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753220AbYAUW5t (ORCPT
+	with ESMTP id S1757772AbYAUW54 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 17:57:49 -0500
+	Mon, 21 Jan 2008 17:57:56 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=oBforxIukajoQpWWUDu4pYB1yqYSO1Gp72KRuci5LND8p6N+xflsByyyfCY1NrafMi8LfSUKSpcfD60lvzoi2dPqs6Akz882UAO/qrnGl/15yzuhuaG5EZz+GMzJyGq0Kt6YD3dbL1GiEhVrkFkXXNkEkwnlqJdLEK3snJqh9r4=
-Subject: [PATCH 1/3] x86: make printk_address available on X86_32
+        b=WEtNqjYFXyCH1PGQaHwK/ffKLlMJmC/M5pPFlHq0q1DBlGMXxpwu4DrHuLVcl8zZyflECAPRQdjfYWpQaJBDpFEa3VQDKdqGL/413LWOjcfG8T6YRkoA9vU9LRRlaDySmZoY32DsX8RRiUGcrkxiJd7bBB4SmvP2rFhFlqiBlx0=
+Subject: [PATCH 2/3] x86: Introduce show_fault_oops helper to fault_32|64.c
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
        Arjan van de Ven <arjan@infradead.org>
 Content-Type: text/plain
-Date: Mon, 21 Jan 2008 14:57:55 -0800
-Message-Id: <1200956275.16972.39.camel@brick>
+Date: Mon, 21 Jan 2008 14:58:01 -0800
+Message-Id: <1200956281.16972.40.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -30,98 +30,126 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Small fomatting fixes to 64-bit as well, trailing whitespace
-and extra semicolon, also move the ifdefs for CONFIG_KALLSYMS
-into the function itself.
+This will help when unifying the oops dumping code on 32/64
+bit.  No functional changes.
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
-Replacements for the 2-patch series I sent earlier.
+ arch/x86/mm/fault_32.c |   54 ++++++++++++++++++++++++++---------------------
+ arch/x86/mm/fault_64.c |   21 ++++++++++++------
+ 2 files changed, 44 insertions(+), 31 deletions(-)
 
- arch/x86/kernel/traps_32.c |   28 ++++++++++++++++++++++++++++
- arch/x86/kernel/traps_64.c |   11 ++++-------
- 2 files changed, 32 insertions(+), 7 deletions(-)
-
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index e0a7615..0ec7621 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -102,6 +102,34 @@ asmlinkage void machine_check(void);
- int kstack_depth_to_print = 24;
- static unsigned int code_bytes = 64;
+diff --git a/arch/x86/mm/fault_32.c b/arch/x86/mm/fault_32.c
+index 0bd2417..fda3997 100644
+--- a/arch/x86/mm/fault_32.c
++++ b/arch/x86/mm/fault_32.c
+@@ -323,6 +323,35 @@ static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
+ 	return 0;
+ }
  
-+void printk_address(unsigned long address, int reliable)
++static void show_fault_oops(struct pt_regs *regs, unsigned long error_code,
++			    unsigned long address)
 +{
-+#ifdef CONFIG_KALLSYMS
-+	unsigned long offset = 0, symsize;
-+	const char *symname;
-+	char *modname;
-+	char *delim = ":";
-+	char namebuf[128];
-+	char reliab[4] = "";
-+
-+	symname = kallsyms_lookup(address, &symsize, &offset,
-+					&modname, namebuf);
-+	if (!symname) {
-+		printk(" [<%08lx>]\n", address);
++	if (!oops_may_print())
 +		return;
++
++#ifdef CONFIG_X86_PAE
++	if (error_code & PF_INSTR) {
++		int level;
++		pte_t *pte = lookup_address(address, &level);
++
++		if (pte && pte_present(*pte) && !pte_exec(*pte))
++			printk(KERN_CRIT "kernel tried to execute "
++				"NX-protected page - exploit attempt? "
++				"(uid: %d)\n", current->uid);
 +	}
-+	if (!reliable)
-+		strcpy(reliab, "? ");
-+
-+	if (!modname)
-+		modname = delim = "";
-+	printk(" [<%08lx>] %s%s%s%s%s+0x%lx/0x%lx\n",
-+		address, reliab, delim, modname, delim, symname, offset, symsize);
-+#else
-+	printk(" [<%08lx>]\n", address);
 +#endif
++	if (address < PAGE_SIZE)
++		printk(KERN_ALERT "BUG: unable to handle kernel NULL "
++				"pointer dereference");
++	else
++		printk(KERN_ALERT "BUG: unable to handle kernel paging"
++				" request");
++	printk(" at virtual address %08lx\n", address);
++	printk(KERN_ALERT "printing ip: %08lx ", regs->ip);
++
++	dump_pagetable(address);
 +}
 +
- static inline int valid_stack_ptr(struct thread_info *tinfo, void *p, unsigned size)
- {
- 	return	p > (void *)tinfo &&
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index 2289f80..1dd5b48 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -100,15 +100,15 @@ static inline void preempt_conditional_cli(struct pt_regs *regs)
+ /*
+  * Handle a fault on the vmalloc or module mapping area
+  *
+@@ -633,30 +662,7 @@ no_context:
  
- int kstack_depth_to_print = 12;
+ 	bust_spinlocks(1);
  
--#ifdef CONFIG_KALLSYMS
- void printk_address(unsigned long address, int reliable)
- {
-+#ifdef CONFIG_KALLSYMS
- 	unsigned long offset = 0, symsize;
- 	const char *symname;
- 	char *modname;
- 	char *delim = ":";
- 	char namebuf[128];
--	char reliab[4] = "";;
-+	char reliab[4] = "";
+-	if (oops_may_print()) {
+-
+-#ifdef CONFIG_X86_PAE
+-		if (error_code & PF_INSTR) {
+-			int level;
+-			pte_t *pte = lookup_address(address, &level);
+-
+-			if (pte && pte_present(*pte) && !pte_exec(*pte))
+-				printk(KERN_CRIT "kernel tried to execute "
+-					"NX-protected page - exploit attempt? "
+-					"(uid: %d)\n", current->uid);
+-		}
+-#endif
+-		if (address < PAGE_SIZE)
+-			printk(KERN_ALERT "BUG: unable to handle kernel NULL "
+-					"pointer dereference");
+-		else
+-			printk(KERN_ALERT "BUG: unable to handle kernel paging"
+-					" request");
+-		printk(" at virtual address %08lx\n", address);
+-		printk(KERN_ALERT "printing ip: %08lx ", regs->ip);
+-
+-		dump_pagetable(address);
+-	}
++	show_fault_oops(regs, error_code, address);
  
- 	symname = kallsyms_lookup(address, &symsize, &offset,
- 					&modname, namebuf);
-@@ -120,16 +120,13 @@ void printk_address(unsigned long address, int reliable)
- 		strcpy(reliab, "? ");
+ 	tsk->thread.cr2 = address;
+ 	tsk->thread.trap_no = 14;
+diff --git a/arch/x86/mm/fault_64.c b/arch/x86/mm/fault_64.c
+index ccbb8e3..1897704 100644
+--- a/arch/x86/mm/fault_64.c
++++ b/arch/x86/mm/fault_64.c
+@@ -293,6 +293,18 @@ static int is_f00f_bug(struct pt_regs *regs, unsigned long address)
+ 	return 0;
+ }
  
- 	if (!modname)
--		modname = delim = ""; 		
-+		modname = delim = "";
- 	printk(" [<%016lx>] %s%s%s%s%s+0x%lx/0x%lx\n",
- 		address, reliab, delim, modname, delim, symname, offset, symsize);
--}
- #else
--void printk_address(unsigned long address, int reliable)
--{
- 	printk(" [<%016lx>]\n", address);
--}
- #endif
++static void show_fault_oops(struct pt_regs *regs, unsigned long error_code,
++			    unsigned long address)
++{
++	if (address < PAGE_SIZE)
++		printk(KERN_ALERT "Unable to handle kernel NULL pointer dereference");
++	else
++		printk(KERN_ALERT "Unable to handle kernel paging request");
++	printk(" at %016lx RIP: \n" KERN_ALERT, address);
++	printk_address(regs->ip, 1);
++	dump_pagetable(address);
 +}
++
+ static noinline void pgtable_bad(unsigned long address, struct pt_regs *regs,
+ 				 unsigned long error_code)
+ {
+@@ -636,13 +648,8 @@ no_context:
  
- static unsigned long *in_exception_stack(unsigned cpu, unsigned long stack,
- 					unsigned *usedp, char **idp)
+ 	flags = oops_begin();
+ 
+-	if (address < PAGE_SIZE)
+-		printk(KERN_ALERT "Unable to handle kernel NULL pointer dereference");
+-	else
+-		printk(KERN_ALERT "Unable to handle kernel paging request");
+-	printk(" at %016lx RIP: \n" KERN_ALERT, address);
+-	printk_address(regs->ip, 1);
+-	dump_pagetable(address);
++	show_fault_oops(regs, error_code, address);
++
+ 	tsk->thread.cr2 = address;
+ 	tsk->thread.trap_no = 14;
+ 	tsk->thread.error_code = error_code;
 -- 
 1.5.4.rc3.1118.gf6754c
 
