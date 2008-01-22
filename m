@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761063AbYAVCIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbYAVCQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761063AbYAVCIp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 21:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbYAVCIf
+	id S1755625AbYAVCQt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 21:16:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYAVCQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 21:08:35 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:9628 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752236AbYAVCIe (ORCPT
+	Mon, 21 Jan 2008 21:16:40 -0500
+Received: from ro-out-1112.google.com ([72.14.202.181]:55790 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751483AbYAVCQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 21:08:34 -0500
+	Mon, 21 Jan 2008 21:16:39 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=UQrECeFwylZwGF3uU5ysxuLTKXvyupQ1kSBS0g13IrW0RoHDrQuJhmY4hRtD0Lyd+2riycxKaM7ZC5l6wGP0sDxj4zzc2vkaPtf7Po5qmjjEMuFrtCcRJvpT0Aqd9SxBYiqzMX8jdqa5hiw1rj/rr2bj53lPL1d7hBxsF9hPSiA=
-Message-ID: <47955018.7000901@gmail.com>
-Date: Tue, 22 Jan 2008 11:08:24 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WbOsW80JY2p0PxcPg5htA87U4SYNgKC2T0I0Z4cbaQyTsFIJpVDpGcTMP2NYvgMFURpiSDCtHKiD+X2/iPWK0KQxn1yi3n1uaVuuPcSuc29uYKx0RJKBRdvqMonAMU6GONOe5iNI+Ro/yJStvJ5cweAATl1ZX6kpTHiWSY5DeN4=
+Message-ID: <9a8748490801211816y4bcd6fefqfb3f2c2af1bbe970@mail.gmail.com>
+Date: Tue, 22 Jan 2008 03:16:38 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Anton Salikhmetov" <salikhmetov@gmail.com>
+Subject: Re: [PATCH -v7 2/2] Update ctime and mtime for memory-mapped files
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, torvalds@linux-foundation.org,
+       a.p.zijlstra@chello.nl, akpm@linux-foundation.org, protasnb@gmail.com,
+       miklos@szeredi.hu, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+In-Reply-To: <4df4ef0c0801211807m3c790a2n679f44f3dec6dc9d@mail.gmail.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Georgi Chulkov <g.chulkov@jacobs-university.de>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Mark Lord <liml@rtr.ca>
-Subject: Re: ATA device reset, shoud I be concerned?
-References: <200801140019.20668.g.chulkov@jacobs-university.de> <20080121164744.2f7d0ed1@lxorguk.ukuu.org.uk> <4794D020.4060204@gmail.com> <200801220231.22609.bzolnier@gmail.com> <4795488E.30706@gmail.com>
-In-Reply-To: <4795488E.30706@gmail.com>
-X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12009619562023-git-send-email-salikhmetov@gmail.com>
+	 <12009619584168-git-send-email-salikhmetov@gmail.com>
+	 <9a8748490801211740r5c764f6ev9c331479f63ef362@mail.gmail.com>
+	 <4df4ef0c0801211751w39d7b9e5ne2e8b788051d3e3a@mail.gmail.com>
+	 <4df4ef0c0801211807m3c790a2n679f44f3dec6dc9d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Bartlomiej Zolnierkiewicz wrote:
->> On Monday 21 January 2008, Tejun Heo wrote:
->>
->> [...]
->>
->>>> Old IDE says it works for PATA. For SATA I can see it might need more
->>>> care and you might simply not be able to get the info.
->>> Old IDE often locks up the machine hard after timeouts.  I'm all for
->> Could you point me to some bugreports?
->>
->> I would like to know more about hosts/conditions for which it happens.
-> 
-> It's jmicron and all on-board jmicrons I have show the same problem.
-> Connect harddrrive to the controller and drive it via jmicron, hot plug
-> unplug SATA drives continuously, after a while, jmicron says it lost
-> interrupt and the machine locks up hard.
+On 22/01/2008, Anton Salikhmetov <salikhmetov@gmail.com> wrote:
+> 2008/1/22, Anton Salikhmetov <salikhmetov@gmail.com>:
+> > 2008/1/22, Jesper Juhl <jesper.juhl@gmail.com>:
+> > > Some very pedantic nitpicking below;
+> > >
+...
+>
+> By the way, if we're talking "pedantic", then:
+>
+> >>>
+>
+> debian:/tmp$ cat c.c
+> void f()
+> {
+>        for (unsigned long i = 0; i < 10; i++)
+>                continue;
+> }
+> debian:/tmp$ gcc -c -pedantic c.c
+> c.c: In function 'f':
+> c.c:3: error: 'for' loop initial declaration used outside C99 mode
+> debian:/tmp$
+>
 
-BTW, those hot plug/unplugs don't have any direct relationship with the
-JMB controller.  It's some interference or power issue, I guess.  Hot
-plugging unrelated drives somehow locks up the jmicron driver.  :-(
+Well, I just wrote the way I'd have writen the loop, I know it's not
+the common kernel style.  Just offering my feedback/input :)
+
 
 -- 
-tejun
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
