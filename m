@@ -1,99 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759713AbYAVJJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbYAVJTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759713AbYAVJJl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 04:09:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbYAVJJY
+	id S1759479AbYAVJTA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 04:19:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbYAVJSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 04:09:24 -0500
-Received: from ag-out-0708.google.com ([72.14.246.249]:46326 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752036AbYAVJJU convert rfc822-to-8bit (ORCPT
+	Tue, 22 Jan 2008 04:18:43 -0500
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:53683 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755048AbYAVJSm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 04:09:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AHbnUSexj1BTSAkLdW4kKgDHWown19iBfDemsxaOYO18tYD10swGhaZdSxeLc0uRVS8jY9Jz3ejpjUlacLUQIWonzb6vuK2vD/4g/damYHADKM2P5v1nWvgixlFYlPaHb7wK0Tf0qElYwDfbCMl/+ImrMJrCcbECwp6wqfnQ+EY=
-Message-ID: <a8e1da0801220109v6bf8931ev50f2210402c3ba41@mail.gmail.com>
-Date: Tue, 22 Jan 2008 17:09:17 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Subject: Re: 2.6.24-rc8-mm1 : net tcp_input.c warnings
-Cc: LKML <linux-kernel@vger.kernel.org>, "David Miller" <davem@davemloft.net>,
-       Netdev <netdev@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <a8e1da0801212037uaa34a10xc2239ac7309a4ed0@mail.gmail.com>
+	Tue, 22 Jan 2008 04:18:42 -0500
+Date: Tue, 22 Jan 2008 09:18:34 +0000
+From: Ben Dooks <ben@fluff.org>
+To: Corey Minyard <minyard@acm.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, hvr@gnu.org,
+       rmk@arm.linux.org.uk, nico@cam.org
+Subject: Re: [PATCH] ARM: Ignore memory tags with invalid data
+Message-ID: <20080122091834.GC27399@fluff.org.uk>
+References: <20080122040556.GA24515@minyard.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080121075548.GA22177@darkstar.te-china.tietoenator.com>
-	 <Pine.LNX.4.64.0801212302170.29700@kivilampi-30.cs.helsinki.fi>
-	 <a8e1da0801212037uaa34a10xc2239ac7309a4ed0@mail.gmail.com>
+In-Reply-To: <20080122040556.GA24515@minyard.local>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 22, 2008 12:37 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
->
-> On Jan 22, 2008 5:14 AM, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
-> >
-> > On Mon, 21 Jan 2008, Dave Young wrote:
-> >
-> > > Please see the kernel messages following,(trigged while using some qemu session)
-> > > BTW, seems there's some e100 error message as well.
-> > >
-> > > PCI: Setting latency timer of device 0000:00:1b.0 to 64
-> > > e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
-> > > e100: Copyright(c) 1999-2006 Intel Corporation
-> > > ACPI: PCI Interrupt 0000:03:08.0[A] -> GSI 20 (level, low) -> IRQ 20
-> > > modprobe:2331 conflicting cache attribute efaff000-efb00000 uncached<->default
-> > > e100: 0000:03:08.0: e100_probe: Cannot map device registers, aborting.
-> > > ACPI: PCI interrupt for device 0000:03:08.0 disabled
-> > > e100: probe of 0000:03:08.0 failed with error -12
-> > > eth0:  setting full-duplex.
-> > > ------------[ cut here ]------------
-> > > WARNING: at net/ipv4/tcp_input.c:2169 tcp_mark_head_lost+0x121/0x150()
-> > > Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse snd_hda_intel snd_pcm snd_timer btusb rtc_cmos thermal bluetooth rtc_core serio_raw intel_agp button processor sg snd rtc_lib i2c_i801 evdev agpgart soundcore dcdbas 3c59x pcspkr snd_page_alloc
-> > > Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #4
-> > >  [<c0132100>] ? printk+0x0/0x20
-> > >  [<c0131834>] warn_on_slowpath+0x54/0x80
-> > >  [<c03e8df8>] ? ip_finish_output+0x128/0x2e0
-> > >  [<c03e9527>] ? ip_output+0xe7/0x100
-> > >  [<c03e8a88>] ? ip_local_out+0x18/0x20
-> > >  [<c03e991c>] ? ip_queue_xmit+0x3dc/0x470
-> > >  [<c043641e>] ? _spin_unlock_irqrestore+0x5e/0x70
-> > >  [<c0186be1>] ? check_pad_bytes+0x61/0x80
-> > >  [<c03f6031>] tcp_mark_head_lost+0x121/0x150
-> > >  [<c03f60ac>] tcp_update_scoreboard+0x4c/0x170
-> > >  [<c03f6e0a>] tcp_fastretrans_alert+0x48a/0x6b0
-> > >  [<c03f7d93>] tcp_ack+0x1b3/0x3a0
-> > >  [<c03fa14b>] tcp_rcv_established+0x3eb/0x710
-> > >  [<c04015c5>] tcp_v4_do_rcv+0xe5/0x100
-> > >  [<c0401bbb>] tcp_v4_rcv+0x5db/0x660
-> >
-> > Doh, once more these S+L things..., the rest are symptom of the first
-> > problem.
->
-> What is the S+L thing? Could you explain a bit?
->
-> >
-> > What is strange is that it doesn't show up until now, the last TCP
-> > changes that could have some significance are from early Dec/Nov. Is
-> > there some reason why you haven't seen this before this (e.g., not
-> > tested with similar cfg or so)?
->
-> Hmm, don't know how to answer ...
->
->
-> I'm a bit worried about its
-> > reproducability if it takes this far to see it...
-> >
+On Mon, Jan 21, 2008 at 10:05:56PM -0600, Corey Minyard wrote:
+> From: Corey Minyard <minyard@acm.org>
+> 
+> The DNS-323 system has several bogus memory entries in the tag table,
+> and it caused the system to crash at startup.  Ignore tag entries that
+> are obviously bogus.
 
-It's trigged again in my pc, just while using firefox.
+This should have gone to the linux-arm-kernel mailing list as well,
+so that all the people interested in ARM can see it as soon as
+possible. See linux-arm-kernel@lists.arm.linux.org.uk
 
-> >
-> > --
-> >  i.
-> >
->
+The only suggestion I could think of would to be change to having
+an check_tag_mem32() function, or put each check on its own line
+to make it easier to read what each check is doing.
+
+ie:
+	if (meminfo.nr_banks >= NR_BANKS ||
+	    tag->u.mem.size & ~PAGE_MASK || /* size is unaligned */
+	    tag->u.mem.size == 0 ||	    /* no memory here */
+	    tag->u.mem.start & ~PAGE_MASK)  /* start is unaligned */ 
+	{
+
+(even without the comments it makes it easier to see what each test
+is.
+ 
+> Signed-off-by: Corey Minyard <minyard@acm.org>
+> ---
+>  arch/arm/kernel/setup.c |    7 ++++++-
+>  1 files changed, 6 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/arm/kernel/setup.c b/arch/arm/kernel/setup.c
+> index bf56eb3..dfdb469 100644
+> --- a/arch/arm/kernel/setup.c
+> +++ b/arch/arm/kernel/setup.c
+> @@ -630,7 +630,12 @@ __tagtable(ATAG_CORE, parse_tag_core);
+>  
+>  static int __init parse_tag_mem32(const struct tag *tag)
+>  {
+> -	if (meminfo.nr_banks >= NR_BANKS) {
+> +	/*
+> +	 * Make sure that the memory size is non-zero, page aligned,
+> +	 * and that it doesn't overflow the meminfo table.
+> +	 */
+> +	if (meminfo.nr_banks >= NR_BANKS || tag->u.mem.size & ~PAGE_MASK ||
+> +	    tag->u.mem.size == 0 || tag->u.mem.start & ~PAGE_MASK) {
+>  		printk(KERN_WARNING
+>  		       "Ignoring memory bank 0x%08x size %dKB\n",
+>  			tag->u.mem.start, tag->u.mem.size / 1024);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
