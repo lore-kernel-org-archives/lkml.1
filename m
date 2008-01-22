@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbYAVU4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbYAVU5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585AbYAVU4k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 15:56:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbYAVU4Z
+	id S1757332AbYAVU5A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 15:57:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbYAVU4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 15:56:25 -0500
-Received: from main.gmane.org ([80.91.229.2]:36771 "EHLO ciao.gmane.org"
+	Tue, 22 Jan 2008 15:56:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42714 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755249AbYAVU4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 15:56:23 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
-Subject: Re: Massive IDE problems. Who leaves data here?
-Date: Tue, 22 Jan 2008 22:04:10 +0100
-Message-ID: <fn5l9c$l6m$1@ger.gmane.org>
-References: <fn5ivo$ck2$1@ger.gmane.org> <47965138.8060603@garzik.org>	 <fn5jsn$ful$1@ger.gmane.org> <2c0942db0801221246u678d2a20xef9cf93ee28eaf51@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: p4fd4bcfe.dip0.t-ipconnect.de
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.11) Gecko/20071129 SeaMonkey/1.1.7
-In-Reply-To: <2c0942db0801221246u678d2a20xef9cf93ee28eaf51@mail.gmail.com>
+	id S1754347AbYAVU4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 15:56:46 -0500
+Date: Tue, 22 Jan 2008 21:56:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       tglx@linutronix.de
+Subject: Re: [PATCH] x86: constify function pointer tables
+Message-ID: <20080122205636.GF12892@elte.hu>
+References: <54038cd4f87a03884e4f59f8f3697889dfb63c54.1201030614.git.jengelh@computergmbh.de> <Pine.LNX.4.64.0801222051140.5722@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801222051140.5722@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> (Please always do a reply-to-all for this email list.)
 
-Currently I don't have a SMTP server configured. As soon as my system is 
-trustworthy, again, I'll do that.
+* Jan Engelhardt <jengelh@computergmbh.de> wrote:
 
-> Bad or almost bad power supplies can cause lots of unhappy problems
-> such as these. If you have another power supply laying around, it can
-> be worth swapping them out. Double-checking that your CPU fan is still
-> spinning, and that memtest86+ doesn't show any errors doesn't hurt
-> either.
+> Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
 
-... that may be possible...
+thanks, applied.
 
-I have all PCI slots filled with cards, two big IDE hard drives and one 
-DVD RAM writer. I already disconnected the DVD drive, as this was nearly 
-unusable with all those IDE errors. The power supply is (AFAIR) a 200 
-watt one.
+btw., please send future x86 cleanup patches against x86.git#mm. For 
+example, this bit:
 
-But may the power supply cause corrupted data? Shouldn't that crash down 
-the PC completely?
+> -struct seq_operations cpuinfo_op = {
+> +const struct seq_operations cpuinfo_op = {
+>  	.start =c_start,
 
-CU
+already looks a bit different there so it didnt apply straight away. (i 
+fixed that up so no need to resend)
 
-Manuel
+x86.git#mm tracking coordinates are at:
 
+    http://redhat.com/~mingo/x86.git/README
+
+	Ingo
