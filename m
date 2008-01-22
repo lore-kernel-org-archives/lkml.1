@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbYAVXOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbYAVXTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759350AbYAVXOg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 18:14:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758846AbYAVXOT
+	id S1757302AbYAVXTD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 18:19:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbYAVXSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 18:14:19 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:40911 "EHLO relay.sgi.com"
+	Tue, 22 Jan 2008 18:18:54 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:48177 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758843AbYAVXOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 18:14:18 -0500
-Date: Tue, 22 Jan 2008 15:14:16 -0800 (PST)
+	id S1753788AbYAVXSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 18:18:53 -0500
+Date: Tue, 22 Jan 2008 15:18:52 -0800 (PST)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Olaf Hering <olaf@aepfle.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Mel Gorman <mel@csn.ul.ie>, Olaf Hering <olaf@aepfle.de>,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
        hanth Aravamudan <nacc@us.ibm.com>,
@@ -21,29 +21,30 @@ cc: Olaf Hering <olaf@aepfle.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
        lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
        akpm@linux-foundation.org
 Subject: Re: crash in kmem_cache_init
-In-Reply-To: <20080122231058.GB866@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0801221513100.2565@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0801221501240.2565@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0801221517260.2871@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+ <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
  <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
  <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
  <Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
  <20080122212654.GB15567@csn.ul.ie> <Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
- <20080122225046.GA866@csn.ul.ie> <Pine.LNX.4.64.0801221453480.2271@schroedinger.engr.sgi.com>
- <20080122231058.GB866@csn.ul.ie>
+ <20080122225046.GA866@csn.ul.ie> <47967560.8080101@cs.helsinki.fi>
+ <Pine.LNX.4.64.0801221501240.2565@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jan 2008, Mel Gorman wrote:
+On Tue, 22 Jan 2008, Christoph Lameter wrote:
 
-> Rather it should be 2. I'll admit the physical setup of this machine is
-> .... less than ideal but clearly it's something that can happen even if
-> it's a bad idea.
+> But I doubt that this is it. The fallback logic was added later and it 
+> worked fine.
 
-Ok. Lets hope that Pekka's find does the trick. But this would mean that 
-fallback gets memory from node 2 for the page allocator. Then fallback 
-alloc is going to try to insert it into the l3 of node 2 which is not 
-there yet. So another ooops. Sigh.
+My patch is useless (fascinating history of the changelog there through). 
+fallback_alloc calls kmem_getpages without GFP_THISNODE. This means that 
+alloc_pages_node() will try to allocate on the current node but fallback 
+to neighboring node if nothing is there....
+
 
