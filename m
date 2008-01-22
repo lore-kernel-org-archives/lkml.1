@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbYAWA4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbYAWBA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759312AbYAWA4z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 19:56:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbYAWAra
+	id S1756261AbYAWBA3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 20:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYAWBAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 19:47:30 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:34233 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755597AbYAWAqZ (ORCPT
+	Tue, 22 Jan 2008 20:00:21 -0500
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:37220 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751683AbYAWBAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 19:46:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=o6x4aehYgzb2/nl0wJB3BdqrXukFwmdGMegTp1wd5BGFz7XcePUVTkWlmsY657SvbiLfYfBm6JgLX/2QPJHGeZ5dm0aqDtHntciKNvJRFHtWRe1sz9r8+UmGJZbUeM8zDvrfvPDSyG2cnhv8OXB9xndV8chDkGyEix4dZ3hThxc=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] ppc: fix #ifdef-s in mediabay driver
-Date: Wed, 23 Jan 2008 01:58:41 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-References: <200801230012.38516.bzolnier@gmail.com> <1201046394.6807.49.camel@pasglop>
-In-Reply-To: <1201046394.6807.49.camel@pasglop>
+	Tue, 22 Jan 2008 20:00:20 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=iOd4Hy0q703tEvVAgUFsZ1k/TzJSUtTgu8pobFd1OGP6rygmcTXMAsE7foDC6ze4SVUobqL/kdHw5YrYlTMZIHtnW34QvySO3dwwdzIqiuhiUUfFtJ5GDoPbJh9zNHE6OGK1k+IvSSMIrxbCm+N56ptXLcOF82EfqyI6d/uwWfw=  ;
+X-YMail-OSG: Tz6eRgIVM1nx_czcjZZan6VIWaWpz2Z6ETv9heZjChdydZnLmXoDw0S7oh6LtiTgwP8hdtxPKPXGKaa3E4lIUiSDxg--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.24 regression: pan hanging unkilleable and un-straceable
+Date: Wed, 23 Jan 2008 10:00:29 +1100
+User-Agent: KMail/1.9.5
+Cc: Frederik Himpe <fhimpe@telenet.be>, linux-kernel@vger.kernel.org
+References: <1200949086.6648.19.camel@Anastacia> <200801221105.11413.nickpiggin@yahoo.com.au> <20080122103708.GA21149@elte.hu>
+In-Reply-To: <20080122103708.GA21149@elte.hu>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200801230158.42017.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801231000.30020.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 22 January 2008 21:37, Ingo Molnar wrote:
+> * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > Well I've twice tried to submit a patch to print stacks for running
+> > tasks as well, but nobody seems interested. It would at least give a
+> > chance to see something.
+>
+> i definitely remembering having done this myself a couple of times (it
+> makes tons of sense to get _some_ info out of the system) but some
+> problem in -mm kept reverting it. I dont remember the specifics ... it
+> was some race.
 
-Hi,
-
-On Wednesday 23 January 2008, Benjamin Herrenschmidt wrote:
-> 
-> On Wed, 2008-01-23 at 00:12 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > * Replace incorrect CONFIG_BLK_DEV_IDE #ifdef in
-> >   check_media_bay() by CONFIG_MAC_FLOPPY one.
-> > 
-> > * Replace incorrect CONFIG_BLK_DEV_IDE #ifdef-s by
-> >   CONFIG_BLK_DEV_IDE_PMAC ones.
-> > 
-> > * check_media_bay() is used only by drivers/block/swim3.c
-> >   so make this function available only if CONFIG_MAC_FLOPPY
-> >   is defined.
-> > 
-> > * check_media_bay_by_base() and media_bay_set_ide_infos()
-> >   are used only by drivers/ide/ppc/pmac.c so so make these
-> >   functions available only if CONFIG_MAC_FLOPPY is defined.
-> > 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > ---
-> > Ben, IMO this patch is safe for 2.6.24 (assuming that it builds fine :),
-> > otherwise I would like to ask for permission to merge it through IDE
-> > tree since I have other pending IDE patches depending on this one.
-> 
-> I'd rather avoid touching 2.6.24 unless it actually fixes a bug or
-> regression...
-
-Well, it is a bugfix for PMAC_MEDIABAY=y && BLK_DEV_IDE=n && MAC_FLOPPY=y. :)
-
-> I'm tempted to actually remove all ifdef's ... if you have a media-bay,
-> then there are about 99% chances it contains an IDE device, with the
-> remaining percent being split with putting a floppy or a battery in. I
-> doubt anybody will care building a kernel without the support for these
-> and with the mediabay support, and still want to save a handful of bytes
-> in that driver.
-
-I'm more worried about breaking automatic build checking (make randconfig)
-than a few extra bytes so if you remove all #ifdefs you'll have to either
-make BLK_DEV_IDE_PMAC select PMAC_MEDIABAY or make PMAC_MEDIABAY depend
-on BLK_DEV_IDE_PMAC (otherwise BLK_DEV_IDE=n && PMAC_MEDIABAY=y will fail
-since mediabay.c is referencing IDE code).
-
-Thanks,
-Bart
+Hmm, that's not unlikely. But there is nothing in the backtrace code
+which prevents a task from being woken up anyway, is there? I guess
+it will be more common now, but if we find a race we can try to fix
+the root cause.
