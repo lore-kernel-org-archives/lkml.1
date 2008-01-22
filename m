@@ -1,59 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751761AbYAVO6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760311AbYAVO7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751761AbYAVO6h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 09:58:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbYAVO6Y
+	id S1760311AbYAVO7g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 09:59:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYAVO72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 09:58:24 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58591 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751101AbYAVO6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 09:58:22 -0500
-Date: Tue, 22 Jan 2008 12:57:53 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Theodore Tso <tytso@mit.edu>, Valdis.Kletnieks@vt.edu,
-       David Chinner <dgc@sgi.com>, Valerie Henson <val@vahconsulting.com>,
-       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andreas Dilger <adilger@clusterfs.com>,
-       Ric Wheeler <ric@emc.com>, marcelo@kvack.org
-Subject: Re: [RFC] Parallelize IO for e2fsck
-Message-ID: <20080122145753.GC32529@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Theodore Tso <tytso@mit.edu>, Valdis.Kletnieks@vt.edu,
-	David Chinner <dgc@sgi.com>, Valerie Henson <val@vahconsulting.com>,
-	linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Andreas Dilger <adilger@clusterfs.com>, Ric Wheeler <ric@emc.com>,
-	marcelo@kvack.org
-References: <70b6f0bf0801161322k2740a8dch6a0d6e6e112cd2d0@mail.gmail.com> <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com> <20080121230041.GL3180@webber.adilger.int> <20080122033830.GR155259@sgi.com> <3673.1200975438@turing-police.cc.vt.edu> <20080122070050.GM3180@webber.adilger.int> <20080122144052.GC17804@mit.edu>
-MIME-Version: 1.0
+	Tue, 22 Jan 2008 09:59:28 -0500
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:57234 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751587AbYAVO70 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 09:59:26 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAIOTlUdMROHU/2dsb2JhbACBV6sK
+Date: Tue, 22 Jan 2008 09:59:19 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>, ltt-dev@shafik.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
+       Robert Wisniewski <bobww@us.ibm.com>
+Subject: [RFC] LTTng Userspace Tracing, vDSO
+Message-ID: <20080122145919.GA17620@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080122144052.GC17804@mit.edu>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:30:21 up 79 days, 19:35,  4 users,  load average: 0.25, 0.28,
+	0.23
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, Jan 22, 2008 at 09:40:52AM -0500, Theodore Tso escreveu:
-> On Tue, Jan 22, 2008 at 12:00:50AM -0700, Andreas Dilger wrote:
-> > > AIX had SIGDANGER some 15 years ago.  Admittedly, that was sent when
-> > > the system was about to hit OOM, not when it was about to start swapping.
-> > 
-> > I'd tried to advocate SIGDANGER some years ago as well, but none of
-> > the kernel maintainers were interested.  It definitely makes sense
-> > to have some sort of mechanism like this.  At the time I first brought
-> > it up it was in conjunction with Netscape using too much cache on some
-> > system, but it would be just as useful for all kinds of other memory-
-> > hungry applications.
-> 
-> It's been discussed before, but I suspect the main reason why it was
-> never done is no one submitted a patch.  Also, the problem is actually
-> a pretty complex one.  There are a couple of different stages where
-> you might want to send an alert to processes:
+Hi,
 
-Isn't Marcelo, Riel and some other people working on memory
-notifications?
+I am poking in the userspace tracing problem again. I had two different
+implementations in LTTng, but I left them out so I could come back with
+a more satisfying solution.
 
-- Arnaldo
+Here are the ideas I would like to use in my forthcoming implementation.
+I submit them for comments, especially about limitations of vDSO I
+might not be aware of (code size... ?, max data size ?).
+
+The idea is to fast-path tracing so a system call is not required. I
+have to determine if I put the tracing code in a normal shared object or
+if it belongs to a vDSO.
+
+Basic ideas :
+
+* Buffers
+Per CPU buffers mapped by both userspace and the kernel
+menuconfig options for buffers
+- per process (safe, a process cannot overwrite other processes'data)
+  - 4k default size, menuconfig configurable
+    - Total of 12.5MB for 200 traced processes * 4 CPUs.. not bad.
+- system-wide (unsafe, low memory consumption)
+  - 1MB default size, menuconfig configurable
+
+Depending on the system type, one could wish for efficiency (single-user
+server) or protection (multi-user system)
+
+Since threads can be stopped by the OS when the buffers are filled, we
+can afford to have smaller buffers than the kernel buffers (4k vs 1MB).
+
+Atomic space reservation to protect against traced signal handlers. Note
+that a full cmpxchg (synchronized wrt other CPUs) is required because
+the vgetcpu only returns a statistically correct cpu ID (might be
+migrated).
+
+* Synchronization
+ - Use seqlock to synchronize vsyscall with kernel if required.
+
+* time source
+  - vsyscall to get the raw cycle count
+  - fallback on kernel syscall
+
+One could ask : why don't you stay in the kernel when you have to use a
+syscall to get the timestamps anyway ? Well, because passing a format
+string and var args from userspace to the kernel would not be "polite".
+;) If userspace passes wrong format strings to the tracing code, I would
+rather prefer the segfault to happen in userspace and not involve the
+kernel at all.
+
+* marker registration
+
+System call to register markers in library init.
+Markers in special section, modify the linker script.
+Keep a per-process data structure (in kernel) to keep track of the
+registered markers. When the last process using a marker set exits,
+remove those markers. (refcount)
+
+* buffer switch
+
+buffer switch performed by a system call.
+Use inotify to tell lttd (trace reading daemon) that new debugfs files
+are created upon first buffer switch of a userspace process.
+
+* Filtering
+
+Export filter data and code to user-space. (eventually)
+
+* Multiple traces
+
+LTTng supports writing to multiple traces at the same time. Each of them
+can have different filtering expressions or be in different mode
+(extract the data to disk when the trace is running or flight recorder
+mode where the data is only kept in circular buffers and always
+overwritten). Can be useful for multiuser systems too.
+
+Therefore, we would have to reserve enough virtual address space in the
+vDSO region to put roughly 16 per-cpu buffers (?). Then, upon buffer
+allocation for a new trace, we would have to iterate over each process
+in the system; if it is being traced, we would allocate extra buffers
+within the tracing vDSO data region.
+
+Any thoughts ?
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
