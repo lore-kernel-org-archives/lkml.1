@@ -1,71 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759954AbYAVBNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760900AbYAVBOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759954AbYAVBNd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 20:13:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbYAVBNZ
+	id S1760900AbYAVBOS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 20:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYAVBOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 20:13:25 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:2447 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751380AbYAVBNY (ORCPT
+	Mon, 21 Jan 2008 20:14:05 -0500
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:21969 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753981AbYAVBOD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 20:13:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=YtgsaUOjCePOqNunB2gKLd5YMgiwkSDLo5i1G1Shj0ZeROQpmNt1R4rGcio6b9s9EPdU3jJkniy1frtBXzDuf2r/OHhpZ34goAIdKJ0l/Omfd+ju0WbFKdWJWV4JAyfydmRMMEnijl9bVRbEUCjzmALmXK6FrJPflj8s6ipfNDg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] pata_pdc202xx_old: Fix crashes with ATAPI
-Date: Tue, 22 Jan 2008 02:25:10 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: jeff@garzik.org, akpm@osdl.org, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org
-References: <20080119155126.180a010d@lxorguk.ukuu.org.uk> <200801220013.53545.bzolnier@gmail.com> <20080122000034.3e3f6dbb@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080122000034.3e3f6dbb@lxorguk.ukuu.org.uk>
+	Mon, 21 Jan 2008 20:14:03 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
+  b=UdeGW54QiX/OkgaCaRSaNbpZV/9x2j3hCxb0S3bZ0baOB4zhbwPjg1X3ugJRqWny2LVRp6ZOKKnRQDP+DVahac0kwbbinlKgite/Y2ssPsSuW7/4vsnXAoT3yEhwvvkh9eiCcs9Ag+/3gag3OLeenf4fa0Hm4raEEDKiqoCwa7k=  ;
+X-YMail-OSG: _khvEhEVM1nUKURt9WwDVT05q.YeM22kOGL.wep04wehNFcGML3plskb3_OUjop6VRN7simhXw--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: what's up for v2.6.25 in x86.git
+Date: Tue, 22 Jan 2008 12:13:53 +1100
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <20080121201437.GA31469@elte.hu>
+In-Reply-To: <20080121201437.GA31469@elte.hu>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200801220225.10168.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_RNUlHiXV1OGCkQl"
+Message-Id: <200801221213.53490.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 January 2008, Alan Cox wrote:
-> > IDE pdc202xx_old host driver supports ATAPI DMA just fine and in line
-> > with the PDC2026x programming guide.
-> 
-> News to me. It didn't last time I tried it the driver selected PIO.
+--Boundary-00=_RNUlHiXV1OGCkQl
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hmmm...
+On Tuesday 22 January 2008 07:14, Ingo Molnar wrote:
 
-commit f3d5b34caae393f13a9486036f98c81cac1595c4
-Author: Tobias Oed <tobiasoed@hotmail.com>
-Date:   Tue Oct 3 01:14:17 2006 -0700
+> Nick Piggin (5):
+>       mm: fix PageUptodate memory ordering bug
 
-    [PATCH] Enable cdrom dma access with pdc20265_old
+This should actually be named differently. It should be
+called
 
-    This patch allows me to use dma with my cd/dvd attached to my on board
-    pdc20265 ide controller
-...
-    Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-    Cc: Bartlomiej Zolnierkiewicz <B.Zolnierkiewicz@elka.pw.edu.pl>
-...
+x86: don't unconditionally enable expensive SMP ppro workaround
 
-Are you by any chance using PDC20263?
+I actually had a more complete patch which printed a warning if
+booting such a system without the config option.
 
-[ PDC2026{5,7} should be fine (unless somebody broke it but then git-bisect
-  should do the job)... ]
+--Boundary-00=_RNUlHiXV1OGCkQl
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="x86-no-ppro-fence.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="x86-no-ppro-fence.patch"
 
-> > > So turn it ATAPI DMA off, these are disk optimised controllers.
-> > 
-> > This is an acceptable workaround for 2.6.24 but it probably just hides
-> > some deeper pata_pdc202xx_old or/and libata problem.
-> 
-> Hard to be sure. No docs here for the older ones.
+The selection of many CPU architecture families causes pentium pro memory
+ordering errata workarounds to be enabled. This causes memory barriers and
+spinlocks to become much more expensive, just to provide a few hacks for a very
+rare (nowadays) class of system.
 
-I lack the docs for PDC20263...
+Just print a warning if such a machine is detected. Also suggest a new CONFIG option that can be enabled to support such CPUs.
 
-Bart
+This saves nearly 1KB of icache in mm/ alone.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+Index: linux-2.6/arch/x86/Kconfig.cpu
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig.cpu
++++ linux-2.6/arch/x86/Kconfig.cpu
+@@ -322,9 +322,20 @@ config X86_XADD
+ 	default y
+ 
+ config X86_PPRO_FENCE
+-	bool
+-	depends on M686 || M586MMX || M586TSC || M586 || M486 || M386 || MGEODEGX1
+-	default y
++	bool "PentiumPro memory ordering errata workaround"
++	default n
++	help
++         Old PentiumPro multiprocessor systems had errata that could cause
++         memory operations to violate the x86 ordering standard in rare cases.
++         Enabling this option will attempt to work around some (but not all)
++         occurances of these problems, at the cost of much heavier spinlock
++         and memory barrier operations.
++
++         If you say N here, these systems will be detected and limited to a
++         single CPU at boot time.
++
++         If unsure, say N here. Even distro kernels should think twice before
++         enabling this: there are few systems, and an unlikely bug.
+ 
+ config X86_F00F_BUG
+ 	bool
+Index: linux-2.6/arch/x86/kernel/cpu/intel.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/intel.c
++++ linux-2.6/arch/x86/kernel/cpu/intel.c
+@@ -108,6 +108,25 @@ static void __cpuinit trap_init_f00f_bug
+ }
+ #endif
+ 
++/*
++ * Errata #66, #92, #51
++ */
++static void __cpuinit ppro_memory_bug(void)
++{
++#ifndef CONFIG_X86_PPRO_FENCE
++	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
++	    boot_cpu_data.x86 == 6 &&
++	    boot_cpu_data.x86_model == 1) {
++		if (boot_cpu_data.x86_mask < 8)
++			printk(KERN_WARNING "WARNING: Pentium Pro with Errata#66, #92, #51 detected.");
++		else
++			printk(KERN_WARNING "WARNING: Pentium Pro with Errata#66, #92 detected.");
++
++		printk("running this kernel may cause inconsistent results and errors. Enable CONFIG_X86_PPRO_FENCE in your kernel config.\n");
++	}
++#endif
++}
++
+ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
+ {
+ 	unsigned int l2 = 0;
+@@ -132,6 +151,8 @@ static void __cpuinit init_intel(struct 
+ 	}
+ #endif
+ 
++	ppro_memory_bug();
++
+ 	select_idle_routine(c);
+ 	l2 = init_intel_cacheinfo(c);
+ 	if (c->cpuid_level > 9 ) {
+
+--Boundary-00=_RNUlHiXV1OGCkQl--
