@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762503AbYAVJ5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbYAVJ6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762503AbYAVJ5y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 04:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760926AbYAVJzg
+	id S1762186AbYAVJ6W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 04:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761514AbYAVJ4Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 04:55:36 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:58658 "EHLO mail.dvmed.net"
+	Tue, 22 Jan 2008 04:56:16 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:58668 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760674AbYAVJze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 04:55:34 -0500
-Message-ID: <4795BD93.8070303@garzik.org>
-Date: Tue, 22 Jan 2008 04:55:31 -0500
+	id S1761498AbYAVJ4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 04:56:14 -0500
+Message-ID: <4795BDBB.10904@garzik.org>
+Date: Tue, 22 Jan 2008 04:56:11 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: jacliburn@bellsouth.net
 CC: csnook@redhat.com, linux-kernel@vger.kernel.org,
        atl1-devel@lists.sourceforge.net
-Subject: Re: [PATCH 05/26] atl1: print debug info if rrd error
-References: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net> <1199152804-3889-6-git-send-email-jacliburn@bellsouth.net>
-In-Reply-To: <1199152804-3889-6-git-send-email-jacliburn@bellsouth.net>
+Subject: Re: [PATCH 06/26] atl1: update initialization parameters
+References: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net> <1199152804-3889-7-git-send-email-jacliburn@bellsouth.net>
+In-Reply-To: <1199152804-3889-7-git-send-email-jacliburn@bellsouth.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -32,43 +32,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 jacliburn@bellsouth.net wrote:
 > From: Jay Cliburn <jacliburn@bellsouth.net>
 > 
-> Add some debug dev_printks if we encounter a bad receive return descriptor.
+> Update initialization parameters to match the current vendor driver
+> version 1.2.40.2.
 > 
 > Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
 > ---
->  drivers/net/atlx/atl1.c |   21 ++++++++++++++++++++-
->  1 files changed, 20 insertions(+), 1 deletions(-)
+>  drivers/net/atlx/atl1.c |   14 +++++++-------
+>  1 files changed, 7 insertions(+), 7 deletions(-)
 > 
 > diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-> index 239641f..262d3ca 100644
+> index 262d3ca..695dcbc 100644
 > --- a/drivers/net/atlx/atl1.c
 > +++ b/drivers/net/atlx/atl1.c
-> @@ -1127,7 +1127,26 @@ static void atl1_intr_rx(struct atl1_adapter *adapter)
->  		if (likely(rrd->xsz.valid)) {	/* packet valid */
->  chk_rrd:
->  			/* check rrd status */
-> -			if (likely(rrd->num_buf == 1))
-> +			if (rrd->num_buf != 1) {
-> +				dev_printk(KERN_DEBUG, &adapter->pdev->dev,
-> +					"rx_buf_len = %d\n",
-> +					adapter->rx_buffer_len);
-> +				dev_printk(KERN_DEBUG, &adapter->pdev->dev,
-> +					"RRD num_buf = %d\n",
-> +					rrd->num_buf);
-> +				dev_printk(KERN_DEBUG, &adapter->pdev->dev,
-> +					"RRD pkt_len = %d\n",
-> +					rrd->xsz.xsum_sz.pkt_size);
-> +				dev_printk(KERN_DEBUG, &adapter->pdev->dev,
-> +					"RRD pkt_flg = 0x%08X\n",
-> +					rrd->pkt_flg);
-> +				dev_printk(KERN_DEBUG, &adapter->pdev->dev,
-> +					"RRD err_flg = 0x%08X\n",
-> +					rrd->err_flg);
-> +				dev_printk(KERN_DEBUG, &adapter->pdev->dev,
-> +					"RRD vlan_tag = 0x%08X\n",
-> +					rrd->vlan_tag);
-> +			} else
+> @@ -136,20 +136,20 @@ static int __devinit atl1_sw_init(struct atl1_adapter *adapter)
+>  	hw->rfd_fetch_gap = 1;
+>  	hw->rx_jumbo_th = adapter->rx_buffer_len / 8;
+>  	hw->rx_jumbo_lkah = 1;
+> -	hw->rrd_ret_timer = 16;
+> -	hw->tpd_burst = 4;
+> +	hw->rrd_ret_timer = 4;	/* 8 us */
+> +	hw->tpd_burst = 8;
+>  	hw->tpd_fetch_th = 16;
+> -	hw->txf_burst = 0x100;
+> +	hw->txf_burst = 0x200;
+>  	hw->tx_jumbo_task_th = (hw->max_frame_size + 7) >> 3;
+>  	hw->tpd_fetch_gap = 1;
+>  	hw->rcb_value = atl1_rcb_64;
+>  	hw->dma_ord = atl1_dma_ord_enh;
+> -	hw->dmar_block = atl1_dma_req_256;
+> -	hw->dmaw_block = atl1_dma_req_256;
+> +	hw->dmar_block = atl1_dma_req_1024;
+> +	hw->dmaw_block = atl1_dma_req_1024;
+>  	hw->cmb_rrd = 4;
+>  	hw->cmb_tpd = 4;
+> -	hw->cmb_rx_timer = 1;	/* about 2us */
+> -	hw->cmb_tx_timer = 1;	/* about 2us */
+> +	hw->cmb_rx_timer = 2;	/* about 4us */
+> +	hw->cmb_tx_timer = 256;	/* about 512us */
+>  	hw->smb_timer = 100000;	/* about 200ms */
 
-look into netif_msg_*, which enables via ethtool very fine-grained 
-selection of messages.
+ACK without any better knowledge...  but is any addition insight 
+available at all?
 
