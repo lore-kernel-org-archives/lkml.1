@@ -1,50 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbYAVRH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbYAVRKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754175AbYAVRH0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 12:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYAVRHQ
+	id S1754337AbYAVRKe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 12:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYAVRK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 12:07:16 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44683 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751512AbYAVRHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 12:07:14 -0500
-Date: Tue, 22 Jan 2008 18:07:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [PATCH] sched: don't take a mutex from interrupt context
-Message-ID: <20080122170700.GA6245@elte.hu>
-References: <20080122023626.GA12213@darkstar.te-china.tietoenator.com> <1201019138.6341.24.camel@lappy>
+	Tue, 22 Jan 2008 12:10:27 -0500
+Received: from styx.suse.cz ([82.119.242.94]:56368 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751929AbYAVRK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 12:10:27 -0500
+Date: Tue, 22 Jan 2008 18:10:25 +0100
+From: Jan Kara <jack@suse.cz>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH RESEND] Minimal fix for private_list handling races
+Message-ID: <20080122171025.GB4485@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1201019138.6341.24.camel@lappy>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  Hi,
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+  as I got no answer for a week, I'm resending this fix for races in
+private_list handling. Andrew, do you like them more than the previous
+version?
 
-> > WARNING: at kernel/mutex.c:134 mutex_lock_nested+0x277/0x290()
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
+---
 
-> Subject: sched: don't take a mutex from interrupt context
-> 
-> print_cfs_stats is callable from interrupt context (sysrq), hence it 
-> should not take mutexes. Change it to use RCU since the task group 
-> data is RCU freed anyway.
+There are two possible races in handling of private_list in buffer cache.
+1) When fsync_buffers_list() processes a private_list, it clears
+b_assoc_mapping and moves buffer to its private list. Now drop_buffers() comes,
+sees a buffer is on list so it calls __remove_assoc_queue() which complains
+about b_assoc_mapping being cleared (as it cannot propagate possible IO error).
+This race has been actually observed in the wild.
+2) When fsync_buffers_list() processes a private_list,
+mark_buffer_dirty_inode() can be called on bh which is already on the private
+list of fsync_buffers_list(). As buffer is on some list (note that the check is
+performed without private_lock), it is not readded to the mapping's
+private_list and after fsync_buffers_list() finishes, we have a dirty buffer
+which should be on private_list but it isn't. This race has not been reported,
+probably because most (but not all) callers of mark_buffer_dirty_inode() hold
+i_mutex and thus are serialized with fsync().
 
-thanks Peter, applied this to sched-devel.git.
+Fix these issues by not clearing b_assoc_map when fsync_buffers_list() moves
+buffer to a dedicated list and by reinserting buffer in private_list when
+it is found dirty after the IO has completed.
 
-	Ingo
+Signed-off-by: Jan Kara <jack@suse.cz>
+
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 7249e01..3ffb2b6 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -794,6 +794,7 @@ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list)
+ {
+ 	struct buffer_head *bh;
+ 	struct list_head tmp;
++	struct address_space *mapping;
+ 	int err = 0, err2;
+ 
+ 	INIT_LIST_HEAD(&tmp);
+@@ -801,9 +802,11 @@ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list)
+ 	spin_lock(lock);
+ 	while (!list_empty(list)) {
+ 		bh = BH_ENTRY(list->next);
++		mapping = bh->b_assoc_map;
+ 		__remove_assoc_queue(bh);
+ 		if (buffer_dirty(bh) || buffer_locked(bh)) {
+ 			list_add(&bh->b_assoc_buffers, &tmp);
++			bh->b_assoc_map = mapping;
+ 			if (buffer_dirty(bh)) {
+ 				get_bh(bh);
+ 				spin_unlock(lock);
+@@ -828,8 +831,13 @@ static int fsync_buffers_list(spinlock_t *lock, struct list_head *list)
+ 		wait_on_buffer(bh);
+ 		if (!buffer_uptodate(bh))
+ 			err = -EIO;
+-		brelse(bh);
+ 		spin_lock(lock);
++		if (buffer_dirty(bh) && list_empty(&bh->b_assoc_buffers)) {
++			BUG_ON(!bh->b_assoc_map);
++			list_add(&bh->b_assoc_buffers,
++				 &bh->b_assoc_map->private_list);
++		}
++		brelse(bh);
+ 	}
+ 	
+ 	spin_unlock(lock);
