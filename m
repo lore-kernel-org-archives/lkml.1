@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbYAVWmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbYAVWn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755816AbYAVWmq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 17:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbYAVWmg
+	id S1756872AbYAVWn1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 17:43:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYAVWnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 17:42:36 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:49581 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751015AbYAVWme (ORCPT
+	Tue, 22 Jan 2008 17:43:16 -0500
+Received: from ro-out-1112.google.com ([72.14.202.181]:25830 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753415AbYAVWnP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 17:42:34 -0500
-Date: Tue, 22 Jan 2008 22:41:11 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH rc8-mm1] hotfix libata-scsi corruption
-In-Reply-To: <20080122221214.1c825949@lxorguk.ukuu.org.uk>
-Message-ID: <Pine.LNX.4.64.0801222238140.30816@blonde.site>
-References: <Pine.LNX.4.64.0801221706320.5832@blonde.site>
- <1201022985.3210.24.camel@localhost.localdomain> <20080122221214.1c825949@lxorguk.ukuu.org.uk>
+	Tue, 22 Jan 2008 17:43:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jBP40jw1sr3zNzGz5XvVlnsXUWNYblMsjPJP8g/Vd+5atUDSkoTmu7wPGoXyyrzORs9PcS64rlCvFhYOz+bq9Bvn22fg2qN1c6mnxWeHIYJeVFjW0/2rB2v7dulpp1DKrez96yluq2kanlLhJz07/fhNGlH8xzc2xD0J1+c1x0I=
+Message-ID: <8bd0f97a0801221443k1442046br4d6a6c8e1be7e666@mail.gmail.com>
+Date: Tue, 22 Jan 2008 17:43:13 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: [PATCH] procfs: constify function pointer tables
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       "Ivan Kokshaysky" <ink@jurassic.park.msu.ru>,
+       "Bryan Wu" <bryan.wu@analog.com>, "Mikael Starvik" <starvik@axis.com>,
+       "David Howells" <dhowells@redhat.com>,
+       "Hirokazu Takata" <takata@linux-m32r.org>,
+       "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Kyle McMartin" <kyle@parisc-linux.org>,
+       "Matthew Wilcox" <matthew@wil.cx>, "Chris Zankel" <chris@zankel.net>
+In-Reply-To: <Pine.LNX.4.64.0801222055440.5722@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <54038cd4f87a03884e4f59f8f3697889dfb63c54.1201030614.git.jengelh@computergmbh.de>
+	 <Pine.LNX.4.64.0801222055440.5722@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jan 2008, Alan Cox wrote:
-> > However, I'd like to see if we can track the problem through the SG_IO
-> > direct path ... how many adjacent page bytes are corrupt?  Just a few or
-> > a large number (I'm wondering if it's an off by one or off by alignment
-> > type bug)?
+On Jan 22, 2008 3:00 PM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> This touches so many different places that I did not feel like creating
+> a miniscule patch for each architecture. I hope that is ok.
 
-We moved away from that concern ....
+there is a linux-arch alias so you dont have to look up every
+maintainer yourself ;)
 
-> Which ATA controller is involved - in theory ATA DMA is byte aligned safe
-> (or dword anyway) in practice I don't know if we've ever tested the non
-> 512 byte aligned case historically for ATA just ATAPI ?
+>  arch/blackfin/kernel/setup.c  |    2 +-
 
-.... but if it's still relevant, this was with ata_piix.
+Blackfin changes look fine, thanks
 
-Hugh
+Acked-by: Mike Frysinger <vapier@gentoo.org>
+-mike
