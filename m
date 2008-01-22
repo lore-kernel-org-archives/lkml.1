@@ -1,66 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbYAVOe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbYAVOj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbYAVOe1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 09:34:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYAVOeT
+	id S1755269AbYAVOj7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 09:39:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYAVOjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 09:34:19 -0500
-Received: from vms042pub.verizon.net ([206.46.252.42]:61689 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750993AbYAVOeS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 09:34:18 -0500
-Date: Tue, 22 Jan 2008 08:34:10 -0600
-From: Corey Minyard <minyard@acm.org>
-Subject: Re: [PATCH] ARM: Ignore memory tags with invalid data
-In-reply-to: <20080122091834.GC27399@fluff.org.uk>
-To: Ben Dooks <ben@fluff.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, hvr@gnu.org,
-       rmk@arm.linux.org.uk, nico@cam.org
-Message-id: <4795FEE2.3090703@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <20080122040556.GA24515@minyard.local>
- <20080122091834.GC27399@fluff.org.uk>
-User-Agent: Icedove 1.5.0.14pre (X11/20071018)
+	Tue, 22 Jan 2008 09:39:52 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53727 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751769AbYAVOjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 09:39:51 -0500
+Date: Tue, 22 Jan 2008 15:39:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Michael Opdenacker <michael-lists@free-electrons.com>,
+       linux-kernel@vger.kernel.org, Linux-tiny@selenic.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: fix unconditional
+	arch/x86/kernel/pcspeaker.c?compiling
+Message-ID: <20080122143912.GJ7304@elte.hu>
+References: <20080118110252.GA17397@elte.hu> <47909821.1090907@free-electrons.com> <20080118122540.GH11044@elte.hu> <20080118122926.GA15216@elte.hu> <4790A385.800@free-electrons.com> <1200664214.4001.24.camel@cinder.waste.org> <4790D3E3.4060409@free-electrons.com> <1200676219.3835.8.camel@cinder.waste.org> <20080118210938.GE10717@elte.hu> <1200695950.25782.28.camel@cinder.waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200695950.25782.28.camel@cinder.waste.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Dooks wrote:
-> On Mon, Jan 21, 2008 at 10:05:56PM -0600, Corey Minyard wrote:
->   
->> From: Corey Minyard <minyard@acm.org>
->>
->> The DNS-323 system has several bogus memory entries in the tag table,
->> and it caused the system to crash at startup.  Ignore tag entries that
->> are obviously bogus.
->>     
->
-> This should have gone to the linux-arm-kernel mailing list as well,
-> so that all the people interested in ARM can see it as soon as
-> possible. See linux-arm-kernel@lists.arm.linux.org.uk
->   
-You have to be a member to post, and I'm not a member.  I guess I'll 
-join, though it seems somewhat pointless for a single patch.
 
-> The only suggestion I could think of would to be change to having
-> an check_tag_mem32() function, or put each check on its own line
-> to make it easier to read what each check is doing.
->
-> ie:
-> 	if (meminfo.nr_banks >= NR_BANKS ||
-> 	    tag->u.mem.size & ~PAGE_MASK || /* size is unaligned */
-> 	    tag->u.mem.size == 0 ||	    /* no memory here */
-> 	    tag->u.mem.start & ~PAGE_MASK)  /* start is unaligned */ 
-> 	{
->
-> (even without the comments it makes it easier to see what each test
-> is.
->   
-That's fine, it is easier to read.
+* Matt Mackall <mpm@selenic.com> wrote:
 
-Thanks,
+> > btw., are there any pending arch/x86 bits in -tiny? (stupid 
+> > question: were can i get the most uptodate version of -tiny from?)
+> 
+> It's not a stupid question. I dropped updating the tree regulary some 
+> time ago to focus on merging bits and then got a bit side-tracked by 
+> this little thing called "version control".
+> 
+> Michael is attempting to get the tree started again and has put a 
+> quilt up here:
+> 
+> http://elinux.org/images/3/3c/Tiny-quilt-2.6.23-0.tar.bz2
 
--corey
+cool! A few comments about the patches that affect arch/x86:
+
+dmi_blacklist.patch:
+
+  +#ifdef CONFIG_DMI_SCAN
+          dmi_scan_machine();
+  +#endif
+
+put that #ifdef into the include file and make it an inlined NOP in the 
+!DMI_SCAN case. That de-#ifdef-ifies the .c files.
+
+cpu-support.patch: ditto.
+
+mtrr.patch: ditto.
+
+inflate-error.patch: please use:
+
+   quilt refresh --diffstat --sort --no-timestamps -p 1
+
+when generating patches, to make them reviewable, uniform and 
+noise-free.
+
+no-doublefault.patch: looks ok. Please add proper metadata and submit to 
+lkml.
+
+sbf.patch: looks ok.
+
+sysenter.patch:
+
++#ifdef CONFIG_SYSENTER
+        sysenter_setup();
+        enable_sep_cpu();
++#endif
+
+hide these #ifdefs in the include file. (as it already does) Looks ok 
+otherwise.
+
+threadinfo-ool.patch: doesnt this break the scheduler? Had something 
+like this in -rt, i turned 'current' into a const actually, but had 
+trouble with keeping from gcc to do the right thing in sched.c. I guess 
+we could live with current_non_const() that gets it from assembly. (and 
+hence gcc wont be able to optimize it away in the middle of the 
+context-switch) But when done properly, this is both a nice, measurable 
+speedup on UP, and a nice space-saver.
+
+tiny-cflags.patch: obsolete? Isnt CFLAGS already extendable? Question to 
+Sam i guess.
+
+tsc.patch: look ok. needs x86.git porting.
+
+	Ingo
