@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbYAVHGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbYAVHNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbYAVHGH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 02:06:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbYAVHFx
+	id S1758112AbYAVHNA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 02:13:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbYAVHMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 02:05:53 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:27765 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751829AbYAVHFw (ORCPT
+	Tue, 22 Jan 2008 02:12:50 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:35703 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751359AbYAVHMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 02:05:52 -0500
-Date: Tue, 22 Jan 2008 00:05:11 -0700
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [RFC] Parallelize IO for e2fsck
-In-reply-to: <20080122033830.GR155259@sgi.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Valerie Henson <val@vahconsulting.com>, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@clusterfs.com>,
-       Ric Wheeler <ric@emc.com>
-Mail-followup-to: David Chinner <dgc@sgi.com>,
- Valerie Henson <val@vahconsulting.com>, linux-fsdevel@vger.kernel.org,
- linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
- Theodore Ts'o <tytso@mit.edu>, Andreas Dilger <adilger@clusterfs.com>,
- Ric Wheeler <ric@emc.com>
-Message-id: <20080122070511.GN3180@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <70b6f0bf0801161322k2740a8dch6a0d6e6e112cd2d0@mail.gmail.com>
- <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com>
- <20080121230041.GL3180@webber.adilger.int> <20080122033830.GR155259@sgi.com>
+	Tue, 22 Jan 2008 02:12:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=aERZLcpFeo/URoyc5zIODetCm7DBnvAevN3ZYsrgKU3TzHyA9mRuNswtpQjPXI0i3d1sB0uB0qfV6uZ6Hxu2LltchIwkhCl/lozbHh8ty523C63yYs+6CJ0oVxcxx4esB0tSJME5346q0SErhmFdt1xgwKB67pTRCcKuW4y8HAU=
+Date: Tue, 22 Jan 2008 15:14:18 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH 6/6] spi : use class iteration api
+Message-ID: <20080122071418.GA3725@darkstar.te-china.tietoenator.com>
+References: <20080112095711.GF2893@darkstar.te-china.tietoenator.com> <20080122060331.GG3066@darkstar.te-china.tietoenator.com> <200801212256.11484.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801212256.11484.david-b@pacbell.net>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 22, 2008  14:38 +1100, David Chinner wrote:
-> On Mon, Jan 21, 2008 at 04:00:41PM -0700, Andreas Dilger wrote:
-> > I discussed this with Ted at one point also.  This is a generic problem,
-> > not just for readahead, because "fsck" can run multiple e2fsck in parallel
-> > and in case of many large filesystems on a single node this can cause
-> > memory usage problems also.
-> > 
-> > What I was proposing is that "fsck.{fstype}" be modified to return an
-> > estimated minimum amount of memory needed, and some "desired" amount of
-> > memory (i.e. readahead) to fsck the filesystem, using some parameter like
-> > "fsck.{fstype} --report-memory-needed /dev/XXX".  If this does not
-> > return the output in the expected format, or returns an error then fsck
-> > will assume some amount of memory based on the device size and continue
-> > as it does today.
-> 
-> And while fsck is running, some other program runs that uses
-> memory and blows your carefully calculated paramters to smithereens?
+Convert to use the class iteration api.
 
-Well, fsck has a rather restricted working environment, because it is
-run before most other processes start (i.e. single-user mode).  For fsck
-initiated by an admin in other runlevels the admin would need to specify
-the upper limit of memory usage.  My proposal was only for the single-user
-fsck at boot time.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+---
+ drivers/spi/spi.c |   24 ++++++++++++++----------
+ 1 file changed, 14 insertions(+), 10 deletions(-)
 
+diff -upr linux/drivers/spi/spi.c linux.new/drivers/spi/spi.c
+--- linux/drivers/spi/spi.c	2008-01-22 15:09:49.000000000 +0800
++++ linux.new/drivers/spi/spi.c	2008-01-22 15:09:49.000000000 +0800
+@@ -485,6 +485,15 @@ void spi_unregister_master(struct spi_ma
+ }
+ EXPORT_SYMBOL_GPL(spi_unregister_master);
+ 
++static int __spi_master_match(struct device *dev, void *data)
++{
++	struct spi_master *m;
++	u16 *bus_num = data;
++
++	m = container_of(dev, struct spi_master, dev);
++	return m->bus_num == *bus_num;
++}
++
+ /**
+  * spi_busnum_to_master - look up master associated with bus_num
+  * @bus_num: the master's bus number
+@@ -499,17 +508,12 @@ struct spi_master *spi_busnum_to_master(
+ {
+ 	struct device		*dev;
+ 	struct spi_master	*master = NULL;
+-	struct spi_master	*m;
+ 
+-	down(&spi_master_class.sem);
+-	list_for_each_entry(dev, &spi_master_class.children, node) {
+-		m = container_of(dev, struct spi_master, dev);
+-		if (m->bus_num == bus_num) {
+-			master = spi_master_get(m);
+-			break;
+-		}
+-	}
+-	up(&spi_master_class.sem);
++	dev = class_find_device(&spi_master_class, &bus_num,
++				__spi_master_match);
++	if (dev)
++		master = container_of(dev, struct spi_master, dev);
++	/* reference got in class_find_device */
+ 	return master;
+ }
+ EXPORT_SYMBOL_GPL(spi_busnum_to_master);
