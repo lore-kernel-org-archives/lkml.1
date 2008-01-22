@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760526AbYAVIxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbYAVJCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760526AbYAVIxL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 03:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbYAVIw6
+	id S1759761AbYAVJCi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 04:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbYAVJCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 03:52:58 -0500
-Received: from styx.suse.cz ([82.119.242.94]:33483 "EHLO mail.suse.cz"
+	Tue, 22 Jan 2008 04:02:21 -0500
+Received: from slowhand.arndnet.de ([88.198.19.76]:59726 "EHLO mail.unitix.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755111AbYAVIw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 03:52:57 -0500
-Date: Tue, 22 Jan 2008 09:19:31 +0100
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: Francis Moreau <francis.moro@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux and remote control device
-Message-ID: <20080122081931.GC5591@suse.cz>
-References: <38b2ab8a0801220001t284c41bdo42b534599249df2a@mail.gmail.com>
+	id S1755621AbYAVJCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 04:02:20 -0500
+Message-ID: <4795B14C.7040502@i4.informatik.rwth-aachen.de>
+Date: Tue, 22 Jan 2008 10:03:08 +0100
+From: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <38b2ab8a0801220001t284c41bdo42b534599249df2a@mail.gmail.com>
-X-Bounce-Cookie: It's a lemon tree, dear Watson!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jordan Crouse <jordan.crouse@amd.com>
+CC: Andres Salomon <dilinger@queued.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
+References: <20080116165606.3ebc06a4@ephemeral> <478F25D6.3060503@i4.informatik.rwth-aachen.de> <20080117134032.4cc1a1cf@ephemeral> <478FB255.5040001@i4.informatik.rwth-aachen.de> <20080117211917.GF8244@cosmic.amd.com> <478FCDB6.4010708@i4.informatik.rwth-aachen.de> <20080117223644.GK8244@cosmic.amd.com> <478FDC12.6020505@i4.informatik.rwth-aachen.de> <20080117225744.GL8244@cosmic.amd.com> <478FE733.2030806@i4.informatik.rwth-aachen.de> <20080121232709.GJ10837@cosmic.amd.com>
+In-Reply-To: <20080121232709.GJ10837@cosmic.amd.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 09:01:10AM +0100, Francis Moreau wrote:
-> Hello,
+Jordan Crouse wrote:
+> Okay - I've been exploring a little bit more.  I talked to the TinyBIOS
+> developer, and he verified that TinyBIOS shouldn't use any MFGPT timers.
+> He also told me that the mysterious "MFGPT workaround" was in fact the 
+> magic MFGPT erasing MSR that was in the old kernel driver.
 > 
-> I'd like to add support for my Infrared remote control to Linux.
+> So with the "MFGPT workaround" turned off, TinyBIOS should be acting like
+> the OLPC firmware with regards to timers, yet it is not.  So that is 
+> curious.  I think I might have identified a race condition in the code,
+> but I'm not 100% sure thats the same problem that the ALIX platform is
+> seeing.
 > 
-> So far I only see LIRCD project that make the kernel support
-> such device but I'm not sure if this project is the best choice
-> since it's not part of mainline kernels. And there are certainly
-> good reasons which I'm not aware of.
+> Anrd and others - will you please try the attached patch on your platform
+> with the "MFGPT workaround" turned off and mfgpts enabled, and send out
+> the dmesg?
+
+Of course, tinyBios version v0.99, "MFGPT workaround" turned off,
+CONFIG_GEODE_MFGPT_TIMER=n:
+
+[   67.369697] NET: Registered protocol family 16
+[   67.383059] geode-mfgpt:  IRQ MSR=0:0
+[   67.394058] geode-mfgpt:  NMI MSR=0:0
+[   67.405049] geode-mfgpt:  Unrestricted sources=0
+[   67.418909] geode:  8 MFGPT timers available.
+[   67.433211] PCI: PCI BIOS revision 2.10 entry at 0xfcd03, last bus=0
+
+same with CONFIG_GEODE_MFGPT_TIMER=y (sorry, without move printk patch):
+
+[   22.289349] NET: Registered protocol family 16
+[   22.302716] geode-mfgpt:  IRQ MSR=0:0
+[   22.313716] geode-mfgpt:  NMI MSR=0:0
+[   22.324704] geode-mfgpt:  Unrestricted sources=0
+[   22.338566] geode-mfgpt:  Registered timer 0
+[   22.351393] mfgpt-timer:  registering the MFGT timer as a clock event.
+^^^^ Hangs here
+
 > 
-> Another possibility is to make the remote controle device an input
-> device. But I see several flaws:
+> This will give us some debug information that I can use to ensure that
+> the interrupts are set up correctly.  You can leave the timer tick disabled
+> if you want.
+
 > 
-> - The IR receiver on my board can't be use as a transmitter any
-> more
+> Thanks,
+> Jordan
+> 
 
-The input subsystem moves events in both directions. It would need some
-additional hacking to work with IR transmitters, but it might be
-possible.
-
-> - All scancodes are embedded in the kernel.
-
-While they reside in the kernel, they can be changed from userspace.
-
-> Do you think it's still the way to go despite the 2 points raised above ?
-
-It might be, but I'm not 100% convinced either.
-
--- 
-Vojtech Pavlik
-Director SuSE Labs
+Arnd
