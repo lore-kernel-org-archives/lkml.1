@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYAVVvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbYAVVx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbYAVVvr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 16:51:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYAVVvj
+	id S1754264AbYAVVx5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 16:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbYAVVxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 16:51:39 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47796 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751087AbYAVVvi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 16:51:38 -0500
-Message-ID: <47966546.6040002@zytor.com>
-Date: Tue, 22 Jan 2008 13:51:02 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 22 Jan 2008 16:53:50 -0500
+Received: from www.tglx.de ([62.245.132.106]:58142 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750710AbYAVVxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 16:53:49 -0500
+Date: Tue, 22 Jan 2008 22:53:18 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>,
+       Jordan Crouse <jordan.crouse@amd.com>, Lars Heete <hel@admin.de>,
+       Andres Salomon <dilinger@queued.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] was: Re: 2.6.24-rc8 hangs at mfgpt-timer
+In-Reply-To: <20080122211014.GA27870@elte.hu>
+Message-ID: <alpine.LFD.1.00.0801222244500.27071@apollo.tec.linutronix.de>
+References: <20080116165606.3ebc06a4@ephemeral> <478FCDB6.4010708@i4.informatik.rwth-aachen.de> <4795B14C.7040502@i4.informatik.rwth-aachen.de> <200801221111.21240.hel@admin.de> <4795D120.7070806@i4.informatik.rwth-aachen.de> <20080122192757.GC5241@cosmic.amd.com>
+ <47965806.6080903@i4.informatik.rwth-aachen.de> <20080122211014.GA27870@elte.hu>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: factor out common s2ram wakeup code
-References: <20080122193719.GA3791@elf.ucw.cz> <4796519C.6040501@zytor.com> <20080122205625.GC4317@elf.ucw.cz> <47965B13.9080705@zytor.com> <20080122212440.GF4317@elf.ucw.cz>
-In-Reply-To: <20080122212440.GF4317@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
->>
->> The biggest question is if your 16-bit code needs to touch symbols in the 
->> 32/64-bit code, or vice versa.  That complicates things a little bit, 
->> obviously.
+On Tue, 22 Jan 2008, Ingo Molnar wrote:
+> * Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
 > 
-> The code is in arch/x86/kernel/acpi/wakeup_32.S
-> . acpi_copy_wakeup_routine needs to know offsets within 16-bit 
-> code. I'd like to somehow call code from arch/x86/boot/video*.c
-> ... current version just took (old) .S code, and cut&paste-s it.
+> > > The attached patch rearranges the code so that the handler is 
+> > > installed before we setup the interrupt (so we have somebody to 
+> > > listen to the immediate interrupt), and it makes sure that we clear 
+> > > the event in the IRQ handler regardless of the state of the timer 
+> > > tick.
+> > 
+> > This patch indeed solves the problem. The board boots fine. Great 
+> > work!
 > 
+> since this driver is new in 2.6.24, perhaps we should apply this fix to 
+> v2.6.24?
 
-Right, I know.
+Yes. It is definitely a safe change and makes otherwise broken systems
+work. There is no impact to anything else than the GEODEs.
 
->> If not, the easiest way is to link the 16-bit code into a separate binary 
->> (including both assembly and C code) which can then be included in the 
->> kernel proper as a binary blob.  If it *does* need to reference outside 
->> symbols, then it needs to be part of the overall link, which means mucking 
->> with the top-level link script.
->> That's obviously more complex.
->>
->> Either way, the Makefile bit of this will be a lot easier if we move the 
->> 16-bit code into a separate directory.
-> 
-> I only need arch/x86/boot/video*.c ...
-> 
->> Let me know which way you think makes more sense, and I can send you a 
->> framework patch.
-> 
-> I need to access data in that 16-bit code...
+Linus,
 
-Would a shared structure be OK for that?  That's easier than dealing 
-with symbols.
+if you agree, please pull the fix from:
 
-	-hpa
+ ssh://master.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+
+Thanks,
+
+	tglx
