@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbYAVBlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760898AbYAVBnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756644AbYAVBlP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 20:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760508AbYAVBkz
+	id S1760898AbYAVBnS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 20:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755566AbYAVBnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 20:40:55 -0500
-Received: from nz-out-0506.google.com ([64.233.162.234]:60137 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760310AbYAVBkx (ORCPT
+	Mon, 21 Jan 2008 20:43:06 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33247 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752384AbYAVBnD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 20:40:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=T+blziCPFUzG3U5uaDEBe+atdrvPKYJDA60neUfHQJw39aQ4WIdB75wIKNXPS5mmvyqUml+RwtCVipCAsIo6WP9trngVi7nhjSUMkj2SX6iNLsd0Vbm9Qmsz1lRioiV1h6OpCyn8tVszxoktQKR/cZslUAge0jeO5+eyI1ervoE=
-Message-ID: <4df4ef0c0801211740i168a82e6ha8992710da81f0b1@mail.gmail.com>
-Date: Tue, 22 Jan 2008 04:40:52 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Subject: Re: [PATCH -v7 0/2] Fixing the issue with memory-mapped file times
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, torvalds@linux-foundation.org,
-       a.p.zijlstra@chello.nl, akpm@linux-foundation.org, protasnb@gmail.com,
-       miklos@szeredi.hu, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
-       hch@infradead.org
-In-Reply-To: <9a8748490801211734w7fbb0ed9i66d63153c870a3f0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 21 Jan 2008 20:43:03 -0500
+Date: Tue, 22 Jan 2008 01:39:28 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Georgi Chulkov <g.chulkov@jacobs-university.de>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Mark Lord <liml@rtr.ca>
+Subject: Re: ATA device reset, shoud I be concerned?
+Message-ID: <20080122013928.554b52f8@lxorguk.ukuu.org.uk>
+In-Reply-To: <200801220231.22609.bzolnier@gmail.com>
+References: <200801140019.20668.g.chulkov@jacobs-university.de>
+	<20080121164744.2f7d0ed1@lxorguk.ukuu.org.uk>
+	<4794D020.4060204@gmail.com>
+	<200801220231.22609.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <12009619562023-git-send-email-salikhmetov@gmail.com>
-	 <9a8748490801211734w7fbb0ed9i66d63153c870a3f0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/22, Jesper Juhl <jesper.juhl@gmail.com>:
-> On 22/01/2008, Anton Salikhmetov <salikhmetov@gmail.com> wrote:
-> > This is the seventh version of my solution for the bug #2645:
-> >
-> > http://bugzilla.kernel.org/show_bug.cgi?id=2645
-> >
-> > Since the previous version, the following has changed: based on
-> > Linus' comment, SMP-safe PTE update implemented.
-> >
-> > Discussions, which followed my past submissions, showed that it was
-> > tempting to approach this problem using very different assumptions.
-> > However, many such designs have proved to be incomplete or inefficient.
-> >
-> > Taking into account the obvious complexity of this problem, I prepared a
-> > design document, the purpose of which is twofold. First, it summarizes
-> > previous attempts to resolve the ctime/mtime issue. Second, it attempts
-> > to prove that what the patches do is necessary and sufficient for mtime
-> > and ctime update provided that we start from a certain sane set of
-> > requirements. The design document is available via the following link:
-> >
-> > http://bugzilla.kernel.org/show_bug.cgi?id=2645#c40
-> >
-> > For the seventh version, comprehensive performance testing was performed.
-> > The results of performance tests, including numbers, are available here:
-> >
-> > http://bugzilla.kernel.org/show_bug.cgi?id=2645#c43
-> >
->
-> Hi Anton,
->
-> I applied your patches here and as far as my own test programs go,
-> these patches solve the previously observed problems I saw with mtime
-> not getting updated.
->
-> Thank you very much for so persistently working on these long standing issues.
+> Could you point me to some bugreports?
+> 
+> I would like to know more about hosts/conditions for which it happens.
 
-Thank you very much for testing these patches!
+The timer reset path races the I/O path races the interrupt path. That
+was the vomitously foul race that persuaded me to go libata instead. I
+seem to remember explaining this all some time ago.
 
->
-> --
-> Jesper Juhl <jesper.juhl@gmail.com>
-> Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-> Plain text mails only, please      http://www.expita.com/nomime.html
->
+The root cause is that we drop the lock on some error paths.
+Unfortunately its almost impossible to fix that without having an
+infrastructure for quiescing the driver and running a separate error
+handling context (the way scsi does).
+
