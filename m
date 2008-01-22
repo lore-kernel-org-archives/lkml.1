@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbYAVUL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbYAVUOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754362AbYAVUL0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 15:11:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYAVULT
+	id S1753980AbYAVUOR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 15:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYAVUOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 15:11:19 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:46324 "EHLO relay.sgi.com"
+	Tue, 22 Jan 2008 15:14:08 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47524 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751875AbYAVULS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 15:11:18 -0500
-Date: Tue, 22 Jan 2008 12:11:14 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Olaf Hering <olaf@aepfle.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-       akpm@linux-foundation.org
-Subject: Re: crash in kmem_cache_init
-In-Reply-To: <20080122195448.GA15567@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
-References: <20080115150949.GA14089@aepfle.de>
- <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com>
- <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
- <20080117181222.GA24411@aepfle.de> <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
- <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
- <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
- <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
+	id S1751694AbYAVUOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 15:14:07 -0500
+Date: Tue, 22 Jan 2008 20:39:15 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, mingo@redhat.com,
+       hpa@zytor.com
+Subject: Incorrect filename comments in arch/x86/boot
+Message-ID: <20080122193915.GA3926@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jan 2008, Mel Gorman wrote:
+Hi!
 
-> Christoph/Pekka, this patch is papering over the problem and something
-> more fundamental may be going wrong. The crash occurs because l3 is NULL
-> and the cache is kmem_cache so this is early in the boot process. It is
-> selecting l3 based on node 2 which is correct in terms of available memory
-> but it initialises the lists on node 0 because that is the node the CPUs are
-> located. Hence later it uses an uninitialised nodelists and BLAM. Relevant
-> parts of the log for seeing the memoryless nodes in relation to CPUs is;
+Not sure if this is worth fixing, or if I should just delete those
+comments...? (Or does someone want to do that? ;-). 
+									Pavel
 
-Would it be possible to run the bootstrap on a cpu that has a 
-node with memory associated to it? I believe we had the same situation 
-last year when GFP_THISNODE was introduced?
+pavel@amd:/data/l/linux/arch/x86/boot$ grep arch/i386/boot *.c
+a20.c: * arch/i386/boot/a20.c
+apm.c: * arch/i386/boot/apm.c
+cmdline.c: * arch/i386/boot/cmdline.c
+cpu.c: * arch/i386/boot/cpu.c
+cpucheck.c: * arch/i386/boot/cpucheck.c
+edd.c: * arch/i386/boot/edd.c
+main.c: * arch/i386/boot/main.c
+mca.c: * arch/i386/boot/mca.c
+memory.c: * arch/i386/boot/memory.c
+pm.c: * arch/i386/boot/pm.c
+printf.c: * arch/i386/boot/printf.c
+string.c: * arch/i386/boot/string.c
+tty.c: * arch/i386/boot/tty.c
+version.c: * arch/i386/boot/version.c
+video-vesa.c: * arch/i386/boot/video-vesa.c
+video-vga.c: * arch/i386/boot/video-vga.c
+voyager.c: * arch/i386/boot/voyager.c
+...
 
-After you reverted the slab memoryless node patch there should be per node 
-structures created for node 0 unless the node is marked offline. Is it? If 
-so then you are booting a cpu that is associated with an offline node. 
-
-> Can you see a better solution than this?
-
-Well this means that bootstrap will work by introducing foreign objects 
-into the per cpu queue (should only hold per cpu objects). They will 
-later be consumed and then the queues will contain the right objects so 
-the effect of the patch is minimal.
-
-I thought we fixed the similar situation last year by dropping 
-GFP_THISNODE for some allocations?
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
