@@ -1,79 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbYAVUal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbYAVUbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755657AbYAVUal (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 15:30:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbYAVUaa
+	id S1755813AbYAVUbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 15:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbYAVUbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 15:30:30 -0500
-Received: from orion.ambsoft.pl ([212.109.144.130]:38357 "EHLO
-	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755298AbYAVUa3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 15:30:29 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc8-mm1: sparc64 warning at fs/file_table.c:49 __fput+0x1a8/0x1e0()
-Date: Tue, 22 Jan 2008 21:30:23 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       sparclinux@vger.kernel.org
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-In-Reply-To: <20080117023514.9df393cf.akpm@linux-foundation.org>
+	Tue, 22 Jan 2008 15:31:10 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:51025 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752952AbYAVUbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 15:31:09 -0500
+Date: Tue, 22 Jan 2008 12:31:07 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm-devel@lists.sourceforge.net,
+       Avi Kivity <avi@qumranet.com>, daniel.blueman@quadrics.com,
+       holt@sgi.com, steiner@sgi.com, Andrew Morton <akpm@osdl.org>,
+       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] mmu notifiers #v3
+In-Reply-To: <1201030127.6341.39.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0801221230340.28197@schroedinger.engr.sgi.com>
+References: <20080113162418.GE8736@v2.random>  <20080116124256.44033d48@bree.surriel.com>
+ <478E4356.7030303@qumranet.com>  <20080117162302.GI7170@v2.random>
+ <478F9C9C.7070500@qumranet.com>  <20080117193252.GC24131@v2.random> 
+ <20080121125204.GJ6970@v2.random> <1201030127.6341.39.camel@lappy>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200801222130.24136.m.kozlowski@tuxland.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, 22 Jan 2008, Peter Zijlstra wrote:
 
-Issuing "sysrq-s sysrq-u" sequence causes these warnings on sparc64:
+> I think we can get rid of this rwlock as I think this will seriously
+> hurt larger machines.
 
-------------[ cut here ]------------
-WARNING: at fs/file_table.c:49 __fput+0x1a8/0x1e0()
-Modules linked in: sg sr_mod cdrom
-Call Trace:
- [00000000004c9ac8] __fput+0x1b0/0x1e0
- [00000000004c6978] filp_close+0x60/0x80
- [00000000004c6a18] sys_close+0x80/0xe0
- [00000000004062d4] linux_sparc_syscall32+0x3c/0x40
- [0000000000012f1c] 0x12f24
----[ end trace 6dbe14ff8ec57744 ]---
-------------[ cut here ]------------
-WARNING: at fs/file_table.c:49 __fput+0x1a8/0x1e0()
-Modules linked in: sg sr_mod cdrom
-Call Trace:
- [00000000004c9ac8] __fput+0x1b0/0x1e0
- [00000000004c6978] filp_close+0x60/0x80
- [00000000004c6a18] sys_close+0x80/0xe0
- [00000000004062d4] linux_sparc_syscall32+0x3c/0x40
- [0000000000012f1c] 0x12f24
----[ end trace 6dbe14ff8ec57744 ]---
-------------[ cut here ]------------
-WARNING: at fs/file_table.c:49 __fput+0x1a8/0x1e0()
-Modules linked in: sg sr_mod cdrom
-Call Trace:
- [00000000004c9ac8] __fput+0x1b0/0x1e0
- [00000000004c6978] filp_close+0x60/0x80
- [00000000004c6a18] sys_close+0x80/0xe0
- [00000000004062d4] linux_sparc_syscall32+0x3c/0x40
- [0000000000012f1c] 0x12f24
----[ end trace 6dbe14ff8ec57744 ]---
-------------[ cut here ]------------
-WARNING: at fs/file_table.c:49 __fput+0x1a8/0x1e0()
-Modules linked in: sg sr_mod cdrom
-Call Trace:
- [00000000004c9ac8] __fput+0x1b0/0x1e0
- [00000000004c6978] filp_close+0x60/0x80
- [00000000004c6a18] sys_close+0x80/0xe0
- [00000000004062d4] linux_sparc_syscall32+0x3c/0x40
- [0000000000012f1c] 0x12f24
----[ end trace 6dbe14ff8ec57744 ]---
+Correct.
 
-Regards,
-
-	Mariusz
