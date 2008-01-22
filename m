@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbYAVWO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756951AbYAVWPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbYAVWO7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 17:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYAVWOt
+	id S1756951AbYAVWPb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 17:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYAVWPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 17:14:49 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58276 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750906AbYAVWOr (ORCPT
+	Tue, 22 Jan 2008 17:15:20 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39670 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbYAVWPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 17:14:47 -0500
-Date: Tue, 22 Jan 2008 22:12:14 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH rc8-mm1] hotfix libata-scsi corruption
-Message-ID: <20080122221214.1c825949@lxorguk.ukuu.org.uk>
-In-Reply-To: <1201022985.3210.24.camel@localhost.localdomain>
-References: <Pine.LNX.4.64.0801221706320.5832@blonde.site>
-	<1201022985.3210.24.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jan 2008 17:15:19 -0500
+Date: Tue, 22 Jan 2008 14:15:47 -0800
+From: Greg KH <greg@kroah.com>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, davem@davemloft.net,
+       schwidefsky@de.ibm.com, mingo@elte.hu, tony.luck@intel.com,
+       paulus@samba.org
+Subject: Re: [PATCH 1/3] constify struct attribute_group uses (against -mm)
+Message-ID: <20080122221547.GA32588@kroah.com>
+References: <4795FE39.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4795FE39.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> However, I'd like to see if we can track the problem through the SG_IO
-> direct path ... how many adjacent page bytes are corrupt?  Just a few or
-> a large number (I'm wondering if it's an off by one or off by alignment
-> type bug)?
+On Tue, Jan 22, 2008 at 01:31:21PM +0000, Jan Beulich wrote:
+> .. as all consumers of it don't require it to be modifiable.
+> 
+> Unfortunately, due to the two-level constifications, this required
+> touching quite many files, not all of which I am able to test - please
+> bare with eventual mistakes or oversights.
+> 
+> The patch doesn't change all instances where 'const' could have been
+> added as a result of the base structure changes, only where either the
+> change has a real effect (the module loader doesn't enforce read-only
+> section attributes at present, so only built-in files matter) or where
+> compiler warnings would result otherwise.
 
-Which ATA controller is involved - in theory ATA DMA is byte aligned safe
-(or dword anyway) in practice I don't know if we've ever tested the non
-512 byte aligned case historically for ATA just ATAPI ?
+Which -mm is this against?  Seems to not apply here :(
 
-Alan
+thanks,
+
+greg k-h
