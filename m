@@ -1,106 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760877AbYAVJTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761280AbYAVJTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760877AbYAVJTV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 04:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757578AbYAVJSx
+	id S1761280AbYAVJTr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 04:19:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760687AbYAVJTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 04:18:53 -0500
-Received: from ag-out-0708.google.com ([72.14.246.241]:50810 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757009AbYAVJSu convert rfc822-to-8bit (ORCPT
+	Tue, 22 Jan 2008 04:19:16 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:55460 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756367AbYAVJTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 04:18:50 -0500
+	Tue, 22 Jan 2008 04:19:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dQY1rPEbauD5OIhvEljBa/2jG78cvSXlvQvpd6ZOrHCUDsLSDg97EgM+8XDXRo124YsKRrV1cfHGyKq1CpuYwtDp+uQDyjmTnVXsz8pQHeS18II1f3+HhyjEzoXeGF1o2jprfHZ9w3qRYhe9yN4iHH2M93PHRmnKMjsi5KmLtjs=
-Message-ID: <a8e1da0801220118vd5066c6g56541f19166193ca@mail.gmail.com>
-Date: Tue, 22 Jan 2008 17:18:48 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Subject: Re: 2.6.24-rc8-mm1 : net tcp_input.c warnings
-Cc: LKML <linux-kernel@vger.kernel.org>, "David Miller" <davem@davemloft.net>,
-       Netdev <netdev@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <a8e1da0801220109v6bf8931ev50f2210402c3ba41@mail.gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=ZtrtO9W3JHeVH8ZrM3RqbARjxQeJnZKmqQ0CQvxm1n8rUwoN18i3w48ngzIgdJ+zM9iSZlhqTYyoO6no73NA3vqcTfwRatA8L9L8qeOcH/NlL5hD2MaASboRyZMwkZl0s+yq2y57+W5mz8DDICOq0UMWZFoh0oP4OH2+v63pTvk=
+Message-ID: <4795B506.1030405@gmail.com>
+Date: Tue, 22 Jan 2008 10:19:02 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20080121075548.GA22177@darkstar.te-china.tietoenator.com>
-	 <Pine.LNX.4.64.0801212302170.29700@kivilampi-30.cs.helsinki.fi>
-	 <a8e1da0801212037uaa34a10xc2239ac7309a4ed0@mail.gmail.com>
-	 <a8e1da0801220109v6bf8931ev50f2210402c3ba41@mail.gmail.com>
+To: =?UTF-8?B?IkouIFBhYmxvIEZlcm7DoW5kZXoi?= <pupeno@pupeno.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Making a USB driver
+References: <fn2u8p$gv3$1@ger.gmane.org> <479515FF.3050705@gmail.com> <200801212313.17703.pupeno@pupeno.com> <479527C7.5000909@gmail.com> <fn4bgk$oi0$1@ger.gmane.org>
+In-Reply-To: <fn4bgk$oi0$1@ger.gmane.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 22, 2008 5:09 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
->
-> On Jan 22, 2008 12:37 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> >
-> > On Jan 22, 2008 5:14 AM, Ilpo J�rvinen <ilpo.jarvinen@helsinki.fi> wrote:
-> > >
-> > > On Mon, 21 Jan 2008, Dave Young wrote:
-> > >
-> > > > Please see the kernel messages following,(trigged while using some qemu session)
-> > > > BTW, seems there's some e100 error message as well.
-> > > >
-> > > > PCI: Setting latency timer of device 0000:00:1b.0 to 64
-> > > > e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
-> > > > e100: Copyright(c) 1999-2006 Intel Corporation
-> > > > ACPI: PCI Interrupt 0000:03:08.0[A] -> GSI 20 (level, low) -> IRQ 20
-> > > > modprobe:2331 conflicting cache attribute efaff000-efb00000 uncached<->default
-> > > > e100: 0000:03:08.0: e100_probe: Cannot map device registers, aborting.
-> > > > ACPI: PCI interrupt for device 0000:03:08.0 disabled
-> > > > e100: probe of 0000:03:08.0 failed with error -12
-> > > > eth0:  setting full-duplex.
-> > > > ------------[ cut here ]------------
-> > > > WARNING: at net/ipv4/tcp_input.c:2169 tcp_mark_head_lost+0x121/0x150()
-> > > > Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse snd_hda_intel snd_pcm snd_timer btusb rtc_cmos thermal bluetooth rtc_core serio_raw intel_agp button processor sg snd rtc_lib i2c_i801 evdev agpgart soundcore dcdbas 3c59x pcspkr snd_page_alloc
-> > > > Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #4
-> > > >  [<c0132100>] ? printk+0x0/0x20
-> > > >  [<c0131834>] warn_on_slowpath+0x54/0x80
-> > > >  [<c03e8df8>] ? ip_finish_output+0x128/0x2e0
-> > > >  [<c03e9527>] ? ip_output+0xe7/0x100
-> > > >  [<c03e8a88>] ? ip_local_out+0x18/0x20
-> > > >  [<c03e991c>] ? ip_queue_xmit+0x3dc/0x470
-> > > >  [<c043641e>] ? _spin_unlock_irqrestore+0x5e/0x70
-> > > >  [<c0186be1>] ? check_pad_bytes+0x61/0x80
-> > > >  [<c03f6031>] tcp_mark_head_lost+0x121/0x150
-> > > >  [<c03f60ac>] tcp_update_scoreboard+0x4c/0x170
-> > > >  [<c03f6e0a>] tcp_fastretrans_alert+0x48a/0x6b0
-> > > >  [<c03f7d93>] tcp_ack+0x1b3/0x3a0
-> > > >  [<c03fa14b>] tcp_rcv_established+0x3eb/0x710
-> > > >  [<c04015c5>] tcp_v4_do_rcv+0xe5/0x100
-> > > >  [<c0401bbb>] tcp_v4_rcv+0x5db/0x660
-> > >
-> > > Doh, once more these S+L things..., the rest are symptom of the first
-> > > problem.
-> >
-> > What is the S+L thing? Could you explain a bit?
-> >
-> > >
-> > > What is strange is that it doesn't show up until now, the last TCP
-> > > changes that could have some significance are from early Dec/Nov. Is
-> > > there some reason why you haven't seen this before this (e.g., not
-> > > tested with similar cfg or so)?
-> >
-> > Hmm, don't know how to answer ...
-> >
-> >
-> > I'm a bit worried about its
-> > > reproducability if it takes this far to see it...
-> > >
->
-> It's trigged again in my pc, just while using firefox.
+We usualy reply to all.
 
-Maybe relate to the e100 error, I will apply jiri slaby's
-e100-iomap-mem-accesses patch to test.
->
-> > >
-> > > --
-> > >  i.
-> > >
-> >
->
+On 01/22/2008 10:03 AM, J. Pablo Fernández wrote:
+> Jiri Slaby wrote:
+> 
+>> On 01/22/2008 12:13 AM, J. Pablo Fernández wrote:
+>>> On Monday 21 January 2008 22:00:31 Jiri Slaby wrote:
+>>>> On 01/21/2008 09:11 PM, J. Pablo Fernández wrote:
+>>>>> Hello,
+>>>>>
+>>>>> I'm interested in making a driver for the Kinesis Savant Elite
+>>>>> Programable USB Foot Switches[1].
+>>>> [1]+1 says
+>>>> Linux, Sun and other Non Windows Platforms
+>>>> · Requires available USB port. Uses generic drivers provided by the
+>>>> operating system. Due to the heterogeneity in these platforms, we cannot
+>>>> guarantee compatibility with these systems. However, if your system can
+>>>> use any USB mouse and keyboard, it will probably work with a Savant or
+>>>> Savant Elite foot switch.
+>>>>
+>>>> I guess it's ordinary input device without any special driver needs.
+>>> It sends ordinary mouse and keyboard commands, but you need a driver to
+>>> program it what commands to send, and that's the part I want to cover: "
+>>> it can be easily reprogrammed on a Windows [and only Windows] PC to
+>>> perform any keyboard action or key combination."
+>> But you didn't even mention that. Then try to search for usb ids in the
+>> tree and also in google.
+> 
+> I don't have the device. Maybe I can ask the vendor for the ids? how exactly
+> should I ask?
+
+Ask for specification, otherwise you won't be able to write a driver anyway.
