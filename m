@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbYAVVMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757635AbYAVVMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756203AbYAVVMT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 16:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYAVVMK
+	id S1757635AbYAVVMs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 16:12:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYAVVMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 16:12:10 -0500
-Received: from ik-out-1112.google.com ([66.249.90.180]:37382 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751512AbYAVVMI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 16:12:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ZnRN0KRttqNgYBAnisPIBVKmF1rUkYQtxQZguURoo4GR58dZn8kQr0JT3W3uewHZFTmvGquHmtit2fhMs2Jm7TkV8QFUJ3fX228ZNeCBxN4LWH+CWsNfSUwOuxTgp3xY7JFB39Mab8lbIHPEK/u+W+KF21K+27EQatyAHpQtM7s=
-Message-ID: <2c0942db0801221312v66887218qe0b9c853384ccd0b@mail.gmail.com>
-Date: Tue, 22 Jan 2008 13:12:04 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Manuel Reimer" <Manuel.Spam@nurfuerspam.de>,
-       "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: Massive IDE problems. Who leaves data here?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <fn5l9c$l6m$1@ger.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jan 2008 16:12:38 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:40699 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751767AbYAVVMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 16:12:37 -0500
+Date: Wed, 23 Jan 2008 00:12:24 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: David Fries <david@fries.net>, linux-kernel@vger.kernel.org
+Subject: Re: W1: w1_slave units, standardize 1C or .001C?  Break API
+Message-ID: <20080122211224.GA434@2ka.mipt.ru>
+References: <20080121231557.GA4025@spacedout.fries.net> <479541F5.9080705@zytor.com> <47955ECB.3050100@zytor.com> <20080122210741.GB30938@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-References: <fn5ivo$ck2$1@ger.gmane.org> <47965138.8060603@garzik.org>
-	 <fn5jsn$ful$1@ger.gmane.org>
-	 <2c0942db0801221246u678d2a20xef9cf93ee28eaf51@mail.gmail.com>
-	 <fn5l9c$l6m$1@ger.gmane.org>
-X-Google-Sender-Auth: c2ba7460a1b1158f
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080122210741.GB30938@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 22, 2008 1:04 PM, Manuel Reimer <Manuel.Spam@nurfuerspam.de> wrote:
-> Ray Lee wrote:
-> > (Please always do a reply-to-all for this email list.)
->
-> Currently I don't have a SMTP server configured. As soon as my system is
-> trustworthy, again, I'll do that.
+On Wed, Jan 23, 2008 at 12:07:41AM +0300, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
+> On Mon, Jan 21, 2008 at 07:11:07PM -0800, H. Peter Anvin (hpa@zytor.com) wrote:
+> > >Millikelvins would have the nice property of never being negative.  :)
+> > >
+> > 
+> > Alternatively, centikelvins would fit nicely in 16 bits if anyone cares...
+> > 
+> > 655.35 K = 382.20 œC = 719.96 œF
+> 
+> I have no objection on adding new sysfs files which will return
+> temperature relative to one on Mars or Venus :)
 
-Oy. Just know that without CC:ing people, I'm having to add Jeff back
-in by hand, and we may not notice your messages. Please, with whatever
-you're using to send email, CC: people that you want to read your
-messages, okay? LKML gets a lot of messages, and it's easy to miss
-some.
+Even more, what about possibility of changing of the base, relative to
+which temperature is displayed? By default I vote for centigrades,
+those, who live behind the oceans, can setup Fahrenheit, Kelvin or anything
+else, but please in a new file :)
+David will this work for you?
 
-> > Bad or almost bad power supplies can cause lots of unhappy problems
-> > such as these. If you have another power supply laying around, it can
-> > be worth swapping them out. Double-checking that your CPU fan is still
-> > spinning, and that memtest86+ doesn't show any errors doesn't hurt
-> > either.
->
-> ... that may be possible...
->
-> I have all PCI slots filled with cards, two big IDE hard drives and one
-> DVD RAM writer. I already disconnected the DVD drive, as this was nearly
-> unusable with all those IDE errors. The power supply is (AFAIR) a 200
-> watt one.
->
-> But may the power supply cause corrupted data? Shouldn't that crash down
-> the PC completely?
-
-No, not in the least. When power supplies are on the edge and
-overloaded, the quality of power drops. 12V lines may only supply 11
-or less, etc. Some components in your computer will deal with it fine,
-others won't.
-
-In general, if you have weird hardware problems and you're ruled out
-memory and overheating, the power supply is almost always the next
-thing to check.
+-- 
+	Evgeniy Polyakov
