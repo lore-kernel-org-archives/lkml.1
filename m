@@ -1,107 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbYAVVow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbYAVVpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753995AbYAVVow (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 16:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYAVVom
+	id S1755388AbYAVVpK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 16:45:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbYAVVos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 16:44:42 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:57097 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbYAVVol (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 16:44:41 -0500
-Date: Tue, 22 Jan 2008 22:45:05 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-       akpm@linux-foundation.org
-Subject: Re: crash in kmem_cache_init
-Message-ID: <20080122214505.GA15674@aepfle.de>
-References: <84144f020801170414q7d408a74uf47a84b777c36a4a@mail.gmail.com> <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com> <20080117181222.GA24411@aepfle.de> <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com> <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com> <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com> <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 22 Jan 2008 16:44:48 -0500
+Received: from 1wt.eu ([62.212.114.60]:1512 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753285AbYAVVoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 16:44:46 -0500
+Date: Tue, 22 Jan 2008 22:15:30 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Jordan Crouse <jordan.crouse@amd.com>
+Cc: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>,
+       Andres Salomon <dilinger@queued.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
+Message-ID: <20080122211530.GC16717@1wt.eu>
+References: <20080117211917.GF8244@cosmic.amd.com> <478FCDB6.4010708@i4.informatik.rwth-aachen.de> <20080117223644.GK8244@cosmic.amd.com> <478FDC12.6020505@i4.informatik.rwth-aachen.de> <20080117225744.GL8244@cosmic.amd.com> <478FE733.2030806@i4.informatik.rwth-aachen.de> <20080121232709.GJ10837@cosmic.amd.com> <20080121233226.GA1052@1wt.eu> <20080122201524.GA16428@1wt.eu> <20080122210858.GD5241@cosmic.amd.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080122195448.GA15567@csn.ul.ie>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080122210858.GD5241@cosmic.amd.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, Mel Gorman wrote:
+On Tue, Jan 22, 2008 at 02:08:58PM -0700, Jordan Crouse wrote:
+> On 22/01/08 21:15 +0100, Willy Tarreau wrote:
+> > So it seems like applying the workaround on top of TinyBIOS 0.98 undoes
+> > this BIOS's workaround. I'm now wondering how we could detect whether
+> > the workaround was applied or not :-/
+> 
+> Actually, the TinyBIOS "workaround" is the same thing.
+> 
+> Like I may have said before, there is a reason why this MSR is undocumented.
+> It works, but the behavior is unvalidated, and obviously erratic.  When we
+> first developed this code, we were using the Geode GX on the OLPC with VSA,
+> so using the MSR was nessesary if we wanted to get our hands on any 
+> timers at all.  Mitch Bradley (author of OpenFirmware) determined through
+> testing that the MSR was erratic, especially when you ran it when all the
+> timers were already clear.  I suspect thats the problem that we see here -
+> writing the MSR in TinyBIOS unstablizied the registers, and writing the
+> MSR again kicked it back.  Of course, the unfortunate corollary is that
+> when the workaround isn't in v0.99, if you run the MSR in the kernel, then
+> you will end up destabilizing everything.
 
-> http://www.csn.ul.ie/~mel/postings/slab-20080122/partial-revert-slab-changes.patch
-> .. Can you please check on your machine if it fixes your problem?
+Indeed, that looks exactly like what's happening.
 
-It does not fix or change the nature of the crash.
+> Furthermore, using the MSR is okay with TinyBIOS, but not okay with the
+> other Geode BIOSen (Insyde, General Software, and for the moment LinuxBIOS)
+> because VSA (the SMM handler) _does_ use some of the timers.  So needless
+> to say, I'm concerned.
 
-> Olaf, please confirm whether you need the patch below as well as the
-> revert to make your machine boot.
+I certainly can understand.
 
-It crashes now in a different way if the patch below is applied:
+> > Interestingly, during the boot, I got thousands of the following line :
+> > geode_mfgpt: reading 0x6200 + 0x6 + (0x0 * 8) = 0x6206                          
+> > It's a debug line I added in geode_mfgpt_read() which writes the timer and
+> > reg being read. It slowed the boot down due to being written to a serial
+> > console, but fortunately stopped when syslogd had changed the console log
+> > level. Just checking...
+> 
+> We control the timer and the status bits for the timer in the setup 
+> register, which is what you are showing above.  Thats fine.
 
-Linux version 2.6.24-rc8-ppc64 (olaf@lingonberry) (gcc version 4.1.2 20070115 (prerelease) (SUSE Linux)) #43 SMP Tue Jan 22 22:39:05 CET 2008
-[boot]0012 Setup Arch
-EEH: PCI Enhanced I/O Error Handling Enabled
-PPC64 nvram contains 8192 bytes
-Zone PFN ranges:
-  DMA             0 ->   892928
-  Normal     892928 ->   892928
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    1:        0 ->   892928
-Could not find start_pfn for node 0
-[boot]0015 Setup Done
-Built 2 zonelists in Node order, mobility grouping on.  Total pages: 880720
-Policy zone: DMA
-Kernel command line: debug xmon=on panic=1  
-[boot]0020 XICS Init
-xics: no ISA interrupt controller
-[boot]0021 XICS Done
-PID hash table entries: 4096 (order: 12, 32768 bytes)
-time_init: decrementer frequency = 275.070000 MHz
-time_init: processor frequency   = 2197.800000 MHz
-clocksource: timebase mult[e8ab05] shift[22] registered
-clockevent: decrementer mult[466a] shift[16] cpu[0]
-Console: colour dummy device 80x25
-console handover: boot [udbg-1] -> real [hvc0]
-Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
-Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
-freeing bootmem node 1
-Memory: 3496632k/3571712k available (6188k kernel code, 75080k reserved, 1324k data, 1220k bss, 304k init)
-Unable to handle kernel paging request for data at address 0x00000058
-Faulting instruction address: 0xc0000000000fe018
-cpu 0x0: Vector: 300 (Data Access) at [c00000000075bac0]
-    pc: c0000000000fe018: .setup_cpu_cache+0x184/0x1f4
-    lr: c0000000000fdfa8: .setup_cpu_cache+0x114/0x1f4
-    sp: c00000000075bd40
-   msr: 8000000000009032
-   dar: 58
- dsisr: 42000000
-  current = 0xc000000000665a50
-  paca    = 0xc000000000666380
-    pid   = 0, comm = swapper
-enter ? for help
-[c00000000075bd40] c0000000000fb368 .kmem_cache_create+0x3c0/0x478 (unreliable)
-[c00000000075be20] c0000000005e6780 .kmem_cache_init+0x284/0x4f4
-[c00000000075bee0] c0000000005bf8ec .start_kernel+0x2f8/0x3fc
-[c00000000075bf90] c000000000008590 .start_here_common+0x60/0xd0
-0:mon> 
+OK.
 
-0xc0000000000fe018 is in setup_cpu_cache (/home/olaf/kernel/git/linux-2.6-numa/mm/slab.c:2111).
-2106                                    BUG_ON(!cachep->nodelists[node]);
-2107                                    kmem_list3_init(cachep->nodelists[node]);
-2108                            }
-2109                    }
-2110            }
-2111            cachep->nodelists[numa_node_id()]->next_reap =
-2112                            jiffies + REAPTIMEOUT_LIST3 +
-2113                            ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
-2114
-2115            cpu_cache_get(cachep)->avail = 0;
+> > # grep mfgpt /proc/interrupts;sleep 10;grep mfgpt /proc/interrupts
+> >   7:      82320    XT-PIC-XT        mfgpt-timer
+> >   7:      84882    XT-PIC-XT        mfgpt-timer
+> > 
+> > It delivers 256 IRQs/s. That makes me think about this comment in mfgpt_32.c :
+> 
+> Hmm - are you running with nohz?
+
+No but I have CONFIG_HZ=250. That makes sense then :
+
+#define MFGPT_HZ  (32000 / MFGPT_DIVISOR)
+#define MFGPT_PERIODIC (MFGPT_HZ / HZ)
+
+=> MFGPT_PERIODIC = (32000 / 16) / 250 = 8
+Given that it's 32.768 kHz in fact, we get 32768/16/8 = 256 Hz
+
+> >  * We are using the 32Khz input clock - its the only one that has the
+> >  * ranges we find desirable.  The following table lists the suitable
+> >  * divisors and the associated hz, minimum interval
+> >  * and the maximum interval:
+> >  *
+> >  *  Divisor   Hz      Min Delta (S) Max Delta (S)
+> >  *   1        32000     .0005          2.048
+> >  *   2        16000      .001          4.096
+> >  *   4         8000      .002          8.192
+> > ...
+> > 
+> > When you say a 32kHz clock, you mean 32000 Hz. Are you really sure ? Most
+> > 32 kHz clocks everywhere are really 32768 Hz (the watch quartz). BTW, I'm
+> > seeing a 32.768 kHz xtal close to the CS5536, and the numbers above seem
+> > to support this suggestion too.
+> 
+> Hmm - yeah, my math is off there - it is a 32768 Hz clock.  That
+> shouldn't affect things too negatively - if it does we can adjust the
+> divisor we use - currently we use 16.
+
+Why not just ajust the constant in MFGPT_HZ since it's the only place (aside
+the comments) where this is referenced ?
+
+If you want I can send you a patch and adjust the comments at the same time.
+
+> > So right now that I've found what caused old kernel to unexpectedly work,
+> > I'm planning a BIOS upgrade. I'm still just wondering what we can do to
+> > detect that the workaround should be needed. I suspect nothing, of course,
+> > but just in case... Maybe we can detect the effects of the workaround ?
+> 
+> I'm not sure if we can - all we can tell is if the registers are zero or
+> not.  Like I said, running the MSR is probably dangerous in 9 out of 10
+> situations, the one good use being the one you determined.  I would
+> support adding the mfgptfix bit though - just as long as it isn't 
+> automagic.
+
+OK I perfectly understand. While I see the current behaviour as a regression
+compared to 2.6.22-mainline (since 2.6.24-rc8 does not boot off from this
+board without nomfgpt), the first problem is in the BIOS and it requires an
+upgrade. Maybe we should extend the scope of CONFIG_GEODE_MFGPT_TIMER to
+allow it to completely disable the detection logic when it's off ? I certainly
+can work a clean patch for "mfgptfix", but for users who will get caught with
+this board not booting at all anymore, adding an option in their boot loaders
+may be as problematic as upgrading the BIOS. I'm also thinking about the ones
+preparing new software updates from a recent boards and deploying them miles
+away without knowing they are running a 0.98 BIOS which will prevent their
+new kernel from booting.
+
+> Thank you very much for your help!
+
+You're welcome, thanks to you too :-)
+Willy
 
