@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761981AbYAVDLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760627AbYAVDL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761981AbYAVDLk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758112AbYAVDGI
+	id S1760627AbYAVDL6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:11:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbYAVDGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:06:08 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:65372 "EHLO
+	Mon, 21 Jan 2008 22:06:33 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:32889 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756642AbYAVDGF (ORCPT
+	by vger.kernel.org with ESMTP id S1759806AbYAVDGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:06:05 -0500
+	Mon, 21 Jan 2008 22:06:31 -0500
 From: "Theodore Ts'o" <tytso@MIT.EDU>
 To: linux-kernel@vger.kernel.org
-Cc: Eric Sandeen <sandeen@redhat.com>
-Subject: [PATCH 21/49] ext4: fix oops on corrupted ext4 mount
-Date: Mon, 21 Jan 2008 22:02:00 -0500
-Message-Id: <1200970948-17903-22-git-send-email-tytso@mit.edu>
+Cc: Jan Kara <jack@suse.cz>, <linux-ext4@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 26/49] jbd2: Fix assertion failure in fs/jbd2/checkpoint.c
+Date: Mon, 21 Jan 2008 22:02:05 -0500
+Message-Id: <1200970948-17903-27-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
-In-Reply-To: <1200970948-17903-21-git-send-email-tytso@mit.edu>
+In-Reply-To: <1200970948-17903-26-git-send-email-tytso@mit.edu>
 References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-2-git-send-email-tytso@mit.edu>
  <1200970948-17903-3-git-send-email-tytso@mit.edu>
@@ -39,80 +40,109 @@ References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-19-git-send-email-tytso@mit.edu>
  <1200970948-17903-20-git-send-email-tytso@mit.edu>
  <1200970948-17903-21-git-send-email-tytso@mit.edu>
+ <1200970948-17903-22-git-send-email-tytso@mit.edu>
+ <1200970948-17903-23-git-send-email-tytso@mit.edu>
+ <1200970948-17903-24-git-send-email-tytso@mit.edu>
+ <1200970948-17903-25-git-send-email-tytso@mit.edu>
+ <1200970948-17903-26-git-send-email-tytso@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Sandeen <sandeen@redhat.com>
+From: Jan Kara <jack@suse.cz>
 
-When mounting an ext4 filesystem with corrupted s_first_data_block, things
-can go very wrong and oops.
+Before we start committing a transaction, we call
+__journal_clean_checkpoint_list() to cleanup transaction's written-back
+buffers.
 
-Because blocks_count in ext4_fill_super is a u64, and we must use do_div,
-the calculation of db_count is done differently than on ext4.  If
-first_data_block is corrupted such that it is larger than ext4_blocks_count,
-for example, then the intermediate blocks_count value may go negative,
-but sign-extend to a very large value:
+If this call happens to remove all of them (and there were already some
+buffers), __journal_remove_checkpoint() will decide to free the transaction
+because it isn't (yet) a committing transaction and soon we fail some
+assertion - the transaction really isn't ready to be freed :).
 
-        blocks_count = (ext4_blocks_count(es) -
-                        le32_to_cpu(es->s_first_data_block) +
-                        EXT4_BLOCKS_PER_GROUP(sb) - 1);
+We change the check in __journal_remove_checkpoint() to free only a
+transaction in T_FINISHED state.  The locking there is subtle though (as
+everywhere in JBD ;().  We use j_list_lock to protect the check and a
+subsequent call to __journal_drop_transaction() and do the same in the end
+of journal_commit_transaction() which is the only place where a transaction
+can get to T_FINISHED state.
 
-This is then assigned to s_groups_count which is an unsigned long:
+Probably I'm too paranoid here and such locking is not really necessary -
+checkpoint lists are processed only from log_do_checkpoint() where a
+transaction must be already committed to be processed or from
+__journal_clean_checkpoint_list() where kjournald itself calls it and thus
+transaction cannot change state either.  Better be safe if something
+changes in future...
 
-        sbi->s_groups_count = blocks_count;
-
-This may result in a value of 0xFFFFFFFF which is then used to compute
-db_count:
-
-        db_count = (sbi->s_groups_count + EXT4_DESC_PER_BLOCK(sb) - 1) /
-                   EXT4_DESC_PER_BLOCK(sb);
-
-and in this case db_count will wind up as 0 because the addition overflows
-32 bits.  This in turn causes the kmalloc for group_desc to be of 0 size:
-
-        sbi->s_group_desc = kmalloc(db_count * sizeof (struct buffer_head *),
-                                    GFP_KERNEL);
-
-and eventually in ext4_check_descriptors, dereferencing
-sbi->s_group_desc[desc_block] will result in a NULL pointer dereference.
-
-The simplest test seems to be to sanity check s_first_data_block,
-EXT4_BLOCKS_PER_GROUP, and ext4_blocks_count values to be sure
-their combination won't result in a bad intermediate value for
-blocks_count.  We could just check for db_count == 0, but
-catching it at the root cause seems like it provides more info.
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Reviewed-by: Mingming Cao <cmm@us.ibm.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
+Cc: <linux-ext4@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- fs/ext4/super.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+ fs/jbd2/checkpoint.c |   12 ++++++------
+ fs/jbd2/commit.c     |    8 ++++----
+ include/linux/jbd2.h |    2 ++
+ 3 files changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 1484a08..32e3ecb 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -1997,6 +1997,17 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+diff --git a/fs/jbd2/checkpoint.c b/fs/jbd2/checkpoint.c
+index 3fccde7..7e958c8 100644
+--- a/fs/jbd2/checkpoint.c
++++ b/fs/jbd2/checkpoint.c
+@@ -602,15 +602,15 @@ int __jbd2_journal_remove_checkpoint(struct journal_head *jh)
  
- 	if (EXT4_BLOCKS_PER_GROUP(sb) == 0)
- 		goto cantfind_ext4;
-+
-+	/* ensure blocks_count calculation below doesn't sign-extend */
-+	if (ext4_blocks_count(es) + EXT4_BLOCKS_PER_GROUP(sb) <
-+	    le32_to_cpu(es->s_first_data_block) + 1) {
-+		printk(KERN_WARNING "EXT4-fs: bad geometry: block count %llu, "
-+		       "first data block %u, blocks per group %lu\n",
-+			ext4_blocks_count(es),
-+			le32_to_cpu(es->s_first_data_block),
-+			EXT4_BLOCKS_PER_GROUP(sb));
-+		goto failed_mount;
-+	}
- 	blocks_count = (ext4_blocks_count(es) -
- 			le32_to_cpu(es->s_first_data_block) +
- 			EXT4_BLOCKS_PER_GROUP(sb) - 1);
+ 	/*
+ 	 * There is one special case to worry about: if we have just pulled the
+-	 * buffer off a committing transaction's forget list, then even if the
+-	 * checkpoint list is empty, the transaction obviously cannot be
+-	 * dropped!
++	 * buffer off a running or committing transaction's checkpoing list,
++	 * then even if the checkpoint list is empty, the transaction obviously
++	 * cannot be dropped!
+ 	 *
+-	 * The locking here around j_committing_transaction is a bit sleazy.
++	 * The locking here around t_state is a bit sleazy.
+ 	 * See the comment at the end of jbd2_journal_commit_transaction().
+ 	 */
+-	if (transaction == journal->j_committing_transaction) {
+-		JBUFFER_TRACE(jh, "belongs to committing transaction");
++	if (transaction->t_state != T_FINISHED) {
++		JBUFFER_TRACE(jh, "belongs to running/committing transaction");
+ 		goto out;
+ 	}
+ 
+diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+index 6986f33..39b5cee 100644
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -867,10 +867,10 @@ restart_loop:
+ 	}
+ 	spin_unlock(&journal->j_list_lock);
+ 	/*
+-	 * This is a bit sleazy.  We borrow j_list_lock to protect
+-	 * journal->j_committing_transaction in __jbd2_journal_remove_checkpoint.
+-	 * Really, __jbd2_journal_remove_checkpoint should be using j_state_lock but
+-	 * it's a bit hassle to hold that across __jbd2_journal_remove_checkpoint
++	 * This is a bit sleazy.  We use j_list_lock to protect transition
++	 * of a transaction into T_FINISHED state and calling
++	 * __jbd2_journal_drop_transaction(). Otherwise we could race with
++	 * other checkpointing code processing the transaction...
+ 	 */
+ 	spin_lock(&journal->j_state_lock);
+ 	spin_lock(&journal->j_list_lock);
+diff --git a/include/linux/jbd2.h b/include/linux/jbd2.h
+index d5f7cff..d861ffd 100644
+--- a/include/linux/jbd2.h
++++ b/include/linux/jbd2.h
+@@ -442,6 +442,8 @@ struct transaction_s
+ 	/*
+ 	 * Transaction's current state
+ 	 * [no locking - only kjournald2 alters this]
++	 * [j_list_lock] guards transition of a transaction into T_FINISHED
++	 * state and subsequent call of __jbd2_journal_drop_transaction()
+ 	 * FIXME: needs barriers
+ 	 * KLUDGE: [use j_state_lock]
+ 	 */
 -- 
 1.5.4.rc3.31.g1271-dirty
 
