@@ -1,124 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbYAVSQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbYAVSVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753916AbYAVSQz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 13:16:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYAVSQq
+	id S1754722AbYAVSVd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 13:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYAVSV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 13:16:46 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:29621 "EHLO
-	outbound6-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751888AbYAVSQp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 13:16:45 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
-Date: Tue, 22 Jan 2008 11:15:42 -0700
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-To: "Arnd Hannemann" <hannemann@i4.informatik.rwth-aachen.de>
-cc: "Lars Heete" <hel@admin.de>, "Andres Salomon" <dilinger@queued.net>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
-Message-ID: <20080122181542.GB5241@cosmic.amd.com>
-References: <20080116165606.3ebc06a4@ephemeral>
- <478FCDB6.4010708@i4.informatik.rwth-aachen.de>
- <4795B14C.7040502@i4.informatik.rwth-aachen.de>
- <200801221111.21240.hel@admin.de>
- <4795D120.7070806@i4.informatik.rwth-aachen.de>
+	Tue, 22 Jan 2008 13:21:26 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:23044 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751426AbYAVSV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 13:21:26 -0500
+Date: Tue, 22 Jan 2008 19:21:21 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, knikanth@novell.com
+Subject: Re: [PATCH 0/6] IO context sharing
+Message-ID: <20080122182121.GX6258@kernel.dk>
+References: <1200995361-24001-1-git-send-email-jens.axboe@oracle.com> <1201013372.6341.19.camel@lappy>
 MIME-Version: 1.0
-In-Reply-To: <4795D120.7070806@i4.informatik.rwth-aachen.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 22 Jan 2008 18:14:29.0388 (UTC)
- FILETIME=[A124E4C0:01C85D22]
-X-WSS-ID: 6B88ED610QK8490730-13-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1201013372.6341.19.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22/01/08 12:18 +0100, Arnd Hannemann wrote:
-> Hi Lars,
+On Tue, Jan 22 2008, Peter Zijlstra wrote:
 > 
-> Lars Heete schrieb:
-> > Hello,
+> On Tue, 2008-01-22 at 10:49 +0100, Jens Axboe wrote:
+> > Hi,
 > > 
-> > On Tuesday 22 January 2008 10:03:08 am Arnd Hannemann wrote:
-> >> Jordan Crouse wrote:
-> >>> Okay - I've been exploring a little bit more.  I talked to the TinyBIOS
-> >>> developer, and he verified that TinyBIOS shouldn't use any MFGPT timers.
-> >>> He also told me that the mysterious "MFGPT workaround" was in fact the
-> >>> magic MFGPT erasing MSR that was in the old kernel driver.
-> >>>
-> >>> So with the "MFGPT workaround" turned off, TinyBIOS should be acting like
-> >>> the OLPC firmware with regards to timers, yet it is not.  So that is
-> >>> curious.  I think I might have identified a race condition in the code,
-> >>> but I'm not 100% sure thats the same problem that the ALIX platform is
-> >>> seeing.
-> >>>
-> >>> Anrd and others - will you please try the attached patch on your platform
-> >>> with the "MFGPT workaround" turned off and mfgpts enabled, and send out
-> >>> the dmesg?
-> >> Of course, tinyBios version v0.99, "MFGPT workaround" turned off,
-> >> CONFIG_GEODE_MFGPT_TIMER=n:
-> >>
-> >> [   67.369697] NET: Registered protocol family 16
-> >> [   67.383059] geode-mfgpt:  IRQ MSR=0:0
-> >> [   67.394058] geode-mfgpt:  NMI MSR=0:0
-> >> [   67.405049] geode-mfgpt:  Unrestricted sources=0
-> >> [   67.418909] geode:  8 MFGPT timers available.
-> >> [   67.433211] PCI: PCI BIOS revision 2.10 entry at 0xfcd03, last bus=0
-> >>
-> >> same with CONFIG_GEODE_MFGPT_TIMER=y (sorry, without move printk patch):
-> >>
-> >> [   22.289349] NET: Registered protocol family 16
-> >> [   22.302716] geode-mfgpt:  IRQ MSR=0:0
-> >> [   22.313716] geode-mfgpt:  NMI MSR=0:0
-> >> [   22.324704] geode-mfgpt:  Unrestricted sources=0
-> >> [   22.338566] geode-mfgpt:  Registered timer 0
-> >> [   22.351393] mfgpt-timer:  registering the MFGT timer as a clock event.
-> >> ^^^^ Hangs here
-> > I had the same problem with MFGPT Timers and alix (BIOS v0.99). I found that 
-> > if you use a different interrupt than the default 7 for MFGPT (just append 
-> > mfgpt_irq=8 to the kernel commandline), the timer seems to work.
+> > Today io contexts are per-process and define the (surprise) io context
+> > of that process. In some situations it would be handy if several
+> > processes share an IO context. With syslets it's especially crucial that
+> > the threads working on behalf of the parent process are seen as the same
+> > IO context. That goes from both a fairness and performance point of
+> > view, since IO schedulers like AS and CFQ base decisions on what the
+> > IO context state is. This patchset adds support for processes sharing a
+> > single io context and also adds a CLONE_IO flag to denote sharing of
+> > IO context.
 > 
-> Indeed.
-> Strange, it works at least with mfgpt_irq=8 (rtc) and mfgpt_irq=5 (audio):
+> Are you planning on extending this to a hierarchical CFQ for cgroups, or
+> just giving the IO context to a cgroup?
 
-That is very unfortunate.  We must continue to investigate.
+Not sure what extra extensions it would need on the IO side. As long as
+the other side makes sure to group its processes by sharing IO context,
+then CFQ will treat that as a single entity.
 
-> [   21.805129] geode-mfgpt:  IRQ MSR=0:0
-> [   21.816129] geode-mfgpt:  NMI MSR=0:0
-> [   21.827116] geode-mfgpt:  Unrestricted sources=0
-> [   21.840979] geode-mfgpt:  Registered timer 0
-> [   21.853806] mfgpt-timer:  registering the MFGT timer as a clock event.
-> [   21.873576] geode:  8 MFGPT timers available.
-> [   21.887962] PCI: PCI BIOS revision 2.10 entry at 0xfcd03, last bus=0
-> 
-<snip>
-
-> I noted that "rtc" disappeared, do I have any drawback of this?
-> I assume that the mfgpt-timer cannot be shared?
-
-No.  We figured that was the best way to go.  I don't know if there
-are any technical reasons why it can't be shared, other then latency
-problems.
-
-But I would still prefer to figure out why 7 doesn't work - because there
-is nothing in the hardware or kernel code that should prevent that.
-
-Arnd - if you don't mind doing a little bit more debug work.  You've already
-given us the MSRs for 0x51400020 - 0x51400023.  Can you now give us 
-0x51400024-0x51400027, as well as 5140004E?  Our current working theory
-is that IRQ7 (traditionally used by the LPT port) is still conflicting
-somewhere.
-
-Jordan
 -- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
+Jens Axboe
 
