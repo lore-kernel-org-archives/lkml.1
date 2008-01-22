@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762676AbYAVDQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762848AbYAVDQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762676AbYAVDQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:16:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758262AbYAVDG7
+	id S1762848AbYAVDQt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:16:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758021AbYAVDHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:06:59 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:32924 "EHLO
+	Mon, 21 Jan 2008 22:07:04 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:33003 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760129AbYAVDGu (ORCPT
+	by vger.kernel.org with ESMTP id S1758296AbYAVDHA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:06:50 -0500
+	Mon, 21 Jan 2008 22:07:00 -0500
 From: "Theodore Ts'o" <tytso@MIT.EDU>
 To: linux-kernel@vger.kernel.org
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 36/49] ext4: Add EXT4_IOC_MIGRATE ioctl
-Date: Mon, 21 Jan 2008 22:02:15 -0500
-Message-Id: <1200970948-17903-37-git-send-email-tytso@mit.edu>
+Cc: Eric Sandeen <sandeen@redhat.com>
+Subject: [PATCH 13/49] ext4: different maxbytes functions for bitmap & extent	files
+Date: Mon, 21 Jan 2008 22:01:52 -0500
+Message-Id: <1200970948-17903-14-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
-In-Reply-To: <1200970948-17903-36-git-send-email-tytso@mit.edu>
+In-Reply-To: <1200970948-17903-13-git-send-email-tytso@mit.edu>
 References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-2-git-send-email-tytso@mit.edu>
  <1200970948-17903-3-git-send-email-tytso@mit.edu>
@@ -31,738 +31,88 @@ References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-11-git-send-email-tytso@mit.edu>
  <1200970948-17903-12-git-send-email-tytso@mit.edu>
  <1200970948-17903-13-git-send-email-tytso@mit.edu>
- <1200970948-17903-14-git-send-email-tytso@mit.edu>
- <1200970948-17903-15-git-send-email-tytso@mit.edu>
- <1200970948-17903-16-git-send-email-tytso@mit.edu>
- <1200970948-17903-17-git-send-email-tytso@mit.edu>
- <1200970948-17903-18-git-send-email-tytso@mit.edu>
- <1200970948-17903-19-git-send-email-tytso@mit.edu>
- <1200970948-17903-20-git-send-email-tytso@mit.edu>
- <1200970948-17903-21-git-send-email-tytso@mit.edu>
- <1200970948-17903-22-git-send-email-tytso@mit.edu>
- <1200970948-17903-23-git-send-email-tytso@mit.edu>
- <1200970948-17903-24-git-send-email-tytso@mit.edu>
- <1200970948-17903-25-git-send-email-tytso@mit.edu>
- <1200970948-17903-26-git-send-email-tytso@mit.edu>
- <1200970948-17903-27-git-send-email-tytso@mit.edu>
- <1200970948-17903-28-git-send-email-tytso@mit.edu>
- <1200970948-17903-29-git-send-email-tytso@mit.edu>
- <1200970948-17903-30-git-send-email-tytso@mit.edu>
- <1200970948-17903-31-git-send-email-tytso@mit.edu>
- <1200970948-17903-32-git-send-email-tytso@mit.edu>
- <1200970948-17903-33-git-send-email-tytso@mit.edu>
- <1200970948-17903-34-git-send-email-tytso@mit.edu>
- <1200970948-17903-35-git-send-email-tytso@mit.edu>
- <1200970948-17903-36-git-send-email-tytso@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+From: Eric Sandeen <sandeen@redhat.com>
 
-The below patch add ioctl for migrating ext3 indirect block mapped inode
-to ext4 extent mapped inode.
+use 2 different maxbytes functions for bitmapped & extent-based
+files.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
 ---
- fs/ext4/Makefile        |    2 +-
- fs/ext4/ioctl.c         |    3 +
- fs/ext4/migrate.c       |  634 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/ext4_fs.h |    4 +
- 4 files changed, 642 insertions(+), 1 deletions(-)
- create mode 100644 fs/ext4/migrate.c
+ fs/ext4/super.c |   45 ++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 42 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ext4/Makefile b/fs/ext4/Makefile
-index ae6e7e5..d5fd80b 100644
---- a/fs/ext4/Makefile
-+++ b/fs/ext4/Makefile
-@@ -6,7 +6,7 @@ obj-$(CONFIG_EXT4DEV_FS) += ext4dev.o
- 
- ext4dev-y	:= balloc.o bitmap.o dir.o file.o fsync.o ialloc.o inode.o \
- 		   ioctl.o namei.o super.o symlink.o hash.o resize.o extents.o \
--		   ext4_jbd2.o
-+		   ext4_jbd2.o migrate.o
- 
- ext4dev-$(CONFIG_EXT4DEV_FS_XATTR)	+= xattr.o xattr_user.o xattr_trusted.o
- ext4dev-$(CONFIG_EXT4DEV_FS_POSIX_ACL)	+= acl.o
-diff --git a/fs/ext4/ioctl.c b/fs/ext4/ioctl.c
-index c0e5b8c..2ed7c37 100644
---- a/fs/ext4/ioctl.c
-+++ b/fs/ext4/ioctl.c
-@@ -254,6 +254,9 @@ flags_err:
- 		return err;
- 	}
- 
-+	case EXT4_IOC_MIGRATE:
-+		return ext4_ext_migrate(inode, filp, cmd, arg);
-+
- 	default:
- 		return -ENOTTY;
- 	}
-diff --git a/fs/ext4/migrate.c b/fs/ext4/migrate.c
-new file mode 100644
-index 0000000..7203d3d
---- /dev/null
-+++ b/fs/ext4/migrate.c
-@@ -0,0 +1,634 @@
-+/*
-+ * Copyright IBM Corporation, 2007
-+ * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of version 2.1 of the GNU Lesser General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it would be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/ext4_jbd2.h>
-+#include <linux/ext4_fs_extents.h>
-+
-+struct list_blocks_struct {
-+	ext4_lblk_t first_block, last_block;
-+	ext4_fsblk_t first_pblock, last_pblock;
-+};
-+
-+/* will go away */
-+static void ext4_ext_store_pblock(struct ext4_extent *ex, ext4_fsblk_t pb)
-+{
-+	ex->ee_start_lo = cpu_to_le32((unsigned long) (pb & 0xffffffff));
-+	ex->ee_start_hi = cpu_to_le16((unsigned long) ((pb >> 31) >> 1)
-+								& 0xffff);
-+}
-+
-+static int finish_range(handle_t *handle, struct inode *inode,
-+				struct list_blocks_struct *lb)
-+
-+{
-+	int retval = 0, needed;
-+	struct ext4_extent newext;
-+	struct ext4_ext_path *path;
-+	if (lb->first_pblock == 0)
-+		return 0;
-+
-+	/* Add the extent to temp inode*/
-+	newext.ee_block = cpu_to_le32(lb->first_block);
-+	newext.ee_len   = cpu_to_le16(lb->last_block - lb->first_block + 1);
-+	ext4_ext_store_pblock(&newext, lb->first_pblock);
-+	path = ext4_ext_find_extent(inode, lb->first_block, NULL);
-+
-+	if (IS_ERR(path)) {
-+		retval = PTR_ERR(path);
-+		goto err_out;
-+	}
-+
-+	/*
-+	 * Calculate the credit needed to inserting this extent
-+	 * Since we are doing this in loop we may accumalate extra
-+	 * credit. But below we try to not accumalate too much
-+	 * of them by restarting the journal.
-+	 */
-+	needed = ext4_ext_calc_credits_for_insert(inode, path);
-+
-+	/*
-+	 * Make sure the credit we accumalated is not really high
-+	 */
-+
-+	if (needed && handle->h_buffer_credits >= EXT4_RESERVE_TRANS_BLOCKS) {
-+
-+		retval = ext4_journal_restart(handle, needed);
-+		if (retval)
-+			goto err_out;
-+
-+	}
-+
-+	if (needed) {
-+		retval = ext4_journal_extend(handle, needed);
-+		if (retval != 0) {
-+			/*
-+			 * IF not able to extend the journal restart the journal
-+			 */
-+			retval = ext4_journal_restart(handle, needed);
-+			if (retval)
-+				goto err_out;
-+		}
-+	}
-+
-+	retval = ext4_ext_insert_extent(handle, inode, path, &newext);
-+
-+err_out:
-+	lb->first_pblock = 0;
-+	return retval;
-+}
-+static int update_extent_range(handle_t *handle, struct inode *inode,
-+				ext4_fsblk_t pblock, ext4_lblk_t blk_num,
-+				struct list_blocks_struct *lb)
-+{
-+	int retval;
-+
-+	/*
-+	 * See if we can add on to the existing range (if it exists)
-+	 */
-+	if (lb->first_pblock &&
-+		(lb->last_pblock+1 == pblock) &&
-+		(lb->last_block+1 == blk_num)) {
-+		lb->last_pblock = pblock;
-+		lb->last_block = blk_num;
-+		return 0;
-+	}
-+	/*
-+	 * Start a new range.
-+	 */
-+	retval = finish_range(handle, inode, lb);
-+	lb->first_pblock = lb->last_pblock = pblock;
-+	lb->first_block = lb->last_block = blk_num;
-+
-+	return retval;
-+
-+}
-+
-+static int update_ind_extent_range(handle_t *handle, struct inode *inode,
-+				   ext4_fsblk_t pblock, ext4_lblk_t *blk_nump,
-+				   struct list_blocks_struct *lb)
-+{
-+	struct buffer_head *bh;
-+	__le32 *i_data;
-+	int i, retval = 0;
-+	ext4_lblk_t blk_count = *blk_nump;
-+	unsigned long max_entries = inode->i_sb->s_blocksize >> 2;
-+
-+	if (!pblock) {
-+		/* Only update the file block number */
-+		*blk_nump += max_entries;
-+		return 0;
-+	}
-+
-+	bh = sb_bread(inode->i_sb, pblock);
-+	if (!bh)
-+		return -EIO;
-+
-+	i_data = (__le32 *)bh->b_data;
-+
-+	for (i = 0; i < max_entries; i++, blk_count++) {
-+		if (i_data[i]) {
-+			retval = update_extent_range(handle, inode,
-+						le32_to_cpu(i_data[i]),
-+						blk_count, lb);
-+			if (retval)
-+				break;
-+		}
-+	}
-+
-+	/* Update the file block number */
-+	*blk_nump = blk_count;
-+	brelse(bh);
-+	return retval;
-+
-+}
-+static int update_dind_extent_range(handle_t *handle, struct inode *inode,
-+				    ext4_fsblk_t pblock, ext4_lblk_t *blk_nump,
-+				    struct list_blocks_struct *lb)
-+{
-+	struct buffer_head *bh;
-+	__le32 *i_data;
-+	int i, retval = 0;
-+	ext4_lblk_t blk_count = *blk_nump;
-+	unsigned long max_entries = inode->i_sb->s_blocksize >> 2;
-+
-+	if (!pblock) {
-+		/* Only update the file block number */
-+		*blk_nump += max_entries * max_entries;
-+		return 0;
-+	}
-+
-+	bh = sb_bread(inode->i_sb, pblock);
-+	if (!bh)
-+		return -EIO;
-+
-+	i_data = (__le32 *)bh->b_data;
-+
-+	for (i = 0; i < max_entries; i++) {
-+		if (i_data[i]) {
-+			retval = update_ind_extent_range(handle, inode,
-+						le32_to_cpu(i_data[i]),
-+						&blk_count, lb);
-+			if (retval)
-+				break;
-+		} else {
-+			/* Only update the file block number */
-+			blk_count += max_entries;
-+		}
-+	}
-+
-+	/* Update the file block number */
-+	*blk_nump = blk_count;
-+	brelse(bh);
-+	return retval;
-+
-+}
-+static int update_tind_extent_range(handle_t *handle, struct inode *inode,
-+				     ext4_fsblk_t pblock, ext4_lblk_t *blk_nump,
-+				     struct list_blocks_struct *lb)
-+{
-+	struct buffer_head *bh;
-+	__le32 *i_data;
-+	int i, retval = 0;
-+	ext4_lblk_t blk_count = *blk_nump;
-+	unsigned long max_entries = inode->i_sb->s_blocksize >> 2;
-+
-+	if (!pblock) {
-+		/* Only update the file block number */
-+		*blk_nump += max_entries * max_entries * max_entries;
-+		return 0;
-+	}
-+
-+	bh = sb_bread(inode->i_sb, pblock);
-+	if (!bh)
-+		return -EIO;
-+
-+	i_data = (__le32 *)bh->b_data;
-+
-+	for (i = 0; i < max_entries; i++) {
-+		if (i_data[i]) {
-+			retval = update_dind_extent_range(handle, inode,
-+						le32_to_cpu(i_data[i]),
-+						&blk_count, lb);
-+			if (retval)
-+				break;
-+		} else {
-+			/* Only update the file block number */
-+			blk_count += max_entries * max_entries;
-+		}
-+	}
-+
-+	/* Update the file block number */
-+	*blk_nump = blk_count;
-+	brelse(bh);
-+	return retval;
-+
-+}
-+
-+
-+static int free_dind_blocks(handle_t *handle,
-+				struct inode *inode, __le32 i_data)
-+{
-+	int i;
-+	__le32 *tmp_idata;
-+	struct buffer_head *bh;
-+	unsigned long max_entries = inode->i_sb->s_blocksize >> 2;
-+
-+	bh = sb_bread(inode->i_sb, le32_to_cpu(i_data));
-+	if (!bh)
-+		return -EIO;
-+
-+	tmp_idata = (__le32 *)bh->b_data;
-+	for (i = 0; i < max_entries; i++) {
-+		if (tmp_idata[i]) {
-+			ext4_free_blocks(handle, inode,
-+					le32_to_cpu(tmp_idata[i]), 1);
-+		}
-+	}
-+	brelse(bh);
-+	ext4_free_blocks(handle, inode, le32_to_cpu(i_data), 1);
-+
-+	return 0;
-+
-+
-+}
-+
-+static int free_tind_blocks(handle_t *handle,
-+				struct inode *inode, __le32 i_data)
-+{
-+	int i, retval = 0;
-+	__le32 *tmp_idata;
-+	struct buffer_head *bh;
-+	unsigned long max_entries = inode->i_sb->s_blocksize >> 2;
-+
-+	bh = sb_bread(inode->i_sb, le32_to_cpu(i_data));
-+	if (!bh)
-+		return -EIO;
-+
-+	tmp_idata = (__le32 *)bh->b_data;
-+
-+	for (i = 0; i < max_entries; i++) {
-+		if (tmp_idata[i]) {
-+			retval = free_dind_blocks(handle,
-+					inode, tmp_idata[i]);
-+			if (retval) {
-+				brelse(bh);
-+				return retval;
-+			}
-+		}
-+	}
-+	brelse(bh);
-+	ext4_free_blocks(handle, inode, le32_to_cpu(i_data), 1);
-+
-+	return 0;
-+
-+
-+}
-+
-+static int free_ind_block(handle_t *handle, struct inode *inode)
-+{
-+	int retval;
-+	struct ext4_inode_info *ei = EXT4_I(inode);
-+
-+	if (ei->i_data[EXT4_IND_BLOCK]) {
-+
-+		ext4_free_blocks(handle, inode,
-+				le32_to_cpu(ei->i_data[EXT4_IND_BLOCK]), 1);
-+
-+	}
-+
-+	if (ei->i_data[EXT4_DIND_BLOCK]) {
-+		retval = free_dind_blocks(handle, inode,
-+						ei->i_data[EXT4_DIND_BLOCK]);
-+		if (retval)
-+			return retval;
-+	}
-+
-+	if (ei->i_data[EXT4_TIND_BLOCK]) {
-+		retval = free_tind_blocks(handle, inode,
-+						ei->i_data[EXT4_TIND_BLOCK]);
-+		if (retval)
-+			return retval;
-+	}
-+
-+
-+	return 0;
-+}
-+static int ext4_ext_swap_inode_data(handle_t *handle, struct inode *inode,
-+				struct inode *tmp_inode, int retval)
-+{
-+	struct ext4_inode_info *ei = EXT4_I(inode);
-+	struct ext4_inode_info *tmp_ei = EXT4_I(tmp_inode);
-+
-+
-+	retval = free_ind_block(handle, inode);
-+	if (retval)
-+		goto err_out;
-+
-+	/*
-+	 * One credit accounted for writing the
-+	 * i_data field of the original inode
-+	 */
-+	retval = ext4_journal_extend(handle, 1);
-+	if (retval != 0) {
-+		retval = ext4_journal_restart(handle, 1);
-+		if (retval)
-+			goto err_out;
-+	}
-+
-+	/*
-+	 * We have the extent map build with the tmp inode.
-+	 * Now copy the i_data across
-+	 */
-+	ei->i_flags |= EXT4_EXTENTS_FL;
-+	memcpy(ei->i_data, tmp_ei->i_data, sizeof(ei->i_data));
-+
-+	/*
-+	 * Update i_blocks with the new blocks that got
-+	 * allocated while adding extents for extent index
-+	 * blocks.
-+	 *
-+	 * While converting to extents we need not
-+	 * update the orignal inode i_blocks for extent blocks
-+	 * via quota APIs. The quota update happened via tmp_inode already.
-+	 */
-+	spin_lock(&inode->i_lock);
-+	inode->i_blocks += tmp_inode->i_blocks;
-+	spin_unlock(&inode->i_lock);
-+
-+	ext4_mark_inode_dirty(handle, inode);
-+
-+err_out:
-+
-+	return retval;
-+}
-+
-+/* Will go away */
-+static ext4_fsblk_t idx_pblock(struct ext4_extent_idx *ix)
-+{
-+	ext4_fsblk_t block;
-+
-+	block = le32_to_cpu(ix->ei_leaf_lo);
-+	block |= ((ext4_fsblk_t) le16_to_cpu(ix->ei_leaf_hi) << 31) << 1;
-+	return block;
-+}
-+
-+static int free_ext_idx(handle_t *handle, struct inode *inode,
-+					struct ext4_extent_idx *ix)
-+{
-+	int i, retval = 0;
-+	ext4_fsblk_t block;
-+	struct buffer_head *bh;
-+	struct ext4_extent_header *eh;
-+
-+
-+	block = idx_pblock(ix);
-+	bh = sb_bread(inode->i_sb, block);
-+	if (!bh)
-+		return -EIO;
-+
-+	eh = (struct ext4_extent_header *)bh->b_data;
-+	if (eh->eh_depth == 0) {
-+
-+		brelse(bh);
-+		ext4_free_blocks(handle, inode, block, 1);
-+
-+	} else {
-+
-+		ix = EXT_FIRST_INDEX(eh);
-+		for (i = 0; i < le16_to_cpu(eh->eh_entries); i++, ix++) {
-+			retval = free_ext_idx(handle, inode, ix);
-+			if (retval)
-+				return retval;
-+		}
-+
-+	}
-+
-+	return retval;
-+
-+}
-+/*
-+ * Free the extent meta data blocks only
-+ */
-+static int free_ext_block(handle_t *handle, struct inode *inode)
-+{
-+	int i, retval = 0;
-+	struct ext4_inode_info *ei = EXT4_I(inode);
-+	struct ext4_extent_header *eh = (struct ext4_extent_header *)ei->i_data;
-+	struct ext4_extent_idx *ix;
-+	if (eh->eh_depth == 0) {
-+		/*
-+		 * No extra blocks allocated for extent meta data
-+		 */
-+		return 0;
-+	}
-+	ix = EXT_FIRST_INDEX(eh);
-+	for (i = 0; i < le16_to_cpu(eh->eh_entries); i++, ix++) {
-+		retval = free_ext_idx(handle, inode, ix);
-+		if (retval)
-+			return retval;
-+	}
-+
-+	return retval;
-+
-+}
-+int ext4_ext_migrate(struct inode *inode, struct file *filp,
-+				unsigned int cmd, unsigned long arg)
-+{
-+	handle_t *handle;
-+	int retval = 0, i;
-+	__le32 *i_data;
-+	ext4_lblk_t blk_count = 0;
-+	struct ext4_inode_info *ei;
-+	struct inode *tmp_inode = NULL;
-+	struct list_blocks_struct lb;
-+	unsigned long max_entries;
-+
-+
-+	if (!test_opt(inode->i_sb, EXTENTS)) {
-+		/*
-+		 * if mounted with noextents
-+		 * we don't allow the migrate
-+		 */
-+		return -EINVAL;
-+	}
-+
-+	if ((EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
-+		return -EINVAL;
-+
-+	down_write(&EXT4_I(inode)->i_data_sem);
-+
-+
-+	handle = ext4_journal_start(inode,
-+					EXT4_DATA_TRANS_BLOCKS(inode->i_sb) +
-+					EXT4_INDEX_EXTRA_TRANS_BLOCKS + 3 +
-+					2 * EXT4_QUOTA_INIT_BLOCKS(inode->i_sb)
-+					+ 1);
-+	if (IS_ERR(handle)) {
-+		retval = PTR_ERR(handle);
-+		goto err_out;
-+	}
-+
-+	tmp_inode = ext4_new_inode(handle,
-+				inode->i_sb->s_root->d_inode,
-+				S_IFREG);
-+
-+	if (IS_ERR(tmp_inode)) {
-+		retval = -ENOMEM;
-+		ext4_journal_stop(handle);
-+		tmp_inode = NULL;
-+		goto err_out;
-+	}
-+
-+	i_size_write(tmp_inode, i_size_read(inode));
-+	/*
-+	 * We don't want the inode to be reclaimed
-+	 * if we got interrupted in between. We have
-+	 * this tmp inode carrying reference to the
-+	 * data blocks of the original file. We set
-+	 * the i_nlink to zero at the last stage after
-+	 * switching the original file to extent format
-+	 */
-+	tmp_inode->i_nlink = 1;
-+
-+	ext4_ext_tree_init(handle, tmp_inode);
-+	ext4_orphan_add(handle, tmp_inode);
-+	ext4_journal_stop(handle);
-+
-+	ei = EXT4_I(inode);
-+	i_data = ei->i_data;
-+	memset(&lb, 0, sizeof(lb));
-+
-+	/* 32 bit block address 4 bytes */
-+	max_entries = inode->i_sb->s_blocksize >> 2;
-+
-+	/*
-+	 * start with one credit accounted for
-+	 * superblock modification.
-+	 *
-+	 * For the tmp_inode we already have commited the
-+	 * trascation that created the inode. Later as and
-+	 * when we add extents we extent the journal
-+	 */
-+	handle = ext4_journal_start(inode, 1);
-+	for (i = 0; i < EXT4_NDIR_BLOCKS; i++, blk_count++) {
-+
-+		if (i_data[i]) {
-+			retval = update_extent_range(handle, tmp_inode,
-+						le32_to_cpu(i_data[i]),
-+						blk_count, &lb);
-+			if (retval)
-+				goto err_out;
-+		}
-+	}
-+
-+	if (i_data[EXT4_IND_BLOCK]) {
-+		retval = update_ind_extent_range(handle, tmp_inode,
-+					le32_to_cpu(i_data[EXT4_IND_BLOCK]),
-+					&blk_count, &lb);
-+			if (retval)
-+				goto err_out;
-+	} else {
-+		blk_count +=  max_entries;
-+	}
-+
-+	if (i_data[EXT4_DIND_BLOCK]) {
-+		retval = update_dind_extent_range(handle, tmp_inode,
-+					le32_to_cpu(i_data[EXT4_DIND_BLOCK]),
-+					&blk_count, &lb);
-+			if (retval)
-+				goto err_out;
-+	} else {
-+		blk_count += max_entries * max_entries;
-+	}
-+
-+
-+	if (i_data[EXT4_TIND_BLOCK]) {
-+		retval = update_tind_extent_range(handle, tmp_inode,
-+					le32_to_cpu(i_data[EXT4_TIND_BLOCK]),
-+					&blk_count, &lb);
-+			if (retval)
-+				goto err_out;
-+	}
-+
-+	/*
-+	 * Build the last extent
-+	 */
-+	retval = finish_range(handle, tmp_inode, &lb);
-+
-+err_out:
-+	/*
-+	 * We are either freeing extent information or indirect
-+	 * blocks. During this we touch superblock, group descriptor
-+	 * and block bitmap. Later we mark the tmp_inode dirty
-+	 * via ext4_ext_tree_init. So allocate a credit of 4
-+	 * We may update quota (user and group).
-+	 *
-+	 * FIXME!! we may be touching bitmaps in different block groups.
-+	 */
-+
-+	if (ext4_journal_extend(handle,
-+			4 + 2*EXT4_QUOTA_TRANS_BLOCKS(inode->i_sb)) != 0) {
-+
-+		ext4_journal_restart(handle,
-+				4 + 2*EXT4_QUOTA_TRANS_BLOCKS(inode->i_sb));
-+	}
-+
-+	if (retval) {
-+		/*
-+		 * Failure case delete the extent information with the
-+		 * tmp_inode
-+		 */
-+		free_ext_block(handle, tmp_inode);
-+
-+	} else {
-+
-+		retval = ext4_ext_swap_inode_data(handle, inode,
-+							tmp_inode, retval);
-+	}
-+
-+	/*
-+	 * Mark the tmp_inode as of size zero
-+	 */
-+	i_size_write(tmp_inode, 0);
-+
-+	/*
-+	 * set the  i_blocks count to zero
-+	 * so that the ext4_delete_inode does the
-+	 * right job
-+	 *
-+	 * We don't need to take the i_lock because
-+	 * the inode is not visible to user space.
-+	 */
-+	tmp_inode->i_blocks = 0;
-+
-+	/* Reset the extent details */
-+	ext4_ext_tree_init(handle, tmp_inode);
-+
-+	/*
-+	 * Set the i_nlink to zero so that
-+	 * generic_drop_inode really deletes the
-+	 * inode
-+	 */
-+	tmp_inode->i_nlink = 0;
-+
-+	ext4_journal_stop(handle);
-+
-+	up_write(&EXT4_I(inode)->i_data_sem);
-+
-+	if (tmp_inode)
-+		iput(tmp_inode);
-+
-+	return retval;
-+}
-diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index b609294..213974f 100644
---- a/include/linux/ext4_fs.h
-+++ b/include/linux/ext4_fs.h
-@@ -243,6 +243,7 @@ struct ext4_new_group_data {
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 64067de..c79e46b 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -1600,19 +1600,58 @@ static void ext4_orphan_cleanup (struct super_block * sb,
  #endif
- #define EXT4_IOC_GETRSVSZ		_IOR('f', 5, long)
- #define EXT4_IOC_SETRSVSZ		_IOW('f', 6, long)
-+#define EXT4_IOC_MIGRATE		_IO('f', 7)
+ 	sb->s_flags = s_flags; /* Restore MS_RDONLY status */
+ }
++/*
++ * Maximal extent format file size.
++ * Resulting logical blkno at s_maxbytes must fit in our on-disk
++ * extent format containers, within a sector_t, and within i_blocks
++ * in the vfs.  ext4 inode has 48 bits of i_block in fsblock units,
++ * so that won't be a limiting factor.
++ *
++ * Note, this does *not* consider any metadata overhead for vfs i_blocks.
++ */
++static loff_t ext4_max_size(int blkbits)
++{
++	loff_t res;
++	loff_t upper_limit = MAX_LFS_FILESIZE;
++
++	/* small i_blocks in vfs inode? */
++	if (sizeof(blkcnt_t) < sizeof(u64)) {
++		/*
++		 * CONFIG_LSF is not enabled implies the inode
++		 * i_block represent total blocks in 512 bytes
++		 * 32 == size of vfs inode i_blocks * 8
++		 */
++		upper_limit = (1LL << 32) - 1;
++
++		/* total blocks in file system block size */
++		upper_limit >>= (blkbits - 9);
++		upper_limit <<= blkbits;
++	}
++
++	/* 32-bit extent-start container, ee_block */
++	res = 1LL << 32;
++	res <<= blkbits;
++	res -= 1;
++
++	/* Sanity check against vm- & vfs- imposed limits */
++	if (res > upper_limit)
++		res = upper_limit;
++
++	return res;
++}
  
  /*
-  * ioctl commands in 32 bit emulation
-@@ -983,6 +984,9 @@ extern int ext4_ioctl (struct inode *, struct file *, unsigned int,
- 		       unsigned long);
- extern long ext4_compat_ioctl (struct file *, unsigned int, unsigned long);
- 
-+/* migrate.c */
-+extern int ext4_ext_migrate(struct inode *, struct file *, unsigned int,
-+		       unsigned long);
- /* namei.c */
- extern int ext4_orphan_add(handle_t *, struct inode *);
- extern int ext4_orphan_del(handle_t *, struct inode *);
+- * Maximal file size.  There is a direct, and {,double-,triple-}indirect
++ * Maximal bitmap file size.  There is a direct, and {,double-,triple-}indirect
+  * block limit, and also a limit of (2^48 - 1) 512-byte sectors in i_blocks.
+  * We need to be 1 filesystem block less than the 2^48 sector limit.
+  */
+-static loff_t ext4_max_size(int bits)
++static loff_t ext4_max_bitmap_size(int bits)
+ {
+ 	loff_t res = EXT4_NDIR_BLOCKS;
+ 	int meta_blocks;
+ 	loff_t upper_limit;
+ 	/* This is calculated to be the largest file size for a
+-	 * dense, file such that the total number of
++	 * dense, bitmapped file such that the total number of
+ 	 * sectors in the file, including data and all indirect blocks,
+ 	 * does not exceed 2^48 -1
+ 	 * __u32 i_blocks_lo and _u16 i_blocks_high representing the
 -- 
 1.5.4.rc3.31.g1271-dirty
 
