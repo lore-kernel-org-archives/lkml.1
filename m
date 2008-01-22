@@ -1,89 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760143AbYAVNLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbYAVNNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760143AbYAVNLe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 08:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYAVNL0
+	id S1760131AbYAVNNS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 08:13:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbYAVNNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 08:11:26 -0500
-Received: from ext-ch1gw-9.online-age.net ([64.37.194.17]:33781 "EHLO
-	ext-ch1gw-9.online-age.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752484AbYAVNLY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 08:11:24 -0500
-X-Greylist: delayed 1697 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jan 2008 08:11:22 EST
-Date: Tue, 22 Jan 2008 13:42:55 +0100
-From: Karl Kiniger <karl.kiniger@med.ge.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Newall <davidn@davidnewall.com>, Andi Kleen <andi@firstfloor.org>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for mm] Remove iBCS support
-Message-ID: <20080122124255.GA22308@wszip-kinigka.euro.med.ge.com>
-References: <4792B191.2060801@davidnewall.com> <20080120031153.GB6275@one.firstfloor.org> <4792D221.1010704@davidnewall.com> <20080120051822.GB19784@one.firstfloor.org> <4792DD22.4070902@davidnewall.com> <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122111205.GA25090@elte.hu>
+	Tue, 22 Jan 2008 08:13:08 -0500
+Received: from www.tglx.de ([62.245.132.106]:41737 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750993AbYAVNNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 08:13:06 -0500
+Date: Tue, 22 Jan 2008 14:12:32 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       jbeulich@novell.com, venkatesh.pallipadi@intel.com,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: CPA boot crash (was: [PATCH] [0/36] Great change_page_attr patch
+ series v3)
+In-Reply-To: <200801211813.45102.ak@suse.de>
+Message-ID: <alpine.LFD.1.00.0801221119180.3199@apollo.tec.linutronix.de>
+References: <200801161114.239449000@suse.de> <200801181819.58675.ak@suse.de> <20080121164052.GA11364@elte.hu> <200801211813.45102.ak@suse.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080122111205.GA25090@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-GEHealthcare-MailScanner: Found to be clean
-X-GEHealthcare-MailScanner-From: karl.kiniger@med.ge.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 080122, Ingo Molnar wrote:
+On Mon, 21 Jan 2008, Andi Kleen wrote:
+> > It's a first shot so it might not yet be perfect - although so far it 
+> > looks good in testing on 4-5 testsystems here, on mixed 64-bit and 
+> > 32-bit boxes. Doing it this way was a pretty straightforward process, it 
+> > took less than an hour - and the end result feels much better in terms 
+> > of maintainability.
 > 
-> * David Newall <davidn@davidnewall.com> wrote:
+> You still kept Venki's redundant 32bit reference count change for 32bit.
+> The code handled that already by doing reserved bits check.
+
+Hmm. Which patch are you referring to ? There is no patch from Venki
+in x86.git which touches the pageattr code.
+
+> IMHO it would have been cleaner to also do that for the 64bit version
+> instead of abusing the reference counting for this (like my
+> "CPA Handle 4K split pages at boot on 64bit" patch did). 
+
+I don't understand what you mean. The "CPA Handle 4K split pages at
+boot on 64bit" patch is in x86.git:
+
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=commit;h=360b371f73b96c400c6a8fc19ea334d083c65c92
+
+Please clarify.
+
+> > I left the clflush feature bits out for now - fixes and cleanups go 
+> > first. We first need to see whether this is robust enough before making 
+> > other changes to c_p_a(). There's enough on the arch/x86 plate for 
+> > v2.6.25 already - we can try the clflush optimizations in v2.6.26. 
+> > (since there's no high-freq in-kernel user of the c_p_a() API at the 
+> > moment, there's no pressing need for this either.)
 > 
-> > Andi Kleen wrote:
-> > > You seem to be under the illusion that iBCS2 support works currently
-> > > in mainline and that only this patch would break it.
-> >
-> > I cannot imagine what brings you to that conclusion.  Suffice to say 
-> > you are entirely and inexplicably wrong.
+> Ok I'll redo it. Thank you for your support.
 > 
-> it should be very easy for you to prove me wrong then. I've got a very 
-> simple question: please tell me, how do i run a binary compiled for an 
-> iBCS2 platform under Linux v2.6.23?
+> Probably in larger chunks now though -- with your somewhat
+> random patching applying methology larger small grained series are just too 
+> painful for me.
 
+Please keep them fine-grained and keep fixes separate and prior to
+features.
 
-at least the Changelog for ibcs-3.4.tar.gz found on
+> First priority will be gbpages on top of it.
 
-http://sourceforge.net/project/showfiles.php?group_id=13130
+First priority is getting CPA and PAT consolidated before we put new
+functionality on top of it. This implies a possible unification of the
+32 and 64 bit code as well. There is no real good reason to have
+different implementations for those.
 
-says:
+> I would appreciate if you could either prevent or warn against further
+> wide scale changes on these files before .26 then -- otherwise I'll have
+> again play catch up with a relatively large patchkit.
 
-2007-10-11  Alex <agon04@users.sourceforge.net>
+FYI, the consolidation of CPA and PAT is changing that code, so flux
+is expected.
 
-        ibcs-3.4
-
-        * support for Kernel 2.6.23 added
-        * support for SUSE AppArmor
-
-
-I did not try this one myself.
-
-Karl
-
-> 
-> I've got plenty of v2.6.23-running testsystems, tell me, if i wanted, 
-> how could i run any iBCS2 binary on them? All i see is a massive, 
-> 2.4-kernels-only patchkit:
-> 
->    http://www.kernel.org/pub/linux/kernel/people/hch/linux-abi/v2.4/
-> 
-> which external patch-kit was not picked up by major distros and which 
-> was never integrated into the upstream kernel either. iBCS2 support in 
-> Linux 2.6 simply does not exist.
-> 
-> 	Ingo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-Karl Kiniger            mailto:karl.kiniger@med.ge.com
-GE Medical Systems Kretztechnik GmbH & Co OHG
-Tiefenbach 15           Tel: (++43) 7682-3800-710  Voip(GE): 1662 710
-A-4871 Zipf Austria     Fax: (++43) 7682-3800-47 C: +43 6991 3800 710
+Thanks,
+	tglx
