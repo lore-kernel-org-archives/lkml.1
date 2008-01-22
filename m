@@ -1,113 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759543AbYAVAzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbYAVA5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759543AbYAVAzW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 19:55:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbYAVAzJ
+	id S1760257AbYAVA5z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 19:57:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbYAVA5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 19:55:09 -0500
-Received: from wx-out-0506.google.com ([66.249.82.225]:18925 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752203AbYAVAzG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 19:55:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OmVk7bGyTVyQqcB1timnqrYyR66kc4fhrOEWAsnt/dm3BE2dqPMw5qd+hLQ8ssgsGUEc07dXYz0K626m59QInSzJF2MfE7soGg1qS2YRzmhe/uAia1rIB7w1f/44ZpiS5/bLPPdslDS7TZX5tXxsooBrrw60tH1g6o0hocc7lJ8=
-Message-ID: <a8e1da0801211655y5a7313edn331ad4312b0b7de9@mail.gmail.com>
-Date: Tue, 22 Jan 2008 08:55:05 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Jarek Poplawski" <jarkao2@gmail.com>
-Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct class
-Cc: "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>, "Greg KH" <gregkh@suse.de>,
-       stefanr@s5r6.in-berlin.de, "David Brownell" <david-b@pacbell.net>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080121211625.GA2758@ami.dom.local>
+	Mon, 21 Jan 2008 19:57:47 -0500
+Received: from pip9.gyao.ne.jp ([61.122.117.247]:31698 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753129AbYAVA5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 19:57:45 -0500
+Date: Tue, 22 Jan 2008 09:56:57 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andreas Schwab <schwab@suse.de>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH] Use separate sections for __dev/__cpu/__mem code/data
+Message-ID: <20080122005657.GA26831@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Sam Ravnborg <sam@ravnborg.org>, Andreas Schwab <schwab@suse.de>,
+	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+	linux-arch@vger.kernel.org, Greg KH <greg@kroah.com>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Adrian Bunk <bunk@kernel.org>
+References: <1200859743-24037-6-git-send-email-sam@ravnborg.org> <1200859743-24037-7-git-send-email-sam@ravnborg.org> <1200859743-24037-8-git-send-email-sam@ravnborg.org> <20080121073341.GA20050@linux-sh.org> <20080121095722.GA29145@uranus.ravnborg.org> <jebq7fqxnj.fsf@sykes.suse.de> <20080121104506.GA29585@uranus.ravnborg.org> <20080121104745.GA29721@uranus.ravnborg.org> <20080121105257.GA21567@linux-sh.org> <20080121120641.GA30165@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a8e1da0801210044t5f705f77n8e310878775f7b5b@mail.gmail.com>
-	 <20080121211625.GA2758@ami.dom.local>
+In-Reply-To: <20080121120641.GA30165@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 22, 2008 5:16 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> Dave Young wrote, On 01/21/2008 09:44 AM:
-> ...
-> > I applied it in my kernel, built and run without warnings, but it need
-> > more testing.
-> > I will be very glad to see the test result about this if you could, thanks.
->
-> Bad news. (Alas I won't be able to check this today.)
-
-Hi, thanks your effort. Now I think we should stop this thread and
-waiting the class_device going away :)
-
-Hope the iteration patches 1-6/7 could be applied.
-
->
-> =============================================
-> [ INFO: possible recursive locking detected ]
-> 2.6.24-rc8 #5
-> ---------------------------------------------
-> modprobe/536 is trying to acquire lock:
->  (&cls->mutex/1){--..}, at: [<c0217e43>] class_device_add+0x2c6/0x322
->
-> but task is already holding lock:
->  (&cls->mutex/1){--..}, at: [<c0217e43>] class_device_add+0x2c6/0x322
->
-> other info that might help us debug this:
-> 2 locks held by modprobe/536:
->  #0:  (&shost->scan_mutex){--..}, at: [<ce82795b>] __scsi_add_device+0x60/0xc9 [scsi_mod]
->  #1:  (&cls->mutex/1){--..}, at: [<c0217e43>] class_device_add+0x2c6/0x322
->
-> stack backtrace:
-> Pid: 536, comm: modprobe Not tainted 2.6.24-rc8 #5
->  [<c0138edf>] __lock_acquire+0x962/0x10d4
->  [<c028be37>] _spin_unlock_irqrestore+0x34/0x39
->  [<c015e693>] kfree+0x87/0xad
->  [<c01380cb>] trace_hardirqs_on+0xba/0x15b
->  [<c01396c2>] lock_acquire+0x71/0x8b
->  [<c0217e43>] class_device_add+0x2c6/0x322
->  [<c028a87f>] mutex_lock_nested+0x92/0x2bc
->  [<c0217e43>] class_device_add+0x2c6/0x322
->  [<c0217e43>] class_device_add+0x2c6/0x322
->  [<c0217e43>] class_device_add+0x2c6/0x322
->  [<c01afd42>] kobject_get+0xf/0x13
->  [<c01afe68>] kobject_init+0x29/0x38
->  [<c0217f2c>] class_device_create+0x7d/0x9e
->  [<cebfe5b4>] sg_add+0x144/0x39f [sg]
->  [<c0217e71>] class_device_add+0x2f4/0x322
->  [<ce8289f7>] scsi_sysfs_add_sdev+0x64/0x1ac [scsi_mod]
->  [<ce840ece>] ata_scsi_dev_config+0x14/0x91 [libata]
->  [<ce826b5c>] scsi_probe_and_add_lun+0x9c0/0x9e0 [scsi_mod]
->  [<ce82795b>] __scsi_add_device+0x60/0xc9 [scsi_mod]
->  [<ce8279c2>] __scsi_add_device+0xc7/0xc9 [scsi_mod]
->  [<ce841401>] ata_scsi_scan_host+0xd3/0x26a [libata]
->  [<ce83e7e6>] ata_host_register+0x205/0x280 [libata]
->  [<ce83f430>] ata_interrupt+0x0/0x200 [libata]
->  [<ce83e8ec>] ata_host_activate+0x8b/0xf2 [libata]
->  [<ceb95504>] svia_init_one+0x2e2/0x511 [sata_via]
->  [<c01ca42c>] pci_match_device+0xa5/0xb6
->  [<ceb95222>] svia_init_one+0x0/0x511 [sata_via]
->  [<c01ca4e9>] pci_device_probe+0x40/0x5f
->  [<c02173ae>] driver_probe_device+0x7c/0x175
->  [<c02175ed>] __driver_attach+0xa2/0xa4
->  [<c02168dd>] bus_for_each_dev+0x3c/0x5a
->  [<c0217263>] driver_attach+0x16/0x1a
->  [<c021754b>] __driver_attach+0x0/0xa4
->  [<c0216bea>] bus_add_driver+0x72/0x1c0
->  [<c01ca642>] __pci_register_driver+0x56/0x89
->  [<c013f11d>] sys_init_module+0xf8/0x1891
->  [<ce83901f>] ata_port_start+0x0/0x65 [libata]
->  [<c01380cb>] trace_hardirqs_on+0xba/0x15b
->  [<c0102936>] syscall_call+0x7/0xb
->  =======================
-> scsi 2:0:0:0: Attached scsi generic sg1 type 0
->
-> Regards,
-> Jarek P.
->
+On Mon, Jan 21, 2008 at 01:06:41PM +0100, Sam Ravnborg wrote:
+> On Mon, Jan 21, 2008 at 07:52:57PM +0900, Paul Mundt wrote:
+> > On Mon, Jan 21, 2008 at 11:47:45AM +0100, Sam Ravnborg wrote:
+> > > On Mon, Jan 21, 2008 at 11:45:06AM +0100, Sam Ravnborg wrote:
+> > > > On Mon, Jan 21, 2008 at 11:29:52AM +0100, Andreas Schwab wrote:
+> > > > > Sam Ravnborg <sam@ravnborg.org> writes:
+> > > > > 
+> > > > > > On Mon, Jan 21, 2008 at 04:33:41PM +0900, Paul Mundt wrote:
+> > > > > >> so the ## is being taken directly rather than acting as a concatenation.
+> > > > > >
+> > > > > > Strange...
+> > > > > > I can reproduce with gcc 3.4.5 here - will fix.
+> > > > > 
+> > > > > The ## operator does not work with -traditional.
+> > > > 
+> > > > Crap - then it breaks at the following architectures:
+> > > > sh64, s390, m68k, m32r
+> > > > 
+> > > > Thanks Andreas.
+> > > 
+> > > OK - I was too quick it seem.
+> > > sh has:
+> > > arch/sh/Makefile:CPPFLAGS_vmlinux.lds := -traditional
+> > > 
+> > > So this needs to be ripped out as it is not needed.
+> > > 
+> > Yes, that can be killed. If this is aimed at 2.6.25, I'll just kill it
+> > off in my tree. Otherwise, feel free to roll this in to your patch set.
+> 
+> It is aimed for 2.6.25 and it looks reasonable to reach that goal.
+> So please take this patch in your tree.
+> 
+Done.
