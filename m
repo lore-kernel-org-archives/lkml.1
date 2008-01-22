@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760398AbYAVBHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759954AbYAVBNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760398AbYAVBHv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 20:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757454AbYAVBHm
+	id S1759954AbYAVBNd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 20:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbYAVBNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 20:07:42 -0500
-Received: from mga02.intel.com ([134.134.136.20]:11196 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757498AbYAVBHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 20:07:41 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,230,1199692800"; 
-   d="scan'208";a="254624552"
-Subject: Re: [PATCH]Fix the order of atomic operations in
-	restore_previous_kprobes on ia64
-From: Shaohua Li <shaohua.li@intel.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: "Luck, Tony" <tony.luck@intel.com>, ia64 <linux-ia64@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-In-Reply-To: <4790D1DE.8030700@redhat.com>
-References: <4790D1DE.8030700@redhat.com>
-Content-Type: text/plain
-Date: Tue, 22 Jan 2008 09:07:46 +0800
-Message-Id: <1200964066.1353.0.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Mon, 21 Jan 2008 20:13:25 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:2447 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751380AbYAVBNY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 20:13:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=YtgsaUOjCePOqNunB2gKLd5YMgiwkSDLo5i1G1Shj0ZeROQpmNt1R4rGcio6b9s9EPdU3jJkniy1frtBXzDuf2r/OHhpZ34goAIdKJ0l/Omfd+ju0WbFKdWJWV4JAyfydmRMMEnijl9bVRbEUCjzmALmXK6FrJPflj8s6ipfNDg=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] pata_pdc202xx_old: Fix crashes with ATAPI
+Date: Tue, 22 Jan 2008 02:25:10 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: jeff@garzik.org, akpm@osdl.org, torvalds@osdl.org,
+       linux-kernel@vger.kernel.org
+References: <20080119155126.180a010d@lxorguk.ukuu.org.uk> <200801220013.53545.bzolnier@gmail.com> <20080122000034.3e3f6dbb@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080122000034.3e3f6dbb@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200801220225.10168.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 22 January 2008, Alan Cox wrote:
+> > IDE pdc202xx_old host driver supports ATAPI DMA just fine and in line
+> > with the PDC2026x programming guide.
+> 
+> News to me. It didn't last time I tried it the driver selected PIO.
 
-On Sat, 2008-01-19 at 00:20 +0800, Masami Hiramatsu wrote:
-> From: Masami Hiramatsu <mhiramat@redhat.com>
-> 
-> Fix the order of atomic operations to prevent overwriting
-> prev_kprobe[0].
-> To pop values from stack, we must decrement stack index right AFTER
-> reading values.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> ---
-> Details of this issue was reported to
-> http://sources.redhat.com/bugzilla/show_bug.cgi?id=2071
-> 
->    arch/ia64/kernel/kprobes.c |    7 ++++---
->    1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> Index: 2.6.24-rc8/arch/ia64/kernel/kprobes.c
-> ===================================================================
-> --- 2.6.24-rc8.orig/arch/ia64/kernel/kprobes.c  2008-01-17
-> 21:14:01.000000000 -0500
-> +++ 2.6.24-rc8/arch/ia64/kernel/kprobes.c       2008-01-17
-> 21:14:01.000000000 -0500
-> @@ -381,9 +381,10 @@
->    static void __kprobes restore_previous_kprobe(struct kprobe_ctlblk
-> *kcb)
->    {
->         unsigned int i;
-> -       i = atomic_sub_return(1, &kcb->prev_kprobe_index);
-> -       __get_cpu_var(current_kprobe) = kcb->prev_kprobe[i].kp;
-> -       kcb->kprobe_status = kcb->prev_kprobe[i].status;
-> +       i = atomic_read(&kcb->prev_kprobe_index);
-> +       __get_cpu_var(current_kprobe) = kcb->prev_kprobe[i-1].kp;
-> +       kcb->kprobe_status = kcb->prev_kprobe[i-1].status;
-> +       atomic_sub(1, &kcb->prev_kprobe_index);
->    }
-> 
->    static void __kprobes set_current_kprobe(struct kprobe *p,
-Acked. Thanks for the patch.
+Hmmm...
 
-Thanks,
-Shaohua
+commit f3d5b34caae393f13a9486036f98c81cac1595c4
+Author: Tobias Oed <tobiasoed@hotmail.com>
+Date:   Tue Oct 3 01:14:17 2006 -0700
 
+    [PATCH] Enable cdrom dma access with pdc20265_old
+
+    This patch allows me to use dma with my cd/dvd attached to my on board
+    pdc20265 ide controller
+...
+    Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+    Cc: Bartlomiej Zolnierkiewicz <B.Zolnierkiewicz@elka.pw.edu.pl>
+...
+
+Are you by any chance using PDC20263?
+
+[ PDC2026{5,7} should be fine (unless somebody broke it but then git-bisect
+  should do the job)... ]
+
+> > > So turn it ATAPI DMA off, these are disk optimised controllers.
+> > 
+> > This is an acceptable workaround for 2.6.24 but it probably just hides
+> > some deeper pata_pdc202xx_old or/and libata problem.
+> 
+> Hard to be sure. No docs here for the older ones.
+
+I lack the docs for PDC20263...
+
+Bart
