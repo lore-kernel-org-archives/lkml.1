@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760812AbYAVDIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbYAVDIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760812AbYAVDIX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:08:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758917AbYAVDFZ
+	id S1760960AbYAVDIl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:08:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758008AbYAVDF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:05:25 -0500
+	Mon, 21 Jan 2008 22:05:28 -0500
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:65333 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757337AbYAVDFV (ORCPT
+	by vger.kernel.org with ESMTP id S1757514AbYAVDFY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:05:21 -0500
+	Mon, 21 Jan 2008 22:05:24 -0500
 From: "Theodore Ts'o" <tytso@MIT.EDU>
 To: linux-kernel@vger.kernel.org
 Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Theodore Ts'o" <tytso@MIT.EDU>
-Subject: [PATCH 45/49] ext4: Use the ext4_ext_actual_len() helper function
-Date: Mon, 21 Jan 2008 22:02:24 -0500
-Message-Id: <1200970948-17903-46-git-send-email-tytso@mit.edu>
+       Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@MIT.EDU>
+Subject: [PATCH 42/49] ext4: Enable the multiblock allocator by default
+Date: Mon, 21 Jan 2008 22:02:21 -0500
+Message-Id: <1200970948-17903-43-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
-In-Reply-To: <1200970948-17903-45-git-send-email-tytso@mit.edu>
+In-Reply-To: <1200970948-17903-42-git-send-email-tytso@mit.edu>
 References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-2-git-send-email-tytso@mit.edu>
  <1200970948-17903-3-git-send-email-tytso@mit.edu>
@@ -61,9 +61,6 @@ References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-40-git-send-email-tytso@mit.edu>
  <1200970948-17903-41-git-send-email-tytso@mit.edu>
  <1200970948-17903-42-git-send-email-tytso@mit.edu>
- <1200970948-17903-43-git-send-email-tytso@mit.edu>
- <1200970948-17903-44-git-send-email-tytso@mit.edu>
- <1200970948-17903-45-git-send-email-tytso@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
@@ -72,139 +69,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-ext4 uses the high bit of the extent length to encode whether the extent
-is intialized or not. The helper function ext4_ext_get_actual_len should
-be used to get the actual length of the extent.
+Enable the multiblock allocator by default.
 
-This addresses the kernel bug documented here:
-     http://bugzilla.kernel.org/show_bug.cgi?id=9732
-
-kernel BUG at fs/ext4/extents.c:1056!
-....
-Call Trace:
-[<ffffffff88366073>] :ext4dev:ext4_ext_get_blocks+0x5ba/0x8c1
-[<ffffffff81053c91>] lock_release_holdtime+0x27/0x49
-[<ffffffff812748f6>] _spin_unlock+0x17/0x20
-[<ffffffff883400a6>] :jbd2:start_this_handle+0x4e0/0x4fe
-[<ffffffff88366564>] :ext4dev:ext4_fallocate+0x175/0x39a
-[<ffffffff81053c91>] lock_release_holdtime+0x27/0x49
-[<ffffffff81056480>] __lock_acquire+0x4e7/0xc4d
-[<ffffffff81053c91>] lock_release_holdtime+0x27/0x49
-[<ffffffff810a8de7>] sys_fallocate+0xe4/0x10d
-[<ffffffff8100c043>] tracesys+0xd5/0xda
+Fix ext4_show_options() so if it is not enabled, the nomballoc option
+included in /proc/mounts.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Acked-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/extents.c |   24 +++++++++++++-----------
- 1 files changed, 13 insertions(+), 11 deletions(-)
+ fs/ext4/super.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
-index 13e3e8c..b6b9ec7 100644
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -1029,7 +1029,7 @@ ext4_ext_search_left(struct inode *inode, struct ext4_ext_path *path,
- {
- 	struct ext4_extent_idx *ix;
- 	struct ext4_extent *ex;
--	int depth;
-+	int depth, ee_len;
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 136d095..91a11ec 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -736,6 +736,8 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
+ 		seq_puts(seq, ",nobh");
+ 	if (!test_opt(sb, EXTENTS))
+ 		seq_puts(seq, ",noextents");
++	if (!test_opt(sb, MBALLOC))
++		seq_puts(seq, ",nomballoc");
+ 	if (test_opt(sb, I_VERSION))
+ 		seq_puts(seq, ",i_version");
  
- 	BUG_ON(path == NULL);
- 	depth = path->p_depth;
-@@ -1043,6 +1043,7 @@ ext4_ext_search_left(struct inode *inode, struct ext4_ext_path *path,
- 	 * first one in the file */
+@@ -1902,6 +1904,11 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 	 * User -o noextents to turn it off
+ 	 */
+ 	set_opt(sbi->s_mount_opt, EXTENTS);
++	/*
++	 * turn on mballoc feature by default in ext4 filesystem
++	 * User -o nomballoc to turn it off
++	 */
++	set_opt(sbi->s_mount_opt, MBALLOC);
  
- 	ex = path[depth].p_ext;
-+	ee_len = ext4_ext_get_actual_len(ex);
- 	if (*logical < le32_to_cpu(ex->ee_block)) {
- 		BUG_ON(EXT_FIRST_EXTENT(path[depth].p_hdr) != ex);
- 		while (--depth >= 0) {
-@@ -1052,10 +1053,10 @@ ext4_ext_search_left(struct inode *inode, struct ext4_ext_path *path,
- 		return 0;
- 	}
- 
--	BUG_ON(*logical < le32_to_cpu(ex->ee_block) + le16_to_cpu(ex->ee_len));
-+	BUG_ON(*logical < (le32_to_cpu(ex->ee_block) + ee_len));
- 
--	*logical = le32_to_cpu(ex->ee_block) + le16_to_cpu(ex->ee_len) - 1;
--	*phys = ext_pblock(ex) + le16_to_cpu(ex->ee_len) - 1;
-+	*logical = le32_to_cpu(ex->ee_block) + ee_len - 1;
-+	*phys = ext_pblock(ex) + ee_len - 1;
- 	return 0;
- }
- 
-@@ -1075,7 +1076,7 @@ ext4_ext_search_right(struct inode *inode, struct ext4_ext_path *path,
- 	struct ext4_extent_idx *ix;
- 	struct ext4_extent *ex;
- 	ext4_fsblk_t block;
--	int depth;
-+	int depth, ee_len;
- 
- 	BUG_ON(path == NULL);
- 	depth = path->p_depth;
-@@ -1089,6 +1090,7 @@ ext4_ext_search_right(struct inode *inode, struct ext4_ext_path *path,
- 	 * first one in the file */
- 
- 	ex = path[depth].p_ext;
-+	ee_len = ext4_ext_get_actual_len(ex);
- 	if (*logical < le32_to_cpu(ex->ee_block)) {
- 		BUG_ON(EXT_FIRST_EXTENT(path[depth].p_hdr) != ex);
- 		while (--depth >= 0) {
-@@ -1100,7 +1102,7 @@ ext4_ext_search_right(struct inode *inode, struct ext4_ext_path *path,
- 		return 0;
- 	}
- 
--	BUG_ON(*logical < le32_to_cpu(ex->ee_block) + le16_to_cpu(ex->ee_len));
-+	BUG_ON(*logical < (le32_to_cpu(ex->ee_block) + ee_len));
- 
- 	if (ex != EXT_LAST_EXTENT(path[depth].p_hdr)) {
- 		/* next allocated block in this leaf */
-@@ -1316,7 +1318,7 @@ ext4_can_extents_be_merged(struct inode *inode, struct ext4_extent *ex1,
- 	if (ext1_ee_len + ext2_ee_len > max_len)
- 		return 0;
- #ifdef AGGRESSIVE_TEST
--	if (le16_to_cpu(ex1->ee_len) >= 4)
-+	if (ext1_ee_len >= 4)
- 		return 0;
- #endif
- 
-@@ -2313,7 +2315,7 @@ int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
- 				   - le32_to_cpu(newex.ee_block)
- 				   + ext_pblock(&newex);
- 			/* number of remaining blocks in the extent */
--			allocated = le16_to_cpu(newex.ee_len) -
-+			allocated = ext4_ext_get_actual_len(&newex) -
- 					(iblock - le32_to_cpu(newex.ee_block));
- 			goto out;
- 		} else {
-@@ -2429,7 +2431,7 @@ int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
- 	newex.ee_len = cpu_to_le16(max_blocks);
- 	err = ext4_ext_check_overlap(inode, &newex, path);
- 	if (err)
--		allocated = le16_to_cpu(newex.ee_len);
-+		allocated = ext4_ext_get_actual_len(&newex);
- 	else
- 		allocated = max_blocks;
- 
-@@ -2461,7 +2463,7 @@ int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
- 		 * but otherwise we'd need to call it every free() */
- 		ext4_mb_discard_inode_preallocations(inode);
- 		ext4_free_blocks(handle, inode, ext_pblock(&newex),
--					le16_to_cpu(newex.ee_len), 0);
-+					ext4_ext_get_actual_len(&newex), 0);
- 		goto out2;
- 	}
- 
-@@ -2470,7 +2472,7 @@ int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
- 
- 	/* previous routine could use block we allocated */
- 	newblock = ext_pblock(&newex);
--	allocated = le16_to_cpu(newex.ee_len);
-+	allocated = ext4_ext_get_actual_len(&newex);
- outnew:
- 	__set_bit(BH_New, &bh_result->b_state);
- 
+ 	if (!parse_options ((char *) data, sb, &journal_inum, &journal_devnum,
+ 			    NULL, 0))
 -- 
 1.5.4.rc3.31.g1271-dirty
 
