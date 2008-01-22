@@ -1,46 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759220AbYAVPGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761901AbYAVPGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759220AbYAVPGI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 10:06:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbYAVPF4
+	id S1761901AbYAVPGY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 10:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759240AbYAVPGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 10:05:56 -0500
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:64861 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753394AbYAVPF4 (ORCPT
+	Tue, 22 Jan 2008 10:06:09 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:42400 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759008AbYAVPGH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 10:05:56 -0500
-X-IronPort-AV: E=Sophos;i="4.25,233,1199685600"; 
-   d="scan'208";a="552018246"
-Date: Tue, 22 Jan 2008 09:02:51 -0600
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: william cheng <opensourcewill@gmail.com>
-Cc: openipmi-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Openipmi-developer] modprobing ipmi_si on Dell Power Edge 2600 make the terminal hang kernel ver. >= 2.6.20
-Message-ID: <20080122150251.GA4403@auslistsprd01.us.dell.com>
-References: <7d34f9680801201740u4eb912eel921e7890b4ac023a@mail.gmail.com> <20080122125031.GA23330@auslistsprd01.us.dell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080122125031.GA23330@auslistsprd01.us.dell.com>
-User-Agent: Mutt/1.5.11
+	Tue, 22 Jan 2008 10:06:07 -0500
+Message-ID: <47960673.3020902@davidnewall.com>
+Date: Wed, 23 Jan 2008 01:36:27 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Karl Kiniger <karl.kiniger@med.ge.com>
+CC: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for mm] Remove iBCS support
+References: <20080119045918.GA12215@basil.nowhere.org> <4792B191.2060801@davidnewall.com> <20080120031153.GB6275@one.firstfloor.org> <4792D221.1010704@davidnewall.com> <20080120051822.GB19784@one.firstfloor.org> <4792DD22.4070902@davidnewall.com> <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122102436.GA15563@wszip-kinigka.euro.med.ge.com>
+In-Reply-To: <20080122102436.GA15563@wszip-kinigka.euro.med.ge.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 06:50:31AM -0600, Matt Domsch wrote:
-> On Mon, Jan 21, 2008 at 09:40:59AM +0800, william cheng wrote:
-> > Dear all,
-> > 
-> >         We got some problem on modprobing the ipmi_si module on Dell
-> > Power Edge 2600.
-> 
-> I've asked someone to look into this.
+Karl Kiniger wrote:
+> on http://www.feise.com/~jfeise/Downloads/linux-abi/
+>
+> a patch named  linux-abi-2.6.22.3_3.diff.bz2 can be found.
+>   
 
-and I've filed this as
-http://bugzilla.kernel.org/show_bug.cgi?id=9793
+Thankyou for that.
 
--- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+Matter of interest: if it works, why isn't it in the mainline?
