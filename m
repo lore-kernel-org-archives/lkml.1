@@ -1,171 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbYAVWxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbYAVWyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757173AbYAVWxZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 17:53:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYAVWxQ
+	id S1757443AbYAVWyf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 17:54:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbYAVWy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 17:53:16 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49621 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752353AbYAVWxP (ORCPT
+	Tue, 22 Jan 2008 17:54:28 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:37024 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753883AbYAVWy1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 17:53:15 -0500
-Date: Tue, 22 Jan 2008 14:53:12 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Andrew Morton <akpm@osdl.org>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, holt@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [kvm-devel] [PATCH] export notifier #1
-In-Reply-To: <20080122223139.GD15848@v2.random>
-Message-ID: <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com>
-References: <20080116124256.44033d48@bree.surriel.com> <478E4356.7030303@qumranet.com>
- <20080117162302.GI7170@v2.random> <478F9C9C.7070500@qumranet.com>
- <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random>
- <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random>
- <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com>
- <20080122223139.GD15848@v2.random>
+	Tue, 22 Jan 2008 17:54:27 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 22 Jan 2008 14:54:25 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Denys Fedoryshchenko <denys@visp.net.lb>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc7 to 2.6.24-rc8 possible regression
+In-Reply-To: <tkrat.fcd947ba88aa56a8@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0801221453420.15585@alien.or.mcafeemobile.com>
+References: <20080121160255.M12670@visp.net.lb>  <47952094.9050102@s5r6.in-berlin.de>
+ <20080122110448.M46928@visp.net.lb>  <4796189F.8070506@s5r6.in-berlin.de>
+ <1201019283.6341.28.camel@lappy> <tkrat.fcd947ba88aa56a8@s5r6.in-berlin.de>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jan 2008, Andrea Arcangeli wrote:
+On Tue, 22 Jan 2008, Stefan Richter wrote:
 
-> First it makes me optimistic this can be merged sooner than later to
-> see a second brand new implementation of this ;).
-
-Brand new? Well this is borrowing as much as possible from you....
-
-> > The problem that I have with this is still that there is no way to sleep 
-> > while running the notifier. We need to invalidate mappings on a remote 
-> > instance of linux. This means sending out a message and waiting for reply 
-> > before the local page is unmapped. So I reworked Andrea's early patch and 
-> > came up with this one:
+> (adding Cc: Davide and akpm)
 > 
-> I guess you missed a problem in unmapping the secondary mmu before the
-> core linux pte is cleared with a zero-locking window in between the
-> two operations. The spte may be instantiated again by a
-> vmexit/secondary-pagefault in another cpu during the zero-locking
-> window (zero locking is zero locking, anything can run in the other
-> cpus, so not exactly sure how you plan to fix that nasty subtle spte
-> leak if you insist calling the mmu_notifier invalidates _before_
-> instead of _after_ ;). All spte invalidates should happen _after_
-> dropping the main linux pte not before, or you never know what else is
-> left mapped in the secondary mmu by the time the linux pte is finally
-> cleared.
-
-spte is the remote pte in my scheme right? The linux instance with the 
-secondary mmu must call back to the exporting machine in order to 
-reinstantiate the page. PageExported is cleared in invalidate_page() so 
-the other linux instance will be told that the page is not available.
-
-> > - Notifiers are called *after* we tore down ptes. At that point pages
-> >   may already have been freed and reused. [..]
+> On 22 Jan, Peter Zijlstra wrote:
+> > 
+> > On Tue, 2008-01-22 at 17:23 +0100, Stefan Richter wrote:
+> >> Denys Fedoryshchenko wrote:
+> >> > No, i am using vanilla kernel. It is one of production machines, and as i 
+> >> > know screen is not using epoll.
+> >> 
+> >> OK, but the trace shows that it is the epoll recursion again.
+> >> 
+> >> > I will try to apply on all my production machines this patch. Sorry if it is 
+> >> > related.
+> >> 
+> >> Well, let's hope that the lockdep annotation or whatever other fix gets
+> >> into mainline sooner than later.  Which reminds me to test my setup
+> >> again which appeared to be able to reproduce the __wake_up recursion on
+> >> my command...
+> > 
+> > Would be appreciated, I have been waiting on testing feedback because
+> > I'm not fully certain here.
+> > 
+> > Curious though that this gets reported frequently the last few weeks,
+> > afaics this problem is way old.
 > 
-> Wait, you should always represent the external reference in the page
-> count just like we do every time we map the page in a linux pte! If
-> you worry about that, that's your fault I'm afraid.
-
-Ahhh. Good to hear. But we will still end in a situation where only
-the remote ptes point to the page. Maybe the remote instance will dirty
-the page at that point?
-
-> > - anon_vma/inode and pte locks are held during callbacks.
+> Here is a report against Fedora's 2.6.23-0.222.rc9.git4.fc8, filed in
+> October:  https://bugzilla.redhat.com/show_bug.cgi?id=323411
 > 
-> In a previous email I asked what's wrong in offloading the event, and
-
-We have internally discussed the possibility of offloading the event but 
-that wont work with the existing callback since we would have to 
-perform atomic allocation and there may be thousands of external 
-references to a page.
-
-> sharing code, and for you missing a single notifier means memory
-> corruption because you don't bump the page count to represent the
-> external reference).
-
-The approach with the export notifier is page based not based on the 
-mm_struct. We only need a single page count for a page that is exported to 
-a number of remote instances of linux. The page count is dropped when all 
-the remote instances have unmapped the page.
-
- 
-> > @@ -966,6 +973,9 @@ int try_to_unmap(struct page *page, int 
-> >  
-> >  	BUG_ON(!PageLocked(page));
-> >  
-> > +	if (unlikely(PageExported(page)))
-> > +		export_notifier(invalidate_page, page);
-> > +
+> I did several tests with a pristine 2.6.24-rc8 now.  The lockdep warning
+> below is 100% reliably triggered by grabbing video from a DV camcorder
+> with dvgrab v3 via firewire-core's character device file ABI.
 > 
-> Passing the page here will complicate things especially for shared
-> pages across different VM that are already working in KVM. For non
+> Also, this warning is 100% reliably suppressed by your annotation patch.
+> I will reply to this message with this patch for kind consideration by
+> those concerned. :-)
 
-How?
+Patch? Where is it?
 
-> shared pages we could cache the userland mapping address in
-> page->private but it's a kludge only working for non-shared
-> pages. Walking twice the anon_vma lists when only a single walk is
 
-There is only the need to walk twice for pages that are marked Exported. 
-And the double walk is only necessary if the exporter does not have its 
-own rmap. The cross partition thing that we are doing has such an rmap and 
-its a matter of walking the exporters rmap to clear out the external 
-references and then we walk the local rmaps. All once.
 
-> Besides the pinned pages ram leak by having the zero locking window
-> above I'm curious how you are going to take care of the finegrined
-> aging that I'm doing with the accessed bit set by hardware in the spte
+- Davide
 
-I think I explained that above. Remote users effectively are forbidden to 
-establish new references to the page by the clearing of the exported bit.
-
-> with your coarse export_notifier(invalidate_page) called
-> unconditionally before checking any young bit at all.
-
-The export notifier is called only if the mm_struct or page bit for 
-exporting is set. Maybe I missed to add a check somewhere?
-
-> Look how clean it is to hook asm-generic/pgtable.h in my last patch
-> compared to the above leaking code expanded all over the place in the
-> mm/*.c, unnecessary mangling of atomic bitflags in the page struct,
-> etc...
-
-I think that hunk is particularly bad in your patch. A notification side 
-event in a macro? You would want that explicitly in the code.
-
-> > +	bool "Export Notifier for notifying subsystems about changes to page mappings"
-> 
-> The word "export notifier" isn't very insightful to me, it doesn't
-> even give an hint we're in the memory management area. If you don't
-> like mmu notifier name I don't mind changing it, but I doubt export
-> notifier is a vast naming improvement. Infact it looks one of those
-> names like RCU that don't tell much of what is really going on
-> (there's no copy 99% of time in RCU).
-
-What we are doing is effectively allowing external references to pages. 
-This is outside of the regular VM operations. So export came up but we 
-could call it something else. External? Its not really tied to the mmu 
-now.
-
-> 
-> > +LIST_HEAD(export_notifier_list);
-> 
-> A global list is not ok IMHO, it's really bad to have a O(N) (N number
-> of mm in the system) complexity here when it's so trivial to go O(1)
-> like in my code. We want to swap 100% of the VM exactly so we can have
-> zillon of idle (or sigstopped) VM on the same system.
-
-There will only be one or two of those notifiers. There is no need to 
-build long lists of mm_structs like in your patch.
-
-The mm_struct is not available at the point of my callbacks. There is no 
-way to do a callback that is mm_struct based if you are not scanning the 
-reverse list. And scanning the reverse list requires taking locks.
 
