@@ -1,82 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbYAVPYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbYAVPZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbYAVPYH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 10:24:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYAVPXz
+	id S1755891AbYAVPZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 10:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYAVPZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 10:23:55 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43293 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752101AbYAVPXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 10:23:54 -0500
-Date: Tue, 22 Jan 2008 16:23:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: Rescheduling interrupts
-Message-ID: <20080122152333.GB19590@elte.hu>
-References: <200801220119.42312.caglar@pardus.org.tr> <20080122105741.GG21149@elte.hu> <200801221455.16814.caglar@pardus.org.tr>
+	Tue, 22 Jan 2008 10:25:21 -0500
+Received: from web32614.mail.mud.yahoo.com ([68.142.207.241]:43982 "HELO
+	web32614.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750985AbYAVPZT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 10:25:19 -0500
+X-YMail-OSG: DC.b6P0VM1lB8IM0Yc6.xTMM8skh8GxDF8uzDyiSMzCM0YQsd7bX2pTAxh6b2BoAXh7hZtYEc5TxXH6AvLqY3ofa.Q--
+X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
+Date: Tue, 22 Jan 2008 07:25:15 -0800 (PST)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+To: Alasdair G Kergon <agk@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>, Mike Snitzer <snitzer@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jplatte@naasa.net,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       James.Bottomley@steeleye.com, Jens Axboe <jens.axboe@oracle.com>,
+       Milan Broz <mbroz@redhat.com>, Neil Brown <neilb@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200801221455.16814.caglar@pardus.org.tr>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <87924.1242.qm@web32614.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* S.Çağlar Onur <caglar@pardus.org.tr> wrote:
+------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
 
-> I grabbed the logs two times to make sure to catch needed info. 1st [1] one is generated while "Rescheduling interrupts" wakeups ~200 times and 2nd one generated for ~350 wakeups.
+----- Original Message ----
+> From: Alasdair G Kergon <agk@redhat.com>
+> To: Martin Knoblauch <spamtrap@knobisoft.de>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>; Mel Gorman <mel@csn.ul.ie>; Fengguang Wu <wfg@mail.ustc.edu.cn>; Mike Snitzer <snitzer@gmail.com>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>; James.Bottomley@steeleye.com; Jens Axboe <jens.axboe@oracle.com>; Milan Broz <mbroz@redhat.com>; Neil Brown <neilb@suse.de>
+> Sent: Tuesday, January 22, 2008 3:39:33 PM
+> Subject: Re: regression: 100% io-wait with 2.6.24-rcX
 > 
-> [1] http://cekirdek.pardus.org.tr/~caglar/dmesg.1st 
-> [2] http://cekirdek.pardus.org.tr/~caglar/dmesg.2nd
+> On Fri, Jan 18, 2008 at 11:01:11AM -0800, Martin Knoblauch wrote:
+> >  At least, rc1-rc5 have shown that the CCISS system can do well. Now
+> > the question is which part of the system does not cope well with the
+> > larger IO sizes? Is it the CCISS controller, LVM or both. I am
+> open
+> 
+ to
+> > suggestions on how to debug that. 
+> 
+> What is your LVM device configuration?
+>   E.g. 'dmsetup table' and 'dmsetup info -c' output.
+> Some configurations lead to large IOs getting split up on the
+> way
+> 
+ through
+> device-mapper.
+>
+Hi Alastair,
 
-thanks, these seem to be mostly normal wakeups from standard tasks:
+ here is the output, the filesystem in question is on LogVol02:
 
- IPI from task kdm_greet:2118 on CPU#0:
- IPI from task X:2079 on CPU#1:
- IPI from task kdm_greet:2118 on CPU#0:
- IPI from task hald-addon-inpu:2009 on CPU#1:
- IPI from task events/0:7 on CPU#1:
- IPI from task bash:2129 on CPU#0:
- IPI from task kdm_greet:2118 on CPU#0:
- IPI from task events/0:7 on CPU#1:
- IPI from task events/0:7 on CPU#1:
- IPI from task events/0:7 on CPU#1:
- IPI from task bash:3902 on CPU#1:
- IPI from task bash:3902 on CPU#1:
- IPI from task amarokapp:3423 on CPU#1:
- IPI from task amarokapp:3423 on CPU#1:
- IPI from task amarokapp:3423 on CPU#1:
- IPI from task X:2079 on CPU#0:
- IPI from task yakuake:3422 on CPU#0:
- IPI from task X:2079 on CPU#1:
- IPI from task amarokapp:3423 on CPU#1:
- IPI from task amarokapp:3423 on CPU#1:
+  [root@lpsdm52 ~]# dmsetup table
+VolGroup00-LogVol02: 0 350945280 linear 104:2 67109248
+VolGroup00-LogVol01: 0 8388608 linear 104:2 418054528
+VolGroup00-LogVol00: 0 67108864 linear 104:2 384
+[root@lpsdm52 ~]# dmsetup info -c
+Name             Maj Min Stat Open Targ Event  UUID
+VolGroup00-LogVol02 253   1 L--w    1    1      0 LVM-IV4PeE8cdxA3piC1qk79GY9PE9OC4OgmOZ4OzOgGQIdF3qDx6fJmlZukXXLIy39R
+VolGroup00-LogVol01 253   2 L--w    1    1      0 LVM-IV4PeE8cdxA3piC1qk79GY9PE9OC4Ogmfn2CcAd2Fh7i48twe8PZc2XK5bSOe1Fq
+VolGroup00-LogVol00 253   0 L--w    1    1      0 LVM-IV4PeE8cdxA3piC1qk79GY9PE9OC4OgmfYjxQKFP3zw2fGsezJN7ypSrfmP7oSvE
 
-could you also add a similar IPI printouts (with the same panic_timeout 
-logic) to arch/x86/kernel/smp_32.c's smp_reschedule_interrupt() function 
-- while still keeping the other printouts too?
+> See if these patches make any difference:
+> 
+  http://www.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/
+> 
+>     dm-md-merge_bvec_fn-with-separate-bdev-and-sector.patch
+>     dm-introduce-merge_bvec_fn.patch
+>     dm-linear-add-merge.patch
+>     dm-table-remove-merge_bvec-sector-restriction.patch
+>  
 
-Could you also enable PRINTK_TIME timestamps, so that we can see the 
-timings? (And do a "dmesg -n 1" so that the printks happen fast and the 
-timings are accurate.) I'd suggest to increase CONFIG_LOG_BUF_SHIFT to 
-20, so that your dmesg buffer is large enough. Plus try to capture 100 
-events, ok?
+ thanks for the suggestion. Are they supposed to apply to mainline?
 
-My theory is that for whatever reason we get "repeat" IPIs: multiple 
-reschedule IPIs although the other CPU only initiated one.
+Cheers
+Martin
 
-	Ingo
+
+
