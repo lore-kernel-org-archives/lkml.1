@@ -1,52 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbYAVGOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbYAVGQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbYAVGOF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 01:14:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbYAVGNx
+	id S1756775AbYAVGQs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 01:16:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYAVGQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 01:13:53 -0500
-Received: from hs-out-0708.google.com ([64.233.178.248]:38019 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751034AbYAVGNx (ORCPT
+	Tue, 22 Jan 2008 01:16:37 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:13564 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbYAVGQg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 01:13:53 -0500
+	Tue, 22 Jan 2008 01:16:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ib+I5ZtNaOET6pTfvFnFAY7gmB0w3s1jQ52rnbpcDCXw3KpHdYqBimaR6ZcRX3Kk6dmRCW6qqS9yyFedAicVJojL04BKpXv5FW+EW979L6xC3PsIm44EBNKtfZfFGngbfCX7PWd0hQWVMDI9BlyRpo2v2TrXvt4/LlJfznAVr7Q=
-Message-ID: <a8e1da0801212213v4d3a7d9ar21eda06d57d4d508@mail.gmail.com>
-Date: Tue, 22 Jan 2008 14:13:51 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct class
-Cc: "Jarek Poplawski" <jarkao2@gmail.com>,
-       "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>, stefanr@s5r6.in-berlin.de,
-       "David Brownell" <david-b@pacbell.net>,
-       "Kernel development list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080122051505.GA7619@suse.de>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Wv/1unNBiZjlTANmOYtIW4eXKOTqICCMpoFeLUQ9YHJy2x9gJ8OmDhDJmTjQ2Tb0UM8AfdFskvrvkFsvaqu+AZBnu454JTlPOML0XtBuKYam49dxfQVuBtcZ/b2cXP5aliHEP/NCMyOUAQ9PM0Ca0vrfKnC7jWuU7XHmsnkmcx8=
+Message-ID: <df9815e70801212216v79ff8137kccc6a94ddb96c818@mail.gmail.com>
+Date: Tue, 22 Jan 2008 14:16:34 +0800
+From: "Jike Song" <albcamus@gmail.com>
+To: jeff@garzik.org
+Subject: [PATCH] pci-skeleton: Misc fixes to build neatly
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a8e1da0801210044t5f705f77n8e310878775f7b5b@mail.gmail.com>
-	 <20080121211625.GA2758@ami.dom.local>
-	 <a8e1da0801211655y5a7313edn331ad4312b0b7de9@mail.gmail.com>
-	 <20080122051505.GA7619@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >
-> > Hope the iteration patches 1-6/7 could be applied.
->
-> Can you resend them again, and CC: me on all of them, with the latest
-> updates, so I know what I should be reviewing this time around?
+Hello Jeff,
 
-Hi, sent.
+The pci-skeleton.c has several problems with compilation, such as missing args
+when calling synchronize_irq(). Fix it.
 
->
-> thanks,
->
-> greg k-h
->
+Signed-off-by: Jike Song <albcamus@gmail.com>
+---
+ drivers/net/pci-skeleton.c |   49 ++++++++++++++++++++++---------------------
+ 1 files changed, 25 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/net/pci-skeleton.c b/drivers/net/pci-skeleton.c
+index ed402e0..fffc49b 100644
+--- a/drivers/net/pci-skeleton.c
++++ b/drivers/net/pci-skeleton.c
+@@ -541,7 +541,7 @@ static void netdrv_hw_start (struct net_device *dev);
+ #define NETDRV_W32_F(reg, val32)	do { writel ((val32), ioaddr +
+(reg)); readl (ioaddr + (reg)); } while (0)
+
+
+-#if MMIO_FLUSH_AUDIT_COMPLETE
++#ifdef MMIO_FLUSH_AUDIT_COMPLETE
+
+ /* write MMIO register */
+ #define NETDRV_W8(reg, val8)	writeb ((val8), ioaddr + (reg))
+@@ -603,7 +603,7 @@ static int __devinit netdrv_init_board (struct
+pci_dev *pdev,
+ 		return -ENOMEM;
+ 	}
+ 	SET_NETDEV_DEV(dev, &pdev->dev);
+-	tp = dev->priv;
++	tp = netdev_priv(dev);
+
+ 	/* enable device (incl. PCI PM wakeup), and bus-mastering */
+ 	rc = pci_enable_device (pdev);
+@@ -759,7 +759,7 @@ static int __devinit netdrv_init_one (struct pci_dev *pdev,
+ 		return i;
+ 	}
+
+-	tp = dev->priv;
++	tp = netdev_priv(dev);
+
+ 	assert (ioaddr != NULL);
+ 	assert (dev != NULL);
+@@ -783,7 +783,7 @@ static int __devinit netdrv_init_one (struct pci_dev *pdev,
+ 	dev->base_addr = (unsigned long) ioaddr;
+
+ 	/* dev->priv/tp zeroed and aligned in alloc_etherdev */
+-	tp = dev->priv;
++	tp = netdev_priv(dev);
+
+ 	/* note: tp->chipset set in netdrv_init_board */
+ 	tp->drv_flags = PCI_COMMAND_IO | PCI_COMMAND_MEMORY |
+@@ -841,7 +841,7 @@ static void __devexit netdrv_remove_one (struct
+pci_dev *pdev)
+
+ 	assert (dev != NULL);
+
+-	np = dev->priv;
++	np = netdev_priv(dev);
+ 	assert (np != NULL);
+
+ 	unregister_netdev (dev);
+@@ -974,7 +974,7 @@ static void mdio_sync (void *mdio_addr)
+
+ static int mdio_read (struct net_device *dev, int phy_id, int location)
+ {
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	void *mdio_addr = tp->mmio_addr + Config4;
+ 	int mii_cmd = (0xf6 << 10) | (phy_id << 5) | location;
+ 	int retval = 0;
+@@ -1017,7 +1017,7 @@ static int mdio_read (struct net_device *dev,
+int phy_id, int location)
+ static void mdio_write (struct net_device *dev, int phy_id, int location,
+ 			int value)
+ {
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	void *mdio_addr = tp->mmio_addr + Config4;
+ 	int mii_cmd =
+ 	    (0x5002 << 16) | (phy_id << 23) | (location << 18) | value;
+@@ -1060,7 +1060,7 @@ static void mdio_write (struct net_device *dev,
+int phy_id, int location,
+
+ static int netdrv_open (struct net_device *dev)
+ {
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	int retval;
+ #ifdef NETDRV_DEBUG
+ 	void *ioaddr = tp->mmio_addr;
+@@ -1121,7 +1121,7 @@ static int netdrv_open (struct net_device *dev)
+ /* Start the hardware at open or resume. */
+ static void netdrv_hw_start (struct net_device *dev)
+ {
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	void *ioaddr = tp->mmio_addr;
+ 	u32 i;
+
+@@ -1191,7 +1191,7 @@ static void netdrv_hw_start (struct net_device *dev)
+ /* Initialize the Rx and Tx rings, along with various 'dev' bits. */
+ static void netdrv_init_ring (struct net_device *dev)
+ {
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	int i;
+
+ 	DPRINTK ("ENTER\n");
+@@ -1213,7 +1213,7 @@ static void netdrv_init_ring (struct net_device *dev)
+ static void netdrv_timer (unsigned long data)
+ {
+ 	struct net_device *dev = (struct net_device *) data;
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	void *ioaddr = tp->mmio_addr;
+ 	int next_tick = 60 * HZ;
+ 	int mii_lpa;
+@@ -1252,9 +1252,10 @@ static void netdrv_timer (unsigned long data)
+ }
+
+
+-static void netdrv_tx_clear (struct netdrv_private *tp)
++static void netdrv_tx_clear (struct net_device *dev)
+ {
+ 	int i;
++	struct netdrv_private *tp = netdev_priv(dev);
+
+ 	atomic_set (&tp->cur_tx, 0);
+ 	atomic_set (&tp->dirty_tx, 0);
+@@ -1278,7 +1279,7 @@ static void netdrv_tx_clear (struct netdrv_private *tp)
+
+ static void netdrv_tx_timeout (struct net_device *dev)
+ {
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	void *ioaddr = tp->mmio_addr;
+ 	int i;
+ 	u8 tmp8;
+@@ -1311,7 +1312,7 @@ static void netdrv_tx_timeout (struct net_device *dev)
+ 	/* Stop a shared interrupt from scavenging while we are. */
+ 	spin_lock_irqsave (&tp->lock, flags);
+
+-	netdrv_tx_clear (tp);
++	netdrv_tx_clear (dev);
+
+ 	spin_unlock_irqrestore (&tp->lock, flags);
+
+@@ -1325,7 +1326,7 @@ static void netdrv_tx_timeout (struct net_device *dev)
+
+ static int netdrv_start_xmit (struct sk_buff *skb, struct net_device *dev)
+ {
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	void *ioaddr = tp->mmio_addr;
+ 	int entry;
+
+@@ -1525,7 +1526,7 @@ static void netdrv_rx_interrupt (struct net_device *dev,
+ 		DPRINTK ("%s:  netdrv_rx() status %4.4x, size %4.4x,"
+ 			 " cur %4.4x.\n", dev->name, rx_status,
+ 			 rx_size, cur_rx);
+-#if NETDRV_DEBUG > 2
++#if defined(NETDRV_DEBUG) && (NETDRV_DEBUG > 2)
+ 		{
+ 			int i;
+ 			DPRINTK ("%s: Frame contents ", dev->name);
+@@ -1648,7 +1649,7 @@ static void netdrv_weird_interrupt (struct
+net_device *dev,
+ static irqreturn_t netdrv_interrupt (int irq, void *dev_instance)
+ {
+ 	struct net_device *dev = (struct net_device *) dev_instance;
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	int boguscnt = max_interrupt_work;
+ 	void *ioaddr = tp->mmio_addr;
+ 	int status = 0, link_changed = 0; /* avoid bogus "uninit" warning */
+@@ -1711,7 +1712,7 @@ static irqreturn_t netdrv_interrupt (int irq,
+void *dev_instance)
+
+ static int netdrv_close (struct net_device *dev)
+ {
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	void *ioaddr = tp->mmio_addr;
+ 	unsigned long flags;
+
+@@ -1738,10 +1739,10 @@ static int netdrv_close (struct net_device *dev)
+
+ 	spin_unlock_irqrestore (&tp->lock, flags);
+
+-	synchronize_irq ();
++	synchronize_irq (dev->irq);
+ 	free_irq (dev->irq, dev);
+
+-	netdrv_tx_clear (tp);
++	netdrv_tx_clear (dev);
+
+ 	pci_free_consistent(tp->pci_dev, RX_BUF_TOT_LEN,
+ 			    tp->rx_ring, tp->rx_ring_dma);
+@@ -1762,7 +1763,7 @@ static int netdrv_close (struct net_device *dev)
+
+ static int netdrv_ioctl (struct net_device *dev, struct ifreq *rq, int cmd)
+ {
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	struct mii_ioctl_data *data = if_mii(rq);
+ 	unsigned long flags;
+ 	int rc = 0;
+@@ -1805,7 +1806,7 @@ static int netdrv_ioctl (struct net_device *dev,
+struct ifreq *rq, int cmd)
+
+ static void netdrv_set_rx_mode (struct net_device *dev)
+ {
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	void *ioaddr = tp->mmio_addr;
+ 	u32 mc_filter[2];	/* Multicast hash filter */
+ 	int i, rx_mode;
+@@ -1862,7 +1863,7 @@ static void netdrv_set_rx_mode (struct net_device *dev)
+ static int netdrv_suspend (struct pci_dev *pdev, pm_message_t state)
+ {
+ 	struct net_device *dev = pci_get_drvdata (pdev);
+-	struct netdrv_private *tp = dev->priv;
++	struct netdrv_private *tp = netdev_priv(dev);
+ 	void *ioaddr = tp->mmio_addr;
+ 	unsigned long flags;
+
+@@ -1892,7 +1893,7 @@ static int netdrv_suspend (struct pci_dev *pdev,
+pm_message_t state)
+ static int netdrv_resume (struct pci_dev *pdev)
+ {
+ 	struct net_device *dev = pci_get_drvdata (pdev);
+-	struct netdrv_private *tp = dev->priv;
++	/*struct netdrv_private *tp = netdev_priv(dev);*/
+
+ 	if (!netif_running(dev))
+ 		return 0;
+-- 
+1.5.3.4
