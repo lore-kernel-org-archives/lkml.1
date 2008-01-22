@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbYAVSVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbYAVSYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754722AbYAVSVd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 13:21:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYAVSV0
+	id S1755279AbYAVSYf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 13:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYAVSY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 13:21:26 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:23044 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751426AbYAVSV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 13:21:26 -0500
-Date: Tue, 22 Jan 2008 19:21:21 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, knikanth@novell.com
-Subject: Re: [PATCH 0/6] IO context sharing
-Message-ID: <20080122182121.GX6258@kernel.dk>
-References: <1200995361-24001-1-git-send-email-jens.axboe@oracle.com> <1201013372.6341.19.camel@lappy>
+	Tue, 22 Jan 2008 13:24:28 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45748 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751068AbYAVSY1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 13:24:27 -0500
+Message-ID: <479634A9.1090908@zytor.com>
+Date: Tue, 22 Jan 2008 10:23:37 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201013372.6341.19.camel@lappy>
+To: Ian Campbell <ijc@hellion.org.uk>
+CC: =?ISO-8859-1?Q?Mika_Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+ format.
+References: <1200758937-22386-1-git-send-email-ijc@hellion.org.uk>	 <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>	 <47939363.8040603@kolumbus.fi>	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>	 <479510CE.7010706@zytor.com>	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>	 <479551FD.5040801@zytor.com> <1201023401.5643.52.camel@localhost.localdomain>
+In-Reply-To: <1201023401.5643.52.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22 2008, Peter Zijlstra wrote:
+Ian Campbell wrote:
+> On Mon, 2008-01-21 at 18:16 -0800, H. Peter Anvin wrote:
+>> Ian Campbell wrote:
+>>> I'm just preparing to send out a version which uses the native_* way of
+>>> doing things, its not actually as clean as I would like so I'd be
+>>> interested to see the ASM variant.
+>>>
+>> This is the asm version I came up with.
 > 
-> On Tue, 2008-01-22 at 10:49 +0100, Jens Axboe wrote:
-> > Hi,
-> > 
-> > Today io contexts are per-process and define the (surprise) io context
-> > of that process. In some situations it would be handy if several
-> > processes share an IO context. With syslets it's especially crucial that
-> > the threads working on behalf of the parent process are seen as the same
-> > IO context. That goes from both a fairness and performance point of
-> > view, since IO schedulers like AS and CFQ base decisions on what the
-> > IO context state is. This patchset adds support for processes sharing a
-> > single io context and also adds a CLONE_IO flag to denote sharing of
-> > IO context.
+> I moderately prefer the C version, even if it is in a restricted
+> environment where care is needed to access global variables. I like that
+> it avoids multiple copies of the code and also find the structure of
+> what's going on is more obviously apparent (even to someone who has done
+> plenty of ASM mode page table frobbing in the past).
 > 
-> Are you planning on extending this to a hierarchical CFQ for cgroups, or
-> just giving the IO context to a cgroup?
+> Anyhow, I don't feel all that strongly about it so if the opinion of the
+> early start of day maintainer(s) is strongly in favour of ASM I'll defer
+> to that.
+> 
 
-Not sure what extra extensions it would need on the IO side. As long as
-the other side makes sure to group its processes by sharing IO context,
-then CFQ will treat that as a single entity.
+My opinion is that I want it done properly (PIC and all that jazz) or 
+not at all, and certainly would not want to mix linear and 
+paging-enabled code in the same file.  When it comes to assembly code, 
+at least people can *see* that there there be dragons.
 
--- 
-Jens Axboe
+The plus *and* minus of a C version is that it's easier for people to 
+modify.  The plus side of that is that if we really need it, it's a lot 
+cleaner; the minus side is that it may encourage more code to creep into 
+the pre-paging code, which would not be a good thing IMO.
 
+	-hpa
