@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbYAVDE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbYAVDEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757887AbYAVDE1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:04:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYAVDDA
+	id S1756859AbYAVDEl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:04:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYAVDDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:03:00 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:64698 "EHLO
+	Mon, 21 Jan 2008 22:03:06 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:64702 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755267AbYAVDC7 (ORCPT
+	by vger.kernel.org with ESMTP id S1754101AbYAVDDA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:02:59 -0500
+	Mon, 21 Jan 2008 22:03:00 -0500
 From: "Theodore Ts'o" <tytso@MIT.EDU>
 To: linux-kernel@vger.kernel.org
-Cc: Mingming Cao <cmm@us.ibm.com>, Arjan van de Ven <arjan@linux.intel.com>,
-       Andrew Morton <akpm@osdl.org>, "Theodore Ts'o" <tytso@MIT.EDU>
-Subject: [PATCH 48/49] jbd2: Use round-jiffies() function for the "5 second" ext4/jbd2 wakeup
-Date: Mon, 21 Jan 2008 22:02:27 -0500
-Message-Id: <1200970948-17903-49-git-send-email-tytso@mit.edu>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       <linux-ext4@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 39/49] ext4: Add ext4_find_next_bit()
+Date: Mon, 21 Jan 2008 22:02:18 -0500
+Message-Id: <1200970948-17903-40-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
-In-Reply-To: <1200970948-17903-48-git-send-email-tytso@mit.edu>
+In-Reply-To: <1200970948-17903-39-git-send-email-tytso@mit.edu>
 References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-2-git-send-email-tytso@mit.edu>
  <1200970948-17903-3-git-send-email-tytso@mit.edu>
@@ -58,54 +58,205 @@ References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-37-git-send-email-tytso@mit.edu>
  <1200970948-17903-38-git-send-email-tytso@mit.edu>
  <1200970948-17903-39-git-send-email-tytso@mit.edu>
- <1200970948-17903-40-git-send-email-tytso@mit.edu>
- <1200970948-17903-41-git-send-email-tytso@mit.edu>
- <1200970948-17903-42-git-send-email-tytso@mit.edu>
- <1200970948-17903-43-git-send-email-tytso@mit.edu>
- <1200970948-17903-44-git-send-email-tytso@mit.edu>
- <1200970948-17903-45-git-send-email-tytso@mit.edu>
- <1200970948-17903-46-git-send-email-tytso@mit.edu>
- <1200970948-17903-47-git-send-email-tytso@mit.edu>
- <1200970948-17903-48-git-send-email-tytso@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mingming Cao <cmm@us.ibm.com>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-While "every 5 seconds" doesn't sound as a problem, there can be many
-of these (and these timers do add up over all the kernel).  The "5
-second" wakeup isn't really timing sensitive; in addition even with
-rounding it'll still happen every 5 seconds (with the exception of the
-very first time, which is likely to be rounded up to somewhere closer
-to 6 seconds)
+This function is used by the ext4 multi block allocator patches.
 
-(Ported from similar JBD patch made by Arjan van de Ven to
-fs/jbd/transaction.c)
+Also add generic_find_next_le_bit
 
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andrew Morton <akpm@osdl.org>
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Cc: <linux-ext4@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- fs/jbd2/transaction.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ include/asm-arm/bitops.h                     |    2 +
+ include/asm-generic/bitops/ext2-non-atomic.h |    2 +
+ include/asm-generic/bitops/le.h              |    4 ++
+ include/asm-m68k/bitops.h                    |    2 +
+ include/asm-m68knommu/bitops.h               |    2 +
+ include/asm-powerpc/bitops.h                 |    4 ++
+ include/asm-s390/bitops.h                    |    2 +
+ include/linux/ext4_fs.h                      |    1 +
+ lib/find_next_bit.c                          |   43 ++++++++++++++++++++++++++
+ 9 files changed, 62 insertions(+), 0 deletions(-)
 
-diff --git a/fs/jbd2/transaction.c b/fs/jbd2/transaction.c
-index 70b3199..0c8adab 100644
---- a/fs/jbd2/transaction.c
-+++ b/fs/jbd2/transaction.c
-@@ -54,7 +54,7 @@ jbd2_get_transaction(journal_t *journal, transaction_t *transaction)
- 	spin_lock_init(&transaction->t_handle_lock);
+diff --git a/include/asm-arm/bitops.h b/include/asm-arm/bitops.h
+index 47a6b08..5c60bfc 100644
+--- a/include/asm-arm/bitops.h
++++ b/include/asm-arm/bitops.h
+@@ -310,6 +310,8 @@ static inline int constant_fls(int x)
+ 		_find_first_zero_bit_le(p,sz)
+ #define ext2_find_next_zero_bit(p,sz,off)	\
+ 		_find_next_zero_bit_le(p,sz,off)
++#define ext2_find_next_bit(p, sz, off) \
++		_find_next_bit_le(p, sz, off)
  
- 	/* Set up the commit timer for the new transaction. */
--	journal->j_commit_timer.expires = transaction->t_expires;
-+	journal->j_commit_timer.expires = round_jiffies(transaction->t_expires);
- 	add_timer(&journal->j_commit_timer);
+ /*
+  * Minix is defined to use little-endian byte ordering.
+diff --git a/include/asm-generic/bitops/ext2-non-atomic.h b/include/asm-generic/bitops/ext2-non-atomic.h
+index 1697404..63cf822 100644
+--- a/include/asm-generic/bitops/ext2-non-atomic.h
++++ b/include/asm-generic/bitops/ext2-non-atomic.h
+@@ -14,5 +14,7 @@
+ 	generic_find_first_zero_le_bit((unsigned long *)(addr), (size))
+ #define ext2_find_next_zero_bit(addr, size, off) \
+ 	generic_find_next_zero_le_bit((unsigned long *)(addr), (size), (off))
++#define ext2_find_next_bit(addr, size, off) \
++	generic_find_next_le_bit((unsigned long *)(addr), (size), (off))
  
- 	J_ASSERT(journal->j_running_transaction == NULL);
+ #endif /* _ASM_GENERIC_BITOPS_EXT2_NON_ATOMIC_H_ */
+diff --git a/include/asm-generic/bitops/le.h b/include/asm-generic/bitops/le.h
+index b9c7e5d..80e3bf1 100644
+--- a/include/asm-generic/bitops/le.h
++++ b/include/asm-generic/bitops/le.h
+@@ -20,6 +20,8 @@
+ #define generic___test_and_clear_le_bit(nr, addr) __test_and_clear_bit(nr, addr)
+ 
+ #define generic_find_next_zero_le_bit(addr, size, offset) find_next_zero_bit(addr, size, offset)
++#define generic_find_next_le_bit(addr, size, offset) \
++			find_next_bit(addr, size, offset)
+ 
+ #elif defined(__BIG_ENDIAN)
+ 
+@@ -42,6 +44,8 @@
+ 
+ extern unsigned long generic_find_next_zero_le_bit(const unsigned long *addr,
+ 		unsigned long size, unsigned long offset);
++extern unsigned long generic_find_next_le_bit(const unsigned long *addr,
++		unsigned long size, unsigned long offset);
+ 
+ #else
+ #error "Please fix <asm/byteorder.h>"
+diff --git a/include/asm-m68k/bitops.h b/include/asm-m68k/bitops.h
+index 2976b5d..83d1f28 100644
+--- a/include/asm-m68k/bitops.h
++++ b/include/asm-m68k/bitops.h
+@@ -410,6 +410,8 @@ static inline int ext2_find_next_zero_bit(const void *vaddr, unsigned size,
+ 	res = ext2_find_first_zero_bit (p, size - 32 * (p - addr));
+ 	return (p - addr) * 32 + res;
+ }
++#define ext2_find_next_bit(addr, size, off) \
++	generic_find_next_le_bit((unsigned long *)(addr), (size), (off))
+ 
+ #endif /* __KERNEL__ */
+ 
+diff --git a/include/asm-m68knommu/bitops.h b/include/asm-m68knommu/bitops.h
+index f8dfb7b..f43afe1 100644
+--- a/include/asm-m68knommu/bitops.h
++++ b/include/asm-m68knommu/bitops.h
+@@ -294,6 +294,8 @@ found_middle:
+ 	return result + ffz(__swab32(tmp));
+ }
+ 
++#define ext2_find_next_bit(addr, size, off) \
++	generic_find_next_le_bit((unsigned long *)(addr), (size), (off))
+ #include <asm-generic/bitops/minix.h>
+ 
+ #endif /* __KERNEL__ */
+diff --git a/include/asm-powerpc/bitops.h b/include/asm-powerpc/bitops.h
+index 733b4af..220d9a7 100644
+--- a/include/asm-powerpc/bitops.h
++++ b/include/asm-powerpc/bitops.h
+@@ -359,6 +359,8 @@ static __inline__ int test_le_bit(unsigned long nr,
+ unsigned long generic_find_next_zero_le_bit(const unsigned long *addr,
+ 				    unsigned long size, unsigned long offset);
+ 
++unsigned long generic_find_next_le_bit(const unsigned long *addr,
++				    unsigned long size, unsigned long offset);
+ /* Bitmap functions for the ext2 filesystem */
+ 
+ #define ext2_set_bit(nr,addr) \
+@@ -378,6 +380,8 @@ unsigned long generic_find_next_zero_le_bit(const unsigned long *addr,
+ #define ext2_find_next_zero_bit(addr, size, off) \
+ 	generic_find_next_zero_le_bit((unsigned long*)addr, size, off)
+ 
++#define ext2_find_next_bit(addr, size, off) \
++	generic_find_next_le_bit((unsigned long *)addr, size, off)
+ /* Bitmap functions for the minix filesystem.  */
+ 
+ #define minix_test_and_set_bit(nr,addr) \
+diff --git a/include/asm-s390/bitops.h b/include/asm-s390/bitops.h
+index 34d9a63..dba6fec 100644
+--- a/include/asm-s390/bitops.h
++++ b/include/asm-s390/bitops.h
+@@ -772,6 +772,8 @@ static inline int sched_find_first_bit(unsigned long *b)
+ 	test_and_clear_bit((nr)^(__BITOPS_WORDSIZE - 8), (unsigned long *)addr)
+ #define ext2_test_bit(nr, addr)      \
+ 	test_bit((nr)^(__BITOPS_WORDSIZE - 8), (unsigned long *)addr)
++#define ext2_find_next_bit(addr, size, off) \
++	generic_find_next_le_bit((unsigned long *)(addr), (size), (off))
+ 
+ #ifndef __s390x__
+ 
+diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
+index 213974f..d0b7ca9 100644
+--- a/include/linux/ext4_fs.h
++++ b/include/linux/ext4_fs.h
+@@ -493,6 +493,7 @@ do {									       \
+ #define ext4_test_bit			ext2_test_bit
+ #define ext4_find_first_zero_bit	ext2_find_first_zero_bit
+ #define ext4_find_next_zero_bit		ext2_find_next_zero_bit
++#define ext4_find_next_bit		ext2_find_next_bit
+ 
+ /*
+  * Maximal mount counts between two filesystem checks
+diff --git a/lib/find_next_bit.c b/lib/find_next_bit.c
+index bda0d71..78ccd73 100644
+--- a/lib/find_next_bit.c
++++ b/lib/find_next_bit.c
+@@ -178,4 +178,47 @@ found_middle_swap:
+ 
+ EXPORT_SYMBOL(generic_find_next_zero_le_bit);
+ 
++unsigned long generic_find_next_le_bit(const unsigned long *addr, unsigned
++		long size, unsigned long offset)
++{
++	const unsigned long *p = addr + BITOP_WORD(offset);
++	unsigned long result = offset & ~(BITS_PER_LONG - 1);
++	unsigned long tmp;
++
++	if (offset >= size)
++		return size;
++	size -= result;
++	offset &= (BITS_PER_LONG - 1UL);
++	if (offset) {
++		tmp = ext2_swabp(p++);
++		tmp &= (~0UL << offset);
++		if (size < BITS_PER_LONG)
++			goto found_first;
++		if (tmp)
++			goto found_middle;
++		size -= BITS_PER_LONG;
++		result += BITS_PER_LONG;
++	}
++
++	while (size & ~(BITS_PER_LONG - 1)) {
++		tmp = *(p++);
++		if (tmp)
++			goto found_middle_swap;
++		result += BITS_PER_LONG;
++		size -= BITS_PER_LONG;
++	}
++	if (!size)
++		return result;
++	tmp = ext2_swabp(p);
++found_first:
++	tmp &= (~0UL >> (BITS_PER_LONG - size));
++	if (tmp == 0UL)		/* Are any bits set? */
++		return result + size; /* Nope. */
++found_middle:
++	return result + __ffs(tmp);
++
++found_middle_swap:
++	return result + __ffs(ext2_swab(tmp));
++}
++EXPORT_SYMBOL(generic_find_next_le_bit);
+ #endif /* __BIG_ENDIAN */
 -- 
 1.5.4.rc3.31.g1271-dirty
 
