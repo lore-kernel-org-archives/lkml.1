@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760745AbYAVJzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760518AbYAVJzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760745AbYAVJzA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 04:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbYAVJy3
+	id S1760518AbYAVJzj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 04:55:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757818AbYAVJyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 04:54:29 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:8780 "EHLO kernel.dk"
+	Tue, 22 Jan 2008 04:54:35 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:8783 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756497AbYAVJy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756509AbYAVJy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 22 Jan 2008 04:54:27 -0500
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
-Cc: knikanth@novell.com, Nikanth Karthikesan <KNikanth@novell.com>
-Subject: [PATCH 3/6] io_context sharing - cfq changes
-Date: Tue, 22 Jan 2008 10:49:18 +0100
-Message-Id: <1200995361-24001-4-git-send-email-jens.axboe@oracle.com>
+Cc: knikanth@novell.com, Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 2/6] io context sharing: preliminary support
+Date: Tue, 22 Jan 2008 10:49:17 +0100
+Message-Id: <1200995361-24001-3-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.4.rc2.84.gf85fd
 In-Reply-To: <1200995361-24001-1-git-send-email-jens.axboe@oracle.com>
 References: <1200995361-24001-1-git-send-email-jens.axboe@oracle.com>
@@ -22,127 +22,159 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nikanth Karthikesan <KNikanth@novell.com>
-
-changes in the cfq for io_context sharing
+Detach task state from ioc, instead keep track of how many processes
+are accessing the ioc.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- block/cfq-iosched.c |   20 ++++++++++++++++++--
- 1 files changed, 18 insertions(+), 2 deletions(-)
+ block/ll_rw_blk.c         |   27 ++++++++++++++++-----------
+ fs/ioprio.c               |    1 -
+ include/linux/blkdev.h    |    2 +-
+ include/linux/iocontext.h |   22 ++++++++++++++++++----
+ kernel/fork.c             |    1 -
+ 5 files changed, 35 insertions(+), 18 deletions(-)
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 533af75..dba52b6 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -895,7 +895,7 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
- 	 * task has exited, don't wait
- 	 */
- 	cic = cfqd->active_cic;
--	if (!cic || !cic->ioc->task)
-+	if (!cic || !atomic_read(&cic->ioc->nr_tasks))
- 		return;
+diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
+index bcd0354..ca8b228 100644
+--- a/block/ll_rw_blk.c
++++ b/block/ll_rw_blk.c
+@@ -3834,10 +3834,10 @@ int __init blk_dev_init(void)
+ /*
+  * IO Context helper functions
+  */
+-void put_io_context(struct io_context *ioc)
++int put_io_context(struct io_context *ioc)
+ {
+ 	if (ioc == NULL)
+-		return;
++		return 1;
  
- 	/*
-@@ -1178,6 +1178,8 @@ static void cfq_free_io_context(struct io_context *ioc)
+ 	BUG_ON(atomic_read(&ioc->refcount) == 0);
  
- 	ioc->ioc_data = NULL;
+@@ -3856,7 +3856,9 @@ void put_io_context(struct io_context *ioc)
+ 		rcu_read_unlock();
  
-+	spin_lock(&ioc->lock);
-+
- 	while ((n = rb_first(&ioc->cic_root)) != NULL) {
- 		__cic = rb_entry(n, struct cfq_io_context, rb_node);
- 		rb_erase(&__cic->rb_node, &ioc->cic_root);
-@@ -1189,6 +1191,8 @@ static void cfq_free_io_context(struct io_context *ioc)
- 
- 	if (ioc_gone && !elv_ioc_count_read(ioc_count))
- 		complete(ioc_gone);
-+
-+	spin_unlock(&ioc->lock);
- }
- 
- static void cfq_exit_cfqq(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-@@ -1243,6 +1247,7 @@ static void cfq_exit_io_context(struct io_context *ioc)
- 
- 	ioc->ioc_data = NULL;
- 
-+	spin_lock(&ioc->lock);
- 	/*
- 	 * put the reference this task is holding to the various queues
- 	 */
-@@ -1253,6 +1258,8 @@ static void cfq_exit_io_context(struct io_context *ioc)
- 		cfq_exit_single_io_context(__cic);
- 		n = rb_next(n);
+ 		kmem_cache_free(iocontext_cachep, ioc);
++		return 1;
  	}
-+
-+	spin_unlock(&ioc->lock);
++	return 0;
+ }
+ EXPORT_SYMBOL(put_io_context);
+ 
+@@ -3871,15 +3873,17 @@ void exit_io_context(void)
+ 	current->io_context = NULL;
+ 	task_unlock(current);
+ 
+-	ioc->task = NULL;
+-	if (ioc->aic && ioc->aic->exit)
+-		ioc->aic->exit(ioc->aic);
+-	if (ioc->cic_root.rb_node != NULL) {
+-		cic = rb_entry(rb_first(&ioc->cic_root), struct cfq_io_context, rb_node);
+-		cic->exit(ioc);
+-	}
++	if (atomic_dec_and_test(&ioc->nr_tasks)) {
++		if (ioc->aic && ioc->aic->exit)
++			ioc->aic->exit(ioc->aic);
++		if (ioc->cic_root.rb_node != NULL) {
++			cic = rb_entry(rb_first(&ioc->cic_root),
++				struct cfq_io_context, rb_node);
++			cic->exit(ioc);
++		}
+ 
+-	put_io_context(ioc);
++		put_io_context(ioc);
++	}
  }
  
- static struct cfq_io_context *
-@@ -1349,6 +1356,8 @@ static void cfq_ioc_set_ioprio(struct io_context *ioc)
- 	struct cfq_io_context *cic;
- 	struct rb_node *n;
- 
-+	spin_lock(&ioc->lock);
-+
- 	ioc->ioprio_changed = 0;
- 
- 	n = rb_first(&ioc->cic_root);
-@@ -1358,6 +1367,8 @@ static void cfq_ioc_set_ioprio(struct io_context *ioc)
- 		changed_ioprio(cic);
- 		n = rb_next(n);
- 	}
-+
-+	spin_unlock(&ioc->lock);
- }
- 
- static struct cfq_queue *
-@@ -1502,6 +1513,7 @@ cfq_cic_rb_lookup(struct cfq_data *cfqd, struct io_context *ioc)
- 	if (cic && cic->key == cfqd)
- 		return cic;
- 
-+	spin_lock(&ioc->lock);
- restart:
- 	n = ioc->cic_root.rb_node;
- 	while (n) {
-@@ -1519,10 +1531,12 @@ restart:
- 			n = n->rb_right;
- 		else {
- 			ioc->ioc_data = cic;
-+			spin_unlock(&ioc->lock);
- 			return cic;
+ struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
+@@ -3889,7 +3893,8 @@ struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
+ 	ret = kmem_cache_alloc_node(iocontext_cachep, gfp_flags, node);
+ 	if (ret) {
+ 		atomic_set(&ret->refcount, 1);
+-		ret->task = current;
++		atomic_set(&ret->nr_tasks, 1);
++		spin_lock_init(&ret->lock);
+ 		ret->ioprio_changed = 0;
+ 		ret->ioprio = 0;
+ 		ret->last_waited = jiffies; /* doesn't matter... */
+diff --git a/fs/ioprio.c b/fs/ioprio.c
+index a760040..06b5d97 100644
+--- a/fs/ioprio.c
++++ b/fs/ioprio.c
+@@ -54,7 +54,6 @@ static int set_task_ioprio(struct task_struct *task, int ioprio)
+ 			break;
  		}
- 	}
+ 		task->io_context = ioc;
+-		ioc->task = task;
+ 	} while (1);
  
-+	spin_unlock(&ioc->lock);
- 	return NULL;
- }
+ 	if (!err) {
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index d61c6f5..1633523 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -34,7 +34,7 @@ struct sg_io_hdr;
+ #define BLKDEV_MIN_RQ	4
+ #define BLKDEV_MAX_RQ	128	/* Default maximum */
  
-@@ -1536,6 +1550,7 @@ cfq_cic_link(struct cfq_data *cfqd, struct io_context *ioc,
- 	unsigned long flags;
- 	void *k;
- 
-+	spin_lock(&ioc->lock);
- 	cic->ioc = ioc;
- 	cic->key = cfqd;
- 
-@@ -1566,6 +1581,7 @@ restart:
- 	spin_lock_irqsave(cfqd->queue->queue_lock, flags);
- 	list_add(&cic->queue_list, &cfqd->cic_list);
- 	spin_unlock_irqrestore(cfqd->queue->queue_lock, flags);
-+	spin_unlock(&ioc->lock);
- }
+-void put_io_context(struct io_context *ioc);
++int put_io_context(struct io_context *ioc);
+ void exit_io_context(void);
+ struct io_context *get_io_context(gfp_t gfp_flags, int node);
+ struct io_context *alloc_io_context(gfp_t, int);
+diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
+index 186807e..cd44d45 100644
+--- a/include/linux/iocontext.h
++++ b/include/linux/iocontext.h
+@@ -54,13 +54,15 @@ struct cfq_io_context {
+ };
  
  /*
-@@ -1659,7 +1675,7 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+- * This is the per-process I/O subsystem state.  It is refcounted and
+- * kmalloc'ed. Currently all fields are modified in process io context
+- * (apart from the atomic refcount), so require no locking.
++ * I/O subsystem state of the associated processes.  It is refcounted
++ * and kmalloc'ed. These could be shared between processes.
+  */
+ struct io_context {
+ 	atomic_t refcount;
+-	struct task_struct *task;
++	atomic_t nr_tasks;
++
++	/* all the fields below are protected by this lock */
++	spinlock_t lock;
  
- 	enable_idle = cfq_cfqq_idle_window(cfqq);
+ 	unsigned short ioprio;
+ 	unsigned short ioprio_changed;
+@@ -76,4 +78,16 @@ struct io_context {
+ 	void *ioc_data;
+ };
  
--	if (!cic->ioc->task || !cfqd->cfq_slice_idle ||
-+	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
- 	    (cfqd->hw_tag && CIC_SEEKY(cic)))
- 		enable_idle = 0;
- 	else if (sample_valid(cic->ttime_samples)) {
++static inline struct io_context *ioc_task_link(struct io_context *ioc)
++{
++	/*
++	 * if ref count is zero, don't allow sharing (ioc is going away, it's
++	 * a race).
++	 */
++	if (ioc && atomic_inc_not_zero(&ioc->refcount))
++		return ioc;
++
++	return NULL;
++}
++
+ #endif
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 9961fb7..4cfb0f4 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -804,7 +804,6 @@ static int copy_io(struct task_struct *tsk)
+ 		if (unlikely(!tsk->io_context))
+ 			return -ENOMEM;
+ 
+-		tsk->io_context->task = tsk;
+ 		tsk->io_context->ioprio = ioc->ioprio;
+ 	}
+ 
 -- 
 1.5.4.rc2.84.gf85fd
 
