@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYAVR4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbYAVR4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbYAVR4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 12:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYAVR4E
+	id S1756935AbYAVR4b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 12:56:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbYAVR4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 12:56:04 -0500
-Received: from gw.goop.org ([64.81.55.164]:55451 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751101AbYAVR4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 12:56:03 -0500
-Message-ID: <47962E1D.2090308@goop.org>
-Date: Tue, 22 Jan 2008 09:55:41 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Eduardo Pereira Habkost <ehabkost@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, glommer@gmail.com, tglx@linutronix.de,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, rusty@rustcorp.com.au,
-       ak@suse.de, chrisw@sous-sol.org, rostedt@goodmis.org, hpa@zytor.com,
-       zach@vmware.com, roland@redhat.com, mtosatti@redhat.com
-Subject: Re: [PATCH 0/4] paravirt_ops-64 compile fixes
-References: <1200952133-31581-1-git-send-email-ehabkost@redhat.com> <20080122120207.GA30271@elte.hu> <20080122123450.GU7338@blackpad>
-In-Reply-To: <20080122123450.GU7338@blackpad>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 22 Jan 2008 12:56:19 -0500
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:1779 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755524AbYAVR4S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 12:56:18 -0500
+Date: Tue, 22 Jan 2008 18:56:15 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
+Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net, tony@atomide.com,
+       "Linux I2C" <i2c@lm-sensors.org>
+Subject: Re: [PATCH 2/2] I2C: ISP1301_OMAP: New-style i2c driver updates,
+ part 2
+Message-ID: <20080122185615.4a8ebbea@hyperion.delvare>
+In-Reply-To: <31e679430801220413j763589b0j171873c9a90a3cb3@mail.gmail.com>
+References: <1199379597-6273-1-git-send-email-me@felipebalbi.com>
+	<1199379597-6273-2-git-send-email-me@felipebalbi.com>
+	<1199379597-6273-3-git-send-email-me@felipebalbi.com>
+	<20080122130158.4d4d44dc@hyperion.delvare>
+	<31e679430801220413j763589b0j171873c9a90a3cb3@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eduardo Pereira Habkost wrote:
-> If this is desirable for broader testing, we can make config PARAVIRT
-> visible and selectable on menuconfig, even when there is no guest
-> implementation being enabled. Should I do it?
->   
+On Tue, 22 Jan 2008 14:13:58 +0200, Felipe Balbi wrote:
+> On Jan 22, 2008 2:01 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> > On Thu,  3 Jan 2008 11:59:57 -0500, Felipe Balbi wrote:
+> > > -     if (machine_is_omap_h2())
+> > > -             omap_free_gpio(2);
+> > > -
+> >
+> > Why?
+> 
+> Board specific code should go to board files. I'll try to find a
+> better way of doing this. Maybe using a private_data.
+> Ditto to all cases below.
 
-Yes please.
+I agree that board code should ideally not be there, however you can't
+just drop it and hope nobody will notice. It needs to be done in such a
+way that everything still works afterwards. IMHO it is better move such
+changes to a later patch so as to not make this one needlessly complex.
 
-> Maybe should this force-paravirt mode be a kernel debugging option?
->   
+> > (Did you test you patch on OMAP H2?)
+> 
+> Can't remember anymore, but before applying these patches isp1301 was
+> crashing the kernel on H2 and H3.
 
-No, just a plain CONFIG_PARAVIRT to turn it on and off independently of 
-everything else.
+That's bad, this should be fixed, if possible even before applying your
+patches.
 
-    J
+Thanks,
+-- 
+Jean Delvare
