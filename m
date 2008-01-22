@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYAVUbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbYAVUck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbYAVUbr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 15:31:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbYAVUbh
+	id S1756028AbYAVUck (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 15:32:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbYAVUc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 15:31:37 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:49677
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753152AbYAVUbg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 15:31:36 -0500
-Date: Tue, 22 Jan 2008 21:31:25 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Izik Eidus <izike@qumranet.com>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>,
-       clameter@sgi.com, daniel.blueman@quadrics.com, holt@sgi.com,
-       steiner@sgi.com, Andrew Morton <akpm@osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] mmu notifiers #v3
-Message-ID: <20080122203125.GC15848@v2.random>
-References: <20080113162418.GE8736@v2.random> <20080116124256.44033d48@bree.surriel.com> <478E4356.7030303@qumranet.com> <20080117162302.GI7170@v2.random> <478F9C9C.7070500@qumranet.com> <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <1201030127.6341.39.camel@lappy>
+	Tue, 22 Jan 2008 15:32:28 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:45593 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750767AbYAVUc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 15:32:27 -0500
+Message-ID: <479652D2.10800@garzik.org>
+Date: Tue, 22 Jan 2008 15:32:18 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201030127.6341.39.camel@lappy>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH rc8-mm1] hotfix libata-scsi corruption
+References: <Pine.LNX.4.64.0801221706320.5832@blonde.site>	 <1201022985.3210.24.camel@localhost.localdomain>	 <Pine.LNX.4.64.0801221813540.8693@blonde.site> <1201031028.3210.61.camel@localhost.localdomain>
+In-Reply-To: <1201031028.3210.61.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 08:28:47PM +0100, Peter Zijlstra wrote:
-> I think we can get rid of this rwlock as I think this will seriously
-> hurt larger machines.
+James Bottomley wrote:
+> Actually, I don't think it's a smaller I/O issue.  The SMART protocol
+> specifically mandates that the transfers for SMART READ DATA and SMART
+> READ LOG shall be 512 bytes).  However, the pio transfer routine does
+> seem to be assuming sector alignment as well, which will be where your
+> problems are coming from.  I think we need to specify sector minimum
+> alignment for ata (but not atapi, which has its own non sector size pio
+> routine).  How about the attached?
+> 
+> We have to do this for all ATA devices, because they'll likely all
+> support SMART, and SMART is defined to be a PIO command.
+> 
+> James
+> 
+> ---
+> 
+> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+> index 4bb268b..bc5cf6b 100644
+> --- a/drivers/ata/libata-scsi.c
+> +++ b/drivers/ata/libata-scsi.c
+> @@ -824,9 +824,6 @@ static void ata_scsi_sdev_config(struct scsi_device *sdev)
+>  	 * requests.
+>  	 */
+>  	sdev->max_device_blocked = 1;
+> -
+> -	/* set the min alignment */
+> -	blk_queue_update_dma_alignment(sdev->request_queue, ATA_DMA_PAD_SZ - 1);
+>  }
+>  
+>  static void ata_scsi_dev_config(struct scsi_device *sdev,
+> @@ -842,7 +839,14 @@ static void ata_scsi_dev_config(struct scsi_device *sdev,
+>  	if (dev->class == ATA_DEV_ATAPI) {
+>  		struct request_queue *q = sdev->request_queue;
+>  		blk_queue_max_hw_segments(q, q->max_hw_segments - 1);
+> -	}
+> +
+> +		/* set the min alignment */
+> +		blk_queue_update_dma_alignment(sdev->request_queue,
+> +					       ATA_DMA_PAD_SZ - 1);
+> +	} else
+> +		/* ATA devices must be sector aligned */
+> +		blk_queue_update_dma_alignment(sdev->request_queue,
+> +					       ATA_SECT_SIZE - 1);
+>  
+>  	if (dev->flags & ATA_DFLAG_AN)
+>  		set_bit(SDEV_EVT_MEDIA_CHANGE, sdev->supported_events);
 
-Yep, I initially considered it, nevertheless given you solved part of
-the complication I can add it now ;). The only technical reason for
-not using RCU is if certain users of the notifiers are registering and
-unregistering at high frequency through objects that may need to be
-freed quickly.
 
-I can tell the KVM usage of the mmu notifiers is sure fine to use RCU.
-Then I will have to update KVM so that it will free the kvm structure
-after waiting a quiescent point to avoid kernel crashing memory
-corruption after applying your changes to the mmu notifier.
+ACK
 
-Thanks!
+Unlike ATAPI, ATA is indeed all 512-byte alignment transfers (_not_ 
+sector size, which may or may not be 512 bytes)
+
+Does this apply to libata?  libata + jejb dma alignment patch?
+
+What tree...
+
+	Jeff
+
+
+
