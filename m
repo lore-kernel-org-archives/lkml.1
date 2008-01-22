@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761084AbYAVAdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761421AbYAVAd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761084AbYAVAdG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 19:33:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756684AbYAVAcm
+	id S1761421AbYAVAd1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 19:33:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbYAVAcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 19:32:42 -0500
-Received: from smtp04.mtu.ru ([62.5.255.51]:64089 "EHLO smtp04.mtu.ru"
+	Mon, 21 Jan 2008 19:32:43 -0500
+Received: from smtp04.mtu.ru ([62.5.255.51]:64114 "EHLO smtp04.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756214AbYAVAcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756526AbYAVAcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 Jan 2008 19:32:41 -0500
 From: Anton Salikhmetov <salikhmetov@gmail.com>
 To: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
@@ -16,9 +16,9 @@ To: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
        torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
        akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
        r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
-Subject: [PATCH -v7 1/2] Massive code cleanup of sys_msync()
-Date: Tue, 22 Jan 2008 03:32:35 +0300
-Message-Id: <12009619581084-git-send-email-salikhmetov@gmail.com>
+Subject: [PATCH -v7 2/2] Update ctime and mtime for memory-mapped files
+Date: Tue, 22 Jan 2008 03:32:36 +0300
+Message-Id: <12009619584168-git-send-email-salikhmetov@gmail.com>
 X-Mailer: git-send-email 1.4.4.4
 In-Reply-To: <12009619562023-git-send-email-salikhmetov@gmail.com>
 References: <12009619562023-git-send-email-salikhmetov@gmail.com>
@@ -27,159 +27,126 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the PAGE_ALIGN() macro instead of "manual" alignment.
-Improve readability of the loop, which traverses the process
-memory regions. Make code more symmetric and possibly boost
-performance on some RISC CPUs by moving variable assignments.
+http://bugzilla.kernel.org/show_bug.cgi?id=2645#c40
+
+Update file times at write references to memory-mapped files.
+Force file times update at the next write reference after
+calling the msync() system call with the MS_ASYNC flag.
 
 Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
 ---
- mm/msync.c |   77 ++++++++++++++++++++++++++++--------------------------------
- 1 files changed, 36 insertions(+), 41 deletions(-)
+ mm/memory.c |    6 ++++++
+ mm/msync.c  |   57 ++++++++++++++++++++++++++++++++++++++++++++-------------
+ 2 files changed, 50 insertions(+), 13 deletions(-)
 
+diff --git a/mm/memory.c b/mm/memory.c
+index 6dd1cd8..4b0144b 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1670,6 +1670,9 @@ gotten:
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+ 	if (dirty_page) {
++		if (vma->vm_file)
++			file_update_time(vma->vm_file);
++
+ 		/*
+ 		 * Yes, Virginia, this is actually required to prevent a race
+ 		 * with clear_page_dirty_for_io() from clearing the page dirty
+@@ -2343,6 +2346,9 @@ out_unlocked:
+ 	if (anon)
+ 		page_cache_release(vmf.page);
+ 	else if (dirty_page) {
++		if (vma->vm_file)
++			file_update_time(vma->vm_file);
++
+ 		set_page_dirty_balance(dirty_page, page_mkwrite);
+ 		put_page(dirty_page);
+ 	}
 diff --git a/mm/msync.c b/mm/msync.c
-index 144a757..a4de868 100644
+index a4de868..394130d 100644
 --- a/mm/msync.c
 +++ b/mm/msync.c
-@@ -1,85 +1,83 @@
- /*
-- *	linux/mm/msync.c
-+ * The msync() system call.
-  *
-- * Copyright (C) 1994-1999  Linus Torvalds
-+ * Copyright (C) 1994-1999 Linus Torvalds
-+ * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
+@@ -5,6 +5,7 @@
+  * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
   */
  
--/*
-- * The msync() system call.
-- */
-+#include <linux/file.h>
++#include <asm/tlbflush.h>
+ #include <linux/file.h>
  #include <linux/fs.h>
  #include <linux/mm.h>
- #include <linux/mman.h>
--#include <linux/file.h>
--#include <linux/syscalls.h>
- #include <linux/sched.h>
-+#include <linux/syscalls.h>
+@@ -13,11 +14,37 @@
+ #include <linux/syscalls.h>
  
  /*
++ * Scan the PTEs for pages belonging to the VMA and mark them read-only.
++ * It will force a pagefault on the next write access.
++ */
++static void vma_wrprotect(struct vm_area_struct *vma)
++{
++	unsigned long addr;
++
++	for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE) {
++		spinlock_t *ptl;
++		pgd_t *pgd = pgd_offset(vma->vm_mm, addr);
++		pud_t *pud = pud_offset(pgd, addr);
++		pmd_t *pmd = pmd_offset(pud, addr);
++		pte_t *pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
++
++		if (pte_dirty(*pte) && pte_write(*pte)) {
++			pte_t entry = ptep_clear_flush(vma, addr, pte);
++
++			entry = pte_wrprotect(entry);
++			set_pte_at(vma->vm_mm, addr, pte, entry);
++		}
++		pte_unmap_unlock(pte, ptl);
++	}
++}
++
++/*
   * MS_SYNC syncs the entire file - including mappings.
   *
-  * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
-- * Nor does it marks the relevant pages dirty (it used to up to 2.6.17).
-+ * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
-  * Now it doesn't do anything, since dirty pages are properly tracked.
+- * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
+- * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
+- * Now it doesn't do anything, since dirty pages are properly tracked.
++ * MS_ASYNC does not start I/O. Instead, it marks the relevant pages
++ * read-only by calling vma_wrprotect(). This is needed to catch the next
++ * write reference to the mapped region and update the file times
++ * accordingly.
   *
-- * The application may now run fsync() to
-- * write out the dirty pages and wait on the writeout and check the result.
-- * Or the application may run fadvise(FADV_DONTNEED) against the fd to start
-- * async writeout immediately.
-+ * The application may now run fsync() to write out the dirty pages and
-+ * wait on the writeout and check the result. Or the application may run
-+ * fadvise(FADV_DONTNEED) against the fd to start async writeout immediately.
-  * So by _not_ starting I/O in MS_ASYNC we provide complete flexibility to
-  * applications.
-  */
- asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
- {
- 	unsigned long end;
--	struct mm_struct *mm = current->mm;
-+	int error, unmapped_error;
- 	struct vm_area_struct *vma;
--	int unmapped_error = 0;
--	int error = -EINVAL;
-+	struct mm_struct *mm;
- 
-+	error = -EINVAL;
- 	if (flags & ~(MS_ASYNC | MS_INVALIDATE | MS_SYNC))
- 		goto out;
- 	if (start & ~PAGE_MASK)
- 		goto out;
- 	if ((flags & MS_ASYNC) && (flags & MS_SYNC))
- 		goto out;
-+
- 	error = -ENOMEM;
--	len = (len + ~PAGE_MASK) & PAGE_MASK;
-+	len = PAGE_ALIGN(len);
- 	end = start + len;
- 	if (end < start)
- 		goto out;
--	error = 0;
-+
-+	error = unmapped_error = 0;
- 	if (end == start)
- 		goto out;
-+
- 	/*
- 	 * If the interval [start,end) covers some unmapped address ranges,
- 	 * just ignore them, but return -ENOMEM at the end.
- 	 */
-+	mm = current->mm;
- 	down_read(&mm->mmap_sem);
- 	vma = find_vma(mm, start);
--	for (;;) {
-+	do {
- 		struct file *file;
- 
--		/* Still start < end. */
- 		error = -ENOMEM;
- 		if (!vma)
--			goto out_unlock;
--		/* Here start < vma->vm_end. */
-+			break;
- 		if (start < vma->vm_start) {
- 			start = vma->vm_start;
- 			if (start >= end)
--				goto out_unlock;
--			unmapped_error = -ENOMEM;
--		}
--		/* Here vma->vm_start <= start < vma->vm_end. */
--		if ((flags & MS_INVALIDATE) &&
--				(vma->vm_flags & VM_LOCKED)) {
--			error = -EBUSY;
--			goto out_unlock;
-+				break;
-+			unmapped_error = error;
- 		}
--		file = vma->vm_file;
-+
-+		error = -EBUSY;
-+		if ((flags & MS_INVALIDATE) && (vma->vm_flags & VM_LOCKED))
-+			break;
-+
-+		error = 0;
+  * The application may now run fsync() to write out the dirty pages and
+  * wait on the writeout and check the result. Or the application may run
+@@ -77,16 +104,20 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
+ 		error = 0;
  		start = vma->vm_end;
--		if ((flags & MS_SYNC) && file &&
--				(vma->vm_flags & VM_SHARED)) {
-+		file = vma->vm_file;
-+		if (file && (vma->vm_flags & VM_SHARED) && (flags & MS_SYNC)) {
- 			get_file(file);
- 			up_read(&mm->mmap_sem);
- 			error = do_fsync(file, 0);
-@@ -88,16 +86,13 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
- 				goto out;
- 			down_read(&mm->mmap_sem);
- 			vma = find_vma(mm, start);
--		} else {
--			if (start >= end) {
--				error = 0;
--				goto out_unlock;
--			}
--			vma = vma->vm_next;
-+			continue;
+ 		file = vma->vm_file;
+-		if (file && (vma->vm_flags & VM_SHARED) && (flags & MS_SYNC)) {
+-			get_file(file);
+-			up_read(&mm->mmap_sem);
+-			error = do_fsync(file, 0);
+-			fput(file);
+-			if (error || start >= end)
+-				goto out;
+-			down_read(&mm->mmap_sem);
+-			vma = find_vma(mm, start);
+-			continue;
++		if (file && (vma->vm_flags & VM_SHARED)) {
++			if (flags & MS_ASYNC)
++				vma_wrprotect(vma);
++			if (flags & MS_SYNC) {
++				get_file(file);
++				up_read(&mm->mmap_sem);
++				error = do_fsync(file, 0);
++				fput(file);
++				if (error || start >= end)
++					goto out;
++				down_read(&mm->mmap_sem);
++				vma = find_vma(mm, start);
++				continue;
++			}
  		}
--	}
--out_unlock:
-+
-+		vma = vma->vm_next;
-+	} while (start < end);
- 	up_read(&mm->mmap_sem);
-+
- out:
--	return error ? : unmapped_error;
-+	return error ? error : unmapped_error;
- }
+ 
+ 		vma = vma->vm_next;
 -- 
 1.4.4.4
 
