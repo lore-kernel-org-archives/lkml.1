@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760627AbYAVDL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbYAVDM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760627AbYAVDL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbYAVDGd
+	id S1761479AbYAVDM1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:12:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbYAVDGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:06:33 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:32889 "EHLO
+	Mon, 21 Jan 2008 22:06:43 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:32924 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759806AbYAVDGb (ORCPT
+	by vger.kernel.org with ESMTP id S1757078AbYAVDGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:06:31 -0500
+	Mon, 21 Jan 2008 22:06:41 -0500
 From: "Theodore Ts'o" <tytso@MIT.EDU>
 To: linux-kernel@vger.kernel.org
-Cc: Jan Kara <jack@suse.cz>, <linux-ext4@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 26/49] jbd2: Fix assertion failure in fs/jbd2/checkpoint.c
-Date: Mon, 21 Jan 2008 22:02:05 -0500
-Message-Id: <1200970948-17903-27-git-send-email-tytso@mit.edu>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 07/49] ext4: Introduce ext4_update_*_feature
+Date: Mon, 21 Jan 2008 22:01:46 -0500
+Message-Id: <1200970948-17903-8-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
-In-Reply-To: <1200970948-17903-26-git-send-email-tytso@mit.edu>
+In-Reply-To: <1200970948-17903-7-git-send-email-tytso@mit.edu>
 References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-2-git-send-email-tytso@mit.edu>
  <1200970948-17903-3-git-send-email-tytso@mit.edu>
@@ -26,123 +25,135 @@ References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-5-git-send-email-tytso@mit.edu>
  <1200970948-17903-6-git-send-email-tytso@mit.edu>
  <1200970948-17903-7-git-send-email-tytso@mit.edu>
- <1200970948-17903-8-git-send-email-tytso@mit.edu>
- <1200970948-17903-9-git-send-email-tytso@mit.edu>
- <1200970948-17903-10-git-send-email-tytso@mit.edu>
- <1200970948-17903-11-git-send-email-tytso@mit.edu>
- <1200970948-17903-12-git-send-email-tytso@mit.edu>
- <1200970948-17903-13-git-send-email-tytso@mit.edu>
- <1200970948-17903-14-git-send-email-tytso@mit.edu>
- <1200970948-17903-15-git-send-email-tytso@mit.edu>
- <1200970948-17903-16-git-send-email-tytso@mit.edu>
- <1200970948-17903-17-git-send-email-tytso@mit.edu>
- <1200970948-17903-18-git-send-email-tytso@mit.edu>
- <1200970948-17903-19-git-send-email-tytso@mit.edu>
- <1200970948-17903-20-git-send-email-tytso@mit.edu>
- <1200970948-17903-21-git-send-email-tytso@mit.edu>
- <1200970948-17903-22-git-send-email-tytso@mit.edu>
- <1200970948-17903-23-git-send-email-tytso@mit.edu>
- <1200970948-17903-24-git-send-email-tytso@mit.edu>
- <1200970948-17903-25-git-send-email-tytso@mit.edu>
- <1200970948-17903-26-git-send-email-tytso@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Kara <jack@suse.cz>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Before we start committing a transaction, we call
-__journal_clean_checkpoint_list() to cleanup transaction's written-back
-buffers.
+Introduce ext4_update_*_feature and use them instead
+of opencoding.
 
-If this call happens to remove all of them (and there were already some
-buffers), __journal_remove_checkpoint() will decide to free the transaction
-because it isn't (yet) a committing transaction and soon we fail some
-assertion - the transaction really isn't ready to be freed :).
 
-We change the check in __journal_remove_checkpoint() to free only a
-transaction in T_FINISHED state.  The locking there is subtle though (as
-everywhere in JBD ;().  We use j_list_lock to protect the check and a
-subsequent call to __journal_drop_transaction() and do the same in the end
-of journal_commit_transaction() which is the only place where a transaction
-can get to T_FINISHED state.
-
-Probably I'm too paranoid here and such locking is not really necessary -
-checkpoint lists are processed only from log_do_checkpoint() where a
-transaction must be already committed to be processed or from
-__journal_clean_checkpoint_list() where kjournald itself calls it and thus
-transaction cannot change state either.  Better be safe if something
-changes in future...
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-Cc: <linux-ext4@vger.kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- fs/jbd2/checkpoint.c |   12 ++++++------
- fs/jbd2/commit.c     |    8 ++++----
- include/linux/jbd2.h |    2 ++
- 3 files changed, 12 insertions(+), 10 deletions(-)
+ fs/ext4/ialloc.c        |   11 +++-----
+ fs/ext4/super.c         |   60 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/ext4_fs.h |    6 ++++
+ 3 files changed, 70 insertions(+), 7 deletions(-)
 
-diff --git a/fs/jbd2/checkpoint.c b/fs/jbd2/checkpoint.c
-index 3fccde7..7e958c8 100644
---- a/fs/jbd2/checkpoint.c
-+++ b/fs/jbd2/checkpoint.c
-@@ -602,15 +602,15 @@ int __jbd2_journal_remove_checkpoint(struct journal_head *jh)
- 
- 	/*
- 	 * There is one special case to worry about: if we have just pulled the
--	 * buffer off a committing transaction's forget list, then even if the
--	 * checkpoint list is empty, the transaction obviously cannot be
--	 * dropped!
-+	 * buffer off a running or committing transaction's checkpoing list,
-+	 * then even if the checkpoint list is empty, the transaction obviously
-+	 * cannot be dropped!
- 	 *
--	 * The locking here around j_committing_transaction is a bit sleazy.
-+	 * The locking here around t_state is a bit sleazy.
- 	 * See the comment at the end of jbd2_journal_commit_transaction().
- 	 */
--	if (transaction == journal->j_committing_transaction) {
--		JBUFFER_TRACE(jh, "belongs to committing transaction");
-+	if (transaction->t_state != T_FINISHED) {
-+		JBUFFER_TRACE(jh, "belongs to running/committing transaction");
- 		goto out;
+diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
+index 7b5cfa6..00b152b 100644
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -748,13 +748,10 @@ got:
+ 	if (test_opt(sb, EXTENTS)) {
+ 		EXT4_I(inode)->i_flags |= EXT4_EXTENTS_FL;
+ 		ext4_ext_tree_init(handle, inode);
+-		if (!EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_EXTENTS)) {
+-			err = ext4_journal_get_write_access(handle, EXT4_SB(sb)->s_sbh);
+-			if (err) goto fail;
+-			EXT4_SET_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_EXTENTS);
+-			BUFFER_TRACE(EXT4_SB(sb)->s_sbh, "call ext4_journal_dirty_metadata");
+-			err = ext4_journal_dirty_metadata(handle, EXT4_SB(sb)->s_sbh);
+-		}
++		err = ext4_update_incompat_feature(handle, sb,
++						EXT4_FEATURE_INCOMPAT_EXTENTS);
++		if (err)
++			goto fail;
  	}
  
-diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-index 6986f33..39b5cee 100644
---- a/fs/jbd2/commit.c
-+++ b/fs/jbd2/commit.c
-@@ -867,10 +867,10 @@ restart_loop:
- 	}
- 	spin_unlock(&journal->j_list_lock);
- 	/*
--	 * This is a bit sleazy.  We borrow j_list_lock to protect
--	 * journal->j_committing_transaction in __jbd2_journal_remove_checkpoint.
--	 * Really, __jbd2_journal_remove_checkpoint should be using j_state_lock but
--	 * it's a bit hassle to hold that across __jbd2_journal_remove_checkpoint
-+	 * This is a bit sleazy.  We use j_list_lock to protect transition
-+	 * of a transaction into T_FINISHED state and calling
-+	 * __jbd2_journal_drop_transaction(). Otherwise we could race with
-+	 * other checkpointing code processing the transaction...
+ 	ext4_debug("allocating inode %lu\n", inode->i_ino);
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index df8842b..4d7f33f 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -373,6 +373,66 @@ void ext4_update_dynamic_rev(struct super_block *sb)
  	 */
- 	spin_lock(&journal->j_state_lock);
- 	spin_lock(&journal->j_list_lock);
-diff --git a/include/linux/jbd2.h b/include/linux/jbd2.h
-index d5f7cff..d861ffd 100644
---- a/include/linux/jbd2.h
-+++ b/include/linux/jbd2.h
-@@ -442,6 +442,8 @@ struct transaction_s
- 	/*
- 	 * Transaction's current state
- 	 * [no locking - only kjournald2 alters this]
-+	 * [j_list_lock] guards transition of a transaction into T_FINISHED
-+	 * state and subsequent call of __jbd2_journal_drop_transaction()
- 	 * FIXME: needs barriers
- 	 * KLUDGE: [use j_state_lock]
- 	 */
+ }
+ 
++int ext4_update_compat_feature(handle_t *handle,
++					struct super_block *sb, __u32 compat)
++{
++	int err = 0;
++	if (!EXT4_HAS_COMPAT_FEATURE(sb, compat)) {
++		err = ext4_journal_get_write_access(handle,
++				EXT4_SB(sb)->s_sbh);
++		if (err)
++			return err;
++		EXT4_SET_COMPAT_FEATURE(sb, compat);
++		sb->s_dirt = 1;
++		handle->h_sync = 1;
++		BUFFER_TRACE(EXT4_SB(sb)->s_sbh,
++					"call ext4_journal_dirty_met adata");
++		err = ext4_journal_dirty_metadata(handle,
++				EXT4_SB(sb)->s_sbh);
++	}
++	return err;
++}
++
++int ext4_update_rocompat_feature(handle_t *handle,
++					struct super_block *sb, __u32 rocompat)
++{
++	int err = 0;
++	if (!EXT4_HAS_RO_COMPAT_FEATURE(sb, rocompat)) {
++		err = ext4_journal_get_write_access(handle,
++				EXT4_SB(sb)->s_sbh);
++		if (err)
++			return err;
++		EXT4_SET_RO_COMPAT_FEATURE(sb, rocompat);
++		sb->s_dirt = 1;
++		handle->h_sync = 1;
++		BUFFER_TRACE(EXT4_SB(sb)->s_sbh,
++					"call ext4_journal_dirty_met adata");
++		err = ext4_journal_dirty_metadata(handle,
++				EXT4_SB(sb)->s_sbh);
++	}
++	return err;
++}
++
++int ext4_update_incompat_feature(handle_t *handle,
++					struct super_block *sb, __u32 incompat)
++{
++	int err = 0;
++	if (!EXT4_HAS_INCOMPAT_FEATURE(sb, incompat)) {
++		err = ext4_journal_get_write_access(handle,
++				EXT4_SB(sb)->s_sbh);
++		if (err)
++			return err;
++		EXT4_SET_INCOMPAT_FEATURE(sb, incompat);
++		sb->s_dirt = 1;
++		handle->h_sync = 1;
++		BUFFER_TRACE(EXT4_SB(sb)->s_sbh,
++					"call ext4_journal_dirty_met adata");
++		err = ext4_journal_dirty_metadata(handle,
++				EXT4_SB(sb)->s_sbh);
++	}
++	return err;
++}
++
+ /*
+  * Open the external journal device
+  */
+diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
+index e1103c2..429dbfc 100644
+--- a/include/linux/ext4_fs.h
++++ b/include/linux/ext4_fs.h
+@@ -989,6 +989,12 @@ extern void ext4_abort (struct super_block *, const char *, const char *, ...)
+ extern void ext4_warning (struct super_block *, const char *, const char *, ...)
+ 	__attribute__ ((format (printf, 3, 4)));
+ extern void ext4_update_dynamic_rev (struct super_block *sb);
++extern int ext4_update_compat_feature(handle_t *handle, struct super_block *sb,
++					__u32 compat);
++extern int ext4_update_rocompat_feature(handle_t *handle,
++					struct super_block *sb,	__u32 rocompat);
++extern int ext4_update_incompat_feature(handle_t *handle,
++					struct super_block *sb,	__u32 incompat);
+ extern ext4_fsblk_t ext4_block_bitmap(struct super_block *sb,
+ 				      struct ext4_group_desc *bg);
+ extern ext4_fsblk_t ext4_inode_bitmap(struct super_block *sb,
 -- 
 1.5.4.rc3.31.g1271-dirty
 
