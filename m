@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761127AbYAVKFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761936AbYAVKGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761127AbYAVKFj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 05:05:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756517AbYAVKF3
+	id S1761936AbYAVKGZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 05:06:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756475AbYAVKGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 05:05:29 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45180 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752766AbYAVKF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 05:05:28 -0500
-Date: Tue, 22 Jan 2008 11:05:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ian Campbell <ijc@hellion.org.uk>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
-	format.
-Message-ID: <20080122100509.GC5722@elte.hu>
-References: <1200758937-22386-1-git-send-email-ijc@hellion.org.uk> <1200758937-22386-2-git-send-email-ijc@hellion.org.uk> <87prvxct42.fsf@basil.nowhere.org> <1200847490.26633.62.camel@cthulhu.hellion.org.uk> <20080120173938.GA27247@one.firstfloor.org> <47939787.3050707@zytor.com>
+	Tue, 22 Jan 2008 05:06:17 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2782 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754879AbYAVKGQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 05:06:16 -0500
+Date: Tue, 22 Jan 2008 10:06:24 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: x86: remove casts
+Message-ID: <20080122100609.GA12154@shadowen.org>
+References: <Pine.LNX.4.64.0801162213390.31385@fbirervta.pbzchgretzou.qr> <20080118104553.GB8785@elte.hu> <Pine.LNX.4.64.0801191455180.27831@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47939787.3050707@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0801191455180.27831@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jan 19, 2008 at 02:56:05PM +0100, Jan Engelhardt wrote:
+> 
+> On Jan 18 2008 11:45, Ingo Molnar wrote:
+> >* Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> >
+> >> This is against x86/mm.
+> >
+> >hm, it has checkpatch failures -
+> 
+> All false positives.
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+The spacing thing is definately a matter for argument elsewhere.  I
+cirtainly have no real oppinion on the matter.  As has been said
+elsewhere the coding style is not meant to be as everyone likes it, more
+a minimally offensive common position generating consistancy out of
+caos.
 
-> I was thinking about this yesterday, and it seems to me that there are 
-> two cleaner options here...
->
-> - either we should put in the full machinery to be able to run C code 
-> compiled with -fPIC/-fPIE before paging is enabled.  Unfortunately gcc 
-> generates R_386_GOT32 relocations for external references even with 
-> -fPIE, so we'll have to put in some code to adjust the GOT (easy 
-> enough to do.)
+Checkpatch is _meant_ to push you towards the recommendations in
+CodingStyle, that is the definative resource; common sense should prevail
+over it.  <standard message>checkpatch is a style guide only, think
+about its output and be prepared to justify any non-complience.</standard
+message>.
 
-i'd _love_ to have this approach instead of the assembly routines. While 
-'constructing pagetables' might not look like a big deal in isolation - 
-C is still 10 times more programmable than assembly. Pushing more of the 
-early boot code into a sane, non-assembly environment will have positive 
-long-term effects all across.
+The second one is a clear falsie which I believe I have fixed for the
+next release, rather over zelous "possible type" detection has fired here.
 
-	Ingo
+ERROR: "foo * bar" should be "foo *bar"
+#123: FILE: arch/x86/kernel/microcode.c:248:
++                         EXT_SIGNATURE_SIZE * i;
+
+Cheers.
+
+-apw
