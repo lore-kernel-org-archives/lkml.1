@@ -1,45 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759589AbYAVPIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbYAVPKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759589AbYAVPIQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 10:08:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbYAVPIE
+	id S1760861AbYAVPKY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 10:10:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbYAVPKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 10:08:04 -0500
-Received: from mail.gmx.net ([213.165.64.20]:44116 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750781AbYAVPID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 10:08:03 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+neEBd77inxK6iQrrahC9mWARbdEIKW1YmRqY3/8
-	r6h8RL3msT93DN
-Date: Tue, 22 Jan 2008 16:08:15 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-X-X-Sender: lyakh@axis700.grange
-To: Sakari Ailus <sakari.ailus@nokia.com>
-cc: linux-kernel@vger.kernel.org, video4linux-list@redhat.com
-Subject: [MUST-FIX] in today's Linus' git
-Message-ID: <Pine.LNX.4.64.0801221601460.6933@axis700.grange>
+	Tue, 22 Jan 2008 10:10:12 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55784 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750992AbYAVPKK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 10:10:10 -0500
+Message-ID: <4796074E.5090606@sgi.com>
+Date: Tue, 22 Jan 2008 07:10:06 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] x86: Reduce memory usage for large count NR_CPUs
+ fixup V2 with git-x86
+References: <20080121211618.599818000@sgi.com> <20080122124811.GD7304@elte.hu>
+In-Reply-To: <20080122124811.GD7304@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Ingo Molnar wrote:
+> * travis@sgi.com <travis@sgi.com> wrote:
+> 
+>> Fixup change NR_CPUS patchset by rebasing on 2.6.24-rc8-mm1
+>> from 2.6.24-rc6-mm1) and adding changes suggested by reviews.
+>>
+>> Based on 2.6.24-rc8-mm1 + latest (08/1/21) git-x86
+>>
+>> Note there are two versions of this patchset:
+>> 	- 2.6.24-rc8-mm1
+>> 	- 2.6.24-rc8-mm1 + latest (08/1/21) git-x86
+> 
+> thanks, applied.
+> 
+>> Signed-off-by: Mike Travis <travis@sgi.com>
+>> ---
+>> Fixup-V2:
+>>     - pulled the SMP_MAX patch as it's not strictly needed and some
+>>       more work on local cpumask_t variables needs to be done before
+>>       NR_CPUS is allowed to increase.
+> 
+> i'd still love to see CONFIG_SMP_MAX, so that we can have continuous 
+> randconfig testing of the large-SMP aspects of the x86 architecture, 
+> even on smaller systems.
+> 
+> What's the maximum that should work right now? 256 or perhaps even 512 
+> CPU ought to work fine i think?
 
-Could someone, please, fix this:
+I'm attempting to gather stack (and memory) usage for increased cpu counts
+right now.  But I'll have another set of basic changes before the cpumask_t
+changes can be done.
 
-drivers/media/video/tcm825x.c:
+Thanks,
+Mike
 
-853:	if (sensor->platform_data == NULL
-854:	    && !sensor->platform_data->is_okay())
+> 
+> and then once the on-stack usage problems are fixed, the NR_CPUS value 
+> in CONFIG_SMP_MAX can be increased. So SMP_MAX would also act as "this 
+> is how far we can go in the upstream kernel" documentation.
+> 
+> [ btw., the crash i remember was rather related to the NODES_SHIFT
+>   increase to 9, not from the NR_CPUSs increase. (the config i sent 
+>   still has NR_CPUS==8, because Kconfig did not pick up the right 
+>   NR_CPUs value dicatated by SMP_MAX.) If you resend the SMP_MAX patch 
+>   against latest x86.git i can retest this. ]
+> 
+> 	Ingo
 
-I haven't looked through the entire file, so, cannot guarantee, that this 
-is the only place. Maybe, someone could review this file and the whole 
-commit it came in with properly...
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
