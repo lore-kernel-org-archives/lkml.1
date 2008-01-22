@@ -1,94 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYAVHmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbYAVH4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759300AbYAVHmB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 02:42:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYAVHlx
+	id S1757653AbYAVH4c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 02:56:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbYAVH4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 02:41:53 -0500
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:43258 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752193AbYAVHlw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 02:41:52 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=pf/U2WjTnjvj14wCiF5v/AQ1dgJpMMpBvDrO6J8fHyMJbrLN22NhXsGd66dHbS8Y8t+dWbBB9k2lFDgk03xKt3QuIsHh41QsQGWjF4JlG1Co6TOs5R30TfHIyoOZqDrEcxWH4g5lpvmhQYOxK2cn9ynhglBEvECa/PE3Afa84J0=  ;
-X-YMail-OSG: QUcNvr8VM1mwUCPjXJGTo0ljPZQ5c_jLvPfSXcUK5KKBo8MMuKryrdTRLVDEfwP5rPsZ6Egx4w--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Dave Young <hidave.darkstar@gmail.com>
-Subject: Re: [PATCH 6/6] spi : use class iteration api
-Date: Mon, 21 Jan 2008 23:41:50 -0800
-User-Agent: KMail/1.9.6
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       spi-devel-general@lists.sourceforge.net
-References: <20080112095711.GF2893@darkstar.te-china.tietoenator.com> <200801212256.11484.david-b@pacbell.net> <20080122071418.GA3725@darkstar.te-china.tietoenator.com>
-In-Reply-To: <20080122071418.GA3725@darkstar.te-china.tietoenator.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 22 Jan 2008 02:56:23 -0500
+Received: from mga11.intel.com ([192.55.52.93]:31186 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752435AbYAVH4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 02:56:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,232,1199692800"; 
+   d="scan'208";a="292285152"
+Subject: Re: [PATCH 6/10] ACPI: register ACPI Video LCD as generic thermal
+	cooling device
+From: Zhang Rui <rui.zhang@intel.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: lenb@kernel.org, linux-acpi@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Thomas, Sujith" <sujith.thomas@intel.com>
+In-Reply-To: <20080118014254.GA14818@srcf.ucam.org>
+References: <1200556282.2935.122.camel@acpi-sony.sh.intel.com>
+	 <20080117122431.GA32133@srcf.ucam.org>
+	 <1200619900.2935.161.camel@acpi-sony.sh.intel.com>
+	 <20080118014254.GA14818@srcf.ucam.org>
+Content-Type: text/plain
+Date: Tue, 22 Jan 2008 16:01:42 +0800
+Message-Id: <1200988902.7424.14.camel@acpi-sony.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801212341.50999.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 January 2008, Dave Young wrote:
-> Convert to use the class iteration api.
+Hi, Matthew,
+
+On Fri, 2008-01-18 at 09:42 +0800, Matthew Garrett wrote:
+> On Fri, Jan 18, 2008 at 09:31:40AM +0800, Zhang Rui wrote:
 > 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
-
-Ack.
-
-
-> ---
->  drivers/spi/spi.c |   24 ++++++++++++++----------
->  1 file changed, 14 insertions(+), 10 deletions(-)
+> > Just like I don't think lcd should be used for ACPI thermal
+> management
+> > before I saw it is listed in _TZD and intel_menlow requires to
+> throttle
+> > it when overheating, why not let the individual drivers implement
+> the
+> > callbacks if there is clearly a request to do this.
+> > And we can add this to the generic acpi_device struct then if this
+> is a
+> > common feature for all ACPI devices.
 > 
-> diff -upr linux/drivers/spi/spi.c linux.new/drivers/spi/spi.c
-> --- linux/drivers/spi/spi.c	2008-01-22 15:09:49.000000000 +0800
-> +++ linux.new/drivers/spi/spi.c	2008-01-22 15:09:49.000000000 +0800
-> @@ -485,6 +485,15 @@ void spi_unregister_master(struct spi_ma
->  }
->  EXPORT_SYMBOL_GPL(spi_unregister_master);
->  
-> +static int __spi_master_match(struct device *dev, void *data)
-> +{
-> +	struct spi_master *m;
-> +	u16 *bus_num = data;
-> +
-> +	m = container_of(dev, struct spi_master, dev);
-> +	return m->bus_num == *bus_num;
-> +}
-> +
->  /**
->   * spi_busnum_to_master - look up master associated with bus_num
->   * @bus_num: the master's bus number
-> @@ -499,17 +508,12 @@ struct spi_master *spi_busnum_to_master(
->  {
->  	struct device		*dev;
->  	struct spi_master	*master = NULL;
-> -	struct spi_master	*m;
->  
-> -	down(&spi_master_class.sem);
-> -	list_for_each_entry(dev, &spi_master_class.children, node) {
-> -		m = container_of(dev, struct spi_master, dev);
-> -		if (m->bus_num == bus_num) {
-> -			master = spi_master_get(m);
-> -			break;
-> -		}
-> -	}
-> -	up(&spi_master_class.sem);
-> +	dev = class_find_device(&spi_master_class, &bus_num,
-> +				__spi_master_match);
-> +	if (dev)
-> +		master = container_of(dev, struct spi_master, dev);
-> +	/* reference got in class_find_device */
->  	return master;
->  }
->  EXPORT_SYMBOL_GPL(spi_busnum_to_master);
+> It'll probably never be common for all ACPI devices,
+I agree.
+>  but it's already
+> required for three types. I think that's a strong argument for making
+> it generic.
+I don't think it's worth doing this as it's only the common feature for
+three ACPI devices.
+> > Well, you're right.
+> > But in order to throttle the lcd, this is reasonable, right?
 > 
+> Moving the common code into its own routine and then calling that from
+> each of the others would probably work.
+Yes.
+I can send an on top patch if the patch "Rationalise ACPI backlight
+implementation" is applied.
 
+Thanks,
+Rui
 
