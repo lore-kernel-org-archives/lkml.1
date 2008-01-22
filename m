@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbYAVQiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbYAVQia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbYAVQiQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 11:38:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYAVQh6
+	id S1759084AbYAVQia (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 11:38:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756935AbYAVQiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 11:37:58 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:60867 "EHLO e3.ny.us.ibm.com"
+	Tue, 22 Jan 2008 11:38:10 -0500
+Received: from waste.org ([66.93.16.53]:51516 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752333AbYAVQh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 11:37:57 -0500
-Date: Tue, 22 Jan 2008 22:21:21 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: [PATCH] sched: don't take a mutex from interrupt context
-Message-ID: <20080122165121.GE31049@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20080122023626.GA12213@darkstar.te-china.tietoenator.com> <1201019138.6341.24.camel@lappy>
+	id S1756584AbYAVQiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 11:38:08 -0500
+Subject: Re: [PATCH] x86: fix unconditional
+	arch/x86/kernel/pcspeaker.c?compiling
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Michael Opdenacker <michael-lists@free-electrons.com>,
+       linux-kernel@vger.kernel.org, Linux-tiny@selenic.com,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20080122143912.GJ7304@elte.hu>
+References: <20080118110252.GA17397@elte.hu>
+	 <47909821.1090907@free-electrons.com> <20080118122540.GH11044@elte.hu>
+	 <20080118122926.GA15216@elte.hu> <4790A385.800@free-electrons.com>
+	 <1200664214.4001.24.camel@cinder.waste.org>
+	 <4790D3E3.4060409@free-electrons.com>
+	 <1200676219.3835.8.camel@cinder.waste.org> <20080118210938.GE10717@elte.hu>
+	 <1200695950.25782.28.camel@cinder.waste.org>
+	 <20080122143912.GJ7304@elte.hu>
+Content-Type: text/plain
+Date: Tue, 22 Jan 2008 10:37:19 -0600
+Message-Id: <1201019839.14436.30.camel@cinder.waste.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201019138.6341.24.camel@lappy>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 05:25:38PM +0100, Peter Zijlstra wrote:
-> @@ -1428,9 +1428,9 @@ static void print_cfs_stats(struct seq_f
->  #ifdef CONFIG_FAIR_GROUP_SCHED
->  	print_cfs_rq(m, cpu, &cpu_rq(cpu)->cfs);
->  #endif
-> -	lock_task_group_list();
-> +	rcu_read_lock();
->  	for_each_leaf_cfs_rq(cpu_rq(cpu), cfs_rq)
->  		print_cfs_rq(m, cpu, cfs_rq);
 
-Isn't there a possibility that print_cfs_rq() can block?
+On Tue, 2008-01-22 at 15:39 +0100, Ingo Molnar wrote:
+> threadinfo-ool.patch: doesnt this break the scheduler? 
 
-> -	unlock_task_group_list();
-> +	rcu_read_unlock();
->  }
->  #endif
-> 
+It didn't when I wrote it, 3+ years ago. But I'm sure it needs to be
+revisited.
+
+> tiny-cflags.patch: obsolete? Isnt CFLAGS already extendable? Question to 
+> Sam i guess.
+
+Yup.
 
 -- 
-Regards,
-vatsa
+Mathematics is the supreme nostalgia of our time.
+
