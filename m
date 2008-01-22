@@ -1,100 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbYAVRaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbYAVRhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbYAVRaH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 12:30:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbYAVR3x
+	id S1753953AbYAVRhT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 12:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbYAVRhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 12:29:53 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:34904 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751512AbYAVR3v (ORCPT
+	Tue, 22 Jan 2008 12:37:05 -0500
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:32697 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751101AbYAVRhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 12:29:51 -0500
-Subject: Re: [PATCH rc8-mm1] hotfix libata-scsi corruption
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0801221706320.5832@blonde.site>
-References: <Pine.LNX.4.64.0801221706320.5832@blonde.site>
+	Tue, 22 Jan 2008 12:37:03 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mika =?ISO-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <479551FD.5040801@zytor.com>
+References: <1200758937-22386-1-git-send-email-ijc@hellion.org.uk>
+	 <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>
+	 <47939363.8040603@kolumbus.fi>
+	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>
+	 <479510CE.7010706@zytor.com>
+	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>
+	 <479551FD.5040801@zytor.com>
 Content-Type: text/plain
-Date: Tue, 22 Jan 2008 11:29:45 -0600
-Message-Id: <1201022985.3210.24.camel@localhost.localdomain>
+Date: Tue, 22 Jan 2008 17:36:41 +0000
+Message-Id: <1201023401.5643.52.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8) 
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 217.46.209.99
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+	format.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added linux-scsi to the cc.
 
-On Tue, 2008-01-22 at 17:11 +0000, Hugh Dickins wrote:
-> 2.6.24-rc8-mm1 is corrupting.  smartd does some sg_ioctl into its stack,
-> and depending on how its stack randomization worked out, this is liable
-> to end up writing into the adjacent physical page too.  If you're lucky
-> you have highmem, and ioread16_rep oopses on the virtual address beyond
-> what ata_pio_sector's kmap_atomic set up; when you're unlucky, it'll go
-> ahead and corrupt the next page more obscurely.
+On Mon, 2008-01-21 at 18:16 -0800, H. Peter Anvin wrote:
+> Ian Campbell wrote:
+> > 
+> > I'm just preparing to send out a version which uses the native_* way of
+> > doing things, its not actually as clean as I would like so I'd be
+> > interested to see the ASM variant.
+> > 
 > 
-> Bisect led to scsi-misc-2.6.git's 465ff3185e0cb76d46137335a4d21d0d9d3ac8a2
-> [SCSI] relax scsi dma alignment, and the patch below is good for a hot-fix.
-> Though I doubt it'll be the final fix, since it appears to undo the whole
-> point of blk_queue_update_dma_alignment: perhaps libata is at fault to be
-> going through sectory code for unsectory I/O - I wouldn't know.
-> 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> ---
-> 
->  drivers/ata/libata-scsi.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- 2.6.24-rc8-mm1/drivers/ata/libata-scsi.c	2008-01-17 16:49:47.000000000 +0000
-> +++ linux/drivers/ata/libata-scsi.c	2008-01-22 15:45:40.000000000 +0000
-> @@ -826,7 +826,7 @@ static void ata_scsi_sdev_config(struct 
->  	sdev->max_device_blocked = 1;
->  
->  	/* set the min alignment */
-> -	blk_queue_update_dma_alignment(sdev->request_queue, ATA_DMA_PAD_SZ - 1);
-> +	blk_queue_update_dma_alignment(sdev->request_queue, ATA_SECT_SIZE - 1);
->  }
->  
->  static void ata_scsi_dev_config(struct scsi_device *sdev,
+> This is the asm version I came up with.
 
-Unfortunately, that's likely not the entire hot fix ... the implication
-is that we have some mapping error in the way we do direct SG_IO.
+I moderately prefer the C version, even if it is in a restricted
+environment where care is needed to access global variables. I like that
+it avoids multiple copies of the code and also find the structure of
+what's going on is more obviously apparent (even to someone who has done
+plenty of ASM mode page table frobbing in the past).
 
-What the fix you propose does is make it far more likely that block will
-copy, perform I/O then uncopy (almost certain, since most smartd data
-transfers are well under ATA_SECT_SIZE, which is 512).  However,
-implicating a generic path like this implies that we would get the same
-problem for SCSI commands as well, so the correct hot fix is below.
+Anyhow, I don't feel all that strongly about it so if the opinion of the
+early start of day maintainer(s) is strongly in favour of ASM I'll defer
+to that.
 
-However, I'd like to see if we can track the problem through the SG_IO
-direct path ... how many adjacent page bytes are corrupt?  Just a few or
-a large number (I'm wondering if it's an off by one or off by alignment
-type bug)?
+> This is only the actual 
+> assembly part; it doesn't require the (obviously necessary) bootmem 
+> adjustments.
 
-James
+Do you mean the native_pagetable_setup_start/done changes? I'm a bit
+confused by not requiring obviously necessary changes -- I presume you
+just mean that those changes are desirable but should be deferred into a
+separate patch?
 
----
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 4cf902e..13376e9 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -1673,8 +1673,11 @@ struct request_queue *__scsi_alloc_queue(struct Scsi_Host *shost,
- 	 * set a reasonable default alignment on word boundaries: the
- 	 * host and device may alter it using
- 	 * blk_queue_update_dma_alignment() later.
-+	 *
-+	 * FIXME: Corruption showing up in SG_IO leads this to be
-+	 * raised to 511 again.
- 	 */
--	blk_queue_dma_alignment(q, 0x03);
-+	blk_queue_dma_alignment(q, 511);
- 
- 	return q;
- }
+The C way doesn't inherently require those two changes to happen in the
+same patch either -- probably worth splitting out if we go that route.
 
+Ian.
+
+-- 
+Ian Campbell
+Current Noise: Pelican - Bliss In Concrete
+
+Your life would be very empty if you had nothing to regret.
 
