@@ -1,407 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbYAVNKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760143AbYAVNLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760975AbYAVNKj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 08:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758049AbYAVNJq
+	id S1760143AbYAVNLe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 08:11:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYAVNL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 08:09:46 -0500
-Received: from bde.crans.org ([138.231.137.76]:47793 "EHLO bde.crans.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755120AbYAVNJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 08:09:40 -0500
-From: Mathieu Segaud <mathieu.segaud@regala.cx>
-To: linux-ext4@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, sct@redhat.com,
-       Mathieu Segaud <mathieu.segaud@regala.cx>
-Subject: [PATCH] Convert ext3_ioctl() to an unlocked_ioctl
-Date: Tue, 22 Jan 2008 14:09:35 +0100
-Message-Id: <1201007375-27914-3-git-send-email-mathieu.segaud@regala.cx>
-X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <1201007375-27914-2-git-send-email-mathieu.segaud@regala.cx>
-References: <1201007375-27914-1-git-send-email-mathieu.segaud@regala.cx>
- <1201007375-27914-2-git-send-email-mathieu.segaud@regala.cx>
+	Tue, 22 Jan 2008 08:11:26 -0500
+Received: from ext-ch1gw-9.online-age.net ([64.37.194.17]:33781 "EHLO
+	ext-ch1gw-9.online-age.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752484AbYAVNLY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 08:11:24 -0500
+X-Greylist: delayed 1697 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jan 2008 08:11:22 EST
+Date: Tue, 22 Jan 2008 13:42:55 +0100
+From: Karl Kiniger <karl.kiniger@med.ge.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Newall <davidn@davidnewall.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for mm] Remove iBCS support
+Message-ID: <20080122124255.GA22308@wszip-kinigka.euro.med.ge.com>
+References: <4792B191.2060801@davidnewall.com> <20080120031153.GB6275@one.firstfloor.org> <4792D221.1010704@davidnewall.com> <20080120051822.GB19784@one.firstfloor.org> <4792DD22.4070902@davidnewall.com> <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122111205.GA25090@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080122111205.GA25090@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-GEHealthcare-MailScanner: Found to be clean
+X-GEHealthcare-MailScanner-From: karl.kiniger@med.ge.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mathieu Segaud <mathieu.segaud@regala.cx>
----
- fs/ext3/dir.c           |    2 +-
- fs/ext3/file.c          |    2 +-
- fs/ext3/ioctl.c         |  161 ++++++++++++++++++++++++++++++++---------------
- include/linux/ext3_fs.h |    3 +-
- 4 files changed, 113 insertions(+), 55 deletions(-)
+On Tue 080122, Ingo Molnar wrote:
+> 
+> * David Newall <davidn@davidnewall.com> wrote:
+> 
+> > Andi Kleen wrote:
+> > > You seem to be under the illusion that iBCS2 support works currently
+> > > in mainline and that only this patch would break it.
+> >
+> > I cannot imagine what brings you to that conclusion.  Suffice to say 
+> > you are entirely and inexplicably wrong.
+> 
+> it should be very easy for you to prove me wrong then. I've got a very 
+> simple question: please tell me, how do i run a binary compiled for an 
+> iBCS2 platform under Linux v2.6.23?
 
-diff --git a/fs/ext3/dir.c b/fs/ext3/dir.c
-index 8ca3bfd..5ab6b88 100644
---- a/fs/ext3/dir.c
-+++ b/fs/ext3/dir.c
-@@ -42,7 +42,7 @@ const struct file_operations ext3_dir_operations = {
- 	.llseek		= generic_file_llseek,
- 	.read		= generic_read_dir,
- 	.readdir	= ext3_readdir,		/* we take BKL. needed?*/
--	.ioctl		= ext3_ioctl,		/* BKL held */
-+	.unlocked_ioctl	= ext3_ioctl,		/* BKL held */
- #ifdef CONFIG_COMPAT
- 	.compat_ioctl	= ext3_compat_ioctl,
- #endif
-diff --git a/fs/ext3/file.c b/fs/ext3/file.c
-index acc4913..49798ed 100644
---- a/fs/ext3/file.c
-+++ b/fs/ext3/file.c
-@@ -112,7 +112,7 @@ const struct file_operations ext3_file_operations = {
- 	.write		= do_sync_write,
- 	.aio_read	= generic_file_aio_read,
- 	.aio_write	= ext3_file_write,
--	.ioctl		= ext3_ioctl,
-+	.unlocked_ioctl	= ext3_ioctl,
- #ifdef CONFIG_COMPAT
- 	.compat_ioctl	= ext3_compat_ioctl,
- #endif
-diff --git a/fs/ext3/ioctl.c b/fs/ext3/ioctl.c
-index 023a070..a7c480a 100644
---- a/fs/ext3/ioctl.c
-+++ b/fs/ext3/ioctl.c
-@@ -17,12 +17,19 @@
- #include <linux/smp_lock.h>
- #include <asm/uaccess.h>
- 
--int ext3_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
-+long ext3_ioctl(struct file *filp, unsigned int cmd,
- 		unsigned long arg)
- {
--	struct ext3_inode_info *ei = EXT3_I(inode);
-+	struct ext3_inode_info *ei;
-+	struct inode *inode;
- 	unsigned int flags;
- 	unsigned short rsv_window_size;
-+	long retval = 0;
-+
-+	lock_kernel();
-+
-+	inode = filp->f_path.dentry->d_inode;
-+	ei = EXT3_I(inode);
- 
- 	ext3_debug ("cmd = %u, arg = %lu\n", cmd, arg);
- 
-@@ -30,7 +37,8 @@ int ext3_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
- 	case EXT3_IOC_GETFLAGS:
- 		ext3_get_inode_flags(ei);
- 		flags = ei->i_flags & EXT3_FL_USER_VISIBLE;
--		return put_user(flags, (int __user *) arg);
-+		retval = put_user(flags, (int __user *) arg);
-+		goto out;
- 	case EXT3_IOC_SETFLAGS: {
- 		handle_t *handle = NULL;
- 		int err;
-@@ -38,14 +46,20 @@ int ext3_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
- 		unsigned int oldflags;
- 		unsigned int jflag;
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
-+		if (IS_RDONLY(inode)) {
-+			retval = -EROFS;
-+			goto out;
-+		}
- 
--		if (!is_owner_or_cap(inode))
--			return -EACCES;
-+		if (!is_owner_or_cap(inode)) {
-+			retval = -EACCES;
-+			goto out;
-+		}
- 
--		if (get_user(flags, (int __user *) arg))
--			return -EFAULT;
-+		if (get_user(flags, (int __user *) arg)) {
-+			retval = -EFAULT;
-+			goto out;
-+		}
- 
- 		if (!S_ISDIR(inode->i_mode))
- 			flags &= ~EXT3_DIRSYNC_FL;
-@@ -54,7 +68,8 @@ int ext3_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
- 		/* Is it quota file? Do not allow user to mess with it */
- 		if (IS_NOQUOTA(inode)) {
- 			mutex_unlock(&inode->i_mutex);
--			return -EPERM;
-+			retval = -EPERM;
-+			goto out;
- 		}
- 		oldflags = ei->i_flags;
- 
-@@ -70,7 +85,8 @@ int ext3_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
- 		if ((flags ^ oldflags) & (EXT3_APPEND_FL | EXT3_IMMUTABLE_FL)) {
- 			if (!capable(CAP_LINUX_IMMUTABLE)) {
- 				mutex_unlock(&inode->i_mutex);
--				return -EPERM;
-+				retval = -EPERM;
-+				goto out;
- 			}
- 		}
- 
-@@ -81,7 +97,8 @@ int ext3_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
- 		if ((jflag ^ oldflags) & (EXT3_JOURNAL_DATA_FL)) {
- 			if (!capable(CAP_SYS_RESOURCE)) {
- 				mutex_unlock(&inode->i_mutex);
--				return -EPERM;
-+				retval = -EPERM;
-+				goto out;
- 			}
- 		}
- 
-@@ -89,7 +106,8 @@ int ext3_ioctl (struct inode * inode, struct file * filp, unsigned int cmd,
- 		handle = ext3_journal_start(inode, 1);
- 		if (IS_ERR(handle)) {
- 			mutex_unlock(&inode->i_mutex);
--			return PTR_ERR(handle);
-+			retval = PTR_ERR(handle);
-+			goto out;
- 		}
- 		if (IS_SYNC(inode))
- 			handle->h_sync = 1;
-@@ -109,17 +127,20 @@ flags_err:
- 		ext3_journal_stop(handle);
- 		if (err) {
- 			mutex_unlock(&inode->i_mutex);
--			return err;
-+			retval = err;
-+			goto out;
- 		}
- 
- 		if ((jflag ^ oldflags) & (EXT3_JOURNAL_DATA_FL))
- 			err = ext3_change_inode_journal_flag(inode, jflag);
- 		mutex_unlock(&inode->i_mutex);
--		return err;
-+		retval = err;
-+		goto out;
- 	}
- 	case EXT3_IOC_GETVERSION:
- 	case EXT3_IOC_GETVERSION_OLD:
--		return put_user(inode->i_generation, (int __user *) arg);
-+		retval = put_user(inode->i_generation, (int __user *) arg);
-+		goto out;
- 	case EXT3_IOC_SETVERSION:
- 	case EXT3_IOC_SETVERSION_OLD: {
- 		handle_t *handle;
-@@ -127,16 +148,24 @@ flags_err:
- 		__u32 generation;
- 		int err;
- 
--		if (!is_owner_or_cap(inode))
--			return -EPERM;
--		if (IS_RDONLY(inode))
--			return -EROFS;
--		if (get_user(generation, (int __user *) arg))
--			return -EFAULT;
-+		if (!is_owner_or_cap(inode)) {
-+			retval = -EPERM;
-+			goto out;
-+		}
-+		if (IS_RDONLY(inode)) {
-+			retval = -EROFS;
-+			goto out;
-+		}
-+		if (get_user(generation, (int __user *) arg)) {
-+			retval = -EFAULT;
-+			goto out;
-+		}
- 
- 		handle = ext3_journal_start(inode, 1);
--		if (IS_ERR(handle))
--			return PTR_ERR(handle);
-+		if (IS_ERR(handle)) {
-+			retval = PTR_ERR(handle);
-+			goto out;
-+		}
- 		err = ext3_reserve_inode_write(handle, inode, &iloc);
- 		if (err == 0) {
- 			inode->i_ctime = CURRENT_TIME_SEC;
-@@ -144,7 +173,8 @@ flags_err:
- 			err = ext3_mark_iloc_dirty(handle, inode, &iloc);
- 		}
- 		ext3_journal_stop(handle);
--		return err;
-+		retval = err;
-+		goto out;
- 	}
- #ifdef CONFIG_JBD_DEBUG
- 	case EXT3_IOC_WAIT_FOR_READONLY:
-@@ -158,7 +188,7 @@ flags_err:
- 		{
- 			struct super_block *sb = inode->i_sb;
- 			DECLARE_WAITQUEUE(wait, current);
--			int ret = 0;
-+			long ret = 0;
- 
- 			set_current_state(TASK_INTERRUPTIBLE);
- 			add_wait_queue(&EXT3_SB(sb)->ro_wait_queue, &wait);
-@@ -167,6 +197,7 @@ flags_err:
- 				ret = 1;
- 			}
- 			remove_wait_queue(&EXT3_SB(sb)->ro_wait_queue, &wait);
-+			unlock_kernel();
- 			return ret;
- 		}
- #endif
-@@ -175,22 +206,33 @@ flags_err:
- 			&& S_ISREG(inode->i_mode)
- 			&& ei->i_block_alloc_info) {
- 			rsv_window_size = ei->i_block_alloc_info->rsv_window_node.rsv_goal_size;
--			return put_user(rsv_window_size, (int __user *)arg);
-+			retval = put_user(rsv_window_size, (int __user *)arg);
-+			goto out;
- 		}
--		return -ENOTTY;
-+		retval = -ENOTTY;
-+		goto out;
- 	case EXT3_IOC_SETRSVSZ: {
- 
--		if (!test_opt(inode->i_sb, RESERVATION) ||!S_ISREG(inode->i_mode))
--			return -ENOTTY;
-+		if (!test_opt(inode->i_sb, RESERVATION) ||
-+				!S_ISREG(inode->i_mode)) {
-+			retval = -ENOTTY;
-+			goto out;
-+		}
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
-+		if (IS_RDONLY(inode)) {
-+			retval = -EROFS;
-+			goto out;
-+		}
- 
--		if (!is_owner_or_cap(inode))
--			return -EACCES;
-+		if (!is_owner_or_cap(inode)) {
-+			retval = -EACCES;
-+			goto out;
-+		}
- 
--		if (get_user(rsv_window_size, (int __user *)arg))
--			return -EFAULT;
-+		if (get_user(rsv_window_size, (int __user *)arg)) {
-+			retval = -EFAULT;
-+			goto out;
-+		}
- 
- 		if (rsv_window_size > EXT3_MAX_RESERVE_BLOCKS)
- 			rsv_window_size = EXT3_MAX_RESERVE_BLOCKS;
-@@ -208,27 +250,34 @@ flags_err:
- 			rsv->rsv_goal_size = rsv_window_size;
- 		}
- 		mutex_unlock(&ei->truncate_mutex);
--		return 0;
-+		goto out;
- 	}
- 	case EXT3_IOC_GROUP_EXTEND: {
- 		ext3_fsblk_t n_blocks_count;
- 		struct super_block *sb = inode->i_sb;
- 		int err;
- 
--		if (!capable(CAP_SYS_RESOURCE))
--			return -EPERM;
-+		if (!capable(CAP_SYS_RESOURCE)) {
-+			retval = -EPERM;
-+			goto out;
-+		}
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
-+		if (IS_RDONLY(inode)) {
-+			retval = -EROFS;
-+			goto out;
-+		}
- 
--		if (get_user(n_blocks_count, (__u32 __user *)arg))
--			return -EFAULT;
-+		if (get_user(n_blocks_count, (__u32 __user *)arg)) {
-+			retval = -EFAULT;
-+			goto out;
-+		}
- 
- 		err = ext3_group_extend(sb, EXT3_SB(sb)->s_es, n_blocks_count);
- 		journal_lock_updates(EXT3_SB(sb)->s_journal);
- 		journal_flush(EXT3_SB(sb)->s_journal);
- 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
- 
-+		unlock_kernel();
- 		return err;
- 	}
- 	case EXT3_IOC_GROUP_ADD: {
-@@ -236,28 +285,40 @@ flags_err:
- 		struct super_block *sb = inode->i_sb;
- 		int err;
- 
--		if (!capable(CAP_SYS_RESOURCE))
--			return -EPERM;
-+		if (!capable(CAP_SYS_RESOURCE)) {
-+			retval = -EPERM;
-+			goto out;
-+		}
- 
--		if (IS_RDONLY(inode))
--			return -EROFS;
-+		if (IS_RDONLY(inode)) {
-+			retval = -EROFS;
-+			goto out;
-+		}
- 
- 		if (copy_from_user(&input, (struct ext3_new_group_input __user *)arg,
--				sizeof(input)))
--			return -EFAULT;
-+				sizeof(input))) {
-+			retval = -EFAULT;
-+			goto out;
-+		}
- 
- 		err = ext3_group_add(sb, &input);
- 		journal_lock_updates(EXT3_SB(sb)->s_journal);
- 		journal_flush(EXT3_SB(sb)->s_journal);
- 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
- 
-+		unlock_kernel();
- 		return err;
- 	}
- 
- 
- 	default:
-+		unlock_kernel();
- 		return -ENOTTY;
- 	}
-+
-+out:
-+	unlock_kernel();
-+	return retval;
- }
- 
- #ifdef CONFIG_COMPAT
-@@ -305,9 +366,7 @@ long ext3_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 	default:
- 		return -ENOIOCTLCMD;
- 	}
--	lock_kernel();
- 	ret = ext3_ioctl(inode, file, cmd, (unsigned long) compat_ptr(arg));
--	unlock_kernel();
- 	return ret;
- }
- #endif
-diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
-index 241c01c..1c925eb 100644
---- a/include/linux/ext3_fs.h
-+++ b/include/linux/ext3_fs.h
-@@ -838,8 +838,7 @@ extern void ext3_get_inode_flags(struct ext3_inode_info *);
- extern void ext3_set_aops(struct inode *inode);
- 
- /* ioctl.c */
--extern int ext3_ioctl (struct inode *, struct file *, unsigned int,
--		       unsigned long);
-+extern long ext3_ioctl(struct file *, unsigned int, unsigned long);
- extern long ext3_compat_ioctl (struct file *, unsigned int, unsigned long);
- 
- /* namei.c */
+
+at least the Changelog for ibcs-3.4.tar.gz found on
+
+http://sourceforge.net/project/showfiles.php?group_id=13130
+
+says:
+
+2007-10-11  Alex <agon04@users.sourceforge.net>
+
+        ibcs-3.4
+
+        * support for Kernel 2.6.23 added
+        * support for SUSE AppArmor
+
+
+I did not try this one myself.
+
+Karl
+
+> 
+> I've got plenty of v2.6.23-running testsystems, tell me, if i wanted, 
+> how could i run any iBCS2 binary on them? All i see is a massive, 
+> 2.4-kernels-only patchkit:
+> 
+>    http://www.kernel.org/pub/linux/kernel/people/hch/linux-abi/v2.4/
+> 
+> which external patch-kit was not picked up by major distros and which 
+> was never integrated into the upstream kernel either. iBCS2 support in 
+> Linux 2.6 simply does not exist.
+> 
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
 -- 
-1.5.3.8
-
+Karl Kiniger            mailto:karl.kiniger@med.ge.com
+GE Medical Systems Kretztechnik GmbH & Co OHG
+Tiefenbach 15           Tel: (++43) 7682-3800-710  Voip(GE): 1662 710
+A-4871 Zipf Austria     Fax: (++43) 7682-3800-47 C: +43 6991 3800 710
