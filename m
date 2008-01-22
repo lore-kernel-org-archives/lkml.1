@@ -1,114 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbYAVAts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759543AbYAVAzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759458AbYAVAts (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 19:49:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbYAVAtj
+	id S1759543AbYAVAzW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 19:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbYAVAzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 19:49:39 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:44857 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752236AbYAVAti (ORCPT
+	Mon, 21 Jan 2008 19:55:09 -0500
+Received: from wx-out-0506.google.com ([66.249.82.225]:18925 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203AbYAVAzG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 19:49:38 -0500
-Date: Mon, 21 Jan 2008 19:49:25 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       John Stultz <johstul@us.ibm.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [RFC PATCH 12/23 -v4] Use RCU algorithm for monotonic cycles.
-In-Reply-To: <200801221120.59792.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.58.0801211946370.21442@gandalf.stny.rr.com>
-References: <20080121152231.579118762@goodmis.org> <20080121152352.789802471@goodmis.org>
- <200801221120.59792.nickpiggin@yahoo.com.au>
+	Mon, 21 Jan 2008 19:55:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OmVk7bGyTVyQqcB1timnqrYyR66kc4fhrOEWAsnt/dm3BE2dqPMw5qd+hLQ8ssgsGUEc07dXYz0K626m59QInSzJF2MfE7soGg1qS2YRzmhe/uAia1rIB7w1f/44ZpiS5/bLPPdslDS7TZX5tXxsooBrrw60tH1g6o0hocc7lJ8=
+Message-ID: <a8e1da0801211655y5a7313edn331ad4312b0b7de9@mail.gmail.com>
+Date: Tue, 22 Jan 2008 08:55:05 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Jarek Poplawski" <jarkao2@gmail.com>
+Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct class
+Cc: "Kay Sievers" <kay.sievers@vrfy.org>,
+       "Alan Stern" <stern@rowland.harvard.edu>, "Greg KH" <gregkh@suse.de>,
+       stefanr@s5r6.in-berlin.de, "David Brownell" <david-b@pacbell.net>,
+       "Kernel development list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080121211625.GA2758@ami.dom.local>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a8e1da0801210044t5f705f77n8e310878775f7b5b@mail.gmail.com>
+	 <20080121211625.GA2758@ami.dom.local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 22 Jan 2008, Nick Piggin wrote:
-
-> On Tuesday 22 January 2008 02:22, Steven Rostedt wrote:
-> > From: john stultz <johnstul@us.ibm.com>
+On Jan 22, 2008 5:16 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> Dave Young wrote, On 01/21/2008 09:44 AM:
+> ...
+> > I applied it in my kernel, built and run without warnings, but it need
+> > more testing.
+> > I will be very glad to see the test result about this if you could, thanks.
 >
-> >  static inline cycle_t
-> > -clocksource_get_cycles(struct clocksource *cs, cycle_t now)
-> > +clocksource_get_basecycles(struct clocksource *cs)
-> >  {
-> > -	cycle_t offset = (now - cs->cycle_last) & cs->mask;
-> > -	offset += cs->cycle_accumulated;
-> > +	int num;
-> > +	cycle_t now, offset;
-> > +
-> > +	preempt_disable();
-> > +	num = cs->base_num;
-> > +	smp_read_barrier_depends();
->
-> All barriers need comments in the code. eg. with read barriers, the
-> comment should contain a list of the loads being ordered, and a
-> reference to the places where stores come from.
->
-> I know it isn't too hard to follow _now_, but it makes the code more
-> maintainable.
+> Bad news. (Alas I won't be able to check this today.)
 
-Yep, thanks for the reminder. This was a quick patch from John. I'll add
-the necessary comment for the next release. Hmm, I'm surprised that
-checkpatch didn't complain.
+Hi, thanks your effort. Now I think we should stop this thread and
+waiting the class_device going away :)
+
+Hope the iteration patches 1-6/7 could be applied.
 
 >
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.24-rc8 #5
+> ---------------------------------------------
+> modprobe/536 is trying to acquire lock:
+>  (&cls->mutex/1){--..}, at: [<c0217e43>] class_device_add+0x2c6/0x322
 >
-> > +	now = clocksource_read(cs);
-> > +	offset = (now - cs->base[num].cycle_base_last);
-> > +	offset &= cs->mask;
-> > +	offset += cs->base[num].cycle_base;
-> > +	preempt_enable();
-> > +
-> >  	return offset;
-> >  }
-> >
-> > @@ -197,14 +215,26 @@ clocksource_get_cycles(struct clocksourc
-> >   * @now:	current cycle value
-> >   *
-> >   * Used to avoids clocksource hardware overflow by periodically
-> > - * accumulating the current cycle delta. Must hold xtime write lock!
-> > + * accumulating the current cycle delta. Uses RCU-like update, but
-> > + * ***still requires the xtime_lock is held for writing!***
-> >   */
-> >  static inline void clocksource_accumulate(struct clocksource *cs, cycle_t
-> > now) {
-> > -	cycle_t offset = (now - cs->cycle_last) & cs->mask;
-> > +	/* First update the monotonic base portion.
-> > +	 * The dual array update method allows for lock-free reading.
-> > +	 */
-> > +	int num = 1 - cs->base_num;
-> > +	cycle_t offset = (now - cs->base[1-num].cycle_base_last);
-> > +	offset &= cs->mask;
-> > +	cs->base[num].cycle_base = cs->base[1-num].cycle_base + offset;
-> > +	cs->base[num].cycle_base_last = now;
-> > +	wmb();
-> > +	cs->base_num = num;
+> but task is already holding lock:
+>  (&cls->mutex/1){--..}, at: [<c0217e43>] class_device_add+0x2c6/0x322
 >
-> Ditto for the wmb. Also, I think the wmb() can probably just be
-> smp_wmb().
-
-Yep, this too. We suggested earlier to John to switch this to a
-smp_wmb, but I took his patch before the update. This will be fixed in the
-next round too.
-
-Thanks,
-
--- Steve
-
+> other info that might help us debug this:
+> 2 locks held by modprobe/536:
+>  #0:  (&shost->scan_mutex){--..}, at: [<ce82795b>] __scsi_add_device+0x60/0xc9 [scsi_mod]
+>  #1:  (&cls->mutex/1){--..}, at: [<c0217e43>] class_device_add+0x2c6/0x322
+>
+> stack backtrace:
+> Pid: 536, comm: modprobe Not tainted 2.6.24-rc8 #5
+>  [<c0138edf>] __lock_acquire+0x962/0x10d4
+>  [<c028be37>] _spin_unlock_irqrestore+0x34/0x39
+>  [<c015e693>] kfree+0x87/0xad
+>  [<c01380cb>] trace_hardirqs_on+0xba/0x15b
+>  [<c01396c2>] lock_acquire+0x71/0x8b
+>  [<c0217e43>] class_device_add+0x2c6/0x322
+>  [<c028a87f>] mutex_lock_nested+0x92/0x2bc
+>  [<c0217e43>] class_device_add+0x2c6/0x322
+>  [<c0217e43>] class_device_add+0x2c6/0x322
+>  [<c0217e43>] class_device_add+0x2c6/0x322
+>  [<c01afd42>] kobject_get+0xf/0x13
+>  [<c01afe68>] kobject_init+0x29/0x38
+>  [<c0217f2c>] class_device_create+0x7d/0x9e
+>  [<cebfe5b4>] sg_add+0x144/0x39f [sg]
+>  [<c0217e71>] class_device_add+0x2f4/0x322
+>  [<ce8289f7>] scsi_sysfs_add_sdev+0x64/0x1ac [scsi_mod]
+>  [<ce840ece>] ata_scsi_dev_config+0x14/0x91 [libata]
+>  [<ce826b5c>] scsi_probe_and_add_lun+0x9c0/0x9e0 [scsi_mod]
+>  [<ce82795b>] __scsi_add_device+0x60/0xc9 [scsi_mod]
+>  [<ce8279c2>] __scsi_add_device+0xc7/0xc9 [scsi_mod]
+>  [<ce841401>] ata_scsi_scan_host+0xd3/0x26a [libata]
+>  [<ce83e7e6>] ata_host_register+0x205/0x280 [libata]
+>  [<ce83f430>] ata_interrupt+0x0/0x200 [libata]
+>  [<ce83e8ec>] ata_host_activate+0x8b/0xf2 [libata]
+>  [<ceb95504>] svia_init_one+0x2e2/0x511 [sata_via]
+>  [<c01ca42c>] pci_match_device+0xa5/0xb6
+>  [<ceb95222>] svia_init_one+0x0/0x511 [sata_via]
+>  [<c01ca4e9>] pci_device_probe+0x40/0x5f
+>  [<c02173ae>] driver_probe_device+0x7c/0x175
+>  [<c02175ed>] __driver_attach+0xa2/0xa4
+>  [<c02168dd>] bus_for_each_dev+0x3c/0x5a
+>  [<c0217263>] driver_attach+0x16/0x1a
+>  [<c021754b>] __driver_attach+0x0/0xa4
+>  [<c0216bea>] bus_add_driver+0x72/0x1c0
+>  [<c01ca642>] __pci_register_driver+0x56/0x89
+>  [<c013f11d>] sys_init_module+0xf8/0x1891
+>  [<ce83901f>] ata_port_start+0x0/0x65 [libata]
+>  [<c01380cb>] trace_hardirqs_on+0xba/0x15b
+>  [<c0102936>] syscall_call+0x7/0xb
+>  =======================
+> scsi 2:0:0:0: Attached scsi generic sg1 type 0
+>
+> Regards,
+> Jarek P.
+>
