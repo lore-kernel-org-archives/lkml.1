@@ -1,59 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbYAVD2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbYAVDjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758923AbYAVD2U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:28:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbYAVD2N
+	id S1756164AbYAVDjW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:39:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbYAVDjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:28:13 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59932 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752943AbYAVD2M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:28:12 -0500
-Message-ID: <47955ECB.3050100@zytor.com>
-Date: Mon, 21 Jan 2008 19:11:07 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: David Fries <david@fries.net>
-CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
-Subject: Re: W1: w1_slave units, standardize 1C or .001C?  Break API
-References: <20080121231557.GA4025@spacedout.fries.net> <479541F5.9080705@zytor.com>
-In-Reply-To: <479541F5.9080705@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 21 Jan 2008 22:39:16 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37410 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751953AbYAVDjO (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 22:39:14 -0500
+Date: Tue, 22 Jan 2008 14:38:30 +1100
+From: David Chinner <dgc@sgi.com>
+To: Valerie Henson <val@vahconsulting.com>, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@clusterfs.com>,
+       Ric Wheeler <ric@emc.com>
+Subject: Re: [RFC] Parallelize IO for e2fsck
+Message-ID: <20080122033830.GR155259@sgi.com>
+References: <70b6f0bf0801161322k2740a8dch6a0d6e6e112cd2d0@mail.gmail.com> <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com> <20080121230041.GL3180@webber.adilger.int>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080121230041.GL3180@webber.adilger.int>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> David Fries wrote:
->> The ds18b20 one wire temperature sensor conversion routine is
->> returning the units in degrees C while the ds1820 (ds18s20) is
->> returning it in .001 degrees C.  20C vs 20312C.  Once you know the
->> units I'm liking the latter as it gives a higher precision.  Time to
->> break user applications so the driver can give the temperature in the
->> same units for both sensors.
->>
->> I only have the ds18b20 sensor model.  Here is the current output from
->> the sys file for this sensor.
->> /sys/devices/w1_bus_master1/28-0000000e84a2/w1_slave
->> 45 01 4b 46 7f ff 0b 10 84 : crc=84 YES
->> 45 01 4b 46 7f ff 0b 10 84 t=20
->>
->> I ran the example data from the specification for the ds1820 through
->> it's conversion routine and found that t= was 1000 times the value.  
->> What should the displayed units be? 
->> This is the same ds18b20 conversion *1000.  Is everyone ok or is any
->> objecting to .001 degrees C for the units?  Patch will follow.  The
->> .001 C does truncate one bit of precision from the ds18b20 by the way.
->>
+On Mon, Jan 21, 2008 at 04:00:41PM -0700, Andreas Dilger wrote:
+> On Jan 16, 2008  13:30 -0800, Valerie Henson wrote:
+> > I have a partial solution that sort of blindly manages the buffer
+> > cache.  First, the user passes e2fsck a parameter saying how much
+> > memory is available as buffer cache.  The readahead thread reads
+> > things in and immediately throws them away so they are only in buffer
+> > cache (no double-caching).  Then readahead and e2fsck work together so
+> > that readahead only reads in new blocks when the main thread is done
+> > with earlier blocks.  The already-used blocks get kicked out of buffer
+> > cache to make room for the new ones.
+> >
+> > What would be nice is to take into account the current total memory
+> > usage of the whole fsck process and factor that in.  I don't think it
+> > would be hard to add to the existing cache management framework.
+> > Thoughts?
 > 
-> Millikelvins would have the nice property of never being negative.  :)
+> I discussed this with Ted at one point also.  This is a generic problem,
+> not just for readahead, because "fsck" can run multiple e2fsck in parallel
+> and in case of many large filesystems on a single node this can cause
+> memory usage problems also.
 > 
+> What I was proposing is that "fsck.{fstype}" be modified to return an
+> estimated minimum amount of memory needed, and some "desired" amount of
+> memory (i.e. readahead) to fsck the filesystem, using some parameter like
+> "fsck.{fstype} --report-memory-needed /dev/XXX".  If this does not
+> return the output in the expected format, or returns an error then fsck
+> will assume some amount of memory based on the device size and continue
+> as it does today.
 
-Alternatively, centikelvins would fit nicely in 16 bits if anyone cares...
+And while fsck is running, some other program runs that uses
+memory and blows your carefully calculated paramters to smithereens?
 
-655.35 K = 382.20 °C = 719.96 °F
+I think there is a clear need for applications to be able to
+register a callback from the kernel to indicate that the machine as
+a whole is running out of memory and that the application should
+trim it's caches to reduce memory utilisation.
 
-	-hpa
+Perhaps instead of swapping immediately, a SIGLOWMEM could be sent
+to a processes that aren't masking the signal followed by a short
+grace period to allow the processes to free up some memory before
+swapping out pages from that process?
+
+With this sort of feedback, the fsck process can scale back it's
+readahead and remove cached info that is not critical to what it
+is currently doing and thereby prevent readahead thrashing as
+memory usage of the fsck process itself grows.
+
+Another example where this could be useful is to tell browsers to
+release some of their cache rather than having the VM swap it out.
+
+IMO, a scheme like this will be far more reliable than trying to
+guess what the optimal settings are going to be over the whole
+lifetime of a process....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
