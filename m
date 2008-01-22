@@ -1,86 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbYAVBau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbYAVBei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758296AbYAVBau (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 20:30:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754147AbYAVBal
+	id S1758064AbYAVBei (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 20:34:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYAVBeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 20:30:41 -0500
-Received: from waste.org ([66.93.16.53]:48728 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753306AbYAVBak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 20:30:40 -0500
-Subject: Re: [PATCHSET] printk: implement printk_header() and merging printk
-From: Matt Mackall <mpm@selenic.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: linux-kernel@vger.kernel.org, daniel.ritz-ml@swissonline.ch,
-       randy.dunlap@oracle.com, jeff@garzik.org, linux-ide@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>
-In-Reply-To: <47954047.90609@gmail.com>
-References: <1200445210549-git-send-email-htejun@gmail.com>
-	 <1200681668.25782.9.camel@cinder.waste.org>  <47912F02.6070801@gmail.com>
-	 <1200951757.3860.24.camel@cinder.waste.org>  <47954047.90609@gmail.com>
-Content-Type: text/plain
-Date: Mon, 21 Jan 2008 19:28:11 -0600
-Message-Id: <1200965291.3860.38.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Mon, 21 Jan 2008 20:34:31 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:52386 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752954AbYAVBea (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 20:34:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wa2gvTOZu+0eJM9vHFUz7LMo//mEGRnt2HGbZKMaxcKKQl13qiMfB8sW/ntka7Glq5FOSUTHAI36AIJjstdT5FuswKPT3we94SYnVg1Ke+tHROQnEDy2vPL4fnibtKO+ToSSdCYvG/suhPrwlWjCgz0ixFJEKqUDJ/D+Efby6ME=
+Message-ID: <9a8748490801211734w7fbb0ed9i66d63153c870a3f0@mail.gmail.com>
+Date: Tue, 22 Jan 2008 02:34:29 +0100
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Anton Salikhmetov" <salikhmetov@gmail.com>
+Subject: Re: [PATCH -v7 0/2] Fixing the issue with memory-mapped file times
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, torvalds@linux-foundation.org,
+       a.p.zijlstra@chello.nl, akpm@linux-foundation.org, protasnb@gmail.com,
+       miklos@szeredi.hu, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+In-Reply-To: <12009619562023-git-send-email-salikhmetov@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12009619562023-git-send-email-salikhmetov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 22/01/2008, Anton Salikhmetov <salikhmetov@gmail.com> wrote:
+> This is the seventh version of my solution for the bug #2645:
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=2645
+>
+> Since the previous version, the following has changed: based on
+> Linus' comment, SMP-safe PTE update implemented.
+>
+> Discussions, which followed my past submissions, showed that it was
+> tempting to approach this problem using very different assumptions.
+> However, many such designs have proved to be incomplete or inefficient.
+>
+> Taking into account the obvious complexity of this problem, I prepared a
+> design document, the purpose of which is twofold. First, it summarizes
+> previous attempts to resolve the ctime/mtime issue. Second, it attempts
+> to prove that what the patches do is necessary and sufficient for mtime
+> and ctime update provided that we start from a certain sane set of
+> requirements. The design document is available via the following link:
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=2645#c40
+>
+> For the seventh version, comprehensive performance testing was performed.
+> The results of performance tests, including numbers, are available here:
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=2645#c43
+>
 
-On Tue, 2008-01-22 at 10:00 +0900, Tejun Heo wrote:
-> Matt Mackall wrote:
-> > I suppose. I still find this approach less than ideal, especially
-> > putting something potentially large on the stack. The dangers are
-> > perhaps worse than a malloc, really. 
-> 
-> I pondered on this a bit but the thing is we already use several
-> hundreds bytes in a function which builds complex messages.
+Hi Anton,
 
-Well there are lots of current and potential future users of this
-function, many of them down at the end of long call chains. So I'm more
-worried about the new cases that embrace this approach and suddenly add
-300 bytes of stack. In fact, if this is at all popular, we can expect to
-have more than one of these frames on the stack in various paths. 
+I applied your patches here and as far as my own test programs go,
+these patches solve the previously observed problems I saw with mtime
+not getting updated.
 
-Given that it only exists to make output prettier, it doesn't -really-
-justify increased stack usage.
-
-> > I also don't like your interface much. Consider this alternative:
-> > 
-> > struct mprintk *mp = mprintk_begin(KERN_INFO "ata%u.%2u: ", 1, 0);
-> > mprintk(mp, "ATA %d", 7);
-> > mprintk(mp, ", %u sectors\n", 1024);
-> > mprintk(mp, "everything seems dandy\n");
-> > mprintk_end(mp);
-> > 
-> > That keeps all the "normal" printks short and makes the flush more
-> > explict.
-> 
-> I like that the more used function is shorter.  Hmmm... The reason why I
-> first used mprintk_push() is to make it clear that the function
-> accumulates messages unlike mprintk() which flushes what's accumulated
-> and prints its own message.
-> 
-> > Now we make mprintk_begin attempt to do a kmalloc of a moderate size
-> > (512 bytes?) and failing that, return null. Then mprintk can fall
-> > through to printk in the NULL case.
-> 
-> If you wanna do that implicitly, you need GFP_ flag in mprintk_begin()
-> and atomic allocation should be used from interrupt handlers and friends
-> and they fail easily under the right (or wrong) conditions.  Forcing
-> kmalloc isn't a good idea.  Having multiple initializers is one way to
-> do it.  Any suggestions?
-
-Adding a gfp_flags arg isn't too painful. And we've generally avoided
-having separate function calls for atomic vs non-atomic allocation.
-
-Btw, we can also easily hide Willy or Rusty's stringbuf implementation
-under the covers here and still have a scheme that automatically falls
-back to direct printk..
+Thank you very much for so persistently working on these long standing issues.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
-
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
