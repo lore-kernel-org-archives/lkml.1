@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbYAVDM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761990AbYAVDMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761479AbYAVDM1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:12:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbYAVDGn
+	id S1761990AbYAVDMp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:12:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbYAVDGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:06:43 -0500
+	Mon, 21 Jan 2008 22:06:45 -0500
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:32924 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757078AbYAVDGl (ORCPT
+	by vger.kernel.org with ESMTP id S1759988AbYAVDGn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:06:41 -0500
+	Mon, 21 Jan 2008 22:06:43 -0500
 From: "Theodore Ts'o" <tytso@MIT.EDU>
 To: linux-kernel@vger.kernel.org
 Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 07/49] ext4: Introduce ext4_update_*_feature
-Date: Mon, 21 Jan 2008 22:01:46 -0500
-Message-Id: <1200970948-17903-8-git-send-email-tytso@mit.edu>
+Subject: [PATCH 08/49] ext4:  Fix sparse warnings.
+Date: Mon, 21 Jan 2008 22:01:47 -0500
+Message-Id: <1200970948-17903-9-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
-In-Reply-To: <1200970948-17903-7-git-send-email-tytso@mit.edu>
+In-Reply-To: <1200970948-17903-8-git-send-email-tytso@mit.edu>
 References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-2-git-send-email-tytso@mit.edu>
  <1200970948-17903-3-git-send-email-tytso@mit.edu>
@@ -25,6 +25,7 @@ References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-5-git-send-email-tytso@mit.edu>
  <1200970948-17903-6-git-send-email-tytso@mit.edu>
  <1200970948-17903-7-git-send-email-tytso@mit.edu>
+ <1200970948-17903-8-git-send-email-tytso@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,127 +34,120 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Introduce ext4_update_*_feature and use them instead
-of opencoding.
-
+Fix sparse warnings related to static functions
+and local variables.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- fs/ext4/ialloc.c        |   11 +++-----
- fs/ext4/super.c         |   60 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/ext4_fs.h |    6 ++++
- 3 files changed, 70 insertions(+), 7 deletions(-)
+ fs/ext4/extents.c       |    6 +++---
+ fs/ext4/inode.c         |   18 +++++++++++-------
+ fs/ext4/super.c         |    3 +++
+ include/linux/ext4_fs.h |    2 ++
+ 4 files changed, 19 insertions(+), 10 deletions(-)
 
-diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 7b5cfa6..00b152b 100644
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -748,13 +748,10 @@ got:
- 	if (test_opt(sb, EXTENTS)) {
- 		EXT4_I(inode)->i_flags |= EXT4_EXTENTS_FL;
- 		ext4_ext_tree_init(handle, inode);
--		if (!EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_EXTENTS)) {
--			err = ext4_journal_get_write_access(handle, EXT4_SB(sb)->s_sbh);
--			if (err) goto fail;
--			EXT4_SET_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_EXTENTS);
--			BUFFER_TRACE(EXT4_SB(sb)->s_sbh, "call ext4_journal_dirty_metadata");
--			err = ext4_journal_dirty_metadata(handle, EXT4_SB(sb)->s_sbh);
--		}
-+		err = ext4_update_incompat_feature(handle, sb,
-+						EXT4_FEATURE_INCOMPAT_EXTENTS);
-+		if (err)
-+			goto fail;
- 	}
- 
- 	ext4_debug("allocating inode %lu\n", inode->i_ino);
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index df8842b..4d7f33f 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -373,6 +373,66 @@ void ext4_update_dynamic_rev(struct super_block *sb)
- 	 */
+diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+index 6853722..754c0d3 100644
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -1088,7 +1088,7 @@ static ext4_lblk_t ext4_ext_next_leaf_block(struct inode *inode,
+  * then we have to correct all indexes above.
+  * TODO: do we need to correct tree in all cases?
+  */
+-int ext4_ext_correct_indexes(handle_t *handle, struct inode *inode,
++static int ext4_ext_correct_indexes(handle_t *handle, struct inode *inode,
+ 				struct ext4_ext_path *path)
+ {
+ 	struct ext4_extent_header *eh;
+@@ -1535,7 +1535,7 @@ ext4_ext_in_cache(struct inode *inode, ext4_lblk_t block,
+  * It's used in truncate case only, thus all requests are for
+  * last index in the block only.
+  */
+-int ext4_ext_rm_idx(handle_t *handle, struct inode *inode,
++static int ext4_ext_rm_idx(handle_t *handle, struct inode *inode,
+ 			struct ext4_ext_path *path)
+ {
+ 	struct buffer_head *bh;
+@@ -1806,7 +1806,7 @@ ext4_ext_more_to_rm(struct ext4_ext_path *path)
+ 	return 1;
  }
  
-+int ext4_update_compat_feature(handle_t *handle,
-+					struct super_block *sb, __u32 compat)
-+{
-+	int err = 0;
-+	if (!EXT4_HAS_COMPAT_FEATURE(sb, compat)) {
-+		err = ext4_journal_get_write_access(handle,
-+				EXT4_SB(sb)->s_sbh);
-+		if (err)
-+			return err;
-+		EXT4_SET_COMPAT_FEATURE(sb, compat);
-+		sb->s_dirt = 1;
-+		handle->h_sync = 1;
-+		BUFFER_TRACE(EXT4_SB(sb)->s_sbh,
-+					"call ext4_journal_dirty_met adata");
-+		err = ext4_journal_dirty_metadata(handle,
-+				EXT4_SB(sb)->s_sbh);
+-int ext4_ext_remove_space(struct inode *inode, ext4_lblk_t start)
++static int ext4_ext_remove_space(struct inode *inode, ext4_lblk_t start)
+ {
+ 	struct super_block *sb = inode->i_sb;
+ 	int depth = ext_depth(inode);
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 1ee19c9..76ceba2 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -2052,11 +2052,11 @@ static void ext4_clear_blocks(handle_t *handle, struct inode *inode,
+ 	for (p = first; p < last; p++) {
+ 		u32 nr = le32_to_cpu(*p);
+ 		if (nr) {
+-			struct buffer_head *bh;
++			struct buffer_head *tbh;
+ 
+ 			*p = 0;
+-			bh = sb_find_get_block(inode->i_sb, nr);
+-			ext4_forget(handle, 0, inode, bh, nr);
++			tbh = sb_find_get_block(inode->i_sb, nr);
++			ext4_forget(handle, 0, inode, tbh, nr);
+ 		}
+ 	}
+ 
+@@ -2324,8 +2324,10 @@ void ext4_truncate(struct inode *inode)
+ 			return;
+ 	}
+ 
+-	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL)
+-		return ext4_ext_truncate(inode, page);
++	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
++		ext4_ext_truncate(inode, page);
++		return;
 +	}
-+	return err;
-+}
-+
-+int ext4_update_rocompat_feature(handle_t *handle,
-+					struct super_block *sb, __u32 rocompat)
-+{
-+	int err = 0;
-+	if (!EXT4_HAS_RO_COMPAT_FEATURE(sb, rocompat)) {
-+		err = ext4_journal_get_write_access(handle,
-+				EXT4_SB(sb)->s_sbh);
-+		if (err)
-+			return err;
-+		EXT4_SET_RO_COMPAT_FEATURE(sb, rocompat);
-+		sb->s_dirt = 1;
-+		handle->h_sync = 1;
-+		BUFFER_TRACE(EXT4_SB(sb)->s_sbh,
-+					"call ext4_journal_dirty_met adata");
-+		err = ext4_journal_dirty_metadata(handle,
-+				EXT4_SB(sb)->s_sbh);
-+	}
-+	return err;
-+}
-+
-+int ext4_update_incompat_feature(handle_t *handle,
-+					struct super_block *sb, __u32 incompat)
-+{
-+	int err = 0;
-+	if (!EXT4_HAS_INCOMPAT_FEATURE(sb, incompat)) {
-+		err = ext4_journal_get_write_access(handle,
-+				EXT4_SB(sb)->s_sbh);
-+		if (err)
-+			return err;
-+		EXT4_SET_INCOMPAT_FEATURE(sb, incompat);
-+		sb->s_dirt = 1;
-+		handle->h_sync = 1;
-+		BUFFER_TRACE(EXT4_SB(sb)->s_sbh,
-+					"call ext4_journal_dirty_met adata");
-+		err = ext4_journal_dirty_metadata(handle,
-+				EXT4_SB(sb)->s_sbh);
-+	}
-+	return err;
-+}
-+
- /*
-  * Open the external journal device
+ 
+ 	handle = start_transaction(inode);
+ 	if (IS_ERR(handle)) {
+@@ -3163,8 +3165,10 @@ ext4_reserve_inode_write(handle_t *handle, struct inode *inode,
+  * Expand an inode by new_extra_isize bytes.
+  * Returns 0 on success or negative error number on failure.
   */
+-int ext4_expand_extra_isize(struct inode *inode, unsigned int new_extra_isize,
+-			struct ext4_iloc iloc, handle_t *handle)
++static int ext4_expand_extra_isize(struct inode *inode,
++				   unsigned int new_extra_isize,
++				   struct ext4_iloc iloc,
++				   handle_t *handle)
+ {
+ 	struct ext4_inode *raw_inode;
+ 	struct ext4_xattr_ibody_header *header;
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 4d7f33f..7be27db 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -1644,6 +1644,9 @@ static ext4_fsblk_t descriptor_loc(struct super_block *sb,
+ 
+ 
+ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
++				__releases(kernel_sem)
++				__acquires(kernel_sem)
++
+ {
+ 	struct buffer_head * bh;
+ 	struct ext4_super_block *es = NULL;
 diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index e1103c2..429dbfc 100644
+index 429dbfc..1a27433 100644
 --- a/include/linux/ext4_fs.h
 +++ b/include/linux/ext4_fs.h
-@@ -989,6 +989,12 @@ extern void ext4_abort (struct super_block *, const char *, const char *, ...)
- extern void ext4_warning (struct super_block *, const char *, const char *, ...)
- 	__attribute__ ((format (printf, 3, 4)));
- extern void ext4_update_dynamic_rev (struct super_block *sb);
-+extern int ext4_update_compat_feature(handle_t *handle, struct super_block *sb,
-+					__u32 compat);
-+extern int ext4_update_rocompat_feature(handle_t *handle,
-+					struct super_block *sb,	__u32 rocompat);
-+extern int ext4_update_incompat_feature(handle_t *handle,
-+					struct super_block *sb,	__u32 incompat);
- extern ext4_fsblk_t ext4_block_bitmap(struct super_block *sb,
- 				      struct ext4_group_desc *bg);
- extern ext4_fsblk_t ext4_inode_bitmap(struct super_block *sb,
+@@ -893,6 +893,8 @@ extern ext4_fsblk_t ext4_new_block (handle_t *handle, struct inode *inode,
+ 			ext4_fsblk_t goal, int *errp);
+ extern ext4_fsblk_t ext4_new_blocks (handle_t *handle, struct inode *inode,
+ 			ext4_fsblk_t goal, unsigned long *count, int *errp);
++extern ext4_fsblk_t ext4_new_blocks_old(handle_t *handle, struct inode *inode,
++			ext4_fsblk_t goal, unsigned long *count, int *errp);
+ extern void ext4_free_blocks (handle_t *handle, struct inode *inode,
+ 			ext4_fsblk_t block, unsigned long count);
+ extern void ext4_free_blocks_sb (handle_t *handle, struct super_block *sb,
 -- 
 1.5.4.rc3.31.g1271-dirty
 
