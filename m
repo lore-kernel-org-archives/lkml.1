@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbYAVDNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761278AbYAVDNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760740AbYAVDNE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:13:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759988AbYAVDGq
+	id S1761278AbYAVDNc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759264AbYAVDGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:06:46 -0500
+	Mon, 21 Jan 2008 22:06:48 -0500
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:32924 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758162AbYAVDGo (ORCPT
+	by vger.kernel.org with ESMTP id S1759256AbYAVDGp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:06:44 -0500
+	Mon, 21 Jan 2008 22:06:45 -0500
 From: "Theodore Ts'o" <tytso@MIT.EDU>
 To: linux-kernel@vger.kernel.org
 Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 12/49] ext4: Support large files
-Date: Mon, 21 Jan 2008 22:01:51 -0500
-Message-Id: <1200970948-17903-13-git-send-email-tytso@mit.edu>
+Subject: [PATCH 37/49] ext4: Fix ext4_show_options to show the correct mount options.
+Date: Mon, 21 Jan 2008 22:02:16 -0500
+Message-Id: <1200970948-17903-38-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
-In-Reply-To: <1200970948-17903-12-git-send-email-tytso@mit.edu>
+In-Reply-To: <1200970948-17903-37-git-send-email-tytso@mit.edu>
 References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-2-git-send-email-tytso@mit.edu>
  <1200970948-17903-3-git-send-email-tytso@mit.edu>
@@ -30,6 +30,31 @@ References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-10-git-send-email-tytso@mit.edu>
  <1200970948-17903-11-git-send-email-tytso@mit.edu>
  <1200970948-17903-12-git-send-email-tytso@mit.edu>
+ <1200970948-17903-13-git-send-email-tytso@mit.edu>
+ <1200970948-17903-14-git-send-email-tytso@mit.edu>
+ <1200970948-17903-15-git-send-email-tytso@mit.edu>
+ <1200970948-17903-16-git-send-email-tytso@mit.edu>
+ <1200970948-17903-17-git-send-email-tytso@mit.edu>
+ <1200970948-17903-18-git-send-email-tytso@mit.edu>
+ <1200970948-17903-19-git-send-email-tytso@mit.edu>
+ <1200970948-17903-20-git-send-email-tytso@mit.edu>
+ <1200970948-17903-21-git-send-email-tytso@mit.edu>
+ <1200970948-17903-22-git-send-email-tytso@mit.edu>
+ <1200970948-17903-23-git-send-email-tytso@mit.edu>
+ <1200970948-17903-24-git-send-email-tytso@mit.edu>
+ <1200970948-17903-25-git-send-email-tytso@mit.edu>
+ <1200970948-17903-26-git-send-email-tytso@mit.edu>
+ <1200970948-17903-27-git-send-email-tytso@mit.edu>
+ <1200970948-17903-28-git-send-email-tytso@mit.edu>
+ <1200970948-17903-29-git-send-email-tytso@mit.edu>
+ <1200970948-17903-30-git-send-email-tytso@mit.edu>
+ <1200970948-17903-31-git-send-email-tytso@mit.edu>
+ <1200970948-17903-32-git-send-email-tytso@mit.edu>
+ <1200970948-17903-33-git-send-email-tytso@mit.edu>
+ <1200970948-17903-34-git-send-email-tytso@mit.edu>
+ <1200970948-17903-35-git-send-email-tytso@mit.edu>
+ <1200970948-17903-36-git-send-email-tytso@mit.edu>
+ <1200970948-17903-37-git-send-email-tytso@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,127 +63,102 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-This patch converts ext4_inode i_blocks to represent total
-blocks occupied by the inode in file system block size.
-Earlier the variable used to represent this in 512 byte
-block size. This actually limited the total size of the file.
-
-The feature is enabled transparently when we write an inode
-whose i_blocks cannot be represnted as 512 byte units in a
-48 bit variable.
-
-inode flag  EXT4_HUGE_FILE_FL
+We need to look at the default value and make sure
+the mount options are not set via default value
+before showing them via ext4_show_options
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- fs/ext4/inode.c         |   32 +++++++++++++++++++++++++-------
- fs/ext4/super.c         |    9 ++++++---
- include/linux/ext4_fs.h |    3 ++-
- 3 files changed, 33 insertions(+), 11 deletions(-)
+ fs/ext4/super.c |   26 +++++++++++++++-----------
+ 1 files changed, 15 insertions(+), 11 deletions(-)
 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index bb89fe7..9cf8572 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -2671,14 +2671,20 @@ static blkcnt_t ext4_inode_blocks(struct ext4_inode *raw_inode,
- 					struct ext4_inode_info *ei)
- {
- 	blkcnt_t i_blocks ;
--	struct super_block *sb = ei->vfs_inode.i_sb;
-+	struct inode *inode = &(ei->vfs_inode);
-+	struct super_block *sb = inode->i_sb;
- 
- 	if (EXT4_HAS_RO_COMPAT_FEATURE(sb,
- 				EXT4_FEATURE_RO_COMPAT_HUGE_FILE)) {
- 		/* we are using combined 48 bit field */
- 		i_blocks = ((u64)le16_to_cpu(raw_inode->i_blocks_high)) << 32 |
- 					le32_to_cpu(raw_inode->i_blocks_lo);
--		return i_blocks;
-+		if (ei->i_flags & EXT4_HUGE_FILE_FL) {
-+			/* i_blocks represent file system block size */
-+			return i_blocks  << (inode->i_blkbits - 9);
-+		} else {
-+			return i_blocks;
-+		}
- 	} else {
- 		return le32_to_cpu(raw_inode->i_blocks_lo);
- 	}
-@@ -2829,8 +2835,9 @@ static int ext4_inode_blocks_set(handle_t *handle,
- 		 * i_blocks can be represnted in a 32 bit variable
- 		 * as multiple of 512 bytes
- 		 */
--		raw_inode->i_blocks_lo   = cpu_to_le32((u32)i_blocks);
-+		raw_inode->i_blocks_lo   = cpu_to_le32(i_blocks);
- 		raw_inode->i_blocks_high = 0;
-+		ei->i_flags &= ~EXT4_HUGE_FILE_FL;
- 	} else if (i_blocks <= 0xffffffffffffULL) {
- 		/*
- 		 * i_blocks can be represented in a 48 bit variable
-@@ -2841,12 +2848,23 @@ static int ext4_inode_blocks_set(handle_t *handle,
- 		if (err)
- 			goto  err_out;
- 		/* i_block is stored in the split  48 bit fields */
--		raw_inode->i_blocks_lo   = cpu_to_le32((u32)i_blocks);
-+		raw_inode->i_blocks_lo   = cpu_to_le32(i_blocks);
- 		raw_inode->i_blocks_high = cpu_to_le16(i_blocks >> 32);
-+		ei->i_flags &= ~EXT4_HUGE_FILE_FL;
- 	} else {
--		ext4_error(sb, __FUNCTION__,
--				"Wrong inode i_blocks count  %llu\n",
--				(unsigned long long)inode->i_blocks);
-+		/*
-+		 * i_blocks should be represented in a 48 bit variable
-+		 * as multiple of  file system block size
-+		 */
-+		err = ext4_update_rocompat_feature(handle, sb,
-+					    EXT4_FEATURE_RO_COMPAT_HUGE_FILE);
-+		if (err)
-+			goto  err_out;
-+		ei->i_flags |= EXT4_HUGE_FILE_FL;
-+		/* i_block is stored in file system block size */
-+		i_blocks = i_blocks >> (inode->i_blkbits - 9);
-+		raw_inode->i_blocks_lo   = cpu_to_le32(i_blocks);
-+		raw_inode->i_blocks_high = cpu_to_le16(i_blocks >> 32);
- 	}
- err_out:
- 	return err;
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 2b9dc96..64067de 100644
+index aa22acd..64fc7f1 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1631,11 +1631,14 @@ static loff_t ext4_max_size(int bits)
- 		upper_limit >>= (bits - 9);
+@@ -665,18 +665,20 @@ static inline void ext4_show_quota_options(struct seq_file *seq, struct super_bl
+  */
+ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
+ {
++	int def_errors;
++	unsigned long def_mount_opts;
+ 	struct super_block *sb = vfs->mnt_sb;
+ 	struct ext4_sb_info *sbi = EXT4_SB(sb);
+ 	struct ext4_super_block *es = sbi->s_es;
+-	unsigned long def_mount_opts;
  
- 	} else {
--		/* We use 48 bit ext4_inode i_blocks */
-+		/*
-+		 * We use 48 bit ext4_inode i_blocks
-+		 * With EXT4_HUGE_FILE_FL set the i_blocks
-+		 * represent total number of blocks in
-+		 * file system block size
-+		 */
- 		upper_limit = (1LL << 48) - 1;
+ 	def_mount_opts = le32_to_cpu(es->s_default_mount_opts);
++	def_errors     = le16_to_cpu(es->s_errors);
  
--		/* total blocks in file system block size */
--		upper_limit >>= (bits - 9);
+ 	if (sbi->s_sb_block != 1)
+ 		seq_printf(seq, ",sb=%llu", sbi->s_sb_block);
+ 	if (test_opt(sb, MINIX_DF))
+ 		seq_puts(seq, ",minixdf");
+-	if (test_opt(sb, GRPID))
++	if (test_opt(sb, GRPID) && !(def_mount_opts & EXT4_DEFM_BSDGROUPS))
+ 		seq_puts(seq, ",grpid");
+ 	if (!test_opt(sb, GRPID) && (def_mount_opts & EXT4_DEFM_BSDGROUPS))
+ 		seq_puts(seq, ",nogrpid");
+@@ -689,25 +691,24 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
+ 		seq_printf(seq, ",resgid=%u", sbi->s_resgid);
  	}
+ 	if (test_opt(sb, ERRORS_RO)) {
+-		int def_errors = le16_to_cpu(es->s_errors);
+-
+ 		if (def_errors == EXT4_ERRORS_PANIC ||
+ 		    def_errors == EXT4_ERRORS_CONTINUE) {
+ 			seq_puts(seq, ",errors=remount-ro");
+ 		}
+ 	}
+-	if (test_opt(sb, ERRORS_CONT))
++	if (test_opt(sb, ERRORS_CONT) && def_errors != EXT4_ERRORS_CONTINUE)
+ 		seq_puts(seq, ",errors=continue");
+-	if (test_opt(sb, ERRORS_PANIC))
++	if (test_opt(sb, ERRORS_PANIC) && def_errors != EXT4_ERRORS_PANIC)
+ 		seq_puts(seq, ",errors=panic");
+-	if (test_opt(sb, NO_UID32))
++	if (test_opt(sb, NO_UID32) && !(def_mount_opts & EXT4_DEFM_UID16))
+ 		seq_puts(seq, ",nouid32");
+-	if (test_opt(sb, DEBUG))
++	if (test_opt(sb, DEBUG) && !(def_mount_opts & EXT4_DEFM_DEBUG))
+ 		seq_puts(seq, ",debug");
+ 	if (test_opt(sb, OLDALLOC))
+ 		seq_puts(seq, ",oldalloc");
+ #ifdef CONFIG_EXT4DEV_FS_XATTR
+-	if (test_opt(sb, XATTR_USER))
++	if (test_opt(sb, XATTR_USER) &&
++		!(def_mount_opts & EXT4_DEFM_XATTR_USER))
+ 		seq_puts(seq, ",user_xattr");
+ 	if (!test_opt(sb, XATTR_USER) &&
+ 	    (def_mount_opts & EXT4_DEFM_XATTR_USER)) {
+@@ -715,7 +716,7 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
+ 	}
+ #endif
+ #ifdef CONFIG_EXT4DEV_FS_POSIX_ACL
+-	if (test_opt(sb, POSIX_ACL))
++	if (test_opt(sb, POSIX_ACL) && !(def_mount_opts & EXT4_DEFM_ACL))
+ 		seq_puts(seq, ",acl");
+ 	if (!test_opt(sb, POSIX_ACL) && (def_mount_opts & EXT4_DEFM_ACL))
+ 		seq_puts(seq, ",noacl");
+@@ -735,6 +736,10 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
+ 	if (test_opt(sb, I_VERSION))
+ 		seq_puts(seq, ",i_version");
  
- 	/* indirect blocks */
-diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index be25eca..6ae91f4 100644
---- a/include/linux/ext4_fs.h
-+++ b/include/linux/ext4_fs.h
-@@ -178,8 +178,9 @@ struct ext4_group_desc
- #define EXT4_NOTAIL_FL			0x00008000 /* file tail should not be merged */
- #define EXT4_DIRSYNC_FL			0x00010000 /* dirsync behaviour (directories only) */
- #define EXT4_TOPDIR_FL			0x00020000 /* Top of directory hierarchies*/
--#define EXT4_RESERVED_FL		0x80000000 /* reserved for ext4 lib */
-+#define EXT4_HUGE_FILE_FL               0x00040000 /* Set to each huge file */
- #define EXT4_EXTENTS_FL			0x00080000 /* Inode uses extents */
-+#define EXT4_RESERVED_FL		0x80000000 /* reserved for ext4 lib */
++	/*
++	 * journal mode get enabled in different ways
++	 * So just print the value even if we didn't specify it
++	 */
+ 	if (test_opt(sb, DATA_FLAGS) == EXT4_MOUNT_JOURNAL_DATA)
+ 		seq_puts(seq, ",data=journal");
+ 	else if (test_opt(sb, DATA_FLAGS) == EXT4_MOUNT_ORDERED_DATA)
+@@ -743,7 +748,6 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
+ 		seq_puts(seq, ",data=writeback");
  
- #define EXT4_FL_USER_VISIBLE		0x000BDFFF /* User visible flags */
- #define EXT4_FL_USER_MODIFIABLE		0x000380FF /* User modifiable flags */
+ 	ext4_show_quota_options(seq, sb);
+-
+ 	return 0;
+ }
+ 
 -- 
 1.5.4.rc3.31.g1271-dirty
 
