@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYAVVKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbYAVVMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbYAVVKl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 16:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbYAVVKd
+	id S1756203AbYAVVMT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 16:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYAVVMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 16:10:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50423 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752355AbYAVVKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 16:10:32 -0500
-Date: Tue, 22 Jan 2008 22:10:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
-Cc: Jordan Crouse <jordan.crouse@amd.com>, Lars Heete <hel@admin.de>,
-       Andres Salomon <dilinger@queued.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
-Message-ID: <20080122211014.GA27870@elte.hu>
-References: <20080116165606.3ebc06a4@ephemeral> <478FCDB6.4010708@i4.informatik.rwth-aachen.de> <4795B14C.7040502@i4.informatik.rwth-aachen.de> <200801221111.21240.hel@admin.de> <4795D120.7070806@i4.informatik.rwth-aachen.de> <20080122192757.GC5241@cosmic.amd.com> <47965806.6080903@i4.informatik.rwth-aachen.de>
+	Tue, 22 Jan 2008 16:12:10 -0500
+Received: from ik-out-1112.google.com ([66.249.90.180]:37382 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751512AbYAVVMI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 16:12:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ZnRN0KRttqNgYBAnisPIBVKmF1rUkYQtxQZguURoo4GR58dZn8kQr0JT3W3uewHZFTmvGquHmtit2fhMs2Jm7TkV8QFUJ3fX228ZNeCBxN4LWH+CWsNfSUwOuxTgp3xY7JFB39Mab8lbIHPEK/u+W+KF21K+27EQatyAHpQtM7s=
+Message-ID: <2c0942db0801221312v66887218qe0b9c853384ccd0b@mail.gmail.com>
+Date: Tue, 22 Jan 2008 13:12:04 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Manuel Reimer" <Manuel.Spam@nurfuerspam.de>,
+       "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: Massive IDE problems. Who leaves data here?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <fn5l9c$l6m$1@ger.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47965806.6080903@i4.informatik.rwth-aachen.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <fn5ivo$ck2$1@ger.gmane.org> <47965138.8060603@garzik.org>
+	 <fn5jsn$ful$1@ger.gmane.org>
+	 <2c0942db0801221246u678d2a20xef9cf93ee28eaf51@mail.gmail.com>
+	 <fn5l9c$l6m$1@ger.gmane.org>
+X-Google-Sender-Auth: c2ba7460a1b1158f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 22, 2008 1:04 PM, Manuel Reimer <Manuel.Spam@nurfuerspam.de> wrote:
+> Ray Lee wrote:
+> > (Please always do a reply-to-all for this email list.)
+>
+> Currently I don't have a SMTP server configured. As soon as my system is
+> trustworthy, again, I'll do that.
 
-* Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de> wrote:
+Oy. Just know that without CC:ing people, I'm having to add Jeff back
+in by hand, and we may not notice your messages. Please, with whatever
+you're using to send email, CC: people that you want to read your
+messages, okay? LKML gets a lot of messages, and it's easy to miss
+some.
 
-> > The attached patch rearranges the code so that the handler is 
-> > installed before we setup the interrupt (so we have somebody to 
-> > listen to the immediate interrupt), and it makes sure that we clear 
-> > the event in the IRQ handler regardless of the state of the timer 
-> > tick.
-> 
-> This patch indeed solves the problem. The board boots fine. Great 
-> work!
+> > Bad or almost bad power supplies can cause lots of unhappy problems
+> > such as these. If you have another power supply laying around, it can
+> > be worth swapping them out. Double-checking that your CPU fan is still
+> > spinning, and that memtest86+ doesn't show any errors doesn't hurt
+> > either.
+>
+> ... that may be possible...
+>
+> I have all PCI slots filled with cards, two big IDE hard drives and one
+> DVD RAM writer. I already disconnected the DVD drive, as this was nearly
+> unusable with all those IDE errors. The power supply is (AFAIR) a 200
+> watt one.
+>
+> But may the power supply cause corrupted data? Shouldn't that crash down
+> the PC completely?
 
-since this driver is new in 2.6.24, perhaps we should apply this fix to 
-v2.6.24?
+No, not in the least. When power supplies are on the edge and
+overloaded, the quality of power drops. 12V lines may only supply 11
+or less, etc. Some components in your computer will deal with it fine,
+others won't.
 
-	Ingo
+In general, if you have weird hardware problems and you're ruled out
+memory and overheating, the power supply is almost always the next
+thing to check.
