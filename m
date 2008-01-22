@@ -1,36 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbYAVQht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbYAVQiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482AbYAVQht (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 11:37:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYAVQhk
+	id S1753047AbYAVQiQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 11:38:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYAVQh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 11:37:40 -0500
-Received: from h155.mvista.com ([63.81.120.155]:59762 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752064AbYAVQhk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 11:37:40 -0500
-Message-ID: <47961C06.3020108@ru.mvista.com>
-Date: Tue, 22 Jan 2008 19:38:30 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 14/16] ide: move drive->crc_count check out from check_dma_crc()
-References: <20080121233036.30311.76015.sendpatchset@localhost.localdomain> <20080121233212.30311.71098.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080121233212.30311.71098.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jan 2008 11:37:58 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:60867 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752333AbYAVQh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 11:37:57 -0500
+Date: Tue, 22 Jan 2008 22:21:21 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH] sched: don't take a mutex from interrupt context
+Message-ID: <20080122165121.GE31049@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20080122023626.GA12213@darkstar.te-china.tietoenator.com> <1201019138.6341.24.camel@lappy>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201019138.6341.24.camel@lappy>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Tue, Jan 22, 2008 at 05:25:38PM +0100, Peter Zijlstra wrote:
+> @@ -1428,9 +1428,9 @@ static void print_cfs_stats(struct seq_f
+>  #ifdef CONFIG_FAIR_GROUP_SCHED
+>  	print_cfs_rq(m, cpu, &cpu_rq(cpu)->cfs);
+>  #endif
+> -	lock_task_group_list();
+> +	rcu_read_lock();
+>  	for_each_leaf_cfs_rq(cpu_rq(cpu), cfs_rq)
+>  		print_cfs_rq(m, cpu, cfs_rq);
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Isn't there a possibility that print_cfs_rq() can block?
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> -	unlock_task_group_list();
+> +	rcu_read_unlock();
+>  }
+>  #endif
+> 
 
-MBR, Sergei
+-- 
+Regards,
+vatsa
