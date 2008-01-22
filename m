@@ -1,124 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbYAVXOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbYAVXOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758885AbYAVXOV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 18:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbYAVXOG
+	id S1759350AbYAVXOg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 18:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758846AbYAVXOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 18:14:06 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34458 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753437AbYAVXOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 18:14:04 -0500
-Subject: Re: 2.6.24-rc8-mm1: sparc64 warning at fs/file_table.c:49
-	__fput+0x1a8/0x1e0()
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, sparclinux@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20080122130228.e7596163.akpm@linux-foundation.org>
-References: <20080117023514.9df393cf.akpm@linux-foundation.org>
-	 <200801222130.24136.m.kozlowski@tuxland.pl>
-	 <20080122130228.e7596163.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 22 Jan 2008 15:13:58 -0800
-Message-Id: <1201043638.7585.47.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jan 2008 18:14:19 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:40911 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758843AbYAVXOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 18:14:18 -0500
+Date: Tue, 22 Jan 2008 15:14:16 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Olaf Hering <olaf@aepfle.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       hanth Aravamudan <nacc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+       akpm@linux-foundation.org
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <20080122231058.GB866@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0801221513100.2565@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
+ <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+ <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
+ <Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
+ <20080122212654.GB15567@csn.ul.ie> <Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
+ <20080122225046.GA866@csn.ul.ie> <Pine.LNX.4.64.0801221453480.2271@schroedinger.engr.sgi.com>
+ <20080122231058.GB866@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-01-22 at 13:02 -0800, Andrew Morton wrote:
-> > On Tue, 22 Jan 2008 21:30:23 +0100 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
-> > Hello,
-> > 
-> > Issuing "sysrq-s sysrq-u" sequence causes these warnings on sparc64:
-> > 
-> > ------------[ cut here ]------------
-> > WARNING: at fs/file_table.c:49 __fput+0x1a8/0x1e0()
-> > Modules linked in: sg sr_mod cdrom
-> > Call Trace:
-> >  [00000000004c9ac8] __fput+0x1b0/0x1e0
-> >  [00000000004c6978] filp_close+0x60/0x80
-> >  [00000000004c6a18] sys_close+0x80/0xe0
-> >  [00000000004062d4] linux_sparc_syscall32+0x3c/0x40
-> >  [0000000000012f1c] 0x12f24
-> > ---[ end trace 6dbe14ff8ec57744 ]---
-> > ------------[ cut here ]------------
-...
-> That's
-> 
->         WARN_ON(f->f_mnt_write_state == FILE_MNT_WRITE_TAKEN);
+On Tue, 22 Jan 2008, Mel Gorman wrote:
 
+> Rather it should be 2. I'll admit the physical setup of this machine is
+> .... less than ideal but clearly it's something that can happen even if
+> it's a bad idea.
 
-The emergency remount code forcibly removes FMODE_WRITE from
-filps.  The r/o bind mount code notices that this was done
-without a proper mnt_drop_write() and properly gives a
-warning.
-
-This patch does a mnt_drop_write() and also notes in the
-filp that this was done to suppress any warning that would
-have otherwise been triggered.
-
-I also wonder if inode->i_writecount is made inconsistent
-by the emergency remount code.  I guess it is, but the
-damage is limited to a single inode instead of being
-visible more globally like the mnt write count.  Probably
-not really worth fixing.
-
-BTW, this wasn't just a sparc thing.  I triggered it in about
-3 seconds on a plain old x86 machine.
-
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
----
-
- linux-2.6.git-dave/fs/super.c |   21 +++++++++++++++++++--
- 1 file changed, 19 insertions(+), 2 deletions(-)
-
-diff -puN fs/super.c~robind-sysrq-fix fs/super.c
---- linux-2.6.git/fs/super.c~robind-sysrq-fix	2008-01-22 14:33:38.000000000 -0800
-+++ linux-2.6.git-dave/fs/super.c	2008-01-22 14:51:13.000000000 -0800
-@@ -37,6 +37,7 @@
- #include <linux/idr.h>
- #include <linux/kobject.h>
- #include <linux/mutex.h>
-+#include <linux/file.h>
- #include <asm/uaccess.h>
- 
- 
-@@ -566,10 +567,26 @@ static void mark_files_ro(struct super_b
- {
- 	struct file *f;
- 
-+retry:
- 	file_list_lock();
- 	list_for_each_entry(f, &sb->s_files, f_u.fu_list) {
--		if (S_ISREG(f->f_path.dentry->d_inode->i_mode) && file_count(f))
--			f->f_mode &= ~FMODE_WRITE;
-+		struct vfsmount mnt;
-+		if (!S_ISREG(f->f_path.dentry->d_inode->i_mode))
-+		       continue;
-+		if (!file_count(f))
-+			continue;
-+		if (!(f->f_mode & FMODE_WRITE))
-+			continue;
-+		f->f_mode &= ~FMODE_WRITE;
-+		f->f_mnt_write_state |= FILE_MNT_WRITE_RELEASED;
-+		mnt = f->f_path.mnt;
-+		file_list_unlock();
-+		/*
-+		 * This can sleep, so we can't hold
-+		 * the file_list_lock() spinlock.
-+		 */
-+		mnt_drop_write(mnt);
-+		goto retry;
- 	}
- 	file_list_unlock();
- }
-_
-
-
--- Dave
+Ok. Lets hope that Pekka's find does the trick. But this would mean that 
+fallback gets memory from node 2 for the page allocator. Then fallback 
+alloc is going to try to insert it into the l3 of node 2 which is not 
+there yet. So another ooops. Sigh.
 
