@@ -1,72 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbYAVGxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbYAVG4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756140AbYAVGxT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 01:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbYAVGxI
+	id S1757488AbYAVG4W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 01:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbYAVG4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 01:53:08 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:39779 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751241AbYAVGxH (ORCPT
+	Tue, 22 Jan 2008 01:56:14 -0500
+Received: from smtp109.sbc.mail.mud.yahoo.com ([68.142.198.208]:42699 "HELO
+	smtp109.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752826AbYAVG4O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 01:53:07 -0500
-X-Greylist: delayed 2030 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jan 2008 01:53:07 EST
-Subject: Re: [PATCH] bluetooth : move children of connection device to NULL
-	before connection down
-From: Marcel Holtmann <marcel@holtmann.org>
-To: David Miller <davem@davemloft.net>
-Cc: hidave.darkstar@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net,
-       cornelia.huck@de.ibm.com, gombasg@sztaki.hu, htejun@gmail.com,
-       viro@zeniv.linux.org.uk, kay.sievers@vrfy.org, greg@kroah.com
-In-Reply-To: <20080121.031417.171098597.davem@davemloft.net>
-References: <20080121044913.GA4162@darkstar.te-china.tietoenator.com>
-	 <20080121045401.GB4162@darkstar.te-china.tietoenator.com>
-	 <20080121.031417.171098597.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 22 Jan 2008 07:18:16 +0100
-Message-Id: <1200982696.7978.148.camel@aeonflux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jan 2008 01:56:14 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=DU77QpoXrloB1amJFPtD43wmAYiZPxiyXXMLA+vRi58s0kEY6B+f+fBZE1iCkBJCKeeW/0FljV2C0WClFDU5S9Y5rLmtyCgBe1UMji0aOKlFTTSicR4ML947SrzZK35MVDhkMpKTRHlpJ/MpTyaTbr83c5xgohTKrcbYxrM5HhY=  ;
+X-YMail-OSG: .ZAjVy0VM1nIBZBCC43W0GMys3LYKkZFXrKSVph4OEQ9Riu7W_huiH6u5xU1ra0SeL_Rf.wQjQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Dave Young <hidave.darkstar@gmail.com>
+Subject: Re: [PATCH 6/6] spi : use class iteration api
+Date: Mon, 21 Jan 2008 22:56:11 -0800
+User-Agent: KMail/1.9.6
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       spi-devel-general@lists.sourceforge.net
+References: <20080112095711.GF2893@darkstar.te-china.tietoenator.com> <20080122060331.GG3066@darkstar.te-china.tietoenator.com>
+In-Reply-To: <20080122060331.GG3066@darkstar.te-china.tietoenator.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200801212256.11484.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+On Monday 21 January 2008, Dave Young wrote:
+> +static int __spi_master_match(struct device *dev, void *data)
+> +{
+> +       struct spi_master *m;
+> +       u16 *bus_num = (u16 *)data;
 
-> > Add people missed in cc-list.
-> 
-> Thanks Dave for your continued efforts on Bluetooth bugs like this.
-> 
-> Marcel, are you going to review/ACK/integrate/push-upstream/whatever
-> any of these Bluetooth patches?
-> 
-> It hasn't been getting much love from you as of late, you are one of
-> the listed maintainers, and I don't want to lose any of Dave's
-> valuable bug fixing work.
-
-I will be fully back in business next week. Just got stuck in a project
-that needed 200% of my time to get it going.
-
-> Or should I just handle it all directly?
-
-I followed the list only a little bit, but from what I have seen is that
-Dave is doing a great job in tracking all issues down to the real cause.
-
-I had a look at his last patch and after review, I agree that this is a
-possible solution. I only have two nitpicks about the coding style. So
-in del_conn the struct device declaration should be made after the
-struct hci_conn assignment from the container and I would put an extra
-empty line before the devel_del, put_device block. Nitpicks only.
-
-Right now I can't think of any side effects by this patch. Actually I
-only see an improvement with this patch. So please take it directly and
-starting with next week, I gonna make sure that they are handled again
-properly by me.
-
-Regards
-
-Marcel
-
+That's "void *data" so "u16 *bus_num = data" is preferred.
 
