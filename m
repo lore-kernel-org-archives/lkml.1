@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbYAVDIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbYAVDI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760960AbYAVDIl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:08:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758008AbYAVDF2
+	id S1758223AbYAVDI6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:08:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbYAVDF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:05:28 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:65333 "EHLO
+	Mon, 21 Jan 2008 22:05:29 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:65372 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757514AbYAVDFY (ORCPT
+	by vger.kernel.org with ESMTP id S1758938AbYAVDF1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:05:24 -0500
+	Mon, 21 Jan 2008 22:05:27 -0500
 From: "Theodore Ts'o" <tytso@MIT.EDU>
 To: linux-kernel@vger.kernel.org
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Mingming Cao <cmm@us.ibm.com>, "Theodore Ts'o" <tytso@MIT.EDU>
-Subject: [PATCH 42/49] ext4: Enable the multiblock allocator by default
-Date: Mon, 21 Jan 2008 22:02:21 -0500
-Message-Id: <1200970948-17903-43-git-send-email-tytso@mit.edu>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 27/49] ext4: Check for the correct error return from
+Date: Mon, 21 Jan 2008 22:02:06 -0500
+Message-Id: <1200970948-17903-28-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
-In-Reply-To: <1200970948-17903-42-git-send-email-tytso@mit.edu>
+In-Reply-To: <1200970948-17903-27-git-send-email-tytso@mit.edu>
 References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-2-git-send-email-tytso@mit.edu>
  <1200970948-17903-3-git-send-email-tytso@mit.edu>
@@ -46,21 +45,6 @@ References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-25-git-send-email-tytso@mit.edu>
  <1200970948-17903-26-git-send-email-tytso@mit.edu>
  <1200970948-17903-27-git-send-email-tytso@mit.edu>
- <1200970948-17903-28-git-send-email-tytso@mit.edu>
- <1200970948-17903-29-git-send-email-tytso@mit.edu>
- <1200970948-17903-30-git-send-email-tytso@mit.edu>
- <1200970948-17903-31-git-send-email-tytso@mit.edu>
- <1200970948-17903-32-git-send-email-tytso@mit.edu>
- <1200970948-17903-33-git-send-email-tytso@mit.edu>
- <1200970948-17903-34-git-send-email-tytso@mit.edu>
- <1200970948-17903-35-git-send-email-tytso@mit.edu>
- <1200970948-17903-36-git-send-email-tytso@mit.edu>
- <1200970948-17903-37-git-send-email-tytso@mit.edu>
- <1200970948-17903-38-git-send-email-tytso@mit.edu>
- <1200970948-17903-39-git-send-email-tytso@mit.edu>
- <1200970948-17903-40-git-send-email-tytso@mit.edu>
- <1200970948-17903-41-git-send-email-tytso@mit.edu>
- <1200970948-17903-42-git-send-email-tytso@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
@@ -69,44 +53,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Enable the multiblock allocator by default.
-
-Fix ext4_show_options() so if it is not enabled, the nomballoc option
-included in /proc/mounts.
+ext4_ext_get_blocks returns negative values on error. We should
+check for  <= 0
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Acked-by: Eric Sandeen <sandeen@redhat.com>
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/super.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ fs/ext4/extents.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 136d095..91a11ec 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -736,6 +736,8 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 		seq_puts(seq, ",nobh");
- 	if (!test_opt(sb, EXTENTS))
- 		seq_puts(seq, ",noextents");
-+	if (!test_opt(sb, MBALLOC))
-+		seq_puts(seq, ",nomballoc");
- 	if (test_opt(sb, I_VERSION))
- 		seq_puts(seq, ",i_version");
- 
-@@ -1902,6 +1904,11 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
- 	 * User -o noextents to turn it off
- 	 */
- 	set_opt(sbi->s_mount_opt, EXTENTS);
-+	/*
-+	 * turn on mballoc feature by default in ext4 filesystem
-+	 * User -o nomballoc to turn it off
-+	 */
-+	set_opt(sbi->s_mount_opt, MBALLOC);
- 
- 	if (!parse_options ((char *) data, sb, &journal_inum, &journal_devnum,
- 			    NULL, 0))
+diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+index 754c0d3..8593e59 100644
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -2462,12 +2462,12 @@ retry:
+ 		ret = ext4_ext_get_blocks(handle, inode, block,
+ 					  max_blocks, &map_bh,
+ 					  EXT4_CREATE_UNINITIALIZED_EXT, 0);
+-		WARN_ON(!ret);
+-		if (!ret) {
++		WARN_ON(ret <= 0);
++		if (ret <= 0) {
+ 			ext4_error(inode->i_sb, "ext4_fallocate",
+-				   "ext4_ext_get_blocks returned 0! inode#%lu"
+-				   ", block=%u, max_blocks=%lu",
+-				   inode->i_ino, block, max_blocks);
++				    "ext4_ext_get_blocks returned error: "
++				    "inode#%lu, block=%u, max_blocks=%lu",
++				    inode->i_ino, block, max_blocks);
+ 			ret = -EIO;
+ 			ext4_mark_inode_dirty(handle, inode);
+ 			ret2 = ext4_journal_stop(handle);
 -- 
 1.5.4.rc3.31.g1271-dirty
 
