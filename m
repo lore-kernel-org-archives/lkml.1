@@ -1,71 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbYAVURU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbYAVUU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754210AbYAVURU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 15:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYAVURN
+	id S1753644AbYAVUU2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 15:20:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYAVUUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 15:17:13 -0500
-Received: from main.gmane.org ([80.91.229.2]:35393 "EHLO ciao.gmane.org"
+	Tue, 22 Jan 2008 15:20:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43667 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751522AbYAVURM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 15:17:12 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
-Subject: Massive IDE problems. Who leaves data here?
-Date: Tue, 22 Jan 2008 21:24:54 +0100
-Message-ID: <fn5ivo$ck2$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751820AbYAVUUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 15:20:18 -0500
+Message-ID: <47964FD5.6020801@redhat.com>
+Date: Tue, 22 Jan 2008 15:19:33 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stable Team <stable@kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Gerd Hoffmann <kraxel@redhat.com>
+Subject: Re: The SMP alternatives code breaks exception fixup?
+References: <479504F6.4080005@redhat.com> <p73zluymnx0.fsf@crumb.suse.de> <alpine.LFD.1.00.0801221312200.3199@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0801221312200.3199@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: p4fd4bcfe.dip0.t-ipconnect.de
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.11) Gecko/20071129 SeaMonkey/1.1.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 01/22/2008 07:35 AM, Thomas Gleixner wrote:
+> 
+> That's a long standing bug in both the PI futex and the standard futex
+> code. Needs to go to stable as well.
+> 
 
-anything started with a try to burn Slackware 12.0 from the original DVD 
-to an new medium with different boot settings. I always got corrupted 
-results and didn't know why.
+Here's the 2.6.23 version:
 
-So I started with an "md5sum -c CHECKSUMS.md5" directly on the original 
-media. This resulted in "anything OK".
 
-Now I copied the whole DVD to my hard drive and created an ISO from it. 
-I mounted the ISO locally and my md5sum now results in 5 corrupted files.
+Subject: x86: fix missing exception entry for SMP alternatives in futex macros
+From: Thomas Gleixner <tglx@linutronix.de>
 
---> A Bug in mkisofs?
+The exception fixup for the futex macros __futex_atomic_op2 and
+futex_atomic_cmpxchg_inatomic() is missing an entry when the lock
+prefix is replaced by a NOP via SMP alternatives.
 
-No, unfortunately not, as a md5sum on the copy, I have created from the 
-original DVD by using "cp -vr" is corrupted, too!
+Chuck Ebert tracked this down from the information provided in:
+https://bugzilla.redhat.com/show_bug.cgi?id=429412
 
-So md5sum on the original DVD is OK, but after copying to my hard drive, 
-several files are corrupted.
+The solution is to add another fixup after the LOCK_PREFIX, so both
+the LOCK and NOP case have their own entry in the exception table.
 
-I'm using kernel 2.6.21.5. Distribution is Slackware 12.0
-All my "partitions" are LVs in LVM2
+The solution was pointed out by Andi Kleen.
 
-I also updated the kernel to 2.6.23.12 to test with this one, but I 
-still get corrupted files.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Is this a LVM bug? Do I already have a corrupted LVM filesystem? How to 
-check/fix it? Is this a known kernel bug? Which may be the reason for 
-corrupted files?
+---
+ include/asm-i386/futex.h |    8 ++++----
+ include/asm-x86_64/futex.h |    8 ++++----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-I've created a backup of my important data to a second disc to a "real 
-ext2 partition" (without LVM), but this is connected to the same IDE 
-controller and I don't even know if I may still trust my mainboard...
-
-I also get those kernel messages via dmesg:
-
-http://pastebin.org/16537
-
-Thank you very much in advance for any help!
-
-Yours
-
-Manuel
-
+Index: linux-2.6/include/asm-i386/futex.h
+===================================================================
+--- linux-2.6.orig/include/asm-i386/futex.h	2008-01-22 13:13:10.000000000 +0100
++++ linux-2.6/include/asm-i386/futex.h	2008-01-22 13:13:49.000000000 +0100
+@@ -28,7 +28,7 @@
+ "1:	movl	%2, %0\n\
+ 	movl	%0, %3\n"					\
+ 	insn "\n"						\
+-"2:	" LOCK_PREFIX "cmpxchgl %3, %2\n\
++"2:	" LOCK_PREFIX "\n 5: cmpxchgl %3, %2\n\
+ 	jnz	1b\n\
+ 3:	.section .fixup,\"ax\"\n\
+ 4:	mov	%5, %1\n\
+@@ -36,7 +36,7 @@
+ 	.previous\n\
+ 	.section __ex_table,\"a\"\n\
+ 	.align	8\n\
+-	.long	1b,4b,2b,4b\n\
++	.long	1b,4b,2b,4b,5b,4b\n\
+ 	.previous"						\
+ 	: "=&a" (oldval), "=&r" (ret), "+m" (*uaddr),		\
+ 	  "=&r" (tem)						\
+@@ -111,7 +111,7 @@ futex_atomic_cmpxchg_inatomic(int __user
+ 		return -EFAULT;
+ 
+ 	__asm__ __volatile__(
+-		"1:	" LOCK_PREFIX "cmpxchgl %3, %1		\n"
++		"1:	" LOCK_PREFIX "\n 4: cmpxchgl %3, %1	\n"
+ 
+ 		"2:	.section .fixup, \"ax\"			\n"
+ 		"3:	mov     %2, %0				\n"
+@@ -120,7 +120,7 @@ futex_atomic_cmpxchg_inatomic(int __user
+ 
+ 		"	.section __ex_table, \"a\"		\n"
+ 		"	.align  8				\n"
+-		"	.long   1b,3b				\n"
++		"	.long   1b,3b,4b,3b			\n"
+ 		"	.previous				\n"
+ 
+ 		: "=a" (oldval), "+m" (*uaddr)
+Index: linux-2.6/include/asm-x86_64/futex.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86_64/futex.h	2008-01-22 13:13:10.000000000 +0100
++++ linux-2.6/include/asm-x86_64/futex.h	2008-01-22 13:13:49.000000000 +0100
+@@ -27,7 +27,7 @@
+ "1:	movl	%2, %0\n\
+ 	movl	%0, %3\n"					\
+ 	insn "\n"						\
+-"2:	" LOCK_PREFIX "cmpxchgl %3, %2\n\
++"2:	" LOCK_PREFIX "\n 5: cmpxchgl %3, %2\n\
+ 	jnz	1b\n\
+ 3:	.section .fixup,\"ax\"\n\
+ 4:	mov	%5, %1\n\
+@@ -35,7 +35,7 @@
+ 	.previous\n\
+ 	.section __ex_table,\"a\"\n\
+ 	.align	8\n\
+-	.quad	1b,4b,2b,4b\n\
++	.quad	1b,4b,2b,4b,5b,4b\n\
+ 	.previous"						\
+ 	: "=&a" (oldval), "=&r" (ret), "=m" (*uaddr),		\
+ 	  "=&r" (tem)						\
+@@ -101,7 +101,7 @@ futex_atomic_cmpxchg_inatomic(int __user
+ 		return -EFAULT;
+ 
+ 	__asm__ __volatile__(
+-		"1:	" LOCK_PREFIX "cmpxchgl %3, %1		\n"
++		"1:	" LOCK_PREFIX "\n 4: cmpxchgl %3, %1	\n"
+ 
+ 		"2:	.section .fixup, \"ax\"			\n"
+ 		"3:	mov     %2, %0				\n"
+@@ -110,7 +110,7 @@ futex_atomic_cmpxchg_inatomic(int __user
+ 
+ 		"	.section __ex_table, \"a\"		\n"
+ 		"	.align  8				\n"
+-		"	.quad   1b,3b				\n"
++		"	.quad   1b,3b,4b,3b			\n"
+ 		"	.previous				\n"
+ 
+ 		: "=a" (oldval), "=m" (*uaddr)
