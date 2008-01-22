@@ -1,94 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758535AbYAVMzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754999AbYAVNDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758535AbYAVMzk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 07:55:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbYAVMzc
+	id S1754999AbYAVNDD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 08:03:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYAVNCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 07:55:32 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:40779 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752390AbYAVMzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 07:55:32 -0500
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Rescheduling interrupts
-Date: Tue, 22 Jan 2008 14:55:14 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20080118.763038)
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-References: <200801220119.42312.caglar@pardus.org.tr> <20080122105741.GG21149@elte.hu>
-In-Reply-To: <20080122105741.GG21149@elte.hu>
+	Tue, 22 Jan 2008 08:02:53 -0500
+Received: from emerald.lightlink.com ([205.232.34.14]:6713 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751110AbYAVNCw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 08:02:52 -0500
+X-Greylist: delayed 788 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jan 2008 08:02:52 EST
+Date: Tue, 22 Jan 2008 07:44:52 -0500
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Jean Delvare <khali@linux-fr.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: [GIT PATCH] hwmon update against v2.6.24-rc8+
+Message-ID: <20080122124452.GI2896@jupiter.solarsys.private>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801221455.16814.caglar@pardus.org.tr>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
+Hi Linus:
 
-22 Oca 2008 Sal tarihinde, Ingo Molnar şunları yazmıştı: 
-> * S.Çağlar Onur <caglar@pardus.org.tr> wrote:
-> 
-> > Top causes for wakeups:
-> >   59,9% (238,4)      <kernel IPI> : Rescheduling interrupts
-> > ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> >   14,7% ( 58,6)         amarokapp : schedule_timeout (process_timeout)
-> 
-> hm, would be nice to figure out what causes these IPIs. Could you stick 
-> something like this into arch/x86/kernel/smp_32.c's 
-> smp_send_reschedule() function [this is the function that generates the 
-> IPI]:
-> 
-> static void native_smp_send_reschedule(int cpu)
-> {
->         WARN_ON(cpu_is_offline(cpu));
->         send_IPI_mask(cpumask_of_cpu(cpu), RESCHEDULE_VECTOR);
-> 	if (panic_timeout > 0) {
-> 		panic_timeout--;
-> 		printk("IPI from task %s:%d on CPU#%d:\n", 
-> 			current->comm, current->pid, cpu);
-> 		dump_stack();
-> 	}
-> }
-> 
-> NOTE: if you run an SMP kernel then first remove these two lines from 
-> kernel/printk.c:
-> 
->         if (!oops_in_progress && waitqueue_active(&log_wait))
->                 wake_up_interruptible(&log_wait);
-> 
-> otherwise you'll get lockups. (the IPI is sent while holding the 
-> runqueue lock, so the printks will lock up)
-> 
-> then wait for the bad condition to occur on your system and generate a 
-> stream of ~10 backtraces, via:
-> 
-> 	echo 10 > /proc/sys/kernel/panic
-> 
-> you should be getting 10 immediate backtraces - please send them to us. 
-> The backtraces should show the place that generates the wakeups. [turn 
-> on CONFIG_FRAME_POINTERS=y to get high quality backtraces.]
->  
-> If you do _not_ get 10 immediate backtraces, then something in the 
-> system is generating such IPIs outside of the scheduler's control. That 
-> would suggest some other sort of borkage.
-> 
-> 	Ingo
+Please pull from:
+	git://lm-sensors.org/kernel/mhoffman/hwmon-2.6.git release
 
-I grabbed the logs two times to make sure to catch needed info. 1st [1] one is generated while "Rescheduling interrupts" wakeups ~200 times and 2nd one generated for ~350 wakeups.
+You'll get one patch (attached) which fixes a regression for it87.
+See below for details.
 
-[1] http://cekirdek.pardus.org.tr/~caglar/dmesg.1st 
-[2] http://cekirdek.pardus.org.tr/~caglar/dmesg.2nd
+Thanks & regards,
 
-Cheers
+
+commit 87b4b6634ac112ddfe7b92aae50eb4bf7b128d1a
+Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Date:   Tue Jan 22 07:21:03 2008 -0500
+
+    hwmon: (it87) request only Environment Controller ports
+    
+    The IT8705F and related parts are Super I/O controllers that contain
+    many separate devices.
+    
+    Some BIOSes describe IT8705F I/O port usage under a motherboard device
+    (PNP0C02) with overlapping regions, e.g., 0x290-0x29f and 0x290-0x294.
+    
+    The it87 driver supports only the Environment Controller, which requires
+    only two ISA ports, but it used to request an eight-port range.  If that
+    range exceeds a range reported by the BIOS, as 0x290-0x297 would, the
+    request fails, and the it87 driver cannot claim the device.
+    
+    This patch makes the it87 driver request only the two ports used for the
+    Environment Controller device.
+    
+    Systems where this problem has been reported:
+        Gigabyte GA-K8N Ultra 9
+        Gigabyte M56S-S3
+        Gigabyte GA-965G-DS3
+    
+    Kernel bug reports:
+        http://bugzilla.kernel.org/show_bug.cgi?id=9514
+        http://lkml.org/lkml/2007/12/4/466
+    
+    Related change:
+        http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a7839e960675b549f06209d18283d5cee2ce9261
+    
+        The patch above increases the number of PNP port resources we support.
+        Prior to this patch, we ignored some port resources, which masked the
+        it87 problem.
+    
+    Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+    Signed-off-by: Mark M. Hoffman <mhoffman@lightlink.com>
+
+diff --git a/drivers/hwmon/it87.c b/drivers/hwmon/it87.c
+index 6a182e1..ad6c8a3 100644
+--- a/drivers/hwmon/it87.c
++++ b/drivers/hwmon/it87.c
+@@ -2,6 +2,14 @@
+     it87.c - Part of lm_sensors, Linux kernel modules for hardware
+              monitoring.
+ 
++    The IT8705F is an LPC-based Super I/O part that contains UARTs, a
++    parallel port, an IR port, a MIDI port, a floppy controller, etc., in
++    addition to an Environment Controller (Enhanced Hardware Monitor and
++    Fan Controller)
++
++    This driver supports only the Environment Controller in the IT8705F and
++    similar parts.  The other devices are supported by different drivers.
++
+     Supports: IT8705F  Super I/O chip w/LPC interface
+               IT8712F  Super I/O chip w/LPC interface
+               IT8716F  Super I/O chip w/LPC interface
+@@ -118,9 +126,15 @@ static int fix_pwm_polarity;
+ /* Length of ISA address segment */
+ #define IT87_EXTENT 8
+ 
+-/* Where are the ISA address/data registers relative to the base address */
+-#define IT87_ADDR_REG_OFFSET 5
+-#define IT87_DATA_REG_OFFSET 6
++/* Length of ISA address segment for Environmental Controller */
++#define IT87_EC_EXTENT 2
++
++/* Offset of EC registers from ISA base address */
++#define IT87_EC_OFFSET 5
++
++/* Where are the ISA address/data registers relative to the EC base address */
++#define IT87_ADDR_REG_OFFSET 0
++#define IT87_DATA_REG_OFFSET 1
+ 
+ /*----- The IT87 registers -----*/
+ 
+@@ -968,10 +982,10 @@ static int __devinit it87_probe(struct platform_device *pdev)
+ 	};
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+-	if (!request_region(res->start, IT87_EXTENT, DRVNAME)) {
++	if (!request_region(res->start, IT87_EC_EXTENT, DRVNAME)) {
+ 		dev_err(dev, "Failed to request region 0x%lx-0x%lx\n",
+ 			(unsigned long)res->start,
+-			(unsigned long)(res->start + IT87_EXTENT - 1));
++			(unsigned long)(res->start + IT87_EC_EXTENT - 1));
+ 		err = -EBUSY;
+ 		goto ERROR0;
+ 	}
+@@ -1124,7 +1138,7 @@ ERROR2:
+ 	platform_set_drvdata(pdev, NULL);
+ 	kfree(data);
+ ERROR1:
+-	release_region(res->start, IT87_EXTENT);
++	release_region(res->start, IT87_EC_EXTENT);
+ ERROR0:
+ 	return err;
+ }
+@@ -1137,7 +1151,7 @@ static int __devexit it87_remove(struct platform_device *pdev)
+ 	sysfs_remove_group(&pdev->dev.kobj, &it87_group);
+ 	sysfs_remove_group(&pdev->dev.kobj, &it87_group_opt);
+ 
+-	release_region(data->addr, IT87_EXTENT);
++	release_region(data->addr, IT87_EC_EXTENT);
+ 	platform_set_drvdata(pdev, NULL);
+ 	kfree(data);
+ 
+@@ -1402,8 +1416,8 @@ static int __init it87_device_add(unsigned short address,
+ 				  const struct it87_sio_data *sio_data)
+ {
+ 	struct resource res = {
+-		.start	= address ,
+-		.end	= address + IT87_EXTENT - 1,
++		.start	= address + IT87_EC_OFFSET,
++		.end	= address + IT87_EC_OFFSET + IT87_EC_EXTENT - 1,
+ 		.name	= DRVNAME,
+ 		.flags	= IORESOURCE_IO,
+ 	};
+
 -- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+Mark M. Hoffman
+mhoffman@lightlink.com
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
