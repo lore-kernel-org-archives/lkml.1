@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbYAVER4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbYAVEVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755863AbYAVER4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 23:17:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYAVERq
+	id S1756497AbYAVEVN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 23:21:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbYAVEU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 23:17:46 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:42793 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752766AbYAVERp (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 23:17:45 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: David Chinner <dgc@sgi.com>
-Cc: Valerie Henson <val@vahconsulting.com>, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@clusterfs.com>,
-       Ric Wheeler <ric@emc.com>
-Subject: Re: [RFC] Parallelize IO for e2fsck
-In-Reply-To: Your message of "Tue, 22 Jan 2008 14:38:30 +1100."
-             <20080122033830.GR155259@sgi.com>
-From: Valdis.Kletnieks@vt.edu
-References: <70b6f0bf0801161322k2740a8dch6a0d6e6e112cd2d0@mail.gmail.com> <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com> <20080121230041.GL3180@webber.adilger.int>
-            <20080122033830.GR155259@sgi.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1200975438_28155P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 21 Jan 2008 23:17:18 -0500
-Message-ID: <3673.1200975438@turing-police.cc.vt.edu>
+	Mon, 21 Jan 2008 23:20:59 -0500
+Received: from ns2.suse.de ([195.135.220.15]:57911 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752920AbYAVEU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 23:20:58 -0500
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Tejun Heo <htejun@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 0/6] RFC: Typesafe callbacks
+References: <200801202046.14746.rusty@rustcorp.com.au>
+	<200801212233.04989.rusty@rustcorp.com.au>
+	<47949257.1000102@gmail.com>
+	<200801221027.15002.rusty@rustcorp.com.au>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 22 Jan 2008 05:20:55 +0100
+In-Reply-To: <200801221027.15002.rusty@rustcorp.com.au>
+Message-ID: <p73bq7eo5i0.fsf@crumb.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1200975438_28155P
-Content-Type: text/plain; charset=us-ascii
+Rusty Russell <rusty@rustcorp.com.au> writes:
+> ===
+> Attempt to create callbacks which take unsigned long as well as
+> correct pointer types.
 
-On Tue, 22 Jan 2008 14:38:30 +1100, David Chinner said:
+FWIW i had something similar using the gcc union extension at some
+point for ioctls because I was tired for all the ugly casts from
+unsigned long arg to void * in ioctl handlers.
 
-> Perhaps instead of swapping immediately, a SIGLOWMEM could be sent
-> to a processes that aren't masking the signal followed by a short
-> grace period to allow the processes to free up some memory before
-> swapping out pages from that process?
+But I decided to not push it because sparse would have likely choked 
+on it, and sparse actually finds a lot of bugs so it's more important than
+having a few more casts.
 
-AIX had SIGDANGER some 15 years ago.  Admittedly, that was sent when
-the system was about to hit OOM, not when it was about to start swapping.
-
-I suspect both approaches have their merits...
-
---==_Exmh_1200975438_28155P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHlW5OcC3lWbTT17ARAqnbAKC9s7T5o1iXU/l9vXOafv6Mjf8NVgCggaW4
-6jcH0uv/kcCFYTQb7gBeYyU=
-=lQUZ
------END PGP SIGNATURE-----
-
---==_Exmh_1200975438_28155P--
+-Andi
