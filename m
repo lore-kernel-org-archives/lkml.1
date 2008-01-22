@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbYAVV4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753791AbYAVWDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbYAVV4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 16:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbYAVV4F
+	id S1753791AbYAVWDD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 17:03:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbYAVWCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 16:56:05 -0500
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:51223 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750710AbYAVV4E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 16:56:04 -0500
-X-IronPort-AV: E=Sophos;i="4.25,235,1199692800"; 
-   d="scan'208";a="3773112"
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: InfiniBand/RDMA merge plans for 2.6.25
-X-Message-Flag: Warning: May contain useful information
-References: <ada7ii8xaao.fsf@cisco.com> <20080121100151.GD5333@infradead.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 22 Jan 2008 13:56:00 -0800
-In-Reply-To: <20080121100151.GD5333@infradead.org> (Christoph Hellwig's message of "Mon, 21 Jan 2008 10:01:51 +0000")
-Message-ID: <adad4rttthr.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Tue, 22 Jan 2008 17:02:53 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47135 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750843AbYAVWCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 17:02:52 -0500
+Date: Tue, 22 Jan 2008 23:03:01 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: factor out common s2ram wakeup code
+Message-ID: <20080122220301.GA8019@elf.ucw.cz>
+References: <20080122193719.GA3791@elf.ucw.cz> <4796519C.6040501@zytor.com> <20080122205625.GC4317@elf.ucw.cz> <47965B13.9080705@zytor.com> <20080122212440.GF4317@elf.ucw.cz> <47966546.6040002@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 22 Jan 2008 21:56:01.0189 (UTC) FILETIME=[93ACC550:01C85D41]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <47966546.6040002@zytor.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > >  - Neteffect "nes" driver.  It's not terribly clean code but since
- > >    it's a new driver that is completely self-contained, I plan on
- > >    merging it and letting cleanups happen upstream.
- > 
- > New code should be better quality than old code, not worse.   I haven't
- > actually seen the driver yet, but by that statement I'd be clearly
- > against a merge.
+On Tue 2008-01-22 13:51:02, H. Peter Anvin wrote:
+> Pavel Machek wrote:
+>>>
+>>> The biggest question is if your 16-bit code needs to touch symbols in the 
+>>> 32/64-bit code, or vice versa.  That complicates things a little bit, 
+>>> obviously.
+>>
+>> The code is in arch/x86/kernel/acpi/wakeup_32.S
+>> . acpi_copy_wakeup_routine needs to know offsets within 16-bit code. I'd 
+>> like to somehow call code from arch/x86/boot/video*.c
+>> ... current version just took (old) .S code, and cut&paste-s it.
+>>
+>
+> Right, I know.
+>
+>>> If not, the easiest way is to link the 16-bit code into a separate binary 
+>>> (including both assembly and C code) which can then be included in the 
+>>> kernel proper as a binary blob.  If it *does* need to reference outside 
+>>> symbols, then it needs to be part of the overall link, which means 
+>>> mucking with the top-level link script.
+>>> That's obviously more complex.
+>>>
+>>> Either way, the Makefile bit of this will be a lot easier if we move the 
+>>> 16-bit code into a separate directory.
+>>
+>> I only need arch/x86/boot/video*.c ...
+>>
+>>> Let me know which way you think makes more sense, and I can send you a 
+>>> framework patch.
+>>
+>> I need to access data in that 16-bit code...
+>
+> Would a shared structure be OK for that?  That's easier than dealing with 
+> symbols.
 
-The driver has been posted a few times; the latest code is in the
-"neteffect" branch of my tree:
-
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git neteffect
-
-It's not *that* bad -- certainly there are lots of things that could
-be improved (sparse endianness annotation, too many lines that are way
-to long, strange indentation of case labeles, etc, etc) but it is a
-self-contained hardware driver.  I agree with Linus's position (stated
-at the last kernel summit) that we ought to merge hardware drivers
-early, so that users get the drivers with as little hassle as
-possible.  We lose a little leverage in getting cleanups done, but the
-number of people who see the code and are able to clean it up
-increases, so I think it's a good trade-off.
-
- - R.
+Shared structure would be okay, plus I need pointer to beggining and
+end of code so that I can copy it to lowmem.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
