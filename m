@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbYAVFV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYAVF0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753386AbYAVFV6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 00:21:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbYAVFVt
+	id S1754518AbYAVF0U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 00:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYAVF0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 00:21:49 -0500
-Received: from mx1.suse.de ([195.135.220.2]:59828 "EHLO mx1.suse.de"
+	Tue, 22 Jan 2008 00:26:06 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:36814 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750855AbYAVFVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 00:21:48 -0500
-Date: Mon, 21 Jan 2008 21:15:05 -0800
-From: Greg KH <gregkh@suse.de>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Alan Stern <stern@rowland.harvard.edu>, stefanr@s5r6.in-berlin.de,
-       David Brownell <david-b@pacbell.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 7/7] driver-core : convert semaphore to mutex in struct
-	class
-Message-ID: <20080122051505.GA7619@suse.de>
-References: <a8e1da0801210044t5f705f77n8e310878775f7b5b@mail.gmail.com> <20080121211625.GA2758@ami.dom.local> <a8e1da0801211655y5a7313edn331ad4312b0b7de9@mail.gmail.com>
+	id S1750972AbYAVF0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 00:26:04 -0500
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Gerd Hoffmann <kraxel@redhat.com>
+Subject: Re: The SMP alternatives code breaks exception fixup?
+References: <479504F6.4080005@redhat.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 22 Jan 2008 06:26:03 +0100
+In-Reply-To: <479504F6.4080005@redhat.com>
+Message-ID: <p73zluymnx0.fsf@crumb.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0801211655y5a7313edn331ad4312b0b7de9@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 08:55:05AM +0800, Dave Young wrote:
-> On Jan 22, 2008 5:16 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
-> > Dave Young wrote, On 01/21/2008 09:44 AM:
-> > ...
-> > > I applied it in my kernel, built and run without warnings, but it need
-> > > more testing.
-> > > I will be very glad to see the test result about this if you could, thanks.
-> >
-> > Bad news. (Alas I won't be able to check this today.)
+Chuck Ebbert <cebbert@redhat.com> writes:
 > 
-> Hi, thanks your effort. Now I think we should stop this thread and
-> waiting the class_device going away :)
-> 
-> Hope the iteration patches 1-6/7 could be applied.
+> There is a fixup, so this should never happen. But the lock instruction
+> was replaced with a nop by the altinstruction code, and that makes the fixup
+> address wrong. AFAICT we don't fix up the exception table when we replace
+> a lock with a nop, which makes the fixup table point to the nop instead
+> of the cmpxchg instruction and causes us to miss the fixup.
 
-Can you resend them again, and CC: me on all of them, with the latest
-updates, so I know what I should be reviewing this time around?
+Indeed.  Nasty issue.
 
-thanks,
+A quick fix would be to add another fixup to handle both cases
+I checked the other LOCK_PREFIX users and they look ok.
 
-greg k-h
+Does this fix it?
+
+-Andi
+
+(untested) 
+
+---
+
+Add exception handlers for both the LOCK and no LOCK prefix
+case in futex.
+
+Hopefully fixes https://bugzilla.redhat.com/show_bug.cgi?id=429412
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/include/asm-x86/futex.h
+===================================================================
+--- linux.orig/include/asm-x86/futex.h
++++ linux/include/asm-x86/futex.h
+@@ -30,7 +30,7 @@
+ "1:	movl	%2, %0\n					\
+ 	movl	%0, %3\n"					\
+ 	insn "\n"						\
+-"2:	" LOCK_PREFIX "cmpxchgl %3, %2\n			\
++"2:	" LOCK_PREFIX "\n5: cmpxchgl %3, %2\n			\
+ 	jnz	1b\n						\
+ 3:	.section .fixup,\"ax\"\n				\
+ 4:	mov	%5, %1\n					\
+@@ -38,7 +38,7 @@
+ 	.previous\n						\
+ 	.section __ex_table,\"a\"\n				\
+ 	.align	8\n"						\
+-	_ASM_PTR "1b,4b,2b,4b\n					\
++	_ASM_PTR "1b,4b,2b,4b,5b,4b\n				\
+ 	.previous"						\
+ 	: "=&a" (oldval), "=&r" (ret), "+m" (*uaddr),		\
+ 	  "=&r" (tem)						\
