@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbYAVVGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbYAVVH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbYAVVGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 16:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYAVVGo
+	id S1757451AbYAVVH0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 16:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYAVVHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 16:06:44 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:54626 "EHLO 2ka.mipt.ru"
+	Tue, 22 Jan 2008 16:07:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52561 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751754AbYAVVGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 16:06:44 -0500
-Date: Wed, 23 Jan 2008 00:06:27 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: David Fries <david@fries.net>
+	id S1752642AbYAVVHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 16:07:09 -0500
+Date: Tue, 22 Jan 2008 22:06:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: W1: w1_slave units, standardize 1C or .001C?  Break API
-Message-ID: <20080122210627.GA30938@2ka.mipt.ru>
-References: <20080121231557.GA4025@spacedout.fries.net>
-Mime-Version: 1.0
+Subject: Re: [patch] sched: Keep total / count stats in addition to the max
+	for wait time
+Message-ID: <20080122210659.GA26764@elte.hu>
+References: <20080121110809.1b584998@laptopd505.fenrus.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080121231557.GA4025@spacedout.fries.net>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080121110809.1b584998@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0008]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David.
 
-On Mon, Jan 21, 2008 at 05:15:57PM -0600, David Fries (david@fries.net) wrote:
-> The ds18b20 one wire temperature sensor conversion routine is
-> returning the units in degrees C while the ds1820 (ds18s20) is
-> returning it in .001 degrees C.  20C vs 20312C.  Once you know the
-> units I'm liking the latter as it gives a higher precision.  Time to
-> break user applications so the driver can give the temperature in the
-> same units for both sensors.
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-What about instead of breaking application just add new sysfs file,
-which will only return temperature instead of full rom content.
-It can be millidegrees Centigrade, another one can be millikelvins :)
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Subject: sched: Keep total / count stats in addition to the max for wait time
+> 
+> Right now, the linux kernel (with scheduler statistics enabled) keeps 
+> track of the maximum time a process is waiting to be scheduled. While 
+> the maximum is a very useful metric, tracking average and total is 
+> equally useful (at least for latencytop) to figure out the accumulated 
+> effect of scheduler delays. The accumulated effect is important to 
+> judge the performance impact of scheduler tuning/behavior.
 
-Actually it is already posible for applications to decode whatever
-precision they like from the rom content displayed, although that can be
-not very convenient.
+thanks, applied to sched-devel.git.
 
--- 
-	Evgeniy Polyakov
+	Ingo
