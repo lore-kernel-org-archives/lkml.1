@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbYAVOnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbYAVOn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758009AbYAVOnW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 09:43:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYAVOnO
+	id S1752181AbYAVOn6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 09:43:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYAVOnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 09:43:14 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55966 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752101AbYAVOnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 09:43:13 -0500
-Date: Tue, 22 Jan 2008 15:42:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Johannes Weiner <hannes@saeurebad.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Zan Lynx <zlynx@acm.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: echo mem > /sys/power/state
-Message-ID: <20080122144242.GK7304@elte.hu>
-References: <20080117111355.29554f38.akpm@linux-foundation.org> <200801172238.17176.rjw@sisk.pl> <20080118083610.GA19792@elte.hu> <20080118004725.dcd132ee.akpm@linux-foundation.org> <20080118121803.GF11044@elte.hu> <20080120233912.GA4844@elf.ucw.cz> <20080120234208.GA22292@elte.hu> <20080121003106.GA1618@elf.ucw.cz> <878x2k53iz.fsf@saeurebad.de> <20080121223756.GA15875@elf.ucw.cz>
+	Tue, 22 Jan 2008 09:43:50 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:41108
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752139AbYAVOnt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 09:43:49 -0500
+Date: Tue, 22 Jan 2008 15:43:32 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Izik Eidus <izike@qumranet.com>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, holt@sgi.com,
+       Hugh Dickins <hugh@veritas.com>, clameter@sgi.com
+Subject: Re: [kvm-devel] [PATCH] mmu notifiers #v3
+Message-ID: <20080122144332.GE7331@v2.random>
+References: <20080113162418.GE8736@v2.random> <20080116124256.44033d48@bree.surriel.com> <478E4356.7030303@qumranet.com> <20080117162302.GI7170@v2.random> <478F9C9C.7070500@qumranet.com> <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080121223756.GA15875@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0027]
+In-Reply-To: <4795F9D2.1050503@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 22, 2008 at 04:12:34PM +0200, Avi Kivity wrote:
+> Andrea Arcangeli wrote:
+>> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+>> --- a/include/asm-generic/pgtable.h
+>> +++ b/include/asm-generic/pgtable.h
+>> @@ -44,8 +44,10 @@
+>>  ({									\
+>>  	int __young;							\
+>>  	__young = ptep_test_and_clear_young(__vma, __address, __ptep);	\
+>> -	if (__young)							\
+>> +	if (__young) {							\
+>>  		flush_tlb_page(__vma, __address);			\
+>> +		mmu_notifier(age_page, (__vma)->vm_mm, __address);	\
+>> +	}								\
+>>  	__young;							\
+>>  })
+>>   
+>
+> I think that unconditionally doing
+>
+>  __young |= mmu_notifier(test_and_clear_young, ...);
+>
+> allows hardware with accessed bits more control over what is going on.
 
-* Pavel Machek <pavel@ucw.cz> wrote:
-
-> Set alarm belongs in drivers/rtc, moved now.
-> 
-> > > +	alarm = now+length;
-> > > +	rtc_time_to_tm(alarm, &alm.time);
-> > > +
-> > > +	retval = cmos_set_alarm(rtc, &alm);
-> > 
-> > cmos_set_alarm() takes a struct device * too.
-> 
-> Fixed.
-
-any updated patch i could try? Thanks,
-
-	Ingo
+Agreed, likely it'll have to be mmu_notifier_age_page().
