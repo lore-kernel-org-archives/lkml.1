@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbYAVWfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbYAVWjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585AbYAVWfv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 17:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYAVWfn
+	id S1754891AbYAVWjQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 17:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbYAVWjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 17:35:43 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:41744 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750843AbYAVWfm (ORCPT
+	Tue, 22 Jan 2008 17:39:03 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42239 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751087AbYAVWjB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 17:35:42 -0500
-Date: Tue, 22 Jan 2008 15:35:41 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: SLUB: Increasing partial pages
-Message-ID: <20080122223541.GR27250@parisc-linux.org>
-References: <20080116195949.GO18741@parisc-linux.org> <Pine.LNX.4.64.0801161219050.9694@schroedinger.engr.sgi.com> <20080116214127.GA11559@parisc-linux.org> <Pine.LNX.4.64.0801161347160.11353@schroedinger.engr.sgi.com> <20080116221618.GB11559@parisc-linux.org> <Pine.LNX.4.64.0801161421240.12024@schroedinger.engr.sgi.com> <20080118191430.GD20490@parisc-linux.org> <Pine.LNX.4.64.0801221142330.27692@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801221142330.27692@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 22 Jan 2008 17:39:01 -0500
+Date: Tue, 22 Jan 2008 22:36:11 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>
+Subject: Re: 2.6.24-rc8-git5: Reported regressions from 2.6.23
+Message-ID: <20080122223611.72acc51f@lxorguk.ukuu.org.uk>
+In-Reply-To: <200801222309.55876.rjw@sisk.pl>
+References: <200801222309.55876.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 12:00:00PM -0800, Christoph Lameter wrote:
-> It would be great if you could get stable results on these (with multiple 
-> differently compiled kernels! Apply some patch that should have no 
-> performance impact but adds some code to verify). I saw an overall slight 
-> performance decrease on tbench (still doubting how much I can trust those 
-> numbers) so lets not merge the series upstream until we have more data).
-> 
-> Patches that I would recommend to test individually if you could do it 
-> (get the series via git pull 
-> git://git.kernel.org/pub/scm/linux/kernel/git/christoph/vm.git performance):
 
-The thing is that each run takes approximately 4 hours on a machine
-which has other patches to try too.  I'm not comfortable with asking my
-colleagues to try various combinations on a whim.  What I've asked for
-is:
+> Subject		: PATA_HPT37X embezzles two ports
+> Submitter	: "Bjoern Olausson" <lkmlist@gmail.com>
+> Date		: 2007-12-12 11:05
+> References	: http://lkml.org/lkml/2007/12/12/161
+> 		  http://bugzilla.kernel.org/show_bug.cgi?id=9551
+> Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Patch		: http://lkml.org/lkml/2007/1/4/161
 
-2.6.24-rc8 w/ SLAB
-2.6.24-rc8 w/ SLUB
-2.6.24-rc8 w/ SLUB and your 22 patches applied.
-
-So that should be done in about 12 hours time.
-
-Obviously, if we see problems with all 22 patches, we'll try bisection
-search ... and I think you've identified some good points to split at
-below, but testing all possible combinations of these 22 patches with
-and without some other random changes isn't feasible.
-
-I also don't understand the dependency tree -- you seem to be saying
-that we could apply patch 6 without patches 1-5 and test that.
-
-> 0006-Use-non-atomic-unlock.patch
-> 
-> 	Surprisingly this one caused a 1% regression in some of my tests. 
->         Maybe the cacheline is held longer if no atomic op is used during 
->         unlock?
-> 
-> 0005-Add-parameter-to-add_partial-to-avoid-having-two-fun.patch
-> 
-> 	I mostly saw performance increases (1-2%) on this one.
-> 
-> 
-> 0009-SLUB-Avoid-folding-functions-into-__slab_alloc-and.patch
-> 
-> 0010-Move-kmem_cache_node-determination-into-add_full-par.patch
-> 
-> 
-> The cmpxchg stuff is a group of 3 patches. The first two should cause a 
-> slight performance decrease which needs at least to be offset by the third
-> one.
-> 
-> 0014-SLUB-Use-unique-end-pointer-for-each-slab-page.patch
-> 0015-slub-provide-unique-end-marker-for-each-slab-fix.patch
-> 0017-SLUB-Alternate-fast-paths-using-cmpxchg_local.patch
-> 
-> 
-> 0018-SLUB-Do-our-own-locking-to-avoid-extraneous-memory.patch
-> 0019-SLUB-Own-locking-checkpatch-fixes.patch
-> 
-> 0021-SLUB-Restructure-slab_alloc-to-flow-in-execution-se.patch
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+This has been present in the kernel fixed for some time.
