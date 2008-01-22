@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbYAVUVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbYAVUZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbYAVUVr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 15:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYAVUVf
+	id S1754104AbYAVUZk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 15:25:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYAVUZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 15:21:35 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:37930 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752507AbYAVUVd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 15:21:33 -0500
-Date: Tue, 22 Jan 2008 20:20:16 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH rc8-mm1] hotfix libata-scsi corruption
-In-Reply-To: <1201031028.3210.61.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0801222009070.16267@blonde.site>
-References: <Pine.LNX.4.64.0801221706320.5832@blonde.site> 
- <1201022985.3210.24.camel@localhost.localdomain>  <Pine.LNX.4.64.0801221813540.8693@blonde.site>
- <1201031028.3210.61.camel@localhost.localdomain>
+	Tue, 22 Jan 2008 15:25:31 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:47960 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751346AbYAVUZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 15:25:31 -0500
+Message-ID: <47965138.8060603@garzik.org>
+Date: Tue, 22 Jan 2008 15:25:28 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Massive IDE problems. Who leaves data here?
+References: <fn5ivo$ck2$1@ger.gmane.org>
+In-Reply-To: <fn5ivo$ck2$1@ger.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jan 2008, James Bottomley wrote:
+Manuel Reimer wrote:
+> Hello,
 > 
-> Actually, I don't think it's a smaller I/O issue.  The SMART protocol
-> specifically mandates that the transfers for SMART READ DATA and SMART
-> READ LOG shall be 512 bytes).  However, the pio transfer routine does
-> seem to be assuming sector alignment as well, which will be where your
-> problems are coming from.  I think we need to specify sector minimum
-> alignment for ata (but not atapi, which has its own non sector size pio
-> routine).  How about the attached?
+> anything started with a try to burn Slackware 12.0 from the original DVD 
+> to an new medium with different boot settings. I always got corrupted 
+> results and didn't know why.
 > 
-> We have to do this for all ATA devices, because they'll likely all
-> support SMART, and SMART is defined to be a PIO command.
+> So I started with an "md5sum -c CHECKSUMS.md5" directly on the original 
+> media. This resulted in "anything OK".
+> 
+> Now I copied the whole DVD to my hard drive and created an ISO from it. 
+> I mounted the ISO locally and my md5sum now results in 5 corrupted files.
+> 
+> --> A Bug in mkisofs?
+> 
+> No, unfortunately not, as a md5sum on the copy, I have created from the 
+> original DVD by using "cp -vr" is corrupted, too!
+> 
+> So md5sum on the original DVD is OK, but after copying to my hard drive, 
+> several files are corrupted.
+> 
+> I'm using kernel 2.6.21.5. Distribution is Slackware 12.0
+> All my "partitions" are LVs in LVM2
+> 
+> I also updated the kernel to 2.6.23.12 to test with this one, but I 
+> still get corrupted files.
+> 
+> Is this a LVM bug? Do I already have a corrupted LVM filesystem? How to 
+> check/fix it? Is this a known kernel bug? Which may be the reason for 
+> corrupted files?
+> 
+> I've created a backup of my important data to a second disc to a "real 
+> ext2 partition" (without LVM), but this is connected to the same IDE 
+> controller and I don't even know if I may still trust my mainboard...
+> 
+> I also get those kernel messages via dmesg:
+> 
+> http://pastebin.org/16537
 
-Thanks, you've answered several of my uncertainties (why the PIO,
-why the sector size).
+If your IDE interface is complaining about BadCRC errors, then it's 
+complaining about hardware problems (bad cable, etc.)
 
-I've just tried it, and can confirm that your replacement patch
-below fixes the issue for me in practice.
+	Jeff
 
-What I can't say, you and Jeff and others will judge, is whether that's
-actually the right placement for the blk_queue_update_dma_alignment call
-(as an outsider, I'm not convinced that the SMART requirement should be
-imposing this limitation on the rest).
 
-Hugh
 
-> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-> index 4bb268b..bc5cf6b 100644
-> --- a/drivers/ata/libata-scsi.c
-> +++ b/drivers/ata/libata-scsi.c
-> @@ -824,9 +824,6 @@ static void ata_scsi_sdev_config(struct scsi_device *sdev)
->  	 * requests.
->  	 */
->  	sdev->max_device_blocked = 1;
-> -
-> -	/* set the min alignment */
-> -	blk_queue_update_dma_alignment(sdev->request_queue, ATA_DMA_PAD_SZ - 1);
->  }
->  
->  static void ata_scsi_dev_config(struct scsi_device *sdev,
-> @@ -842,7 +839,14 @@ static void ata_scsi_dev_config(struct scsi_device *sdev,
->  	if (dev->class == ATA_DEV_ATAPI) {
->  		struct request_queue *q = sdev->request_queue;
->  		blk_queue_max_hw_segments(q, q->max_hw_segments - 1);
-> -	}
-> +
-> +		/* set the min alignment */
-> +		blk_queue_update_dma_alignment(sdev->request_queue,
-> +					       ATA_DMA_PAD_SZ - 1);
-> +	} else
-> +		/* ATA devices must be sector aligned */
-> +		blk_queue_update_dma_alignment(sdev->request_queue,
-> +					       ATA_SECT_SIZE - 1);
->  
->  	if (dev->flags & ATA_DFLAG_AN)
->  		set_bit(SDEV_EVT_MEDIA_CHANGE, sdev->supported_events);
