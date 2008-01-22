@@ -1,2198 +1,1488 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbYAVTkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYAVTmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbYAVTkp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 14:40:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbYAVTkA
+	id S1753918AbYAVTmX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 14:42:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYAVTmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 14:40:00 -0500
-Received: from tservice.ru ([195.178.208.66]:34828 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751810AbYAVTin convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 14:38:43 -0500
-Cc: netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [2/4] DST: Core distributed storage files.
-In-Reply-To: <12010307141243@2ka.mipt.ru>
-X-Mailer: Patch sending script by Greg Kroah-Hartman
-Date: Tue, 22 Jan 2008 22:38:34 +0300
-Message-Id: <1201030714838@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Reply-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: lkml <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7BIT
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+	Tue, 22 Jan 2008 14:42:14 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:39144 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751537AbYAVTmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 14:42:10 -0500
+Date: Tue, 22 Jan 2008 11:42:09 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matthew Wilcox <matthew@wil.cx>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: SLUB: Increasing partial pages
+In-Reply-To: <20080118195451.GE20490@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0801181528140.9520@schroedinger.engr.sgi.com>
+References: <20080116195949.GO18741@parisc-linux.org>
+ <Pine.LNX.4.64.0801161219050.9694@schroedinger.engr.sgi.com>
+ <20080116214127.GA11559@parisc-linux.org> <Pine.LNX.4.64.0801161347160.11353@schroedinger.engr.sgi.com>
+ <20080118195451.GE20490@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 Jan 2008, Matthew Wilcox wrote:
 
-Core distributed storage files.
-Include userspace interfaces, initialization,
-block layer bindings and other core functionality.
+> I've found one backtrace which seems to be relevant.  I believe this is
+> due to 8/10.
 
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Looks like NULL pointer dereferences. Rest may just be the consequence 
+of the oops. Not enough information though to figure out exactly what 
+is going on and the current code in mm may be different. Sigh. I did a lot 
+of testing over the weekend and did not encounter any problems. Some 
+config differences may have cause it?
 
+I have extracted the current slub stuff from mm, rediffed it against 
+upstream and put it on git.kernel.org
 
-diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
-index b4c8319..ca6592d 100644
---- a/drivers/block/Kconfig
-+++ b/drivers/block/Kconfig
-@@ -451,6 +451,8 @@ config ATA_OVER_ETH
- 	This driver provides Support for ATA over Ethernet block
- 	devices like the Coraid EtherDrive (R) Storage Blade.
- 
-+source "drivers/block/dst/Kconfig"
-+
- source "drivers/s390/block/Kconfig"
- 
- endmenu
-diff --git a/drivers/block/Makefile b/drivers/block/Makefile
-index dd88e33..fcf042d 100644
---- a/drivers/block/Makefile
-+++ b/drivers/block/Makefile
-@@ -29,3 +29,4 @@ obj-$(CONFIG_VIODASD)		+= viodasd.o
- obj-$(CONFIG_BLK_DEV_SX8)	+= sx8.o
- obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
- 
-+obj-$(CONFIG_DST)		+= dst/
-diff --git a/drivers/block/dst/Kconfig b/drivers/block/dst/Kconfig
-new file mode 100644
-index 0000000..67a7dad
---- /dev/null
-+++ b/drivers/block/dst/Kconfig
-@@ -0,0 +1,28 @@
-+config DST
-+	tristate "Distributed storage"
-+	depends on NET
-+	select CONNECTOR
-+	select LIBCRC32C
-+	---help---
-+	This driver allows to create a distributed storage.
-+
-+config DST_DEBUG
-+	bool "DST debug"
-+	depends on DST
-+	---help---
-+	This option will turn HEAVY debugging of the DST.
-+	Turn it on ONLY if you have to debug some really obscure problem.
-+
-+config DST_ALG_LINEAR
-+	tristate "Linear distribution algorithm"
-+	depends on DST
-+	---help---
-+	This module allows to create linear mapping of the nodes
-+	in the distributed storage.
-+
-+config DST_ALG_MIRROR
-+	tristate "Mirror distribution algorithm"
-+	depends on DST
-+	---help---
-+	This module allows to create a mirror of the nodes in the
-+	distributed storage.
-diff --git a/drivers/block/dst/Makefile b/drivers/block/dst/Makefile
-new file mode 100644
-index 0000000..1400e94
---- /dev/null
-+++ b/drivers/block/dst/Makefile
-@@ -0,0 +1,6 @@
-+obj-$(CONFIG_DST) += dst.o
-+
-+dst-y := dcore.o kst.o
-+
-+obj-$(CONFIG_DST_ALG_LINEAR) += alg_linear.o
-+obj-$(CONFIG_DST_ALG_MIRROR) += alg_mirror.o
-diff --git a/drivers/block/dst/dcore.c b/drivers/block/dst/dcore.c
-new file mode 100644
-index 0000000..22841a7
---- /dev/null
-+++ b/drivers/block/dst/dcore.c
-@@ -0,0 +1,1657 @@
-+/*
-+ * 2007+ Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/blkdev.h>
-+#include <linux/bio.h>
-+#include <linux/slab.h>
-+#include <linux/connector.h>
-+#include <linux/socket.h>
-+#include <linux/dst.h>
-+#include <linux/device.h>
-+#include <linux/in.h>
-+#include <linux/in6.h>
-+#include <linux/buffer_head.h>
-+
-+#include <net/sock.h>
-+
-+static LIST_HEAD(dst_storage_list);
-+static LIST_HEAD(dst_alg_list);
-+static DEFINE_MUTEX(dst_storage_lock);
-+static DEFINE_MUTEX(dst_alg_lock);
-+static int dst_major;
-+static struct kst_worker *kst_main_worker;
-+static struct cb_id cn_dst_id = { CN_DST_IDX, CN_DST_VAL };
-+
-+struct kmem_cache *dst_request_cache;
-+
-+static char dst_name[] = "Succumbed to live ant.";
-+
-+/*
-+ * DST sysfs tree. For device called 'storage' which is formed
-+ * on top of two nodes this looks like this:
-+ *
-+ * /sys/bus/dst/devices/storage/
-+ * /sys/bus/dst/devices/storage/alg : alg_linear
-+ * /sys/bus/dst/devices/storage/n-800/type : R: 192.168.4.80:1025
-+ * /sys/bus/dst/devices/storage/n-800/size : 800
-+ * /sys/bus/dst/devices/storage/n-800/start : 800
-+ * /sys/bus/dst/devices/storage/n-800/clean
-+ * /sys/bus/dst/devices/storage/n-800/dirty
-+ * /sys/bus/dst/devices/storage/n-0/type : R: 192.168.4.81:1025
-+ * /sys/bus/dst/devices/storage/n-0/size : 800
-+ * /sys/bus/dst/devices/storage/n-0/start : 0
-+ * /sys/bus/dst/devices/storage/n-0/clean
-+ * /sys/bus/dst/devices/storage/n-0/dirty
-+ * /sys/bus/dst/devices/storage/remove_all_nodes
-+ * /sys/bus/dst/devices/storage/nodes : sectors (start [size]): 0 [800] | 800 [800]
-+ * /sys/bus/dst/devices/storage/name : storage
-+ */
-+
-+static int dst_dev_match(struct device *dev, struct device_driver *drv)
-+{
-+	return 1;
-+}
-+
-+static void dst_dev_release(struct device *dev)
-+{
-+}
-+
-+static struct bus_type dst_dev_bus_type = {
-+	.name 		= "dst",
-+	.match 		= &dst_dev_match,
-+};
-+
-+static struct device dst_dev = {
-+	.bus 		= &dst_dev_bus_type,
-+	.release 	= &dst_dev_release
-+};
-+
-+static void dst_node_release(struct device *dev)
-+{
-+}
-+
-+static struct device dst_node_dev = {
-+	.release 	= &dst_node_release
-+};
-+
-+static void dst_free_alg(struct dst_alg *alg)
-+{
-+	kfree(alg);
-+}
-+
-+/*
-+ * Algorithm is never freed directly,
-+ * since its module reference counter is increased
-+ * by storage when it is created - just like network protocols.
-+ */
-+static inline void dst_put_alg(struct dst_alg *alg)
-+{
-+	module_put(alg->ops->owner);
-+	if (atomic_dec_and_test(&alg->refcnt))
-+		dst_free_alg(alg);
-+}
-+
-+static void dst_remove_disk(struct dst_storage *st)
-+{
-+	put_disk(st->disk);
-+	blk_cleanup_queue(st->queue);
-+}
-+
-+static void dst_free_storage(struct dst_storage *st)
-+{
-+	BUG_ON(rb_first(&st->tree_root) != NULL);
-+
-+	dst_remove_disk(st);
-+	dst_put_alg(st->alg);
-+	kfree(st);
-+}
-+
-+static inline void dst_put_storage(struct dst_storage *st)
-+{
-+	if (atomic_dec_and_test(&st->refcnt))
-+		dst_free_storage(st);
-+}
-+
-+static struct bio_set *dst_bio_set;
-+
-+/*
-+ * Has to be called under tree_lock mutex.
-+ */
-+void dst_set_disk_size(struct dst_storage *st)
-+{
-+	struct block_device *bdev;
-+
-+	set_capacity(st->disk, st->disk_size);
-+	
-+	bdev = bdget_disk(st->disk, 0);
-+	if (bdev) {
-+		mutex_lock(&bdev->bd_inode->i_mutex);
-+		i_size_write(bdev->bd_inode, to_bytes(st->disk_size));
-+		mutex_unlock(&bdev->bd_inode->i_mutex);
-+		bdput(bdev);
-+	}
-+}
-+
-+EXPORT_SYMBOL_GPL(dst_set_disk_size);
-+
-+static void dst_destructor(struct bio *bio)
-+{
-+	bio_free(bio, dst_bio_set);
-+}
-+
-+/*
-+ * Internal callback for local requests (i.e. for local disk),
-+ * which are splitted between nodes (part with local node destination
-+ * ends up with this ->bi_end_io() callback).
-+ */
-+static int dst_end_io(struct bio *bio, unsigned int size, int err)
-+{
-+	struct bio *orig_bio = bio->bi_private;
-+
-+	if (bio->bi_size)
-+		return 0;
-+
-+	dprintk("%s: bio: %p, orig_bio: %p, size: %u, orig_size: %u.\n",
-+		__func__, bio, orig_bio, size, orig_bio->bi_size);
-+
-+	bio_endio(orig_bio, size, 0);
-+	bio_put(bio);
-+	return 0;
-+}
-+
-+/*
-+ * This function sends processing request down to block layer (for local node)
-+ * or to network state machine (for remote node).
-+ */
-+static int dst_node_push(struct dst_request *req)
-+{
-+	int err = 0;
-+	struct dst_node *n = req->node;
-+
-+	if (n->bdev) {
-+		struct bio *bio = req->bio;
-+
-+		dprintk("%s: start: %llu, num: %d, idx: %d, offset: %u, "
-+				"size: %llu, bi_idx: %d, bi_vcnt: %d.\n",
-+			__func__, req->start, req->num, req->idx,
-+			req->offset, req->size,	bio->bi_idx, bio->bi_vcnt);
-+
-+		if (likely(bio->bi_idx == req->idx &&
-+					bio->bi_vcnt == req->num)) {
-+			bio->bi_bdev = n->bdev;
-+			bio->bi_sector = req->start;
-+		} else {
-+			struct bio *clone = bio_alloc_bioset(GFP_NOIO,
-+					bio->bi_max_vecs, dst_bio_set);
-+			struct bio_vec *bv;
-+
-+			err = -ENOMEM;
-+			if (!clone)
-+				goto out_put;
-+
-+			__bio_clone(clone, bio);
-+
-+			bv = bio_iovec_idx(clone, req->idx);
-+			bv->bv_offset += req->offset;
-+			clone->bi_idx = req->idx;
-+			clone->bi_vcnt = req->num;
-+			clone->bi_bdev = n->bdev;
-+			clone->bi_sector = req->start;
-+			clone->bi_destructor = dst_destructor;
-+			clone->bi_private = bio;
-+			clone->bi_size = req->orig_size;
-+			clone->bi_end_io = &dst_end_io;
-+			req->bio = clone;
-+
-+			dprintk("%s: start: %llu, num: %d, idx: %d, "
-+				"offset: %u, size: %llu, "
-+				"bi_idx: %d, bi_vcnt: %d, req: %p, bio: %p.\n",
-+				__func__, req->start, req->num, req->idx,
-+				req->offset, req->size,
-+				clone->bi_idx, clone->bi_vcnt, req, req->bio);
-+
-+		}
-+	}
-+
-+	err = n->st->alg->ops->remap(req);
-+
-+out_put:
-+	dst_node_put(n);
-+	return err;
-+}
-+
-+/*
-+ * This function is invoked from block layer request processing function,
-+ * its task is to remap block request to different nodes.
-+ */
-+static int dst_remap(struct dst_storage *st, struct bio *bio)
-+{
-+	struct dst_node *n;
-+	int err = -EINVAL, i, cnt;
-+	unsigned int bio_sectors = bio->bi_size>>9;
-+	struct bio_vec *bv;
-+	struct dst_request req;
-+	u64 rest_in_node, start, total_size;
-+
-+	if (bio->bi_size + bio_sectors > st->disk_size)
-+		return -E2BIG;
-+
-+	mutex_lock(&st->tree_lock);
-+	n = dst_storage_tree_search(st, bio->bi_sector);
-+	mutex_unlock(&st->tree_lock);
-+
-+	if (!n) {
-+		dprintk("%s: failed to find a node for bio: %p, "
-+				"sector: %llu.\n",
-+				__func__, bio, (u64)bio->bi_sector);
-+		return -ENODEV;
-+	}
-+
-+	dprintk("%s: bio: %llu-%llu, dev: %llu-%llu, in sectors.\n",
-+			__func__, (u64)bio->bi_sector, (u64)bio->bi_sector+bio_sectors,
-+			n->start, n->start+n->size);
-+
-+	memset(&req, 0, sizeof(struct dst_request));
-+
-+	start = bio->bi_sector;
-+	total_size = bio->bi_size;
-+
-+	dst_fill_request(&req, bio, start - n->start, n, &kst_bio_endio);
-+
-+	/*
-+	 * Common fast path - block request does not cross
-+	 * boundaries between nodes.
-+	 */
-+	if (likely(bio->bi_sector + bio_sectors <= n->start + n->size))
-+		return dst_node_push(&req);
-+	
-+	dprintk("%s: bio: %llu-%llu, dev: %llu-%llu, in sectors.\n",
-+			__func__, (u64)bio->bi_sector, (u64)bio->bi_sector+bio_sectors,
-+			n->start, n->start+n->size);
-+
-+	req.size = 0;
-+	req.idx = 0;
-+	req.num = 1;
-+
-+	cnt = bio->bi_vcnt;
-+
-+	rest_in_node = to_bytes(n->size - req.start);
-+
-+	for (i = 0; i < cnt; ++i) {
-+		bv = bio_iovec_idx(bio, i);
-+
-+		if (req.size + bv->bv_len >= rest_in_node) {
-+			unsigned int diff = req.size + bv->bv_len -
-+				rest_in_node;
-+
-+			req.size += bv->bv_len - diff;
-+			req.start = start - n->start;
-+			req.orig_size = req.size;
-+			req.bio = bio;
-+			req.bio_endio = &kst_bio_endio;
-+
-+			dprintk("%s: split: start: %llu/%llu, size: %llu, "
-+					"total_size: %llu, diff: %u, idx: %d, "
-+					"num: %d, bv_len: %u, bv_offset: %u.\n",
-+					__func__, start, req.start, req.size,
-+					total_size, diff, req.idx, req.num,
-+					bv->bv_len, bv->bv_offset);
-+
-+			err = dst_node_push(&req);
-+			if (err)
-+				break;
-+
-+			total_size -= req.orig_size;
-+
-+			if (!total_size)
-+				break;
-+
-+			start += to_sector(req.orig_size);
-+
-+			req.flags = (test_bit(DST_NODE_FROZEN, &n->flags))?
-+				DST_REQ_ALWAYS_QUEUE:0;
-+			req.orig_size = req.size = diff;
-+
-+			if (diff) {
-+				req.offset = bv->bv_len - diff;
-+				req.idx = req.num - 1;
-+			} else {
-+				req.idx = req.num;
-+				req.offset = 0;
-+			}
-+
-+			dprintk("%s: next: start: %llu, size: %llu, "
-+				"total_size: %llu, diff: %u, idx: %d, "
-+				"num: %d, offset: %u, bv_len: %u, "
-+				"bv_offset: %u.\n",
-+				__func__, start, req.size, total_size, diff,
-+				req.idx, req.num, req.offset,
-+				bv->bv_len, bv->bv_offset);
-+
-+			mutex_lock(&st->tree_lock);
-+			n = dst_storage_tree_search(st, start);
-+			mutex_unlock(&st->tree_lock);
-+
-+			if (!n) {
-+				err = -ENODEV;
-+				dprintk("%s: failed to find a split node for "
-+				  "bio: %p, sector: %llu, start: %llu.\n",
-+						__func__, bio, (u64)bio->bi_sector,
-+						req.start);
-+				break;
-+			}
-+
-+			req.state = n->state;
-+			req.node = n;
-+			req.start = start - n->start;
-+			rest_in_node = to_bytes(n->size - req.start);
-+
-+			dprintk("%s: req.start: %llu, start: %llu, "
-+					"dev_start: %llu, dev_size: %llu, "
-+					"rest_in_node: %llu.\n",
-+				__func__, req.start, start, n->start,
-+				n->size, rest_in_node);
-+		} else {
-+			req.size += bv->bv_len;
-+			req.num++;
-+		}
-+	}
-+
-+	dprintk("%s: last request: start: %llu, size: %llu, "
-+			"total_size: %llu.\n", __func__,
-+			req.start, req.size, total_size);
-+	if (total_size && !err) {
-+		req.orig_size = req.size;
-+		req.bio = bio;
-+		req.bio_endio = &kst_bio_endio;
-+
-+		err = dst_node_push(&req);
-+		if (!err) {
-+			total_size -= req.orig_size;
-+
-+			printk(KERN_ERR "%s: last: start: %llu/%llu, size: %llu, "
-+					"total_size: %llu, idx: %d, num: %d.\n",
-+				__func__, start, req.start, req.size,
-+				total_size, req.idx, req.num);
-+
-+
-+			BUG_ON(total_size != 0);
-+		}
-+	}
-+
-+	dprintk("%s: end bio: %p, err: %d.\n", __func__, bio, err);
-+	return err;
-+}
-+
-+/*
-+ * Distributed storage erquest processing function.
-+ * It calls algorithm spcific remapping code only.
-+ */
-+static int dst_request(struct request_queue *q, struct bio *bio)
-+{
-+	struct dst_storage *st = q->queuedata;
-+	int err;
-+
-+	dprintk("\n%s: start: st: %p, bio: %p, cnt: %u.\n",
-+			__func__, st, bio, bio->bi_vcnt);
-+
-+	err = dst_remap(st, bio);
-+	if (err)
-+		bio_endio(bio, bio->bi_size, err);
-+
-+	dprintk("%s: end: st: %p, bio: %p, err: %d.\n",
-+			__func__, st, bio, err);
-+	return 0;
-+}
-+
-+static void dst_unplug(struct request_queue *q)
-+{
-+}
-+
-+static int dst_flush(struct request_queue *q, struct gendisk *disk, sector_t *sec)
-+{
-+	return 0;
-+}
-+
-+static int dst_blk_open(struct inode *inode, struct file *file)
-+{
-+	struct dst_storage *st = inode->i_bdev->bd_disk->private_data;
-+
-+	atomic_inc(&st->refcnt);
-+	return 0;
-+}
-+
-+static int dst_blk_release(struct inode *inode, struct file *file)
-+{
-+	struct dst_storage *st = inode->i_bdev->bd_disk->private_data;
-+
-+	dst_put_storage(st);
-+	return 0;
-+}
-+
-+static struct block_device_operations dst_blk_ops = {
-+	.open = &dst_blk_open,
-+	.release = &dst_blk_release,
-+	.owner = THIS_MODULE,
-+};
-+
-+/*
-+ * Block layer binding - disk is created when array is fully configured
-+ * by userspace request.
-+ */
-+static int dst_create_disk(struct dst_storage *st)
-+{
-+	int err = -ENOMEM;
-+
-+	st->queue = blk_alloc_queue(GFP_KERNEL);
-+	if (!st->queue)
-+		goto err_out_exit;
-+
-+	st->queue->queuedata = st;
-+	blk_queue_make_request(st->queue, dst_request);
-+	blk_queue_bounce_limit(st->queue, BLK_BOUNCE_ANY);
-+	st->queue->unplug_fn = dst_unplug;
-+	st->queue->issue_flush_fn = dst_flush;
-+
-+	err = -EINVAL;
-+	st->disk = alloc_disk(1);
-+	if (!st->disk)
-+		goto err_out_free_queue;
-+
-+	st->disk->major = dst_major;
-+	st->disk->first_minor = (((unsigned long)st->disk) ^
-+		(((unsigned long)st->disk) >> 31)) & 0xff;
-+	st->disk->fops = &dst_blk_ops;
-+	st->disk->queue = st->queue;
-+	st->disk->private_data = st;
-+	snprintf(st->disk->disk_name, sizeof(st->disk->disk_name),
-+			"dst-%s-%d", st->name, st->disk->first_minor);
-+
-+	return 0;
-+
-+err_out_free_queue:
-+	blk_cleanup_queue(st->queue);
-+err_out_exit:
-+	return err;
-+}
-+
-+/*
-+ * Shows node name in sysfs.
-+ */
-+static ssize_t dst_name_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct dst_storage *st = container_of(dev, struct dst_storage, device);
-+
-+	return sprintf(buf, "%s\n", st->name);
-+}
-+
-+static void dst_remove_all_nodes(struct dst_storage *st)
-+{
-+	struct dst_node *n, *node, *tmp;
-+	struct rb_node *rb_node;
-+
-+	mutex_lock(&st->tree_lock);
-+	while ((rb_node = rb_first(&st->tree_root)) != NULL) {
-+		n = rb_entry(rb_node, struct dst_node, tree_node);
-+		rb_erase(&n->tree_node, &st->tree_root);
-+		dprintk("%s: first: %p [%d], shared_head: %p, shared_num: %d.\n",
-+				__func__, n, atomic_read(&n->refcnt), n->shared_head,
-+				atomic_read(&n->shared_num));
-+		if (atomic_read(&n->shared_num)) {
-+			list_for_each_entry_safe(node, tmp, &n->shared, shared) {
-+				list_del(&node->shared);
-+				atomic_dec(&n->shared_num);
-+				dprintk("%s: node: %p [%d].\n", __func__, node, atomic_read(&node->refcnt));
-+				dst_node_put(node->shared_head);
-+				node->shared_head = NULL;
-+				dst_node_put(node);
-+			}
-+		}
-+		n->shared_head = NULL;
-+		dst_node_put(n);
-+	}
-+	mutex_unlock(&st->tree_lock);
-+}
-+
-+/*
-+ * Shows node layout in syfs.
-+ */
-+static ssize_t dst_nodes_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct dst_storage *st = container_of(dev, struct dst_storage, device);
-+	int size = PAGE_CACHE_SIZE, sz;
-+	struct dst_node *n;
-+	struct rb_node *rb_node;
-+
-+	sz = sprintf(buf, "sectors (start [size]): ");
-+	size -= sz;
-+	buf += sz;
-+
-+	mutex_lock(&st->tree_lock);
-+	for (rb_node = rb_first(&st->tree_root); rb_node;
-+			rb_node = rb_next(rb_node)) {
-+		n = rb_entry(rb_node, struct dst_node, tree_node);
-+		if (size < 32)
-+			break;
-+		sz = sprintf(buf, "%llu [%llu]", n->start, n->size);
-+		buf += sz;
-+		size -= sz;
-+
-+		if (!rb_next(rb_node))
-+			break;
-+
-+		sz = sprintf(buf, " | ");
-+		buf += sz;
-+		size -= sz;
-+	}
-+	mutex_unlock(&st->tree_lock);
-+	size -= sprintf(buf, "\n");
-+	return PAGE_CACHE_SIZE - size;
-+}
-+
-+/*
-+ * Algorithm currently being used by given storage.
-+ */
-+static ssize_t dst_alg_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct dst_storage *st = container_of(dev, struct dst_storage, device);
-+	return sprintf(buf, "%s\n", st->alg->name);
-+}
-+
-+/*
-+ * Writing to this sysfs file allows to remove all nodes
-+ * and storage itself automatically.
-+ */
-+static ssize_t dst_remove_nodes(struct device *dev,
-+		struct device_attribute *attr,
-+		const char *buf, size_t count)
-+{
-+	struct dst_storage *st = container_of(dev, struct dst_storage, device);
-+	dst_remove_all_nodes(st);
-+	return count;
-+}
-+
-+static DEVICE_ATTR(name, 0444, dst_name_show, NULL);
-+static DEVICE_ATTR(nodes, 0444, dst_nodes_show, NULL);
-+static DEVICE_ATTR(alg, 0444, dst_alg_show, NULL);
-+static DEVICE_ATTR(remove_all_nodes, 0644, NULL, dst_remove_nodes);
-+
-+static int dst_create_storage_attributes(struct dst_storage *st)
-+{
-+	int err;
-+
-+	err = device_create_file(&st->device, &dev_attr_name);
-+	err = device_create_file(&st->device, &dev_attr_nodes);
-+	err = device_create_file(&st->device, &dev_attr_alg);
-+	err = device_create_file(&st->device, &dev_attr_remove_all_nodes);
-+	return 0;
-+}
-+
-+static void dst_remove_storage_attributes(struct dst_storage *st)
-+{
-+	device_remove_file(&st->device, &dev_attr_name);
-+	device_remove_file(&st->device, &dev_attr_nodes);
-+	device_remove_file(&st->device, &dev_attr_alg);
-+	device_remove_file(&st->device, &dev_attr_remove_all_nodes);
-+}
-+
-+static void dst_storage_sysfs_exit(struct dst_storage *st)
-+{
-+	dst_remove_storage_attributes(st);
-+	device_unregister(&st->device);
-+}
-+
-+static int dst_storage_sysfs_init(struct dst_storage *st)
-+{
-+	int err;
-+
-+	memcpy(&st->device, &dst_dev, sizeof(struct device));
-+	snprintf(st->device.bus_id, sizeof(st->device.bus_id), "%s", st->name);
-+
-+	err = device_register(&st->device);
-+	if (err) {
-+		dprintk(KERN_ERR "Failed to register dst device %s, err: %d.\n",
-+			st->name, err);
-+		goto err_out_exit;
-+	}
-+
-+	dst_create_storage_attributes(st);
-+
-+	return 0;
-+
-+err_out_exit:
-+	return err;
-+}
-+
-+/*
-+ * This functions shows size and start of the appropriate node.
-+ * Both are in sectors.
-+ */
-+static ssize_t dst_show_start(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct dst_node *n = container_of(dev, struct dst_node, device);
-+
-+	return sprintf(buf, "%llu\n", n->start);
-+}
-+
-+static ssize_t dst_show_size(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct dst_node *n = container_of(dev, struct dst_node, device);
-+
-+	return sprintf(buf, "%llu\n", n->size);
-+}
-+
-+/*
-+ * This function shows node's flags in hex.
-+ */
-+static ssize_t dst_show_flags(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct dst_node *n = container_of(dev, struct dst_node, device);
-+
-+	return sprintf(buf, "0x%lx\n", n->flags);
-+}
-+
-+/*
-+ * Shows type of the remote node - device major/minor number
-+ * for local nodes and address (af_inet ipv4/ipv6 only) for remote nodes.
-+ */
-+static ssize_t dst_show_type(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct dst_node *n = container_of(dev, struct dst_node, device);
-+	struct sockaddr addr;
-+	struct socket *sock;
-+	int addrlen;
-+
-+	if (!n->state && !n->bdev)
-+		return 0;
-+
-+	if (n->bdev)
-+		return sprintf(buf, "L: %d:%d\n",
-+				MAJOR(n->bdev->bd_dev), MINOR(n->bdev->bd_dev));
-+
-+	sock = n->state->socket;
-+	if (sock->ops->getname(sock, &addr, &addrlen, 2))
-+		return 0;
-+
-+	if (sock->ops->family == AF_INET) {
-+		struct sockaddr_in *sin = (struct sockaddr_in *)&addr;
-+		return sprintf(buf, "R: %u.%u.%u.%u:%d\n",
-+			NIPQUAD(sin->sin_addr.s_addr), ntohs(sin->sin_port));
-+	} else if (sock->ops->family == AF_INET6) {
-+		struct sockaddr_in6 *sin = (struct sockaddr_in6 *)&addr;
-+		return sprintf(buf,
-+			"R: %04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x:%d\n",
-+			NIP6(sin->sin6_addr), ntohs(sin->sin6_port));
-+	}
-+	return 0;
-+}
-+
-+static struct device_attribute dst_node_attrs[] = {
-+	__ATTR(start, 0444, dst_show_start, NULL),
-+	__ATTR(size, 0444, dst_show_size, NULL),
-+	__ATTR(flags, 0444, dst_show_flags, NULL),
-+	__ATTR(type, 0444, dst_show_type, NULL),
-+};
-+
-+static int dst_create_node_attributes(struct dst_node *n)
-+{
-+	int err, i;
-+
-+	for (i=0; i<ARRAY_SIZE(dst_node_attrs); ++i)
-+		err = device_create_file(&n->device,
-+				&dst_node_attrs[i]);
-+	return 0;
-+}
-+
-+static void dst_remove_node_attributes(struct dst_node *n)
-+{
-+	int i;
-+
-+	for (i=0; i<ARRAY_SIZE(dst_node_attrs); ++i)
-+		device_remove_file(&n->device,
-+				&dst_node_attrs[i]);
-+}
-+
-+static void dst_node_sysfs_exit(struct dst_node *n)
-+{
-+	if (n->device.parent == &n->st->device) {
-+		dst_remove_node_attributes(n);
-+		device_unregister(&n->device);
-+		n->device.parent = NULL;
-+	}
-+}
-+
-+static int dst_node_sysfs_init(struct dst_node *n)
-+{
-+	int err;
-+
-+	memcpy(&n->device, &dst_node_dev, sizeof(struct device));
-+
-+	n->device.parent = &n->st->device;
-+
-+	snprintf(n->device.bus_id, sizeof(n->device.bus_id),
-+			"n-%llu-%p", n->start, n);
-+	err = device_register(&n->device);
-+	if (err) {
-+		dprintk(KERN_ERR "Failed to register node, err: %d.\n", err);
-+		goto err_out_exit;
-+	}
-+
-+	dst_create_node_attributes(n);
-+
-+	return 0;
-+
-+err_out_exit:
-+	n->device.parent = NULL;
-+	return err;
-+}
-+
-+/*
-+ * Gets a reference for given storage, if
-+ * storage with given name and algorithm being used
-+ * does not exist it is created.
-+ */
-+static struct dst_storage *dst_get_storage(char *name, char *aname, int alloc)
-+{
-+	struct dst_storage *st, *rst = NULL;
-+	int err;
-+	struct dst_alg *alg;
-+
-+	mutex_lock(&dst_storage_lock);
-+	list_for_each_entry(st, &dst_storage_list, entry) {
-+		if (!strcmp(name, st->name) && !strcmp(st->alg->name, aname)) {
-+			rst = st;
-+			atomic_inc(&st->refcnt);
-+			break;
-+		}
-+	}
-+
-+	if (rst || !alloc) {
-+		mutex_unlock(&dst_storage_lock);
-+		return rst;
-+	}
-+
-+	st = kzalloc(sizeof(struct dst_storage), GFP_KERNEL);
-+	if (!st) {
-+		mutex_unlock(&dst_storage_lock);
-+		return NULL;
-+	}
-+
-+	mutex_init(&st->tree_lock);
-+	/*
-+	 * One for storage itself,
-+	 * another one for attached node below.
-+	 */
-+	atomic_set(&st->refcnt, 2);
-+	snprintf(st->name, DST_NAMELEN, "%s", name);
-+	st->tree_root.rb_node = NULL;
-+
-+	err = dst_storage_sysfs_init(st);
-+	if (err)
-+		goto err_out_free;
-+
-+	err = dst_create_disk(st);
-+	if (err)
-+		goto err_out_sysfs_exit;
-+
-+	mutex_lock(&dst_alg_lock);
-+	list_for_each_entry(alg, &dst_alg_list, entry) {
-+		if (!strcmp(alg->name, aname)) {
-+			atomic_inc(&alg->refcnt);
-+			try_module_get(alg->ops->owner);
-+			st->alg = alg;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&dst_alg_lock);
-+
-+	if (!st->alg)
-+		goto err_out_disk_remove;
-+
-+	list_add_tail(&st->entry, &dst_storage_list);
-+	mutex_unlock(&dst_storage_lock);
-+
-+	return st;
-+
-+err_out_disk_remove:
-+	dst_remove_disk(st);
-+err_out_sysfs_exit:
-+	dst_storage_sysfs_exit(st);
-+err_out_free:
-+	mutex_unlock(&dst_storage_lock);
-+	kfree(st);
-+	return NULL;
-+}
-+
-+/*
-+ * Allows to allocate and add new algorithm by external modules.
-+ */
-+struct dst_alg *dst_alloc_alg(char *name, struct dst_alg_ops *ops)
-+{
-+	struct dst_alg *alg;
-+
-+	alg = kzalloc(sizeof(struct dst_alg), GFP_KERNEL);
-+	if (!alg)
-+		return NULL;
-+	snprintf(alg->name, DST_NAMELEN, "%s", name);
-+	atomic_set(&alg->refcnt, 1);
-+	alg->ops = ops;
-+
-+	mutex_lock(&dst_alg_lock);
-+	list_add_tail(&alg->entry, &dst_alg_list);
-+	mutex_unlock(&dst_alg_lock);
-+
-+	return alg;
-+}
-+EXPORT_SYMBOL_GPL(dst_alloc_alg);
-+
-+/*
-+ * Removing algorithm from main list of supported algorithms.
-+ */
-+void dst_remove_alg(struct dst_alg *alg)
-+{
-+	mutex_lock(&dst_alg_lock);
-+	list_del_init(&alg->entry);
-+	mutex_unlock(&dst_alg_lock);
-+
-+	dst_put_alg(alg);
-+}
-+EXPORT_SYMBOL_GPL(dst_remove_alg);
-+
-+static void dst_cleanup_node(struct dst_node *n)
-+{
-+	struct dst_storage *st = n->st;
-+
-+	if (n->shared_head) {
-+		mutex_lock(&st->tree_lock);
-+		list_del(&n->shared);
-+		mutex_unlock(&st->tree_lock);
-+
-+		atomic_dec(&n->shared_head->refcnt);
-+		dst_node_put(n->shared_head);
-+		n->shared_head = NULL;
-+	}
-+
-+	if (n->st->alg->ops->pre_del_node)
-+		n->st->alg->ops->pre_del_node(n);
-+	if (n->cleanup)
-+		n->cleanup(n);
-+	dst_node_sysfs_exit(n);
-+	n->st->alg->ops->del_node(n);
-+	kfree(n);
-+}
-+
-+/*
-+ * This can deadlock if called under st->tree_lock being held,
-+ * so take care to only call this when reference counter can not
-+ * hit zero and thus start node freeing.
-+ */
-+void dst_node_put(struct dst_node *n)
-+{
-+	if (atomic_dec_and_test(&n->refcnt)) {
-+		struct dst_storage *st = n->st;
-+
-+		dprintk("%s: freeing node: %p, start: %llu, size: %llu, "
-+			"shared_head: %p, shared_num: %d, flags: %lx.\n",
-+			__func__, n, n->start, n->size,
-+			n->shared_head, atomic_read(&n->shared_num),
-+			n->flags);
-+
-+		dst_cleanup_node(n);
-+		dst_put_storage(st);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(dst_node_put);
-+
-+static inline int dst_compare_id(struct dst_node *old, u64 new)
-+{
-+	if (old->start + old->size <= new)
-+		return 1;
-+	if (old->start > new)
-+		return -1;
-+	return 0;
-+}
-+
-+/*
-+ * Tree of of the nodes, which form the storage.
-+ * Tree is indexed via start of the node and its size.
-+ * Comparison function above.
-+ */
-+struct dst_node *dst_storage_tree_search(struct dst_storage *st, u64 start)
-+{
-+	struct rb_node *n = st->tree_root.rb_node;
-+	struct dst_node *dn;
-+	int cmp;
-+
-+	while (n) {
-+		dn = rb_entry(n, struct dst_node, tree_node);
-+
-+		cmp = dst_compare_id(dn, start);
-+		dprintk("%s: tree: %llu-%llu, new: %llu.\n",
-+			__func__, dn->start, dn->start+dn->size, start);
-+		if (cmp < 0)
-+			n = n->rb_left;
-+		else if (cmp > 0)
-+			n = n->rb_right;
-+		else {
-+			return dst_node_get(dn);
-+		}
-+	}
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(dst_storage_tree_search);
-+
-+/*
-+ * This function allows to remove a node with given start address
-+ * from the storage.
-+ */
-+static struct dst_node *dst_storage_tree_del(struct dst_storage *st, u64 start)
-+{
-+	struct dst_node *n = dst_storage_tree_search(st, start);
-+
-+	if (!n)
-+		return NULL;
-+
-+	rb_erase(&n->tree_node, &st->tree_root);
-+	dst_node_put(n);
-+	return n;
-+}
-+
-+/*
-+ * This function allows to add given node to the storage.
-+ * Returns -EEXIST if the same area is already covered by another node.
-+ * This is return must be checked for redundancy algorithms.
-+ */
-+static struct dst_node *dst_storage_tree_add(struct dst_node *new,
-+		struct dst_storage *st)
-+{
-+	struct rb_node **n = &st->tree_root.rb_node, *parent = NULL;
-+	struct dst_node *dn;
-+	int cmp;
-+
-+	while (*n) {
-+		parent = *n;
-+		dn = rb_entry(parent, struct dst_node, tree_node);
-+
-+		cmp = dst_compare_id(dn, new->start);
-+		dprintk("%s: tree: %llu-%llu, new: %llu.\n",
-+				__func__, dn->start, dn->start+dn->size,
-+				new->start);
-+		if (cmp < 0)
-+			n = &parent->rb_left;
-+		else if (cmp > 0)
-+			n = &parent->rb_right;
-+		else {
-+			return dn;
-+		}
-+	}
-+
-+	rb_link_node(&new->tree_node, parent, n);
-+	rb_insert_color(&new->tree_node, &st->tree_root);
-+
-+	return NULL;
-+}
-+
-+/*
-+ * This function finds devices major/minor numbers for given pathname.
-+ */
-+static int dst_lookup_device(const char *path, dev_t *dev)
-+{
-+	int err;
-+	struct nameidata nd;
-+	struct inode *inode;
-+
-+	err = path_lookup(path, LOOKUP_FOLLOW, &nd);
-+	if (err)
-+		return err;
-+
-+	inode = nd.dentry->d_inode;
-+	if (!inode) {
-+		err = -ENOENT;
-+		goto out;
-+	}
-+
-+	if (!S_ISBLK(inode->i_mode)) {
-+		err = -ENOTBLK;
-+		goto out;
-+	}
-+
-+	*dev = inode->i_rdev;
-+
-+out:
-+	path_release(&nd);
-+	return err;
-+}
-+
-+/*
-+ * Cleanup routings for local, local exporting and remote nodes.
-+ */
-+static void dst_cleanup_remote(struct dst_node *n)
-+{
-+	if (n->state) {
-+		kst_state_exit(n->state);
-+		n->state = NULL;
-+	}
-+}
-+
-+static void dst_cleanup_local(struct dst_node *n)
-+{
-+	if (n->bdev) {
-+		sync_blockdev(n->bdev);
-+		blkdev_put(n->bdev);
-+		n->bdev = NULL;
-+	}
-+}
-+
-+static void dst_cleanup_local_export(struct dst_node *n)
-+{
-+	dst_cleanup_local(n);
-+	dst_cleanup_remote(n);
-+}
-+
-+/*
-+ * Header receiving function - may block.
-+ */
-+int dst_data_recv_header(struct socket *sock,
-+		struct dst_remote_request *r, int block)
-+{
-+	struct msghdr msg;
-+	struct kvec iov;
-+
-+	iov.iov_base = r;
-+	iov.iov_len = sizeof(struct dst_remote_request);
-+
-+	msg.msg_iov = (struct iovec *)&iov;
-+	msg.msg_iovlen = 1;
-+	msg.msg_name = NULL;
-+	msg.msg_namelen = 0;
-+	msg.msg_control = NULL;
-+	msg.msg_controllen = 0;
-+	msg.msg_flags = (block)?MSG_WAITALL:MSG_DONTWAIT | MSG_NOSIGNAL;
-+
-+	return kernel_recvmsg(sock, &msg, &iov, 1, iov.iov_len,
-+			msg.msg_flags);
-+}
-+
-+/*
-+ * Header sending function - may block.
-+ */
-+int dst_data_send_header(struct socket *sock,
-+		struct dst_remote_request *r)
-+{
-+	struct msghdr msg;
-+	struct kvec iov;
-+
-+	iov.iov_base = r;
-+	iov.iov_len = sizeof(struct dst_remote_request);
-+
-+	msg.msg_iov = (struct iovec *)&iov;
-+	msg.msg_iovlen = 1;
-+	msg.msg_name = NULL;
-+	msg.msg_namelen = 0;
-+	msg.msg_control = NULL;
-+	msg.msg_controllen = 0;
-+	msg.msg_flags = MSG_WAITALL | MSG_NOSIGNAL;
-+
-+	return kernel_sendmsg(sock, &msg, &iov, 1, iov.iov_len);
-+}
-+
-+static inline void dst_node_set_size(struct dst_node *n, u64 size)
-+{
-+	if (n->size)
-+		n->size = min(size, n->size);
-+	else
-+		n->size = size;
-+}
-+
-+/*
-+ * Setup routings for local, local exporting and remote nodes.
-+ */
-+static int dst_setup_local(struct dst_node *n, struct dst_ctl *ctl,
-+		struct dst_local_ctl *l)
-+{
-+	dev_t dev;
-+	int err;
-+
-+	err = dst_lookup_device(l->name, &dev);
-+	if (err)
-+		return err;
-+
-+	n->bdev = open_by_devnum(dev, FMODE_READ|FMODE_WRITE);
-+	if (!n->bdev)
-+		return -ENODEV;
-+
-+	dst_node_set_size(n, to_sector(n->bdev->bd_inode->i_size));
-+
-+	return 0;
-+}
-+
-+static int dst_setup_local_export(struct dst_node *n, struct dst_ctl *ctl,
-+		struct dst_le_template *tmp)
-+{
-+	int err;
-+
-+	err = dst_setup_local(n, ctl, &tmp->le->lctl);
-+	if (err)
-+		goto err_out_exit;
-+
-+	n->state = kst_listener_state_init(n, tmp);
-+	if (IS_ERR(n->state)) {
-+		err = PTR_ERR(n->state);
-+		goto err_out_cleanup;
-+	}
-+
-+	return 0;
-+
-+err_out_cleanup:
-+	dst_cleanup_local(n);
-+err_out_exit:
-+	return err;
-+}
-+
-+static int dst_request_remote_config(struct dst_node *n, struct socket *sock)
-+{
-+	struct dst_remote_request cfg;
-+	int err = -EINVAL;
-+
-+	memset(&cfg, 0, sizeof(struct dst_remote_request));
-+	cfg.cmd = cpu_to_be32(DST_REMOTE_CFG);
-+
-+	dprintk("%s: sending header.\n", __func__);
-+	err = dst_data_send_header(sock, &cfg);
-+	if (err != sizeof(struct dst_remote_request))
-+		goto out;
-+
-+	dprintk("%s: receiving header.\n", __func__);
-+	err = dst_data_recv_header(sock, &cfg, 1);
-+	if (err != sizeof(struct dst_remote_request))
-+		goto out;
-+
-+	err = -EINVAL;
-+	dprintk("%s: checking result: cmd: %d, size reported: %llu, csum is supported: %u.\n",
-+			__func__, be32_to_cpu(cfg.cmd), be64_to_cpu(cfg.sector), !!cfg.csum);
-+	if (be32_to_cpu(cfg.cmd) != DST_REMOTE_CFG)
-+		goto out;
-+
-+	err = 0;
-+	dst_node_set_size(n, be64_to_cpu(cfg.sector));
-+
-+	if (cfg.csum)
-+		__set_bit(DST_NODE_USE_CSUM, &n->flags);
-+	else
-+		__clear_bit(DST_NODE_USE_CSUM, &n->flags);
-+
-+out:
-+	dprintk("%s: n: %p, err: %d.\n", __func__, n, err);
-+	return err;
-+}
-+
-+static int dst_setup_remote(struct dst_node *n, struct dst_ctl *ctl,
-+		struct dst_remote_ctl *r)
-+{
-+	int err;
-+	struct socket *sock;
-+
-+	err = sock_create(r->addr.sa_family, r->type, r->proto, &sock);
-+	if (err < 0)
-+		goto err_out_exit;
-+
-+	sock->sk->sk_sndtimeo = sock->sk->sk_rcvtimeo =
-+		msecs_to_jiffies(DST_DEFAULT_TIMEO);
-+
-+	err = sock->ops->connect(sock, (struct sockaddr *)&r->addr,
-+			r->addr.sa_data_len, 0);
-+	if (err)
-+		goto err_out_destroy;
-+
-+	err = dst_request_remote_config(n, sock);
-+	if (err)
-+		goto err_out_destroy;
-+
-+	n->state = kst_data_state_init(n, sock);
-+	if (IS_ERR(n->state)) {
-+		err = PTR_ERR(n->state);
-+		goto err_out_destroy;
-+	}
-+
-+	return 0;
-+
-+err_out_destroy:
-+	sock_release(sock);
-+err_out_exit:
-+
-+	dprintk("%s: n: %p, err: %d.\n", __func__, n, err);
-+	return err;
-+}
-+
-+/*
-+ * This function inserts node into storage.
-+ */
-+static int dst_insert_node(struct dst_node *n)
-+{
-+	int err;
-+	struct dst_storage *st = n->st;
-+	struct dst_node *dn;
-+
-+	err = st->alg->ops->add_node(n);
-+	if (err)
-+		goto err_out_exit;
-+
-+	err = dst_node_sysfs_init(n);
-+	if (err)
-+		goto err_out_remove_node;
-+
-+	mutex_lock(&st->tree_lock);
-+	dn = dst_storage_tree_add(n, st);
-+	if (dn) {
-+		err = -EINVAL;
-+		dn->size = st->disk_size;
-+		if (dn->start == n->start)
-+			err = 0;
-+	}
-+	mutex_unlock(&st->tree_lock);
-+	if (err)
-+		goto err_out_sysfs_exit;
-+
-+	if (n->priv_callback)
-+		n->priv_callback(n);
-+
-+	return 0;
-+
-+err_out_sysfs_exit:
-+	dst_node_sysfs_exit(n);
-+err_out_remove_node:
-+	st->alg->ops->del_node(n);
-+err_out_exit:
-+	return err;
-+}
-+
-+static struct dst_node *dst_alloc_node(struct dst_ctl *ctl,
-+		void (*cleanup)(struct dst_node *))
-+{
-+	struct dst_storage *st;
-+	struct dst_node *n;
-+
-+	st = dst_get_storage(ctl->st, ctl->alg, 1);
-+	if (!st)
-+		goto err_out_exit;
-+
-+	n = kzalloc(sizeof(struct dst_node), GFP_KERNEL);
-+	if (!n)
-+		goto err_out_put_storage;
-+
-+	if (ctl->flags & DST_CTL_USE_CSUM)
-+		__set_bit(DST_NODE_USE_CSUM, &n->flags);
-+
-+	n->w = kst_main_worker;
-+	n->st = st;
-+	n->cleanup = cleanup;
-+	n->start = ctl->start;
-+	n->size = ctl->size;
-+	INIT_LIST_HEAD(&n->shared);
-+	n->shared_head = NULL;
-+	atomic_set(&n->shared_num, 0);
-+	atomic_set(&n->refcnt, 1);
-+
-+	return n;
-+
-+err_out_put_storage:
-+	mutex_lock(&dst_storage_lock);
-+	list_del_init(&st->entry);
-+	mutex_unlock(&dst_storage_lock);
-+
-+	dst_put_storage(st);
-+err_out_exit:
-+	return NULL;
-+}
-+
-+/*
-+ * Control callback for userspace commands to setup
-+ * different nodes and start/stop array.
-+ */
-+static int dst_add_remote(struct dst_ctl *ctl, void *data, unsigned int len)
-+{
-+	struct dst_node *n;
-+	int err;
-+	struct dst_remote_ctl *rctl = data;
-+
-+	if (len != sizeof(struct dst_remote_ctl))
-+		return -EINVAL;
-+
-+	n = dst_alloc_node(ctl, &dst_cleanup_remote);
-+	if (!n)
-+		return -ENOMEM;
-+
-+	err = dst_setup_remote(n, ctl, rctl);
-+	if (err < 0)
-+		goto err_out_free;
-+
-+	err = dst_insert_node(n);
-+	if (err)
-+		goto err_out_cleanup;
-+
-+	return 0;
-+
-+err_out_cleanup:
-+	if (n->cleanup)
-+		n->cleanup(n);
-+err_out_free:
-+	dst_put_storage(n->st);
-+	kfree(n);
-+	return err;
-+}
-+
-+static int dst_add_local_export(struct dst_ctl *ctl, void *data, unsigned int len)
-+{
-+	struct dst_node *n;
-+	int err;
-+	struct dst_le_template tmp;
-+
-+	if (len < sizeof(struct dst_local_export_ctl))
-+		return -EINVAL;
-+
-+	tmp.le = data;
-+
-+	len -= sizeof(struct dst_local_export_ctl);
-+	data += sizeof(struct dst_local_export_ctl);
-+
-+	if (len != tmp.le->secure_attr_num * sizeof(struct dst_secure_user))
-+		return -EINVAL;
-+
-+	tmp.data = data;
-+
-+	n = dst_alloc_node(ctl, &dst_cleanup_local_export);
-+	if (!n)
-+		return -EINVAL;
-+
-+	err = dst_setup_local_export(n, ctl, &tmp);
-+	if (err < 0)
-+		goto err_out_free;
-+
-+	err = dst_insert_node(n);
-+	if (err)
-+		goto err_out_cleanup;
-+
-+	return 0;
-+
-+err_out_cleanup:
-+	if (n->cleanup)
-+		n->cleanup(n);
-+err_out_free:
-+	dst_put_storage(n->st);
-+	kfree(n);
-+	return err;
-+}
-+
-+static int dst_add_local(struct dst_ctl *ctl, void *data, unsigned int len)
-+{
-+	struct dst_node *n;
-+	int err;
-+	struct dst_local_ctl *lctl = data;
-+
-+	if (len != sizeof(struct dst_local_ctl))
-+		return -EINVAL;
-+
-+	n = dst_alloc_node(ctl, &dst_cleanup_local);
-+	if (!n)
-+		return -EINVAL;
-+
-+	err = dst_setup_local(n, ctl, lctl);
-+	if (err < 0)
-+		goto err_out_free;
-+
-+	err = dst_insert_node(n);
-+	if (err)
-+		goto err_out_cleanup;
-+
-+	return 0;
-+
-+err_out_cleanup:
-+	if (n->cleanup)
-+		n->cleanup(n);
-+err_out_free:
-+	dst_put_storage(n->st);
-+	kfree(n);
-+	return err;
-+}
-+
-+static int dst_del_node(struct dst_ctl *ctl, void *data, unsigned int len)
-+{
-+	struct dst_node *n;
-+	struct dst_storage *st;
-+	int err = -ENODEV;
-+
-+	if (len)
-+		return -EINVAL;
-+
-+	st = dst_get_storage(ctl->st, ctl->alg, 0);
-+	if (!st)
-+		goto err_out_exit;
-+
-+	mutex_lock(&st->tree_lock);
-+	n = dst_storage_tree_del(st, ctl->start);
-+	mutex_unlock(&st->tree_lock);
-+	if (!n)
-+		goto err_out_put;
-+
-+	dst_node_put(n);
-+	dst_put_storage(st);
-+
-+	return 0;
-+
-+err_out_put:
-+	dst_put_storage(st);
-+err_out_exit:
-+	return err;
-+}
-+
-+static int dst_start_storage(struct dst_ctl *ctl, void *data, unsigned int len)
-+{
-+	struct dst_storage *st;
-+	int err = -ENXIO;
-+
-+	if (len)
-+		return -EINVAL;
-+
-+	st = dst_get_storage(ctl->st, ctl->alg, 0);
-+	if (!st)
-+		return -ENODEV;
-+
-+	mutex_lock(&st->tree_lock);
-+	if (!(st->flags & DST_ST_STARTED) && st->disk_size) {
-+		set_capacity(st->disk, st->disk_size);
-+		add_disk(st->disk);
-+		st->flags |= DST_ST_STARTED;
-+		printk(KERN_INFO "%s: STARTED name: '%s', st: %p, disk_size: %llu.\n",
-+				__func__, st->name, st, st->disk_size);
-+		err = 0;
-+	}
-+	mutex_unlock(&st->tree_lock);
-+
-+	dst_put_storage(st);
-+
-+	return err;
-+}
-+
-+static int dst_stop_storage(struct dst_ctl *ctl, void *data, unsigned int len)
-+{
-+	struct dst_storage *st;
-+
-+	if (len)
-+		return -EINVAL;
-+
-+	st = dst_get_storage(ctl->st, ctl->alg, 0);
-+	if (!st)
-+		return -ENODEV;
-+
-+	printk(KERN_INFO "%s: STOPPED storage: %s.\n", __func__, st->name);
-+
-+	dst_storage_sysfs_exit(st);
-+
-+	mutex_lock(&dst_storage_lock);
-+	list_del_init(&st->entry);
-+	mutex_unlock(&dst_storage_lock);
-+
-+	if (st->flags & DST_ST_STARTED)
-+		del_gendisk(st->disk);
-+
-+	dst_remove_all_nodes(st);
-+	dst_put_storage(st); /* One reference got above */
-+	dst_put_storage(st); /* Another reference set during initialization */
-+
-+	return 0;
-+}
-+
-+typedef int (*dst_command_func)(struct dst_ctl *ctl, void *data, unsigned int len);
-+
-+/*
-+ * List of userspace commands.
-+ */
-+static dst_command_func dst_commands[] = {
-+	[DST_ADD_REMOTE] = &dst_add_remote,
-+	[DST_ADD_LOCAL] = &dst_add_local,
-+	[DST_ADD_LOCAL_EXPORT] = &dst_add_local_export,
-+	[DST_DEL_NODE] = &dst_del_node,
-+	[DST_START_STORAGE] = &dst_start_storage,
-+	[DST_STOP_STORAGE] = &dst_stop_storage,
-+};
-+
-+/*
-+ * Configuration parser.
-+ */
-+static void cn_dst_callback(void *data)
-+{
-+	struct dst_ctl *ctl;
-+	struct cn_msg *msg = data;
-+	int err;
-+	struct dst_ctl_ack *ack;
-+
-+	if (msg->len < sizeof(struct dst_ctl)) {
-+		err = -EBADMSG;
-+		goto out;
-+	}
-+
-+	ctl = (struct dst_ctl *)msg->data;
-+
-+	if (ctl->cmd >= DST_CMD_MAX) {
-+		err = -EINVAL;
-+		goto out;
-+	}
-+
-+	err = dst_commands[ctl->cmd](ctl, msg->data + sizeof(struct dst_ctl),
-+			msg->len - sizeof(struct dst_ctl));
-+
-+out:
-+	ack = kmalloc(sizeof(struct dst_ctl_ack), GFP_KERNEL);
-+	if (!ack)
-+		return;
-+
-+	memcpy(&ack->msg, msg, sizeof(struct cn_msg));
-+
-+	ack->msg.ack = msg->ack + 1;
-+	ack->msg.len = sizeof(struct dst_ctl_ack) - sizeof(struct cn_msg);
-+
-+	ack->error = err;
-+
-+	cn_netlink_send(&ack->msg, 0, GFP_KERNEL);
-+	kfree(ack);
-+}
-+
-+static int dst_sysfs_init(void)
-+{
-+	return bus_register(&dst_dev_bus_type);
-+}
-+
-+static void dst_sysfs_exit(void)
-+{
-+	bus_unregister(&dst_dev_bus_type);
-+}
-+
-+static int __init dst_sys_init(void)
-+{
-+	int err = -ENOMEM;
-+
-+	dst_request_cache = kmem_cache_create("dst", sizeof(struct dst_request),
-+				       0, 0, NULL, NULL);
-+	if (!dst_request_cache)
-+		return -ENOMEM;
-+
-+	dst_bio_set = bioset_create(32, 32);
-+	if (!dst_bio_set)
-+		goto err_out_destroy;
-+
-+	err = register_blkdev(dst_major, DST_NAME);
-+	if (err < 0)
-+		goto err_out_destroy_bioset;
-+	if (err)
-+		dst_major = err;
-+
-+	err = dst_sysfs_init();
-+	if (err)
-+		goto err_out_unregister;
-+
-+	kst_main_worker = kst_worker_init(0);
-+	if (IS_ERR(kst_main_worker)) {
-+		err = PTR_ERR(kst_main_worker);
-+		goto err_out_sysfs_exit;
-+	}
-+
-+	err = cn_add_callback(&cn_dst_id, "DST", cn_dst_callback);
-+	if (err)
-+		goto err_out_worker_exit;
-+
-+	printk(KERN_INFO "Distributed storage, '%s' release.\n", dst_name);
-+
-+	return 0;
-+
-+err_out_worker_exit:
-+	kst_worker_exit(kst_main_worker);
-+err_out_sysfs_exit:
-+	dst_sysfs_exit();
-+err_out_unregister:
-+	unregister_blkdev(dst_major, DST_NAME);
-+err_out_destroy_bioset:
-+	bioset_free(dst_bio_set);
-+err_out_destroy:
-+	kmem_cache_destroy(dst_request_cache);
-+	return err;
-+}
-+
-+static void __exit dst_sys_exit(void)
-+{
-+	cn_del_callback(&cn_dst_id);
-+	dst_sysfs_exit();
-+	unregister_blkdev(dst_major, DST_NAME);
-+	kst_exit_all();
-+	bioset_free(dst_bio_set);
-+	kmem_cache_destroy(dst_request_cache);
-+}
-+
-+module_init(dst_sys_init);
-+module_exit(dst_sys_exit);
-+
-+MODULE_DESCRIPTION("Distributed storage");
-+MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/connector.h b/include/linux/connector.h
-index 10eb56b..9e67d58 100644
---- a/include/linux/connector.h
-+++ b/include/linux/connector.h
-@@ -36,9 +36,11 @@
- #define CN_VAL_CIFS                     0x1
- #define CN_W1_IDX			0x3	/* w1 communication */
- #define CN_W1_VAL			0x1
-+#define CN_DST_IDX			0x4	/* Distributed storage */
-+#define CN_DST_VAL			0x1
- 
- 
--#define CN_NETLINK_USERS		4
-+#define CN_NETLINK_USERS		5
- 
- /*
-  * Maximum connector's message size.
-diff --git a/include/linux/dst.h b/include/linux/dst.h
-new file mode 100644
-index 0000000..a1eb8e7
---- /dev/null
-+++ b/include/linux/dst.h
-@@ -0,0 +1,407 @@
-+/*
-+ * 2007+ Copyright (c) Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#ifndef __DST_H
-+#define __DST_H
-+
-+#include <linux/types.h>
-+#include <linux/connector.h>
-+
-+#define DST_NAMELEN		32
-+#define DST_NAME		"dst"
-+#define DST_IOCTL		0xba
-+
-+enum {
-+	DST_DEL_NODE	= 0,	/* Remove node with given id from storage */
-+	DST_ADD_REMOTE,		/* Add remote node with given id to the storage */
-+	DST_ADD_LOCAL,		/* Add local node with given id to the storage */
-+	DST_ADD_LOCAL_EXPORT,	/* Add local node with given id to the storage to be exported and used by remote peers */
-+	DST_START_STORAGE,	/* Array is ready and storage can be started, if there will be new nodes
-+				 * added to the storage, they will be checked against existing size and
-+				 * probably be dropped (for example in mirror format when new node has smaller
-+				 * size than array created) or inserted.
-+				 */
-+	DST_STOP_STORAGE,	/* Remove array and all nodes. */
-+	DST_CMD_MAX
-+};
-+
-+#define DST_CTL_FLAGS_REMOTE	(1<<0)
-+#define DST_CTL_FLAGS_EXPORT	(1<<1)
-+#define DST_CTL_USE_CSUM	(1<<2)
-+
-+struct dst_ctl
-+{
-+	char			st[DST_NAMELEN];
-+	char			alg[DST_NAMELEN];
-+	__u32			flags, cmd;
-+	__u64			start, size;
-+};
-+
-+struct dst_ctl_ack
-+{
-+	struct cn_msg		msg;
-+	int			error;
-+	int			unused[3];
-+};
-+
-+struct dst_local_ctl
-+{
-+	char			name[DST_NAMELEN];
-+};
-+
-+#define SADDR_MAX_DATA	128
-+
-+struct saddr {
-+	unsigned short		sa_family;			/* address family, AF_xxx	*/
-+	char			sa_data[SADDR_MAX_DATA];	/* 14 bytes of protocol address	*/
-+	unsigned short		sa_data_len;			/* Number of bytes used in sa_data */
-+};
-+
-+struct dst_remote_ctl
-+{
-+	__u16			type;
-+	__u16			proto;
-+	struct saddr		addr;
-+};
-+
-+#define DST_PERM_READ		(1<<0)
-+#define DST_PERM_WRITE		(1<<1)
-+
-+/*
-+ * Right now it is simple model, where each remote address
-+ * is assigned to set of permissions it is allowed to perform.
-+ * In real world block device does not know anything but
-+ * reading and writing, so it should be more than enough.
-+ */
-+struct dst_secure_user
-+{
-+	unsigned int		permissions;
-+	unsigned short		check_offset;
-+	struct saddr		addr;
-+};
-+
-+struct dst_local_export_ctl
-+{
-+	__u32			backlog;
-+	int			secure_attr_num;
-+	struct dst_local_ctl	lctl;
-+	struct dst_remote_ctl	rctl;
-+};
-+
-+enum {
-+	DST_REMOTE_CFG		= 1, 		/* Request remote configuration */
-+	DST_WRITE,				/* Writing */
-+	DST_READ,				/* Reading */
-+	DST_NCMD_MAX,
-+};
-+
-+struct dst_remote_request
-+{
-+	__u32			cmd;
-+	__u32			csum;
-+	__u32			size;
-+	__u32			offset;
-+	__u64			sector;
-+};
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/rbtree.h>
-+#include <linux/net.h>
-+#include <linux/blkdev.h>
-+#include <linux/bio.h>
-+#include <linux/mempool.h>
-+#include <linux/device.h>
-+#include <linux/crc32c.h>
-+
-+//#define CONFIG_DST_DEBUG
-+
-+#ifdef CONFIG_DST_DEBUG
-+#define dprintk(f, a...) printk(KERN_NOTICE f, ##a)
-+#else
-+static inline void __attribute__ ((format (printf, 1, 2))) dprintk(const char * fmt, ...) {}
-+#endif
-+
-+struct kst_worker
-+{
-+	struct list_head	entry;
-+
-+	struct list_head	state_list;
-+	struct mutex		state_mutex;
-+
-+	struct list_head	ready_list;
-+	spinlock_t		ready_lock;
-+
-+	mempool_t		*req_pool;
-+
-+	struct task_struct	*thread;
-+
-+	wait_queue_head_t 	wait;
-+
-+	int			id;
-+};
-+
-+struct kst_state;
-+struct dst_node;
-+
-+#define DST_REQ_HEADER_SENT	(1<<0)
-+#define DST_REQ_EXPORT		(1<<1)
-+#define DST_REQ_EXPORT_WRITE	(1<<2)
-+#define DST_REQ_EXPORT_READ	(1<<3)
-+#define DST_REQ_ALWAYS_QUEUE	(1<<4)
-+#define DST_REQ_CHEKSUM_RECV	(1<<5)
-+#define DST_REQ_CHECK_QUEUE	(1<<6)
-+
-+struct dst_request
-+{
-+	struct list_head	request_list_entry;
-+	struct bio		*bio;
-+	struct kst_state 	*state;
-+	struct dst_node 	*node;
-+
-+	u32			tmp_csum, tmp_offset;
-+
-+	u32			flags;
-+
-+	u32			offset;
-+	int			idx, num;
-+
-+	int 			(*callback)(struct dst_request *dst,
-+						unsigned int revents);
-+	void			(*bio_endio)(struct dst_request *dst, 
-+						int err);
-+
-+	atomic_t		refcnt;
-+	void			*priv;
-+
-+	u64			size, orig_size, start;
-+};
-+
-+struct kst_state_ops
-+{
-+	int 		(*init)(struct kst_state *, void *);
-+	int 		(*push)(struct dst_request *req);
-+	int		(*ready)(struct kst_state *);
-+	int		(*recovery)(struct kst_state *, int err);
-+	void 		(*exit)(struct kst_state *);
-+};
-+
-+struct kst_state
-+{
-+	struct list_head	entry;
-+	struct list_head	ready_entry;
-+
-+	wait_queue_t 		wait;
-+	wait_queue_head_t 	*whead;
-+
-+	struct dst_node		*node;
-+	struct socket		*socket;
-+
-+	u32			permissions;
-+
-+	struct mutex		request_lock;
-+	struct list_head	request_list;
-+
-+	struct kst_state_ops	*ops;
-+};
-+
-+#define DST_DEFAULT_TIMEO	2000
-+
-+struct dst_storage;
-+
-+struct dst_alg_ops
-+{
-+	int			(*add_node)(struct dst_node *n);
-+	void			(*del_node)(struct dst_node *n);
-+	void			(*pre_del_node)(struct dst_node *n);
-+	int 			(*remap)(struct dst_request *req);
-+	int			(*error)(struct kst_state *state, int err);
-+	struct module 		*owner;
-+};
-+
-+struct dst_alg
-+{
-+	struct list_head	entry;
-+	char			name[DST_NAMELEN];
-+	atomic_t		refcnt;
-+	struct dst_alg_ops	*ops;
-+};
-+
-+#define DST_ST_STARTED		(1<<0)
-+
-+struct dst_storage
-+{
-+	struct list_head	entry;
-+	char			name[DST_NAMELEN];
-+	struct dst_alg		*alg;
-+	atomic_t		refcnt;
-+	struct mutex		tree_lock;
-+	struct rb_root		tree_root;
-+
-+	struct request_queue	*queue;
-+	struct gendisk		*disk;
-+
-+	long			flags;
-+	u64			disk_size;
-+
-+	struct device		device;
-+};
-+
-+#define DST_NODE_FROZEN		0
-+#define DST_NODE_NOTSYNC	1
-+#define DST_NODE_USE_CSUM	2
-+
-+struct dst_node
-+{
-+	struct rb_node		tree_node;
-+
-+	struct list_head	shared;
-+	struct dst_node		*shared_head;
-+
-+	struct block_device 	*bdev;
-+	struct dst_storage	*st;
-+	struct kst_state	*state;
-+	struct kst_worker	*w;
-+
-+	atomic_t		refcnt;
-+	atomic_t		shared_num;
-+
-+	void			(*cleanup)(struct dst_node *);
-+
-+	long			flags;
-+
-+	u64			start, size;
-+
-+	void			(*priv_callback)(struct dst_node *);
-+	void			*priv;
-+
-+	struct device		device;
-+};
-+
-+struct dst_le_template
-+{
-+	struct dst_local_export_ctl	*le;
-+	void 				*data;
-+};
-+
-+struct dst_secure
-+{
-+	struct list_head	sec_entry;
-+	struct dst_secure_user	sec;
-+};
-+
-+void kst_state_exit(struct kst_state *st);
-+
-+struct kst_worker *kst_worker_init(int id);
-+void kst_worker_exit(struct kst_worker *w);
-+
-+struct kst_state *kst_listener_state_init(struct dst_node *node,
-+		struct dst_le_template *tmp);
-+struct kst_state *kst_data_state_init(struct dst_node *node,
-+		struct socket *newsock);
-+
-+void kst_wake(struct kst_state *st);
-+
-+void kst_exit_all(void);
-+
-+struct dst_alg *dst_alloc_alg(char *name, struct dst_alg_ops *ops);
-+void dst_remove_alg(struct dst_alg *alg);
-+
-+struct dst_node *dst_storage_tree_search(struct dst_storage *st, u64 start);
-+
-+void dst_node_put(struct dst_node *n);
-+
-+static inline struct dst_node *dst_node_get(struct dst_node *n)
-+{
-+	atomic_inc(&n->refcnt);
-+	return n;
-+}
-+
-+struct dst_request *dst_clone_request(struct dst_request *req, mempool_t *pool);
-+void dst_free_request(struct dst_request *req);
-+
-+void kst_complete_req(struct dst_request *req, int err);
-+void kst_bio_endio(struct dst_request *req, int err);
-+void kst_del_req(struct dst_request *req);
-+int kst_enqueue_req(struct kst_state *st, struct dst_request *req);
-+
-+int kst_data_callback(struct dst_request *req, unsigned int revents);
-+
-+extern struct kmem_cache *dst_request_cache;
-+
-+static inline sector_t to_sector(unsigned long long n)
-+{
-+	return (n >> 9);
-+}
-+
-+static inline unsigned long to_bytes(sector_t n)
-+{
-+	return (n << 9);
-+}
-+
-+/*
-+ * Checks state's permissions.
-+ * Returns -EPERM if check failed.
-+ */
-+static inline int kst_check_permissions(struct kst_state *st, struct bio *bio)
-+{
-+	if ((bio_rw(bio) == WRITE) && !(st->permissions & DST_PERM_WRITE))
-+		return -EPERM;
-+
-+	return 0;
-+}
-+
-+static inline __u32 dst_csum_data(unsigned char *d, unsigned int size)
-+{
-+	return crc32c_le(0, d, size);
-+}
-+
-+static inline void kst_convert_header(struct dst_remote_request *r)
-+{
-+	r->cmd = be32_to_cpu(r->cmd);
-+	r->sector = be64_to_cpu(r->sector);
-+	r->offset = be32_to_cpu(r->offset);
-+	r->size = be32_to_cpu(r->size);
-+	r->csum = be32_to_cpu(r->csum);
-+}
-+
-+extern int dst_data_send_header(struct socket *sock,
-+		struct dst_remote_request *r);
-+extern int dst_data_recv_header(struct socket *sock,
-+		struct dst_remote_request *r, int block);
-+
-+static inline void dst_fill_request(struct dst_request *req, struct bio *bio,
-+	u64 start, struct dst_node *n, void (*req_bio_endio)(struct dst_request *req, int err))
-+{
-+	req->flags = (test_bit(DST_NODE_FROZEN, &n->flags))?
-+				DST_REQ_ALWAYS_QUEUE:0;
-+	req->start = start;
-+	req->offset = 0;
-+	req->state = n->state;
-+	req->node = n;
-+	req->bio = bio;
-+
-+	req->size = bio->bi_size;
-+	req->orig_size = bio->bi_size;
-+	req->idx = bio->bi_idx;
-+	req->num = bio->bi_vcnt;
-+
-+	req->bio_endio = req_bio_endio;
-+}
-+
-+void dst_set_disk_size(struct dst_storage *st);
-+
-+#endif /* __KERNEL__ */
-+#endif /* __DST_H */
+do a
 
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/christoph/vm.git performance
+
+to get the changes.
+
+(more on the tests I did will come as a response to the other email from 
+you).
+
+Config in use here:
+
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.24-rc8
+# Sun Jan 20 23:03:25 2008
+#
+CONFIG_64BIT=y
+# CONFIG_X86_32 is not set
+CONFIG_X86_64=y
+CONFIG_X86=y
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_CLOCKSOURCE_WATCHDOG=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_SEMAPHORE_SLEEPERS=y
+CONFIG_MMU=y
+CONFIG_ZONE_DMA=y
+# CONFIG_QUICKLIST is not set
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_IOMAP=y
+CONFIG_GENERIC_BUG=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_DMI=y
+CONFIG_RWSEM_GENERIC_SPINLOCK=y
+# CONFIG_RWSEM_XCHGADD_ALGORITHM is not set
+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_GENERIC_TIME_VSYSCALL=y
+CONFIG_ARCH_SUPPORTS_OPROFILE=y
+CONFIG_ZONE_DMA32=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_AUDIT_ARCH=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_GENERIC_PENDING_IRQ=y
+CONFIG_X86_HT=y
+# CONFIG_KTIME_SCALAR is not set
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION="x86_64-default"
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+# CONFIG_BSD_PROCESS_ACCT is not set
+# CONFIG_TASKSTATS is not set
+# CONFIG_USER_NS is not set
+# CONFIG_PID_NS is not set
+# CONFIG_AUDIT is not set
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_LOG_BUF_SHIFT=18
+# CONFIG_CGROUPS is not set
+CONFIG_FAIR_GROUP_SCHED=y
+CONFIG_FAIR_USER_SCHED=y
+# CONFIG_FAIR_CGROUP_SCHED is not set
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_RELAY=y
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+CONFIG_EMBEDDED=y
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+# CONFIG_KALLSYMS_ALL is not set
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_SLUB_DEBUG=y
+# CONFIG_SLAB is not set
+CONFIG_SLUB=y
+# CONFIG_SLOB is not set
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+# CONFIG_TINY_SHMEM is not set
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODULE_FORCE_UNLOAD=y
+# CONFIG_MODVERSIONS is not set
+# CONFIG_MODULE_SRCVERSION_ALL is not set
+# CONFIG_KMOD is not set
+CONFIG_STOP_MACHINE=y
+CONFIG_BLOCK=y
+# CONFIG_BLK_DEV_IO_TRACE is not set
+# CONFIG_BLK_DEV_BSG is not set
+CONFIG_BLOCK_COMPAT=y
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+# CONFIG_IOSCHED_AS is not set
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+CONFIG_DEFAULT_CFQ=y
+# CONFIG_DEFAULT_NOOP is not set
+CONFIG_DEFAULT_IOSCHED="cfq"
+
+#
+# Processor type and features
+#
+# CONFIG_TICK_ONESHOT is not set
+# CONFIG_NO_HZ is not set
+# CONFIG_HIGH_RES_TIMERS is not set
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+CONFIG_SMP=y
+CONFIG_X86_PC=y
+# CONFIG_X86_ELAN is not set
+# CONFIG_X86_VOYAGER is not set
+# CONFIG_X86_NUMAQ is not set
+# CONFIG_X86_SUMMIT is not set
+# CONFIG_X86_BIGSMP is not set
+# CONFIG_X86_VISWS is not set
+# CONFIG_X86_GENERICARCH is not set
+# CONFIG_X86_ES7000 is not set
+# CONFIG_X86_VSMP is not set
+# CONFIG_M386 is not set
+# CONFIG_M486 is not set
+# CONFIG_M586 is not set
+# CONFIG_M586TSC is not set
+# CONFIG_M586MMX is not set
+# CONFIG_M686 is not set
+# CONFIG_MPENTIUMII is not set
+# CONFIG_MPENTIUMIII is not set
+# CONFIG_MPENTIUMM is not set
+# CONFIG_MPENTIUM4 is not set
+# CONFIG_MK6 is not set
+# CONFIG_MK7 is not set
+# CONFIG_MK8 is not set
+# CONFIG_MCRUSOE is not set
+# CONFIG_MEFFICEON is not set
+# CONFIG_MWINCHIPC6 is not set
+# CONFIG_MWINCHIP2 is not set
+# CONFIG_MWINCHIP3D is not set
+# CONFIG_MGEODEGX1 is not set
+# CONFIG_MGEODE_LX is not set
+# CONFIG_MCYRIXIII is not set
+# CONFIG_MVIAC3_2 is not set
+# CONFIG_MVIAC7 is not set
+# CONFIG_MPSC is not set
+# CONFIG_MCORE2 is not set
+CONFIG_GENERIC_CPU=y
+CONFIG_X86_L1_CACHE_BYTES=128
+CONFIG_X86_INTERNODE_CACHE_BYTES=128
+CONFIG_X86_CMPXCHG=y
+CONFIG_X86_L1_CACHE_SHIFT=7
+CONFIG_X86_GOOD_APIC=y
+CONFIG_X86_TSC=y
+CONFIG_X86_MINIMUM_CPU_FAMILY=64
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+CONFIG_GART_IOMMU=y
+# CONFIG_CALGARY_IOMMU is not set
+CONFIG_SWIOTLB=y
+CONFIG_NR_CPUS=8
+CONFIG_SCHED_SMT=y
+CONFIG_SCHED_MC=y
+# CONFIG_PREEMPT_NONE is not set
+CONFIG_PREEMPT_VOLUNTARY=y
+# CONFIG_PREEMPT is not set
+CONFIG_PREEMPT_BKL=y
+CONFIG_X86_LOCAL_APIC=y
+CONFIG_X86_IO_APIC=y
+CONFIG_X86_MCE=y
+CONFIG_X86_MCE_INTEL=y
+CONFIG_X86_MCE_AMD=y
+# CONFIG_MICROCODE is not set
+CONFIG_X86_MSR=y
+CONFIG_X86_CPUID=y
+# CONFIG_NUMA is not set
+CONFIG_ARCH_FLATMEM_ENABLE=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_SELECT_MEMORY_MODEL=y
+# CONFIG_FLATMEM_MANUAL is not set
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+CONFIG_SPARSEMEM_MANUAL=y
+CONFIG_SPARSEMEM=y
+CONFIG_HAVE_MEMORY_PRESENT=y
+# CONFIG_SPARSEMEM_STATIC is not set
+CONFIG_SPARSEMEM_EXTREME=y
+CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
+CONFIG_SPARSEMEM_VMEMMAP=y
+
+#
+# Memory hotplug is currently incompatible with Software Suspend
+#
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_RESOURCES_64BIT=y
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_MTRR=y
+CONFIG_SECCOMP=y
+# CONFIG_CC_STACKPROTECTOR is not set
+# CONFIG_HZ_100 is not set
+CONFIG_HZ_250=y
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=250
+# CONFIG_KEXEC is not set
+# CONFIG_CRASH_DUMP is not set
+CONFIG_PHYSICAL_START=0x200000
+# CONFIG_RELOCATABLE is not set
+CONFIG_PHYSICAL_ALIGN=0x200000
+CONFIG_HOTPLUG_CPU=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+
+#
+# Power management options
+#
+CONFIG_ARCH_HIBERNATION_HEADER=y
+CONFIG_PM=y
+# CONFIG_PM_LEGACY is not set
+# CONFIG_PM_DEBUG is not set
+CONFIG_PM_SLEEP_SMP=y
+CONFIG_PM_SLEEP=y
+CONFIG_SUSPEND_SMP_POSSIBLE=y
+CONFIG_SUSPEND=y
+CONFIG_HIBERNATION_SMP_POSSIBLE=y
+CONFIG_HIBERNATION=y
+CONFIG_PM_STD_PARTITION=""
+CONFIG_ACPI=y
+CONFIG_ACPI_SLEEP=y
+CONFIG_ACPI_PROCFS=y
+CONFIG_ACPI_PROCFS_POWER=y
+CONFIG_ACPI_SYSFS_POWER=y
+CONFIG_ACPI_PROC_EVENT=y
+CONFIG_ACPI_AC=y
+CONFIG_ACPI_BATTERY=y
+CONFIG_ACPI_BUTTON=y
+CONFIG_ACPI_FAN=y
+# CONFIG_ACPI_DOCK is not set
+CONFIG_ACPI_PROCESSOR=y
+CONFIG_ACPI_HOTPLUG_CPU=y
+CONFIG_ACPI_THERMAL=y
+# CONFIG_ACPI_ASUS is not set
+# CONFIG_ACPI_TOSHIBA is not set
+CONFIG_ACPI_BLACKLIST_YEAR=0
+# CONFIG_ACPI_DEBUG is not set
+CONFIG_ACPI_EC=y
+CONFIG_ACPI_POWER=y
+CONFIG_ACPI_SYSTEM=y
+CONFIG_X86_PM_TIMER=y
+CONFIG_ACPI_CONTAINER=y
+# CONFIG_ACPI_SBS is not set
+
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+CONFIG_CPU_FREQ_DEBUG=y
+CONFIG_CPU_FREQ_STAT=y
+# CONFIG_CPU_FREQ_STAT_DETAILS is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+# CONFIG_CPU_FREQ_GOV_POWERSAVE is not set
+CONFIG_CPU_FREQ_GOV_USERSPACE=y
+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+
+#
+# CPUFreq processor drivers
+#
+CONFIG_X86_ACPI_CPUFREQ=y
+CONFIG_X86_POWERNOW_K8=y
+CONFIG_X86_POWERNOW_K8_ACPI=y
+# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
+# CONFIG_X86_P4_CLOCKMOD is not set
+
+#
+# shared options
+#
+CONFIG_X86_ACPI_CPUFREQ_PROC_INTF=y
+# CONFIG_X86_SPEEDSTEP_LIB is not set
+CONFIG_CPU_IDLE=y
+CONFIG_CPU_IDLE_GOV_LADDER=y
+
+#
+# Bus options (PCI etc.)
+#
+CONFIG_PCI=y
+CONFIG_PCI_DIRECT=y
+CONFIG_PCI_MMCONFIG=y
+CONFIG_PCI_DOMAINS=y
+# CONFIG_DMAR is not set
+CONFIG_PCIEPORTBUS=y
+CONFIG_PCIEAER=y
+CONFIG_ARCH_SUPPORTS_MSI=y
+CONFIG_PCI_MSI=y
+CONFIG_PCI_LEGACY=y
+# CONFIG_PCI_DEBUG is not set
+# CONFIG_HT_IRQ is not set
+CONFIG_ISA_DMA_API=y
+CONFIG_K8_NB=y
+# CONFIG_PCCARD is not set
+# CONFIG_HOTPLUG_PCI is not set
+
+#
+# Executable file formats / Emulations
+#
+CONFIG_BINFMT_ELF=y
+# CONFIG_BINFMT_MISC is not set
+CONFIG_IA32_EMULATION=y
+CONFIG_IA32_AOUT=y
+CONFIG_COMPAT=y
+CONFIG_COMPAT_FOR_U64_ALIGNMENT=y
+CONFIG_SYSVIPC_COMPAT=y
+
+#
+# Networking
+#
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+# CONFIG_PACKET_MMAP is not set
+CONFIG_UNIX=y
+# CONFIG_NET_KEY is not set
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_FIB_HASH=y
+CONFIG_IP_PNP=y
+CONFIG_IP_PNP_DHCP=y
+# CONFIG_IP_PNP_BOOTP is not set
+# CONFIG_IP_PNP_RARP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_IP_MROUTE is not set
+# CONFIG_ARPD is not set
+# CONFIG_SYN_COOKIES is not set
+# CONFIG_INET_AH is not set
+# CONFIG_INET_ESP is not set
+# CONFIG_INET_IPCOMP is not set
+# CONFIG_INET_XFRM_TUNNEL is not set
+CONFIG_INET_TUNNEL=y
+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
+# CONFIG_INET_XFRM_MODE_BEET is not set
+# CONFIG_INET_LRO is not set
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+# CONFIG_TCP_CONG_ADVANCED is not set
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+# CONFIG_TCP_MD5SIG is not set
+CONFIG_IPV6=y
+# CONFIG_IPV6_PRIVACY is not set
+# CONFIG_IPV6_ROUTER_PREF is not set
+# CONFIG_IPV6_OPTIMISTIC_DAD is not set
+# CONFIG_INET6_AH is not set
+# CONFIG_INET6_ESP is not set
+# CONFIG_INET6_IPCOMP is not set
+# CONFIG_IPV6_MIP6 is not set
+# CONFIG_INET6_XFRM_TUNNEL is not set
+# CONFIG_INET6_TUNNEL is not set
+# CONFIG_INET6_XFRM_MODE_TRANSPORT is not set
+# CONFIG_INET6_XFRM_MODE_TUNNEL is not set
+# CONFIG_INET6_XFRM_MODE_BEET is not set
+# CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION is not set
+CONFIG_IPV6_SIT=y
+# CONFIG_IPV6_TUNNEL is not set
+# CONFIG_IPV6_MULTIPLE_TABLES is not set
+# CONFIG_NETWORK_SECMARK is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_IP_DCCP is not set
+# CONFIG_IP_SCTP is not set
+# CONFIG_TIPC is not set
+# CONFIG_ATM is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_VLAN_8021Q is not set
+# CONFIG_DECNET is not set
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+# CONFIG_NET_SCHED is not set
+
+#
+# Network testing
+#
+# CONFIG_NET_PKTGEN is not set
+# CONFIG_NET_TCPPROBE is not set
+# CONFIG_HAMRADIO is not set
+# CONFIG_IRDA is not set
+# CONFIG_BT is not set
+# CONFIG_AF_RXRPC is not set
+
+#
+# Wireless
+#
+# CONFIG_CFG80211 is not set
+# CONFIG_WIRELESS_EXT is not set
+# CONFIG_MAC80211 is not set
+# CONFIG_IEEE80211 is not set
+# CONFIG_RFKILL is not set
+# CONFIG_NET_9P is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+# CONFIG_SYS_HYPERVISOR is not set
+# CONFIG_CONNECTOR is not set
+# CONFIG_MTD is not set
+# CONFIG_PARPORT is not set
+CONFIG_PNP=y
+# CONFIG_PNP_DEBUG is not set
+
+#
+# Protocols
+#
+CONFIG_PNPACPI=y
+CONFIG_BLK_DEV=y
+CONFIG_BLK_DEV_FD=y
+# CONFIG_BLK_CPQ_DA is not set
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_UMEM is not set
+# CONFIG_BLK_DEV_COW_COMMON is not set
+CONFIG_BLK_DEV_LOOP=y
+# CONFIG_BLK_DEV_CRYPTOLOOP is not set
+# CONFIG_BLK_DEV_NBD is not set
+# CONFIG_BLK_DEV_SX8 is not set
+# CONFIG_BLK_DEV_UB is not set
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=4096
+CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
+# CONFIG_CDROM_PKTCDVD is not set
+# CONFIG_ATA_OVER_ETH is not set
+CONFIG_MISC_DEVICES=y
+# CONFIG_IBM_ASM is not set
+# CONFIG_PHANTOM is not set
+# CONFIG_EEPROM_93CX6 is not set
+# CONFIG_SGI_IOC4 is not set
+# CONFIG_TIFM_CORE is not set
+# CONFIG_SONY_LAPTOP is not set
+# CONFIG_THINKPAD_ACPI is not set
+CONFIG_IDE=y
+CONFIG_IDE_MAX_HWIFS=4
+CONFIG_BLK_DEV_IDE=y
+
+#
+# Please see Documentation/ide.txt for help/info on IDE drives
+#
+# CONFIG_BLK_DEV_IDE_SATA is not set
+# CONFIG_BLK_DEV_HD_IDE is not set
+CONFIG_BLK_DEV_IDEDISK=y
+CONFIG_IDEDISK_MULTI_MODE=y
+CONFIG_BLK_DEV_IDECD=y
+# CONFIG_BLK_DEV_IDETAPE is not set
+# CONFIG_BLK_DEV_IDEFLOPPY is not set
+# CONFIG_BLK_DEV_IDESCSI is not set
+CONFIG_BLK_DEV_IDEACPI=y
+# CONFIG_IDE_TASK_IOCTL is not set
+CONFIG_IDE_PROC_FS=y
+
+#
+# IDE chipset support/bugfixes
+#
+CONFIG_IDE_GENERIC=y
+# CONFIG_BLK_DEV_PLATFORM is not set
+# CONFIG_BLK_DEV_CMD640 is not set
+# CONFIG_BLK_DEV_IDEPNP is not set
+
+#
+# PCI IDE chipsets support
+#
+CONFIG_BLK_DEV_IDEPCI=y
+# CONFIG_IDEPCI_SHARE_IRQ is not set
+CONFIG_IDEPCI_PCIBUS_ORDER=y
+# CONFIG_BLK_DEV_OFFBOARD is not set
+# CONFIG_BLK_DEV_GENERIC is not set
+# CONFIG_BLK_DEV_OPTI621 is not set
+# CONFIG_BLK_DEV_RZ1000 is not set
+CONFIG_BLK_DEV_IDEDMA_PCI=y
+# CONFIG_BLK_DEV_AEC62XX is not set
+# CONFIG_BLK_DEV_ALI15X3 is not set
+CONFIG_BLK_DEV_AMD74XX=y
+CONFIG_BLK_DEV_ATIIXP=y
+# CONFIG_BLK_DEV_CMD64X is not set
+# CONFIG_BLK_DEV_TRIFLEX is not set
+# CONFIG_BLK_DEV_CY82C693 is not set
+# CONFIG_BLK_DEV_CS5520 is not set
+# CONFIG_BLK_DEV_CS5530 is not set
+# CONFIG_BLK_DEV_HPT34X is not set
+# CONFIG_BLK_DEV_HPT366 is not set
+# CONFIG_BLK_DEV_JMICRON is not set
+# CONFIG_BLK_DEV_SC1200 is not set
+CONFIG_BLK_DEV_PIIX=y
+# CONFIG_BLK_DEV_IT8213 is not set
+# CONFIG_BLK_DEV_IT821X is not set
+# CONFIG_BLK_DEV_NS87415 is not set
+# CONFIG_BLK_DEV_PDC202XX_OLD is not set
+CONFIG_BLK_DEV_PDC202XX_NEW=y
+# CONFIG_BLK_DEV_SVWKS is not set
+# CONFIG_BLK_DEV_SIIMAGE is not set
+# CONFIG_BLK_DEV_SIS5513 is not set
+# CONFIG_BLK_DEV_SLC90E66 is not set
+# CONFIG_BLK_DEV_TRM290 is not set
+# CONFIG_BLK_DEV_VIA82CXXX is not set
+# CONFIG_BLK_DEV_TC86C001 is not set
+# CONFIG_IDE_ARM is not set
+CONFIG_BLK_DEV_IDEDMA=y
+CONFIG_IDE_ARCH_OBSOLETE_INIT=y
+# CONFIG_BLK_DEV_HD is not set
+
+#
+# SCSI device support
+#
+# CONFIG_RAID_ATTRS is not set
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+# CONFIG_SCSI_TGT is not set
+CONFIG_SCSI_NETLINK=y
+# CONFIG_SCSI_PROC_FS is not set
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=y
+# CONFIG_CHR_DEV_ST is not set
+# CONFIG_CHR_DEV_OSST is not set
+CONFIG_BLK_DEV_SR=y
+# CONFIG_BLK_DEV_SR_VENDOR is not set
+CONFIG_CHR_DEV_SG=y
+# CONFIG_CHR_DEV_SCH is not set
+
+#
+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+#
+# CONFIG_SCSI_MULTI_LUN is not set
+CONFIG_SCSI_CONSTANTS=y
+# CONFIG_SCSI_LOGGING is not set
+# CONFIG_SCSI_SCAN_ASYNC is not set
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+CONFIG_SCSI_SPI_ATTRS=y
+CONFIG_SCSI_FC_ATTRS=y
+# CONFIG_SCSI_ISCSI_ATTRS is not set
+# CONFIG_SCSI_SAS_LIBSAS is not set
+# CONFIG_SCSI_SRP_ATTRS is not set
+CONFIG_SCSI_LOWLEVEL=y
+# CONFIG_ISCSI_TCP is not set
+# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
+# CONFIG_SCSI_3W_9XXX is not set
+# CONFIG_SCSI_ACARD is not set
+# CONFIG_SCSI_AACRAID is not set
+# CONFIG_SCSI_AIC7XXX is not set
+# CONFIG_SCSI_AIC7XXX_OLD is not set
+CONFIG_SCSI_AIC79XX=y
+CONFIG_AIC79XX_CMDS_PER_DEVICE=32
+CONFIG_AIC79XX_RESET_DELAY_MS=4000
+# CONFIG_AIC79XX_DEBUG_ENABLE is not set
+CONFIG_AIC79XX_DEBUG_MASK=0
+# CONFIG_AIC79XX_REG_PRETTY_PRINT is not set
+# CONFIG_SCSI_AIC94XX is not set
+# CONFIG_SCSI_ADVANSYS is not set
+# CONFIG_SCSI_ARCMSR is not set
+# CONFIG_MEGARAID_NEWGEN is not set
+# CONFIG_MEGARAID_LEGACY is not set
+# CONFIG_MEGARAID_SAS is not set
+# CONFIG_SCSI_HPTIOP is not set
+# CONFIG_SCSI_BUSLOGIC is not set
+# CONFIG_SCSI_DMX3191D is not set
+# CONFIG_SCSI_EATA is not set
+# CONFIG_SCSI_FUTURE_DOMAIN is not set
+# CONFIG_SCSI_GDTH is not set
+# CONFIG_SCSI_IPS is not set
+# CONFIG_SCSI_INITIO is not set
+# CONFIG_SCSI_INIA100 is not set
+# CONFIG_SCSI_STEX is not set
+# CONFIG_SCSI_SYM53C8XX_2 is not set
+# CONFIG_SCSI_IPR is not set
+# CONFIG_SCSI_QLOGIC_1280 is not set
+# CONFIG_SCSI_QLA_FC is not set
+# CONFIG_SCSI_QLA_ISCSI is not set
+# CONFIG_SCSI_LPFC is not set
+# CONFIG_SCSI_DC395x is not set
+# CONFIG_SCSI_DC390T is not set
+# CONFIG_SCSI_DEBUG is not set
+# CONFIG_SCSI_SRP is not set
+CONFIG_ATA=y
+# CONFIG_ATA_NONSTANDARD is not set
+CONFIG_ATA_ACPI=y
+CONFIG_SATA_AHCI=y
+CONFIG_SATA_SVW=y
+CONFIG_ATA_PIIX=y
+# CONFIG_SATA_MV is not set
+CONFIG_SATA_NV=y
+# CONFIG_PDC_ADMA is not set
+# CONFIG_SATA_QSTOR is not set
+# CONFIG_SATA_PROMISE is not set
+# CONFIG_SATA_SX4 is not set
+CONFIG_SATA_SIL=y
+# CONFIG_SATA_SIL24 is not set
+# CONFIG_SATA_SIS is not set
+# CONFIG_SATA_ULI is not set
+CONFIG_SATA_VIA=y
+# CONFIG_SATA_VITESSE is not set
+# CONFIG_SATA_INIC162X is not set
+# CONFIG_PATA_ACPI is not set
+# CONFIG_PATA_ALI is not set
+# CONFIG_PATA_AMD is not set
+# CONFIG_PATA_ARTOP is not set
+# CONFIG_PATA_ATIIXP is not set
+# CONFIG_PATA_CMD640_PCI is not set
+# CONFIG_PATA_CMD64X is not set
+# CONFIG_PATA_CS5520 is not set
+# CONFIG_PATA_CS5530 is not set
+# CONFIG_PATA_CYPRESS is not set
+# CONFIG_PATA_EFAR is not set
+# CONFIG_ATA_GENERIC is not set
+# CONFIG_PATA_HPT366 is not set
+# CONFIG_PATA_HPT37X is not set
+# CONFIG_PATA_HPT3X2N is not set
+# CONFIG_PATA_HPT3X3 is not set
+# CONFIG_PATA_IT821X is not set
+# CONFIG_PATA_IT8213 is not set
+# CONFIG_PATA_JMICRON is not set
+# CONFIG_PATA_TRIFLEX is not set
+# CONFIG_PATA_MARVELL is not set
+# CONFIG_PATA_MPIIX is not set
+# CONFIG_PATA_OLDPIIX is not set
+# CONFIG_PATA_NETCELL is not set
+# CONFIG_PATA_NS87410 is not set
+# CONFIG_PATA_NS87415 is not set
+# CONFIG_PATA_OPTI is not set
+# CONFIG_PATA_OPTIDMA is not set
+# CONFIG_PATA_PDC_OLD is not set
+# CONFIG_PATA_RADISYS is not set
+# CONFIG_PATA_RZ1000 is not set
+# CONFIG_PATA_SC1200 is not set
+# CONFIG_PATA_SERVERWORKS is not set
+# CONFIG_PATA_PDC2027X is not set
+# CONFIG_PATA_SIL680 is not set
+# CONFIG_PATA_SIS is not set
+# CONFIG_PATA_VIA is not set
+# CONFIG_PATA_WINBOND is not set
+# CONFIG_PATA_PLATFORM is not set
+CONFIG_MD=y
+# CONFIG_BLK_DEV_MD is not set
+CONFIG_BLK_DEV_DM=y
+# CONFIG_DM_DEBUG is not set
+# CONFIG_DM_CRYPT is not set
+# CONFIG_DM_SNAPSHOT is not set
+# CONFIG_DM_MIRROR is not set
+# CONFIG_DM_ZERO is not set
+# CONFIG_DM_MULTIPATH is not set
+# CONFIG_DM_DELAY is not set
+# CONFIG_DM_UEVENT is not set
+CONFIG_FUSION=y
+CONFIG_FUSION_SPI=y
+# CONFIG_FUSION_FC is not set
+# CONFIG_FUSION_SAS is not set
+CONFIG_FUSION_MAX_SGE=128
+# CONFIG_FUSION_CTL is not set
+# CONFIG_FUSION_LOGGING is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+# CONFIG_FIREWIRE is not set
+CONFIG_IEEE1394=y
+
+#
+# Subsystem Options
+#
+# CONFIG_IEEE1394_VERBOSEDEBUG is not set
+
+#
+# Controllers
+#
+
+#
+# Texas Instruments PCILynx requires I2C
+#
+CONFIG_IEEE1394_OHCI1394=y
+
+#
+# Protocols
+#
+# CONFIG_IEEE1394_VIDEO1394 is not set
+# CONFIG_IEEE1394_SBP2 is not set
+# CONFIG_IEEE1394_ETH1394_ROM_ENTRY is not set
+# CONFIG_IEEE1394_ETH1394 is not set
+# CONFIG_IEEE1394_DV1394 is not set
+CONFIG_IEEE1394_RAWIO=y
+# CONFIG_I2O is not set
+CONFIG_MACINTOSH_DRIVERS=y
+# CONFIG_MAC_EMUMOUSEBTN is not set
+CONFIG_NETDEVICES=y
+CONFIG_NETDEVICES_MULTIQUEUE=y
+# CONFIG_DUMMY is not set
+# CONFIG_BONDING is not set
+# CONFIG_MACVLAN is not set
+# CONFIG_EQUALIZER is not set
+CONFIG_TUN=y
+# CONFIG_VETH is not set
+# CONFIG_NET_SB1000 is not set
+# CONFIG_ARCNET is not set
+# CONFIG_PHYLIB is not set
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=y
+# CONFIG_HAPPYMEAL is not set
+# CONFIG_SUNGEM is not set
+# CONFIG_CASSINI is not set
+CONFIG_NET_VENDOR_3COM=y
+CONFIG_VORTEX=y
+# CONFIG_TYPHOON is not set
+CONFIG_NET_TULIP=y
+# CONFIG_DE2104X is not set
+CONFIG_TULIP=y
+# CONFIG_TULIP_MWI is not set
+# CONFIG_TULIP_MMIO is not set
+# CONFIG_TULIP_NAPI is not set
+# CONFIG_DE4X5 is not set
+# CONFIG_WINBOND_840 is not set
+# CONFIG_DM9102 is not set
+# CONFIG_ULI526X is not set
+# CONFIG_HP100 is not set
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+CONFIG_NET_PCI=y
+# CONFIG_PCNET32 is not set
+CONFIG_AMD8111_ETH=y
+# CONFIG_AMD8111E_NAPI is not set
+# CONFIG_ADAPTEC_STARFIRE is not set
+CONFIG_B44=y
+CONFIG_B44_PCI_AUTOSELECT=y
+CONFIG_B44_PCICORE_AUTOSELECT=y
+CONFIG_B44_PCI=y
+CONFIG_FORCEDETH=y
+# CONFIG_FORCEDETH_NAPI is not set
+# CONFIG_EEPRO100 is not set
+CONFIG_E100=y
+# CONFIG_FEALNX is not set
+# CONFIG_NATSEMI is not set
+# CONFIG_NE2K_PCI is not set
+CONFIG_8139CP=y
+CONFIG_8139TOO=y
+# CONFIG_8139TOO_PIO is not set
+# CONFIG_8139TOO_TUNE_TWISTER is not set
+# CONFIG_8139TOO_8129 is not set
+# CONFIG_8139_OLD_RX_RESET is not set
+# CONFIG_SIS900 is not set
+# CONFIG_EPIC100 is not set
+# CONFIG_SUNDANCE is not set
+# CONFIG_VIA_RHINE is not set
+# CONFIG_SC92031 is not set
+CONFIG_NETDEV_1000=y
+# CONFIG_ACENIC is not set
+# CONFIG_DL2K is not set
+CONFIG_E1000=y
+# CONFIG_E1000_NAPI is not set
+# CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
+CONFIG_E1000E=y
+# CONFIG_IP1000 is not set
+# CONFIG_NS83820 is not set
+# CONFIG_HAMACHI is not set
+# CONFIG_YELLOWFIN is not set
+# CONFIG_R8169 is not set
+# CONFIG_SIS190 is not set
+# CONFIG_SKGE is not set
+# CONFIG_SKY2 is not set
+# CONFIG_SK98LIN is not set
+# CONFIG_VIA_VELOCITY is not set
+CONFIG_TIGON3=y
+CONFIG_BNX2=y
+# CONFIG_QLA3XXX is not set
+# CONFIG_ATL1 is not set
+CONFIG_NETDEV_10000=y
+# CONFIG_CHELSIO_T1 is not set
+# CONFIG_CHELSIO_T3 is not set
+# CONFIG_IXGBE is not set
+# CONFIG_IXGB is not set
+CONFIG_S2IO=m
+# CONFIG_S2IO_NAPI is not set
+# CONFIG_MYRI10GE is not set
+# CONFIG_NETXEN_NIC is not set
+# CONFIG_NIU is not set
+# CONFIG_MLX4_CORE is not set
+# CONFIG_TEHUTI is not set
+# CONFIG_TR is not set
+
+#
+# Wireless LAN
+#
+# CONFIG_WLAN_PRE80211 is not set
+# CONFIG_WLAN_80211 is not set
+
+#
+# USB Network Adapters
+#
+# CONFIG_USB_CATC is not set
+# CONFIG_USB_KAWETH is not set
+# CONFIG_USB_PEGASUS is not set
+# CONFIG_USB_RTL8150 is not set
+# CONFIG_USB_USBNET is not set
+# CONFIG_WAN is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+# CONFIG_NET_FC is not set
+# CONFIG_SHAPER is not set
+CONFIG_NETCONSOLE=y
+# CONFIG_NETCONSOLE_DYNAMIC is not set
+CONFIG_NETPOLL=y
+# CONFIG_NETPOLL_TRAP is not set
+CONFIG_NET_POLL_CONTROLLER=y
+# CONFIG_ISDN is not set
+# CONFIG_PHONE is not set
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+# CONFIG_INPUT_FF_MEMLESS is not set
+# CONFIG_INPUT_POLLDEV is not set
+
+#
+# Userland interfaces
+#
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+# CONFIG_INPUT_JOYDEV is not set
+CONFIG_INPUT_EVDEV=y
+# CONFIG_INPUT_EVBUG is not set
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+# CONFIG_KEYBOARD_SUNKBD is not set
+# CONFIG_KEYBOARD_LKKBD is not set
+# CONFIG_KEYBOARD_XTKBD is not set
+# CONFIG_KEYBOARD_NEWTON is not set
+# CONFIG_KEYBOARD_STOWAWAY is not set
+CONFIG_INPUT_MOUSE=y
+CONFIG_MOUSE_PS2=y
+CONFIG_MOUSE_PS2_ALPS=y
+CONFIG_MOUSE_PS2_LOGIPS2PP=y
+CONFIG_MOUSE_PS2_SYNAPTICS=y
+CONFIG_MOUSE_PS2_LIFEBOOK=y
+CONFIG_MOUSE_PS2_TRACKPOINT=y
+# CONFIG_MOUSE_PS2_TOUCHKIT is not set
+# CONFIG_MOUSE_SERIAL is not set
+# CONFIG_MOUSE_APPLETOUCH is not set
+# CONFIG_MOUSE_VSXXXAA is not set
+# CONFIG_INPUT_JOYSTICK is not set
+# CONFIG_INPUT_TABLET is not set
+# CONFIG_INPUT_TOUCHSCREEN is not set
+# CONFIG_INPUT_MISC is not set
+
+#
+# Hardware I/O ports
+#
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=y
+# CONFIG_SERIO_SERPORT is not set
+# CONFIG_SERIO_CT82C710 is not set
+# CONFIG_SERIO_PCIPS2 is not set
+CONFIG_SERIO_LIBPS2=y
+# CONFIG_SERIO_RAW is not set
+# CONFIG_GAMEPORT is not set
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+# CONFIG_VT_HW_CONSOLE_BINDING is not set
+# CONFIG_SERIAL_NONSTANDARD is not set
+
+#
+# Serial drivers
+#
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_FIX_EARLYCON_MEM=y
+CONFIG_SERIAL_8250_PCI=y
+CONFIG_SERIAL_8250_PNP=y
+CONFIG_SERIAL_8250_NR_UARTS=4
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+# CONFIG_SERIAL_8250_EXTENDED is not set
+
+#
+# Non-8250 serial port support
+#
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+# CONFIG_SERIAL_JSM is not set
+CONFIG_UNIX98_PTYS=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+# CONFIG_IPMI_HANDLER is not set
+CONFIG_HW_RANDOM=y
+CONFIG_HW_RANDOM_INTEL=y
+CONFIG_HW_RANDOM_AMD=y
+# CONFIG_NVRAM is not set
+CONFIG_RTC=y
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+# CONFIG_MWAVE is not set
+# CONFIG_PC8736x_GPIO is not set
+CONFIG_RAW_DRIVER=y
+CONFIG_MAX_RAW_DEVS=256
+CONFIG_HPET=y
+# CONFIG_HPET_RTC_IRQ is not set
+CONFIG_HPET_MMAP=y
+# CONFIG_HANGCHECK_TIMER is not set
+# CONFIG_TCG_TPM is not set
+# CONFIG_TELCLOCK is not set
+CONFIG_DEVPORT=y
+# CONFIG_I2C is not set
+
+#
+# SPI support
+#
+# CONFIG_SPI is not set
+# CONFIG_SPI_MASTER is not set
+# CONFIG_W1 is not set
+CONFIG_POWER_SUPPLY=y
+# CONFIG_POWER_SUPPLY_DEBUG is not set
+# CONFIG_PDA_POWER is not set
+# CONFIG_BATTERY_DS2760 is not set
+# CONFIG_HWMON is not set
+# CONFIG_WATCHDOG is not set
+
+#
+# Sonics Silicon Backplane
+#
+CONFIG_SSB_POSSIBLE=y
+CONFIG_SSB=y
+CONFIG_SSB_PCIHOST_POSSIBLE=y
+CONFIG_SSB_PCIHOST=y
+# CONFIG_SSB_SILENT is not set
+# CONFIG_SSB_DEBUG is not set
+CONFIG_SSB_DRIVER_PCICORE_POSSIBLE=y
+CONFIG_SSB_DRIVER_PCICORE=y
+
+#
+# Multifunction device drivers
+#
+# CONFIG_MFD_SM501 is not set
+
+#
+# Multimedia devices
+#
+# CONFIG_VIDEO_DEV is not set
+# CONFIG_DVB_CORE is not set
+CONFIG_DAB=y
+# CONFIG_USB_DABUSB is not set
+
+#
+# Graphics support
+#
+CONFIG_AGP=y
+CONFIG_AGP_AMD64=y
+CONFIG_AGP_INTEL=y
+# CONFIG_AGP_SIS is not set
+# CONFIG_AGP_VIA is not set
+# CONFIG_DRM is not set
+# CONFIG_VGASTATE is not set
+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
+# CONFIG_FB is not set
+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+
+#
+# Display device support
+#
+# CONFIG_DISPLAY_SUPPORT is not set
+
+#
+# Console display driver support
+#
+CONFIG_VGA_CONSOLE=y
+CONFIG_VGACON_SOFT_SCROLLBACK=y
+CONFIG_VGACON_SOFT_SCROLLBACK_SIZE=256
+CONFIG_VIDEO_SELECT=y
+CONFIG_DUMMY_CONSOLE=y
+
+#
+# Sound
+#
+CONFIG_SOUND=y
+
+#
+# Advanced Linux Sound Architecture
+#
+# CONFIG_SND is not set
+
+#
+# Open Sound System
+#
+CONFIG_SOUND_PRIME=y
+# CONFIG_SOUND_TRIDENT is not set
+# CONFIG_SOUND_MSNDCLAS is not set
+# CONFIG_SOUND_MSNDPIN is not set
+# CONFIG_SOUND_OSS is not set
+CONFIG_HID_SUPPORT=y
+CONFIG_HID=y
+# CONFIG_HID_DEBUG is not set
+# CONFIG_HIDRAW is not set
+
+#
+# USB Input Devices
+#
+CONFIG_USB_HID=y
+# CONFIG_USB_HIDINPUT_POWERBOOK is not set
+# CONFIG_HID_FF is not set
+# CONFIG_USB_HIDDEV is not set
+CONFIG_USB_SUPPORT=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+CONFIG_USB=y
+# CONFIG_USB_DEBUG is not set
+
+#
+# Miscellaneous USB options
+#
+CONFIG_USB_DEVICEFS=y
+# CONFIG_USB_DEVICE_CLASS is not set
+# CONFIG_USB_DYNAMIC_MINORS is not set
+# CONFIG_USB_SUSPEND is not set
+# CONFIG_USB_PERSIST is not set
+# CONFIG_USB_OTG is not set
+
+#
+# USB Host Controller Drivers
+#
+CONFIG_USB_EHCI_HCD=y
+# CONFIG_USB_EHCI_SPLIT_ISO is not set
+# CONFIG_USB_EHCI_ROOT_HUB_TT is not set
+# CONFIG_USB_EHCI_TT_NEWSCHED is not set
+# CONFIG_USB_ISP116X_HCD is not set
+CONFIG_USB_OHCI_HCD=y
+# CONFIG_USB_OHCI_HCD_SSB is not set
+# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
+# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
+CONFIG_USB_UHCI_HCD=y
+# CONFIG_USB_SL811_HCD is not set
+# CONFIG_USB_R8A66597_HCD is not set
+
+#
+# USB Device Class drivers
+#
+# CONFIG_USB_ACM is not set
+CONFIG_USB_PRINTER=y
+
+#
+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
+#
+
+#
+# may also be needed; see USB_STORAGE Help for more information
+#
+CONFIG_USB_STORAGE=y
+# CONFIG_USB_STORAGE_DEBUG is not set
+# CONFIG_USB_STORAGE_DATAFAB is not set
+# CONFIG_USB_STORAGE_FREECOM is not set
+# CONFIG_USB_STORAGE_ISD200 is not set
+# CONFIG_USB_STORAGE_DPCM is not set
+# CONFIG_USB_STORAGE_USBAT is not set
+# CONFIG_USB_STORAGE_SDDR09 is not set
+# CONFIG_USB_STORAGE_SDDR55 is not set
+# CONFIG_USB_STORAGE_JUMPSHOT is not set
+# CONFIG_USB_STORAGE_ALAUDA is not set
+# CONFIG_USB_STORAGE_KARMA is not set
+# CONFIG_USB_LIBUSUAL is not set
+
+#
+# USB Imaging devices
+#
+# CONFIG_USB_MDC800 is not set
+# CONFIG_USB_MICROTEK is not set
+CONFIG_USB_MON=y
+
+#
+# USB port drivers
+#
+
+#
+# USB Serial Converter support
+#
+# CONFIG_USB_SERIAL is not set
+
+#
+# USB Miscellaneous drivers
+#
+# CONFIG_USB_EMI62 is not set
+# CONFIG_USB_EMI26 is not set
+# CONFIG_USB_ADUTUX is not set
+# CONFIG_USB_AUERSWALD is not set
+# CONFIG_USB_RIO500 is not set
+# CONFIG_USB_LEGOTOWER is not set
+# CONFIG_USB_LCD is not set
+# CONFIG_USB_BERRY_CHARGE is not set
+# CONFIG_USB_LED is not set
+# CONFIG_USB_CYPRESS_CY7C63 is not set
+# CONFIG_USB_CYTHERM is not set
+# CONFIG_USB_PHIDGET is not set
+# CONFIG_USB_IDMOUSE is not set
+# CONFIG_USB_FTDI_ELAN is not set
+# CONFIG_USB_APPLEDISPLAY is not set
+# CONFIG_USB_SISUSBVGA is not set
+# CONFIG_USB_LD is not set
+# CONFIG_USB_TRANCEVIBRATOR is not set
+# CONFIG_USB_IOWARRIOR is not set
+# CONFIG_USB_TEST is not set
+
+#
+# USB DSL modem support
+#
+
+#
+# USB Gadget Support
+#
+# CONFIG_USB_GADGET is not set
+# CONFIG_MMC is not set
+# CONFIG_NEW_LEDS is not set
+# CONFIG_INFINIBAND is not set
+# CONFIG_EDAC is not set
+# CONFIG_RTC_CLASS is not set
+# CONFIG_DMADEVICES is not set
+CONFIG_VIRTUALIZATION=y
+# CONFIG_KVM is not set
+
+#
+# Userspace I/O
+#
+# CONFIG_UIO is not set
+
+#
+# Firmware Drivers
+#
+# CONFIG_EDD is not set
+# CONFIG_DELL_RBU is not set
+# CONFIG_DCDBAS is not set
+CONFIG_DMIID=y
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=y
+CONFIG_EXT2_FS_XATTR=y
+CONFIG_EXT2_FS_POSIX_ACL=y
+# CONFIG_EXT2_FS_SECURITY is not set
+# CONFIG_EXT2_FS_XIP is not set
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+# CONFIG_EXT3_FS_SECURITY is not set
+# CONFIG_EXT4DEV_FS is not set
+CONFIG_JBD=y
+# CONFIG_JBD_DEBUG is not set
+CONFIG_FS_MBCACHE=y
+CONFIG_REISERFS_FS=y
+# CONFIG_REISERFS_CHECK is not set
+# CONFIG_REISERFS_PROC_INFO is not set
+CONFIG_REISERFS_FS_XATTR=y
+CONFIG_REISERFS_FS_POSIX_ACL=y
+# CONFIG_REISERFS_FS_SECURITY is not set
+# CONFIG_JFS_FS is not set
+CONFIG_FS_POSIX_ACL=y
+CONFIG_XFS_FS=y
+# CONFIG_XFS_QUOTA is not set
+# CONFIG_XFS_SECURITY is not set
+# CONFIG_XFS_POSIX_ACL is not set
+# CONFIG_XFS_RT is not set
+# CONFIG_GFS2_FS is not set
+# CONFIG_OCFS2_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_ROMFS_FS is not set
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+# CONFIG_QUOTA is not set
+CONFIG_DNOTIFY=y
+# CONFIG_AUTOFS_FS is not set
+CONFIG_AUTOFS4_FS=y
+# CONFIG_FUSE_FS is not set
+CONFIG_GENERIC_ACL=y
+
+#
+# CD-ROM/DVD Filesystems
+#
+CONFIG_ISO9660_FS=y
+CONFIG_JOLIET=y
+# CONFIG_ZISOFS is not set
+# CONFIG_UDF_FS is not set
+
+#
+# DOS/FAT/NT Filesystems
+#
+CONFIG_FAT_FS=y
+CONFIG_MSDOS_FS=y
+CONFIG_VFAT_FS=y
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+# CONFIG_NTFS_FS is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_TMPFS_POSIX_ACL=y
+CONFIG_HUGETLBFS=y
+CONFIG_HUGETLB_PAGE=y
+# CONFIG_CONFIGFS_FS is not set
+
+#
+# Miscellaneous filesystems
+#
+# CONFIG_ADFS_FS is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_HFSPLUS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+# CONFIG_NFS_V3_ACL is not set
+# CONFIG_NFS_V4 is not set
+# CONFIG_NFS_DIRECTIO is not set
+CONFIG_NFSD=y
+CONFIG_NFSD_V3=y
+# CONFIG_NFSD_V3_ACL is not set
+# CONFIG_NFSD_V4 is not set
+CONFIG_NFSD_TCP=y
+CONFIG_ROOT_NFS=y
+CONFIG_LOCKD=y
+CONFIG_LOCKD_V4=y
+CONFIG_EXPORTFS=y
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=y
+# CONFIG_SUNRPC_BIND34 is not set
+# CONFIG_RPCSEC_GSS_KRB5 is not set
+# CONFIG_RPCSEC_GSS_SPKM3 is not set
+# CONFIG_SMB_FS is not set
+# CONFIG_CIFS is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_CODA_FS is not set
+# CONFIG_AFS_FS is not set
+
+#
+# Partition Types
+#
+# CONFIG_PARTITION_ADVANCED is not set
+CONFIG_MSDOS_PARTITION=y
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+CONFIG_NLS_CODEPAGE_437=y
+# CONFIG_NLS_CODEPAGE_737 is not set
+# CONFIG_NLS_CODEPAGE_775 is not set
+# CONFIG_NLS_CODEPAGE_850 is not set
+# CONFIG_NLS_CODEPAGE_852 is not set
+# CONFIG_NLS_CODEPAGE_855 is not set
+# CONFIG_NLS_CODEPAGE_857 is not set
+# CONFIG_NLS_CODEPAGE_860 is not set
+# CONFIG_NLS_CODEPAGE_861 is not set
+# CONFIG_NLS_CODEPAGE_862 is not set
+# CONFIG_NLS_CODEPAGE_863 is not set
+# CONFIG_NLS_CODEPAGE_864 is not set
+# CONFIG_NLS_CODEPAGE_865 is not set
+# CONFIG_NLS_CODEPAGE_866 is not set
+# CONFIG_NLS_CODEPAGE_869 is not set
+# CONFIG_NLS_CODEPAGE_936 is not set
+# CONFIG_NLS_CODEPAGE_950 is not set
+# CONFIG_NLS_CODEPAGE_932 is not set
+# CONFIG_NLS_CODEPAGE_949 is not set
+# CONFIG_NLS_CODEPAGE_874 is not set
+# CONFIG_NLS_ISO8859_8 is not set
+# CONFIG_NLS_CODEPAGE_1250 is not set
+# CONFIG_NLS_CODEPAGE_1251 is not set
+CONFIG_NLS_ASCII=y
+CONFIG_NLS_ISO8859_1=y
+# CONFIG_NLS_ISO8859_2 is not set
+# CONFIG_NLS_ISO8859_3 is not set
+# CONFIG_NLS_ISO8859_4 is not set
+# CONFIG_NLS_ISO8859_5 is not set
+# CONFIG_NLS_ISO8859_6 is not set
+# CONFIG_NLS_ISO8859_7 is not set
+# CONFIG_NLS_ISO8859_9 is not set
+# CONFIG_NLS_ISO8859_13 is not set
+# CONFIG_NLS_ISO8859_14 is not set
+CONFIG_NLS_ISO8859_15=y
+# CONFIG_NLS_KOI8_R is not set
+# CONFIG_NLS_KOI8_U is not set
+CONFIG_NLS_UTF8=y
+# CONFIG_DLM is not set
+CONFIG_INSTRUMENTATION=y
+CONFIG_PROFILING=y
+CONFIG_OPROFILE=y
+CONFIG_KPROBES=y
+# CONFIG_MARKERS is not set
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+# CONFIG_PRINTK_TIME is not set
+CONFIG_ENABLE_WARN_DEPRECATED=y
+# CONFIG_ENABLE_MUST_CHECK is not set
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_UNUSED_SYMBOLS=y
+CONFIG_DEBUG_FS=y
+# CONFIG_HEADERS_CHECK is not set
+CONFIG_DEBUG_KERNEL=y
+# CONFIG_DEBUG_SHIRQ is not set
+CONFIG_DETECT_SOFTLOCKUP=y
+CONFIG_SCHED_DEBUG=y
+# CONFIG_SCHEDSTATS is not set
+# CONFIG_TIMER_STATS is not set
+# CONFIG_SLUB_DEBUG_ON is not set
+# CONFIG_DEBUG_RT_MUTEXES is not set
+# CONFIG_RT_MUTEX_TESTER is not set
+# CONFIG_DEBUG_SPINLOCK is not set
+# CONFIG_DEBUG_MUTEXES is not set
+# CONFIG_DEBUG_LOCK_ALLOC is not set
+# CONFIG_PROVE_LOCKING is not set
+# CONFIG_LOCK_STAT is not set
+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+# CONFIG_DEBUG_KOBJECT is not set
+# CONFIG_DEBUG_BUGVERBOSE is not set
+# CONFIG_DEBUG_INFO is not set
+# CONFIG_DEBUG_VM is not set
+# CONFIG_DEBUG_LIST is not set
+# CONFIG_DEBUG_SG is not set
+# CONFIG_FRAME_POINTER is not set
+CONFIG_FORCED_INLINING=y
+# CONFIG_BOOT_PRINTK_DELAY is not set
+# CONFIG_RCU_TORTURE_TEST is not set
+# CONFIG_LKDTM is not set
+# CONFIG_FAULT_INJECTION is not set
+# CONFIG_SAMPLES is not set
+CONFIG_EARLY_PRINTK=y
+# CONFIG_DEBUG_STACKOVERFLOW is not set
+# CONFIG_DEBUG_STACK_USAGE is not set
+# CONFIG_DEBUG_RODATA is not set
+# CONFIG_IOMMU_DEBUG is not set
+
+#
+# Security options
+#
+# CONFIG_KEYS is not set
+# CONFIG_SECURITY is not set
+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
+# CONFIG_CRYPTO is not set
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+# CONFIG_CRC_CCITT is not set
+# CONFIG_CRC16 is not set
+# CONFIG_CRC_ITU_T is not set
+CONFIG_CRC32=y
+# CONFIG_CRC7 is not set
+# CONFIG_LIBCRC32C is not set
+CONFIG_ZLIB_INFLATE=y
+CONFIG_PLIST=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
