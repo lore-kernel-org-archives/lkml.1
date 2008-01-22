@@ -1,110 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYAVWOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbYAVWO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbYAVWOB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 17:14:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYAVWNv
+	id S1756257AbYAVWO7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 17:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYAVWOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 17:13:51 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:25628 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751407AbYAVWNu (ORCPT
+	Tue, 22 Jan 2008 17:14:49 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58276 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750906AbYAVWOr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 17:13:50 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Casey Schaufler <cschaufler@mvista.com>
-Subject: Re: [PATCH] (2.6.24-rc8-mm1)  -mm v2 Smack socket label setting fix
-Date: Tue, 22 Jan 2008 17:13:45 -0500
-User-Agent: KMail/1.9.7
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-References: <47928214.60800@mvista.com>
-In-Reply-To: <47928214.60800@mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 22 Jan 2008 17:14:47 -0500
+Date: Tue, 22 Jan 2008 22:12:14 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Alan Stern <stern@rowland.harvard.edu>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH rc8-mm1] hotfix libata-scsi corruption
+Message-ID: <20080122221214.1c825949@lxorguk.ukuu.org.uk>
+In-Reply-To: <1201022985.3210.24.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0801221706320.5832@blonde.site>
+	<1201022985.3210.24.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801221713.45620.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 January 2008 6:04:52 pm Casey Schaufler wrote:
-> From: Casey Schaufler <casey@schaufler-ca.com>
->
-> Correct the checks in smack_inode_setxattr to include the
-> socket labeling attributes. Simplify and correct
-> smack_sock_graft, while the values it was setting were
-> safe they were not correct and the job was not being
-> done efficiently. smack_inode_setsecurity wasn't
-> invoking the required netlabel function in the case
-> where smk_ipout was set. It does now, but that change
-> required the hook to be moved in the file. This
-> movement accounts for the bulk of the patch.
->
->
-> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+> However, I'd like to see if we can track the problem through the SG_IO
+> direct path ... how many adjacent page bytes are corrupt?  Just a few or
+> a large number (I'm wondering if it's an off by one or off by alignment
+> type bug)?
 
-...
+Which ATA controller is involved - in theory ATA DMA is byte aligned safe
+(or dword anyway) in practice I don't know if we've ever tested the non
+512 byte aligned case historically for ATA just ATAPI ?
 
-> +/**
->   * smack_socket_post_create - finish socket setup
->   * @sock: the socket
->   * @family: protocol family
-> @@ -2192,33 +2199,20 @@ static int smack_socket_getpeersec_dgram
->  static void smack_sock_graft(struct sock *sk, struct socket *parent)
->  {
->  	struct socket_smack *ssp;
-> -	struct netlbl_lsm_secattr secattr;
-> -	char smack[SMK_LABELLEN];
->  	int rc;
-
-I don't think you need 'rc'.
-
-> -	if (sk == NULL || parent == NULL || parent->sk == NULL)
-> +	if (sk == NULL)
->  		return;
-
-I'm pretty sure you don't need to check 'sk' to ensure it is non-NULL; 
-SELinux assumes 'sk' is non-NULL and it hasn't caused any problems.
-
->  	if (sk->sk_family != PF_INET && sk->sk_family != PF_INET6)
->  		return;
->
-> -	ssp = parent->sk->sk_security;
-> -
-> -	memset(smack, '\0', SMK_LABELLEN);
-> -	netlbl_secattr_init(&secattr);
-> -	rc = netlbl_sock_getattr(sk, &secattr);
-> -	if (rc == 0)
-> -		smack_from_secattr(&secattr, smack);
-> -	else
-> -		strncpy(smack, smack_known_huh.smk_known, SMK_MAXLEN);
-> -	netlbl_secattr_destroy(&secattr);
-> -
-> -	netlbl_secattr_init(&secattr);
-> +	ssp = sk->sk_security;
-> +	ssp->smk_in = current->security;
-> +	ssp->smk_out = current->security;
-> +	ssp->smk_packet[0] = '\0';
->
-> -	smack_to_secattr(smack, &secattr);
-> -	if (secattr.flags != NETLBL_SECATTR_NONE)
-> -		rc = netlbl_sock_setattr(parent->sk, &secattr);
-> -	netlbl_secattr_destroy(&secattr);
-> +	rc = smack_netlabel(sk);
-
-I haven't checked the latest SMACK bits, but I'm pretty sure you don't 
-need to assign the return value of 'smack_netlabel()' to anything here 
-since the function doesn't return a value.
-
->  }
->
->  /**
-
-
-
--- 
-paul moore
-linux security @ hp
+Alan
