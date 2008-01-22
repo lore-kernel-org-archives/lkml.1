@@ -1,503 +1,547 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbYAVUCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbYAVUC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754975AbYAVUCJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 15:02:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYAVUB4
+	id S1752583AbYAVUC1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 15:02:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbYAVUCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 15:01:56 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50532 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752128AbYAVUBy (ORCPT
+	Tue, 22 Jan 2008 15:02:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45466 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754873AbYAVUCF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 15:01:54 -0500
-Date: Tue, 22 Jan 2008 21:01:52 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] kernel: constify data and function pointer tables
-In-Reply-To: <54038cd4f87a03884e4f59f8f3697889dfb63c54.1201030614.git.jengelh@computergmbh.de>
-Message-ID: <Pine.LNX.4.64.0801222100490.5722@fbirervta.pbzchgretzou.qr>
-References: <54038cd4f87a03884e4f59f8f3697889dfb63c54.1201030614.git.jengelh@computergmbh.de>
+	Tue, 22 Jan 2008 15:02:05 -0500
+Message-ID: <47964B7B.9000905@zytor.com>
+Date: Tue, 22 Jan 2008 12:00:59 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ian Campbell <ijc@hellion.org.uk>
+CC: =?ISO-8859-1?Q?Mika_Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+ format.
+References: <1200758937-22386-1-git-send-email-ijc@hellion.org.uk>	 <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>	 <47939363.8040603@kolumbus.fi>	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>	 <479510CE.7010706@zytor.com>	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>	 <479551FD.5040801@zytor.com>	 <1201023401.5643.52.camel@localhost.localdomain>	 <479634A9.1090908@zytor.com> <1201031325.15491.66.camel@cthulhu.hellion.org.uk>
+In-Reply-To: <1201031325.15491.66.camel@cthulhu.hellion.org.uk>
+Content-Type: multipart/mixed;
+ boundary="------------000707070807060406010503"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is a multi-part message in MIME format.
+--------------000707070807060406010503
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
+Ian Campbell wrote:
+> On Tue, 2008-01-22 at 10:23 -0800, H. Peter Anvin wrote:
+>> Ian Campbell wrote:
+>>> Anyhow, I don't feel all that strongly about it so if the opinion of the
+>>> early start of day maintainer(s) is strongly in favour of ASM I'll defer
+>>> to that.
+>>>
+>> My opinion is that I want it done properly (PIC and all that jazz) or 
+>> not at all, and certainly would not want to mix linear and 
+>> paging-enabled code in the same file.  When it comes to assembly code, 
+>> at least people can *see* that there there be dragons.
+>>
+>> The plus *and* minus of a C version is that it's easier for people to 
+>> modify.  The plus side of that is that if we really need it, it's a lot 
+>> cleaner; the minus side is that it may encourage more code to creep into 
+>> the pre-paging code, which would not be a good thing IMO.
+> 
+> Seems reasonable to me. I'll integrate your asm diff with the other
+> changes and give it a whirl.
 
-this one also touches like any place that could be found, so I combined 
-it.
+This version boots into userspace on both PAE and !PAE.  You want to 
+take it from here?
 
-===Patch begins here===
-[PATCH] kernel: constify data and function pointer tables
+	-hpa
 
-Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
----
- drivers/char/apm-emulation.c     |    2 +-
- drivers/char/drm/drmP.h          |    6 +++---
- drivers/char/misc.c              |    2 +-
- drivers/char/tpm/tpm_bios.c      |    4 ++--
- drivers/isdn/capi/kcapi_proc.c   |   10 +++++-----
- drivers/misc/phantom.c           |    2 +-
- drivers/spi/spidev.c             |    2 +-
- fs/afs/proc.c                    |    8 ++++----
- fs/char_dev.c                    |    2 +-
- fs/debugfs/inode.c               |    4 ++--
- fs/hfsplus/inode.c               |    2 +-
- fs/inode.c                       |    2 +-
- fs/locks.c                       |    2 +-
- fs/namespace.c                   |    4 ++--
- include/linux/cgroup.h           |    2 +-
- include/linux/fs.h               |    2 +-
- ipc/util.c                       |    2 +-
- kernel/cgroup.c                  |   12 ++++++------
- kernel/kprobes.c                 |    6 +++---
- kernel/lockdep_proc.c            |    2 +-
- kernel/time/timer_list.c         |    2 +-
- kernel/time/timer_stats.c        |    2 +-
- samples/markers/marker-example.c |    2 +-
- 23 files changed, 42 insertions(+), 42 deletions(-)
+--------------000707070807060406010503
+Content-Type: text/plain;
+ name="diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff"
 
-diff --git a/drivers/char/apm-emulation.c b/drivers/char/apm-emulation.c
-index 17d5431..98f140d 100644
---- a/drivers/char/apm-emulation.c
-+++ b/drivers/char/apm-emulation.c
-@@ -438,7 +438,7 @@ static int apm_open(struct inode * inode, struct file * filp)
- 	return as ? 0 : -ENOMEM;
- }
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+index f409fe2..d6a1e04 100644
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -18,6 +18,10 @@
+ #include <asm/thread_info.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/setup.h>
++#include <asm/processor-flags.h>
++
++/* Physical address */
++#define pa(X) ((X) - __PAGE_OFFSET)
  
--static struct file_operations apm_bios_fops = {
-+static const struct file_operations apm_bios_fops = {
- 	.owner		= THIS_MODULE,
- 	.read		= apm_read,
- 	.poll		= apm_poll,
-diff --git a/drivers/char/drm/drmP.h b/drivers/char/drm/drmP.h
-index dde02a1..136906b 100644
---- a/drivers/char/drm/drmP.h
-+++ b/drivers/char/drm/drmP.h
-@@ -612,9 +612,9 @@ struct drm_driver {
- 	int major;
- 	int minor;
- 	int patchlevel;
--	char *name;
--	char *desc;
--	char *date;
-+	const char *name;
-+	const char *desc;
-+	const char *date;
+ /*
+  * References to members of the new_cpu_data structure.
+@@ -79,10 +83,6 @@ INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE + ALLOCATOR_SLOP)*PAGE_
+  */
+ .section .text.head,"ax",@progbits
+ ENTRY(startup_32)
+-	/* check to see if KEEP_SEGMENTS flag is meaningful */
+-	cmpw $0x207, BP_version(%esi)
+-	jb 1f
+-
+ 	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
+ 		us to not reload segments */
+ 	testb $(1<<6), BP_loadflags(%esi)
+@@ -91,7 +91,7 @@ ENTRY(startup_32)
+ /*
+  * Set segments to known values.
+  */
+-1:	lgdt boot_gdt_descr - __PAGE_OFFSET
++1:	lgdt pa(boot_gdt_descr)
+ 	movl $(__BOOT_DS),%eax
+ 	movl %eax,%ds
+ 	movl %eax,%es
+@@ -104,8 +104,8 @@ ENTRY(startup_32)
+  */
+ 	cld
+ 	xorl %eax,%eax
+-	movl $__bss_start - __PAGE_OFFSET,%edi
+-	movl $__bss_stop - __PAGE_OFFSET,%ecx
++	movl $pa(__bss_start),%edi
++	movl $pa(__bss_stop),%ecx
+ 	subl %edi,%ecx
+ 	shrl $2,%ecx
+ 	rep ; stosl
+@@ -117,31 +117,32 @@ ENTRY(startup_32)
+  * (kexec on panic case). Hence copy out the parameters before initializing
+  * page tables.
+  */
+-	movl $(boot_params - __PAGE_OFFSET),%edi
++	movl $pa(boot_params),%edi
+ 	movl $(PARAM_SIZE/4),%ecx
+ 	cld
+ 	rep
+ 	movsl
+-	movl boot_params - __PAGE_OFFSET + NEW_CL_POINTER,%esi
++	movl pa(boot_params) + NEW_CL_POINTER,%esi
+ 	andl %esi,%esi
+ 	jz 1f			# No comand line
+-	movl $(boot_command_line - __PAGE_OFFSET),%edi
++	movl $pa(boot_command_line),%edi
+ 	movl $(COMMAND_LINE_SIZE/4),%ecx
+ 	rep
+ 	movsl
+ 1:
  
- 	u32 driver_features;
- 	int dev_priv_size;
-diff --git a/drivers/char/misc.c b/drivers/char/misc.c
-index 71c8cd7..035a011 100644
---- a/drivers/char/misc.c
-+++ b/drivers/char/misc.c
-@@ -90,7 +90,7 @@ static int misc_seq_show(struct seq_file *seq, void *v)
- }
+ #ifdef CONFIG_PARAVIRT
+-	cmpw $0x207, (boot_params + BP_version - __PAGE_OFFSET)
++	/* This is can only trip for a broken bootloader... */
++	cmpw $0x207, pa(boot_params + BP_version)
+ 	jb default_entry
  
+ 	/* Paravirt-compatible boot parameters.  Look to see what architecture
+ 		we're booting under. */
+-	movl (boot_params + BP_hardware_subarch - __PAGE_OFFSET), %eax
++	movl pa(boot_params + BP_hardware_subarch), %eax
+ 	cmpl $num_subarch_entries, %eax
+ 	jae bad_subarch
  
--static struct seq_operations misc_seq_ops = {
-+static const struct seq_operations misc_seq_ops = {
- 	.start = misc_seq_start,
- 	.next  = misc_seq_next,
- 	.stop  = misc_seq_stop,
-diff --git a/drivers/char/tpm/tpm_bios.c b/drivers/char/tpm/tpm_bios.c
-index 60a2d26..7b6a7fb 100644
---- a/drivers/char/tpm/tpm_bios.c
-+++ b/drivers/char/tpm/tpm_bios.c
-@@ -344,14 +344,14 @@ static int tpm_ascii_bios_measurements_show(struct seq_file *m, void *v)
- 	return 0;
- }
+-	movl subarch_entries - __PAGE_OFFSET(,%eax,4), %eax
++	movl pa(subarch_entries)(,%eax,4), %eax
+ 	subl $__PAGE_OFFSET, %eax
+ 	jmp *%eax
  
--static struct seq_operations tpm_ascii_b_measurments_seqops = {
-+static const struct seq_operations tpm_ascii_b_measurments_seqops = {
- 	.start = tpm_bios_measurements_start,
- 	.next = tpm_bios_measurements_next,
- 	.stop = tpm_bios_measurements_stop,
- 	.show = tpm_ascii_bios_measurements_show,
- };
+@@ -167,17 +168,74 @@ num_subarch_entries = (. - subarch_entries) / 4
+  * Mappings are created both at virtual address 0 (identity mapping)
+  * and PAGE_OFFSET for up to _end+sizeof(page tables)+INIT_MAP_BEYOND_END.
+  *
+- * Warning: don't use %esi or the stack in this code.  However, %esp
+- * can be used as a GPR if you really need it...
++ * Note that the stack is not yet set up!
+  */
+-page_pde_offset = (__PAGE_OFFSET >> 20);
++#define PTE_ATTR	0x007		/* PRESENT+RW+USER */
++#define PDE_ATTR	0x067		/* PRESENT+RW+USER+DIRTY+ACCESSED */
++#define PGD_ATTR	0x001		/* PRESENT (no other attributes) */
  
--static struct seq_operations tpm_binary_b_measurments_seqops = {
-+static const struct seq_operations tpm_binary_b_measurments_seqops = {
- 	.start = tpm_bios_measurements_start,
- 	.next = tpm_bios_measurements_next,
- 	.stop = tpm_bios_measurements_stop,
-diff --git a/drivers/isdn/capi/kcapi_proc.c b/drivers/isdn/capi/kcapi_proc.c
-index 845a797..ad7865d 100644
---- a/drivers/isdn/capi/kcapi_proc.c
-+++ b/drivers/isdn/capi/kcapi_proc.c
-@@ -89,14 +89,14 @@ static int contrstats_show(struct seq_file *seq, void *v)
- 	return 0;
- }
+ default_entry:
+-	movl $(pg0 - __PAGE_OFFSET), %edi
+-	movl $(swapper_pg_dir - __PAGE_OFFSET), %edx
+-	movl $0x007, %eax			/* 0x007 = PRESENT+RW+USER */
++#ifdef CONFIG_X86_PAE
++	/*
++	 * In PAE mode, the kernel PMD is shared, and __PAGE_OFFSET
++	 * is guaranteed to be a multiple of 1 GB (the PGD granulatity.)
++	 * Thus, we only need to set up a single PMD here; the identity
++	 * mapping is handled by pointing two PGD entries to the PMD.
++	 *
++	 * Note the upper half of each PMD or PTE are always zero at
++	 * this stage.
++	 */
++page_pde_offset = (__PAGE_OFFSET >> 27);
++
++	movl %cr4, %eax
++	orl  $X86_CR4_PAE, %eax
++	movl %eax, %cr4
++
++	xorl %ebx,%ebx				/* %ebx is kept at zero */
++	
++	movl $pa(pg0), %edi
++	movl $pa(swapper_pg_pmd), %edx
++	movl $PTE_ATTR, %eax
++10:
++	leal PDE_ATTR(%edi),%ecx		/* Create PMD entry */
++	movl %ecx,(%edx)			/* Store PMD entry */
++						/* Upper half already zero */
++	addl $8,%edx
++	movl $512,%ecx
++11:
++	stosl
++	xchgl %eax,%ebx
++	stosl
++	xchgl %eax,%ebx
++	addl $0x1000,%eax
++	loop 11b
++
++	/*
++	 * End condition: we must map up to and including INIT_MAP_BEYOND_END
++	 * bytes beyond the end of our own page tables.
++	 */
++	leal (INIT_MAP_BEYOND_END+PTE_ATTR)(%edi),%ebp
++	cmpl %ebp,%eax
++	jb 10b
++	movl %edi,pa(init_pg_tables_end)
++
++	/* Set up the PGD */
++	movl $pa(swapper_pg_pmd)+PGD_ATTR, %eax
++	movl %eax, pa(swapper_pg_dir)			/* Identity map */
++	movl %eax, pa(swapper_pg_dir+page_pde_offset)	/* Kernel map */
++
++	/* Do early initialization of the fixmap area */
++	movl $pa(swapper_pg_fixmap)+PDE_ATTR,%eax
++	movl %eax,pa(swapper_pg_pmd+0xff8)
++#else	/* Not PAE */
++
++page_pde_offset = (__PAGE_OFFSET >> 20);
++	
++	movl $pa(pg0), %edi
++	movl $pa(swapper_pg_dir), %edx
++	movl $PTE_ATTR, %eax
+ 10:
+-	leal 0x007(%edi),%ecx			/* Create PDE entry */
++	leal PDE_ATTR(%edi),%ecx		/* Create PDE entry */
+ 	movl %ecx,(%edx)			/* Store identity PDE entry */
+ 	movl %ecx,page_pde_offset(%edx)		/* Store kernel PDE entry */
+ 	addl $4,%edx
+@@ -186,19 +244,20 @@ default_entry:
+ 	stosl
+ 	addl $0x1000,%eax
+ 	loop 11b
+-	/* End condition: we must map up to and including INIT_MAP_BEYOND_END */
+-	/* bytes beyond the end of our own page tables; the +0x007 is the attribute bits */
+-	leal (INIT_MAP_BEYOND_END+0x007)(%edi),%ebp
++	/*
++	 * End condition: we must map up to and including INIT_MAP_BEYOND_END
++	 * bytes beyond the end of our own page tables; the +0x007 is
++	 * the attribute bits
++	 */
++	leal (INIT_MAP_BEYOND_END+PTE_ATTR)(%edi),%ebp
+ 	cmpl %ebp,%eax
+ 	jb 10b
+-	movl %edi,(init_pg_tables_end - __PAGE_OFFSET)
+-
+-	/* Do an early initialization of the fixmap area */
+-	movl $(swapper_pg_dir - __PAGE_OFFSET), %edx
+-	movl $(swapper_pg_pmd - __PAGE_OFFSET), %eax
+-	addl $0x67, %eax			/* 0x67 == _PAGE_TABLE */
+-	movl %eax, 4092(%edx)
++	movl %edi,pa(init_pg_tables_end)
  
--static struct seq_operations seq_controller_ops = {
-+static const struct seq_operations seq_controller_ops = {
- 	.start	= controller_start,
- 	.next	= controller_next,
- 	.stop	= controller_stop,
- 	.show	= controller_show,
- };
++	/* Do early initialization of the fixmap area */
++	movl $pa(swapper_pg_fixmap)+PDE_ATTR,%eax
++	movl %eax,pa(swapper_pg_dir+0xffc)
++#endif
+ 	xorl %ebx,%ebx				/* This is the boot CPU (BSP) */
+ 	jmp 3f
+ /*
+@@ -237,7 +296,7 @@ ENTRY(startup_32_smp)
+  *	NOTE! We have to correct for the fact that we're
+  *	not yet offset PAGE_OFFSET..
+  */
+-#define cr4_bits mmu_cr4_features-__PAGE_OFFSET
++#define cr4_bits pa(mmu_cr4_features)
+ 	movl cr4_bits,%edx
+ 	andl %edx,%edx
+ 	jz 6f
+@@ -278,10 +337,10 @@ ENTRY(startup_32_smp)
+ /*
+  * Enable paging
+  */
+-	movl $swapper_pg_dir-__PAGE_OFFSET,%eax
++	movl $pa(swapper_pg_dir),%eax
+ 	movl %eax,%cr3		/* set the page table pointer.. */
+ 	movl %cr0,%eax
+-	orl $0x80000000,%eax
++	orl  $X86_CR0_PG,%eax
+ 	movl %eax,%cr0		/* ..and set paging (PG) bit */
+ 	ljmp $__BOOT_CS,$1f	/* Clear prefetch and normalize %eip */
+ 1:
+@@ -556,8 +615,12 @@ ENTRY(_stext)
+ 	.align PAGE_SIZE_asm
+ ENTRY(swapper_pg_dir)
+ 	.fill 1024,4,0
++#ifdef CONFIG_X86_PAE
+ ENTRY(swapper_pg_pmd)
+ 	.fill 1024,4,0
++#endif
++ENTRY(swapper_pg_fixmap)
++	.fill 1024,4,0
+ ENTRY(empty_zero_page)
+ 	.fill 4096,1,0
  
--static struct seq_operations seq_contrstats_ops = {
-+static const struct seq_operations seq_contrstats_ops = {
- 	.start	= controller_start,
- 	.next	= controller_next,
- 	.stop	= controller_stop,
-@@ -192,14 +192,14 @@ applstats_show(struct seq_file *seq, void *v)
- 	return 0;
- }
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index cbba769..14c6c41 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -43,6 +43,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/sections.h>
+ #include <asm/paravirt.h>
++#include <asm/setup.h>
  
--static struct seq_operations seq_applications_ops = {
-+static const struct seq_operations seq_applications_ops = {
- 	.start	= applications_start,
- 	.next	= applications_next,
- 	.stop	= applications_stop,
- 	.show	= applications_show,
- };
+ unsigned int __VMALLOC_RESERVE = 128 << 20;
  
--static struct seq_operations seq_applstats_ops = {
-+static const struct seq_operations seq_applstats_ops = {
- 	.start	= applications_start,
- 	.next	= applications_next,
- 	.stop	= applications_stop,
-@@ -267,7 +267,7 @@ static int capi_driver_show(struct seq_file *seq, void *v)
- 	return 0;
- }
+@@ -353,44 +354,11 @@ extern void __init remap_numa_kva(void);
  
--static struct seq_operations seq_capi_driver_ops = {
-+static const struct seq_operations seq_capi_driver_ops = {
- 	.start	= capi_driver_start,
- 	.next	= capi_driver_next,
- 	.stop	= capi_driver_stop,
-diff --git a/drivers/misc/phantom.c b/drivers/misc/phantom.c
-index cd221fd..8e2736a 100644
---- a/drivers/misc/phantom.c
-+++ b/drivers/misc/phantom.c
-@@ -249,7 +249,7 @@ static unsigned int phantom_poll(struct file *file, poll_table *wait)
- 	return mask;
- }
- 
--static struct file_operations phantom_file_ops = {
-+static const struct file_operations phantom_file_ops = {
- 	.open = phantom_open,
- 	.release = phantom_release,
- 	.unlocked_ioctl = phantom_ioctl,
-diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
-index b3518ca..be4caed 100644
---- a/drivers/spi/spidev.c
-+++ b/drivers/spi/spidev.c
-@@ -439,7 +439,7 @@ static int spidev_release(struct inode *inode, struct file *filp)
- 	return status;
- }
- 
--static struct file_operations spidev_fops = {
-+static const struct file_operations spidev_fops = {
- 	.owner =	THIS_MODULE,
- 	/* REVISIT switch to aio primitives, so that userspace
- 	 * gets more complete API coverage.  It'll simplify things
-diff --git a/fs/afs/proc.c b/fs/afs/proc.c
-index 846c761..370d656 100644
---- a/fs/afs/proc.c
-+++ b/fs/afs/proc.c
-@@ -28,7 +28,7 @@ static int afs_proc_cells_show(struct seq_file *m, void *v);
- static ssize_t afs_proc_cells_write(struct file *file, const char __user *buf,
- 				    size_t size, loff_t *_pos);
- 
--static struct seq_operations afs_proc_cells_ops = {
-+static const struct seq_operations afs_proc_cells_ops = {
- 	.start	= afs_proc_cells_start,
- 	.next	= afs_proc_cells_next,
- 	.stop	= afs_proc_cells_stop,
-@@ -68,7 +68,7 @@ static void *afs_proc_cell_volumes_next(struct seq_file *p, void *v,
- static void afs_proc_cell_volumes_stop(struct seq_file *p, void *v);
- static int afs_proc_cell_volumes_show(struct seq_file *m, void *v);
- 
--static struct seq_operations afs_proc_cell_volumes_ops = {
-+static const struct seq_operations afs_proc_cell_volumes_ops = {
- 	.start	= afs_proc_cell_volumes_start,
- 	.next	= afs_proc_cell_volumes_next,
- 	.stop	= afs_proc_cell_volumes_stop,
-@@ -92,7 +92,7 @@ static void *afs_proc_cell_vlservers_next(struct seq_file *p, void *v,
- static void afs_proc_cell_vlservers_stop(struct seq_file *p, void *v);
- static int afs_proc_cell_vlservers_show(struct seq_file *m, void *v);
- 
--static struct seq_operations afs_proc_cell_vlservers_ops = {
-+static const struct seq_operations afs_proc_cell_vlservers_ops = {
- 	.start	= afs_proc_cell_vlservers_start,
- 	.next	= afs_proc_cell_vlservers_next,
- 	.stop	= afs_proc_cell_vlservers_stop,
-@@ -115,7 +115,7 @@ static void *afs_proc_cell_servers_next(struct seq_file *p, void *v,
- static void afs_proc_cell_servers_stop(struct seq_file *p, void *v);
- static int afs_proc_cell_servers_show(struct seq_file *m, void *v);
- 
--static struct seq_operations afs_proc_cell_servers_ops = {
-+static const struct seq_operations afs_proc_cell_servers_ops = {
- 	.start	= afs_proc_cell_servers_start,
- 	.next	= afs_proc_cell_servers_next,
- 	.stop	= afs_proc_cell_servers_stop,
-diff --git a/fs/char_dev.c b/fs/char_dev.c
-index c3bfa76..150e38d 100644
---- a/fs/char_dev.c
-+++ b/fs/char_dev.c
-@@ -55,7 +55,7 @@ static struct char_device_struct {
- 	unsigned int baseminor;
- 	int minorct;
- 	char name[64];
--	struct file_operations *fops;
-+	const struct file_operations *fops;
- 	struct cdev *cdev;		/* will die */
- } *chrdevs[CHRDEV_MAJOR_HASH_SIZE];
- 
-diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
-index 6a713b3..b32b730 100644
---- a/fs/debugfs/inode.c
-+++ b/fs/debugfs/inode.c
-@@ -30,8 +30,8 @@
- #define DEBUGFS_MAGIC	0x64626720
- 
- /* declared over in file.c */
--extern struct file_operations debugfs_file_operations;
--extern struct inode_operations debugfs_link_operations;
-+extern const struct file_operations debugfs_file_operations;
-+extern const struct inode_operations debugfs_link_operations;
- 
- static struct vfsmount *debugfs_mount;
- static int debugfs_mount_count;
-diff --git a/fs/hfsplus/inode.c b/fs/hfsplus/inode.c
-index 37744cf..aea1de4 100644
---- a/fs/hfsplus/inode.c
-+++ b/fs/hfsplus/inode.c
-@@ -279,7 +279,7 @@ static int hfsplus_file_release(struct inode *inode, struct file *file)
- }
- 
- extern const struct inode_operations hfsplus_dir_inode_operations;
--extern struct file_operations hfsplus_dir_operations;
-+extern const struct file_operations hfsplus_dir_operations;
- 
- static const struct inode_operations hfsplus_file_inode_operations = {
- 	.lookup		= hfsplus_file_lookup,
-diff --git a/fs/inode.c b/fs/inode.c
-index ed35383..cca0193 100644
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -111,7 +111,7 @@ static void wake_up_inode(struct inode *inode)
- static struct inode *alloc_inode(struct super_block *sb)
+ void __init native_pagetable_setup_start(pgd_t *base)
  {
- 	static const struct address_space_operations empty_aops;
--	static struct inode_operations empty_iops;
-+	static const struct inode_operations empty_iops;
- 	static const struct file_operations empty_fops;
- 	struct inode *inode;
- 
-diff --git a/fs/locks.c b/fs/locks.c
-index 8b8388e..d389248 100644
---- a/fs/locks.c
-+++ b/fs/locks.c
-@@ -2177,7 +2177,7 @@ static void locks_stop(struct seq_file *f, void *v)
- 	unlock_kernel();
+-#ifdef CONFIG_X86_PAE
+-	int i;
+-
+-	/*
+-	 * Init entries of the first-level page table to the
+-	 * zero page, if they haven't already been set up.
+-	 *
+-	 * In a normal native boot, we'll be running on a
+-	 * pagetable rooted in swapper_pg_dir, but not in PAE
+-	 * mode, so this will end up clobbering the mappings
+-	 * for the lower 24Mbytes of the address space,
+-	 * without affecting the kernel address space.
+-	 */
+-	for (i = 0; i < USER_PTRS_PER_PGD; i++)
+-		set_pgd(&base[i],
+-			__pgd(__pa(empty_zero_page) | _PAGE_PRESENT));
+-
+-	/* Make sure kernel address space is empty so that a pagetable
+-	   will be allocated for it. */
+-	memset(&base[USER_PTRS_PER_PGD], 0,
+-	       KERNEL_PGD_PTRS * sizeof(pgd_t));
+-#else
+ 	paravirt_alloc_pd(__pa(swapper_pg_dir) >> PAGE_SHIFT);
+-#endif
  }
  
--struct seq_operations locks_seq_operations = {
-+const struct seq_operations locks_seq_operations = {
- 	.start	= locks_start,
- 	.next	= locks_next,
- 	.stop	= locks_stop,
-diff --git a/fs/namespace.c b/fs/namespace.c
-index 0608388..f967896 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -391,7 +391,7 @@ static int show_vfsmnt(struct seq_file *m, void *v)
- 	return err;
+ void __init native_pagetable_setup_done(pgd_t *base)
+ {
+-#ifdef CONFIG_X86_PAE
+-	/*
+-	 * Add low memory identity-mappings - SMP needs it when
+-	 * starting up on an AP from real-mode. In the non-PAE
+-	 * case we already have these mappings through head.S.
+-	 * All user-space mappings are explicitly cleared after
+-	 * SMP startup.
+-	 */
+-	set_pgd(&base[0], base[USER_PTRS_PER_PGD]);
+-#endif
  }
  
--struct seq_operations mounts_op = {
-+const struct seq_operations mounts_op = {
- 	.start	= m_start,
- 	.next	= m_next,
- 	.stop	= m_stop,
-@@ -429,7 +429,7 @@ static int show_vfsstat(struct seq_file *m, void *v)
- 	return err;
+ /*
+@@ -399,9 +367,8 @@ void __init native_pagetable_setup_done(pgd_t *base)
+  * the boot process.
+  *
+  * If we're booting on native hardware, this will be a pagetable
+- * constructed in arch/i386/kernel/head.S, and not running in PAE mode
+- * (even if we'll end up running in PAE).  The root of the pagetable
+- * will be swapper_pg_dir.
++ * constructed in arch/x86/kernel/head_32.S.  The root of the
++ * pagetable will be swapper_pg_dir.
+  *
+  * If we're booting paravirtualized under a hypervisor, then there are
+  * more options: we may already be running PAE, and the pagetable may
+@@ -559,14 +526,6 @@ void __init paging_init(void)
+ 
+ 	load_cr3(swapper_pg_dir);
+ 
+-#ifdef CONFIG_X86_PAE
+-	/*
+-	 * We will bail out later - printk doesn't work right now so
+-	 * the user would just see a hanging kernel.
+-	 */
+-	if (cpu_has_pae)
+-		set_in_cr4(X86_CR4_PAE);
+-#endif
+ 	__flush_tlb_all();
+ 
+ 	kmap_init();
+@@ -696,10 +655,6 @@ void __init mem_init(void)
+ 	BUG_ON((unsigned long)high_memory      > VMALLOC_START);
+ #endif /* double-sanity-check paranoia */
+ 
+-#ifdef CONFIG_X86_PAE
+-	if (!cpu_has_pae)
+-		panic("cannot execute a PAE-enabled kernel on a PAE-less CPU!");
+-#endif
+ 	if (boot_cpu_data.wp_works_ok < 0)
+ 		test_wp_bit();
+ 
+diff --git a/arch/x86/mm/ioremap_32.c b/arch/x86/mm/ioremap_32.c
+index 05a24cd..fa8a3ff 100644
+--- a/arch/x86/mm/ioremap_32.c
++++ b/arch/x86/mm/ioremap_32.c
+@@ -226,40 +226,45 @@ static int __init early_ioremap_debug_setup(char *str)
+ __setup("early_ioremap_debug", early_ioremap_debug_setup);
+ 
+ static __initdata int after_paging_init;
+-static __initdata unsigned long bm_pte[1024]
++static __initdata pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)]
+ 				__attribute__((aligned(PAGE_SIZE)));
+ 
+-static inline unsigned long * __init early_ioremap_pgd(unsigned long addr)
++static inline pmd_t * __init early_ioremap_pmd(unsigned long addr)
+ {
+-	return (unsigned long *)swapper_pg_dir + ((addr >> 22) & 1023);
++	pgd_t *pgd = &swapper_pg_dir[pgd_index(addr)];
++	pud_t *pud = pud_offset(pgd, addr);
++	pmd_t *pmd = pmd_offset(pud, addr);
++
++	return pmd;
  }
  
--struct seq_operations mountstats_op = {
-+const struct seq_operations mountstats_op = {
- 	.start	= m_start,
- 	.next	= m_next,
- 	.stop	= m_stop,
-diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index 8747932..c843d98 100644
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -33,7 +33,7 @@ extern void cgroup_exit(struct task_struct *p, int run_callbacks);
- extern int cgroupstats_build(struct cgroupstats *stats,
- 				struct dentry *dentry);
- 
--extern struct file_operations proc_cgroup_operations;
-+extern const struct file_operations proc_cgroup_operations;
- 
- /* Define the enumeration of all cgroup subsystems */
- #define SUBSYS(_x) _x ## _subsys_id,
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index b3ec4a4..c88626e 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -939,7 +939,7 @@ extern int vfs_setlease(struct file *, long, struct file_lock **);
- extern int lease_modify(struct file_lock **, int);
- extern int lock_may_read(struct inode *, loff_t start, unsigned long count);
- extern int lock_may_write(struct inode *, loff_t start, unsigned long count);
--extern struct seq_operations locks_seq_operations;
-+extern const struct seq_operations locks_seq_operations;
- 
- struct fasync_struct {
- 	int	magic;
-diff --git a/ipc/util.c b/ipc/util.c
-index 1aa0ebf..f784a79 100644
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -901,7 +901,7 @@ static int sysvipc_proc_show(struct seq_file *s, void *it)
- 	return iface->show(s, it);
+-static inline unsigned long * __init early_ioremap_pte(unsigned long addr)
++static inline pte_t * __init early_ioremap_pte(unsigned long addr)
+ {
+-	return bm_pte + ((addr >> PAGE_SHIFT) & 1023);
++	return &bm_pte[pte_index(addr)];
  }
  
--static struct seq_operations sysvipc_proc_seqops = {
-+static const struct seq_operations sysvipc_proc_seqops = {
- 	.start = sysvipc_proc_start,
- 	.stop  = sysvipc_proc_stop,
- 	.next  = sysvipc_proc_next,
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 1a3c239..333f447 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -564,8 +564,8 @@ void cgroup_unlock(void)
- static int cgroup_mkdir(struct inode *dir, struct dentry *dentry, int mode);
- static int cgroup_rmdir(struct inode *unused_dir, struct dentry *dentry);
- static int cgroup_populate_dir(struct cgroup *cgrp);
--static struct inode_operations cgroup_dir_inode_operations;
--static struct file_operations proc_cgroupstats_operations;
-+static const struct inode_operations cgroup_dir_inode_operations;
-+static const struct file_operations proc_cgroupstats_operations;
+ void __init early_ioremap_init(void)
+ {
+-	unsigned long *pgd;
++	pmd_t *pmd;
  
- static struct backing_dev_info cgroup_backing_dev_info = {
- 	.capabilities	= BDI_CAP_NO_ACCT_DIRTY | BDI_CAP_NO_WRITEBACK,
-@@ -1510,7 +1510,7 @@ static int cgroup_rename(struct inode *old_dir, struct dentry *old_dentry,
- 	return simple_rename(old_dir, old_dentry, new_dir, new_dentry);
+ 	if (early_ioremap_debug)
+ 		printk("early_ioremap_init()\n");
+ 
+-	pgd = early_ioremap_pgd(fix_to_virt(FIX_BTMAP_BEGIN));
+-	*pgd = __pa(bm_pte) | _PAGE_TABLE;
++	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
+ 	memset(bm_pte, 0, sizeof(bm_pte));
++	set_pmd(pmd, __pmd(__pa(bm_pte) | _PAGE_TABLE));
++
+ 	/*
+-	 * The boot-ioremap range spans multiple pgds, for which
++	 * The boot-ioremap range spans multiple pmds, for which
+ 	 * we are not prepared:
+ 	 */
+-	if (pgd != early_ioremap_pgd(fix_to_virt(FIX_BTMAP_END))) {
++	if (pmd != early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END))) {
+ 		WARN_ON(1);
+-		printk("pgd %p != %p\n",
+-			pgd, early_ioremap_pgd(fix_to_virt(FIX_BTMAP_END)));
+-		printk("fix_to_virt(FIX_BTMAP_BEGIN): %08lx\n",
++		printk(KERN_WARNING "pmd %p != %p\n",
++		       pmd, early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END)));
++		printk(KERN_WARNING "fix_to_virt(FIX_BTMAP_BEGIN): %08lx\n",
+ 			fix_to_virt(FIX_BTMAP_BEGIN));
+-		printk("fix_to_virt(FIX_BTMAP_END):   %08lx\n",
++		printk(KERN_WARNING "fix_to_virt(FIX_BTMAP_END):   %08lx\n",
+ 			fix_to_virt(FIX_BTMAP_END));
+ 
+ 		printk("FIX_BTMAP_END:       %d\n", FIX_BTMAP_END);
+@@ -269,27 +274,28 @@ void __init early_ioremap_init(void)
+ 
+ void __init early_ioremap_clear(void)
+ {
+-	unsigned long *pgd;
++	pmd_t *pmd;
+ 
+ 	if (early_ioremap_debug)
+ 		printk("early_ioremap_clear()\n");
+ 
+-	pgd = early_ioremap_pgd(fix_to_virt(FIX_BTMAP_BEGIN));
+-	*pgd = 0;
++	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
++	pmd_clear(pmd);
+ 	__flush_tlb_all();
  }
  
--static struct file_operations cgroup_file_operations = {
-+static const struct file_operations cgroup_file_operations = {
- 	.read = cgroup_file_read,
- 	.write = cgroup_file_write,
- 	.llseek = generic_file_llseek,
-@@ -1518,7 +1518,7 @@ static struct file_operations cgroup_file_operations = {
- 	.release = cgroup_file_release,
- };
+ void __init early_ioremap_reset(void)
+ {
+ 	enum fixed_addresses idx;
+-	unsigned long *pte, phys, addr;
++	unsigned long addr, phys;
++	pte_t *pte;
  
--static struct inode_operations cgroup_dir_inode_operations = {
-+static const struct inode_operations cgroup_dir_inode_operations = {
- 	.lookup = simple_lookup,
- 	.mkdir = cgroup_mkdir,
- 	.rmdir = cgroup_rmdir,
-@@ -2390,7 +2390,7 @@ static int cgroup_open(struct inode *inode, struct file *file)
- 	return single_open(file, proc_cgroup_show, pid);
+ 	after_paging_init = 1;
+ 	for (idx = FIX_BTMAP_BEGIN; idx <= FIX_BTMAP_END; idx--) {
+ 		addr = fix_to_virt(idx);
+ 		pte = early_ioremap_pte(addr);
+-		if (!*pte & _PAGE_PRESENT) {
+-			phys = *pte & PAGE_MASK;
++		if (pte_present(*pte)) {
++			phys = pte_val(*pte) & PAGE_MASK;
+ 			set_fixmap(idx, phys);
+ 		}
+ 	}
+@@ -298,7 +304,8 @@ void __init early_ioremap_reset(void)
+ static void __init __early_set_fixmap(enum fixed_addresses idx,
+ 				   unsigned long phys, pgprot_t flags)
+ {
+-	unsigned long *pte, addr = __fix_to_virt(idx);
++	unsigned long addr = __fix_to_virt(idx);
++	pte_t *pte;
+ 
+ 	if (idx >= __end_of_fixed_addresses) {
+ 		BUG();
+@@ -306,9 +313,9 @@ static void __init __early_set_fixmap(enum fixed_addresses idx,
+ 	}
+ 	pte = early_ioremap_pte(addr);
+ 	if (pgprot_val(flags))
+-		*pte = (phys & PAGE_MASK) | pgprot_val(flags);
++		set_pte(pte, pfn_pte(phys >> PAGE_SHIFT, flags));
+ 	else
+-		*pte = 0;
++		pte_clear(NULL, addr, pte);
+ 	__flush_tlb_one(addr);
  }
  
--struct file_operations proc_cgroup_operations = {
-+const struct file_operations proc_cgroup_operations = {
- 	.open		= cgroup_open,
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
-@@ -2419,7 +2419,7 @@ static int cgroupstats_open(struct inode *inode, struct file *file)
- 	return single_open(file, proc_cgroupstats_show, 0);
- }
+diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
+index 11c4b39..8fc0473 100644
+--- a/include/asm-x86/page_32.h
++++ b/include/asm-x86/page_32.h
+@@ -48,7 +48,6 @@ typedef unsigned long	pgprotval_t;
+ typedef unsigned long	phys_addr_t;
  
--static struct file_operations proc_cgroupstats_operations = {
-+static const struct file_operations proc_cgroupstats_operations = {
- 	.open = cgroupstats_open,
- 	.read = seq_read,
- 	.llseek = seq_lseek,
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index e3a5d81..49e20ec 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -889,7 +889,7 @@ static int __kprobes show_kprobe_addr(struct seq_file *pi, void *v)
- 	return 0;
- }
+ typedef union { pteval_t pte, pte_low; } pte_t;
+-typedef pte_t boot_pte_t;
  
--static struct seq_operations kprobes_seq_ops = {
-+static const struct seq_operations kprobes_seq_ops = {
- 	.start = kprobe_seq_start,
- 	.next  = kprobe_seq_next,
- 	.stop  = kprobe_seq_stop,
-@@ -901,7 +901,7 @@ static int __kprobes kprobes_open(struct inode *inode, struct file *filp)
- 	return seq_open(filp, &kprobes_seq_ops);
- }
+ #endif	/* __ASSEMBLY__ */
+ #endif	/* CONFIG_X86_PAE */
+diff --git a/include/asm-x86/pgtable_32.h b/include/asm-x86/pgtable_32.h
+index 11c8b73..c07389b 100644
+--- a/include/asm-x86/pgtable_32.h
++++ b/include/asm-x86/pgtable_32.h
+@@ -55,10 +55,6 @@ int text_address(unsigned long);
+ #define USER_PGD_PTRS (PAGE_OFFSET >> PGDIR_SHIFT)
+ #define KERNEL_PGD_PTRS (PTRS_PER_PGD-USER_PGD_PTRS)
  
--static struct file_operations debugfs_kprobes_operations = {
-+static const struct file_operations debugfs_kprobes_operations = {
- 	.open           = kprobes_open,
- 	.read           = seq_read,
- 	.llseek         = seq_lseek,
-@@ -1013,7 +1013,7 @@ static ssize_t write_enabled_file_bool(struct file *file,
- 	return count;
- }
- 
--static struct file_operations fops_kp = {
-+static const struct file_operations fops_kp = {
- 	.read =         read_enabled_file_bool,
- 	.write =        write_enabled_file_bool,
- };
-diff --git a/kernel/lockdep_proc.c b/kernel/lockdep_proc.c
-index 8a135bd..c1e8b3a 100644
---- a/kernel/lockdep_proc.c
-+++ b/kernel/lockdep_proc.c
-@@ -581,7 +581,7 @@ static int ls_show(struct seq_file *m, void *v)
- 	return 0;
- }
- 
--static struct seq_operations lockstat_ops = {
-+static const struct seq_operations lockstat_ops = {
- 	.start	= ls_start,
- 	.next	= ls_next,
- 	.stop	= ls_stop,
-diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
-index 12c5f4c..4eab187 100644
---- a/kernel/time/timer_list.c
-+++ b/kernel/time/timer_list.c
-@@ -265,7 +265,7 @@ static int timer_list_open(struct inode *inode, struct file *filp)
- 	return single_open(filp, timer_list_show, NULL);
- }
- 
--static struct file_operations timer_list_fops = {
-+static const struct file_operations timer_list_fops = {
- 	.open		= timer_list_open,
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
-diff --git a/kernel/time/timer_stats.c b/kernel/time/timer_stats.c
-index c36bb7e..f120255 100644
---- a/kernel/time/timer_stats.c
-+++ b/kernel/time/timer_stats.c
-@@ -395,7 +395,7 @@ static int tstats_open(struct inode *inode, struct file *filp)
- 	return single_open(filp, tstats_show, NULL);
- }
- 
--static struct file_operations tstats_fops = {
-+static const struct file_operations tstats_fops = {
- 	.open		= tstats_open,
- 	.read		= seq_read,
- 	.write		= tstats_write,
-diff --git a/samples/markers/marker-example.c b/samples/markers/marker-example.c
-index 05e438f..27e2668 100644
---- a/samples/markers/marker-example.c
-+++ b/samples/markers/marker-example.c
-@@ -26,7 +26,7 @@ static int my_open(struct inode *inode, struct file *file)
- 	return -EPERM;
- }
- 
--static struct file_operations mark_ops = {
-+static const struct file_operations mark_ops = {
- 	.open = my_open,
- };
- 
--- 
-1.5.3.4
+-#define TWOLEVEL_PGDIR_SHIFT	22
+-#define BOOT_USER_PGD_PTRS (__PAGE_OFFSET >> TWOLEVEL_PGDIR_SHIFT)
+-#define BOOT_KERNEL_PGD_PTRS (1024-BOOT_USER_PGD_PTRS)
+-
+ /* Just any arbitrary offset to the start of the vmalloc VM area: the
+  * current 8MB value just means that there will be a 8MB "hole" after the
+  * physical memory until the kernel virtual memory starts.  That means that
+
+--------------000707070807060406010503--
