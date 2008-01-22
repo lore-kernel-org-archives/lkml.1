@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbYAVMjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbYAVMj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbYAVMjl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 07:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758023AbYAVMj3
+	id S1754323AbYAVMj6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 07:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYAVMjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 07:39:29 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:54001 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751929AbYAVMj2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 07:39:28 -0500
-X-Sasl-enc: 7FRH5w3+76DLVK33mN6GACQ2en8z2W4TXUM8oPHYBDcA 1201005566
-Date: Tue, 22 Jan 2008 10:39:23 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, len.brown@intel.com
-Subject: Re: [PATCH] Rationalise ACPI backlight implementation
-Message-ID: <20080122123923.GC15490@khazad-dum.debian.net>
-References: <20071226020325.GA21099@srcf.ucam.org> <1200990809.7424.31.camel@acpi-sony.sh.intel.com> <20080122114605.GA23983@srcf.ucam.org>
+	Tue, 22 Jan 2008 07:39:49 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52521 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752781AbYAVMjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 07:39:48 -0500
+Date: Tue, 22 Jan 2008 13:39:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: what's up for v2.6.25 in x86.git
+Message-ID: <20080122123932.GB7304@elte.hu>
+References: <20080121201437.GA31469@elte.hu> <200801221213.53490.nickpiggin@yahoo.com.au> <200801221228.21404.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080122114605.GA23983@srcf.ucam.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200801221228.21404.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jan 2008, Matthew Garrett wrote:
-> On Tue, Jan 22, 2008 at 04:33:29PM +0800, Zhang Rui wrote:
-> > I have no obvious objection on either of these two proposals.
-> > But one thing to mention is that
-> > both of these two patches is written on the assumption that the
-> > brightness levels listed in _BCL method are in ascending order, while
-> > this is not stated in the ACPI spec.
-> > Is this a problem?
+
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> On Tuesday 22 January 2008 12:13, Nick Piggin wrote:
+> > On Tuesday 22 January 2008 07:14, Ingo Molnar wrote:
+> > > Nick Piggin (5):
+> > >       mm: fix PageUptodate memory ordering bug
+> >
+> > This should actually be named differently. It should be
+> > called
+> >
+> > x86: don't unconditionally enable expensive SMP ppro workaround
+> >
+> > I actually had a more complete patch which printed a warning if
+> > booting such a system without the config option.
 > 
-> The driver already makes that assumption, and it's implicit in the spec.
+> Ah sorry, here is a refreshed version
 
-Actually, no, it is not implicit.  The spec clearly states that the
-brightness values will be cycled through the ones given by that list.  It is
-implicit that brightness up actions will cycle through the list in order,
-and brightness down will cycle through the list in reverse order.
+looks good to me, but could you please send a delta patch against 
+x86.git:
 
-If a vendor where to decide to place the most used brightness values in the
-beginning of the list, and the rest of it later, he would be allowed to do
-so.  Nobody was weird enough to do it yet though, AFAIK.
+    http://redhat.com/~mingo/x86.git/README
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+and i'll backmerge it to your other patch (with the subject fixed, etc.) 
+once it passes qa, etc. Thanks,
+
+	Ingo
