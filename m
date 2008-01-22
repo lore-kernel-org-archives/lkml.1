@@ -1,40 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYAVSpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbYAVSuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669AbYAVSpZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 13:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbYAVSpM
+	id S1755409AbYAVSuF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 13:50:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYAVStu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 13:45:12 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3014 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751483AbYAVSpL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 13:45:11 -0500
-Date: Tue, 22 Jan 2008 18:44:21 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: rdunlap@xenotime.net, jschopp@austin.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24-rc8-mm1] checkpatch.pl -- Handle backslashes within quoted string.
-Message-ID: <20080122184421.GC5941@shadowen.org>
-References: <200801182221.CID64509.JSMOFHtOFLVQFO@I-love.SAKURA.ne.jp> <200801190024.GBG57380.JSMFHVOOLtOFFQ@I-love.SAKURA.ne.jp>
+	Tue, 22 Jan 2008 13:49:50 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:44059 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751467AbYAVStt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 13:49:49 -0500
+Date: Tue, 22 Jan 2008 20:48:23 +0200
+From: Adrian Bunk <adrian.bunk@movial.fi>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.60-rc1
+Message-ID: <20080122184822.GH26556@does.not.exist>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200801190024.GBG57380.JSMFHVOOLtOFFQ@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 19, 2008 at 12:24:41AM +0900, Tetsuo Handa wrote:
-> 
-> Tetsuo Handa wrote:
-> > checkpatch.pl was unable to handle \\ within quoted string.
-> 
-> Sorry, I didn't know checkpatch 0.13 is available.
+Security fixes since 2.6.16.59:
+- CVE-2007-6063: isdn: avoid copying overly-long strings
+- CVE-2007-6151: I4L: fix isdn_ioctl memory overrun vulnerability
+- CVE-2007-6206: vfs: coredumping fix
 
-No problem.  Thanks for trying to fix it.
 
-:)
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
 
--apw
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+
+
+Changes since 2.6.16.59:
+
+Adrian Bunk (2):
+      drivers/scsi/BusLogic.c: #ifdef MODULE BusLogic_pci_tbl[]
+      Linux 2.6.16.60-rc1
+
+Al Viro (3):
+      [CASSINI]: Fix endianness bug.
+      [NET]: Introduce types for checksums.
+      [NET]: Generic checksum annotations and cleanups.
+
+Ben Collins (1):
+      [BusLogic] Add pci dev table for auto module loading.
+
+Chas Williams (1):
+      [ATM]: [nicstar] delay irq setup until card is configured
+
+David S. Miller (1):
+      [CASSINI]: Set skb->truesize properly on receive packets.
+
+Eric Dumazet (1):
+      [IPV4] ROUTE: ip_rt_dump() is unecessary slow
+
+Herbert Xu (1):
+      [ATM]: Check IP header validity in mpc_send_packet
+
+Ingo Molnar (1):
+      vfs: coredumping fix (CVE-2007-6206)
+
+Jeff Moyer (1):
+      raw: don't allow the creation of a raw device with minor number 0
+
+Karsten Keil (2):
+      isdn: avoid copying overly-long strings (CVE-2007-6063)
+      I4L: fix isdn_ioctl memory overrun vulnerability (CVE-2007-6151)
+
+Trond Myklebust (2):
+      NFS: writes should not clobber utimes() calls
+      NFS: call nfs_wb_all() only on regular files
+
+
+ Makefile                       |    2 
+ drivers/atm/nicstar.c          |   19 +++-----
+ drivers/char/raw.c             |    2 
+ drivers/isdn/i4l/isdn_common.c |    5 +-
+ drivers/isdn/i4l/isdn_net.c    |    8 +--
+ drivers/net/cassini.c          |    9 ++-
+ drivers/net/cassini.h          |   18 +++----
+ drivers/scsi/BusLogic.c        |   13 +++++
+ fs/exec.c                      |    6 ++
+ fs/nfs/dir.c                   |    3 -
+ fs/nfs/inode.c                 |    4 -
+ include/linux/types.h          |    2 
+ include/net/checksum.h         |   42 ++++++++++--------
+ include/net/ip6_checksum.h     |   76 ++++++++++++++++-----------------
+ net/atm/mpc.c                  |    7 +++
+ net/ipv4/route.c               |    8 +--
+ 16 files changed, 133 insertions(+), 91 deletions(-)
+
