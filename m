@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbYAVNVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbYAVNYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756688AbYAVNVB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 08:21:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYAVNUv
+	id S1758861AbYAVNYL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 08:24:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbYAVNX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 08:20:51 -0500
-Received: from hs-out-0708.google.com ([64.233.178.249]:22627 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751947AbYAVNUu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 08:20:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VlGoIAjxWNmdo1RteEaQ9O1iqSrg8ur1FhnFgtbNC2JCveU/+qS6GkLzeTJVLVKX/bo1r/OwTIz1e/t+Soa1fc1S0fapZTXlNPH00aeDUIkHb8UY2k/oYwxpwWQXZnjMwFEAVjmimsYsiSfzR7ebzSQICbfdKYh9fAuupNh61Zo=
-Message-ID: <4d8e3fd30801220520p14dbf5aau874d1df86415359a@mail.gmail.com>
-Date: Tue, 22 Jan 2008 14:20:48 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: apw@shadowen.org, "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] checkpatch: add filename in the summary
-In-Reply-To: <20080114232339.2c018647@paolo-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jan 2008 08:23:58 -0500
+Received: from mx2.suse.de ([195.135.220.15]:45294 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752646AbYAVNX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 08:23:57 -0500
+Date: Tue, 22 Jan 2008 14:23:55 +0100
+From: Andi Kleen <ak@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, jbeulich@novell.com,
+       venkatesh.pallipadi@intel.com, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: CPA boot crash (was: [PATCH] [0/36] Great change_page_attr patch series v3)
+Message-ID: <20080122132355.GA24320@wotan.suse.de>
+References: <200801161114.239449000@suse.de> <200801181819.58675.ak@suse.de> <20080121164052.GA11364@elte.hu> <200801211813.45102.ak@suse.de> <alpine.LFD.1.00.0801221119180.3199@apollo.tec.linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080114232339.2c018647@paolo-desktop>
+In-Reply-To: <alpine.LFD.1.00.0801221119180.3199@apollo.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 14, 2008 11:23 PM, Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
-> Add a filename option (default to 0)
-> in order to get the following summary output:
-> ./scripts/checkpatch.pl --filename --file ./arch/sparc/kernel/apc.c
-> ...
-> ...
-> ...
-> ./arch/sparc/kernel/apc.c --> total: 18 errors, 3 warnings, 186 lines checked
-> ---
->
-> Andy,
-> I wonder why checkpatch doesn't show all the command line options.
-> At the moment, it only prints:
-> options: -q           => quiet
->         --no-tree    => run without a kernel tree
->         --terse      => one line per report
->         --emacs      => emacs compile window format
->         --file       => check a source file
->         --strict     => enable more subjective tests
->         --root       => path to the kernel tree root
->
-> but I see a lot more options:
->         q|quiet
->         tree
->         signoff
->         patch
->         test-type
->         emacs
->         terse
->         file
->         subjective
->         strict
->         root=s
->         summary
->         mailback
->
-[patch snipped]
+> First priority is getting CPA and PAT consolidated before we put new
 
-Hi Andy,
-do you plan to document all the command line options that checkpatch
-is currently accepting?
+PAT seems to be still quite unstable and frankly for me it is 
+unclear how long it will take to it become stable. It would
+not surprise me if it takes longer than the .26 merge window.
 
-Thanks.
+You're saying you want to delay an relatively simple and imho
+relatively mature feature like gbpages after that complicated and risky 
+feature PAT? Please take a look at the patches; they're really
+not very complicated.
 
-Ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+That seems to me like against your own principles -- simple stuff
+first -- that you two harped on so extensively on earlier this thread.
+
+For me it would make much more sense to put the gbpages first
+than to delay them for PAT. I only didn't argue this strongly
+earlier because PAT was already rushed in (for me quite suprisingly) 
+and I didn't want to argue for dropping it.
+
+But now that it is gone again anyways delaying the gbpages for it again
+would be quite unfortunate from my perspective.
+
+-Andi
