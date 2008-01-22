@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbYAVTsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbYAVTtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753573AbYAVTsW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 14:48:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbYAVTsO
+	id S1754340AbYAVTtT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 14:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYAVTtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 14:48:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42595 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751841AbYAVTsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 14:48:13 -0500
-Date: Tue, 22 Jan 2008 20:47:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Eduardo Pereira Habkost <ehabkost@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       glommer@gmail.com, tglx@linutronix.de, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
-       rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
-       mtosatti@redhat.com
-Subject: Re: [PATCH 0/4] paravirt_ops-64 compile fixes
-Message-ID: <20080122194710.GC3218@elte.hu>
-References: <1200952133-31581-1-git-send-email-ehabkost@redhat.com> <20080122120207.GA30271@elte.hu> <20080122123450.GU7338@blackpad> <47962E1D.2090308@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47962E1D.2090308@goop.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 22 Jan 2008 14:49:09 -0500
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:61482 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751866AbYAVTtI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 14:49:08 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mika =?ISO-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <479634A9.1090908@zytor.com>
+References: <1200758937-22386-1-git-send-email-ijc@hellion.org.uk>
+	 <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>
+	 <47939363.8040603@kolumbus.fi>
+	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>
+	 <479510CE.7010706@zytor.com>
+	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>
+	 <479551FD.5040801@zytor.com>
+	 <1201023401.5643.52.camel@localhost.localdomain>
+	 <479634A9.1090908@zytor.com>
+Content-Type: text/plain
+Date: Tue, 22 Jan 2008 19:48:45 +0000
+Message-Id: <1201031325.15491.66.camel@cthulhu.hellion.org.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 192.168.1.223
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+	format.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Tue, 2008-01-22 at 10:23 -0800, H. Peter Anvin wrote:
+> Ian Campbell wrote:
+> > Anyhow, I don't feel all that strongly about it so if the opinion of the
+> > early start of day maintainer(s) is strongly in favour of ASM I'll defer
+> > to that.
+> > 
+> 
+> My opinion is that I want it done properly (PIC and all that jazz) or 
+> not at all, and certainly would not want to mix linear and 
+> paging-enabled code in the same file.  When it comes to assembly code, 
+> at least people can *see* that there there be dragons.
+> 
+> The plus *and* minus of a C version is that it's easier for people to 
+> modify.  The plus side of that is that if we really need it, it's a lot 
+> cleaner; the minus side is that it may encourage more code to creep into 
+> the pre-paging code, which would not be a good thing IMO.
 
->> Maybe should this force-paravirt mode be a kernel debugging option?
->
-> No, just a plain CONFIG_PARAVIRT to turn it on and off independently 
-> of everything else.
+Seems reasonable to me. I'll integrate your asm diff with the other
+changes and give it a whirl.
 
-it should be a debugging option in the way that it's dependent on 
-KERNEL_DEBUG and KERNEL_EXPERIMENTAL.
+Ian. 
+-- 
+Ian Campbell
 
-i dont think you shold worry about this - i think 64-bit guest support 
-for specific hypervisors could be added even after the merge window, if 
-it's reasonably isolated (which i'd expect it to be). It clearly cannot 
-break anything else so it's the same category as new driver or new 
-hardware support - more relaxed integration rules. Then we can remove 
-the KERNEL_DEBUG and KERNEL_EXPERIMENTAL dependency as well.
+Never go to bed mad.  Stay up and fight.
+		-- Phyllis Diller, "Phyllis Diller's Housekeeping Hints"
 
-	Ingo
