@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbYAVU42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbYAVU4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbYAVU42 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 15:56:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbYAVU4R
+	id S1755585AbYAVU4k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 15:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbYAVU4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 15:56:17 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:37884 "EHLO e2.ny.us.ibm.com"
+	Tue, 22 Jan 2008 15:56:25 -0500
+Received: from main.gmane.org ([80.91.229.2]:36771 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752853AbYAVU4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 15:56:16 -0500
-Date: Tue, 22 Jan 2008 14:56:16 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linuxram@us.ibm.com, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org, viro@ftp.linux.org.uk, hch@infradead.org,
-       a.p.zijlstra@chello.nl
-Subject: Re: [RFC][PATCH] VFS: create /proc/<pid>/mountinfo
-Message-ID: <20080122205616.GA1506@sergelap.austin.ibm.com>
-References: <E1JGBVq-0002Or-H1@pomaz-ex.szeredi.hu> <1200944886.2988.27.camel@ram.us.ibm.com> <E1JH49E-0006d6-N9@pomaz-ex.szeredi.hu> <1200952394.2988.70.camel@ram.us.ibm.com> <E1JH4po-0006ju-TS@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JH4po-0006ju-TS@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1755249AbYAVU4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 15:56:23 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
+Subject: Re: Massive IDE problems. Who leaves data here?
+Date: Tue, 22 Jan 2008 22:04:10 +0100
+Message-ID: <fn5l9c$l6m$1@ger.gmane.org>
+References: <fn5ivo$ck2$1@ger.gmane.org> <47965138.8060603@garzik.org>	 <fn5jsn$ful$1@ger.gmane.org> <2c0942db0801221246u678d2a20xef9cf93ee28eaf51@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: p4fd4bcfe.dip0.t-ipconnect.de
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.11) Gecko/20071129 SeaMonkey/1.1.7
+In-Reply-To: <2c0942db0801221246u678d2a20xef9cf93ee28eaf51@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > On Mon, 2008-01-21 at 22:25 +0100, Miklos Szeredi wrote:
-> > > > 	You have removed the code that checked if the peer or
-> > > > 	master mount was in the same namespace before reporting their
-> > > > 	corresponding mount-ids. One downside of that approach is the
-> > > > 	user will see an mount_id in the output with no corresponding
-> > > > 	line to explain the details of the mount_id.  
-> > > 
-> > > Before the change, the peer and master ID's were basically randomly
-> > > chosen from the peers, which means, it wasn't possible to always
-> > > determine, that two mounts were peers, or that they were slaves to the
-> > > same peer group.
-> > > 
-> > > After the change, this is possible, since the peer ID will be the same
-> > > for all mounts which are peers.  This means, that even though the peer
-> > > ID might be in a different namespace, it is possible to determine all
-> > > peers within the same namespace by comparing their peer ID's.
-> > 
-> > 
-> >  I agree with your reasoning on the random id; showing a single
-> >  id avoids clutter. But my point is, why not show a
-> >  id for the master or peer residing in the same namespace?
-> 
-> Because this way it is possible see propagation between different
-> namespaces as well, by looking at the mount information for processes
-> in the different namespaces.  Of course, this is only possible with
-> sufficient privileges.
+Ray Lee wrote:
+> (Please always do a reply-to-all for this email list.)
 
-Gotta say I agree with Miklos this would be useful.  I'd far prefer to
-see the id than a -1.
+Currently I don't have a SMTP server configured. As soon as my system is 
+trustworthy, again, I'll do that.
 
-thanks,
--serge
+> Bad or almost bad power supplies can cause lots of unhappy problems
+> such as these. If you have another power supply laying around, it can
+> be worth swapping them out. Double-checking that your CPU fan is still
+> spinning, and that memtest86+ doesn't show any errors doesn't hurt
+> either.
 
-> >  Showing a id with no corresponding entry for that id, can be
-> >  intriguing.
-> 
-> Not if it's clearly documented (will add documentation for the next
-> submission).
-> 
-> Miklos
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+... that may be possible...
+
+I have all PCI slots filled with cards, two big IDE hard drives and one 
+DVD RAM writer. I already disconnected the DVD drive, as this was nearly 
+unusable with all those IDE errors. The power supply is (AFAIR) a 200 
+watt one.
+
+But may the power supply cause corrupted data? Shouldn't that crash down 
+the PC completely?
+
+CU
+
+Manuel
+
