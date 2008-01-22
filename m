@@ -1,81 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757426AbYAVW5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757962AbYAVW5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757426AbYAVW5Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 17:57:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYAVW5R
+	id S1757962AbYAVW5j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 17:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757530AbYAVW50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 17:57:17 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56845 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752182AbYAVW5Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 17:57:16 -0500
-Date: Tue, 22 Jan 2008 14:58:06 -0800
-From: Greg KH <greg@kroah.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH]PCIE ASPM support - takes 3
-Message-ID: <20080122225806.GC4742@kroah.com>
-References: <1200621388.8965.3.camel@sli10-desk.sh.intel.com>
+	Tue, 22 Jan 2008 17:57:26 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:50967 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757479AbYAVW5Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 17:57:25 -0500
+Date: Tue, 22 Jan 2008 14:57:22 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Olaf Hering <olaf@aepfle.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       hanth Aravamudan <nacc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+       akpm@linux-foundation.org
+Subject: Re: crash in kmem_cache_init
+In-Reply-To: <20080122225046.GA866@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0801221453480.2271@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
+ <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
+ <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+ <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
+ <Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
+ <20080122212654.GB15567@csn.ul.ie> <Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
+ <20080122225046.GA866@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1200621388.8965.3.camel@sli10-desk.sh.intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 09:56:28AM +0800, Shaohua Li wrote:
-> v3->v2, fixed the issues Matthew Wilcox raised.
+On Tue, 22 Jan 2008, Mel Gorman wrote:
+
+> > > Whatever this was a problem fixed in the past or not, it's broken again now
+> > > :( . It's possible that there is a __GFP_THISNODE that can be dropped early
+> > > at boot-time that would also fix this problem in a way that doesn't
+> > > affect runtime (like altering cache_grow in my patch does).
+> > 
+> > The dropping of GFP_THISNODE has the same effect as your patch. 
 > 
-> PCI Express ASPM defines a protocol for PCI Express components in the D0
-> state to reduce Link power by placing their Links into a low power state
-> and instructing the other end of the Link to do likewise. This
-> capability allows hardware-autonomous, dynamic Link power reduction
-> beyond what is achievable by software-only controlled power management.
-> However, The device should be configured by software appropriately.
-> Enabling ASPM will save power, but will introduce device latency.
+> The dropping of it totally? If so, this patch might fix a boot but it'll
+> potentially be a performance regression on NUMA machines that only have
+> nodes with memory, right?
+
+No the dropping during early allocations.,
+
+> o 0
+> o 2
+> Nodes with regular memory
+> o 2
+> Current running CPU 0 is associated with node 0
+> Current node is 0
 > 
-> This patch adds ASPM support in Linux. It introduces a global policy for
-> ASPM, a sysfs file /sys/module/pcie_aspm/parameters/policy can control
-> it. The interface can be used as a boot option too. Currently we have
-> below setting:
->         -default, BIOS default setting
->         -powersave, highest power saving mode, enable all available ASPM
-> state
-> and clock power management
->         -performance, highest performance, disable ASPM and clock power
-> management
-> By default, the 'default' policy is used currently.
-> 
-> In my test, power difference between powersave mode and performance mode
-> is about 1.3w in a system with 3 PCIE links.
-> 
-> please review, any comments will be appreciated.
+> So node 2 has regular memory but it's trying to use node 0 at a glance.
+> I've attached the patch I used against 2.6.24-rc8. It includes the revert.
 
-Can you please fix up all of the warnings that checkpatch.pl and sparse
-produce from this patch?
+We need the current processor to be attached to a node that has 
+memory. We cannot fall back that early because the structures for the 
+other nodes do not exist yet.
 
-Also, one small thing:
+> Online nodes
+> o 0
+> o 2
+> Nodes with regular memory
+> o 2
+> Current running CPU 0 is associated with node 0
+> Current node is 0
+>  o kmem_list3_init
 
-> --- linux.orig/include/linux/pci.h	2008-01-16 15:59:42.000000000 +0800
-> +++ linux/include/linux/pci.h	2008-01-18 09:41:20.000000000 +0800
-> @@ -164,6 +164,10 @@ struct pci_dev {
->  					   this is D0-D3, D0 being fully functional,
->  					   and D3 being off. */
->  
-> +#ifdef CONFIG_PCIEASPM
-> +	void		*link_state;	/* ASPM link state. */
-> +#endif
+This needs to be node 2.
 
-Can we make this a "real" pointer to a structure?  I note that you use
-two different structures here in this pointer, should you really do
-that?  It's good to get type-checks whereever possible.
+> [c0000000005c3b40] c0000000000dadec .cache_grow+0x7c/0x338
+> [c0000000005c3c00] c0000000000db54c .fallback_alloc+0x1c0/0x224
 
-thanks,
+Fallback during bootstrap.
 
-greg k-h
