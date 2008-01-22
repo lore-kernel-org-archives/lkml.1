@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbYAVVe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbYAVVfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbYAVVe0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 16:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYAVVeQ
+	id S1755226AbYAVVfW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 16:35:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbYAVVfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 16:34:16 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46196 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751407AbYAVVeP (ORCPT
+	Tue, 22 Jan 2008 16:35:09 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:50165 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbYAVVfH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 16:34:15 -0500
-Date: Tue, 22 Jan 2008 13:34:14 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Olaf Hering <olaf@aepfle.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-       akpm@linux-foundation.org
-Subject: Re: crash in kmem_cache_init
-In-Reply-To: <20080122212654.GB15567@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0801170628580.19208@schroedinger.engr.sgi.com>
- <20080117181222.GA24411@aepfle.de> <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com>
- <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com>
- <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
- <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
- <Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com>
- <20080122212654.GB15567@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 22 Jan 2008 16:35:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=EFSSB0+OgiA8jx8jwfr+enqJl0kXPo0FsTfMQS2gJflQR88JgpmCirSmGxliwxWw+UGYXFbSTPb+EEJvUJcjfQJLFuTWYsNgSuHTtdkIOwFj6HYVwc5/pn/fV3ms2alP58auwZip3/BZMczLj9vq5gTTU4PNFWdYnS2WW1ANNcg=
+Subject: Re: [PATCH] x86: make nx_enabled conditional on CONFIG_X86_PAE
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ian Campbell <ijc@hellion.org.uk>,
+       Mika =?ISO-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <20080122210442.GH12892@elte.hu>
+References: <1200950633.15491.21.camel@cthulhu.hellion.org.uk>
+	 <479510CE.7010706@zytor.com>
+	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>
+	 <479551FD.5040801@zytor.com>
+	 <1201023401.5643.52.camel@localhost.localdomain>
+	 <479634A9.1090908@zytor.com>
+	 <1201031325.15491.66.camel@cthulhu.hellion.org.uk>
+	 <47964B7B.9000905@zytor.com> <20080122203611.GA12892@elte.hu>
+	 <1201035611.16972.61.camel@brick>  <20080122210442.GH12892@elte.hu>
+Content-Type: text/plain
+Date: Tue, 22 Jan 2008 13:35:15 -0800
+Message-Id: <1201037715.16972.76.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jan 2008, Mel Gorman wrote:
-
-> > After you reverted the slab memoryless node patch there should be per node 
-> > structures created for node 0 unless the node is marked offline. Is it? If 
-> > so then you are booting a cpu that is associated with an offline node. 
-> > 
+On Tue, 2008-01-22 at 22:04 +0100, Ingo Molnar wrote:
+> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
 > 
-> I'll roll a patch that prints out the online states before startup and
-> see what it looks like.
-
-Ok. Great.
-
-> 
-> > > Can you see a better solution than this?
+> > nx_enabled can only be set to non-zero when CONFIG_X86_PAE is set.  
+> > The only use not currently inside a CONFIG_X86_PAE block is the 
+> > definition, the declaration and a conditional unlikely test in 
+> > fault_32.c (is_prefetch).
 > > 
-> > Well this means that bootstrap will work by introducing foreign objects 
-> > into the per cpu queue (should only hold per cpu objects). They will 
-> > later be consumed and then the queues will contain the right objects so 
-> > the effect of the patch is minimal.
+> > When !CONFIG_X86_PAE, is_prefetch always returns 0 immediately as 
+> > nx_enabled is always 0.
 > > 
+> > When CONFIG_X86_PAE, the test is preserved, but the test against the 
+> > cpu model and stepping is deleted, this may not be correct.
 > 
-> By minimal, do you mean that you expect it to break in some other
-> respect later or minimal as in "this is bad but should not have no
-> adverse impact".
+> thanks, applied.
 
-Should not have any adverse impact after the objects from the cpu queue 
-have been consumed. If the cache_reaper tries to shift objects back 
-from the per cpu queue into slabs then BUG_ONs may be triggered. Make sure 
-you run the tests with full debugging please.
+Hmmm, the extern nx_enabled in page_32.h is already within an
+ifndef __ASSEMBLY__ block, so I'm not sure how wakeup_32.S could
+be using it.  Thoughts?
 
-> Whatever this was a problem fixed in the past or not, it's broken again now
-> :( . It's possible that there is a __GFP_THISNODE that can be dropped early
-> at boot-time that would also fix this problem in a way that doesn't
-> affect runtime (like altering cache_grow in my patch does).
-
-The dropping of GFP_THISNODE has the same effect as your patch. 
-Objects from another node get into the per cpu queue. And on free we 
-assume that per cpu queue objects are from the local node. If debug is on 
-then we check that with BUG_ONs.
-
+Harvey
 
