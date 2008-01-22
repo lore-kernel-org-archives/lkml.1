@@ -1,104 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbYAVOj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbYAVOlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbYAVOj7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 09:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYAVOjw
+	id S1757176AbYAVOlV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 09:41:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbYAVOlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 09:39:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53727 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751769AbYAVOjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 09:39:51 -0500
-Date: Tue, 22 Jan 2008 15:39:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Michael Opdenacker <michael-lists@free-electrons.com>,
-       linux-kernel@vger.kernel.org, Linux-tiny@selenic.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: fix unconditional
-	arch/x86/kernel/pcspeaker.c?compiling
-Message-ID: <20080122143912.GJ7304@elte.hu>
-References: <20080118110252.GA17397@elte.hu> <47909821.1090907@free-electrons.com> <20080118122540.GH11044@elte.hu> <20080118122926.GA15216@elte.hu> <4790A385.800@free-electrons.com> <1200664214.4001.24.camel@cinder.waste.org> <4790D3E3.4060409@free-electrons.com> <1200676219.3835.8.camel@cinder.waste.org> <20080118210938.GE10717@elte.hu> <1200695950.25782.28.camel@cinder.waste.org>
+	Tue, 22 Jan 2008 09:41:06 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:64851 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751134AbYAVOlE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 09:41:04 -0500
+Date: Tue, 22 Jan 2008 09:40:52 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Valdis.Kletnieks@vt.edu, David Chinner <dgc@sgi.com>,
+       Valerie Henson <val@vahconsulting.com>, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andreas Dilger <adilger@clusterfs.com>, Ric Wheeler <ric@emc.com>
+Subject: Re: [RFC] Parallelize IO for e2fsck
+Message-ID: <20080122144052.GC17804@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Valdis.Kletnieks@vt.edu,
+	David Chinner <dgc@sgi.com>, Valerie Henson <val@vahconsulting.com>,
+	linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Andreas Dilger <adilger@clusterfs.com>, Ric Wheeler <ric@emc.com>
+References: <70b6f0bf0801161322k2740a8dch6a0d6e6e112cd2d0@mail.gmail.com> <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com> <20080121230041.GL3180@webber.adilger.int> <20080122033830.GR155259@sgi.com> <3673.1200975438@turing-police.cc.vt.edu> <20080122070050.GM3180@webber.adilger.int>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1200695950.25782.28.camel@cinder.waste.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080122070050.GM3180@webber.adilger.int>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Matt Mackall <mpm@selenic.com> wrote:
-
-> > btw., are there any pending arch/x86 bits in -tiny? (stupid 
-> > question: were can i get the most uptodate version of -tiny from?)
+On Tue, Jan 22, 2008 at 12:00:50AM -0700, Andreas Dilger wrote:
+> > AIX had SIGDANGER some 15 years ago.  Admittedly, that was sent when
+> > the system was about to hit OOM, not when it was about to start swapping.
 > 
-> It's not a stupid question. I dropped updating the tree regulary some 
-> time ago to focus on merging bits and then got a bit side-tracked by 
-> this little thing called "version control".
-> 
-> Michael is attempting to get the tree started again and has put a 
-> quilt up here:
-> 
-> http://elinux.org/images/3/3c/Tiny-quilt-2.6.23-0.tar.bz2
+> I'd tried to advocate SIGDANGER some years ago as well, but none of
+> the kernel maintainers were interested.  It definitely makes sense
+> to have some sort of mechanism like this.  At the time I first brought
+> it up it was in conjunction with Netscape using too much cache on some
+> system, but it would be just as useful for all kinds of other memory-
+> hungry applications.
 
-cool! A few comments about the patches that affect arch/x86:
+It's been discussed before, but I suspect the main reason why it was
+never done is no one submitted a patch.  Also, the problem is actually
+a pretty complex one.  There are a couple of different stages where
+you might want to send an alert to processes:
 
-dmi_blacklist.patch:
+    * Data is starting to get ejected from page/buffer cache
+    * System is starting to swap
+    * System is starting to really struggle to find memory
+    * System is starting an out-of-memory killer
 
-  +#ifdef CONFIG_DMI_SCAN
-          dmi_scan_machine();
-  +#endif
+AIX's SIGDANGER really did the last two, where the OOM killer would
+tend to avoid processes that had a SIGDANGER handler in favor of
+processes that were SIGDANGER unaware.
 
-put that #ifdef into the include file and make it an inlined NOP in the 
-!DMI_SCAN case. That de-#ifdef-ifies the .c files.
+Then there is the additional complexity in Linux that you have
+multiple zones of memory, which at least on the historically more
+popular x86 was highly, highly important.  You could say that whenever
+there is sufficient memory pressure in any zone that you start
+ejecting data from caches or start to swap that you start sending the
+signals --- but on x86 systems with lowmem, that could happen quite
+frequently, and since a user process has no idea whether its resources
+are in lowmem or highmem, there's not much you can do about this.
 
-cpu-support.patch: ditto.
+Hopefully this is less of an issue today, since the 2.6 VM is much
+more better behaved, and people are gradually moving over to x86_64
+anyway.  (Sorry SGI and Intel, unfortunately they're not moving over
+to the Itanic :-).   So maybe this would be better received now.
 
-mtrr.patch: ditto.
+Bringing us back to the main topic at hand, one of the tradeoffs in
+Val's current approach is that by relying on the kernel's buffer
+cache, we don't have to worry about locking and coherency at the
+userspace level.  OTOH, we give up low-level control about when memory
+gets thrown out, and it also means that simply getting notified when
+the system starts to swap isn't good enough.  We need to know much
+earlier, when the system starts ejecting data from the buffer and page
+caches.
 
-inflate-error.patch: please use:
+Does this matter?  Well, there are a couple of use cases:
 
-   quilt refresh --diffstat --sort --no-timestamps -p 1
+     * The restricted boot environment
+     * The background "once a month" take a snapshot and check
+     * The oh-my-gosh we-lost-a-filesystem -- repair it while the 
+       IMAP server is still on-line serving data from the other 
+       mounted filesystems.
 
-when generating patches, to make them reviewable, uniform and 
-noise-free.
+It's the last case where things get really tricky....
 
-no-doublefault.patch: looks ok. Please add proper metadata and submit to 
-lkml.
-
-sbf.patch: looks ok.
-
-sysenter.patch:
-
-+#ifdef CONFIG_SYSENTER
-        sysenter_setup();
-        enable_sep_cpu();
-+#endif
-
-hide these #ifdefs in the include file. (as it already does) Looks ok 
-otherwise.
-
-threadinfo-ool.patch: doesnt this break the scheduler? Had something 
-like this in -rt, i turned 'current' into a const actually, but had 
-trouble with keeping from gcc to do the right thing in sched.c. I guess 
-we could live with current_non_const() that gets it from assembly. (and 
-hence gcc wont be able to optimize it away in the middle of the 
-context-switch) But when done properly, this is both a nice, measurable 
-speedup on UP, and a nice space-saver.
-
-tiny-cflags.patch: obsolete? Isnt CFLAGS already extendable? Question to 
-Sam i guess.
-
-tsc.patch: look ok. needs x86.git porting.
-
-	Ingo
+     	      	   	 	    - Ted
