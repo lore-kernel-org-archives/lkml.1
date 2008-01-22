@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYAVW01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbYAVW1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359AbYAVW01 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 17:26:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYAVW0U
+	id S1755986AbYAVW1s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 17:27:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbYAVW1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 17:26:20 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48759 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751015AbYAVW0T (ORCPT
+	Tue, 22 Jan 2008 17:27:41 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58983 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751785AbYAVW1l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 17:26:19 -0500
-Date: Tue, 22 Jan 2008 14:25:50 -0800
-From: Greg KH <greg@kroah.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: David Brownell <david-b@pacbell.net>, Greg KH <gregkh@suse.de>,
-       stefanr@s5r6.in-berlin.de, James.Bottomley@hansenpartnership.com,
-       a.zummo@towertech.it, peterz@infradead.org, cbou@mail.ru,
-       linux-kernel@vger.kernel.org, stern@rowland.harvard.edu,
-       dwmw2@infradead.org, davem@davemloft.net, jarkao2@gmail.com,
-       cornelia.huck@de.ibm.com
-Subject: Re: [PATCH 1/6] driver-core : add class iteration api
-Message-ID: <20080122222550.GB7146@kroah.com>
-References: <20080112094754.GA2893@darkstar.te-china.tietoenator.com> <20080122055434.GB3066@darkstar.te-china.tietoenator.com> <200801212224.18149.david-b@pacbell.net> <20080122072708.GB3725@darkstar.te-china.tietoenator.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080122072708.GB3725@darkstar.te-china.tietoenator.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 22 Jan 2008 17:27:41 -0500
+Date: Tue, 22 Jan 2008 22:25:39 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Massive IDE problems. Who leaves data here?
+Message-ID: <20080122222539.5643d6ae@lxorguk.ukuu.org.uk>
+In-Reply-To: <fn5jsn$ful$1@ger.gmane.org>
+References: <fn5ivo$ck2$1@ger.gmane.org>
+	<47965138.8060603@garzik.org>
+	<fn5jsn$ful$1@ger.gmane.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 03:27:08PM +0800, Dave Young wrote:
+On Tue, 22 Jan 2008 21:40:21 +0100
+Manuel Reimer <Manuel.Spam@nurfuerspam.de> wrote:
+
+> Jeff Garzik wrote:
+> > If your IDE interface is complaining about BadCRC errors, then it's 
+> > complaining about hardware problems (bad cable, etc.)
 > 
-> Add the following class iteration functions for driver use:
-> class_for_each_device
-> class_find_device
-> class_for_each_child
-> class_find_child
+> The cable already has been replaced three times. I even got sure to 
+> *not* bend the cable. This all doesn't help.
+> 
+> May a bad cable really cause corrupted data?
 
-As class_for_each_child() is not used by anyone in this patch series,
-and we want to heavily discourage the use of class_device (only scsi and
-IB are the last remaining users), I'll cut out this portion of the
-patch.
+Yes, or dodgy connectors or other problems. The CRC itself is computed by
+the hardware each end so a BadCRC error really means the two ends
+disagree about the data. 
 
-Any objection?
+That is *usually* a cable/electrical noise problem. It can be power and
+it can occasionally show up if the software misprograms the timing so the
+two ends are a bit out of sync.
 
-thanks,
-
-greg k-h
+Alan
