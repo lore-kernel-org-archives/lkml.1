@@ -1,99 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbYAVSuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbYAVSu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbYAVSuF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 13:50:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYAVStu
+	id S1756641AbYAVSu2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 13:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYAVStz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 13:49:50 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:44059 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751467AbYAVStt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 13:49:49 -0500
-Date: Tue, 22 Jan 2008 20:48:23 +0200
-From: Adrian Bunk <adrian.bunk@movial.fi>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.60-rc1
-Message-ID: <20080122184822.GH26556@does.not.exist>
+	Tue, 22 Jan 2008 13:49:55 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:58245 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbYAVStv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 13:49:51 -0500
+Date: Tue, 22 Jan 2008 18:36:18 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH rc8-mm1] hotfix libata-scsi corruption
+In-Reply-To: <1201022985.3210.24.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0801221813540.8693@blonde.site>
+References: <Pine.LNX.4.64.0801221706320.5832@blonde.site>
+ <1201022985.3210.24.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-12-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Security fixes since 2.6.16.59:
-- CVE-2007-6063: isdn: avoid copying overly-long strings
-- CVE-2007-6151: I4L: fix isdn_ioctl memory overrun vulnerability
-- CVE-2007-6206: vfs: coredumping fix
+On Tue, 22 Jan 2008, James Bottomley wrote:
+> > --- 2.6.24-rc8-mm1/drivers/ata/libata-scsi.c	2008-01-17 16:49:47.000000000 +0000
+> > +++ linux/drivers/ata/libata-scsi.c	2008-01-22 15:45:40.000000000 +0000
+> > @@ -826,7 +826,7 @@ static void ata_scsi_sdev_config(struct 
+> >  	sdev->max_device_blocked = 1;
+> >  
+> >  	/* set the min alignment */
+> > -	blk_queue_update_dma_alignment(sdev->request_queue, ATA_DMA_PAD_SZ - 1);
+> > +	blk_queue_update_dma_alignment(sdev->request_queue, ATA_SECT_SIZE - 1);
+> >  }
+> >  
+> >  static void ata_scsi_dev_config(struct scsi_device *sdev,
+> 
+> Unfortunately, that's likely not the entire hot fix ... the implication
+> is that we have some mapping error in the way we do direct SG_IO.
 
+Quite possibly, I'm not sure.
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
+> What the fix you propose does is make it far more likely that block will
+> copy, perform I/O then uncopy (almost certain, since most smartd data
+> transfers are well under ATA_SECT_SIZE, which is 512).  However,
+> implicating a generic path like this implies that we would get the same
+> problem for SCSI commands as well, so the correct hot fix is below.
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+I've not noticed any problems from the normal activity of the system,
+only from smartd's sg_ioctl.  My impression was that it's a libata
+issue, because it's going through ata_pio_sector, which does 
 
-RSS feed of the git tree:
-http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+	ap->ops->data_xfer(qc->dev, buf + offset, qc->sect_size, do_write);
 
+referring to sect_size, without considering the possibility of any smaller
+I/O size.  (Me, I don't even know why it's going PIO rather than DMA:
+I'm assuming smartd does things that way, but there's no limit to my
+ignorance here.)
 
-Changes since 2.6.16.59:
+> However, I'd like to see if we can track the problem through the SG_IO
+> direct path ... how many adjacent page bytes are corrupt?  Just a few or
+> a large number (I'm wondering if it's an off by one or off by alignment
+> type bug)?
 
-Adrian Bunk (2):
-      drivers/scsi/BusLogic.c: #ifdef MODULE BusLogic_pci_tbl[]
-      Linux 2.6.16.60-rc1
+I've assumed it's just the one next page: because ata_pio_sector is
+doing a data_xfer of sect_size ATA_SECT_SIZE 512 to an offset above
+0xe00 in the smartd stack page.  The time I actually saw corruption
+rather than an oops at startup, it was in a tmpfs swap vector page
+running 64-bit kernel, and I didn't examine any further pages (just
+checked the page before and matched it up to smartd's stack, already
+suspecting that).
 
-Al Viro (3):
-      [CASSINI]: Fix endianness bug.
-      [NET]: Introduce types for checksums.
-      [NET]: Generic checksum annotations and cleanups.
+I don't believe it's an off-by-one at your SCSI end.
 
-Ben Collins (1):
-      [BusLogic] Add pci dev table for auto module loading.
-
-Chas Williams (1):
-      [ATM]: [nicstar] delay irq setup until card is configured
-
-David S. Miller (1):
-      [CASSINI]: Set skb->truesize properly on receive packets.
-
-Eric Dumazet (1):
-      [IPV4] ROUTE: ip_rt_dump() is unecessary slow
-
-Herbert Xu (1):
-      [ATM]: Check IP header validity in mpc_send_packet
-
-Ingo Molnar (1):
-      vfs: coredumping fix (CVE-2007-6206)
-
-Jeff Moyer (1):
-      raw: don't allow the creation of a raw device with minor number 0
-
-Karsten Keil (2):
-      isdn: avoid copying overly-long strings (CVE-2007-6063)
-      I4L: fix isdn_ioctl memory overrun vulnerability (CVE-2007-6151)
-
-Trond Myklebust (2):
-      NFS: writes should not clobber utimes() calls
-      NFS: call nfs_wb_all() only on regular files
-
-
- Makefile                       |    2 
- drivers/atm/nicstar.c          |   19 +++-----
- drivers/char/raw.c             |    2 
- drivers/isdn/i4l/isdn_common.c |    5 +-
- drivers/isdn/i4l/isdn_net.c    |    8 +--
- drivers/net/cassini.c          |    9 ++-
- drivers/net/cassini.h          |   18 +++----
- drivers/scsi/BusLogic.c        |   13 +++++
- fs/exec.c                      |    6 ++
- fs/nfs/dir.c                   |    3 -
- fs/nfs/inode.c                 |    4 -
- include/linux/types.h          |    2 
- include/net/checksum.h         |   42 ++++++++++--------
- include/net/ip6_checksum.h     |   76 ++++++++++++++++-----------------
- net/atm/mpc.c                  |    7 +++
- net/ipv4/route.c               |    8 +--
- 16 files changed, 133 insertions(+), 91 deletions(-)
-
+Hugh
