@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756951AbYAVWPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbYAVWWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756951AbYAVWPb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 17:15:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYAVWPU
+	id S1755136AbYAVWWG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 17:22:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYAVWV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 17:15:20 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39670 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750906AbYAVWPT (ORCPT
+	Tue, 22 Jan 2008 17:21:56 -0500
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:44866 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750843AbYAVWVz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 17:15:19 -0500
-Date: Tue, 22 Jan 2008 14:15:47 -0800
-From: Greg KH <greg@kroah.com>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, davem@davemloft.net,
-       schwidefsky@de.ibm.com, mingo@elte.hu, tony.luck@intel.com,
-       paulus@samba.org
-Subject: Re: [PATCH 1/3] constify struct attribute_group uses (against -mm)
-Message-ID: <20080122221547.GA32588@kroah.com>
-References: <4795FE39.76E4.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4795FE39.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 22 Jan 2008 17:21:55 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Mika =?ISO-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <47965974.5080502@zytor.com>
+References: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>
+	 <47939363.8040603@kolumbus.fi>
+	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>
+	 <479510CE.7010706@zytor.com>
+	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>
+	 <479551FD.5040801@zytor.com>
+	 <1201023401.5643.52.camel@localhost.localdomain>
+	 <479634A9.1090908@zytor.com>
+	 <1201031325.15491.66.camel@cthulhu.hellion.org.uk>
+	 <47964B7B.9000905@zytor.com>  <20080122203611.GA12892@elte.hu>
+	 <1201035150.15491.70.camel@cthulhu.hellion.org.uk>
+	 <47965974.5080502@zytor.com>
+Content-Type: text/plain
+Date: Tue, 22 Jan 2008 22:21:44 +0000
+Message-Id: <1201040504.15491.80.camel@cthulhu.hellion.org.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 192.168.1.223
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+	format.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 01:31:21PM +0000, Jan Beulich wrote:
-> .. as all consumers of it don't require it to be modifiable.
+
+On Tue, 2008-01-22 at 13:00 -0800, H. Peter Anvin wrote:
+> Ian Campbell wrote:
+> > On Tue, 2008-01-22 at 21:36 +0100, Ingo Molnar wrote:
+> >> * H. Peter Anvin <hpa@zytor.com> wrote:
+> >>
+> >>>> Seems reasonable to me. I'll integrate your asm diff with the other 
+> >>>> changes and give it a whirl.
+> >>> This version boots into userspace on both PAE and !PAE.  You want to 
+> >>> take it from here?
+> >> ok, i'll wait for Ian to submit the final (tested) version then. A few 
+> >> possible complications are: PSE-less boxes, 32-bit PAGEALLOC bootups 
+> >> with tons of RAM, NX-less boxes and NX-able boxes :)
+> > 
+> > I'm not sure I can promise that sort of coverage ;-) Will test on what
+> > hardware I've got available...
+> > 
 > 
-> Unfortunately, due to the two-level constifications, this required
-> touching quite many files, not all of which I am able to test - please
-> bare with eventual mistakes or oversights.
-> 
-> The patch doesn't change all instances where 'const' could have been
-> added as a result of the base structure changes, only where either the
-> change has a real effect (the module loader doesn't enforce read-only
-> section attributes at present, so only built-in files matter) or where
-> compiler warnings would result otherwise.
+> I tend to use simulators (e.g. Qemu) quite a bit.  They let you tune 
+> this kind of stuff.
 
-Which -mm is this against?  Seems to not apply here :(
+So do I but I'd never really investigated the option to fiddle with the
+CPU type -- very useful though, thanks for the tip!
 
-thanks,
+Ian.
 
-greg k-h
+-- 
+Ian Campbell
+
+No one can feel as helpless as the owner of a sick goldfish.
+
