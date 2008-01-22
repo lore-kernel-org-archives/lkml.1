@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761319AbYAVDJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761487AbYAVDJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761319AbYAVDJc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:09:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYAVDFb
+	id S1761487AbYAVDJr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:09:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbYAVDFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:05:31 -0500
+	Mon, 21 Jan 2008 22:05:33 -0500
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:65372 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755685AbYAVDF2 (ORCPT
+	by vger.kernel.org with ESMTP id S1758982AbYAVDFa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:05:28 -0500
+	Mon, 21 Jan 2008 22:05:30 -0500
 From: "Theodore Ts'o" <tytso@MIT.EDU>
 To: linux-kernel@vger.kernel.org
 Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 19/49] ext4: Return after ext4_error in case of failures
-Date: Mon, 21 Jan 2008 22:01:58 -0500
-Message-Id: <1200970948-17903-20-git-send-email-tytso@mit.edu>
+Subject: [PATCH 16/49] ext2: Fix the max file size for ext2 file system.
+Date: Mon, 21 Jan 2008 22:01:55 -0500
+Message-Id: <1200970948-17903-17-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
-In-Reply-To: <1200970948-17903-19-git-send-email-tytso@mit.edu>
+In-Reply-To: <1200970948-17903-16-git-send-email-tytso@mit.edu>
 References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-2-git-send-email-tytso@mit.edu>
  <1200970948-17903-3-git-send-email-tytso@mit.edu>
@@ -34,9 +34,6 @@ References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-14-git-send-email-tytso@mit.edu>
  <1200970948-17903-15-git-send-email-tytso@mit.edu>
  <1200970948-17903-16-git-send-email-tytso@mit.edu>
- <1200970948-17903-17-git-send-email-tytso@mit.edu>
- <1200970948-17903-18-git-send-email-tytso@mit.edu>
- <1200970948-17903-19-git-send-email-tytso@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,50 +42,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-This fix some instances where we were continuing after calling
-ext4_error. ext4_error call panic only if errors=panic mount option is
-set. So we need to make sure we return correctly after ext4_error call
-
-Reported by: Adrian Bunk <bunk@kernel.org>
+The max file size for ext2 file system is now calculated
+with hardcoded 4K block size. The patch fixes it to be
+calculated with the right block size.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- fs/ext4/balloc.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+ fs/ext2/super.c |   32 ++++++++++++++++++++++++++++----
+ 1 files changed, 28 insertions(+), 4 deletions(-)
 
-diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-index 9568a57..ff3428e 100644
---- a/fs/ext4/balloc.c
-+++ b/fs/ext4/balloc.c
-@@ -587,11 +587,13 @@ do_more:
- 	    in_range(ext4_inode_bitmap(sb, desc), block, count) ||
- 	    in_range(block, ext4_inode_table(sb, desc), sbi->s_itb_per_group) ||
- 	    in_range(block + count - 1, ext4_inode_table(sb, desc),
--		     sbi->s_itb_per_group))
-+		     sbi->s_itb_per_group)) {
- 		ext4_error (sb, "ext4_free_blocks",
- 			    "Freeing blocks in system zones - "
- 			    "Block = %llu, count = %lu",
- 			    block, count);
-+		goto error_return;
-+	}
+diff --git a/fs/ext2/super.c b/fs/ext2/super.c
+index 154e25f..6abaf75 100644
+--- a/fs/ext2/super.c
++++ b/fs/ext2/super.c
+@@ -680,11 +680,31 @@ static int ext2_check_descriptors (struct super_block * sb)
+ static loff_t ext2_max_size(int bits)
+ {
+ 	loff_t res = EXT2_NDIR_BLOCKS;
+-	/* This constant is calculated to be the largest file size for a
+-	 * dense, 4k-blocksize file such that the total number of
++	int meta_blocks;
++	loff_t upper_limit;
++
++	/* This is calculated to be the largest file size for a
++	 * dense, file such that the total number of
+ 	 * sectors in the file, including data and all indirect blocks,
+-	 * does not exceed 2^32. */
+-	const loff_t upper_limit = 0x1ff7fffd000LL;
++	 * does not exceed 2^32 -1
++	 * __u32 i_blocks representing the total number of
++	 * 512 bytes blocks of the file
++	 */
++	upper_limit = (1LL << 32) - 1;
++
++	/* total blocks in file system block size */
++	upper_limit >>= (bits - 9);
++
++
++	/* indirect blocks */
++	meta_blocks = 1;
++	/* double indirect blocks */
++	meta_blocks += 1 + (1LL << (bits-2));
++	/* tripple indirect blocks */
++	meta_blocks += 1 + (1LL << (bits-2)) + (1LL << (2*(bits-2)));
++
++	upper_limit -= meta_blocks;
++	upper_limit <<= bits;
  
- 	/*
- 	 * We are about to start releasing blocks in the bitmap,
-@@ -1690,11 +1692,13 @@ allocated:
- 	    in_range(ret_block, ext4_inode_table(sb, gdp),
- 		     EXT4_SB(sb)->s_itb_per_group) ||
- 	    in_range(ret_block + num - 1, ext4_inode_table(sb, gdp),
--		     EXT4_SB(sb)->s_itb_per_group))
-+		     EXT4_SB(sb)->s_itb_per_group)) {
- 		ext4_error(sb, "ext4_new_block",
- 			    "Allocating block in system zone - "
- 			    "blocks from %llu, length %lu",
- 			     ret_block, num);
-+		goto out;
-+	}
- 
- 	performed_allocation = 1;
+ 	res += 1LL << (bits-2);
+ 	res += 1LL << (2*(bits-2));
+@@ -692,6 +712,10 @@ static loff_t ext2_max_size(int bits)
+ 	res <<= bits;
+ 	if (res > upper_limit)
+ 		res = upper_limit;
++
++	if (res > MAX_LFS_FILESIZE)
++		res = MAX_LFS_FILESIZE;
++
+ 	return res;
+ }
  
 -- 
 1.5.4.rc3.31.g1271-dirty
