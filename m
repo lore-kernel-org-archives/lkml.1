@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYAVUqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbYAVUqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754907AbYAVUqQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 15:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYAVUqE
+	id S1756126AbYAVUqo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 15:46:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYAVUqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 15:46:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44674 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752012AbYAVUqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 15:46:03 -0500
-Date: Tue, 22 Jan 2008 21:45:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ian Campbell <ijc@hellion.org.uk>,
-       Mika =?iso-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
-	format.
-Message-ID: <20080122204539.GC12892@elte.hu>
-References: <1200950633.15491.21.camel@cthulhu.hellion.org.uk> <479510CE.7010706@zytor.com> <1200951996.15491.28.camel@cthulhu.hellion.org.uk> <479551FD.5040801@zytor.com> <1201023401.5643.52.camel@localhost.localdomain> <479634A9.1090908@zytor.com> <1201031325.15491.66.camel@cthulhu.hellion.org.uk> <47964B7B.9000905@zytor.com> <20080122203611.GA12892@elte.hu> <47965555.60308@zytor.com>
+	Tue, 22 Jan 2008 15:46:35 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:43318 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbYAVUqe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 15:46:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=lDPm18V6B2026lJse6vwcXFEMJLNXIxWFb7cFd3ai+F8i9WKACGpOSV/0HfIxlJ+2FTyHm4i838/SiT1oJNO0cGjAODnW3JN4AttU8KnePxxo26uD0Y4Ypve6hdbkSX2MhnYy5rMUM4N7g45pKXEYqqOJk8SCt+BunQ27wDv0mU=
+Message-ID: <2c0942db0801221246u678d2a20xef9cf93ee28eaf51@mail.gmail.com>
+Date: Tue, 22 Jan 2008 12:46:32 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Manuel Reimer" <Manuel.Spam@nurfuerspam.de>,
+       "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: Massive IDE problems. Who leaves data here?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <fn5jsn$ful$1@ger.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47965555.60308@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <fn5ivo$ck2$1@ger.gmane.org> <47965138.8060603@garzik.org>
+	 <fn5jsn$ful$1@ger.gmane.org>
+X-Google-Sender-Auth: 073d82013b948dc9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(Please always do a reply-to-all for this email list.)
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
-
->> ok, i'll wait for Ian to submit the final (tested) version then. A 
->> few possible complications are: PSE-less boxes, 32-bit PAGEALLOC 
->> bootups with tons of RAM, NX-less boxes and NX-able boxes :)
+On Jan 22, 2008 12:40 PM, Manuel Reimer <Manuel.Spam@nurfuerspam.de> wrote:
+> Jeff Garzik wrote:
+> > If your IDE interface is complaining about BadCRC errors, then it's
+> > complaining about hardware problems (bad cable, etc.)
 >
-> PSE-less should be less of an issue than making sure we switch to 
-> using large pages where appropriate, and enable the PGE and NX bits 
-> where appropriate.
+> The cable already has been replaced three times. I even got sure to
+> *not* bend the cable. This all doesn't help.
+>
+> May a bad cable really cause corrupted data?
+>
+> I also have such messages for my cdrom drive (the bad sector messages at
+> the end of the log for drive hdc). I replaced the 40 pin cable with a
+> new 80 pin one and still have the errors...
 
-yeah - and that would be the right point to enable gigapages as well - 
-once we have all this stuff consolidated and unified from grounds up.
-
-	Ingo
+Bad or almost bad power supplies can cause lots of unhappy problems
+such as these. If you have another power supply laying around, it can
+be worth swapping them out. Double-checking that your CPU fan is still
+spinning, and that memtest86+ doesn't show any errors doesn't hurt
+either.
