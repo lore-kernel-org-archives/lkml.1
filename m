@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbYAVNYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760892AbYAVNYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758861AbYAVNYL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 08:24:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbYAVNX6
+	id S1760892AbYAVNYp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 08:24:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYAVNYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 08:23:58 -0500
-Received: from mx2.suse.de ([195.135.220.15]:45294 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752646AbYAVNX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 08:23:57 -0500
-Date: Tue, 22 Jan 2008 14:23:55 +0100
-From: Andi Kleen <ak@suse.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, jbeulich@novell.com,
-       venkatesh.pallipadi@intel.com, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: CPA boot crash (was: [PATCH] [0/36] Great change_page_attr patch series v3)
-Message-ID: <20080122132355.GA24320@wotan.suse.de>
-References: <200801161114.239449000@suse.de> <200801181819.58675.ak@suse.de> <20080121164052.GA11364@elte.hu> <200801211813.45102.ak@suse.de> <alpine.LFD.1.00.0801221119180.3199@apollo.tec.linutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 22 Jan 2008 08:24:36 -0500
+Received: from [212.12.190.62] ([212.12.190.62]:48291 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753263AbYAVNYf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 08:24:35 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: Ingo Molnar <mingo@elte.hu>,
+       Oliver Pinter (=?iso-8859-1?q?Pint=E9r?=
+	=?iso-8859-1?q?=20Oliv=E9r?=) <oliver.pntr@gmail.com>
+Subject: Re: konqueror deadlocks on 2.6.22
+Date: Tue, 22 Jan 2008 16:23:42 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <200801192114.41427.a1426z@gawab.com> <6101e8c40801191417k7906422chf657895152b61a2d@mail.gmail.com> <20080122101014.GD5722@elte.hu>
+In-Reply-To: <20080122101014.GD5722@elte.hu>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0801221119180.3199@apollo.tec.linutronix.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200801221623.42989.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> First priority is getting CPA and PAT consolidated before we put new
+Ingo Molnar wrote:
+> * Oliver Pinter (Pintér Olivér) <oliver.pntr@gmail.com> wrote:
+> > and then please update to CFS-v24.1
+> > http://people.redhat.com/~mingo/cfs-scheduler/sched-cfs-v2.6.22.15-v24.1
+> >.patch
+> >
+> > > Yes with CFSv20.4, as in the log.
+> > >
+> > > It also hangs on 2.6.23.13
+>
+> my feeling is that this is some sort of timing dependent race in
+> konqueror/kde/qt that is exposed when a different scheduler is put in.
+>
+> If it disappears with CFS-v24.1 it is probably just because the timings
+> will change again. Would be nice to debug this on the konqueror side and
+> analyze why it fails and how. You can probably tune the timings by
+> enabling SCHED_DEBUG and tweaking /proc/sys/kernel/*sched* values - in
+> particular sched_latency and the granularity settings. Setting wakeup
+> granularity to 0 might be one of the things that could make a
+> difference.
 
-PAT seems to be still quite unstable and frankly for me it is 
-unclear how long it will take to it become stable. It would
-not surprise me if it takes longer than the .26 merge window.
+Thanks Ingo, but Mike suggested that data=writeback may make a difference, 
+which it does indeed.
 
-You're saying you want to delay an relatively simple and imho
-relatively mature feature like gbpages after that complicated and risky 
-feature PAT? Please take a look at the patches; they're really
-not very complicated.
+So the bug seems to be related to data=ordered, although I haven't gotten any 
+feedback from the ext3 gurus yet.
 
-That seems to me like against your own principles -- simple stuff
-first -- that you two harped on so extensively on earlier this thread.
+Seems rather critical though, as data=writeback is a dangerous mode to run.
 
-For me it would make much more sense to put the gbpages first
-than to delay them for PAT. I only didn't argue this strongly
-earlier because PAT was already rushed in (for me quite suprisingly) 
-and I didn't want to argue for dropping it.
 
-But now that it is gone again anyways delaying the gbpages for it again
-would be quite unfortunate from my perspective.
+Thanks!
 
--Andi
+--
+Al
+
