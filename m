@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756489AbYAVQwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbYAVQxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756489AbYAVQwy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 11:52:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYAVQwp
+	id S1753263AbYAVQxO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 11:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYAVQwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 22 Jan 2008 11:52:46 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36944 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752672AbYAVQwp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 22 Jan 2008 11:52:45 -0500
-Received: from mail.hevs.ch ([153.109.23.15]:38918 "EHLO mail.hevs.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750817AbYAVQwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 11:52:44 -0500
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH 6/6] atmel_serial: Add DMA support
-Date: Tue, 22 Jan 2008 17:52:43 +0100
-User-Agent: KMail/1.9.7
-Cc: Andrew Victor <linux@maxim.org.za>, kernel@avr32linux.org,
-       linux-kernel@vger.kernel.org, Remy Bohmer <linux@bohmer.net>,
-       Chip Coldwell <coldwell@redhat.com>
-References: <1201013444-30370-1-git-send-email-hskinnemoen@atmel.com> <1201013444-30370-6-git-send-email-hskinnemoen@atmel.com> <1201013444-30370-7-git-send-email-hskinnemoen@atmel.com>
-In-Reply-To: <1201013444-30370-7-git-send-email-hskinnemoen@atmel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Date: Tue, 22 Jan 2008 16:50:15 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Newall <davidn@davidnewall.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for mm] Remove iBCS support
+Message-ID: <20080122165015.5aca62ac@lxorguk.ukuu.org.uk>
+In-Reply-To: <4796081A.7060505@davidnewall.com>
+References: <20080119045918.GA12215@basil.nowhere.org>
+	<4792B191.2060801@davidnewall.com>
+	<20080120031153.GB6275@one.firstfloor.org>
+	<4792D221.1010704@davidnewall.com>
+	<20080120051822.GB19784@one.firstfloor.org>
+	<4792DD22.4070902@davidnewall.com>
+	<20080120055544.GB19861@one.firstfloor.org>
+	<4792E8E2.1090307@davidnewall.com>
+	<20080120072922.GA21047@one.firstfloor.org>
+	<4793F775.6090403@davidnewall.com>
+	<20080122111205.GA25090@elte.hu>
+	<4796081A.7060505@davidnewall.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801221752.43830.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+ 
+> You're being silly.  Either that or you're not reading what I write. 
+> You know perfectly well iBCS2 compatibility doesn't work (anymore.)  The
+> question, in my mind, is will it ever be made to work again?  I think
+> the answer should be yes.
 
-I removed linux-arm-kernel@lists.arm.linux.org.uk from cc, it is a
-subscriber-only list.
+We await your patches. If you think it should be done then rework the
+code, test it and figure how to merge it nicely.
 
-On Tuesday 22 January 2008, Haavard Skinnemoen wrote:
-> From: Chip Coldwell <coldwell@redhat.com>
-...
-> @@ -47,6 +50,11 @@
->  
->  #include "atmel_serial.h"
->  
-> +#define SUPPORT_PDC
-> +#define PDC_BUFFER_SIZE		(L1_CACHE_BYTES << 3)
-> +#warning "Revisit"
-why add this warning?
-
-...
-> @@ -1090,7 +1434,7 @@ static int atmel_serial_suspend(struct platform_device *pdev,
->  	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
->  
->  	if (device_may_wakeup(&pdev->dev)
-> -	    && !at91_suspend_entering_slow_clock())
-> +		&& !clk_must_disable(atmel_port->clk))
-1. this has nothing to do with dma
-2. clk_must_disable isn't in mainline (2.6.24-rc8) for at91 (not verified for avr32).
-
-CONFIG_MAGIC_SYSRQ isn't working with this pach, (CONFIG_MAGIC_SYSRQ has never
-worked with atmel_serial dma patches).
-
-For me breaking CONFIG_MAGIC_SYSRQ is not a critical regression and can be
-fixed later, but the "clk_must_disable" problem breaks compilation.
-
-Regards
-
-Marc
+Alan
