@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbYAVUqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbYAVUsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756126AbYAVUqo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 15:46:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYAVUqf
+	id S1755720AbYAVUsm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 15:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYAVUsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 15:46:35 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:43318 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753240AbYAVUqe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 15:46:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=lDPm18V6B2026lJse6vwcXFEMJLNXIxWFb7cFd3ai+F8i9WKACGpOSV/0HfIxlJ+2FTyHm4i838/SiT1oJNO0cGjAODnW3JN4AttU8KnePxxo26uD0Y4Ypve6hdbkSX2MhnYy5rMUM4N7g45pKXEYqqOJk8SCt+BunQ27wDv0mU=
-Message-ID: <2c0942db0801221246u678d2a20xef9cf93ee28eaf51@mail.gmail.com>
-Date: Tue, 22 Jan 2008 12:46:32 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Manuel Reimer" <Manuel.Spam@nurfuerspam.de>,
-       "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: Massive IDE problems. Who leaves data here?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <fn5jsn$ful$1@ger.gmane.org>
+	Tue, 22 Jan 2008 15:48:32 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:35933 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751557AbYAVUsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 15:48:31 -0500
+Date: Tue, 22 Jan 2008 14:48:28 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: serue@us.ibm.com, akpm@linux-foundation.org, hch@infradead.org,
+       viro@ftp.linux.org.uk, kzak@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       util-linux-ng@vger.kernel.org
+Subject: Re: [patch 07/10] unprivileged mounts: add sysctl tunable for
+	"safe" property
+Message-ID: <20080122204828.GA1212@sergelap.austin.ibm.com>
+References: <20080116123147.466284860@szeredi.hu> <20080116123433.126167584@szeredi.hu> <20080121203249.GB5536@sergelap.austin.rr.com> <E1JH4Kz-0006gt-MC@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <fn5ivo$ck2$1@ger.gmane.org> <47965138.8060603@garzik.org>
-	 <fn5jsn$ful$1@ger.gmane.org>
-X-Google-Sender-Auth: 073d82013b948dc9
+In-Reply-To: <E1JH4Kz-0006gt-MC@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Please always do a reply-to-all for this email list.)
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > What do you think about doing this only if FS_SAFE is also set,
+> > so for instance at first only FUSE would allow itself to be
+> > made user-mountable?
+> > 
+> > A safe thing to do, or overly intrusive?
+> 
+> It goes somewhat against the "no policy in kernel" policy ;).  I think
+> the warning in the documentation should be enough to make sysadmins
+> think twice before doing anything foolish:
 
-On Jan 22, 2008 12:40 PM, Manuel Reimer <Manuel.Spam@nurfuerspam.de> wrote:
-> Jeff Garzik wrote:
-> > If your IDE interface is complaining about BadCRC errors, then it's
-> > complaining about hardware problems (bad cable, etc.)
->
-> The cable already has been replaced three times. I even got sure to
-> *not* bend the cable. This all doesn't help.
->
-> May a bad cable really cause corrupted data?
->
-> I also have such messages for my cdrom drive (the bad sector messages at
-> the end of the log for drive hdc). I replaced the 40 pin cable with a
-> new 80 pin one and still have the errors...
+Warning in which documentation?  A sysadmin considering setting fs_safe
+for ext2 or xfs isn't going to be looking at fuse docs, which I think is
+what you're talking about.  Are you going to add a file under
+Documentation/filesystems?
 
-Bad or almost bad power supplies can cause lots of unhappy problems
-such as these. If you have another power supply laying around, it can
-be worth swapping them out. Double-checking that your CPU fan is still
-spinning, and that memtest86+ doesn't show any errors doesn't hurt
-either.
+> > +Care should be taken when enabling this, since most
+> > +filesystems haven't been designed with unprivileged mounting
+> > +in mind.
+> > +
+> 
+> BTW, filesystems like 'proc' and 'sysfs' should also be safe, although
+> the only use for them being marked safe is if the users are allowed to
+> umount them from their private namespace (otherwise a 'mount --bind'
+> has the same effect as a new mount).
+> 
+> Thanks,
+> Miklos
