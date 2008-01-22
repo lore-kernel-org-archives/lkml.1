@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760258AbYAVJDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760784AbYAVJE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760258AbYAVJDt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 04:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbYAVJDg
+	id S1760784AbYAVJE3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 04:04:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYAVJEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 04:03:36 -0500
-Received: from main.gmane.org ([80.91.229.2]:37875 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755671AbYAVJDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 04:03:33 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?UTF-8?B?Si4gUGFibG8gRmVybsOhbmRleg==?= <pupeno@pupeno.com>
-Subject: Re: Making a USB driver
-Date: Tue, 22 Jan 2008 09:03:19 +0000
-Message-ID: <fn4bgk$oi0$1@ger.gmane.org>
-References: <fn2u8p$gv3$1@ger.gmane.org> <479515FF.3050705@gmail.com> <200801212313.17703.pupeno@pupeno.com> <479527C7.5000909@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: dsl-37-170.dsl.netsource.ie
-User-Agent: KNode/0.10.5
+	Tue, 22 Jan 2008 04:04:15 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:48252 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756074AbYAVJEM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 04:04:12 -0500
+Date: Tue, 22 Jan 2008 01:10:19 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_64: AMD Family 10h enable ext config in quirk
+In-reply-to: <200801220245.m0M2jDAs000524@imap1.linux-foundation.org>
+To: akpm@linux-foundation.org, greg@kroah.com
+Cc: LKML <linux-kernel@vger.kernel.org>, ak@suse.de, hpa@zytor.com,
+       mingo@elte.hu, tglx@linutronix.de
+Message-id: <200801220110.19571.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200801220245.m0M2jDAs000524@imap1.linux-foundation.org>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
+need to be applied after
+gregkh-pci-pci-make-pci-extended-config-space-a-driver-opt-in.patch
+x86_64-set-cfg_size-for-amd-family-10h-in-case-mmconfig-is-used.patch
 
-> On 01/22/2008 12:13 AM, J. Pablo Fernández wrote:
->> On Monday 21 January 2008 22:00:31 Jiri Slaby wrote:
->>> On 01/21/2008 09:11 PM, J. Pablo Fernández wrote:
->>>> Hello,
->>>>
->>>> I'm interested in making a driver for the Kinesis Savant Elite
->>>> Programable USB Foot Switches[1].
->>> [1]+1 says
->>> Linux, Sun and other Non Windows Platforms
->>> · Requires available USB port. Uses generic drivers provided by the
->>> operating system. Due to the heterogeneity in these platforms, we cannot
->>> guarantee compatibility with these systems. However, if your system can
->>> use any USB mouse and keyboard, it will probably work with a Savant or
->>> Savant Elite foot switch.
->>>
->>> I guess it's ordinary input device without any special driver needs.
->> 
->> It sends ordinary mouse and keyboard commands, but you need a driver to
->> program it what commands to send, and that's the part I want to cover: "
->> it can be easily reprogrammed on a Windows [and only Windows] PC to
->> perform any keyboard action or key combination."
-> 
-> But you didn't even mention that. Then try to search for usb ids in the
-> tree and also in google.
+[PATCH] x86_64: AMD Family 10h enable ext config in quirk
 
-I don't have the device. Maybe I can ask the vendor for the ids? how exactly
-should I ask?
+because of changes of
+gregkh-pci-pci-make-pci-extended-config-space-a-driver-opt-in.patch
 
-Thanks.
--- 
-J. Pablo Fernández <pupeno@pupeno.com> (http://pupeno.com)
+need to call pci_enable_ext_config to enable mmconfig before set right cfg_size
+even MCFG is there
+
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+--- a/arch/x86/pci/fixup.c	2008-01-22 00:54:38.000000000 -0800
++++ b/arch/x86/pci/fixup.c	2008-01-22 00:55:06.000000000 -0800
+@@ -498,10 +498,12 @@
+  * access it.  Maybe we don't have a way to generate extended config space
+  * accesses.   So check it
+  */
+-static void fam10h_pci_cfg_space_size(struct pci_dev *dev)
++static void fam10h_enable_pci_ext_cfg(struct pci_dev *dev)
+ {
++	pci_enable_ext_config(dev);
++	/* recheck cfg_size without pcie_pcix checking */
+ 	dev->cfg_size = pci_cfg_space_size_ext(dev, 0);
+ }
+ 
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_ANY_ID,
+-			 fam10h_pci_cfg_space_size);
++			 fam10h_enable_pci_ext_cfg);
 
