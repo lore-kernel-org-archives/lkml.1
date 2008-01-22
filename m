@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbYAVXCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759574AbYAVXCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757869AbYAVXCa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 18:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbYAVXAs
+	id S1759574AbYAVXCo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 18:02:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758780AbYAVXB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 18:00:48 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45797 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755960AbYAVXAp (ORCPT
+	Tue, 22 Jan 2008 18:01:29 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:41024 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758753AbYAVXB1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 18:00:45 -0500
-Message-ID: <47967560.8080101@cs.helsinki.fi>
-Date: Wed, 23 Jan 2008 00:59:44 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
-MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: Christoph Lameter <clameter@sgi.com>, Olaf Hering <olaf@aepfle.de>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-       akpm@linux-foundation.org
-Subject: Re: crash in kmem_cache_init
-References: <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com> <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com> <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com> <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie> <Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com> <20080122212654.GB15567@csn.ul.ie> <Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com> <20080122225046.GA866@csn.ul.ie>
-In-Reply-To: <20080122225046.GA866@csn.ul.ie>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 22 Jan 2008 18:01:27 -0500
+To: serue@us.ibm.com
+CC: miklos@szeredi.hu, serue@us.ibm.com, akpm@linux-foundation.org,
+       hch@infradead.org, viro@ftp.linux.org.uk, kzak@redhat.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, util-linux-ng@vger.kernel.org
+In-reply-to: <20080122204828.GA1212@sergelap.austin.ibm.com>
+	(serue@us.ibm.com)
+Subject: Re: [patch 07/10] unprivileged mounts: add sysctl tunable for
+	"safe" property
+References: <20080116123147.466284860@szeredi.hu> <20080116123433.126167584@szeredi.hu> <20080121203249.GB5536@sergelap.austin.rr.com> <E1JH4Kz-0006gt-MC@pomaz-ex.szeredi.hu> <20080122204828.GA1212@sergelap.austin.ibm.com>
+Message-Id: <E1JHS5h-0001EC-QD@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 22 Jan 2008 23:59:37 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> > > What do you think about doing this only if FS_SAFE is also set,
+> > > so for instance at first only FUSE would allow itself to be
+> > > made user-mountable?
+> > > 
+> > > A safe thing to do, or overly intrusive?
+> > 
+> > It goes somewhat against the "no policy in kernel" policy ;).  I think
+> > the warning in the documentation should be enough to make sysadmins
+> > think twice before doing anything foolish:
+> 
+> Warning in which documentation?  A sysadmin considering setting fs_safe
+> for ext2 or xfs isn't going to be looking at fuse docs, which I think is
+> what you're talking about.  Are you going to add a file under
+> Documentation/filesystems?
 
-Mel Gorman wrote:
-> Faulting instruction address: 0xc0000000003c8c00
-> cpu 0x0: Vector: 300 (Data Access) at [c0000000005c3840]
->     pc: c0000000003c8c00: __lock_text_start+0x20/0x88
->     lr: c0000000000dadec: .cache_grow+0x7c/0x338
->     sp: c0000000005c3ac0
->    msr: 8000000000009032
->    dar: 40
->  dsisr: 40000000
->   current = 0xc000000000500f10
->   paca    = 0xc000000000501b80
->     pid   = 0, comm = swapper
-> enter ? for help
-> [c0000000005c3b40] c0000000000dadec .cache_grow+0x7c/0x338
-> [c0000000005c3c00] c0000000000db54c .fallback_alloc+0x1c0/0x224
-> [c0000000005c3cb0] c0000000000db958 .kmem_cache_alloc+0xe0/0x14c
-> [c0000000005c3d50] c0000000000dcccc .kmem_cache_create+0x230/0x4cc
-> [c0000000005c3e30] c0000000004c05f4 .kmem_cache_init+0x310/0x640
-> [c0000000005c3ee0] c00000000049f8d8 .start_kernel+0x304/0x3fc
-> [c0000000005c3f90] c000000000008594 .start_here_common+0x54/0xc0
-> 0:mon>
+Yes, I meant documentation of the new sysctl tunable in
+Documentation/filesystems/proc.txt:
 
-I mentioned this already but received no response (maybe I am missing 
-something totally obvious here):
+> Index: linux/Documentation/filesystems/proc.txt
+> ===================================================================
+> --- linux.orig/Documentation/filesystems/proc.txt	2008-01-16 13:25:07.000000000 +0100
+> +++ linux/Documentation/filesystems/proc.txt	2008-01-16 13:25:09.000000000 +0100
+> @@ -43,6 +43,7 @@ Table of Contents
+>    2.13	/proc/<pid>/oom_score - Display current oom-killer score
+>    2.14	/proc/<pid>/io - Display the IO accounting fields
+>    2.15	/proc/<pid>/coredump_filter - Core dump filtering settings
+> +  2.16	/proc/sys/fs/types - File system type specific parameters
+>  
+>  ------------------------------------------------------------------------------
+>  Preface
+> @@ -2283,4 +2284,21 @@ For example:
+>    $ echo 0x7 > /proc/self/coredump_filter
+>    $ ./some_program
+>  
+> +2.16 /proc/sys/fs/types/ - File system type specific parameters
+> +----------------------------------------------------------------
+> +
+> +There's a separate directory /proc/sys/fs/types/<type>/ for each
+> +filesystem type, containing the following files:
+> +
+> +usermount_safe
+> +--------------
+> +
+> +Setting this to non-zero will allow filesystems of this type to be
+> +mounted by unprivileged users (note, that there are other
+> +prerequisites as well).
+> +
+> +Care should be taken when enabling this, since most
+> +filesystems haven't been designed with unprivileged mounting
+> +in mind.
+> +
+>  ------------------------------------------------------------------------------
+> 
 
-When we call fallback_alloc() because the current node has ->nodelists 
-set to NULL, we end up calling kmem_getpages() with -1 as the node id 
-which is then translated to numa_node_id() by alloc_pages_node. But the 
-reason we called fallback_alloc() in the first place is because 
-numa_node_id() doesn't have a ->nodelist which makes cache_grow() oops.
+Do you think this is enough?  Or do we need something more, to prevent
+sysadmin inadvertently setting this for an unsafe filesystem?
 
-			Pekka
+Thanks,
+Miklos
