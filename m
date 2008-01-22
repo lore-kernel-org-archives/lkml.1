@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbYAVMaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbYAVMcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756795AbYAVMaz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 07:30:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYAVMaq
+	id S1757474AbYAVMcQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 07:32:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYAVMcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 07:30:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58376 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751922AbYAVMap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 07:30:45 -0500
-Date: Tue, 22 Jan 2008 13:30:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Marcelo Tosatti <marcelo@kvack.org>
-Cc: gcosta@redhat.com, ehabkost@redhat.com, glommer@gmail.com, jeremy@goop.org,
-       chrisw@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fill in missing pv_mmu_ops entries for
-	PAGETABLE_LEVELS >= 3
-Message-ID: <20080122123029.GD31253@elte.hu>
-References: <12006768251548-git-send-email-gcosta@redhat.com> <20080119181909.GA4640@dmt>
+	Tue, 22 Jan 2008 07:32:03 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:40209 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752411AbYAVMcB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 07:32:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=JAmMw9F/wrsXJTifgiWk6GdiCwCoGKnUU//35j10TMo5nglmNm+W5eA6+8mCK1M8uGAyXtm0/p5PSMujGLPChc4Gwv4gxEmiM9+/SaUzH/dsOhXwVXpfSPT8hp4R9K834cp4MGCCPQdm7TXbbwKMOqK0Mzxi9Eh7IrGfy58HkWk=
+Message-ID: <4795E23A.1010306@gmail.com>
+Date: Tue, 22 Jan 2008 13:31:54 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080119181909.GA4640@dmt>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: =?UTF-8?B?IkouIFBhYmxvIEZlcm7DoW5kZXoi?= <pupeno@pupeno.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Making a USB driver
+References: <fn2u8p$gv3$1@ger.gmane.org> <479515FF.3050705@gmail.com> <200801212313.17703.pupeno@pupeno.com> <479527C7.5000909@gmail.com> <fn4bgk$oi0$1@ger.gmane.org> <4795B506.1030405@gmail.com> <fn4l7p$ncc$1@ger.gmane.org>
+In-Reply-To: <fn4l7p$ncc$1@ger.gmane.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Marcelo Tosatti <marcelo@kvack.org> wrote:
-
-> > The first fix is not even specific for PARAVIRT, and it's actually 
-> > preventing the whole tree from booting.
-> > 
+On 01/22/2008 12:49 PM, J. Pablo Fernández wrote:
+>> On 01/22/2008 10:03 AM, J. Pablo Fernández wrote:
+>>> Jiri Slaby wrote:
+>> Ask for specification, otherwise you won't be able to write a driver
+>> anyway.
 > 
-> And the following allows PARAVIRT kernels to boot on x86_64.
+> They already told me they don't even have the specification. 
 
-> Fill in missing pagetable manipulation entries in pv_mmu_ops 
-> for PAGETABLE_LEVELS >= 3.
+Maybe they might provide you some pieces of win code :P?
 
-thanks Marcelo - picked this up and the other changes as well. I guess 
-the only thing missing at the moment is the proper Kconfig changes to 
-allow the building of a 64-bit PARAVIRT kernel?
+> I'm already
+> considering doing reverse engineering to get the information. It won't be
+> easy for me because I'm new to this level, but it shouldn't be very hard,
+> it's not a scanner or a webcam, it should be a fairly simple protocol.
 
-	Ingo
+Ok, then you need the device anyway :). After you got it, you might get the usb ids.
