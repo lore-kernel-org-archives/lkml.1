@@ -1,126 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbYAVDCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbYAVDDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753895AbYAVDCn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYAVDCe
+	id S1755566AbYAVDDN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:03:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbYAVDCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:02:34 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:64522 "EHLO
+	Mon, 21 Jan 2008 22:02:53 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:64634 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751769AbYAVDCd (ORCPT
+	by vger.kernel.org with ESMTP id S1754448AbYAVDCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:02:33 -0500
+	Mon, 21 Jan 2008 22:02:51 -0500
 From: "Theodore Ts'o" <tytso@MIT.EDU>
 To: linux-kernel@vger.kernel.org
-Subject: ext4 merge plans for 2.6.25
-Date: Mon, 21 Jan 2008 22:01:39 -0500
-Message-Id: <1200970948-17903-1-git-send-email-tytso@mit.edu>
+Cc: Eric Sandeen <sandeen@redhat.com>
+Subject: [PATCH 15/49] ext4: store maxbytes for bitmapped  files and return EFBIG as appropriate
+Date: Mon, 21 Jan 2008 22:01:54 -0500
+Message-Id: <1200970948-17903-16-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
+In-Reply-To: <1200970948-17903-15-git-send-email-tytso@mit.edu>
+References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
+ <1200970948-17903-2-git-send-email-tytso@mit.edu>
+ <1200970948-17903-3-git-send-email-tytso@mit.edu>
+ <1200970948-17903-4-git-send-email-tytso@mit.edu>
+ <1200970948-17903-5-git-send-email-tytso@mit.edu>
+ <1200970948-17903-6-git-send-email-tytso@mit.edu>
+ <1200970948-17903-7-git-send-email-tytso@mit.edu>
+ <1200970948-17903-8-git-send-email-tytso@mit.edu>
+ <1200970948-17903-9-git-send-email-tytso@mit.edu>
+ <1200970948-17903-10-git-send-email-tytso@mit.edu>
+ <1200970948-17903-11-git-send-email-tytso@mit.edu>
+ <1200970948-17903-12-git-send-email-tytso@mit.edu>
+ <1200970948-17903-13-git-send-email-tytso@mit.edu>
+ <1200970948-17903-14-git-send-email-tytso@mit.edu>
+ <1200970948-17903-15-git-send-email-tytso@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patches have been in the -mm tree for a while, and I
-plan to push them to Linus when the 2.6.25 merge window opens.  With
-this patch series, it is expected that ext4 format should be settling
-down.  We still have delayed allocation and online defrag which aren't
-quite ready to merge, but those shouldn't affect the on-disk format.
+From: Eric Sandeen <sandeen@redhat.com>
 
-I don't expect any other on-disk format changes to show up after this
-point, but I've been wrong before....  any such changes would have to
-have a Really Good Reason, though.  (No, Abhishek Rai's changes
-wouldn't count as an on-disk change, since they change layout choices,
-but not anything that e2fsck would actually care about.  We may try
-merging those into ext4 and see how they play out in the -mm tree;
-we'll see.)
+Calculate & store the max offset for bitmapped files, and
+catch too-large seeks, truncates, and writes in ext4, shortening
+or rejecting as appropriate.
 
-						- Ted
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+---
+ fs/ext4/file.c             |   19 ++++++++++++++++++-
+ fs/ext4/inode.c            |   16 +++++++++++++++-
+ fs/ext4/super.c            |    1 +
+ include/linux/ext4_fs_sb.h |    1 +
+ 4 files changed, 35 insertions(+), 2 deletions(-)
 
-P.S.  Yes, the currently released e2fsprogs won't support all of these
-format changes yet; again ext4, shouldn't be deployed to production
-systems yet, although we do salute those who are willing to be guinea
-pigs and play with this code!  Never fear, I'll be working to get
-e2fsprogs caught up Real Soon Now.
-
-Adrian Bunk (1):
-      ext4/super.c: fix #ifdef's (CONFIG_EXT4_* -> CONFIG_EXT4DEV_*)
-
-Alex Tomas (2):
-      ext4: Add new functions for searching extent tree
-      ext4: Add multi block allocator for ext4
-
-Aneesh Kumar K.V (23):
-      ext4: Introduce ext4_lblk_t
-      ext4: Introduce ext4_update_*_feature
-      ext4:  Fix sparse warnings.
-      ext4: Rename i_file_acl to i_file_acl_lo
-      ext4: Rename i_dir_acl to i_size_high
-      ext4: Add support for 48 bit inode i_blocks.
-      ext4: Support large files
-      ext2: Fix the max file size for ext2 file system.
-      ext3: Fix the max file size for ext3 file system.
-      ext4: Return after ext4_error in case of failures
-      ext4: Change the default behaviour on error
-      Add buffer head related helper functions
-      ext4: add block bitmap validation
-      ext4: Check for the correct error return from
-      ext4: Make ext4_get_blocks_wrap take the truncate_mutex early.
-      ext4: Convert truncate_mutex to read write semaphore.
-      ext4: Take read lock during overwrite case.
-      ext4: Add EXT4_IOC_MIGRATE ioctl
-      ext4: Fix ext4_show_options to show the correct mount options.
-      ext4: Add ext4_find_next_bit()
-      ext4: Enable the multiblock allocator by default
-      ext4: Check for return value from sb_set_blocksize
-      ext4: Use the ext4_ext_actual_len() helper function
-
-Avantika Mathur (2):
-      ext4: add ext4_group_t, and change all group variables to this type.
-      ext4: fixes block group number being set to a negative value
-
-Chris Snook (1):
-      jbd2: Remove printk from J_ASSERT to preserve registers during BUG
-
-Coly Li (1):
-      ext4: sync up block group descriptor with e2fsprogs.
-
-Dmitry Monakhov (1):
-      ext4: fix uniniatilized extent splitting error
-
-Eric Sandeen (6):
-      ext4 extents: remove unneeded casts
-      ext4: different maxbytes functions for bitmap & extent	files
-      ext4: export iov_shorten from kernel for ext4's use
-      ext4: store maxbytes for bitmapped  files and return EFBIG as appropriate
-      ext4: fix oops on corrupted ext4 mount
-      ext4: fix up EXT4FS_DEBUG builds
-
-Girish Shilamkar (1):
-      ext4: Add the journal checksum feature
-
-Jan Kara (2):
-      ext4: Avoid rec_len overflow with 64KB block size
-      jbd2: Fix assertion failure in fs/jbd2/checkpoint.c
-
-Jean Noel Cordenner (2):
-      vfs: Add 64 bit i_version support
-      ext4: Add inode version support in ext4
-
-Johann Lombardi (1):
-      jbd2: jbd2 stats through procfs
-
-Mariusz Kozlowski (1):
-      ext4: remove unused code from ext4_find_entry()
-
-Mingming Cao (4):
-      jbd2: add lockdep support
-      jbd2: Mark jbd2 slabs as SLAB_TEMPORARY
-      jbd2: Use round-jiffies() function for the "5 second" ext4/jbd2 wakeup
-      jbd2: sparse pointer use of zero as null
-
-Takashi Sato (1):
-      ext4:  Support large blocksize up to PAGESIZE
-
+diff --git a/fs/ext4/file.c b/fs/ext4/file.c
+index 1a81cd6..a6b2aa1 100644
+--- a/fs/ext4/file.c
++++ b/fs/ext4/file.c
+@@ -56,8 +56,25 @@ ext4_file_write(struct kiocb *iocb, const struct iovec *iov,
+ 	ssize_t ret;
+ 	int err;
+ 
+-	ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
++	/*
++	 * If we have encountered a bitmap-format file, the size limit
++	 * is smaller than s_maxbytes, which is for extent-mapped files.
++	 */
++
++	if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL)) {
++		struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
++		size_t length = iov_length(iov, nr_segs);
+ 
++		if (pos > sbi->s_bitmap_maxbytes)
++			return -EFBIG;
++
++		if (pos + length > sbi->s_bitmap_maxbytes) {
++			nr_segs = iov_shorten((struct iovec *)iov, nr_segs,
++					      sbi->s_bitmap_maxbytes - pos);
++		}
++	}
++
++	ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
+ 	/*
+ 	 * Skip flushing if there was an error, or if nothing was written.
+ 	 */
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 9cf8572..eaace13 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -314,7 +314,10 @@ static int ext4_block_to_path(struct inode *inode,
+ 		offsets[n++] = i_block & (ptrs - 1);
+ 		final = ptrs;
+ 	} else {
+-		ext4_warning(inode->i_sb, "ext4_block_to_path", "block > big");
++		ext4_warning(inode->i_sb, "ext4_block_to_path",
++				"block %u > max",
++				i_block + direct_blocks +
++				indirect_blocks + double_blocks);
+ 	}
+ 	if (boundary)
+ 		*boundary = final - 1 - (i_block & (ptrs - 1));
+@@ -3092,6 +3095,17 @@ int ext4_setattr(struct dentry *dentry, struct iattr *attr)
+ 		ext4_journal_stop(handle);
+ 	}
+ 
++	if (attr->ia_valid & ATTR_SIZE) {
++		if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL)) {
++			struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
++
++			if (attr->ia_size > sbi->s_bitmap_maxbytes) {
++				error = -EFBIG;
++				goto err_out;
++			}
++		}
++	}
++
+ 	if (S_ISREG(inode->i_mode) &&
+ 	    attr->ia_valid & ATTR_SIZE && attr->ia_size < inode->i_size) {
+ 		handle_t *handle;
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index c79e46b..0931831 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -1922,6 +1922,7 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
+ 		}
+ 	}
+ 
++	sbi->s_bitmap_maxbytes = ext4_max_bitmap_size(sb->s_blocksize_bits);
+ 	sb->s_maxbytes = ext4_max_size(sb->s_blocksize_bits);
+ 
+ 	if (le32_to_cpu(es->s_rev_level) == EXT4_GOOD_OLD_REV) {
+diff --git a/include/linux/ext4_fs_sb.h b/include/linux/ext4_fs_sb.h
+index f15821c..38a47ec 100644
+--- a/include/linux/ext4_fs_sb.h
++++ b/include/linux/ext4_fs_sb.h
+@@ -38,6 +38,7 @@ struct ext4_sb_info {
+ 	ext4_group_t s_groups_count;	/* Number of groups in the fs */
+ 	unsigned long s_overhead_last;  /* Last calculated overhead */
+ 	unsigned long s_blocks_last;    /* Last seen block count */
++	loff_t s_bitmap_maxbytes;	/* max bytes for bitmap files */
+ 	struct buffer_head * s_sbh;	/* Buffer containing the super block */
+ 	struct ext4_super_block * s_es;	/* Pointer to the super block in the buffer */
+ 	struct buffer_head ** s_group_desc;
+-- 
+1.5.4.rc3.31.g1271-dirty
 
