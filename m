@@ -1,256 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbYAVLjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbYAVLkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbYAVLjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 06:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYAVLjH
+	id S1755060AbYAVLkj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 06:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYAVLka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 06:39:07 -0500
-Received: from rayleigh.systella.fr ([213.41.184.253]:42819 "EHLO
-	rayleigh.systella.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751522AbYAVLjE (ORCPT
+	Tue, 22 Jan 2008 06:40:30 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:44341 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbYAVLk3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 06:39:04 -0500
-Message-ID: <4795D5CC.6080208@systella.fr>
-Date: Tue, 22 Jan 2008 12:38:52 +0100
-From: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <joel.bertrand@systella.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux sparc64; fr-FR; rv:1.8.1.11) Gecko/20071119 Iceape/1.1.7 (Debian-1.1.7-1)
-MIME-Version: 1.0
-To: linux-raid@vger.kernel.org
-CC: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Raid1, mdadm and nfs that remains in D state
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 22 Jan 2008 06:40:29 -0500
+Subject: Re: [PATCH] bluetooth : move children of connection device to NULL
+	before connection down
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net,
+       cornelia.huck@de.ibm.com, gombasg@sztaki.hu, htejun@gmail.com,
+       viro@zeniv.linux.org.uk, kay.sievers@vrfy.org, greg@kroah.com
+In-Reply-To: <a8e1da0801220024u30e9c814va74e44252fc8b11e@mail.gmail.com>
+References: <20080121044913.GA4162@darkstar.te-china.tietoenator.com>
+	 <20080121045401.GB4162@darkstar.te-china.tietoenator.com>
+	 <20080121.031417.171098597.davem@davemloft.net>
+	 <1200982696.7978.148.camel@aeonflux>
+	 <a8e1da0801220024u30e9c814va74e44252fc8b11e@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 22 Jan 2008 12:39:20 +0100
+Message-Id: <1201001960.7978.158.camel@aeonflux>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-3.1.8 (rayleigh.systella.fr [192.168.254.1]); Tue, 22 Jan 2008 12:38:58 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hello,
+Hi Dave,
 
-	I have installed a lot of T1000 with debian/testing and official 
-2.6.23.9 linux kernel. All but iscsi packages come from debian 
-repositories. iscsi was built from SVN tree. md7 is a raid1 volume over 
-iscsi and I can access to this device. This morning, one of my T1000 has 
-crashed. NFS daemon stays in D state:
+> could you tell something more about your coding style?
+> I would like to submit patches about bluetooth according to your sytle
+> later If I have.
+> 
+> Maybe you could put it on the bluez web site or anywhere.
 
-Root gershwin:[~] > ps auwx | grep NFS
-root     17041  0.0  0.0   2064   744 ttyS0    S+   12:33   0:00 grep NFS
-Root gershwin:[~] > ps auwx | grep nfs
-root     17043  0.0  0.0   2064   744 ttyS0    S+   12:33   0:00 grep nfs
-root     18276  0.0  0.0      0     0 ?        D     2007  16:59 [nfsd]
-root     18277  0.0  0.0      0     0 ?        D     2007  16:56 [nfsd]
-root     18278  0.0  0.0      0     0 ?        D     2007  16:57 [nfsd]
-root     18279  0.0  0.0      0     0 ?        D     2007  16:41 [nfsd]
-root     18280  0.0  0.0      0     0 ?        D     2007  16:44 [nfsd]
-root     18281  0.0  0.0      0     0 ?        D     2007  16:49 [nfsd]
-root     18282  0.0  0.0      0     0 ?        D     2007  16:37 [nfsd]
-root     18283  0.0  0.0      0     0 ?        D     2007  16:54 [nfsd]
-Root gershwin:[~] > dmesg
-sp: fffff800f2bcf3b1 ret_pc: 00000000005e6d54
-RPC: <raid1d+0x35c/0x1020>
-l0: fffff80060b8fa40 l1: 0000000000000050 l2: 0000000000000006 l3: 
-0000000000000001
-l4: fffff800fde2c8a0 l5: fffff800fc74dc20 l6: 0000000000000007 l7: 
-0000000000000000
-i0: fffff800fb70c400 i1: fffff800fde2c8c8 i2: fffff8006297ee40 i3: 
-fffff80000000000
-i4: 0000000000000010 i5: 00000000007a2f00 i6: fffff800f2bcf4f1 i7: 
-00000000005f2f50
-I7: <md_thread+0x38/0x140>
-BUG: soft lockup - CPU#6 stuck for 11s! [md7_raid1:5818]
-TSTATE: 0000000080001600 TPC: 000000000055bff0 TNPC: 000000000055bff4 Y: 
-00000000    Not tainted
-TPC: <loop+0x14/0x28>
-g0: 0000000000000020 g1: dffd574080000000 g2: 0002a8ba2e810000 g3: 
-0000000000000000
-g4: fffff800fd52d960 g5: fffff800020bc000 g6: fffff800f2bcc000 g7: 
-0000000000000000
-o0: fffff8009d13d254 o1: fffff80071755254 o2: 0000000000000dac o3: 
-0000000000000000
-o4: 000000000018d1a6 o5: 0000000000225c52 sp: fffff800f2bcf3b1 ret_pc: 
-00000000005e6d54
-RPC: <raid1d+0x35c/0x1020>
-l0: fffff80077d36ce0 l1: 0000000000000050 l2: 0000000000000006 l3: 
-0000000000000001
-l4: fffff800fde2c8a0 l5: fffff800f4372ea0 l6: 0000000000000007 l7: 
-0000000000000000
-i0: fffff800fb70c400 i1: fffff800fde2c8c8 i2: fffff80091038660 i3: 
-fffff80000000000
-i4: 0000000000000010 i5: 00000000007a2f00 i6: fffff800f2bcf4f1 i7: 
-00000000005f2f50
-I7: <md_thread+0x38/0x140>
-BUG: soft lockup - CPU#6 stuck for 11s! [md7_raid1:5818]
-TSTATE: 0000004480001607 TPC: 00000000006803a0 TNPC: 00000000006803a4 Y: 
-00000000    Not tainted
-TPC: <_spin_unlock_irqrestore+0x28/0x40>
-g0: fffff800fed95000 g1: 0000000000000000 g2: c000000000002000 g3: 
-d000000000002000
-g4: fffff800fd52d960 g5: fffff800020bc000 g6: fffff800f2bcc000 g7: 
-fffff800ffcb0000
-o0: fffff800fee16000 o1: 0000000000000000 o2: 0000000000000000 o3: 
-fffff800fee16000
-o4: 0000000000000000 o5: 0000000000784000 sp: fffff800f2bceda1 ret_pc: 
-00000000005a4fb8
-RPC: <tg3_poll+0x820/0xc40>
-l0: 000000000000042a l1: 0000000000010000 l2: fffff800f79aba00 l3: 
-00000000000001d0
-l4: fffff800fed95700 l5: fffff800f1091ec0 l6: 00000000000001d0 l7: 
-0000000000010000
-i0: 0000000001df0000 i1: 0000000000000029 i2: 00000000000001df i3: 
-0000000000000029
-i4: fffff800fed95794 i5: 0000000094479812 i6: fffff800f2bcee81 i7: 
-0000000000609780
-I7: <net_rx_action+0x88/0x160>
-BUG: soft lockup - CPU#6 stuck for 11s! [md7_raid1:5818]
-TSTATE: 0000009980001602 TPC: 0000000010170100 TNPC: 0000000010170104 Y: 
-00000000    Not tainted
-TPC: <ipv4_get_l4proto+0x8/0xa0 [nf_conntrack_ipv4]>
-g0: 000000001002bb58 g1: 000000000000006c g2: fffff800eba32b0c g3: 
-0000000010170100
-g4: fffff800fd52d960 g5: fffff800020bc000 g6: fffff800f2bcc000 g7: 
-0000000000000003
-o0: fffff800d69aae00 o1: 0000000000000000 o2: fffff800f2bced24 o3: 
-fffff800f2bced2f
-o4: fffff800fed95000 o5: fffff800f2bceec8 sp: fffff800f2bce411 ret_pc: 
-0000000010019d7c
-RPC: <nf_conntrack_in+0xa4/0x580 [nf_conntrack]>
-l0: 0000000000000002 l1: 0000000010175590 l2: ffffffff80000000 l3: 
-0000000000000002
-l4: 000000000000ffff l5: 000000000cbcc8bb l6: 0000000000000002 l7: 
-fffff80062b8f820
-i0: 0000000000000002 i1: 0000000000000003 i2: fffff800f2bcf080 i3: 
-fffff800fed95000
-i4: 0000000000630260 i5: 0000000000630260 i6: fffff800f2bce541 i7: 
-000000000062517c
-I7: <nf_iterate+0x84/0xe0>
-BUG: soft lockup - CPU#6 stuck for 11s! [md7_raid1:5818]
-TSTATE: 0000004480001605 TPC: 0000000010161030 TNPC: 0000000010161034 Y: 
-00000000    Not tainted
-TPC: <ipt_do_table+0xd8/0x5a0 [ip_tables]>
-g0: 0000000000010000 g1: 0000000000000000 g2: 00000000c0a80001 g3: 
-0000000000000000
-g4: fffff800fd52d960 g5: fffff800020bc000 g6: fffff800f2bcc000 g7: 
-0000000000000be0
-o0: 0000000010180b74 o1: fffff800f2bcf480 o2: 0000000000000000 o3: 
-fffff800fed95000
-o4: 0000000000000000 o5: fffff8005ef72be0 sp: fffff800f2bce821 ret_pc: 
-0000000010160fac
-RPC: <ipt_do_table+0x54/0x5a0 [ip_tables]>
-l0: fffff8005ef72be0 l1: 000000000062c460 l2: ffffffff80000000 l3: 
-fffff800688d7820
-l4: fffff8005ef72000 l5: fffff800fda0c280 l6: fffff800fed95000 l7: 
-0000000010164800
-i0: fffff800f2bcf480 i1: 0000000000000001 i2: fffff800fed95000 i3: 
-0000000000000000
-i4: 0000000010180b74 i5: 0000000000000000 i6: fffff800f2bce991 i7: 
-000000000062517c
-I7: <nf_iterate+0x84/0xe0>
-BUG: soft lockup - CPU#6 stuck for 11s! [md7_raid1:5818]
-TSTATE: 0000004480001607 TPC: 00000000006803a0 TNPC: 00000000006803a4 Y: 
-00000000    Not tainted
-TPC: <_spin_unlock_irqrestore+0x28/0x40>
-g0: 0000000000002000 g1: 0000000000000000 g2: 0000000000200db0 g3: 
-0000000000201db0
-g4: fffff800fd52d960 g5: fffff800020bc000 g6: fffff800f2bcc000 g7: 
-fffff800ffcb0000
-o0: fffff800fee16000 o1: 0000000000000000 o2: 0000000000000000 o3: 
-fffff800fee16000
-o4: 0000000000000010 o5: 0000000000784000 sp: fffff800f2bceda1 ret_pc: 
-00000000005a4844
-RPC: <tg3_poll+0xac/0xc40>
-l0: 00000000000000f2 l1: fffff800fe923a60 l2: 0000000000000f20 l3: 
-fffff800f447b000
-l4: fffff800fed95700 l5: 00000000000000f3 l6: 0000000000726c00 l7: 
-0000000000000000
-i0: fffff800fed95000 i1: fffff800f2bcf73c i2: 0000000000001976 i3: 
-000000000074cc00
-i4: 0000000000784000 i5: 0000000000784000 i6: fffff800f2bcee81 i7: 
-0000000000609780
-I7: <net_rx_action+0x88/0x160>
-BUG: soft lockup - CPU#6 stuck for 11s! [md7_raid1:5818]
-TSTATE: 0000000080001600 TPC: 000000000055bfe8 TNPC: 000000000055bfec Y: 
-00000000    Not tainted
-TPC: <loop+0xc/0x28>
-g0: 0000000000000020 g1: 5ffb6cea80000000 g2: 0004930c59d50000 g3: 
-0000000000000000
-g4: fffff800fd52d960 g5: fffff800020bc000 g6: fffff800f2bcc000 g7: 
-0000000000000000
-o0: fffff800cad755e3 o1: fffff800c32e55e3 o2: 0000000000000a1d o3: 
-0000000000000000
-o4: 00000000002ab21e o5: 00000000002c5f16 sp: fffff800f2bcf3b1 ret_pc: 
-00000000005e6d54
-RPC: <raid1d+0x35c/0x1020>
-l0: fffff800e30a6460 l1: 0000000000000030 l2: 0000000000000004 l3: 
-0000000000000001
-l4: fffff800fde2c8a0 l5: fffff800dfefbbc0 l6: 0000000000000007 l7: 
-0000000000000000
-i0: fffff800fb70c400 i1: fffff800fde2c8c8 i2: fffff800624536c0 i3: 
-fffff80000000000
-i4: 0000000000000010 i5: 00000000007a2f00 i6: fffff800f2bcf4f1 i7: 
-00000000005f2f50
-I7: <md_thread+0x38/0x140>
-BUG: soft lockup - CPU#6 stuck for 11s! [md7_raid1:5818]
-TSTATE: 0000000080001600 TPC: 000000001014e0ac TNPC: 000000001014dea8 Y: 
-00000000    Not tainted
-TPC: <iscsi_tcp_data_recv+0x514/0x1400 [iscsi_tcp]>
-g0: 0000000000002000 g1: 0000000000000b20 g2: 00000000000014e0 g3: 
-0000000000000b20
-g4: fffff800fd52d960 g5: fffff800020bc000 g6: fffff800f2bcc000 g7: 
-00000000000005a8
-o0: 0000000000000000 o1: 0000000000000000 o2: fffff8006563e578 o3: 
-0000000000000000
-o4: 0000000000000578 o5: 0000000000000b20 sp: fffff800f2bce611 ret_pc: 
-000000001014e030
-RPC: <iscsi_tcp_data_recv+0x498/0x1400 [iscsi_tcp]>
-l0: 00000000000005a8 l1: fffff800f6770b38 l2: fffff800ebfaca88 l3: 
-fffff800f6770ae0
-l4: 0000000000002000 l5: 0000000000000000 l6: 0000000000000006 l7: 
-0000000000000000
-i0: fffff800f50e2cc0 i1: fffff800952c1990 i2: fffff800f50e2cc0 i3: 
-00000000000005a8
-i4: fffff800f6770b38 i5: fffff80065f22260 i6: fffff800f2bce741 i7: 
-000000000063ab58
-I7: <tcp_read_sock+0x140/0x1c0>
-BUG: soft lockup - CPU#6 stuck for 11s! [md7_raid1:5818]
-TSTATE: 0000009980001602 TPC: 0000000000625400 TNPC: 0000000000625404 Y: 
-00000000    Not tainted
-TPC: <nf_hook_slow+0x48/0x100>
-g0: fffff800fe550098 g1: 000000000000fc00 g2: 0000000000000100 g3: 
-000007ff002ecc1f
-g4: fffff800fd52d960 g5: fffff800020bc000 g6: fffff800f2bcc000 g7: 
-0000000000000000
-o0: fffff80063934800 o1: fffff800fed95000 o2: 0000000000000000 o3: 
-fffff800fed95000
-o4: 0000000000000000 o5: 0000000098e3a812 sp: fffff800f2bceb21 ret_pc: 
-0000000000606da4
-RPC: <netif_receive_skb+0x1ec/0x480>
-l0: 0000000000759830 l1: 0000000000000000 l2: ffffffff80000000 l3: 
-fffff800f2bcf3e8
-l4: 000000000000ffff l5: fffff8006ebff940 l6: 00000000000000a5 l7: 
-0000000000010000
-i0: 0000000000000002 i1: 0000000000000000 i2: fffff800f2bcf560 i3: 
-fffff800fed95000
-i4: 0000000000000000 i5: 000000000062c060 i6: fffff800f2bcec01 i7: 
-000000000062cca4
-I7: <ip_rcv+0x3ac/0x6e0>
-BUG: soft lockup - CPU#6 stuck for 11s! [md7_raid1:5818]
-TSTATE: 0000000080001600 TPC: 000000000055bff0 TNPC: 000000000055bff4 Y: 
-00000000    Not tainted
-TPC: <loop+0x14/0x28>
-g0: 0000000000000020 g1: ffff6f2800000000 g2: 000090d6de500000 g3: 
-0000000000000000
-g4: fffff800fd52d960 g5: fffff800020bc000 g6: fffff800f2bcc000 g7: 
-0000000000000000
-o0: fffff800dc397a50 o1: fffff80018241a50 o2: 00000000000005b0 o3: 
-0000000000000000
-o4: 00000000000547e0 o5: 0000000000302c8d sp: fffff800f2bcf3b1 ret_pc: 
-00000000005e6d54
-RPC: <raid1d+0x35c/0x1020>
+it follows closely the kernel coding style as layout within the kernel
+documentation. However there are some minor style things, that I am
+going to enforce from time to time. Like having the container_of or
+get_user_data calls at the top of the variable declaration. This has
+never formalized as far as I recall, but makes from my point of view the
+code clearer and easier to read.
 
-	I will tre to build a 2.6.23.14 kernel but I don't see any patch that 
-could fix this bug. This bug always occurs when mdadm rescan this 
-device, but I don't understand why nfs remains in D state. Any idea ?
+Some other times I like an extra empty line to more visual separate
+different code blocks. For this some people might agree with me others
+might disagree. It is fully a personal more liking one way over the
+other.
 
-	Regards,
+When it comes to indentation and placement of braces etc. I is 100% the
+kernel coding style and nothing else. If not, then it needs fixing and
+is an oversight from the old days.
 
-	JKB
+Regards
+
+Marcel
+
+
