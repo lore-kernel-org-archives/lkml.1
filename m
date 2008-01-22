@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759701AbYAVKeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761651AbYAVKf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759701AbYAVKeW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 05:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756461AbYAVKeF
+	id S1761651AbYAVKf0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 05:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755128AbYAVKfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 05:34:05 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44978 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760288AbYAVKd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 05:33:56 -0500
-Date: Tue, 22 Jan 2008 11:33:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [git pull] scheduler fix
-Message-ID: <20080122103344.GA18673@elte.hu>
+	Tue, 22 Jan 2008 05:35:17 -0500
+Received: from ext-nj2ut-7.online-age.net ([64.14.54.237]:45380 "EHLO
+	ext-nj2ut-7.online-age.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751146AbYAVKfP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 05:35:15 -0500
+X-Greylist: delayed 632 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jan 2008 05:35:13 EST
+Date: Tue, 22 Jan 2008 11:24:36 +0100
+From: Karl Kiniger <karl.kiniger@med.ge.com>
+To: David Newall <davidn@davidnewall.com>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for mm] Remove iBCS support
+Message-ID: <20080122102436.GA15563@wszip-kinigka.euro.med.ge.com>
+References: <20080119045918.GA12215@basil.nowhere.org> <4792B191.2060801@davidnewall.com> <20080120031153.GB6275@one.firstfloor.org> <4792D221.1010704@davidnewall.com> <20080120051822.GB19784@one.firstfloor.org> <4792DD22.4070902@davidnewall.com> <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4793F775.6090403@davidnewall.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-GEHealthcare-MailScanner: Found to be clean
+X-GEHealthcare-MailScanner-From: karl.kiniger@med.ge.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+FYI, 
 
-Linus, please pull the latest scheduler-fixes git tree from:
+on http://www.feise.com/~jfeise/Downloads/linux-abi/
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+a patch named  linux-abi-2.6.22.3_3.diff.bz2 can be found.
 
-it's a fix for a late-breaking bug: if the root user / admin sets the 
-new /sys/uids/*/cpu_share tunable too low from the default 1024 then we 
-can crash/hang. [ in sched-devel.git we've already had MIN_GROUP_SHARES 
-for a long time to enforce this limit - but it was not backported. ]
+(and I know a friend of mine got it working OK - old
+Informix 4GL medical app compiled for SCO ... :-)
 
-	Ingo
+Karl
 
------------------->
-Ingo Molnar (1):
-      sched: group scheduler, set uid share fix
 
- sched.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+On Mon 080121, David Newall wrote:
+> Andi Kleen wrote:
+> > You seem to be under the illusion that iBCS2 support works currently
+> > in mainline and that only this patch would break it.
+> I cannot imagine what brings you to that conclusion.  Suffice to say you
+> are entirely and inexplicably wrong.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 37cf07a..e76b11c 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7153,6 +7153,14 @@ int sched_group_set_shares(struct task_group *tg, unsigned long shares)
- {
- 	int i;
- 
-+	/*
-+	 * A weight of 0 or 1 can cause arithmetics problems.
-+	 * (The default weight is 1024 - so there's no practical
-+	 *  limitation from this.)
-+	 */
-+	if (shares < 2)
-+		shares = 2;
-+
- 	spin_lock(&tg->lock);
- 	if (tg->shares == shares)
- 		goto done;
+-- 
+Karl Kiniger            mailto:karl.kiniger@med.ge.com
+GE Medical Systems Kretztechnik GmbH & Co OHG
+Tiefenbach 15           Tel: (++43) 7682-3800-710  Voip(GE): 1662 710
+A-4871 Zipf Austria     Fax: (++43) 7682-3800-47 C: +43 6991 3800 710
