@@ -1,108 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYAVSIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbYAVSQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbYAVSIR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 13:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbYAVSIH
+	id S1753916AbYAVSQz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 13:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYAVSQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 13:08:07 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:52184 "EHLO
-	outbound1-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751068AbYAVSIF (ORCPT
+	Tue, 22 Jan 2008 13:16:46 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:29621 "EHLO
+	outbound6-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751888AbYAVSQp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 13:08:05 -0500
-X-Greylist: delayed 1973 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 Jan 2008 13:08:05 EST
+	Tue, 22 Jan 2008 13:16:45 -0500
 X-BigFish: VP
 X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
 X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
-From: "Joachim Deguara" <joachim.deguara@amd.com>
-Organization: AMD
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [x86] please setup git for http access
-Date: Tue, 22 Jan 2008 09:34:52 -0800
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-References: <200801151556.58881.joachim.deguara@amd.com>
- <478D5D13.70904@zytor.com> <200801171443.56750.joachim.deguara@amd.com>
-In-Reply-To: <200801171443.56750.joachim.deguara@amd.com>
+Date: Tue, 22 Jan 2008 11:15:42 -0700
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: "Arnd Hannemann" <hannemann@i4.informatik.rwth-aachen.de>
+cc: "Lars Heete" <hel@admin.de>, "Andres Salomon" <dilinger@queued.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.24-rc8 hangs at mfgpt-timer
+Message-ID: <20080122181542.GB5241@cosmic.amd.com>
+References: <20080116165606.3ebc06a4@ephemeral>
+ <478FCDB6.4010708@i4.informatik.rwth-aachen.de>
+ <4795B14C.7040502@i4.informatik.rwth-aachen.de>
+ <200801221111.21240.hel@admin.de>
+ <4795D120.7070806@i4.informatik.rwth-aachen.de>
 MIME-Version: 1.0
-Message-ID: <200801220934.53224.joachim.deguara@amd.com>
-X-OriginalArrivalTime: 22 Jan 2008 17:32:30.0779 (UTC)
- FILETIME=[C3EFA8B0:01C85D1C]
-X-WSS-ID: 6B88F6A40QK8485373-13-01
+In-Reply-To: <4795D120.7070806@i4.informatik.rwth-aachen.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 22 Jan 2008 18:14:29.0388 (UTC)
+ FILETIME=[A124E4C0:01C85D22]
+X-WSS-ID: 6B88ED610QK8490730-13-01
 Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: 7bit
+ charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 January 2008, Joachim Deguara wrote:
-> On Tuesday 15 January 2008, H. Peter Anvin wrote:
-> > Joachim Deguara wrote:
-> > > Hello,
-> > >   I am trying to access the x86 git tree behind a proxy and therefore
-> > > over the http address.  This works for Linus' tree but not for the x86
-> > > tree.  Please follow these guidelines to enable http access.
-> > >
-> > > http://www.kernel.org/pub/software/scm/git/docs/user-manual.html#export
-> > >in g-via-http
-> >
-> > Set up now.
-> >
-> > 	-hpa
->
-> Thanks but unfortunately it still seams not to be working.  I cannot
-> sucessfully:
->  git-clone
-> http://www.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
->
-> I can see the git repository over http but I am guessing something did not
-> go right with 'git --bare update-server-info' as the .git/info directory
-> does not have the refs like Linus' does which are needed for http (gleaming
-> this from man git-update-server-info).  There have been updates to the git
-> tree since you responded so it looks like that hook did not get activated. 
-> (these are guesses from me and I don't really know git well so don't trust
-> a word I say)
->
-> thanks
-> -Joachim
+On 22/01/08 12:18 +0100, Arnd Hannemann wrote:
+> Hi Lars,
+> 
+> Lars Heete schrieb:
+> > Hello,
+> > 
+> > On Tuesday 22 January 2008 10:03:08 am Arnd Hannemann wrote:
+> >> Jordan Crouse wrote:
+> >>> Okay - I've been exploring a little bit more.  I talked to the TinyBIOS
+> >>> developer, and he verified that TinyBIOS shouldn't use any MFGPT timers.
+> >>> He also told me that the mysterious "MFGPT workaround" was in fact the
+> >>> magic MFGPT erasing MSR that was in the old kernel driver.
+> >>>
+> >>> So with the "MFGPT workaround" turned off, TinyBIOS should be acting like
+> >>> the OLPC firmware with regards to timers, yet it is not.  So that is
+> >>> curious.  I think I might have identified a race condition in the code,
+> >>> but I'm not 100% sure thats the same problem that the ALIX platform is
+> >>> seeing.
+> >>>
+> >>> Anrd and others - will you please try the attached patch on your platform
+> >>> with the "MFGPT workaround" turned off and mfgpts enabled, and send out
+> >>> the dmesg?
+> >> Of course, tinyBios version v0.99, "MFGPT workaround" turned off,
+> >> CONFIG_GEODE_MFGPT_TIMER=n:
+> >>
+> >> [   67.369697] NET: Registered protocol family 16
+> >> [   67.383059] geode-mfgpt:  IRQ MSR=0:0
+> >> [   67.394058] geode-mfgpt:  NMI MSR=0:0
+> >> [   67.405049] geode-mfgpt:  Unrestricted sources=0
+> >> [   67.418909] geode:  8 MFGPT timers available.
+> >> [   67.433211] PCI: PCI BIOS revision 2.10 entry at 0xfcd03, last bus=0
+> >>
+> >> same with CONFIG_GEODE_MFGPT_TIMER=y (sorry, without move printk patch):
+> >>
+> >> [   22.289349] NET: Registered protocol family 16
+> >> [   22.302716] geode-mfgpt:  IRQ MSR=0:0
+> >> [   22.313716] geode-mfgpt:  NMI MSR=0:0
+> >> [   22.324704] geode-mfgpt:  Unrestricted sources=0
+> >> [   22.338566] geode-mfgpt:  Registered timer 0
+> >> [   22.351393] mfgpt-timer:  registering the MFGT timer as a clock event.
+> >> ^^^^ Hangs here
+> > I had the same problem with MFGPT Timers and alix (BIOS v0.99). I found that 
+> > if you use a different interrupt than the default 7 for MFGPT (just append 
+> > mfgpt_irq=8 to the kernel commandline), the timer seems to work.
+> 
+> Indeed.
+> Strange, it works at least with mfgpt_irq=8 (rtc) and mfgpt_irq=5 (audio):
 
-Its almost works now!  It starts cloning the archive but then does not find 
-a 'pack'.  Interestingly there are not many packs populated:
-http://www.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git/objects/pack/
+That is very unfortunate.  We must continue to investigate.
 
-joachim@andante:git> git clone 
-http://www.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-Initialized empty Git repository in /home/joachim/tmp/git/linux-2.6-x86/.git/
-Getting alternates list for 
-http://www.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-Also look at 
-http://www.kernel.org/home/ftp/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/
-Getting pack list for 
-http://www.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-Getting index for pack 467c9a27b7553e8ad01fc42a6fbe74965e32ec4e
-Getting index for pack ec3b53b28a0be9cc6121d29c327f5945a1aeeb8e
-Getting pack ec3b53b28a0be9cc6121d29c327f5945a1aeeb8e
- which contains 4960c9df1407c2723459c60ff13e6efe0c209c62
-walk 4960c9df1407c2723459c60ff13e6efe0c209c62
-walk d384e35a25445bb60457b7dab8cffe178c6b7ecb
-Getting pack list for 
-http://www.kernel.org/home/ftp/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/
-error: Unable to find 8d14531846b95bfa3564b58ccfb7913a034323b8 under 
-http://www.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-Cannot obtain needed blob 8d14531846b95bfa3564b58ccfb7913a034323b8
-while processing commit d384e35a25445bb60457b7dab8cffe178c6b7ecb.
-Waiting for 
-http://www.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git/objects/41/12e840094b6d3f5e280c83466c66d267fced99
-Waiting for 
-http://www.kernel.org/home/ftp/pub/scm/linux/kernel/git/torvalds/linux-2.6.git//objects/e9/4ba7819ccceacdda2c2f0f72017c543b4b6808
-Waiting for 
-http://www.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git/objects/a9/d4836f7003159bf56607eeb1b78775b548cfa1
-joachim@andante:git> echo $?
-1
+> [   21.805129] geode-mfgpt:  IRQ MSR=0:0
+> [   21.816129] geode-mfgpt:  NMI MSR=0:0
+> [   21.827116] geode-mfgpt:  Unrestricted sources=0
+> [   21.840979] geode-mfgpt:  Registered timer 0
+> [   21.853806] mfgpt-timer:  registering the MFGT timer as a clock event.
+> [   21.873576] geode:  8 MFGPT timers available.
+> [   21.887962] PCI: PCI BIOS revision 2.10 entry at 0xfcd03, last bus=0
+> 
+<snip>
 
+> I noted that "rtc" disappeared, do I have any drawback of this?
+> I assume that the mfgpt-timer cannot be shared?
 
--Joachim
+No.  We figured that was the best way to go.  I don't know if there
+are any technical reasons why it can't be shared, other then latency
+problems.
+
+But I would still prefer to figure out why 7 doesn't work - because there
+is nothing in the hardware or kernel code that should prevent that.
+
+Arnd - if you don't mind doing a little bit more debug work.  You've already
+given us the MSRs for 0x51400020 - 0x51400023.  Can you now give us 
+0x51400024-0x51400027, as well as 5140004E?  Our current working theory
+is that IRQ7 (traditionally used by the LPT port) is still conflicting
+somewhere.
+
+Jordan
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
 
 
