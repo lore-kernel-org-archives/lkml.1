@@ -1,59 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759017AbYAVXBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbYAVXCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759017AbYAVXBr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 18:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758351AbYAVXAe
+	id S1758597AbYAVXCF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 18:02:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758387AbYAVXAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 18:00:34 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:50833 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757734AbYAVXA2 (ORCPT
+	Tue, 22 Jan 2008 18:00:42 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52280 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758360AbYAVXAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 18:00:28 -0500
-Date: Tue, 22 Jan 2008 22:59:13 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
+	Tue, 22 Jan 2008 18:00:34 -0500
+Subject: Re: [PATCH rc8-mm1] hotfix libata-scsi corruption
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
        Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
        linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH rc8-mm1] hotfix libata-scsi corruption
-In-Reply-To: <1201039931.3210.96.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0801222241460.30816@blonde.site>
-References: <Pine.LNX.4.64.0801221706320.5832@blonde.site> 
- <1201022985.3210.24.camel@localhost.localdomain>  <Pine.LNX.4.64.0801221813540.8693@blonde.site>
-  <1201031028.3210.61.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0801222009070.16267@blonde.site> <1201039931.3210.96.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <479652D2.10800@garzik.org>
+References: <Pine.LNX.4.64.0801221706320.5832@blonde.site>
+	 <1201022985.3210.24.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0801221813540.8693@blonde.site>
+	 <1201031028.3210.61.camel@localhost.localdomain>
+	 <479652D2.10800@garzik.org>
+Content-Type: text/plain
+Date: Tue, 22 Jan 2008 17:00:25 -0600
+Message-Id: <1201042825.30007.0.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jan 2008, James Bottomley wrote:
+On Tue, 2008-01-22 at 15:32 -0500, Jeff Garzik wrote:
+> James Bottomley wrote:
+> > Actually, I don't think it's a smaller I/O issue.  The SMART protocol
+> > specifically mandates that the transfers for SMART READ DATA and SMART
+> > READ LOG shall be 512 bytes).  However, the pio transfer routine does
+> > seem to be assuming sector alignment as well, which will be where your
+> > problems are coming from.  I think we need to specify sector minimum
+> > alignment for ata (but not atapi, which has its own non sector size pio
+> > routine).  How about the attached?
+> > 
+> > We have to do this for all ATA devices, because they'll likely all
+> > support SMART, and SMART is defined to be a PIO command.
+> > 
+> > James
+> > 
+> > ---
+> > 
+> > diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+> > index 4bb268b..bc5cf6b 100644
+> > --- a/drivers/ata/libata-scsi.c
+> > +++ b/drivers/ata/libata-scsi.c
+> > @@ -824,9 +824,6 @@ static void ata_scsi_sdev_config(struct scsi_device *sdev)
+> >  	 * requests.
+> >  	 */
+> >  	sdev->max_device_blocked = 1;
+> > -
+> > -	/* set the min alignment */
+> > -	blk_queue_update_dma_alignment(sdev->request_queue, ATA_DMA_PAD_SZ - 1);
+> >  }
+> >  
+> >  static void ata_scsi_dev_config(struct scsi_device *sdev,
+> > @@ -842,7 +839,14 @@ static void ata_scsi_dev_config(struct scsi_device *sdev,
+> >  	if (dev->class == ATA_DEV_ATAPI) {
+> >  		struct request_queue *q = sdev->request_queue;
+> >  		blk_queue_max_hw_segments(q, q->max_hw_segments - 1);
+> > -	}
+> > +
+> > +		/* set the min alignment */
+> > +		blk_queue_update_dma_alignment(sdev->request_queue,
+> > +					       ATA_DMA_PAD_SZ - 1);
+> > +	} else
+> > +		/* ATA devices must be sector aligned */
+> > +		blk_queue_update_dma_alignment(sdev->request_queue,
+> > +					       ATA_SECT_SIZE - 1);
+> >  
+> >  	if (dev->flags & ATA_DFLAG_AN)
+> >  		set_bit(SDEV_EVT_MEDIA_CHANGE, sdev->supported_events);
 > 
-> libsas looks to be OK because it specifically kmallocs a 512 byte buffer
-> which should (for off slab data) be 512 byte aligned.
+> 
+> ACK
+> 
+> Unlike ATAPI, ATA is indeed all 512-byte alignment transfers (_not_ 
+> sector size, which may or may not be 512 bytes)
+> 
+> Does this apply to libata?  libata + jejb dma alignment patch?
+> 
+> What tree...
 
-I don't remember the various SLAB and SLOB and SLUB rules offhand:
-I'm not sure it's safe to rely on such alignment on all of them ....
+It's scsi-misc-2.6; the blk_queue_update_dma_alignment() API doesn't
+exist in mainline (yet).
 
-> libata actually
-> has an issue because the usual location for IDENTIFY_DEVICE data is
-> inside a struct ata_device, which is highly unlikely to be correctly
-> aligned.  Fortunately, I think we can only get the bug if we actually
-> cross a page boundary for non contiguous pages in the identify data,
-> which a kernel allocation will never do, so libata should be safe as
-> well.
+James
 
-.... but this would trump it: yes, we don't need 512-byte alignment
-for this, and it is okay to cross a page boundary, just so long as
-the start of the next page really belongs to our buffer not somebody
-else's.
 
-There doesn't seem much likelihood of anyone vmalloc'ing the buffer
-in which that IDENTIFY_DEVICE gets done.  Though this discussion
-does make me wonder whether ata_pio_sector ought to have a BUG_ON
-(and yes, a BUG_ON rather than a WARN_ON) against the possibility.
-
-Hugh
