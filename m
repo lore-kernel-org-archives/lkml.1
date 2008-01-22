@@ -1,52 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbYAVAF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbYAVAVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760140AbYAVAF1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 19:05:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbYAVAFT
+	id S1758762AbYAVAVV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 19:21:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbYAVAVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 19:05:19 -0500
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:48588 "HELO
+	Mon, 21 Jan 2008 19:21:12 -0500
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:35204 "HELO
 	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752994AbYAVAFS convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 19:05:18 -0500
+	by vger.kernel.org with SMTP id S1752994AbYAVAVK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 19:21:10 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=pbP+X9XTwIhjgfQpC7Hq5ngDrqaeQKPHq/kXOAVxsrK6zJz4c9rT6CWWqEY/F3mF2XACS3s7vH4nvIITTtIK6N1kSe7Pkvzl6Z3wq+tNaLHxWypdII/7iA97LC2EWod1LQs4fjro4z51h5waAroj6eeY6W1bMuzub2jeSBEOxoY=  ;
-X-YMail-OSG: MsaR7_AVM1lAKwk1KbePVoCHrnpS6OEG_AGjOlymyZ1ToKYgQvpHIPVhVa_4iCYAY_dNaBtBgA--
+  b=sQ4U4dmP8Tbb7ATwacub1KUWXkoYHN5qT9kzQhki73z1qycBXMmHfMbA4JntQ48xEC+C2Joox4OXvRo+JTulUlX3SqBLjjYZfkzcyXJxYDeMyICLSH4uUu8W7dNlg7S9wzEelXBi/QUmgG07ehaZR2DPuwUX4CFNuyp6byrdapw=  ;
+X-YMail-OSG: XsJ39ZQVM1l3hhkkUCu2TqRkK65EjOWKn4wldZaqEeHytYVuz2YXylY.Oq2KSV3fxVezljqXBA--
 X-Yahoo-Newman-Property: ymail-3
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Frederik Himpe <fhimpe@telenet.be>
-Subject: Re: 2.6.24 regression: pan hanging unkilleable and un-straceable
-Date: Tue, 22 Jan 2008 11:05:11 +1100
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC PATCH 12/23 -v4] Use RCU algorithm for monotonic cycles.
+Date: Tue, 22 Jan 2008 11:20:58 +1100
 User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <1200949086.6648.19.camel@Anastacia>
-In-Reply-To: <1200949086.6648.19.camel@Anastacia>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       John Stultz <johstul@us.ibm.com>, Steven Rostedt <srostedt@redhat.com>
+References: <20080121152231.579118762@goodmis.org> <20080121152352.789802471@goodmis.org>
+In-Reply-To: <20080121152352.789802471@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801221105.11413.nickpiggin@yahoo.com.au>
+Message-Id: <200801221120.59792.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 January 2008 07:58, Frederik Himpe wrote:
-> With Linux 2.6.24-rc8 I often have the problem that the pan usenet
-> reader starts using 100% of CPU time after some time. When this happens,
-> kill -9 does not work, and strace just hangs when trying to attach to
-> the process. The same with gdb. ﻿ps shows the process as being in the R
-> state.
+On Tuesday 22 January 2008 02:22, Steven Rostedt wrote:
+> From: john stultz <johnstul@us.ibm.com>
+
+>  static inline cycle_t
+> -clocksource_get_cycles(struct clocksource *cs, cycle_t now)
+> +clocksource_get_basecycles(struct clocksource *cs)
+>  {
+> -	cycle_t offset = (now - cs->cycle_last) & cs->mask;
+> -	offset += cs->cycle_accumulated;
+> +	int num;
+> +	cycle_t now, offset;
+> +
+> +	preempt_disable();
+> +	num = cs->base_num;
+> +	smp_read_barrier_depends();
+
+All barriers need comments in the code. eg. with read barriers, the
+comment should contain a list of the loads being ordered, and a
+reference to the places where stores come from.
+
+I know it isn't too hard to follow _now_, but it makes the code more
+maintainable.
+
+
+> +	now = clocksource_read(cs);
+> +	offset = (now - cs->base[num].cycle_base_last);
+> +	offset &= cs->mask;
+> +	offset += cs->base[num].cycle_base;
+> +	preempt_enable();
+> +
+>  	return offset;
+>  }
 >
-> I pressed Ctrl-Alt-SysRq-T, and this was shown for pan:
-> Jan 21 21:45:01 Anastacia kernel: pan           R  running task        0 
+> @@ -197,14 +215,26 @@ clocksource_get_cycles(struct clocksourc
+>   * @now:	current cycle value
+>   *
+>   * Used to avoids clocksource hardware overflow by periodically
+> - * accumulating the current cycle delta. Must hold xtime write lock!
+> + * accumulating the current cycle delta. Uses RCU-like update, but
+> + * ***still requires the xtime_lock is held for writing!***
+>   */
+>  static inline void clocksource_accumulate(struct clocksource *cs, cycle_t
+> now) {
+> -	cycle_t offset = (now - cs->cycle_last) & cs->mask;
+> +	/* First update the monotonic base portion.
+> +	 * The dual array update method allows for lock-free reading.
+> +	 */
+> +	int num = 1 - cs->base_num;
+> +	cycle_t offset = (now - cs->base[1-num].cycle_base_last);
+> +	offset &= cs->mask;
+> +	cs->base[num].cycle_base = cs->base[1-num].cycle_base + offset;
+> +	cs->base[num].cycle_base_last = now;
+> +	wmb();
+> +	cs->base_num = num;
 
-Well I've twice tried to submit a patch to print stacks for running
-tasks as well, but nobody seems interested. It would at least give a
-chance to see something.
-
-Can you post a few Sysrq+P traces?
-
+Ditto for the wmb. Also, I think the wmb() can probably just be
+smp_wmb().
