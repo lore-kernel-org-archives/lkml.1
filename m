@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbYAVVZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbYAVV07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301AbYAVVZi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 16:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYAVVZ2
+	id S1754703AbYAVV07 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 16:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbYAVV0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 16:25:28 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51284 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751276AbYAVVZ1 (ORCPT
+	Tue, 22 Jan 2008 16:26:49 -0500
+Received: from yergi.telenet-ops.be ([195.130.132.36]:53689 "EHLO
+	yergi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751687AbYAVV0r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 16:25:27 -0500
-Date: Tue, 22 Jan 2008 21:25:01 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Greg KH <greg@kroah.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>, Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH] Use separate sections for __dev/__cpu/__mem code/data
-Message-ID: <20080122212501.GA17434@flint.arm.linux.org.uk>
-Mail-Followup-To: Greg KH <greg@kroah.com>, Sam Ravnborg <sam@ravnborg.org>,
-	linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-	linux-arch@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>,
-	Adrian Bunk <bunk@kernel.org>
-References: <20080120200527.GA23852@uranus.ravnborg.org> <1200859743-24037-1-git-send-email-sam@ravnborg.org> <1200859743-24037-2-git-send-email-sam@ravnborg.org> <1200859743-24037-3-git-send-email-sam@ravnborg.org> <1200859743-24037-4-git-send-email-sam@ravnborg.org> <1200859743-24037-5-git-send-email-sam@ravnborg.org> <1200859743-24037-6-git-send-email-sam@ravnborg.org> <1200859743-24037-7-git-send-email-sam@ravnborg.org> <1200859743-24037-8-git-send-email-sam@ravnborg.org> <20080122211715.GA26279@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080122211715.GA26279@kroah.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 22 Jan 2008 16:26:47 -0500
+Date: Tue, 22 Jan 2008 22:25:59 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bryan Wu <bryan.wu@analog.com>, Mikael Starvik <starvik@axis.com>,
+       David Howells <dhowells@redhat.com>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Kyle McMartin <kyle@parisc-linux.org>, Matthew Wilcox <matthew@wil.cx>,
+       Chris Zankel <chris@zankel.net>
+Subject: Re: [PATCH] procfs: constify function pointer tables
+In-Reply-To: <Pine.LNX.4.64.0801222055440.5722@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0801222225320.29273@anakin>
+References: <54038cd4f87a03884e4f59f8f3697889dfb63c54.1201030614.git.jengelh@computergmbh.de>
+ <Pine.LNX.4.64.0801222055440.5722@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 01:17:15PM -0800, Greg KH wrote:
-> I like this a lot.  It makes things much more understandable from a
-> driver developer's point of view, and would allow us to mark some things
-> as freeable when we do not run with a CPU hotplug system :)
+On Tue, 22 Jan 2008, Jan Engelhardt wrote:
+> This touches so many different places that I did not feel like creating 
+> a miniscule patch for each architecture. I hope that is ok.
+> 
+> ===Patch begins===
+> [PATCH] procfs: constify function pointer tables
+> 
+> Signed-off-by: Jan Engelhardt <jengelh@computergmbh.de>
+> ---
+>  arch/alpha/kernel/setup.c     |    2 +-
+>  arch/blackfin/kernel/setup.c  |    2 +-
+>  arch/cris/kernel/setup.c      |    2 +-
+>  arch/frv/kernel/setup.c       |    2 +-
+>  arch/h8300/kernel/setup.c     |    2 +-
+>  arch/m32r/kernel/setup.c      |    2 +-
+>  arch/m68k/kernel/setup.c      |    2 +-
+>  arch/m68knommu/kernel/setup.c |    2 +-
+>  arch/parisc/kernel/setup.c    |    2 +-
+>  arch/ppc/kernel/setup.c       |    2 +-
+>  arch/v850/kernel/procfs.c     |    2 +-
+>  arch/xtensa/kernel/setup.c    |    2 +-
+>  fs/proc/base.c                |    6 +++---
+>  fs/proc/nommu.c               |    2 +-
+>  fs/proc/proc_misc.c           |   22 +++++++++++-----------
+>  fs/proc/proc_sysctl.c         |    4 ++--
+>  fs/proc/proc_tty.c            |    2 +-
+>  fs/proc/task_mmu.c            |    8 ++++----
+>  fs/proc/task_nommu.c          |    2 +-
+>  19 files changed, 35 insertions(+), 35 deletions(-)
 
-You mean at run time - I'm not sure if there's any advantage to that.
+m68k part is:
 
-In order to free the hotplug cpu data and text, you'd have to make
-those sections page aligned - and then you have the question of
-how much space you are wasting in doing so.  That will be variable
-over time as the code changes.
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Also, if you were to merge the hotplug cpu text and data to reduce
-the wastage, would that cause any architectures any issues?  (Thinking
-about execute-only being set on the kernel's text section only, etc.)
+Gr{oetje,eeting}s,
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
