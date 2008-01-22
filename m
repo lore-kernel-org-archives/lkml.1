@@ -1,181 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760440AbYAVBky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbYAVBlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760440AbYAVBky (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 20:40:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYAVBkq
+	id S1756644AbYAVBlP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 20:41:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760508AbYAVBkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 20:40:46 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:4212 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751483AbYAVBkp (ORCPT
+	Mon, 21 Jan 2008 20:40:55 -0500
+Received: from nz-out-0506.google.com ([64.233.162.234]:60137 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760310AbYAVBkx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 20:40:45 -0500
+	Mon, 21 Jan 2008 20:40:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DyvEz1OwoLmO/5lC52ZD6qC1lrf5oU+yE6VjoUfSWjLAFBDVmUI6OU34P1qke4NAYF30qriGbm+v+aTyyjTaOw2SH2KddouzgDTLWMpWDcdpmxD3I6p+aaOs7kmQXrTwdaMliYSDhfw0BdMxGb2BqZU+ioQdbra/qXNwPrUhB9k=
-Message-ID: <9a8748490801211740r5c764f6ev9c331479f63ef362@mail.gmail.com>
-Date: Tue, 22 Jan 2008 02:40:45 +0100
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Anton Salikhmetov" <salikhmetov@gmail.com>
-Subject: Re: [PATCH -v7 2/2] Update ctime and mtime for memory-mapped files
+        b=T+blziCPFUzG3U5uaDEBe+atdrvPKYJDA60neUfHQJw39aQ4WIdB75wIKNXPS5mmvyqUml+RwtCVipCAsIo6WP9trngVi7nhjSUMkj2SX6iNLsd0Vbm9Qmsz1lRioiV1h6OpCyn8tVszxoktQKR/cZslUAge0jeO5+eyI1ervoE=
+Message-ID: <4df4ef0c0801211740i168a82e6ha8992710da81f0b1@mail.gmail.com>
+Date: Tue, 22 Jan 2008 04:40:52 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [PATCH -v7 0/2] Fixing the issue with memory-mapped file times
 Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
        valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
        staubach@redhat.com, torvalds@linux-foundation.org,
        a.p.zijlstra@chello.nl, akpm@linux-foundation.org, protasnb@gmail.com,
        miklos@szeredi.hu, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
        hch@infradead.org
-In-Reply-To: <12009619584168-git-send-email-salikhmetov@gmail.com>
+In-Reply-To: <9a8748490801211734w7fbb0ed9i66d63153c870a3f0@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <12009619562023-git-send-email-salikhmetov@gmail.com>
-	 <12009619584168-git-send-email-salikhmetov@gmail.com>
+	 <9a8748490801211734w7fbb0ed9i66d63153c870a3f0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some very pedantic nitpicking below;
-
-On 22/01/2008, Anton Salikhmetov <salikhmetov@gmail.com> wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=2645#c40
+2008/1/22, Jesper Juhl <jesper.juhl@gmail.com>:
+> On 22/01/2008, Anton Salikhmetov <salikhmetov@gmail.com> wrote:
+> > This is the seventh version of my solution for the bug #2645:
+> >
+> > http://bugzilla.kernel.org/show_bug.cgi?id=2645
+> >
+> > Since the previous version, the following has changed: based on
+> > Linus' comment, SMP-safe PTE update implemented.
+> >
+> > Discussions, which followed my past submissions, showed that it was
+> > tempting to approach this problem using very different assumptions.
+> > However, many such designs have proved to be incomplete or inefficient.
+> >
+> > Taking into account the obvious complexity of this problem, I prepared a
+> > design document, the purpose of which is twofold. First, it summarizes
+> > previous attempts to resolve the ctime/mtime issue. Second, it attempts
+> > to prove that what the patches do is necessary and sufficient for mtime
+> > and ctime update provided that we start from a certain sane set of
+> > requirements. The design document is available via the following link:
+> >
+> > http://bugzilla.kernel.org/show_bug.cgi?id=2645#c40
+> >
+> > For the seventh version, comprehensive performance testing was performed.
+> > The results of performance tests, including numbers, are available here:
+> >
+> > http://bugzilla.kernel.org/show_bug.cgi?id=2645#c43
+> >
 >
-> Update file times at write references to memory-mapped files.
-> Force file times update at the next write reference after
-> calling the msync() system call with the MS_ASYNC flag.
+> Hi Anton,
 >
-> Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
-> ---
->  mm/memory.c |    6 ++++++
->  mm/msync.c  |   57 ++++++++++++++++++++++++++++++++++++++++++++-------------
->  2 files changed, 50 insertions(+), 13 deletions(-)
+> I applied your patches here and as far as my own test programs go,
+> these patches solve the previously observed problems I saw with mtime
+> not getting updated.
 >
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 6dd1cd8..4b0144b 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -1670,6 +1670,9 @@ gotten:
->  unlock:
->         pte_unmap_unlock(page_table, ptl);
->         if (dirty_page) {
-> +               if (vma->vm_file)
-> +                       file_update_time(vma->vm_file);
-> +
->                 /*
->                  * Yes, Virginia, this is actually required to prevent a race
->                  * with clear_page_dirty_for_io() from clearing the page dirty
-> @@ -2343,6 +2346,9 @@ out_unlocked:
->         if (anon)
->                 page_cache_release(vmf.page);
->         else if (dirty_page) {
-> +               if (vma->vm_file)
-> +                       file_update_time(vma->vm_file);
-> +
->                 set_page_dirty_balance(dirty_page, page_mkwrite);
->                 put_page(dirty_page);
->         }
-> diff --git a/mm/msync.c b/mm/msync.c
-> index a4de868..394130d 100644
-> --- a/mm/msync.c
-> +++ b/mm/msync.c
-> @@ -5,6 +5,7 @@
->   * Copyright (C) 2008 Anton Salikhmetov <salikhmetov@gmail.com>
->   */
+> Thank you very much for so persistently working on these long standing issues.
+
+Thank you very much for testing these patches!
+
 >
-> +#include <asm/tlbflush.h>
->  #include <linux/file.h>
->  #include <linux/fs.h>
->  #include <linux/mm.h>
-> @@ -13,11 +14,37 @@
->  #include <linux/syscalls.h>
+> --
+> Jesper Juhl <jesper.juhl@gmail.com>
+> Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+> Plain text mails only, please      http://www.expita.com/nomime.html
 >
->  /*
-> + * Scan the PTEs for pages belonging to the VMA and mark them read-only.
-> + * It will force a pagefault on the next write access.
-> + */
-> +static void vma_wrprotect(struct vm_area_struct *vma)
-> +{
-> +       unsigned long addr;
-> +
-> +       for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE) {
-
-I know it's not the common "Linux Kernel way", but 'addr' could be
-made to have just 'for' scope here according to C99;
-
-       for (unsigned long addr = vma->vm_start; addr < vma->vm_end;
-addr += PAGE_SIZE) {
-
-
-> +               spinlock_t *ptl;
-> +               pgd_t *pgd = pgd_offset(vma->vm_mm, addr);
-> +               pud_t *pud = pud_offset(pgd, addr);
-> +               pmd_t *pmd = pmd_offset(pud, addr);
-> +               pte_t *pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
-> +
-> +               if (pte_dirty(*pte) && pte_write(*pte)) {
-> +                       pte_t entry = ptep_clear_flush(vma, addr, pte);
-> +
-> +                       entry = pte_wrprotect(entry);
-> +                       set_pte_at(vma->vm_mm, addr, pte, entry);
-> +               }
-> +               pte_unmap_unlock(pte, ptl);
-> +       }
-> +}
-> +
-> +/*
->   * MS_SYNC syncs the entire file - including mappings.
->   *
-> - * MS_ASYNC does not start I/O (it used to, up to 2.5.67).
-> - * Nor does it mark the relevant pages dirty (it used to up to 2.6.17).
-> - * Now it doesn't do anything, since dirty pages are properly tracked.
-
-I think keeping some version of the "up to ..." comments makes sense.
-It documents that we previously had different behaviour.
-
-> + * MS_ASYNC does not start I/O. Instead, it marks the relevant pages
-> + * read-only by calling vma_wrprotect(). This is needed to catch the next
-> + * write reference to the mapped region and update the file times
-> + * accordingly.
->   *
->   * The application may now run fsync() to write out the dirty pages and
->   * wait on the writeout and check the result. Or the application may run
-> @@ -77,16 +104,20 @@ asmlinkage long sys_msync(unsigned long start, size_t len, int flags)
->                 error = 0;
->                 start = vma->vm_end;
->                 file = vma->vm_file;
-> -               if (file && (vma->vm_flags & VM_SHARED) && (flags & MS_SYNC)) {
-> -                       get_file(file);
-> -                       up_read(&mm->mmap_sem);
-> -                       error = do_fsync(file, 0);
-> -                       fput(file);
-> -                       if (error || start >= end)
-> -                               goto out;
-> -                       down_read(&mm->mmap_sem);
-> -                       vma = find_vma(mm, start);
-> -                       continue;
-> +               if (file && (vma->vm_flags & VM_SHARED)) {
-> +                       if (flags & MS_ASYNC)
-> +                               vma_wrprotect(vma);
-> +                       if (flags & MS_SYNC) {
-
-"else if" ??
-
-> +                               get_file(file);
-> +                               up_read(&mm->mmap_sem);
-> +                               error = do_fsync(file, 0);
-> +                               fput(file);
-> +                               if (error || start >= end)
-> +                                       goto out;
-> +                               down_read(&mm->mmap_sem);
-> +                               vma = find_vma(mm, start);
-> +                               continue;
-> +                       }
->                 }
->
->                 vma = vma->vm_next;
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
