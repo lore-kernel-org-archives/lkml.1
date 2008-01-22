@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbYAVPKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbYAVPNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760861AbYAVPKY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 10:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbYAVPKM
+	id S1758008AbYAVPNP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 10:13:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYAVPNB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 10:10:12 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55784 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750992AbYAVPKK (ORCPT
+	Tue, 22 Jan 2008 10:13:01 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:42404 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753273AbYAVPNA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 10:10:10 -0500
-Message-ID: <4796074E.5090606@sgi.com>
-Date: Tue, 22 Jan 2008 07:10:06 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 22 Jan 2008 10:13:00 -0500
+Message-ID: <4796081A.7060505@davidnewall.com>
+Date: Wed, 23 Jan 2008 01:43:30 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+CC: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] x86: Reduce memory usage for large count NR_CPUs
- fixup V2 with git-x86
-References: <20080121211618.599818000@sgi.com> <20080122124811.GD7304@elte.hu>
-In-Reply-To: <20080122124811.GD7304@elte.hu>
+Subject: Re: [PATCH for mm] Remove iBCS support
+References: <20080119045918.GA12215@basil.nowhere.org> <4792B191.2060801@davidnewall.com> <20080120031153.GB6275@one.firstfloor.org> <4792D221.1010704@davidnewall.com> <20080120051822.GB19784@one.firstfloor.org> <4792DD22.4070902@davidnewall.com> <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122111205.GA25090@elte.hu>
+In-Reply-To: <20080122111205.GA25090@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,50 +28,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Ingo Molnar wrote:
-> * travis@sgi.com <travis@sgi.com> wrote:
-> 
->> Fixup change NR_CPUS patchset by rebasing on 2.6.24-rc8-mm1
->> from 2.6.24-rc6-mm1) and adding changes suggested by reviews.
->>
->> Based on 2.6.24-rc8-mm1 + latest (08/1/21) git-x86
->>
->> Note there are two versions of this patchset:
->> 	- 2.6.24-rc8-mm1
->> 	- 2.6.24-rc8-mm1 + latest (08/1/21) git-x86
-> 
-> thanks, applied.
-> 
->> Signed-off-by: Mike Travis <travis@sgi.com>
->> ---
->> Fixup-V2:
->>     - pulled the SMP_MAX patch as it's not strictly needed and some
->>       more work on local cpumask_t variables needs to be done before
->>       NR_CPUS is allowed to increase.
-> 
-> i'd still love to see CONFIG_SMP_MAX, so that we can have continuous 
-> randconfig testing of the large-SMP aspects of the x86 architecture, 
-> even on smaller systems.
-> 
-> What's the maximum that should work right now? 256 or perhaps even 512 
-> CPU ought to work fine i think?
+> * David Newall <davidn@davidnewall.com> wrote:
+>   
+>> Andi Kleen wrote:
+>>     
+>>> You seem to be under the illusion that iBCS2 support works currently
+>>> in mainline and that only this patch would break it.
+>>>       
+>> I cannot imagine what brings you to that conclusion.  Suffice to say 
+>> you are entirely and inexplicably wrong.
+>>     
+>
+> it should be very easy for you to prove me wrong then. I've got a very 
+> simple question: please tell me, how do i run a binary compiled for an 
+> iBCS2 platform under Linux v2.6.23?
+>   
 
-I'm attempting to gather stack (and memory) usage for increased cpu counts
-right now.  But I'll have another set of basic changes before the cpumask_t
-changes can be done.
-
-Thanks,
-Mike
-
-> 
-> and then once the on-stack usage problems are fixed, the NR_CPUS value 
-> in CONFIG_SMP_MAX can be increased. So SMP_MAX would also act as "this 
-> is how far we can go in the upstream kernel" documentation.
-> 
-> [ btw., the crash i remember was rather related to the NODES_SHIFT
->   increase to 9, not from the NR_CPUSs increase. (the config i sent 
->   still has NR_CPUS==8, because Kconfig did not pick up the right 
->   NR_CPUs value dicatated by SMP_MAX.) If you resend the SMP_MAX patch 
->   against latest x86.git i can retest this. ]
-> 
-> 	Ingo
-
+You're being silly.  Either that or you're not reading what I write. 
+You know perfectly well iBCS2 compatibility doesn't work (anymore.)  The
+question, in my mind, is will it ever be made to work again?  I think
+the answer should be yes.
