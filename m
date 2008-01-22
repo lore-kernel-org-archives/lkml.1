@@ -1,98 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbYAVXCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbYAVXCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758597AbYAVXCF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 18:02:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758387AbYAVXAm
+	id S1757869AbYAVXCa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 18:02:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbYAVXAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 18:00:42 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:52280 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758360AbYAVXAe (ORCPT
+	Tue, 22 Jan 2008 18:00:48 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:45797 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755960AbYAVXAp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 18:00:34 -0500
-Subject: Re: [PATCH rc8-mm1] hotfix libata-scsi corruption
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <479652D2.10800@garzik.org>
-References: <Pine.LNX.4.64.0801221706320.5832@blonde.site>
-	 <1201022985.3210.24.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0801221813540.8693@blonde.site>
-	 <1201031028.3210.61.camel@localhost.localdomain>
-	 <479652D2.10800@garzik.org>
-Content-Type: text/plain
-Date: Tue, 22 Jan 2008 17:00:25 -0600
-Message-Id: <1201042825.30007.0.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Tue, 22 Jan 2008 18:00:45 -0500
+Message-ID: <47967560.8080101@cs.helsinki.fi>
+Date: Wed, 23 Jan 2008 00:59:44 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+MIME-Version: 1.0
+To: Mel Gorman <mel@csn.ul.ie>
+CC: Christoph Lameter <clameter@sgi.com>, Olaf Hering <olaf@aepfle.de>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       hanth Aravamudan <nacc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+       akpm@linux-foundation.org
+Subject: Re: crash in kmem_cache_init
+References: <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com> <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com> <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com> <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie> <Pine.LNX.4.64.0801221203340.27950@schroedinger.engr.sgi.com> <20080122212654.GB15567@csn.ul.ie> <Pine.LNX.4.64.0801221330390.1652@schroedinger.engr.sgi.com> <20080122225046.GA866@csn.ul.ie>
+In-Reply-To: <20080122225046.GA866@csn.ul.ie>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-01-22 at 15:32 -0500, Jeff Garzik wrote:
-> James Bottomley wrote:
-> > Actually, I don't think it's a smaller I/O issue.  The SMART protocol
-> > specifically mandates that the transfers for SMART READ DATA and SMART
-> > READ LOG shall be 512 bytes).  However, the pio transfer routine does
-> > seem to be assuming sector alignment as well, which will be where your
-> > problems are coming from.  I think we need to specify sector minimum
-> > alignment for ata (but not atapi, which has its own non sector size pio
-> > routine).  How about the attached?
-> > 
-> > We have to do this for all ATA devices, because they'll likely all
-> > support SMART, and SMART is defined to be a PIO command.
-> > 
-> > James
-> > 
-> > ---
-> > 
-> > diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-> > index 4bb268b..bc5cf6b 100644
-> > --- a/drivers/ata/libata-scsi.c
-> > +++ b/drivers/ata/libata-scsi.c
-> > @@ -824,9 +824,6 @@ static void ata_scsi_sdev_config(struct scsi_device *sdev)
-> >  	 * requests.
-> >  	 */
-> >  	sdev->max_device_blocked = 1;
-> > -
-> > -	/* set the min alignment */
-> > -	blk_queue_update_dma_alignment(sdev->request_queue, ATA_DMA_PAD_SZ - 1);
-> >  }
-> >  
-> >  static void ata_scsi_dev_config(struct scsi_device *sdev,
-> > @@ -842,7 +839,14 @@ static void ata_scsi_dev_config(struct scsi_device *sdev,
-> >  	if (dev->class == ATA_DEV_ATAPI) {
-> >  		struct request_queue *q = sdev->request_queue;
-> >  		blk_queue_max_hw_segments(q, q->max_hw_segments - 1);
-> > -	}
-> > +
-> > +		/* set the min alignment */
-> > +		blk_queue_update_dma_alignment(sdev->request_queue,
-> > +					       ATA_DMA_PAD_SZ - 1);
-> > +	} else
-> > +		/* ATA devices must be sector aligned */
-> > +		blk_queue_update_dma_alignment(sdev->request_queue,
-> > +					       ATA_SECT_SIZE - 1);
-> >  
-> >  	if (dev->flags & ATA_DFLAG_AN)
-> >  		set_bit(SDEV_EVT_MEDIA_CHANGE, sdev->supported_events);
-> 
-> 
-> ACK
-> 
-> Unlike ATAPI, ATA is indeed all 512-byte alignment transfers (_not_ 
-> sector size, which may or may not be 512 bytes)
-> 
-> Does this apply to libata?  libata + jejb dma alignment patch?
-> 
-> What tree...
+Hi,
 
-It's scsi-misc-2.6; the blk_queue_update_dma_alignment() API doesn't
-exist in mainline (yet).
+Mel Gorman wrote:
+> Faulting instruction address: 0xc0000000003c8c00
+> cpu 0x0: Vector: 300 (Data Access) at [c0000000005c3840]
+>     pc: c0000000003c8c00: __lock_text_start+0x20/0x88
+>     lr: c0000000000dadec: .cache_grow+0x7c/0x338
+>     sp: c0000000005c3ac0
+>    msr: 8000000000009032
+>    dar: 40
+>  dsisr: 40000000
+>   current = 0xc000000000500f10
+>   paca    = 0xc000000000501b80
+>     pid   = 0, comm = swapper
+> enter ? for help
+> [c0000000005c3b40] c0000000000dadec .cache_grow+0x7c/0x338
+> [c0000000005c3c00] c0000000000db54c .fallback_alloc+0x1c0/0x224
+> [c0000000005c3cb0] c0000000000db958 .kmem_cache_alloc+0xe0/0x14c
+> [c0000000005c3d50] c0000000000dcccc .kmem_cache_create+0x230/0x4cc
+> [c0000000005c3e30] c0000000004c05f4 .kmem_cache_init+0x310/0x640
+> [c0000000005c3ee0] c00000000049f8d8 .start_kernel+0x304/0x3fc
+> [c0000000005c3f90] c000000000008594 .start_here_common+0x54/0xc0
+> 0:mon>
 
-James
+I mentioned this already but received no response (maybe I am missing 
+something totally obvious here):
 
+When we call fallback_alloc() because the current node has ->nodelists 
+set to NULL, we end up calling kmem_getpages() with -1 as the node id 
+which is then translated to numa_node_id() by alloc_pages_node. But the 
+reason we called fallback_alloc() in the first place is because 
+numa_node_id() doesn't have a ->nodelist which makes cache_grow() oops.
 
+			Pekka
