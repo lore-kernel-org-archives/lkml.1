@@ -1,38 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbYAVXBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbYAVXBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758655AbYAVXBE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 18:01:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758245AbYAVXAW
+	id S1755419AbYAVXBa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 18:01:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757712AbYAVXA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 22 Jan 2008 18:00:26 -0500
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:16860 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758262AbYAVXAW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 22 Jan 2008 18:00:22 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:40625 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758219AbYAVXAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 18:00:18 -0500
-Date: Tue, 22 Jan 2008 15:00:17 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matthew Wilcox <matthew@wil.cx>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: SLUB: Increasing partial pages
-In-Reply-To: <20080122223541.GR27250@parisc-linux.org>
-Message-ID: <Pine.LNX.4.64.0801221458260.2271@schroedinger.engr.sgi.com>
-References: <20080116195949.GO18741@parisc-linux.org>
- <Pine.LNX.4.64.0801161219050.9694@schroedinger.engr.sgi.com>
- <20080116214127.GA11559@parisc-linux.org> <Pine.LNX.4.64.0801161347160.11353@schroedinger.engr.sgi.com>
- <20080116221618.GB11559@parisc-linux.org> <Pine.LNX.4.64.0801161421240.12024@schroedinger.engr.sgi.com>
- <20080118191430.GD20490@parisc-linux.org> <Pine.LNX.4.64.0801221142330.27692@schroedinger.engr.sgi.com>
- <20080122223541.GR27250@parisc-linux.org>
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [PATCH RESEND 3/3] RDMA/cxgb3: Mark qp as privileged based on user capabilities.
+X-Message-Flag: Warning: May contain useful information
+References: <20080121204130.3820.11053.stgit@dell3.ogc.int>
+	<20080121204213.3820.12396.stgit@dell3.ogc.int>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 22 Jan 2008 15:00:13 -0800
+In-Reply-To: <20080121204213.3820.12396.stgit@dell3.ogc.int> (Steve Wise's message of "Mon, 21 Jan 2008 14:42:13 -0600")
+Message-ID: <adaodbdsbya.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 22 Jan 2008 23:00:14.0102 (UTC) FILETIME=[8C30A360:01C85D4A]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Jan 2008, Matthew Wilcox wrote:
-
-> I also don't understand the dependency tree -- you seem to be saying
-> that we could apply patch 6 without patches 1-5 and test that.
-
-You could do that. Many patches can be moved at will, some require minor 
-mods to apply.
+thanks, applied 1-3
