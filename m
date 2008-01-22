@@ -1,101 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbYAVIl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759958AbYAVIo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759614AbYAVIl1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 03:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755187AbYAVIlU
+	id S1759958AbYAVIo0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 03:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755187AbYAVIoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 03:41:20 -0500
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:19254 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754742AbYAVIlT (ORCPT
+	Tue, 22 Jan 2008 03:44:18 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:64430 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbYAVIoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 03:41:19 -0500
-Date: Tue, 22 Jan 2008 10:41:06 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: CFP: Operating Systems Review special issue on the Linux kernel
-Message-ID: <20080122084106.GD9613@rhun.haifa.ibm.com>
+	Tue, 22 Jan 2008 03:44:17 -0500
+Date: Tue, 22 Jan 2008 09:44:12 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: David Brownell <david-b@pacbell.net>, Greg KH <gregkh@suse.de>,
+       stefanr@s5r6.in-berlin.de, James.Bottomley@hansenpartnership.com,
+       a.zummo@towertech.it, peterz@infradead.org, cbou@mail.ru,
+       linux-kernel@vger.kernel.org, stern@rowland.harvard.edu,
+       dwmw2@infradead.org, davem@davemloft.net, jarkao2@gmail.com
+Subject: Re: [PATCH 1/6] driver-core : add class iteration api
+Message-ID: <20080122094412.18eab273@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20080122072708.GB3725@darkstar.te-china.tietoenator.com>
+References: <20080112094754.GA2893@darkstar.te-china.tietoenator.com>
+	<20080122055434.GB3066@darkstar.te-china.tietoenator.com>
+	<200801212224.18149.david-b@pacbell.net>
+	<20080122072708.GB3725@darkstar.te-china.tietoenator.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SIGOPS Operating Systems Review Special Issue on
+On Tue, 22 Jan 2008 15:27:08 +0800,
+Dave Young <hidave.darkstar@gmail.com> wrote:
 
-  Research and Developments in the Linux Kernel
+> On Mon, Jan 21, 2008 at 10:24:17PM -0800, David Brownell wrote:
+> > This is called with class->sem held.  So fn() has a
+> > constraint to not re-acquire that ... else it'd be
+> > self-deadlocking.  I'd like to see docs at least
+> > mention that; calls to add or remove class members
+> > would be verboten, for example, which isn't an issue
+> > with most other driver model iterators.
 
-The Linux kernel, since its inception in 1991, has captured the
-interest of many thousands of developers and millions of users. It
-recently celebrated its 16th anniversary, includes many millions of
-lines of code, and is used in production systems around the world. It
-is also advancing at an increasingly rapid pace, undergoing many
-changes every single day.
+Indeed, it's a good idea to point this out.
 
-For this OSR special issue, we welcome technical papers covering the
-latest advances that have been or will soon be merged into the Linux
-kernel, as well as wild idea papers discussing promising experimental
-work. In recognition of the current chasm that we wish to bridge, we
-encourage papers from both the Linux kernel community and the research
-community. The OSR issue aims to:
+> Update kerneldoc as david brownell's sugestion.
+> Is it right for me add Cornelia Huck's ack after this change?
 
-a) expose members of the Linux kernel community to exploratory
-   research work that is going on which might influence Linux's
-   evolution, and
+Fine with me.
 
-b) expose members of the systems research community to the latest
-   happenings in a mature, production kernel that is widely used and
-   advancing rapidly.
-
-Please submit papers related to all aspects of the Linux kernel. In
-particular, papers are solicited for the the following areas:
-
-* Virtualization
-* I/O, networking and interconnects
-* Support for multi-core and heterogeneous CPUs
-* Co-existence with other operating systems
-* filesystems, clustering, SSI
-* Profiling, performance tuning, debugging
-* Scaling up (e.g., supercomputers) and down (e.g., embedded devices)
-* Experience reports
-* Research directions
-
-Submissions should be between 5 and 10 pages (in a font no smaller
-than 10 pt). Standard SIGOPS formatting rules apply (see
-http://www.sigops.org/osr.html). Papers should report on significant
-new results or directions and include at least some material that has
-not been published before. Papers will be reviewed by the guest
-editors and the review committee. Accepted papers will be published in
-the July 2008 issue of Operating Systems Review.
-
-Please upload your submissions (in PDF format only) to the conference
-website, at http://www.easychair.org/conferences/?conf=osrlk2008. If
-you have any questions or comments, please do not hesitate to contact
-the guest editors.
-
-Important dates:
-
-Submission deadline: March 14th, 2008
-Author notification: April 18th, 2008
-Camera-ready submission deadline: May 13th, 2008
-
-OSR guest editors:
-
- * Muli Ben-Yehuda, IBM Haifa Research Lab <muli@il.ibm.com>
- * Eric Van Hensbergen, IBM Austin Research Lab <bergevan@us.ibm.com>
- * Marc E. Fiuczynski, Princeton University <mef@cs.princeton.edu>
-
-Review committee:
-
- * Patrick Bridges (University of New Mexico)
- * Angela Demke Brown (University of Toronto)
- * Hubertus Franke (IBM Research)
- * Oren Laadan (Columbia University)
- * Paul McKenney (IBM Linux Technology Center)
- * Chris Mason (Oracle)
- * Ron Minnich (Los Alamos National Laboratory)
- * Stephen C. Tweedie (Red Hat)
- * Chris Wright (Red Hat)
- * Pete Wyckoff (Ohio Supercomputer Center)
+> ---
+> 
+> Add the following class iteration functions for driver use:
+> class_for_each_device
+> class_find_device
+> class_for_each_child
+> class_find_child
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+> Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> 
+> ---
+>  drivers/base/class.c   |  175 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/device.h |   11 ++-
+>  2 files changed, 184 insertions(+), 2 deletions(-)
