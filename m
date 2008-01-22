@@ -1,287 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759062AbYAVDWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbYAVD0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759062AbYAVDWS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbYAVDJS
+	id S1759471AbYAVD0A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:26:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYAVDZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:09:18 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:33719 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760627AbYAVDJP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:09:15 -0500
-From: "Theodore Ts'o" <tytso@MIT.EDU>
-To: linux-kernel@vger.kernel.org
-Cc: Avantika Mathur <mathur@us.ibm.com>, "Theodore Ts'o" <tytso@MIT.EDU>
-Subject: [PATCH 06/49] ext4: fixes block group number being set to a negative value
-Date: Mon, 21 Jan 2008 22:01:45 -0500
-Message-Id: <1200970948-17903-7-git-send-email-tytso@mit.edu>
-X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
-In-Reply-To: <1200970948-17903-6-git-send-email-tytso@mit.edu>
-References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
- <1200970948-17903-2-git-send-email-tytso@mit.edu>
- <1200970948-17903-3-git-send-email-tytso@mit.edu>
- <1200970948-17903-4-git-send-email-tytso@mit.edu>
- <1200970948-17903-5-git-send-email-tytso@mit.edu>
- <1200970948-17903-6-git-send-email-tytso@mit.edu>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Mon, 21 Jan 2008 22:25:50 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41580 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752446AbYAVDZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 Jan 2008 22:25:48 -0500
+Date: Tue, 22 Jan 2008 04:25:55 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Paul Mundt <lethal@linux-sh.org>, Andreas Schwab <schwab@suse.de>,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       linux-arch@vger.kernel.org, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH] Use separate sections for __dev/__cpu/__mem code/data
+Message-ID: <20080122032555.GA3945@uranus.ravnborg.org>
+References: <1200859743-24037-7-git-send-email-sam@ravnborg.org> <1200859743-24037-8-git-send-email-sam@ravnborg.org> <20080121073341.GA20050@linux-sh.org> <20080121095722.GA29145@uranus.ravnborg.org> <jebq7fqxnj.fsf@sykes.suse.de> <20080121104506.GA29585@uranus.ravnborg.org> <20080121104745.GA29721@uranus.ravnborg.org> <20080121105257.GA21567@linux-sh.org> <20080121120641.GA30165@uranus.ravnborg.org> <20080122005657.GA26831@linux-sh.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080122005657.GA26831@linux-sh.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Avantika Mathur <mathur@us.ibm.com>
+On Tue, Jan 22, 2008 at 09:56:57AM +0900, Paul Mundt wrote:
+> On Mon, Jan 21, 2008 at 01:06:41PM +0100, Sam Ravnborg wrote:
+> > On Mon, Jan 21, 2008 at 07:52:57PM +0900, Paul Mundt wrote:
+> > > On Mon, Jan 21, 2008 at 11:47:45AM +0100, Sam Ravnborg wrote:
+> > > > On Mon, Jan 21, 2008 at 11:45:06AM +0100, Sam Ravnborg wrote:
+> > > > > On Mon, Jan 21, 2008 at 11:29:52AM +0100, Andreas Schwab wrote:
+> > > > > > Sam Ravnborg <sam@ravnborg.org> writes:
+> > > > > > 
+> > > > > > > On Mon, Jan 21, 2008 at 04:33:41PM +0900, Paul Mundt wrote:
+> > > > > > >> so the ## is being taken directly rather than acting as a concatenation.
+> > > > > > >
+> > > > > > > Strange...
+> > > > > > > I can reproduce with gcc 3.4.5 here - will fix.
+> > > > > > 
+> > > > > > The ## operator does not work with -traditional.
+> > > > > 
+> > > > > Crap - then it breaks at the following architectures:
+> > > > > sh64, s390, m68k, m32r
+> > > > > 
+> > > > > Thanks Andreas.
+> > > > 
+> > > > OK - I was too quick it seem.
+> > > > sh has:
+> > > > arch/sh/Makefile:CPPFLAGS_vmlinux.lds := -traditional
+> > > > 
+> > > > So this needs to be ripped out as it is not needed.
+> > > > 
+> > > Yes, that can be killed. If this is aimed at 2.6.25, I'll just kill it
+> > > off in my tree. Otherwise, feel free to roll this in to your patch set.
+> > 
+> > It is aimed for 2.6.25 and it looks reasonable to reach that goal.
+> > So please take this patch in your tree.
+> > 
+> Done.
+Thanks Paul,
+and thanks for the prompt testing!
 
-This patch fixes various places where the group number is set to a negative
-value.
-
-Signed-off-by: Avantika Mathur <mathur@us.ibm.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
----
- fs/ext4/ialloc.c |  101 ++++++++++++++++++++++++++++-------------------------
- 1 files changed, 53 insertions(+), 48 deletions(-)
-
-diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index 64dea86..7b5cfa6 100644
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -260,12 +260,14 @@ error_return:
-  * For other inodes, search forward from the parent directory\'s block
-  * group to find a free inode.
-  */
--static ext4_group_t find_group_dir(struct super_block *sb, struct inode *parent)
-+static int find_group_dir(struct super_block *sb, struct inode *parent,
-+				ext4_group_t *best_group)
- {
- 	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
- 	unsigned int freei, avefreei;
- 	struct ext4_group_desc *desc, *best_desc = NULL;
--	ext4_group_t group, best_group = -1;
-+	ext4_group_t group;
-+	int ret = -1;
- 
- 	freei = percpu_counter_read_positive(&EXT4_SB(sb)->s_freeinodes_counter);
- 	avefreei = freei / ngroups;
-@@ -279,11 +281,12 @@ static ext4_group_t find_group_dir(struct super_block *sb, struct inode *parent)
- 		if (!best_desc ||
- 		    (le16_to_cpu(desc->bg_free_blocks_count) >
- 		     le16_to_cpu(best_desc->bg_free_blocks_count))) {
--			best_group = group;
-+			*best_group = group;
- 			best_desc = desc;
-+			ret = 0;
- 		}
- 	}
--	return best_group;
-+	return ret;
- }
- 
- /*
-@@ -314,8 +317,8 @@ static ext4_group_t find_group_dir(struct super_block *sb, struct inode *parent)
- #define INODE_COST 64
- #define BLOCK_COST 256
- 
--static ext4_group_t find_group_orlov(struct super_block *sb,
--				      struct inode *parent)
-+static int find_group_orlov(struct super_block *sb, struct inode *parent,
-+				ext4_group_t *group)
- {
- 	ext4_group_t parent_group = EXT4_I(parent)->i_block_group;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
-@@ -328,7 +331,7 @@ static ext4_group_t find_group_orlov(struct super_block *sb,
- 	unsigned int ndirs;
- 	int max_debt, max_dirs, min_inodes;
- 	ext4_grpblk_t min_blocks;
--	ext4_group_t group = -1, i;
-+	ext4_group_t i;
- 	struct ext4_group_desc *desc;
- 
- 	freei = percpu_counter_read_positive(&sbi->s_freeinodes_counter);
-@@ -341,13 +344,14 @@ static ext4_group_t find_group_orlov(struct super_block *sb,
- 	if ((parent == sb->s_root->d_inode) ||
- 	    (EXT4_I(parent)->i_flags & EXT4_TOPDIR_FL)) {
- 		int best_ndir = inodes_per_group;
--		ext4_group_t best_group = -1;
-+		ext4_group_t grp;
-+		int ret = -1;
- 
--		get_random_bytes(&group, sizeof(group));
--		parent_group = (unsigned)group % ngroups;
-+		get_random_bytes(&grp, sizeof(grp));
-+		parent_group = (unsigned)grp % ngroups;
- 		for (i = 0; i < ngroups; i++) {
--			group = (parent_group + i) % ngroups;
--			desc = ext4_get_group_desc (sb, group, NULL);
-+			grp = (parent_group + i) % ngroups;
-+			desc = ext4_get_group_desc(sb, grp, NULL);
- 			if (!desc || !desc->bg_free_inodes_count)
- 				continue;
- 			if (le16_to_cpu(desc->bg_used_dirs_count) >= best_ndir)
-@@ -356,11 +360,12 @@ static ext4_group_t find_group_orlov(struct super_block *sb,
- 				continue;
- 			if (le16_to_cpu(desc->bg_free_blocks_count) < avefreeb)
- 				continue;
--			best_group = group;
-+			*group = grp;
-+			ret = 0;
- 			best_ndir = le16_to_cpu(desc->bg_used_dirs_count);
- 		}
--		if (best_group >= 0)
--			return best_group;
-+		if (ret == 0)
-+			return ret;
- 		goto fallback;
- 	}
- 
-@@ -381,8 +386,8 @@ static ext4_group_t find_group_orlov(struct super_block *sb,
- 		max_debt = 1;
- 
- 	for (i = 0; i < ngroups; i++) {
--		group = (parent_group + i) % ngroups;
--		desc = ext4_get_group_desc (sb, group, NULL);
-+		*group = (parent_group + i) % ngroups;
-+		desc = ext4_get_group_desc(sb, *group, NULL);
- 		if (!desc || !desc->bg_free_inodes_count)
- 			continue;
- 		if (le16_to_cpu(desc->bg_used_dirs_count) >= max_dirs)
-@@ -391,17 +396,16 @@ static ext4_group_t find_group_orlov(struct super_block *sb,
- 			continue;
- 		if (le16_to_cpu(desc->bg_free_blocks_count) < min_blocks)
- 			continue;
--		return group;
-+		return 0;
- 	}
- 
- fallback:
- 	for (i = 0; i < ngroups; i++) {
--		group = (parent_group + i) % ngroups;
--		desc = ext4_get_group_desc (sb, group, NULL);
--		if (!desc || !desc->bg_free_inodes_count)
--			continue;
--		if (le16_to_cpu(desc->bg_free_inodes_count) >= avefreei)
--			return group;
-+		*group = (parent_group + i) % ngroups;
-+		desc = ext4_get_group_desc(sb, *group, NULL);
-+		if (desc && desc->bg_free_inodes_count &&
-+			le16_to_cpu(desc->bg_free_inodes_count) >= avefreei)
-+			return 0;
- 	}
- 
- 	if (avefreei) {
-@@ -416,22 +420,22 @@ fallback:
- 	return -1;
- }
- 
--static ext4_group_t find_group_other(struct super_block *sb,
--					struct inode *parent)
-+static int find_group_other(struct super_block *sb, struct inode *parent,
-+				ext4_group_t *group)
- {
- 	ext4_group_t parent_group = EXT4_I(parent)->i_block_group;
- 	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
- 	struct ext4_group_desc *desc;
--	ext4_group_t group, i;
-+	ext4_group_t i;
- 
- 	/*
- 	 * Try to place the inode in its parent directory
- 	 */
--	group = parent_group;
--	desc = ext4_get_group_desc (sb, group, NULL);
-+	*group = parent_group;
-+	desc = ext4_get_group_desc(sb, *group, NULL);
- 	if (desc && le16_to_cpu(desc->bg_free_inodes_count) &&
- 			le16_to_cpu(desc->bg_free_blocks_count))
--		return group;
-+		return 0;
- 
- 	/*
- 	 * We're going to place this inode in a different blockgroup from its
-@@ -442,33 +446,33 @@ static ext4_group_t find_group_other(struct super_block *sb,
- 	 *
- 	 * So add our directory's i_ino into the starting point for the hash.
- 	 */
--	group = (group + parent->i_ino) % ngroups;
-+	*group = (*group + parent->i_ino) % ngroups;
- 
- 	/*
- 	 * Use a quadratic hash to find a group with a free inode and some free
- 	 * blocks.
- 	 */
- 	for (i = 1; i < ngroups; i <<= 1) {
--		group += i;
--		if (group >= ngroups)
--			group -= ngroups;
--		desc = ext4_get_group_desc (sb, group, NULL);
-+		*group += i;
-+		if (*group >= ngroups)
-+			*group -= ngroups;
-+		desc = ext4_get_group_desc(sb, *group, NULL);
- 		if (desc && le16_to_cpu(desc->bg_free_inodes_count) &&
- 				le16_to_cpu(desc->bg_free_blocks_count))
--			return group;
-+			return 0;
- 	}
- 
- 	/*
- 	 * That failed: try linear search for a free inode, even if that group
- 	 * has no free blocks.
- 	 */
--	group = parent_group;
-+	*group = parent_group;
- 	for (i = 0; i < ngroups; i++) {
--		if (++group >= ngroups)
--			group = 0;
--		desc = ext4_get_group_desc (sb, group, NULL);
-+		if (++*group >= ngroups)
-+			*group = 0;
-+		desc = ext4_get_group_desc(sb, *group, NULL);
- 		if (desc && le16_to_cpu(desc->bg_free_inodes_count))
--			return group;
-+			return 0;
- 	}
- 
- 	return -1;
-@@ -489,16 +493,17 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode * dir, int mode)
- 	struct super_block *sb;
- 	struct buffer_head *bitmap_bh = NULL;
- 	struct buffer_head *bh2;
--	ext4_group_t group;
-+	ext4_group_t group = 0;
- 	unsigned long ino = 0;
- 	struct inode * inode;
- 	struct ext4_group_desc * gdp = NULL;
- 	struct ext4_super_block * es;
- 	struct ext4_inode_info *ei;
- 	struct ext4_sb_info *sbi;
--	int err = 0;
-+	int ret2, err = 0;
- 	struct inode *ret;
--	int i, free = 0;
-+	ext4_group_t i;
-+	int free = 0;
- 
- 	/* Cannot create files in a deleted directory */
- 	if (!dir || !dir->i_nlink)
-@@ -514,14 +519,14 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode * dir, int mode)
- 	es = sbi->s_es;
- 	if (S_ISDIR(mode)) {
- 		if (test_opt (sb, OLDALLOC))
--			group = find_group_dir(sb, dir);
-+			ret2 = find_group_dir(sb, dir, &group);
- 		else
--			group = find_group_orlov(sb, dir);
-+			ret2 = find_group_orlov(sb, dir, &group);
- 	} else
--		group = find_group_other(sb, dir);
-+		ret2 = find_group_other(sb, dir, &group);
- 
- 	err = -ENOSPC;
--	if (group == -1)
-+	if (ret2 == -1)
- 		goto out;
- 
- 	for (i = 0; i < sbi->s_groups_count; i++) {
--- 
-1.5.4.rc3.31.g1271-dirty
-
+	Sam
