@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbYAVWcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbYAVWfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757002AbYAVWcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 17:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbYAVWb5
+	id S1755585AbYAVWfv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 17:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYAVWfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 17:31:57 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:4055 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755518AbYAVWb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 17:31:56 -0500
-Date: Tue, 22 Jan 2008 17:15:42 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Harald Dunkel <harald.dunkel@t-online.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.24-rc8: iwl3945 gets stuck
-Message-ID: <20080122221542.GD3206@tuxdriver.com>
-References: <479657F3.2030901@t-online.de>
+	Tue, 22 Jan 2008 17:35:43 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:41744 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbYAVWfm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 17:35:42 -0500
+Date: Tue, 22 Jan 2008 15:35:41 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: SLUB: Increasing partial pages
+Message-ID: <20080122223541.GR27250@parisc-linux.org>
+References: <20080116195949.GO18741@parisc-linux.org> <Pine.LNX.4.64.0801161219050.9694@schroedinger.engr.sgi.com> <20080116214127.GA11559@parisc-linux.org> <Pine.LNX.4.64.0801161347160.11353@schroedinger.engr.sgi.com> <20080116221618.GB11559@parisc-linux.org> <Pine.LNX.4.64.0801161421240.12024@schroedinger.engr.sgi.com> <20080118191430.GD20490@parisc-linux.org> <Pine.LNX.4.64.0801221142330.27692@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <479657F3.2030901@t-online.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <Pine.LNX.4.64.0801221142330.27692@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 09:54:11PM +0100, Harald Dunkel wrote:
+On Tue, Jan 22, 2008 at 12:00:00PM -0800, Christoph Lameter wrote:
+> It would be great if you could get stable results on these (with multiple 
+> differently compiled kernels! Apply some patch that should have no 
+> performance impact but adds some code to verify). I saw an overall slight 
+> performance decrease on tbench (still doubting how much I can trust those 
+> numbers) so lets not merge the series upstream until we have more data).
+> 
+> Patches that I would recommend to test individually if you could do it 
+> (get the series via git pull 
+> git://git.kernel.org/pub/scm/linux/kernel/git/christoph/vm.git performance):
 
-> If I put some heavy load on the iwl3945, then the network connection
-> gets stuck after a some time. To fix it I have to reload the module.
+The thing is that each run takes approximately 4 hours on a machine
+which has other patches to try too.  I'm not comfortable with asking my
+colleagues to try various combinations on a whim.  What I've asked for
+is:
 
-Can you quantify this a bit more?  What constitutes a "heavey load"?
-What (if any) encryption are you using?  Are you using any options
-for iwl3945 in /etc/modprobe.conf?
+2.6.24-rc8 w/ SLAB
+2.6.24-rc8 w/ SLUB
+2.6.24-rc8 w/ SLUB and your 22 patches applied.
 
-Could you include the output of dmesg and/or the contents of
-/var/log/messages (trimmed for the most recent boot)?
+So that should be done in about 12 hours time.
 
-> AFAICS this problem was a topic on lkml almost 3 months ago. Any news
-> about this? I would be glad to help to track this down, but I have
-> no idea how to change the scaling algorithm to iwl-3945-rs .
+Obviously, if we see problems with all 22 patches, we'll try bisection
+search ... and I think you've identified some good points to split at
+below, but testing all possible combinations of these 22 patches with
+and without some other random changes isn't feasible.
 
-This should happen automatically now.
+I also don't understand the dependency tree -- you seem to be saying
+that we could apply patch 6 without patches 1-5 and test that.
 
-John
+> 0006-Use-non-atomic-unlock.patch
+> 
+> 	Surprisingly this one caused a 1% regression in some of my tests. 
+>         Maybe the cacheline is held longer if no atomic op is used during 
+>         unlock?
+> 
+> 0005-Add-parameter-to-add_partial-to-avoid-having-two-fun.patch
+> 
+> 	I mostly saw performance increases (1-2%) on this one.
+> 
+> 
+> 0009-SLUB-Avoid-folding-functions-into-__slab_alloc-and.patch
+> 
+> 0010-Move-kmem_cache_node-determination-into-add_full-par.patch
+> 
+> 
+> The cmpxchg stuff is a group of 3 patches. The first two should cause a 
+> slight performance decrease which needs at least to be offset by the third
+> one.
+> 
+> 0014-SLUB-Use-unique-end-pointer-for-each-slab-page.patch
+> 0015-slub-provide-unique-end-marker-for-each-slab-fix.patch
+> 0017-SLUB-Alternate-fast-paths-using-cmpxchg_local.patch
+> 
+> 
+> 0018-SLUB-Do-our-own-locking-to-avoid-extraneous-memory.patch
+> 0019-SLUB-Own-locking-checkpatch-fixes.patch
+> 
+> 0021-SLUB-Restructure-slab_alloc-to-flow-in-execution-se.patch
+
 -- 
-John W. Linville
-linville@tuxdriver.com
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
