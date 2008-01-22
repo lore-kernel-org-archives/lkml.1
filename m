@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760583AbYAVDPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762553AbYAVDP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760583AbYAVDPi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 Jan 2008 22:15:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757377AbYAVDGz
+	id S1762553AbYAVDP4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 Jan 2008 22:15:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760195AbYAVDG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 Jan 2008 22:06:55 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:32924 "EHLO
+	Mon, 21 Jan 2008 22:06:57 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:65238 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758010AbYAVDGs (ORCPT
+	by vger.kernel.org with ESMTP id S1760112AbYAVDGu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 Jan 2008 22:06:48 -0500
+	Mon, 21 Jan 2008 22:06:50 -0500
 From: "Theodore Ts'o" <tytso@MIT.EDU>
 To: linux-kernel@vger.kernel.org
 Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 11/49] ext4: Add support for 48 bit inode i_blocks.
-Date: Mon, 21 Jan 2008 22:01:50 -0500
-Message-Id: <1200970948-17903-12-git-send-email-tytso@mit.edu>
+Subject: [PATCH 30/49] ext4: Convert truncate_mutex to read write semaphore.
+Date: Mon, 21 Jan 2008 22:02:09 -0500
+Message-Id: <1200970948-17903-31-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.5.4.rc3.31.g1271-dirty
-In-Reply-To: <1200970948-17903-11-git-send-email-tytso@mit.edu>
+In-Reply-To: <1200970948-17903-30-git-send-email-tytso@mit.edu>
 References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-2-git-send-email-tytso@mit.edu>
  <1200970948-17903-3-git-send-email-tytso@mit.edu>
@@ -29,6 +29,25 @@ References: <1200970948-17903-1-git-send-email-tytso@mit.edu>
  <1200970948-17903-9-git-send-email-tytso@mit.edu>
  <1200970948-17903-10-git-send-email-tytso@mit.edu>
  <1200970948-17903-11-git-send-email-tytso@mit.edu>
+ <1200970948-17903-12-git-send-email-tytso@mit.edu>
+ <1200970948-17903-13-git-send-email-tytso@mit.edu>
+ <1200970948-17903-14-git-send-email-tytso@mit.edu>
+ <1200970948-17903-15-git-send-email-tytso@mit.edu>
+ <1200970948-17903-16-git-send-email-tytso@mit.edu>
+ <1200970948-17903-17-git-send-email-tytso@mit.edu>
+ <1200970948-17903-18-git-send-email-tytso@mit.edu>
+ <1200970948-17903-19-git-send-email-tytso@mit.edu>
+ <1200970948-17903-20-git-send-email-tytso@mit.edu>
+ <1200970948-17903-21-git-send-email-tytso@mit.edu>
+ <1200970948-17903-22-git-send-email-tytso@mit.edu>
+ <1200970948-17903-23-git-send-email-tytso@mit.edu>
+ <1200970948-17903-24-git-send-email-tytso@mit.edu>
+ <1200970948-17903-25-git-send-email-tytso@mit.edu>
+ <1200970948-17903-26-git-send-email-tytso@mit.edu>
+ <1200970948-17903-27-git-send-email-tytso@mit.edu>
+ <1200970948-17903-28-git-send-email-tytso@mit.edu>
+ <1200970948-17903-29-git-send-email-tytso@mit.edu>
+ <1200970948-17903-30-git-send-email-tytso@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,263 +56,304 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Use the __le16 l_i_reserved1 field of the linux2 struct of ext4_inode
-to represet the higher 16 bits for i_blocks. With this change max_file
-size becomes (2**48 -1 )* 512 bytes.
-
-We add a RO_COMPAT feature to the super block to indicate that inode
-have i_blocks represented as a split 48 bits. Super block with this
-feature set cannot be mounted read write on a kernel with CONFIG_LSF
-disabled.
-
-Super block flag EXT4_FEATURE_RO_COMPAT_HUGE_FILE
+We are currently taking the truncate_mutex for every read. This would have
+performance impact on large CPU configuration. Convert the lock to read write
+semaphore and take read lock when we are trying to read the file.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- fs/ext4/inode.c         |   58 ++++++++++++++++++++++++++++++++++++++++++-
- fs/ext4/super.c         |   62 ++++++++++++++++++++++++++++++++++++++++++----
- include/linux/ext4_fs.h |   10 +++++--
- 3 files changed, 119 insertions(+), 11 deletions(-)
+ fs/ext4/balloc.c          |    2 +-
+ fs/ext4/extents.c         |   13 +++++++------
+ fs/ext4/file.c            |    4 ++--
+ fs/ext4/inode.c           |   39 ++++++++++++++++++++++++++++++++-------
+ fs/ext4/ioctl.c           |    4 ++--
+ fs/ext4/super.c           |    2 +-
+ include/linux/ext4_fs.h   |   25 ++++---------------------
+ include/linux/ext4_fs_i.h |    6 +++---
+ 8 files changed, 52 insertions(+), 43 deletions(-)
 
+diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
+index a9140ea..925e063 100644
+--- a/fs/ext4/balloc.c
++++ b/fs/ext4/balloc.c
+@@ -526,7 +526,7 @@ static inline int rsv_is_empty(struct ext4_reserve_window *rsv)
+  * when setting the reservation window size through ioctl before the file
+  * is open for write (needs block allocation).
+  *
+- * Needs truncate_mutex protection prior to call this function.
++ * Needs down_write(i_data_sem) protection prior to call this function.
+  */
+ void ext4_init_block_alloc_info(struct inode *inode)
+ {
+diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+index ec5019f..03d1bbb 100644
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -1565,7 +1565,7 @@ static int ext4_ext_rm_idx(handle_t *handle, struct inode *inode,
+  * This routine returns max. credits that the extent tree can consume.
+  * It should be OK for low-performance paths like ->writepage()
+  * To allow many writing processes to fit into a single transaction,
+- * the caller should calculate credits under truncate_mutex and
++ * the caller should calculate credits under i_data_sem and
+  * pass the actual path.
+  */
+ int ext4_ext_calc_credits_for_insert(struct inode *inode,
+@@ -2131,7 +2131,8 @@ out:
+ 
+ /*
+  * Need to be called with
+- * mutex_lock(&EXT4_I(inode)->truncate_mutex);
++ * down_read(&EXT4_I(inode)->i_data_sem) if not allocating file system block
++ * (ie, create is zero). Otherwise down_write(&EXT4_I(inode)->i_data_sem)
+  */
+ int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
+ 			ext4_lblk_t iblock,
+@@ -2350,7 +2351,7 @@ void ext4_ext_truncate(struct inode * inode, struct page *page)
+ 	if (page)
+ 		ext4_block_truncate_page(handle, page, mapping, inode->i_size);
+ 
+-	mutex_lock(&EXT4_I(inode)->truncate_mutex);
++	down_write(&EXT4_I(inode)->i_data_sem);
+ 	ext4_ext_invalidate_cache(inode);
+ 
+ 	/*
+@@ -2386,7 +2387,7 @@ out_stop:
+ 	if (inode->i_nlink)
+ 		ext4_orphan_del(handle, inode);
+ 
+-	mutex_unlock(&EXT4_I(inode)->truncate_mutex);
++	up_write(&EXT4_I(inode)->i_data_sem);
+ 	ext4_journal_stop(handle);
+ }
+ 
+@@ -2450,7 +2451,7 @@ long ext4_fallocate(struct inode *inode, int mode, loff_t offset, loff_t len)
+ 	 * modify 1 super block, 1 block bitmap and 1 group descriptor.
+ 	 */
+ 	credits = EXT4_DATA_TRANS_BLOCKS(inode->i_sb) + 3;
+-	mutex_lock(&EXT4_I(inode)->truncate_mutex)
++	down_write((&EXT4_I(inode)->i_data_sem));
+ retry:
+ 	while (ret >= 0 && ret < max_blocks) {
+ 		block = block + ret;
+@@ -2507,7 +2508,7 @@ retry:
+ 	if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
+ 		goto retry;
+ 
+-	mutex_unlock(&EXT4_I(inode)->truncate_mutex)
++	up_write((&EXT4_I(inode)->i_data_sem));
+ 	/*
+ 	 * Time to update the file size.
+ 	 * Update only when preallocation was requested beyond the file size.
+diff --git a/fs/ext4/file.c b/fs/ext4/file.c
+index a6b2aa1..ac35ec5 100644
+--- a/fs/ext4/file.c
++++ b/fs/ext4/file.c
+@@ -37,9 +37,9 @@ static int ext4_release_file (struct inode * inode, struct file * filp)
+ 	if ((filp->f_mode & FMODE_WRITE) &&
+ 			(atomic_read(&inode->i_writecount) == 1))
+ 	{
+-		mutex_lock(&EXT4_I(inode)->truncate_mutex);
++		down_write(&EXT4_I(inode)->i_data_sem);
+ 		ext4_discard_reservation(inode);
+-		mutex_unlock(&EXT4_I(inode)->truncate_mutex);
++		up_write(&EXT4_I(inode)->i_data_sem);
+ 	}
+ 	if (is_dx(inode) && filp->private_data)
+ 		ext4_htree_free_dir_info(filp->private_data);
 diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index e663455..bb89fe7 100644
+index 71c7ad0..596b3ab 100644
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -2667,6 +2667,22 @@ void ext4_get_inode_flags(struct ext4_inode_info *ei)
- 	if (flags & S_DIRSYNC)
- 		ei->i_flags |= EXT4_DIRSYNC_FL;
- }
-+static blkcnt_t ext4_inode_blocks(struct ext4_inode *raw_inode,
-+					struct ext4_inode_info *ei)
-+{
-+	blkcnt_t i_blocks ;
-+	struct super_block *sb = ei->vfs_inode.i_sb;
-+
-+	if (EXT4_HAS_RO_COMPAT_FEATURE(sb,
-+				EXT4_FEATURE_RO_COMPAT_HUGE_FILE)) {
-+		/* we are using combined 48 bit field */
-+		i_blocks = ((u64)le16_to_cpu(raw_inode->i_blocks_high)) << 32 |
-+					le32_to_cpu(raw_inode->i_blocks_lo);
-+		return i_blocks;
-+	} else {
-+		return le32_to_cpu(raw_inode->i_blocks_lo);
-+	}
-+}
- 
- void ext4_read_inode(struct inode * inode)
- {
-@@ -2715,8 +2731,8 @@ void ext4_read_inode(struct inode * inode)
- 		 * recovery code: that's fine, we're about to complete
- 		 * the process of deleting those. */
+@@ -308,7 +308,7 @@ static int ext4_block_to_path(struct inode *inode,
+ 		final = ptrs;
+ 	} else {
+ 		ext4_warning(inode->i_sb, "ext4_block_to_path",
+-				"block %u > max",
++				"block %lu > max",
+ 				i_block + direct_blocks +
+ 				indirect_blocks + double_blocks);
  	}
--	inode->i_blocks = le32_to_cpu(raw_inode->i_blocks);
- 	ei->i_flags = le32_to_cpu(raw_inode->i_flags);
-+	inode->i_blocks = ext4_inode_blocks(raw_inode, ei);
- 	ei->i_file_acl = le32_to_cpu(raw_inode->i_file_acl_lo);
- 	if (EXT4_SB(inode->i_sb)->s_es->s_creator_os !=
- 	    cpu_to_le32(EXT4_OS_HURD)) {
-@@ -2799,6 +2815,43 @@ bad_inode:
- 	return;
- }
+@@ -345,7 +345,7 @@ static int ext4_block_to_path(struct inode *inode,
+  *	the whole chain, all way to the data (returns %NULL, *err == 0).
+  *
+  *      Need to be called with
+- *      mutex_lock(&EXT4_I(inode)->truncate_mutex)
++ *      down_read(&EXT4_I(inode)->i_data_sem)
+  */
+ static Indirect *ext4_get_branch(struct inode *inode, int depth,
+ 				 ext4_lblk_t  *offsets,
+@@ -777,7 +777,8 @@ err_out:
+  *
+  *
+  * Need to be called with
+- * mutex_lock(&EXT4_I(inode)->truncate_mutex)
++ * down_read(&EXT4_I(inode)->i_data_sem) if not allocating file system block
++ * (ie, create is zero). Otherwise down_write(&EXT4_I(inode)->i_data_sem)
+  */
+ int ext4_get_blocks_handle(handle_t *handle, struct inode *inode,
+ 		ext4_lblk_t iblock, unsigned long maxblocks,
+@@ -865,7 +866,7 @@ int ext4_get_blocks_handle(handle_t *handle, struct inode *inode,
+ 		err = ext4_splice_branch(handle, inode, iblock,
+ 					partial, indirect_blks, count);
+ 	/*
+-	 * i_disksize growing is protected by truncate_mutex.  Don't forget to
++	 * i_disksize growing is protected by i_data_sem.  Don't forget to
+ 	 * protect it if you're about to implement concurrent
+ 	 * ext4_get_block() -bzzz
+ 	*/
+@@ -895,6 +896,30 @@ out:
  
-+static int ext4_inode_blocks_set(handle_t *handle,
-+				struct ext4_inode *raw_inode,
-+				struct ext4_inode_info *ei)
+ #define DIO_CREDITS (EXT4_RESERVE_TRANS_BLOCKS + 32)
+ 
++int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode, sector_t block,
++			unsigned long max_blocks, struct buffer_head *bh,
++			int create, int extend_disksize)
 +{
-+	struct inode *inode = &(ei->vfs_inode);
-+	u64 i_blocks = inode->i_blocks;
-+	struct super_block *sb = inode->i_sb;
-+	int err = 0;
-+
-+	if (i_blocks <= ~0U) {
-+		/*
-+		 * i_blocks can be represnted in a 32 bit variable
-+		 * as multiple of 512 bytes
-+		 */
-+		raw_inode->i_blocks_lo   = cpu_to_le32((u32)i_blocks);
-+		raw_inode->i_blocks_high = 0;
-+	} else if (i_blocks <= 0xffffffffffffULL) {
-+		/*
-+		 * i_blocks can be represented in a 48 bit variable
-+		 * as multiple of 512 bytes
-+		 */
-+		err = ext4_update_rocompat_feature(handle, sb,
-+					    EXT4_FEATURE_RO_COMPAT_HUGE_FILE);
-+		if (err)
-+			goto  err_out;
-+		/* i_block is stored in the split  48 bit fields */
-+		raw_inode->i_blocks_lo   = cpu_to_le32((u32)i_blocks);
-+		raw_inode->i_blocks_high = cpu_to_le16(i_blocks >> 32);
++	int retval;
++	if (create) {
++		down_write((&EXT4_I(inode)->i_data_sem));
 +	} else {
-+		ext4_error(sb, __FUNCTION__,
-+				"Wrong inode i_blocks count  %llu\n",
-+				(unsigned long long)inode->i_blocks);
++		down_read((&EXT4_I(inode)->i_data_sem));
 +	}
-+err_out:
-+	return err;
++	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
++		retval =  ext4_ext_get_blocks(handle, inode, block, max_blocks,
++				bh, create, extend_disksize);
++	} else {
++		retval = ext4_get_blocks_handle(handle, inode, block,
++				max_blocks, bh, create, extend_disksize);
++	}
++	if (create) {
++		up_write((&EXT4_I(inode)->i_data_sem));
++	} else {
++		up_read((&EXT4_I(inode)->i_data_sem));
++	}
++	return retval;
 +}
-+
- /*
-  * Post the struct inode info into an on-disk inode location in the
-  * buffer-cache.  This gobbles the caller's reference to the
-@@ -2853,7 +2906,8 @@ static int ext4_do_update_inode(handle_t *handle,
- 	EXT4_INODE_SET_XTIME(i_atime, inode, raw_inode);
- 	EXT4_EINODE_SET_XTIME(i_crtime, ei, raw_inode);
+ static int ext4_get_block(struct inode *inode, sector_t iblock,
+ 			struct buffer_head *bh_result, int create)
+ {
+@@ -1399,7 +1424,7 @@ static int jbd2_journal_dirty_data_fn(handle_t *handle, struct buffer_head *bh)
+  *	ext4_file_write() -> generic_file_write() -> __alloc_pages() -> ...
+  *
+  * Same applies to ext4_get_block().  We will deadlock on various things like
+- * lock_journal and i_truncate_mutex.
++ * lock_journal and i_data_sem
+  *
+  * Setting PF_MEMALLOC here doesn't work - too many internal memory
+  * allocations fail.
+@@ -2325,7 +2350,7 @@ void ext4_truncate(struct inode *inode)
+ 	 * From here we block out all ext4_get_block() callers who want to
+ 	 * modify the block allocation tree.
+ 	 */
+-	mutex_lock(&ei->truncate_mutex);
++	down_write(&ei->i_data_sem);
  
--	raw_inode->i_blocks = cpu_to_le32(inode->i_blocks);
-+	if (ext4_inode_blocks_set(handle, raw_inode, ei))
-+		goto out_brelse;
- 	raw_inode->i_dtime = cpu_to_le32(ei->i_dtime);
- 	raw_inode->i_flags = cpu_to_le32(ei->i_flags);
- 	if (EXT4_SB(inode->i_sb)->s_es->s_creator_os !=
+ 	if (n == 1) {		/* direct blocks */
+ 		ext4_free_data(handle, inode, NULL, i_data+offsets[0],
+@@ -2389,7 +2414,7 @@ do_indirects:
+ 
+ 	ext4_discard_reservation(inode);
+ 
+-	mutex_unlock(&ei->truncate_mutex);
++	up_write(&ei->i_data_sem);
+ 	inode->i_mtime = inode->i_ctime = ext4_current_time(inode);
+ 	ext4_mark_inode_dirty(handle, inode);
+ 
+diff --git a/fs/ext4/ioctl.c b/fs/ext4/ioctl.c
+index e7f894b..c0e5b8c 100644
+--- a/fs/ext4/ioctl.c
++++ b/fs/ext4/ioctl.c
+@@ -199,7 +199,7 @@ flags_err:
+ 		 * need to allocate reservation structure for this inode
+ 		 * before set the window size
+ 		 */
+-		mutex_lock(&ei->truncate_mutex);
++		down_write(&ei->i_data_sem);
+ 		if (!ei->i_block_alloc_info)
+ 			ext4_init_block_alloc_info(inode);
+ 
+@@ -207,7 +207,7 @@ flags_err:
+ 			struct ext4_reserve_window_node *rsv = &ei->i_block_alloc_info->rsv_window_node;
+ 			rsv->rsv_goal_size = rsv_window_size;
+ 		}
+-		mutex_unlock(&ei->truncate_mutex);
++		up_write(&ei->i_data_sem);
+ 		return 0;
+ 	}
+ 	case EXT4_IOC_GROUP_EXTEND: {
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 7be27db..2b9dc96 100644
+index effd375..c730544 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -1603,17 +1603,50 @@ static void ext4_orphan_cleanup (struct super_block * sb,
- 
- /*
-  * Maximal file size.  There is a direct, and {,double-,triple-}indirect
-- * block limit, and also a limit of (2^32 - 1) 512-byte sectors in i_blocks.
-- * We need to be 1 filesystem block less than the 2^32 sector limit.
-+ * block limit, and also a limit of (2^48 - 1) 512-byte sectors in i_blocks.
-+ * We need to be 1 filesystem block less than the 2^48 sector limit.
-  */
- static loff_t ext4_max_size(int bits)
- {
- 	loff_t res = EXT4_NDIR_BLOCKS;
--	/* This constant is calculated to be the largest file size for a
--	 * dense, 4k-blocksize file such that the total number of
-+	int meta_blocks;
-+	loff_t upper_limit;
-+	/* This is calculated to be the largest file size for a
-+	 * dense, file such that the total number of
- 	 * sectors in the file, including data and all indirect blocks,
--	 * does not exceed 2^32. */
--	const loff_t upper_limit = 0x1ff7fffd000LL;
-+	 * does not exceed 2^48 -1
-+	 * __u32 i_blocks_lo and _u16 i_blocks_high representing the
-+	 * total number of  512 bytes blocks of the file
-+	 */
-+
-+	if (sizeof(blkcnt_t) < sizeof(u64)) {
-+		/*
-+		 * CONFIG_LSF is not enabled implies the inode
-+		 * i_block represent total blocks in 512 bytes
-+		 * 32 == size of vfs inode i_blocks * 8
-+		 */
-+		upper_limit = (1LL << 32) - 1;
-+
-+		/* total blocks in file system block size */
-+		upper_limit >>= (bits - 9);
-+
-+	} else {
-+		/* We use 48 bit ext4_inode i_blocks */
-+		upper_limit = (1LL << 48) - 1;
-+
-+		/* total blocks in file system block size */
-+		upper_limit >>= (bits - 9);
-+	}
-+
-+	/* indirect blocks */
-+	meta_blocks = 1;
-+	/* double indirect blocks */
-+	meta_blocks += 1 + (1LL << (bits-2));
-+	/* tripple indirect blocks */
-+	meta_blocks += 1 + (1LL << (bits-2)) + (1LL << (2*(bits-2)));
-+
-+	upper_limit -= meta_blocks;
-+	upper_limit <<= bits;
- 
- 	res += 1LL << (bits-2);
- 	res += 1LL << (2*(bits-2));
-@@ -1621,6 +1654,10 @@ static loff_t ext4_max_size(int bits)
- 	res <<= bits;
- 	if (res > upper_limit)
- 		res = upper_limit;
-+
-+	if (res > MAX_LFS_FILESIZE)
-+		res = MAX_LFS_FILESIZE;
-+
- 	return res;
+@@ -593,7 +593,7 @@ static void init_once(struct kmem_cache *cachep, void *foo)
+ #ifdef CONFIG_EXT4DEV_FS_XATTR
+ 	init_rwsem(&ei->xattr_sem);
+ #endif
+-	mutex_init(&ei->truncate_mutex);
++	init_rwsem(&ei->i_data_sem);
+ 	inode_init_once(&ei->vfs_inode);
  }
  
-@@ -1789,6 +1826,19 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
- 		       sb->s_id, le32_to_cpu(features));
- 		goto failed_mount;
- 	}
-+	if (EXT4_HAS_RO_COMPAT_FEATURE(sb, EXT4_FEATURE_RO_COMPAT_HUGE_FILE)) {
-+		/*
-+		 * Large file size enabled file system can only be
-+		 * mount if kernel is build with CONFIG_LSF
-+		 */
-+		if (sizeof(root->i_blocks) < sizeof(u64) &&
-+				!(sb->s_flags & MS_RDONLY)) {
-+			printk(KERN_ERR "EXT4-fs: %s: Filesystem with huge "
-+					"files cannot be mounted read-write "
-+					"without CONFIG_LSF.\n", sb->s_id);
-+			goto failed_mount;
-+		}
-+	}
- 	blocksize = BLOCK_SIZE << le32_to_cpu(es->s_log_block_size);
- 
- 	if (blocksize < EXT4_MIN_BLOCK_SIZE ||
 diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index a8f3fae..be25eca 100644
+index 583049c..300cc5a 100644
 --- a/include/linux/ext4_fs.h
 +++ b/include/linux/ext4_fs.h
-@@ -282,7 +282,7 @@ struct ext4_inode {
- 	__le32	i_dtime;	/* Deletion Time */
- 	__le16	i_gid;		/* Low 16 bits of Group Id */
- 	__le16	i_links_count;	/* Links count */
--	__le32	i_blocks;	/* Blocks count */
-+	__le32	i_blocks_lo;	/* Blocks count */
- 	__le32	i_flags;	/* File flags */
- 	union {
- 		struct {
-@@ -302,7 +302,7 @@ struct ext4_inode {
- 	__le32	i_obso_faddr;	/* Obsoleted fragment address */
- 	union {
- 		struct {
--			__le16	l_i_reserved1;	/* Obsoleted fragment number/size which are removed in ext4 */
-+			__le16	l_i_blocks_high; /* were l_i_reserved1 */
- 			__le16	l_i_file_acl_high;
- 			__le16	l_i_uid_high;	/* these 2 fields */
- 			__le16	l_i_gid_high;	/* were reserved2[0] */
-@@ -404,6 +404,7 @@ do {									       \
- #if defined(__KERNEL__) || defined(__linux__)
- #define i_reserved1	osd1.linux1.l_i_reserved1
- #define i_file_acl_high	osd2.linux2.l_i_file_acl_high
-+#define i_blocks_high	osd2.linux2.l_i_blocks_high
- #define i_uid_low	i_uid
- #define i_gid_low	i_gid
- #define i_uid_high	osd2.linux2.l_i_uid_high
-@@ -670,6 +671,7 @@ static inline int ext4_valid_inum(struct super_block *sb, unsigned long ino)
- #define EXT4_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
- #define EXT4_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
- #define EXT4_FEATURE_RO_COMPAT_BTREE_DIR	0x0004
-+#define EXT4_FEATURE_RO_COMPAT_HUGE_FILE        0x0008
- #define EXT4_FEATURE_RO_COMPAT_GDT_CSUM		0x0010
- #define EXT4_FEATURE_RO_COMPAT_DIR_NLINK	0x0020
- #define EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE	0x0040
-@@ -681,6 +683,7 @@ static inline int ext4_valid_inum(struct super_block *sb, unsigned long ino)
- #define EXT4_FEATURE_INCOMPAT_META_BG		0x0010
- #define EXT4_FEATURE_INCOMPAT_EXTENTS		0x0040 /* extents support */
- #define EXT4_FEATURE_INCOMPAT_64BIT		0x0080
-+#define EXT4_FEATURE_INCOMPAT_MMP               0x0100
- #define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
+@@ -1107,27 +1107,10 @@ extern void ext4_ext_init(struct super_block *);
+ extern void ext4_ext_release(struct super_block *);
+ extern long ext4_fallocate(struct inode *inode, int mode, loff_t offset,
+ 			  loff_t len);
+-static inline int
+-ext4_get_blocks_wrap(handle_t *handle, struct inode *inode, sector_t block,
+-			unsigned long max_blocks, struct buffer_head *bh,
+-			int create, int extend_disksize)
+-{
+-	int retval;
+-	mutex_lock(&EXT4_I(inode)->truncate_mutex);
+-	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
+-		retval = ext4_ext_get_blocks(handle, inode,
+-						(ext4_lblk_t)block, max_blocks,
+-						bh, create, extend_disksize);
+-	} else {
+-		retval = ext4_get_blocks_handle(handle, inode,
+-						(ext4_lblk_t)block, max_blocks,
+-						bh, create, extend_disksize);
+-	}
+-	mutex_unlock(&EXT4_I(inode)->truncate_mutex);
+-	return retval;
+-}
+-
+-
++extern int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode,
++			sector_t block, unsigned long max_blocks,
++			struct buffer_head *bh, int create,
++			int extend_disksize);
+ #endif	/* __KERNEL__ */
  
- #define EXT4_FEATURE_COMPAT_SUPP	EXT2_FEATURE_COMPAT_EXT_ATTR
-@@ -695,7 +698,8 @@ static inline int ext4_valid_inum(struct super_block *sb, unsigned long ino)
- 					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM| \
- 					 EXT4_FEATURE_RO_COMPAT_DIR_NLINK | \
- 					 EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE | \
--					 EXT4_FEATURE_RO_COMPAT_BTREE_DIR)
-+					 EXT4_FEATURE_RO_COMPAT_BTREE_DIR |\
-+					 EXT4_FEATURE_RO_COMPAT_HUGE_FILE)
+ #endif	/* _LINUX_EXT4_FS_H */
+diff --git a/include/linux/ext4_fs_i.h b/include/linux/ext4_fs_i.h
+index f1cd493..4377d24 100644
+--- a/include/linux/ext4_fs_i.h
++++ b/include/linux/ext4_fs_i.h
+@@ -139,16 +139,16 @@ struct ext4_inode_info {
+ 	__u16 i_extra_isize;
  
- /*
-  * Default values for user and/or group using reserved blocks
+ 	/*
+-	 * truncate_mutex is for serialising ext4_truncate() against
++	 * i_data_sem is for serialising ext4_truncate() against
+ 	 * ext4_getblock().  In the 2.4 ext2 design, great chunks of inode's
+ 	 * data tree are chopped off during truncate. We can't do that in
+ 	 * ext4 because whenever we perform intermediate commits during
+ 	 * truncate, the inode and all the metadata blocks *must* be in a
+ 	 * consistent state which allows truncation of the orphans to restart
+ 	 * during recovery.  Hence we must fix the get_block-vs-truncate race
+-	 * by other means, so we have truncate_mutex.
++	 * by other means, so we have i_data_sem.
+ 	 */
+-	struct mutex truncate_mutex;
++	struct rw_semaphore i_data_sem;
+ 	struct inode vfs_inode;
+ 
+ 	unsigned long i_ext_generation;
 -- 
 1.5.4.rc3.31.g1271-dirty
 
