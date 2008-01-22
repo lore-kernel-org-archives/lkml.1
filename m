@@ -1,84 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbYAVO2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbYAVO22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754241AbYAVO2D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 09:28:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYAVO1w
+	id S1752468AbYAVO22 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 09:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbYAVO2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 09:27:52 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:34219 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750781AbYAVO1v convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 09:27:51 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Al Boldi <a1426z@gawab.com>
-Subject: Re: konqueror deadlocks on 2.6.22
-Date: Tue, 22 Jan 2008 09:25:49 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Oliver Pinter (=?iso-8859-1?q?Pint=E9r?= =?iso-8859-1?q?_Oliv=E9r?=) 
-	<oliver.pntr@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <200801192114.41427.a1426z@gawab.com> <20080122101014.GD5722@elte.hu> <200801221623.42989.a1426z@gawab.com>
-In-Reply-To: <200801221623.42989.a1426z@gawab.com>
+	Tue, 22 Jan 2008 09:28:17 -0500
+Received: from mail.mev.co.uk ([62.49.15.74]:40197 "EHLO mail.mev.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbYAVO2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 09:28:16 -0500
+Message-ID: <4795FD78.6020208@mev.co.uk>
+Date: Tue, 22 Jan 2008 14:28:08 +0000
+From: Ian Abbott <abbotti@mev.co.uk>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200801220925.50314.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, gregkh@suse.de,
+       kristen.c.accardi@intel.com
+Subject: [RESEND][PATCH-2.6.24-rc8] Fix fakephp deadlock
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Jan 2008 14:28:08.0624 (UTC) FILETIME=[0260C300:01C85D03]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 January 2008, Al Boldi wrote:
-> Ingo Molnar wrote:
-> > * Oliver Pinter (Pintér Olivér) <oliver.pntr@gmail.com> wrote:
-> > > and then please update to CFS-v24.1
-> > > http://people.redhat.com/~mingo/cfs-scheduler/sched-cfs-v2.6.22.15-v24.
-> > >1 .patch
-> > >
-> > > > Yes with CFSv20.4, as in the log.
-> > > >
-> > > > It also hangs on 2.6.23.13
-> >
-> > my feeling is that this is some sort of timing dependent race in
-> > konqueror/kde/qt that is exposed when a different scheduler is put in.
-> >
-> > If it disappears with CFS-v24.1 it is probably just because the timings
-> > will change again. Would be nice to debug this on the konqueror side and
-> > analyze why it fails and how. You can probably tune the timings by
-> > enabling SCHED_DEBUG and tweaking /proc/sys/kernel/*sched* values - in
-> > particular sched_latency and the granularity settings. Setting wakeup
-> > granularity to 0 might be one of the things that could make a
-> > difference.
->
-> Thanks Ingo, but Mike suggested that data=writeback may make a difference,
-> which it does indeed.
->
-> So the bug seems to be related to data=ordered, although I haven't gotten
-> any feedback from the ext3 gurus yet.
->
-> Seems rather critical though, as data=writeback is a dangerous mode to run.
+From: Ian Abbott <abbotti@mev.co.uk>
 
-Running fsync in data=ordered means that all of the dirty blocks on the FS 
-will get written before fsync returns.  Your original stack trace shows 
-everyone either performing writeback for a log commit or waiting for the log 
-commit to return.
+I last sent this 11 days ago and didn't get any replies, so my timeout
+handler has kicked in. :)
 
-They key task in your trace is kjournald, stuck in get_request_wait.  It could 
-be a block layer bug, not giving him requests quickly enough, or it could be 
-the scheduler not giving him back the cpu fast enough.
+The patch is same as last time except I've bumped the revision from rc7
+to rc8 and have remembered to use diff's -p option this time!
 
-At any rate, that's where to concentrate the debugging.  You should be able to 
-simulate this by running a few instances of the below loop and looking for 
-stalls:
+---
+From: Ian Abbott <abbotti@mev.co.uk>
 
-while(true) ; do
-    time dd if=/dev/zero of=foo bs=50M count=4 oflags=sync    
-done
+If the fakephp driver is used to emulate removal of a PCI device by
+writing text string "0" to the "power" sysfs attribute file, this causes
+its parent directory and its contents (including the "power" file) to be
+deleted before the write operation returns.  Unfortunately, it ends up
+in a deadlock waiting for itself to complete.
+
+The deadlock is as follows: sysfs_write_file calls flush_write_buffer
+which calls sysfs_get_active_two before calling power_write_file in
+pci_hotplug_core.c via the sysfs store operation. The power_write_file
+function calls disable_slot in fakephp.c via the slot operation.  The
+disable_slot function calls remove_slot which calls pci_hp_deregister
+(back in pci_hotplug_core.c) which calls fs_remove_slot which calls
+sysfs_remove_file to remove the "power" file. The sysfs_remove_file
+function calls sysfs_hash_and_remove which calls sysfs_addrm_finish
+which calls sysfs_deactivate. The sysfs_deactivate function sees that
+something has an active reference on the sysfs_dirent (from the
+previous call to sysfs_get_active_two back up the call stack somewhere)
+so waits for the active reference to go away, which is of course
+impossible.
+
+The problem has been present since 2.6.21.
+
+This patch breaks the deadlock by queuing a work queue item on a single-
+threaded workqueue to do the removal from sysfs.  There is also some
+protection against performing store operations on the "power" file of a
+slot that has already been disabled.
+
+Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
+---
+
+--- linux-2.6.24-rc8/drivers/pci/hotplug/fakephp.c.orig	2008-01-03 16:50:05.000000000 +0000
++++ linux-2.6.24-rc8/drivers/pci/hotplug/fakephp.c	2008-01-10 17:20:58.000000000 +0000
+@@ -39,6 +39,7 @@
+ #include <linux/init.h>
+ #include <linux/string.h>
+ #include <linux/slab.h>
++#include <linux/workqueue.h>
+ #include "../pci.h"
+ 
+ #if !defined(MODULE)
+@@ -63,10 +64,13 @@ struct dummy_slot {
+ 	struct list_head node;
+ 	struct hotplug_slot *slot;
+ 	struct pci_dev *dev;
++	struct work_struct remove_work;
++	unsigned long removed;
+ };
+ 
+ static int debug;
+ static LIST_HEAD(slot_list);
++static struct workqueue_struct *dummyphp_wq;
+ 
+ static int enable_slot (struct hotplug_slot *slot);
+ static int disable_slot (struct hotplug_slot *slot);
+@@ -109,7 +113,7 @@ static int add_slot(struct pci_dev *dev)
+ 	slot->name = &dev->dev.bus_id[0];
+ 	dbg("slot->name = %s\n", slot->name);
+ 
+-	dslot = kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
++	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
+ 	if (!dslot)
+ 		goto error_info;
+ 
+@@ -164,6 +168,13 @@ static void remove_slot(struct dummy_slo
+ 		err("Problem unregistering a slot %s\n", dslot->slot->name);
+ }
+ 
++static void remove_slot_worker(struct work_struct *work)
++{
++	struct dummy_slot *dslot =
++		container_of(work, struct dummy_slot, remove_work);
++	remove_slot(dslot);
++}
++
+ /**
+  * pci_rescan_slot - Rescan slot
+  * @temp: Device template. Should be set: bus and devfn.
+@@ -271,6 +282,20 @@ static inline void pci_rescan(void) {
+ static int enable_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	/* mis-use enable_slot for rescanning of the pci bus */
++	struct dummy_slot *dslot;
++
++	if (hotplug_slot) {
++		/* make sure slot is not scheduled for removal
++		 * otherwise flush_workqueue() could deadlock */
++		dslot = hotplug_slot->private;
++		if (test_bit(0, &dslot->removed)) {
++			/* FIXME: -ENODEV is also returned when function
++			 * succeeds. */
++			return -ENODEV;
++		}
++	}
++	/* first, complete any pending removals */
++	flush_workqueue(dummyphp_wq);
+ 	pci_rescan();
+ 	return -ENODEV;
+ }
+@@ -306,6 +331,10 @@ static int disable_slot(struct hotplug_s
+ 		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
+ 		return -ENODEV;
+ 	}
++	if (test_and_set_bit(0, &dslot->removed)) {
++		dbg("Slot already scheduled for removal\n");
++		return -ENODEV;
++	}
+ 	/* search for subfunctions and disable them first */
+ 	if (!(dslot->dev->devfn & 7)) {
+ 		for (func = 1; func < 8; func++) {
+@@ -328,8 +357,9 @@ static int disable_slot(struct hotplug_s
+ 	/* remove the device from the pci core */
+ 	pci_remove_bus_device(dslot->dev);
+ 
+-	/* blow away this sysfs entry and other parts. */
+-	remove_slot(dslot);
++	/* queue work item to blow away this sysfs entry and other parts. */
++	INIT_WORK(&dslot->remove_work, remove_slot_worker);
++	queue_work(dummyphp_wq, &dslot->remove_work);
+ 
+ 	return 0;
+ }
+@@ -340,6 +370,7 @@ static void cleanup_slots (void)
+ 	struct list_head *next;
+ 	struct dummy_slot *dslot;
+ 
++	destroy_workqueue(dummyphp_wq);
+ 	list_for_each_safe (tmp, next, &slot_list) {
+ 		dslot = list_entry (tmp, struct dummy_slot, node);
+ 		remove_slot(dslot);
+@@ -351,6 +382,10 @@ static int __init dummyphp_init(void)
+ {
+ 	info(DRIVER_DESC "\n");
+ 
++	dummyphp_wq = create_singlethread_workqueue(MY_NAME);
++	if (!dummyphp_wq)
++		return -ENOMEM;
++
+ 	return pci_scan_buses();
+ }
+ 
+
+---
+Note that the return values from the enable_slot function needs some
+attention.  The patch causes this to return -ENODEV if the slot has
+already been disabled, but that is also the normal return value of the
+function.  The return values should be different.  Is there any reason
+why the normal return value can't be 0?
+
+
+-- 
+-=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
+-=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
 
