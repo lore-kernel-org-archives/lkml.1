@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761075AbYAVNb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYAVNbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761075AbYAVNb3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 08:31:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYAVNbN
+	id S1754742AbYAVNbl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 08:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760926AbYAVNb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 08:31:13 -0500
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:26885
+	Tue, 22 Jan 2008 08:31:28 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:26903
 	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759346AbYAVNbJ convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1760234AbYAVNb1 convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 08:31:09 -0500
-Message-Id: <4795FE4A.76E4.0078.0@novell.com>
+	Tue, 22 Jan 2008 08:31:27 -0500
+Message-Id: <4795FE5D.76E4.0078.0@novell.com>
 X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Tue, 22 Jan 2008 13:31:38 +0000
+Date: Tue, 22 Jan 2008 13:31:57 +0000
 From: "Jan Beulich" <jbeulich@novell.com>
 To: <gregkh@suse.de>, <linux-kernel@vger.kernel.org>
-Cc: <mingo@elte.hu>, <tony.luck@intel.com>, <axboe@kernel.dk>,
-       <dougthompson@xmission.com>
-Subject: [PATCH 2/3] constify struct kobj_type's default_attrs (against
-	-mm)
+Cc: <mingo@elte.hu>, <tony.luck@intel.com>, <axboe@kernel.dk>
+Subject: [PATCH 3/3] constify struct sysfs_ops (against -mm)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -27,389 +25,277 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the EDAC code, I took the opportunity to replace the explicit cast
-initializer with a safer, cast-less mechanism (as used elsewhere),
-which makes this patch somewhat larger than it would have been
-otherwise.
+.. as again all consumers of it don't require it to be modifiable.
 
-Again, the patch doesn't change all instances where 'const' could have
-been added as a result of the base structure changes, only where the
-change has a real effect (the module loader doesn't enforce read-only
-section attributes at present, so only built-in files matter).
+As before, the patch doesn't change all instances where 'const' could
+have been added as a result of the base structure changes, only where
+either the change has a real effect (the module loader doesn't enforce
+read-only section attributes at present, so only built-in files matter)
+or where compiler warnings would result otherwise.
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Jens Axboe <axboe@kernel.dk>
-Cc: Doug Thompson <dougthompson@xmission.com>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/kobject.txt               |    2 -
- arch/ia64/kernel/topology.c             |    2 -
- arch/x86/kernel/cpu/intel_cacheinfo.c   |    2 -
- arch/x86/kernel/cpu/mcheck/mce_amd_64.c |    2 -
- block/ll_rw_blk.c                       |    2 -
- drivers/block/pktcdvd.c                 |    4 +-
- drivers/cpufreq/cpufreq.c               |    2 -
- drivers/cpuidle/sysfs.c                 |    2 -
- drivers/edac/edac_device_sysfs.c        |   28 ++++++++---------
- drivers/edac/edac_mc_sysfs.c            |   50 ++++++++++++++++----------------
- drivers/edac/edac_pci_sysfs.c           |   24 +++++++--------
- drivers/firmware/edd.c                  |    2 -
- drivers/firmware/efivars.c              |    2 -
- include/linux/kobject.h                 |    2 -
- 14 files changed, 63 insertions(+), 63 deletions(-)
+ Documentation/kobject.txt               |    2 +-
+ arch/ia64/kernel/topology.c             |    2 +-
+ arch/x86/kernel/cpu/intel_cacheinfo.c   |    2 +-
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c |    2 +-
+ block/elevator.c                        |    2 +-
+ block/ll_rw_blk.c                       |    2 +-
+ drivers/base/bus.c                      |    4 ++--
+ drivers/base/class.c                    |    4 ++--
+ drivers/base/core.c                     |    2 +-
+ drivers/base/sys.c                      |    4 ++--
+ drivers/cpufreq/cpufreq.c               |    2 +-
+ drivers/cpuidle/sysfs.c                 |    4 ++--
+ fs/sysfs/file.c                         |    8 ++++----
+ include/linux/kobject.h                 |    2 +-
+ kernel/params.c                         |    2 +-
+ mm/slub.c                               |    2 +-
+ 16 files changed, 23 insertions(+), 23 deletions(-)
 
 --- 2.6.24-rc8-mm1-const.orig/Documentation/kobject.txt
 +++ 2.6.24-rc8-mm1-const/Documentation/kobject.txt
-@@ -263,7 +263,7 @@ kobj_type:
+@@ -262,7 +262,7 @@ kobj_type:
+ 
      struct kobj_type {
  	    void (*release)(struct kobject *);
- 	    struct sysfs_ops	*sysfs_ops;
--	    struct attribute	**default_attrs;
-+	    struct attribute	*const *default_attrs;
+-	    struct sysfs_ops	*sysfs_ops;
++	    const struct sysfs_ops *sysfs_ops;
+ 	    struct attribute	*const *default_attrs;
      };
  
- This structure is used to describe a particular type of kobject (or, more
 --- 2.6.24-rc8-mm1-const.orig/arch/ia64/kernel/topology.c
 +++ 2.6.24-rc8-mm1-const/arch/ia64/kernel/topology.c
-@@ -242,7 +242,7 @@ define_one_ro(number_of_sets);
- define_one_ro(shared_cpu_map);
- define_one_ro(attributes);
+@@ -267,7 +267,7 @@ static ssize_t cache_show(struct kobject
+ 	return ret;
+ }
  
--static struct attribute * cache_default_attrs[] = {
-+static struct attribute *const cache_default_attrs[] = {
- 	&type.attr,
- 	&level.attr,
- 	&coherency_line_size.attr,
+-static struct sysfs_ops cache_sysfs_ops = {
++static const struct sysfs_ops cache_sysfs_ops = {
+ 	.show   = cache_show
+ };
+ 
 --- 2.6.24-rc8-mm1-const.orig/arch/x86/kernel/cpu/intel_cacheinfo.c
 +++ 2.6.24-rc8-mm1-const/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -634,7 +634,7 @@ define_one_ro(number_of_sets);
- define_one_ro(size);
- define_one_ro(shared_cpu_map);
+@@ -668,7 +668,7 @@ static ssize_t store(struct kobject * ko
+ 	return 0;
+ }
  
--static struct attribute * default_attrs[] = {
-+static struct attribute *const default_attrs[] = {
- 	&type.attr,
- 	&level.attr,
- 	&coherency_line_size.attr,
+-static struct sysfs_ops sysfs_ops = {
++static const struct sysfs_ops sysfs_ops = {
+ 	.show   = show,
+ 	.store  = store,
+ };
 --- 2.6.24-rc8-mm1-const.orig/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
 +++ 2.6.24-rc8-mm1-const/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-@@ -348,7 +348,7 @@ RW_ATTR(interrupt_enable);
- RW_ATTR(threshold_limit);
- RW_ATTR(error_count);
+@@ -377,7 +377,7 @@ static ssize_t store(struct kobject *kob
+ 	return ret;
+ }
  
--static struct attribute *default_attrs[] = {
-+static struct attribute *const default_attrs[] = {
- 	&interrupt_enable.attr,
- 	&threshold_limit.attr,
- 	&error_count.attr,
+-static struct sysfs_ops threshold_ops = {
++static const struct sysfs_ops threshold_ops = {
+ 	.show = show,
+ 	.store = store,
+ };
+--- 2.6.24-rc8-mm1-const.orig/block/elevator.c
++++ 2.6.24-rc8-mm1-const/block/elevator.c
+@@ -914,7 +914,7 @@ elv_attr_store(struct kobject *kobj, str
+ 	return error;
+ }
+ 
+-static struct sysfs_ops elv_sysfs_ops = {
++static const struct sysfs_ops elv_sysfs_ops = {
+ 	.show	= elv_attr_show,
+ 	.store	= elv_attr_store,
+ };
 --- 2.6.24-rc8-mm1-const.orig/block/ll_rw_blk.c
 +++ 2.6.24-rc8-mm1-const/block/ll_rw_blk.c
-@@ -4132,7 +4132,7 @@ static struct queue_sysfs_entry queue_io
- 	.store = elv_iosched_store,
+@@ -4184,7 +4184,7 @@ queue_attr_store(struct kobject *kobj, s
+ 	return res;
+ }
+ 
+-static struct sysfs_ops queue_sysfs_ops = {
++static const struct sysfs_ops queue_sysfs_ops = {
+ 	.show	= queue_attr_show,
+ 	.store	= queue_attr_store,
  };
+--- 2.6.24-rc8-mm1-const.orig/drivers/base/bus.c
++++ 2.6.24-rc8-mm1-const/drivers/base/bus.c
+@@ -71,7 +71,7 @@ drv_attr_store(struct kobject * kobj, st
+ 	return ret;
+ }
  
--static struct attribute *default_attrs[] = {
-+static struct attribute *const default_attrs[] = {
- 	&queue_requests_entry.attr,
- 	&queue_ra_entry.attr,
- 	&queue_max_hw_sectors_entry.attr,
---- 2.6.24-rc8-mm1-const.orig/drivers/block/pktcdvd.c
-+++ 2.6.24-rc8-mm1-const/drivers/block/pktcdvd.c
-@@ -171,7 +171,7 @@ DEF_ATTR(kobj_pkt_attr_st4, "kb_written"
- DEF_ATTR(kobj_pkt_attr_st5, "kb_read", 0444);
- DEF_ATTR(kobj_pkt_attr_st6, "kb_read_gather", 0444);
+-static struct sysfs_ops driver_sysfs_ops = {
++static const struct sysfs_ops driver_sysfs_ops = {
+ 	.show	= drv_attr_show,
+ 	.store	= drv_attr_store,
+ };
+@@ -120,7 +120,7 @@ bus_attr_store(struct kobject * kobj, st
+ 	return ret;
+ }
  
--static struct attribute *kobj_pkt_attrs_stat[] = {
-+static struct attribute *const kobj_pkt_attrs_stat[] = {
- 	&kobj_pkt_attr_st1,
- 	&kobj_pkt_attr_st2,
- 	&kobj_pkt_attr_st3,
-@@ -185,7 +185,7 @@ DEF_ATTR(kobj_pkt_attr_wq1, "size", 0444
- DEF_ATTR(kobj_pkt_attr_wq2, "congestion_off", 0644);
- DEF_ATTR(kobj_pkt_attr_wq3, "congestion_on",  0644);
+-static struct sysfs_ops bus_sysfs_ops = {
++static const struct sysfs_ops bus_sysfs_ops = {
+ 	.show	= bus_attr_show,
+ 	.store	= bus_attr_store,
+ };
+--- 2.6.24-rc8-mm1-const.orig/drivers/base/class.c
++++ 2.6.24-rc8-mm1-const/drivers/base/class.c
+@@ -61,7 +61,7 @@ static void class_release(struct kobject
+ 			 "be careful\n", class->name);
+ }
  
--static struct attribute *kobj_pkt_attrs_wqueue[] = {
-+static struct attribute *const kobj_pkt_attrs_wqueue[] = {
- 	&kobj_pkt_attr_wq1,
- 	&kobj_pkt_attr_wq2,
- 	&kobj_pkt_attr_wq3,
+-static struct sysfs_ops class_sysfs_ops = {
++static const struct sysfs_ops class_sysfs_ops = {
+ 	.show	= class_attr_show,
+ 	.store	= class_attr_store,
+ };
+@@ -307,7 +307,7 @@ class_device_attr_store(struct kobject *
+ 	return ret;
+ }
+ 
+-static struct sysfs_ops class_dev_sysfs_ops = {
++static const struct sysfs_ops class_dev_sysfs_ops = {
+ 	.show	= class_device_attr_show,
+ 	.store	= class_device_attr_store,
+ };
+--- 2.6.24-rc8-mm1-const.orig/drivers/base/core.c
++++ 2.6.24-rc8-mm1-const/drivers/base/core.c
+@@ -76,7 +76,7 @@ dev_attr_store(struct kobject * kobj, st
+ 	return ret;
+ }
+ 
+-static struct sysfs_ops dev_sysfs_ops = {
++static const struct sysfs_ops dev_sysfs_ops = {
+ 	.show	= dev_attr_show,
+ 	.store	= dev_attr_store,
+ };
+--- 2.6.24-rc8-mm1-const.orig/drivers/base/sys.c
++++ 2.6.24-rc8-mm1-const/drivers/base/sys.c
+@@ -53,7 +53,7 @@ sysdev_store(struct kobject * kobj, stru
+ 	return -EIO;
+ }
+ 
+-static struct sysfs_ops sysfs_ops = {
++static const struct sysfs_ops sysfs_ops = {
+ 	.show	= sysdev_show,
+ 	.store	= sysdev_store,
+ };
+@@ -103,7 +103,7 @@ static ssize_t sysdev_class_store(struct
+ 	return -EIO;
+ }
+ 
+-static struct sysfs_ops sysfs_class_ops = {
++static const struct sysfs_ops sysfs_class_ops = {
+ 	.show	= sysdev_class_show,
+ 	.store	= sysdev_class_store,
+ };
 --- 2.6.24-rc8-mm1-const.orig/drivers/cpufreq/cpufreq.c
 +++ 2.6.24-rc8-mm1-const/drivers/cpufreq/cpufreq.c
-@@ -651,7 +651,7 @@ define_one_rw(scaling_max_freq);
- define_one_rw(scaling_governor);
- define_one_rw(scaling_setspeed);
+@@ -725,7 +725,7 @@ static void cpufreq_sysfs_release(struct
+ 	complete(&policy->kobj_unregister);
+ }
  
--static struct attribute * default_attrs[] = {
-+static struct attribute *const default_attrs[] = {
- 	&cpuinfo_min_freq.attr,
- 	&cpuinfo_max_freq.attr,
- 	&scaling_min_freq.attr,
+-static struct sysfs_ops sysfs_ops = {
++static const struct sysfs_ops sysfs_ops = {
+ 	.show	= show,
+ 	.store	= store,
+ };
 --- 2.6.24-rc8-mm1-const.orig/drivers/cpuidle/sysfs.c
 +++ 2.6.24-rc8-mm1-const/drivers/cpuidle/sysfs.c
-@@ -233,7 +233,7 @@ define_one_state_ro(power, show_state_po
- define_one_state_ro(usage, show_state_usage);
- define_one_state_ro(time, show_state_time);
+@@ -186,7 +186,7 @@ static ssize_t cpuidle_store(struct kobj
+ 	return ret;
+ }
  
--static struct attribute *cpuidle_state_default_attrs[] = {
-+static struct attribute *const cpuidle_state_default_attrs[] = {
- 	&attr_name.attr,
- 	&attr_latency.attr,
- 	&attr_power.attr,
---- 2.6.24-rc8-mm1-const.orig/drivers/edac/edac_device_sysfs.c
-+++ 2.6.24-rc8-mm1-const/drivers/edac/edac_device_sysfs.c
-@@ -161,11 +161,11 @@ CTL_INFO_ATTR(poll_msec, S_IRUGO | S_IWU
- 	edac_device_ctl_poll_msec_show, edac_device_ctl_poll_msec_store);
+-static struct sysfs_ops cpuidle_sysfs_ops = {
++static const struct sysfs_ops cpuidle_sysfs_ops = {
+ 	.show = cpuidle_show,
+ 	.store = cpuidle_store,
+ };
+@@ -258,7 +258,7 @@ static ssize_t cpuidle_state_show(struct
+ 	return ret;
+ }
  
- /* Base Attributes of the EDAC_DEVICE ECC object */
--static struct ctl_info_attribute *device_ctrl_attr[] = {
--	&attr_ctl_info_panic_on_ue,
--	&attr_ctl_info_log_ue,
--	&attr_ctl_info_log_ce,
--	&attr_ctl_info_poll_msec,
-+static struct attribute *const device_ctrl_attr[] = {
-+	&attr_ctl_info_panic_on_ue.attr,
-+	&attr_ctl_info_log_ue.attr,
-+	&attr_ctl_info_log_ce.attr,
-+	&attr_ctl_info_poll_msec.attr,
- 	NULL,
+-static struct sysfs_ops cpuidle_state_sysfs_ops = {
++static const struct sysfs_ops cpuidle_state_sysfs_ops = {
+ 	.show = cpuidle_state_show,
  };
  
-@@ -215,7 +215,7 @@ static void edac_device_ctrl_master_rele
- static struct kobj_type ktype_device_ctrl = {
- 	.release = edac_device_ctrl_master_release,
- 	.sysfs_ops = &device_ctl_info_ops,
--	.default_attrs = (struct attribute **)device_ctrl_attr,
-+	.default_attrs = device_ctrl_attr,
- };
+--- 2.6.24-rc8-mm1-const.orig/fs/sysfs/file.c
++++ 2.6.24-rc8-mm1-const/fs/sysfs/file.c
+@@ -50,7 +50,7 @@ struct sysfs_buffer {
+ 	size_t			count;
+ 	loff_t			pos;
+ 	char			* page;
+-	struct sysfs_ops	* ops;
++	const struct sysfs_ops	* ops;
+ 	struct mutex		mutex;
+ 	int			needs_read_fill;
+ 	int			event;
+@@ -72,7 +72,7 @@ static int fill_read_buffer(struct dentr
+ {
+ 	struct sysfs_dirent *attr_sd = dentry->d_fsdata;
+ 	struct kobject *kobj = attr_sd->s_parent->s_dir.kobj;
+-	struct sysfs_ops * ops = buffer->ops;
++	const struct sysfs_ops * ops = buffer->ops;
+ 	int ret = 0;
+ 	ssize_t count;
  
- /*
-@@ -394,9 +394,9 @@ INSTANCE_ATTR(ce_count, S_IRUGO, instanc
- INSTANCE_ATTR(ue_count, S_IRUGO, instance_ue_count_show, NULL);
+@@ -191,7 +191,7 @@ flush_write_buffer(struct dentry * dentr
+ {
+ 	struct sysfs_dirent *attr_sd = dentry->d_fsdata;
+ 	struct kobject *kobj = attr_sd->s_parent->s_dir.kobj;
+-	struct sysfs_ops * ops = buffer->ops;
++	const struct sysfs_ops * ops = buffer->ops;
+ 	int rc;
  
- /* list of edac_dev 'instance' attributes */
--static struct instance_attribute *device_instance_attr[] = {
--	&attr_instance_ce_count,
--	&attr_instance_ue_count,
-+static struct attribute *const device_instance_attr[] = {
-+	&attr_instance_ce_count.attr,
-+	&attr_instance_ue_count.attr,
- 	NULL,
- };
+ 	/* need attr_sd for attr and ops, its parent for kobj */
+@@ -326,7 +326,7 @@ static int sysfs_open_file(struct inode 
+ 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
+ 	struct kobject *kobj = attr_sd->s_parent->s_dir.kobj;
+ 	struct sysfs_buffer *buffer;
+-	struct sysfs_ops *ops;
++	const struct sysfs_ops *ops;
+ 	int error = -EACCES;
+ 	char *p;
  
-@@ -404,7 +404,7 @@ static struct instance_attribute *device
- static struct kobj_type ktype_instance_ctrl = {
- 	.release = edac_device_ctrl_instance_release,
- 	.sysfs_ops = &device_instance_ops,
--	.default_attrs = (struct attribute **)device_instance_attr,
-+	.default_attrs = device_instance_attr,
- };
- 
- /* edac_dev -> instance -> block information */
-@@ -492,9 +492,9 @@ BLOCK_ATTR(ce_count, S_IRUGO, block_ce_c
- BLOCK_ATTR(ue_count, S_IRUGO, block_ue_count_show, NULL);
- 
- /* list of edac_dev 'block' attributes */
--static struct edac_dev_sysfs_block_attribute *device_block_attr[] = {
--	&attr_block_ce_count,
--	&attr_block_ue_count,
-+static struct attribute *const device_block_attr[] = {
-+	&attr_block_ce_count.attr,
-+	&attr_block_ue_count.attr,
- 	NULL,
- };
- 
-@@ -502,7 +502,7 @@ static struct edac_dev_sysfs_block_attri
- static struct kobj_type ktype_block_ctrl = {
- 	.release = edac_device_ctrl_block_release,
- 	.sysfs_ops = &device_block_ops,
--	.default_attrs = (struct attribute **)device_block_attr,
-+	.default_attrs = device_block_attr,
- };
- 
- /* block ctor/dtor  code */
---- 2.6.24-rc8-mm1-const.orig/drivers/edac/edac_mc_sysfs.c
-+++ 2.6.24-rc8-mm1-const/drivers/edac/edac_mc_sysfs.c
-@@ -268,13 +268,13 @@ CSROWDEV_ATTR(ue_count, S_IRUGO, csrow_u
- CSROWDEV_ATTR(ce_count, S_IRUGO, csrow_ce_count_show, NULL, 0);
- 
- /* default attributes of the CSROW<id> object */
--static struct csrowdev_attribute *default_csrow_attr[] = {
--	&attr_dev_type,
--	&attr_mem_type,
--	&attr_edac_mode,
--	&attr_size_mb,
--	&attr_ue_count,
--	&attr_ce_count,
-+static struct attribute *const default_csrow_attr[] = {
-+	&attr_dev_type.attr,
-+	&attr_mem_type.attr,
-+	&attr_edac_mode.attr,
-+	&attr_size_mb.attr,
-+	&attr_ue_count.attr,
-+	&attr_ce_count.attr,
- 	NULL,
- };
- 
-@@ -366,7 +366,7 @@ static void edac_csrow_instance_release(
- static struct kobj_type ktype_csrow = {
- 	.release = edac_csrow_instance_release,
- 	.sysfs_ops = &csrowfs_ops,
--	.default_attrs = (struct attribute **)default_csrow_attr,
-+	.default_attrs = default_csrow_attr,
- };
- 
- /* Create a CSROW object under specifed edac_mc_device */
-@@ -604,16 +604,16 @@ MCIDEV_ATTR(ce_count, S_IRUGO, mci_ce_co
- MCIDEV_ATTR(sdram_scrub_rate, S_IRUGO | S_IWUSR, mci_sdram_scrub_rate_show,
- 	mci_sdram_scrub_rate_store);
- 
--static struct mcidev_sysfs_attribute *mci_attr[] = {
--	&mci_attr_reset_counters,
--	&mci_attr_mc_name,
--	&mci_attr_size_mb,
--	&mci_attr_seconds_since_reset,
--	&mci_attr_ue_noinfo_count,
--	&mci_attr_ce_noinfo_count,
--	&mci_attr_ue_count,
--	&mci_attr_ce_count,
--	&mci_attr_sdram_scrub_rate,
-+static struct attribute *const mci_attr[] = {
-+	&mci_attr_reset_counters.attr,
-+	&mci_attr_mc_name.attr,
-+	&mci_attr_size_mb.attr,
-+	&mci_attr_seconds_since_reset.attr,
-+	&mci_attr_ue_noinfo_count.attr,
-+	&mci_attr_ce_noinfo_count.attr,
-+	&mci_attr_ue_count.attr,
-+	&mci_attr_ce_count.attr,
-+	&mci_attr_sdram_scrub_rate.attr,
- 	NULL
- };
- 
-@@ -646,7 +646,7 @@ static void edac_mci_control_release(str
- static struct kobj_type ktype_mci = {
- 	.release = edac_mci_control_release,
- 	.sysfs_ops = &mci_ops,
--	.default_attrs = (struct attribute **)mci_attr,
-+	.default_attrs = mci_attr,
- };
- 
- /* show/store, tables, etc for the MC kset */
-@@ -719,11 +719,11 @@ MEMCTRL_ATTR(edac_mc_poll_msec,
- 	S_IRUGO | S_IWUSR, memctrl_int_show, poll_msec_int_store);
- 
- /* Base Attributes of the memory ECC object */
--static struct memctrl_dev_attribute *memctrl_attr[] = {
--	&attr_edac_mc_panic_on_ue,
--	&attr_edac_mc_log_ue,
--	&attr_edac_mc_log_ce,
--	&attr_edac_mc_poll_msec,
-+static struct attribute *const memctrl_attr[] = {
-+	&attr_edac_mc_panic_on_ue.attr,
-+	&attr_edac_mc_log_ue.attr,
-+	&attr_edac_mc_log_ce.attr,
-+	&attr_edac_mc_poll_msec.attr,
- 	NULL,
- };
- 
-@@ -731,7 +731,7 @@ static struct memctrl_dev_attribute *mem
- /* the ktype for the mc_kset internal kobj */
- static struct kobj_type ktype_mc_set_attribs = {
- 	.sysfs_ops = &memctrlfs_ops,
--	.default_attrs = (struct attribute **)memctrl_attr,
-+	.default_attrs = memctrl_attr,
- };
- 
- /* EDAC memory controller sysfs kset:
---- 2.6.24-rc8-mm1-const.orig/drivers/edac/edac_pci_sysfs.c
-+++ 2.6.24-rc8-mm1-const/drivers/edac/edac_pci_sysfs.c
-@@ -137,9 +137,9 @@ INSTANCE_ATTR(pe_count, S_IRUGO, instanc
- INSTANCE_ATTR(npe_count, S_IRUGO, instance_npe_count_show, NULL);
- 
- /* pci instance attributes */
--static struct instance_attribute *pci_instance_attr[] = {
--	&attr_instance_pe_count,
--	&attr_instance_npe_count,
-+static struct attribute *const pci_instance_attr[] = {
-+	&attr_instance_pe_count.attr,
-+	&attr_instance_npe_count.attr,
- 	NULL
- };
- 
-@@ -147,7 +147,7 @@ static struct instance_attribute *pci_in
- static struct kobj_type ktype_pci_instance = {
- 	.release = edac_pci_instance_release,
- 	.sysfs_ops = &pci_instance_ops,
--	.default_attrs = (struct attribute **)pci_instance_attr,
-+	.default_attrs = pci_instance_attr,
- };
- 
- /*
-@@ -294,13 +294,13 @@ EDAC_PCI_ATTR(pci_parity_count, S_IRUGO,
- EDAC_PCI_ATTR(pci_nonparity_count, S_IRUGO, edac_pci_int_show, NULL);
- 
- /* Base Attributes of the memory ECC object */
--static struct edac_pci_dev_attribute *edac_pci_attr[] = {
--	&edac_pci_attr_check_pci_errors,
--	&edac_pci_attr_edac_pci_log_pe,
--	&edac_pci_attr_edac_pci_log_npe,
--	&edac_pci_attr_edac_pci_panic_on_pe,
--	&edac_pci_attr_pci_parity_count,
--	&edac_pci_attr_pci_nonparity_count,
-+static struct attribute *const edac_pci_attr[] = {
-+	&edac_pci_attr_check_pci_errors.attr,
-+	&edac_pci_attr_edac_pci_log_pe.attr,
-+	&edac_pci_attr_edac_pci_log_npe.attr,
-+	&edac_pci_attr_edac_pci_panic_on_pe.attr,
-+	&edac_pci_attr_pci_parity_count.attr,
-+	&edac_pci_attr_pci_nonparity_count.attr,
- 	NULL,
- };
- 
-@@ -328,7 +328,7 @@ static void edac_pci_release_main_kobj(s
- static struct kobj_type ktype_edac_pci_main_kobj = {
- 	.release = edac_pci_release_main_kobj,
- 	.sysfs_ops = &edac_pci_sysfs_ops,
--	.default_attrs = (struct attribute **)edac_pci_attr,
-+	.default_attrs = edac_pci_attr,
- };
- 
- /**
---- 2.6.24-rc8-mm1-const.orig/drivers/firmware/edd.c
-+++ 2.6.24-rc8-mm1-const/drivers/firmware/edd.c
-@@ -587,7 +587,7 @@ static EDD_DEVICE_ATTR(mbr_signature, 04
- /* These are default attributes that are added for every edd
-  * device discovered.  There are none.
-  */
--static struct attribute * def_attrs[] = {
-+static struct attribute *const def_attrs[] = {
- 	NULL,
- };
- 
---- 2.6.24-rc8-mm1-const.orig/drivers/firmware/efivars.c
-+++ 2.6.24-rc8-mm1-const/drivers/firmware/efivars.c
-@@ -380,7 +380,7 @@ static EFIVAR_ATTR(size, 0400, efivar_si
- static EFIVAR_ATTR(data, 0400, efivar_data_read, NULL);
- static EFIVAR_ATTR(raw_var, 0600, efivar_show_raw, efivar_store_raw);
- 
--static struct attribute *def_attrs[] = {
-+static struct attribute *const def_attrs[] = {
- 	&efivar_attr_guid.attr,
- 	&efivar_attr_size.attr,
- 	&efivar_attr_attributes.attr,
 --- 2.6.24-rc8-mm1-const.orig/include/linux/kobject.h
 +++ 2.6.24-rc8-mm1-const/include/linux/kobject.h
-@@ -108,7 +108,7 @@ extern char * kobject_get_path(struct ko
+@@ -107,7 +107,7 @@ extern char * kobject_get_path(struct ko
+ 
  struct kobj_type {
  	void (*release)(struct kobject *);
- 	struct sysfs_ops	* sysfs_ops;
--	struct attribute	** default_attrs;
-+	struct attribute	*const *default_attrs;
+-	struct sysfs_ops	* sysfs_ops;
++	const struct sysfs_ops	*sysfs_ops;
+ 	struct attribute	*const *default_attrs;
  };
  
- struct kobj_uevent_env {
+--- 2.6.24-rc8-mm1-const.orig/kernel/params.c
++++ 2.6.24-rc8-mm1-const/kernel/params.c
+@@ -672,7 +672,7 @@ static ssize_t module_attr_store(struct 
+ 	return ret;
+ }
+ 
+-static struct sysfs_ops module_sysfs_ops = {
++static const struct sysfs_ops module_sysfs_ops = {
+ 	.show = module_attr_show,
+ 	.store = module_attr_store,
+ };
+--- 2.6.24-rc8-mm1-const.orig/mm/slub.c
++++ 2.6.24-rc8-mm1-const/mm/slub.c
+@@ -4114,7 +4114,7 @@ static ssize_t slab_attr_store(struct ko
+ 	return err;
+ }
+ 
+-static struct sysfs_ops slab_sysfs_ops = {
++static const struct sysfs_ops slab_sysfs_ops = {
+ 	.show = slab_attr_show,
+ 	.store = slab_attr_store,
+ };
 
 
