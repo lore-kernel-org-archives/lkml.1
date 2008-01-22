@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYAVPxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbYAVPxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbYAVPxj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 10:53:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYAVPxb
+	id S1756397AbYAVPxw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 10:53:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYAVPxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 10:53:31 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49531 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751276AbYAVPxb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 10:53:31 -0500
-Date: Tue, 22 Jan 2008 07:53:10 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 0/6] RFC: Typesafe callbacks
-In-Reply-To: <200801221816.19594.rusty@rustcorp.com.au>
-Message-ID: <alpine.LFD.1.00.0801220751180.2957@woody.linux-foundation.org>
-References: <200801202046.14746.rusty@rustcorp.com.au> <200801221027.15002.rusty@rustcorp.com.au> <alpine.LFD.1.00.0801211547160.2957@woody.linux-foundation.org> <200801221816.19594.rusty@rustcorp.com.au>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 22 Jan 2008 10:53:33 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59168 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751879AbYAVPxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 10:53:32 -0500
+Date: Tue, 22 Jan 2008 17:52:06 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: David Newall <davidn@davidnewall.com>
+Cc: Karl Kiniger <karl.kiniger@med.ge.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for mm] Remove iBCS support
+Message-ID: <20080122155206.GA23277@does.not.exist>
+References: <20080120031153.GB6275@one.firstfloor.org> <4792D221.1010704@davidnewall.com> <20080120051822.GB19784@one.firstfloor.org> <4792DD22.4070902@davidnewall.com> <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122102436.GA15563@wszip-kinigka.euro.med.ge.com> <47960673.3020902@davidnewall.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <47960673.3020902@davidnewall.com>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 22 Jan 2008, Rusty Russell wrote:
+On Wed, Jan 23, 2008 at 01:36:27AM +1030, David Newall wrote:
+> Karl Kiniger wrote:
+> > on http://www.feise.com/~jfeise/Downloads/linux-abi/
+> >
+> > a patch named  linux-abi-2.6.22.3_3.diff.bz2 can be found.
 > 
->     If we can stomach it the effect is nice, but the version which simply 
-> allows pointer correctness (rather than trying to do unsigned long too) is 
-> less bletcherous.
+> Thankyou for that.
+> 
+> Matter of interest: if it works, why isn't it in the mainline?
 
-I'd suggest trying to get by with just the pointer version for now. But we 
-know whom to turn to when we need bletcherousness.
+This you have to ask the person offering this patch.
 
-		Linus
+Patches don't enter the kernel by themselves, someone has to submit 
+them.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
