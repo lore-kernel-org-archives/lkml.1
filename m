@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbYAVOn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYAVOtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181AbYAVOn6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 09:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYAVOnu
+	id S1754762AbYAVOtw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 09:49:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYAVOtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 09:43:50 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:41108
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752139AbYAVOnt (ORCPT
+	Tue, 22 Jan 2008 09:49:45 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:55902 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750985AbYAVOto (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 09:43:49 -0500
-Date: Tue, 22 Jan 2008 15:43:32 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Izik Eidus <izike@qumranet.com>, Andrew Morton <akpm@osdl.org>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, holt@sgi.com,
-       Hugh Dickins <hugh@veritas.com>, clameter@sgi.com
-Subject: Re: [kvm-devel] [PATCH] mmu notifiers #v3
-Message-ID: <20080122144332.GE7331@v2.random>
-References: <20080113162418.GE8736@v2.random> <20080116124256.44033d48@bree.surriel.com> <478E4356.7030303@qumranet.com> <20080117162302.GI7170@v2.random> <478F9C9C.7070500@qumranet.com> <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4795F9D2.1050503@qumranet.com>
+	Tue, 22 Jan 2008 09:49:44 -0500
+Subject: Re: [PATCH 0/6] IO context sharing
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, knikanth@novell.com
+In-Reply-To: <1200995361-24001-1-git-send-email-jens.axboe@oracle.com>
+References: <1200995361-24001-1-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain
+Date: Tue, 22 Jan 2008 15:49:31 +0100
+Message-Id: <1201013372.6341.19.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 04:12:34PM +0200, Avi Kivity wrote:
-> Andrea Arcangeli wrote:
->> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
->> --- a/include/asm-generic/pgtable.h
->> +++ b/include/asm-generic/pgtable.h
->> @@ -44,8 +44,10 @@
->>  ({									\
->>  	int __young;							\
->>  	__young = ptep_test_and_clear_young(__vma, __address, __ptep);	\
->> -	if (__young)							\
->> +	if (__young) {							\
->>  		flush_tlb_page(__vma, __address);			\
->> +		mmu_notifier(age_page, (__vma)->vm_mm, __address);	\
->> +	}								\
->>  	__young;							\
->>  })
->>   
->
-> I think that unconditionally doing
->
->  __young |= mmu_notifier(test_and_clear_young, ...);
->
-> allows hardware with accessed bits more control over what is going on.
 
-Agreed, likely it'll have to be mmu_notifier_age_page().
+On Tue, 2008-01-22 at 10:49 +0100, Jens Axboe wrote:
+> Hi,
+> 
+> Today io contexts are per-process and define the (surprise) io context
+> of that process. In some situations it would be handy if several
+> processes share an IO context. With syslets it's especially crucial that
+> the threads working on behalf of the parent process are seen as the same
+> IO context. That goes from both a fairness and performance point of
+> view, since IO schedulers like AS and CFQ base decisions on what the
+> IO context state is. This patchset adds support for processes sharing a
+> single io context and also adds a CLONE_IO flag to denote sharing of
+> IO context.
+
+Are you planning on extending this to a hierarchical CFQ for cgroups, or
+just giving the IO context to a cgroup?
+
+
+
