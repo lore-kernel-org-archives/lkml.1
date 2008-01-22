@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYAVLti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbYAVMDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbYAVLti (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 06:49:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYAVLtb
+	id S1753959AbYAVMDd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 07:03:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYAVMDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 06:49:31 -0500
-Received: from main.gmane.org ([80.91.229.2]:37550 "EHLO ciao.gmane.org"
+	Tue, 22 Jan 2008 07:03:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56617 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751560AbYAVLta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 06:49:30 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?UTF-8?B?Si4gUGFibG8gRmVybsOhbmRleg==?= <pupeno@pupeno.com>
-Subject: Re: Making a USB driver
-Date: Tue, 22 Jan 2008 11:49:08 +0000
-Message-ID: <fn4l7p$ncc$1@ger.gmane.org>
-References: <fn2u8p$gv3$1@ger.gmane.org> <479515FF.3050705@gmail.com> <200801212313.17703.pupeno@pupeno.com> <479527C7.5000909@gmail.com> <fn4bgk$oi0$1@ger.gmane.org> <4795B506.1030405@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 80.169.137.165
-User-Agent: KNode/0.10.5
+	id S1751727AbYAVMDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 07:03:23 -0500
+Date: Tue, 22 Jan 2008 13:02:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Eduardo Habkost <ehabkost@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
+       tglx@linutronix.de, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       rusty@rustcorp.com.au, ak@suse.de, chrisw@sous-sol.org,
+       rostedt@goodmis.org, hpa@zytor.com, zach@vmware.com, roland@redhat.com,
+       mtosatti@redhat.com
+Subject: Re: [PATCH 0/4] paravirt_ops-64 compile fixes
+Message-ID: <20080122120207.GA30271@elte.hu>
+References: <1200952133-31581-1-git-send-email-ehabkost@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1200952133-31581-1-git-send-email-ehabkost@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<posted & mailed>
 
-Hello Jiri,
+* Eduardo Habkost <ehabkost@redhat.com> wrote:
 
-Jiri Slaby wrote:
-> We usualy reply to all.
-
-I'm sorry. I'm using Gmane to read and post to this mailing list and my
-newsgroup reader doesn't reply to all by default.
- 
-> On 01/22/2008 10:03 AM, J. Pablo Fernández wrote:
->> Jiri Slaby wrote:
->> 
->>> On 01/22/2008 12:13 AM, J. Pablo Fernández wrote:
->>>> On Monday 21 January 2008 22:00:31 Jiri Slaby wrote:
->>>>> On 01/21/2008 09:11 PM, J. Pablo Fernández wrote:
->>>>>> Hello,
->>>>>>
->>>>>> I'm interested in making a driver for the Kinesis Savant Elite
->>>>>> Programable USB Foot Switches[1].
->>>>> [1]+1 says
->>>>> Linux, Sun and other Non Windows Platforms
->>>>> · Requires available USB port. Uses generic drivers provided by the
->>>>> operating system. Due to the heterogeneity in these platforms, we
->>>>> cannot guarantee compatibility with these systems. However, if your
->>>>> system can use any USB mouse and keyboard, it will probably work with
->>>>> a Savant or Savant Elite foot switch.
->>>>>
->>>>> I guess it's ordinary input device without any special driver needs.
->>>> It sends ordinary mouse and keyboard commands, but you need a driver to
->>>> program it what commands to send, and that's the part I want to cover:
->>>> " it can be easily reprogrammed on a Windows [and only Windows] PC to
->>>> perform any keyboard action or key combination."
->>> But you didn't even mention that. Then try to search for usb ids in the
->>> tree and also in google.
->> 
->> I don't have the device. Maybe I can ask the vendor for the ids? how
->> exactly should I ask?
+> This series contain fixes to make the paravirt_ops code compile and 
+> boot on x86_64.
 > 
-> Ask for specification, otherwise you won't be able to write a driver
-> anyway.
+> This is a follow-up for the previous series from Glauber.
 
-They already told me they don't even have the specification. I'm already
-considering doing reverse engineering to get the information. It won't be
-easy for me because I'm new to this level, but it shouldn't be very hard,
-it's not a scanner or a webcam, it should be a fairly simple protocol.
+thanks Eduardo, i've applied your fixes.
 
-Thank you.
--- 
-J. Pablo Fernández <pupeno@pupeno.com> (http://pupeno.com)
+could you perhaps send the missing bits that add the missing 64-bit 
+Kconfig entries? Even if the 64-bit side is not functional yet as a real 
+guest, it would help us find the build bugs and any runtime regressions 
+PARAVIRT might cause on the native 64-bit side of the kernel.
 
+Or is it now just a matter of removing all the depends-on X86_32 bits in 
+arch/x86/Kconfig?
+
+	Ingo
