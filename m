@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbYAWUCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbYAWTgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753728AbYAWUCI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 15:02:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbYAWUB4
+	id S1752515AbYAWTgG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 14:36:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYAWTfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 15:01:56 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:44415 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbYAWUBz (ORCPT
+	Wed, 23 Jan 2008 14:35:54 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:39552 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751383AbYAWTfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 15:01:55 -0500
-Subject: Re: [PATCH 01/20 -v5] printk - dont wakeup klogd with interrupts
-	disabled
-From: Daniel Walker <dwalker@mvista.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <1201114213.13596.29.camel@imap.mvista.com>
-References: <20080123160236.969334052@goodmis.org>
-	 <20080123160441.236562634@goodmis.org>
-	 <1201107978.13596.16.camel@imap.mvista.com>
-	 <Pine.LNX.4.58.0801231213430.12932@gandalf.stny.rr.com>
-	 <1201110185.13596.22.camel@imap.mvista.com>
-	 <Pine.LNX.4.58.0801231315500.6127@gandalf.stny.rr.com>
-	 <1201112899.13596.25.camel@imap.mvista.com>
-	 <Pine.LNX.4.58.0801231336540.9982@gandalf.stny.rr.com>
-	 <1201114213.13596.29.camel@imap.mvista.com>
+	Wed, 23 Jan 2008 14:35:53 -0500
+Subject: Re: [PATCH 3/4] ACPI: Check for any matching CID when walking
+	namespace.
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       lenb@kernel.org, gregkh@suse.de, matthew@wil.cx, tom.l.nguyen@intel.com,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <20080123174253.GA10387@kroah.com>
+References: <20080123001807.28190.32648.stgit@bluto.andrew>
+	 <20080123001822.28190.3147.stgit@bluto.andrew>
+	 <20080123174253.GA10387@kroah.com>
 Content-Type: text/plain
-Date: Wed, 23 Jan 2008 11:59:44 -0800
-Message-Id: <1201118384.13596.31.camel@imap.mvista.com>
+Date: Wed, 23 Jan 2008 12:35:51 -0700
+Message-Id: <1201116951.12916.128.camel@bluto.andrew>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8) 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-01-23 at 10:50 -0800, Daniel Walker wrote:
-> On Wed, 2008-01-23 at 13:43 -0500, Steven Rostedt wrote:
-> > On Wed, 23 Jan 2008, Daniel Walker wrote:
+On Wed, 2008-01-23 at 09:42 -0800, Greg KH wrote:
+> On Tue, Jan 22, 2008 at 05:18:22PM -0700, Andrew Patterson wrote:
+> > From: Andrew Patterson <andrew.patterson@hp.com>
 > > 
-> > >
-> > > On Wed, 2008-01-23 at 13:18 -0500, Steven Rostedt wrote:
-> > >
-> > > > The wakeup hook in schedule is when we find out that we hit our max. I
-> > > > could postpone that somehow, but that would require more glue code than I
-> > > > would like to add.
-> > >
-> > > Which hook specifically ?
+> > The callback function acpi_ns_get_device_callback called from
+> > acpi_get_devices() will check CID's if the HID does not match.  This code
+> > has a bug where it requires that all CIDs match the HID. Changed the code
+> > so that any CID match will do.
 > > 
-> > The wakeup tracer does a print on max when the new task is about to be
-> > switched to (in context_switch).
+> > Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
+> > ---
+> > 
+> >  drivers/acpi/namespace/nsxfeval.c |   11 ++++++++---
+> >  1 files changed, 8 insertions(+), 3 deletions(-)
 > 
-> You can't move that hook to when the task actually starts running (i.e.
-> at the end of schedule() )..
+> This should probably go through the ACPI tree, not the PCI tree, right?
+> 
 
-I mean , why can't you?
+Yes, but it is needed to get PCIe AER working (at least on the systems
+that I have seen).  I suspect we will have the same issue with PCIe
+hotplug. Len Brown is looking at it.
 
-Daniel
+> thanks,
+> 
+> greg k-h
+
 
