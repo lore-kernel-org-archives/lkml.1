@@ -1,63 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbYAWMUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbYAWMZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753360AbYAWMUg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 07:20:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbYAWMU3
+	id S1752964AbYAWMZr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 07:25:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYAWMZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 07:20:29 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:53974 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751155AbYAWMU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 07:20:29 -0500
-Date: Wed, 23 Jan 2008 13:20:10 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] fix variable use in AVR32 pte_alloc_one
-Message-ID: <20080123132010.266eccb8@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <47972BAE.70902@niasdigital.com>
-References: <47972BAE.70902@niasdigital.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Jan 2008 07:25:39 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:33090 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751292AbYAWMZi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 07:25:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bjSnpueq/QAnz5DnlR9DA0vKE7qKs6BP1eKS0BnoaWBhm5jrWwavwEkZ1TX16Jh8NzG81DlRTxN9FYK4rmnZtWhTbem1GQQB1aKo8WVFyGJHb4fbvVXa5/9dWkZHhChUaM4Wm5+i66p17Rg3mkUfmYDVfTgeHpLTC2SbWzWfQtA=
+Message-ID: <4df4ef0c0801230425o13a1f3a6p87298c6767eb62ce@mail.gmail.com>
+Date: Wed, 23 Jan 2008 15:25:37 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: [PATCH -v8 4/4] The design document for memory-mapped file times update
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
+       hidave.darkstar@gmail.com, hch@infradead.org
+In-Reply-To: <E1JHdav-0002MW-GH@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12010440803930-git-send-email-salikhmetov@gmail.com>
+	 <1201044083554-git-send-email-salikhmetov@gmail.com>
+	 <E1JHbs1-00025n-Ac@pomaz-ex.szeredi.hu>
+	 <4df4ef0c0801230237g2f26f0d1j2d2ada2ce62ba284@mail.gmail.com>
+	 <E1JHdE4-0002Jk-QG@pomaz-ex.szeredi.hu>
+	 <E1JHdav-0002MW-GH@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jan 2008 22:57:34 +1100
-Ben Nizette <bn@niasdigital.com> wrote:
-
-> 
-> Some parts of this function use 'page', some 'pte'.  As such, an AVR32
-> -mm build fails with an undefined reference to 'page'.
-> 
-> Signed-Off-By: Ben Nizette <bn@niasdigital.com>
-> 
+2008/1/23, Miklos Szeredi <miklos@szeredi.hu>:
+> > Ah, OK, this is becuase mmap doesn't actually set up the page tables
+> > by default.   Try adding MAP_POPULATE to the flags.
+>
+> Here's an updated version of the program, with an added a '-r' option,
+> that performs a read access on the mapping before doing the write
+> (basically equivalent to MAP_POPULATE, but portable).
+>
+> Please try this on a tmpfs file.
+>
+> Thanks,
+> Miklos
+>
 > ---
-> Index: linux-2.6.24-rc8-mm1/include/asm-avr32/pgalloc.h
-> ===================================================================
-> --- linux-2.6.24-rc8-mm1.orig/include/asm-avr32/pgalloc.h
-> +++ linux-2.6.24-rc8-mm1/include/asm-avr32/pgalloc.h
-> @@ -52,9 +52,9 @@ static inline struct page *pte_alloc_one
->  	struct page *pte;
->  
->  	pte = alloc_page(GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO);
-> -	if (!page)
-> +	if (!pte)
->  		return NULL;
-> -	pgtable_page_ctor(page);
-> +	pgtable_page_ctor(pte);
->  	return pte;
->  }
+> #include <stdio.h>
+> #include <stdlib.h>
+> #include <unistd.h>
+> #include <string.h>
+> #include <fcntl.h>
+> #include <sys/mman.h>
+> #include <sys/stat.h>
+> #include <sys/wait.h>
+>
+> static const char *filename;
+> static int msync_flag = MS_ASYNC;
+> static int msync_fork = 0;
+> static int msync_read = 0;
+>
+> static void print_times(const char *msg)
+> {
+>         struct stat stbuf;
+>         stat(filename, &stbuf);
+>         printf("%s\t%li\t%li\t%li\n", msg, stbuf.st_ctime, stbuf.st_mtime,
+>                stbuf.st_atime);
+> }
+>
+> static void do_msync(void *addr, int len)
+> {
+>         int res;
+>         if (!msync_fork) {
+>                 res = msync(addr, len, msync_flag);
+>                 if (res == -1) {
+>                         perror("msync");
+>                         exit(1);
+>                 }
+>         } else {
+>                 int pid = fork();
+>                 if (pid == -1) {
+>                         perror("fork");
+>                         exit(1);
+>                 }
+>                 if (!pid) {
+>                         int fd = open(filename, O_RDWR);
+>                         if (fd == -1) {
+>                                 perror("open");
+>                                 exit(1);
+>                         }
+>                         addr = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+>                         if (addr == MAP_FAILED) {
+>                                 perror("mmap");
+>                                 exit(1);
+>                         }
+>                         res = msync(addr, len, msync_flag);
+>                         if (res == -1) {
+>                                 perror("msync");
+>                                 exit(1);
+>                         }
+>                         exit(0);
+>                 }
+>                 wait(NULL);
+>         }
+> }
+>
+> static void usage(const char *progname)
+> {
+>         fprintf(stderr, "usage: %s filename [-sfr]\n", progname);
+>         fprintf(stderr, " -s: use MS_SYNC instead of MS_ASYNC\n");
+>         fprintf(stderr, " -f: fork and perform msync in a different process\n");
+>         fprintf(stderr, " -r: do a read access before each write access\n");
+>         exit(1);
+> }
+>
+> int main(int argc, char *argv[])
+> {
+>         int res;
+>         char *addr;
+>         char tmp[32];
+>         int fd;
+>
+>         if (argc < 2)
+>                 usage(argv[0]);
+>
+>         filename = argv[1];
+>         if (argc > 2) {
+>                 char *s;
+>                 if (argc > 3)
+>                         usage(argv[0]);
+>                 s = argv[2];
+>                 if (s[0] != '-' || !s[1])
+>                         usage(argv[0]);
+>                 for (s++; *s; s++) {
+>                         switch (*s) {
+>                         case 's':
+>                                 msync_flag = MS_SYNC;
+>                                 break;
+>                         case 'f':
+>                                 msync_fork = 1;
+>                                 break;
+>                         case 'r':
+>                                 msync_read = 1;
+>                                 break;
+>                         default:
+>                                 usage(argv[0]);
+>                         }
+>                 }
+>         }
+>
+>         fd = open(filename, O_RDWR | O_TRUNC | O_CREAT, 0666);
+>         if (fd == -1) {
+>                 perror(filename);
+>                 return 1;
+>         }
+>         print_times("begin");
+>         sleep(1);
+>         write(fd, "wxyz\n", 4);
+>         print_times("write");
+>         sleep(1);
+>         addr = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+>         if (addr == MAP_FAILED) {
+>                 perror("mmap");
+>                 return 1;
+>         }
+>         print_times("mmap");
+>         sleep(1);
+>
+>         if (msync_read) {
+>                 sprintf(tmp, "fetch %c", addr[1]);
+>                 print_times(tmp);
+>                 sleep(1);
+>         }
+>         addr[1] = 'b';
+>         print_times("store b");
+>         sleep(1);
+>         do_msync(addr, 4);
+>         print_times("msync");
+>         sleep(1);
+>
+>         if (msync_read) {
+>                 sprintf(tmp, "fetch %c", addr[2]);
+>                 print_times(tmp);
+>                 sleep(1);
+>         }
+>         addr[2] = 'c';
+>         print_times("store c");
+>         sleep(1);
+>         do_msync(addr, 4);
+>         print_times("msync");
+>         sleep(1);
+>
+>         if (msync_read) {
+>                 sprintf(tmp, "fetch %c", addr[3]);
+>                 print_times(tmp);
+>                 sleep(1);
+>         }
+>         addr[3] = 'd';
+>         print_times("store d");
+>         sleep(1);
+>         res = munmap(addr, 4);
+>         if (res == -1) {
+>                 perror("munmap");
+>                 return 1;
+>         }
+>         print_times("munmap");
+>         sleep(1);
+>
+>         res = close(fd);
+>         if (res == -1) {
+>                 perror("close");
+>                 return 1;
+>         }
+>         print_times("close");
+>         sleep(1);
+>         sync();
+>         print_times("sync");
+>
+>         return 0;
+> }
+>
 
-Hmm...I can't see anything like this on my current avr32-arch branch,
-but I think I mistakenly pushed out some unfinished code about a week
-ago and rewound it shortly afterwards. If Andrew pulled during that
-window, I guess it must have made it into -mm :-(
+Miklos, thanks for your program. Its output is given below.
 
-But thanks for testing and for providing a fix. I'll check the code
-that I was working on and apply the patch if it's still broken.
+debian:~/miklos# mount | grep mnt
+tmpfs on /mnt type tmpfs (rw)
+debian:~/miklos# ./miklos /mnt/file
+begin   1201089989      1201089989      1201085868
+write   1201089990      1201089990      1201085868
+mmap    1201089990      1201089990      1201089991
+store b 1201089992      1201089992      1201089991
+msync   1201089992      1201089992      1201089991
+store c 1201089994      1201089994      1201089991
+msync   1201089994      1201089994      1201089991
+store d 1201089996      1201089996      1201089991
+munmap  1201089996      1201089996      1201089991
+close   1201089996      1201089996      1201089991
+sync    1201089996      1201089996      1201089991
+debian:~/miklos# ./miklos /mnt/file -r
+begin   1201090025      1201090025      1201089991
+write   1201090026      1201090026      1201089991
+mmap    1201090026      1201090026      1201090027
+fetch x 1201090026      1201090026      1201090027
+store b 1201090026      1201090026      1201090027
+msync   1201090026      1201090026      1201090027
+fetch y 1201090026      1201090026      1201090027
+store c 1201090032      1201090032      1201090027
+msync   1201090032      1201090032      1201090027
+fetch z 1201090032      1201090032      1201090027
+store d 1201090036      1201090036      1201090027
+munmap  1201090036      1201090036      1201090027
+close   1201090036      1201090036      1201090027
+sync    1201090036      1201090036      1201090027
+debian:~/miklos#
 
-Haavard
+I think that after the patches applied the msync() system call does
+everything, which it is expected to do. The issue you're now talking
+about is one belonging to do_fsync() and the design of the tmpfs
+driver itself, I believe. Indeed, when the first write in the "-r"
+version of the test did not update the stamps, this is obviously not
+an msync() guilt.
+
+By the way, I would not like to move the "4/4" patch to the earlier
+place, because then it would describe the functionality, which had not
+been introduced yet.
