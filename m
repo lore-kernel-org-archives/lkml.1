@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYAWFmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbYAWFmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755166AbYAWFmV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 00:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbYAWFmG
+	id S1753324AbYAWFmg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 00:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYAWFmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 00:42:06 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:42591 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752386AbYAWFmB (ORCPT
+	Wed, 23 Jan 2008 00:42:09 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:23285 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752798AbYAWFmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 00:42:01 -0500
-Date: Tue, 22 Jan 2008 21:39:43 -0800
+	Wed, 23 Jan 2008 00:42:07 -0500
+Date: Tue, 22 Jan 2008 21:39:47 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: perex@perex.cz, akpm <akpm@linux-foundation.org>, samr <sam@ravnborg.org>
-Subject: [PATCH] sound: fix cs5535 section mismatch
-Message-Id: <20080122213943.939bc1cb.randy.dunlap@oracle.com>
+Subject: [PATCH] sound: fix opti9xx/miro section mismatch
+Message-Id: <20080122213947.f044c040.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -31,24 +31,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-snd_cs5535audio_mixer() is only called by __devinit snd_cs5535audio_probe(),
-so the mixer function can also be __devinit.
+snd_opti93x_mixer() is only called by __devinit snd_opti93x_probe(),
+so the former can also be __devinit.
 
-WARNING: vmlinux.o(.text+0xfdbba0): Section mismatch: reference to .init.data:ac97_quirks (between 'snd_cs5535audio_mixer' and 'process_bm0_irq')
+snd_miro_mixer() is only called by __devinit snd_miro_probe(),
+so the former can also be __devinit.
+
+sound/isa/opti9xx/opti92x-ad1848.c:
+WARNING: vmlinux.o(.text+0xf91cd7): Section mismatch: reference to .init.data:snd_opti93x_controls (between 'snd_opti93x_mixer' and 'snd_card_opti9xx_free')
+WARNING: vmlinux.o(.text+0xf91d66): Section mismatch: reference to .init.data:snd_miro_controls (between 'snd_opti93x_mixer' and 'snd_card_opti9xx_free')
+
+opti9xx/miro.c:
+WARNING: vmlinux.o(.text+0xf926c2): Section mismatch: reference to .init.data:snd_miro_controls (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+WARNING: vmlinux.o(.text+0xf926e5): Section mismatch: reference to .init.data:snd_miro_eq_controls (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+WARNING: vmlinux.o(.text+0xf926f9): Section mismatch: reference to .init.data:snd_miro_line_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+WARNING: vmlinux.o(.text+0xf92716): Section mismatch: reference to .init.data:snd_miro_amp_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+WARNING: vmlinux.o(.text+0xf9273e): Section mismatch: reference to .init.data:snd_miro_preamp_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+WARNING: vmlinux.o(.text+0xf92764): Section mismatch: reference to .init.data:snd_miro_capture_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+WARNING: vmlinux.o(.text+0xf92783): Section mismatch: reference to .init.data:snd_miro_radio_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+WARNING: vmlinux.o(.text+0xf9279a): Section mismatch: reference to .init.data:snd_miro_eq_controls (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+WARNING: vmlinux.o(.text+0xf927b9): Section mismatch: reference to .init.data:snd_miro_radio_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- sound/pci/cs5535audio/cs5535audio.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ sound/isa/opti9xx/miro.c           |    2 +-
+ sound/isa/opti9xx/opti92x-ad1848.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- linux-2.6.24-rc8-git5.orig/sound/pci/cs5535audio/cs5535audio.c
-+++ linux-2.6.24-rc8-git5/sound/pci/cs5535audio/cs5535audio.c
-@@ -145,7 +145,7 @@ static unsigned short snd_cs5535audio_ac
- 	return snd_cs5535audio_codec_read(cs5535au, reg);
+--- linux-2.6.24-rc8-git5.orig/sound/isa/opti9xx/miro.c
++++ linux-2.6.24-rc8-git5/sound/isa/opti9xx/miro.c
+@@ -662,7 +662,7 @@ static int __devinit snd_set_aci_init_va
+ 	return 0;
  }
  
--static int snd_cs5535audio_mixer(struct cs5535audio *cs5535au)
-+static int __devinit snd_cs5535audio_mixer(struct cs5535audio *cs5535au)
+-static int snd_miro_mixer(struct snd_miro *miro)
++static int __devinit snd_miro_mixer(struct snd_miro *miro)
  {
- 	struct snd_card *card = cs5535au->card;
- 	struct snd_ac97_bus *pbus;
+ 	struct snd_card *card;
+ 	unsigned int idx;
+--- linux-2.6.24-rc8-git5.orig/sound/isa/opti9xx/opti92x-ad1848.c
++++ linux-2.6.24-rc8-git5/sound/isa/opti9xx/opti92x-ad1848.c
+@@ -1595,7 +1595,7 @@ OPTi93X_DOUBLE("Capture Volume", 0, OPTi
+ }
+ };
+                                         
+-static int snd_opti93x_mixer(struct snd_opti93x *chip)
++static int __devinit snd_opti93x_mixer(struct snd_opti93x *chip)
+ {
+ 	struct snd_card *card;
+ 	struct snd_kcontrol_new knew;
