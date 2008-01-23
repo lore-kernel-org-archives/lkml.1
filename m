@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYAWVvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752459AbYAWV6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbYAWVvr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 16:51:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYAWVvk
+	id S1752459AbYAWV6w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 16:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbYAWV6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 16:51:40 -0500
-Received: from 1wt.eu ([62.212.114.60]:1558 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751508AbYAWVvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 16:51:39 -0500
-Date: Wed, 23 Jan 2008 22:19:52 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>,
-       Jordan Crouse <jordan.crouse@amd.com>, Lars Heete <hel@admin.de>,
-       Andres Salomon <dilinger@queued.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+	Wed, 23 Jan 2008 16:58:42 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:32821 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216AbYAWV6l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 16:58:41 -0500
+Date: Wed, 23 Jan 2008 16:58:34 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 2/2] x86: GEODE add the "mfgptfix" boot time option to fix MFGPT timers
-Message-ID: <20080123211952.GB3081@1wt.eu>
-References: <20080116165606.3ebc06a4@ephemeral> <478FCDB6.4010708@i4.informatik.rwth-aachen.de> <4795B14C.7040502@i4.informatik.rwth-aachen.de> <200801221111.21240.hel@admin.de> <4795D120.7070806@i4.informatik.rwth-aachen.de> <20080122192757.GC5241@cosmic.amd.com> <47965806.6080903@i4.informatik.rwth-aachen.de> <20080122211014.GA27870@elte.hu> <20080123211746.GA2969@1wt.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080123211746.GA2969@1wt.eu>
-User-Agent: Mutt/1.5.11
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 06/20 -v5] add notrace annotations for NMI routines
+In-Reply-To: <20080123213139.GB2282@Krystal>
+Message-ID: <Pine.LNX.4.58.0801231650150.19550@gandalf.stny.rr.com>
+References: <20080123160236.969334052@goodmis.org> <20080123160442.063076557@goodmis.org>
+ <20080123213139.GB2282@Krystal>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The new "mfgptfix" boot command line option may be usd to fix MFGPT
-timers on AMD Geode platforms when the BIOS has incorrectly applied
-a workaround. TinyBIOS version 0.98 is known to be affected, 0.99
-fixes the problem by letting the user disable the workaround.
 
-Signed-off-by: Willy Tarreau <w@1wt.eu>
----
- Documentation/kernel-parameters.txt |    5 +++++
- arch/x86/kernel/mfgpt_32.c          |   15 +++++++++++++++
- 2 files changed, 20 insertions(+), 0 deletions(-)
+On Wed, 23 Jan 2008, Mathieu Desnoyers wrote:
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index c417877..83c6704 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1051,6 +1051,11 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Multi-Function General Purpose Timers on AMD Geode
- 			platforms.
- 
-+	mfgptfix	[X86-32] Fix MFGPT timers on AMD Geode platforms when
-+			the BIOS has incorrectly applied a workaround. TinyBIOS
-+			version 0.98 is known to be affected, 0.99 fixes the
-+			problem by letting the user disable the workaround.
-+
- 	mga=		[HW,DRM]
- 
- 	mousedev.tap_time=
-diff --git a/arch/x86/kernel/mfgpt_32.c b/arch/x86/kernel/mfgpt_32.c
-index 5519091..f38d4a9 100644
---- a/arch/x86/kernel/mfgpt_32.c
-+++ b/arch/x86/kernel/mfgpt_32.c
-@@ -63,6 +63,21 @@ static int __init mfgpt_disable(char *s)
- }
- __setup("nomfgpt", mfgpt_disable);
- 
-+/* Reset the MFGPT timers. This is required by some broken BIOSes which already
-+ * do the same and leave the system in an unstable state. TinyBIOS 0.98 is
-+ * affected at least (0.99 is OK with MFGPT workaround left to off).
-+ */
-+static int __init mfgpt_fix(char *s)
-+{
-+	u32 val, dummy;
-+
-+	/* The following udocumented bit resets the MFGPT timers */
-+	val = 0xFF; dummy = 0;
-+	wrmsr(0x5140002B, val, dummy);
-+	return 1;
-+}
-+__setup("mfgptfix", mfgpt_fix);
-+
- /*
-  * Check whether any MFGPTs are available for the kernel to use.  In most
-  * cases, firmware that uses AMD's VSA code will claim all timers during
--- 
-1.5.3.4
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > This annotates NMI functions with notrace. Some tracers may be able
+> > to live with this, but some cannot. So we turn off NMI tracing.
+> >
+> > One solution might be to make a notrace_nmi which would only turn
+> > off NMI tracing if a trace utility needed it off.
+> >
+> Is this still needed with the atomic clocksource read ?
+
+This never had to do with the clocksource. The tracer itself isn't atomic
+against NMIs. hmm, it may actually be. It does a tracer disable for the
+CPU by an atomic_inc and this would prevent the NMI from causing harm.
+
+I'll test without this patch and see what happens when I turn on a high
+rate of NMIS.
+
+I still want to add a bit more notraces around for the simple
+reason of cleaning up the output and prehaps speeding up the code a bit.
+
+-- Steve
 
