@@ -1,1415 +1,1452 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYAWRbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbYAWRjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758067AbYAWRbn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbYAWRYD
+	id S1758108AbYAWRjc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:39:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757119AbYAWRit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:24:03 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56229 "EHLO mx1.redhat.com"
+	Wed, 23 Jan 2008 12:38:49 -0500
+Received: from ns2.suse.de ([195.135.220.15]:51145 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755632AbYAWRW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:22:58 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 24/27] NFS: Use local caching [try #2]
-To: Trond.Myklebust@netapp.com
-Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 23 Jan 2008 17:22:46 +0000
-Message-ID: <20080123172246.11107.62216.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
-References: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S1756639AbYAWRin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:38:43 -0500
+Subject: Re: [PATCH] Allocate pnp resources dynamically via krealloc -
+	working version
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jean Delvare <khali@linux-fr.org>
+In-Reply-To: <84144f020801191623i2ad344a8t1c40969578793d13@mail.gmail.com>
+References: <1200772810.3708.42.camel@queen>
+	 <84144f020801191623i2ad344a8t1c40969578793d13@mail.gmail.com>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Wed, 23 Jan 2008 18:38:37 +0100
+Message-Id: <1201109917.20940.214.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The attached patch makes it possible for the NFS filesystem to make use of the
-network filesystem local caching service (FS-Cache).
+On Sun, 2008-01-20 at 02:23 +0200, Pekka Enberg wrote:
+> Hi Thomas,
+...
+> When krealloc() returns NULL, there wasn't enough memory to fit the
+> new size but the original memory region remains unchanged.
+...
 
-To be able to use this, an updated mount program is required.  This can be
-obtained from:
+Thanks Pekka, this one should be better now:
 
-	http://people.redhat.com/steved/fscache/util-linux/
+The patch is against latest 2.6.24-rc8 not -mm tree:
 
-To mount an NFS filesystem to use caching, add an "fsc" option to the mount:
+Allocate pnp resources dynamically via krealloc
 
-	mount warthog:/ /a -o fsc
+Latest BIOS ACPI PNP device resource descriptions may have (especially on the
+general device PNP0c02) more than 20 IO port resources.
+Reserve the space in a static array wastes a lot of memory on every PNP device
+and is not a real option as the number of IO ports could be much greater than
+20.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
+This approach allocates the memory for PNP resources at runtime.
+The memory is reallocated in e.g. 8 (for IO port) resource portions.
+That means that the previously allocated pointers will get a new address.
+Therefore this address must not be stored and/or used as long as krealloc
+might still allocate new resources.
+>From what I have seen, there is a patch in -mm that gets rid of
+registering resources automatically and pass the pointers from
+pnp_resource_table to request_region.
+While this should still work (only disabled devices where the regions
+should have been unregistered should be modifyable) it is potential
+dangereous: once you realloc pnp_resource_table pointers you end up
+with invalid pointers in the kernel/resource.c implemented list.
+Finding this could get difficult as you get really ugly phenomenons with
+corrupted memory...
+
+
+The patch also needs another patch from Rene Herman:
+"[PATCH] sound/isa: kill pnp_resource_change."
+Sent to the alsa-devel list and it's already included in Takashi's tree
+for 2.6.25 inclusion.
+The function pnp_resource_change is a nop now and immediately returns to avoid
+compile errors. It can be removed as soon as everything is merged together.
+
+This has been tested on rather new machines on i386 and x86_64.
+The first with pnpbios also compiled in and forced a test with pnpacpi=off.
+
+isapnp is totally untested. Also the sysfs is rather untested.
+
+I tried to play a bit with the sysfs interface and wanted override
+resources without much success:
+Unloaded parport_pc driver, then the corresponding pnp device changed state
+from active to disabled and now I should have been able to modify BIOS
+settings, but it did not work. I expect this is rather unused and could have
+been broken before and I did not want to loose more time with it.
+Maybe someone else knows more here.
+
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+
 ---
+ drivers/pnp/core.c             |    2 
+ drivers/pnp/interface.c        |   44 +++-
+ drivers/pnp/isapnp/core.c      |   33 ++-
+ drivers/pnp/manager.c          |  402 +++++++++++++++++++++++++++++++++++------
+ drivers/pnp/pnpacpi/rsparser.c |  151 +++++++--------
+ drivers/pnp/pnpbios/rsparser.c |  112 ++++++-----
+ drivers/pnp/resource.c         |   16 -
+ drivers/pnp/support.c          |   11 -
+ drivers/pnp/system.c           |    4 
+ include/linux/pnp.h            |   51 +++--
+ 10 files changed, 587 insertions(+), 239 deletions(-)
 
- fs/nfs/Makefile           |    1 
- fs/nfs/client.c           |    5 +
- fs/nfs/file.c             |   37 ++++
- fs/nfs/fscache-def.c      |  289 +++++++++++++++++++++++++++++++++
- fs/nfs/fscache.c          |  391 +++++++++++++++++++++++++++++++++++++++++++++
- fs/nfs/fscache.h          |  148 +++++++++++++++++
- fs/nfs/inode.c            |   47 +++++
- fs/nfs/read.c             |   28 +++
- fs/nfs/super.c            |    3 
- fs/nfs/sysctl.c           |    1 
- include/linux/nfs_fs.h    |    9 +
- include/linux/nfs_fs_sb.h |   18 ++
- 12 files changed, 968 insertions(+), 9 deletions(-)
- create mode 100644 fs/nfs/fscache-def.c
- create mode 100644 fs/nfs/fscache.c
- create mode 100644 fs/nfs/fscache.h
-
-
-diff --git a/fs/nfs/Makefile b/fs/nfs/Makefile
-index df0f41e..073d04c 100644
---- a/fs/nfs/Makefile
-+++ b/fs/nfs/Makefile
-@@ -16,3 +16,4 @@ nfs-$(CONFIG_NFS_V4)	+= nfs4proc.o nfs4xdr.o nfs4state.o nfs4renewd.o \
- 			   nfs4namespace.o
- nfs-$(CONFIG_NFS_DIRECTIO) += direct.o
- nfs-$(CONFIG_SYSCTL) += sysctl.o
-+nfs-$(CONFIG_NFS_FSCACHE) += fscache.o fscache-def.o
-diff --git a/fs/nfs/client.c b/fs/nfs/client.c
-index a6f6254..bcdc5d0 100644
---- a/fs/nfs/client.c
-+++ b/fs/nfs/client.c
-@@ -43,6 +43,7 @@
- #include "delegation.h"
- #include "iostat.h"
- #include "internal.h"
-+#include "fscache.h"
+Index: linux-2.6.23/include/linux/pnp.h
+===================================================================
+--- linux-2.6.23.orig/include/linux/pnp.h
++++ linux-2.6.23/include/linux/pnp.h
+@@ -13,10 +13,6 @@
+ #include <linux/errno.h>
+ #include <linux/mod_devicetable.h>
  
- #define NFSDBG_FACILITY		NFSDBG_CLIENT
+-#define PNP_MAX_PORT		40
+-#define PNP_MAX_MEM		12
+-#define PNP_MAX_IRQ		2
+-#define PNP_MAX_DMA		2
+ #define PNP_NAME_LEN		50
  
-@@ -139,6 +140,8 @@ static struct nfs_client *nfs_alloc_client(const char *hostname,
- 	clp->cl_state = 1 << NFS4CLNT_LEASE_EXPIRED;
- #endif
+ struct pnp_protocol;
+@@ -26,13 +22,24 @@ struct pnp_dev;
+  * Resource Management
+  */
  
-+	nfs_fscache_get_client_cookie(clp);
-+
- 	return clp;
- 
- error_3:
-@@ -170,6 +173,8 @@ static void nfs_free_client(struct nfs_client *clp)
- 
- 	nfs4_shutdown_client(clp);
- 
-+	nfs_fscache_release_client_cookie(clp);
-+
- 	/* -EIO all pending I/O */
- 	if (!IS_ERR(clp->cl_rpcclient))
- 		rpc_shutdown_client(clp->cl_rpcclient);
-diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-index b3bb89f..d492cd7 100644
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -35,6 +35,7 @@
- #include "delegation.h"
- #include "internal.h"
- #include "iostat.h"
-+#include "fscache.h"
- 
- #define NFSDBG_FACILITY		NFSDBG_FILE
- 
-@@ -352,22 +353,48 @@ static int nfs_write_end(struct file *file, struct address_space *mapping,
- 	return status < 0 ? status : copied;
- }
- 
+-/* Use these instead of directly reading pnp_dev to get resource information */
 +/*
-+ * Partially or wholly invalidate a page
-+ * - Release the private state associated with a page if undergoing complete
-+ *   page invalidation
-+ * - Called if either PG_private or PG_fscache set on the page
-+ * - Caller holds page lock
++ * NULL pointer alarm: always check with pnp_port_ok or pnp_port_valid before
++ * accessing start/end/flags/len values or you might access not allocated mem.
++ * Same for mem, irq and dma macros
++ *
++ * Pointers are not static and they might change, do not store addresses
++ * of resources in the pnp resource table!
 + */
- static void nfs_invalidate_page(struct page *page, unsigned long offset)
- {
- 	if (offset != 0)
- 		return;
- 	/* Cancel any unstarted writes on this page */
- 	nfs_wb_page_cancel(page->mapping->host, page);
 +
-+	nfs_fscache_invalidate_page(page, page->mapping->host);
- }
++#define pnp_port_ok(dev,bar)	((dev)->res.allocated_ports > (bar))
++
+ #define pnp_port_start(dev,bar)   ((dev)->res.port_resource[(bar)].start)
+ #define pnp_port_end(dev,bar)     ((dev)->res.port_resource[(bar)].end)
+ #define pnp_port_flags(dev,bar)   ((dev)->res.port_resource[(bar)].flags)
+ #define pnp_port_valid(dev,bar) \
++	(pnp_port_ok((dev),(bar)) && \
+ 	((pnp_port_flags((dev),(bar)) & (IORESOURCE_IO | IORESOURCE_UNSET)) \
+-		== IORESOURCE_IO)
++		== IORESOURCE_IO))
+ #define pnp_port_len(dev,bar) \
+ 	((pnp_port_start((dev),(bar)) == 0 &&	\
+ 	  pnp_port_end((dev),(bar)) ==		\
+@@ -41,12 +48,14 @@ struct pnp_dev;
+ 	 (pnp_port_end((dev),(bar)) -		\
+ 	  pnp_port_start((dev),(bar)) + 1))
  
-+/*
-+ * Release the private state associated with a page
-+ * - Called if either PG_private or PG_fscache set on the page
-+ * - Caller holds page lock
-+ * - Return true (may release) or false (may not)
-+ */
- static int nfs_release_page(struct page *page, gfp_t gfp)
- {
- 	/* If PagePrivate() is set, then the page is not freeable */
--	return 0;
-+	if (PagePrivate(page))
-+		return 0;
-+	return nfs_fscache_release_page(page, gfp);
- }
++#define pnp_mem_ok(dev,bar)	((dev)->res.allocated_mems > (bar))
+ #define pnp_mem_start(dev,bar)   ((dev)->res.mem_resource[(bar)].start)
+ #define pnp_mem_end(dev,bar)     ((dev)->res.mem_resource[(bar)].end)
+ #define pnp_mem_flags(dev,bar)   ((dev)->res.mem_resource[(bar)].flags)
+ #define pnp_mem_valid(dev,bar) \
++	(pnp_mem_ok((dev),(bar)) && \
+ 	((pnp_mem_flags((dev),(bar)) & (IORESOURCE_MEM | IORESOURCE_UNSET)) \
+-		== IORESOURCE_MEM)
++		== IORESOURCE_MEM))
+ #define pnp_mem_len(dev,bar) \
+ 	((pnp_mem_start((dev),(bar)) == 0 &&	\
+ 	  pnp_mem_end((dev),(bar)) ==		\
+@@ -55,17 +64,21 @@ struct pnp_dev;
+ 	 (pnp_mem_end((dev),(bar)) -		\
+ 	  pnp_mem_start((dev),(bar)) + 1))
  
-+/*
-+ * Attempt to clear the private state associated with a page when an error
-+ * occurs that requires the cached contents of an inode to be written back or
-+ * destroyed
-+ * - Called if either PG_private or PG_fscache set on the page
-+ * - Caller holds page lock
-+ * - Return 0 if successful, -error otherwise
-+ */
- static int nfs_launder_page(struct page *page)
- {
-+	wait_on_page_fscache_write(page);
- 	return nfs_wb_page(page->mapping->host, page);
- }
++#define pnp_irq_ok(dev,bar)	((dev)->res.allocated_irqs > (bar))
+ #define pnp_irq(dev,bar)	 ((dev)->res.irq_resource[(bar)].start)
+ #define pnp_irq_flags(dev,bar)	 ((dev)->res.irq_resource[(bar)].flags)
+ #define pnp_irq_valid(dev,bar) \
++	(pnp_irq_ok((dev),(bar)) && \
+ 	((pnp_irq_flags((dev),(bar)) & (IORESOURCE_IRQ | IORESOURCE_UNSET)) \
+-		== IORESOURCE_IRQ)
++		== IORESOURCE_IRQ))
  
-@@ -387,6 +414,11 @@ const struct address_space_operations nfs_file_aops = {
- 	.launder_page = nfs_launder_page,
++#define pnp_dma_ok(dev,bar)	((dev)->res.allocated_dmas > (bar))
+ #define pnp_dma(dev,bar)	 ((dev)->res.dma_resource[(bar)].start)
+ #define pnp_dma_flags(dev,bar)	 ((dev)->res.dma_resource[(bar)].flags)
+ #define pnp_dma_valid(dev,bar) \
++	(pnp_dma_ok((dev),(bar)) && \
+ 	((pnp_dma_flags((dev),(bar)) & (IORESOURCE_DMA | IORESOURCE_UNSET)) \
+-		== IORESOURCE_DMA)
++		== IORESOURCE_DMA))
+ 
+ #define PNP_PORT_FLAG_16BITADDR	(1<<0)
+ #define PNP_PORT_FLAG_FIXED	(1<<1)
+@@ -119,10 +132,14 @@ struct pnp_option {
  };
  
-+/*
-+ * Notification that a PTE pointing to an NFS page is about to be made
-+ * writable, implying that someone is about to modify the page through a
-+ * shared-writable mapping
+ struct pnp_resource_table {
+-	struct resource port_resource[PNP_MAX_PORT];
+-	struct resource mem_resource[PNP_MAX_MEM];
+-	struct resource dma_resource[PNP_MAX_DMA];
+-	struct resource irq_resource[PNP_MAX_IRQ];
++	struct resource *port_resource;
++	unsigned int allocated_ports;
++	struct resource *mem_resource;
++	unsigned int allocated_mems;
++	struct resource *dma_resource;
++	unsigned int allocated_dmas;
++	struct resource *irq_resource;
++	unsigned int allocated_irqs;
+ };
+ 
+ /*
+@@ -364,6 +381,7 @@ int pnp_device_attach(struct pnp_dev *pn
+ void pnp_device_detach(struct pnp_dev *pnp_dev);
+ extern struct list_head pnp_global;
+ extern int pnp_platform_devices;
++extern int pnp_bios_data_parsed;
+ 
+ /* multidevice card support */
+ int pnp_add_card(struct pnp_card *card);
+@@ -398,6 +416,8 @@ int pnp_activate_dev(struct pnp_dev *dev
+ int pnp_disable_dev(struct pnp_dev *dev);
+ void pnp_resource_change(struct resource *resource, resource_size_t start,
+ 			 resource_size_t size);
++int pnp_assign_resource(struct pnp_resource_table *table, struct resource *res);
++
+ 
+ /* protocol helpers */
+ int pnp_is_active(struct pnp_dev *dev);
+@@ -445,6 +465,7 @@ static inline int pnp_stop_dev(struct pn
+ static inline int pnp_activate_dev(struct pnp_dev *dev) { return -ENODEV; }
+ static inline int pnp_disable_dev(struct pnp_dev *dev) { return -ENODEV; }
+ static inline void pnp_resource_change(struct resource *resource, resource_size_t start, resource_size_t size) { }
++static inline int pnp_assign_resource(struct pnp_resource_table *table, struct resource *res) { }
+ 
+ /* protocol helpers */
+ static inline int pnp_is_active(struct pnp_dev *dev) { return 0; }
+@@ -460,9 +481,11 @@ static inline void pnp_unregister_driver
+ #define pnp_warn(format, arg...) printk(KERN_WARNING "pnp: " format "\n" , ## arg)
+ 
+ #ifdef CONFIG_PNP_DEBUG
+-#define pnp_dbg(format, arg...) printk(KERN_DEBUG "pnp: " format "\n" , ## arg)
++#define pnp_dbg(format, arg...) printk(KERN_INFO "pnp: " format "\n" , ## arg)
++void pnp_dump_resources(struct pnp_dev *dev);
+ #else
+ #define pnp_dbg(format, arg...) do {} while (0)
++static inline void pnp_dump_resources(struct pnp_dev *dev) { }
+ #endif
+ 
+ #endif /* __KERNEL__ */
+Index: linux-2.6.23/drivers/pnp/interface.c
+===================================================================
+--- linux-2.6.23.orig/drivers/pnp/interface.c
++++ linux-2.6.23/drivers/pnp/interface.c
+@@ -264,7 +264,7 @@ static ssize_t pnp_show_current_resource
+ 	else
+ 		pnp_printf(buffer, "disabled\n");
+ 
+-	for (i = 0; i < PNP_MAX_PORT; i++) {
++	for (i = 0; pnp_port_ok(dev, i); i++) {
+ 		if (pnp_port_valid(dev, i)) {
+ 			pnp_printf(buffer, "io");
+ 			if (pnp_port_flags(dev, i) & IORESOURCE_DISABLED)
+@@ -277,7 +277,7 @@ static ssize_t pnp_show_current_resource
+ 									    i));
+ 		}
+ 	}
+-	for (i = 0; i < PNP_MAX_MEM; i++) {
++	for (i = 0; pnp_mem_ok(dev, i); i++) {
+ 		if (pnp_mem_valid(dev, i)) {
+ 			pnp_printf(buffer, "mem");
+ 			if (pnp_mem_flags(dev, i) & IORESOURCE_DISABLED)
+@@ -290,7 +290,7 @@ static ssize_t pnp_show_current_resource
+ 									   i));
+ 		}
+ 	}
+-	for (i = 0; i < PNP_MAX_IRQ; i++) {
++	for (i = 0; pnp_irq_ok(dev, i); i++) {
+ 		if (pnp_irq_valid(dev, i)) {
+ 			pnp_printf(buffer, "irq");
+ 			if (pnp_irq_flags(dev, i) & IORESOURCE_DISABLED)
+@@ -300,7 +300,7 @@ static ssize_t pnp_show_current_resource
+ 					   (unsigned long long)pnp_irq(dev, i));
+ 		}
+ 	}
+-	for (i = 0; i < PNP_MAX_DMA; i++) {
++	for (i = 0; pnp_dma_ok(dev, i); i++) {
+ 		if (pnp_dma_valid(dev, i)) {
+ 			pnp_printf(buffer, "dma");
+ 			if (pnp_dma_flags(dev, i) & IORESOURCE_DISABLED)
+@@ -381,6 +381,13 @@ pnp_set_current_resources(struct device 
+ 				buf += 2;
+ 				while (isspace(*buf))
+ 					++buf;
++				if (!pnp_port_ok(dev, nport)) {
++					buf++;
++					pnp_err("Cannot manually set port"
++						"resource %d for device %s",
++						nport, dev->name);
++					continue;
++				}
+ 				dev->res.port_resource[nport].start =
+ 				    simple_strtoul(buf, &buf, 0);
+ 				while (isspace(*buf))
+@@ -397,14 +404,19 @@ pnp_set_current_resources(struct device 
+ 				dev->res.port_resource[nport].flags =
+ 				    IORESOURCE_IO;
+ 				nport++;
+-				if (nport >= PNP_MAX_PORT)
+-					break;
+ 				continue;
+ 			}
+ 			if (!strnicmp(buf, "mem", 3)) {
+ 				buf += 3;
+ 				while (isspace(*buf))
+ 					++buf;
++				if (!pnp_mem_ok(dev, nmem)) {
++					buf++;
++					pnp_err("Cannot manually set mem "
++						"resource %d for device %s",
++						nmem, dev->name);
++					continue;
++				}
+ 				dev->res.mem_resource[nmem].start =
+ 				    simple_strtoul(buf, &buf, 0);
+ 				while (isspace(*buf))
+@@ -421,36 +433,44 @@ pnp_set_current_resources(struct device 
+ 				dev->res.mem_resource[nmem].flags =
+ 				    IORESOURCE_MEM;
+ 				nmem++;
+-				if (nmem >= PNP_MAX_MEM)
+-					break;
+ 				continue;
+ 			}
+ 			if (!strnicmp(buf, "irq", 3)) {
+ 				buf += 3;
+ 				while (isspace(*buf))
+ 					++buf;
++				if (!pnp_irq_ok(dev, nirq)) {
++					buf++;
++					pnp_err("Cannot manually set irq "
++						"resource %d for device %s",
++						nirq, dev->name);
++					continue;
++				}
+ 				dev->res.irq_resource[nirq].start =
+ 				    dev->res.irq_resource[nirq].end =
+ 				    simple_strtoul(buf, &buf, 0);
+ 				dev->res.irq_resource[nirq].flags =
+ 				    IORESOURCE_IRQ;
+ 				nirq++;
+-				if (nirq >= PNP_MAX_IRQ)
+-					break;
+ 				continue;
+ 			}
+ 			if (!strnicmp(buf, "dma", 3)) {
+ 				buf += 3;
+ 				while (isspace(*buf))
+ 					++buf;
++				if (!pnp_dma_ok(dev, ndma)) {
++					buf++;
++					pnp_err("Cannot manually set dma "
++						"resource %d for device %s",
++						ndma, dev->name);
++					continue;
++				}
+ 				dev->res.dma_resource[ndma].start =
+ 				    dev->res.dma_resource[ndma].end =
+ 				    simple_strtoul(buf, &buf, 0);
+ 				dev->res.dma_resource[ndma].flags =
+ 				    IORESOURCE_DMA;
+ 				ndma++;
+-				if (ndma >= PNP_MAX_DMA)
+-					break;
+ 				continue;
+ 			}
+ 			break;
+Index: linux-2.6.23/drivers/pnp/manager.c
+===================================================================
+--- linux-2.6.23.orig/drivers/pnp/manager.c
++++ linux-2.6.23/drivers/pnp/manager.c
+@@ -14,15 +14,338 @@
+ #include <linux/bitmap.h>
+ #include "base.h"
+ 
++/* Defines the amount of struct resources that will get (re-)alloced
++ * if the resource table runs out of allocated ports/irqs/dma/mems
 + */
- static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++#define PNP_ALLOC_PORT		8
++#define PNP_ALLOC_MEM		4
++#define PNP_ALLOC_IRQ		2
++#define PNP_ALLOC_DMA		2
++
+ DECLARE_MUTEX(pnp_res_mutex);
+ 
++#ifdef CONFIG_PNP_DEBUG
++void pnp_dump_resources(struct pnp_dev *dev)
++{
++	int i;
++	pnp_dbg("Resource table dump:");
++	pnp_dbg("Allocted: ports: %d [%p - %p]",
++		dev->res.allocated_ports, dev->res.port_resource,
++		dev->res.port_resource + (dev->res.allocated_ports *
++					   sizeof(struct resource)));
++	for (i = 0; pnp_port_ok(dev, i); i++) {
++		pnp_dbg("Port %d: start: 0x%lx - end: 0x%lx - flags: %lu", i,
++			(unsigned long)pnp_port_start(dev, i),
++			(unsigned long)pnp_port_end(dev, i),
++			pnp_port_flags(dev, i));
++	}
++	pnp_dbg("Allocted: mems: %d [%p - %p]",
++		dev->res.allocated_mems, dev->res.mem_resource,
++		dev->res.mem_resource + (dev->res.allocated_mems *
++					   sizeof(struct resource)));
++	for (i = 0; pnp_mem_ok(dev, i); i++) {
++		pnp_dbg("Mem %d: start: 0x%lx - end: 0x%lx - flags: %lu", i,
++			(unsigned long)pnp_mem_start(dev, i),
++			(unsigned long)pnp_mem_end(dev, i),
++			pnp_mem_flags(dev, i));
++	}
++	pnp_dbg("Allocted: irqs: %d [%p - %p]",
++		dev->res.allocated_irqs, dev->res.irq_resource,
++		dev->res.irq_resource + (dev->res.allocated_irqs *
++					 sizeof(struct resource)));
++	for (i = 0; pnp_irq_ok(dev, i); i++) {
++		pnp_dbg("Irq %d: start: 0x%lx - flags: %lu", i,
++			(unsigned long)pnp_irq(dev, i),
++			pnp_irq_flags(dev, i));
++	}
++	pnp_dbg("Allocted: dmas: %d [%p - %p]",
++		dev->res.allocated_dmas, dev->res.dma_resource,
++		dev->res.dma_resource + (dev->res.allocated_dmas *
++					 sizeof(struct resource)));
++	for (i = 0; pnp_dma_ok(dev, i); i++) {
++		pnp_dbg("Dma %d: start: 0x%lx - flags: %lu", i,
++			(unsigned long)pnp_dma(dev, i),
++			pnp_dma_flags(dev, i));
++	}
++}
++#endif
++
++static void pnp_init_io(struct resource *res)
++{
++	res->name = NULL;
++	res->start = 0;
++	res->end = 0;
++	res->flags = IORESOURCE_IO | IORESOURCE_AUTO | IORESOURCE_UNSET;
++}
++static void pnp_init_mem(struct resource *res)
++{
++	res->name = NULL;
++	res->start = 0;
++	res->end = 0;
++	res->flags = IORESOURCE_MEM | IORESOURCE_AUTO | IORESOURCE_UNSET;
++}
++static void pnp_init_irq(struct resource *res)
++{
++	res->name = NULL;
++	res->start = -1;
++	res->end = -1;
++	res->flags = IORESOURCE_IRQ | IORESOURCE_AUTO | IORESOURCE_UNSET;
++}
++static void pnp_init_dma(struct resource *res)
++{
++	res->name = NULL;
++	res->start = -1;
++	res->end = -1;
++	res->flags = IORESOURCE_DMA | IORESOURCE_AUTO | IORESOURCE_UNSET;
++}
++
++/****************************************************************
++ *
++ * pnp_alloc_{port,dma,irq,mem}
++ *
++ * These functions must only be when a device is not active and
++ * can therefore not have any resources requested via kernel/resource.c
++ * If the pnp resource table has not enough (or none) resources of
++ * a specific type allocated, the memory of the array is increased
++ * via krealloc, which results in changed pointers of all already
++ * allocated struct resources in the table.
++ * This would invalidate the addresses passed to request/insert_resource
++ */
++
++static int pnp_alloc_port(struct pnp_resource_table *res)
++{
++	int i;
++	void *ret;
++
++	ret = krealloc(res->port_resource,
++	       (sizeof(struct resource) * res->allocated_ports)
++	       + (sizeof(struct resource) * PNP_ALLOC_PORT), GFP_KERNEL);
++
++	if (!ret)
++		return -ENOMEM;
++
++	res->port_resource = ret;
++
++	res->allocated_ports += PNP_ALLOC_PORT;
++	for (i = res->allocated_ports - PNP_ALLOC_PORT;
++	     i < res->allocated_ports; i++)
++		pnp_init_io(&res->port_resource[i]);
++
++	pnp_dbg("Port allocate: %p - %p; Allocated: %lu bytes, size of"
++		"struct: %lu - allocated ports: %d",
++		res->port_resource,
++		res->port_resource
++		+ (sizeof(struct resource) * res->allocated_ports)
++		+ (sizeof(struct resource) * PNP_ALLOC_PORT),
++		(unsigned long) (sizeof(struct resource) * res->allocated_ports)
++		+ (sizeof(struct resource) * PNP_ALLOC_PORT),
++		(unsigned long) sizeof(struct resource),
++		res->allocated_ports);
++
++	return 0;
++}
++
++static int pnp_alloc_mem(struct pnp_resource_table *res)
++{
++	int i;
++	void *ret;
++
++	ret = krealloc(res->mem_resource,
++	       (sizeof(struct resource) * res->allocated_mems)
++	       + (sizeof(struct resource)	* PNP_ALLOC_MEM), GFP_KERNEL);
++
++	if (!ret)
++		return -ENOMEM;
++
++	res->mem_resource = ret;
++
++	res->allocated_mems += PNP_ALLOC_MEM;
++
++	for (i = res->allocated_mems - PNP_ALLOC_MEM; i < res->allocated_mems;
++	     i++)
++		pnp_init_mem(&res->mem_resource[i]);
++
++	pnp_dbg("Mem allocate: %p - %p; Allocated: %lu bytes, size of"
++		"struct: %lu - allocated mems: %d",
++		res->mem_resource,
++		res->mem_resource
++		+ (sizeof(struct resource) * res->allocated_mems)
++		+ (sizeof(struct resource) * PNP_ALLOC_MEM),
++		(unsigned long) (sizeof(struct resource) * res->allocated_mems)
++		+ (sizeof(struct resource) * PNP_ALLOC_MEM),
++		(unsigned long) sizeof(struct resource),
++		res->allocated_mems);
++
++	return 0;
++}
++
++static int pnp_alloc_irq(struct pnp_resource_table *res)
++{
++	int i;
++	void *ret;
++
++	ret = krealloc(res->irq_resource,
++	       (sizeof(struct resource) * res->allocated_irqs)
++	       + (sizeof(struct resource)	* PNP_ALLOC_IRQ), GFP_KERNEL);
++
++	if (!ret)
++		return -ENOMEM;
++
++	res->irq_resource = ret;
++
++	res->allocated_irqs += PNP_ALLOC_IRQ;
++	for (i = res->allocated_irqs - PNP_ALLOC_IRQ; i < res->allocated_irqs;
++	     i++)
++		pnp_init_irq(&res->irq_resource[i]);
++
++	pnp_dbg("Irq allocate: %p - %p; Allocated: %lu bytes, size of"
++		"struct: %lu - allocated irqs: %d",
++		res->irq_resource,
++		res->irq_resource
++		+ (sizeof(struct resource) * res->allocated_irqs)
++		+ (sizeof(struct resource) * PNP_ALLOC_IRQ),
++		(unsigned long) (sizeof(struct resource) * res->allocated_irqs)
++		+ (sizeof(struct resource) * PNP_ALLOC_IRQ),
++		(unsigned long) sizeof(struct resource),
++		res->allocated_irqs);
++	return 0;
++}
++
++static int pnp_alloc_dma(struct pnp_resource_table *res)
++{
++	int i;
++	void *ret;
++
++	ret = krealloc(res->dma_resource,
++	       (sizeof(struct resource) * res->allocated_dmas)
++	       + (sizeof(struct resource)	* PNP_ALLOC_DMA), GFP_KERNEL);
++
++	if (!ret)
++		return -ENOMEM;
++
++	res->dma_resource = ret;
++
++	res->allocated_dmas += PNP_ALLOC_DMA;
++	for (i = res->allocated_dmas - PNP_ALLOC_DMA; i < res->allocated_dmas;
++	     i++)
++		pnp_init_dma(&res->dma_resource[i]);
++
++	pnp_dbg("Dma allocate: %p - %p; Allocated: %lu bytes, size of"
++		"struct: %lu - allocated dmas: %d",
++		res->dma_resource,
++		res->dma_resource
++		+ (sizeof(struct resource) * res->allocated_dmas)
++		+ (sizeof(struct resource) * PNP_ALLOC_DMA),
++		(unsigned long) (sizeof(struct resource) * res->allocated_dmas)
++		+ (sizeof(struct resource) * PNP_ALLOC_DMA),
++		(unsigned long) sizeof(struct resource),
++		res->allocated_dmas);
++
++	return 0;
++}
++
++#define pnp_print_alloc_err(type, val, x)				\
++	pnp_dbg("%s - cannot allocate new resource: %d in func %s "	\
++		" - alloc: %d", type, val, __FUNCTION__, x)
++
++
++/*
++ * Assign a resource (IO, MEM, IRQ, DMA) to the resource table.
++ * Searches for an IORESOURCE_UNSET resource entry in the table or reallocs
++ * new resource entries as needed and copies the given resource there.
++ */
++int pnp_assign_resource(struct pnp_resource_table *table, struct resource *res)
++{
++	int i = 0, ret;
++
++	if (!table || !res)
++		return -EINVAL;
++
++	if (res->flags & IORESOURCE_IO) {
++		/* find the next unused table entry */
++		while (i < table->allocated_ports) {
++			if (!(table->port_resource[i].flags
++			      & IORESOURCE_UNSET))
++				i++;
++			else
++				break;
++		}
++		/* No unused table entry anymore, allocate new ones */
++		if (table->allocated_ports <= i) {
++			ret = pnp_alloc_port(table);
++			if (ret) {
++				pnp_print_alloc_err("Port", ret, i);
++				return ret;
++			}
++		}
++		memcpy(&table->port_resource[i], res, sizeof(struct resource));
++	} else 	if (res->flags & IORESOURCE_MEM) {
++		while (i < table->allocated_mems) {
++			if (!(table->mem_resource[i].flags & IORESOURCE_UNSET))
++				i++;
++			else
++				break;
++		}
++
++		if (table->allocated_mems <= i) {
++			ret = pnp_alloc_mem(table);
++			if (ret) {
++				pnp_print_alloc_err("System Memory", ret, i);
++				return ret;
++			}
++		}
++		memcpy(&table->mem_resource[i], res, sizeof(struct resource));
++	} else if (res->flags & IORESOURCE_IRQ) {
++		while (i < table->allocated_irqs) {
++			if (!(table->irq_resource[i].flags & IORESOURCE_UNSET))
++				i++;
++			else
++				break;
++		}
++
++		if (table->allocated_irqs <= i) {
++			ret = pnp_alloc_irq(table);
++			if (ret) {
++				pnp_print_alloc_err("Irq", ret, i);
++				return ret;
++			}
++		}
++		memcpy(&table->irq_resource[i], res, sizeof(struct resource));
++	} else	if (res->flags & IORESOURCE_DMA) {
++		while (i < table->allocated_dmas) {
++			if (!(table->dma_resource[i].flags & IORESOURCE_UNSET))
++				i++;
++			else
++				break;
++		}
++
++		if (table->allocated_dmas <= i) {
++			ret = pnp_alloc_dma(table);
++			if (ret) {
++				pnp_print_alloc_err("DMA", ret, i);
++				return ret;
++			}
++		}
++		memcpy(&table->dma_resource[i], res, sizeof(struct resource));
++	} else
++		return -EINVAL;
++
++	return 0;
++}
++
++#define pnp_print_assign_err(type, val)					\
++	pnp_dbg("%s resource %d not allocated, cannot assign value",	\
++		type, val);
++
++
++
+ static int pnp_assign_port(struct pnp_dev *dev, struct pnp_port *rule, int idx)
  {
- 	struct file *filp = vma->vm_file;
-@@ -396,6 +428,9 @@ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
- 	struct address_space *mapping;
- 	loff_t offset;
+ 	resource_size_t *start, *end;
+ 	unsigned long *flags;
  
-+	/* make sure the cache has finished storing the page */
-+	wait_on_page_fscache_write(page);
-+
- 	lock_page(page);
- 	mapping = page->mapping;
- 	if (mapping != vma->vm_file->f_path.dentry->d_inode->i_mapping) {
-diff --git a/fs/nfs/fscache-def.c b/fs/nfs/fscache-def.c
-new file mode 100644
-index 0000000..bc20b7d
---- /dev/null
-+++ b/fs/nfs/fscache-def.c
-@@ -0,0 +1,289 @@
-+/* NFS FS-Cache index structure definition
-+ *
-+ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public Licence
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the Licence, or (at your option) any later version.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/nfs_fs.h>
-+#include <linux/nfs_fs_sb.h>
-+#include <linux/in6.h>
-+
-+#include "internal.h"
-+#include "fscache.h"
-+
-+#define NFSDBG_FACILITY		NFSDBG_FSCACHE
-+
-+/*
-+ * Definition of the auxiliary data attached to NFS inode storage objects.
-+ * This is used for coherency management.
-+ */
-+struct nfs_fh_auxdata {
-+	struct timespec	i_mtime;
-+	struct timespec	i_ctime;
-+	loff_t		i_size;
-+};
-+
-+/*
-+ * Definition of the key for an NFS server index object.  The server's IP
-+ * address is stored as an IPv6 address, with IPv4 addresses being wrapped
-+ * appropriately.
-+ */
-+struct nfs_server_key {
-+	uint16_t nfsversion;
-+	uint16_t port;
-+	union {
-+		struct {
-+			uint8_t		ipv6wrapper[12];
-+			struct in_addr	addr;
-+		} ipv4_addr;
-+		struct in6_addr ipv6_addr;
-+	};
-+};
-+
-+static const struct fscache_netfs_operations nfs_cache_ops = {
-+};
-+
-+struct fscache_netfs nfs_cache_netfs = {
-+	.name		= "nfs",
-+	.version	= 0,
-+	.ops		= &nfs_cache_ops,
-+};
-+
-+static const uint8_t nfs_cache_ipv6_wrapper_for_ipv4[12] = {
-+	[0 ... 9]	= 0x00,
-+	[10 ... 11]	= 0xff
-+};
-+
-+/*
-+ * Generate a key to describe a server in the main NFS index
-+ */
-+static uint16_t nfs_server_get_key(const void *cookie_netfs_data,
-+				   void *buffer, uint16_t bufmax)
-+{
-+	const struct nfs_client *clp = cookie_netfs_data;
-+	struct nfs_server_key *key = buffer;
-+	uint16_t len = 0;
-+
-+	key->nfsversion = clp->cl_nfsversion;
-+
-+	switch (clp->cl_addr.sin_family) {
-+	case AF_INET:
-+		key->port = clp->cl_addr.sin_port;
-+
-+		memcpy(&key->ipv4_addr.ipv6wrapper,
-+		       &nfs_cache_ipv6_wrapper_for_ipv4,
-+		       sizeof(key->ipv4_addr.ipv6wrapper));
-+		memcpy(&key->ipv4_addr.addr,
-+		       &clp->cl_addr.sin_addr,
-+		       sizeof(key->ipv4_addr.addr));
-+		len = sizeof(struct nfs_server_key);
-+		break;
-+
-+	case AF_INET6:
-+		key->port = clp->cl_addr.sin_port;
-+
-+		memcpy(&key->ipv6_addr,
-+		       &clp->cl_addr.sin_addr,
-+		       sizeof(key->ipv6_addr));
-+		len = sizeof(struct nfs_server_key);
-+		break;
-+
-+	default:
-+		len = 0;
-+		printk(KERN_WARNING "NFS: Unknown network family '%d'\n",
-+			clp->cl_addr.sin_family);
-+		break;
-+	}
-+
-+	return len;
-+}
-+
-+/*
-+ * The root index for the filesystem is defined by nfsd IP address and ports
-+ */
-+const struct fscache_cookie_def nfs_cache_server_index_def = {
-+	.name		= "NFS.servers",
-+	.type 		= FSCACHE_COOKIE_TYPE_INDEX,
-+	.get_key	= nfs_server_get_key,
-+};
-+
-+/*
-+ * Generate a key to describe an NFS inode in an NFS server's index
-+ */
-+static uint16_t nfs_fh_get_key(const void *cookie_netfs_data,
-+			       void *buffer, uint16_t bufmax)
-+{
-+	const struct nfs_inode *nfsi = cookie_netfs_data;
-+	uint16_t nsize;
-+
-+	/* use the inode's NFS filehandle as the key */
-+	nsize = nfsi->fh.size;
-+	memcpy(buffer, nfsi->fh.data, nsize);
-+	return nsize;
-+}
-+
-+/*
-+ * Get an extra reference on a read context
-+ * - This function can be absent if the completion function doesn't require a
-+ *   context
-+ */
-+static void nfs_fh_get_context(void *cookie_netfs_data, void *context)
-+{
-+	get_nfs_open_context(context);
-+}
-+
-+/*
-+ * Release an extra reference on a read context
-+ * - This function can be absent if the completion function doesn't require a
-+ *   context
-+ */
-+static void nfs_fh_put_context(void *cookie_netfs_data, void *context)
-+{
-+	if (context)
-+		put_nfs_open_context(context);
-+}
-+
-+/*
-+ * Indication the cookie is no longer uncached
-+ * - This function is called when the backing store currently caching a cookie
-+ *   is removed
-+ * - The netfs should use this to clean up any markers indicating cached pages
-+ * - This is mandatory for any object that may have data
-+ */
-+static void nfs_fh_now_uncached(void *cookie_netfs_data)
-+{
-+	struct nfs_inode *nfsi = cookie_netfs_data;
-+	struct pagevec pvec;
-+	pgoff_t first;
-+	int loop, nr_pages;
-+
-+	pagevec_init(&pvec, 0);
-+	first = 0;
-+
-+	dprintk("NFS: nfs_fh_now_uncached: nfs_inode 0x%p\n", nfsi);
-+
-+	for (;;) {
-+		/* grab a bunch of pages to clean */
-+		nr_pages = pagevec_lookup(&pvec,
-+					  nfsi->vfs_inode.i_mapping,
-+					  first,
-+					  PAGEVEC_SIZE - pagevec_count(&pvec));
-+		if (!nr_pages)
-+			break;
-+
-+		for (loop = 0; loop < nr_pages; loop++)
-+			ClearPageFsCache(pvec.pages[loop]);
-+
-+		first = pvec.pages[nr_pages - 1]->index + 1;
-+
-+		pvec.nr = nr_pages;
-+		pagevec_release(&pvec);
-+		cond_resched();
-+	}
-+}
-+
-+/*
-+ * Tet certain file attributes from the netfs data
-+ * - This function can be absent for an index
-+ * - Not permitted to return an error
-+ * - The netfs data from the cookie being used as the source is
-+ *   presented
-+ */
-+static void nfs_fh_get_attr(const void *cookie_netfs_data, uint64_t *size)
-+{
-+	const struct nfs_inode *nfsi = cookie_netfs_data;
-+
-+	*size = nfsi->vfs_inode.i_size;
-+}
-+
-+/*
-+ * Get the auxiliary data from netfs data
-+ * - This function can be absent if the index carries no state data
-+ * - Should store the auxiliary data in the buffer
-+ * - Should return the amount of amount stored
-+ * - Not permitted to return an error
-+ * - The netfs data from the cookie being used as the source is presented
-+ */
-+static uint16_t nfs_fh_get_aux(const void *cookie_netfs_data,
-+			       void *buffer, uint16_t bufmax)
-+{
-+	struct nfs_fh_auxdata auxdata;
-+	const struct nfs_inode *nfsi = cookie_netfs_data;
-+
-+	auxdata.i_size = nfsi->vfs_inode.i_size;
-+	auxdata.i_mtime = nfsi->vfs_inode.i_mtime;
-+	auxdata.i_ctime = nfsi->vfs_inode.i_ctime;
-+
-+	if (bufmax > sizeof(auxdata))
-+		bufmax = sizeof(auxdata);
-+
-+	memcpy(buffer, &auxdata, bufmax);
-+	return bufmax;
-+}
-+
-+/*
-+ * Consult the netfs about the state of an object
-+ * - This function can be absent if the index carries no state data
-+ * - The netfs data from the cookie being used as the target is
-+ *   presented, as is the auxiliary data
-+ */
-+static enum fscache_checkaux nfs_fh_check_aux(void *cookie_netfs_data,
-+					      const void *data,
-+					      uint16_t datalen)
-+{
-+	struct nfs_fh_auxdata auxdata;
-+	struct nfs_inode *nfsi = cookie_netfs_data;
-+
-+	if (datalen > sizeof(auxdata))
-+		return FSCACHE_CHECKAUX_OBSOLETE;
-+
-+	auxdata.i_size = nfsi->vfs_inode.i_size;
-+	auxdata.i_mtime = nfsi->vfs_inode.i_mtime;
-+	auxdata.i_ctime = nfsi->vfs_inode.i_ctime;
-+
-+	if (memcmp(data, &auxdata, datalen) != 0)
-+		return FSCACHE_CHECKAUX_OBSOLETE;
-+
-+	return FSCACHE_CHECKAUX_OKAY;
-+}
-+
-+/*
-+ * The primary index for each server is simply made up of a series of NFS file
-+ * handles
-+ */
-+const struct fscache_cookie_def nfs_cache_fh_index_def = {
-+	.name		= "NFS.fh",
-+	.type		= FSCACHE_COOKIE_TYPE_DATAFILE,
-+	.get_key	= nfs_fh_get_key,
-+	.get_attr	= nfs_fh_get_attr,
-+	.get_aux	= nfs_fh_get_aux,
-+	.check_aux	= nfs_fh_check_aux,
-+	.get_context	= nfs_fh_get_context,
-+	.put_context	= nfs_fh_put_context,
-+	.now_uncached	= nfs_fh_now_uncached,
-+};
-+
-+/*
-+ * Register NFS for caching
-+ */
-+int nfs_fscache_register(void)
-+{
-+	return fscache_register_netfs(&nfs_cache_netfs);
-+}
-+
-+/*
-+ * Unregister NFS for caching
-+ */
-+void nfs_fscache_unregister(void)
-+{
-+	fscache_unregister_netfs(&nfs_cache_netfs);
-+}
-diff --git a/fs/nfs/fscache.c b/fs/nfs/fscache.c
-new file mode 100644
-index 0000000..465f961
---- /dev/null
-+++ b/fs/nfs/fscache.c
-@@ -0,0 +1,391 @@
-+/* NFS filesystem cache interface
-+ *
-+ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/nfs_fs.h>
-+#include <linux/nfs_fs_sb.h>
-+#include <linux/in6.h>
-+#include <linux/seq_file.h>
-+
-+#include "internal.h"
-+#include "fscache.h"
-+
-+#define NFSDBG_FACILITY		NFSDBG_FSCACHE
-+
-+/*
-+ * Get the per-client index cookie for an NFS client if the appropriate mount
-+ * flag was set
-+ * - We always try and get an index cookie for the client, but get filehandle
-+ *   cookies on a per-superblock basis, depending on the mount flags
-+ */
-+void nfs_fscache_get_client_cookie(struct nfs_client *clp)
-+{
-+	/* create a cache index for looking up filehandles */
-+	clp->fscache = fscache_acquire_cookie(nfs_cache_netfs.primary_index,
-+					      &nfs_cache_server_index_def,
-+					      clp);
-+	dfprintk(FSCACHE, "NFS: get client cookie (0x%p/0x%p)\n",
-+		 clp, clp->fscache);
-+}
-+
-+/*
-+ * Dispose of a per-client cookie
-+ */
-+void nfs_fscache_release_client_cookie(struct nfs_client *clp)
-+{
-+	dfprintk(FSCACHE, "NFS: releasing client cookie (0x%p/0x%p)\n",
-+		 clp, clp->fscache);
-+
-+	fscache_relinquish_cookie(clp->fscache, 0);
-+	clp->fscache = NULL;
-+}
-+
-+/*
-+ * Display statistics through /proc/pid/mountstats
-+ */
-+void nfs_fscache_show_stats(struct seq_file *m, struct nfs_server *nfss)
-+{
-+	seq_printf(m, "\tfscache rd: ok=%u,fail=%u,lasterr=%d\n",
-+		   atomic_read(&nfss->fscache_cnt_read_ok),
-+		   atomic_read(&nfss->fscache_cnt_read_fail),
-+		   nfss->fscache_last_read_error);
-+	seq_printf(m, "\tfscache wr: ok=%u,fail=%u,lasterr=%d\n",
-+		   atomic_read(&nfss->fscache_cnt_write_ok),
-+		   atomic_read(&nfss->fscache_cnt_write_fail),
-+		   nfss->fscache_last_write_error);
-+	seq_printf(m, "\tfscache uncache: ok=%u\n",
-+		   atomic_read(&nfss->fscache_cnt_uncache));
-+}
-+
-+/*
-+ * Initialise the per-filehandle cookie for an NFS inode
-+ */
-+void nfs_fscache_init_fh_cookie(struct inode *inode)
-+{
-+	NFS_I(inode)->fscache = NULL;
-+	if (S_ISREG(inode->i_mode))
-+		set_bit(NFS_INO_FSCACHE, &NFS_I(inode)->flags);
-+}
-+
-+/*
-+ * Get the per-filehandle cookie for an NFS inode
-+ */
-+void nfs_fscache_enable_fh_cookie(struct inode *inode)
-+{
-+	struct super_block *sb = inode->i_sb;
-+	struct nfs_inode *nfsi = NFS_I(inode);
-+
-+	if (nfsi->fscache || !NFS_FSCACHE(inode))
-+		return;
-+
-+	if ((NFS_SB(sb)->options & NFS_OPTION_FSCACHE)) {
-+		nfsi->fscache = fscache_acquire_cookie(
-+			NFS_SB(sb)->nfs_client->fscache,
-+			&nfs_cache_fh_index_def,
-+			nfsi);
-+
-+		dfprintk(FSCACHE, "NFS: get FH cookie (0x%p/0x%p/0x%p)\n",
-+			 sb, nfsi, nfsi->fscache);
-+	}
-+}
-+
-+/*
-+ * Release a per-filehandle cookie
-+ */
-+void nfs_fscache_release_fh_cookie(struct inode *inode)
-+{
-+	struct nfs_inode *nfsi = NFS_I(inode);
-+
-+	dfprintk(FSCACHE, "NFS: clear cookie (0x%p/0x%p)\n",
-+		 nfsi, nfsi->fscache);
-+
-+	fscache_relinquish_cookie(nfsi->fscache, 0);
-+	nfsi->fscache = NULL;
-+}
-+
-+/*
-+ * Retire a per-filehandle cookie, destroying the data attached to it
-+ */
-+void nfs_fscache_zap_fh_cookie(struct inode *inode)
-+{
-+	struct nfs_inode *nfsi = NFS_I(inode);
-+
-+	dfprintk(FSCACHE, "NFS: zapping cookie (0x%p/0x%p)\n",
-+		 nfsi, nfsi->fscache);
-+
-+	fscache_relinquish_cookie(nfsi->fscache, 1);
-+	nfsi->fscache = NULL;
-+}
-+
-+/*
-+ * Turn off the cache with regard to a filehandle cookie if opened for writing,
-+ * invalidating all the pages in the page cache relating to the associated
-+ * inode to clear the per-page caching
-+ */
-+void nfs_fscache_disable_fh_cookie(struct inode *inode)
-+{
-+	clear_bit(NFS_INO_FSCACHE, &NFS_I(inode)->flags);
-+
-+	if (NFS_I(inode)->fscache) {
-+		dfprintk(FSCACHE,
-+			 "NFS: nfsi 0x%p turning cache off\n", NFS_I(inode));
-+
-+		/* Need to invalidate any mapped pages that were read in before
-+		 * turning off the cache.
-+		 */
-+		if (inode->i_mapping && inode->i_mapping->nrpages)
-+			invalidate_inode_pages2(inode->i_mapping);
-+
-+		nfs_fscache_zap_fh_cookie(inode);
-+	}
-+}
-+
-+/*
-+ * Decide if we should enable or disable the FS cache for this inode
-+ * - For now, only regular files that are open read-only will be able to use
-+ *   the cache
-+ */
-+void nfs_fscache_set_fh_cookie(struct inode *inode, struct file *filp)
-+{
-+	if (NFS_FSCACHE(inode)) {
-+		if ((filp->f_flags & O_ACCMODE) != O_RDONLY)
-+			nfs_fscache_disable_fh_cookie(inode);
-+		else
-+			nfs_fscache_enable_fh_cookie(inode);
-+	}
-+}
-+
-+/*
-+ * Replace a per-filehandle cookie due to revalidation detecting a file having
-+ * changed on the server
-+ */
-+void nfs_fscache_renew_fh_cookie(struct inode *inode)
-+{
-+	struct nfs_inode *nfsi = NFS_I(inode);
-+	struct nfs_server *nfss = NFS_SERVER(inode);
-+	struct fscache_cookie *old = nfsi->fscache;
-+
-+	if (nfsi->fscache) {
-+		/* retire the current fscache cache and get a new one */
-+		fscache_relinquish_cookie(nfsi->fscache, 1);
-+
-+		nfsi->fscache = fscache_acquire_cookie(
-+			nfss->nfs_client->fscache,
-+			&nfs_cache_fh_index_def,
-+			nfsi);
-+
-+		dfprintk(FSCACHE,
-+			 "NFS: revalidation new cookie (0x%p/0x%p/0x%p/0x%p)\n",
-+			 nfss, nfsi, old, nfsi->fscache);
-+	}
-+}
-+
-+/*
-+ * change the filesize associated with a per-filehandle cookie
-+ */
-+void nfs_fscache_attr_changed(struct inode *inode)
-+{
-+	fscache_attr_changed(NFS_I(inode)->fscache);
-+}
-+
-+/*
-+ * Handle completion of a page being read from the cache
-+ * - Called in process (keventd) context
-+ */
-+static void nfs_readpage_from_fscache_complete(struct page *page,
-+					       void *context,
-+					       int error)
-+{
-+	dfprintk(FSCACHE,
-+		 "NFS: readpage_from_fscache_complete (0x%p/0x%p/%d)\n",
-+		 page, context, error);
-+
-+	/* if the read completes with an error, we just unlock the page and let
-+	 * the VM reissue the readpage */
-+	if (!error) {
-+		SetPageUptodate(page);
-+		unlock_page(page);
-+	} else {
-+		error = nfs_readpage_async(context, page->mapping->host, page);
-+		if (error)
-+			unlock_page(page);
-+	}
-+}
-+
-+/*
-+ * Store a newly fetched page in fscache
-+ * - PG_fscache must be set on the page
-+ */
-+void __nfs_readpage_to_fscache(struct inode *inode, struct page *page, int sync)
-+{
-+	struct nfs_server *nfss = NFS_SERVER(inode);
-+	int ret;
-+
-+	dfprintk(FSCACHE,
-+		 "NFS: readpage_to_fscache(fsc:%p/p:%p(i:%lx f:%lx)/%d)\n",
-+		 NFS_I(inode)->fscache, page, page->index, page->flags, sync);
-+
-+	ret = fscache_write_page(NFS_I(inode)->fscache, page, GFP_KERNEL);
-+	dfprintk(FSCACHE,
-+		 "NFS:     readpage_to_fscache: p:%p(i:%lu f:%lx) ret %d\n",
-+		 page, page->index, page->flags, ret);
-+
-+	if (ret != 0) {
-+		fscache_uncache_page(NFS_I(inode)->fscache, page);
-+		atomic_inc(&nfss->fscache_cnt_uncache);
-+		atomic_inc(&nfss->fscache_cnt_write_fail);
-+		nfss->fscache_last_write_error = ret;
-+	} else {
-+		atomic_inc(&nfss->fscache_cnt_write_ok);
-+	}
-+}
-+
-+/*
-+ * Retrieve a page from fscache
-+ */
-+int __nfs_readpage_from_fscache(struct nfs_open_context *ctx,
-+				struct inode *inode, struct page *page)
-+{
-+	struct nfs_server *nfss = NFS_SERVER(inode);
-+	int ret;
-+
-+	dfprintk(FSCACHE,
-+		 "NFS: readpage_from_fscache(fsc:%p/p:%p(i:%lx f:%lx)/0x%p)\n",
-+		 NFS_I(inode)->fscache, page, page->index, page->flags, inode);
-+
-+	ret = fscache_read_or_alloc_page(NFS_I(inode)->fscache,
-+					 page,
-+					 nfs_readpage_from_fscache_complete,
-+					 ctx,
-+					 GFP_KERNEL);
-+
-+	switch (ret) {
-+	case 0: /* read BIO submitted (page in fscache) */
-+		dfprintk(FSCACHE,
-+			 "NFS:    readpage_from_fscache: BIO submitted\n");
-+		atomic_inc(&nfss->fscache_cnt_read_ok);
-+		return ret;
-+
-+	case -ENOBUFS: /* inode not in cache */
-+	case -ENODATA: /* page not in cache */
-+		atomic_inc(&nfss->fscache_cnt_read_fail);
-+		dfprintk(FSCACHE,
-+			 "NFS:    readpage_from_fscache %d\n", ret);
-+		return 1;
-+
-+	default:
-+		dfprintk(FSCACHE, "NFS:    readpage_from_fscache %d\n", ret);
-+		atomic_inc(&nfss->fscache_cnt_read_fail);
-+		nfss->fscache_last_read_error = ret;
-+	}
-+	return ret;
-+}
-+
-+/*
-+ * Retrieve a set of pages from fscache
-+ */
-+int __nfs_readpages_from_fscache(struct nfs_open_context *ctx,
-+				 struct inode *inode,
-+				 struct address_space *mapping,
-+				 struct list_head *pages,
-+				 unsigned *nr_pages)
-+{
-+	struct nfs_server *nfss = NFS_SERVER(inode);
-+	int ret, npages = *nr_pages;
-+
-+	dfprintk(FSCACHE, "NFS: nfs_getpages_from_fscache (0x%p/%u/0x%p)\n",
-+		 NFS_I(inode)->fscache, npages, inode);
-+
-+	ret = fscache_read_or_alloc_pages(NFS_I(inode)->fscache,
-+					  mapping, pages, nr_pages,
-+					  nfs_readpage_from_fscache_complete,
-+					  ctx,
-+					  mapping_gfp_mask(mapping));
-+
-+	switch (ret) {
-+	case 0: /* read submitted to the cache for all pages */
-+		BUG_ON(!list_empty(pages));
-+		BUG_ON(*nr_pages != 0);
-+		dfprintk(FSCACHE,
-+			 "NFS: nfs_getpages_from_fscache: submitted\n");
-+
-+		atomic_add(npages, &nfss->fscache_cnt_read_ok);
-+		return ret;
-+
-+	case -ENOBUFS: /* some pages aren't cached and can't be */
-+	case -ENODATA: /* some pages aren't cached */
-+		dfprintk(FSCACHE,
-+			 "NFS: nfs_getpages_from_fscache: no page: %d\n", ret);
-+		atomic_add(*nr_pages, &nfss->fscache_cnt_read_fail);
-+		return 1;
-+
-+	default:
-+		dfprintk(FSCACHE,
-+			 "NFS: nfs_getpages_from_fscache: ret  %d\n", ret);
-+		nfss->fscache_last_read_error = ret;
-+	}
-+
-+	return ret;
-+}
-+
-+/*
-+ * Release the caching state associated with a page, if the page isn't busy
-+ * interacting with the cache
-+ * - Returns true (can release page) or false (page busy)
-+ */
-+int nfs_fscache_release_page(struct page *page, gfp_t gfp)
-+{
-+	struct nfs_server *nfss = NFS_SERVER(page->mapping->host);
-+
-+	if (PageFsCacheWrite(page)) {
-+		if (!(gfp & __GFP_WAIT))
-+			return 0;
-+		wait_on_page_fscache_write(page);
-+	}
-+
-+	if (PageFsCache(page)) {
-+		struct nfs_inode *nfsi = NFS_I(page->mapping->host);
-+
-+		BUG_ON(!nfsi->fscache);
-+
-+		dfprintk(FSCACHE, "NFS: fscache releasepage (0x%p/0x%p/0x%p)\n",
-+			 nfsi->fscache, page, nfsi);
-+
-+		fscache_uncache_page(nfsi->fscache, page);
-+		atomic_inc(&nfss->fscache_cnt_uncache);
-+	}
-+
+-	if (idx >= PNP_MAX_PORT) {
+-		dev_err(&dev->dev, "too many I/O port resources\n");
++	if (!pnp_port_ok(dev, idx)) {
++		pnp_print_assign_err("Port", idx);
+ 		/* pretend we were successful so at least the manager won't try again */
+ 		return 1;
+ 	}
+@@ -62,9 +385,8 @@ static int pnp_assign_mem(struct pnp_dev
+ 	resource_size_t *start, *end;
+ 	unsigned long *flags;
+ 
+-	if (idx >= PNP_MAX_MEM) {
+-		dev_err(&dev->dev, "too many memory resources\n");
+-		/* pretend we were successful so at least the manager won't try again */
++	if (!pnp_mem_ok(dev, idx)) {
++		pnp_print_assign_err("System Memory", idx);
+ 		return 1;
+ 	}
+ 
+@@ -119,9 +441,8 @@ static int pnp_assign_irq(struct pnp_dev
+ 		5, 10, 11, 12, 9, 14, 15, 7, 3, 4, 13, 0, 1, 6, 8, 2
+ 	};
+ 
+-	if (idx >= PNP_MAX_IRQ) {
+-		dev_err(&dev->dev, "too many IRQ resources\n");
+-		/* pretend we were successful so at least the manager won't try again */
++	if (!pnp_irq_ok(dev, idx)) {
++		pnp_print_assign_err("Irq", idx);
+ 		return 1;
+ 	}
+ 
+@@ -169,8 +490,8 @@ static void pnp_assign_dma(struct pnp_de
+ 		1, 3, 5, 6, 7, 0, 2, 4
+ 	};
+ 
+-	if (idx >= PNP_MAX_DMA) {
+-		dev_err(&dev->dev, "too many DMA resources\n");
++	if (!pnp_dma_ok(dev, idx)) {
++		pnp_print_assign_err("DMA", idx);
+ 		return;
+ 	}
+ 
+@@ -207,28 +528,28 @@ void pnp_init_resource_table(struct pnp_
+ {
+ 	int idx;
+ 
+-	for (idx = 0; idx < PNP_MAX_IRQ; idx++) {
++	for (idx = 0; idx < table->allocated_irqs; idx++) {
+ 		table->irq_resource[idx].name = NULL;
+ 		table->irq_resource[idx].start = -1;
+ 		table->irq_resource[idx].end = -1;
+ 		table->irq_resource[idx].flags =
+ 		    IORESOURCE_IRQ | IORESOURCE_AUTO | IORESOURCE_UNSET;
+ 	}
+-	for (idx = 0; idx < PNP_MAX_DMA; idx++) {
++	for (idx = 0; idx < table->allocated_dmas; idx++) {
+ 		table->dma_resource[idx].name = NULL;
+ 		table->dma_resource[idx].start = -1;
+ 		table->dma_resource[idx].end = -1;
+ 		table->dma_resource[idx].flags =
+ 		    IORESOURCE_DMA | IORESOURCE_AUTO | IORESOURCE_UNSET;
+ 	}
+-	for (idx = 0; idx < PNP_MAX_PORT; idx++) {
++	for (idx = 0; idx < table->allocated_ports; idx++) {
+ 		table->port_resource[idx].name = NULL;
+ 		table->port_resource[idx].start = 0;
+ 		table->port_resource[idx].end = 0;
+ 		table->port_resource[idx].flags =
+ 		    IORESOURCE_IO | IORESOURCE_AUTO | IORESOURCE_UNSET;
+ 	}
+-	for (idx = 0; idx < PNP_MAX_MEM; idx++) {
++	for (idx = 0; idx < table->allocated_mems; idx++) {
+ 		table->mem_resource[idx].name = NULL;
+ 		table->mem_resource[idx].start = 0;
+ 		table->mem_resource[idx].end = 0;
+@@ -245,7 +566,7 @@ static void pnp_clean_resource_table(str
+ {
+ 	int idx;
+ 
+-	for (idx = 0; idx < PNP_MAX_IRQ; idx++) {
++	for (idx = 0; idx < res->allocated_irqs; idx++) {
+ 		if (!(res->irq_resource[idx].flags & IORESOURCE_AUTO))
+ 			continue;
+ 		res->irq_resource[idx].start = -1;
+@@ -253,7 +574,7 @@ static void pnp_clean_resource_table(str
+ 		res->irq_resource[idx].flags =
+ 		    IORESOURCE_IRQ | IORESOURCE_AUTO | IORESOURCE_UNSET;
+ 	}
+-	for (idx = 0; idx < PNP_MAX_DMA; idx++) {
++	for (idx = 0; idx < res->allocated_dmas; idx++) {
+ 		if (!(res->dma_resource[idx].flags & IORESOURCE_AUTO))
+ 			continue;
+ 		res->dma_resource[idx].start = -1;
+@@ -261,7 +582,7 @@ static void pnp_clean_resource_table(str
+ 		res->dma_resource[idx].flags =
+ 		    IORESOURCE_DMA | IORESOURCE_AUTO | IORESOURCE_UNSET;
+ 	}
+-	for (idx = 0; idx < PNP_MAX_PORT; idx++) {
++	for (idx = 0; idx < res->allocated_ports; idx++) {
+ 		if (!(res->port_resource[idx].flags & IORESOURCE_AUTO))
+ 			continue;
+ 		res->port_resource[idx].start = 0;
+@@ -269,7 +590,7 @@ static void pnp_clean_resource_table(str
+ 		res->port_resource[idx].flags =
+ 		    IORESOURCE_IO | IORESOURCE_AUTO | IORESOURCE_UNSET;
+ 	}
+-	for (idx = 0; idx < PNP_MAX_MEM; idx++) {
++	for (idx = 0; idx < res->allocated_mems; idx++) {
+ 		if (!(res->mem_resource[idx].flags & IORESOURCE_AUTO))
+ 			continue;
+ 		res->mem_resource[idx].start = 0;
+@@ -386,46 +707,12 @@ fail:
+ int pnp_manual_config_dev(struct pnp_dev *dev, struct pnp_resource_table *res,
+ 			  int mode)
+ {
+-	int i;
+-	struct pnp_resource_table *bak;
+-
+-	if (!pnp_can_configure(dev))
+-		return -ENODEV;
+-	bak = pnp_alloc(sizeof(struct pnp_resource_table));
+-	if (!bak)
+-		return -ENOMEM;
+-	*bak = dev->res;
+-
+-	down(&pnp_res_mutex);
+-	dev->res = *res;
+-	if (!(mode & PNP_CONFIG_FORCE)) {
+-		for (i = 0; i < PNP_MAX_PORT; i++) {
+-			if (!pnp_check_port(dev, i))
+-				goto fail;
+-		}
+-		for (i = 0; i < PNP_MAX_MEM; i++) {
+-			if (!pnp_check_mem(dev, i))
+-				goto fail;
+-		}
+-		for (i = 0; i < PNP_MAX_IRQ; i++) {
+-			if (!pnp_check_irq(dev, i))
+-				goto fail;
+-		}
+-		for (i = 0; i < PNP_MAX_DMA; i++) {
+-			if (!pnp_check_dma(dev, i))
+-				goto fail;
+-		}
+-	}
+-	up(&pnp_res_mutex);
+-
+-	kfree(bak);
+-	return 0;
++	/* We must never end up here, these functions are poisson for dynamic
++	   allocation via pointer array.
++	*/
++	BUG_ON(1);
 +	return 1;
-+}
-+
-+/*
-+ * Release the caching state associated with a page if undergoing complete page
-+ * invalidation
-+ */
-+void __nfs_fscache_invalidate_page(struct page *page, struct inode *inode)
-+{
-+	struct nfs_server *nfss = NFS_SERVER(inode);
-+	struct nfs_inode *nfsi = NFS_I(inode);
-+
-+	BUG_ON(!nfsi->fscache);
-+
-+	dfprintk(FSCACHE, "NFS: fscache invalidatepage (0x%p/0x%p/0x%p)\n",
-+		 nfsi->fscache, page, nfsi);
-+
-+	wait_on_page_fscache_write(page);
-+
-+	BUG_ON(!PageLocked(page));
-+	fscache_uncache_page(nfsi->fscache, page);
-+	atomic_inc(&nfss->fscache_cnt_uncache);
-+}
-diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
-new file mode 100644
-index 0000000..144fb58
---- /dev/null
-+++ b/fs/nfs/fscache.h
-@@ -0,0 +1,148 @@
-+/* NFS filesystem cache interface definitions
-+ *
-+ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#ifndef _NFS_FSCACHE_H
-+#define _NFS_FSCACHE_H
-+
-+#include <linux/nfs_fs.h>
-+#include <linux/nfs_mount.h>
-+#include <linux/nfs4_mount.h>
-+
-+#ifdef CONFIG_NFS_FSCACHE
-+#include <linux/fscache.h>
-+
-+/*
-+ * fscache-def.c
-+ */
-+extern struct fscache_netfs nfs_cache_netfs;
-+extern const struct fscache_cookie_def nfs_cache_server_index_def;
-+extern const struct fscache_cookie_def nfs_cache_fh_index_def;
-+
-+extern int nfs_fscache_register(void);
-+extern void nfs_fscache_unregister(void);
-+
-+/*
-+ * fscache.c
-+ */
-+extern void nfs_fscache_get_client_cookie(struct nfs_client *);
-+extern void nfs_fscache_release_client_cookie(struct nfs_client *);
-+extern void nfs_fscache_show_stats(struct seq_file *, struct nfs_server *);
-+extern void nfs_fscache_init_fh_cookie(struct inode *);
-+extern void nfs_fscache_enable_fh_cookie(struct inode *);
-+extern void nfs_fscache_release_fh_cookie(struct inode *);
-+extern void nfs_fscache_zap_fh_cookie(struct inode *);
-+extern void nfs_fscache_disable_fh_cookie(struct inode *);
-+extern void nfs_fscache_set_fh_cookie(struct inode *, struct file *);
-+extern void nfs_fscache_renew_fh_cookie(struct inode *);
-+extern void nfs_fscache_attr_changed(struct inode *);
-+extern void __nfs_readpage_to_fscache(struct inode *, struct page *, int);
-+extern int __nfs_readpage_from_fscache(struct nfs_open_context *,
-+				       struct inode *, struct page *);
-+extern int __nfs_readpages_from_fscache(struct nfs_open_context *,
-+					struct inode *, struct address_space *,
-+					struct list_head *, unsigned *);
-+extern void __nfs_fscache_invalidate_page(struct page *, struct inode *);
-+extern int nfs_fscache_release_page(struct page *, gfp_t);
-+
-+/*
-+ * release the caching state associated with a page if undergoing complete page
-+ * invalidation
-+ */
-+static inline void nfs_fscache_invalidate_page(struct page *page,
-+					       struct inode *inode)
-+{
-+	if (PageFsCache(page))
-+		__nfs_fscache_invalidate_page(page, inode);
-+}
-+
-+/*
-+ * store a newly fetched page in fscache
-+ */
-+static inline void nfs_readpage_to_fscache(struct inode *inode,
-+					   struct page *page,
-+					   int sync)
-+{
-+	if (PageFsCache(page))
-+		__nfs_readpage_to_fscache(inode, page, sync);
-+}
-+
-+/*
-+ * retrieve a page from fscache
-+ */
-+static inline int nfs_readpage_from_fscache(struct nfs_open_context *ctx,
-+					    struct inode *inode,
-+					    struct page *page)
-+{
-+	if (NFS_I(inode)->fscache)
-+		return __nfs_readpage_from_fscache(ctx, inode, page);
-+	return -ENOBUFS;
-+}
-+
-+/*
-+ * retrieve a set of pages from fscache
-+ */
-+static inline int nfs_readpages_from_fscache(struct nfs_open_context *ctx,
-+					     struct inode *inode,
-+					     struct address_space *mapping,
-+					     struct list_head *pages,
-+					     unsigned *nr_pages)
-+{
-+	if (NFS_I(inode)->fscache)
-+		return __nfs_readpages_from_fscache(ctx, inode, mapping, pages,
-+						    nr_pages);
-+	return -ENOBUFS;
-+}
-+
-+#else /* CONFIG_NFS_FSCACHE */
-+static inline int nfs_fscache_register(void) { return 0; }
-+static inline void nfs_fscache_unregister(void) {}
-+static inline void nfs_fscache_get_client_cookie(struct nfs_client *clp) {}
-+static inline void nfs4_fscache_get_client_cookie(struct nfs_client *clp) {}
-+static inline void nfs_fscache_release_client_cookie(struct nfs_client *clp) {}
-+static inline void nfs_fscache_show_stats(struct seq_file *m,
-+					  struct nfs_server *nfss) {}
-+
-+static inline void nfs_fscache_init_fh_cookie(struct inode *inode) {}
-+static inline void nfs_fscache_enable_fh_cookie(struct inode *inode) {}
-+static inline void nfs_fscache_attr_changed(struct inode *inode) {}
-+static inline void nfs_fscache_release_fh_cookie(struct inode *inode) {}
-+static inline void nfs_fscache_zap_fh_cookie(struct inode *inode) {}
-+static inline void nfs_fscache_renew_fh_cookie(struct inode *inode) {}
-+static inline void nfs_fscache_disable_fh_cookie(struct inode *inode) {}
-+static inline void nfs_fscache_set_fh_cookie(struct inode *inode,
-+					     struct file *filp) {}
-+static inline void nfs_fscache_install_vm_ops(struct inode *inode,
-+					      struct vm_area_struct *vma) {}
-+static inline int nfs_fscache_release_page(struct page *page, gfp_t gfp)
-+{
-+	return 1; /* True: may release page */
-+}
-+static inline void nfs_fscache_invalidate_page(struct page *page,
-+					       struct inode *inode) {}
-+static inline void nfs_readpage_to_fscache(struct inode *inode,
-+					   struct page *page, int sync) {}
-+static inline int nfs_readpage_from_fscache(struct nfs_open_context *ctx,
-+					    struct inode *inode,
-+					    struct page *page)
-+{
-+	return -ENOBUFS;
-+}
-+static inline int nfs_readpages_from_fscache(struct nfs_open_context *ctx,
-+					     struct inode *inode,
-+					     struct address_space *mapping,
-+					     struct list_head *pages,
-+					     unsigned *nr_pages)
-+{
-+	return -ENOBUFS;
-+}
-+
-+#endif /* CONFIG_NFS_FSCACHE */
-+#endif /* _NFS_FSCACHE_H */
-diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
-index db5d96d..49726b1 100644
---- a/fs/nfs/inode.c
-+++ b/fs/nfs/inode.c
-@@ -46,6 +46,7 @@
- #include "delegation.h"
- #include "iostat.h"
- #include "internal.h"
-+#include "fscache.h"
  
- #define NFSDBG_FACILITY		NFSDBG_VFS
- 
-@@ -111,6 +112,7 @@ void nfs_clear_inode(struct inode *inode)
- 	BUG_ON(!list_empty(&NFS_I(inode)->open_files));
- 	nfs_zap_acl_cache(inode);
- 	nfs_access_zap_cache(inode);
-+	nfs_fscache_release_fh_cookie(inode);
+-fail:
+-	dev->res = *bak;
+-	up(&pnp_res_mutex);
+-	kfree(bak);
+-	return -EINVAL;
  }
  
  /**
-@@ -330,6 +332,8 @@ nfs_fhget(struct super_block *sb, struct nfs_fh *fh, struct nfs_fattr *fattr)
- 		memset(nfsi->cookieverf, 0, sizeof(nfsi->cookieverf));
- 		nfsi->access_cache = RB_ROOT;
- 
-+		nfs_fscache_init_fh_cookie(inode);
-+
- 		unlock_new_inode(inode);
- 	} else
- 		nfs_refresh_inode(inode, fattr);
-@@ -613,6 +617,7 @@ int nfs_open(struct inode *inode, struct file *filp)
- 	ctx->mode = filp->f_mode;
- 	nfs_file_set_open_context(filp, ctx);
- 	put_nfs_open_context(ctx);
-+	nfs_fscache_set_fh_cookie(inode, filp);
- 	return 0;
- }
- 
-@@ -673,7 +678,13 @@ __nfs_revalidate_inode(struct nfs_server *server, struct inode *inode)
- 			 (long long)NFS_FILEID(inode), status);
- 		goto out;
- 	}
--	spin_unlock(&inode->i_lock);
-+	if (nfsi->cache_validity & NFS_INO_INVALID_FSCACHE_ATTR) {
-+		nfsi->cache_validity &= ~NFS_INO_INVALID_FSCACHE_ATTR;
-+		spin_unlock(&inode->i_lock);
-+		nfs_fscache_attr_changed(inode);
-+	} else {
-+		spin_unlock(&inode->i_lock);
-+	}
- 
- 	if (nfsi->cache_validity & NFS_INO_INVALID_ACL)
- 		nfs_zap_acl_cache(inode);
-@@ -729,6 +740,7 @@ static int nfs_invalidate_mapping_nolock(struct inode *inode, struct address_spa
- 		memset(nfsi->cookieverf, 0, sizeof(nfsi->cookieverf));
- 	spin_unlock(&inode->i_lock);
- 	nfs_inc_stats(inode, NFSIOS_DATAINVALIDATE);
-+	nfs_fscache_renew_fh_cookie(inode);
- 	dfprintk(PAGECACHE, "NFS: (%s/%Ld) data cache invalidated\n",
- 			inode->i_sb->s_id, (long long)NFS_FILEID(inode));
- 	return 0;
-@@ -904,7 +916,13 @@ int nfs_refresh_inode(struct inode *inode, struct nfs_fattr *fattr)
- 	else
- 		status = nfs_check_inode_attributes(inode, fattr);
- 
--	spin_unlock(&inode->i_lock);
-+	if (nfsi->cache_validity & NFS_INO_INVALID_FSCACHE_ATTR) {
-+		nfsi->cache_validity &= ~NFS_INO_INVALID_FSCACHE_ATTR;
-+		spin_unlock(&inode->i_lock);
-+		nfs_fscache_attr_changed(inode);
-+	} else {
-+		spin_unlock(&inode->i_lock);
-+	}
- 	return status;
- }
- 
-@@ -925,12 +943,19 @@ int nfs_refresh_inode(struct inode *inode, struct nfs_fattr *fattr)
- int nfs_post_op_update_inode(struct inode *inode, struct nfs_fattr *fattr)
+@@ -563,6 +850,7 @@ int pnp_disable_dev(struct pnp_dev *dev)
+ void pnp_resource_change(struct resource *resource, resource_size_t start,
+ 			 resource_size_t size)
  {
- 	struct nfs_inode *nfsi = NFS_I(inode);
-+	bool update_fscache = false;
++	return;
+ 	resource->flags &= ~(IORESOURCE_AUTO | IORESOURCE_UNSET);
+ 	resource->start = start;
+ 	resource->end = start + size - 1;
+Index: linux-2.6.23/drivers/pnp/pnpacpi/rsparser.c
+===================================================================
+--- linux-2.6.23.orig/drivers/pnp/pnpacpi/rsparser.c
++++ linux-2.6.23/drivers/pnp/pnpacpi/rsparser.c
+@@ -73,23 +73,16 @@ static void pnpacpi_parse_allocated_irqr
+ 						u32 gsi, int triggering,
+ 						int polarity, int shareable)
+ {
+-	int i = 0;
+ 	int irq;
+ 	int p, t;
+-	static unsigned char warned;
++
++	struct resource new_res = {
++		.flags = IORESOURCE_IRQ,
++	};
  
- 	spin_lock(&inode->i_lock);
- 	nfsi->cache_validity |= NFS_INO_INVALID_ATTR|NFS_INO_REVAL_PAGECACHE;
- 	if (S_ISDIR(inode->i_mode))
- 		nfsi->cache_validity |= NFS_INO_INVALID_DATA;
-+	if (nfsi->cache_validity & NFS_INO_INVALID_FSCACHE_ATTR) {
-+		nfsi->cache_validity &= ~NFS_INO_INVALID_FSCACHE_ATTR;
-+		update_fscache = true;
-+	}
- 	spin_unlock(&inode->i_lock);
-+	if (update_fscache)
-+		nfs_fscache_attr_changed(inode);
- 	return nfs_refresh_inode(inode, fattr);
+ 	if (!valid_IRQ(gsi))
+ 		return;
+ 
+-	while (!(res->irq_resource[i].flags & IORESOURCE_UNSET) &&
+-	       i < PNP_MAX_IRQ)
+-		i++;
+-	if (i >= PNP_MAX_IRQ && !warned) {
+-		printk(KERN_ERR "pnpacpi: exceeded the max number of IRQ "
+-				"resources: %d \n", PNP_MAX_IRQ);
+-		warned = 1;
+-		return;
+-	}
+ 	/*
+ 	 * in IO-APIC mode, use overrided attribute. Two reasons:
+ 	 * 1. BIOS bug in DSDT
+@@ -107,20 +100,26 @@ static void pnpacpi_parse_allocated_irqr
+ 		}
+ 	}
+ 
+-	res->irq_resource[i].flags = IORESOURCE_IRQ;	// Also clears _UNSET flag
+-	res->irq_resource[i].flags |= irq_flags(triggering, polarity);
++	new_res.flags |= irq_flags(triggering, polarity);
+ 	irq = acpi_register_gsi(gsi, triggering, polarity);
+ 	if (irq < 0) {
+-		res->irq_resource[i].flags |= IORESOURCE_DISABLED;
++		/* <trenn> Check: Do we need to allocate and assign
++		   this resource at all? */
++		new_res.flags |= IORESOURCE_DISABLED;
++		if (pnp_assign_resource(res, &new_res))
++			pnp_err("Bug in %s", __FUNCTION__);
+ 		return;
+ 	}
+ 
+ 	if (shareable)
+-		res->irq_resource[i].flags |= IORESOURCE_IRQ_SHAREABLE;
++		new_res.flags |= IORESOURCE_IRQ_SHAREABLE;
+ 
+-	res->irq_resource[i].start = irq;
+-	res->irq_resource[i].end = irq;
++	new_res.start = irq;
++	new_res.end = irq;
+ 	pcibios_penalize_isa_irq(irq, 1);
++
++	if (pnp_assign_resource(res, &new_res))
++		pnp_err("Bug in %s", __FUNCTION__);
  }
  
-@@ -1018,7 +1043,8 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
- 		if (!timespec_equal(&inode->i_mtime, &fattr->mtime)) {
- 			dprintk("NFS: mtime change on server for file %s/%ld\n",
- 					inode->i_sb->s_id, inode->i_ino);
--			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA;
-+			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA |
-+				NFS_INO_INVALID_FSCACHE_ATTR;
- 			nfsi->cache_change_attribute = now;
- 		}
- 		/* If ctime has changed we should definitely clear access+acl caches */
-@@ -1027,7 +1053,9 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
- 	} else if (nfsi->change_attr != fattr->change_attr) {
- 		dprintk("NFS: change_attr change on server for file %s/%ld\n",
- 				inode->i_sb->s_id, inode->i_ino);
--		invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA|NFS_INO_INVALID_ACCESS|NFS_INO_INVALID_ACL;
-+		invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA |
-+			NFS_INO_INVALID_ACCESS|NFS_INO_INVALID_ACL |
-+			NFS_INO_INVALID_FSCACHE_ATTR;
- 		nfsi->cache_change_attribute = now;
- 	}
- 
-@@ -1039,13 +1067,13 @@ static int nfs_update_inode(struct inode *inode, struct nfs_fattr *fattr)
- 		 * the file grown beyond our last write? */
- 		if (nfsi->npages == 0 || new_isize > cur_isize) {
- 			inode->i_size = new_isize;
--			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA;
-+			invalid |= NFS_INO_INVALID_ATTR|NFS_INO_INVALID_DATA |
-+				NFS_INO_INVALID_FSCACHE_ATTR;
- 		}
- 		dprintk("NFS: isize change on server for file %s/%ld\n",
- 				inode->i_sb->s_id, inode->i_ino);
- 	}
- 
+ static int dma_flags(int type, int bus_master, int transfer)
+@@ -170,81 +169,71 @@ static void pnpacpi_parse_allocated_dmar
+ 						u32 dma, int type,
+ 						int bus_master, int transfer)
+ {
+-	int i = 0;
+-	static unsigned char warned;
 -
- 	memcpy(&inode->i_mtime, &fattr->mtime, sizeof(inode->i_mtime));
- 	memcpy(&inode->i_ctime, &fattr->ctime, sizeof(inode->i_ctime));
- 	memcpy(&inode->i_atime, &fattr->atime, sizeof(inode->i_atime));
-@@ -1214,6 +1242,10 @@ static int __init init_nfs_fs(void)
- {
- 	int err;
- 
-+	err = nfs_fscache_register();
-+	if (err < 0)
-+		goto out6;
+-	while (i < PNP_MAX_DMA &&
+-	       !(res->dma_resource[i].flags & IORESOURCE_UNSET))
+-		i++;
+-	if (i < PNP_MAX_DMA) {
+-		res->dma_resource[i].flags = IORESOURCE_DMA;	// Also clears _UNSET flag
+-		res->dma_resource[i].flags |=
+-		    dma_flags(type, bus_master, transfer);
+-		if (dma == -1) {
+-			res->dma_resource[i].flags |= IORESOURCE_DISABLED;
+-			return;
+-		}
+-		res->dma_resource[i].start = dma;
+-		res->dma_resource[i].end = dma;
+-	} else if (!warned) {
+-		printk(KERN_ERR "pnpacpi: exceeded the max number of DMA "
+-				"resources: %d \n", PNP_MAX_DMA);
+-		warned = 1;
+-	}
++	struct resource new_res = {
++		.flags = IORESOURCE_DMA,
++	};
 +
- 	err = nfs_fs_proc_init();
- 	if (err)
- 		goto out5;
-@@ -1260,6 +1292,8 @@ out3:
- out4:
- 	nfs_fs_proc_exit();
- out5:
-+	nfs_fscache_unregister();
-+out6:
- 	return err;
- }
- 
-@@ -1270,6 +1304,7 @@ static void __exit exit_nfs_fs(void)
- 	nfs_destroy_readpagecache();
- 	nfs_destroy_inodecache();
- 	nfs_destroy_nfspagecache();
-+	nfs_fscache_unregister();
- #ifdef CONFIG_PROC_FS
- 	rpc_proc_unregister("nfs");
- #endif
-diff --git a/fs/nfs/read.c b/fs/nfs/read.c
-index 4587a86..56e919e 100644
---- a/fs/nfs/read.c
-+++ b/fs/nfs/read.c
-@@ -18,12 +18,14 @@
- #include <linux/sunrpc/clnt.h>
- #include <linux/nfs_fs.h>
- #include <linux/nfs_page.h>
-+#include <linux/nfs_mount.h>
- #include <linux/smp_lock.h>
- 
- #include <asm/system.h>
- 
- #include "internal.h"
- #include "iostat.h"
-+#include "fscache.h"
- 
- #define NFSDBG_FACILITY		NFSDBG_PAGECACHE
- 
-@@ -114,8 +116,8 @@ static void nfs_readpage_truncate_uninitialised_page(struct nfs_read_data *data)
- 	}
- }
- 
--static int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
--		struct page *page)
-+int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
-+		       struct page *page)
- {
- 	LIST_HEAD(one_request);
- 	struct nfs_page	*new;
-@@ -142,6 +144,11 @@ static int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
- 
- static void nfs_readpage_release(struct nfs_page *req)
- {
-+	struct inode *d_inode = req->wb_context->path.dentry->d_inode;
-+
-+	if (PageUptodate(req->wb_page))
-+		nfs_readpage_to_fscache(d_inode, req->wb_page, 0);
-+
- 	unlock_page(req->wb_page);
- 
- 	dprintk("NFS: read done (%s/%Ld %d@%Ld)\n",
-@@ -496,8 +503,15 @@ int nfs_readpage(struct file *file, struct page *page)
- 	} else
- 		ctx = get_nfs_open_context(nfs_file_open_context(file));
- 
-+	if (!IS_SYNC(inode)) {
-+		error = nfs_readpage_from_fscache(ctx, inode, page);
-+		if (error == 0)
-+			goto out;
++	new_res.flags |= dma_flags(type, bus_master, transfer);
++	if (dma == -1) {
++		/* <trenn> Check: Do we need to allocate and assign
++		   this resource at all? */
++		new_res.flags |= IORESOURCE_DISABLED;
++		if (pnp_assign_resource(res, &new_res))
++			pnp_err("Bug in %s", __FUNCTION__);
++		return;
 +	}
++	new_res.start = dma;
++	new_res.end = dma;
++	if (pnp_assign_resource(res, &new_res))
++		pnp_err("Bug in %s", __FUNCTION__);
+ }
+ 
+ static void pnpacpi_parse_allocated_ioresource(struct pnp_resource_table *res,
+ 					       u64 io, u64 len, int io_decode)
+ {
+-	int i = 0;
+-	static unsigned char warned;
+-
+-	while (!(res->port_resource[i].flags & IORESOURCE_UNSET) &&
+-	       i < PNP_MAX_PORT)
+-		i++;
+-	if (i < PNP_MAX_PORT) {
+-		res->port_resource[i].flags = IORESOURCE_IO;	// Also clears _UNSET flag
+-		if (io_decode == ACPI_DECODE_16)
+-			res->port_resource[i].flags |= PNP_PORT_FLAG_16BITADDR;
+-		if (len <= 0 || (io + len - 1) >= 0x10003) {
+-			res->port_resource[i].flags |= IORESOURCE_DISABLED;
+-			return;
+-		}
+-		res->port_resource[i].start = io;
+-		res->port_resource[i].end = io + len - 1;
+-	} else if (!warned) {
+-		printk(KERN_ERR "pnpacpi: exceeded the max number of IO "
+-				"resources: %d \n", PNP_MAX_PORT);
+-		warned = 1;
+-	}
++	struct resource new_res = {
++		.flags = IORESOURCE_IO,
++	};
 +
- 	error = nfs_readpage_async(ctx, inode, page);
++	if (io_decode == ACPI_DECODE_16)
++		new_res.flags |= PNP_PORT_FLAG_16BITADDR;
++	if (len <= 0 || (io + len - 1) >= 0x10003) {
++		/* <trenn> Check: Do we need to allocate and assign
++		   this resource at all? */
++		new_res.flags |= IORESOURCE_DISABLED;
++		if (pnp_assign_resource(res, &new_res))
++			pnp_err("Bug in %s", __FUNCTION__);
++		return;
++	}
++	new_res.start = io;
++	new_res.end = io + len - 1;
++	if (pnp_assign_resource(res, &new_res))
++		pnp_err("Bug in %s", __FUNCTION__);
+ }
  
-+out:
- 	put_nfs_open_context(ctx);
- 	return error;
- out_unlock:
-@@ -573,6 +587,15 @@ int nfs_readpages(struct file *filp, struct address_space *mapping,
- 			return -EBADF;
- 	} else
- 		desc.ctx = get_nfs_open_context(nfs_file_open_context(filp));
+ static void pnpacpi_parse_allocated_memresource(struct pnp_resource_table *res,
+ 						u64 mem, u64 len,
+ 						int write_protect)
+ {
+-	int i = 0;
+-	static unsigned char warned;
+-
+-	while (!(res->mem_resource[i].flags & IORESOURCE_UNSET) &&
+-	       (i < PNP_MAX_MEM))
+-		i++;
+-	if (i < PNP_MAX_MEM) {
+-		res->mem_resource[i].flags = IORESOURCE_MEM;	// Also clears _UNSET flag
+-		if (len <= 0) {
+-			res->mem_resource[i].flags |= IORESOURCE_DISABLED;
+-			return;
+-		}
+-		if (write_protect == ACPI_READ_WRITE_MEMORY)
+-			res->mem_resource[i].flags |= IORESOURCE_MEM_WRITEABLE;
+-
+-		res->mem_resource[i].start = mem;
+-		res->mem_resource[i].end = mem + len - 1;
+-	} else if (!warned) {
+-		printk(KERN_ERR "pnpacpi: exceeded the max number of mem "
+-				"resources: %d\n", PNP_MAX_MEM);
+-		warned = 1;
+-	}
++	struct resource new_res = {
++		.flags = IORESOURCE_MEM,
++	};
 +
-+	/* attempt to read as many of the pages as possible from the cache
-+	 * - this returns -ENOBUFS immediately if the cookie is negative
-+	 */
-+	ret = nfs_readpages_from_fscache(desc.ctx, inode, mapping,
-+					 pages, &nr_pages);
-+	if (ret == 0)
-+		goto read_complete; /* all pages were read */
++	if (len <= 0) {
++		/* <trenn> Check: Do we need to allocate and assign
++		   this resource at all? */
++		new_res.flags |= IORESOURCE_DISABLED;
++		if (pnp_assign_resource(res, &new_res))
++			pnp_err("Bug in %s", __FUNCTION__);
++		return;
++	}
++	if (write_protect == ACPI_READ_WRITE_MEMORY)
++		new_res.flags |= IORESOURCE_MEM_WRITEABLE;
 +
- 	if (rsize < PAGE_CACHE_SIZE)
- 		nfs_pageio_init(&pgio, inode, nfs_pagein_multi, rsize, 0);
- 	else
-@@ -583,6 +606,7 @@ int nfs_readpages(struct file *filp, struct address_space *mapping,
- 	nfs_pageio_complete(&pgio);
- 	npages = (pgio.pg_bytes_written + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
- 	nfs_add_stats(inode, NFSIOS_READPAGES, npages);
-+read_complete:
- 	put_nfs_open_context(desc.ctx);
- out:
- 	return ret;
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index 7f5e747..6dd628f 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -57,6 +57,7 @@
- #include "delegation.h"
- #include "iostat.h"
- #include "internal.h"
-+#include "fscache.h"
++	new_res.start = mem;
++	new_res.end = mem + len - 1;
++	if (pnp_assign_resource(res, &new_res))
++		pnp_err("Bug in %s", __FUNCTION__);
+ }
  
- #define NFSDBG_FACILITY		NFSDBG_VFS
- 
-@@ -549,6 +550,8 @@ static int nfs_show_stats(struct seq_file *m, struct vfsmount *mnt)
- 
- 	rpc_print_iostats(m, nfss->client);
- 
-+	nfs_fscache_show_stats(m, nfss);
+ static void pnpacpi_parse_allocated_address_space(struct pnp_resource_table *res_table,
+Index: linux-2.6.23/drivers/pnp/pnpbios/rsparser.c
+===================================================================
+--- linux-2.6.23.orig/drivers/pnp/pnpbios/rsparser.c
++++ linux-2.6.23/drivers/pnp/pnpbios/rsparser.c
+@@ -56,78 +56,84 @@ inline void pcibios_penalize_isa_irq(int
+ static void pnpbios_parse_allocated_irqresource(struct pnp_resource_table *res,
+ 						int irq)
+ {
+-	int i = 0;
+-
+-	while (!(res->irq_resource[i].flags & IORESOURCE_UNSET)
+-	       && i < PNP_MAX_IRQ)
+-		i++;
+-	if (i < PNP_MAX_IRQ) {
+-		res->irq_resource[i].flags = IORESOURCE_IRQ;	// Also clears _UNSET flag
+-		if (irq == -1) {
+-			res->irq_resource[i].flags |= IORESOURCE_DISABLED;
+-			return;
+-		}
+-		res->irq_resource[i].start =
+-		    res->irq_resource[i].end = (unsigned long)irq;
+-		pcibios_penalize_isa_irq(irq, 1);
++	struct resource new_res = {
++		.flags = IORESOURCE_IRQ,
++	};
 +
++	if (irq == -1) {
++		/* <trenn> Check: Do we need to allocate and assign
++		   this resource at all? */
++		new_res.flags |= IORESOURCE_DISABLED;
++		if (pnp_assign_resource(res, &new_res))
++			pnp_err("Bug in %s", __FUNCTION__);
++		return;
+ 	}
++	new_res.start = new_res.end = (unsigned long)irq;
++	pcibios_penalize_isa_irq(irq, 1);
++	if (pnp_assign_resource(res, &new_res))
++		pnp_err("Bug in %s", __FUNCTION__);
+ }
+ 
+ static void pnpbios_parse_allocated_dmaresource(struct pnp_resource_table *res,
+ 						int dma)
+ {
+-	int i = 0;
+-
+-	while (i < PNP_MAX_DMA &&
+-	       !(res->dma_resource[i].flags & IORESOURCE_UNSET))
+-		i++;
+-	if (i < PNP_MAX_DMA) {
+-		res->dma_resource[i].flags = IORESOURCE_DMA;	// Also clears _UNSET flag
+-		if (dma == -1) {
+-			res->dma_resource[i].flags |= IORESOURCE_DISABLED;
+-			return;
+-		}
+-		res->dma_resource[i].start =
+-		    res->dma_resource[i].end = (unsigned long)dma;
++	struct resource new_res = {
++		.flags = IORESOURCE_DMA,
++	};
++
++	if (dma == -1) {
++		/* <trenn> Check: Do we need to allocate and assign
++		   this resource at all? */
++		new_res.flags |= IORESOURCE_DISABLED;
++		if (pnp_assign_resource(res, &new_res))
++			pnp_err("Bug in %s", __FUNCTION__);
++		return;
+ 	}
++	new_res.start = new_res.end = (unsigned long)dma;
++	if (pnp_assign_resource(res, &new_res))
++		pnp_err("Bug in %s", __FUNCTION__);
+ }
+ 
+ static void pnpbios_parse_allocated_ioresource(struct pnp_resource_table *res,
+ 					       int io, int len)
+ {
+-	int i = 0;
+-
+-	while (!(res->port_resource[i].flags & IORESOURCE_UNSET)
+-	       && i < PNP_MAX_PORT)
+-		i++;
+-	if (i < PNP_MAX_PORT) {
+-		res->port_resource[i].flags = IORESOURCE_IO;	// Also clears _UNSET flag
+-		if (len <= 0 || (io + len - 1) >= 0x10003) {
+-			res->port_resource[i].flags |= IORESOURCE_DISABLED;
+-			return;
+-		}
+-		res->port_resource[i].start = (unsigned long)io;
+-		res->port_resource[i].end = (unsigned long)(io + len - 1);
++	struct resource new_res = {
++		.flags = IORESOURCE_IO,
++	};
++
++	if (len <= 0 || (io + len - 1) >= 0x10003) {
++		/* <trenn> Check: Do we need to allocate and assign
++		   this resource at all? */
++		new_res.flags |= IORESOURCE_DISABLED;
++		if (pnp_assign_resource(res, &new_res))
++			pnp_err("Bug in %s", __FUNCTION__);
++		return;
+ 	}
++	new_res.start = (unsigned long)io;
++	new_res.end = (unsigned long)(io + len - 1);
++	if (pnp_assign_resource(res, &new_res))
++		pnp_err("Bug in %s", __FUNCTION__);
+ }
+ 
+ static void pnpbios_parse_allocated_memresource(struct pnp_resource_table *res,
+ 						int mem, int len)
+ {
+-	int i = 0;
+-
+-	while (!(res->mem_resource[i].flags & IORESOURCE_UNSET)
+-	       && i < PNP_MAX_MEM)
+-		i++;
+-	if (i < PNP_MAX_MEM) {
+-		res->mem_resource[i].flags = IORESOURCE_MEM;	// Also clears _UNSET flag
+-		if (len <= 0) {
+-			res->mem_resource[i].flags |= IORESOURCE_DISABLED;
+-			return;
+-		}
+-		res->mem_resource[i].start = (unsigned long)mem;
+-		res->mem_resource[i].end = (unsigned long)(mem + len - 1);
++	struct resource new_res = {
++		.flags = IORESOURCE_MEM,
++	};
++
++	if (len <= 0) {
++		/* <trenn> Check: Do we need to allocate and assign
++		   this resource at all? */
++		new_res.flags |= IORESOURCE_DISABLED;
++		if (pnp_assign_resource(res, &new_res))
++			pnp_err("Bug in %s", __FUNCTION__);
++		return;
+ 	}
++	new_res.start = (unsigned long)mem;
++	new_res.end = (unsigned long)(mem + len - 1);
++	if (pnp_assign_resource(res, &new_res))
++		pnp_err("Bug in %s", __FUNCTION__);
+ }
+ 
+ static unsigned char *pnpbios_parse_allocated_resource_data(unsigned char *p,
+Index: linux-2.6.23/drivers/pnp/core.c
+===================================================================
+--- linux-2.6.23.orig/drivers/pnp/core.c
++++ linux-2.6.23/drivers/pnp/core.c
+@@ -129,6 +129,7 @@ int __pnp_add_device(struct pnp_dev *dev
+ 		return ret;
+ 
+ 	pnp_interface_attach_device(dev);
++	pnp_dump_resources(dev);
  	return 0;
  }
  
-diff --git a/fs/nfs/sysctl.c b/fs/nfs/sysctl.c
-index b62481d..b3b3280 100644
---- a/fs/nfs/sysctl.c
-+++ b/fs/nfs/sysctl.c
-@@ -14,6 +14,7 @@
- #include <linux/nfs_fs.h>
+@@ -148,6 +149,7 @@ int pnp_add_device(struct pnp_dev *dev)
+ 	dev->dev.parent = &dev->protocol->dev;
+ 	sprintf(dev->dev.bus_id, "%02x:%02x", dev->protocol->number,
+ 		dev->number);
++	pnp_dbg("Adding device %s - %s", dev->name, dev->dev.bus_id);
+ 	ret = __pnp_add_device(dev);
+ 	if (ret)
+ 		return ret;
+Index: linux-2.6.23/drivers/pnp/isapnp/core.c
+===================================================================
+--- linux-2.6.23.orig/drivers/pnp/isapnp/core.c
++++ linux-2.6.23/drivers/pnp/isapnp/core.c
+@@ -42,6 +42,7 @@
+ #include <linux/init.h>
+ #include <linux/isapnp.h>
+ #include <linux/mutex.h>
++
+ #include <asm/io.h>
  
- #include "callback.h"
-+#include "internal.h"
+ #if 0
+@@ -65,6 +66,12 @@ module_param(isapnp_verbose, int, 0);
+ MODULE_PARM_DESC(isapnp_verbose, "ISA Plug & Play verbose mode");
+ MODULE_LICENSE("GPL");
  
- static const int nfs_set_port_min = 0;
- static const int nfs_set_port_max = 65535;
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index 2d15d4a..8a5685f 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -174,6 +174,9 @@ struct nfs_inode {
- 	int			 delegation_state;
- 	struct rw_semaphore	rwsem;
- #endif /* CONFIG_NFS_V4*/
-+#ifdef CONFIG_NFS_FSCACHE
-+	struct fscache_cookie	*fscache;
-+#endif
- 	struct inode		vfs_inode;
- };
++/* ISAPNP is restricted to these limits by spec */
++#define PNP_MAX_PORT		8
++#define PNP_MAX_MEM		4
++#define PNP_MAX_IRQ		2
++#define PNP_MAX_DMA		2
++
+ #define _PIDXR		0x279
+ #define _PNPWRP		0xa79
  
-@@ -187,6 +190,7 @@ struct nfs_inode {
- #define NFS_INO_INVALID_ACL	0x0010		/* cached acls are invalid */
- #define NFS_INO_REVAL_PAGECACHE	0x0020		/* must revalidate pagecache */
- #define NFS_INO_REVAL_FORCED	0x0040		/* force revalidation ignoring a delegation */
-+#define NFS_INO_INVALID_FSCACHE_ATTR	0x0080	/* local cache attributes are invalid */
- 
- /*
-  * Bit offsets in flags field
-@@ -195,6 +199,7 @@ struct nfs_inode {
- #define NFS_INO_ADVISE_RDPLUS	(1)		/* advise readdirplus */
- #define NFS_INO_STALE		(2)		/* possible stale inode */
- #define NFS_INO_ACL_LRU_SET	(3)		/* Inode is on the LRU list */
-+#define NFS_INO_FSCACHE		(4)		/* inode can be cached by FS-Cache */
- 
- static inline struct nfs_inode *NFS_I(struct inode *inode)
+@@ -942,6 +949,7 @@ static int isapnp_read_resources(struct 
+ 				 struct pnp_resource_table *res)
  {
-@@ -216,6 +221,7 @@ static inline struct nfs_inode *NFS_I(struct inode *inode)
+ 	int tmp, ret;
++	struct resource new_res;
  
- #define NFS_FLAGS(inode)		(NFS_I(inode)->flags)
- #define NFS_STALE(inode)		(test_bit(NFS_INO_STALE, &NFS_FLAGS(inode)))
-+#define NFS_FSCACHE(inode)	(test_bit(NFS_INO_FSCACHE, &NFS_FLAGS(inode)))
+ 	dev->active = isapnp_read_byte(ISAPNP_CFG_ACTIVATE);
+ 	if (dev->active) {
+@@ -949,16 +957,20 @@ static int isapnp_read_resources(struct 
+ 			ret = isapnp_read_word(ISAPNP_CFG_PORT + (tmp << 1));
+ 			if (!ret)
+ 				continue;
+-			res->port_resource[tmp].start = ret;
+-			res->port_resource[tmp].flags = IORESOURCE_IO;
++			new_res.start = ret;
++			new_res.flags = IORESOURCE_IO;
++			if (pnp_assign_resource(res, &new_res))
++				pnp_err("Bug in %s", __FUNCTION__);
+ 		}
+ 		for (tmp = 0; tmp < PNP_MAX_MEM; tmp++) {
+ 			ret =
+ 			    isapnp_read_word(ISAPNP_CFG_MEM + (tmp << 3)) << 8;
+ 			if (!ret)
+ 				continue;
+-			res->mem_resource[tmp].start = ret;
+-			res->mem_resource[tmp].flags = IORESOURCE_MEM;
++			new_res.start = ret;
++			new_res.flags = IORESOURCE_MEM;
++			if (pnp_assign_resource(res, &new_res))
++				pnp_err("Bug in %s", __FUNCTION__);
+ 		}
+ 		for (tmp = 0; tmp < PNP_MAX_IRQ; tmp++) {
+ 			ret =
+@@ -966,17 +978,20 @@ static int isapnp_read_resources(struct 
+ 			     8);
+ 			if (!ret)
+ 				continue;
+-			res->irq_resource[tmp].start =
+-			    res->irq_resource[tmp].end = ret;
+-			res->irq_resource[tmp].flags = IORESOURCE_IRQ;
++			new_res.start = new_res.end = ret;
++			new_res.flags = IORESOURCE_IRQ;
++			if (pnp_assign_resource(res, &new_res))
++				pnp_err("Bug in %s", __FUNCTION__);
+ 		}
+ 		for (tmp = 0; tmp < PNP_MAX_DMA; tmp++) {
+ 			ret = isapnp_read_byte(ISAPNP_CFG_DMA + tmp);
+ 			if (ret == 4)
+ 				continue;
+ 			res->dma_resource[tmp].start =
+-			    res->dma_resource[tmp].end = ret;
+-			res->dma_resource[tmp].flags = IORESOURCE_DMA;
++			new_res.start = new_res.end = ret;
++			new_res.flags = IORESOURCE_DMA;
++			if (pnp_assign_resource(res, &new_res))
++				pnp_err("Bug in %s", __FUNCTION__);
+ 		}
+ 	}
+ 	return 0;
+Index: linux-2.6.23/drivers/pnp/resource.c
+===================================================================
+--- linux-2.6.23.orig/drivers/pnp/resource.c
++++ linux-2.6.23/drivers/pnp/resource.c
+@@ -242,7 +242,7 @@ int pnp_check_port(struct pnp_dev *dev, 
+ 	}
  
- #define NFS_FILEID(inode)		(NFS_I(inode)->fileid)
+ 	/* check for internal conflicts */
+-	for (tmp = 0; tmp < PNP_MAX_PORT && tmp != idx; tmp++) {
++	for (tmp = 0; pnp_port_ok(dev, tmp) && tmp != idx; tmp++) {
+ 		if (dev->res.port_resource[tmp].flags & IORESOURCE_IO) {
+ 			tport = &dev->res.port_resource[tmp].start;
+ 			tend = &dev->res.port_resource[tmp].end;
+@@ -255,7 +255,7 @@ int pnp_check_port(struct pnp_dev *dev, 
+ 	pnp_for_each_dev(tdev) {
+ 		if (tdev == dev)
+ 			continue;
+-		for (tmp = 0; tmp < PNP_MAX_PORT; tmp++) {
++		for (tmp = 0; pnp_port_ok(tdev, tmp); tmp++) {
+ 			if (tdev->res.port_resource[tmp].flags & IORESOURCE_IO) {
+ 				if (cannot_compare
+ 				    (tdev->res.port_resource[tmp].flags))
+@@ -300,7 +300,7 @@ int pnp_check_mem(struct pnp_dev *dev, i
+ 	}
  
-@@ -455,6 +461,8 @@ extern int  nfs_readpages(struct file *, struct address_space *,
- 		struct list_head *, unsigned);
- extern int  nfs_readpage_result(struct rpc_task *, struct nfs_read_data *);
- extern void nfs_readdata_release(void *data);
-+extern int  nfs_readpage_async(struct nfs_open_context *, struct inode *,
-+			       struct page *);
+ 	/* check for internal conflicts */
+-	for (tmp = 0; tmp < PNP_MAX_MEM && tmp != idx; tmp++) {
++	for (tmp = 0; pnp_mem_ok(dev, tmp) && tmp != idx; tmp++) {
+ 		if (dev->res.mem_resource[tmp].flags & IORESOURCE_MEM) {
+ 			taddr = &dev->res.mem_resource[tmp].start;
+ 			tend = &dev->res.mem_resource[tmp].end;
+@@ -313,7 +313,7 @@ int pnp_check_mem(struct pnp_dev *dev, i
+ 	pnp_for_each_dev(tdev) {
+ 		if (tdev == dev)
+ 			continue;
+-		for (tmp = 0; tmp < PNP_MAX_MEM; tmp++) {
++		for (tmp = 0; pnp_mem_ok(tdev, tmp); tmp++) {
+ 			if (tdev->res.mem_resource[tmp].flags & IORESOURCE_MEM) {
+ 				if (cannot_compare
+ 				    (tdev->res.mem_resource[tmp].flags))
+@@ -355,7 +355,7 @@ int pnp_check_irq(struct pnp_dev *dev, i
+ 	}
  
- /*
-  * Allocate nfs_read_data structures
-@@ -545,6 +553,7 @@ extern void * nfs_root_data(void);
- #define NFSDBG_CALLBACK		0x0100
- #define NFSDBG_CLIENT		0x0200
- #define NFSDBG_MOUNT		0x0400
-+#define NFSDBG_FSCACHE		0x0800
- #define NFSDBG_ALL		0xFFFF
+ 	/* check for internal conflicts */
+-	for (tmp = 0; tmp < PNP_MAX_IRQ && tmp != idx; tmp++) {
++	for (tmp = 0; pnp_irq_ok(dev, tmp) && tmp != idx; tmp++) {
+ 		if (dev->res.irq_resource[tmp].flags & IORESOURCE_IRQ) {
+ 			if (dev->res.irq_resource[tmp].start == *irq)
+ 				return 0;
+@@ -388,7 +388,7 @@ int pnp_check_irq(struct pnp_dev *dev, i
+ 	pnp_for_each_dev(tdev) {
+ 		if (tdev == dev)
+ 			continue;
+-		for (tmp = 0; tmp < PNP_MAX_IRQ; tmp++) {
++		for (tmp = 0; pnp_irq_ok(tdev, tmp); tmp++) {
+ 			if (tdev->res.irq_resource[tmp].flags & IORESOURCE_IRQ) {
+ 				if (cannot_compare
+ 				    (tdev->res.irq_resource[tmp].flags))
+@@ -424,7 +424,7 @@ int pnp_check_dma(struct pnp_dev *dev, i
+ 	}
  
- #ifdef __KERNEL__
-diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
-index 0cac49b..3c8e15d 100644
---- a/include/linux/nfs_fs_sb.h
-+++ b/include/linux/nfs_fs_sb.h
-@@ -3,6 +3,7 @@
- 
- #include <linux/list.h>
- #include <linux/backing-dev.h>
-+#include <linux/fscache.h>
- 
- struct nfs_iostats;
- 
-@@ -65,6 +66,10 @@ struct nfs_client {
- 	char			cl_ipaddr[16];
- 	unsigned char		cl_id_uniquifier;
- #endif
+ 	/* check for internal conflicts */
+-	for (tmp = 0; tmp < PNP_MAX_DMA && tmp != idx; tmp++) {
++	for (tmp = 0; pnp_dma_ok(dev, tmp) && tmp != idx; tmp++) {
+ 		if (dev->res.dma_resource[tmp].flags & IORESOURCE_DMA) {
+ 			if (dev->res.dma_resource[tmp].start == *dma)
+ 				return 0;
+@@ -443,7 +443,7 @@ int pnp_check_dma(struct pnp_dev *dev, i
+ 	pnp_for_each_dev(tdev) {
+ 		if (tdev == dev)
+ 			continue;
+-		for (tmp = 0; tmp < PNP_MAX_DMA; tmp++) {
++		for (tmp = 0; pnp_dma_ok(tdev, tmp); tmp++) {
+ 			if (tdev->res.dma_resource[tmp].flags & IORESOURCE_DMA) {
+ 				if (cannot_compare
+ 				    (tdev->res.dma_resource[tmp].flags))
+Index: linux-2.6.23/drivers/pnp/support.c
+===================================================================
+--- linux-2.6.23.orig/drivers/pnp/support.c
++++ linux-2.6.23/drivers/pnp/support.c
+@@ -14,11 +14,16 @@
+  *	resources
+  * @dev: pointer to the desired PnP device
+  */
 +
-+#ifdef CONFIG_NFS_FSCACHE
-+	struct fscache_cookie	*fscache;	/* client index cache cookie */
-+#endif
- };
++/* <trenn> This interface is only used by pnpbios and one driver:
++   sound/isa/sscape.c
++   drivers can check for pnp_port_valid... anyway
++   This one is not needed.
++*/
+ int pnp_is_active(struct pnp_dev *dev)
+ {
+-	if (!pnp_port_start(dev, 0) && pnp_port_len(dev, 0) <= 1 &&
+-	    !pnp_mem_start(dev, 0) && pnp_mem_len(dev, 0) <= 1 &&
+-	    pnp_irq(dev, 0) == -1 && pnp_dma(dev, 0) == -1)
++	if (dev->res.allocated_ports <= 0 && dev->res.allocated_mems <= 0 &&
++	    dev->res.allocated_irqs <= 0 && dev->res.allocated_dmas <= 0)
+ 		return 0;
+ 	else
+ 		return 1;
+Index: linux-2.6.23/drivers/pnp/system.c
+===================================================================
+--- linux-2.6.23.orig/drivers/pnp/system.c
++++ linux-2.6.23/drivers/pnp/system.c
+@@ -58,7 +58,7 @@ static void reserve_resources_of_dev(str
+ {
+ 	int i;
  
- /*
-@@ -95,12 +100,25 @@ struct nfs_server {
- 	unsigned int		acdirmin;
- 	unsigned int		acdirmax;
- 	unsigned int		namelen;
-+	unsigned int		options;	/* extra options enabled by mount */
-+#define NFS_OPTION_FSCACHE	0x00000001	/* - local caching enabled */
+-	for (i = 0; i < PNP_MAX_PORT; i++) {
++	for (i = 0; pnp_port_ok(dev, i); i++) {
+ 		if (!pnp_port_valid(dev, i))
+ 			continue;
+ 		if (pnp_port_start(dev, i) == 0)
+@@ -80,7 +80,7 @@ static void reserve_resources_of_dev(str
+ 			      pnp_port_end(dev, i), 1);
+ 	}
  
- 	struct nfs_fsid		fsid;
- 	__u64			maxfilesize;	/* maximum file size */
- 	unsigned long		mount_time;	/* when this fs was mounted */
- 	dev_t			s_dev;		/* superblock dev numbers */
+-	for (i = 0; i < PNP_MAX_MEM; i++) {
++	for (i = 0; pnp_mem_ok(dev, i); i++) {
+ 		if (!pnp_mem_valid(dev, i))
+ 			continue;
  
-+#ifdef CONFIG_NFS_FSCACHE
-+	/* statistical counters for local caching */
-+	atomic_t		fscache_cnt_read_ok;
-+	atomic_t		fscache_cnt_read_fail;
-+	atomic_t		fscache_cnt_write_ok;
-+	atomic_t		fscache_cnt_write_fail;
-+	atomic_t		fscache_cnt_uncache;
-+	int			fscache_last_read_error;
-+	int			fscache_last_write_error;
-+#endif
-+
- #ifdef CONFIG_NFS_V4
- 	u32			attr_bitmask[2];/* V4 bitmask representing the set
- 						   of attributes supported on this
+
 
