@@ -1,103 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbYAWOck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbYAWOcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151AbYAWOck (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 09:32:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbYAWOcc
+	id S1754773AbYAWOcz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 09:32:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbYAWOcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 09:32:32 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52693 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752080AbYAWOcc (ORCPT
+	Wed, 23 Jan 2008 09:32:45 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:35378 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754309AbYAWOco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 09:32:32 -0500
-Date: Wed, 23 Jan 2008 16:32:30 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-       Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
- running on a memoryless node
-In-Reply-To: <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI>
-References: <20080118213011.GC10491@csn.ul.ie>
- <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
- <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
- <20080122214505.GA15674@aepfle.de> <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
- <20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
- <20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
- <20080123135513.GA14175@csn.ul.ie> <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
+	Wed, 23 Jan 2008 09:32:44 -0500
+Subject: Re: [PATCH 0/2] dm-band: The I/O bandwidth controller: Overview
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+In-Reply-To: <20080123.215350.193721890.ryov@valinux.co.jp>
+References: <20080123.215350.193721890.ryov@valinux.co.jp>
+Content-Type: text/plain
+Date: Wed, 23 Jan 2008 15:32:35 +0100
+Message-Id: <1201098755.6341.54.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jan 2008, Pekka J Enberg wrote:
-> I still think Christoph's kmem_getpages() patch is correct (to fix 
-> cache_grow() oops) but I overlooked the fact that none the callers of 
-> ____cache_alloc_node() deal with bootstrapping (with the exception of 
-> __cache_alloc_node() that even has a comment about it).
 
-So something like this (totally untested) patch on top of current git:
+On Wed, 2008-01-23 at 21:53 +0900, Ryo Tsuruta wrote:
+> Hi everyone,
+> 
+> I'm happy to announce that I've implemented a Block I/O bandwidth controller.
+> The controller is designed to be of use in a cgroup or virtual machine
+> environment. The current approach is that the controller is implemented as
+> a device-mapper driver.
 
----
- mm/slab.c |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+What definition of bandwidth does it use? Does it for example account
+for seek latency?
 
-Index: linux-2.6/mm/slab.c
-===================================================================
---- linux-2.6.orig/mm/slab.c
-+++ linux-2.6/mm/slab.c
-@@ -1668,7 +1668,11 @@ static void *kmem_getpages(struct kmem_c
- 	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
- 		flags |= __GFP_RECLAIMABLE;
- 
--	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
-+	if (nodeid == -1)
-+		page = alloc_pages(flags, cachep->gfporder);
-+	else
-+		page = alloc_pages_node(nodeid, flags, cachep->gfporder);
-+
- 	if (!page)
- 		return NULL;
- 
-@@ -2976,8 +2980,9 @@ retry:
- 		batchcount = BATCHREFILL_LIMIT;
- 	}
- 	l3 = cachep->nodelists[node];
-+	if (!l3)
-+		return NULL;
- 
--	BUG_ON(ac->avail > 0 || !l3);
- 	spin_lock(&l3->list_lock);
- 
- 	/* See if we can refill from the shared array */
-@@ -3317,7 +3322,8 @@ static void *____cache_alloc_node(struct
- 	int x;
- 
- 	l3 = cachep->nodelists[nodeid];
--	BUG_ON(!l3);
-+	if (!l3)
-+		return fallback_alloc(cachep, flags);
- 
- retry:
- 	check_irq_off();
-@@ -3394,12 +3400,6 @@ __cache_alloc_node(struct kmem_cache *ca
- 	if (unlikely(nodeid == -1))
- 		nodeid = numa_node_id();
- 
--	if (unlikely(!cachep->nodelists[nodeid])) {
--		/* Node not bootstrapped yet */
--		ptr = fallback_alloc(cachep, flags);
--		goto out;
--	}
--
- 	if (nodeid == numa_node_id()) {
- 		/*
- 		 * Use the locally cached objects if possible.
+
