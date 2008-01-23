@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYAWQqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755014AbYAWQtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbYAWQqR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 11:46:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbYAWQqF
+	id S1755014AbYAWQtD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 11:49:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYAWQsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 11:46:05 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41918 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751023AbYAWQqE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 11:46:04 -0500
-Date: Wed, 23 Jan 2008 16:41:50 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <linux@maxim.org.za>,
-       kernel@avr32linux.org, linux-kernel@vger.kernel.org,
-       Remy Bohmer <linux@bohmer.net>, Chip Coldwell <coldwell@redhat.com>
-Subject: Re: [PATCH 6/6] atmel_serial: Add DMA support
-Message-ID: <20080123164150.4b162826@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080123161425.203a0159@dhcp-252-066.norway.atmel.com>
-References: <1201013444-30370-1-git-send-email-hskinnemoen@atmel.com>
-	<200801231418.38997.marc.pignat@hevs.ch>
-	<20080123143503.764bc8cf@dhcp-252-066.norway.atmel.com>
-	<200801231452.55388.marc.pignat@hevs.ch>
-	<20080123150511.3785986c@dhcp-252-066.norway.atmel.com>
-	<20080123150436.75fe469c@lxorguk.ukuu.org.uk>
-	<20080123161425.203a0159@dhcp-252-066.norway.atmel.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Jan 2008 11:48:54 -0500
+Received: from as2.cineca.com ([130.186.84.242]:35681 "EHLO as2.cineca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752677AbYAWQsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 11:48:53 -0500
+Message-ID: <47976FE9.5030600@users.sourceforge.net>
+From: Andrea Righi <righiandr@users.sourceforge.net>
+Reply-To: righiandr@users.sourceforge.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Andrea Righi <righiandr@users.sourceforge.net>,
+       Naveen Gupta <ngupta@google.com>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
+Subject: Re: [RFC] [PATCH] cgroup: limit network bandwidth
+References: <47970448.7010609@users.sourceforge.net> <20080123092417.GA4542@balbir.in.ibm.com>
+In-Reply-To: <20080123092417.GA4542@balbir.in.ibm.com>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=77CEF397;
+	url=keyserver.veridis.com
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+Date: Wed, 23 Jan 2008 17:48:41 +0100 (MET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jan 2008 16:14:25 +0100
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-
-> On Wed, 23 Jan 2008 15:04:36 +0000
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Balbir Singh wrote:
+> * Andrea Righi <righiandr@users.sourceforge.net> [2008-01-23 10:09:28]:
 > 
-> > > No, I think GFP_DMA is for legacy ISA DMA and other DMA controllers
-> > > with addressing limitations. The PDC is capable of accessing the full
-> > > 32-bit physical address space on both AT91 and AVR32, so no special DMA
-> > > flags are needed.
-> > 
-> > For kernel coherent DMA buffers use the dma_ API to allocate the memory.
+>> Allow to limit the network bandwidth for specific process containers (cgroups)
+>> imposing additional delays in the sockets' sendmsg()/recvmsg() calls made by
+>> those processes that exceed the limits defined in the control group filesystem.
+>>
+>> Example:
+>>   # mkdir /dev/cgroup
+>>   # mount -t cgroup -onet net /dev/cgroup
+>>   # cd /dev/cgroup
+>>   # mkdir foo
+>>   --> the cgroup foo has been created
+>>   # /bin/echo $$ > foo/tasks
+>>   # /bin/echo 1024 > foo/net.tcp
+>>   # /bin/echo 2048 > foo/net.tot
+>>   # sh
+>>   --> the subshell 'sh' is running in cgroup "foo" that has a maximum network
+>>       bandwidth for TCP traffic of 1MB/s and 2MB/s for total network
+>>       activities.
+>>
+>> The netlimit approach can be easily extended to support additional network
+>> protocols or different socket families or types (PF_UNIX, PF_BLUETOOTH,
+>> SOCK_SEQPACKET, etc.).
+>>
+>> Signed-off-by: Andrea Righi <a.righi@cineca.it>
 > 
-> Yes, but since we're managing DMA coherency using the streaming DMA
-> API, we don't really need coherent buffers, right?
+> Hi, Andrea,
+> 
+> I took a quick look at the patches and it looks like we throttle
+> network (by forcing a schedule_timeout()), if we exceed our bandwidth
+> limit. That is one way of doing it, but it has some disadvantages, it
+> does not scale to 
+> 
+> 1. Implementation of soft limits (limit on contention of resource)
+>    gets harder
 
-Right.
+Why? do you mean implementing a grace time when the soft-limit is
+exceeded? this could be done in cgroup_nl_throttle() introducing 3 
+additional attributes to struct netlimit (i.e. hard_limit,
+last_time_exceeded grace_time) and perform something like:
+...
+	if ((current_rate > hard_limit) ||
+	    time_after(jiffies, last_time_exceeded + grace_time))
+			schedule_timeout(sleep);
+...
 
-Alan
+> 2. Why dont use the existing infrastructure for bandwidth limitation
+>    for implementing the network controller?
+> 
+
+Yes, the integration with iptables (as Paul said), and traffic shaping
+rules would be absolutely the right way(tm) in perspective. I was just
+proposing a possible simple API to implement the limiting stuff.
+
+-Andrea
