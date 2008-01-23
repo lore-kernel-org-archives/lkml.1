@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbYAWHaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbYAWHlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755636AbYAWHaB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 02:30:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYAWH3y
+	id S1755298AbYAWHlg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 02:41:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbYAWHlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 02:29:54 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:60860 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752646AbYAWH3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 02:29:53 -0500
-Date: Wed, 23 Jan 2008 08:30:01 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, perex@perex.cz,
-       akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] sound: fix opti9xx/miro section mismatch
-Message-ID: <20080123073001.GC19132@uranus.ravnborg.org>
-References: <20080122213947.f044c040.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080122213947.f044c040.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 23 Jan 2008 02:41:25 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:41532 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753617AbYAWHlX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 02:41:23 -0500
+Date: Wed, 23 Jan 2008 09:41:20 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: hidave.darkstar@gmail.com
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc8-mm1 : net tcp_input.c warnings
+In-Reply-To: <20080122.190137.206066966.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0801230937270.31652@kivilampi-30.cs.helsinki.fi>
+References: <a8e1da0801220109v6bf8931ev50f2210402c3ba41@mail.gmail.com>
+ <Pine.LNX.4.64.0801221115150.31652@kivilampi-30.cs.helsinki.fi>
+ <a8e1da0801221744m37021e88h5c188e5b31ea42bf@mail.gmail.com>
+ <20080122.190137.206066966.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-172326771-1201074080=:31652"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 09:39:47PM -0800, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> snd_opti93x_mixer() is only called by __devinit snd_opti93x_probe(),
-> so the former can also be __devinit.
-> 
-> snd_miro_mixer() is only called by __devinit snd_miro_probe(),
-> so the former can also be __devinit.
-> 
-> sound/isa/opti9xx/opti92x-ad1848.c:
-> WARNING: vmlinux.o(.text+0xf91cd7): Section mismatch: reference to .init.data:snd_opti93x_controls (between 'snd_opti93x_mixer' and 'snd_card_opti9xx_free')
-> WARNING: vmlinux.o(.text+0xf91d66): Section mismatch: reference to .init.data:snd_miro_controls (between 'snd_opti93x_mixer' and 'snd_card_opti9xx_free')
-> 
-> opti9xx/miro.c:
-> WARNING: vmlinux.o(.text+0xf926c2): Section mismatch: reference to .init.data:snd_miro_controls (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
-> WARNING: vmlinux.o(.text+0xf926e5): Section mismatch: reference to .init.data:snd_miro_eq_controls (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
-> WARNING: vmlinux.o(.text+0xf926f9): Section mismatch: reference to .init.data:snd_miro_line_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
-> WARNING: vmlinux.o(.text+0xf92716): Section mismatch: reference to .init.data:snd_miro_amp_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
-> WARNING: vmlinux.o(.text+0xf9273e): Section mismatch: reference to .init.data:snd_miro_preamp_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
-> WARNING: vmlinux.o(.text+0xf92764): Section mismatch: reference to .init.data:snd_miro_capture_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
-> WARNING: vmlinux.o(.text+0xf92783): Section mismatch: reference to .init.data:snd_miro_radio_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
-> WARNING: vmlinux.o(.text+0xf9279a): Section mismatch: reference to .init.data:snd_miro_eq_controls (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
-> WARNING: vmlinux.o(.text+0xf927b9): Section mismatch: reference to .init.data:snd_miro_radio_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> ---
->  sound/isa/opti9xx/miro.c           |    2 +-
->  sound/isa/opti9xx/opti92x-ad1848.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+---696243703-172326771-1201074080=:31652
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+
+On Tue, 22 Jan 2008, David Miller wrote:
+
+> From: "Dave Young" <hidave.darkstar@gmail.com>
+> Date: Wed, 23 Jan 2008 09:44:30 +0800
 > 
-> --- linux-2.6.24-rc8-git5.orig/sound/isa/opti9xx/miro.c
-> +++ linux-2.6.24-rc8-git5/sound/isa/opti9xx/miro.c
-> @@ -662,7 +662,7 @@ static int __devinit snd_set_aci_init_va
->  	return 0;
->  }
->  
-> -static int snd_miro_mixer(struct snd_miro *miro)
-> +static int __devinit snd_miro_mixer(struct snd_miro *miro)
->  {
->  	struct snd_card *card;
->  	unsigned int idx;
-> --- linux-2.6.24-rc8-git5.orig/sound/isa/opti9xx/opti92x-ad1848.c
-> +++ linux-2.6.24-rc8-git5/sound/isa/opti9xx/opti92x-ad1848.c
-> @@ -1595,7 +1595,7 @@ OPTi93X_DOUBLE("Capture Volume", 0, OPTi
->  }
->  };
->                                          
-> -static int snd_opti93x_mixer(struct snd_opti93x *chip)
-> +static int __devinit snd_opti93x_mixer(struct snd_opti93x *chip)
->  {
->  	struct snd_card *card;
->  	struct snd_kcontrol_new knew;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> > On Jan 22, 2008 6:47 PM, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+> > > [PATCH] [TCP]: debug S+L
+> > 
+> > Thanks, If there's new findings I will let you know.
+> 
+> Thanks for helping with this bug Dave.
+
+I noticed btw that there thing might (is likely to) spuriously trigger at 
+WARN_ON(sacked != tp->sacked_out); because those won't be equal when SACK 
+is not enabled. If that does happen too often, I send a fixed patch for 
+it, yet, the fact that I print print tp->rx_opt.sack_ok allows
+identification of those cases already as it's zero when SACK is not 
+enabled.
+
+Just ask if you need the updated debug patch.
+
+-- 
+ i.
+---696243703-172326771-1201074080=:31652--
