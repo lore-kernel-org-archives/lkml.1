@@ -1,54 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbYAWUz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbYAWVCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753361AbYAWUz5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 15:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbYAWUzt
+	id S1752946AbYAWVCc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 16:02:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYAWVCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 15:55:49 -0500
-Received: from as4.cineca.com ([130.186.84.251]:60120 "EHLO as4.cineca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751512AbYAWUzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 15:55:48 -0500
-Message-ID: <4797A9C3.1000707@users.sourceforge.net>
-From: Andrea Righi <righiandr@users.sourceforge.net>
-Reply-To: righiandr@users.sourceforge.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
+	Wed, 23 Jan 2008 16:02:23 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47224 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751807AbYAWVCV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 16:02:21 -0500
+Date: Wed, 23 Jan 2008 13:00:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: a.p.zijlstra@chello.nl, salikhmetov@gmail.com, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
+       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+Subject: Re: [PATCH -v8 3/4] Enable the MS_ASYNC functionality in
+ sys_msync()
+In-Reply-To: <E1JHlh8-0003s8-Bb@pomaz-ex.szeredi.hu>
+Message-ID: <alpine.LFD.1.00.0801231248060.2803@woody.linux-foundation.org>
+References: <12010440803930-git-send-email-salikhmetov@gmail.com>  <1201044083504-git-send-email-salikhmetov@gmail.com>  <alpine.LFD.1.00.0801230836250.1741@woody.linux-foundation.org> <1201110066.6341.65.camel@lappy> <alpine.LFD.1.00.0801231107520.1741@woody.linux-foundation.org>
+ <E1JHlh8-0003s8-Bb@pomaz-ex.szeredi.hu>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Andrea Righi <righiandr@users.sourceforge.net>,
-       Naveen Gupta <ngupta@google.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Paul Menage <menage@google.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH] cgroup: limit block I/O bandwidth
-References: <4791DC2C.9090405@users.sourceforge.net> <4793507B.6040706@users.sourceforge.net> <20080120143239.GS6258@kernel.dk> <47936BC1.9060805@users.sourceforge.net> <20080120160651.GU6258@kernel.dk> <4793E047.1000602@users.sourceforge.net> <2846be6b0801221102y2ad297e2u2f9df06e33b72162@mail.gmail.com> <47967805.4060307@users.sourceforge.net> <2846be6b0801221717j41984f93v920d271b948d39be@mail.gmail.com> <47975C0F.3010609@users.sourceforge.net> <20080123153828.GB12333@balbir.in.ibm.com>
-In-Reply-To: <20080123153828.GB12333@balbir.in.ibm.com>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=77CEF397;
-	url=keyserver.veridis.com
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Date: Wed, 23 Jan 2008 21:55:32 +0100 (MET)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> * Andrea Righi <righiandr@users.sourceforge.net> [2008-01-23 16:23:59]:
-> 
->> Probably tracking who dirtied the pages would be the best approach, but
->> we want also to reduce the overhead of this tracking. So, we should find
->> a smart way to track which cgroup dirtied the pages and then only when
->> the i/o scheduler dispatches the write requests of those pages, account
->> the i/o operations to the opportune cgroup. In this way throttling could
->> be done probably in __set_page_dirty() as well.
->>
-> 
-> I think the OpenVZ controller works that way.
 
-Well... looking at the code it seems that OpenVZ doesn't use this
-strategy, instead performs UBC-based I/O accounting looking at the
-__set_page_dirty*() for writes and submit_bio() for reads. Then,
-independently from accounting data, it uses per-UBC i/o priority model
-that is mapped directly on the CFQ i/o priority model.
 
--Andrea
+On Wed, 23 Jan 2008, Miklos Szeredi wrote:
+>
+> > [ Side note: it is quite possible that we should not do the 
+> >   SYNC_FILE_RANGE_WAIT_BEFORE on MS_ASYNC, and just skip over pages that 
+> >   are busily under writeback already.
+> 
+> MS_ASYNC is not supposed to wait, so SYNC_FILE_RANGE_WAIT_BEFORE
+> probably should not be used in that case.
+
+Well, that would leave the page dirty (including in the page tables) if it 
+was under page writeback when the MS_ASYNC happened.
+
+So I agree, we shouldn't necessarily wait, but if we want the page tables 
+to be cleaned, right now we need to.
+
+> What would be perfect, is if we had a sync mode, that on encountering
+> a page currently under writeback, would just do a page_mkclean() on
+> it, so we still receive a page fault next time one of the mappings is
+> dirtied, so the times can be updated.
+> 
+> Would there be any difficulties with that?
+
+It would require fairly invasive changes. Right now the actual page 
+writeback does effectively:
+
+			...
+                        if (wbc->sync_mode != WB_SYNC_NONE)
+                                wait_on_page_writeback(page);
+
+                        if (PageWriteback(page) ||
+                            !clear_page_dirty_for_io(page)) {
+                                unlock_page(page);
+                                continue;
+                        }
+
+                        ret = (*writepage)(page, wbc, data);
+			...
+
+and that "clear_page_dirty_for_io()" really does clear *all* the dirty 
+bits, so we absolutely must start writepage() when we have done that. And 
+that, in turn, requires that we're not already under writeback.
+
+Is it possible to fix? Sure. We'd have to split up 
+clear_page_dirty_for_io() to do it, and do the
+
+	if (mapping && mapping_cap_account_dirty(mapping))
+			..
+
+part first (before the PageWriteback() tests), and then doing the
+
+	if (TestClearPageDirty(page))
+			...
+
+parts later (after checking that that we're not under page-writeback).
+
+So it's not horribly hard, but it's kind of a separate issue right now. 
+And while the *generic* page-writeback is easy enough to fix, I worry 
+about low-level filesystems that have their own "writepages()" 
+implementation. They could easily get that wrong.
+
+So right now it seems that waiting for writeback to finish is the right 
+and safe thing to do (and even so, I'm not actually willing to commit my 
+suggested patch in 2.6.24, I think this needs more thinking about)
+
+			Linus
