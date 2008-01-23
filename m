@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbYAWSii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbYAWSsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756009AbYAWSii (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 13:38:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbYAWSia
+	id S1757122AbYAWSsv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 13:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbYAWSsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 13:38:30 -0500
-Received: from mail.mev.co.uk ([62.49.15.74]:44162 "EHLO mail.mev.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750919AbYAWSi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 13:38:29 -0500
-Message-ID: <4797899E.6020207@mev.co.uk>
-Date: Wed, 23 Jan 2008 18:38:22 +0000
-From: Ian Abbott <abbotti@mev.co.uk>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
+	Wed, 23 Jan 2008 13:48:43 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:62765 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbYAWSsm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 13:48:42 -0500
+Date: Wed, 23 Jan 2008 13:48:39 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Frank Ch. Eigler" <fche@redhat.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Jan Kiszka <jan.kiszka@siemens.com>,
+       John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 19/20 -v5] Trace irq disabled critical timings
+In-Reply-To: <20080123182533.GF18698@redhat.com>
+Message-ID: <Pine.LNX.4.58.0801231344090.9982@gandalf.stny.rr.com>
+References: <20080123160236.969334052@goodmis.org> <20080123160444.197366580@goodmis.org>
+ <20080123165353.GA12598@goodmis.org> <20080123171107.GB12598@goodmis.org>
+ <20080123172712.GE18698@redhat.com> <1201111103.6341.73.camel@lappy>
+ <20080123182533.GF18698@redhat.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, gregkh@suse.de,
-       kristen.c.accardi@intel.com
-Subject: Re: [RESEND][PATCH-2.6.24-rc8] Fix fakephp deadlock
-References: <4795FD78.6020208@mev.co.uk> <20080123174639.GB10387@kroah.com>
-In-Reply-To: <20080123174639.GB10387@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Jan 2008 18:38:22.0310 (UTC) FILETIME=[21A53060:01C85DEF]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23/01/08 17:46, Greg KH wrote:
-> On Tue, Jan 22, 2008 at 02:28:08PM +0000, Ian Abbott wrote:
->> #include <linux/init.h>
->> #include <linux/string.h>
->> #include <linux/slab.h>
->> +#include <linux/workqueue.h>
->> #include "../pci.h"
->> #if !defined(MODULE)
->> @@ -63,10 +64,13 @@ struct dummy_slot {
->> 	struct list_head node;
->> 	struct hotplug_slot *slot;
->> 	struct pci_dev *dev;
->> +	struct work_struct remove_work;
->> +	unsigned long removed;
-> 
-> You are treating "removed" as an atomic value, so why not just make it
-> an atomic_t?
 
-Because I'm using it as a boolean?
+On Wed, 23 Jan 2008, Frank Ch. Eigler wrote:
+> >
+> > Also, the things the latency tracer and latecytop measure are quite
+> > different. the latency tracer measures how long a non-schedulable
+> > section is, latencytop measures how a task was scheduled away.
+>
+> The commonality I imagine is not in what sorts of reports they create,
+> or where they complete the formatting for and end-user.  It is solely
+> whether the kernel-side instrumentation sites can be represented by
+> individual markers, so that these particular tools as well as future
+> ones don't need to keep inserting custom code in similar or even the
+> same places.
 
-> And what is protecting the fact that the flag could be set right after
-> it gets checked?  I don't see a lock here :)
+So basically just having the marker implementation there to let all
+tracers access to irqs enabled/disabled.
 
-Okay, it looks like there might be a race condition between 
-enable_slot() and disable_slot() if some other task calls disable_slot() 
-while enable_slot() is between the test_bit() and flush_workqueue() 
-calls.  I can fix that by avoiding the call to flush_workqueue() in 
-enable_slot() and allocating and queueing a work queue item to defer the 
-call to pci_rescan().  And enable_slot() won't then need to check if the 
-slot was marked as removed - it can just go ahead and allocate and queue 
-a work item.
+One problem is that the hooks are alse in entry.S, so the tracing ends up
+being architecture dependent. One solution is to have a "generic" hook for
+trace_hardirqs_on/off (kind of like what I did here) and add a marker
+inside that. The hooks in entry.S can call the generic function and have
+the marker call the registered probes, be that lockdep, latencytap or
+latency-trace.
 
--- 
--=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
--=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
+Have the generic hook only be compiled in when one of the tracers or
+lockdep is configured on and they select it.
+
+-- Steve
+
