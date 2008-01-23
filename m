@@ -1,44 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbYAWJ7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbYAWKDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752424AbYAWJ7e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 04:59:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbYAWJ7Y
+	id S1752682AbYAWKDJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 05:03:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYAWKCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 04:59:24 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:47157 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751135AbYAWJ7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 04:59:23 -0500
-Message-ID: <47970FF9.7010009@garzik.org>
-Date: Wed, 23 Jan 2008 04:59:21 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 23 Jan 2008 05:02:55 -0500
+Received: from web53704.mail.re2.yahoo.com ([206.190.37.25]:48594 "HELO
+	web53704.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751061AbYAWKCy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 05:02:54 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=GKtrOKZrzHBzi4gpFwC53OyNlg0vL4XmNp7g3q5U3SavUPKGmT9ewzV5dQJ+2mZaM/VdhjNzdN3p9zrOktlYE+ojPbjf9ReKbTxcQT1YV+Bjc5i2hrIXVxH1gBhia7Ejbc55pxC7dpl+5gXz47EARvqIh+a1EAkecPMcR6FJktk=;
+X-YMail-OSG: LpNUb0MVM1n8lTHIlEyhnLHryfU1Oai3BlLlHxGe
+Date: Wed, 23 Jan 2008 01:56:14 -0800 (PST)
+From: Nagendra Tomar <tomer_iisc@yahoo.com>
+Subject: [PATCH 2.6.23.14] SCSI : scsi_device_lookup/scsi_device_lookup_by_target return NULL for an existent scsi_device
+To: James.Bottomley@SteelEye.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Jike Song <albcamus@gmail.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pci-skeleton: Misc fixes to build neatly
-References: <df9815e70801212216v79ff8137kccc6a94ddb96c818@mail.gmail.com>
-In-Reply-To: <df9815e70801212216v79ff8137kccc6a94ddb96c818@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <622408.27957.qm@web53704.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jike Song wrote:
-> Hello Jeff,
-> 
-> The pci-skeleton.c has several problems with compilation, such as missing args
-> when calling synchronize_irq(). Fix it.
-> 
-> Signed-off-by: Jike Song <albcamus@gmail.com>
-> ---
->  drivers/net/pci-skeleton.c |   49 ++++++++++++++++++++++---------------------
->  1 files changed, 25 insertions(+), 24 deletions(-)
 
-ACK but git-am (everybody's patch import tool) says the patch is corrupted
+__scsi_device_lookup and __scsi_device_lookup_by_target do not 
+check for the sdev_state and hence return scsi_devices with 
+sdev_state set to SDEV_DEL also. It has the following side effects.
+
+We can have two scsi_devices with the same HBTL queued in 
+the scsi_host->__devices/scsi_target->devices list, one
+in the SDEV_DEL state and the other in, say SDEV_RUNNING state. 
+    If the one in the SDEV_DEL state is before the one in SDEV_RUNNING 
+state, (which will almost always be the case) the scsi_device_lookup and 
+scsi_device_lookup_by_target will never find the totally legitimate
+scsi_device (the one in the SDEV_RUNNING state).
+
+This is because __scsi_device_lookup/__scsi_device_lookup_by_target 
+always returns the first one in the list (which in our case is the 
+one with the SDEV_DEL state) and the scsi_device_get() which is called by 
+scsi_device_lookup/scsi_device_lookup_by_target will return -ENXIO 
+for this scsi_device, resulting in scsi_device_lookup and 
+scsi_device_lookup_by_target to return NULL.
+
+        So we _cannot_ lookup a perfectly valid device present in the
+list of scsi_devices. 
+
+        The right thing to do is to not have __scsi_device_lookup
+and __scsi_device_lookup_by_target match a device if the scsi_device
+state is SDEV_DEL. This will also make these functions similar in 
+behaviour to their scsi_device_lookup/scsi_device_lookup_by_target
+counterparts, as the comments in the code suggest.
+
+        One way by which we can have two scsi_devices in the list is 
+as follows.        
+        Suppose a scsi_device has some outstanding command(s) when 
+scsi_remove_device is called for it. Due to the extra ref being held
+by the command in flight, the __scsi_remove_device->put_device call 
+will not actually free the scsi_device and it will remain in the 
+scsi_device list albeit in the SDEV_DEL state. Now if we do a 
+scsi_add_device for the same HBTL, a new device with the same HBTL
+(this one in SDEV_RUNNING state) gets added to the scsi_device list. 
+        
+        Infact if we call scsi_add_device one more time, it happily 
+goes ahead and tries to add it once more, as 
+scsi_probe_and_add_lun->scsi_device_lookup_by_target does not return
+the already existing device. This will though result in the kobject 
+EEXIST warning dump.
+
+        The patch below solves the problem described here by not
+returning scsi_devices in SDEV_DEL state, thus allowing scsi_device
+in SDEV_RUNNING state (if any) to be correctly returned, instead.
 
 
+Thanx,
+Tomar
+
+
+Signed-off-by: Nagendra Singh Tomar <nagendra_tomar@adaptec.com>
+---
+
+--- linux-2.6.23.14/drivers/scsi/scsi.c.orig	2008-01-23 18:06:02.000000000 +0530
++++ linux-2.6.23.14/drivers/scsi/scsi.c	2008-01-23 19:17:35.000000000 +0530
+@@ -951,7 +951,7 @@ struct scsi_device *__scsi_device_lookup
+ 	struct scsi_device *sdev;
+ 
+ 	list_for_each_entry(sdev, &starget->devices, same_target_siblings) {
+-		if (sdev->lun ==lun)
++		if (sdev->lun == lun && sdev->sdev_state != SDEV_DEL)
+ 			return sdev;
+ 	}
+ 
+@@ -1008,7 +1008,7 @@ struct scsi_device *__scsi_device_lookup
+ 
+ 	list_for_each_entry(sdev, &shost->__devices, siblings) {
+ 		if (sdev->channel == channel && sdev->id == id &&
+-				sdev->lun ==lun)
++			sdev->lun == lun && sdev->sdev_state != SDEV_DEL)
+ 			return sdev;
+ 	}
+
+
+
+      ___________________________________________________________
+Support the World Aids Awareness campaign this month with Yahoo! For Good http://uk.promotions.yahoo.com/forgood/
