@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYAWSfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbYAWSoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbYAWSfo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 13:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbYAWSfe
+	id S1756119AbYAWSoP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 13:44:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbYAWSoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 13:35:34 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60513 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752545AbYAWSfe (ORCPT
+	Wed, 23 Jan 2008 13:44:00 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:57932 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751103AbYAWSn7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 13:35:34 -0500
-Date: Wed, 23 Jan 2008 10:35:32 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-cc: Mel Gorman <mel@csn.ul.ie>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-       Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
- running on a memoryless node
-In-Reply-To: <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0801231034110.11430@schroedinger.engr.sgi.com>
-References: <20080118213011.GC10491@csn.ul.ie>
- <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
- <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
- <20080122214505.GA15674@aepfle.de> <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
- <20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
- <20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
- <20080123135513.GA14175@csn.ul.ie> <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
+	Wed, 23 Jan 2008 13:43:59 -0500
+Date: Wed, 23 Jan 2008 13:43:55 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Daniel Walker <dwalker@mvista.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 01/20 -v5] printk - dont wakeup klogd with interrupts
+ disabled
+In-Reply-To: <1201112899.13596.25.camel@imap.mvista.com>
+Message-ID: <Pine.LNX.4.58.0801231336540.9982@gandalf.stny.rr.com>
+References: <20080123160236.969334052@goodmis.org>  <20080123160441.236562634@goodmis.org>
+  <1201107978.13596.16.camel@imap.mvista.com>  <Pine.LNX.4.58.0801231213430.12932@gandalf.stny.rr.com>
+  <1201110185.13596.22.camel@imap.mvista.com>  <Pine.LNX.4.58.0801231315500.6127@gandalf.stny.rr.com>
+ <1201112899.13596.25.camel@imap.mvista.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jan 2008, Pekka J Enberg wrote:
 
-> I still think Christoph's kmem_getpages() patch is correct (to fix 
-> cache_grow() oops) but I overlooked the fact that none the callers of 
-> ____cache_alloc_node() deal with bootstrapping (with the exception of 
-> __cache_alloc_node() that even has a comment about it).
+On Wed, 23 Jan 2008, Daniel Walker wrote:
 
-My patch is useless. kmem_getpages called with nodeid == -1 falls back 
-correctly to the available node. The problem is that the node structures 
-for the page does not exist.
- 
-> But what I am really wondering about is, why wasn't the 
-> N_NORMAL_MEMORY revert enough? I assume this used to work before so what 
-> more do we need to revert for 2.6.24?
+>
+> On Wed, 2008-01-23 at 13:18 -0500, Steven Rostedt wrote:
+>
+> > The wakeup hook in schedule is when we find out that we hit our max. I
+> > could postpone that somehow, but that would require more glue code than I
+> > would like to add.
+>
+> Which hook specifically ?
 
-I think that is because SLUB relaxed the requirements on having regular 
-memory on the boot node. Now the expectation is that SLAB can do the same.
+The wakeup tracer does a print on max when the new task is about to be
+switched to (in context_switch).
 
+>
+> > As for -rt, we've disabled printk for consoles not ATOMIC safe. So the
+> > only consoles that will print in atomic sections so far are, earlyprintk
+> > and the VGA.
+>
+> Is this code you added recently for tracing?
+
+Nope, it's been there for a few releases and had nothing to do with the
+latency tracer.
+
+<looks at code>
+
+Hmm, seems that only the "hack" fix is in upstream. The Red Hat version
+has the better fix, but mainline didn't get it. OK, I'll add that to the
+next -rt release.
+
+-- Steve
 
