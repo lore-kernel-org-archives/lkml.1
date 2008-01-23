@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbYAWRjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758620AbYAWRef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757847AbYAWRjG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:39:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbYAWRil
+	id S1758620AbYAWRef (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:34:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758123AbYAWRcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:38:41 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:48331 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756250AbYAWRij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:38:39 -0500
-Date: Wed, 23 Jan 2008 11:38:42 -0600
-From: Paul Jackson <pj@sgi.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org, hpa@zytor.com,
-       ak@suse.de, adaplas@pol.net, linux-kernel@vger.kernel.org
-Subject: Re: Could you please merge the x86_64 EFI boot support patchset?
-Message-Id: <20080123113842.a6177cb5.pj@sgi.com>
-In-Reply-To: <1201075675.4945.44.camel@caritas-dev.intel.com>
-References: <1194831950.17223.44.camel@caritas-dev.intel.com>
-	<20080123010051.969d21fd.pj@sgi.com>
-	<1201073166.4945.41.camel@caritas-dev.intel.com>
-	<20080123014653.6261020c.pj@sgi.com>
-	<1201075675.4945.44.camel@caritas-dev.intel.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Jan 2008 12:32:00 -0500
+Received: from de01egw02.freescale.net ([192.88.165.103]:42854 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758114AbYAWRb6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:31:58 -0500
+Message-ID: <47977A02.40506@freescale.com>
+Date: Wed, 23 Jan 2008 11:31:46 -0600
+From: Jon Loeliger <jdl@freescale.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Kumar Gala <galak@kernel.crashing.org>,
+       Scott Wood <scottwood@freescale.com>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCHv2 0/8] [POWERPC] 8xx cleanups
+References: <4797641F.4000902@scram.de>	<CA8FFE19-B84A-426B-9B1C-EF0F7C87AE47@kernel.crashing.org> <20080123171252.GA22967@uranus.ravnborg.org>
+In-Reply-To: <20080123171252.GA22967@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ying Huang wrote:
-> > Are you optimistic that some variation of H. Peter Anvin's "struct
-> > setup_data" mechanism will make it into 2.6.25 or thereabouts?
+Sam Ravnborg wrote:
+>> What impact do the have on boards in arch/ppc being able to build?
 > 
-> I think it may be merged into 2.6.26.
+> Byt the way what are the plans for powerpc?
+> We have:
+> arch/ppc
+> arch/ppc64
+> arch/powerpc
+> 
+> It was my understanding that arch/powerpc was supposed
+> to be the future unified powerpc architecture but it
+> does not even provide a defconfig.
+> 
+> And I do not see too much happening to do so - but that maybe
+> because I looked at a wrong place.
 
-That (2.6.26) is just barely within the schedule SGI needs.
-I hope the chances of making it by then are good.  I'm no
-expert in this area, but I'll do what little I can to help
-review and test.
+You must have looked in the wrong place. :-)
 
-Good luck ;).
+arch/ppc is scheduled for removal from mainline in June.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+arch/powerpc is under significant development, with lots
+of defconfigs in arch/powerpc/configs.
+
+arch/ppc64 is long dead.
+
+jdl
+
