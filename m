@@ -1,329 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753410AbYAWLmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752498AbYAWLx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753410AbYAWLmA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 06:42:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYAWLlw
+	id S1752498AbYAWLx5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 06:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbYAWLxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 06:41:52 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:34655
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751009AbYAWLlu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 06:41:50 -0500
-Date: Wed, 23 Jan 2008 12:41:36 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Andrew Morton <akpm@osdl.org>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, holt@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [kvm-devel] [PATCH] export notifier #1
-Message-ID: <20080123114136.GE15848@v2.random>
-References: <20080117162302.GI7170@v2.random> <478F9C9C.7070500@qumranet.com> <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <20080122223139.GD15848@v2.random> <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com>
+	Wed, 23 Jan 2008 06:53:48 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:56826 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750855AbYAWLxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 06:53:47 -0500
+Date: Wed, 23 Jan 2008 12:53:00 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Marc Pignat <marc.pignat@hevs.ch>
+Cc: Andrew Victor <linux@maxim.org.za>, kernel@avr32linux.org,
+       linux-kernel@vger.kernel.org, Remy Bohmer <linux@bohmer.net>,
+       Chip Coldwell <coldwell@redhat.com>
+Subject: Re: [PATCH 6/6] atmel_serial: Add DMA support
+Message-ID: <20080123125300.5d8d7006@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <200801221752.43830.marc.pignat@hevs.ch>
+References: <1201013444-30370-1-git-send-email-hskinnemoen@atmel.com>
+	<1201013444-30370-6-git-send-email-hskinnemoen@atmel.com>
+	<1201013444-30370-7-git-send-email-hskinnemoen@atmel.com>
+	<200801221752.43830.marc.pignat@hevs.ch>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
+On Tue, 22 Jan 2008 17:52:43 +0100
+Marc Pignat <marc.pignat@hevs.ch> wrote:
 
-On Tue, Jan 22, 2008 at 02:53:12PM -0800, Christoph Lameter wrote:
-> On Tue, 22 Jan 2008, Andrea Arcangeli wrote:
+> Hi!
 > 
-> > First it makes me optimistic this can be merged sooner than later to
-> > see a second brand new implementation of this ;).
-> 
-> Brand new? Well this is borrowing as much as possible from you....
+> I removed linux-arm-kernel@lists.arm.linux.org.uk from cc, it is a
+> subscriber-only list.
 
-I said "new", not "different" ;).
+Right. Does that mean I shouldn't Cc it on patches?
 
-> > > The problem that I have with this is still that there is no way to sleep 
-> > > while running the notifier. We need to invalidate mappings on a remote 
-> > > instance of linux. This means sending out a message and waiting for reply 
-> > > before the local page is unmapped. So I reworked Andrea's early patch and 
-> > > came up with this one:
-> > 
-> > I guess you missed a problem in unmapping the secondary mmu before the
-> > core linux pte is cleared with a zero-locking window in between the
-> > two operations. The spte may be instantiated again by a
-> > vmexit/secondary-pagefault in another cpu during the zero-locking
-> > window (zero locking is zero locking, anything can run in the other
-> > cpus, so not exactly sure how you plan to fix that nasty subtle spte
-> > leak if you insist calling the mmu_notifier invalidates _before_
-> > instead of _after_ ;). All spte invalidates should happen _after_
-> > dropping the main linux pte not before, or you never know what else is
-> > left mapped in the secondary mmu by the time the linux pte is finally
-> > cleared.
-> 
-> spte is the remote pte in my scheme right? [..]
+> On Tuesday 22 January 2008, Haavard Skinnemoen wrote:
+> > From: Chip Coldwell <coldwell@redhat.com>
+> ...
+> > @@ -47,6 +50,11 @@
+> >  
+> >  #include "atmel_serial.h"
+> >  
+> > +#define SUPPORT_PDC
+> > +#define PDC_BUFFER_SIZE		(L1_CACHE_BYTES << 3)
+> > +#warning "Revisit"
+> why add this warning?
 
-yes.
+Dunno. I suppose the PDC_BUFFER_SIZE and/or PDC_RX_TIMEOUT definitions
+needs to be revisited? Chip?
 
-> [..] The linux instance with the 
-> secondary mmu must call back to the exporting machine in order to 
-> reinstantiate the page. PageExported is cleared in invalidate_page() so 
-> the other linux instance will be told that the page is not available.
+I don't really understand why the buffer size depends on the cache line
+size either. Why don't we just set it to something nice and large, like
+512 (actually 1024 since there are two buffers), and be done with it?
 
-Page is not available is not a valid answer. At least with KVM there
-are three possible ways:
+And while we're at it, might as well move the SUPPORT_PDC definition
+into Kconfig where it belongs...
 
-1) the remote instance will have to wait for the linux pte to go away
-   before calling follow_page (then the page is gone as a whole so
-   there won't be any more page flags to check)
-2) it will kill the VM
+> ...
+> > @@ -1090,7 +1434,7 @@ static int atmel_serial_suspend(struct platform_device *pdev,
+> >  	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
+> >  
+> >  	if (device_may_wakeup(&pdev->dev)
+> > -	    && !at91_suspend_entering_slow_clock())
+> > +		&& !clk_must_disable(atmel_port->clk))
+> 1. this has nothing to do with dma
+> 2. clk_must_disable isn't in mainline (2.6.24-rc8) for at91 (not verified for avr32).
 
-Nothing runs SetPageExported in your VM code, I can't see how the
-remote instance can know when it can call follow_page again safely on
-the master node.
+Ok, I don't think this code is actually compiled on avr32 so I didn't
+see the breakage. But I agree it has nothing to do with DMA, so I'll
+remove it. If anything here needs fixing, it should be done as a
+separate patch.
 
-The remote instance is like a secondary TLB what you're doing in your
-code is as backwards as flushing the TLB _before_ clearing the PTE! If
-you want to call the secondary tlb flush outside locks we can argue
-about that, but I think you should do that _after_ clearing the linux
-pte IMHO. Otherwise you can as well move the tlb_flush_page before
-clearing the pte and you'll run in the same amount of smp races for
-the master MMU too.
+> CONFIG_MAGIC_SYSRQ isn't working with this pach, (CONFIG_MAGIC_SYSRQ has never
+> worked with atmel_serial dma patches).
 
-> Ahhh. Good to hear. But we will still end in a situation where only
-> the remote ptes point to the page. Maybe the remote instance will dirty
-> the page at that point?
+Yeah, I know. It's a bit difficult to fix. But this DMA patch has been
+out of tree for so long that I think it's actually more important to
+get it into mainline at this point, without necessarily having to fix
+up problems that have been there forever.
 
-If you flush the remote instance _after_ clearing the main linux PTE
-like I suggest and like I'm doing in my patch, I can't see how you
-could risk to end up in a situation with only the remote ptes pointing
-the page, that's the whole point of doing the remote-TLB flush _after_
-clearing the main linux pte, instead of before like in your patch.
+And even with this patch, DMA support is entirely optional on a
+per-port basis, so if it turns out to be (too) broken, we can simply
+turn it off on the boards where it actually matters.
 
-This is the same as the tlb flush, there's a reason we normally do:
+> For me breaking CONFIG_MAGIC_SYSRQ is not a critical regression and can be
+> fixed later, but the "clk_must_disable" problem breaks compilation.
 
-     pte_clear()
-     flush_tlb_page()
-     __free_page()
-     
-instead of:
+Right. The below patch should take care of this. If you're fine with
+it, I'll fold it into the DMA patch in the next round.
 
-     flush_tlb_page()
-     pte_clear()
-     __free_page()
+Haavard
 
-The ordering you're implementing is backwards and unnatural, you can
-try to serialize it with explicit locking to block the "remote-tlb
-refills" through page bitflags (something not doable with the core
-master tlb because the refills are done by the hardware with the
-master tlb), but it'll remain unnatural and backwards IMHO.
-
-> > > - anon_vma/inode and pte locks are held during callbacks.
-> > 
-> > In a previous email I asked what's wrong in offloading the event, and
-> 
-> We have internally discussed the possibility of offloading the event but 
-> that wont work with the existing callback since we would have to 
-> perform atomic allocation and there may be thousands of external 
-> references to a page.
-
-You should however also consider a rearming tasklet/softirq invoked by
-ksoftirqd, if memory allocation fails you retry later. Furthermore you
-should not require thousands of simultaneous allocations anyway,
-you're running in the PF_MEMALLOC path and your memory will come from
-the precious PF_MEMALLOC pool in the objrmap paths! If you ever
-attempt what you suggest (simultanous allocation of thousands of
-packets to simultaneously notify the thousand of external reference)
-depending on the size of the allocation you can instant deadlock
-regardless if you can sleep or not. Infact if you can't sleep and you
-rearm the tasklet when GFP_ATOMIC fails you won't instant
-deadlock.... I think you should have a max-amount of simultanous
-allocations, and you should notify the external references partially
-_serially_. Also you can't exceed the max-amount of simultanous
-allocation even if GFP_ATOMIC/KERNEL fails or you'll squeeze the whole
-PF_MEMALLOC pool leading to deadlocks elsewhere. You must stop when
-there's still quite some room in the PF_MEMALLOC pool.
-
-> The approach with the export notifier is page based not based on the 
-> mm_struct. We only need a single page count for a page that is exported to 
-> a number of remote instances of linux. The page count is dropped when all 
-> the remote instances have unmapped the page.
-
-With KVM it doesn't work that way. Anyway you must be keeping a
-"secondary" count if you know when it's time to call
-__free_page/put_page, so why don't you use the main page_count instead?
-
-> > > @@ -966,6 +973,9 @@ int try_to_unmap(struct page *page, int 
-> > >  
-> > >  	BUG_ON(!PageLocked(page));
-> > >  
-> > > +	if (unlikely(PageExported(page)))
-> > > +		export_notifier(invalidate_page, page);
-> > > +
-> > 
-> > Passing the page here will complicate things especially for shared
-> > pages across different VM that are already working in KVM. For non
-> 
-> How?
-
-Because especially for shared pages we'll have to walk
-objrmap/anon_vma->vmas->ptes by hand in our lowlevel methods twice to
-get to the address where the page is mapped in the address space of
-the task etc...
-
-> There is only the need to walk twice for pages that are marked Exported. 
-
-All kvm guest physical pages would need to be marked exported of
-course.
-
-> And the double walk is only necessary if the exporter does not have its 
-> own rmap. The cross partition thing that we are doing has such an rmap and 
-
-We've one rmap per-VM, so the same physical pages will have multiple
-rmap structures, each VM is indipendent and the refcounting happens on
-the core page_count.
-
-If multiple KVM images are using the page, then multiple "mm" will
-have a mmu notifier registered, and they'll all be called when we walk
-the objrmap/anon_vma with the address where the page is mapped in each
-"mm". That's what we need to find the rmap structure for the "mm".
-
-> its a matter of walking the exporters rmap to clear out the external 
-> references and then we walk the local rmaps. All once.
-
-The problem in having a single rmap for a physical page is that it'd
-need to be a data structure shared by all KVM instances, it doesn't
-work that way right now and certainly there would be complications.
-
-> > Besides the pinned pages ram leak by having the zero locking window
-> > above I'm curious how you are going to take care of the finegrined
-> > aging that I'm doing with the accessed bit set by hardware in the spte
-> 
-> I think I explained that above. Remote users effectively are forbidden to 
-> establish new references to the page by the clearing of the exported bit.
-
-And how do they know when they can restart adding references if infact
-the VM _never_ calls into SetPageExported? (perhaps you forgot
-something in your patch to set PageExported again to notify the
-external reference that it can "de-freeze" and to restart adding
-references ;)
-
-> > with your coarse export_notifier(invalidate_page) called
-> > unconditionally before checking any young bit at all.
-> 
-> The export notifier is called only if the mm_struct or page bit for 
-> exporting is set. Maybe I missed to add a check somewhere?
-
-try_to_unmap internally is doing:
-
-	     if any accessed bit is clear:
-	     	clear the accessed bit, flush tlb and do nothing else at all
-	     else
-		ptep_clear_flush
-
-Not sure how you're going to "do nothing else at all" if you've a
-broad invalidate_page call before even checking the linux pte.
-
-But given with your design we'll have to replicate mm/rmap.c inside
-KVM to find the virtual address where the page is mapped in each "mm"
-that might have a KVM instance running, I guess we can duplicate it
-all and check the young bit too. Infact we could duplicate the whole
-thing and offload mm/rmap.c inside KVM and perhaps it'll work ok. But
-I don't think having to duplicate the whole mm/rmap.c in an external
-module is a good design when my model requires zero duplication, zero
-"freezing" of the SVM/VMX pagefaults as long as PageExported bitflag
-is clear (and nobody knows who's supposed to SetPageExported again to
-"unfreeze" the KVM page fault, certainly KVM can't know when the VM
-has finished clearing the pte and flushing the core linux tlb).
-
-Also note KVM will try to generate a core-linux page fault in order to
-find the "page struct", so I can't see how we could ever check the
-PageExported bit to know if we can trigger the core-linux page fault
-or not. Your whole design is backwards as far as I can tell.
-
-> > Look how clean it is to hook asm-generic/pgtable.h in my last patch
-> > compared to the above leaking code expanded all over the place in the
-> > mm/*.c, unnecessary mangling of atomic bitflags in the page struct,
-> > etc...
-> 
-> I think that hunk is particularly bad in your patch. A notification side 
-> event in a macro? You would want that explicitly in the code.
-
-Sorry this is the exact opposite. I'm placing all required
-invalidate_page with a 1 line change to the kernel source. How can
-that be bad? This is exactly the right place to hook into so it
-will remain as close as possible to the main linux TLB/MMU without
-cluttering mm/*.c with notifiers all over the place. Check how clean
-it is the access bit test_and_clear:
-
-#ifndef __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
-#define ptep_clear_flush_young(__vma, __address, __ptep)		\
-({									\
-	int __young;							\
-	__young = ptep_test_and_clear_young(__vma, __address, __ptep);	\
-	if (__young)							\
-		flush_tlb_page(__vma, __address);			\
-	__young |= mmu_notifier_age_page((__vma)->vm_mm, __address);	\
-	__young;							\
-})
-#endif
-
-This is totally strightforward, clean and 100% optimal too! I fail to
-see how this can be considered _inferior_ to your cluttering of
-mm/*.c (plus the fact you place your hook _before_ clearing the main
-linux pte which is backwards).
-
-> > > +	bool "Export Notifier for notifying subsystems about changes to page mappings"
-> > 
-> > The word "export notifier" isn't very insightful to me, it doesn't
-> > even give an hint we're in the memory management area. If you don't
-> > like mmu notifier name I don't mind changing it, but I doubt export
-> > notifier is a vast naming improvement. Infact it looks one of those
-> > names like RCU that don't tell much of what is really going on
-> > (there's no copy 99% of time in RCU).
-> 
-> What we are doing is effectively allowing external references to pages. 
-> This is outside of the regular VM operations. So export came up but we 
-> could call it something else. External? Its not really tied to the mmu 
-> now.
-
-It's tied to the core linux mmu. Even for KVM it's a secondary tlb not
-really a secondary mmu. But we want notifications of the operations on
-the master linux mmu so we can export the same data in secondary
-subsystems too through the notifiers.
-
-It wasn't a "pte" notifier, not always we notify about pte updates,
-sometime we notify about "range of virtual addresses being zapped
-without even knowing if a pte existed in the range". It wasn't a "tlb"
-notifier because we don't always notify whenever there is a tlb flush
-in the main linux VM. we simply notify about certain events that
-affect the master MMU that allows to represent the userland memory not
-only in the master MMU.
-
-> > > +LIST_HEAD(export_notifier_list);
-> > 
-> > A global list is not ok IMHO, it's really bad to have a O(N) (N number
-> > of mm in the system) complexity here when it's so trivial to go O(1)
-> > like in my code. We want to swap 100% of the VM exactly so we can have
-> > zillon of idle (or sigstopped) VM on the same system.
-> 
-> There will only be one or two of those notifiers. There is no need to 
-> build long lists of mm_structs like in your patch.
-
-Each KVM will register into this list (they're mostly indipendent),
-plus when each notifier is called it will have to check the rmap to
-see if the page belongs to its "mm" before doing anything with it,
-that's really bad for KVM.
-
-> The mm_struct is not available at the point of my callbacks. There is no 
-> way to do a callback that is mm_struct based if you are not scanning the 
-> reverse list. And scanning the reverse list requires taking locks.
-
-The thing is, we can add notifiers to my patch to fit your needs, but
-those will be _different_ notifiers and they really should be after
-the linux pte updates... I think fixing your code so it'll work with
-the sleeping-notifiers getting the "page" instead of a virtual address
-called _after_ clearing the main linux pte, is the way to go. Then
-hopefully won't have to find a way to enable the PageExported bitflag
-anymore in the linux VM and it may remain always-on for the exported
-pages etc.... it makes life a whole lot easier for you too IMHO.
+diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+index d7e1996..67bfbb0 100644
+--- a/drivers/serial/Kconfig
++++ b/drivers/serial/Kconfig
+@@ -380,6 +380,21 @@ config SERIAL_ATMEL_CONSOLE
+ 	  console is the device which receives all kernel messages and
+ 	  warnings and which allows logins in single user mode).
+ 
++config SERIAL_ATMEL_PDC
++	bool "Support DMA transfers on AT91 / AT32 serial port"
++	depends on SERIAL_ATMEL
++	default y
++	help
++	  Say Y here if you wish to use the PDC to do DMA transfers to
++	  and from the Atmel AT91 / AT32 serial port. In order to
++	  actually use DMA transfers, make sure that the use_dma_tx
++	  and use_dma_rx members in the atmel_uart_data struct is set
++	  appropriately for each port.
++
++	  Note that break and error handling currently doesn't work
++	  properly when DMA is enabled. Make sure that ports where
++	  this matters don't use DMA.
++
+ config SERIAL_ATMEL_TTYAT
+ 	bool "Install as device ttyATn instead of ttySn"
+ 	depends on SERIAL_ATMEL=y
+diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+index cb70cc5..f4ef1df 100644
+--- a/drivers/serial/atmel_serial.c
++++ b/drivers/serial/atmel_serial.c
+@@ -50,9 +50,8 @@
+ 
+ #include "atmel_serial.h"
+ 
+-#define SUPPORT_PDC
+-#define PDC_BUFFER_SIZE		(L1_CACHE_BYTES << 3)
+-#warning "Revisit"
++#define PDC_BUFFER_SIZE		512
++/* Revisit: We should calculate this based on the actual port settings */
+ #define PDC_RX_TIMEOUT		(3 * 10)		/* 3 bytes */
+ 
+ #if defined(CONFIG_SERIAL_ATMEL_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
+@@ -162,7 +161,7 @@ static struct atmel_uart_port atmel_ports[ATMEL_MAX_UART];
+ static struct console atmel_console;
+ #endif
+ 
+-#ifdef SUPPORT_PDC
++#ifdef CONFIG_SERIAL_ATMEL_PDC
+ static bool atmel_use_dma_rx(struct uart_port *port)
+ {
+ 	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
+@@ -1434,7 +1433,7 @@ static int atmel_serial_suspend(struct platform_device *pdev,
+ 	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
+ 
+ 	if (device_may_wakeup(&pdev->dev)
+-		&& !clk_must_disable(atmel_port->clk))
++	    && !at91_suspend_entering_slow_clock())
+ 		enable_irq_wake(port->irq);
+ 	else {
+ 		uart_suspend_port(&atmel_uart, port);
