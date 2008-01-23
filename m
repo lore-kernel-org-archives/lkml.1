@@ -1,70 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYAWOtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYAWOtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbYAWOtd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 09:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbYAWOtY
+	id S1755399AbYAWOtx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 09:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbYAWOto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 09:49:24 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57156 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751975AbYAWOtX (ORCPT
+	Wed, 23 Jan 2008 09:49:44 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:58044 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753023AbYAWOtm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 09:49:23 -0500
-Date: Wed, 23 Jan 2008 06:49:05 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: test case for the RODATA config option
-Message-ID: <20080123064905.5d05509a@laptopd505.fenrus.org>
-In-Reply-To: <p731w88nc0p.fsf@crumb.suse.de>
-References: <20080122144420.4ebcf95f@laptopd505.fenrus.org>
-	<p731w88nc0p.fsf@crumb.suse.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+	Wed, 23 Jan 2008 09:49:42 -0500
+Date: Wed, 23 Jan 2008 16:49:41 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       hanth Aravamudan <nacc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+       Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
+ running on a memoryless node
+In-Reply-To: <Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
+References: <20080118213011.GC10491@csn.ul.ie>
+ <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+ <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
+ <20080122214505.GA15674@aepfle.de> <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
+ <20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
+ <20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
+ <20080123135513.GA14175@csn.ul.ie> <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
+ <Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23 Jan 2008 10:09:58 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+Hi,
 
-> Arjan van de Ven <arjan@infradead.org> writes:
+On Wed, 23 Jan 2008, Pekka J Enberg wrote:
+> > I still think Christoph's kmem_getpages() patch is correct (to fix 
+> > cache_grow() oops) but I overlooked the fact that none the callers of 
+> > ____cache_alloc_node() deal with bootstrapping (with the exception of 
+> > __cache_alloc_node() that even has a comment about it).
 > 
-> > This patch adds a test module for the DEBUG_RODATA config
-> > option to make sure change_page_attr() did indeed make
-> > "const" data read only.
-> 
-> The only that this does that is not done pretty much equivalently
-> by pageattr-test.c (it just checks G instead of W) is testing the
-> kernel text mapping on 64bit. On 32bit it is fully redundant I
-> believe.
+> So something like this (totally untested) patch on top of current git:
 
-What it does is check if the rodata marking was succesful. That's more than just checking 
-change_page_attr() itself, and basically a reasonably self self-check of mark_rodata_const().
+Sorry, removed a BUG_ON() from cache_alloc_refill() by mistake, here's a 
+better one:
 
+[PATCH] slab: fix allocation on memoryless nodes
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-> Testing the kernel mapping might be a good idea, but I would
-> suggest adding it to pageattr-test.c
+As memoryless nodes do not have a nodelist, change cache_alloc_refill() to bail
+out for those and let ____cache_alloc_node() always deal with that by resorting
+to fallback_alloc().
 
-where we move the actual test function... I don't really care. Once pageattr-test.c
-is merged I have absolutely no problem moving it there if it's the right place...
-(one can argue that it should be in or near the mark_rodata_const() function instead
-since it tests that one).
-Just like the NX test I wrote yesterday (and will post later today) probably wants to live
-somewhere close to the NX code.
+Furthermore, don't let kmem_getpages() call alloc_pages_node() if nodeid passed
+to it is -1 as the latter will always translate that to numa_node_id() which
+might not have ->nodelist that caused the invocation of fallback_alloc() in the
+first place (for example, during bootstrap).
+
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ mm/slab.c |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
+
+Index: linux-2.6/mm/slab.c
+===================================================================
+--- linux-2.6.orig/mm/slab.c
++++ linux-2.6/mm/slab.c
+@@ -1668,7 +1668,11 @@ static void *kmem_getpages(struct kmem_c
+ 	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
+ 		flags |= __GFP_RECLAIMABLE;
  
-> Yes I'm sure these basic facts will not stop it from being 
-> applied anyways; just wanted to point it out for the benefit
-> of the list readers.
-
-Please spare me the bitter, undeserved sarcasm; I don't remember doing anything
-to you to deserve that.
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+-	page = alloc_pages_node(nodeid, flags, cachep->gfporder);
++	if (nodeid == -1)
++		page = alloc_pages(flags, cachep->gfporder);
++	else
++		page = alloc_pages_node(nodeid, flags, cachep->gfporder);
++
+ 	if (!page)
+ 		return NULL;
+ 
+@@ -2975,9 +2979,11 @@ retry:
+ 		 */
+ 		batchcount = BATCHREFILL_LIMIT;
+ 	}
++	BUG_ON(ac->avail > 0);
+ 	l3 = cachep->nodelists[node];
++	if (!l3)
++		return NULL;
+ 
+-	BUG_ON(ac->avail > 0 || !l3);
+ 	spin_lock(&l3->list_lock);
+ 
+ 	/* See if we can refill from the shared array */
+@@ -3317,7 +3323,8 @@ static void *____cache_alloc_node(struct
+ 	int x;
+ 
+ 	l3 = cachep->nodelists[nodeid];
+-	BUG_ON(!l3);
++	if (!l3)
++		return fallback_alloc(cachep, flags);
+ 
+ retry:
+ 	check_irq_off();
+@@ -3394,12 +3401,6 @@ __cache_alloc_node(struct kmem_cache *ca
+ 	if (unlikely(nodeid == -1))
+ 		nodeid = numa_node_id();
+ 
+-	if (unlikely(!cachep->nodelists[nodeid])) {
+-		/* Node not bootstrapped yet */
+-		ptr = fallback_alloc(cachep, flags);
+-		goto out;
+-	}
+-
+ 	if (nodeid == numa_node_id()) {
+ 		/*
+ 		 * Use the locally cached objects if possible.
