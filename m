@@ -1,44 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbYAWTCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbYAWTLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbYAWTCK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 14:02:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbYAWTB5
+	id S1756970AbYAWTLm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 14:11:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755819AbYAWTLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 14:01:57 -0500
-Received: from nz-out-0506.google.com ([64.233.162.230]:50304 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752392AbYAWTB4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 14:01:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=t5zTy3QdBflVpnQBZJJTiZuLYiwWh0qYb56yqhJ4dhStxdUDLQJBj9L5VGvpOQHfLeVYtCIgjJqBtNjkh2txK/XCkllPZEwn7AZvn03oNtk5DvFf4UpFbLOedmzNUNoloMPTYmL6gaxFesCTQx9nbnGbSIXOnDLzDH+gj+fsD8U=
-Message-ID: <14344f930801231101w3906aeaey88034e0fa8fa3f36@mail.gmail.com>
-Date: Thu, 24 Jan 2008 03:01:53 +0800
-From: "Wang Nan" <wn.at.lkml@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Can any one tell me why cond_resched in do_select?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 Jan 2008 14:11:30 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:43236 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755495AbYAWTL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 14:11:28 -0500
+Subject: Re: [PATCH 1/4] add task handling notifier: base definitions
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <4784A601.76E4.0078.0@novell.com>
+References: <476A7832.76E4.0078.0@novell.com>
+	 <1199852889.17010.243.camel@localhost.localdomain>
+	 <4784A601.76E4.0078.0@novell.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Wed, 23 Jan 2008 11:11:25 -0800
+Message-Id: <1201115485.5443.41.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, everyone.
-I have a question regarding to select system call's code. In
-do_select() function, after check each fd in the set, do_select() call
-cond_resched(). That line, according to my view, is to reduce the
-system freeze time when do the busy querying. But before the call,
-when entering into the big loop, do_select call
-set_current_state(TASK_INTERRUPTIBLE). Then, if the reschedule really
-taken up, the current process will not return unless it catch a
-signal, or one of already registered fd send an event.
-I've tried in UML. If I replace the cond_resched() into schedule(),
-when sys_select() called, the process halt just like I've said.
-I don't think there is a bug because this code exist so long time and
-no really bad thing happened. I just want to know that, since no
-schedule() allowed here, can we delete the useless line?
-Thank you.
+
+On Wed, 2008-01-09 at 09:46 +0000, Jan Beulich wrote:
+> >> +BLOCKING_NOTIFIER_HEAD(task_notifier_list);
+> >> +EXPORT_SYMBOL_GPL(task_notifier_list);
+> >> +ATOMIC_NOTIFIER_HEAD(atomic_task_notifier_list);
+> >> +EXPORT_SYMBOL_GPL(atomic_task_notifier_list);
+> >> +
+> >
+> >When these global notifier lists were proposed years ago folks at SGI
+> >loudly objected with concerns over anticipated cache line bouncing on
+> >512+ cpu machines. Is that no longer a concern?
+> 
+> I can't see an alternative, since the serialization is unavoidable.
+
+There are definitely alternatives. Naturally they are all much more
+complex than using a single notifier chain. You could do per-cpu chains
+for example (ugly, I know..).
+
+> >> @@ -121,6 +127,9 @@ void __put_task_struct(struct task_struc
+> >>  	WARN_ON(atomic_read(&tsk->usage));
+> >>  	WARN_ON(tsk == current);
+> >> 
+> >> +	atomic_notifier_call_chain(&atomic_task_notifier_list,
+> >> +				   TASK_DELETE, tsk);
+> >> +
+> >>  	security_task_free(tsk);
+> >>  	free_uid(tsk->user);
+> >>  	put_group_info(tsk->group_info);
+> >
+> >Would the atomic notifier call chain be necessary if you hooked into an
+> >earlier section of do_exit() instead?
+> 
+> I'm afraid it is, as I was told that sleeping in the do_exit() path is not
+> generally possible.
+> 
+> Jan
+
+Odd. Last I checked I thought I saw a bunch of calls in do_exit() that
+could sleep. Only in certain sections and at the end did it appear to
+prevent sleeping.
+
+Sorry for the late reply.
+
+Cheers,
+	-Matt Helsley
+
