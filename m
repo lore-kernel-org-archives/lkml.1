@@ -1,57 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbYAWPyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbYAWP5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635AbYAWPyj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 10:54:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYAWPyc
+	id S1753986AbYAWP5T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 10:57:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYAWP5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 10:54:32 -0500
-Received: from waste.org ([66.93.16.53]:34886 "EHLO waste.org"
+	Wed, 23 Jan 2008 10:57:00 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:55734 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751536AbYAWPyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 10:54:32 -0500
-Subject: Re: Rescheduling interrupts
-From: Matt Mackall <mpm@selenic.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?Q?S=2E=C3=87a=C4=9Flar?= Onur <caglar@pardus.org.tr>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <p73fxwoncs4.fsf@crumb.suse.de>
-References: <200801220119.42312.caglar@pardus.org.tr>
-	 <200801221455.16814.caglar@pardus.org.tr> <20080122152333.GB19590@elte.hu>
-	 <200801221755.56470.caglar@pardus.org.tr> <20080122160557.GA31831@elte.hu>
-	 <1201021429.14436.45.camel@cinder.waste.org>
-	 <20080122192744.GB3218@elte.hu>  <p73fxwoncs4.fsf@crumb.suse.de>
-Content-Type: text/plain
-Date: Wed, 23 Jan 2008 09:52:36 -0600
-Message-Id: <1201103556.14436.109.camel@cinder.waste.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	id S1751536AbYAWP47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 10:56:59 -0500
+Date: Wed, 23 Jan 2008 15:56:55 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       hanth Aravamudan <nacc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+       Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is running on a memoryless node
+Message-ID: <20080123155655.GB20156@csn.ul.ie>
+References: <20080122214505.GA15674@aepfle.de> <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com> <20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie> <20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de> <20080123135513.GA14175@csn.ul.ie> <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-01-23 at 09:53 +0100, Andi Kleen wrote:
-> Ingo Molnar <mingo@elte.hu> writes:
+On (23/01/08 16:49), Pekka J Enberg didst pronounce:
+> Hi,
 > 
-> > that would probably be the case if it's multiple sockets - but for 
-> > multiple cores exactly the opposite is true: the sooner _both_ cores 
-> > finish processing, the deeper power use the CPU can reach. 
+> On Wed, 23 Jan 2008, Pekka J Enberg wrote:
+> > > I still think Christoph's kmem_getpages() patch is correct (to fix 
+> > > cache_grow() oops) but I overlooked the fact that none the callers of 
+> > > ____cache_alloc_node() deal with bootstrapping (with the exception of 
+> > > __cache_alloc_node() that even has a comment about it).
+> > 
+> > So something like this (totally untested) patch on top of current git:
 > 
-> That's only true on setups where the cores don't have 
-> separate sleep states. But that's not generally true anymore.
-> e.g. AMD Fam10h has completely separate power planes for
-> the cores and I believe newer Intel CPUs can also let their 
-> cores go to at least some sleep states independently (although
-> the deepest sleep modi still require all cores idle) 
+> Sorry, removed a BUG_ON() from cache_alloc_refill() by mistake, here's a 
+> better one:
+> 
 
-I think we can expect everyone to rapidly evolve towards full
-independence of core power states. In fact, it wouldn't surprise me if
-we eventually get to the point of shutting down individual functional
-units like the FPU.
+Applied in combination with the N_NORMAL_MEMORY revert and it fails to
+boot. Console is as follows;
+
+Linux version 2.6.24-rc8-autokern1 (root@gekko-lp3.ltc.austin.ibm.com)
+(gcc version 3.4.6 20060404 (Red Hat 3.4.6-3)) #2 SMP Wed Jan 23
+10:37:36 EST 2008
+[boot]0012 Setup Arch
+EEH: PCI Enhanced I/O Error Handling Enabled
+PPC64 nvram contains 7168 bytes
+Zone PFN ranges:
+  DMA             0 ->  1048576
+  Normal    1048576 ->  1048576
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    2:        0 ->  1048576
+Could not find start_pfn for node 0
+[boot]0015 Setup Done
+Built 2 zonelists in Node order, mobility grouping on.  Total pages: 1034240
+Policy zone: DMA
+Kernel command line: ro console=hvc0 autobench_args: root=/dev/sda6
+ABAT:1201101591 loglevel=8 
+[boot]0020 XICS Init
+xics: no ISA interrupt controller
+[boot]0021 XICS Done
+PID hash table entries: 4096 (order: 12, 32768 bytes)
+time_init: decrementer frequency = 238.059000 MHz
+time_init: processor frequency   = 1904.472000 MHz
+clocksource: timebase mult[10cd746] shift[22] registered
+clockevent: decrementer mult[3cf1] shift[16] cpu[0]
+Console: colour dummy device 80x25
+console handover: boot [udbg0] -> real [hvc0]
+Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
+Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
+freeing bootmem node 2
+Memory: 4105560k/4194304k available (5004k kernel code, 88744k reserved,
+876k data, 559k bss, 272k init)
+Unable to handle kernel paging request for data at address 0x00000040
+Faulting instruction address: 0xc0000000003c8ae8
+cpu 0x0: Vector: 300 (Data Access) at [c0000000005c3840]
+    pc: c0000000003c8ae8: __lock_text_start+0x20/0x88
+    lr: c0000000000dadb4: .cache_grow+0x7c/0x338
+    sp: c0000000005c3ac0
+   msr: 8000000000009032
+   dar: 40
+ dsisr: 40000000
+  current = 0xc000000000500f10
+  paca    = 0xc000000000501b80
+    pid   = 0, comm = swapper
+enter ? for help
+[c0000000005c3b40] c0000000000dadb4 .cache_grow+0x7c/0x338
+[c0000000005c3c00] c0000000000db518 .fallback_alloc+0x1c0/0x224
+[c0000000005c3cb0] c0000000000db920 .kmem_cache_alloc+0xe0/0x14c
+[c0000000005c3d50] c0000000000dcbd0 .kmem_cache_create+0x230/0x4cc
+[c0000000005c3e30] c0000000004c049c .kmem_cache_init+0x1ec/0x51c
+[c0000000005c3ee0] c00000000049f8d8 .start_kernel+0x304/0x3fc
+[c0000000005c3f90] c000000000008594 .start_here_common+0x54/0xc0
+
+0xc0000000000dadb4 is in cache_grow (mm/slab.c:2782).
+2777            local_flags = flags & (GFP_CONSTRAINT_MASK|GFP_RECLAIM_MASK);
+2778    
+2779            /* Take the l3 list lock to change the colour_next on this node */
+2780            check_irq_off();
+2781            l3 = cachep->nodelists[nodeid];
+2782            spin_lock(&l3->list_lock);
+2783    
+2784            /* Get colour for the slab, and cal the next value. */
+2785            offset = l3->colour_next;
+2786            l3->colour_next++;
 
 -- 
-Mathematics is the supreme nostalgia of our time.
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
