@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbYAWQGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbYAWQG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbYAWQGl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 11:06:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbYAWQE4
+	id S1755625AbYAWQG5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 11:06:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbYAWQE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 11:04:56 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:63066 "EHLO
+	Wed, 23 Jan 2008 11:04:58 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:63068 "EHLO
 	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752877AbYAWQEu (ORCPT
+	with ESMTP id S1752894AbYAWQEu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 23 Jan 2008 11:04:50 -0500
-Message-Id: <20080123160441.397633019@goodmis.org>
+Message-Id: <20080123160443.530030764@goodmis.org>
 References: <20080123160236.969334052@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 23 Jan 2008 11:02:38 -0500
+Date: Wed, 23 Jan 2008 11:02:51 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,432 +29,295 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 02/20 -v5] Add basic support for gcc profiler instrumentation
-Content-Disposition: inline; filename=mcount-add-basic-support-for-gcc-profiler-instrum.patch
+Subject: [PATCH 15/20 -v5] Generic command line storage
+Content-Disposition: inline; filename=trace-generic-cmdline.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If CONFIG_MCOUNT is selected and /proc/sys/kernel/mcount_enabled is set to a
-non-zero value the mcount routine will be called everytime we enter a kernel
-function that is not marked with the "notrace" attribute.
+Saving the comm of tasks for each trace is very expensive.
+This patch includes in the context switch hook, a way to
+store the last 100 command lines of tasks. This table is
+examined when a trace is to be printed.
 
-The mcount routine will then call a registered function if a function
-happens to be registered.
+Note: The comm may be destroyed if other traces are performed.
+Later (TBD) patches may simply store this information in the trace
+itself.
 
-[This code has been highly hacked by Steven Rostedt, so don't
- blame Arnaldo for all of this ;-) ]
-
-Update:
-  It is now possible to register more than one mcount function.
-  If only one mcount function is registered, that will be the
-  function that mcount calls directly. If more than one function
-  is registered, then mcount will call a function that will loop
-  through the functions to call.
-
-Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- Makefile                   |    3 
- arch/x86/Kconfig           |    1 
- arch/x86/kernel/entry_32.S |   25 +++++++
- arch/x86/kernel/entry_64.S |   36 +++++++++++
- include/linux/linkage.h    |    2 
- include/linux/mcount.h     |   38 ++++++++++++
- kernel/sysctl.c            |   11 +++
- lib/Kconfig.debug          |    2 
- lib/Makefile               |    2 
- lib/tracing/Kconfig        |   10 +++
- lib/tracing/Makefile       |    3 
- lib/tracing/mcount.c       |  141 +++++++++++++++++++++++++++++++++++++++++++++
- 12 files changed, 274 insertions(+)
+ lib/tracing/Kconfig              |    1 
+ lib/tracing/trace_function.c     |    2 
+ lib/tracing/trace_sched_switch.c |    7 ++
+ lib/tracing/tracer.c             |  104 +++++++++++++++++++++++++++++++++++++--
+ lib/tracing/tracer.h             |    6 +-
+ 5 files changed, 114 insertions(+), 6 deletions(-)
 
-Index: linux-mcount.git/Makefile
-===================================================================
---- linux-mcount.git.orig/Makefile	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/Makefile	2008-01-23 10:26:34.000000000 -0500
-@@ -509,6 +509,9 @@ endif
- 
- include $(srctree)/arch/$(SRCARCH)/Makefile
- 
-+ifdef CONFIG_MCOUNT
-+KBUILD_CFLAGS	+= -pg
-+endif
- ifdef CONFIG_FRAME_POINTER
- KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
- else
-Index: linux-mcount.git/arch/x86/Kconfig
-===================================================================
---- linux-mcount.git.orig/arch/x86/Kconfig	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/arch/x86/Kconfig	2008-01-23 10:26:34.000000000 -0500
-@@ -19,6 +19,7 @@ config X86_64
- config X86
- 	bool
- 	default y
-+	select HAVE_MCOUNT
- 
- config GENERIC_TIME
- 	bool
-Index: linux-mcount.git/arch/x86/kernel/entry_32.S
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/entry_32.S	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/entry_32.S	2008-01-23 10:26:34.000000000 -0500
-@@ -75,6 +75,31 @@ DF_MASK		= 0x00000400 
- NT_MASK		= 0x00004000
- VM_MASK		= 0x00020000
- 
-+#ifdef CONFIG_MCOUNT
-+.globl mcount
-+mcount:
-+	/* unlikely(mcount_enabled) */
-+	cmpl $0, mcount_enabled
-+	jnz trace
-+	ret
-+
-+trace:
-+	/* taken from glibc */
-+	pushl %eax
-+	pushl %ecx
-+	pushl %edx
-+	movl 0xc(%esp), %edx
-+	movl 0x4(%ebp), %eax
-+
-+	call   *mcount_trace_function
-+
-+	popl %edx
-+	popl %ecx
-+	popl %eax
-+
-+	ret
-+#endif
-+
- #ifdef CONFIG_PREEMPT
- #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
- #else
-Index: linux-mcount.git/arch/x86/kernel/entry_64.S
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/entry_64.S	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/entry_64.S	2008-01-23 10:26:34.000000000 -0500
-@@ -53,6 +53,42 @@
- 
- 	.code64
- 
-+#ifdef CONFIG_MCOUNT
-+
-+ENTRY(mcount)
-+	/* unlikely(mcount_enabled) */
-+	cmpl $0, mcount_enabled
-+	jnz trace
-+	retq
-+
-+trace:
-+	/* taken from glibc */
-+	subq $0x38, %rsp
-+	movq %rax, (%rsp)
-+	movq %rcx, 8(%rsp)
-+	movq %rdx, 16(%rsp)
-+	movq %rsi, 24(%rsp)
-+	movq %rdi, 32(%rsp)
-+	movq %r8, 40(%rsp)
-+	movq %r9, 48(%rsp)
-+
-+	movq 0x38(%rsp), %rsi
-+	movq 8(%rbp), %rdi
-+
-+	call   *mcount_trace_function
-+
-+	movq 48(%rsp), %r9
-+	movq 40(%rsp), %r8
-+	movq 32(%rsp), %rdi
-+	movq 24(%rsp), %rsi
-+	movq 16(%rsp), %rdx
-+	movq 8(%rsp), %rcx
-+	movq (%rsp), %rax
-+	addq $0x38, %rsp
-+
-+	retq
-+#endif
-+
- #ifndef CONFIG_PREEMPT
- #define retint_kernel retint_restore_args
- #endif	
-Index: linux-mcount.git/include/linux/linkage.h
-===================================================================
---- linux-mcount.git.orig/include/linux/linkage.h	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/include/linux/linkage.h	2008-01-23 10:26:34.000000000 -0500
-@@ -3,6 +3,8 @@
- 
- #include <asm/linkage.h>
- 
-+#define notrace __attribute__((no_instrument_function))
-+
- #ifdef __cplusplus
- #define CPP_ASMLINKAGE extern "C"
- #else
-Index: linux-mcount.git/include/linux/mcount.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/include/linux/mcount.h	2008-01-23 10:26:34.000000000 -0500
-@@ -0,0 +1,38 @@
-+#ifndef _LINUX_MCOUNT_H
-+#define _LINUX_MCOUNT_H
-+
-+#ifdef CONFIG_MCOUNT
-+extern int mcount_enabled;
-+
-+#include <linux/linkage.h>
-+
-+#define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-+#define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
-+#define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
-+
-+typedef void (*mcount_func_t)(unsigned long ip, unsigned long parent_ip);
-+
-+struct mcount_ops {
-+	mcount_func_t func;
-+	struct mcount_ops *next;
-+};
-+
-+/*
-+ * The mcount_ops must be a static and should also
-+ * be read_mostly.  These functions do modify read_mostly variables
-+ * so use them sparely. Never free an mcount_op or modify the
-+ * next pointer after it has been registered. Even after unregistering
-+ * it, the next pointer may still be used internally.
-+ */
-+int register_mcount_function(struct mcount_ops *ops);
-+int unregister_mcount_function(struct mcount_ops *ops);
-+void clear_mcount_function(void);
-+
-+extern void mcount(void);
-+
-+#else /* !CONFIG_MCOUNT */
-+# define register_mcount_function(ops) do { } while (0)
-+# define unregister_mcount_function(ops) do { } while (0)
-+# define clear_mcount_function(ops) do { } while (0)
-+#endif /* CONFIG_MCOUNT */
-+#endif /* _LINUX_MCOUNT_H */
-Index: linux-mcount.git/kernel/sysctl.c
-===================================================================
---- linux-mcount.git.orig/kernel/sysctl.c	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/kernel/sysctl.c	2008-01-23 10:26:34.000000000 -0500
-@@ -46,6 +46,7 @@
- #include <linux/nfs_fs.h>
- #include <linux/acpi.h>
- #include <linux/reboot.h>
-+#include <linux/mcount.h>
- 
- #include <asm/uaccess.h>
- #include <asm/processor.h>
-@@ -470,6 +471,16 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+#ifdef CONFIG_MCOUNT
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "mcount_enabled",
-+		.data		= &mcount_enabled,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+#endif
- #ifdef CONFIG_KMOD
- 	{
- 		.ctl_name	= KERN_MODPROBE,
-Index: linux-mcount.git/lib/Kconfig.debug
-===================================================================
---- linux-mcount.git.orig/lib/Kconfig.debug	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/lib/Kconfig.debug	2008-01-23 10:26:34.000000000 -0500
-@@ -517,4 +517,6 @@ config FAULT_INJECTION_STACKTRACE_FILTER
- 	help
- 	  Provide stacktrace filter for fault-injection capabilities
- 
-+source lib/tracing/Kconfig
-+
- source "samples/Kconfig"
-Index: linux-mcount.git/lib/Makefile
-===================================================================
---- linux-mcount.git.orig/lib/Makefile	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/lib/Makefile	2008-01-23 10:26:34.000000000 -0500
-@@ -66,6 +66,8 @@ obj-$(CONFIG_AUDIT_GENERIC) += audit.o
- obj-$(CONFIG_SWIOTLB) += swiotlb.o
- obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
- 
-+obj-$(CONFIG_MCOUNT) += tracing/
-+
- lib-$(CONFIG_GENERIC_BUG) += bug.o
- 
- hostprogs-y	:= gen_crc32table
 Index: linux-mcount.git/lib/tracing/Kconfig
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/lib/tracing/Kconfig	2008-01-23 10:26:34.000000000 -0500
-@@ -0,0 +1,10 @@
-+
-+# Archs that enable MCOUNT should select HAVE_MCOUNT
-+config HAVE_MCOUNT
-+       bool
-+
-+# MCOUNT itself is useless, or will just be added overhead.
-+# It needs something to register a function with it.
-+config MCOUNT
-+	bool
-+	select FRAME_POINTER
-Index: linux-mcount.git/lib/tracing/Makefile
+--- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-23 10:27:31.000000000 -0500
++++ linux-mcount.git/lib/tracing/Kconfig	2008-01-23 10:27:39.000000000 -0500
+@@ -18,6 +18,7 @@ config FUNCTION_TRACER
+ 	depends on DEBUG_KERNEL && HAVE_MCOUNT
+ 	select MCOUNT
+ 	select TRACING
++	select CONTEXT_SWITCH_TRACER
+ 	help
+ 	  Use profiler instrumentation, adding -pg to CFLAGS. This will
+ 	  insert a call to an architecture specific __mcount routine,
+Index: linux-mcount.git/lib/tracing/trace_function.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/lib/tracing/Makefile	2008-01-23 10:26:34.000000000 -0500
-@@ -0,0 +1,3 @@
-+obj-$(CONFIG_MCOUNT) += libmcount.o
-+
-+libmcount-y := mcount.o
-Index: linux-mcount.git/lib/tracing/mcount.c
+--- linux-mcount.git.orig/lib/tracing/trace_function.c	2008-01-23 10:27:19.000000000 -0500
++++ linux-mcount.git/lib/tracing/trace_function.c	2008-01-23 10:27:39.000000000 -0500
+@@ -28,11 +28,13 @@ static notrace void function_reset(struc
+ static notrace void start_function_trace(struct tracing_trace *tr)
+ {
+ 	function_reset(tr);
++	atomic_inc(&trace_record_cmdline);
+ 	tracing_start_function_trace();
+ }
+ 
+ static notrace void stop_function_trace(struct tracing_trace *tr)
+ {
++	atomic_dec(&trace_record_cmdline);
+ 	tracing_stop_function_trace();
+ }
+ 
+Index: linux-mcount.git/lib/tracing/trace_sched_switch.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/lib/tracing/mcount.c	2008-01-23 10:26:34.000000000 -0500
-@@ -0,0 +1,141 @@
-+/*
-+ * Infrastructure for profiling code inserted by 'gcc -pg'.
-+ *
-+ * Copyright (C) 2007-2008 Steven Rostedt <srostedt@redhat.com>
-+ *
-+ * Originally ported from the -rt patch by:
-+ *   Copyright (C) 2007 Arnaldo Carvalho de Melo <acme@redhat.com>
-+ *
-+ * Based on code in the latency_tracer, that is:
-+ *
-+ *  Copyright (C) 2004-2006 Ingo Molnar
-+ *  Copyright (C) 2004 William Lee Irwin III
-+ */
+--- linux-mcount.git.orig/lib/tracing/trace_sched_switch.c	2008-01-23 10:27:31.000000000 -0500
++++ linux-mcount.git/lib/tracing/trace_sched_switch.c	2008-01-23 10:27:39.000000000 -0500
+@@ -30,6 +30,11 @@ static notrace void sched_switch_callbac
+ 	va_list ap;
+ 	int cpu;
+ 
++	if (likely(!atomic_read(&trace_record_cmdline)))
++		return;
 +
-+#include <linux/module.h>
-+#include <linux/mcount.h>
++	tracing_record_cmdline(current);
 +
-+/*
-+ * Since we have nothing protecting between the test of
-+ * mcount_trace_function and the call to it, we can't
-+ * set it to NULL without risking a race that will have
-+ * the kernel call the NULL pointer. Instead, we just
-+ * set the function pointer to a dummy function.
-+ */
-+notrace void dummy_mcount_tracer(unsigned long ip,
-+				 unsigned long parent_ip)
+ 	if (likely(!trace_enabled))
+ 		return;
+ 
+@@ -62,6 +67,7 @@ static notrace void sched_switch_reset(s
+ 
+ static notrace void start_sched_trace(struct tracing_trace *tr)
+ {
++	atomic_inc(&trace_record_cmdline);
+ 	sched_switch_reset(tr);
+ 	trace_enabled = 1;
+ }
+@@ -69,6 +75,7 @@ static notrace void start_sched_trace(st
+ static notrace void stop_sched_trace(struct tracing_trace *tr)
+ {
+ 	trace_enabled = 0;
++	atomic_dec(&trace_record_cmdline);
+ }
+ 
+ static notrace void sched_switch_trace_init(struct tracing_trace *tr)
+Index: linux-mcount.git/lib/tracing/tracer.c
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/tracer.c	2008-01-23 10:27:31.000000000 -0500
++++ linux-mcount.git/lib/tracing/tracer.c	2008-01-23 10:27:39.000000000 -0500
+@@ -169,6 +169,88 @@ void tracing_stop_function_trace(void)
+ 	unregister_mcount_function(&trace_ops);
+ }
+ 
++#define SAVED_CMDLINES 128
++static unsigned map_pid_to_cmdline[PID_MAX_DEFAULT+1];
++static unsigned map_cmdline_to_pid[SAVED_CMDLINES];
++static char saved_cmdlines[SAVED_CMDLINES][TASK_COMM_LEN];
++static int cmdline_idx;
++static DEFINE_SPINLOCK(trace_cmdline_lock);
++atomic_t trace_record_cmdline;
++atomic_t trace_record_cmdline_disabled;
++
++static void trace_init_cmdlines(void)
 +{
-+	/* do nothing */
++	memset(&map_pid_to_cmdline, -1, sizeof(map_pid_to_cmdline));
++	memset(&map_cmdline_to_pid, -1, sizeof(map_cmdline_to_pid));
++	cmdline_idx = 0;
 +}
 +
-+static DEFINE_SPINLOCK(mcount_func_lock);
-+static struct mcount_ops mcount_list_end __read_mostly =
++notrace void trace_stop_cmdline_recording(void);
++
++static void notrace trace_save_cmdline(struct task_struct *tsk)
 +{
-+	.func = dummy_mcount_tracer,
-+};
++	unsigned map;
++	unsigned idx;
 +
-+static struct mcount_ops *mcount_list __read_mostly = &mcount_list_end;
-+mcount_func_t mcount_trace_function __read_mostly = dummy_mcount_tracer;
-+int mcount_enabled __read_mostly;
-+
-+/* mcount is defined per arch in assembly */
-+EXPORT_SYMBOL_GPL(mcount);
-+
-+notrace void mcount_list_func(unsigned long ip, unsigned long parent_ip)
-+{
-+	struct mcount_ops *op = mcount_list;
-+
-+	while (op != &mcount_list_end) {
-+		op->func(ip, parent_ip);
-+		op = op->next;
-+	};
-+}
-+
-+/**
-+ * register_mcount_function - register a function for profiling
-+ * @ops - ops structure that holds the function for profiling.
-+ *
-+ * Register a function to be called by all functions in the
-+ * kernel.
-+ *
-+ * Note: @ops->func and all the functions it calls must be labeled
-+ *       with "notrace", otherwise it will go into a
-+ *       recursive loop.
-+ */
-+int register_mcount_function(struct mcount_ops *ops)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&mcount_func_lock, flags);
-+	ops->next = mcount_list;
-+	/* must have next seen before we update the list pointer */
-+	smp_wmb();
-+	mcount_list = ops;
-+	/*
-+	 * For one func, simply call it directly.
-+	 * For more than one func, call the chain.
-+	 */
-+	if (ops->next == &mcount_list_end)
-+		mcount_trace_function = ops->func;
-+	else
-+		mcount_trace_function = mcount_list_func;
-+	spin_unlock_irqrestore(&mcount_func_lock, flags);
-+
-+	return 0;
-+}
-+
-+/**
-+ * unregister_mcount_function - unresgister a function for profiling.
-+ * @ops - ops structure that holds the function to unregister
-+ *
-+ * Unregister a function that was added to be called by mcount profiling.
-+ */
-+int unregister_mcount_function(struct mcount_ops *ops)
-+{
-+	unsigned long flags;
-+	struct mcount_ops **p;
-+	int ret = 0;
-+
-+	spin_lock_irqsave(&mcount_func_lock, flags);
++	if (!tsk->pid || unlikely(tsk->pid > PID_MAX_DEFAULT))
++		return;
 +
 +	/*
-+	 * If we are the only function, then the mcount pointer is
-+	 * pointing directly to that function.
++	 * It's not the end of the world if we don't get
++	 * the lock, but we also don't want to spin
++	 * nor do we want to disable interrupts,
++	 * so if we miss here, then better luck next time.
 +	 */
-+	if (mcount_list == ops && ops->next == &mcount_list_end) {
-+		mcount_trace_function = dummy_mcount_tracer;
-+		mcount_list = &mcount_list_end;
-+		goto out;
++	if (!spin_trylock(&trace_cmdline_lock))
++		return;
++
++	idx = map_pid_to_cmdline[tsk->pid];
++	if (idx >= SAVED_CMDLINES) {
++		idx = (cmdline_idx + 1) % SAVED_CMDLINES;
++
++		map = map_cmdline_to_pid[idx];
++		if (map <= PID_MAX_DEFAULT)
++			map_pid_to_cmdline[map] = (unsigned)-1;
++
++		map_pid_to_cmdline[tsk->pid] = idx;
++
++		cmdline_idx = idx;
 +	}
 +
-+	for (p = &mcount_list; *p != &mcount_list_end; p = &(*p)->next)
-+		if (*p == ops)
-+			break;
++	memcpy(&saved_cmdlines[idx], tsk->comm, TASK_COMM_LEN);
 +
-+	if (*p != ops) {
-+		ret = -1;
++	spin_unlock(&trace_cmdline_lock);
++}
++
++static notrace char *trace_find_cmdline(int pid)
++{
++	char *cmdline = "<...>";
++	unsigned map;
++
++	if (!pid)
++		return "<idle>";
++
++	if (pid > PID_MAX_DEFAULT)
 +		goto out;
-+	}
 +
-+	*p = (*p)->next;
++	map = map_pid_to_cmdline[pid];
++	if (map >= SAVED_CMDLINES)
++		goto out;
 +
-+	/* If we only have one func left, then call that directly */
-+	if (mcount_list->next == &mcount_list_end)
-+		mcount_trace_function = mcount_list->func;
++	cmdline = saved_cmdlines[map];
 +
 + out:
-+	spin_unlock_irqrestore(&mcount_func_lock, flags);
-+
-+	return 0;
++	return cmdline;
 +}
 +
-+/**
-+ * clear_mcount_function - reset the mcount function
-+ *
-+ * This NULLs the mcount function and in essence stops
-+ * tracing.  There may be lag
-+ */
-+void clear_mcount_function(void)
++void tracing_record_cmdline(struct task_struct *tsk)
 +{
-+	mcount_trace_function = dummy_mcount_tracer;
++	if (atomic_read(&trace_record_cmdline_disabled))
++		return;
++
++	trace_save_cmdline(tsk);
 +}
++
+ static inline notrace struct tracing_entry *
+ tracing_get_trace_entry(struct tracing_trace *tr,
+ 			struct tracing_trace_cpu *data)
+@@ -210,7 +292,6 @@ tracing_generic_entry_update(struct trac
+ 		((pc & HARDIRQ_MASK) ? TRACE_FLAG_HARDIRQ : 0) |
+ 		((pc & SOFTIRQ_MASK) ? TRACE_FLAG_SOFTIRQ : 0) |
+ 		(need_resched() ? TRACE_FLAG_NEED_RESCHED : 0);
+-	memcpy(entry->comm, tsk->comm, TASK_COMM_LEN);
+ }
+ 
+ notrace void tracing_function_trace(struct tracing_trace *tr,
+@@ -366,6 +447,8 @@ static void *s_start(struct seq_file *m,
+ 	if (!current_trace || current_trace != iter->trace)
+ 		return NULL;
+ 
++	atomic_inc(&trace_record_cmdline_disabled);
++
+ 	/* let the tracer grab locks here if needed */
+ 	if (current_trace->start)
+ 		current_trace->start(iter);
+@@ -393,6 +476,8 @@ static void s_stop(struct seq_file *m, v
+ {
+ 	struct tracing_iterator *iter = m->private;
+ 
++	atomic_dec(&trace_record_cmdline_disabled);
++
+ 	/* let the tracer release locks here if needed */
+ 	if (current_trace && current_trace == iter->trace && iter->trace->stop)
+ 		iter->trace->stop(iter);
+@@ -521,8 +606,11 @@ static void notrace
+ lat_print_generic(struct seq_file *m, struct tracing_entry *entry, int cpu)
+ {
+ 	int hardirq, softirq;
++	char *comm;
++
++	comm = trace_find_cmdline(entry->pid);
+ 
+-	seq_printf(m, "%8.8s-%-5d ", entry->comm, entry->pid);
++	seq_printf(m, "%8.8s-%-5d ", comm, entry->pid);
+ 	seq_printf(m, "%d", cpu);
+ 	seq_printf(m, "%c%c",
+ 		   (entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' : '.',
+@@ -584,9 +672,12 @@ print_lat_fmt(struct seq_file *m, struct
+ 	abs_usecs = cycles_to_usecs(entry->t - iter->tr->time_start);
+ 
+ 	if (verbose) {
++		char *comm;
++
++		comm = trace_find_cmdline(entry->pid);
+ 		seq_printf(m, "%16s %5d %d %d %08x %08x [%08lx]"
+ 			   " %ld.%03ldms (+%ld.%03ldms): ",
+-			   entry->comm,
++			   comm,
+ 			   entry->pid, cpu, entry->flags,
+ 			   entry->preempt_count, trace_idx,
+ 			   cycles_to_usecs(entry->t),
+@@ -623,6 +714,9 @@ static void notrace print_trace_fmt(stru
+ 	unsigned long secs;
+ 	int sym_only = !!(trace_flags & TRACE_ITER_SYM_ONLY);
+ 	unsigned long long t;
++	char *comm;
++
++	comm = trace_find_cmdline(iter->ent->pid);
+ 
+ 	t = cycles_to_usecs(iter->ent->t);
+ 	usec_rem = do_div(t, 1000000ULL);
+@@ -630,7 +724,7 @@ static void notrace print_trace_fmt(stru
+ 
+ 	seq_printf(m, "[%5lu.%06lu] ", secs, usec_rem);
+ 	seq_printf(m, "CPU %d: ", iter->cpu);
+-	seq_printf(m, "%s:%d ", iter->ent->comm,
++	seq_printf(m, "%s:%d ", comm,
+ 		   iter->ent->pid);
+ 	switch (iter->ent->type) {
+ 	case TRACE_FN:
+@@ -1164,6 +1258,8 @@ __init static int tracer_alloc_buffers(v
+ 
+ 	tracer_init_debugfs();
+ 
++	trace_init_cmdlines();
++
+ 	return 0;
+ 
+  free_buffers:
+Index: linux-mcount.git/lib/tracing/tracer.h
+===================================================================
+--- linux-mcount.git.orig/lib/tracing/tracer.h	2008-01-23 10:27:31.000000000 -0500
++++ linux-mcount.git/lib/tracing/tracer.h	2008-01-23 10:27:39.000000000 -0500
+@@ -25,7 +25,6 @@ struct tracing_entry {
+ 	char preempt_count; /* assumes PREEMPT_MASK is 8 bits or less */
+ 	int pid;
+ 	cycle_t t;
+-	char comm[TASK_COMM_LEN];
+ 	union {
+ 		struct tracing_function fn;
+ 		struct tracing_sched_switch ctx;
+@@ -98,13 +97,16 @@ void tracing_sched_switch_trace(struct t
+ 				struct task_struct *prev,
+ 				struct task_struct *next,
+ 				unsigned long flags);
+-
++void tracing_record_cmdline(struct task_struct *tsk);
+ 
+ void tracing_start_function_trace(void);
+ void tracing_stop_function_trace(void);
+ int register_trace(struct trace_types_struct *type);
+ void unregister_trace(struct trace_types_struct *type);
+ 
++extern atomic_t trace_record_cmdline;
++extern atomic_t trace_record_cmdline_disabled;
++
+ static inline notrace cycle_t now(void)
+ {
+ 	return get_monotonic_cycles();
 
 -- 
