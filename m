@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbYAWNg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbYAWNmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbYAWNg2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 08:36:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYAWNgV
+	id S1753623AbYAWNmA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 08:42:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbYAWNlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 08:36:21 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:61398 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751175AbYAWNgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 08:36:20 -0500
-Date: Wed, 23 Jan 2008 14:35:03 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Marc Pignat <marc.pignat@hevs.ch>
-Cc: Andrew Victor <linux@maxim.org.za>, kernel@avr32linux.org,
-       linux-kernel@vger.kernel.org, Remy Bohmer <linux@bohmer.net>,
-       Chip Coldwell <coldwell@redhat.com>
-Subject: Re: [PATCH 6/6] atmel_serial: Add DMA support
-Message-ID: <20080123143503.764bc8cf@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <200801231418.38997.marc.pignat@hevs.ch>
-References: <1201013444-30370-1-git-send-email-hskinnemoen@atmel.com>
-	<200801231330.32777.marc.pignat@hevs.ch>
-	<20080123134553.144ca487@dhcp-252-066.norway.atmel.com>
-	<200801231418.38997.marc.pignat@hevs.ch>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jan 2008 08:41:53 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:53389 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751130AbYAWNlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 08:41:52 -0500
+Date: Wed, 23 Jan 2008 13:41:48 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Olaf Hering <olaf@aepfle.de>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       hanth Aravamudan <nacc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+       akpm@linux-foundation.org
+Subject: Re: crash in kmem_cache_init
+Message-ID: <20080123134147.GA12503@csn.ul.ie>
+References: <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com> <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com> <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie> <20080122214505.GA15674@aepfle.de> <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com> <20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie> <20080123121459.GA18631@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080123121459.GA18631@aepfle.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jan 2008 14:18:38 +0100
-Marc Pignat <marc.pignat@hevs.ch> wrote:
+On (23/01/08 13:14), Olaf Hering didst pronounce:
+> On Wed, Jan 23, Mel Gorman wrote:
+> 
+> > Sorry this is dragging out. Can you post the full dmesg with loglevel=8 of the
+> > following patch against 2.6.24-rc8 please? It contains the debug information
+> > that helped me figure out what was going wrong on the PPC64 machine here,
+> > the revert and the !l3 checks (i.e. the two patches that made machines I
+> > have access to work). Thanks
+> 
+> It boots with your change.
+> 
 
-> On Wednesday 23 January 2008, Haavard Skinnemoen wrote:
-> > Ok, but then any power of two larger than the cache line size should be
-> > fine, assuming kmalloc() returns a properly aligned buffer.
-> Yes. The memory should be allocated using GFP_KERNEL | GFP_DMA flags, but this
-> is probably a nop on at91 and avr32.
+....... Nice one! As the only addition here is debugging output, I can
+only assume that the two patches were being booted in isolation instead
+of combination earlier. The two threads have been a little confused with
+hand waving so that can easily happen.
 
-GFP_DMA doesn't have anything to do with alignment, AFAIK.
+Looking at your log;
 
-> I prepare a patch using the generic dma api (allocation + dma mapping in one
-> call = simpler code).
+> early_node_map[1] active PFN ranges
+>     1:        0 ->   892928
 
-No, please don't. If you're thinking of dma_alloc_coherent(), it means
-that the cache will be bypassed when accessing the buffer (slower), and
-that the size will be rounded up to the next multiple of the page size
-(larger). If the sole purpose of doing that is to get properly aligned
-buffers, we might as well use the page allocator directly.
+All memory on node 1
 
-kmalloc() does return cache-aligned buffers on AVR32, so a patch like
-that would have only downsides. I'm not sure about ARM though.
+> Online nodes
+> o 0
+> o 1
+> Nodes with regular memory
+> o 1
+> Current running CPU 0 is associated with node 0
+> Current node is 0
 
-> > Other than that, I can't see any reason why a platform with 64 byte
-> > cache lines should need larger buffers than one with 32 byte cache
-> > lines.
-> If the memory at the end of the cacheline is used by the cpu, it will be
-> corrupted while you call dma_sync_single_for_cpu(..., DMA_FROM_DEVICE);
+Running CPU associated with node 0 so other than being node 1 instead of
+node 2, your machine is similar to the one I had the problem on in terms
+of memoryless nodes and CPU configuration.
 
-True, but if that happens, the right fix is to provide a suitable
-definition of ARCH_KMALLOC_MINALIGN on ARM.
+> VFS: Cannot open root device "<NULL>" or unknown-block(0,0)
+> Please append a correct "root=" boot option; here are the available partitions:
+> Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0)
+> Rebooting in 1 seconds..    
+> 
 
-Haavard
+I see it failed to complete boot but I'm going to assume this is a relatively
+normal commane-line, .config or initrd problem and not a regression of
+some type.
+
+I'll post a patch suitable for pick-up shortly. The two patches ran in
+combination with CONFIG_DEBUG_SLAB a compile-based stress tests without
+difficulty so hopefully there is not new surprises hiding in the corners.
+
+Thanks Olaf.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
