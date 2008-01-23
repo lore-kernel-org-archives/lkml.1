@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbYAWKQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbYAWKYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752580AbYAWKQu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 05:16:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbYAWKQj
+	id S1752794AbYAWKYP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 05:24:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbYAWKYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 05:16:39 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:51919 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbYAWKQi (ORCPT
+	Wed, 23 Jan 2008 05:24:05 -0500
+Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:2071 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751745AbYAWKYD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 05:16:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=X/o5x0C7/vdC/bM4ejoQcUY4lUovUmWIUj5xSd7RdaeXvitrWHAAICfH6mkYWnX65V/phHb10+VrhBApMKWnEEB/6vsmTT5vcoG90a7X2idXByRwq6TMczOKMPiuYq7WypG6Cmm6m5QWdz8EArVb2H/REpy8Z3r9eZba7FPlXSc=
-Message-ID: <df9815e70801230216j713c5e2bpf57d691138a9aaca@mail.gmail.com>
-Date: Wed, 23 Jan 2008 18:16:36 +0800
-From: "Jike Song" <albcamus@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [PATCH] pci-skeleton: Misc fixes to build neatly
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <47970FF9.7010009@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 23 Jan 2008 05:24:03 -0500
+Date: Wed, 23 Jan 2008 11:23:50 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: Jochen Friedrich <jochen@scram.de>, Scott Wood <scottwood@freescale.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       i2c@lm-sensors.org
+Subject: Re: [PATCH POWERPC] i2c: adds support for i2c bus on Frescale 
+ CPM1/CPM2 controllers
+Message-ID: <20080123112350.629ee615@hyperion.delvare>
+In-Reply-To: <20071222001112.691b80c8@kernel.crashing.org>
+References: <476C15BC.3090807@scram.de>
+	<20071222001112.691b80c8@kernel.crashing.org>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <df9815e70801212216v79ff8137kccc6a94ddb96c818@mail.gmail.com>
-	 <47970FF9.7010009@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/23/08, Jeff Garzik <jeff@garzik.org> wrote:
->
-> ACK but git-am (everybody's patch import tool) says the patch is corrupted
->
-Hi Jeff,
+On Sat, 22 Dec 2007 00:11:12 +0300, Vitaly Bordug wrote:
+> On Fri, 21 Dec 2007 20:36:28 +0100
+> Jochen Friedrich wrote:
+> 
+> > Using the port of 2.4 code from Vitaly Bordug
+> > <vitb@kernel.crashing.org> and the actual algorithm used by the i2c
+> > driver of the DBox code on cvs.tuxboc.org from Tmbinc, Gillem
+> > (htoa@gmx.net). Renamed i2c-rpx.c and i2c-algo-8xx.c to i2c-cpm.c and
+> > converted the driver to an of_platform_driver.
+> > 
+> 
+> I had an attempt a while ago to do this but haven't had enough time to get it completed, so
+> I am glad to see it finally picked up. There was some sort of discussion that time, you seem to have some of those points
+> addressed but  something not, please
+> check: http://lkml.org/lkml/2007/5/8/45
+> 
+> (for instance, cpm_i2c_shutdown() and i2c_cpm_del_bus() are void because they cant' fail) 
+> 
+> Also, why this was directed to Scott? This is lm-sensors stuff and is
+> Jean Delvare <khali@linux-fr.org> material...
 
-Thank you very much for your acknowledgement!  This is my first patch
-for Linux kernel, sorry for the corruption.  I'll resend it ASAP.
+This is _i2c_ stuff and doesn't have _anything_ to do with lm-sensors.
+(Don't let the i2c list address fool you.)
 
-Regards,
-Jike
+As the i2c subsystem maintainer, I am very pleased when contributors
+get their patches reviewed and tested by people with the knowledge and
+access to the target architecture and hardware. So Jochen did the right
+thing by sending this patch to Scott at first.
+
+-- 
+Jean Delvare
