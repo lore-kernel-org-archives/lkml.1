@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbYAWOfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYAWOgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754415AbYAWOfN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 09:35:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbYAWOfA
+	id S1754579AbYAWOgx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 09:36:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYAWOgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 09:35:00 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:50396 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751912AbYAWOfA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 09:35:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IJqBOvcFdZVpUd6QHoeHGoth9BbPWMN21XV5puW3Dgv3s33Gra/48HKnwTnRHma2HKxqiscDjXtax3XFCpBKM8dtfYWbqJiD/gEa1xWu+LoEqMngTxTDR/skj7PacWICtQ69EKTgipyOyVuJHhLCClHmTsxwiT2Di3nzfWdt1gk=
-Message-ID: <4cc25cb20801230634w2cab51c7w8d62d75ec982f132@mail.gmail.com>
-Date: Wed, 23 Jan 2008 22:34:57 +0800
-From: rmingming <mingming.nk@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Is try_module_get buggy?
-In-Reply-To: <200801171409.39389.rusty@rustcorp.com.au>
+	Wed, 23 Jan 2008 09:36:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:52667 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752057AbYAWOgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 09:36:45 -0500
+Message-ID: <479750CA.4070101@redhat.com>
+Date: Wed, 23 Jan 2008 15:35:54 +0100
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Robin Holt <holt@sgi.com>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, daniel.blueman@quadrics.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [PATCH] export notifier #1
+References: <478F9C9C.7070500@qumranet.com> <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <4797384B.7080200@redhat.com> <20080123131939.GJ26420@sgi.com> <47974B54.30407@redhat.com> <20080123141814.GE3058@sgi.com>
+In-Reply-To: <20080123141814.GE3058@sgi.com>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cc25cb20801112035x16c69a40rf3103a73b6cda107@mail.gmail.com>
-	 <200801171409.39389.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi rminming,
->
-> try_module_get is designed to ensure that you don't call a function inside a
-> module without a reference.  Like any reference function, it cannot handle
-> the case where the argument is invalid (or invalidated partway through the
-> call).
->
-> In this case, the module pointer is usually inside a registered structure.
-> The pointer will be valid until the structure is unregistered, which the
-> calling code presumably prevents while it's doing a lookup.
->
-> Hope that clarifies,
-> Rusty.
->
+Robin Holt wrote:
+> We have a seg structure which is similar to some structure you probably
+> have which describes the grant.  One of the things hanging off that
+> seg structure is essentially a page table containing PFNs with their
+> respective flags (XPMEM specific and not the same as the pfn flags in
+> the processor page tables).
 
-Hi Rusty,
+i.e. page tables used by hardware != cpu, right?
 
-Thank you so much!
-I think you mean that this situation can really happen, because this
-is a reference function, but it is so seldom, and the common result of
-this situation is a kernel oops, it's not very important. Am I right?
+In the Xen guest case the normal processor page tables are modified, but
+in a special way to make the Xen hypervisor also release the grant.
 
-Sorry about later reply, thanks again.
-Best wishes,
-
-rmingming
+cheers,
+  Gerd
