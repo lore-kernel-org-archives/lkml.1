@@ -1,107 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757969AbYAWABJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758876AbYAWADT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757969AbYAWABJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 19:01:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758706AbYAWAAo
+	id S1758876AbYAWADT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 19:03:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbYAWADH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 19:00:44 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:38192 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758648AbYAWAAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 19:00:41 -0500
-Date: Tue, 22 Jan 2008 18:00:40 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: serue@us.ibm.com, akpm@linux-foundation.org, hch@infradead.org,
-       viro@ftp.linux.org.uk, kzak@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       util-linux-ng@vger.kernel.org
-Subject: Re: [patch 07/10] unprivileged mounts: add sysctl tunable for
-	"safe" property
-Message-ID: <20080123000040.GA6931@sergelap.austin.ibm.com>
-References: <20080116123147.466284860@szeredi.hu> <20080116123433.126167584@szeredi.hu> <20080121203249.GB5536@sergelap.austin.rr.com> <E1JH4Kz-0006gt-MC@pomaz-ex.szeredi.hu> <20080122204828.GA1212@sergelap.austin.ibm.com> <E1JHS5h-0001EC-QD@pomaz-ex.szeredi.hu>
+	Tue, 22 Jan 2008 19:03:07 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:41020 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752808AbYAWADF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 19:03:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=dPaNGacWBUTw+G45q8VPQFqY74aleSlQhM8HW+gqihG5Ixi9MnyWH9KsQgnD9fWDIxMH5DRusFU5O1AAun495bGADTajXBBeogey1ThM3oNB5z/MS3xhaon2dryyfJRHJUyUEAzwCSbyFZ9poLsXJll2dcJoZtz74VQPyUspJPA=
+Message-ID: <47968432.2090304@gmail.com>
+Date: Wed, 23 Jan 2008 09:02:58 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JHS5h-0001EC-QD@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Matthew Wilcox <matthew@wil.cx>, randy.dunlap@oracle.com,
+       daniel.ritz-ml@swissonline.ch, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCHSET] printk: implement printk_header() and merging printk,
+ take #2
+References: <1200892437108-git-send-email-htejun@gmail.com> <20080121124821.GH27250@parisc-linux.org> <Pine.LNX.4.64.0801230036250.9183@fbirervta.pbzchgretzou.qr> <47968183.3050704@gmail.com> <Pine.LNX.4.64.0801230056510.9183@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0801230056510.9183@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > > What do you think about doing this only if FS_SAFE is also set,
-> > > > so for instance at first only FUSE would allow itself to be
-> > > > made user-mountable?
-> > > > 
-> > > > A safe thing to do, or overly intrusive?
-> > > 
-> > > It goes somewhat against the "no policy in kernel" policy ;).  I think
-> > > the warning in the documentation should be enough to make sysadmins
-> > > think twice before doing anything foolish:
-> > 
-> > Warning in which documentation?  A sysadmin considering setting fs_safe
-> > for ext2 or xfs isn't going to be looking at fuse docs, which I think is
-> > what you're talking about.  Are you going to add a file under
-> > Documentation/filesystems?
+Jan Engelhardt wrote:
+> On Jan 23 2008 08:51, Tejun Heo wrote:
+>> What do you think about the second suggestion then?
+>>
+>> ata1.00: line0
+>> ata1.00  line1
+>> ata1.00  line2
+>>
+>> It allows you to grab for the header && has indication for message
+>> boundaries.
 > 
-> Yes, I meant documentation of the new sysctl tunable in
-> Documentation/filesystems/proc.txt:
+> Then again, why not "[ata1.00] line0", then it matches what sd_mod does :)
 
-Argh, sorry.
+Well, that's fine too but using ':' is much more common.  Just take a
+look at the boot log and if we go with '[]', any ideas on how to
+indicate multiline messages?
 
-> > Index: linux/Documentation/filesystems/proc.txt
-> > ===================================================================
-> > --- linux.orig/Documentation/filesystems/proc.txt	2008-01-16 13:25:07.000000000 +0100
-> > +++ linux/Documentation/filesystems/proc.txt	2008-01-16 13:25:09.000000000 +0100
-> > @@ -43,6 +43,7 @@ Table of Contents
-> >    2.13	/proc/<pid>/oom_score - Display current oom-killer score
-> >    2.14	/proc/<pid>/io - Display the IO accounting fields
-> >    2.15	/proc/<pid>/coredump_filter - Core dump filtering settings
-> > +  2.16	/proc/sys/fs/types - File system type specific parameters
-> >  
-> >  ------------------------------------------------------------------------------
-> >  Preface
-> > @@ -2283,4 +2284,21 @@ For example:
-> >    $ echo 0x7 > /proc/self/coredump_filter
-> >    $ ./some_program
-> >  
-> > +2.16 /proc/sys/fs/types/ - File system type specific parameters
-> > +----------------------------------------------------------------
-> > +
-> > +There's a separate directory /proc/sys/fs/types/<type>/ for each
-> > +filesystem type, containing the following files:
-> > +
-> > +usermount_safe
-> > +--------------
-> > +
-> > +Setting this to non-zero will allow filesystems of this type to be
-> > +mounted by unprivileged users (note, that there are other
-> > +prerequisites as well).
-> > +
-> > +Care should be taken when enabling this, since most
-> > +filesystems haven't been designed with unprivileged mounting
-> > +in mind.
-> > +
-> >  ------------------------------------------------------------------------------
-> > 
-> 
-> Do you think this is enough?  Or do we need something more, to prevent
-> sysadmin inadvertently setting this for an unsafe filesystem?
-
-I would think something more would be good.  First explaining
-that fuse should be safe modulo warnings in the fuse documentation,
-procfs and sysfs may be safe, while other filesystems are not known safe
-at all.
-
-Then explaining the dangers with not-known-safe filesystems and what is
-needed to make them safe.  Clearly making sure input validation is
-properly done so for instance getsb() doesn't turn into a buffer
-overflow, etc.
-
-Such a checklist also would be useful for holding a meaningful discussion
-about the other filesystems and maybe turning some people loose on
-an audit of other filesystems.
-
-thanks,
--serge
+-- 
+tejun
