@@ -1,18 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYAWRew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbYAWRdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbYAWRew (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757255AbYAWRcY
+	id S1756361AbYAWRdL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:33:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756588AbYAWR1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:32:24 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:55270 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757684AbYAWRcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:32:21 -0500
-Date: Wed, 23 Jan 2008 12:27:12 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	Wed, 23 Jan 2008 12:27:25 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:47447 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757129AbYAWR1Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:27:24 -0500
+Date: Wed, 23 Jan 2008 12:27:12 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Daniel Walker <dwalker@mvista.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -25,26 +27,71 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 19/20 -v5] Trace irq disabled critical timings
-Message-ID: <20080123172712.GE18698@redhat.com>
-References: <20080123160236.969334052@goodmis.org> <20080123160444.197366580@goodmis.org> <20080123165353.GA12598@goodmis.org> <20080123171107.GB12598@goodmis.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080123171107.GB12598@goodmis.org>
-User-Agent: Mutt/1.4.1i
+Subject: Re: [PATCH 01/20 -v5] printk - dont wakeup klogd with interrupts
+ disabled
+In-Reply-To: <1201107978.13596.16.camel@imap.mvista.com>
+Message-ID: <Pine.LNX.4.58.0801231213430.12932@gandalf.stny.rr.com>
+References: <20080123160236.969334052@goodmis.org>  <20080123160441.236562634@goodmis.org>
+ <1201107978.13596.16.camel@imap.mvista.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
 
-On Wed, Jan 23, 2008 at 12:11:07PM -0500, Steven Rostedt wrote:
-> This patch adds latency tracing for critical timings
-> (how long interrupts are disabled for).
-> [...]
+On Wed, 23 Jan 2008, Daniel Walker wrote:
 
-Is there an opportunity here to share effort with latencytop, and
-ideally to use markers as much as possible for these event hooks?
+>
+> On Wed, 2008-01-23 at 11:02 -0500, Steven Rostedt wrote:
+>
+> > +	if (!irqs_disabled() && wake_klogd)
+> >  		wake_up_klogd();
+>
+> This causes a regression .. When printk is called during an OOPS in
+> kernels without this change then the OOPS will get logged, since the
+> logging process (klogd) is woken to handle the messages.. If you apply
+> this change klogd doesn't wakeup, and hence doesn't log the oops.. So if
+> you remove the wakeup here you have to add it someplace else to maintain
+> the logging ..
+>
+> (I'm not theorizing here, I have defects logged against this specific
+> piece of code..)
 
-- FChE
+It wont get woken up anyway. Did you look at wake_up_klogd?
+
+void wake_up_klogd(void)
+{
+	if (!oops_in_progress && waitqueue_active(&log_wait))
+		wake_up_interruptible(&log_wait);
+}
+
+
+So if oops_in_progress is set, then it still wont get woken. Perhaps it
+got woken some other way? Or is oops_in_progress not set in these oops?
+
+One other solution is to make the runqueue locks visible externally. Like:
+
+in sched.c:
+
+int runqueue_is_locked(void)
+{
+	int cpu = get_cpu();
+	struct rq *rq = cpu_rq(cpu);
+	int ret;
+
+	ret = spin_is_locked(&rq->lock);
+	put_cpu();
+	return ret;
+}
+
+And in printk we could do:
+
+	if (wake_klogd && !runqueue_is_locked())
+		wake_up_klogd();
+
+This probably is the cleanest solution since it simply prevents the
+deadlock from occurring.
+
+-- Steve
+
