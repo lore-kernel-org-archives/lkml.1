@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYAWXG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbYAWXO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067AbYAWXG3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 18:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYAWXGT
+	id S1753469AbYAWXO2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 18:14:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYAWXOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 18:06:19 -0500
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2629 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752258AbYAWXGS (ORCPT
+	Wed, 23 Jan 2008 18:14:18 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:32457 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbYAWXOR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 18:06:18 -0500
-Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
-From: Joe Perches <joe@perches.com>
-To: Roel Kluin <12o3l@tiscali.nl>, Andy Whitcroft <apw@shadowen.org>
-Cc: jwboyer@linux.vnet.ibm.com, lkml <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <4797C1AD.3040307@tiscali.nl>
-References: <4797C1AD.3040307@tiscali.nl>
-Content-Type: text/plain
-Date: Wed, 23 Jan 2008 15:05:27 -0800
-Message-Id: <1201129527.4988.69.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+	Wed, 23 Jan 2008 18:14:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YTAAWgqehRpu+K97RuDVorue4omOEpLq8Agkr7yMb+84hCKGr/lpSD3ZLfyGOQk5GTuv4anxXu91V4bC0De0bj/3dG13EAJxNqrcchr7XJvYPKVEFAKFqrpPXnhXuaY+EPgWfGcG0ya/UbS61pS9IDLu0OA8QlaTn3EZeHz1tXo=
+Message-ID: <4df4ef0c0801231514ga32b513g4917d715f9888ac6@mail.gmail.com>
+Date: Thu, 24 Jan 2008 02:14:16 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH -v8 2/4] Update ctime and mtime for memory-mapped files
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
+       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
+In-Reply-To: <alpine.LFD.1.00.0801230959500.1741@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12010440803930-git-send-email-salikhmetov@gmail.com>
+	 <12010440822957-git-send-email-salikhmetov@gmail.com>
+	 <alpine.LFD.1.00.0801230959500.1741@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-23 at 23:37 +0100, Roel Kluin wrote:
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-> index ebf9e21..dcfb459 100644
-> --- a/arch/powerpc/boot/4xx.c
-> +++ b/arch/powerpc/boot/4xx.c
-> @@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
->  	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
->  	cs = 0;
->  	while (val) {
-> -		if (val && 0x1)
-> +		if (val & 0x1)
->  			cs++;
->  		val = val >> 1;
+2008/1/23, Linus Torvalds <torvalds@linux-foundation.org>:
+>
+>
+> On Wed, 23 Jan 2008, Anton Salikhmetov wrote:
+> >
+> > Update ctime and mtime for memory-mapped files at a write access on
+> > a present, read-only PTE, as well as at a write on a non-present PTE.
+>
+> Ok, this one I'm applying. I agree that it leaves MS_ASYNC not updating
+> the file until the next sync actually happens, but I can't really bring
+> myself to care at least for an imminent 2.6.24 thing. The file times are
+> actually "correct" in the sense that they will now match when the IO is
+> done, and my man-page says that MS_ASYNC "schedules the io to be done".
+>
+> And I think this is better than we have now, and I don't think this part
+> is somethign that anybody really disagrees with.
+>
+> We can (and should) keep the MS_ASYNC issue open.
 
-I think this pattern should be added to checkpatch
+Thank you!
 
-Signed-off-by: Joe Perches <joe@perches.com>
+I have closed the bug #2645, because this patch solves the issue
+originally reported.
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 579f50f..147e573 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -1337,6 +1337,11 @@ sub process {
- 			}
- 		}
- 
-+# Check for bitwise tests written as boolean
-+		if ($line =~ /\&\&\s*0[xX]/) {
-+			WARN("boolean test with hexadecimal, perhaps just 1 \&?\n" . $herecurr);
-+		}
-+
- # if and else should not have general statements after it
- 		if ($line =~ /^.\s*(?:}\s*)?else\b(.*)/ &&
- 		    $1 !~ /^\s*(?:\sif|{|\\|$)/) {
-
-
+>
+>                 Linus
+>
