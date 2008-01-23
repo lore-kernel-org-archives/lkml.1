@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758269AbYAWAvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756982AbYAWAvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758269AbYAWAvc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 19:51:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYAWApr
+	id S1756982AbYAWAvv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 19:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbYAWApv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 19:45:47 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34440 "EHLO mx1.redhat.com"
+	Tue, 22 Jan 2008 19:45:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34450 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754298AbYAWApL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 19:45:11 -0500
+	id S1754224AbYAWApU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 19:45:20 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 15/27] FS-Cache: Provide an add_wait_queue_tail() function
+Subject: [PATCH 17/27] CacheFiles: Add missing copy_page export for ia64
 To: Trond.Myklebust@netapp.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 23 Jan 2008 00:45:05 +0000
-Message-ID: <20080123004505.15602.18177.stgit@warthog.procyon.org.uk>
+Date: Wed, 23 Jan 2008 00:45:16 +0000
+Message-ID: <20080123004515.15602.3675.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080123004344.15602.35710.stgit@warthog.procyon.org.uk>
 References: <20080123004344.15602.35710.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -31,57 +31,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide an add_wait_queue_tail() function to add a waiter to the back of a
-wait queue instead of the front.
+This one-line patch fixes the missing export of copy_page introduced
+by the cachefile patches.  This patch is not yet upstream, but is required
+for cachefile on ia64.  It will be pushed upstream when cachefile goes
+upstream.
 
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/wait.h |    2 ++
- kernel/wait.c        |   18 ++++++++++++++++++
- 2 files changed, 20 insertions(+), 0 deletions(-)
+ arch/ia64/kernel/ia64_ksyms.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
 
-diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 0e68628..f1038d0 100644
---- a/include/linux/wait.h
-+++ b/include/linux/wait.h
-@@ -118,6 +118,8 @@ static inline int waitqueue_active(wait_queue_head_t *q)
- #define is_sync_wait(wait)	(!(wait) || ((wait)->private))
+diff --git a/arch/ia64/kernel/ia64_ksyms.c b/arch/ia64/kernel/ia64_ksyms.c
+index c3b4412..e64fd61 100644
+--- a/arch/ia64/kernel/ia64_ksyms.c
++++ b/arch/ia64/kernel/ia64_ksyms.c
+@@ -43,6 +43,7 @@ EXPORT_SYMBOL(__do_clear_user);
+ EXPORT_SYMBOL(__strlen_user);
+ EXPORT_SYMBOL(__strncpy_from_user);
+ EXPORT_SYMBOL(__strnlen_user);
++EXPORT_SYMBOL(copy_page);
  
- extern void FASTCALL(add_wait_queue(wait_queue_head_t *q, wait_queue_t * wait));
-+extern void FASTCALL(add_wait_queue_tail(wait_queue_head_t *q,
-+					 wait_queue_t *wait));
- extern void FASTCALL(add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t * wait));
- extern void FASTCALL(remove_wait_queue(wait_queue_head_t *q, wait_queue_t * wait));
- 
-diff --git a/kernel/wait.c b/kernel/wait.c
-index 444ddbf..7acc9cc 100644
---- a/kernel/wait.c
-+++ b/kernel/wait.c
-@@ -29,6 +29,24 @@ void fastcall add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
- }
- EXPORT_SYMBOL(add_wait_queue);
- 
-+/**
-+ * add_wait_queue_tail - Add a waiter to the back of a waitqueue
-+ * @q: the wait queue to append the waiter to
-+ * @wait: the waiter to be queued
-+ *
-+ * Add a waiter to the back of a waitqueue so that it gets woken up last.
-+ */
-+void fastcall add_wait_queue_tail(wait_queue_head_t *q, wait_queue_t *wait)
-+{
-+	unsigned long flags;
-+
-+	wait->flags &= ~WQ_FLAG_EXCLUSIVE;
-+	spin_lock_irqsave(&q->lock, flags);
-+	__add_wait_queue_tail(q, wait);
-+	spin_unlock_irqrestore(&q->lock, flags);
-+}
-+EXPORT_SYMBOL(add_wait_queue_tail);
-+
- void fastcall add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait)
- {
- 	unsigned long flags;
+ /* from arch/ia64/lib */
+ extern void __divsi3(void);
 
