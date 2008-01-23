@@ -1,323 +1,395 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYAWQDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbYAWQFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbYAWQDM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 11:03:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYAWQC5
+	id S1755098AbYAWQFH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 11:05:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbYAWQEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 11:02:57 -0500
-Received: from mail0.scram.de ([78.47.204.202]:39821 "EHLO mail0.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752394AbYAWQCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 11:02:55 -0500
-X-Spam-Score: -4.212
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.2 AWL AWL: From: address is in the auto white-list
-Message-ID: <47976511.50006@scram.de>
-Date: Wed, 23 Jan 2008 17:02:25 +0100
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-CC: Kumar Gala <galak@kernel.crashing.org>,
-       Scott Wood <scottwood@freescale.com>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCHv2 8/8] [POWERPC] Move definition of buffer descriptor to cpm.h
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jan 2008 11:04:51 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:64287 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752130AbYAWQEs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 11:04:48 -0500
+Message-Id: <20080123160236.969334052@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 23 Jan 2008 11:02:36 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: [PATCH 00/20 -v5] mcount and latency tracing utility -v5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Buffer descriptors are used by both CPM1 and CPM2. Move the definitions
-from the cpm dependent include file to common cpm.h
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
-  include/asm-powerpc/cpm.h  |   73 ++++++++++++++++++++++++++++++++++++++++++++
-  include/asm-powerpc/cpm1.h |   65 ---------------------------------------
-  include/asm-powerpc/cpm2.h |   64 --------------------------------------
-  3 files changed, 73 insertions(+), 129 deletions(-)
+[
+  version 5 of mcount / trace patches:
 
-diff --git a/include/asm-powerpc/cpm.h b/include/asm-powerpc/cpm.h
-index fae83b1..77e39da 100644
---- a/include/asm-powerpc/cpm.h
-+++ b/include/asm-powerpc/cpm.h
-@@ -4,6 +4,79 @@
-  #include <linux/compiler.h>
-  #include <linux/types.h>
+  changes include:
 
-+/* Buffer descriptors used by many of the CPM protocols. */
-+typedef struct cpm_buf_desc {
-+	ushort	cbd_sc;		/* Status and Control */
-+	ushort	cbd_datlen;	/* Data length in buffer */
-+	uint	cbd_bufaddr;	/* Buffer address in host memory */
-+} cbd_t;
-+
-+/* Buffer descriptor control/status used by serial
-+ */
-+
-+#define BD_SC_EMPTY	(0x8000)	/* Receive is empty */
-+#define BD_SC_READY	(0x8000)	/* Transmit is ready */
-+#define BD_SC_WRAP	(0x2000)	/* Last buffer descriptor */
-+#define BD_SC_INTRPT	(0x1000)	/* Interrupt on change */
-+#define BD_SC_LAST	(0x0800)	/* Last buffer in frame */
-+#define BD_SC_TC	(0x0400)	/* Transmit CRC */
-+#define BD_SC_CM	(0x0200)	/* Continous mode */
-+#define BD_SC_ID	(0x0100)	/* Rec'd too many idles */
-+#define BD_SC_P		(0x0100)	/* xmt preamble */
-+#define BD_SC_BR	(0x0020)	/* Break received */
-+#define BD_SC_FR	(0x0010)	/* Framing error */
-+#define BD_SC_PR	(0x0008)	/* Parity error */
-+#define BD_SC_NAK	(0x0004)	/* NAK - did not respond */
-+#define BD_SC_OV	(0x0002)	/* Overrun */
-+#define BD_SC_UN	(0x0002)	/* Underrun */
-+#define BD_SC_CD	(0x0001)	/* */
-+#define BD_SC_CL	(0x0001)	/* Collision */
-+
-+/* Buffer descriptor control/status used by Ethernet receive.
-+ * Common to SCC and FCC.
-+ */
-+#define BD_ENET_RX_EMPTY	(0x8000)
-+#define BD_ENET_RX_WRAP		(0x2000)
-+#define BD_ENET_RX_INTR		(0x1000)
-+#define BD_ENET_RX_LAST		(0x0800)
-+#define BD_ENET_RX_FIRST	(0x0400)
-+#define BD_ENET_RX_MISS		(0x0100)
-+#define BD_ENET_RX_BC		(0x0080)	/* FCC Only */
-+#define BD_ENET_RX_MC		(0x0040)	/* FCC Only */
-+#define BD_ENET_RX_LG		(0x0020)
-+#define BD_ENET_RX_NO		(0x0010)
-+#define BD_ENET_RX_SH		(0x0008)
-+#define BD_ENET_RX_CR		(0x0004)
-+#define BD_ENET_RX_OV		(0x0002)
-+#define BD_ENET_RX_CL		(0x0001)
-+#define BD_ENET_RX_STATS	(0x01ff)	/* All status bits */
-+
-+/* Buffer descriptor control/status used by Ethernet transmit.
-+ * Common to SCC and FCC.
-+ */
-+#define BD_ENET_TX_READY	(0x8000)
-+#define BD_ENET_TX_PAD		(0x4000)
-+#define BD_ENET_TX_WRAP		(0x2000)
-+#define BD_ENET_TX_INTR		(0x1000)
-+#define BD_ENET_TX_LAST		(0x0800)
-+#define BD_ENET_TX_TC		(0x0400)
-+#define BD_ENET_TX_DEF		(0x0200)
-+#define BD_ENET_TX_HB		(0x0100)
-+#define BD_ENET_TX_LC		(0x0080)
-+#define BD_ENET_TX_RL		(0x0040)
-+#define BD_ENET_TX_RCMASK	(0x003c)
-+#define BD_ENET_TX_UN		(0x0002)
-+#define BD_ENET_TX_CSL		(0x0001)
-+#define BD_ENET_TX_STATS	(0x03ff)	/* All status bits */
-+
-+/* Buffer descriptor control/status used by Transparent mode SCC.
-+ */
-+#define BD_SCC_TX_LAST		(0x0800)
-+
-+/* Buffer descriptor control/status used by I2C.
-+ */
-+#define BD_I2C_START		(0x0400)
-+
-  int cpm_muram_init(void);
-  unsigned long cpm_muram_alloc(unsigned long size, unsigned long align);
-  int cpm_muram_free(unsigned long offset);
-diff --git a/include/asm-powerpc/cpm1.h b/include/asm-powerpc/cpm1.h
-index 901a00b..b2ebd6a 100644
---- a/include/asm-powerpc/cpm1.h
-+++ b/include/asm-powerpc/cpm1.h
-@@ -91,32 +91,6 @@ extern void cpm_load_patch(cpm8xx_t *cp);
+   Folded more patches together (mostly the timing stuff)
 
-  extern void cpm_reset(void);
+   Some minor fixes to the timing code.
 
--/* Buffer descriptors used by many of the CPM protocols.
--*/
--typedef struct cpm_buf_desc {
--	ushort	cbd_sc;		/* Status and Control */
--	ushort	cbd_datlen;	/* Data length in buffer */
--	uint	cbd_bufaddr;	/* Buffer address in host memory */
--} cbd_t;
--
--#define BD_SC_EMPTY	((ushort)0x8000)	/* Receive is empty */
--#define BD_SC_READY	((ushort)0x8000)	/* Transmit is ready */
--#define BD_SC_WRAP	((ushort)0x2000)	/* Last buffer descriptor */
--#define BD_SC_INTRPT	((ushort)0x1000)	/* Interrupt on change */
--#define BD_SC_LAST	((ushort)0x0800)	/* Last buffer in frame */
--#define BD_SC_TC	((ushort)0x0400)	/* Transmit CRC */
--#define BD_SC_CM	((ushort)0x0200)	/* Continous mode */
--#define BD_SC_ID	((ushort)0x0100)	/* Rec'd too many idles */
--#define BD_SC_P		((ushort)0x0100)	/* xmt preamble */
--#define BD_SC_BR	((ushort)0x0020)	/* Break received */
--#define BD_SC_FR	((ushort)0x0010)	/* Framing error */
--#define BD_SC_PR	((ushort)0x0008)	/* Parity error */
--#define BD_SC_NAK	((ushort)0x0004)	/* NAK - did not respond */
--#define BD_SC_OV	((ushort)0x0002)	/* Overrun */
--#define BD_SC_UN	((ushort)0x0002)	/* Underrun */
--#define BD_SC_CD	((ushort)0x0001)	/* ?? */
--#define BD_SC_CL	((ushort)0x0001)	/* Collision */
--
-  /* Parameter RAM offsets.
-  */
-  #define PROFF_SCC1	((uint)0x0000)
-@@ -446,41 +420,6 @@ typedef struct scc_enet {
-  #define SCC_PSMR_NIB22	((ushort)0x000a)	/* Start frame search */
-  #define SCC_PSMR_FDE	((ushort)0x0001)	/* Full duplex enable */
+   Redesigned the tracer!
+   
+     - Now all tracers use the same buffer. This cut down tremendously
+        the code duplication).
 
--/* Buffer descriptor control/status used by Ethernet receive.
--*/
--#define BD_ENET_RX_EMPTY	((ushort)0x8000)
--#define BD_ENET_RX_WRAP		((ushort)0x2000)
--#define BD_ENET_RX_INTR		((ushort)0x1000)
--#define BD_ENET_RX_LAST		((ushort)0x0800)
--#define BD_ENET_RX_FIRST	((ushort)0x0400)
--#define BD_ENET_RX_MISS		((ushort)0x0100)
--#define BD_ENET_RX_LG		((ushort)0x0020)
--#define BD_ENET_RX_NO		((ushort)0x0010)
--#define BD_ENET_RX_SH		((ushort)0x0008)
--#define BD_ENET_RX_CR		((ushort)0x0004)
--#define BD_ENET_RX_OV		((ushort)0x0002)
--#define BD_ENET_RX_CL		((ushort)0x0001)
--#define BD_ENET_RX_BC		((ushort)0x0080)	/* DA is Broadcast */
--#define BD_ENET_RX_MC		((ushort)0x0040)	/* DA is Multicast */
--#define BD_ENET_RX_STATS	((ushort)0x013f)	/* All status bits */
--
--/* Buffer descriptor control/status used by Ethernet transmit.
--*/
--#define BD_ENET_TX_READY	((ushort)0x8000)
--#define BD_ENET_TX_PAD		((ushort)0x4000)
--#define BD_ENET_TX_WRAP		((ushort)0x2000)
--#define BD_ENET_TX_INTR		((ushort)0x1000)
--#define BD_ENET_TX_LAST		((ushort)0x0800)
--#define BD_ENET_TX_TC		((ushort)0x0400)
--#define BD_ENET_TX_DEF		((ushort)0x0200)
--#define BD_ENET_TX_HB		((ushort)0x0100)
--#define BD_ENET_TX_LC		((ushort)0x0080)
--#define BD_ENET_TX_RL		((ushort)0x0040)
--#define BD_ENET_TX_RCMASK	((ushort)0x003c)
--#define BD_ENET_TX_UN		((ushort)0x0002)
--#define BD_ENET_TX_CSL		((ushort)0x0001)
--#define BD_ENET_TX_STATS	((ushort)0x03ff)	/* All status bits */
--
-  /* SCC as UART
-  */
-  typedef struct scc_uart {
-@@ -549,8 +488,6 @@ typedef struct scc_trans {
-  	uint	st_cmask;	/* Constant mask for CRC */
-  } scc_trans_t;
+     - consolidated the debugfs files (see below)
 
--#define BD_SCC_TX_LAST		((ushort)0x0800)
--
-  /* IIC parameter RAM.
-  */
-  typedef struct iic {
-@@ -574,8 +511,6 @@ typedef struct iic {
-  	char	res2[2];	/* Reserved */
-  } iic_t;
+   This has now gone from a RFC patch series to a true PATCH series.
 
--#define BD_IIC_START		((ushort)0x0400)
--
-  /* SPI parameter RAM.
-  */
-  typedef struct spi {
-diff --git a/include/asm-powerpc/cpm2.h b/include/asm-powerpc/cpm2.h
-index f1112c1..b93a53e 100644
---- a/include/asm-powerpc/cpm2.h
-+++ b/include/asm-powerpc/cpm2.h
-@@ -132,29 +132,6 @@ extern void cpm_setbrg(uint brg, uint rate);
-  extern void cpm2_fastbrg(uint brg, uint rate, int div16);
-  extern void cpm2_reset(void);
+  New! trace-cmd.c - see below
 
--
--/* Buffer descriptors used by many of the CPM protocols.
--*/
--typedef struct cpm_buf_desc {
--	ushort	cbd_sc;		/* Status and Control */
--	ushort	cbd_datlen;	/* Data length in buffer */
--	uint	cbd_bufaddr;	/* Buffer address in host memory */
--} cbd_t;
--
--#define BD_SC_EMPTY	((ushort)0x8000)	/* Receive is empty */
--#define BD_SC_READY	((ushort)0x8000)	/* Transmit is ready */
--#define BD_SC_WRAP	((ushort)0x2000)	/* Last buffer descriptor */
--#define BD_SC_INTRPT	((ushort)0x1000)	/* Interrupt on change */
--#define BD_SC_LAST	((ushort)0x0800)	/* Last buffer in frame */
--#define BD_SC_CM	((ushort)0x0200)	/* Continous mode */
--#define BD_SC_ID	((ushort)0x0100)	/* Rec'd too many idles */
--#define BD_SC_P		((ushort)0x0100)	/* xmt preamble */
--#define BD_SC_BR	((ushort)0x0020)	/* Break received */
--#define BD_SC_FR	((ushort)0x0010)	/* Framing error */
--#define BD_SC_PR	((ushort)0x0008)	/* Parity error */
--#define BD_SC_OV	((ushort)0x0002)	/* Overrun */
--#define BD_SC_CD	((ushort)0x0001)	/* ?? */
--
-  /* Function code bits, usually generic to devices.
-  */
-  #define CPMFCR_GBL	((u_char)0x20)	/* Set memory snooping */
-@@ -456,43 +433,6 @@ typedef struct scc_enet {
-  #define SCC_PSMR_NIB22	((ushort)0x000a)	/* Start frame search */
-  #define SCC_PSMR_FDE	((ushort)0x0001)	/* Full duplex enable */
+  added printk patch to allow printk to happen with runqueue lock held.
+]
 
--/* Buffer descriptor control/status used by Ethernet receive.
-- * Common to SCC and FCC.
-- */
--#define BD_ENET_RX_EMPTY	((ushort)0x8000)
--#define BD_ENET_RX_WRAP		((ushort)0x2000)
--#define BD_ENET_RX_INTR		((ushort)0x1000)
--#define BD_ENET_RX_LAST		((ushort)0x0800)
--#define BD_ENET_RX_FIRST	((ushort)0x0400)
--#define BD_ENET_RX_MISS		((ushort)0x0100)
--#define BD_ENET_RX_BC		((ushort)0x0080)	/* FCC Only */
--#define BD_ENET_RX_MC		((ushort)0x0040)	/* FCC Only */
--#define BD_ENET_RX_LG		((ushort)0x0020)
--#define BD_ENET_RX_NO		((ushort)0x0010)
--#define BD_ENET_RX_SH		((ushort)0x0008)
--#define BD_ENET_RX_CR		((ushort)0x0004)
--#define BD_ENET_RX_OV		((ushort)0x0002)
--#define BD_ENET_RX_CL		((ushort)0x0001)
--#define BD_ENET_RX_STATS	((ushort)0x01ff)	/* All status bits */
--
--/* Buffer descriptor control/status used by Ethernet transmit.
-- * Common to SCC and FCC.
-- */
--#define BD_ENET_TX_READY	((ushort)0x8000)
--#define BD_ENET_TX_PAD		((ushort)0x4000)
--#define BD_ENET_TX_WRAP		((ushort)0x2000)
--#define BD_ENET_TX_INTR		((ushort)0x1000)
--#define BD_ENET_TX_LAST		((ushort)0x0800)
--#define BD_ENET_TX_TC		((ushort)0x0400)
--#define BD_ENET_TX_DEF		((ushort)0x0200)
--#define BD_ENET_TX_HB		((ushort)0x0100)
--#define BD_ENET_TX_LC		((ushort)0x0080)
--#define BD_ENET_TX_RL		((ushort)0x0040)
--#define BD_ENET_TX_RCMASK	((ushort)0x003c)
--#define BD_ENET_TX_UN		((ushort)0x0002)
--#define BD_ENET_TX_CSL		((ushort)0x0001)
--#define BD_ENET_TX_STATS	((ushort)0x03ff)	/* All status bits */
--
-  /* SCC as UART
-  */
-  typedef struct scc_uart {
-@@ -562,8 +502,6 @@ typedef struct scc_trans {
-  	uint	st_cmask;	/* Constant mask for CRC */
-  } scc_trans_t;
+All released version of these patches can be found at:
 
--#define BD_SCC_TX_LAST		((ushort)0x0800)
--
-  /* How about some FCCs.....
-  */
-  #define FCC_GFMR_DIAG_NORM	((uint)0x00000000)
-@@ -769,8 +707,6 @@ typedef struct spi {
+   http://people.redhat.com/srostedt/tracing/
 
-  #define SPI_EB		((u_char)0x10)		/* big endian byte order */
 
--#define BD_IIC_START		((ushort)0x0400)
--
-  /* IDMA parameter RAM
-  */
-  typedef struct idma {
--- 
-1.5.3.8
+The following patch series brings to vanilla Linux a bit of the RT kernel
+trace facility. This incorporates the "-pg" profiling option of gcc
+that will call the "mcount" function for all functions called in
+the kernel.
+
+Note: I did investigate using -finstrument-functions but that adds a call
+to both start and end of a function. Using mcount only does the
+beginning of the function. mcount alone adds ~13% overhead. The
+-finstrument-functions added ~19%.  Also it caused me to do tricks with
+inline, because it adds the function calls to inline functions as well.
+
+This patch series implements the code for x86 (32 and 64 bit), but
+other archs can easily be implemented as well (note: ARM and PPC are
+already implemented in -rt)
+
+Some Background:
+----------------
+
+A while back, Ingo Molnar and William Lee Irwin III created a latency tracer
+to find problem latency areas in the kernel for the RT patch.  This tracer
+became a very integral part of the RT kernel in solving where latency hot
+spots were.  One of the features that the latency tracer added was a
+function trace.  This function tracer would record all functions that
+were called (implemented by the gcc "-pg" option) and would show what was
+called when interrupts or preemption was turned off.
+
+This feature is also very helpful in normal debugging. So it's been talked
+about taking bits and pieces from the RT latency tracer and bring them
+to LKML. But no one had the time to do it.
+
+Arnaldo Carvalho de Melo took a crack at it. He pulled out the mcount
+as well as part of the tracing code and made it generic from the point
+of the tracing code.  I'm not sure why this stopped. Probably because
+Arnaldo is a very busy man, and his efforts had to be utilized elsewhere.
+
+While I still maintain my own Logdev utility:
+
+  http://rostedt.homelinux.com/logdev
+
+I came across a need to do the mcount with logdev too. I was successful
+but found that it became very dependent on a lot of code. One thing that
+I liked about my logdev utility was that it was very non-intrusive, and has
+been easy to port from the Linux 2.0 days. I did not want to burden the
+logdev patch with the intrusiveness of mcount (not really that intrusive,
+it just needs to add a "notrace" annotation to functions in the kernel
+that will cause more conflicts in applying patches for me).
+
+Being close to the holidays, I grabbed Arnaldos old patches and started
+massaging them into something that could be useful for logdev, and what
+I found out (and talking this over with Arnaldo too) that this can
+be much more useful for others as well.
+
+The main thing I changed, was that I made the mcount function itself
+generic, and not the dependency on the tracing code.  That is I added
+
+register_mcount_function()
+ and
+clear_mcount_function()
+
+So when ever mcount is enabled and a function is registered that function
+is called for all functions in the kernel that is not labeled with the
+"notrace" annotation.
+
+
+The Simple Tracer:
+------------------
+
+To show the power of this I also massaged the tracer code that Arnaldo pulled
+from the RT patch and made it be a nice example of what can be done
+with this.
+
+The function that is registered to mcount has the prototype:
+
+ void func(unsigned long ip, unsigned long parent_ip);
+
+The ip is the address of the function and parent_ip is the address of
+the parent function that called it.
+
+The x86_64 version has the assembly call the registered function directly
+to save having to do a double function call.
+
+To enable mcount, a sysctl is added:
+
+   /proc/sys/kernel/mcount_enabled
+
+Once mcount is enabled, when a function is registed, it will be called by
+all functions. The tracer in this patch series shows how this is done.
+It adds a directory in the debugfs, called mctracer. With a ctrl file that
+will allow the user have the tracer register its function.  Note, the order
+of enabling mcount and registering a function is not important, but both
+must be done to initiate the tracing. That is, you can disable tracing
+by either disabling mcount or by clearing the registered function.
+
+Only one function may be registered at a time. If another function is
+registered, it will simply override what ever was there previously.
+
+Here's a simple example of the tracer output:
+
+CPU 2: hackbench:11867 preempt_schedule+0xc/0x84 <-- avc_has_perm_noaudit+0x45d/0x52c
+CPU 1: hackbench:12052 selinux_file_permission+0x10/0x11c <-- security_file_permission+0x16/0x18
+CPU 3: hackbench:12017 update_curr+0xe/0x8b <-- put_prev_task_fair+0x24/0x4c
+CPU 2: hackbench:11867 avc_audit+0x16/0x9e3 <-- avc_has_perm+0x51/0x63
+CPU 0: hackbench:12019 socket_has_perm+0x16/0x7c <-- selinux_socket_sendmsg+0x27/0x3e
+CPU 1: hackbench:12052 file_has_perm+0x16/0xbb <-- selinux_file_permission+0x104/0x11c
+
+This is formated like:
+
+ CPU <CPU#>: <task-comm>:<task-pid> <function> <-- <parent-function>
+
+
+Latency Tracer Format:
+----------------------
+
+The format used by the RT patch is a bit more complex. It is designed to
+record a lot of information quickly and dump out a lot too.
+
+There's two versions of the format. Verbose and non-vebose.
+
+verbose:
+
+preemption latency trace v1.1.5 on 2.6.24-rc7-tst
+--------------------------------------------------------------------
+ latency: 89 us, #3/3, CPU#1 | (M:desktop VP:0, KP:0, SP:0 HP:0 #P:4)
+    -----------------
+    | task: kjournald-600 (uid:0 nice:-5 policy:0 rt_prio:0)
+    -----------------
+ => started at: _spin_lock_irqsave+0x2a/0x63 <c06310d2>
+ => ended at:   _spin_unlock_irqrestore+0x32/0x41 <c0631245>
+
+       kjournald   600 1 1 00000000 00000000 [397408f1] 0.003ms (+0.079ms): _spin_lock_irqsave+0x2a/0x63 <c06310d2> (scsi_dispatch_cmd+0x155/0x234 [scsi_mod] <f8867c19>)
+       kjournald   600 1 1 00000000 00000001 [39740940] 0.081ms (+0.005ms): _spin_unlock_irqrestore+0x32/0x41 <c0631245> (scsi_dispatch_cmd+0x1be/0x234 [scsi_mod] <f8867c82>)
+       kjournald   600 1 1 00000000 00000002 [39740945] 0.087ms (+0.000ms): trace_hardirqs_on_caller+0x74/0x86 <c0508bdc> (_spin_unlock_irqrestore+0x32/0x41 <c0631245>)
+
+
+non-verbose:
+
+preemption latency trace v1.1.5 on 2.6.24-rc7-tst
+--------------------------------------------------------------------
+ latency: 89 us, #3/3, CPU#2 | (M:desktop VP:0, KP:0, SP:0 HP:0 #P:4)
+    -----------------
+    | task: kjournald-600 (uid:0 nice:-5 policy:0 rt_prio:0)
+    -----------------
+ => started at: _spin_lock_irqsave+0x2a/0x63 <c06310d2>
+ => ended at:   _spin_unlock_irqrestore+0x32/0x41 <c0631245>
+
+                 _------=> CPU#            
+                / _-----=> irqs-off        
+               | / _----=> need-resched    
+               || / _---=> hardirq/softirq 
+               ||| / _--=> preempt-depth   
+               |||| /                      
+               |||||     delay             
+   cmd     pid ||||| time  |   caller      
+      \   /    |||||   \   |   /           
+kjournal-600   1d...    3us+: _spin_lock_irqsave+0x2a/0x63 <c06310d2> (scsi_dispatch_cmd+0x155/0x234 [scsi_mod] <f8867c19>)
+kjournal-600   1d...   81us+: _spin_unlock_irqrestore+0x32/0x41 <c0631245> (scsi_dispatch_cmd+0x1be/0x234 [scsi_mod] <f8867c82>)
+kjournal-600   1d...   87us : trace_hardirqs_on_caller+0x74/0x86 <c0508bdc> (_spin_unlock_irqrestore+0x32/0x41 <c0631245>)
+
+
+Debug FS:
+---------
+
+Although enabling and disabling mcount is done through the sysctl:
+
+/proc/sys/kernel/mcount_enabled
+
+The rest of the tracing uses debugfs.
+
+/debugfs/tracing
+
+Here's the available files:
+
+ available_tracers
+  Lists the tracers that are compiled into the kernel and can be
+  echoed into current_tracer
+
+ current_tracer
+   Shows the current tracer that is registered. On bootup this is
+   blank. To set a new tracer, simply echo into this file the name
+   found in available_tracers.
+
+   e.g.
+
+     echo wakeup > /debugfs/tracing/current_tracer
+
+ trace_ctrl
+   echo 1 to enable the current tracer.
+   echo 0 to disable it.
+
+    Note, the function trace also needs mcount_enabled set,
+    otherwise it will not record.
+
+ latency_trace
+   Outputs the current trace in latency_trace format.
+
+ tracing_thresh
+   echo a number (in usecs) into this to record all traces that are
+   greater than threshold. Only matters for those traces that use
+   a max threshold (preemptoff irqsoff and wakeup)
+
+ iter_ctrl
+   echo "symonly" to not show the instruction pointers in the trace
+   echo "nosymonly" to disable symonly.
+   echo "verbose" for verbose output from latency format.
+   echo "noverbose" to disable verbose ouput.
+   cat iter_ctrl to see the current settings.
+
+ tracing_max_latency
+   Holds the current max critical latency.
+   echo 0 to reset and start tracing.
+   Only holds for those tracers that use a max setting.
+   (preemptoff irqsoff and wakeup)
+
+ trace
+   simple output format of the current trace.
+
+Trace tool:
+-----------
+
+ The trace_cmd.c found at
+   http://people.redhat.com/srostedt/tracing/trace-cmd.c
+
+ This tool will set up the tracer and allow you to run a program
+ and trace it. (must be root)
+
+  e.g.
+
+   # ./trace-cmd -f echo hi
+   # cat /debug/tracing/latency_trace | grep echo | head
+    echo-4240  1d..1 1076us : ret_from_fork+0x6/0x1c (schedule_tail+0x9/0x5e)
+    echo-4240  1d..1 1077us : schedule_tail+0x1e/0x5e (finish_task_switch+0xb/0x61)
+    echo-4240  1d..1 1078us : finish_task_switch+0x24/0x61 (_spin_unlock_irq+0x8/0x40)
+    echo-4240  1...1 1079us : _spin_unlock_irq+0x27/0x40 (sub_preempt_count+0xd/0x104)
+    echo-4240  1...1 1080us+: sub_preempt_count+0x8d/0x104 (in_lock_functions+0x8/0x2c)
+    echo-4240  1d... 1082us : error_code+0x72/0x78 (do_page_fault+0xe/0x7c0)
+    echo-4240  1d... 1083us : do_page_fault+0x35b/0x7c0 (add_preempt_count+0xc/0x10f)
+    echo-4240  1d..1 1085us : add_preempt_count+0x53/0x10f (in_lock_functions+0x8/0x2c)
+    echo-4240  1d..1 1086us : do_page_fault+0x38f/0x7c0 (sub_preempt_count+0xd/0x104)
+    echo-4240  1d..1 1087us : sub_preempt_count+0x8d/0x104 (in_lock_functions+0x8/0x2c)
+
+
+  The available switches are:
+
+    -s - context switch tracing
+    -p - preemption off tracing
+    -i - interrupts off tracing
+    -b - both interrupts off and preemption off tracing
+    -w - wakeup timings
+    -f - function trace
+
+  Only -f (function trace) may be enabled with the other tracers,
+  since most the other tracers also have a function trace version
+  if mcount is enabled (yes -f will enable mcount).
+
+
+Overhead:
+---------
+
+Note that having mcount compiled in seems to show a little overhead.
+
+Here's 3 runs of hackbench 50 without the patches:
+Time: 2.137
+Time: 2.283
+Time: 2.245
+
+ Avg: 2.221
+
+and here's 3 runs with the patches (without tracing on):
+Time: 2.738
+Time: 2.469
+Time: 2.388
+
+  Avg: 2.531
+
+So it is a 13% overhead when enabled (according to hackbench).
+
+But full tracing can cause a bit more problems:
+
+# hackbench 50
+Time: 113.350
+
+  113.350!!!!!
+
+But this is tracing *every* function call!
+
+
+Future:
+-------
+The way the mcount hook is done here, other utilities can easily add their
+own functions. Just care needs to be made not to call anything that is not
+marked with notrace, or you will crash the box with recursion. But
+even the simple tracer adds a "disabled" feature so in case it happens
+to call something that is not marked with notrace, it is a safety net
+not to kill the box.
+
+I was originally going to use the relay system to record the data, but
+that had a chance of calling functions not marked with notrace. But, if
+for example LTTng wanted to use this, it could disable tracing on a CPU
+when doing the calls, and this will protect from recusion.
+
+Redesign:
+---------
+This will be the last series that has each of the traces as a separate
+buffer. The next series will be more like the RT patch implementation
+of holding a single buffer for all latency traces. The only disadvantage
+of this is that you can only perform one type of latency at a time.
+But this has never been brought up as an issue with the RT patch.
+
+The user will still be able to switch at runtime which type of latency
+they would like to record.
+
+SystemTap:
+----------
+One thing that Arnaldo and I discussed last year was using systemtap to
+add hooks into the kernel to start and stop tracing.  kprobes is too
+heavy to do on all funtion calls, but it would be perfect to add to
+non hot paths to start the tracer and stop the tracer.
+
+So when debugging the kernel, instead of recompiling with printks
+or other markers, you could simply use systemtap to place a trace start
+and stop locations and trace the problem areas to see what is happening.
+
+
+
+These are just some of the ideas we have with this. And we are sure others
+could come up with more.
+
+These patches are for the underlining work. We'll see what happens next.
+
+
+
 
