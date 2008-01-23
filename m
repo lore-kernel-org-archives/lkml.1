@@ -1,93 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752710AbYAWNdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbYAWNg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752710AbYAWNdl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 08:33:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYAWNde
+	id S1753787AbYAWNg2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 08:36:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYAWNgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 08:33:34 -0500
-Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:17488 "EHLO
-	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751043AbYAWNdd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 08:33:33 -0500
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Subject: Re: [PATCH 1/2] dm-band: The I/O bandwidth controller: Source code  patch
-Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-In-reply-To: <20080123.215632.226773739.ryov@valinux.co.jp>
-References: <20080123.215350.193721890.ryov@valinux.co.jp> <20080123.215632.226773739.ryov@valinux.co.jp>
-Message-Id: <E1JHfjM-0003NV-BR@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Wed, 23 Jan 2008 14:33:28 +0100
-X-OriginalArrivalTime: 23 Jan 2008 13:33:30.0778 (UTC) FILETIME=[8B0AE7A0:01C85DC4]
+	Wed, 23 Jan 2008 08:36:21 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:61398 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751175AbYAWNgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 08:36:20 -0500
+Date: Wed, 23 Jan 2008 14:35:03 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Marc Pignat <marc.pignat@hevs.ch>
+Cc: Andrew Victor <linux@maxim.org.za>, kernel@avr32linux.org,
+       linux-kernel@vger.kernel.org, Remy Bohmer <linux@bohmer.net>,
+       Chip Coldwell <coldwell@redhat.com>
+Subject: Re: [PATCH 6/6] atmel_serial: Add DMA support
+Message-ID: <20080123143503.764bc8cf@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <200801231418.38997.marc.pignat@hevs.ch>
+References: <1201013444-30370-1-git-send-email-hskinnemoen@atmel.com>
+	<200801231330.32777.marc.pignat@hevs.ch>
+	<20080123134553.144ca487@dhcp-252-066.norway.atmel.com>
+	<200801231418.38997.marc.pignat@hevs.ch>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 23 Jan 2008 14:18:38 +0100
+Marc Pignat <marc.pignat@hevs.ch> wrote:
 
-I'm not qualified to comment on the code, but here are some suggestions on
-config option and comments.
+> On Wednesday 23 January 2008, Haavard Skinnemoen wrote:
+> > Ok, but then any power of two larger than the cache line size should be
+> > fine, assuming kmalloc() returns a properly aligned buffer.
+> Yes. The memory should be allocated using GFP_KERNEL | GFP_DMA flags, but this
+> is probably a nop on at91 and avr32.
 
-Cheers,
-FJP
+GFP_DMA doesn't have anything to do with alignment, AFAIK.
 
-Ryo Tsuruta wrote:
-> +config DM_BAND
-> +	tristate "I/O band width control "
+> I prepare a patch using the generic dma api (allocation + dma mapping in one
+> call = simpler code).
 
-s/band width/bandwidth/
-(it seems to be used correctly elsewhere, but you may want to double-check)
+No, please don't. If you're thinking of dma_alloc_coherent(), it means
+that the cache will be bypassed when accessing the buffer (slower), and
+that the size will be rounded up to the next multiple of the page size
+(larger). If the sole purpose of doing that is to get properly aligned
+buffers, we might as well use the page allocator directly.
 
-> +	depends on BLK_DEV_DM
-> +	---help---
-> +	Any processes or cgroups can use the same storage
-> +	with its band-width fairly shared.
+kmalloc() does return cache-aligned buffers on AVR32, so a patch like
+that would have only downsides. I'm not sure about ARM though.
 
-s/band-width/bandwidth/
+> > Other than that, I can't see any reason why a platform with 64 byte
+> > cache lines should need larger buffers than one with 32 byte cache
+> > lines.
+> If the memory at the end of the cacheline is used by the cpu, it will be
+> corrupted while you call dma_sync_single_for_cpu(..., DMA_FROM_DEVICE);
 
-The help should probably be a bit more verbose as this does not tell anybody
-much who has not already read the documentation.
+True, but if that happens, the right fix is to provide a suitable
+definition of ARCH_KMALLOC_MINALIGN on ARM.
 
-Maybe something like:
-<snip>
-This device-mapper target allows to define how the
-available bandwith of a storage device should be
-shared between processes or cgroups.
-
-Information on how to use dm-band is available in:
-   Documentation/device-mapper/band.txt
-</snip>
-
-> + * The following functiotons determine when and which BIOs should
-                    ^^^^^^^^^^^
-> + * be submitted to control the I/O flow.
-> + * It is possible to add a new I/O scheduling policy with it.
-
-> + *  <Method>      <description>
-> + * g_can_submit   : To determine whether a given group has a right to
-
-s/a right/the right/
-
-> + *                  submit BIOs.
-> + * 		    The larger return value the higher priority to submit.
-> + * 		    Zero means it has no right.
-
-"The larger the return value, the higher the priority [...]"
-
-> + * g_prepare_bio  : Called right before submitting each BIO.
-> + * g_restart_bios : Called when there exist some BIOs blocked but none of
-> them
-> + * 		    can't be submitted now.
-
-s/when there exist some BIOs blocked/if some BIOs exist that are blocked/ ?
-
-"none of them can't" : the double negative looks incorrect (and should be
-avoided anyway)
-
-> + *		    This method have to do something to restart to submit BIOs.
-
-s/have/has/
-
-"has to do something" : that's rather vague...
+Haavard
