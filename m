@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbYAWRYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbYAWR2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756252AbYAWRYn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:24:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbYAWRV7
+	id S1757471AbYAWR2q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:28:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370AbYAWRXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:21:59 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56053 "EHLO mx1.redhat.com"
+	Wed, 23 Jan 2008 12:23:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56170 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755235AbYAWRVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:21:23 -0500
+	id S1754680AbYAWRWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:22:23 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 06/27] Security: Separate task security context from
-	task_struct [try #2]
+Subject: [PATCH 16/27] FS-Cache: Generic filesystem caching facility [try #2]
 To: Trond.Myklebust@netapp.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 23 Jan 2008 17:21:11 +0000
-Message-ID: <20080123172111.11107.80950.stgit@warthog.procyon.org.uk>
+Date: Wed, 23 Jan 2008 17:22:04 +0000
+Message-ID: <20080123172204.11107.20041.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 References: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,4673 +31,7692 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Separate the task security context from task_struct.  At this point, the
-security data is temporarily embedded in the task_struct with two pointers
-pointing to it.
+The attached patch adds a generic intermediary (FS-Cache) by which filesystems
+may call on local caching capabilities, and by which local caching backends may
+make caches available:
 
-Alpha needs further alteration as it refers to UID & GID in entry.S via asm
-offsets.
+	+---------+
+	|         |                        +--------------+
+	|   NFS   |--+                     |              |
+	|         |  |                 +-->|   CacheFS    |
+	+---------+  |   +----------+  |   |  /dev/hda5   |
+	             |   |          |  |   +--------------+
+	+---------+  +-->|          |  |
+	|         |      |          |--+
+	|   AFS   |----->| FS-Cache |
+	|         |      |          |--+
+	+---------+  +-->|          |  |
+	             |   |          |  |   +--------------+
+	+---------+  |   +----------+  |   |              |
+	|         |  |                 +-->|  CacheFiles  |
+	|  ISOFS  |--+                     |  /var/cache  |
+	|         |                        +--------------+
+	+---------+
 
-Sparc needs further alteration as it refers to UID & GID in sclow.S via asm
-offsets.
+The patch also documents the netfs interface and the cache backend
+interface provided by the facility.
+
+
+There are a number of reasons why I'm not using i_mapping to do this.
+These have been discussed a lot on the LKML and CacheFS mailing lists,
+but to summarise the basics:
+
+ (1) Most filesystems don't do hole reportage.  Holes in files are treated as
+     blocks of zeros and can't be distinguished otherwise, making it difficult
+     to distinguish blocks that have been read from the network and cached from
+     those that haven't.
+
+ (2) The backing inode must be fully populated before being exposed to
+     userspace through the main inode because the VM/VFS goes directly to the
+     backing inode and does not interrogate the front inode on VM ops.
+
+     Therefore:
+
+     (a) The backing inode must fit entirely within the cache.
+
+     (b) All backed files currently open must fit entirely within the cache at
+     	 the same time.
+
+     (c) A working set of files in total larger than the cache may not be
+     	 cached.
+
+     (d) A file may not grow larger than the available space in the cache.
+
+     (e) A file that's open and cached, and remotely grows larger than the
+     	 cache is potentially stuffed.
+
+ (3) Writes go to the backing filesystem, and can only be transferred to the
+     network when the file is closed.
+
+ (4) There's no record of what changes have been made, so the whole file must
+     be written back.
+
+ (5) The pages belong to the backing filesystem, and all metadata associated
+     with that page are relevant only to the backing filesystem, and not
+     anything stacked atop it.
+
+
+The attached patch adds a generic core to which both networking filesystems and
+caches may bind.  It transfers requests from networking filesystems to
+appropriate caches if possible, or else gracefully denies them.
+
+If this facility is disabled in the kernel configuration, then all its
+operations will be trivially reducible to nothing by the compiler.
+
+FS-Cache provides the following facilities:
+
+ (1) Caches can be added / removed at any time, even whilst in use.
+
+ (2) Adds a facility by which tags can be used to refer to caches, even if
+     they're not mounted yet.
+
+ (3) More than one cache can be used at once.  Caches can be selected
+     explicitly by use of tags.
+
+ (4) The netfs is provided with an interface that allows either party to
+     withdraw caching facilities from a file (required for (1)).
+
+ (5) A netfs may annotate cache objects that belongs to it.
+
+ (6) Cache objects can be pinned and reservations made.
+
+ (7) The interface to the netfs returns as few errors as possible, preferring
+     rather to let the netfs remain oblivious.
+
+ (8) Cookies are used to represent indices, files and other objects to the
+     netfs.  The simplest cookie is just a NULL pointer - indicating nothing
+     cached there.
+
+ (9) The netfs is allowed to propose - dynamically - any index hierarchy it
+     desires, though it must be aware that the index search function is
+     recursive, stack space is limited, and indices can only be children of
+     indices.
+
+(10) Indices can be used to group files together to reduce key size and to make
+     group invalidation easier.  The use of indices may make lookup quicker,
+     but that's cache dependent.
+
+(11) Data I/O is effectively done directly to and from the netfs's pages.  The
+     netfs indicates that page A is at index B of the data-file represented by
+     cookie C, and that it should be read or written.  The cache backend may or
+     may not start I/O on that page, but if it does, a netfs callback will be
+     invoked to indicate completion.  The I/O may be either synchronous or
+     asynchronous.
+
+(12) Cookies can be "retired" upon release.  At this point FS-Cache will mark
+     them as obsolete and the index hierarchy rooted at that point will get
+     recycled.
+
+(13) The netfs provides a "match" function for index searches.  In addition to
+     saying whether a match was made or not, this can also specify that an
+     entry should be updated or deleted.
+
+
+FS-Cache maintains a virtual indexing tree in which all indices, files, objects
+and pages are kept.  Bits of this tree may actually reside in one or more
+caches.
+
+                                           FSDEF
+                                             |
+                        +------------------------------------+
+                        |                                    |
+                       NFS                                  AFS
+                        |                                    |
+           +--------------------------+                +-----------+
+           |                          |                |           |
+        homedir                     mirror          afs.org   redhat.com
+           |                          |                            |
+     +------------+           +---------------+              +----------+
+     |            |           |               |              |          |
+   00001        00002       00007           00125        vol00001   vol00002
+     |            |           |               |                         |
+ +---+---+     +-----+      +---+      +------+------+            +-----+----+
+ |   |   |     |     |      |   |      |      |      |            |     |    |
+PG0 PG1 PG2   PG0  XATTR   PG0 PG1   DIRENT DIRENT DIRENT        R/W   R/O  Bak
+                     |                                            |
+                    PG0                                       +-------+
+                                                              |       |
+                                                            00001   00003
+                                                              |
+                                                          +---+---+
+                                                          |   |   |
+                                                         PG0 PG1 PG2
+
+In the example above, you can see two netfs's being backed: NFS and AFS.  These
+have different index hierarchies:
+
+ (*) The NFS primary index will probably contain per-server indices.  Each
+     server index is indexed by NFS file handles to get data file objects.
+     Each data file objects can have an array of pages, but may also have
+     further child objects, such as extended attributes and directory entries.
+     Extended attribute objects themselves have page-array contents.
+
+ (*) The AFS primary index contains per-cell indices.  Each cell index contains
+     per-logical-volume indices.  Each of volume index contains up to three
+     indices for the read-write, read-only and backup mirrors of those volumes.
+     Each of these contains vnode data file objects, each of which contains an
+     array of pages.
+
+The very top index is the FS-Cache master index in which individual netfs's
+have entries.
+
+Any index object may reside in more than one cache, provided it only has index
+children.  Any index with non-index object children will be assumed to only
+reside in one cache.
+
+
+The FS-Cache overview can be found in:
+
+	Documentation/filesystems/caching/fscache.txt
+
+The netfs API to FS-Cache can be found in:
+
+	Documentation/filesystems/caching/netfs-api.txt
+
+The cache backend API to FS-Cache can be found in:
+
+	Documentation/filesystems/caching/backend-api.txt
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- arch/parisc/kernel/signal.c       |    2 
- arch/powerpc/mm/fault.c           |    2 
- arch/s390/hypfs/inode.c           |    4 -
- arch/s390/kernel/compat_linux.c   |   28 ++--
- arch/sparc64/kernel/sys_sparc32.c |   28 ++--
- drivers/block/loop.c              |    5 -
- drivers/char/agp/frontend.c       |    2 
- drivers/char/drm/drm_fops.c       |    2 
- drivers/char/tty_audit.c          |    2 
- drivers/connector/cn_proc.c       |    8 +
- drivers/media/video/cpia.c        |    2 
- drivers/net/tun.c                 |    4 -
- drivers/net/wan/sbni.c            |    8 +
- drivers/usb/core/devio.c          |    8 +
- fs/affs/super.c                   |    4 -
- fs/autofs/inode.c                 |    4 -
- fs/autofs4/inode.c                |    4 -
- fs/autofs4/waitq.c                |    4 -
- fs/binfmt_elf.c                   |   12 +-
- fs/binfmt_elf_fdpic.c             |   12 +-
- fs/cifs/connect.c                 |    5 -
- fs/cifs/ioctl.c                   |    2 
- fs/dquot.c                        |    3 
- fs/ecryptfs/messaging.c           |   15 +-
- fs/exec.c                         |   20 +--
- fs/fat/inode.c                    |    4 -
- fs/fcntl.c                        |    7 +
- fs/file_table.c                   |    4 -
- fs/fuse/dir.c                     |   12 +-
- fs/hfs/super.c                    |    4 -
- fs/hfsplus/options.c              |    4 -
- fs/hpfs/super.c                   |    4 -
- fs/hugetlbfs/inode.c              |    4 -
- fs/inotify_user.c                 |    2 
- fs/ioprio.c                       |   12 +-
- fs/namei.c                        |    6 +
- fs/ncpfs/ioctl.c                  |   32 ++--
- fs/nfsd/auth.c                    |   17 +-
- fs/nfsd/nfs4recover.c             |   12 +-
- fs/open.c                         |   22 +--
- fs/proc/array.c                   |   14 +-
- fs/proc/base.c                    |   16 +-
- fs/proc/proc_sysctl.c             |    4 -
- fs/quota.c                        |    4 -
- fs/smbfs/dir.c                    |    4 -
- fs/smbfs/inode.c                  |    2 
- fs/smbfs/proc.c                   |    2 
- include/linux/init_task.h         |   23 ++-
- include/linux/sched.h             |   79 ++++++++---
- include/net/scm.h                 |    4 -
- ipc/mqueue.c                      |    4 -
- ipc/msg.c                         |    4 -
- ipc/sem.c                         |    4 -
- ipc/shm.c                         |   16 +-
- ipc/util.c                        |    7 +
- kernel/acct.c                     |    8 +
- kernel/auditsc.c                  |   40 +++--
- kernel/cgroup.c                   |    5 -
- kernel/exit.c                     |   12 +-
- kernel/fork.c                     |   23 ++-
- kernel/futex.c                    |    8 +
- kernel/futex_compat.c             |    5 -
- kernel/ptrace.c                   |   14 +-
- kernel/sched.c                    |   11 +
- kernel/signal.c                   |   26 ++-
- kernel/sys.c                      |  276 +++++++++++++++++++++----------------
- kernel/sysctl.c                   |    2 
- kernel/timer.c                    |    8 +
- kernel/tsacct.c                   |    4 -
- kernel/uid16.c                    |   28 ++--
- kernel/user.c                     |    4 -
- kernel/user_namespace.c           |    2 
- mm/mempolicy.c                    |    7 +
- mm/migrate.c                      |    7 +
- mm/oom_kill.c                     |    6 -
- net/ax25/af_ax25.c                |    2 
- net/ax25/ax25_route.c             |    2 
- net/core/scm.c                    |   10 +
- net/ipv6/ip6_flowlabel.c          |    2 
- net/netrom/af_netrom.c            |    4 -
- net/rose/af_rose.c                |    4 -
- net/sunrpc/auth.c                 |    4 -
- net/unix/af_unix.c                |   12 +-
- security/commoncap.c              |  117 +++++++++-------
- security/dummy.c                  |   40 +++--
- security/keys/keyctl.c            |   25 ++-
- security/keys/permission.c        |   11 +
- security/keys/process_keys.c      |   76 +++++-----
- security/keys/request_key.c       |   13 +-
- security/keys/request_key_auth.c  |   12 +-
- security/selinux/exports.c        |    4 -
- security/selinux/hooks.c          |  111 ++++++++-------
- security/selinux/selinuxfs.c      |    2 
- security/selinux/xfrm.c           |    6 -
- 94 files changed, 814 insertions(+), 662 deletions(-)
+ Documentation/filesystems/caching/backend-api.txt |  625 +++++++++++++++
+ Documentation/filesystems/caching/fscache.txt     |  295 +++++++
+ Documentation/filesystems/caching/netfs-api.txt   |  741 ++++++++++++++++++
+ fs/Kconfig                                        |    6 
+ fs/Makefile                                       |    1 
+ fs/fscache/Kconfig                                |   49 +
+ fs/fscache/Makefile                               |   19 
+ fs/fscache/fsc-cache.c                            |  506 ++++++++++++
+ fs/fscache/fsc-cookie.c                           |  490 ++++++++++++
+ fs/fscache/fsc-fsdef.c                            |  112 +++
+ fs/fscache/fsc-internal.h                         |  376 +++++++++
+ fs/fscache/fsc-main.c                             |  133 +++
+ fs/fscache/fsc-manage.c                           |  257 ++++++
+ fs/fscache/fsc-object.c                           |  583 ++++++++++++++
+ fs/fscache/fsc-page.c                             |  872 +++++++++++++++++++++
+ fs/fscache/fsc-proc.c                             |  404 ++++++++++
+ fs/fscache/fsc-stats.c                            |  103 ++
+ fs/fscache/fsc-threads.c                          |  676 ++++++++++++++++
+ include/linux/fscache-cache.h                     |  433 ++++++++++
+ include/linux/fscache.h                           |  617 +++++++++++++++
+ include/linux/pagemap.h                           |    4 
+ mm/filemap.c                                      |    2 
+ 22 files changed, 7303 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/filesystems/caching/backend-api.txt
+ create mode 100644 Documentation/filesystems/caching/fscache.txt
+ create mode 100644 Documentation/filesystems/caching/netfs-api.txt
+ create mode 100644 fs/fscache/Kconfig
+ create mode 100644 fs/fscache/Makefile
+ create mode 100644 fs/fscache/fsc-cache.c
+ create mode 100644 fs/fscache/fsc-cookie.c
+ create mode 100644 fs/fscache/fsc-fsdef.c
+ create mode 100644 fs/fscache/fsc-internal.h
+ create mode 100644 fs/fscache/fsc-main.c
+ create mode 100644 fs/fscache/fsc-manage.c
+ create mode 100644 fs/fscache/fsc-object.c
+ create mode 100644 fs/fscache/fsc-page.c
+ create mode 100644 fs/fscache/fsc-proc.c
+ create mode 100644 fs/fscache/fsc-stats.c
+ create mode 100644 fs/fscache/fsc-threads.c
+ create mode 100644 include/linux/fscache-cache.h
+ create mode 100644 include/linux/fscache.h
 
 
-diff --git a/arch/parisc/kernel/signal.c b/arch/parisc/kernel/signal.c
-index 2ce3806..fc7a77e 100644
---- a/arch/parisc/kernel/signal.c
-+++ b/arch/parisc/kernel/signal.c
-@@ -182,7 +182,7 @@ give_sigsegv:
- 	si.si_errno = 0;
- 	si.si_code = SI_KERNEL;
- 	si.si_pid = task_pid_vnr(current);
--	si.si_uid = current->uid;
-+	si.si_uid = current->act_as->uid;
- 	si.si_addr = &frame->uc;
- 	force_sig_info(SIGSEGV, &si, current);
- 	return;
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 8135da0..70cf3c6 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -365,7 +365,7 @@ bad_area_nosemaphore:
- 	    && printk_ratelimit())
- 		printk(KERN_CRIT "kernel tried to execute NX-protected"
- 		       " page (%lx) - exploit attempt? (uid: %d)\n",
--		       address, current->uid);
-+		       address, current->act_as->uid);
- 
- 	return SIGSEGV;
- 
-diff --git a/arch/s390/hypfs/inode.c b/arch/s390/hypfs/inode.c
-index 5245717..d3a25f4 100644
---- a/arch/s390/hypfs/inode.c
-+++ b/arch/s390/hypfs/inode.c
-@@ -289,8 +289,8 @@ static int hypfs_fill_super(struct super_block *sb, void *data, int silent)
- 	if (!sbi)
- 		return -ENOMEM;
- 	mutex_init(&sbi->lock);
--	sbi->uid = current->uid;
--	sbi->gid = current->gid;
-+	sbi->uid = current->act_as->uid;
-+	sbi->gid = current->act_as->gid;
- 	sb->s_fs_info = sbi;
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
- 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
-diff --git a/arch/s390/kernel/compat_linux.c b/arch/s390/kernel/compat_linux.c
-index 50b85d0..d939699 100644
---- a/arch/s390/kernel/compat_linux.c
-+++ b/arch/s390/kernel/compat_linux.c
-@@ -149,9 +149,9 @@ asmlinkage long sys32_getresuid16(u16 __user *ruid, u16 __user *euid, u16 __user
- {
- 	int retval;
- 
--	if (!(retval = put_user(high2lowuid(current->uid), ruid)) &&
--	    !(retval = put_user(high2lowuid(current->euid), euid)))
--		retval = put_user(high2lowuid(current->suid), suid);
-+	if (!(retval = put_user(high2lowuid(current->sec->uid), ruid)) &&
-+	    !(retval = put_user(high2lowuid(current->sec->euid), euid)))
-+		retval = put_user(high2lowuid(current->sec->suid), suid);
- 
- 	return retval;
- }
-@@ -166,9 +166,9 @@ asmlinkage long sys32_getresgid16(u16 __user *rgid, u16 __user *egid, u16 __user
- {
- 	int retval;
- 
--	if (!(retval = put_user(high2lowgid(current->gid), rgid)) &&
--	    !(retval = put_user(high2lowgid(current->egid), egid)))
--		retval = put_user(high2lowgid(current->sgid), sgid);
-+	if (!(retval = put_user(high2lowgid(current->sec->gid), rgid)) &&
-+	    !(retval = put_user(high2lowgid(current->sec->egid), egid)))
-+		retval = put_user(high2lowgid(current->sec->sgid), sgid);
- 
- 	return retval;
- }
-@@ -218,20 +218,20 @@ asmlinkage long sys32_getgroups16(int gidsetsize, u16 __user *grouplist)
- 	if (gidsetsize < 0)
- 		return -EINVAL;
- 
--	get_group_info(current->group_info);
--	i = current->group_info->ngroups;
-+	get_group_info(current->sec->group_info);
-+	i = current->sec->group_info->ngroups;
- 	if (gidsetsize) {
- 		if (i > gidsetsize) {
- 			i = -EINVAL;
- 			goto out;
- 		}
--		if (groups16_to_user(grouplist, current->group_info)) {
-+		if (groups16_to_user(grouplist, current->sec->group_info)) {
- 			i = -EFAULT;
- 			goto out;
- 		}
- 	}
- out:
--	put_group_info(current->group_info);
-+	put_group_info(current->sec->group_info);
- 	return i;
- }
- 
-@@ -262,22 +262,22 @@ asmlinkage long sys32_setgroups16(int gidsetsize, u16 __user *grouplist)
- 
- asmlinkage long sys32_getuid16(void)
- {
--	return high2lowuid(current->uid);
-+	return high2lowuid(current->sec->uid);
- }
- 
- asmlinkage long sys32_geteuid16(void)
- {
--	return high2lowuid(current->euid);
-+	return high2lowuid(current->sec->euid);
- }
- 
- asmlinkage long sys32_getgid16(void)
- {
--	return high2lowgid(current->gid);
-+	return high2lowgid(current->sec->gid);
- }
- 
- asmlinkage long sys32_getegid16(void)
- {
--	return high2lowgid(current->egid);
-+	return high2lowgid(current->sec->egid);
- }
- 
- /* 32-bit timeval and related flotsam.  */
-diff --git a/arch/sparc64/kernel/sys_sparc32.c b/arch/sparc64/kernel/sys_sparc32.c
-index 98c4688..28ddfb5 100644
---- a/arch/sparc64/kernel/sys_sparc32.c
-+++ b/arch/sparc64/kernel/sys_sparc32.c
-@@ -105,9 +105,9 @@ asmlinkage long sys32_getresuid16(u16 __user *ruid, u16 __user *euid, u16 __user
- {
- 	int retval;
- 
--	if (!(retval = put_user(high2lowuid(current->uid), ruid)) &&
--	    !(retval = put_user(high2lowuid(current->euid), euid)))
--		retval = put_user(high2lowuid(current->suid), suid);
-+	if (!(retval = put_user(high2lowuid(current->sec->uid), ruid)) &&
-+	    !(retval = put_user(high2lowuid(current->sec->euid), euid)))
-+		retval = put_user(high2lowuid(current->sec->suid), suid);
- 
- 	return retval;
- }
-@@ -122,9 +122,9 @@ asmlinkage long sys32_getresgid16(u16 __user *rgid, u16 __user *egid, u16 __user
- {
- 	int retval;
- 
--	if (!(retval = put_user(high2lowgid(current->gid), rgid)) &&
--	    !(retval = put_user(high2lowgid(current->egid), egid)))
--		retval = put_user(high2lowgid(current->sgid), sgid);
-+	if (!(retval = put_user(high2lowgid(current->sec->gid), rgid)) &&
-+	    !(retval = put_user(high2lowgid(current->sec->egid), egid)))
-+		retval = put_user(high2lowgid(current->sec->sgid), sgid);
- 
- 	return retval;
- }
-@@ -174,20 +174,20 @@ asmlinkage long sys32_getgroups16(int gidsetsize, u16 __user *grouplist)
- 	if (gidsetsize < 0)
- 		return -EINVAL;
- 
--	get_group_info(current->group_info);
--	i = current->group_info->ngroups;
-+	get_group_info(current->sec->group_info);
-+	i = current->sec->group_info->ngroups;
- 	if (gidsetsize) {
- 		if (i > gidsetsize) {
- 			i = -EINVAL;
- 			goto out;
- 		}
--		if (groups16_to_user(grouplist, current->group_info)) {
-+		if (groups16_to_user(grouplist, current->sec->group_info)) {
- 			i = -EFAULT;
- 			goto out;
- 		}
- 	}
- out:
--	put_group_info(current->group_info);
-+	put_group_info(current->sec->group_info);
- 	return i;
- }
- 
-@@ -218,22 +218,22 @@ asmlinkage long sys32_setgroups16(int gidsetsize, u16 __user *grouplist)
- 
- asmlinkage long sys32_getuid16(void)
- {
--	return high2lowuid(current->uid);
-+	return high2lowuid(current->sec->uid);
- }
- 
- asmlinkage long sys32_geteuid16(void)
- {
--	return high2lowuid(current->euid);
-+	return high2lowuid(current->sec->euid);
- }
- 
- asmlinkage long sys32_getgid16(void)
- {
--	return high2lowgid(current->gid);
-+	return high2lowgid(current->sec->gid);
- }
- 
- asmlinkage long sys32_getegid16(void)
- {
--	return high2lowgid(current->egid);
-+	return high2lowgid(current->sec->egid);
- }
- 
- /* 32-bit timeval and related flotsam.  */
-diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-index b8af22e..30232fb 100644
---- a/drivers/block/loop.c
-+++ b/drivers/block/loop.c
-@@ -928,7 +928,8 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
- 	int err;
- 	struct loop_func_table *xfer;
- 
--	if (lo->lo_encrypt_key_size && lo->lo_key_owner != current->uid &&
-+	if (lo->lo_encrypt_key_size &&
-+	    lo->lo_key_owner != current->act_as->uid &&
- 	    !capable(CAP_SYS_ADMIN))
- 		return -EPERM;
- 	if (lo->lo_state != Lo_bound)
-@@ -979,7 +980,7 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
- 	if (info->lo_encrypt_key_size) {
- 		memcpy(lo->lo_encrypt_key, info->lo_encrypt_key,
- 		       info->lo_encrypt_key_size);
--		lo->lo_key_owner = current->uid;
-+		lo->lo_key_owner = current->act_as->uid;
- 	}	
- 
- 	return 0;
-diff --git a/drivers/char/agp/frontend.c b/drivers/char/agp/frontend.c
-index 7791e98..b07d2d2 100644
---- a/drivers/char/agp/frontend.c
-+++ b/drivers/char/agp/frontend.c
-@@ -689,7 +689,7 @@ static int agp_open(struct inode *inode, struct file *file)
- 	set_bit(AGP_FF_ALLOW_CLIENT, &priv->access_flags);
- 	priv->my_pid = current->pid;
- 
--	if ((current->uid == 0) || (current->suid == 0)) {
-+	if ((current->act_as->uid == 0) || (current->act_as->suid == 0)) {
- 		/* Root priv, can be controller */
- 		set_bit(AGP_FF_ALLOW_CONTROLLER, &priv->access_flags);
- 	}
-diff --git a/drivers/char/drm/drm_fops.c b/drivers/char/drm/drm_fops.c
-index 3992f73..1f8d0a7 100644
---- a/drivers/char/drm/drm_fops.c
-+++ b/drivers/char/drm/drm_fops.c
-@@ -243,7 +243,7 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
- 	memset(priv, 0, sizeof(*priv));
- 	filp->private_data = priv;
- 	priv->filp = filp;
--	priv->uid = current->euid;
-+	priv->uid = current->act_as->euid;
- 	priv->pid = task_pid_nr(current);
- 	priv->minor = minor;
- 	priv->head = drm_heads[minor];
-diff --git a/drivers/char/tty_audit.c b/drivers/char/tty_audit.c
-index d222012..625c12b 100644
---- a/drivers/char/tty_audit.c
-+++ b/drivers/char/tty_audit.c
-@@ -86,7 +86,7 @@ static void tty_audit_buf_push(struct task_struct *tsk, uid_t loginuid,
- 		char name[sizeof(tsk->comm)];
- 
- 		audit_log_format(ab, "tty pid=%u uid=%u auid=%u major=%d "
--				 "minor=%d comm=", tsk->pid, tsk->uid,
-+				 "minor=%d comm=", tsk->pid, tsk->sec->uid,
- 				 loginuid, buf->major, buf->minor);
- 		get_task_comm(name, tsk);
- 		audit_log_untrustedstring(ab, name);
-diff --git a/drivers/connector/cn_proc.c b/drivers/connector/cn_proc.c
-index 5c9f67f..5a004dd 100644
---- a/drivers/connector/cn_proc.c
-+++ b/drivers/connector/cn_proc.c
-@@ -116,11 +116,11 @@ void proc_id_connector(struct task_struct *task, int which_id)
- 	ev->event_data.id.process_pid = task->pid;
- 	ev->event_data.id.process_tgid = task->tgid;
- 	if (which_id == PROC_EVENT_UID) {
--	 	ev->event_data.id.r.ruid = task->uid;
--	 	ev->event_data.id.e.euid = task->euid;
-+		ev->event_data.id.r.ruid = task->act_as->uid;
-+		ev->event_data.id.e.euid = task->act_as->euid;
- 	} else if (which_id == PROC_EVENT_GID) {
--	   	ev->event_data.id.r.rgid = task->gid;
--	   	ev->event_data.id.e.egid = task->egid;
-+		ev->event_data.id.r.rgid = task->act_as->gid;
-+		ev->event_data.id.e.egid = task->act_as->egid;
- 	} else
- 	     	return;
- 	get_seq(&msg->seq, &ev->cpu);
-diff --git a/drivers/media/video/cpia.c b/drivers/media/video/cpia.c
-index 7c630f5..5b178ab 100644
---- a/drivers/media/video/cpia.c
-+++ b/drivers/media/video/cpia.c
-@@ -3202,7 +3202,7 @@ static int cpia_open(struct inode *inode, struct file *file)
- 
- 	/* Set ownership of /proc/cpia/videoX to current user */
- 	if(cam->proc_entry)
--		cam->proc_entry->uid = current->uid;
-+		cam->proc_entry->uid = current->act_as->uid;
- 
- 	/* set mark for loading first frame uncompressed */
- 	cam->first_frame = 1;
-diff --git a/drivers/net/tun.c b/drivers/net/tun.c
-index f8b8c71..66c63cf 100644
---- a/drivers/net/tun.c
-+++ b/drivers/net/tun.c
-@@ -474,9 +474,9 @@ static int tun_set_iff(struct file *file, struct ifreq *ifr)
- 
- 		/* Check permissions */
- 		if (((tun->owner != -1 &&
--		      current->euid != tun->owner) ||
-+		      current->act_as->euid != tun->owner) ||
- 		     (tun->group != -1 &&
--		      current->egid != tun->group)) &&
-+		      current->act_as->egid != tun->group)) &&
- 		     !capable(CAP_NET_ADMIN))
- 			return -EPERM;
- 	}
-diff --git a/drivers/net/wan/sbni.c b/drivers/net/wan/sbni.c
-index 2e8b5c2..4bd60e8 100644
---- a/drivers/net/wan/sbni.c
-+++ b/drivers/net/wan/sbni.c
-@@ -1317,7 +1317,7 @@ sbni_ioctl( struct net_device  *dev,  struct ifreq  *ifr,  int  cmd )
- 		break;
- 
- 	case  SIOCDEVRESINSTATS :
--		if( current->euid != 0 )	/* root only */
-+		if (current->act_as->euid != 0)	/* root only */
- 			return  -EPERM;
- 		memset( &nl->in_stats, 0, sizeof(struct sbni_in_stats) );
- 		break;
-@@ -1334,7 +1334,7 @@ sbni_ioctl( struct net_device  *dev,  struct ifreq  *ifr,  int  cmd )
- 		break;
- 
- 	case  SIOCDEVSHWSTATE :
--		if( current->euid != 0 )	/* root only */
-+		if (current->act_as->euid != 0)	/* root only */
- 			return  -EPERM;
- 
- 		spin_lock( &nl->lock );
-@@ -1355,7 +1355,7 @@ sbni_ioctl( struct net_device  *dev,  struct ifreq  *ifr,  int  cmd )
- #ifdef CONFIG_SBNI_MULTILINE
- 
- 	case  SIOCDEVENSLAVE :
--		if( current->euid != 0 )	/* root only */
-+		if (current->act_as->euid != 0)	/* root only */
- 			return  -EPERM;
- 
- 		if (copy_from_user( slave_name, ifr->ifr_data, sizeof slave_name ))
-@@ -1370,7 +1370,7 @@ sbni_ioctl( struct net_device  *dev,  struct ifreq  *ifr,  int  cmd )
- 		return  enslave( dev, slave_dev );
- 
- 	case  SIOCDEVEMANSIPATE :
--		if( current->euid != 0 )	/* root only */
-+		if (current->act_as->euid != 0)	/* root only */
- 			return  -EPERM;
- 
- 		return  emancipate( dev );
-diff --git a/drivers/usb/core/devio.c b/drivers/usb/core/devio.c
-index 1f4f6d0..bc32409 100644
---- a/drivers/usb/core/devio.c
-+++ b/drivers/usb/core/devio.c
-@@ -575,8 +575,8 @@ static int usbdev_open(struct inode *inode, struct file *file)
- 	init_waitqueue_head(&ps->wait);
- 	ps->discsignr = 0;
- 	ps->disc_pid = get_pid(task_pid(current));
--	ps->disc_uid = current->uid;
--	ps->disc_euid = current->euid;
-+	ps->disc_uid = current->sec->uid;
-+	ps->disc_euid = current->sec->euid;
- 	ps->disccontext = NULL;
- 	ps->ifclaimed = 0;
- 	security_task_getsecid(current, &ps->secid);
-@@ -1082,8 +1082,8 @@ static int proc_do_submiturb(struct dev_state *ps, struct usbdevfs_urb *uurb,
- 	as->signr = uurb->signr;
- 	as->ifnum = ifnum;
- 	as->pid = get_pid(task_pid(current));
--	as->uid = current->uid;
--	as->euid = current->euid;
-+	as->uid = current->sec->uid;
-+	as->euid = current->sec->euid;
- 	security_task_getsecid(current, &as->secid);
- 	if (!is_in) {
- 		if (copy_from_user(as->urb->transfer_buffer, uurb->buffer,
-diff --git a/fs/affs/super.c b/fs/affs/super.c
-index b53e5d0..ed79ab3 100644
---- a/fs/affs/super.c
-+++ b/fs/affs/super.c
-@@ -159,8 +159,8 @@ parse_options(char *options, uid_t *uid, gid_t *gid, int *mode, int *reserved, s
- 
- 	/* Fill in defaults */
- 
--	*uid        = current->uid;
--	*gid        = current->gid;
-+	*uid        = current->sec->uid;
-+	*gid        = current->sec->gid;
- 	*reserved   = 2;
- 	*root       = -1;
- 	*blocksize  = -1;
-diff --git a/fs/autofs/inode.c b/fs/autofs/inode.c
-index 45f5992..ac3bd58 100644
---- a/fs/autofs/inode.c
-+++ b/fs/autofs/inode.c
-@@ -78,8 +78,8 @@ static int parse_options(char *options, int *pipefd, uid_t *uid, gid_t *gid,
- 	substring_t args[MAX_OPT_ARGS];
- 	int option;
- 
--	*uid = current->uid;
--	*gid = current->gid;
-+	*uid = current->sec->uid;
-+	*gid = current->sec->gid;
- 	*pgrp = task_pgrp_nr(current);
- 
- 	*minproto = *maxproto = AUTOFS_PROTO_VERSION;
-diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
-index 7f05d6c..fac6121 100644
---- a/fs/autofs4/inode.c
-+++ b/fs/autofs4/inode.c
-@@ -224,8 +224,8 @@ static int parse_options(char *options, int *pipefd, uid_t *uid, gid_t *gid,
- 	substring_t args[MAX_OPT_ARGS];
- 	int option;
- 
--	*uid = current->uid;
--	*gid = current->gid;
-+	*uid = current->sec->uid;
-+	*gid = current->sec->gid;
- 	*pgrp = task_pgrp_nr(current);
- 
- 	*minproto = AUTOFS_MIN_PROTO_VERSION;
-diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
-index 1fe28e4..f41f5b7 100644
---- a/fs/autofs4/waitq.c
-+++ b/fs/autofs4/waitq.c
-@@ -294,8 +294,8 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 		wq->len = len;
- 		wq->dev = autofs4_get_dev(sbi);
- 		wq->ino = autofs4_get_ino(sbi);
--		wq->uid = current->uid;
--		wq->gid = current->gid;
-+		wq->uid = current->sec->uid;
-+		wq->gid = current->sec->gid;
- 		wq->pid = current->pid;
- 		wq->tgid = current->tgid;
- 		wq->status = -EINTR; /* Status return if interrupted */
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index f0b3171..307a65e 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -200,10 +200,10 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
- 	NEW_AUX_ENT(AT_BASE, interp_load_addr);
- 	NEW_AUX_ENT(AT_FLAGS, 0);
- 	NEW_AUX_ENT(AT_ENTRY, exec->e_entry);
--	NEW_AUX_ENT(AT_UID, tsk->uid);
--	NEW_AUX_ENT(AT_EUID, tsk->euid);
--	NEW_AUX_ENT(AT_GID, tsk->gid);
--	NEW_AUX_ENT(AT_EGID, tsk->egid);
-+	NEW_AUX_ENT(AT_UID, tsk->sec->uid);
-+	NEW_AUX_ENT(AT_EUID, tsk->sec->euid);
-+	NEW_AUX_ENT(AT_GID, tsk->sec->gid);
-+	NEW_AUX_ENT(AT_EGID, tsk->sec->egid);
-  	NEW_AUX_ENT(AT_SECURE, security_bprm_secureexec(bprm));
- 	if (k_platform) {
- 		NEW_AUX_ENT(AT_PLATFORM,
-@@ -1440,8 +1440,8 @@ static int fill_psinfo(struct elf_prpsinfo *psinfo, struct task_struct *p,
- 	psinfo->pr_zomb = psinfo->pr_sname == 'Z';
- 	psinfo->pr_nice = task_nice(p);
- 	psinfo->pr_flag = p->flags;
--	SET_UID(psinfo->pr_uid, p->uid);
--	SET_GID(psinfo->pr_gid, p->gid);
-+	SET_UID(psinfo->pr_uid, p->sec->uid);
-+	SET_GID(psinfo->pr_gid, p->sec->gid);
- 	strncpy(psinfo->pr_fname, p->comm, sizeof(psinfo->pr_fname));
- 	
- 	return 0;
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 32649f2..0ebb7eb 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -585,10 +585,10 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
- 	NEW_AUX_ENT( 6,	AT_BASE,	interp_params->elfhdr_addr);
- 	NEW_AUX_ENT( 7, AT_FLAGS,	0);
- 	NEW_AUX_ENT( 8, AT_ENTRY,	exec_params->entry_addr);
--	NEW_AUX_ENT( 9, AT_UID,		(elf_addr_t) current->uid);
--	NEW_AUX_ENT(10, AT_EUID,	(elf_addr_t) current->euid);
--	NEW_AUX_ENT(11, AT_GID,		(elf_addr_t) current->gid);
--	NEW_AUX_ENT(12, AT_EGID,	(elf_addr_t) current->egid);
-+	NEW_AUX_ENT( 9, AT_UID,		(elf_addr_t) current->sec->uid);
-+	NEW_AUX_ENT(10, AT_EUID,	(elf_addr_t) current->sec->euid);
-+	NEW_AUX_ENT(11, AT_GID,		(elf_addr_t) current->sec->gid);
-+	NEW_AUX_ENT(12, AT_EGID,	(elf_addr_t) current->sec->egid);
- 
- #ifdef ARCH_DLINFO
- 	/* ARCH_DLINFO must come last so platform specific code can enforce
-@@ -1402,8 +1402,8 @@ static int fill_psinfo(struct elf_prpsinfo *psinfo, struct task_struct *p,
- 	psinfo->pr_zomb = psinfo->pr_sname == 'Z';
- 	psinfo->pr_nice = task_nice(p);
- 	psinfo->pr_flag = p->flags;
--	SET_UID(psinfo->pr_uid, p->uid);
--	SET_GID(psinfo->pr_gid, p->gid);
-+	SET_UID(psinfo->pr_uid, p->sec->uid);
-+	SET_GID(psinfo->pr_gid, p->sec->gid);
- 	strncpy(psinfo->pr_fname, p->comm, sizeof(psinfo->pr_fname));
- 
- 	return 0;
-diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index fd9147c..77b3e30 100644
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -818,8 +818,9 @@ cifs_parse_mount_options(char *options, const char *devname,
- 	/* null target name indicates to use *SMBSERVR default called name
- 	   if we end up sending RFC1001 session initialize */
- 	vol->target_rfc1001_name[0] = 0;
--	vol->linux_uid = current->uid;	/* current->euid instead? */
--	vol->linux_gid = current->gid;
-+	vol->linux_uid = current->sec->uid;  /* use current->act_as->euid
-+					      * instead? */
-+	vol->linux_gid = current->sec->gid;
- 	vol->dir_mode = S_IRWXUGO;
- 	/* 2767 perms indicate mandatory locking support */
- 	vol->file_mode = (S_IRWXUGO | S_ISGID) & (~S_IXGRP);
-diff --git a/fs/cifs/ioctl.c b/fs/cifs/ioctl.c
-index d24fe68..bf61a78 100644
---- a/fs/cifs/ioctl.c
-+++ b/fs/cifs/ioctl.c
-@@ -65,7 +65,7 @@ int cifs_ioctl (struct inode *inode, struct file *filep,
- 	switch (command) {
- 		case CIFS_IOC_CHECKUMOUNT:
- 			cFYI(1, ("User unmount attempted"));
--			if (cifs_sb->mnt_uid == current->uid)
-+			if (cifs_sb->mnt_uid == current->sec->uid)
- 				rc = 0;
- 			else {
- 				rc = -EACCES;
-diff --git a/fs/dquot.c b/fs/dquot.c
-index eb4f9f1..e240e4c 100644
---- a/fs/dquot.c
-+++ b/fs/dquot.c
-@@ -955,7 +955,8 @@ static void send_warning(const struct dquot *dquot, const char warntype)
- 		MINOR(dquot->dq_sb->s_dev));
- 	if (ret)
- 		goto attr_err_out;
--	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current->user->uid);
-+	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID,
-+			  current->act_as->user->uid);
- 	if (ret)
- 		goto attr_err_out;
- 	genlmsg_end(skb, msg_head);
-diff --git a/fs/ecryptfs/messaging.c b/fs/ecryptfs/messaging.c
-index 9cc2aec..d035a5f 100644
---- a/fs/ecryptfs/messaging.c
-+++ b/fs/ecryptfs/messaging.c
-@@ -264,26 +264,27 @@ int ecryptfs_process_response(struct ecryptfs_message *msg, uid_t uid,
- 	}
- 	msg_ctx = &ecryptfs_msg_ctx_arr[msg->index];
- 	mutex_lock(&msg_ctx->mux);
--	if (ecryptfs_find_daemon_id(msg_ctx->task->euid, &id)) {
-+	if (ecryptfs_find_daemon_id(msg_ctx->task->sec->euid, &id)) {
- 		rc = -EBADMSG;
- 		ecryptfs_printk(KERN_WARNING, "User [%d] received a "
- 				"message response from process [%d] but does "
- 				"not have a registered daemon\n",
--				msg_ctx->task->euid, pid);
-+				msg_ctx->task->sec->euid, pid);
- 		goto wake_up;
- 	}
--	if (msg_ctx->task->euid != uid) {
-+	if (msg_ctx->task->sec->euid != uid) {
- 		rc = -EBADMSG;
- 		ecryptfs_printk(KERN_WARNING, "Received message from user "
- 				"[%d]; expected message from user [%d]\n",
--				uid, msg_ctx->task->euid);
-+				uid, msg_ctx->task->sec->euid);
- 		goto unlock;
- 	}
- 	if (id->pid != pid) {
- 		rc = -EBADMSG;
- 		ecryptfs_printk(KERN_ERR, "User [%d] received a "
- 				"message response from an unrecognized "
--				"process [%d]\n", msg_ctx->task->euid, pid);
-+				"process [%d]\n",
-+				msg_ctx->task->sec->euid, pid);
- 		goto unlock;
- 	}
- 	if (msg_ctx->state != ECRYPTFS_MSG_CTX_STATE_PENDING) {
-@@ -331,11 +332,11 @@ int ecryptfs_send_message(unsigned int transport, char *data, int data_len,
- 	int rc;
- 
- 	mutex_lock(&ecryptfs_daemon_id_hash_mux);
--	if (ecryptfs_find_daemon_id(current->euid, &id)) {
-+	if (ecryptfs_find_daemon_id(current->act_as->euid, &id)) {
- 		mutex_unlock(&ecryptfs_daemon_id_hash_mux);
- 		rc = -ENOTCONN;
- 		ecryptfs_printk(KERN_ERR, "User [%d] does not have a daemon "
--				"registered\n", current->euid);
-+				"registered\n", current->sec->euid);
- 		goto out;
- 	}
- 	mutex_unlock(&ecryptfs_daemon_id_hash_mux);
-diff --git a/fs/exec.c b/fs/exec.c
-index a09ce1b..da01655 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1000,7 +1000,8 @@ int flush_old_exec(struct linux_binprm * bprm)
- 
- 	current->sas_ss_sp = current->sas_ss_size = 0;
- 
--	if (current->euid == current->uid && current->egid == current->gid)
-+	if (current->sec->euid == current->sec->uid &&
-+	    current->sec->egid == current->sec->gid)
- 		set_dumpable(current->mm, 1);
- 	else
- 		set_dumpable(current->mm, suid_dumpable);
-@@ -1027,7 +1028,8 @@ int flush_old_exec(struct linux_binprm * bprm)
- 	 */
- 	current->mm->task_size = TASK_SIZE;
- 
--	if (bprm->e_uid != current->euid || bprm->e_gid != current->egid) {
-+	if (bprm->e_uid != current->sec->euid ||
-+	    bprm->e_gid != current->sec->egid) {
- 		suid_keys(current);
- 		set_dumpable(current->mm, suid_dumpable);
- 		current->pdeath_signal = 0;
-@@ -1069,8 +1071,8 @@ int prepare_binprm(struct linux_binprm *bprm)
- 	if (bprm->file->f_op == NULL)
- 		return -EACCES;
- 
--	bprm->e_uid = current->euid;
--	bprm->e_gid = current->egid;
-+	bprm->e_uid = current->sec->euid;
-+	bprm->e_gid = current->sec->egid;
- 
- 	if(!(bprm->file->f_path.mnt->mnt_flags & MNT_NOSUID)) {
- 		/* Set-uid? */
-@@ -1123,7 +1125,7 @@ void compute_creds(struct linux_binprm *bprm)
- {
- 	int unsafe;
- 
--	if (bprm->e_uid != current->uid) {
-+	if (bprm->e_uid != current->sec->uid) {
- 		suid_keys(current);
- 		current->pdeath_signal = 0;
- 	}
-@@ -1441,7 +1443,7 @@ static int format_corename(char *corename, const char *pattern, long signr)
- 			/* uid */
- 			case 'u':
- 				rc = snprintf(out_ptr, out_end - out_ptr,
--					      "%d", current->uid);
-+					      "%d", current->sec->uid);
- 				if (rc > out_end - out_ptr)
- 					goto out;
- 				out_ptr += rc;
-@@ -1449,7 +1451,7 @@ static int format_corename(char *corename, const char *pattern, long signr)
- 			/* gid */
- 			case 'g':
- 				rc = snprintf(out_ptr, out_end - out_ptr,
--					      "%d", current->gid);
-+					      "%d", current->sec->gid);
- 				if (rc > out_end - out_ptr)
- 					goto out;
- 				out_ptr += rc;
-@@ -1707,7 +1709,7 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
- 	 */
- 	if (get_dumpable(mm) == 2) {	/* Setuid core dump mode */
- 		flag = O_EXCL;		/* Stop rewrite attacks */
--		current->fsuid = 0;	/* Dump root private */
-+		current->act_as->fsuid = 0;	/* Dump root private */
- 	}
- 
- 	retval = coredump_wait(exit_code);
-@@ -1803,7 +1805,7 @@ fail_unlock:
- 	if (helper_argv)
- 		argv_free(helper_argv);
- 
--	current->fsuid = fsuid;
-+	current->act_as->fsuid = fsuid;
- 	complete_all(&mm->core_done);
- fail:
- 	return retval;
-diff --git a/fs/fat/inode.c b/fs/fat/inode.c
-index 920a576..f49733f 100644
---- a/fs/fat/inode.c
-+++ b/fs/fat/inode.c
-@@ -934,8 +934,8 @@ static int parse_options(char *options, int is_vfat, int silent, int *debug,
- 
- 	opts->isvfat = is_vfat;
- 
--	opts->fs_uid = current->uid;
--	opts->fs_gid = current->gid;
-+	opts->fs_uid = current->sec->uid;
-+	opts->fs_gid = current->sec->gid;
- 	opts->fs_fmask = opts->fs_dmask = current->fs->umask;
- 	opts->codepage = fat_default_codepage;
- 	opts->iocharset = fat_default_iocharset;
-diff --git a/fs/fcntl.c b/fs/fcntl.c
-index 8685263..35d8f74 100644
---- a/fs/fcntl.c
-+++ b/fs/fcntl.c
-@@ -276,7 +276,8 @@ int __f_setown(struct file *filp, struct pid *pid, enum pid_type type,
- 	if (err)
- 		return err;
- 
--	f_modown(filp, pid, type, current->uid, current->euid, force);
-+	f_modown(filp, pid, type, current->sec->uid, current->act_as->euid,
-+		 force);
- 	return 0;
- }
- EXPORT_SYMBOL(__f_setown);
-@@ -461,8 +462,8 @@ static inline int sigio_perm(struct task_struct *p,
-                              struct fown_struct *fown, int sig)
- {
- 	return (((fown->euid == 0) ||
--		 (fown->euid == p->suid) || (fown->euid == p->uid) ||
--		 (fown->uid == p->suid) || (fown->uid == p->uid)) &&
-+		 (fown->euid == p->sec->suid) || (fown->euid == p->sec->uid) ||
-+		 (fown->uid == p->sec->suid) || (fown->uid == p->sec->uid)) &&
- 		!security_file_send_sigiotask(p, fown, sig));
- }
- 
-diff --git a/fs/file_table.c b/fs/file_table.c
-index 664e3f2..e559b50 100644
---- a/fs/file_table.c
-+++ b/fs/file_table.c
-@@ -114,8 +114,8 @@ struct file *get_empty_filp(void)
- 	INIT_LIST_HEAD(&f->f_u.fu_list);
- 	atomic_set(&f->f_count, 1);
- 	rwlock_init(&f->f_owner.lock);
--	f->f_uid = tsk->fsuid;
--	f->f_gid = tsk->fsgid;
-+	f->f_uid = tsk->act_as->fsuid;
-+	f->f_gid = tsk->act_as->fsgid;
- 	eventpoll_init_file(f);
- 	/* f->f_version: 0 */
- 	return f;
-diff --git a/fs/fuse/dir.c b/fs/fuse/dir.c
-index 80d2f52..0c78b97 100644
---- a/fs/fuse/dir.c
-+++ b/fs/fuse/dir.c
-@@ -830,12 +830,12 @@ int fuse_allow_task(struct fuse_conn *fc, struct task_struct *task)
- 	if (fc->flags & FUSE_ALLOW_OTHER)
- 		return 1;
- 
--	if (task->euid == fc->user_id &&
--	    task->suid == fc->user_id &&
--	    task->uid == fc->user_id &&
--	    task->egid == fc->group_id &&
--	    task->sgid == fc->group_id &&
--	    task->gid == fc->group_id)
-+	if (task->sec->euid == fc->user_id &&
-+	    task->sec->suid == fc->user_id &&
-+	    task->sec->uid == fc->user_id &&
-+	    task->sec->egid == fc->group_id &&
-+	    task->sec->sgid == fc->group_id &&
-+	    task->sec->gid == fc->group_id)
- 		return 1;
- 
- 	return 0;
-diff --git a/fs/hfs/super.c b/fs/hfs/super.c
-index 16cbd90..54a1d32 100644
---- a/fs/hfs/super.c
-+++ b/fs/hfs/super.c
-@@ -210,8 +210,8 @@ static int parse_options(char *options, struct hfs_sb_info *hsb)
- 	int tmp, token;
- 
- 	/* initialize the sb with defaults */
--	hsb->s_uid = current->uid;
--	hsb->s_gid = current->gid;
-+	hsb->s_uid = current->sec->uid;
-+	hsb->s_gid = current->sec->gid;
- 	hsb->s_file_umask = 0133;
- 	hsb->s_dir_umask = 0022;
- 	hsb->s_type = hsb->s_creator = cpu_to_be32(0x3f3f3f3f);	/* == '????' */
-diff --git a/fs/hfsplus/options.c b/fs/hfsplus/options.c
-index dc64fac..fa5e015 100644
---- a/fs/hfsplus/options.c
-+++ b/fs/hfsplus/options.c
-@@ -49,8 +49,8 @@ void hfsplus_fill_defaults(struct hfsplus_sb_info *opts)
- 	opts->creator = HFSPLUS_DEF_CR_TYPE;
- 	opts->type = HFSPLUS_DEF_CR_TYPE;
- 	opts->umask = current->fs->umask;
--	opts->uid = current->uid;
--	opts->gid = current->gid;
-+	opts->uid = current->sec->uid;
-+	opts->gid = current->sec->gid;
- 	opts->part = -1;
- 	opts->session = -1;
- }
-diff --git a/fs/hpfs/super.c b/fs/hpfs/super.c
-index 00971d9..cf4c6b5 100644
---- a/fs/hpfs/super.c
-+++ b/fs/hpfs/super.c
-@@ -464,8 +464,8 @@ static int hpfs_fill_super(struct super_block *s, void *options, int silent)
- 
- 	init_MUTEX(&sbi->hpfs_creation_de);
- 
--	uid = current->uid;
--	gid = current->gid;
-+	uid = current->sec->uid;
-+	gid = current->sec->gid;
- 	umask = current->fs->umask;
- 	lowercase = 0;
- 	conv = CONV_BINARY;
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index 39ad919..1e4d411 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -921,7 +921,7 @@ struct file *hugetlb_file_setup(const char *name, size_t size)
- 	if (!can_do_hugetlb_shm())
- 		return ERR_PTR(-EPERM);
- 
--	if (!user_shm_lock(size, current->user))
-+	if (!user_shm_lock(size, current->sec->user))
- 		return ERR_PTR(-ENOMEM);
- 
- 	root = hugetlbfs_vfsmount->mnt_root;
-@@ -960,7 +960,7 @@ out_inode:
- out_dentry:
- 	dput(dentry);
- out_shm_unlock:
--	user_shm_unlock(size, current->user);
-+	user_shm_unlock(size, current->sec->user);
- 	return ERR_PTR(error);
- }
- 
-diff --git a/fs/inotify_user.c b/fs/inotify_user.c
-index 5e00933..6d68f3e 100644
---- a/fs/inotify_user.c
-+++ b/fs/inotify_user.c
-@@ -558,7 +558,7 @@ asmlinkage long sys_inotify_init(void)
- 		goto out_put_fd;
- 	}
- 
--	user = get_uid(current->user);
-+	user = get_uid(current->sec->user);
- 	if (unlikely(atomic_read(&user->inotify_devs) >=
- 			inotify_max_user_instances)) {
- 		ret = -EMFILE;
-diff --git a/fs/ioprio.c b/fs/ioprio.c
-index e4e01bc..5392a60 100644
---- a/fs/ioprio.c
-+++ b/fs/ioprio.c
-@@ -32,8 +32,8 @@ static int set_task_ioprio(struct task_struct *task, int ioprio)
- 	int err;
- 	struct io_context *ioc;
- 
--	if (task->uid != current->euid &&
--	    task->uid != current->uid && !capable(CAP_SYS_NICE))
-+	if (task->sec->uid != current->act_as->euid &&
-+	    task->sec->uid != current->act_as->uid && !capable(CAP_SYS_NICE))
- 		return -EPERM;
- 
- 	err = security_task_setioprio(task, ioprio);
-@@ -115,7 +115,7 @@ asmlinkage long sys_ioprio_set(int which, int who, int ioprio)
- 			break;
- 		case IOPRIO_WHO_USER:
- 			if (!who)
--				user = current->user;
-+				user = current->sec->user;
- 			else
- 				user = find_user(who);
- 
-@@ -123,7 +123,7 @@ asmlinkage long sys_ioprio_set(int which, int who, int ioprio)
- 				break;
- 
- 			do_each_thread(g, p) {
--				if (p->uid != who)
-+				if (p->sec->uid != who)
- 					continue;
- 				ret = set_task_ioprio(p, ioprio);
- 				if (ret)
-@@ -206,7 +206,7 @@ asmlinkage long sys_ioprio_get(int which, int who)
- 			break;
- 		case IOPRIO_WHO_USER:
- 			if (!who)
--				user = current->user;
-+				user = current->sec->user;
- 			else
- 				user = find_user(who);
- 
-@@ -214,7 +214,7 @@ asmlinkage long sys_ioprio_get(int which, int who)
- 				break;
- 
- 			do_each_thread(g, p) {
--				if (p->uid != user->uid)
-+				if (p->sec->uid != user->uid)
- 					continue;
- 				tmpio = get_task_ioprio(p);
- 				if (tmpio < 0)
-diff --git a/fs/namei.c b/fs/namei.c
-index b07ae67..f121975 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1433,11 +1433,13 @@ int fastcall __user_walk(const char __user *name, unsigned flags, struct nameida
-  */
- static inline int check_sticky(struct inode *dir, struct inode *inode)
- {
-+	uid_t fsuid = current->act_as->fsuid;
+diff --git a/Documentation/filesystems/caching/backend-api.txt b/Documentation/filesystems/caching/backend-api.txt
+new file mode 100644
+index 0000000..a7e58eb
+--- /dev/null
++++ b/Documentation/filesystems/caching/backend-api.txt
+@@ -0,0 +1,625 @@
++			  ==========================
++			  FS-CACHE CACHE BACKEND API
++			  ==========================
 +
- 	if (!(dir->i_mode & S_ISVTX))
- 		return 0;
--	if (inode->i_uid == current_fsuid())
-+	if (inode->i_uid == fsuid)
- 		return 0;
--	if (dir->i_uid == current_fsuid())
-+	if (dir->i_uid == fsuid)
- 		return 0;
- 	return !capable(CAP_FOWNER);
- }
-diff --git a/fs/ncpfs/ioctl.c b/fs/ncpfs/ioctl.c
-index c67b4bd..5f1adaf 100644
---- a/fs/ncpfs/ioctl.c
-+++ b/fs/ncpfs/ioctl.c
-@@ -40,7 +40,7 @@ ncp_get_fs_info(struct ncp_server * server, struct file *file,
- 	struct ncp_fs_info info;
- 
- 	if ((file_permission(file, MAY_WRITE) != 0)
--	    && (current->uid != server->m.mounted_uid)) {
-+	    && (current->act_as->uid != server->m.mounted_uid)) {
- 		return -EACCES;
- 	}
- 	if (copy_from_user(&info, arg, sizeof(info)))
-@@ -70,7 +70,7 @@ ncp_get_fs_info_v2(struct ncp_server * server, struct file *file,
- 	struct ncp_fs_info_v2 info2;
- 
- 	if ((file_permission(file, MAY_WRITE) != 0)
--	    && (current->uid != server->m.mounted_uid)) {
-+	    && (current->act_as->uid != server->m.mounted_uid)) {
- 		return -EACCES;
- 	}
- 	if (copy_from_user(&info2, arg, sizeof(info2)))
-@@ -141,7 +141,7 @@ ncp_get_compat_fs_info_v2(struct ncp_server * server, struct file *file,
- 	struct compat_ncp_fs_info_v2 info2;
- 
- 	if ((file_permission(file, MAY_WRITE) != 0)
--	    && (current->uid != server->m.mounted_uid)) {
-+	    && (current->act_as->uid != server->m.mounted_uid)) {
- 		return -EACCES;
- 	}
- 	if (copy_from_user(&info2, arg, sizeof(info2)))
-@@ -276,7 +276,7 @@ int ncp_ioctl(struct inode *inode, struct file *filp,
- #endif
- 	case NCP_IOC_NCPREQUEST:
- 		if ((file_permission(filp, MAY_WRITE) != 0)
--		    && (current->uid != server->m.mounted_uid)) {
-+		    && (current->act_as->uid != server->m.mounted_uid)) {
- 			return -EACCES;
- 		}
- #ifdef CONFIG_COMPAT
-@@ -356,7 +356,7 @@ int ncp_ioctl(struct inode *inode, struct file *filp,
- 	case NCP_IOC_GETMOUNTUID32:
- 	case NCP_IOC_GETMOUNTUID64:
- 		if ((file_permission(filp, MAY_READ) != 0)
--			&& (current->uid != server->m.mounted_uid)) {
-+			&& (current->act_as->uid != server->m.mounted_uid)) {
- 			return -EACCES;
- 		}
- 		if (cmd == NCP_IOC_GETMOUNTUID16) {
-@@ -380,7 +380,7 @@ int ncp_ioctl(struct inode *inode, struct file *filp,
- 			struct ncp_setroot_ioctl sr;
- 
- 			if ((file_permission(filp, MAY_READ) != 0)
--			    && (current->uid != server->m.mounted_uid))
-+			    && (current->act_as->uid != server->m.mounted_uid))
- 			{
- 				return -EACCES;
- 			}
-@@ -455,7 +455,7 @@ int ncp_ioctl(struct inode *inode, struct file *filp,
- #ifdef CONFIG_NCPFS_PACKET_SIGNING	
- 	case NCP_IOC_SIGN_INIT:
- 		if ((file_permission(filp, MAY_WRITE) != 0)
--		    && (current->uid != server->m.mounted_uid))
-+		    && (current->act_as->uid != server->m.mounted_uid))
- 		{
- 			return -EACCES;
- 		}
-@@ -478,7 +478,7 @@ int ncp_ioctl(struct inode *inode, struct file *filp,
- 		
-         case NCP_IOC_SIGN_WANTED:
- 		if ((file_permission(filp, MAY_READ) != 0)
--		    && (current->uid != server->m.mounted_uid))
-+		    && (current->act_as->uid != server->m.mounted_uid))
- 		{
- 			return -EACCES;
- 		}
-@@ -491,7 +491,7 @@ int ncp_ioctl(struct inode *inode, struct file *filp,
- 			int newstate;
- 
- 			if ((file_permission(filp, MAY_WRITE) != 0)
--			    && (current->uid != server->m.mounted_uid))
-+			    && (current->act_as->uid != server->m.mounted_uid))
- 			{
- 				return -EACCES;
- 			}
-@@ -512,7 +512,7 @@ int ncp_ioctl(struct inode *inode, struct file *filp,
- #ifdef CONFIG_NCPFS_IOCTL_LOCKING
- 	case NCP_IOC_LOCKUNLOCK:
- 		if ((file_permission(filp, MAY_WRITE) != 0)
--		    && (current->uid != server->m.mounted_uid))
-+		    && (current->act_as->uid != server->m.mounted_uid))
- 		{
- 			return -EACCES;
- 		}
-@@ -585,7 +585,7 @@ outrel:
- 
- #ifdef CONFIG_COMPAT
- 	case NCP_IOC_GETOBJECTNAME_32:
--		if (current->uid != server->m.mounted_uid) {
-+		if (current->act_as->uid != server->m.mounted_uid) {
- 			return -EACCES;
- 		}
- 		{
-@@ -610,7 +610,7 @@ outrel:
- 		}
- #endif
- 	case NCP_IOC_GETOBJECTNAME:
--		if (current->uid != server->m.mounted_uid) {
-+		if (current->act_as->uid != server->m.mounted_uid) {
- 			return -EACCES;
- 		}
- 		{
-@@ -637,7 +637,7 @@ outrel:
- 	case NCP_IOC_SETOBJECTNAME_32:
- #endif
- 	case NCP_IOC_SETOBJECTNAME:
--		if (current->uid != server->m.mounted_uid) {
-+		if (current->act_as->uid != server->m.mounted_uid) {
- 			return -EACCES;
- 		}
- 		{
-@@ -695,7 +695,7 @@ outrel:
- 	case NCP_IOC_GETPRIVATEDATA_32:
- #endif
- 	case NCP_IOC_GETPRIVATEDATA:
--		if (current->uid != server->m.mounted_uid) {
-+		if (current->act_as->uid != server->m.mounted_uid) {
- 			return -EACCES;
- 		}
- 		{
-@@ -740,7 +740,7 @@ outrel:
- 	case NCP_IOC_SETPRIVATEDATA_32:
- #endif
- 	case NCP_IOC_SETPRIVATEDATA:
--		if (current->uid != server->m.mounted_uid) {
-+		if (current->act_as->uid != server->m.mounted_uid) {
- 			return -EACCES;
- 		}
- 		{
-@@ -795,7 +795,7 @@ outrel:
- 
- 	case NCP_IOC_SETDENTRYTTL:
- 		if ((file_permission(filp, MAY_WRITE) != 0) &&
--				 (current->uid != server->m.mounted_uid))
-+		    current->act_as->uid != server->m.mounted_uid)
- 			return -EACCES;
- 		{
- 			u_int32_t user;
-diff --git a/fs/nfsd/auth.c b/fs/nfsd/auth.c
-index 2192805..b2e19c8 100644
---- a/fs/nfsd/auth.c
-+++ b/fs/nfsd/auth.c
-@@ -56,23 +56,24 @@ int nfsd_setuser(struct svc_rqst *rqstp, struct svc_export *exp)
- 		get_group_info(cred.cr_group_info);
- 
- 	if (cred.cr_uid != (uid_t) -1)
--		current->fsuid = cred.cr_uid;
-+		current->act_as->fsuid = cred.cr_uid;
- 	else
--		current->fsuid = exp->ex_anon_uid;
-+		current->act_as->fsuid = exp->ex_anon_uid;
- 	if (cred.cr_gid != (gid_t) -1)
--		current->fsgid = cred.cr_gid;
-+		current->act_as->fsgid = cred.cr_gid;
- 	else
--		current->fsgid = exp->ex_anon_gid;
-+		current->act_as->fsgid = exp->ex_anon_gid;
- 
- 	if (!cred.cr_group_info)
- 		return -ENOMEM;
--	ret = set_current_groups(cred.cr_group_info);
-+	ret = set_groups(current->act_as, cred.cr_group_info);
- 	put_group_info(cred.cr_group_info);
- 	if ((cred.cr_uid)) {
--		cap_t(current->cap_effective) &= ~CAP_NFSD_MASK;
-+		cap_t(current->act_as->cap_effective) &= ~CAP_NFSD_MASK;
- 	} else {
--		cap_t(current->cap_effective) |= (CAP_NFSD_MASK &
--						  current->cap_permitted);
-+		cap_t(current->act_as->cap_effective) |=
-+			(CAP_NFSD_MASK & current->act_as->cap_permitted);
- 	}
- 	return ret;
- }
++The FS-Cache system provides an API by which actual caches can be supplied to
++FS-Cache for it to then serve out to network filesystems and other interested
++parties.
 +
-diff --git a/fs/nfsd/nfs4recover.c b/fs/nfsd/nfs4recover.c
-index 1602cd0..bf0217a 100644
---- a/fs/nfsd/nfs4recover.c
-+++ b/fs/nfsd/nfs4recover.c
-@@ -56,17 +56,17 @@ static int rec_dir_init = 0;
- static void
- nfs4_save_user(uid_t *saveuid, gid_t *savegid)
- {
--	*saveuid = current->fsuid;
--	*savegid = current->fsgid;
--	current->fsuid = 0;
--	current->fsgid = 0;
-+	*saveuid = current->act_as->fsuid;
-+	*savegid = current->act_as->fsgid;
-+	current->act_as->fsuid = 0;
-+	current->act_as->fsgid = 0;
- }
- 
- static void
- nfs4_reset_user(uid_t saveuid, gid_t savegid)
- {
--	current->fsuid = saveuid;
--	current->fsgid = savegid;
-+	current->act_as->fsuid = saveuid;
-+	current->act_as->fsgid = savegid;
- }
- 
- static void
-diff --git a/fs/open.c b/fs/open.c
-index 4932b4d..6d7a29c 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -428,12 +428,12 @@ asmlinkage long sys_faccessat(int dfd, const char __user *filename, int mode)
- 	if (mode & ~S_IRWXO)	/* where's F_OK, X_OK, W_OK, R_OK? */
- 		return -EINVAL;
- 
--	old_fsuid = current->fsuid;
--	old_fsgid = current->fsgid;
--	old_cap = current->cap_effective;
-+	old_fsuid = current->act_as->fsuid;
-+	old_fsgid = current->act_as->fsgid;
-+	old_cap = current->act_as->cap_effective;
- 
--	current->fsuid = current->uid;
--	current->fsgid = current->gid;
-+	current->act_as->fsuid = current->act_as->uid;
-+	current->act_as->fsgid = current->act_as->gid;
- 
- 	/*
- 	 * Clear the capabilities if we switch to a non-root user
-@@ -443,10 +443,10 @@ asmlinkage long sys_faccessat(int dfd, const char __user *filename, int mode)
- 	 * value below.  We should hold task_capabilities_lock,
- 	 * but we cannot because user_path_walk can sleep.
- 	 */
--	if (current->uid)
--		cap_clear(current->cap_effective);
-+	if (current->act_as->uid)
-+		cap_clear(current->act_as->cap_effective);
- 	else
--		current->cap_effective = current->cap_permitted;
-+		current->act_as->cap_effective = current->act_as->cap_permitted;
- 
- 	res = __user_walk_fd(dfd, filename, LOOKUP_FOLLOW|LOOKUP_ACCESS, &nd);
- 	if (res)
-@@ -464,9 +464,9 @@ asmlinkage long sys_faccessat(int dfd, const char __user *filename, int mode)
- out_path_release:
- 	path_release(&nd);
- out:
--	current->fsuid = old_fsuid;
--	current->fsgid = old_fsgid;
--	current->cap_effective = old_cap;
-+	current->act_as->fsuid = old_fsuid;
-+	current->act_as->fsgid = old_fsgid;
-+	current->act_as->cap_effective = old_cap;
- 
- 	return res;
- }
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index eb97f28..595fe90 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -182,8 +182,8 @@ static inline char *task_state(struct task_struct *p, char *buffer)
- 		task_tgid_nr_ns(p, ns),
- 		task_pid_nr_ns(p, ns),
- 		ppid, tpid,
--		p->uid, p->euid, p->suid, p->fsuid,
--		p->gid, p->egid, p->sgid, p->fsgid);
-+		p->sec->uid, p->sec->euid, p->sec->suid, p->sec->fsuid,
-+		p->sec->gid, p->sec->egid, p->sec->sgid, p->sec->fsgid);
- 
- 	task_lock(p);
- 	if (p->files)
-@@ -194,7 +194,7 @@ static inline char *task_state(struct task_struct *p, char *buffer)
- 		fdt ? fdt->max_fds : 0);
- 	rcu_read_unlock();
- 
--	group_info = p->group_info;
-+	group_info = p->sec->group_info;
- 	get_group_info(group_info);
- 	task_unlock(p);
- 
-@@ -267,7 +267,7 @@ static inline char *task_sig(struct task_struct *p, char *buffer)
- 		blocked = p->blocked;
- 		collect_sigign_sigcatch(p, &ignored, &caught);
- 		num_threads = atomic_read(&p->signal->count);
--		qsize = atomic_read(&p->user->sigpending);
-+		qsize = atomic_read(&p->sec->user->sigpending);
- 		qlim = p->signal->rlim[RLIMIT_SIGPENDING].rlim_cur;
- 		unlock_task_sighand(p, &flags);
- 	}
-@@ -291,9 +291,9 @@ static inline char *task_cap(struct task_struct *p, char *buffer)
-     return buffer + sprintf(buffer, "CapInh:\t%016x\n"
- 			    "CapPrm:\t%016x\n"
- 			    "CapEff:\t%016x\n",
--			    cap_t(p->cap_inheritable),
--			    cap_t(p->cap_permitted),
--			    cap_t(p->cap_effective));
-+			    cap_t(p->sec->cap_inheritable),
-+			    cap_t(p->sec->cap_permitted),
-+			    cap_t(p->sec->cap_effective));
- }
- 
- static inline char *task_context_switch_counts(struct task_struct *p,
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 7411bfb..43e3782 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1201,8 +1201,8 @@ static struct inode *proc_pid_make_inode(struct super_block * sb, struct task_st
- 	inode->i_uid = 0;
- 	inode->i_gid = 0;
- 	if (task_dumpable(task)) {
--		inode->i_uid = task->euid;
--		inode->i_gid = task->egid;
-+		inode->i_uid = task->sec->euid;
-+		inode->i_gid = task->sec->egid;
- 	}
- 	security_task_to_inode(task, inode);
- 
-@@ -1227,8 +1227,8 @@ static int pid_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat
- 	if (task) {
- 		if ((inode->i_mode == (S_IFDIR|S_IRUGO|S_IXUGO)) ||
- 		    task_dumpable(task)) {
--			stat->uid = task->euid;
--			stat->gid = task->egid;
-+			stat->uid = task->sec->euid;
-+			stat->gid = task->sec->egid;
- 		}
- 	}
- 	rcu_read_unlock();
-@@ -1259,8 +1259,8 @@ static int pid_revalidate(struct dentry *dentry, struct nameidata *nd)
- 	if (task) {
- 		if ((inode->i_mode == (S_IFDIR|S_IRUGO|S_IXUGO)) ||
- 		    task_dumpable(task)) {
--			inode->i_uid = task->euid;
--			inode->i_gid = task->egid;
-+			inode->i_uid = task->sec->euid;
-+			inode->i_gid = task->sec->egid;
- 		} else {
- 			inode->i_uid = 0;
- 			inode->i_gid = 0;
-@@ -1433,8 +1433,8 @@ static int tid_fd_revalidate(struct dentry *dentry, struct nameidata *nd)
- 				rcu_read_unlock();
- 				put_files_struct(files);
- 				if (task_dumpable(task)) {
--					inode->i_uid = task->euid;
--					inode->i_gid = task->egid;
-+					inode->i_uid = task->sec->euid;
-+					inode->i_gid = task->sec->egid;
- 				} else {
- 					inode->i_uid = 0;
- 					inode->i_gid = 0;
-diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
-index 4e57fcf..e4ddfdb 100644
---- a/fs/proc/proc_sysctl.c
-+++ b/fs/proc/proc_sysctl.c
-@@ -393,9 +393,9 @@ static int proc_sys_permission(struct inode *inode, int mask, struct nameidata *
- 	error = -EACCES;
- 	mode = inode->i_mode;
- 
--	if (current->euid == 0)
-+	if (current->act_as->euid == 0)
- 		mode >>= 6;
--	else if (in_group_p(0))
-+	else if (in_egroup_p(0))
- 		mode >>= 3;
- 
- 	if ((mode & mask & (MAY_READ|MAY_WRITE|MAY_EXEC)) == mask)
-diff --git a/fs/quota.c b/fs/quota.c
-index 99b24b5..ab4f1d9 100644
---- a/fs/quota.c
-+++ b/fs/quota.c
-@@ -80,7 +80,7 @@ static int generic_quotactl_valid(struct super_block *sb, int type, int cmd, qid
- 
- 	/* Check privileges */
- 	if (cmd == Q_GETQUOTA) {
--		if (((type == USRQUOTA && current->euid != id) ||
-+		if (((type == USRQUOTA && current->act_as->euid != id) ||
- 		     (type == GRPQUOTA && !in_egroup_p(id))) &&
- 		    !capable(CAP_SYS_ADMIN))
- 			return -EPERM;
-@@ -131,7 +131,7 @@ static int xqm_quotactl_valid(struct super_block *sb, int type, int cmd, qid_t i
- 
- 	/* Check privileges */
- 	if (cmd == Q_XGETQUOTA) {
--		if (((type == XQM_USRQUOTA && current->euid != id) ||
-+		if (((type == XQM_USRQUOTA && current->act_as->euid != id) ||
- 		     (type == XQM_GRPQUOTA && !in_egroup_p(id))) &&
- 		     !capable(CAP_SYS_ADMIN))
- 			return -EPERM;
-diff --git a/fs/smbfs/dir.c b/fs/smbfs/dir.c
-index 48da4fa..53e03a3 100644
---- a/fs/smbfs/dir.c
-+++ b/fs/smbfs/dir.c
-@@ -667,8 +667,8 @@ smb_make_node(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
- 
- 	attr.ia_valid = ATTR_MODE | ATTR_UID | ATTR_GID;
- 	attr.ia_mode = mode;
--	attr.ia_uid = current->euid;
--	attr.ia_gid = current->egid;
-+	attr.ia_uid = current->act_as->euid;
-+	attr.ia_gid = current->act_as->egid;
- 
- 	if (!new_valid_dev(dev))
- 		return -EINVAL;
-diff --git a/fs/smbfs/inode.c b/fs/smbfs/inode.c
-index 9416ead..95a2455 100644
---- a/fs/smbfs/inode.c
-+++ b/fs/smbfs/inode.c
-@@ -579,7 +579,7 @@ static int smb_fill_super(struct super_block *sb, void *raw_data, int silent)
- 		if (parse_options(mnt, raw_data))
- 			goto out_bad_option;
- 	}
--	mnt->mounted_uid = current->uid;
-+	mnt->mounted_uid = current->act_as->uid;
- 	smb_setcodepage(server, &mnt->codepage);
- 
- 	/*
-diff --git a/fs/smbfs/proc.c b/fs/smbfs/proc.c
-index d517a27..a55d9cd 100644
---- a/fs/smbfs/proc.c
-+++ b/fs/smbfs/proc.c
-@@ -865,7 +865,7 @@ smb_newconn(struct smb_sb_info *server, struct smb_conn_opt *opt)
- 		goto out;
- 
- 	error = -EACCES;
--	if (current->uid != server->mnt->mounted_uid && 
-+	if (current->act_as->uid != server->mnt->mounted_uid &&
- 	    !capable(CAP_SYS_ADMIN))
- 		goto out;
- 
-diff --git a/include/linux/init_task.h b/include/linux/init_task.h
-index cae35b6..6fa8413 100644
---- a/include/linux/init_task.h
-+++ b/include/linux/init_task.h
-@@ -114,6 +114,20 @@ extern struct group_info init_groups;
- 	.pid = &init_struct_pid,				\
- }
- 
-+extern struct task_security init_task_security;
++This API is declared in <linux/fscache-cache.h>.
 +
-+#define INIT_TASK_SECURITY(p)					\
-+{								\
-+	.usage			= ATOMIC_INIT(3),		\
-+	.keep_capabilities	= 0,				\
-+	.cap_inheritable	= CAP_INIT_INH_SET,		\
-+	.cap_permitted		= CAP_FULL_SET,			\
-+	.cap_effective		= CAP_INIT_EFF_SET,		\
-+	.user			= INIT_USER,			\
-+	.group_info		= &init_groups,			\
-+	.lock			= __SPIN_LOCK_UNLOCKED(p.lock),	\
-+}
 +
- /*
-  *  INIT_TASK is used to set up the first task table, touch at
-  * your own risk!. Base=0, limit=0x1fffff (=2MB)
-@@ -143,12 +157,9 @@ extern struct group_info init_groups;
- 	.children	= LIST_HEAD_INIT(tsk.children),			\
- 	.sibling	= LIST_HEAD_INIT(tsk.sibling),			\
- 	.group_leader	= &tsk,						\
--	.group_info	= &init_groups,					\
--	.cap_effective	= CAP_INIT_EFF_SET,				\
--	.cap_inheritable = CAP_INIT_INH_SET,				\
--	.cap_permitted	= CAP_FULL_SET,					\
--	.keep_capabilities = 0,						\
--	.user		= INIT_USER,					\
-+	.__temp_sec	= INIT_TASK_SECURITY(tsk.__temp_sec),		\
-+	.sec		= &tsk.__temp_sec,				\
-+	.act_as		= &tsk.__temp_sec,				\
- 	.comm		= "swapper",					\
- 	.thread		= INIT_THREAD,					\
- 	.fs		= &init_fs,					\
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index c500e4c..afa25e9 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -570,6 +570,63 @@ extern struct user_struct *find_user(uid_t);
- extern struct user_struct root_user;
- #define INIT_USER (&root_user)
++====================================
++INITIALISING AND REGISTERING A CACHE
++====================================
++
++To start off, a cache definition must be initialised and registered for each
++cache the backend wants to make available.  For instance, CacheFS does this in
++the fill_super() operation on mounting.
++
++The cache definition (struct fscache_cache) should be initialised by calling:
++
++	void fscache_init_cache(struct fscache_cache *cache,
++				struct fscache_cache_ops *ops,
++				const char *idfmt,
++				...);
++
++Where:
++
++ (*) "cache" is a pointer to the cache definition;
++
++ (*) "ops" is a pointer to the table of operations that the backend supports on
++     this cache; and
++
++ (*) "idfmt" is a format and printf-style arguments for constructing a label
++     for the cache.
++
++
++The cache should then be registered with FS-Cache by passing a pointer to the
++previously initialised cache definition to:
++
++	int fscache_add_cache(struct fscache_cache *cache,
++			      struct fscache_object *fsdef,
++			      const char *tagname);
++
++Two extra arguments should also be supplied:
++
++ (*) "fsdef" which should point to the object representation for the FS-Cache
++     master index in this cache.  Netfs primary index entries will be created
++     here.
++
++ (*) "tagname" which, if given, should be a text string naming this cache.  If
++     this is NULL, the identifier will be used instead.  For CacheFS, the
++     identifier is set to name the underlying block device and the tag can be
++     supplied by mount.
++
++This function may return -ENOMEM if it ran out of memory or -EEXIST if the tag
++is already in use.  0 will be returned on success.
++
++
++=====================
++UNREGISTERING A CACHE
++=====================
++
++A cache can be withdrawn from the system by calling this function with a
++pointer to the cache definition:
++
++	void fscache_withdraw_cache(struct fscache_cache *cache);
++
++In CacheFS's case, this is called by put_super().
++
++
++========
++SECURITY
++========
++
++The cache methods are executed one of two contexts:
++
++ (1) that of the userspace process that issued the netfs operation that caused
++     the cache method to be invoked, or
++
++ (2) that of one of the processes in the FS-Cache thread pool.
++
++In either case, this may not be an appropriate context in which to access the
++cache.
++
++The calling process's fsuid, fsgid and SELinux security identities may need to
++be masqueraded for the duration of the cache driver's access to the cache.
++This is left to the cache to handle; FS-Cache makes no effort in this regard.
++
++
++===================================
++CONTROL AND STATISTICS PRESENTATION
++===================================
++
++The cache may present data to the outside world through FS-Cache's interfaces
++in sysfs and procfs - the former for control and the latter for statistics.
++
++A sysfs directory called /sys/fs/fscache/<cachetag>/ is created if CONFIG_SYSFS
++is enabled.  This is accessible through the kobject struct fscache_cache::kobj
++and is for use by the cache as it sees fit.
++
++The cache driver may create itself a directory named for the cache type in the
++/proc/fs/fscache/ directory.  This is available if CONFIG_FSCACHE_PROC is
++enabled and is accessible through:
++
++	struct proc_dir_entry *proc_fscache;
++
++
++========================
++RELEVANT DATA STRUCTURES
++========================
++
++ (*) Index/Data file FS-Cache representation cookie:
++
++	struct fscache_cookie {
++		struct fscache_object_def	*def;
++		struct fscache_netfs		*netfs;
++		void				*netfs_data;
++		...
++	};
++
++     The fields that might be of use to the backend describe the object
++     definition, the netfs definition and the netfs's data for this cookie.
++     The object definition contain functions supplied by the netfs for loading
++     and matching index entries; these are required to provide some of the
++     cache operations.
++
++
++ (*) In-cache object representation:
++
++	struct fscache_object {
++		int				debug_id;
++		enum {
++			FSCACHE_OBJECT_RECYCLING,
++			...
++		}				state;
++		spinlock_t			lock
++		struct fscache_cache		*cache;
++		struct fscache_cookie		*cookie;
++		...
++	};
++
++     Structures of this type should be allocated by the cache backend and
++     passed to FS-Cache when requested by the appropriate cache operation.  In
++     the case of CacheFS, they're embedded in CacheFS's internal object
++     structures.
++
++     The debug_id is a simple integer that can be used in debugging messages
++     that refer to a particular object.  In such a case it should be printed
++     using "OBJ%x" to be consistent with FS-Cache.
++
++     Each object contains a pointer to the cookie that represents the object it
++     is backing.  An object should retired when put_object() is called if it is
++     in state FSCACHE_OBJECT_RECYCLING.  The fscache_object struct should be
++     initialised by calling fscache_object_init(object).
++
++
++ (*) FS-Cache operation record:
++
++	struct fscache_operation {
++		atomic_t		usage;
++		struct fscache_object	*object;
++		unsigned long		flags;
++	#define FSCACHE_OP_EXCLUSIVE
++		void (*processor)(struct fscache_operation *op);
++		void (*release)(struct fscache_operation *op);
++		...
++	};
++
++     FS-Cache has a pool of threads that it uses to give CPU time to the
++     various asynchronous operations that need to be done as part of driving
++     the cache.  These are represented by the above structure.  The processor
++     method is called to give the op CPU time, and the release method to get
++     rid of it when its usage count reaches 0.
++
++     An operation can be made exclusive upon an object by setting the
++     appropriate flag before enqueuing it with fscache_enqueue_operation().  If
++     an operation needs more processing time, it should be enqueued again.
++
++
++ (*) FS-Cache retrieval operation record:
++
++	struct fscache_retrieval {
++		struct fscache_operation op;
++		struct address_space	*mapping;
++		struct list_head	*to_do;
++		...
++	};
++
++     A structure of this type is allocated by FS-Cache to record retrieval and
++     allocation requests made by the netfs.  This struct is then passed to the
++     backend to do the operation.  The backend may get extra refs to it by
++     calling fscache_get_retrieval() and refs may be discarded by calling
++     fscache_put_retrieval().
++
++     A retrieval operation can be used by the backend to do retrieval work.  To
++     do this, the retrieval->op.processor method pointer should be set
++     appropriately by the backend and fscache_enqueue_retrieval() called to
++     submit it to the thread pool.  CacheFiles, for example, uses this to queue
++     page examination when it detects PG_lock being cleared.
++
++     The to_do field is an empty list available for the cache backend to use as
++     it sees fit.
++
++
++ (*) FS-Cache storage operation record:
++
++	struct fscache_storage {
++		struct fscache_operation op;
++		pgoff_t			store_limit;
++		...
++	};
++
++     A structure of this type is allocated by FS-Cache to record outstanding
++     writes to be made.  FS-Cache itself enqueues this operation and invokes
++     the write_page() method on the object at appropriate times to effect
++     storage.
++
++
++================
++CACHE OPERATIONS
++================
++
++The cache backend provides FS-Cache with a table of operations that can be
++performed on the denizens of the cache.  These are held in a structure of type:
++
++	struct fscache_cache_ops
++
++ (*) Name of cache provider [mandatory]:
++
++	const char *name
++
++     This isn't strictly an operation, but should be pointed at a string naming
++     the backend.
++
++
++ (*) Allocate a new object [mandatory]:
++
++	struct fscache_object *(*alloc_object)(struct fscache_cache *cache,
++					       struct fscache_cookie *cookie)
++
++     This method is used to allocate a cache object representation to back a
++     cookie in a particular cache.  fscache_object_init() should be called on
++     the object to initialise it prior to returning.
++
++     This function may also be used to parse the index key to be used for
++     multiple lookup calls to turn it into a more convenient form.  FS-Cache
++     will call the lookup_complete() method to allow the cache to release the
++     form once lookup is complete or aborted.
++
++
++ (*) Look up and create object [mandatory]:
++
++	void (*lookup_object)(struct fscache_object *object)
++
++     This method is used to look up an object, given that the object is already
++     allocated and attached to the cookie.  This should instantiate that object
++     in the cache if it can.
++
++     The method should call fscache_object_lookup_negative() as soon as
++     possible if it determines the object doesn't exist in the cache.  If the
++     object is found to exist and the netfs indicates that it is valid then
++     fscache_obtained_object() should be called once the object is in a
++     position to have data stored in it.  Similarly, fscache_obtained_object()
++     should also be called once a non-present object has been created.
++
++     If a lookup error occurs, fscache_object_lookup_error() should be called
++     to abort the lookup of that object.
++
++
++ (*) Release lookup data [mandatory]:
++
++	void (*lookup_complete)(struct fscache_object *object)
++
++     This method is called to ask the cache to release any resources it was
++     using to perform a lookup.
++
++
++ (*) Increment object refcount [mandatory]:
++
++	struct fscache_object *(*grab_object)(struct fscache_object *object)
++
++     This method is called to increment the reference count on an object.  It
++     may fail (for instance if the cache is being withdrawn) by returning NULL.
++     It should return the object pointer if successful.
++
++
++ (*) Lock/Unlock object [mandatory]:
++
++	void (*lock_object)(struct fscache_object *object)
++	void (*unlock_object)(struct fscache_object *object)
++
++     These methods are used to exclusively lock an object.  It must be possible
++     to schedule with the lock held, so a spinlock isn't sufficient.
++
++
++ (*) Pin/Unpin object [optional]:
++
++	int (*pin_object)(struct fscache_object *object)
++	void (*unpin_object)(struct fscache_object *object)
++
++     These methods are used to pin an object into the cache.  Once pinned an
++     object cannot be reclaimed to make space.  Return -ENOSPC if there's not
++     enough space in the cache to permit this.
++
++
++ (*) Update object [mandatory]:
++
++	int (*update_object)(struct fscache_object *object)
++
++     This is called to update the index entry for the specified object.  The
++     new information should be in object->cookie->netfs_data.  This can be
++     obtained by calling object->cookie->def->get_aux()/get_attr().
++
++
++ (*) Discard object [mandatory]:
++
++	void (*drop_object)(struct fscache_object *object)
++
++     This method is called to indicate that an object has been unbound from its
++     cookie, and that the cache should release the object's resources and
++     retire it if it's in state FSCACHE_OBJECT_RECYCLING.
++
++     This method should not attempt to release any references held by the
++     caller.  The caller will invoke the put_object() method as appropriate.
++
++
++ (*) Release object reference [mandatory]:
++
++	void (*put_object)(struct fscache_object *object)
++
++     This method is used to discard a reference to an object.  The object may
++     be freed when all the references to it are released.
++
++
++ (*) Synchronise a cache [mandatory]:
++
++	void (*sync)(struct fscache_cache *cache)
++
++     This is called to ask the backend to synchronise a cache with its backing
++     device.
++
++
++ (*) Dissociate a cache [mandatory]:
++
++	void (*dissociate_pages)(struct fscache_cache *cache)
++
++     This is called to ask a cache to perform any page dissociations as part of
++     cache withdrawal.
++
++
++ (*) Notification that the attributes on a netfs file changed [mandatory]:
++
++	int (*attr_changed)(struct fscache_object *object);
++
++     This is called to indicate to the cache that certain attributes on a netfs
++     file have changed (for example the maximum size a file may reach).  The
++     cache can read these from the netfs by calling the cookie's get_attr()
++     method.
++
++     The cache may use the file size information to reserve space on the cache.
++     It should also call fscache_set_store_limit() to indicate to FS-Cache the
++     highest byte it's willing to store for an object.
++
++     This method may return -ve if an error occurred or the cache object cannot
++     be expanded.  In such a case, the object will be withdrawn from service.
++
++     This operation is run asynchronously from FS-Cache's thread pool, and
++     storage and retrieval operations from the netfs are excluded during the
++     execution of this operation.
++
++
++ (*) Reserve cache space for an object's data [optional]:
++
++	int (*reserve_space)(struct fscache_object *object, loff_t size);
++
++     This is called to request that cache space be reserved to hold the data
++     for an object and the metadata used to track it.  Zero size should be
++     taken as request to cancel a reservation.
++
++     This should return 0 if successful, -ENOSPC if there isn't enough space
++     available, or -ENOMEM or -EIO on other errors.
++
++     The reservation may exceed the current size of the object, thus permitting
++     future expansion.  If the amount of space consumed by an object would
++     exceed the reservation, it's permitted to refuse requests to allocate
++     pages, but not required.  An object may be pruned down to its reservation
++     size if larger than that already.
++
++
++ (*) Request page be read from cache [mandatory]:
++
++	int (*read_or_alloc_page)(struct fscache_retrieval *op,
++				  struct page *page,
++				  gfp_t gfp)
++
++     This is called to attempt to read a netfs page from the cache, or to
++     reserve a backing block if not.  FS-Cache will have done as much checking
++     as it can before calling, but most of the work belongs to the backend.
++
++     If there's no page in the cache, then -ENODATA should be returned if the
++     backend managed to reserve a backing block; -ENOBUFS or -ENOMEM if it
++     didn't.
++
++     If there is suitable data in the cache, then a read operation should be
++     queued and 0 returned.  When the read finishes, fscache_end_io() should be
++     called.
++
++     The fscache_mark_pages_cached() should be called for the page if any cache
++     metadata is retained.  This will indicate to the netfs that the page needs
++     explicit uncaching.  This operation takes a pagevec, thus allowing several
++     pages to be marked at once.
++
++     The retrieval record pointed to by op should be retained for each page
++     queued and released when I/O on the page has been formally ended.
++     fscache_get/put_retrieval() are available for this purpose.
++
++     The retrieval record may be used to get CPU time via the FS-Cache thread
++     pool.  If this is desired, the op->op.processor should be set to point to
++     the appropriate processing routine, and fscache_enqueue_retrieval() should
++     be called at an appropriate point to request CPU time.  For instance, the
++     retrieval routine could be enqueued upon the completion of a disk read.
++     The to_do field in the retrieval record is provided to aid in this.
++
++     If an I/O error occurs, fscache_io_error() should be called and -ENOBUFS
++     returned if possible or fscache_end_io() called with a suitable error
++     code..
++
++
++ (*) Request pages be read from cache [mandatory]:
++
++	int (*read_or_alloc_pages)(struct fscache_retrieval *op,
++				   struct list_head *pages,
++				   unsigned *nr_pages,
++				   gfp_t gfp)
++
++     This is like the read_or_alloc_page() method, except it is handed a list
++     of pages instead of one page.  Any pages on which a read operation is
++     started must be added to the page cache for the specified mapping and also
++     to the LRU.  Such pages must also be removed from the pages list and
++     *nr_pages decremented per page.
++
++     If there was an error such as -ENOMEM, then that should be returned; else
++     if one or more pages couldn't be read or allocated, then -ENOBUFS should
++     be returned; else if one or more pages couldn't be read, then -ENODATA
++     should be returned.  If all the pages are dispatched then 0 should be
++     returned.
++
++
++ (*) Request page be allocated in the cache [mandatory]:
++
++	int (*allocate_page)(struct fscache_retrieval *op,
++			     struct page *page,
++			     gfp_t gfp)
++
++     This is like the read_or_alloc_page() method, except that it shouldn't
++     read from the cache, even if there's data there that could be retrieved.
++     It should, however, set up any internal metadata required such that
++     the write_page() method can write to the cache.
++
++     If there's no backing block available, then -ENOBUFS should be returned
++     (or -ENOMEM if there were other problems).  If a block is successfully
++     allocated, then the netfs page should be marked and 0 returned.
++
++
++ (*) Request pages be allocated in the cache [mandatory]:
++
++	int (*allocate_pages)(struct fscache_retrieval *op,
++			      struct list_head *pages,
++			      unsigned *nr_pages,
++			      gfp_t gfp)
++
++     This is an multiple page version of the allocate_page() method.  pages and
++     nr_pages should be treated as for the read_or_alloc_pages() method.
++
++
++ (*) Request page be written to cache [mandatory]:
++
++	int (*write_page)(struct fscache_storage *op,
++			  struct page *page);
++
++     This is called to write from a page on which there was a previously
++     successful read_or_alloc_page() call or similar.  FS-Cache filters out
++     pages that don't have mappings.
++
++     This method is called asynchronously from the FS-Cache thread pool.  It is
++     not required to actually store anything, provided -ENODATA is then
++     returned to the next read of this page.
++
++     If an error occurred, then a negative error code should be returned,
++     otherwise zero should be returned.  FS-Cache will take appropriate action
++     in response to an error, such as withdrawing this object.
++
++     If this method returns success then FS-Cache will inform the netfs
++     appropriately.
++
++
++ (*) Discard retained per-page metadata [mandatory]:
++
++	void (*uncache_page)(struct fscache_object *object, struct page *page)
++
++     This is called when a netfs page is being evicted from the pagecache.  The
++     cache backend should tear down any internal representation or tracking it
++     maintains for this page.
++
++
++==================
++FS-CACHE UTILITIES
++==================
++
++FS-Cache provides some utilities that a cache backend may make use of:
++
++ (*) Note occurrence of an I/O error in a cache:
++
++	void fscache_io_error(struct fscache_cache *cache)
++
++     This tells FS-Cache that an I/O error occurred in the cache.  After this
++     has been called, only resource dissociation operations (object and page
++     release) will be passed from the netfs to the cache backend for the
++     specified cache.
++
++     This does not actually withdraw the cache.  That must be done separately.
++
++
++ (*) Invoke the retrieval I/O completion function:
++
++	void fscache_end_io(struct fscache_retrieval *op, struct page *page,
++			    int error);
++
++     This is called to note the end of an attempt to retrieve a page.  The
++     error value should be 0 if successful and an error otherwise.
++
++
++ (*) Set highest store limit:
++
++	void fscache_set_store_limit(struct fscache_object *object,
++				     loff_t i_size);
++
++     This sets the limit FS-Cache imposes on the highest byte it's willing to
++     try and store for a netfs.  Any page over this limit is automatically
++     rejected by fscache_read_alloc_page() and co with -ENOBUFS.
++
++
++ (*) Mark pages as being cached:
++
++	void fscache_mark_pages_cached(struct fscache_retrieval *op,
++				       struct pagevec *pagevec);
++
++     This marks a set of pages as being cached.  After this has been called,
++     the netfs must call fscache_uncache_page() to unmark the pages.
++
++
++ (*) Initialise a freshly allocated object:
++
++	void fscache_object_init(struct fscache_object *object);
++
++     This initialises all the fields in an object representation.
++
++
++ (*) Indicate negative lookup on an object:
++
++	void fscache_object_lookup_negative(struct fscache_object *object);
++
++     This is called to indicate to FS-Cache that a lookup process for an object
++     found a negative result.
++
++     This changes the state of an object to permit reads pending on lookup
++     completion to go off and start fetching data from the netfs server as it's
++     known at this point that there can't be any data in the cache.
++
++     This may be called multiple times on an object.  Only the first call is
++     significant - all subsequent calls are ignored.
++
++
++ (*) Indicate an object has been obtained:
++
++	void fscache_obtained_object(struct fscache_object *object);
++
++     This is called to indicate to FS-Cache that a lookup process for an object
++     produced a positive result, or that an object was created.  This should
++     only be called once for any particular object.
++
++     This changes the state of an object to indicate:
++
++	(1) if no call to fscache_object_lookup_negative() has been made on
++	    this object, that there may be data available, and that reads can
++	    now go and look for it; and
++
++        (2) that writes may now proceed against this object.
++
++
++ (*) Indicate that object lookup failed:
++
++	void fscache_object_lookup_error(struct fscache_object *object);
++
++     This marks an object as having encountered a fatal error (usually EIO)
++     and causes it to move into a state whereby it will be withdrawn as soon
++     as possible.
++
++
++ (*) Get and release references on a retrieval record:
++
++	void fscache_get_retrieval(struct fscache_retrieval *op);
++	void fscache_put_retrieval(struct fscache_retrieval *op);
++
++     These two functions are used to retain a retrieval record whilst doing
++     asynchronous data retrieval and block allocation.
++
++
++ (*) Enqueue a retrieval record for processing.
++
++	void fscache_enqueue_retrieval(struct fscache_retrieval *op);
++
++     This enqueues a retrieval record for processing by the FS-Cache thread
++     pool.  One of the threads in the pool will invoke the retrieval record's
++     op->op.processor callback function.  This function may be called from
++     within the callback function.
++
++
++ (*) List of object state names:
++
++	const char *fscache_object_states[];
++
++     For debugging purposes, this may be used to turn the state that an object
++     is in into a text string for display purposes.
+diff --git a/Documentation/filesystems/caching/fscache.txt b/Documentation/filesystems/caching/fscache.txt
+new file mode 100644
+index 0000000..b28f2ca
+--- /dev/null
++++ b/Documentation/filesystems/caching/fscache.txt
+@@ -0,0 +1,295 @@
++			  ==========================
++			  General Filesystem Caching
++			  ==========================
++
++========
++OVERVIEW
++========
++
++This facility is a general purpose cache for network filesystems, though it
++could be used for caching other things such as ISO9660 filesystems too.
++
++FS-Cache mediates between cache backends (such as CacheFS) and network
++filesystems:
++
++	+---------+
++	|         |                        +--------------+
++	|   NFS   |--+                     |              |
++	|         |  |                 +-->|   CacheFS    |
++	+---------+  |   +----------+  |   |  /dev/hda5   |
++	             |   |          |  |   +--------------+
++	+---------+  +-->|          |  |
++	|         |      |          |--+
++	|   AFS   |----->| FS-Cache |
++	|         |      |          |--+
++	+---------+  +-->|          |  |
++	             |   |          |  |   +--------------+
++	+---------+  |   +----------+  |   |              |
++	|         |  |                 +-->|  CacheFiles  |
++	|  ISOFS  |--+                     |  /var/cache  |
++	|         |                        +--------------+
++	+---------+
++
++
++FS-Cache does not follow the idea of completely loading every netfs file
++opened in its entirety into a cache before permitting it to be accessed and
++then serving the pages out of that cache rather than the netfs inode because:
++
++ (1) It must be practical to operate without a cache.
++
++ (2) The size of any accessible file must not be limited to the size of the
++     cache.
++
++ (3) The combined size of all opened files (this includes mapped libraries)
++     must not be limited to the size of the cache.
++
++ (4) The user should not be forced to download an entire file just to do a
++     one-off access of a small portion of it (such as might be done with the
++     "file" program).
++
++It instead serves the cache out in PAGE_SIZE chunks as and when requested by
++the netfs('s) using it.
++
++
++FS-Cache provides the following facilities:
++
++ (1) More than one cache can be used at once.  Caches can be selected
++     explicitly by use of tags.
++
++ (2) Caches can be added / removed at any time.
++
++ (3) The netfs is provided with an interface that allows either party to
++     withdraw caching facilities from a file (required for (2)).
++
++ (4) The interface to the netfs returns as few errors as possible, preferring
++     rather to let the netfs remain oblivious.
++
++ (5) Cookies are used to represent indices, files and other objects to the
++     netfs.  The simplest cookie is just a NULL pointer - indicating nothing
++     cached there.
++
++ (6) The netfs is allowed to propose - dynamically - any index hierarchy it
++     desires, though it must be aware that the index search function is
++     recursive, stack space is limited, and indices can only be children of
++     indices.
++
++ (7) Data I/O is done direct to and from the netfs's pages.  The netfs
++     indicates that page A is at index B of the data-file represented by cookie
++     C, and that it should be read or written.  The cache backend may or may
++     not start I/O on that page, but if it does, a netfs callback will be
++     invoked to indicate completion.  The I/O may be either synchronous or
++     asynchronous.
++
++ (8) Cookies can be "retired" upon release.  At this point FS-Cache will mark
++     them as obsolete and the index hierarchy rooted at that point will get
++     recycled.
++
++ (9) The netfs provides a "match" function for index searches.  In addition to
++     saying whether a match was made or not, this can also specify that an
++     entry should be updated or deleted.
++
++(10) As much as possible is done asynchronously.
++
++
++FS-Cache maintains a virtual indexing tree in which all indices, files, objects
++and pages are kept.  Bits of this tree may actually reside in one or more
++caches.
++
++                                           FSDEF
++                                             |
++                        +------------------------------------+
++                        |                                    |
++                       NFS                                  AFS
++                        |                                    |
++           +--------------------------+                +-----------+
++           |                          |                |           |
++        homedir                     mirror          afs.org   redhat.com
++           |                          |                            |
++     +------------+           +---------------+              +----------+
++     |            |           |               |              |          |
++   00001        00002       00007           00125        vol00001   vol00002
++     |            |           |               |                         |
++ +---+---+     +-----+      +---+      +------+------+            +-----+----+
++ |   |   |     |     |      |   |      |      |      |            |     |    |
++PG0 PG1 PG2   PG0  XATTR   PG0 PG1   DIRENT DIRENT DIRENT        R/W   R/O  Bak
++                     |                                            |
++                    PG0                                       +-------+
++                                                              |       |
++                                                            00001   00003
++                                                              |
++                                                          +---+---+
++                                                          |   |   |
++                                                         PG0 PG1 PG2
++
++In the example above, you can see two netfs's being backed: NFS and AFS.  These
++have different index hierarchies:
++
++ (*) The NFS primary index contains per-server indices.  Each server index is
++     indexed by NFS file handles to get data file objects.  Each data file
++     objects can have an array of pages, but may also have further child
++     objects, such as extended attributes and directory entries.  Extended
++     attribute objects themselves have page-array contents.
++
++ (*) The AFS primary index contains per-cell indices.  Each cell index contains
++     per-logical-volume indices.  Each of volume index contains up to three
++     indices for the read-write, read-only and backup mirrors of those volumes.
++     Each of these contains vnode data file objects, each of which contains an
++     array of pages.
++
++The very top index is the FS-Cache master index in which individual netfs's
++have entries.
++
++Any index object may reside in more than one cache, provided it only has index
++children.  Any index with non-index object children will be assumed to only
++reside in one cache.
++
++
++The netfs API to FS-Cache can be found in:
++
++	Documentation/filesystems/caching/netfs-api.txt
++
++The cache backend API to FS-Cache can be found in:
++
++	Documentation/filesystems/caching/backend-api.txt
++
++
++=======================
++STATISTICAL INFORMATION
++=======================
++
++If FS-Cache is compiled with the following options enabled:
++
++	CONFIG_FSCACHE_PROC=y (implied by the following two)
++	CONFIG_FSCACHE_STATS=y
++	CONFIG_FSCACHE_HISTOGRAM=y
++
++then it will gather certain statistics and display them through a number of
++proc files.
++
++ (*) /proc/fs/fscache/stats
++
++     This shows counts of a number of events that can happen in FS-Cache:
++
++	CLASS	EVENT	MEANING
++	=======	=======	=======================================================
++	Cookies	idx=N	Number of index cookies allocated
++		dat=N	Number of data storage cookies allocated
++		spc=N	Number of special cookies allocated
++	Objects	alc=N	Number of objects allocated
++		nal=N	Number of object allocation failures
++		avl=N	Number of objects that reached the available state
++	Pages	mrk=N	Number of pages marked as being cached
++		unc=N	Number of uncache page requests seen
++	Acquire	n=N	Number of acquire cookie requests seen
++		nul=N	Number of acq reqs given a NULL parent
++		noc=N	Number of acq reqs rejected due to no cache available
++		ok=N	Number of acq reqs succeeded
++		nbf=N	Number of acq reqs rejected due to error
++		oom=N	Number of acq reqs failed on ENOMEM
++	Lookups	n=N	Number of lookup calls made on cache backends
++		neg=N	Number of negative lookups made
++		pos=N	Number of positive lookups made
++		crt=N	Number of objects created by lookup
++		bst=N	Number of objects with boosted lookup priority
++	Updates	n=N	Number of update cookie requests seen
++		nul=N	Number of upd reqs given a NULL parent
++		run=N	Number of upd reqs granted CPU time
++	Relinqs	n=N	Number of relinquish cookie requests seen
++		nul=N	Number of rlq reqs given a NULL parent
++		wcr=N	Number of rlq reqs waited on completion of creation
++	AttrChg	n=N	Number of attribute changed requests seen
++		ok=N	Number of attr changed requests queued
++		nbf=N	Number of attr changed rejected -ENOBUFS
++		oom=N	Number of attr changed failed -ENOMEM
++		run=N	Number of attr changed ops given CPU time
++	Allocs	n=N	Number of allocation requests seen
++		ok=N	Number of successful alloc reqs
++		wt=N	Number of alloc reqs that waited on lookup completion
++		nbf=N	Number of alloc reqs rejected -ENOBUFS
++		ops=N	Number of alloc reqs submitted
++		owt=N	Number of alloc reqs waited for CPU time
++	Retrvls	n=N	Number of retrieval (read) requests seen
++		ok=N	Number of successful retr reqs
++		wt=N	Number of retr reqs that waited on lookup completion
++		nod=N	Number of retr reqs returned -ENODATA
++		nbf=N	Number of retr reqs rejected -ENOBUFS
++		int=N	Number of retr reqs aborted -ERESTARTSYS
++		oom=N	Number of retr reqs failed -ENOMEM
++		ops=N	Number of retr reqs submitted
++		owt=N	Number of retr reqs waited for CPU time
++	Stores	n=N	Number of storage (write) requests seen
++		ok=N	Number of successful store reqs
++		agn=N	Number of store reqs on a page already pending storage
++		nbf=N	Number of store reqs rejected -ENOBUFS
++		oom=N	Number of store reqs failed -ENOMEM
++		ops=N	Number of store reqs submitted
++		run=N	Number of store reqs granted CPU time
++	Ops	pend=N	Number of times async ops added to pending queues
++		run=N	Number of times async ops given CPU time
++		enq=N	Number of times async ops queued for processing
++		req=N	Number of times async ops requeued for processing
++		rel=N	Number of times async ops released
++
++
++ (*) /proc/fs/fscache/pool
++
++     This shows the number of objects and operations each thread in the thread
++     pool has given CPU time to.
++
++
++ (*) /proc/fs/fscache/histogram
++
++	cat /proc/fs/fscache/histogram 
++	+HZ   +TIME OBJ INST  OP RUNS   OBJ RUNS  RETRV DLY RETRIEVLS
++	===== ===== ========= ========= ========= ========= =========
++
++     This shows the breakdown of the number of times each amount of time
++     between 0 jiffies and HZ-1 jiffies a variety of tasks took to run.  The
++     columns are as follows:
++
++	COLUMN		TIME MEASUREMENT
++	=======		=======================================================
++	OBJ INST	Length of time to instantiate an object
++	OP RUNS		Length of time a call to process an operation took
++	OBJ RUNS	Length of time a call to process an object event took
++	RETRV DLY	Time between an requesting a read and lookup completing
++	RETRIEVLS	Time between beginning and end of a retrieval
++
++     Each row shows the number of events that took a particular range of times.
++     Each step is 1 jiffy in size.  The +HZ column indicates the particular
++     jiffy range covered, and the +TIME field the equivalent number of seconds.
++
++
++=========
++DEBUGGING
++=========
++
++The FS-Cache facility can have runtime debugging enabled by adjusting the value
++in:
++
++	/sys/module/fscache/parameters/debug
++
++This is a bitmask of debugging streams to enable:
++
++	BIT	VALUE	STREAM				POINT
++	=======	=======	===============================	=======================
++	0	1	Cache management		Function entry trace
++	1	2					Function exit trace
++	2	4					General
++	3	8	Cookie management		Function entry trace
++	4	16					Function exit trace
++	5	32					General
++	6	64	Page handling			Function entry trace
++	7	128					Function exit trace
++	8	256					General
++	9	512	Thread pool management		Function entry trace
++	10	1024					Function exit trace
++	11	2048					General
++
++The appropriate set of values should be OR'd together and the result written to
++the control file.  For example:
++
++	echo $((1|8|64)) >/sys/module/fscache/parameters/debug
++
++will turn on all function entry debugging.
++
+diff --git a/Documentation/filesystems/caching/netfs-api.txt b/Documentation/filesystems/caching/netfs-api.txt
+new file mode 100644
+index 0000000..0b6d09a
+--- /dev/null
++++ b/Documentation/filesystems/caching/netfs-api.txt
+@@ -0,0 +1,741 @@
++			===============================
++			FS-CACHE NETWORK FILESYSTEM API
++			===============================
++
++There's an API by which a network filesystem can make use of the FS-Cache
++facilities.  This is based around a number of principles:
++
++ (1) Caches can store a number of different object types.  There are two main
++     object types: indices and files.  The first is a special type used by
++     FS-Cache to make finding objects faster and to make retiring of groups of
++     objects easier.
++
++ (2) Every index, file or other object is represented by a cookie.  This cookie
++     may or may not have anything associated with it, but the netfs doesn't
++     need to care.
++
++ (3) Barring the top-level index (one entry per cached netfs), the index
++     hierarchy for each netfs is structured according the whim of the netfs.
++
++This API is declared in <linux/fscache.h>.
++
++This document contains the following sections:
++
++	 (1) Network filesystem definition
++	 (2) Index definition
++	 (3) Object definition
++	 (4) Network filesystem (un)registration
++	 (5) Cache tag lookup
++	 (6) Index registration
++	 (7) Data file registration
++	 (8) Miscellaneous object registration
++	 (9) Setting the data file size
++	(10) Page alloc/read/write
++	(11) Page uncaching
++	(12) Index and data file update
++	(13) Miscellaneous cookie operations
++	(14) Cookie unregistration
++	(15) Index and data file invalidation
++
++
++=============================
++NETWORK FILESYSTEM DEFINITION
++=============================
++
++FS-Cache needs a description of the network filesystem.  This is specified
++using a record of the following structure:
++
++	struct fscache_netfs {
++		uint32_t			version;
++		const char			*name;
++		struct fscache_netfs_operations	*ops;
++		struct fscache_cookie		*primary_index;
++		...
++	};
++
++This first three fields should be filled in before registration, and the fourth
++will be filled in by the registration function; any other fields should just be
++ignored and are for internal use only.
++
++The fields are:
++
++ (1) The name of the netfs (used as the key in the toplevel index).
++
++ (2) The version of the netfs (if the name matches but the version doesn't, the
++     entire in-cache hierarchy for this netfs will be scrapped and begun
++     afresh).
++
++ (3) The operations table is defined as follows:
++
++	struct fscache_netfs_operations {
++	};
++
++     Currently there aren't any functions here.
++
++ (4) The cookie representing the primary index will be allocated according to
++     another parameter passed into the registration function.
++
++For example, kAFS (linux/fs/afs/) uses the following definitions to describe
++itself:
++
++	static struct fscache_netfs_operations afs_cache_ops = {
++	};
++
++	struct fscache_netfs afs_cache_netfs = {
++		.version	= 0,
++		.name		= "afs",
++		.ops		= &afs_cache_ops,
++	};
++
++
++================
++INDEX DEFINITION
++================
++
++Indices are used for two purposes:
++
++ (1) To aid the finding of a file based on a series of keys (such as AFS's
++     "cell", "volume ID", "vnode ID").
++
++ (2) To make it easier to discard a subset of all the files cached based around
++     a particular key - for instance to mirror the removal of an AFS volume.
++
++However, since it's unlikely that any two netfs's are going to want to define
++their index hierarchies in quite the same way, FS-Cache tries to impose as few
++restraints as possible on how an index is structured and where it is placed in
++the tree.  The netfs can even mix indices and data files at the same level, but
++it's not recommended.
++
++Each index entry consists of a key of indeterminate length plus some auxilliary
++data, also of indeterminate length.
++
++There are some limits on indices:
++
++ (1) Any index containing non-index objects should be restricted to a single
++     cache.  Any such objects created within an index will be created in the
++     first cache only.  The cache in which an index is created can be
++     controlled by cache tags (see below).
++
++ (2) The entry data must be atomically journallable, so it is limited to about
++     400 bytes at present.  At least 400 bytes will be available.
++
++ (3) The depth of the index tree should be judged with care as the search
++     function is recursive.  Too many layers will run the kernel out of stack.
++
++
++=================
++OBJECT DEFINITION
++=================
++
++To define an object, a structure of the following type should be filled out:
++
++	struct fscache_cookie_def
++	{
++		uint8_t name[16];
++		uint8_t type;
++
++		struct fscache_cache_tag *(*select_cache)(
++			const void *parent_netfs_data,
++			const void *cookie_netfs_data);
++
++		uint16_t (*get_key)(const void *cookie_netfs_data,
++				    void *buffer,
++				    uint16_t bufmax);
++
++		void (*get_attr)(const void *cookie_netfs_data,
++				 uint64_t *size);
++
++		uint16_t (*get_aux)(const void *cookie_netfs_data,
++				    void *buffer,
++				    uint16_t bufmax);
++
++		enum fscache_checkaux (*check_aux)(void *cookie_netfs_data,
++						   const void *data,
++						   uint16_t datalen);
++
++		void (*get_context)(void *cookie_netfs_data, void *context);
++
++		void (*put_context)(void *cookie_netfs_data, void *context);
++
++		void (*mark_pages_cached)(void *cookie_netfs_data,
++					  struct address_space *mapping,
++					  struct pagevec *cached_pvec);
++
++		void (*now_uncached)(void *cookie_netfs_data);
++	};
++
++This has the following fields:
++
++ (1) The type of the object [mandatory].
++
++     This is one of the following values:
++
++	(*) FSCACHE_COOKIE_TYPE_INDEX
++
++	    This defines an index, which is a special FS-Cache type.
++
++	(*) FSCACHE_COOKIE_TYPE_DATAFILE
++
++	    This defines an ordinary data file.
++
++	(*) Any other value between 2 and 255
++
++	    This defines an extraordinary object such as an XATTR.
++
++ (2) The name of the object type (NUL terminated unless all 16 chars are used)
++     [optional].
++
++ (3) A function to select the cache in which to store an index [optional].
++
++     This function is invoked when an index needs to be instantiated in a cache
++     during the instantiation of a non-index object.  Only the immediate index
++     parent for the non-index object will be queried.  Any indices above that
++     in the hierarchy may be stored in multiple caches.  This function does not
++     need to be supplied for any non-index object or any index that will only
++     have index children.
++
++     If this function is not supplied or if it returns NULL then the first
++     cache in the parent's list will be chosed, or failing that, the first
++     cache in the master list.
++
++ (4) A function to retrieve an object's key from the netfs [mandatory].
++
++     This function will be called with the netfs data that was passed to the
++     cookie acquisition function and the maximum length of key data that it may
++     provide.  It should write the required key data into the given buffer and
++     return the quantity it wrote.
++
++ (5) A function to retrieve attribute data from the netfs [optional].
++
++     This function will be called with the netfs data that was passed to the
++     cookie acquisition function.  It should return the size of the file if
++     this is a data file.  The size may be used to govern how much cache must
++     be reserved for this file in the cache.
++
++     If the function is absent, a file size of 0 is assumed.
++
++ (6) A function to retrieve auxilliary data from the netfs [optional].
++
++     This function will be called with the netfs data that was passed to the
++     cookie acquisition function and the maximum length of auxilliary data that
++     it may provide.  It should write the auxilliary data into the given buffer
++     and return the quantity it wrote.
++
++     If this function is absent, the auxilliary data length will be set to 0.
++
++     The length of the auxilliary data buffer may be dependent on the key
++     length.  A netfs mustn't rely on being able to provide more than 400 bytes
++     for both.
++
++ (7) A function to check the auxilliary data [optional].
++
++     This function will be called to check that a match found in the cache for
++     this object is valid.  For instance with AFS it could check the auxilliary
++     data against the data version number returned by the server to determine
++     whether the index entry in a cache is still valid.
++
++     If this function is absent, it will be assumed that matching objects in a
++     cache are always valid.
++
++     If present, the function should return one of the following values:
++
++	(*) FSCACHE_CHECKAUX_OKAY		- the entry is okay as is
++	(*) FSCACHE_CHECKAUX_NEEDS_UPDATE	- the entry requires update
++	(*) FSCACHE_CHECKAUX_OBSOLETE		- the entry should be deleted
++
++     This function can also be used to extract data from the auxilliary data in
++     the cache and copy it into the netfs's structures.
++
++ (8) A pair of functions to manage contexts for the completion callback
++     [optional].
++
++     The cache read/write functions are passed a context which is then passed
++     to the I/O completion callback function.  To ensure this context remains
++     valid until after the I/O completion is called, two functions may be
++     provided: one to get an extra reference on the context, and one to drop a
++     reference to it.
++
++     If the context is not used or is a type of object that won't go out of
++     scope, then these functions are not required.  These functions are not
++     required for indices as indices may not contain data.  These functions may
++     be called in interrupt context and so may not sleep.
++
++ (9) A function to mark a page as retaining cache metadata [optional].
++
++     This is called by the cache to indicate that it is retaining in-memory
++     information for this page and that the netfs should uncache the page when
++     it has finished.  This does not indicate whether there's data on the disk
++     or not.  Note that several pages at once may be presented for marking.
++
++     The PG_fscache bit is set on the pages before this function would be
++     called, so the function need not be provided if this is sufficient.
++
++     This function is not required for indices as they're not permitted data.
++
++(10) A function to unmark all the pages retaining cache metadata [mandatory].
++
++     This is called by FS-Cache to indicate that a backing store is being
++     unbound from a cookie and that all the marks on the pages should be
++     cleared to prevent confusion.  Note that the cache will have torn down all
++     its tracking information so that the pages don't need to be explicitly
++     uncached.
++
++     This function is not required for indices as they're not permitted data.
++
++
++===================================
++NETWORK FILESYSTEM (UN)REGISTRATION
++===================================
++
++The first step is to declare the network filesystem to the cache.  This also
++involves specifying the layout of the primary index (for AFS, this would be the
++"cell" level).
++
++The registration function is:
++
++	int fscache_register_netfs(struct fscache_netfs *netfs);
++
++It just takes a pointer to the netfs definition.  It returns 0 or an error as
++appropriate.
++
++For kAFS, registration is done as follows:
++
++	ret = fscache_register_netfs(&afs_cache_netfs);
++
++The last step is, of course, unregistration:
++
++	void fscache_unregister_netfs(struct fscache_netfs *netfs);
++
++
++================
++CACHE TAG LOOKUP
++================
++
++FS-Cache permits the use of more than one cache.  To permit particular index
++subtrees to be bound to particular caches, the second step is to look up cache
++representation tags.  This step is optional; it can be left entirely up to
++FS-Cache as to which cache should be used.  The problem with doing that is that
++FS-Cache will always pick the first cache that was registered.
++
++To get the representation for a named tag:
++
++	struct fscache_cache_tag *fscache_lookup_cache_tag(const char *name);
++
++This takes a text string as the name and returns a representation of a tag.  It
++will never return an error.  It may return a dummy tag, however, if it runs out
++of memory; this will inhibit caching with this tag.
++
++Any representation so obtained must be released by passing it to this function:
++
++	void fscache_release_cache_tag(struct fscache_cache_tag *tag);
++
++The tag will be retrieved by FS-Cache when it calls the object definition
++operation select_cache().
++
++
++==================
++INDEX REGISTRATION
++==================
++
++The third step is to inform FS-Cache about part of an index hierarchy that can
++be used to locate files.  This is done by requesting a cookie for each index in
++the path to the file:
++
++	struct fscache_cookie *
++	fscache_acquire_cookie(struct fscache_cookie *parent,
++			       const struct fscache_object_def *def,
++			       void *netfs_data);
++
++This function creates an index entry in the index represented by parent,
++filling in the index entry by calling the operations pointed to by def.
++
++Note that this function never returns an error - all errors are handled
++internally.  It may, however, return NULL to indicate no cookie.  It is quite
++acceptable to pass this token back to this function as the parent to another
++acquisition (or even to the relinquish cookie, read page and write page
++functions - see below).
++
++Note also that no indices are actually created in a cache until a non-index
++object needs to be created somewhere down the hierarchy.  Furthermore, an index
++may be created in several different caches independently at different times.
++This is all handled transparently, and the netfs doesn't see any of it.
++
++For example, with AFS, a cell would be added to the primary index.  This index
++entry would have a dependent inode containing a volume location index for the
++volume mappings within this cell:
++
++	cell->cache =
++		fscache_acquire_cookie(afs_cache_netfs.primary_index,
++				       &afs_cell_cache_index_def,
++				       cell);
++
++Then when a volume location was accessed, it would be entered into the cell's
++index and an inode would be allocated that acts as a volume type and hash chain
++combination:
++
++	vlocation->cache =
++		fscache_acquire_cookie(cell->cache,
++				       &afs_vlocation_cache_index_def,
++				       vlocation);
++
++And then a particular flavour of volume (R/O for example) could be added to
++that index, creating another index for vnodes (AFS inode equivalents):
++
++	volume->cache =
++		fscache_acquire_cookie(vlocation->cache,
++				       &afs_volume_cache_index_def,
++				       volume);
++
++
++======================
++DATA FILE REGISTRATION
++======================
++
++The fourth step is to request a data file be created in the cache.  This is
++identical to index cookie acquisition.  The only difference is that the type in
++the object definition should be something other than index type.
++
++	vnode->cache =
++		fscache_acquire_cookie(volume->cache,
++				       &afs_vnode_cache_object_def,
++				       vnode);
++
++
++=================================
++MISCELLANEOUS OBJECT REGISTRATION
++=================================
++
++An optional step is to request an object of miscellaneous type be created in
++the cache.  This is almost identical to index cookie acquisition.  The only
++difference is that the type in the object definition should be something other
++than index type.  Whilst the parent object could be an index, it's more likely
++it would be some other type of object such as a data file.
++
++	xattr->cache =
++		fscache_acquire_cookie(vnode->cache,
++				       &afs_xattr_cache_object_def,
++				       xattr);
++
++Miscellaneous objects might be used to store extended attributes or directory
++entries for example.
++
++
++==========================
++SETTING THE DATA FILE SIZE
++==========================
++
++The fifth step is to set the physical attributes of the file, such as its size.
++This doesn't automatically reserve any space in the cache, but permits the
++cache to adjust its metadata for data tracking appropriately:
++
++	int fscache_attr_changed(struct fscache_cookie *cookie);
++
++The cache will return -ENOBUFS if there is no backing cache or if there is no
++space to allocate any extra metadata required in the cache.  The attributes
++will be accessed with the get_attr() cookie definition operation.
++
++Note that attempts to read or write data pages in the cache over this size may
++be rebuffed with -ENOBUFS.
++
++This operation schedules an attribute adjustment to happen asynchronously at
++some point in the future, and as such, it may happen after the function returns
++to the caller.  The attribute adjustment excludes read and write operations.
++
++
++=====================
++PAGE READ/ALLOC/WRITE
++=====================
++
++And the sixth step is to store and retrieve pages in the cache.  There are
++three functions that are used to do this.
++
++Note:
++
++ (1) A page should not be re-read or re-allocated without uncaching it first.
++
++ (2) A read or allocated page must be uncached when the netfs page is released
++     from the pagecache.
++
++ (3) A page should only be written to the cache if previous read or allocated.
++
++This permits the cache to maintain its page tracking in proper order.
++
++
++PAGE READ
++---------
++
++Firstly, the netfs should ask FS-Cache to examine the caches and read the
++contents cached for a particular page of a particular file if present, or else
++allocate space to store the contents if not:
++
++	typedef
++	void (*fscache_rw_complete_t)(struct page *page,
++				      void *context,
++				      int error);
++
++	int fscache_read_or_alloc_page(struct fscache_cookie *cookie,
++				       struct page *page,
++				       fscache_rw_complete_t end_io_func,
++				       void *context,
++				       gfp_t gfp);
++
++The cookie argument must specify a cookie for an object that isn't an index,
++the page specified will have the data loaded into it (and is also used to
++specify the page number), and the gfp argument is used to control how any
++memory allocations made are satisfied.
++
++If the cookie indicates the inode is not cached:
++
++ (1) The function will return -ENOBUFS.
++
++Else if there's a copy of the page resident in the cache:
++
++ (1) The mark_pages_cached() cookie operation will be called on that page.
++
++ (2) The function will submit a request to read the data from the cache's
++     backing device directly into the page specified.
++
++ (3) The function will return 0.
++
++ (4) When the read is complete, end_io_func() will be invoked with:
++
++     (*) The netfs data supplied when the cookie was created.
++
++     (*) The page descriptor.
++
++     (*) The context argument passed to the above function.  This will be
++     	 maintained with the get_context/put_context functions mentioned above.
++
++     (*) An argument that's 0 on success or negative for an error code.
++
++     If an error occurs, it should be assumed that the page contains no usable
++     data.
++
++     end_io_func() will be called in process context if the read is results in
++     an error, but it might be called in interrupt context if the read is
++     successful.
++
++Otherwise, if there's not a copy available in cache, but the cache may be able
++to store the page:
++
++ (1) The mark_pages_cached() cookie operation will be called on that page.
++
++ (2) A block may be reserved in the cache and attached to the object at the
++     appropriate place.
++
++ (3) The function will return -ENODATA.
++
++This function may also return -ENOMEM or -EINTR, in which case it won't have
++read any data from the cache.
++
++
++PAGE ALLOCATE
++-------------
++
++Alternatively, if there's not expected to be any data in the cache for a page
++because the file has been extended, a block can simply be allocated instead:
++
++	int fscache_alloc_page(struct fscache_cookie *cookie,
++			       struct page *page,
++			       gfp_t gfp);
++
++This is similar to the fscache_read_or_alloc_page() function, except that it
++never reads from the cache.  It will return 0 if a block has been allocated,
++rather than -ENODATA as the other would.  One or the other must be performed
++before writing to the cache.
++
++The mark_pages_cached() cookie operation will be called on the page if
++successful.
++
++
++PAGE WRITE
++----------
++
++Secondly, if the netfs changes the contents of the page (either due to an
++initial download or if a user performs a write), then the page should be
++written back to the cache:
++
++	int fscache_write_page(struct fscache_cookie *cookie,
++			       struct page *page,
++			       gfp_t gfp);
++
++The cookie argument must specify a data file cookie, the page specified should
++contain the data to be written (and is also used to specify the page number),
++and the gfp argument is used to control how any memory allocations made are
++satisfied.
++
++The page must have first been read or allocated successfully and must not have
++been uncached before writing is performed.
++
++If the cookie indicates the inode is not cached then:
++
++ (1) The function will return -ENOBUFS.
++
++Else if space can be allocated in the cache to hold this page:
++
++ (1) PG_fscache_write will be set on the page.
++
++ (2) The function will submit a request to write the data to cache's backing
++     device directly from the page specified.
++
++ (3) The function will return 0.
++
++ (4) When the write is complete PG_fscache_write is cleared on the page and
++     anyone waiting for that bit will be woken up.
++
++Else if there's no space available in the cache, -ENOBUFS will be returned.  It
++is also possible for the PG_fscache_write bit to be cleared when no write took
++place if unforeseen circumstances arose (such as a disk error).
++
++Writing takes place asynchronously.
++
++
++MULTIPLE PAGE READ
++------------------
++
++A facility is provided to read several pages at once, as requested by the
++readpages() address space operation:
++
++	int fscache_read_or_alloc_pages(struct fscache_cookie *cookie,
++					struct address_space *mapping,
++					struct list_head *pages,
++					int *nr_pages,
++					fscache_rw_complete_t end_io_func,
++					void *context,
++					gfp_t gfp);
++
++This works in a similar way to fscache_read_or_alloc_page(), except:
++
++ (1) Any page it can retrieve data for is removed from pages and nr_pages and
++     dispatched for reading to the disk.  Reads of adjacent pages on disk may
++     be merged for greater efficiency.
++
++ (2) The mark_pages_cached() cookie operation will be called on several pages
++     at once if they're being read or allocated.
++
++ (3) If there was an general error, then that error will be returned.
++
++     Else if some pages couldn't be allocated or read, then -ENOBUFS will be
++     returned.
++
++     Else if some pages couldn't be read but were allocated, then -ENODATA will
++     be returned.
++
++     Otherwise, if all pages had reads dispatched, then 0 will be returned, the
++     list will be empty and *nr_pages will be 0.
++
++ (4) end_io_func will be called once for each page being read as the reads
++     complete.  It will be called in process context if error != 0, but it may
++     be called in interrupt context if there is no error.
++
++Note that a return of -ENODATA, -ENOBUFS or any other error does not preclude
++some of the pages being read and some being allocated.  Those pages will have
++been marked appropriately and will need uncaching.
++
++
++==============
++PAGE UNCACHING
++==============
++
++To uncache a page, this function should be called:
++
++	void fscache_uncache_page(struct fscache_cookie *cookie,
++				  struct page *page);
++
++This function permits the cache to release any in-memory representation it
++might be holding for this netfs page.  This function must be called once for
++each page on which the read or write page functions above have been called to
++make sure the cache's in-memory tracking information gets torn down.
++
++Note that pages can't be explicitly deleted from the a data file.  The whole
++data file must be retired (see the relinquish cookie function below).
++
++Furthermore, note that this does not cancel the asynchronous read or write
++operation started by the read/alloc and write functions.
++
++
++==========================
++INDEX AND DATA FILE UPDATE
++==========================
++
++To request an update of the index data for an index or other object, the
++following function should be called:
++
++	void fscache_update_cookie(struct fscache_cookie *cookie);
++
++This function will refer back to the netfs_data pointer stored in the cookie by
++the acquisition function to obtain the data to write into each revised index
++entry.  The update method in the parent index definition will be called to
++transfer the data.
++
++Note that partial updates may happen automatically at other times, such as when
++data blocks are added to a data file object.
++
++
++===============================
++MISCELLANEOUS COOKIE OPERATIONS
++===============================
++
++There are a number of operations that can be used to control cookies:
++
++ (*) Cookie pinning:
++
++	int fscache_pin_cookie(struct fscache_cookie *cookie);
++	void fscache_unpin_cookie(struct fscache_cookie *cookie);
++
++     These operations permit data cookies to be pinned into the cache and to
++     have the pinning removed.  They are not permitted on index cookies.
++
++     The pinning function will return 0 if successful, -ENOBUFS in the cookie
++     isn't backed by a cache, -EOPNOTSUPP if the cache doesn't support pinning,
++     -ENOSPC if there isn't enough space to honour the operation, -ENOMEM or
++     -EIO if there's any other problem.
++
++ (*) Data space reservation:
++
++	int fscache_reserve_space(struct fscache_cookie *cookie, loff_t size);
++
++     This permits a netfs to request cache space be reserved to store up to the
++     given amount of a file.  It is permitted to ask for more than the current
++     size of the file to allow for future file expansion.
++
++     If size is given as zero then the reservation will be cancelled.
++
++     The function will return 0 if successful, -ENOBUFS in the cookie isn't
++     backed by a cache, -EOPNOTSUPP if the cache doesn't support reservations,
++     -ENOSPC if there isn't enough space to honour the operation, -ENOMEM or
++     -EIO if there's any other problem.
++
++     Note that this doesn't pin an object in a cache; it can still be culled to
++     make space if it's not in use.
++
++
++=====================
++COOKIE UNREGISTRATION
++=====================
++
++To get rid of a cookie, this function should be called.
++
++	void fscache_relinquish_cookie(struct fscache_cookie *cookie,
++				       int retire);
++
++If retire is non-zero, then the object will be marked for recycling, and all
++copies of it will be removed from all active caches in which it is present.
++Not only that but all child objects will also be retired.
++
++If retire is zero, then the object may be available again when next the
++acquisition function is called.  Retirement here will overrule the pinning on a
++cookie.
++
++One very important note - relinquish must NOT be called for a cookie unless all
++the cookies for "child" indices, objects and pages have been relinquished
++first.
++
++
++================================
++INDEX AND DATA FILE INVALIDATION
++================================
++
++There is no direct way to invalidate an index subtree or a data file.  To do
++this, the caller should relinquish and retire the cookie they have, and then
++acquire a new one.
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 781b47d..88e5b2d 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -656,6 +656,12 @@ config GENERIC_ACL
+ 	bool
+ 	select FS_POSIX_ACL
  
++menu "Caches"
 +
-+/*
-+ * The security context of a task
++source "fs/fscache/Kconfig"
++
++endmenu
++
+ if BLOCK
+ menu "CD-ROM/DVD Filesystems"
+ 
+diff --git a/fs/Makefile b/fs/Makefile
+index 500cf15..1767091 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -65,6 +65,7 @@ obj-$(CONFIG_PROFILING)		+= dcookies.o
+ obj-$(CONFIG_DLM)		+= dlm/
+  
+ # Do not add any filesystems before this line
++obj-$(CONFIG_FSCACHE)		+= fscache/
+ obj-$(CONFIG_REISERFS_FS)	+= reiserfs/
+ obj-$(CONFIG_EXT3_FS)		+= ext3/ # Before ext2 so root fs can be ext3
+ obj-$(CONFIG_EXT4DEV_FS)	+= ext4/ # Before ext2 so root fs can be ext4dev
+diff --git a/fs/fscache/Kconfig b/fs/fscache/Kconfig
+new file mode 100644
+index 0000000..e68c945
+--- /dev/null
++++ b/fs/fscache/Kconfig
+@@ -0,0 +1,49 @@
++
++config FSCACHE
++	tristate "General filesystem local caching manager"
++	depends on EXPERIMENTAL
++	help
++	  This option enables a generic filesystem caching manager that can be
++	  used by various network and other filesystems to cache data locally.
++	  Different sorts of caches can be plugged in, depending on the
++	  resources available.
++
++	  See Documentation/filesystems/caching/fscache.txt for more information.
++
++config FSCACHE_PROC
++	bool "Provide /proc interface for local caching statistics"
++	depends on FSCACHE && PROC_FS
++
++config FSCACHE_STATS
++	bool "Gather statistical information on local caching"
++	depends on FSCACHE_PROC
++	help
++	  This option causes statistical information to be gathered on local
++	  caching and exported through files:
++
++		/proc/fs/fscache/stats
++		/proc/fs/fscache/pool
++
++	  See Documentation/filesystems/caching/fscache.txt for more information.
++
++config FSCACHE_HISTOGRAM
++	bool "Gather latency information on local caching"
++	depends on FSCACHE_PROC
++	help
++
++	  This option causes latency information to be gathered on local
++	  caching and exported through file:
++
++		/proc/fs/fscache/histogram
++
++	  See Documentation/filesystems/caching/fscache.txt for more information.
++
++config FSCACHE_DEBUG
++	bool "Debug FS-Cache"
++	depends on FSCACHE
++	help
++	  This permits debugging to be dynamically enabled in the local caching
++	  management module.  If this is set, the debugging output may be
++	  enabled by setting bits in /sys/modules/fscache/parameter/debug.
++
++	  See Documentation/filesystems/caching/fscache.txt for more information.
+diff --git a/fs/fscache/Makefile b/fs/fscache/Makefile
+new file mode 100644
+index 0000000..e60dad3
+--- /dev/null
++++ b/fs/fscache/Makefile
+@@ -0,0 +1,19 @@
++#
++# Makefile for general filesystem caching code
++#
++
++fscache-y := \
++	fsc-cache.o \
++	fsc-cookie.o \
++	fsc-fsdef.o \
++	fsc-main.o \
++	fsc-manage.o \
++	fsc-object.o \
++	fsc-page.o \
++	fsc-threads.o
++
++fscache-$(CONFIG_FSCACHE_PROC) += \
++	fsc-proc.o \
++	fsc-stats.o
++
++obj-$(CONFIG_FSCACHE) := fscache.o
+diff --git a/fs/fscache/fsc-cache.c b/fs/fscache/fsc-cache.c
+new file mode 100644
+index 0000000..7e77673
+--- /dev/null
++++ b/fs/fscache/fsc-cache.c
+@@ -0,0 +1,506 @@
++/* FS-Cache cache handling
 + *
-+ * The parts of the context break down into two categories:
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
 + *
-+ *  (1) The objective context of a task.  These parts are used when some other
-+ *	task is attempting to affect this one.
-+ *
-+ *  (2) The subjective context.  These details are used when the task is acting
-+ *	upon another object, be that a file, a task, a key or whatever.
-+ *
-+ * Note that some members of this structure belong to both categories - the
-+ * LSM security pointer for instance.
-+ *
-+ * A task has two security pointers.  task->sec points to the objective context
-+ * that defines that task's actual details.  The objective part of this context
-+ * is used whenever that task is acted upon.
-+ *
-+ * task->act_as points to the subjective context that defines the details of
-+ * how that task is going to act upon another object.  This may be overridden
-+ * temporarily to point to another security context, but normally points to the
-+ * same context as task->sec.
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
 + */
-+struct task_security {
-+	atomic_t	usage;
-+	uid_t		uid;		/* real UID of the task */
-+	gid_t		gid;		/* real GID of the task */
-+	uid_t		suid;		/* saved UID of the task */
-+	gid_t		sgid;		/* saved GID of the task */
-+	uid_t		euid;		/* effective UID of the task */
-+	gid_t		egid;		/* effective GID of the task */
-+	uid_t		fsuid;		/* UID for VFS ops */
-+	gid_t		fsgid;		/* GID for VFS ops */
-+	unsigned	keep_capabilities:1;
-+	kernel_cap_t	cap_inheritable; /* caps our children can inherit */
-+	kernel_cap_t	cap_permitted;	/* caps we're permitted */
-+	kernel_cap_t	cap_effective;	/* caps we can actually use */
-+#ifdef CONFIG_KEYS
-+	unsigned char	jit_keyring;	/* default keyring to attach requested
-+					 * keys to */
-+	struct key	*thread_keyring; /* keyring private to this thread */
-+	struct key	*request_key_auth; /* assumed request_key authority */
-+#endif
-+#ifdef CONFIG_SECURITY
-+	void		*security;	/* subjective LSM security */
-+#endif
-+	struct user_struct *user;	/* real user ID subscription */
-+	struct group_info *group_info;	/* supplementary groups for euid/fsgid */
-+	spinlock_t	lock;		/* lock for pointer changes */
++
++#define FSCACHE_DEBUG_LEVEL CACHE
++#include <linux/module.h>
++#include <linux/slab.h>
++#include "fsc-internal.h"
++
++LIST_HEAD(fscache_cache_list);
++DECLARE_RWSEM(fscache_addremove_sem);
++DECLARE_WAIT_QUEUE_HEAD(fscache_clearance_wq);
++static LIST_HEAD(fscache_cache_tag_list);
++static LIST_HEAD(fscache_netfs_list);
++
++static struct sysfs_ops fscache_cache_sysfs_ops = {
 +};
 +
-+#define current_fsuid() (current->act_as->fsuid)
-+#define current_fsgid() (current->act_as->fsgid)
-+#define current_cap()	(current->act_as->cap_effective)
++static struct kobj_type fscache_cache_ktype = {
++	.sysfs_ops	= &fscache_cache_sysfs_ops,
++};
 +
-+
- struct backing_dev_info;
- struct reclaim_state;
- 
-@@ -802,6 +859,7 @@ struct group_info {
- extern struct group_info *groups_alloc(int gidsetsize);
- extern void groups_free(struct group_info *group_info);
- extern int set_current_groups(struct group_info *group_info);
-+extern int set_groups(struct task_security *sec, struct group_info *group_info);
- extern int groups_search(struct group_info *group_info, gid_t grp);
- /* access the groups "array" with this macro */
- #define GROUP_AT(gi, i) \
-@@ -1025,17 +1083,10 @@ struct task_struct {
- 	struct list_head cpu_timers[3];
- 
- /* process credentials */
--	uid_t uid,euid,suid,fsuid;
--	gid_t gid,egid,sgid,fsgid;
--	struct group_info *group_info;
--	kernel_cap_t   cap_effective, cap_inheritable, cap_permitted;
--	unsigned keep_capabilities:1;
--	struct user_struct *user;
--#ifdef CONFIG_KEYS
--	struct key *request_key_auth;	/* assumed request_key authority */
--	struct key *thread_keyring;	/* keyring private to this thread */
--	unsigned char jit_keyring;	/* default keyring to attach requested keys to */
--#endif
-+	struct task_security __temp_sec __deprecated; /* temporary security to be removed */
-+	struct task_security *sec;	/* actual/objective task security */
-+	struct task_security *act_as;	/* effective/subjective task security */
-+
- 	char comm[TASK_COMM_LEN]; /* executable name excluding path
- 				     - access with [gs]et_task_comm (which lock
- 				       it with task_lock())
-@@ -1067,9 +1118,6 @@ struct task_struct {
- 	int (*notifier)(void *priv);
- 	void *notifier_data;
- 	sigset_t *notifier_mask;
--#ifdef CONFIG_SECURITY
--	void *security;
--#endif
- 	struct audit_context *audit_context;
- 	seccomp_t seccomp;
- 
-@@ -1180,9 +1228,6 @@ struct task_struct {
- 	struct prop_local_single dirties;
- };
- 
--#define current_fsuid() (current->fsuid)
--#define current_fsgid() (current->fsgid)
--
- /*
-  * Priority of a process goes from 0..MAX_PRIO-1, valid RT
-  * priority is 0..MAX_RT_PRIO-1, and SCHED_NORMAL/SCHED_BATCH
-diff --git a/include/net/scm.h b/include/net/scm.h
-index 06df126..b133114 100644
---- a/include/net/scm.h
-+++ b/include/net/scm.h
-@@ -54,8 +54,8 @@ static __inline__ int scm_send(struct socket *sock, struct msghdr *msg,
- 			       struct scm_cookie *scm)
- {
- 	struct task_struct *p = current;
--	scm->creds.uid = p->uid;
--	scm->creds.gid = p->gid;
-+	scm->creds.uid = p->sec->uid;
-+	scm->creds.gid = p->sec->gid;
- 	scm->creds.pid = task_tgid_vnr(p);
- 	scm->fp = NULL;
- 	scm->seq = 0;
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index 590045a..43a3228 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -118,7 +118,7 @@ static struct inode *mqueue_get_inode(struct super_block *sb, int mode,
- 		if (S_ISREG(mode)) {
- 			struct mqueue_inode_info *info;
- 			struct task_struct *p = current;
--			struct user_struct *u = p->user;
-+			struct user_struct *u = p->sec->user;
- 			unsigned long mq_bytes, mq_msg_tblsz;
- 
- 			inode->i_fop = &mqueue_file_operations;
-@@ -511,7 +511,7 @@ static void __do_notify(struct mqueue_inode_info *info)
- 			sig_i.si_code = SI_MESGQ;
- 			sig_i.si_value = info->notify.sigev_value;
- 			sig_i.si_pid = task_pid_vnr(current);
--			sig_i.si_uid = current->uid;
-+			sig_i.si_uid = current->act_as->uid;
- 
- 			kill_pid_info(info->notify.sigev_signo,
- 				      &sig_i, info->notify_owner);
-diff --git a/ipc/msg.c b/ipc/msg.c
-index fdf3db5..83c7a29 100644
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -551,8 +551,8 @@ asmlinkage long sys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf)
- 	}
- 
- 	err = -EPERM;
--	if (current->euid != ipcp->cuid &&
--	    current->euid != ipcp->uid && !capable(CAP_SYS_ADMIN))
-+	if (current->act_as->euid != ipcp->cuid &&
-+	    current->act_as->euid != ipcp->uid && !capable(CAP_SYS_ADMIN))
- 		/* We _could_ check for CAP_CHOWN above, but we don't */
- 		goto out_unlock_up;
- 
-diff --git a/ipc/sem.c b/ipc/sem.c
-index 35952c0..35736f5 100644
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -924,8 +924,8 @@ static int semctl_down(struct ipc_namespace *ns, int semid, int semnum,
- 		if (err)
- 			goto out_unlock;
- 	}
--	if (current->euid != ipcp->cuid && 
--	    current->euid != ipcp->uid && !capable(CAP_SYS_ADMIN)) {
-+	if (current->act_as->euid != ipcp->cuid &&
-+	    current->act_as->euid != ipcp->uid && !capable(CAP_SYS_ADMIN)) {
- 	    	err=-EPERM;
- 		goto out_unlock;
- 	}
-diff --git a/ipc/shm.c b/ipc/shm.c
-index 3818fae..89e232e 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -417,7 +417,7 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
- 	if (shmflg & SHM_HUGETLB) {
- 		/* hugetlb_file_setup takes care of mlock user accounting */
- 		file = hugetlb_file_setup(name, size);
--		shp->mlock_user = current->user;
-+		shp->mlock_user = current->sec->user;
- 	} else {
- 		int acctflag = VM_ACCOUNT;
- 		/*
-@@ -770,8 +770,8 @@ asmlinkage long sys_shmctl (int shmid, int cmd, struct shmid_ds __user *buf)
- 
- 		if (!capable(CAP_IPC_LOCK)) {
- 			err = -EPERM;
--			if (current->euid != shp->shm_perm.uid &&
--			    current->euid != shp->shm_perm.cuid)
-+			if (current->act_as->euid != shp->shm_perm.uid &&
-+			    current->act_as->euid != shp->shm_perm.cuid)
- 				goto out_unlock;
- 			if (cmd == SHM_LOCK &&
- 			    !current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur)
-@@ -783,7 +783,7 @@ asmlinkage long sys_shmctl (int shmid, int cmd, struct shmid_ds __user *buf)
- 			goto out_unlock;
- 		
- 		if(cmd==SHM_LOCK) {
--			struct user_struct * user = current->user;
-+			struct user_struct *user = current->act_as->user;
- 			if (!is_file_hugepages(shp->shm_file)) {
- 				err = shmem_lock(shp->shm_file, 1, user);
- 				if (!err && !(shp->shm_perm.mode & SHM_LOCKED)){
-@@ -822,8 +822,8 @@ asmlinkage long sys_shmctl (int shmid, int cmd, struct shmid_ds __user *buf)
- 		if (err)
- 			goto out_unlock_up;
- 
--		if (current->euid != shp->shm_perm.uid &&
--		    current->euid != shp->shm_perm.cuid && 
-+		if (current->act_as->euid != shp->shm_perm.uid &&
-+		    current->act_as->euid != shp->shm_perm.cuid &&
- 		    !capable(CAP_SYS_ADMIN)) {
- 			err=-EPERM;
- 			goto out_unlock_up;
-@@ -862,8 +862,8 @@ asmlinkage long sys_shmctl (int shmid, int cmd, struct shmid_ds __user *buf)
- 		if (err)
- 			goto out_unlock_up;
- 		err=-EPERM;
--		if (current->euid != shp->shm_perm.uid &&
--		    current->euid != shp->shm_perm.cuid && 
-+		if (current->act_as->euid != shp->shm_perm.uid &&
-+		    current->act_as->euid != shp->shm_perm.cuid &&
- 		    !capable(CAP_SYS_ADMIN)) {
- 			goto out_unlock_up;
- 		}
-diff --git a/ipc/util.c b/ipc/util.c
-index 1aa0ebf..fc22a9c 100644
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -283,8 +283,8 @@ int ipc_addid(struct ipc_ids* ids, struct kern_ipc_perm* new, int size)
- 
- 	ids->in_use++;
- 
--	new->cuid = new->uid = current->euid;
--	new->gid = new->cgid = current->egid;
-+	new->cuid = new->uid = current->act_as->euid;
-+	new->gid = new->cgid = current->act_as->egid;
- 
- 	new->seq = ids->seq++;
- 	if(ids->seq > ids->seq_max)
-@@ -632,7 +632,8 @@ int ipcperms (struct kern_ipc_perm *ipcp, short flag)
- 		return err;
- 	requested_mode = (flag >> 6) | (flag >> 3) | flag;
- 	granted_mode = ipcp->mode;
--	if (current->euid == ipcp->cuid || current->euid == ipcp->uid)
-+	if (current->act_as->euid == ipcp->cuid ||
-+	    current->act_as->euid == ipcp->uid)
- 		granted_mode >>= 6;
- 	else if (in_group_p(ipcp->cgid) || in_group_p(ipcp->gid))
- 		granted_mode >>= 3;
-diff --git a/kernel/acct.c b/kernel/acct.c
-index 521dfa5..f2d1783 100644
---- a/kernel/acct.c
-+++ b/kernel/acct.c
-@@ -470,15 +470,15 @@ static void do_acct_process(struct file *file)
- 	do_div(elapsed, AHZ);
- 	ac.ac_btime = get_seconds() - elapsed;
- 	/* we really need to bite the bullet and change layout */
--	ac.ac_uid = current->uid;
--	ac.ac_gid = current->gid;
-+	ac.ac_uid = current->sec->uid;
-+	ac.ac_gid = current->sec->gid;
- #if ACCT_VERSION==2
- 	ac.ac_ahz = AHZ;
- #endif
- #if ACCT_VERSION==1 || ACCT_VERSION==2
- 	/* backward-compatible 16 bit fields */
--	ac.ac_uid16 = current->uid;
--	ac.ac_gid16 = current->gid;
-+	ac.ac_uid16 = current->sec->uid;
-+	ac.ac_gid16 = current->sec->gid;
- #endif
- #if ACCT_VERSION==3
- 	ac.ac_pid = current->tgid;
-diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index bce9ecd..46fe72a 100644
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -394,6 +394,7 @@ static int audit_filter_rules(struct task_struct *tsk,
- 			      struct audit_names *name,
- 			      enum audit_state *state)
- {
-+	struct task_security *sec = tsk->sec;
- 	int i, j, need_sid = 1;
- 	u32 sid;
- 
-@@ -413,28 +414,28 @@ static int audit_filter_rules(struct task_struct *tsk,
- 			}
- 			break;
- 		case AUDIT_UID:
--			result = audit_comparator(tsk->uid, f->op, f->val);
-+			result = audit_comparator(sec->uid, f->op, f->val);
- 			break;
- 		case AUDIT_EUID:
--			result = audit_comparator(tsk->euid, f->op, f->val);
-+			result = audit_comparator(sec->euid, f->op, f->val);
- 			break;
- 		case AUDIT_SUID:
--			result = audit_comparator(tsk->suid, f->op, f->val);
-+			result = audit_comparator(sec->suid, f->op, f->val);
- 			break;
- 		case AUDIT_FSUID:
--			result = audit_comparator(tsk->fsuid, f->op, f->val);
-+			result = audit_comparator(sec->fsuid, f->op, f->val);
- 			break;
- 		case AUDIT_GID:
--			result = audit_comparator(tsk->gid, f->op, f->val);
-+			result = audit_comparator(sec->gid, f->op, f->val);
- 			break;
- 		case AUDIT_EGID:
--			result = audit_comparator(tsk->egid, f->op, f->val);
-+			result = audit_comparator(sec->egid, f->op, f->val);
- 			break;
- 		case AUDIT_SGID:
--			result = audit_comparator(tsk->sgid, f->op, f->val);
-+			result = audit_comparator(sec->sgid, f->op, f->val);
- 			break;
- 		case AUDIT_FSGID:
--			result = audit_comparator(tsk->fsgid, f->op, f->val);
-+			result = audit_comparator(sec->fsgid, f->op, f->val);
- 			break;
- 		case AUDIT_PERS:
- 			result = audit_comparator(tsk->personality, f->op, f->val);
-@@ -997,6 +998,7 @@ static void audit_log_execve_info(struct audit_buffer *ab,
- 
- static void audit_log_exit(struct audit_context *context, struct task_struct *tsk)
- {
-+	struct task_security *sec = tsk->sec;
- 	int i, call_panic = 0;
- 	struct audit_buffer *ab;
- 	struct audit_aux_data *aux;
-@@ -1006,14 +1008,14 @@ static void audit_log_exit(struct audit_context *context, struct task_struct *ts
- 	context->pid = tsk->pid;
- 	if (!context->ppid)
- 		context->ppid = sys_getppid();
--	context->uid = tsk->uid;
--	context->gid = tsk->gid;
--	context->euid = tsk->euid;
--	context->suid = tsk->suid;
--	context->fsuid = tsk->fsuid;
--	context->egid = tsk->egid;
--	context->sgid = tsk->sgid;
--	context->fsgid = tsk->fsgid;
-+	context->uid = sec->uid;
-+	context->gid = sec->gid;
-+	context->euid = sec->euid;
-+	context->suid = sec->suid;
-+	context->fsuid = sec->fsuid;
-+	context->egid = sec->egid;
-+	context->sgid = sec->sgid;
-+	context->fsgid = sec->fsgid;
- 	context->personality = tsk->personality;
- 
- 	ab = audit_log_start(context, GFP_KERNEL, AUDIT_SYSCALL);
-@@ -1788,7 +1790,7 @@ int audit_set_loginuid(struct task_struct *task, uid_t loginuid)
- 			if (ab) {
- 				audit_log_format(ab, "login pid=%d uid=%u "
- 					"old auid=%u new auid=%u",
--					task->pid, task->uid,
-+					task->pid, task->sec->uid,
- 					context->loginuid, loginuid);
- 				audit_log_end(ab);
- 			}
-@@ -2219,7 +2221,7 @@ int __audit_signal_info(int sig, struct task_struct *t)
- 			if (ctx)
- 				audit_sig_uid = ctx->loginuid;
- 			else
--				audit_sig_uid = tsk->uid;
-+				audit_sig_uid = tsk->sec->uid;
- 			selinux_get_task_sid(tsk, &audit_sig_sid);
- 		}
- 		if (!audit_signals || audit_dummy_context())
-@@ -2274,7 +2276,7 @@ void audit_core_dumps(long signr)
- 	ab = audit_log_start(NULL, GFP_KERNEL, AUDIT_ANOM_ABEND);
- 	audit_log_format(ab, "auid=%u uid=%u gid=%u",
- 			audit_get_loginuid(current->audit_context),
--			current->uid, current->gid);
-+			current->sec->uid, current->sec->gid);
- 	selinux_get_task_sid(current, &sid);
- 	if (sid) {
- 		char *ctx = NULL;
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 1b85df5..0016012 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -1247,8 +1247,9 @@ static int attach_task_by_pid(struct cgroup *cgrp, char *pidbuf)
- 		get_task_struct(tsk);
- 		rcu_read_unlock();
- 
--		if ((current->euid) && (current->euid != tsk->uid)
--		    && (current->euid != tsk->suid)) {
-+		if (current->act_as->euid &&
-+		    current->act_as->euid != tsk->sec->uid &&
-+		    current->act_as->euid != tsk->sec->suid) {
- 			put_task_struct(tsk);
- 			return -EACCES;
- 		}
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 549c055..d793e22 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -147,7 +147,7 @@ void release_task(struct task_struct * p)
- 	struct task_struct *leader;
- 	int zap_leader;
- repeat:
--	atomic_dec(&p->user->processes);
-+	atomic_dec(&p->sec->user->processes);
- 	proc_flush_task(p);
- 	write_lock_irq(&tasklist_lock);
- 	ptrace_unlink(p);
-@@ -1198,7 +1198,7 @@ static int wait_task_zombie(struct task_struct *p, int noreap,
- 
- 	if (unlikely(noreap)) {
- 		pid_t pid = task_pid_nr_ns(p, ns);
--		uid_t uid = p->uid;
-+		uid_t uid = p->sec->uid;
- 		int exit_code = p->exit_code;
- 		int why, status;
- 
-@@ -1318,7 +1318,7 @@ static int wait_task_zombie(struct task_struct *p, int noreap,
- 	if (!retval && infop)
- 		retval = put_user(task_pid_nr_ns(p, ns), &infop->si_pid);
- 	if (!retval && infop)
--		retval = put_user(p->uid, &infop->si_uid);
-+		retval = put_user(p->sec->uid, &infop->si_uid);
- 	if (!retval)
- 		retval = task_pid_nr_ns(p, ns);
- 
-@@ -1381,7 +1381,7 @@ static int wait_task_stopped(struct task_struct *p, int delayed_group_leader,
- 	read_unlock(&tasklist_lock);
- 
- 	if (unlikely(noreap)) {
--		uid_t uid = p->uid;
-+		uid_t uid = p->sec->uid;
- 		int why = (p->ptrace & PT_PTRACED) ? CLD_TRAPPED : CLD_STOPPED;
- 
- 		exit_code = p->exit_code;
-@@ -1452,7 +1452,7 @@ bail_ref:
- 	if (!retval && infop)
- 		retval = put_user(pid, &infop->si_pid);
- 	if (!retval && infop)
--		retval = put_user(p->uid, &infop->si_uid);
-+		retval = put_user(p->sec->uid, &infop->si_uid);
- 	if (!retval)
- 		retval = pid;
- 	put_task_struct(p);
-@@ -1491,7 +1491,7 @@ static int wait_task_continued(struct task_struct *p, int noreap,
- 
- 	ns = current->nsproxy->pid_ns;
- 	pid = task_pid_nr_ns(p, ns);
--	uid = p->uid;
-+	uid = p->sec->uid;
- 	get_task_struct(p);
- 	read_unlock(&tasklist_lock);
- 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 8dd8ff2..6caab9a 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -122,8 +122,8 @@ void __put_task_struct(struct task_struct *tsk)
- 	WARN_ON(tsk == current);
- 
- 	security_task_free(tsk);
--	free_uid(tsk->user);
--	put_group_info(tsk->group_info);
-+	free_uid(tsk->__temp_sec.user);
-+	put_group_info(tsk->__temp_sec.group_info);
- 	delayacct_tsk_free(tsk);
- 
- 	if (!profile_handoff_task(tsk))
-@@ -1014,17 +1014,18 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	DEBUG_LOCKS_WARN_ON(!p->hardirqs_enabled);
- 	DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
- #endif
-+	p->act_as = p->sec = &p->__temp_sec;
- 	retval = -EAGAIN;
--	if (atomic_read(&p->user->processes) >=
-+	if (atomic_read(&p->sec->user->processes) >=
- 			p->signal->rlim[RLIMIT_NPROC].rlim_cur) {
- 		if (!capable(CAP_SYS_ADMIN) && !capable(CAP_SYS_RESOURCE) &&
--		    p->user != current->nsproxy->user_ns->root_user)
-+		    p->sec->user != current->nsproxy->user_ns->root_user)
- 			goto bad_fork_free;
- 	}
- 
--	atomic_inc(&p->user->__count);
--	atomic_inc(&p->user->processes);
--	get_group_info(p->group_info);
-+	atomic_inc(&p->sec->user->__count);
-+	atomic_inc(&p->sec->user->processes);
-+	get_group_info(p->sec->group_info);
- 
- 	/*
- 	 * If multiple threads are within copy_process(), then this check
-@@ -1080,7 +1081,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	p->real_start_time = p->start_time;
- 	monotonic_to_bootbased(&p->real_start_time);
- #ifdef CONFIG_SECURITY
--	p->security = NULL;
-+	p->sec->security = NULL;
- #endif
- 	p->io_context = NULL;
- 	p->audit_context = NULL;
-@@ -1350,9 +1351,9 @@ bad_fork_cleanup_cgroup:
- bad_fork_cleanup_put_domain:
- 	module_put(task_thread_info(p)->exec_domain->module);
- bad_fork_cleanup_count:
--	put_group_info(p->group_info);
--	atomic_dec(&p->user->processes);
--	free_uid(p->user);
-+	put_group_info(p->sec->group_info);
-+	atomic_dec(&p->sec->user->processes);
-+	free_uid(p->sec->user);
- bad_fork_free:
- 	free_task(p);
- fork_out:
-diff --git a/kernel/futex.c b/kernel/futex.c
-index db9824d..169bf75 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -444,7 +444,8 @@ static struct task_struct * futex_find_get_task(pid_t pid)
- 
- 	rcu_read_lock();
- 	p = find_task_by_vpid(pid);
--	if (!p || ((current->euid != p->euid) && (current->euid != p->uid)))
-+	if (!p || (current->act_as->euid != p->sec->euid &&
-+		   current->act_as->euid != p->sec->uid))
- 		p = ERR_PTR(-ESRCH);
- 	else
- 		get_task_struct(p);
-@@ -1889,8 +1890,9 @@ sys_get_robust_list(int pid, struct robust_list_head __user * __user *head_ptr,
- 		if (!p)
- 			goto err_unlock;
- 		ret = -EPERM;
--		if ((current->euid != p->euid) && (current->euid != p->uid) &&
--				!capable(CAP_SYS_PTRACE))
-+		if (current->act_as->euid != p->sec->euid &&
-+		    current->act_as->euid != p->sec->uid &&
-+		    !capable(CAP_SYS_PTRACE))
- 			goto err_unlock;
- 		head = p->robust_list;
- 		rcu_read_unlock();
-diff --git a/kernel/futex_compat.c b/kernel/futex_compat.c
-index 0a43def..ae41737 100644
---- a/kernel/futex_compat.c
-+++ b/kernel/futex_compat.c
-@@ -141,8 +141,9 @@ compat_sys_get_robust_list(int pid, compat_uptr_t __user *head_ptr,
- 		if (!p)
- 			goto err_unlock;
- 		ret = -EPERM;
--		if ((current->euid != p->euid) && (current->euid != p->uid) &&
--				!capable(CAP_SYS_PTRACE))
-+		if (current->act_as->euid != p->sec->euid &&
-+		    current->act_as->euid != p->sec->uid &&
-+		    !capable(CAP_SYS_PTRACE))
- 			goto err_unlock;
- 		head = p->compat_robust_list;
- 		read_unlock(&tasklist_lock);
-diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index c25db86..d1f3503 100644
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -122,6 +122,8 @@ int ptrace_check_attach(struct task_struct *child, int kill)
- 
- int __ptrace_may_attach(struct task_struct *task)
- {
-+	struct task_security *sec = current->act_as, *tsec = task->sec;
-+
- 	/* May we inspect the given task?
- 	 * This check is used both for attaching with ptrace
- 	 * and for allowing access to sensitive information in /proc.
-@@ -134,12 +136,12 @@ int __ptrace_may_attach(struct task_struct *task)
- 	/* Don't let security modules deny introspection */
- 	if (task == current)
- 		return 0;
--	if (((current->uid != task->euid) ||
--	     (current->uid != task->suid) ||
--	     (current->uid != task->uid) ||
--	     (current->gid != task->egid) ||
--	     (current->gid != task->sgid) ||
--	     (current->gid != task->gid)) && !capable(CAP_SYS_PTRACE))
-+	if (((sec->uid != tsec->euid) ||
-+	     (sec->uid != tsec->suid) ||
-+	     (sec->uid != tsec->uid) ||
-+	     (sec->gid != tsec->egid) ||
-+	     (sec->gid != tsec->sgid) ||
-+	     (sec->gid != tsec->gid)) && !capable(CAP_SYS_PTRACE))
- 		return -EPERM;
- 	smp_rmb();
- 	if (task->mm)
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e76b11c..a267272 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -204,7 +204,7 @@ static inline struct task_group *task_group(struct task_struct *p)
- 	struct task_group *tg;
- 
- #ifdef CONFIG_FAIR_USER_SCHED
--	tg = p->user->tg;
-+	tg = p->sec->user->tg;
- #elif defined(CONFIG_FAIR_CGROUP_SCHED)
- 	tg = container_of(task_subsys_state(p, cpu_cgroup_subsys_id),
- 				struct task_group, css);
-@@ -4311,8 +4311,8 @@ recheck:
- 			return -EPERM;
- 
- 		/* can't change other user's priorities */
--		if ((current->euid != p->euid) &&
--		    (current->euid != p->uid))
-+		if ((current->act_as->euid != p->sec->euid) &&
-+		    (current->act_as->euid != p->sec->uid))
- 			return -EPERM;
- 	}
- 
-@@ -4509,8 +4509,9 @@ long sched_setaffinity(pid_t pid, cpumask_t new_mask)
- 	read_unlock(&tasklist_lock);
- 
- 	retval = -EPERM;
--	if ((current->euid != p->euid) && (current->euid != p->uid) &&
--			!capable(CAP_SYS_NICE))
-+	if ((current->act_as->euid != p->sec->euid) &&
-+	    (current->act_as->euid != p->sec->uid) &&
-+	    !capable(CAP_SYS_NICE))
- 		goto out_unlock;
- 
- 	retval = security_task_setscheduler(p, 0, NULL);
-diff --git a/kernel/signal.c b/kernel/signal.c
-index afa4f78..5c093a0 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -174,7 +174,7 @@ static struct sigqueue *__sigqueue_alloc(struct task_struct *t, gfp_t flags,
- 	 * In order to avoid problems with "switch_user()", we want to make
- 	 * sure that the compiler doesn't re-load "t->user"
- 	 */
--	user = t->user;
-+	user = t->sec->user;
- 	barrier();
- 	atomic_inc(&user->sigpending);
- 	if (override_rlimit ||
-@@ -537,8 +537,10 @@ static int check_kill_permission(int sig, struct siginfo *info,
- 		error = -EPERM;
- 		if (((sig != SIGCONT) ||
- 			(task_session_nr(current) != task_session_nr(t)))
--		    && (current->euid ^ t->suid) && (current->euid ^ t->uid)
--		    && (current->uid ^ t->suid) && (current->uid ^ t->uid)
-+		    && (current->act_as->euid ^ t->sec->suid)
-+		    && (current->act_as->euid ^ t->sec->uid)
-+		    && (current->act_as->uid ^ t->sec->suid)
-+		    && (current->act_as->uid ^ t->sec->uid)
- 		    && !capable(CAP_KILL))
- 		return error;
- 	}
-@@ -695,7 +697,7 @@ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
- 			q->info.si_errno = 0;
- 			q->info.si_code = SI_USER;
- 			q->info.si_pid = task_pid_vnr(current);
--			q->info.si_uid = current->uid;
-+			q->info.si_uid = current->act_as->uid;
- 			break;
- 		case (unsigned long) SEND_SIG_PRIV:
- 			q->info.si_signo = sig;
-@@ -1111,8 +1113,8 @@ int kill_pid_info_as_uid(int sig, struct siginfo *info, struct pid *pid,
- 		goto out_unlock;
- 	}
- 	if ((info == SEND_SIG_NOINFO || (!is_si_special(info) && SI_FROMUSER(info)))
--	    && (euid != p->suid) && (euid != p->uid)
--	    && (uid != p->suid) && (uid != p->uid)) {
-+	    && (euid != p->sec->suid) && (euid != p->sec->uid)
-+	    && (uid != p->sec->suid) && (uid != p->sec->uid)) {
- 		ret = -EPERM;
- 		goto out_unlock;
- 	}
-@@ -1464,7 +1466,7 @@ void do_notify_parent(struct task_struct *tsk, int sig)
- 	info.si_pid = task_pid_nr_ns(tsk, tsk->parent->nsproxy->pid_ns);
- 	rcu_read_unlock();
- 
--	info.si_uid = tsk->uid;
-+	info.si_uid = tsk->sec->uid;
- 
- 	/* FIXME: find out whether or not this is supposed to be c*time. */
- 	info.si_utime = cputime_to_jiffies(cputime_add(tsk->utime,
-@@ -1535,7 +1537,7 @@ static void do_notify_parent_cldstop(struct task_struct *tsk, int why)
- 	info.si_pid = task_pid_nr_ns(tsk, tsk->parent->nsproxy->pid_ns);
- 	rcu_read_unlock();
- 
--	info.si_uid = tsk->uid;
-+	info.si_uid = tsk->sec->uid;
- 
- 	/* FIXME: find out whether or not this is supposed to be c*time. */
- 	info.si_utime = cputime_to_jiffies(tsk->utime);
-@@ -1661,7 +1663,7 @@ void ptrace_notify(int exit_code)
- 	info.si_signo = SIGTRAP;
- 	info.si_code = exit_code;
- 	info.si_pid = task_pid_vnr(current);
--	info.si_uid = current->uid;
-+	info.si_uid = current->sec->uid;
- 
- 	/* Let the debugger run.  */
- 	spin_lock_irq(&current->sighand->siglock);
-@@ -1831,7 +1833,7 @@ relock:
- 				info->si_errno = 0;
- 				info->si_code = SI_USER;
- 				info->si_pid = task_pid_vnr(current->parent);
--				info->si_uid = current->parent->uid;
-+				info->si_uid = current->parent->sec->uid;
- 			}
- 
- 			/* If the (new) signal is now blocked, requeue it.  */
-@@ -2218,7 +2220,7 @@ sys_kill(int pid, int sig)
- 	info.si_errno = 0;
- 	info.si_code = SI_USER;
- 	info.si_pid = task_tgid_vnr(current);
--	info.si_uid = current->uid;
-+	info.si_uid = current->act_as->uid;
- 
- 	return kill_something_info(sig, &info, pid);
- }
-@@ -2234,7 +2236,7 @@ static int do_tkill(int tgid, int pid, int sig)
- 	info.si_errno = 0;
- 	info.si_code = SI_TKILL;
- 	info.si_pid = task_tgid_vnr(current);
--	info.si_uid = current->uid;
-+	info.si_uid = current->act_as->uid;
- 
- 	read_lock(&tasklist_lock);
- 	p = find_task_by_vpid(pid);
-diff --git a/kernel/sys.c b/kernel/sys.c
-index d1fe71e..34cd59b 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -110,8 +110,8 @@ static int set_one_prio(struct task_struct *p, int niceval, int error)
- {
- 	int no_nice;
- 
--	if (p->uid != current->euid &&
--		p->euid != current->euid && !capable(CAP_SYS_NICE)) {
-+	if (p->sec->uid != current->act_as->euid &&
-+	    p->sec->euid != current->act_as->euid && !capable(CAP_SYS_NICE)) {
- 		error = -EPERM;
- 		goto out;
- 	}
-@@ -168,18 +168,19 @@ asmlinkage long sys_setpriority(int which, int who, int niceval)
- 			} while_each_pid_task(pgrp, PIDTYPE_PGID, p);
- 			break;
- 		case PRIO_USER:
--			user = current->user;
-+			user = current->sec->user;
- 			if (!who)
--				who = current->uid;
-+				who = current->sec->uid;
- 			else
--				if ((who != current->uid) && !(user = find_user(who)))
-+				if ((who != current->sec->uid) &&
-+				    !(user = find_user(who)))
- 					goto out_unlock;	/* No processes for this user */
- 
- 			do_each_thread(g, p)
--				if (p->uid == who)
-+				if (p->sec->uid == who)
- 					error = set_one_prio(p, niceval, error);
- 			while_each_thread(g, p);
--			if (who != current->uid)
-+			if (who != current->sec->uid)
- 				free_uid(user);		/* For find_user() */
- 			break;
- 	}
-@@ -230,21 +231,22 @@ asmlinkage long sys_getpriority(int which, int who)
- 			} while_each_pid_task(pgrp, PIDTYPE_PGID, p);
- 			break;
- 		case PRIO_USER:
--			user = current->user;
-+			user = current->sec->user;
- 			if (!who)
--				who = current->uid;
-+				who = current->sec->uid;
- 			else
--				if ((who != current->uid) && !(user = find_user(who)))
-+				if ((who != current->sec->uid) &&
-+				    !(user = find_user(who)))
- 					goto out_unlock;	/* No processes for this user */
- 
- 			do_each_thread(g, p)
--				if (p->uid == who) {
-+				if (p->sec->uid == who) {
- 					niceval = 20 - task_nice(p);
- 					if (niceval > retval)
- 						retval = niceval;
- 				}
- 			while_each_thread(g, p);
--			if (who != current->uid)
-+			if (who != current->sec->uid)
- 				free_uid(user);		/* for find_user() */
- 			break;
- 	}
-@@ -481,8 +483,9 @@ void ctrl_alt_del(void)
-  */
- asmlinkage long sys_setregid(gid_t rgid, gid_t egid)
- {
--	int old_rgid = current->gid;
--	int old_egid = current->egid;
-+	struct task_security *sec = current->sec;
-+	int old_rgid = sec->gid;
-+	int old_egid = sec->egid;
- 	int new_rgid = old_rgid;
- 	int new_egid = old_egid;
- 	int retval;
-@@ -493,7 +496,7 @@ asmlinkage long sys_setregid(gid_t rgid, gid_t egid)
- 
- 	if (rgid != (gid_t) -1) {
- 		if ((old_rgid == rgid) ||
--		    (current->egid==rgid) ||
-+		    (sec->egid == rgid) ||
- 		    capable(CAP_SETGID))
- 			new_rgid = rgid;
- 		else
-@@ -501,8 +504,8 @@ asmlinkage long sys_setregid(gid_t rgid, gid_t egid)
- 	}
- 	if (egid != (gid_t) -1) {
- 		if ((old_rgid == egid) ||
--		    (current->egid == egid) ||
--		    (current->sgid == egid) ||
-+		    (sec->egid == egid) ||
-+		    (sec->sgid == egid) ||
- 		    capable(CAP_SETGID))
- 			new_egid = egid;
- 		else
-@@ -514,10 +517,10 @@ asmlinkage long sys_setregid(gid_t rgid, gid_t egid)
- 	}
- 	if (rgid != (gid_t) -1 ||
- 	    (egid != (gid_t) -1 && egid != old_rgid))
--		current->sgid = new_egid;
--	current->fsgid = new_egid;
--	current->egid = new_egid;
--	current->gid = new_rgid;
-+		sec->sgid = new_egid;
-+	sec->fsgid = new_egid;
-+	sec->egid = new_egid;
-+	sec->gid = new_rgid;
- 	key_fsgid_changed(current);
- 	proc_id_connector(current, PROC_EVENT_GID);
- 	return 0;
-@@ -530,7 +533,8 @@ asmlinkage long sys_setregid(gid_t rgid, gid_t egid)
-  */
- asmlinkage long sys_setgid(gid_t gid)
- {
--	int old_egid = current->egid;
-+	struct task_security *sec = current->sec;
-+	int old_egid = sec->egid;
- 	int retval;
- 
- 	retval = security_task_setgid(gid, (gid_t)-1, (gid_t)-1, LSM_SETID_ID);
-@@ -542,13 +546,13 @@ asmlinkage long sys_setgid(gid_t gid)
- 			set_dumpable(current->mm, suid_dumpable);
- 			smp_wmb();
- 		}
--		current->gid = current->egid = current->sgid = current->fsgid = gid;
--	} else if ((gid == current->gid) || (gid == current->sgid)) {
-+		sec->gid = sec->egid = sec->sgid = sec->fsgid = gid;
-+	} else if ((gid == sec->gid) || (gid == sec->sgid)) {
- 		if (old_egid != gid) {
- 			set_dumpable(current->mm, suid_dumpable);
- 			smp_wmb();
- 		}
--		current->egid = current->fsgid = gid;
-+		sec->egid = sec->fsgid = gid;
- 	}
- 	else
- 		return -EPERM;
-@@ -579,7 +583,7 @@ static int set_user(uid_t new_ruid, int dumpclear)
- 		set_dumpable(current->mm, suid_dumpable);
- 		smp_wmb();
- 	}
--	current->uid = new_ruid;
-+	current->sec->uid = new_ruid;
- 	return 0;
- }
- 
-@@ -600,6 +604,7 @@ static int set_user(uid_t new_ruid, int dumpclear)
-  */
- asmlinkage long sys_setreuid(uid_t ruid, uid_t euid)
- {
-+	struct task_security *sec = current->sec;
- 	int old_ruid, old_euid, old_suid, new_ruid, new_euid;
- 	int retval;
- 
-@@ -607,14 +612,14 @@ asmlinkage long sys_setreuid(uid_t ruid, uid_t euid)
- 	if (retval)
- 		return retval;
- 
--	new_ruid = old_ruid = current->uid;
--	new_euid = old_euid = current->euid;
--	old_suid = current->suid;
-+	new_ruid = old_ruid = sec->uid;
-+	new_euid = old_euid = sec->euid;
-+	old_suid = sec->suid;
- 
- 	if (ruid != (uid_t) -1) {
- 		new_ruid = ruid;
- 		if ((old_ruid != ruid) &&
--		    (current->euid != ruid) &&
-+		    (sec->euid != ruid) &&
- 		    !capable(CAP_SETUID))
- 			return -EPERM;
- 	}
-@@ -622,8 +627,8 @@ asmlinkage long sys_setreuid(uid_t ruid, uid_t euid)
- 	if (euid != (uid_t) -1) {
- 		new_euid = euid;
- 		if ((old_ruid != euid) &&
--		    (current->euid != euid) &&
--		    (current->suid != euid) &&
-+		    (sec->euid != euid) &&
-+		    (sec->suid != euid) &&
- 		    !capable(CAP_SETUID))
- 			return -EPERM;
- 	}
-@@ -635,11 +640,11 @@ asmlinkage long sys_setreuid(uid_t ruid, uid_t euid)
- 		set_dumpable(current->mm, suid_dumpable);
- 		smp_wmb();
- 	}
--	current->fsuid = current->euid = new_euid;
-+	sec->fsuid = sec->euid = new_euid;
- 	if (ruid != (uid_t) -1 ||
- 	    (euid != (uid_t) -1 && euid != old_ruid))
--		current->suid = current->euid;
--	current->fsuid = current->euid;
-+		sec->suid = sec->euid;
-+	sec->fsuid = sec->euid;
- 
- 	key_fsuid_changed(current);
- 	proc_id_connector(current, PROC_EVENT_UID);
-@@ -662,7 +667,8 @@ asmlinkage long sys_setreuid(uid_t ruid, uid_t euid)
-  */
- asmlinkage long sys_setuid(uid_t uid)
- {
--	int old_euid = current->euid;
-+	struct task_security *sec = current->sec;
-+	int old_euid = sec->euid;
- 	int old_ruid, old_suid, new_suid;
- 	int retval;
- 
-@@ -670,23 +676,23 @@ asmlinkage long sys_setuid(uid_t uid)
- 	if (retval)
- 		return retval;
- 
--	old_ruid = current->uid;
--	old_suid = current->suid;
-+	old_ruid = sec->uid;
-+	old_suid = sec->suid;
- 	new_suid = old_suid;
- 	
- 	if (capable(CAP_SETUID)) {
- 		if (uid != old_ruid && set_user(uid, old_euid != uid) < 0)
- 			return -EAGAIN;
- 		new_suid = uid;
--	} else if ((uid != current->uid) && (uid != new_suid))
-+	} else if ((uid != sec->uid) && (uid != new_suid))
- 		return -EPERM;
- 
- 	if (old_euid != uid) {
- 		set_dumpable(current->mm, suid_dumpable);
- 		smp_wmb();
- 	}
--	current->fsuid = current->euid = uid;
--	current->suid = new_suid;
-+	sec->fsuid = sec->euid = uid;
-+	sec->suid = new_suid;
- 
- 	key_fsuid_changed(current);
- 	proc_id_connector(current, PROC_EVENT_UID);
-@@ -701,9 +707,10 @@ asmlinkage long sys_setuid(uid_t uid)
-  */
- asmlinkage long sys_setresuid(uid_t ruid, uid_t euid, uid_t suid)
- {
--	int old_ruid = current->uid;
--	int old_euid = current->euid;
--	int old_suid = current->suid;
-+	struct task_security *sec = current->sec;
-+	int old_ruid = sec->uid;
-+	int old_euid = sec->euid;
-+	int old_suid = sec->suid;
- 	int retval;
- 
- 	retval = security_task_setuid(ruid, euid, suid, LSM_SETID_RES);
-@@ -711,30 +718,31 @@ asmlinkage long sys_setresuid(uid_t ruid, uid_t euid, uid_t suid)
- 		return retval;
- 
- 	if (!capable(CAP_SETUID)) {
--		if ((ruid != (uid_t) -1) && (ruid != current->uid) &&
--		    (ruid != current->euid) && (ruid != current->suid))
-+		if ((ruid != (uid_t) -1) && (ruid != sec->uid) &&
-+		    (ruid != sec->euid) && (ruid != sec->suid))
- 			return -EPERM;
--		if ((euid != (uid_t) -1) && (euid != current->uid) &&
--		    (euid != current->euid) && (euid != current->suid))
-+		if ((euid != (uid_t) -1) && (euid != sec->uid) &&
-+		    (euid != sec->euid) && (euid != sec->suid))
- 			return -EPERM;
--		if ((suid != (uid_t) -1) && (suid != current->uid) &&
--		    (suid != current->euid) && (suid != current->suid))
-+		if ((suid != (uid_t) -1) && (suid != sec->uid) &&
-+		    (suid != sec->euid) && (suid != sec->suid))
- 			return -EPERM;
- 	}
- 	if (ruid != (uid_t) -1) {
--		if (ruid != current->uid && set_user(ruid, euid != current->euid) < 0)
-+		if (ruid != sec->uid &&
-+		    set_user(ruid, euid != sec->euid) < 0)
- 			return -EAGAIN;
- 	}
- 	if (euid != (uid_t) -1) {
--		if (euid != current->euid) {
-+		if (euid != sec->euid) {
- 			set_dumpable(current->mm, suid_dumpable);
- 			smp_wmb();
- 		}
--		current->euid = euid;
-+		sec->euid = euid;
- 	}
--	current->fsuid = current->euid;
-+	sec->fsuid = sec->euid;
- 	if (suid != (uid_t) -1)
--		current->suid = suid;
-+		sec->suid = suid;
- 
- 	key_fsuid_changed(current);
- 	proc_id_connector(current, PROC_EVENT_UID);
-@@ -744,11 +752,12 @@ asmlinkage long sys_setresuid(uid_t ruid, uid_t euid, uid_t suid)
- 
- asmlinkage long sys_getresuid(uid_t __user *ruid, uid_t __user *euid, uid_t __user *suid)
- {
-+	struct task_security *sec = current->sec;
- 	int retval;
- 
--	if (!(retval = put_user(current->uid, ruid)) &&
--	    !(retval = put_user(current->euid, euid)))
--		retval = put_user(current->suid, suid);
-+	if (!(retval = put_user(sec->uid, ruid)) &&
-+	    !(retval = put_user(sec->euid, euid)))
-+		retval = put_user(sec->suid, suid);
- 
- 	return retval;
- }
-@@ -758,6 +767,7 @@ asmlinkage long sys_getresuid(uid_t __user *ruid, uid_t __user *euid, uid_t __us
-  */
- asmlinkage long sys_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
- {
-+	struct task_security *sec = current->sec;
- 	int retval;
- 
- 	retval = security_task_setgid(rgid, egid, sgid, LSM_SETID_RES);
-@@ -765,28 +775,28 @@ asmlinkage long sys_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
- 		return retval;
- 
- 	if (!capable(CAP_SETGID)) {
--		if ((rgid != (gid_t) -1) && (rgid != current->gid) &&
--		    (rgid != current->egid) && (rgid != current->sgid))
-+		if ((rgid != (gid_t) -1) && (rgid != sec->gid) &&
-+		    (rgid != sec->egid) && (rgid != sec->sgid))
- 			return -EPERM;
--		if ((egid != (gid_t) -1) && (egid != current->gid) &&
--		    (egid != current->egid) && (egid != current->sgid))
-+		if ((egid != (gid_t) -1) && (egid != sec->gid) &&
-+		    (egid != sec->egid) && (egid != sec->sgid))
- 			return -EPERM;
--		if ((sgid != (gid_t) -1) && (sgid != current->gid) &&
--		    (sgid != current->egid) && (sgid != current->sgid))
-+		if ((sgid != (gid_t) -1) && (sgid != sec->gid) &&
-+		    (sgid != sec->egid) && (sgid != sec->sgid))
- 			return -EPERM;
- 	}
- 	if (egid != (gid_t) -1) {
--		if (egid != current->egid) {
-+		if (egid != sec->egid) {
- 			set_dumpable(current->mm, suid_dumpable);
- 			smp_wmb();
- 		}
--		current->egid = egid;
-+		sec->egid = egid;
- 	}
--	current->fsgid = current->egid;
-+	sec->fsgid = sec->egid;
- 	if (rgid != (gid_t) -1)
--		current->gid = rgid;
-+		sec->gid = rgid;
- 	if (sgid != (gid_t) -1)
--		current->sgid = sgid;
-+		sec->sgid = sgid;
- 
- 	key_fsgid_changed(current);
- 	proc_id_connector(current, PROC_EVENT_GID);
-@@ -795,11 +805,12 @@ asmlinkage long sys_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
- 
- asmlinkage long sys_getresgid(gid_t __user *rgid, gid_t __user *egid, gid_t __user *sgid)
- {
-+	struct task_security *sec = current->sec;
- 	int retval;
- 
--	if (!(retval = put_user(current->gid, rgid)) &&
--	    !(retval = put_user(current->egid, egid)))
--		retval = put_user(current->sgid, sgid);
-+	if (!(retval = put_user(sec->gid, rgid)) &&
-+	    !(retval = put_user(sec->egid, egid)))
-+		retval = put_user(sec->sgid, sgid);
- 
- 	return retval;
- }
-@@ -813,20 +824,21 @@ asmlinkage long sys_getresgid(gid_t __user *rgid, gid_t __user *egid, gid_t __us
-  */
- asmlinkage long sys_setfsuid(uid_t uid)
- {
-+	struct task_security *sec = current->sec;
- 	int old_fsuid;
- 
--	old_fsuid = current->fsuid;
-+	old_fsuid = sec->fsuid;
- 	if (security_task_setuid(uid, (uid_t)-1, (uid_t)-1, LSM_SETID_FS))
- 		return old_fsuid;
- 
--	if (uid == current->uid || uid == current->euid ||
--	    uid == current->suid || uid == current->fsuid || 
-+	if (uid == sec->uid || uid == sec->euid ||
-+	    uid == sec->suid || uid == sec->fsuid ||
- 	    capable(CAP_SETUID)) {
- 		if (uid != old_fsuid) {
- 			set_dumpable(current->mm, suid_dumpable);
- 			smp_wmb();
- 		}
--		current->fsuid = uid;
-+		sec->fsuid = uid;
- 	}
- 
- 	key_fsuid_changed(current);
-@@ -842,20 +854,21 @@ asmlinkage long sys_setfsuid(uid_t uid)
-  */
- asmlinkage long sys_setfsgid(gid_t gid)
- {
-+	struct task_security *sec = current->sec;
- 	int old_fsgid;
- 
--	old_fsgid = current->fsgid;
-+	old_fsgid = sec->fsgid;
- 	if (security_task_setgid(gid, (gid_t)-1, (gid_t)-1, LSM_SETID_FS))
- 		return old_fsgid;
- 
--	if (gid == current->gid || gid == current->egid ||
--	    gid == current->sgid || gid == current->fsgid || 
-+	if (gid == sec->gid || gid == sec->egid ||
-+	    gid == sec->sgid || gid == sec->fsgid ||
- 	    capable(CAP_SETGID)) {
- 		if (gid != old_fsgid) {
- 			set_dumpable(current->mm, suid_dumpable);
- 			smp_wmb();
- 		}
--		current->fsgid = gid;
-+		sec->fsgid = gid;
- 		key_fsgid_changed(current);
- 		proc_id_connector(current, PROC_EVENT_GID);
- 	}
-@@ -1232,8 +1245,15 @@ int groups_search(struct group_info *group_info, gid_t grp)
- 	return 0;
- }
- 
--/* validate and set current->group_info */
--int set_current_groups(struct group_info *group_info)
-+/**
-+ * set_groups - Change a group subscription in a security record
-+ * @sec: The security record to alter
-+ * @group_info: The group list to impose
-+ *
-+ * Validate a group subscription and, if valid, impose it upon a task security
-+ * record.
++/*
++ * look up a cache tag
 + */
-+int set_groups(struct task_security *sec, struct group_info *group_info)
- {
- 	int retval;
- 	struct group_info *old_info;
-@@ -1245,20 +1265,34 @@ int set_current_groups(struct group_info *group_info)
- 	groups_sort(group_info);
- 	get_group_info(group_info);
- 
--	task_lock(current);
--	old_info = current->group_info;
--	current->group_info = group_info;
--	task_unlock(current);
-+	spin_lock(&sec->lock);
-+	old_info = sec->group_info;
-+	sec->group_info = group_info;
-+	spin_unlock(&sec->lock);
- 
- 	put_group_info(old_info);
--
- 	return 0;
- }
- 
-+EXPORT_SYMBOL(set_groups);
-+
-+/**
-+ * set_current_groups - Change current's group subscription
-+ * @group_info: The group list to impose
-+ *
-+ * Validate a group subscription and, if valid, impose it upon current's task
-+ * security record.
-+ */
-+int set_current_groups(struct group_info *group_info)
++struct fscache_cache_tag *__fscache_lookup_cache_tag(const char *name)
 +{
-+	return set_groups(current->sec, group_info);
++	struct fscache_cache_tag *tag, *xtag;
++
++	/* firstly check for the existence of the tag under read lock */
++	down_read(&fscache_addremove_sem);
++
++	list_for_each_entry(tag, &fscache_cache_tag_list, link) {
++		if (strcmp(tag->name, name) == 0) {
++			atomic_inc(&tag->usage);
++			up_read(&fscache_addremove_sem);
++			return tag;
++		}
++	}
++
++	up_read(&fscache_addremove_sem);
++
++	/* the tag does not exist - create a candidate */
++	xtag = kzalloc(sizeof(*xtag) + strlen(name) + 1, GFP_KERNEL);
++	if (!xtag)
++		/* return a dummy tag if out of memory */
++		return ERR_PTR(-ENOMEM);
++
++	atomic_set(&xtag->usage, 1);
++	strcpy(xtag->name, name);
++
++	/* write lock, search again and add if still not present */
++	down_write(&fscache_addremove_sem);
++
++	list_for_each_entry(tag, &fscache_cache_tag_list, link) {
++		if (strcmp(tag->name, name) == 0) {
++			atomic_inc(&tag->usage);
++			up_write(&fscache_addremove_sem);
++			kfree(xtag);
++			return tag;
++		}
++	}
++
++	list_add_tail(&xtag->link, &fscache_cache_tag_list);
++	up_write(&fscache_addremove_sem);
++	return xtag;
 +}
 +
- EXPORT_SYMBOL(set_current_groups);
- 
- asmlinkage long sys_getgroups(int gidsetsize, gid_t __user *grouplist)
- {
-+	struct task_security *sec = current->sec;
- 	int i = 0;
- 
- 	/*
-@@ -1270,13 +1304,13 @@ asmlinkage long sys_getgroups(int gidsetsize, gid_t __user *grouplist)
- 		return -EINVAL;
- 
- 	/* no need to grab task_lock here; it cannot change */
--	i = current->group_info->ngroups;
-+	i = sec->group_info->ngroups;
- 	if (gidsetsize) {
- 		if (i > gidsetsize) {
- 			i = -EINVAL;
- 			goto out;
- 		}
--		if (groups_to_user(grouplist, current->group_info)) {
-+		if (groups_to_user(grouplist, sec->group_info)) {
- 			i = -EFAULT;
- 			goto out;
- 		}
-@@ -1320,9 +1354,10 @@ asmlinkage long sys_setgroups(int gidsetsize, gid_t __user *grouplist)
++/*
++ * release a reference to a cache tag
++ */
++void __fscache_release_cache_tag(struct fscache_cache_tag *tag)
++{
++	if (tag != ERR_PTR(-ENOMEM)) {
++		down_write(&fscache_addremove_sem);
++
++		if (atomic_dec_and_test(&tag->usage))
++			list_del_init(&tag->link);
++		else
++			tag = NULL;
++
++		up_write(&fscache_addremove_sem);
++
++		kfree(tag);
++	}
++}
++
++/*
++ * register a network filesystem for caching
++ */
++int __fscache_register_netfs(struct fscache_netfs *netfs)
++{
++	struct fscache_netfs *ptr;
++	int ret;
++
++	_enter("{%s}", netfs->name);
++
++	INIT_LIST_HEAD(&netfs->link);
++
++	/* allocate a cookie for the primary index */
++	netfs->primary_index =
++		kmem_cache_zalloc(fscache_cookie_jar, GFP_KERNEL);
++
++	if (!netfs->primary_index) {
++		_leave(" = -ENOMEM");
++		return -ENOMEM;
++	}
++
++	/* initialise the primary index cookie */
++	atomic_set(&netfs->primary_index->usage, 1);
++	atomic_set(&netfs->primary_index->n_children, 0);
++
++	netfs->primary_index->def		= &fscache_fsdef_netfs_def;
++	netfs->primary_index->parent		= &fscache_fsdef_index;
++	netfs->primary_index->netfs_data	= netfs;
++
++	atomic_inc(&netfs->primary_index->parent->usage);
++	atomic_inc(&netfs->primary_index->parent->n_children);
++
++	spin_lock_init(&netfs->primary_index->lock);
++	INIT_HLIST_HEAD(&netfs->primary_index->backing_objects);
++
++	/* check the netfs type is not already present */
++	down_write(&fscache_addremove_sem);
++
++	ret = -EEXIST;
++	list_for_each_entry(ptr, &fscache_netfs_list, link) {
++		if (strcmp(ptr->name, netfs->name) == 0)
++			goto already_registered;
++	}
++
++	list_add(&netfs->link, &fscache_netfs_list);
++	ret = 0;
++
++	printk(KERN_NOTICE "FS-Cache: Netfs '%s' registered for caching\n",
++	       netfs->name);
++
++already_registered:
++	up_write(&fscache_addremove_sem);
++
++	if (ret < 0) {
++		netfs->primary_index->parent = NULL;
++		__fscache_cookie_put(netfs->primary_index);
++		netfs->primary_index = NULL;
++	}
++
++	_leave(" = %d", ret);
++	return ret;
++}
++EXPORT_SYMBOL(__fscache_register_netfs);
++
++/*
++ * unregister a network filesystem from the cache
++ * - all cookies must have been released first
++ */
++void __fscache_unregister_netfs(struct fscache_netfs *netfs)
++{
++	_enter("{%s.%u}", netfs->name, netfs->version);
++
++	down_write(&fscache_addremove_sem);
++
++	list_del(&netfs->link);
++	fscache_relinquish_cookie(netfs->primary_index, 0);
++
++	up_write(&fscache_addremove_sem);
++
++	printk(KERN_NOTICE "FS-Cache: Netfs '%s' unregistered from caching\n",
++	       netfs->name);
++
++	_leave("");
++}
++EXPORT_SYMBOL(__fscache_unregister_netfs);
++
++/**
++ * fscache_init_cache - Initialise a cache record
++ * @cache: The cache record to be initialised
++ * @ops: The cache operations to be installed in that record
++ * @idfmt: Format string to define identifier
++ * @...: sprintf-style arguments
++ *
++ * Initialise a record of a cache and fill in the name.
++ *
++ * See Documentation/filesystems/caching/backend-api.txt for a complete
++ * description.
++ */
++void fscache_init_cache(struct fscache_cache *cache,
++			const struct fscache_cache_ops *ops,
++			const char *idfmt,
++			...)
++{
++	va_list va;
++
++	memset(cache, 0, sizeof(*cache));
++
++	cache->ops = ops;
++	cache->kobj.kset = &fscache_kset;
++	cache->kobj.ktype = &fscache_cache_ktype;
++
++	va_start(va, idfmt);
++	vsnprintf(cache->identifier, sizeof(cache->identifier), idfmt, va);
++	va_end(va);
++
++	INIT_LIST_HEAD(&cache->link);
++	INIT_LIST_HEAD(&cache->object_list);
++	spin_lock_init(&cache->object_list_lock);
++}
++EXPORT_SYMBOL(fscache_init_cache);
++
++/**
++ * fscache_add_cache - Declare a cache as being open for business
++ * @cache: The record describing the cache
++ * @ifsdef: The record of the cache object describing the top-level index
++ * @tagname: The tag describing this cache
++ *
++ * Add a cache to the system, making it available for netfs's to use.
++ *
++ * See Documentation/filesystems/caching/backend-api.txt for a complete
++ * description.
++ */
++int fscache_add_cache(struct fscache_cache *cache,
++		      struct fscache_object *ifsdef,
++		      const char *tagname)
++{
++	struct fscache_cache_tag *tag;
++	int ret;
++
++	BUG_ON(!cache->ops);
++	BUG_ON(!ifsdef);
++
++	/* make sure the worker threads are present */
++	down_write(&fscache_addremove_sem);
++	fscache_init_threads();
++	up_write(&fscache_addremove_sem);
++
++	cache->flags = 0;
++	ifsdef->event_mask = ULONG_MAX & ~(1 << FSCACHE_OBJECT_EV_CLEARED);
++	ifsdef->state = FSCACHE_OBJECT_ACTIVE;
++
++	if (!tagname)
++		tagname = cache->identifier;
++
++	BUG_ON(!tagname[0]);
++
++	_enter("{%s.%s},,%s", cache->ops->name, cache->identifier, tagname);
++
++	/* we use the cache tag to uniquely identify caches */
++	tag = __fscache_lookup_cache_tag(tagname);
++	if (IS_ERR(tag))
++		goto nomem;
++
++	if (test_and_set_bit(FSCACHE_TAG_RESERVED, &tag->flags))
++		goto tag_in_use;
++
++	ret = kobject_set_name(&cache->kobj, "%s", tagname);
++	if (ret < 0)
++		goto error;
++
++	ret = kobject_register(&cache->kobj);
++	if (ret < 0)
++		goto error;
++
++	if (!cache->ops->grab_object(ifsdef))
++		BUG();
++
++	ifsdef->cookie = &fscache_fsdef_index;
++	ifsdef->cache = cache;
++	cache->fsdef = ifsdef;
++
++	down_write(&fscache_addremove_sem);
++
++	tag->cache = cache;
++	cache->tag = tag;
++
++	/* add the cache to the list */
++	list_add(&cache->link, &fscache_cache_list);
++
++	/* add the cache's netfs definition index object to the cache's
++	 * list */
++	spin_lock(&cache->object_list_lock);
++	list_add_tail(&ifsdef->cache_link, &cache->object_list);
++	spin_unlock(&cache->object_list_lock);
++
++	/* add the cache's netfs definition index object to the top level index
++	 * cookie as a known backing object */
++	spin_lock(&fscache_fsdef_index.lock);
++
++	hlist_add_head(&ifsdef->cookie_link,
++		       &fscache_fsdef_index.backing_objects);
++
++	atomic_inc(&fscache_fsdef_index.usage);
++
++	/* done */
++	spin_unlock(&fscache_fsdef_index.lock);
++	up_write(&fscache_addremove_sem);
++
++	printk(KERN_NOTICE "FS-Cache: Cache \"%s\" added (type %s)\n",
++	       cache->tag->name, cache->ops->name);
++
++	_leave(" = 0 [%s]", cache->identifier);
++	return 0;
++
++tag_in_use:
++	printk(KERN_ERR "FS-Cache: Cache tag '%s' already in use\n", tagname);
++	__fscache_release_cache_tag(tag);
++	_leave(" = -EXIST");
++	return -EEXIST;
++
++error:
++	__fscache_release_cache_tag(tag);
++	_leave(" = %d", ret);
++	return ret;
++
++nomem:
++	_leave(" = -ENOMEM");
++	return -ENOMEM;
++}
++EXPORT_SYMBOL(fscache_add_cache);
++
++/*
++ * select a cache in which to store an object
++ * - the cache addremove semaphore must be at least read-locked by the caller
++ * - the object will never be an index
++ */
++struct fscache_cache *fscache_select_cache_for_object(
++	struct fscache_cookie *cookie)
++{
++	struct fscache_cache_tag *tag;
++	struct fscache_object *object;
++	struct fscache_cache *cache;
++
++	_enter("");
++
++	if (list_empty(&fscache_cache_list)) {
++		_leave(" = NULL [no cache]");
++		return NULL;
++	}
++
++	/* we check the parent to determine the cache to use */
++	spin_lock(&cookie->lock);
++
++	/* the first in the parent's backing list should be the preferred
++	 * cache */
++	if (!hlist_empty(&cookie->backing_objects)) {
++		object = hlist_entry(cookie->backing_objects.first,
++				     struct fscache_object, cookie_link);
++
++		cache = object->cache;
++		if (object->state >= FSCACHE_OBJECT_DYING ||
++		    test_bit(FSCACHE_IOERROR, &cache->flags))
++			cache = NULL;
++
++		spin_unlock(&cookie->lock);
++		_leave(" = %p [parent]", cache);
++		return cache;
++	}
++
++	/* the parent is unbacked */
++	if (cookie->def->type != FSCACHE_COOKIE_TYPE_INDEX) {
++		/* cookie not an index and is unbacked */
++		spin_unlock(&cookie->lock);
++		_leave(" = NULL [cookie ub,ni]");
++		return NULL;
++	}
++
++	spin_unlock(&cookie->lock);
++
++	if (!cookie->def->select_cache)
++		goto no_preference;
++
++	/* ask the netfs for its preference */
++	tag = cookie->def->select_cache(cookie->parent->netfs_data,
++					cookie->netfs_data);
++	if (!tag)
++		goto no_preference;
++
++	if (tag == ERR_PTR(-ENOMEM)) {
++		_leave(" = NULL [nomem tag]");
++		return NULL;
++	}
++
++	if (!tag->cache) {
++		_leave(" = NULL [unbacked tag]");
++		return NULL;
++	}
++
++	if (test_bit(FSCACHE_IOERROR, &tag->cache->flags))
++		return NULL;
++
++	_leave(" = %p [specific]", tag->cache);
++	return tag->cache;
++
++no_preference:
++	/* netfs has no preference - just select first cache */
++	cache = list_entry(fscache_cache_list.next,
++			   struct fscache_cache, link);
++	_leave(" = %p [first]", cache);
++	return cache;
++}
++
++/**
++ * fscache_io_error - Note a cache I/O error
++ * @cache: The record describing the cache
++ *
++ * Note that an I/O error occurred in a cache and that it should no longer be
++ * used for anything.  This also reports the error into the kernel log.
++ *
++ * See Documentation/filesystems/caching/backend-api.txt for a complete
++ * description.
++ */
++void fscache_io_error(struct fscache_cache *cache)
++{
++	set_bit(FSCACHE_IOERROR, &cache->flags);
++
++	printk(KERN_ERR "FS-Cache: Cache %s stopped due to I/O error\n",
++	       cache->ops->name);
++}
++EXPORT_SYMBOL(fscache_io_error);
++
++/**
++ * fscache_withdraw_cache - Withdraw a cache from the active service
++ * @cache: The record describing the cache
++ *
++ * Withdraw a cache from service, unbinding all its cache objects from the
++ * netfs cookies they're currently representing.
++ *
++ * See Documentation/filesystems/caching/backend-api.txt for a complete
++ * description.
++ */
++void fscache_withdraw_cache(struct fscache_cache *cache)
++{
++	struct fscache_object *object;
++	LIST_HEAD(object_list);
++
++	_enter("");
++
++	printk(KERN_NOTICE "FS-Cache: Withdrawing cache \"%s\"\n",
++	       cache->tag->name);
++
++	/* make the cache unavailable for cookie acquisition */
++	if (test_and_set_bit(FSCACHE_CACHE_WITHDRAWN, &cache->flags))
++		BUG();
++
++	down_write(&fscache_addremove_sem);
++	list_del_init(&cache->link);
++	cache->tag->cache = NULL;
++	up_write(&fscache_addremove_sem);
++
++	/* make sure all pages pinned by operations on behalf of the netfs are
++	 * written to disk */
++	cache->ops->sync_cache(cache);
++
++	/* dissociate all the netfs pages backed by this cache from the block
++	 * mappings in the cache */
++	cache->ops->dissociate_pages(cache);
++
++	/* we now have to destroy all the active objects pertaining to this
++	 * cache - which we do by passing them off to thread pool to dispose
++	 * of */
++	_debug("destroy");
++
++	spin_lock(&cache->object_list_lock);
++
++	while (!list_empty(&cache->object_list)) {
++		object = list_entry(cache->object_list.next,
++				    struct fscache_object, cache_link);
++		list_move_tail(&object->cache_link, &object_list);
++
++		_debug("withdraw %p", object->cookie);
++
++		spin_lock(&object->lock);
++		spin_unlock(&cache->object_list_lock);
++		fscache_raise_event(object, FSCACHE_OBJECT_EV_WITHDRAW);
++		spin_unlock(&object->lock);
++
++		cond_resched();
++		spin_lock(&cache->object_list_lock);
++	}
++
++	spin_unlock(&cache->object_list_lock);
++
++	/* wait for all extant objects to finish their outstanding operations
++	 * and go away */
++	_debug("wait for finish");
++	wait_event(fscache_clearance_wq,
++		   atomic_read(&cache->thread_usage) == 0);
++	_debug("wait for clearance");
++	wait_event(fscache_clearance_wq,
++		   list_empty(&cache->object_list));
++	_debug("cleared");
++
++	kobject_unregister(&cache->kobj);
++
++	clear_bit(FSCACHE_TAG_RESERVED, &cache->tag->flags);
++	fscache_release_cache_tag(cache->tag);
++	cache->tag = NULL;
++
++	_leave("");
++}
++EXPORT_SYMBOL(fscache_withdraw_cache);
+diff --git a/fs/fscache/fsc-cookie.c b/fs/fscache/fsc-cookie.c
+new file mode 100644
+index 0000000..41e5c4b
+--- /dev/null
++++ b/fs/fscache/fsc-cookie.c
+@@ -0,0 +1,490 @@
++/* netfs cookie management
++ *
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define FSCACHE_DEBUG_LEVEL COOKIE
++#include <linux/module.h>
++#include <linux/slab.h>
++#include "fsc-internal.h"
++
++struct kmem_cache *fscache_cookie_jar;
++
++static atomic_t fscache_object_debug_id = ATOMIC_INIT(0);
++
++static int fscache_acquire_non_index_cookie(struct fscache_cookie *cookie);
++static int fscache_alloc_object(struct fscache_cache *cache,
++				struct fscache_cookie *cookie);
++static int fscache_attach_object(struct fscache_cookie *cookie,
++				 struct fscache_object *object);
++
++/*
++ * initialise an cookie jar slab element prior to any use
++ */
++void fscache_cookie_init_once(struct kmem_cache *cachep, void *_cookie)
++{
++	struct fscache_cookie *cookie = _cookie;
++
++	memset(cookie, 0, sizeof(*cookie));
++	spin_lock_init(&cookie->lock);
++	INIT_HLIST_HEAD(&cookie->backing_objects);
++}
++
++/*
++ * request a cookie to represent an object (index, datafile, xattr, etc)
++ * - parent specifies the parent object
++ *   - the top level index cookie for each netfs is stored in the fscache_netfs
++ *     struct upon registration
++ * - def points to the definition
++ * - the netfs_data will be passed to the functions pointed to in *def
++ * - all attached caches will be searched to see if they contain this object
++ * - index objects aren't stored on disk until there's a dependent file that
++ *   needs storing
++ * - other objects are stored in a selected cache immediately, and all the
++ *   indices forming the path to it are instantiated if necessary
++ * - we never let on to the netfs about errors
++ *   - we may set a negative cookie pointer, but that's okay
++ */
++struct fscache_cookie *__fscache_acquire_cookie(struct fscache_cookie *parent,
++						const struct fscache_cookie_def *def,
++						void *netfs_data)
++{
++	struct fscache_cookie *cookie;
++
++	BUG_ON(!def);
++
++	_enter("{%s},{%s},%p",
++	       parent ? (char *) parent->def->name : "<no-parent>",
++	       def->name, netfs_data);
++
++	fscache_stat(&fscache_n_acquires);
++
++	/* if there's no parent cookie, then we don't create one here either */
++	if (!parent) {
++		fscache_stat(&fscache_n_acquires_null);
++		_leave(" [no parent]");
++		return NULL;
++	}
++
++	/* validate the definition */
++	BUG_ON(!def->get_key);
++	BUG_ON(!def->name[0]);
++
++	BUG_ON(def->type == FSCACHE_COOKIE_TYPE_INDEX &&
++	       parent->def->type != FSCACHE_COOKIE_TYPE_INDEX);
++
++	/* allocate and initialise a cookie */
++	cookie = kmem_cache_alloc(fscache_cookie_jar, GFP_KERNEL);
++	if (!cookie) {
++		fscache_stat(&fscache_n_acquires_oom);
++		_leave(" [ENOMEM]");
++		return NULL;
++	}
++
++	atomic_set(&cookie->usage, 1);
++	atomic_set(&cookie->n_children, 0);
++
++	atomic_inc(&parent->usage);
++	atomic_inc(&parent->n_children);
++
++	cookie->def		= def;
++	cookie->parent		= parent;
++	cookie->netfs_data	= netfs_data;
++	cookie->flags		= 0;
++
++	switch (cookie->def->type) {
++	case FSCACHE_COOKIE_TYPE_INDEX:
++		fscache_stat(&fscache_n_cookie_index);
++		break;
++	case FSCACHE_COOKIE_TYPE_DATAFILE:
++		fscache_stat(&fscache_n_cookie_data);
++		break;
++	default:
++		fscache_stat(&fscache_n_cookie_special);
++		break;
++	}
++
++	/* if the object is an index then we need do nothing more here - we
++	 * create indices on disk when we need them as an index may exist in
++	 * multiple caches */
++	if (cookie->def->type != FSCACHE_COOKIE_TYPE_INDEX) {
++		if (fscache_acquire_non_index_cookie(cookie) < 0) {
++			atomic_dec(&parent->n_children);
++			__fscache_cookie_put(cookie);
++			fscache_stat(&fscache_n_acquires_nobufs);
++			_leave(" = NULL");
++			return NULL;
++		}
++	}
++
++	fscache_stat(&fscache_n_acquires_ok);
++	_leave(" = %p", cookie);
++	return cookie;
++}
++EXPORT_SYMBOL(__fscache_acquire_cookie);
++
++/*
++ * acquire a non-index cookie
++ * - this must make sure the index chain is instantiated and instantiate the
++ *   object representation too
++ */
++static int fscache_acquire_non_index_cookie(struct fscache_cookie *cookie)
++{
++	struct fscache_object *object;
++	struct fscache_cache *cache;
++	uint64_t i_size;
++	int ret;
++
++	_enter("");
++
++	cookie->flags = 1 << FSCACHE_COOKIE_UNAVAILABLE;
++
++	/* now we need to see whether the backing objects for this cookie yet
++	 * exist, if not there'll be nothing to search */
++	down_read(&fscache_addremove_sem);
++
++	if (list_empty(&fscache_cache_list)) {
++		up_read(&fscache_addremove_sem);
++		_leave(" = 0 [no caches]");
++		return 0;
++	}
++
++	/* select a cache in which to store the object */
++	cache = fscache_select_cache_for_object(cookie->parent);
++	if (!cache) {
++		up_read(&fscache_addremove_sem);
++		fscache_stat(&fscache_n_acquires_no_cache);
++		_leave(" = -ENOMEDIUM [no cache]");
++		return -ENOMEDIUM;
++	}
++
++	_debug("cache %s", cache->tag->name);
++
++	cookie->flags =
++		(1 << FSCACHE_COOKIE_LOOKING_UP) |
++		(1 << FSCACHE_COOKIE_CREATING) |
++		(1 << FSCACHE_COOKIE_NO_DATA_YET);
++
++	/* ask the cache to allocate objects for this cookie and its parent
++	 * chain */
++	ret = fscache_alloc_object(cache, cookie);
++	if (ret < 0) {
++		up_read(&fscache_addremove_sem);
++		_leave(" = %d", ret);
++		return ret;
++	}
++
++	/* initiate the process of looking up all the objects in the chain */
++	cookie->def->get_attr(cookie->netfs_data, &i_size);
++
++	spin_lock(&cookie->lock);
++	if (hlist_empty(&cookie->backing_objects)) {
++		spin_unlock(&cookie->lock);
++		goto unavailable;
++	}
++
++	object = hlist_entry(cookie->backing_objects.first,
++			     struct fscache_object, cookie_link);
++
++	fscache_set_store_limit(object, i_size);
++	fscache_enqueue_object(object);
++	spin_unlock(&cookie->lock);
++
++	/* we may be required to wait for lookup to complete at this point */
++	if (!fscache_defer_lookup) {
++		_debug("non-deferred lookup %p", &cookie->flags);
++		wait_on_bit(&cookie->flags, FSCACHE_COOKIE_LOOKING_UP,
++			    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++		_debug("complete");
++		if (test_bit(FSCACHE_COOKIE_UNAVAILABLE, &cookie->flags))
++			goto unavailable;
++	}
++
++	up_read(&fscache_addremove_sem);
++	_leave(" = 0 [deferred]");
++	return 0;
++
++unavailable:
++	up_read(&fscache_addremove_sem);
++	_leave(" = -ENOBUFS");
++	return -ENOBUFS;
++}
++
++/*
++ * recursively allocate cache object records for a cookie/cache combination
++ * - caller must be holding the addremove sem
++ */
++static int fscache_alloc_object(struct fscache_cache *cache,
++				struct fscache_cookie *cookie)
++{
++	struct fscache_object *object;
++	struct hlist_node *_n;
++	int ret;
++
++	_enter("%p,%p{%s}", cache, cookie, cookie->def->name);
++
++	spin_lock(&cookie->lock);
++	hlist_for_each_entry(object, _n, &cookie->backing_objects,
++			     cookie_link) {
++		if (object->cache == cache)
++			goto object_already_extant;
++	}
++	spin_unlock(&cookie->lock);
++
++	/* ask the cache to allocate an object (we may end up with duplicate
++	 * objects at this stage, but we sort that out later) */
++	object = cache->ops->alloc_object(cache, cookie);
++	if (IS_ERR(object)) {
++		fscache_stat(&fscache_n_object_no_alloc);
++		ret = PTR_ERR(object);
++		goto error;
++	}
++
++	fscache_stat(&fscache_n_object_alloc);
++
++	object->debug_id = atomic_inc_return(&fscache_object_debug_id);
++
++	_debug("ALLOC OBJ%x: %s {%lx}",
++	       object->debug_id, cookie->def->name, object->events);
++
++	ret = fscache_alloc_object(cache, cookie->parent);
++	if (ret < 0)
++		goto error_put;
++
++	/* only attach if we managed to allocate all we needed, otherwise
++	 * discard the object we just allocated and instead use the one
++	 * attached to the cookie */
++	if (fscache_attach_object(cookie, object) < 0)
++		cache->ops->put_object(object);
++
++	_leave(" = 0");
++	return 0;
++
++object_already_extant:
++	ret = -ENOBUFS;
++	if (object->state >= FSCACHE_OBJECT_DYING) {
++		spin_unlock(&cookie->lock);
++		goto error;
++	}
++	spin_unlock(&cookie->lock);
++	_leave(" = 0 [found]");
++	return 0;
++
++error_put:
++	cache->ops->put_object(object);
++error:
++	_leave(" = %d", ret);
++	return ret;
++}
++
++/*
++ * attach a cache object to a cookie
++ */
++static int fscache_attach_object(struct fscache_cookie *cookie,
++				 struct fscache_object *object)
++{
++	struct fscache_object *p;
++	struct fscache_cache *cache = object->cache;
++	struct hlist_node *_n;
++	int ret;
++
++	_enter("{%s},{OBJ%x}", cookie->def->name, object->debug_id);
++
++	spin_lock(&cookie->lock);
++
++	/* there may be multiple initial creations of this object, but we only
++	 * want one */
++	ret = -EEXIST;
++	hlist_for_each_entry(p, _n, &cookie->backing_objects, cookie_link) {
++		if (p->cache == object->cache) {
++			if (p->state >= FSCACHE_OBJECT_DYING)
++				ret = -ENOBUFS;
++			goto cant_attach_object;
++		}
++	}
++
++	/* pin the parent object */
++	spin_lock_nested(&cookie->parent->lock, 1);
++	hlist_for_each_entry(p, _n, &cookie->parent->backing_objects,
++			     cookie_link) {
++		if (p->cache == object->cache) {
++			if (p->state >= FSCACHE_OBJECT_DYING) {
++				ret = -ENOBUFS;
++				spin_unlock(&cookie->parent->lock);
++				goto cant_attach_object;
++			}
++			object->parent = p;
++			spin_lock(&p->lock);
++			p->n_children++;
++			spin_unlock(&p->lock);
++			break;
++		}
++	}
++	spin_unlock(&cookie->parent->lock);
++
++	/* attach to the cache's object list */
++	if (list_empty(&object->cache_link)) {
++		spin_lock(&cache->object_list_lock);
++		list_add(&object->cache_link, &cache->object_list);
++		spin_unlock(&cache->object_list_lock);
++	}
++
++	/* attach to the cookie */
++	object->cookie = cookie;
++	atomic_inc(&cookie->usage);
++	hlist_add_head(&object->cookie_link, &cookie->backing_objects);
++	ret = 0;
++
++cant_attach_object:
++	spin_unlock(&cookie->lock);
++	_leave(" = %d", ret);
++	return ret;
++}
++
++/*
++ * update the index entries backing a cookie
++ */
++void __fscache_update_cookie(struct fscache_cookie *cookie)
++{
++	struct fscache_object *object;
++	struct hlist_node *_p;
++
++	fscache_stat(&fscache_n_updates);
++
++	if (!cookie) {
++		fscache_stat(&fscache_n_updates_null);
++		_leave(" [no cookie]");
++		return;
++	}
++
++	_enter("{%s}", cookie->def->name);
++
++	BUG_ON(!cookie->def->get_aux);
++
++	spin_lock(&cookie->lock);
++
++	/* update the index entry on disk in each cache backing this cookie */
++	hlist_for_each_entry(object, _p,
++			     &cookie->backing_objects, cookie_link) {
++		fscache_raise_event(object, FSCACHE_OBJECT_EV_UPDATE);
++	}
++
++	spin_unlock(&cookie->lock);
++	_leave("");
++}
++EXPORT_SYMBOL(__fscache_update_cookie);
++
++/*
++ * release a cookie back to the cache
++ * - the object will be marked as recyclable on disk if retire is true
++ * - all dependents of this cookie must have already been unregistered
++ *   (indices/files/pages)
++ */
++void __fscache_relinquish_cookie(struct fscache_cookie *cookie, int retire)
++{
++	struct fscache_cache *cache;
++	struct fscache_object *object;
++	unsigned long event;
++
++	fscache_stat(&fscache_n_relinquishes);
++
++	if (!cookie) {
++		fscache_stat(&fscache_n_relinquishes_null);
++		_leave(" [no cookie]");
++		return;
++	}
++
++	_enter("%p{%s,%p},%d",
++	       cookie, cookie->def->name, cookie->netfs_data, retire);
++
++	if (atomic_read(&cookie->n_children) != 0) {
++		printk(KERN_ERR "FS-Cache: Cookie '%s' still has children\n",
++		       cookie->def->name);
++		BUG();
++	}
++
++	/* wait for the cookie to finish being instantiated (or to fail) */
++	if (test_bit(FSCACHE_COOKIE_CREATING, &cookie->flags)) {
++		fscache_stat(&fscache_n_relinquishes_waitcrt);
++		wait_on_bit(&cookie->flags, FSCACHE_COOKIE_CREATING,
++			    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++	}
++
++	event = retire ? FSCACHE_OBJECT_EV_RETIRE : FSCACHE_OBJECT_EV_RELEASE;
++
++	/* detach pointers back to the netfs */
++	spin_lock(&cookie->lock);
++
++	cookie->netfs_data	= NULL;
++	cookie->def		= NULL;
++
++	/* break links with all the active objects */
++	while (!hlist_empty(&cookie->backing_objects)) {
++		object = hlist_entry(cookie->backing_objects.first,
++				     struct fscache_object,
++				     cookie_link);
++
++		_debug("RELEASE OBJ%x", object->debug_id);
++
++		/* detach each cache object from the object cookie */
++		spin_lock(&object->lock);
++		hlist_del_init(&object->cookie_link);
++
++		cache = object->cache;
++		object->cookie = NULL;
++		fscache_raise_event(object, event);
++		spin_unlock(&object->lock);
++
++		if (atomic_dec_and_test(&cookie->usage))
++			/* the cookie refcount shouldn't be reduced to 0 yet */
++			BUG();
++	}
++
++	spin_unlock(&cookie->lock);
++
++	if (cookie->parent) {
++		ASSERTCMP(atomic_read(&cookie->parent->usage), >, 0);
++		ASSERTCMP(atomic_read(&cookie->parent->n_children), >, 0);
++		atomic_dec(&cookie->parent->n_children);
++	}
++
++	/* finally dispose of the cookie */
++	ASSERTCMP(atomic_read(&cookie->usage), >, 0);
++	fscache_cookie_put(cookie);
++
++	_leave("");
++}
++EXPORT_SYMBOL(__fscache_relinquish_cookie);
++
++/*
++ * destroy a cookie
++ */
++void __fscache_cookie_put(struct fscache_cookie *cookie)
++{
++	struct fscache_cookie *parent;
++
++	_enter("%p", cookie);
++
++	for (;;) {
++		_debug("FREE COOKIE %p", cookie);
++		parent = cookie->parent;
++		BUG_ON(!hlist_empty(&cookie->backing_objects));
++		kmem_cache_free(fscache_cookie_jar, cookie);
++
++		if (!parent)
++			break;
++
++		cookie = parent;
++		BUG_ON(atomic_read(&cookie->usage) <= 0);
++		if (!atomic_dec_and_test(&cookie->usage))
++			break;
++	}
++
++	_leave("");
++}
+diff --git a/fs/fscache/fsc-fsdef.c b/fs/fscache/fsc-fsdef.c
+new file mode 100644
+index 0000000..e52fc61
+--- /dev/null
++++ b/fs/fscache/fsc-fsdef.c
+@@ -0,0 +1,112 @@
++/* Filesystem index definition
++ *
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define FSCACHE_DEBUG_LEVEL CACHE
++#include <linux/module.h>
++#include "fsc-internal.h"
++
++static uint16_t fscache_fsdef_netfs_get_key(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax);
++
++static uint16_t fscache_fsdef_netfs_get_aux(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax);
++
++static
++enum fscache_checkaux fscache_fsdef_netfs_check_aux(void *cookie_netfs_data,
++						    const void *data,
++						    uint16_t datalen);
++
++struct fscache_cookie_def fscache_fsdef_netfs_def = {
++	.name		= "FSDEF.netfs",
++	.type		= FSCACHE_COOKIE_TYPE_INDEX,
++	.get_key	= fscache_fsdef_netfs_get_key,
++	.get_aux	= fscache_fsdef_netfs_get_aux,
++	.check_aux	= fscache_fsdef_netfs_check_aux,
++};
++
++static struct fscache_cookie_def fscache_fsdef_index_def = {
++	.name		= ".FS-Cache",
++	.type		= FSCACHE_COOKIE_TYPE_INDEX,
++};
++
++struct fscache_cookie fscache_fsdef_index = {
++	.usage		= ATOMIC_INIT(1),
++	.lock		= __SPIN_LOCK_UNLOCKED(fscache_fsdef_index.lock),
++	.backing_objects = HLIST_HEAD_INIT,
++	.def		= &fscache_fsdef_index_def,
++};
++EXPORT_SYMBOL(fscache_fsdef_index);
++
++/*
++ * get the key data for an FSDEF index record
++ */
++static uint16_t fscache_fsdef_netfs_get_key(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax)
++{
++	const struct fscache_netfs *netfs = cookie_netfs_data;
++	unsigned klen;
++
++	_enter("{%s.%u},", netfs->name, netfs->version);
++
++	klen = strlen(netfs->name);
++	if (klen > bufmax)
++		return 0;
++
++	memcpy(buffer, netfs->name, klen);
++	return klen;
++}
++
++/*
++ * get the auxilliary data for an FSDEF index record
++ */
++static uint16_t fscache_fsdef_netfs_get_aux(const void *cookie_netfs_data,
++					    void *buffer, uint16_t bufmax)
++{
++	const struct fscache_netfs *netfs = cookie_netfs_data;
++	unsigned dlen;
++
++	_enter("{%s.%u},", netfs->name, netfs->version);
++
++	dlen = sizeof(uint32_t);
++	if (dlen > bufmax)
++		return 0;
++
++	memcpy(buffer, &netfs->version, dlen);
++	return dlen;
++}
++
++/*
++ * check that the version stored in the auxilliary data is correct
++ */
++static
++enum fscache_checkaux fscache_fsdef_netfs_check_aux(void *cookie_netfs_data,
++						    const void *data,
++						    uint16_t datalen)
++{
++	struct fscache_netfs *netfs = cookie_netfs_data;
++	uint32_t version;
++
++	_enter("{%s},,%hu", netfs->name, datalen);
++
++	if (datalen != sizeof(version)) {
++		_leave(" = OBSOLETE [dl=%d v=%zu]", datalen, sizeof(version));
++		return FSCACHE_CHECKAUX_OBSOLETE;
++	}
++
++	memcpy(&version, data, sizeof(version));
++	if (version != netfs->version) {
++		_leave(" = OBSOLETE [ver=%x net=%x]", version, netfs->version);
++		return FSCACHE_CHECKAUX_OBSOLETE;
++	}
++
++	_leave(" = OKAY");
++	return FSCACHE_CHECKAUX_OKAY;
++}
+diff --git a/fs/fscache/fsc-internal.h b/fs/fscache/fsc-internal.h
+new file mode 100644
+index 0000000..295dc95
+--- /dev/null
++++ b/fs/fscache/fsc-internal.h
+@@ -0,0 +1,376 @@
++/* Internal definitions for FS-Cache
++ *
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++/*
++ * Lock order, in the order in which multiple locks should be obtained:
++ * - fscache_addremove_sem
++ * - cookie->lock
++ * - cookie->parent->lock
++ * - cache->object_list_lock
++ * - object->lock
++ * - object->parent->lock
++ * - fscache_thread_lock
++ *
++ */
++
++#include <linux/fscache-cache.h>
++#include <linux/sched.h>
++
++#define FSCACHE_MIN_THREADS	4
++#define FSCACHE_MAX_THREADS	32
++
++/*
++ * fsc-cache.c
++ */
++extern struct list_head fscache_cache_list;
++extern struct rw_semaphore fscache_addremove_sem;
++extern wait_queue_head_t fscache_clearance_wq;
++
++extern struct fscache_cache *fscache_select_cache_for_object(
++	struct fscache_cookie *);
++
++/*
++ * fsc-cookie.c
++ */
++extern struct kmem_cache *fscache_cookie_jar;
++
++extern void fscache_cookie_init_once(struct kmem_cache *, void *);
++extern void __fscache_cookie_put(struct fscache_cookie *);
++
++/*
++ * fsc-fsdef.c
++ */
++extern struct fscache_cookie fscache_fsdef_index;
++extern struct fscache_cookie_def fscache_fsdef_netfs_def;
++
++/*
++ * fsc-main.c
++ */
++extern unsigned fscache_defer_lookup;
++extern unsigned fscache_defer_create;
++extern unsigned fscache_debug;
++extern struct kset fscache_kset;
++
++extern int fscache_wait_bit(void *);
++extern int fscache_wait_bit_interruptible(void *);
++
++/*
++ * fsc-object.c
++ */
++extern void fscache_object_state_machine(struct fscache_object *);
++extern void fscache_withdrawing_object(struct fscache_cache *,
++				       struct fscache_object *);
++
++/*
++ * fsc-stats.c
++ */
++#ifdef CONFIG_FSCACHE_STATS
++extern atomic_t fscache_n_ops_processed[FSCACHE_MAX_THREADS];
++extern atomic_t fscache_n_objs_processed[FSCACHE_MAX_THREADS];
++
++extern atomic_t fscache_n_op_pend;
++extern atomic_t fscache_n_op_run;
++extern atomic_t fscache_n_op_enqueue;
++extern atomic_t fscache_n_op_requeue;
++extern atomic_t fscache_n_op_release;
++
++extern atomic_t fscache_n_attr_changed;
++extern atomic_t fscache_n_attr_changed_ok;
++extern atomic_t fscache_n_attr_changed_nobufs;
++extern atomic_t fscache_n_attr_changed_nomem;
++extern atomic_t fscache_n_attr_changed_calls;
++
++extern atomic_t fscache_n_allocs;
++extern atomic_t fscache_n_allocs_ok;
++extern atomic_t fscache_n_allocs_wait;
++extern atomic_t fscache_n_allocs_nobufs;
++extern atomic_t fscache_n_alloc_ops;
++extern atomic_t fscache_n_alloc_op_waits;
++
++extern atomic_t fscache_n_retrievals;
++extern atomic_t fscache_n_retrievals_ok;
++extern atomic_t fscache_n_retrievals_wait;
++extern atomic_t fscache_n_retrievals_nodata;
++extern atomic_t fscache_n_retrievals_nobufs;
++extern atomic_t fscache_n_retrievals_intr;
++extern atomic_t fscache_n_retrievals_nomem;
++extern atomic_t fscache_n_retrieval_ops;
++extern atomic_t fscache_n_retrieval_op_waits;
++
++extern atomic_t fscache_n_stores;
++extern atomic_t fscache_n_stores_ok;
++extern atomic_t fscache_n_stores_again;
++extern atomic_t fscache_n_stores_nobufs;
++extern atomic_t fscache_n_stores_oom;
++extern atomic_t fscache_n_store_ops;
++extern atomic_t fscache_n_store_calls;
++
++extern atomic_t fscache_n_marks;
++extern atomic_t fscache_n_uncaches;
++
++extern atomic_t fscache_n_acquires;
++extern atomic_t fscache_n_acquires_null;
++extern atomic_t fscache_n_acquires_no_cache;
++extern atomic_t fscache_n_acquires_ok;
++extern atomic_t fscache_n_acquires_nobufs;
++extern atomic_t fscache_n_acquires_oom;
++
++extern atomic_t fscache_n_updates;
++extern atomic_t fscache_n_updates_null;
++extern atomic_t fscache_n_updates_run;
++
++extern atomic_t fscache_n_relinquishes;
++extern atomic_t fscache_n_relinquishes_null;
++extern atomic_t fscache_n_relinquishes_waitcrt;
++
++extern atomic_t fscache_n_cookie_index;
++extern atomic_t fscache_n_cookie_data;
++extern atomic_t fscache_n_cookie_special;
++
++extern atomic_t fscache_n_object_alloc;
++extern atomic_t fscache_n_object_no_alloc;
++extern atomic_t fscache_n_object_lookups;
++extern atomic_t fscache_n_object_lookups_negative;
++extern atomic_t fscache_n_object_lookups_positive;
++extern atomic_t fscache_n_object_created;
++extern atomic_t fscache_n_object_avail;
++extern atomic_t fscache_n_object_boosted;
++
++static inline void fscache_stat(atomic_t *stat)
++{
++	atomic_inc(stat);
++}
++#else
++
++#define fscache_stat(stat) do {} while (0)
++#endif
++
++#ifdef CONFIG_FSCACHE_HISTOGRAM
++extern atomic_t fscache_obj_instantiate_histogram[HZ];
++extern atomic_t fscache_objs_histogram[HZ];
++extern atomic_t fscache_ops_histogram[HZ];
++extern atomic_t fscache_retrieval_delay_histogram[HZ];
++extern atomic_t fscache_retrieval_histogram[HZ];
++
++static inline void fscache_hist(atomic_t histogram[], unsigned long start_jif)
++{
++	unsigned long jif = jiffies - start_jif;
++	if (jif >= HZ)
++		jif = HZ - 1;
++	atomic_inc(&histogram[jif]);
++}
++
++#else
++#define fscache_hist(hist, start_jif) do {} while (0)
++#endif
++
++#ifdef CONFIG_FSCACHE_PROC
++extern int __init fscache_proc_init(void);
++extern void fscache_proc_cleanup(void);
++#else
++#define fscache_proc_init()	(0)
++#define fscache_proc_cleanup()	do {} while (0)
++#endif
++
++/*
++ * fsc-threads.c
++ */
++extern void fscache_start_operations(struct fscache_object *);
++extern void fscache_enqueue_object(struct fscache_object *);
++extern void fscache_enqueue_dependents(struct fscache_object *);
++extern void fscache_dequeue_object(struct fscache_object *);
++extern void fscache_boost_object(struct fscache_object *);
++extern int fscache_init_threads(void);
++extern void fscache_kill_threads(void);
++
++/*
++ * raise an event on an object
++ * - if the event is not masked for that object, then the object is
++ *   queued for attention by the thread pool.
++ */
++static inline void fscache_raise_event(struct fscache_object *object,
++				       unsigned event)
++{
++	if (!test_and_set_bit(event, &object->events) &&
++	    test_bit(event, &object->event_mask))
++		fscache_enqueue_object(object);
++}
++
++/*
++ * drop a reference to a cookie
++ */
++static inline void fscache_cookie_put(struct fscache_cookie *cookie)
++{
++	BUG_ON(atomic_read(&cookie->usage) <= 0);
++	if (atomic_dec_and_test(&cookie->usage))
++		__fscache_cookie_put(cookie);
++}
++
++/*
++ * get an extra reference to a netfs retrieval context
++ */
++static inline
++void *fscache_get_context(struct fscache_cookie *cookie, void *context)
++{
++	if (cookie->def->get_context)
++		cookie->def->get_context(cookie->netfs_data, context);
++	return context;
++}
++
++/*
++ * release a reference to a netfs retrieval context
++ */
++static inline
++void fscache_put_context(struct fscache_cookie *cookie, void *context)
++{
++	if (cookie->def->put_context)
++		cookie->def->put_context(cookie->netfs_data, context);
++}
++
++/*****************************************************************************/
++/*
++ * debug tracing
++ */
++#define dbgprintk(FMT, ...) \
++	printk(KERN_DEBUG "[%-6.6s] "FMT"\n", current->comm, ##__VA_ARGS__)
++
++/* make sure we maintain the format strings, even when debugging is disabled */
++static inline __attribute__((format(printf, 1, 2)))
++void _dbprintk(const char *fmt, ...)
++{
++}
++
++#define kenter(FMT, ...) dbgprintk("==> %s("FMT")", __FUNCTION__, ##__VA_ARGS__)
++#define kleave(FMT, ...) dbgprintk("<== %s()"FMT"", __FUNCTION__, ##__VA_ARGS__)
++#define kdebug(FMT, ...) dbgprintk(FMT, ##__VA_ARGS__)
++
++#define kjournal(FMT, ...) _dbprintk(FMT, ##__VA_ARGS__)
++
++#ifdef __KDEBUG
++#define _enter(FMT, ...) kenter(FMT, ##__VA_ARGS__)
++#define _leave(FMT, ...) kleave(FMT, ##__VA_ARGS__)
++#define _debug(FMT, ...) kdebug(FMT, ##__VA_ARGS__)
++
++#elif defined(CONFIG_FSCACHE_DEBUG)
++#define _enter(FMT, ...)			\
++do {						\
++	if (__do_kdebug(ENTER))			\
++		kenter(FMT, ##__VA_ARGS__);	\
++} while (0)
++
++#define _leave(FMT, ...)			\
++do {						\
++	if (__do_kdebug(LEAVE))			\
++		kleave(FMT, ##__VA_ARGS__);	\
++} while (0)
++
++#define _debug(FMT, ...)			\
++do {						\
++	if (__do_kdebug(DEBUG))			\
++		kdebug(FMT, ##__VA_ARGS__);	\
++} while (0)
++
++#else
++#define _enter(FMT, ...) _dbprintk("==> %s("FMT")", __FUNCTION__, ##__VA_ARGS__)
++#define _leave(FMT, ...) _dbprintk("<== %s()"FMT"", __FUNCTION__, ##__VA_ARGS__)
++#define _debug(FMT, ...) _dbprintk(FMT, ##__VA_ARGS__)
++#endif
++
++/*
++ * determine whether a particular optional debugging point should be logged
++ * - we need to go through three steps to persuade cpp to correctly join the
++ *   shorthand in FSCACHE_DEBUG_LEVEL with its prefix
++ */
++#define ____do_kdebug(LEVEL, POINT) \
++	unlikely((fscache_debug & \
++		  (FSCACHE_POINT_##POINT << (FSCACHE_DEBUG_ ## LEVEL * 3))))
++#define ___do_kdebug(LEVEL, POINT) \
++	____do_kdebug(LEVEL, POINT)
++#define __do_kdebug(POINT) \
++	___do_kdebug(FSCACHE_DEBUG_LEVEL, POINT)
++
++#define FSCACHE_DEBUG_CACHE	0
++#define FSCACHE_DEBUG_COOKIE	1
++#define FSCACHE_DEBUG_PAGE	2
++#define FSCACHE_DEBUG_THREAD	3
++
++#define FSCACHE_POINT_ENTER	1
++#define FSCACHE_POINT_LEAVE	2
++#define FSCACHE_POINT_DEBUG	4
++
++#ifndef FSCACHE_DEBUG_LEVEL
++#define FSCACHE_DEBUG_LEVEL CACHE
++#endif
++
++/*
++ * assertions
++ */
++#if 1 /* defined(__KDEBUGALL) */
++
++#define ASSERT(X)							\
++do {									\
++	if (unlikely(!(X))) {						\
++		printk(KERN_ERR "\n");					\
++		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
++		BUG();							\
++	}								\
++} while (0)
++
++#define ASSERTCMP(X, OP, Y)						\
++do {									\
++	if (unlikely(!((X) OP (Y)))) {					\
++		printk(KERN_ERR "\n");					\
++		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
++		printk(KERN_ERR "%lx " #OP " %lx is false\n",		\
++		       (unsigned long)(X), (unsigned long)(Y));		\
++		BUG();							\
++	}								\
++} while (0)
++
++#define ASSERTIF(C, X)							\
++do {									\
++	if (unlikely((C) && !(X))) {					\
++		printk(KERN_ERR "\n");					\
++		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
++		BUG();							\
++	}								\
++} while (0)
++
++#define ASSERTIFCMP(C, X, OP, Y)					\
++do {									\
++	if (unlikely((C) && !((X) OP (Y)))) {				\
++		printk(KERN_ERR "\n");					\
++		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
++		printk(KERN_ERR "%lx " #OP " %lx is false\n",		\
++		       (unsigned long)(X), (unsigned long)(Y));		\
++		BUG();							\
++	}								\
++} while (0)
++
++#else
++
++#define ASSERT(X)				\
++do {						\
++} while (0)
++
++#define ASSERTCMP(X, OP, Y)			\
++do {						\
++} while (0)
++
++#define ASSERTIF(C, X)				\
++do {						\
++} while (0)
++
++#define ASSERTIFCMP(C, X, OP, Y)		\
++do {						\
++} while (0)
++
++#endif /* assert or not */
+diff --git a/fs/fscache/fsc-main.c b/fs/fscache/fsc-main.c
+new file mode 100644
+index 0000000..8ccced8
+--- /dev/null
++++ b/fs/fscache/fsc-main.c
+@@ -0,0 +1,133 @@
++/* General filesystem local caching manager
++ *
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define FSCACHE_DEBUG_LEVEL CACHE
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/sched.h>
++#include <linux/completion.h>
++#include <linux/slab.h>
++#include "fsc-internal.h"
++
++MODULE_DESCRIPTION("FS Cache Manager");
++MODULE_AUTHOR("Red Hat, Inc.");
++MODULE_LICENSE("GPL");
++
++unsigned fscache_defer_lookup = 1;
++module_param_named(defer_lookup, fscache_defer_lookup, uint,
++		   S_IWUSR | S_IRUGO);
++MODULE_PARM_DESC(fscache_defer_lookup,
++		 "Defer cookie lookup to background thread");
++
++unsigned fscache_defer_create = 1;
++module_param_named(defer_create, fscache_defer_create, uint,
++		   S_IWUSR | S_IRUGO);
++MODULE_PARM_DESC(fscache_defer_create,
++		 "Defer cookie creation to background thread");
++
++unsigned fscache_debug;
++module_param_named(debug, fscache_debug, uint,
++		   S_IWUSR | S_IRUGO);
++MODULE_PARM_DESC(fscache_debug,
++		 "FS-Cache debugging mask");
++
++static struct sysfs_ops fscache_sysfs_ops = {
++};
++
++static struct kobj_type fscache_ktype = {
++	.sysfs_ops	= &fscache_sysfs_ops,
++};
++
++struct kset fscache_kset = {
++	.kobj.k_name	= "fscache",
++	.kobj.kset	= &fs_subsys,
++	.ktype		= &fscache_ktype,
++};
++
++/*
++ * initialise the fs caching module
++ */
++static int __init fscache_init(void)
++{
++	int ret;
++
++	ret = fscache_proc_init();
++	if (ret < 0)
++		goto error_proc;
++
++	ret = fscache_init_threads();
++	if (ret < 0)
++		goto error_init_threads;
++
++	fscache_cookie_jar = kmem_cache_create("fscache_cookie_jar",
++					       sizeof(struct fscache_cookie),
++					       0,
++					       0,
++					       fscache_cookie_init_once);
++	if (!fscache_cookie_jar) {
++		printk(KERN_NOTICE
++		       "FS-Cache: Failed to allocate a cookie jar\n");
++		ret = -ENOMEM;
++		goto error_cookie_jar;
++	}
++
++	ret = kset_register(&fscache_kset);
++	if (ret < 0)
++		goto error_kset;
++
++	printk(KERN_NOTICE "FS-Cache: Loaded\n");
++	return 0;
++
++error_kset:
++	kmem_cache_destroy(fscache_cookie_jar);
++error_cookie_jar:
++	fscache_kill_threads();
++error_init_threads:
++	fscache_proc_cleanup();
++error_proc:
++	return ret;
++}
++
++fs_initcall(fscache_init);
++
++/*
++ * clean up on module removal
++ */
++static void __exit fscache_exit(void)
++{
++	_enter("");
++
++	kset_unregister(&fscache_kset);
++	kmem_cache_destroy(fscache_cookie_jar);
++	fscache_kill_threads();
++	fscache_proc_cleanup();
++	printk(KERN_NOTICE "FS-Cache: Unloaded\n");
++}
++
++module_exit(fscache_exit);
++
++/*
++ * wait_on_bit() sleep function for uninterruptible waiting
++ */
++int fscache_wait_bit(void *flags)
++{
++	schedule();
++	return 0;
++}
++
++/*
++ * wait_on_bit() sleep function for interruptible waiting
++ */
++int fscache_wait_bit_interruptible(void *flags)
++{
++	schedule();
++	return signal_pending(current);
++}
+diff --git a/fs/fscache/fsc-manage.c b/fs/fscache/fsc-manage.c
+new file mode 100644
+index 0000000..8b2802a
+--- /dev/null
++++ b/fs/fscache/fsc-manage.c
+@@ -0,0 +1,257 @@
++/* Manage cache objects
++ *
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define FSCACHE_DEBUG_LEVEL PAGE
++#include <linux/module.h>
++#include <linux/fscache-cache.h>
++#include <linux/buffer_head.h>
++#include <linux/pagevec.h>
++#include "fsc-internal.h"
++
++/*
++ * wait for a slow operation to float to the front of the op queue, then
++ * effectively suspend processing on this object till the calling process
++ * context has completed the operation
++ * - this prevents kfscached being hogged by a really slow op
++ */
++#if 0
++static int fscache_slow_op(struct fscache_object *object,
++			   struct fscache_operation *op)
++{
++	int ret;
++
++	kenter("");
++
++	if (test_and_clear_bit(FSCACHE_OP_WAITING, &op->flags))
++		wake_up_bit(&op->flags, FSCACHE_OP_WAITING);
++
++	if (test_bit(FSCACHE_OP_IN_PROGRESS, &op->flags))
++		ret = -EINPROGRESS;
++	else
++		ret = 0;
++
++	kleave(" = %d", ret);
++	return ret;
++}
++#endif
++
++/*
++ * reserve space for an object
++ */
++int __fscache_reserve_space(struct fscache_cookie *cookie, loff_t size)
++{
++#if 0
++	struct fscache_operation *op;
++	struct fscache_object *object;
++	int ret;
++
++	_enter("%p,%llu,", cookie, size);
++
++	ASSERTCMP(cookie->def->type, !=, FSCACHE_COOKIE_TYPE_INDEX);
++
++	op = kzalloc(sizeof(*op), GFP_KERNEL);
++	if (!op) {
++		_leave(" = -ENOMEM");
++		return -ENOMEM;
++	}
++
++	op->processor = fscache_slow_op;
++	__set_bit(FSCACHE_OP_WAITING, &op->flags);
++	__set_bit(FSCACHE_OP_IN_PROGRESS, &op->flags);
++
++	spin_lock(&cookie->lock);
++
++	ret = -ENOBUFS;
++	if (hlist_empty(&cookie->backing_objects))
++		goto error;
++	object = hlist_entry(cookie->backing_objects.first,
++			     struct fscache_object, cookie_link);
++	if (test_bit(FSCACHE_IOERROR, &object->cache->flags))
++		goto error;
++
++	ret = -EOPNOTSUPP;
++	if (!object->cache->ops->reserve_space)
++		goto error;
++
++	/* prevent the file from being uncached whilst we access it and exclude
++	 * write attempts on pages
++	 */
++	ret = -ENOBUFS;
++	if (!object->cache->ops->grab_object(object))
++		goto error;
++	list_add_tail(&op->link, &object->operations);
++
++	if (!test_and_set_bit(FSCACHE_OBJECT_BUSY, &object->flags))
++		queue_work(fscache_workqueue, &object->work);
++
++	spin_unlock(&cookie->lock);
++
++	/* wait for the operation queue to be whittled down */
++	if (wait_on_bit(&op->flags, FSCACHE_OP_WAITING,
++			fscache_wait_bit_interruptible, TASK_INTERRUPTIBLE
++			) < 0) {
++		/* we were interrupted */
++		spin_lock(&cookie->lock);
++		if (!test_and_clear_bit(FSCACHE_OP_WAITING, &op->flags))
++			queue_work(fscache_workqueue, &object->work);
++		if (!test_and_clear_bit(FSCACHE_OP_IN_PROGRESS, &op->flags))
++			BUG();
++		ret = -ERESTARTSYS;
++		goto out_locked;
++	}
++
++	/* okay - we're now in a position to make a reservation */
++	ret = -ENOBUFS;
++	if (test_bit(FSCACHE_OBJECT_ABORTED, &object->flags) ||
++	    test_bit(FSCACHE_IOERROR, &object->cache->flags))
++		goto out;
++
++	ret = -ERESTARTSYS;
++	if (signal_pending(current))
++		goto out;
++
++	/* ask the cache to honour the operation */
++	ret = object->cache->ops->reserve_space(object, size);
++
++out:
++	spin_lock(&cookie->lock);
++out_locked:
++	if (!test_and_clear_bit(FSCACHE_OP_IN_PROGRESS, &op->flags))
++		BUG();
++	queue_work(fscache_workqueue, &object->work);
++	spin_unlock(&cookie->lock);
++
++	kleave(" = %d", ret);
++	return ret;
++
++error:
++	spin_unlock(&cookie->lock);
++	kfree(op);
++	kleave(" = %d", ret);
++	return ret;
++#endif
++	kleave(" = -ENOBUFS");
++	return -ENOBUFS;
++}
++EXPORT_SYMBOL(__fscache_reserve_space);
++
++#if 0
++/*
++ * pin an object into the cache
++ */
++int __fscache_pin_cookie(struct fscache_cookie *cookie)
++{
++	struct fscache_object *object;
++	int ret;
++
++	_enter("%p", cookie);
++
++	if (hlist_empty(&cookie->backing_objects)) {
++		_leave(" = -ENOBUFS");
++		return -ENOBUFS;
++	}
++
++	/* not supposed to use this for indexes */
++	BUG_ON(cookie->def->type == FSCACHE_COOKIE_TYPE_INDEX);
++
++	/* prevent the file from being uncached whilst we access it and exclude
++	 * read and write attempts on pages
++	 */
++	down_write(&cookie->sem);
++
++	ret = -ENOBUFS;
++	if (!hlist_empty(&cookie->backing_objects)) {
++		/* get and pin the backing object */
++		object = hlist_entry(cookie->backing_objects.first,
++				     struct fscache_object, cookie_link);
++
++		if (test_bit(FSCACHE_IOERROR, &object->cache->flags))
++			goto out;
++
++		if (!object->cache->ops->pin_object) {
++			ret = -EOPNOTSUPP;
++			goto out;
++		}
++
++		/* prevent the cache from being withdrawn */
++		if (fscache_operation_lock(object)) {
++			if (object->cache->ops->grab_object(object)) {
++				/* ask the cache to honour the operation */
++				ret = object->cache->ops->pin_object(object);
++
++				object->cache->ops->put_object(object);
++			}
++
++			fscache_operation_unlock(object);
++		}
++	}
++
++out:
++	up_write(&cookie->sem);
++	_leave(" = %d", ret);
++	return ret;
++}
++EXPORT_SYMBOL(__fscache_pin_cookie);
++
++/*
++ * unpin an object into the cache
++ */
++void __fscache_unpin_cookie(struct fscache_cookie *cookie)
++{
++	struct fscache_object *object;
++	int ret;
++
++	_enter("%p", cookie);
++
++	if (hlist_empty(&cookie->backing_objects)) {
++		_leave(" [no obj]");
++		return;
++	}
++
++	/* not supposed to use this for indexes */
++	BUG_ON(cookie->def->type == FSCACHE_COOKIE_TYPE_INDEX);
++
++	/* prevent the file from being uncached whilst we access it and exclude
++	 * read and write attempts on pages
++	 */
++	down_write(&cookie->sem);
++
++	ret = -ENOBUFS;
++	if (!hlist_empty(&cookie->backing_objects)) {
++		/* get and unpin the backing object */
++		object = hlist_entry(cookie->backing_objects.first,
++				     struct fscache_object, cookie_link);
++
++		if (test_bit(FSCACHE_IOERROR, &object->cache->flags))
++			goto out;
++
++		if (!object->cache->ops->unpin_object)
++			goto out;
++
++		/* prevent the cache from being withdrawn */
++		if (fscache_operation_lock(object)) {
++			if (object->cache->ops->grab_object(object)) {
++				/* ask the cache to honour the operation */
++				object->cache->ops->unpin_object(object);
++
++				object->cache->ops->put_object(object);
++			}
++
++			fscache_operation_unlock(object);
++		}
++	}
++
++out:
++	up_write(&cookie->sem);
++	_leave("");
++}
++EXPORT_SYMBOL(__fscache_unpin_cookie);
++#endif
+diff --git a/fs/fscache/fsc-object.c b/fs/fscache/fsc-object.c
+new file mode 100644
+index 0000000..796637a
+--- /dev/null
++++ b/fs/fscache/fsc-object.c
+@@ -0,0 +1,583 @@
++/* FS-Cache object state machine handler
++ *
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define FSCACHE_DEBUG_LEVEL COOKIE
++#include <linux/module.h>
++#include "fsc-internal.h"
++
++const char *fscache_object_states[] = {
++	[FSCACHE_OBJECT_INIT]		= "OBJECT_INIT",
++	[FSCACHE_OBJECT_LOOKING_UP]	= "OBJECT_LOOKING_UP",
++	[FSCACHE_OBJECT_CREATING]	= "OBJECT_CREATING",
++	[FSCACHE_OBJECT_AVAILABLE]	= "OBJECT_AVAILABLE",
++	[FSCACHE_OBJECT_ACTIVE]		= "OBJECT_ACTIVE",
++	[FSCACHE_OBJECT_UPDATING]	= "OBJECT_UPDATING",
++	[FSCACHE_OBJECT_DYING]		= "OBJECT_DYING",
++	[FSCACHE_OBJECT_LC_DYING]	= "OBJECT_LC_DYING",
++	[FSCACHE_OBJECT_ABORT_INIT]	= "OBJECT_ABORT_INIT",
++	[FSCACHE_OBJECT_RELEASING]	= "OBJECT_RELEASING",
++	[FSCACHE_OBJECT_RECYCLING]	= "OBJECT_RECYCLING",
++	[FSCACHE_OBJECT_WITHDRAWING]	= "OBJECT_WITHDRAWING",
++	[FSCACHE_OBJECT_DEAD]		= "OBJECT_DEAD",
++};
++EXPORT_SYMBOL(fscache_object_states);
++
++static void fscache_check_object_parent(struct fscache_object *);
++static void fscache_lookup_object(struct fscache_object *);
++static void fscache_object_available(struct fscache_object *);
++static void fscache_release_object(struct fscache_object *);
++static void fscache_withdraw_object(struct fscache_object *);
++
++/*
++ * object state machine processor
++ * - initiates parent lookup
++ * - does object lookup
++ * - does object creation
++ * - does object recycling and retirement
++ * - does object withdrawal
++ */
++void fscache_object_state_machine(struct fscache_object *object)
++{
++	ASSERT(object != NULL);
++
++	_enter("{OBJ%x,%s,%lx}",
++	       object->debug_id, fscache_object_states[object->state],
++	       object->events);
++
++	switch (object->state) {
++	case FSCACHE_OBJECT_INIT:
++		object->event_mask =
++			ULONG_MAX & ~(1 << FSCACHE_OBJECT_EV_CLEARED);
++		fscache_check_object_parent(object);
++		goto done;
++
++	case FSCACHE_OBJECT_LOOKING_UP:
++		fscache_lookup_object(object);
++		goto lookup_transit;
++
++	case FSCACHE_OBJECT_CREATING:
++		fscache_lookup_object(object);
++		goto lookup_transit;
++
++	case FSCACHE_OBJECT_AVAILABLE:
++		fscache_object_available(object);
++		goto active_transit;
++
++	case FSCACHE_OBJECT_ACTIVE:
++		goto active_transit;
++
++	case FSCACHE_OBJECT_UPDATING:
++		clear_bit(FSCACHE_OBJECT_EV_UPDATE, &object->events);
++		fscache_stat(&fscache_n_updates_run);
++		object->cache->ops->update_object(object);
++		goto active_transit;
++
++		/* object started dying during lookup */
++	case FSCACHE_OBJECT_LC_DYING:
++		object->event_mask &= ~(1 << FSCACHE_OBJECT_EV_UPDATE);
++		object->cache->ops->lookup_complete(object);
++
++		object->state = FSCACHE_OBJECT_DYING;
++		spin_lock(&object->lock);
++		if (test_and_clear_bit(FSCACHE_COOKIE_CREATING,
++				       &object->cookie->flags))
++			wake_up_bit(&object->cookie->flags,
++				    FSCACHE_COOKIE_CREATING);
++		spin_unlock(&object->lock);
++
++		/* wait for completion of active accessors */
++	case FSCACHE_OBJECT_DYING:
++	dying:
++		clear_bit(FSCACHE_OBJECT_EV_CLEARED, &object->events);
++		spin_lock(&object->lock);
++		_debug("dying OBJ%x {%d,%d}",
++		       object->debug_id, object->n_ops, object->n_children);
++		if (object->n_ops == 0 && object->n_children == 0) {
++			object->event_mask &=
++				~(1 << FSCACHE_OBJECT_EV_CLEARED);
++			object->event_mask |=
++				(1 << FSCACHE_OBJECT_EV_WITHDRAW) |
++				(1 << FSCACHE_OBJECT_EV_RETIRE) |
++				(1 << FSCACHE_OBJECT_EV_RELEASE) |
++				(1 << FSCACHE_OBJECT_EV_ERROR);
++		} else {
++			object->event_mask &=
++				~((1 << FSCACHE_OBJECT_EV_WITHDRAW) |
++				  (1 << FSCACHE_OBJECT_EV_RETIRE) |
++				  (1 << FSCACHE_OBJECT_EV_RELEASE) |
++				  (1 << FSCACHE_OBJECT_EV_ERROR));
++			object->event_mask |=
++				1 << FSCACHE_OBJECT_EV_CLEARED;
++		}
++		spin_unlock(&object->lock);
++		fscache_enqueue_dependents(object);
++		goto terminal_transit;
++
++		/* handle an abort during the init state */
++	case FSCACHE_OBJECT_ABORT_INIT:
++		_debug("handle abort init %lx", object->events);
++		object->event_mask &= ~(1 << FSCACHE_OBJECT_EV_UPDATE);
++		fscache_dequeue_object(object);
++
++		object->state = FSCACHE_OBJECT_DYING;
++		spin_lock(&object->lock);
++		if (test_and_clear_bit(FSCACHE_COOKIE_CREATING,
++				       &object->cookie->flags))
++			wake_up_bit(&object->cookie->flags,
++				    FSCACHE_COOKIE_CREATING);
++		spin_unlock(&object->lock);
++		goto dying;
++
++	case FSCACHE_OBJECT_RELEASING:
++	case FSCACHE_OBJECT_RECYCLING:
++		object->event_mask &=
++			~((1 << FSCACHE_OBJECT_EV_WITHDRAW) |
++			  (1 << FSCACHE_OBJECT_EV_RETIRE) |
++			  (1 << FSCACHE_OBJECT_EV_RELEASE) |
++			  (1 << FSCACHE_OBJECT_EV_ERROR));
++		fscache_release_object(object);
++		object->state = FSCACHE_OBJECT_DEAD;
++		goto terminal_transit;
++
++	case FSCACHE_OBJECT_WITHDRAWING:
++		object->event_mask &=
++			~((1 << FSCACHE_OBJECT_EV_WITHDRAW) |
++			  (1 << FSCACHE_OBJECT_EV_RETIRE) |
++			  (1 << FSCACHE_OBJECT_EV_RELEASE) |
++			  (1 << FSCACHE_OBJECT_EV_ERROR));
++		fscache_withdraw_object(object);
++		object->state = FSCACHE_OBJECT_DEAD;
++		goto terminal_transit;
++
++	case FSCACHE_OBJECT_DEAD:
++		printk(KERN_ERR "FS-Cache:"
++		       " Unexpected event in dead state %lx\n",
++		       object->events & object->event_mask);
++		BUG();
++
++	default:
++		printk(KERN_ERR "FS-Cache: Unknown object state %u\n",
++		       object->state);
++		BUG();
++	}
++
++	/* determine the transition from a lookup state */
++lookup_transit:
++	switch (fls(object->events & object->event_mask) - 1) {
++	case FSCACHE_OBJECT_EV_WITHDRAW:
++	case FSCACHE_OBJECT_EV_RETIRE:
++	case FSCACHE_OBJECT_EV_RELEASE:
++	case FSCACHE_OBJECT_EV_ERROR:
++		object->state = FSCACHE_OBJECT_LC_DYING;
++		break;
++	case FSCACHE_OBJECT_EV_REQUEUE:
++		break;
++	case -1:
++		break; /* sleep until event */
++	default:
++		goto unsupported_event;
++	}
++	goto done;
++
++	/* determine the transition from an active state */
++active_transit:
++	switch (fls(object->events & object->event_mask) - 1) {
++	case FSCACHE_OBJECT_EV_WITHDRAW:
++	case FSCACHE_OBJECT_EV_RETIRE:
++	case FSCACHE_OBJECT_EV_RELEASE:
++	case FSCACHE_OBJECT_EV_ERROR:
++		object->state = FSCACHE_OBJECT_DYING;
++		break;
++	case FSCACHE_OBJECT_EV_UPDATE:
++		object->state = FSCACHE_OBJECT_UPDATING;
++		break;
++	case -1:
++		object->state = FSCACHE_OBJECT_ACTIVE;
++		break; /* sleep until event */
++	default:
++		goto unsupported_event;
++	}
++	goto done;
++
++	/* determine the transition from a terminal state */
++terminal_transit:
++	switch (fls(object->events & object->event_mask) - 1) {
++	case FSCACHE_OBJECT_EV_WITHDRAW:
++		object->state = FSCACHE_OBJECT_WITHDRAWING;
++		break;
++	case FSCACHE_OBJECT_EV_RETIRE:
++		object->state = FSCACHE_OBJECT_RECYCLING;
++		break;
++	case FSCACHE_OBJECT_EV_RELEASE:
++		object->state = FSCACHE_OBJECT_RELEASING;
++		break;
++	case FSCACHE_OBJECT_EV_ERROR:
++		object->state = FSCACHE_OBJECT_WITHDRAWING;
++		break;
++	case FSCACHE_OBJECT_EV_CLEARED:
++		object->state = FSCACHE_OBJECT_DYING;
++		break;
++	case -1:
++		break; /* sleep until event */
++	default:
++		goto unsupported_event;
++	}
++
++done:
++	_leave(" [->%s]", fscache_object_states[object->state]);
++	return;
++
++unsupported_event:
++	printk(KERN_ERR "FS-Cache:"
++	       " Unsupported event %lx [mask %lx] in state %s\n",
++	       object->events, object->event_mask,
++	       fscache_object_states[object->state]);
++	BUG();
++}
++
++/*
++ * check the specified object's parent to see if we can make use of it
++ * immediately to do a creation
++ * - we may need to start the process of creating a parent and we need to wait
++ *   for the parent's lookup and creation to complete if it's not there yet
++ * - an object's cookie is pinned until we clear FSCACHE_COOKIE_CREATING on the
++ *   leaf-most cookies of the object and all its children
++ */
++static void fscache_check_object_parent(struct fscache_object *object)
++{
++	struct fscache_object *parent;
++
++	_enter("");
++	ASSERT(object->cookie != NULL);
++	ASSERT(object->cookie->parent != NULL);
++	ASSERT(list_empty(&object->work_link));
++
++	if (object->events & ((1 << FSCACHE_OBJECT_EV_ERROR) |
++			      (1 << FSCACHE_OBJECT_EV_RELEASE) |
++			      (1 << FSCACHE_OBJECT_EV_RETIRE) |
++			      (1 << FSCACHE_OBJECT_EV_WITHDRAW))) {
++		_debug("abort init %lx", object->events);
++		object->state = FSCACHE_OBJECT_ABORT_INIT;
++		return;
++	}
++
++	spin_lock(&object->cookie->lock);
++	spin_lock_nested(&object->cookie->parent->lock, 1);
++
++	parent = object->parent;
++	if (!parent) {
++		_debug("no parent");
++		set_bit(FSCACHE_OBJECT_EV_WITHDRAW, &object->events);
++	} else {
++		spin_lock_nested(&parent->lock, 1);
++		_debug("parent %s", fscache_object_states[parent->state]);
++
++		if (parent->state >= FSCACHE_OBJECT_DYING) {
++			_debug("bad parent");
++			set_bit(FSCACHE_OBJECT_EV_WITHDRAW, &object->events);
++		} else if (parent->state < FSCACHE_OBJECT_AVAILABLE) {
++			_debug("wait");
++			object->cache->ops->grab_object(object);
++			set_bit(FSCACHE_OBJECT_WAITING, &object->flags);
++			list_add(&object->work_link, &parent->dependents);
++			atomic_inc(&object->cache->thread_usage);
++			if (parent->state == FSCACHE_OBJECT_INIT)
++				fscache_enqueue_object(parent);
++		} else {
++			_debug("go");
++			parent->n_ops++;
++			object->lookup_jif = jiffies;
++			object->state = FSCACHE_OBJECT_LOOKING_UP;
++			set_bit(FSCACHE_OBJECT_EV_REQUEUE, &object->events);
++		}
++
++		spin_unlock(&parent->lock);
++	}
++
++	spin_unlock(&object->cookie->parent->lock);
++	spin_unlock(&object->cookie->lock);
++	_leave("");
++}
++
++/*
++ * look up an object in its cache
++ * - we hold an "access lock" on the parent object, so the parent object cannot
++ *   be withdrawn by either party till we've finished
++ * - an object's cookie is pinned until we clear FSCACHE_COOKIE_CREATING on the
++ *   leaf-most cookies of the object and all its children
++ */
++static void fscache_lookup_object(struct fscache_object *object)
++{
++	struct fscache_cookie *cookie = object->cookie;
++	struct fscache_object *parent;
++
++	_enter("");
++
++	parent = object->parent;
++	ASSERT(parent != NULL);
++	ASSERTCMP(parent->n_ops, >, 0);
++
++	/* make sure the parent is still available */
++	ASSERTCMP(parent->state, >=, FSCACHE_OBJECT_AVAILABLE);
++
++	if (parent->state >= FSCACHE_OBJECT_DYING ||
++	    test_bit(FSCACHE_IOERROR, &object->cache->flags)) {
++		_debug("unavailable");
++		set_bit(FSCACHE_OBJECT_EV_WITHDRAW, &object->events);
++		_leave("");
++		return;
++	}
++
++	_debug("LOOKUP \"%s/%s\" in \"%s\"",
++	       parent->cookie->def->name, cookie->def->name,
++	       object->cache->tag->name);
++
++	fscache_stat(&fscache_n_object_lookups);
++	object->cache->ops->lookup_object(object);
++
++	if (test_bit(FSCACHE_OBJECT_EV_ERROR, &object->events))
++		set_bit(FSCACHE_COOKIE_UNAVAILABLE, &cookie->flags);
++
++	_leave("");
++}
++
++/**
++ * fscache_object_lookup_negative - Note negative cookie lookup
++ * @object: Object pointing to cookie to mark
++ *
++ * Note negative lookup, permitting those waiting to read data from an already
++ * existing backing object to continue as there's no data for them to read.
++ */
++void fscache_object_lookup_negative(struct fscache_object *object)
++{
++	struct fscache_cookie *cookie = object->cookie;
++
++	_enter("{OBJ%x,%s}",
++	       object->debug_id, fscache_object_states[object->state]);
++
++	if (object->state == FSCACHE_OBJECT_LOOKING_UP) {
++		fscache_stat(&fscache_n_object_lookups_negative);
++
++		/* transit here to allow write requests to begin stacking up
++		 * and read requests to begin returning ENODATA */
++		object->state = FSCACHE_OBJECT_CREATING;
++
++		set_bit(FSCACHE_COOKIE_PENDING_FILL, &cookie->flags);
++		set_bit(FSCACHE_COOKIE_NO_DATA_YET, &cookie->flags);
++
++		_debug("wake up lookup %p", &cookie->flags);
++		smp_mb__before_clear_bit();
++		clear_bit(FSCACHE_COOKIE_LOOKING_UP, &cookie->flags);
++		smp_mb__after_clear_bit();
++		wake_up_bit(&cookie->flags, FSCACHE_COOKIE_LOOKING_UP);
++		clear_bit(FSCACHE_OBJECT_SYNC, &object->flags);
++		set_bit(FSCACHE_OBJECT_EV_REQUEUE, &object->events);
++	} else {
++		ASSERTCMP(object->state, ==, FSCACHE_OBJECT_CREATING);
++	}
++
++	_leave("");
++}
++EXPORT_SYMBOL(fscache_object_lookup_negative);
++
++/**
++ * fscache_obtained_object - Note successful object lookup or creation
++ * @object: Object pointing to cookie to mark
++ *
++ * Note successful lookup and/or creation, permitting those waiting to write
++ * data to a backing object to continue.
++ *
++ * Note that after calling this, an object's cookie may be relinquished by the
++ * netfs, and so must be accessed with object lock held.
++ */
++void fscache_obtained_object(struct fscache_object *object)
++{
++	struct fscache_cookie *cookie = object->cookie;
++
++	_enter("{OBJ%x,%s}",
++	       object->debug_id, fscache_object_states[object->state]);
++
++	/* if we were still looking up, then we must have a positive lookup
++	 * result, in which case there may be data available */
++	if (object->state == FSCACHE_OBJECT_LOOKING_UP) {
++		fscache_stat(&fscache_n_object_lookups_positive);
++
++		clear_bit(FSCACHE_COOKIE_NO_DATA_YET, &cookie->flags);
++
++		object->state = FSCACHE_OBJECT_AVAILABLE;
++
++		smp_mb__before_clear_bit();
++		clear_bit(FSCACHE_COOKIE_LOOKING_UP, &cookie->flags);
++		smp_mb__after_clear_bit();
++		wake_up_bit(&cookie->flags, FSCACHE_COOKIE_LOOKING_UP);
++		clear_bit(FSCACHE_OBJECT_SYNC, &object->flags);
++		set_bit(FSCACHE_OBJECT_EV_REQUEUE, &object->events);
++	} else {
++		ASSERTCMP(object->state, ==, FSCACHE_OBJECT_CREATING);
++		fscache_stat(&fscache_n_object_created);
++
++		object->state = FSCACHE_OBJECT_AVAILABLE;
++		set_bit(FSCACHE_OBJECT_EV_REQUEUE, &object->events);
++		smp_wmb();
++	}
++
++	if (test_and_clear_bit(FSCACHE_COOKIE_CREATING, &cookie->flags))
++		wake_up_bit(&cookie->flags, FSCACHE_COOKIE_CREATING);
++
++	_leave("");
++}
++EXPORT_SYMBOL(fscache_obtained_object);
++
++/*
++ * handle an object that has just become available
++ */
++static void fscache_object_available(struct fscache_object *object)
++{
++	_enter("{OBJ%x}", object->debug_id);
++
++	spin_lock(&object->lock);
++	if (test_and_clear_bit(FSCACHE_COOKIE_CREATING, &object->cookie->flags))
++		wake_up_bit(&object->cookie->flags, FSCACHE_COOKIE_CREATING);
++
++	spin_lock_nested(&object->parent->lock, 1);
++	object->parent->n_ops--;
++	if (object->parent->n_ops == 0)
++		fscache_raise_event(object->parent, FSCACHE_OBJECT_EV_CLEARED);
++	spin_unlock(&object->parent->lock);
++
++	if (object->n_ops > 0)
++		fscache_start_operations(object);
++	spin_unlock(&object->lock);
++
++	object->cache->ops->lookup_complete(object);
++	fscache_enqueue_dependents(object);
++
++	if (test_bit(FSCACHE_OBJECT_BOOSTED, &object->flags))
++		fscache_hist(fscache_obj_instantiate_histogram,
++			     object->lookup_jif);
++	fscache_stat(&fscache_n_object_avail);
++
++	_leave("");
++}
++
++/*
++ * drop an object's attachments
++ */
++static void fscache_drop_object(struct fscache_object *object)
++{
++	struct fscache_object *parent = object->parent;
++	struct fscache_cache *cache = object->cache;
++
++	_enter("{OBJ%x,%d}", object->debug_id, object->n_children);
++
++	spin_lock(&cache->object_list_lock);
++	list_del_init(&object->cache_link);
++	spin_unlock(&cache->object_list_lock);
++
++	cache->ops->drop_object(object);
++
++	if (parent) {
++		_debug("release parent OBJ%x {%d}",
++		       parent->debug_id, parent->n_children);
++
++		spin_lock(&parent->lock);
++		parent->n_children--;
++		if (parent->n_children == 0)
++			fscache_raise_event(parent, FSCACHE_OBJECT_EV_CLEARED);
++		spin_unlock(&parent->lock);
++		object->parent = NULL;
++	}
++
++	/* this just shifts the object release to the fscache thread pool */
++	object->cache->ops->put_object(object);
++}
++
++/*
++ * release or recycle an object
++ */
++static void fscache_release_object(struct fscache_object *object)
++{
++	_enter("");
++
++	fscache_drop_object(object);
++
++	_leave("");
++}
++
++/*
++ * withdraw an object from active service
++ */
++static void fscache_withdraw_object(struct fscache_object *object)
++{
++	struct fscache_cookie *cookie;
++	bool detached;
++
++	_enter("");
++
++	spin_lock(&object->lock);
++	cookie = object->cookie;
++	if (cookie) {
++		/* need to get the cookie lock before the object lock, starting
++		 * from the object pointer */
++		atomic_inc(&cookie->usage);
++		spin_unlock(&object->lock);
++
++		detached = false;
++		spin_lock(&cookie->lock);
++		spin_lock(&object->lock);
++
++		if (object->cookie == cookie) {
++			hlist_del_init(&object->cookie_link);
++			object->cookie = NULL;
++			detached = true;
++		}
++		spin_unlock(&cookie->lock);
++		fscache_cookie_put(cookie);
++		if (detached)
++			fscache_cookie_put(cookie);
++	}
++
++	spin_unlock(&object->lock);
++
++	fscache_drop_object(object);
++
++	_leave("");
++}
++
++/*
++ * withdraw an object from active service at the behest of the cache
++ * - need break the links to a cached object cookie
++ * - called under two situations:
++ *   (1) recycler decides to reclaim an in-use object
++ *   (2) a cache is unmounted
++ * - have to take care as the cookie can be being relinquished by the netfs
++ *   simultaneously
++ * - the object is pinned by the caller holding a refcount on it
++ */
++void fscache_withdrawing_object(struct fscache_cache *cache,
++				struct fscache_object *object)
++{
++	bool enqueue = false;
++
++	_enter(",OBJ%x", object->debug_id);
++
++	spin_lock(&object->lock);
++	if (object->state < FSCACHE_OBJECT_WITHDRAWING) {
++		object->state = FSCACHE_OBJECT_WITHDRAWING;
++		enqueue = true;
++	}
++	spin_unlock(&object->lock);
++
++	if (enqueue)
++		fscache_enqueue_object(object);
++
++	_leave("");
++}
+diff --git a/fs/fscache/fsc-page.c b/fs/fscache/fsc-page.c
+new file mode 100644
+index 0000000..a5834fd
+--- /dev/null
++++ b/fs/fscache/fsc-page.c
+@@ -0,0 +1,872 @@
++/* Cache page management and data I/O routines
++ *
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define FSCACHE_DEBUG_LEVEL PAGE
++#include <linux/module.h>
++#include <linux/fscache-cache.h>
++#include <linux/buffer_head.h>
++#include <linux/pagevec.h>
++#include "fsc-internal.h"
++
++/*
++ * start an op running
++ */
++static void fscache_run_op(struct fscache_object *object,
++			   struct fscache_operation *op)
++{
++	object->n_in_progress++;
++	clear_bit(FSCACHE_OP_WAITING, &op->flags);
++	if (op->processor)
++		fscache_enqueue_operation(op);
++	fscache_stat(&fscache_n_op_run);
++}
++
++/*
++ * submit an exclusive operation for an object
++ * - other ops are excluded from running simultaneously with this one
++ */
++static int fscache_submit_exclusive_op(struct fscache_object *object,
++				       struct fscache_operation *op)
++{
++	int ret;
++
++	spin_lock(&object->lock);
++	ASSERTCMP(object->n_ops, >=, object->n_in_progress);
++	ASSERTCMP(object->n_ops, >=, object->n_exclusive);
++
++	ret = -ENOBUFS;
++	if (fscache_object_is_active(object)) {
++		op->object = object;
++		object->n_ops++;
++		object->n_exclusive++;	/* reads and writes must wait */
++
++		if (object->n_ops > 0) {
++			list_add_tail(&op->work_link, &object->pending_ops);
++			fscache_stat(&fscache_n_op_pend);
++		} else {
++			ASSERTCMP(object->n_in_progress, ==, 0);
++			fscache_run_op(object, op);
++		}
++
++		/* need to issue a new write op after this */
++		clear_bit(FSCACHE_OBJECT_PENDING_WRITE, &object->flags);
++		ret = 0;
++	} else if (object->state == FSCACHE_OBJECT_CREATING) {
++		op->object = object;
++		object->n_ops++;
++		object->n_exclusive++;	/* reads and writes must wait */
++		list_add_tail(&op->work_link, &object->pending_ops);
++		fscache_stat(&fscache_n_op_pend);
++		ret = 0;
++	} else {
++		/* not allowed to submit ops in any other state */
++		BUG();
++	}
++
++	spin_unlock(&object->lock);
++	return ret;
++}
++
++/*
++ * submit an operation for an object
++ */
++static int fscache_submit_op(struct fscache_object *object,
++			     struct fscache_operation *op)
++{
++	int ret;
++
++	ASSERTCMP(atomic_read(&op->usage), >, 0);
++
++	spin_lock(&object->lock);
++	ASSERTCMP(object->n_ops, >=, object->n_in_progress);
++	ASSERTCMP(object->n_ops, >=, object->n_exclusive);
++
++	if (fscache_object_is_active(object)) {
++		op->object = object;
++		object->n_ops++;
++
++		if (object->n_exclusive > 0) {
++			ASSERTCMP(object->n_in_progress, >, 0);
++			list_add_tail(&op->work_link, &object->pending_ops);
++			fscache_stat(&fscache_n_op_pend);
++		} else {
++			ASSERT(list_empty(&object->pending_ops));
++			ASSERTCMP(object->n_exclusive, ==, 0);
++			fscache_run_op(object, op);
++		}
++		ret = 0;
++	} else if (object->state == FSCACHE_OBJECT_CREATING) {
++		op->object = object;
++		object->n_ops++;
++		list_add_tail(&op->work_link, &object->pending_ops);
++		fscache_stat(&fscache_n_op_pend);
++		ret = 0;
++	} else if (!test_bit(FSCACHE_IOERROR, &object->cache->flags)) {
++		static bool once_only;
++		if (!once_only) {
++			once_only = true;
++			kdebug("no submit [OBJ%x %s]",
++			       object->debug_id,
++			       fscache_object_states[object->state]);
++			dump_stack();
++		}
++		ret = -ENOBUFS;
++	} else {
++		ret = -ENOBUFS;
++	}
++
++	spin_unlock(&object->lock);
++	return ret;
++}
++
++/*
++ * queue an object for withdrawal on error, aborting all following asynchronous
++ * operations
++ */
++static void fscache_abort_object(struct fscache_object *object)
++{
++	fscache_raise_event(object, FSCACHE_OBJECT_EV_ERROR);
++}
++
++/*
++ * actually apply the changed attributes to a cache object
++ */
++static void fscache_attr_changed_op(struct fscache_operation *op)
++{
++	struct fscache_object *object = op->object;
++
++	_enter("{OBJ%x}", object->debug_id);
++
++	fscache_stat(&fscache_n_attr_changed_calls);
++
++	if (fscache_object_is_active(object) &&
++	    object->cache->ops->attr_changed(object) < 0)
++		fscache_abort_object(object);
++
++	_leave("");
++}
++
++/*
++ * notification that the attributes on an object have changed
++ */
++int __fscache_attr_changed(struct fscache_cookie *cookie)
++{
++	struct fscache_operation *op;
++	struct fscache_object *object;
++
++	_enter("%p", cookie);
++
++	ASSERTCMP(cookie->def->type, !=, FSCACHE_COOKIE_TYPE_INDEX);
++
++	fscache_stat(&fscache_n_attr_changed);
++
++	op = kzalloc(sizeof(*op), GFP_KERNEL);
++	if (!op) {
++		fscache_stat(&fscache_n_attr_changed_nomem);
++		_leave(" = -ENOMEM");
++		return -ENOMEM;
++	}
++
++	op->flags |= 1 << FSCACHE_OP_EXCLUSIVE;
++	op->processor = fscache_attr_changed_op;
++
++	spin_lock(&cookie->lock);
++
++	if (hlist_empty(&cookie->backing_objects))
++		goto nobufs;
++	object = hlist_entry(cookie->backing_objects.first,
++			     struct fscache_object, cookie_link);
++
++	if (fscache_submit_exclusive_op(object, op) < 0)
++		goto nobufs;
++	spin_unlock(&cookie->lock);
++	fscache_stat(&fscache_n_attr_changed_ok);
++	_leave(" = 0");
++	return 0;
++
++nobufs:
++	spin_unlock(&cookie->lock);
++	kfree(op);
++	fscache_stat(&fscache_n_attr_changed_nobufs);
++	_leave(" = %d", -ENOBUFS);
++	return -ENOBUFS;
++}
++EXPORT_SYMBOL(__fscache_attr_changed);
++
++/*
++ * release a retrieval op reference
++ */
++static void fscache_release_retrieval_op(struct fscache_operation *_op)
++{
++	struct fscache_retrieval *op =
++		container_of(_op, struct fscache_retrieval, op);
++
++	_enter("");
++
++	fscache_hist(fscache_retrieval_histogram, op->start_time);
++	if (op->context)
++		fscache_put_context(op->op.object->cookie, op->context);
++
++	_leave("");
++}
++
++/*
++ * allocate a retrieval op
++ */
++static struct fscache_retrieval *fscache_alloc_retrieval(
++	struct address_space *mapping,
++	fscache_rw_complete_t end_io_func,
++	void *context)
++{
++	struct fscache_retrieval *op;
++
++	/* allocate a retrieval operation and attempt to submit it */
++	op = kzalloc(sizeof(*op), GFP_NOIO);
++	if (!op) {
++		fscache_stat(&fscache_n_retrievals_nomem);
++		return NULL;
++	}
++
++	atomic_set(&op->op.usage, 1);
++	op->op.flags	= (1 << FSCACHE_OP_WAITING) | (1 << FSCACHE_OP_SYNC);
++	op->op.release	= fscache_release_retrieval_op;
++	op->mapping	= mapping;
++	op->end_io_func	= end_io_func;
++	op->context	= context;
++	op->start_time	= jiffies;
++	INIT_LIST_HEAD(&op->op.work_link);
++	INIT_LIST_HEAD(&op->to_do);
++	return op;
++}
++
++/*
++ * wait for a deferred lookup to complete
++ */
++static int fscache_wait_for_deferred_lookup(struct fscache_cookie *cookie)
++{
++	struct fscache_object *object;
++	unsigned long jif;
++
++	if (!test_bit(FSCACHE_COOKIE_LOOKING_UP, &cookie->flags))
++		return 0;
++
++	fscache_stat(&fscache_n_retrievals_wait);
++
++	/* tell the cookie dispatcher that this cookie is now being waited
++	 * upon for lookup completion */
++	spin_lock(&cookie->lock);
++	if (!hlist_empty(&cookie->backing_objects)) {
++		object = hlist_entry(cookie->backing_objects.first,
++				     struct fscache_object, cookie_link);
++		if (!test_and_set_bit(FSCACHE_OBJECT_SYNC, &object->flags))
++			fscache_boost_object(object);
++	}
++	spin_unlock(&cookie->lock);
++
++	jif = jiffies;
++	if (wait_on_bit(&cookie->flags, FSCACHE_COOKIE_LOOKING_UP,
++			fscache_wait_bit_interruptible,
++			TASK_INTERRUPTIBLE) != 0) {
++		fscache_stat(&fscache_n_retrievals_intr);
++		return -ERESTARTSYS;
++	}
++
++	ASSERT(!test_bit(FSCACHE_COOKIE_LOOKING_UP, &cookie->flags));
++
++	smp_rmb();
++	fscache_hist(fscache_retrieval_delay_histogram, jif);
++	return 0;
++}
++
++/*
++ * read a page from the cache or allocate a block in which to store it
++ * - we return:
++ *   -ENOMEM	- out of memory, nothing done
++ *   -ERESTARTSYS - interrupted
++ *   -ENOBUFS	- no backing object available in which to cache the block
++ *   -ENODATA	- no data available in the backing object for this block
++ *   0		- dispatched a read - it'll call end_io_func() when finished
++ */
++int __fscache_read_or_alloc_page(struct fscache_cookie *cookie,
++				 struct page *page,
++				 fscache_rw_complete_t end_io_func,
++				 void *context,
++				 gfp_t gfp)
++{
++	struct fscache_retrieval *op;
++	struct fscache_object *object;
++	int ret;
++
++	_enter("%p,%p,,,", cookie, page);
++
++	fscache_stat(&fscache_n_retrievals);
++
++	if (hlist_empty(&cookie->backing_objects))
++		goto nobufs;
++
++	ASSERTCMP(cookie->def->type, !=, FSCACHE_COOKIE_TYPE_INDEX);
++	ASSERTCMP(page, !=, NULL);
++
++	if (fscache_wait_for_deferred_lookup(cookie) < 0)
++		return -ERESTARTSYS;
++
++	op = fscache_alloc_retrieval(page->mapping, end_io_func, context);
++	if (!op) {
++		_leave(" = -ENOMEM");
++		return -ENOMEM;
++	}
++
++	spin_lock(&cookie->lock);
++
++	if (hlist_empty(&cookie->backing_objects))
++		goto nobufs_unlock;
++	object = hlist_entry(cookie->backing_objects.first,
++			     struct fscache_object, cookie_link);
++
++	ASSERTCMP(object->state, >, FSCACHE_COOKIE_LOOKING_UP);
++
++	if (fscache_submit_op(object, &op->op) < 0)
++		goto nobufs_unlock;
++	spin_unlock(&cookie->lock);
++
++	fscache_stat(&fscache_n_retrieval_ops);
++
++	/* pin the netfs read context in case we need to do the actual netfs
++	 * read because we've encountered a cache read failure */
++	fscache_get_context(object->cookie, op->context);
++
++	if (test_bit(FSCACHE_OP_WAITING, &op->op.flags)) {
++		_debug(">>> WT");
++		fscache_stat(&fscache_n_retrieval_op_waits);
++		wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
++			    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++		_debug("<<< GO");
++	}
++
++	/* ask the cache to honour the operation */
++	if (test_bit(FSCACHE_COOKIE_NO_DATA_YET, &object->cookie->flags)) {
++		ret = object->cache->ops->allocate_page(op, page, gfp);
++		if (ret == 0)
++			ret = -ENODATA;
++	} else {
++		ret = object->cache->ops->read_or_alloc_page(op, page, gfp);
++	}
++
++	if (ret == -ENOMEM)
++		fscache_stat(&fscache_n_retrievals_nomem);
++	else if (ret == -ERESTARTSYS)
++		fscache_stat(&fscache_n_retrievals_intr);
++	else if (ret == -ENODATA)
++		fscache_stat(&fscache_n_retrievals_nodata);
++	else if (ret < 0)
++		fscache_stat(&fscache_n_retrievals_nobufs);
++	else
++		fscache_stat(&fscache_n_retrievals_ok);
++
++	fscache_put_retrieval(op);
++	_leave(" = %d", ret);
++	return ret;
++
++nobufs_unlock:
++	spin_unlock(&cookie->lock);
++	kfree(op);
++nobufs:
++	fscache_stat(&fscache_n_retrievals_nobufs);
++	_leave(" = -ENOBUFS");
++	return -ENOBUFS;
++}
++EXPORT_SYMBOL(__fscache_read_or_alloc_page);
++
++/*
++ * read a list of page from the cache or allocate a block in which to store
++ * them
++ * - we return:
++ *   -ENOMEM	- out of memory, some pages may be being read
++ *   -ERESTARTSYS - interrupted, some pages may be being read
++ *   -ENOBUFS	- no backing object or space available in which to cache any
++ *                pages not being read
++ *   -ENODATA	- no data available in the backing object for some or all of
++ *                the pages
++ *   0		- dispatched a read on all pages
++ *
++ * end_io_func() will be called for each page read from the cache as it is
++ * finishes being read
++ *
++ * any pages for which a read is dispatched will be removed from pages and
++ * nr_pages
++ */
++int __fscache_read_or_alloc_pages(struct fscache_cookie *cookie,
++				  struct address_space *mapping,
++				  struct list_head *pages,
++				  unsigned *nr_pages,
++				  fscache_rw_complete_t end_io_func,
++				  void *context,
++				  gfp_t gfp)
++{
++	fscache_pages_retrieval_func_t func;
++	struct fscache_retrieval *op;
++	struct fscache_object *object;
++	int ret;
++
++	_enter("%p,,%d,,,", cookie, *nr_pages);
++
++	fscache_stat(&fscache_n_retrievals);
++
++	if (hlist_empty(&cookie->backing_objects))
++		goto nobufs;
++
++	ASSERTCMP(cookie->def->type, !=, FSCACHE_COOKIE_TYPE_INDEX);
++	ASSERTCMP(*nr_pages, >, 0);
++	ASSERT(!list_empty(pages));
++
++	if (fscache_wait_for_deferred_lookup(cookie) < 0)
++		return -ERESTARTSYS;
++
++	op = fscache_alloc_retrieval(mapping, end_io_func, context);
++	if (!op)
++		return -ENOMEM;
++
++	spin_lock(&cookie->lock);
++
++	if (hlist_empty(&cookie->backing_objects))
++		goto nobufs_unlock;
++	object = hlist_entry(cookie->backing_objects.first,
++			     struct fscache_object, cookie_link);
++
++	if (fscache_submit_op(object, &op->op) < 0)
++		goto nobufs_unlock;
++	spin_unlock(&cookie->lock);
++
++	fscache_stat(&fscache_n_retrieval_ops);
++
++	/* pin the netfs read context in case we need to do the actual netfs
++	 * read because we've encountered a cache read failure */
++	fscache_get_context(object->cookie, op->context);
++
++	if (test_bit(FSCACHE_OP_WAITING, &op->op.flags)) {
++		_debug(">>> WT");
++		fscache_stat(&fscache_n_retrieval_op_waits);
++		wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
++			    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++		_debug("<<< GO");
++	}
++
++	/* ask the cache to honour the operation */
++	if (test_bit(FSCACHE_COOKIE_NO_DATA_YET, &object->cookie->flags))
++		func = object->cache->ops->allocate_pages;
++	else
++		func = object->cache->ops->read_or_alloc_pages;
++	ret = func(op, pages, nr_pages, gfp);
++
++	if (ret == -ENOMEM)
++		fscache_stat(&fscache_n_retrievals_nomem);
++	else if (ret == -ERESTARTSYS)
++		fscache_stat(&fscache_n_retrievals_intr);
++	else if (ret == -ENODATA)
++		fscache_stat(&fscache_n_retrievals_nodata);
++	else if (ret < 0)
++		fscache_stat(&fscache_n_retrievals_nobufs);
++	else
++		fscache_stat(&fscache_n_retrievals_ok);
++
++	fscache_put_retrieval(op);
++	_leave(" = %d", ret);
++	return ret;
++
++nobufs_unlock:
++	spin_unlock(&cookie->lock);
++	kfree(op);
++nobufs:
++	fscache_stat(&fscache_n_retrievals_nobufs);
++	_leave(" = -ENOBUFS");
++	return -ENOBUFS;
++}
++EXPORT_SYMBOL(__fscache_read_or_alloc_pages);
++
++/*
++ * allocate a block in the cache on which to store a page
++ * - we return:
++ *   -ENOMEM	- out of memory, nothing done
++ *   -ERESTARTSYS - interrupted
++ *   -ENOBUFS	- no backing object available in which to cache the block
++ *   0		- block allocated
++ */
++int __fscache_alloc_page(struct fscache_cookie *cookie,
++			 struct page *page,
++			 gfp_t gfp)
++{
++	struct fscache_retrieval *op;
++	struct fscache_object *object;
++	int ret;
++
++	_enter("%p,%p,,,", cookie, page);
++
++	fscache_stat(&fscache_n_allocs);
++
++	if (hlist_empty(&cookie->backing_objects))
++		goto nobufs;
++
++	ASSERTCMP(cookie->def->type, !=, FSCACHE_COOKIE_TYPE_INDEX);
++	ASSERTCMP(page, !=, NULL);
++
++	if (fscache_wait_for_deferred_lookup(cookie) < 0)
++		return -ERESTARTSYS;
++
++	op = fscache_alloc_retrieval(page->mapping, NULL, NULL);
++	if (!op)
++		return -ENOMEM;
++
++	spin_lock(&cookie->lock);
++
++	if (hlist_empty(&cookie->backing_objects))
++		goto nobufs_unlock;
++	object = hlist_entry(cookie->backing_objects.first,
++			     struct fscache_object, cookie_link);
++
++	if (fscache_submit_op(object, &op->op) < 0)
++		goto nobufs_unlock;
++	spin_unlock(&cookie->lock);
++
++	fscache_stat(&fscache_n_alloc_ops);
++
++	if (test_bit(FSCACHE_OP_WAITING, &op->op.flags)) {
++		_debug(">>> WT");
++		fscache_stat(&fscache_n_alloc_op_waits);
++		wait_on_bit(&op->op.flags, FSCACHE_OP_WAITING,
++			    fscache_wait_bit, TASK_UNINTERRUPTIBLE);
++		_debug("<<< GO");
++	}
++
++	/* ask the cache to honour the operation */
++	ret = object->cache->ops->allocate_page(op, page, gfp);
++
++	if (ret < 0)
++		fscache_stat(&fscache_n_allocs_nobufs);
++	else
++		fscache_stat(&fscache_n_allocs_ok);
++
++	fscache_put_retrieval(op);
++	_leave(" = %d", ret);
++	return ret;
++
++nobufs_unlock:
++	spin_unlock(&cookie->lock);
++	kfree(op);
++nobufs:
++	fscache_stat(&fscache_n_allocs_nobufs);
++	_leave(" = -ENOBUFS");
++	return -ENOBUFS;
++}
++EXPORT_SYMBOL(__fscache_alloc_page);
++
++/*
++ * release a write op reference
++ */
++static void fscache_release_write_op(struct fscache_operation *_op)
++{
++	_enter("");
++}
++
++/*
++ * store a page in the cache in the background
++ */
++static void fscache_write_op(struct fscache_operation *_op)
++{
++	struct fscache_storage *op =
++		container_of(_op, struct fscache_storage, op);
++	struct fscache_object *object = op->op.object;
++	struct page *page;
++	unsigned n;
++	void *results[1];
++	int ret;
++
++	_enter("{%d}", atomic_read(&op->op.usage));
++
++	if (!fscache_object_is_active(object)) {
++		fscache_put_operation(&op->op);
++		_leave("");
++		return;
++	}
++
++	fscache_stat(&fscache_n_store_calls);
++
++	/* find a page to store */
++	spin_lock(&object->lock);
++
++	page = NULL;
++	n = radix_tree_gang_lookup(&object->stores, results, 0, 1);
++	if (n == 1) {
++		page = results[0];
++		_debug("gang %d [%lx]", n, page->index);
++		if (page->index <= op->store_limit)
++			radix_tree_delete(&object->stores, page->index);
++		else
++			goto superseded;
++	} else {
++		goto superseded;
++	}
++
++	spin_unlock(&object->lock);
++
++	if (page) {
++		ret = object->cache->ops->write_page(op, page);
++		end_page_fscache_write(page);
++		page_cache_release(page);
++		if (ret < 0) {
++			fscache_abort_object(object);
++			fscache_put_operation(&op->op);
++		} else {
++			fscache_enqueue_operation(&op->op);
++		}
++	}
++
++	_leave("");
++	return;
++
++superseded:
++	/* this writer is going away and there aren't any more things to
++	 * write */
++	_debug("cease");
++	clear_bit(FSCACHE_OBJECT_PENDING_WRITE, &object->flags);
++	spin_unlock(&object->lock);
++	fscache_put_operation(&op->op);
++	_leave("");
++}
++
++/*
++ * request a page be stored in the cache
++ * - returns:
++ *   -ENOMEM	- out of memory, nothing done
++ *   -ENOBUFS	- no backing object available in which to cache the page
++ *   0		- dispatched a write - it'll call end_io_func() when finished
++ *
++ * if the cookie still has a backing object at this point, that object can be
++ * in one of a few states with respect to storage processing:
++ *
++ *  (1) negative lookup, object not yet created (FSCACHE_COOKIE_CREATING is
++ *      set)
++ *
++ *	(a) no writes yet (set FSCACHE_COOKIE_PENDING_FILL and queue deferred
++ *	    fill op)
++ *
++ *	(b) writes deferred till post-creation (mark page for writing and
++ *	    return immediately)
++ *
++ *  (2) negative lookup, object created, initial fill being made from netfs
++ *      (FSCACHE_COOKIE_INITIAL_FILL is set)
++ *
++ *	(a) fill point not yet reached this page (mark page for writing and
++ *          return)
++ *
++ *	(b) fill point passed this page (queue op to store this page)
++ *
++ *  (3) object extant (queue op to store this page)
++ *
++ * any other state is invalid
++ */
++int __fscache_write_page(struct fscache_cookie *cookie,
++			 struct page *page,
++			 gfp_t gfp)
++{
++	struct fscache_storage *op;
++	struct fscache_object *object;
++	int ret;
++
++	_enter("%p,%x,", cookie, (u32) page->flags);
++
++	ASSERTCMP(cookie->def->type, !=, FSCACHE_COOKIE_TYPE_INDEX);
++	ASSERT(PageFsCache(page));
++
++	fscache_stat(&fscache_n_stores);
++
++	op = kzalloc(sizeof(*op), GFP_NOIO);
++	if (!op) {
++		fscache_stat(&fscache_n_stores_oom);
++		_leave(" = -ENOMEM");
++		return -ENOMEM;
++	}
++
++	ret = radix_tree_preload(gfp & ~__GFP_HIGHMEM);
++	if (ret < 0) {
++		kfree(op);
++		fscache_stat(&fscache_n_stores_oom);
++		_leave(" = %d", ret);
++		return ret;
++	}
++
++	ret = -ENOBUFS;
++	spin_lock(&cookie->lock);
++
++	if (hlist_empty(&cookie->backing_objects))
++		goto nobufs;
++	object = hlist_entry(cookie->backing_objects.first,
++			     struct fscache_object, cookie_link);
++	if (test_bit(FSCACHE_IOERROR, &object->cache->flags))
++		goto nobufs;
++
++	/* add the page to the pending-storage radix tree on the backing
++	 * object */
++	spin_lock(&object->lock);
++
++	_debug("store limit %llx", (unsigned long long) object->store_limit);
++
++	ret = radix_tree_insert(&object->stores, page->index, page);
++	if (ret < 0) {
++		if (ret == -EEXIST)
++			goto already_queued;
++		_debug("insert failed %d", ret);
++		ret = -ENOBUFS;
++		goto nobufs_unlock;
++	}
++
++	page_cache_get(page);
++	if (TestSetPageFsCacheWrite(page))
++		BUG();
++
++	/* we only want one writer at a time, but we do need to queue new
++	 * writers after exclusive ops */
++	if (test_and_set_bit(FSCACHE_OBJECT_PENDING_WRITE, &object->flags))
++		goto already_pending;
++
++	spin_unlock(&object->lock);
++
++	op->op.processor = fscache_write_op;
++	op->op.release =  fscache_release_write_op;
++	op->store_limit = object->store_limit;
++	INIT_LIST_HEAD(&op->op.work_link);
++	atomic_set(&op->op.usage, 1);
++
++	if (fscache_submit_op(object, &op->op) < 0) {
++		radix_tree_delete(&object->stores, page->index);
++		end_page_fscache_write(page);
++		page_cache_release(page);
++		ret = -ENOBUFS;
++		goto nobufs;
++	}
++
++	spin_unlock(&cookie->lock);
++	radix_tree_preload_end();
++	fscache_stat(&fscache_n_store_ops);
++	fscache_stat(&fscache_n_stores_ok);
++	_leave(" = 0");
++	return 0;
++
++already_queued:
++	fscache_stat(&fscache_n_stores_again);
++already_pending:
++	spin_unlock(&object->lock);
++	spin_unlock(&cookie->lock);
++	radix_tree_preload_end();
++	kfree(op);
++	fscache_stat(&fscache_n_stores_ok);
++	_leave(" = 0");
++	return 0;
++
++nobufs_unlock:
++	spin_unlock(&object->lock);
++nobufs:
++	spin_unlock(&cookie->lock);
++	radix_tree_preload_end();
++	kfree(op);
++	fscache_stat(&fscache_n_stores_nobufs);
++	_leave(" = -ENOBUFS");
++	return -ENOBUFS;
++}
++EXPORT_SYMBOL(__fscache_write_page);
++
++/*
++ * remove a page from the cache
++ */
++void __fscache_uncache_page(struct fscache_cookie *cookie, struct page *page)
++{
++	struct fscache_object *object;
++
++	_enter(",%p", page);
++
++	ASSERTCMP(cookie->def->type, !=, FSCACHE_COOKIE_TYPE_INDEX);
++	ASSERTCMP(page, !=, NULL);
++
++	fscache_stat(&fscache_n_uncaches);
++
++	/* cache withdrawal may beat us to it */
++	if (!PageFsCache(page))
++		goto done;
++
++	/* get the object */
++	spin_lock(&cookie->lock);
++
++	if (hlist_empty(&cookie->backing_objects)) {
++		ClearPageFsCache(page);
++		goto done_unlock;
++	}
++
++	object = hlist_entry(cookie->backing_objects.first,
++			     struct fscache_object, cookie_link);
++
++	/* there might now be stuff on disk we could read */
++	clear_bit(FSCACHE_COOKIE_NO_DATA_YET, &cookie->flags);
++
++	/* only invoke the cache backend if we managed to mark the page
++	 * uncached here; this deals with synchronisation vs withdrawal */
++	if (TestClearPageFsCache(page) &&
++	    object->cache->ops->uncache_page) {
++		/* the cache backend releases the cookie lock */
++		object->cache->ops->uncache_page(object, page);
++		goto done;
++	}
++
++done_unlock:
++	spin_unlock(&cookie->lock);
++done:
++	_leave("");
++}
++EXPORT_SYMBOL(__fscache_uncache_page);
++
++/**
++ * fscache_mark_pages_cached - Mark pages as being cached
++ * @op: The retrieval op pages are being marked for
++ * @pagevec: The pages to be marked
++ *
++ * Mark a bunch of netfs pages as being cached.  After this is called,
++ * the netfs must call fscache_uncache_page() to remove the mark.
++ */
++void fscache_mark_pages_cached(struct fscache_retrieval *op,
++			       struct pagevec *pagevec)
++{
++	struct fscache_cookie *cookie = op->op.object->cookie;
++	unsigned long loop;
++
++#ifdef CONFIG_FSCACHE_STATS
++	atomic_add(pagevec->nr, &fscache_n_marks);
++#endif
++
++	for (loop = 0; loop < pagevec->nr; loop++) {
++		struct page *page = pagevec->pages[loop];
++
++		_debug("- mark %p{%lx}", page, page->index);
++		if (TestSetPageFsCache(page)) {
++			static bool once_only = false;
++			if (!once_only) {
++				once_only = true;
++				printk(KERN_WARNING "FS-Cache:"
++				       " Cookie type %s marked page %lx"
++				       " multiple times\n",
++				       cookie->def->name, page->index);
++			}
++		}
++	}
++
++	if (cookie->def->mark_pages_cached)
++		cookie->def->mark_pages_cached(cookie->netfs_data,
++					       op->mapping, pagevec);
++	pagevec_reinit(pagevec);
++}
++EXPORT_SYMBOL(fscache_mark_pages_cached);
+diff --git a/fs/fscache/fsc-proc.c b/fs/fscache/fsc-proc.c
+new file mode 100644
+index 0000000..ef6fd60
+--- /dev/null
++++ b/fs/fscache/fsc-proc.c
+@@ -0,0 +1,404 @@
++/* FS-Cache statistics viewing interface
++ *
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define FSCACHE_DEBUG_LEVEL THREAD
++#include <linux/module.h>
++#include <linux/proc_fs.h>
++#include <linux/seq_file.h>
++#include "fsc-internal.h"
++
++struct fscache_proc {
++	unsigned			nlines;
++	const struct seq_operations	*ops;
++};
++
++struct proc_dir_entry *proc_fscache;
++EXPORT_SYMBOL(proc_fscache);
++
++#if defined(CONFIG_FSCACHE_STATS) || defined(CONFIG_FSCACHE_HISTOGRAM)
++static int fscache_proc_open(struct inode *inode, struct file *file);
++static void *fscache_proc_start(struct seq_file *m, loff_t *pos);
++static void fscache_proc_stop(struct seq_file *m, void *v);
++static void *fscache_proc_next(struct seq_file *m, void *v, loff_t *pos);
++
++static const struct file_operations fscache_proc_fops = {
++	.open		= fscache_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= seq_release,
++};
++#endif
++
++#ifdef CONFIG_FSCACHE_STATS
++static int fscache_stats_show(struct seq_file *m, void *v);
++static int fscache_pool_show(struct seq_file *m, void *v);
++
++static const struct seq_operations fscache_stats_ops = {
++	.start		= fscache_proc_start,
++	.stop		= fscache_proc_stop,
++	.next		= fscache_proc_next,
++	.show		= fscache_stats_show,
++};
++
++static const struct fscache_proc fscache_stats = {
++	.nlines		= 16,
++	.ops		= &fscache_stats_ops,
++};
++
++static const struct seq_operations fscache_pool_ops = {
++	.start		= fscache_proc_start,
++	.stop		= fscache_proc_stop,
++	.next		= fscache_proc_next,
++	.show		= fscache_pool_show,
++};
++
++static const struct fscache_proc fscache_pool = {
++	.nlines		= FSCACHE_MAX_THREADS + 2,
++	.ops		= &fscache_pool_ops,
++};
++#endif
++
++#ifdef CONFIG_FSCACHE_HISTOGRAM
++static int fscache_histogram_show(struct seq_file *m, void *v);
++
++static const struct seq_operations fscache_histogram_ops = {
++	.start		= fscache_proc_start,
++	.stop		= fscache_proc_stop,
++	.next		= fscache_proc_next,
++	.show		= fscache_histogram_show,
++};
++
++static const struct fscache_proc fscache_histogram = {
++	.nlines		= HZ + 1,
++	.ops		= &fscache_histogram_ops,
++};
++#endif
++
++#define FSC_DESC(SELECT, N) ((void *) (unsigned long) (((SELECT) << 16) | (N)))
++
++/*
++ * initialise the /proc/fs/fscache/ directory
++ */
++int __init fscache_proc_init(void)
++{
++#if defined(CONFIG_FSCACHE_STATS) || defined(CONFIG_FSCACHE_HISTOGRAM)
++	struct proc_dir_entry *p;
++#endif
++
++	_enter("");
++
++	proc_fscache = proc_mkdir("fs/fscache", NULL);
++	if (!proc_fscache)
++		goto error_dir;
++	proc_fscache->owner = THIS_MODULE;
++
++#ifdef CONFIG_FSCACHE_STATS
++	p = create_proc_entry("stats", 0, proc_fscache);
++	if (!p)
++		goto error_stats;
++	p->proc_fops = &fscache_proc_fops;
++	p->owner = THIS_MODULE;
++	p->data = (void *) &fscache_stats;
++
++	p = create_proc_entry("pool", 0, proc_fscache);
++	if (!p)
++		goto error_pool;
++	p->proc_fops = &fscache_proc_fops;
++	p->owner = THIS_MODULE;
++	p->data = (void *) &fscache_pool;
++#endif
++
++#ifdef CONFIG_FSCACHE_HISTOGRAM
++	p = create_proc_entry("histogram", 0, proc_fscache);
++	if (!p)
++		goto error_histogram;
++	p->proc_fops = &fscache_proc_fops;
++	p->owner = THIS_MODULE;
++	p->data = (void *) &fscache_histogram;
++#endif
++
++	_leave(" = 0");
++	return 0;
++
++#ifdef CONFIG_FSCACHE_HISTOGRAM
++error_histogram:
++#endif
++#ifdef CONFIG_FSCACHE_STATS
++	remove_proc_entry("pool", proc_fscache);
++error_pool:
++	remove_proc_entry("stats", proc_fscache);
++error_stats:
++#endif
++	remove_proc_entry("fs/fscache", NULL);
++error_dir:
++	_leave(" = -ENOMEM");
++	return -ENOMEM;
++}
++
++/*
++ * clean up the /proc/fs/fscache/ directory
++ */
++void fscache_proc_cleanup(void)
++{
++#ifdef CONFIG_FSCACHE_HISTOGRAM
++	remove_proc_entry("histogram", proc_fscache);
++#endif
++#ifdef CONFIG_FSCACHE_STATS
++	remove_proc_entry("pool", proc_fscache);
++	remove_proc_entry("stats", proc_fscache);
++#endif
++	remove_proc_entry("fs/fscache", NULL);
++}
++
++#if defined(CONFIG_FSCACHE_STATS) || defined(CONFIG_FSCACHE_HISTOGRAM)
++/*
++ * open "/proc/fs/fscache/XXX" which provide statistics summaries
++ */
++static int fscache_proc_open(struct inode *inode, struct file *file)
++{
++	const struct fscache_proc *proc = PDE(inode)->data;
++	struct seq_file *m;
++	int ret;
++
++	ret = seq_open(file, proc->ops);
++	if (ret == 0) {
++		m = file->private_data;
++		m->private = (void *) proc;
++	}
++	return ret;
++}
++
++/*
++ * set up the iterator to start reading from the first line
++ */
++static void *fscache_proc_start(struct seq_file *m, loff_t *_pos)
++{
++	if (*_pos == 0)
++		*_pos = 1;
++	return (void *)(unsigned long) *_pos;
++}
++
++/*
++ * move to the next line
++ */
++static void *fscache_proc_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	const struct fscache_proc *proc = m->private;
++
++	(*pos)++;
++	return *pos > proc->nlines ? NULL : (void *)(unsigned long) *pos;
++}
++
++/*
++ * clean up after reading
++ */
++static void fscache_proc_stop(struct seq_file *m, void *v)
++{
++}
++#endif
++
++#ifdef CONFIG_FSCACHE_STATS
++/*
++ * display the general statistics
++ */
++static int fscache_stats_show(struct seq_file *m, void *v)
++{
++	unsigned long line = (unsigned long) v;
++
++	switch (line) {
++	case 1:
++		seq_puts(m, "FS-Cache statistics\n");
++		break;
++
++	case 2:
++		seq_printf(m, "Cookies: idx=%u dat=%u spc=%u\n",
++			   atomic_read(&fscache_n_cookie_index),
++			   atomic_read(&fscache_n_cookie_data),
++			   atomic_read(&fscache_n_cookie_special));
++		break;
++
++	case 3:
++		seq_printf(m, "Objects: alc=%u nal=%u avl=%u\n",
++			   atomic_read(&fscache_n_object_alloc),
++			   atomic_read(&fscache_n_object_no_alloc),
++			   atomic_read(&fscache_n_object_avail));
++		break;
++
++	case 4:
++		seq_printf(m, "Pages  : mrk=%u unc=%u\n",
++			   atomic_read(&fscache_n_marks),
++			   atomic_read(&fscache_n_uncaches));
++		break;
++
++	case 5:
++		seq_printf(m, "Acquire: n=%u nul=%u noc=%u ok=%u nbf=%u"
++			   " oom=%u\n",
++			   atomic_read(&fscache_n_acquires),
++			   atomic_read(&fscache_n_acquires_null),
++			   atomic_read(&fscache_n_acquires_no_cache),
++			   atomic_read(&fscache_n_acquires_ok),
++			   atomic_read(&fscache_n_acquires_nobufs),
++			   atomic_read(&fscache_n_acquires_oom));
++		break;
++
++	case 6:
++		seq_printf(m, "Lookups: n=%u neg=%u pos=%u crt=%u bst=%u\n",
++			   atomic_read(&fscache_n_object_lookups),
++			   atomic_read(&fscache_n_object_lookups_negative),
++			   atomic_read(&fscache_n_object_lookups_positive),
++			   atomic_read(&fscache_n_object_created),
++			   atomic_read(&fscache_n_object_boosted));
++		break;
++
++	case 7:
++		seq_printf(m, "Updates: n=%u nul=%u run=%u\n",
++			   atomic_read(&fscache_n_updates),
++			   atomic_read(&fscache_n_updates_null),
++			   atomic_read(&fscache_n_updates_run));
++		break;
++
++	case 8:
++		seq_printf(m, "Relinqs: n=%u nul=%u wcr=%u\n",
++			   atomic_read(&fscache_n_relinquishes),
++			   atomic_read(&fscache_n_relinquishes_null),
++			   atomic_read(&fscache_n_relinquishes_waitcrt));
++		break;
++
++	case 9:
++		seq_printf(m, "AttrChg: n=%u ok=%u nbf=%u oom=%u run=%u\n",
++			   atomic_read(&fscache_n_attr_changed),
++			   atomic_read(&fscache_n_attr_changed_ok),
++			   atomic_read(&fscache_n_attr_changed_nobufs),
++			   atomic_read(&fscache_n_attr_changed_nomem),
++			   atomic_read(&fscache_n_attr_changed_calls));
++		break;
++
++	case 10:
++		seq_printf(m, "Allocs : n=%u ok=%u wt=%u nbf=%u\n",
++			   atomic_read(&fscache_n_allocs),
++			   atomic_read(&fscache_n_allocs_ok),
++			   atomic_read(&fscache_n_allocs_wait),
++			   atomic_read(&fscache_n_allocs_nobufs));
++		break;
++	case 11:
++		seq_printf(m, "Allocs : ops=%u owt=%u\n",
++			   atomic_read(&fscache_n_alloc_ops),
++			   atomic_read(&fscache_n_alloc_op_waits));
++		break;
++
++	case 12:
++		seq_printf(m, "Retrvls: n=%u ok=%u wt=%u nod=%u nbf=%u"
++			   " int=%u oom=%u\n",
++			   atomic_read(&fscache_n_retrievals),
++			   atomic_read(&fscache_n_retrievals_ok),
++			   atomic_read(&fscache_n_retrievals_wait),
++			   atomic_read(&fscache_n_retrievals_nodata),
++			   atomic_read(&fscache_n_retrievals_nobufs),
++			   atomic_read(&fscache_n_retrievals_intr),
++			   atomic_read(&fscache_n_retrievals_nomem));
++		break;
++	case 13:
++		seq_printf(m, "Retrvls: ops=%u owt=%u\n",
++			   atomic_read(&fscache_n_retrieval_ops),
++			   atomic_read(&fscache_n_retrieval_op_waits));
++		break;
++
++	case 14:
++		seq_printf(m, "Stores : n=%u ok=%u agn=%u nbf=%u oom=%u\n",
++			   atomic_read(&fscache_n_stores),
++			   atomic_read(&fscache_n_stores_ok),
++			   atomic_read(&fscache_n_stores_again),
++			   atomic_read(&fscache_n_stores_nobufs),
++			   atomic_read(&fscache_n_stores_oom));
++		break;
++	case 15:
++		seq_printf(m, "Stores : ops=%u run=%u\n",
++			   atomic_read(&fscache_n_store_ops),
++			   atomic_read(&fscache_n_store_calls));
++		break;
++
++	case 16:
++		seq_printf(m, "Ops    : pend=%u run=%u enq=%u req=%u rel=%u\n",
++			   atomic_read(&fscache_n_op_pend),
++			   atomic_read(&fscache_n_op_run),
++			   atomic_read(&fscache_n_op_enqueue),
++			   atomic_read(&fscache_n_op_requeue),
++			   atomic_read(&fscache_n_op_release));
++		break;
++
++	default:
++		break;
++	}
++	return 0;
++}
++
++/*
++ * display the per-pool-thread statistics
++ */
++static int fscache_pool_show(struct seq_file *m, void *v)
++{
++	unsigned line = (unsigned long) v;
++	unsigned x, y;
++
++	switch (line) {
++	case 1:
++		seq_puts(m, "THREAD  OPERS RUN OBJS RUN\n");
++		return 0;
++	case 2:
++		seq_puts(m, "======= ========= =========\n");
++		return 0;
++	case 3 ... FSCACHE_MAX_THREADS + 2:
++		x = atomic_read(&fscache_n_ops_processed[line - 3]);
++		y = atomic_read(&fscache_n_objs_processed[line - 3]);
++		if (x != 0 || y != 0)
++			seq_printf(m, "kfsc%02ud %9u %9u\n", line - 3, x, y);
++	default:
++		return 0;
++	}
++}
++#endif
++
++#ifdef CONFIG_FSCACHE_HISTOGRAM
++/*
++ * display the time-taken histogram
++ */
++static int fscache_histogram_show(struct seq_file *m, void *v)
++{
++	unsigned long index;
++	unsigned n[5], t;
++
++	switch ((unsigned long) v) {
++	case 1:
++		seq_puts(m, "JIFS  SECS  OBJ INST  OP RUNS   OBJ RUNS "
++			 " RETRV DLY RETRIEVLS\n");
++		return 0;
++	case 2:
++		seq_puts(m, "===== ===== ========= ========= ========="
++			 " ========= =========\n");
++		return 0;
++	default:
++		index = (unsigned long) v - 3;
++		n[0] = atomic_read(&fscache_obj_instantiate_histogram[index]);
++		n[1] = atomic_read(&fscache_ops_histogram[index]);
++		n[2] = atomic_read(&fscache_objs_histogram[index]);
++		n[3] = atomic_read(&fscache_retrieval_delay_histogram[index]);
++		n[4] = atomic_read(&fscache_retrieval_histogram[index]);
++		if (!(n[0] | n[1] | n[2] | n[3] | n[4]))
++			return 0;
++
++		t = (index * 1000) / HZ;
++
++		seq_printf(m, "%4lu  0.%03u %9u %9u %9u %9u %9u\n",
++			   index, t, n[0], n[1], n[2], n[3], n[4]);
++		return 0;
++	}
++}
++#endif
+diff --git a/fs/fscache/fsc-stats.c b/fs/fscache/fsc-stats.c
+new file mode 100644
+index 0000000..15adbda
+--- /dev/null
++++ b/fs/fscache/fsc-stats.c
+@@ -0,0 +1,103 @@
++/* FS-Cache statistics
++ *
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define FSCACHE_DEBUG_LEVEL THREAD
++#include <linux/module.h>
++#include <linux/proc_fs.h>
++#include <linux/seq_file.h>
++#include "fsc-internal.h"
++
++/*
++ * operation counters
++ */
++#ifdef CONFIG_FSCACHE_STATS
++atomic_t fscache_n_op_pend;
++atomic_t fscache_n_op_run;
++atomic_t fscache_n_op_enqueue;
++atomic_t fscache_n_op_requeue;
++atomic_t fscache_n_op_release;
++
++atomic_t fscache_n_attr_changed;
++atomic_t fscache_n_attr_changed_ok;
++atomic_t fscache_n_attr_changed_nobufs;
++atomic_t fscache_n_attr_changed_nomem;
++atomic_t fscache_n_attr_changed_calls;
++
++atomic_t fscache_n_allocs;
++atomic_t fscache_n_allocs_ok;
++atomic_t fscache_n_allocs_wait;
++atomic_t fscache_n_allocs_nobufs;
++atomic_t fscache_n_alloc_ops;
++atomic_t fscache_n_alloc_op_waits;
++
++atomic_t fscache_n_retrievals;
++atomic_t fscache_n_retrievals_ok;
++atomic_t fscache_n_retrievals_wait;
++atomic_t fscache_n_retrievals_nodata;
++atomic_t fscache_n_retrievals_nobufs;
++atomic_t fscache_n_retrievals_intr;
++atomic_t fscache_n_retrievals_nomem;
++atomic_t fscache_n_retrieval_ops;
++atomic_t fscache_n_retrieval_op_waits;
++
++atomic_t fscache_n_stores;
++atomic_t fscache_n_stores_ok;
++atomic_t fscache_n_stores_again;
++atomic_t fscache_n_stores_nobufs;
++atomic_t fscache_n_stores_oom;
++atomic_t fscache_n_store_ops;
++atomic_t fscache_n_store_calls;
++
++atomic_t fscache_n_marks;
++atomic_t fscache_n_uncaches;
++
++atomic_t fscache_n_acquires;
++atomic_t fscache_n_acquires_null;
++atomic_t fscache_n_acquires_no_cache;
++atomic_t fscache_n_acquires_ok;
++atomic_t fscache_n_acquires_nobufs;
++atomic_t fscache_n_acquires_oom;
++
++atomic_t fscache_n_updates;
++atomic_t fscache_n_updates_null;
++atomic_t fscache_n_updates_run;
++
++atomic_t fscache_n_relinquishes;
++atomic_t fscache_n_relinquishes_null;
++atomic_t fscache_n_relinquishes_waitcrt;
++
++atomic_t fscache_n_cookie_index;
++atomic_t fscache_n_cookie_data;
++atomic_t fscache_n_cookie_special;
++
++atomic_t fscache_n_object_alloc;
++atomic_t fscache_n_object_no_alloc;
++atomic_t fscache_n_object_lookups;
++atomic_t fscache_n_object_lookups_negative;
++atomic_t fscache_n_object_lookups_positive;
++atomic_t fscache_n_object_created;
++atomic_t fscache_n_object_avail;
++atomic_t fscache_n_object_boosted;
++
++/*
++ * the number of operations and objects processed by each thread in the pool
++ */
++atomic_t fscache_n_ops_processed[FSCACHE_MAX_THREADS];
++atomic_t fscache_n_objs_processed[FSCACHE_MAX_THREADS];
++#endif
++
++#ifdef CONFIG_FSCACHE_HISTOGRAM
++atomic_t fscache_obj_instantiate_histogram[HZ];
++atomic_t fscache_objs_histogram[HZ];
++atomic_t fscache_ops_histogram[HZ];
++atomic_t fscache_retrieval_delay_histogram[HZ];
++atomic_t fscache_retrieval_histogram[HZ];
++#endif
+diff --git a/fs/fscache/fsc-threads.c b/fs/fscache/fsc-threads.c
+new file mode 100644
+index 0000000..4853176
+--- /dev/null
++++ b/fs/fscache/fsc-threads.c
+@@ -0,0 +1,676 @@
++/* FS-Cache worker thread pool manager
++ *
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define FSCACHE_DEBUG_LEVEL THREAD
++#include <linux/module.h>
++#include <linux/kthread.h>
++#include "fsc-internal.h"
++
++static LIST_HEAD(fscache_async_object_fifo);
++static LIST_HEAD(fscache_sync_object_fifo);
++static LIST_HEAD(fscache_async_op_fifo);
++static LIST_HEAD(fscache_sync_op_fifo);
++
++static struct task_struct *fscache_threads[FSCACHE_MAX_THREADS];
++
++static unsigned fscache_n_threads = 21;
++module_param_named(n_threads, fscache_n_threads, uint, S_IWUSR | S_IRUGO);
++MODULE_PARM_DESC(fscache_n_threads, "FS-Cache thread pool size");
++
++static DEFINE_SPINLOCK(fscache_object_lock);
++static DEFINE_SPINLOCK(fscache_operation_lock);
++static DEFINE_MUTEX(fscache_thread_mutex);
++static DECLARE_WAIT_QUEUE_HEAD(fscache_async_obj_threads);
++static DECLARE_WAIT_QUEUE_HEAD(fscache_sync_obj_threads);
++static DECLARE_WAIT_QUEUE_HEAD(fscache_async_op_threads);
++static DECLARE_WAIT_QUEUE_HEAD(fscache_sync_op_threads);
++
++/**
++ * fscache_enqueue_operation - Enqueue an operation for processing
++ * @op: The operation to enqueue
++ *
++ * Enqueue an operation for processing by the FS-Cache thread pool.
++ */
++void fscache_enqueue_operation(struct fscache_operation *op)
++{
++	unsigned long flags;
++	unsigned wake = 0;
++
++	_enter("{OBJ%x}", op->object->debug_id);
++
++	ASSERT(op->processor != NULL);
++	ASSERTCMP(op->object->state, >=, FSCACHE_OBJECT_AVAILABLE);
++	ASSERTCMP(atomic_read(&op->usage), >, 0);
++
++	spin_lock_irqsave(&fscache_operation_lock, flags);
++
++	if (list_empty(&op->work_link) &&
++	    !test_bit(FSCACHE_OP_REQUEUE, &op->flags)) {
++		if (!test_bit(FSCACHE_OP_LOCK, &op->flags)) {
++			atomic_inc(&op->usage);
++			if (test_bit(FSCACHE_OP_SYNC, &op->flags)) {
++				list_add_tail(&op->work_link,
++					      &fscache_sync_op_fifo);
++				wake = 1;
++			} else {
++				list_add_tail(&op->work_link,
++					      &fscache_async_op_fifo);
++				wake = 2;
++			}
++			fscache_stat(&fscache_n_op_enqueue);
++		} else {
++			set_bit(FSCACHE_OP_REQUEUE, &op->flags);
++			fscache_stat(&fscache_n_op_requeue);
++		}
++	}
++
++	spin_unlock_irqrestore(&fscache_operation_lock, flags);
++	if (wake) {
++		_debug("wake %u", wake);
++		switch (wake) {
++		case 1:
++			wake_up(&fscache_sync_op_threads);
++			break;
++		case 2:
++			wake_up(&fscache_async_op_threads);
++			break;
++		default:
++			break;
++		}
++	}
++}
++EXPORT_SYMBOL(fscache_enqueue_operation);
++
++/*
++ * jump start the operation processing on an object
++ * - caller must hold object->lock
++ */
++void fscache_start_operations(struct fscache_object *object)
++{
++	struct fscache_operation *op;
++	bool stop = false;
++
++	while (!list_empty(&object->pending_ops) && !stop) {
++		op = list_entry(object->pending_ops.next,
++				struct fscache_operation, work_link);
++
++		if (test_bit(FSCACHE_OP_EXCLUSIVE, &op->flags)) {
++			if (object->n_in_progress > 0)
++				break;
++			stop = true;
++		}
++		list_del_init(&op->work_link);
++		object->n_in_progress++;
++
++		if (test_and_clear_bit(FSCACHE_OP_WAITING, &op->flags))
++			wake_up_bit(&op->flags, FSCACHE_OP_WAITING);
++		if (op->processor)
++			fscache_enqueue_operation(op);
++	}
++
++	ASSERTCMP(object->n_in_progress, <=, object->n_ops);
++
++	_debug("woke %d ops on OBJ%x",
++	       object->n_in_progress, object->debug_id);
++}
++
++/*
++ * release an operation
++ * - queues pending ops if this is the last in-progress op
++ */
++void fscache_put_operation(struct fscache_operation *op)
++{
++	struct fscache_object *object;
++
++	_enter("{%d}", atomic_read(&op->usage));
++
++	ASSERTCMP(atomic_read(&op->usage), >, 0);
++
++	if (!atomic_dec_and_test(&op->usage))
++		return;
++
++	_debug("PUT OP");
++	fscache_stat(&fscache_n_op_release);
++
++	if (op->release)
++		op->release(op);
++
++	object = op->object;
++	spin_lock(&object->lock);
++	if (test_bit(FSCACHE_OP_EXCLUSIVE, &op->flags)) {
++		ASSERTCMP(object->n_exclusive, >, 0);
++		object->n_exclusive--;
++	}
++
++	ASSERTCMP(object->n_in_progress, >, 0);
++	object->n_in_progress--;
++	if (object->n_in_progress == 0)
++		fscache_start_operations(object);
++
++	ASSERTCMP(object->n_ops, >, 0);
++	object->n_ops--;
++	if (object->n_ops == 0)
++		fscache_raise_event(object, FSCACHE_OBJECT_EV_CLEARED);
++
++	spin_unlock(&object->lock);
++	_leave("");
++}
++EXPORT_SYMBOL(fscache_put_operation);
++
++/*
++ * add object to queue
++ * - caller must hold fscache_thread_lock
++ */
++static unsigned __fscache_enqueue_object(struct fscache_object *object)
++{
++	if (test_bit(FSCACHE_OBJECT_SYNC, &object->flags)) {
++		list_add_tail(&object->work_link, &fscache_sync_object_fifo);
++		return 1;
++	} else {
++		list_add_tail(&object->work_link, &fscache_async_object_fifo);
++		return 2;
++	}
++}
++
++/*
++ * enqueue an object for metadata-type processing
++ */
++void fscache_enqueue_object(struct fscache_object *object)
++{
++	struct fscache_cache *cache;
++	unsigned wake = 0;
++
++	_enter("{OBJ%x}", object->debug_id);
++
++	if (list_empty(&object->work_link) &&
++	    !test_bit(FSCACHE_OBJECT_EV_REQUEUE, &object->events)) {
++		spin_lock_irq(&fscache_object_lock);
++		if (!test_bit(FSCACHE_OBJECT_LOCK, &object->flags)) {
++			if (list_empty(&object->work_link)) {
++				_debug("add");
++				cache = object->cache;
++				atomic_inc(&cache->thread_usage);
++				cache->ops->grab_object(object);
++				wake = __fscache_enqueue_object(object);
++			}
++		} else {
++			_debug("defer");
++			set_bit(FSCACHE_OBJECT_EV_REQUEUE, &object->events);
++		}
++		spin_unlock_irq(&fscache_object_lock);
++		if (wake) {
++			_debug("wake %u", wake);
++			switch (wake) {
++			case 1:
++				wake_up(&fscache_sync_obj_threads);
++				break;
++			case 2:
++				wake_up(&fscache_async_obj_threads);
++				break;
++			default:
++				break;
++			}
++		}
++	}
++}
++
++/*
++ * enqueue the dependents of an object for metadata-type processing
++ * - the caller must hold the object's lock
++ * - this may cause an already locked object to wind up being processed again
++ */
++void fscache_enqueue_dependents(struct fscache_object *object)
++{
++	struct fscache_object *dep;
++	unsigned wake = 0;
++
++	_enter("{%p}", object);
++
++	if (list_empty(&object->dependents))
++		return;
++
++	spin_lock_irq(&fscache_object_lock);
++
++	while (!list_empty(&object->dependents)) {
++		dep = list_entry(object->dependents.next,
++				 struct fscache_object, work_link);
++		list_del(&dep->work_link);
++
++		clear_bit(FSCACHE_OBJECT_WAITING, &object->flags);
++
++		/* sort onto appropriate lists */
++		wake |= __fscache_enqueue_object(dep);
++
++		if (!list_empty(&object->dependents) && need_resched()) {
++			spin_unlock_irq(&fscache_object_lock);
++			cond_resched();
++			spin_lock_irq(&fscache_object_lock);
++		}
++	}
++
++	spin_unlock_irq(&fscache_object_lock);
++	if (wake) {
++		_debug("wake %u", wake);
++		if (wake & 1)
++			wake_up(&fscache_sync_obj_threads);
++		if (wake & 2)
++			wake_up(&fscache_async_obj_threads);
++	}
++}
++
++/*
++ * remove an object from whatever queue it's waiting on
++ */
++void fscache_dequeue_object(struct fscache_object *object)
++{
++	_enter("{OBJ%x}", object->debug_id);
++
++	if (!list_empty(&object->dependents)) {
++		spin_lock_irq(&fscache_object_lock);
++		list_del_init(&object->work_link);
++		spin_unlock_irq(&fscache_object_lock);
++	}
++	_leave("");
++}
++
++/*
++ * boost an object that's being waited upon by moving it to the priority queue
++ */
++void fscache_boost_object(struct fscache_object *object)
++{
++	set_bit(FSCACHE_OBJECT_BOOSTED, &object->flags);
++	if (!test_bit(FSCACHE_OBJECT_WAITING, &object->flags)) {
++		fscache_stat(&fscache_n_object_boosted);
++		spin_lock_irq(&fscache_object_lock);
++		if (!list_empty(&object->work_link))
++			list_move_tail(&object->work_link,
++				       &fscache_sync_object_fifo);
++		spin_unlock_irq(&fscache_object_lock);
++	}
++}
++
++/*
++ * object dispatcher
++ * - slow threads take from the object FIFO by preference
++ * - called with fscache_thread_lock locked, which it drops
++ */
++static void fscache_dispatch_object(unsigned thread)
++{
++	struct fscache_object *object;
++	struct fscache_cache *cache = NULL;
++	unsigned long start;
++	bool sync;
++
++	spin_lock_irq(&fscache_object_lock);
++
++	if (list_empty(&fscache_async_object_fifo) &&
++	    list_empty(&fscache_sync_object_fifo)) {
++		spin_unlock_irq(&fscache_object_lock);
++		return;
++	}
++
++	fscache_stat(&fscache_n_objs_processed[thread]);
++
++	sync = !list_empty(&fscache_sync_object_fifo);
++	if (sync) {
++		object = list_entry(fscache_sync_object_fifo.next,
++				    struct fscache_object, work_link);
++		set_user_nice(current, -1);
++	} else {
++		object = list_entry(fscache_async_object_fifo.next,
++				    struct fscache_object, work_link);
++		set_user_nice(current, 1);
++	}
++
++	/* lock the object so that it's only processed by one thread at
++	 * once */
++	_debug("LK OBJ%x", object->debug_id);
++	list_del_init(&object->work_link);
++	if (test_and_set_bit(FSCACHE_OBJECT_LOCK, &object->flags)) {
++		_debug("OBJ%x already locked {%s,%lx}\n",
++		       object->debug_id,
++		       fscache_object_states[object->state],
++		       object->events & object->event_mask);
++		set_bit(FSCACHE_OBJECT_EV_REQUEUE, &object->events);
++		spin_unlock_irq(&fscache_object_lock);
++		return;
++	}
++	do {
++		spin_unlock_irq(&fscache_object_lock);
++
++		do {
++			clear_bit(FSCACHE_OBJECT_EV_REQUEUE, &object->events);
++			start = jiffies;
++			fscache_object_state_machine(object);
++			fscache_hist(fscache_objs_histogram, start);
++		} while (object->events & object->event_mask);
++
++		spin_lock_irq(&fscache_object_lock);
++	} while (object->events & object->event_mask);
++
++	/* unlock the object */
++	_debug("UN OBJ%x", object->debug_id);
++	if (!test_and_clear_bit(FSCACHE_OBJECT_LOCK, &object->flags))
++		BUG();
++
++	spin_unlock_irq(&fscache_object_lock);
++
++	if (object) {
++		/* must do the wake up outside the thread pool lock to avoid a
++		 * circular lock dependency against a __wake_up() lock in
++		 * CacheFiles */
++		wake_up_bit(&object->lock, FSCACHE_OBJECT_LOCK);
++		cache = object->cache;
++		cache->ops->put_object(object);
++		_debug("%d REMAIN", atomic_read(&cache->thread_usage));
++		if (atomic_dec_and_test(&cache->thread_usage)) {
++			_debug("ALL GONE");
++			wake_up_all(&fscache_clearance_wq);
++		}
++	}
++}
++
++/*
++ * operation dispatcher
++ * - all threads can take from the fast FIFO
++ * - called with fscache_thread_lock locked, which it drops
++ */
++static void fscache_dispatch_operation(unsigned thread, struct list_head *queue)
++{
++	struct fscache_operation *op;
++	unsigned long start;
++
++	spin_lock_irq(&fscache_operation_lock);
++
++	if (list_empty(queue)) {
++		spin_unlock_irq(&fscache_operation_lock);
++		return;
++	}
++
++	fscache_stat(&fscache_n_ops_processed[thread]);
++
++	op = list_entry(queue->next, struct fscache_operation, work_link);
++
++	/* lock the operation so that it's only processed by one thread
++	 * at once */
++	_debug("LK OP OBJ%x", op->object->debug_id);
++	if (test_and_set_bit(FSCACHE_OP_LOCK, &op->flags)) {
++		printk(KERN_ERR "FS-Cache: OP on OBJ%x already locked\n",
++		       op->object->debug_id);
++		BUG();
++	}
++	list_del_init(&op->work_link);
++	spin_unlock_irq(&fscache_operation_lock);
++
++	ASSERT(op->processor != NULL);
++	start = jiffies;
++	op->processor(op);
++	fscache_hist(fscache_ops_histogram, start);
++
++	/* unlock the op and requeue if requested */
++	spin_lock_irq(&fscache_operation_lock);
++	_debug("UN OP OBJ%x", op->object->debug_id);
++	clear_bit(FSCACHE_OP_LOCK, &op->flags);
++
++	if (test_and_clear_bit(FSCACHE_OP_REQUEUE, &op->flags)) {
++		list_add(&op->work_link, queue);
++		op = NULL;
++	}
++
++	spin_unlock_irq(&fscache_operation_lock);
++
++	if (op)
++		fscache_put_operation(op);
++}
++
++/*
++ * thread dispatcher
++ */
++static void fscache_dispatch(unsigned thread, unsigned level)
++{
++	_enter("");
++
++	switch (level) {
++	case 2:
++		/* threads 2, 5, 8, 11, ... do object processing then sync
++		 * object processing, then async ops then sync ops */
++		if (!list_empty(&fscache_async_object_fifo) ||
++		    !list_empty(&fscache_sync_object_fifo)) {
++			fscache_dispatch_object(thread);
++			break;
++		}
++	case 1:
++		/* threads 1, 4, 7, 10, ... do async ops then sync ops */
++		if (!list_empty(&fscache_async_op_fifo)) {
++			fscache_dispatch_operation(thread,
++						   &fscache_async_op_fifo);
++			break;
++		}
++		if (!list_empty(&fscache_sync_op_fifo)) {
++			fscache_dispatch_operation(thread,
++						   &fscache_sync_op_fifo);
++			break;
++		}
++		break;
++	default:
++		/* threads 0, 3, 6, 9, ... do sync ops only */
++		if (!list_empty(&fscache_sync_op_fifo)) {
++			fscache_dispatch_operation(thread,
++						   &fscache_sync_op_fifo);
++			break;
++		}
++		break;
++	}
++
++	_leave("");
++}
++
++/*
++ * operation dispatcher thread (where thread ID % 3 == 2) dedicated to doing
++ * asynchronous and synchronous object processing and asynchronous and
++ * synchronous operation processing in that order
++ */
++static int kfscached_type_2(unsigned thread)
++{
++	DECLARE_WAITQUEUE(myself_async_obj, current);
++	DECLARE_WAITQUEUE(myself_sync_obj, current);
++	DECLARE_WAITQUEUE(myself_async_op, current);
++	DECLARE_WAITQUEUE(myself_sync_op, current);
++
++	/* set_user_nice(current, -4); */
++
++	do {
++		while (!list_empty(&fscache_async_object_fifo) ||
++		       !list_empty(&fscache_sync_object_fifo) ||
++		       !list_empty(&fscache_async_op_fifo) ||
++		       !list_empty(&fscache_sync_op_fifo)
++		       ) {
++			fscache_dispatch(thread, 2);
++			cond_resched();
++		}
++
++		if (thread / 3 & 1) {
++			add_wait_queue(&fscache_async_obj_threads,
++				       &myself_async_obj);
++			add_wait_queue_tail(&fscache_sync_obj_threads,
++					    &myself_sync_obj);
++		} else {
++			add_wait_queue_tail(&fscache_async_obj_threads,
++					    &myself_async_obj);
++			add_wait_queue(&fscache_sync_obj_threads,
++				       &myself_sync_obj);
++		}
++		add_wait_queue_tail(&fscache_async_op_threads,
++				    &myself_async_op);
++		add_wait_queue_tail(&fscache_sync_op_threads, &myself_sync_op);
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (list_empty(&fscache_async_object_fifo) &&
++		    list_empty(&fscache_sync_object_fifo) &&
++		    list_empty(&fscache_async_op_fifo) &&
++		    list_empty(&fscache_sync_op_fifo) &&
++		    !kthread_should_stop())
++			schedule();
++		remove_wait_queue(&fscache_async_obj_threads,
++				  &myself_async_obj);
++		remove_wait_queue(&fscache_sync_obj_threads, &myself_sync_obj);
++		remove_wait_queue(&fscache_async_op_threads, &myself_async_op);
++		remove_wait_queue(&fscache_sync_op_threads, &myself_sync_op);
++		__set_current_state(TASK_RUNNING);
++	} while (!kthread_should_stop());
++
++	return 0;
++}
++
++/*
++ * operation dispatcher thread (where thread ID % 3 == 1) dedicated to doing
++ * asynchronous and synchronous operation processing only
++ */
++static int kfscached_type_1(unsigned thread)
++{
++	DECLARE_WAITQUEUE(myself_async_op, current);
++	DECLARE_WAITQUEUE(myself_sync_op, current);
++
++	do {
++		while (!list_empty(&fscache_async_op_fifo) ||
++		       !list_empty(&fscache_sync_op_fifo)) {
++			fscache_dispatch(thread, 1);
++			cond_resched();
++		}
++
++		add_wait_queue(&fscache_async_op_threads, &myself_async_op);
++		add_wait_queue_tail(&fscache_sync_op_threads, &myself_sync_op);
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (list_empty(&fscache_async_op_fifo) &&
++		    list_empty(&fscache_sync_op_fifo) &&
++		    !kthread_should_stop())
++			schedule();
++		remove_wait_queue(&fscache_async_op_threads, &myself_async_op);
++		remove_wait_queue(&fscache_sync_op_threads, &myself_sync_op);
++		__set_current_state(TASK_RUNNING);
++	} while (!kthread_should_stop());
++
++	return 0;
++}
++
++/*
++ * operation dispatcher thread (where thread ID % 3 == 0) dedicated to doing
++ * synchronous operation processing only
++ */
++static int kfscached(void *_thread)
++{
++	unsigned thread = (unsigned long) _thread;
++
++	DECLARE_WAITQUEUE(myself_sync_op, current);
++
++	switch (thread % 3) {
++	case 2:
++		return kfscached_type_2(thread);
++	case 1:
++		return kfscached_type_1(thread);
++	default:
++		break;
++	}
++
++	set_user_nice(current, 1);
++
++	do {
++		while (!list_empty(&fscache_sync_op_fifo)) {
++			fscache_dispatch(thread, 0);
++			cond_resched();
++		}
++
++		add_wait_queue(&fscache_sync_op_threads, &myself_sync_op);
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (list_empty(&fscache_sync_op_fifo) &&
++		    !kthread_should_stop())
++			schedule();
++		remove_wait_queue(&fscache_sync_op_threads, &myself_sync_op);
++		__set_current_state(TASK_RUNNING);
++	} while (!kthread_should_stop());
++
++	return 0;
++}
++
++/*
++ * initialise the worker thread pool
++ */
++int fscache_init_threads(void)
++{
++	static bool inited = false;
++	struct task_struct *t;
++	unsigned long loop, max;
++	int ret;
++
++	_enter("");
++
++	mutex_lock(&fscache_thread_mutex);
++
++	if (!inited) {
++		max = fscache_n_threads;
++		if (max < FSCACHE_MIN_THREADS)
++			max = FSCACHE_MIN_THREADS;
++		else if (max > FSCACHE_MAX_THREADS)
++			max = FSCACHE_MAX_THREADS;
++
++		for (loop = 0; loop < max; loop++) {
++			t = kthread_create(kfscached, (void *) loop,
++					   "kfsc%02ud", loop);
++			if (IS_ERR(t))
++				goto failed;
++			fscache_threads[loop] = t;
++			wake_up_process(t);
++		}
++
++		inited = true;
++	}
++	mutex_unlock(&fscache_thread_mutex);
++	_leave(" = 0");
++	return 0;
++
++failed:
++	ret = PTR_ERR(t);
++	printk(KERN_ERR "FS-Cache: Unable to create kfscached threads (%d)\n",
++	       ret);
++
++	while (loop-- > 0) {
++		if (fscache_threads[loop]) {
++			kthread_stop(fscache_threads[loop]);
++			fscache_threads[loop] = NULL;
++		}
++	}
++
++	mutex_unlock(&fscache_thread_mutex);
++	_leave(" = %d", ret);
++	return ret;
++}
++
++/*
++ * kill the pool of running threads
++ */
++void fscache_kill_threads(void)
++{
++	unsigned int loop;
++
++	_enter("");
++	mutex_lock(&fscache_thread_mutex);
++
++	for (loop = 0; loop < FSCACHE_MAX_THREADS; loop++)
++		if (fscache_threads[loop])
++			kthread_stop(fscache_threads[loop]);
++
++	BUG_ON(!list_empty(&fscache_async_object_fifo));
++	BUG_ON(!list_empty(&fscache_sync_object_fifo));
++	BUG_ON(!list_empty(&fscache_async_op_fifo));
++	BUG_ON(!list_empty(&fscache_sync_op_fifo));
++
++	mutex_unlock(&fscache_thread_mutex);
++	_leave("");
++}
+diff --git a/include/linux/fscache-cache.h b/include/linux/fscache-cache.h
+new file mode 100644
+index 0000000..176797f
+--- /dev/null
++++ b/include/linux/fscache-cache.h
+@@ -0,0 +1,433 @@
++/* General filesystem caching backing cache interface
++ *
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ * NOTE!!! See:
++ *
++ *	Documentation/filesystems/caching/backend-api.txt
++ *
++ * for a description of the cache backend interface declared here.
++ */
++
++#ifndef _LINUX_FSCACHE_CACHE_H
++#define _LINUX_FSCACHE_CACHE_H
++
++#include <linux/fscache.h>
++
++#define NR_MAXCACHES BITS_PER_LONG
++
++struct fscache_cache;
++struct fscache_cache_ops;
++struct fscache_object;
++
++#ifdef CONFIG_FSCACHE_PROC
++extern struct proc_dir_entry *proc_fscache;
++#endif
++
++/*
++ * cache tag definition
++ */
++struct fscache_cache_tag {
++	struct list_head	link;
++	struct fscache_cache	*cache;		/* cache referred to by this tag */
++	unsigned long		flags;
++#define FSCACHE_TAG_RESERVED	0		/* T if tag is reserved for a cache */
++	atomic_t		usage;
++	char			name[0];	/* tag name */
++};
++
++/*
++ * cache definition
++ */
++struct fscache_cache {
++	const struct fscache_cache_ops *ops;
++	struct fscache_cache_tag *tag;		/* tag representing this cache */
++	struct kobject		kobj;		/* system representation of this cache */
++	struct list_head	link;		/* link in list of caches */
++	size_t			max_index_size;	/* maximum size of index data */
++	char			identifier[32];	/* cache label */
++
++	/* node management */
++	struct list_head	object_list;	/* list of data/index objects */
++	spinlock_t		object_list_lock;
++	atomic_t		thread_usage;	/* no. of threads working this cache */
++	struct fscache_object	*fsdef;		/* object for the fsdef index */
++	unsigned long		flags;
++#define FSCACHE_IOERROR		0	/* cache stopped on I/O error */
++#define FSCACHE_CACHE_WITHDRAWN	1	/* cache has been withdrawn */
++};
++
++/*
++ * asynchronous operation being applied to or waiting to be applied to a cache
++ * object
++ * - slow operations are done in the context of the process that issued them,
++ *   not in the context of kfscached
++ */
++struct fscache_operation {
++	struct list_head	work_link;	/* link in worker thread FIFO or
++						 * link in object->pending_ops */
++	struct fscache_object	*object;	/* object to be operated upon */
++
++	unsigned long		flags;
++#define FSCACHE_OP_WAITING	0	/* cleared when op is woken */
++#define FSCACHE_OP_SYNC		1	/* synchronous operation */
++#define FSCACHE_OP_EXCLUSIVE	2	/* exclusive op, other ops must wait */
++#define FSCACHE_OP_LOCK		3	/* thread pool processing lock */
++#define FSCACHE_OP_REQUEUE	4	/* op needs more processing */
++
++	atomic_t		usage;
++
++	/* operation processor callback
++	 * - can be NULL if FSCACHE_OP_WAITING is going to be used to perform
++	 *   the op in a non-pool thread */
++	void (*processor)(struct fscache_operation *op);
++
++	/* operation releaser */
++	void (*release)(struct fscache_operation *op);
++};
++
++extern void fscache_enqueue_operation(struct fscache_operation *);
++extern void fscache_put_operation(struct fscache_operation *);
++
++/*
++ * data read operation
++ */
++struct fscache_retrieval {
++	struct fscache_operation op;
++	struct address_space	*mapping;	/* netfs pages */
++	fscache_rw_complete_t	end_io_func;	/* function to call on I/O completion */
++	void			*context;	/* netfs read context (pinned) */
++	struct list_head	to_do;		/* list of things to be done by the backend */
++	unsigned long		start_time;	/* time at which retrieval started */
++};
++
++typedef int (*fscache_page_retrieval_func_t)(struct fscache_retrieval *op,
++					     struct page *page,
++					     gfp_t gfp);
++
++typedef int (*fscache_pages_retrieval_func_t)(struct fscache_retrieval *op,
++					      struct list_head *pages,
++					      unsigned *nr_pages,
++					      gfp_t gfp);
++
++/**
++ * fscache_get_retrieval - Get an extra reference on a retrieval operation
++ * @op: The retrieval operation to get a reference on
++ *
++ * Get an extra reference on a retrieval operation.
++ */
++static inline
++struct fscache_retrieval *fscache_get_retrieval(struct fscache_retrieval *op)
++{
++	atomic_inc(&op->op.usage);
++	return op;
++}
++
++/**
++ * fscache_enqueue_retrieval - Enqueue a retrieval operation for processing
++ * @op: The retrieval operation affected
++ *
++ * Enqueue a retrieval operation for processing by the FS-Cache thread pool.
++ */
++static inline void fscache_enqueue_retrieval(struct fscache_retrieval *op)
++{
++	fscache_enqueue_operation(&op->op);
++}
++
++/**
++ * fscache_put_retrieval - Drop a reference to a retrieval operation
++ * @op: The retrieval operation affected
++ *
++ * Drop a reference to a retrieval operation.
++ */
++static inline void fscache_put_retrieval(struct fscache_retrieval *op)
++{
++	fscache_put_operation(&op->op);
++}
++
++/*
++ * cached page storage work item
++ * - used to do three things:
++ *   - batch writes to the cache
++ *   - do cache writes asynchronously
++ *   - defer writes until cache object lookup completion
++ */
++struct fscache_storage {
++	struct fscache_operation op;
++	pgoff_t			store_limit;	/* don't write more than this */
++};
++
++/*
++ * cache operations
++ */
++struct fscache_cache_ops {
++	/* name of cache provider */
++	const char *name;
++
++	/* allocate an object record for a cookie */
++	struct fscache_object *(*alloc_object)(struct fscache_cache *cache,
++					       struct fscache_cookie *cookie);
++
++	/* look up the object for a cookie */
++	void (*lookup_object)(struct fscache_object *object);
++
++	/* finished looking up */
++	void (*lookup_complete)(struct fscache_object *object);
++
++	/* increment the usage count on this object (may fail if unmounting) */
++	struct fscache_object *(*grab_object)(struct fscache_object *object);
++
++	/* pin an object in the cache */
++	int (*pin_object)(struct fscache_object *object);
++
++	/* unpin an object in the cache */
++	void (*unpin_object)(struct fscache_object *object);
++
++	/* store the updated auxilliary data on an object */
++	void (*update_object)(struct fscache_object *object);
++
++	/* discard the resources pinned by an object and effect retirement if
++	 * necessary */
++	void (*drop_object)(struct fscache_object *object);
++
++	/* dispose of a reference to an object */
++	void (*put_object)(struct fscache_object *object);
++
++	/* sync a cache */
++	void (*sync_cache)(struct fscache_cache *cache);
++
++	/* notification that the attributes of a non-index object (such as
++	 * i_size) have changed */
++	int (*attr_changed)(struct fscache_object *object);
++
++	/* reserve space for an object's data and associated metadata */
++	int (*reserve_space)(struct fscache_object *object, loff_t i_size);
++
++	/* request a backing block for a page be read or allocated in the
++	 * cache */
++	fscache_page_retrieval_func_t read_or_alloc_page;
++
++	/* request backing blocks for a list of pages be read or allocated in
++	 * the cache */
++	fscache_pages_retrieval_func_t read_or_alloc_pages;
++
++	/* request a backing block for a page be allocated in the cache so that
++	 * it can be written directly */
++	fscache_page_retrieval_func_t allocate_page;
++
++	/* request backing blocks for pages be allocated in the cache so that
++	 * they can be written directly */
++	fscache_pages_retrieval_func_t allocate_pages;
++
++	/* write a page to its backing block in the cache */
++	int (*write_page)(struct fscache_storage *op, struct page *page);
++
++	/* detach backing block from a page (optional)
++	 * - must release the cookie lock before returning
++	 * - may sleep
++	 */
++	void (*uncache_page)(struct fscache_object *object,
++			     struct page *page);
++
++	/* dissociate a cache from all the pages it was backing */
++	void (*dissociate_pages)(struct fscache_cache *cache);
++};
++
++/*
++ * data file or index object cookie
++ * - a file will only appear in one cache
++ * - a request to cache a file may or may not be honoured, subject to
++ *   constraints such as disk space
++ * - indices are created on disk just-in-time
++ */
++struct fscache_cookie {
++	atomic_t			usage;		/* number of users of this cookie */
++	atomic_t			n_children;	/* number of children of this cookie */
++	spinlock_t			lock;
++	struct hlist_head		backing_objects; /* object(s) backing this file/index */
++	const struct fscache_cookie_def	*def;		/* definition */
++	struct fscache_cookie		*parent;	/* parent of this entry */
++	void				*netfs_data;	/* back pointer to netfs */
++	unsigned long			flags;
++#define FSCACHE_COOKIE_LOOKING_UP	0	/* T if non-index cookie being looked up still */
++#define FSCACHE_COOKIE_CREATING		1	/* T if non-index object being created still */
++#define FSCACHE_COOKIE_NO_DATA_YET	2	/* T if new object with no cached data yet */
++#define FSCACHE_COOKIE_PENDING_FILL	3	/* T if pending initial fill on object */
++#define FSCACHE_COOKIE_FILLING		4	/* T if filling object incrementally */
++#define FSCACHE_COOKIE_UNAVAILABLE	5	/* T if cookie is unavailable (error, etc) */
++};
++
++extern struct fscache_cookie fscache_fsdef_index;
++
++/*
++ * on-disk cache file or index handle
++ */
++struct fscache_object {
++	enum {
++		FSCACHE_OBJECT_INIT,		/* object in initial unbound state */
++		FSCACHE_OBJECT_LOOKING_UP,	/* looking up object */
++		FSCACHE_OBJECT_CREATING,	/* creating object */
++
++		/* active states */
++		FSCACHE_OBJECT_AVAILABLE,	/* cleaning up object after creation */
++		FSCACHE_OBJECT_ACTIVE,		/* object is usable */
++		FSCACHE_OBJECT_UPDATING,	/* object is updating */
++
++		/* terminal states */
++		FSCACHE_OBJECT_DYING,		/* object waiting for accessors to finish */
++		FSCACHE_OBJECT_LC_DYING,	/* object cleaning up after lookup/create */
++		FSCACHE_OBJECT_ABORT_INIT,	/* abort the init state */
++		FSCACHE_OBJECT_RELEASING,	/* releasing object */
++		FSCACHE_OBJECT_RECYCLING,	/* retiring object */
++		FSCACHE_OBJECT_WITHDRAWING,	/* withdrawing object */
++		FSCACHE_OBJECT_DEAD,		/* object is now dead */
++	} state;
++
++	int			debug_id;	/* debugging ID */
++	int			n_children;	/* number of child objects */
++	int			n_ops;		/* number of ops outstanding on object */
++	int			n_in_progress;	/* number of ops in progress */
++	int			n_exclusive;	/* number of exclusive ops queued */
++	spinlock_t		lock;		/* state and operations lock */
++
++	unsigned long		lookup_jif;	/* time at which lookup started */
++	unsigned long		event_mask;	/* events this object is interested in */
++	unsigned long		events;		/* events to be processed by this object
++						 * (order is important - using fls) */
++#define FSCACHE_OBJECT_EV_REQUEUE	0	/* T if object should be requeued */
++#define FSCACHE_OBJECT_EV_UPDATE	1	/* T if object should be updated */
++#define FSCACHE_OBJECT_EV_CLEARED	2	/* T if accessors all gone */
++#define FSCACHE_OBJECT_EV_ERROR		3	/* T if fatal error occurred during processing */
++#define FSCACHE_OBJECT_EV_RELEASE	4	/* T if netfs requested object release */
++#define FSCACHE_OBJECT_EV_RETIRE	5	/* T if netfs requested object retirement */
++#define FSCACHE_OBJECT_EV_WITHDRAW	6	/* T if cache requested object withdrawal */
++
++	unsigned long		flags;
++#define FSCACHE_OBJECT_LOCK		0	/* T if object is busy being processed */
++#define FSCACHE_OBJECT_SYNC		1	/* T if object is has waiters */
++#define FSCACHE_OBJECT_PENDING_WRITE	2	/* T if object has pending write */
++#define FSCACHE_OBJECT_WAITING		3	/* T if object is waiting on its parent */
++#define FSCACHE_OBJECT_BOOSTED		4	/* T if object was boosted to priority queue */
++
++	struct list_head	cache_link;	/* link in cache->object_list */
++	struct hlist_node	cookie_link;	/* link in cookie->backing_objects */
++	struct fscache_cache	*cache;		/* cache that supplied this object */
++	struct fscache_cookie	*cookie;	/* netfs's file/index object */
++	struct fscache_object	*parent;	/* parent object */
++	struct list_head	work_link;	/* link in worker thread FIFO */
++	struct list_head	dependents;	/* FIFO of dependent objects */
++	struct list_head	pending_ops;	/* unstarted operations on this object */
++	struct radix_tree_root	stores;		/* data to be stored */
++	pgoff_t			store_limit;	/* current storage limit */
++};
++
++extern const char *fscache_object_states[];
++
++#define fscache_object_is_active(obj)			      \
++	(!test_bit(FSCACHE_IOERROR, &(obj)->cache->flags) &&  \
++	 (obj)->state >= FSCACHE_OBJECT_AVAILABLE &&	      \
++	 (obj)->state < FSCACHE_OBJECT_DYING)
++
++/**
++ * fscache_object_init - Initialise a cache object description
++ * @object: Object description
++ *
++ * Initialise a cache object description to its basic values.
++ *
++ * See Documentation/filesystems/caching/backend-api.txt for a complete
++ * description.
++ */
++static inline
++void fscache_object_init(struct fscache_object *object)
++{
++	object->state = FSCACHE_OBJECT_INIT;
++	spin_lock_init(&object->lock);
++	INIT_LIST_HEAD(&object->cache_link);
++	INIT_HLIST_NODE(&object->cookie_link);
++	INIT_LIST_HEAD(&object->work_link);
++	INIT_LIST_HEAD(&object->dependents);
++	INIT_LIST_HEAD(&object->pending_ops);
++	INIT_RADIX_TREE(&object->stores, GFP_NOFS);
++	object->n_children = 0;
++	object->n_ops = object->n_in_progress = object->n_exclusive = 0;
++	object->events = object->event_mask = 0;
++	object->flags = 0;
++	object->store_limit = 0;
++	object->cache = NULL;
++	object->cookie = NULL;
++}
++
++extern void fscache_object_lookup_negative(struct fscache_object *object);
++extern void fscache_obtained_object(struct fscache_object *object);
++
++/**
++ * fscache_object_lookup_error - Note an object encountered an error
++ * @object: The object on which the error was encountered
++ *
++ * Note that an object encountered a fatal error (usually an I/O error) and
++ * that it should be withdrawn as soon as possible.
++ */
++static inline void fscache_object_lookup_error(struct fscache_object *object)
++{
++	set_bit(FSCACHE_OBJECT_EV_ERROR, &object->events);
++}
++
++/**
++ * fscache_set_store_limit - Set the maximum size to be stored in an object
++ * @object: The object to set the maximum on
++ * @i_size: The limit to set in bytes
++ *
++ * Set the maximum size an object is permitted to reach, implying the highest
++ * byte that may be written.  Intended to be called by the attr_changed() op.
++ *
++ * See Documentation/filesystems/caching/backend-api.txt for a complete
++ * description.
++ */
++static inline
++void fscache_set_store_limit(struct fscache_object *object, loff_t i_size)
++{
++	object->store_limit = i_size >> PAGE_SHIFT;
++	if (i_size & ~PAGE_MASK)
++		object->store_limit++;
++}
++
++/**
++ * fscache_end_io - End a retrieval operation on a page
++ * @op: The FS-Cache operation covering the retrieval
++ * @page: The page that was to be fetched
++ * @error: The error code (0 if successful)
++ *
++ * Note the end of an operation to retrieve a page, as covered by a particular
++ * operation record.
++ */
++static inline void fscache_end_io(struct fscache_retrieval *op,
++				  struct page *page, int error)
++{
++	op->end_io_func(page, op->context, error);
++}
++
++/*
++ * out-of-line cache backend functions
++ */
++extern void fscache_init_cache(struct fscache_cache *cache,
++			       const struct fscache_cache_ops *ops,
++			       const char *idfmt,
++			       ...) __attribute__ ((format (printf, 3, 4)));
++
++extern int fscache_add_cache(struct fscache_cache *cache,
++			     struct fscache_object *fsdef,
++			     const char *tagname);
++extern void fscache_withdraw_cache(struct fscache_cache *cache);
++
++extern void fscache_io_error(struct fscache_cache *cache);
++
++extern void fscache_mark_pages_cached(struct fscache_retrieval *op,
++				      struct pagevec *pagevec);
++
++#endif /* _LINUX_FSCACHE_CACHE_H */
+diff --git a/include/linux/fscache.h b/include/linux/fscache.h
+new file mode 100644
+index 0000000..0e20917
+--- /dev/null
++++ b/include/linux/fscache.h
+@@ -0,0 +1,617 @@
++/* General filesystem caching interface
++ *
++ * Copyright (C) 2004-2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ * NOTE!!! See:
++ *
++ *	Documentation/filesystems/caching/netfs-api.txt
++ *
++ * for a description of the network filesystem interface declared here.
++ */
++
++#ifndef _LINUX_FSCACHE_H
++#define _LINUX_FSCACHE_H
++
++#include <linux/fs.h>
++#include <linux/list.h>
++#include <linux/pagemap.h>
++#include <linux/pagevec.h>
++
++#if defined(CONFIG_FSCACHE) || defined(CONFIG_FSCACHE_MODULE)
++#define fscache_available() (1)
++#define fscache_cookie_valid(cookie) (cookie)
++#else
++#define fscache_available() (0)
++#define fscache_cookie_valid(cookie) (0)
++#endif
++
++
++/*
++ * overload PG_private_2 to give us PG_fscache - this is used to indicate that
++ * a page is currently backed by a local disk cache
++ */
++#define PageFsCache(page)		PagePrivate2((page))
++#define SetPageFsCache(page)		SetPagePrivate2((page))
++#define ClearPageFsCache(page)		ClearPagePrivate2((page))
++#define TestSetPageFsCache(page)	TestSetPagePrivate2((page))
++#define TestClearPageFsCache(page)	TestClearPagePrivate2((page))
++
++/*
++ * overload PG_owner_priv_2 to give us PG_fscache_write - this is used to
++ * indicate that a page is currently being written to a local disk cache
++ */
++#define PageFsCacheWrite(page)		PageOwnerPriv2((page))
++#define SetPageFsCacheWrite(page)	SetPageOwnerPriv2((page))
++#define ClearPageFsCacheWrite(page)	ClearPageOwnerPriv2((page))
++#define TestSetPageFsCacheWrite(page)	TestSetPageOwnerPriv2((page))
++#define TestClearPageFsCacheWrite(page)	TestClearPageOwnerPriv2((page))
++
++#define wait_on_page_fscache_write(page) wait_on_page_owner_priv_2((page))
++#define end_page_fscache_write(page)	end_page_owner_priv_2((page))
++
++
++/* pattern used to fill dead space in an index entry */
++#define FSCACHE_INDEX_DEADFILL_PATTERN 0x79
++
++struct pagevec;
++struct fscache_cache_tag;
++struct fscache_cookie;
++struct fscache_netfs;
++struct fscache_netfs_operations;
++
++typedef void (*fscache_rw_complete_t)(struct page *page,
++				      void *context,
++				      int error);
++
++/* result of index entry consultation */
++enum fscache_checkaux {
++	FSCACHE_CHECKAUX_OKAY,		/* entry okay as is */
++	FSCACHE_CHECKAUX_NEEDS_UPDATE,	/* entry requires update */
++	FSCACHE_CHECKAUX_OBSOLETE,	/* entry requires deletion */
++};
++
++/*
++ * fscache cookie definition
++ */
++struct fscache_cookie_def {
++	/* name of cookie type */
++	char name[16];
++
++	/* cookie type */
++	uint8_t type;
++#define FSCACHE_COOKIE_TYPE_INDEX	0
++#define FSCACHE_COOKIE_TYPE_DATAFILE	1
++
++	/* select the cache into which to insert an entry in this index
++	 * - optional
++	 * - should return a cache identifier or NULL to cause the cache to be
++	 *   inherited from the parent if possible or the first cache picked
++	 *   for a non-index file if not
++	 */
++	struct fscache_cache_tag *(*select_cache)(
++		const void *parent_netfs_data,
++		const void *cookie_netfs_data);
++
++	/* get an index key
++	 * - should store the key data in the buffer
++	 * - should return the amount of amount stored
++	 * - not permitted to return an error
++	 * - the netfs data from the cookie being used as the source is
++	 *   presented
++	 */
++	uint16_t (*get_key)(const void *cookie_netfs_data,
++			    void *buffer,
++			    uint16_t bufmax);
++
++	/* get certain file attributes from the netfs data
++	 * - this function can be absent for an index
++	 * - not permitted to return an error
++	 * - the netfs data from the cookie being used as the source is
++	 *   presented
++	 */
++	void (*get_attr)(const void *cookie_netfs_data, uint64_t *size);
++
++	/* get the auxilliary data from netfs data
++	 * - this function can be absent if the index carries no state data
++	 * - should store the auxilliary data in the buffer
++	 * - should return the amount of amount stored
++	 * - not permitted to return an error
++	 * - the netfs data from the cookie being used as the source is
++	 *   presented
++	 */
++	uint16_t (*get_aux)(const void *cookie_netfs_data,
++			    void *buffer,
++			    uint16_t bufmax);
++
++	/* consult the netfs about the state of an object
++	 * - this function can be absent if the index carries no state data
++	 * - the netfs data from the cookie being used as the target is
++	 *   presented, as is the auxilliary data
++	 */
++	enum fscache_checkaux (*check_aux)(void *cookie_netfs_data,
++					   const void *data,
++					   uint16_t datalen);
++
++	/* get an extra reference on a read context
++	 * - this function can be absent if the completion function doesn't
++	 *   require a context
++	 */
++	void (*get_context)(void *cookie_netfs_data, void *context);
++
++	/* release an extra reference on a read context
++	 * - this function can be absent if the completion function doesn't
++	 *   require a context
++	 */
++	void (*put_context)(void *cookie_netfs_data, void *context);
++
++	/* indicate pages that now have cache metadata retained
++	 * - this function should mark the specified pages as now being cached
++	 * - the pages will have been marked with PG_fscache before this is
++	 *   called, so this is optional
++	 */
++	void (*mark_pages_cached)(void *cookie_netfs_data,
++				  struct address_space *mapping,
++				  struct pagevec *cached_pvec);
++
++	/* indicate the cookie is no longer cached
++	 * - this function is called when the backing store currently caching
++	 *   a cookie is removed
++	 * - the netfs should use this to clean up any markers indicating
++	 *   cached pages
++	 * - this is mandatory for any object that may have data
++	 */
++	void (*now_uncached)(void *cookie_netfs_data);
++};
++
++/*
++ * netfs operations pointer (currently there aren't any ops)
++ */
++struct fscache_netfs_operations {
++};
++
++/*
++ * fscache cached network filesystem type
++ * - name, version and ops must be filled in before registration
++ * - all other fields will be set during registration
++ */
++struct fscache_netfs {
++	uint32_t			version;	/* indexing version */
++	const char			*name;		/* filesystem name */
++	struct fscache_cookie		*primary_index;
++	const struct fscache_netfs_operations *ops;
++	struct list_head		link;		/* internal link */
++};
++
++/*
++ * slow-path functions for when there is actually caching available, and the
++ * netfs does actually have a valid token
++ * - these are not to be called directly
++ * - these are undefined symbols when FS-Cache is not configured and the
++ *   optimiser takes care of not using them
++ */
++extern int __fscache_register_netfs(struct fscache_netfs *);
++extern void __fscache_unregister_netfs(struct fscache_netfs *);
++extern struct fscache_cache_tag *__fscache_lookup_cache_tag(const char *);
++extern void __fscache_release_cache_tag(struct fscache_cache_tag *);
++extern struct fscache_cookie *__fscache_acquire_cookie(
++	struct fscache_cookie *,
++	const struct fscache_cookie_def *,
++	void *);
++extern void __fscache_relinquish_cookie(struct fscache_cookie *, int);
++extern void __fscache_update_cookie(struct fscache_cookie *);
++extern int __fscache_pin_cookie(struct fscache_cookie *);
++extern void __fscache_unpin_cookie(struct fscache_cookie *);
++extern int __fscache_attr_changed(struct fscache_cookie *);
++extern int __fscache_reserve_space(struct fscache_cookie *, loff_t);
++extern int __fscache_read_or_alloc_page(struct fscache_cookie *,
++					struct page *,
++					fscache_rw_complete_t,
++					void *,
++					gfp_t);
++extern int __fscache_read_or_alloc_pages(struct fscache_cookie *,
++					 struct address_space *,
++					 struct list_head *,
++					 unsigned *,
++					 fscache_rw_complete_t,
++					 void *,
++					 gfp_t);
++extern int __fscache_alloc_page(struct fscache_cookie *, struct page *, gfp_t);
++extern int __fscache_write_page(struct fscache_cookie *, struct page *, gfp_t);
++
++extern int __fscache_write_pages(struct fscache_cookie *,
++				 struct pagevec *,
++				 fscache_rw_complete_t,
++				 void *,
++				 gfp_t);
++extern void __fscache_uncache_page(struct fscache_cookie *, struct page *);
++extern void __fscache_uncache_pages(struct fscache_cookie *, struct pagevec *);
++
++/**
++ * fscache_register_netfs - Register a filesystem as desiring caching services
++ * @netfs: The description of the filesystem
++ *
++ * Register a filesystem as desiring caching services if they're available.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++int fscache_register_netfs(struct fscache_netfs *netfs)
++{
++	if (fscache_available())
++		return __fscache_register_netfs(netfs);
++	else
++		return 0;
++}
++
++/**
++ * fscache_unregister_netfs - Indicate that a filesystem no longer desires
++ * caching services
++ * @netfs: The description of the filesystem
++ *
++ * Indicate that a filesystem no longer desires caching services for the
++ * moment.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++void fscache_unregister_netfs(struct fscache_netfs *netfs)
++{
++	if (fscache_available())
++		__fscache_unregister_netfs(netfs);
++}
++
++/**
++ * fscache_lookup_cache_tag - Look up a cache tag
++ * @name: The name of the tag to search for
++ *
++ * Acquire a specific cache referral tag that can be used to select a specific
++ * cache in which to cache an index.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++struct fscache_cache_tag *fscache_lookup_cache_tag(const char *name)
++{
++	if (fscache_available())
++		return __fscache_lookup_cache_tag(name);
++	else
++		return NULL;
++}
++
++/**
++ * fscache_release_cache_tag - Release a cache tag
++ * @tag: The tag to release
++ *
++ * Release a reference to a cache referral tag previously looked up.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++void fscache_release_cache_tag(struct fscache_cache_tag *tag)
++{
++	if (fscache_available())
++		__fscache_release_cache_tag(tag);
++}
++
++/**
++ * fscache_acquire_cookie - Acquire a cookie to represent a cache object
++ * @parent: The cookie that's to be the parent of this one
++ * @def: A description of the cache object, including callback operations
++ * @netfs_data: An arbitrary piece of data to be kept in the cookie to
++ * represent the cache object to the netfs
++ *
++ * This function is used to inform FS-Cache about part of an index hierarchy
++ * that can be used to locate files.  This is done by requesting a cookie for
++ * each index in the path to the file.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++struct fscache_cookie *fscache_acquire_cookie(
++	struct fscache_cookie *parent,
++	const struct fscache_cookie_def *def,
++	void *netfs_data)
++{
++	if (fscache_cookie_valid(parent))
++		return __fscache_acquire_cookie(parent, def, netfs_data);
++	else
++		return NULL;
++}
++
++/**
++ * fscache_relinquish_cookie - Return the cookie to the cache, maybe discarding
++ * it
++ * @cookie: The cookie being returned
++ * @retire: True if the cache object the cookie represents is to be discarded
++ *
++ * This function returns a cookie to the cache, forcibly discarding the
++ * associated cache object if retire is set to true.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++void fscache_relinquish_cookie(struct fscache_cookie *cookie, int retire)
++{
++	if (fscache_cookie_valid(cookie))
++		__fscache_relinquish_cookie(cookie, retire);
++}
++
++/**
++ * fscache_update_cookie - Request that a cache object be updated
++ * @cookie: The cookie representing the cache object
++ *
++ * Request an update of the index data for the cache object associated with the
++ * cookie.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++void fscache_update_cookie(struct fscache_cookie *cookie)
++{
++	if (fscache_cookie_valid(cookie))
++		__fscache_update_cookie(cookie);
++}
++
++/**
++ * fscache_pin_cookie - Pin a data-storage cache object in its cache
++ * @cookie: The cookie representing the cache object
++ *
++ * Permit data-storage cache objects to be pinned in the cache.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++int fscache_pin_cookie(struct fscache_cookie *cookie)
++{
++	if (fscache_cookie_valid(cookie))
++		return __fscache_pin_cookie(cookie);
++	else
++		return -ENOBUFS;
++}
++
++/**
++ * fscache_pin_cookie - Unpin a data-storage cache object in its cache
++ * @cookie: The cookie representing the cache object
++ *
++ * Permit data-storage cache objects to be unpinned from the cache.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++void fscache_unpin_cookie(struct fscache_cookie *cookie)
++{
++	if (fscache_cookie_valid(cookie))
++		__fscache_unpin_cookie(cookie);
++}
++
++/**
++ * fscache_attr_changed - Notify cache that an object's attributes changed
++ * @cookie: The cookie representing the cache object
++ *
++ * Send a notification to the cache indicating that an object's attributes have
++ * changed.  This includes the data size.  These attributes will be obtained
++ * through the get_attr() cookie definition op.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++int fscache_attr_changed(struct fscache_cookie *cookie)
++{
++	if (fscache_cookie_valid(cookie))
++		return __fscache_attr_changed(cookie);
++	else
++		return -ENOBUFS;
++}
++
++/**
++ * fscache_reserve_space - Reserve data space for a cached object
++ * @cookie: The cookie representing the cache object
++ * @i_size: The amount of space to be reserved
++ *
++ * Reserve an amount of space in the cache for the cache object attached to a
++ * cookie so that a write to that object within the space can always be
++ * honoured.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++int fscache_reserve_space(struct fscache_cookie *cookie, loff_t size)
++{
++	if (fscache_cookie_valid(cookie))
++		return __fscache_reserve_space(cookie, size);
++	else
++		return -ENOBUFS;
++}
++
++/**
++ * fscache_read_or_alloc_page - Read a page from the cache or allocate a block
++ * in which to store it
++ * @cookie: The cookie representing the cache object
++ * @page: The netfs page to fill if possible
++ * @end_io_func: The callback to invoke when and if the page is filled
++ * @context: An arbitrary piece of data to pass on to end_io_func()
++ * @gfp: The conditions under which memory allocation should be made
++ *
++ * Read a page from the cache, or if that's not possible make a potential
++ * one-block reservation in the cache into which the page may be stored once
++ * fetched from the server.
++ *
++ * If the page is not backed by the cache object, or if it there's some reason
++ * it can't be, -ENOBUFS will be returned and nothing more will be done for
++ * that page.
++ *
++ * Else, if that page is backed by the cache, a read will be initiated directly
++ * to the netfs's page and 0 will be returned by this function.  The
++ * end_io_func() callback will be invoked when the operation terminates on a
++ * completion or failure.  Note that the callback may be invoked before the
++ * return.
++ *
++ * Else, if the page is unbacked, -ENODATA is returned and a block may have
++ * been allocated in the cache.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++int fscache_read_or_alloc_page(struct fscache_cookie *cookie,
++			       struct page *page,
++			       fscache_rw_complete_t end_io_func,
++			       void *context,
++			       gfp_t gfp)
++{
++	if (fscache_cookie_valid(cookie))
++		return __fscache_read_or_alloc_page(cookie, page, end_io_func,
++						    context, gfp);
++	else
++		return -ENOBUFS;
++}
++
++/**
++ * fscache_read_or_alloc_pages - Read pages from the cache and/or allocate
++ * blocks in which to store them
++ * @cookie: The cookie representing the cache object
++ * @mapping: The netfs inode mapping to which the pages will be attached
++ * @pages: A list of potential netfs pages to be filled
++ * @end_io_func: The callback to invoke when and if each page is filled
++ * @context: An arbitrary piece of data to pass on to end_io_func()
++ * @gfp: The conditions under which memory allocation should be made
++ *
++ * Read a set of pages from the cache, or if that's not possible, attempt to
++ * make a potential one-block reservation for each page in the cache into which
++ * that page may be stored once fetched from the server.
++ *
++ * If some pages are not backed by the cache object, or if it there's some
++ * reason they can't be, -ENOBUFS will be returned and nothing more will be
++ * done for that pages.
++ *
++ * Else, if some of the pages are backed by the cache, a read will be initiated
++ * directly to the netfs's page and 0 will be returned by this function.  The
++ * end_io_func() callback will be invoked when the operation terminates on a
++ * completion or failure.  Note that the callback may be invoked before the
++ * return.
++ *
++ * Else, if a page is unbacked, -ENODATA is returned and a block may have
++ * been allocated in the cache.
++ *
++ * Because the function may want to return all of -ENOBUFS, -ENODATA and 0 in
++ * regard to different pages, the return values are prioritised in that order.
++ * Any pages submitted for reading are removed from the pages list.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++int fscache_read_or_alloc_pages(struct fscache_cookie *cookie,
++				struct address_space *mapping,
++				struct list_head *pages,
++				unsigned *nr_pages,
++				fscache_rw_complete_t end_io_func,
++				void *context,
++				gfp_t gfp)
++{
++	if (fscache_cookie_valid(cookie))
++		return __fscache_read_or_alloc_pages(cookie, mapping, pages,
++						     nr_pages, end_io_func,
++						     context, gfp);
++	else
++		return -ENOBUFS;
++}
++
++/**
++ * fscache_alloc_page - Allocate a block in which to store a page
++ * @cookie: The cookie representing the cache object
++ * @page: The netfs page to allocate a page for
++ * @gfp: The conditions under which memory allocation should be made
++ *
++ * Request Allocation a block in the cache in which to store a netfs page
++ * without retrieving any contents from the cache.
++ *
++ * If the page is not backed by a file then -ENOBUFS will be returned and
++ * nothing more will be done, and no reservation will be made.
++ *
++ * Else, a block will be allocated if one wasn't already, and 0 will be
++ * returned
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++int fscache_alloc_page(struct fscache_cookie *cookie,
++		       struct page *page,
++		       gfp_t gfp)
++{
++	if (fscache_cookie_valid(cookie))
++		return __fscache_alloc_page(cookie, page, gfp);
++	else
++		return -ENOBUFS;
++}
++
++/**
++ * fscache_write_page - Request storage of a page in the cache
++ * @cookie: The cookie representing the cache object
++ * @page: The netfs page to store
++ * @gfp: The conditions under which memory allocation should be made
++ *
++ * Request the contents of the netfs page be written into the cache.  This
++ * request may be ignored if no cache block is currently allocated, in which
++ * case it will return -ENOBUFS.
++ *
++ * If a cache block was already allocated, a write will be initiated and 0 will
++ * be returned.  The PG_fscache_write page bit is set immediately and will then
++ * be cleared at the completion of the write to indicate the success or failure
++ * of the operation.  Note that the completion may happen before the return.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++int fscache_write_page(struct fscache_cookie *cookie,
++		       struct page *page,
++		       gfp_t gfp)
++{
++	if (fscache_cookie_valid(cookie))
++		return __fscache_write_page(cookie, page, gfp);
++	else
++		return -ENOBUFS;
++}
++
++/**
++ * fscache_uncache_page - Indicate that caching is no longer required on a page
++ * @cookie: The cookie representing the cache object
++ * @page: The netfs page that was being cached.
++ *
++ * Tell the cache that we no longer want a page to be cached and that it should
++ * remove any knowledge of the netfs page it may have.
++ *
++ * Note that this cannot cancel any outstanding I/O operations between this
++ * page and the cache.
++ *
++ * See Documentation/filesystems/caching/netfs-api.txt for a complete
++ * description.
++ */
++static inline
++void fscache_uncache_page(struct fscache_cookie *cookie,
++			  struct page *page)
++{
++	if (fscache_cookie_valid(cookie))
++		__fscache_uncache_page(cookie, page);
++}
++
++#endif /* _LINUX_FSCACHE_H */
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index 00b108c..d534689 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -215,7 +215,9 @@ extern void end_page_writeback(struct page *page);
+  * wait_on_page_owner_priv_2 - Wait for PG_owner_priv_2 to become clear
+  * @page: The page to monitor
+  *
+- * Wait for a PG_owner_priv_2 to become clear on the specified page.
++ * Wait for a PG_owner_priv_2 to become clear on the specified page.  This is
++ * also used to monitor PG_fscache_write (which is an alternate name for the
++ * same bit).
   */
- int in_group_p(gid_t grp)
+ static inline void wait_on_page_owner_priv_2(struct page *page)
  {
-+	struct task_security *act_as = current->act_as;
- 	int retval = 1;
--	if (grp != current->fsgid)
--		retval = groups_search(current->group_info, grp);
-+	if (grp != act_as->fsgid)
-+		retval = groups_search(act_as->group_info, grp);
- 	return retval;
- }
- 
-@@ -1330,9 +1365,10 @@ EXPORT_SYMBOL(in_group_p);
- 
- int in_egroup_p(gid_t grp)
- {
-+	struct task_security *act_as = current->act_as;
- 	int retval = 1;
--	if (grp != current->egid)
--		retval = groups_search(current->group_info, grp);
-+	if (grp != act_as->egid)
-+		retval = groups_search(act_as->group_info, grp);
- 	return retval;
- }
- 
-@@ -1641,6 +1677,9 @@ asmlinkage long sys_umask(int mask)
- asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
- 			  unsigned long arg4, unsigned long arg5)
- {
-+	struct task_struct *me = current;
-+	struct task_security *sec = me->sec;
-+	unsigned char comm[sizeof(me->comm)];
- 	long error;
- 
- 	error = security_task_prctl(option, arg2, arg3, arg4, arg5);
-@@ -1653,39 +1692,39 @@ asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
- 				error = -EINVAL;
- 				break;
- 			}
--			current->pdeath_signal = arg2;
-+			me->pdeath_signal = arg2;
- 			break;
- 		case PR_GET_PDEATHSIG:
--			error = put_user(current->pdeath_signal, (int __user *)arg2);
-+			error = put_user(me->pdeath_signal, (int __user *)arg2);
- 			break;
- 		case PR_GET_DUMPABLE:
--			error = get_dumpable(current->mm);
-+			error = get_dumpable(me->mm);
- 			break;
- 		case PR_SET_DUMPABLE:
- 			if (arg2 < 0 || arg2 > 1) {
- 				error = -EINVAL;
- 				break;
- 			}
--			set_dumpable(current->mm, arg2);
-+			set_dumpable(me->mm, arg2);
- 			break;
- 
- 		case PR_SET_UNALIGN:
--			error = SET_UNALIGN_CTL(current, arg2);
-+			error = SET_UNALIGN_CTL(me, arg2);
- 			break;
- 		case PR_GET_UNALIGN:
--			error = GET_UNALIGN_CTL(current, arg2);
-+			error = GET_UNALIGN_CTL(me, arg2);
- 			break;
- 		case PR_SET_FPEMU:
--			error = SET_FPEMU_CTL(current, arg2);
-+			error = SET_FPEMU_CTL(me, arg2);
- 			break;
- 		case PR_GET_FPEMU:
--			error = GET_FPEMU_CTL(current, arg2);
-+			error = GET_FPEMU_CTL(me, arg2);
- 			break;
- 		case PR_SET_FPEXC:
--			error = SET_FPEXC_CTL(current, arg2);
-+			error = SET_FPEXC_CTL(me, arg2);
- 			break;
- 		case PR_GET_FPEXC:
--			error = GET_FPEXC_CTL(current, arg2);
-+			error = GET_FPEXC_CTL(me, arg2);
- 			break;
- 		case PR_GET_TIMING:
- 			error = PR_TIMING_STATISTICAL;
-@@ -1698,7 +1737,7 @@ asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
- 			break;
- 
- 		case PR_GET_KEEPCAPS:
--			if (current->keep_capabilities)
-+			if (sec->keep_capabilities)
- 				error = 1;
- 			break;
- 		case PR_SET_KEEPCAPS:
-@@ -1706,33 +1745,26 @@ asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
- 				error = -EINVAL;
- 				break;
- 			}
--			current->keep_capabilities = arg2;
-+			sec->keep_capabilities = arg2;
- 			break;
--		case PR_SET_NAME: {
--			struct task_struct *me = current;
--			unsigned char ncomm[sizeof(me->comm)];
--
--			ncomm[sizeof(me->comm)-1] = 0;
--			if (strncpy_from_user(ncomm, (char __user *)arg2,
-+		case PR_SET_NAME:
-+			comm[sizeof(me->comm)-1] = 0;
-+			if (strncpy_from_user(comm, (char __user *)arg2,
- 						sizeof(me->comm)-1) < 0)
- 				return -EFAULT;
--			set_task_comm(me, ncomm);
-+			set_task_comm(me, comm);
- 			return 0;
--		}
--		case PR_GET_NAME: {
--			struct task_struct *me = current;
--			unsigned char tcomm[sizeof(me->comm)];
--
--			get_task_comm(tcomm, me);
--			if (copy_to_user((char __user *)arg2, tcomm, sizeof(tcomm)))
-+		case PR_GET_NAME:
-+			get_task_comm(comm, me);
-+			if (copy_to_user((char __user *)arg2, comm,
-+					 sizeof(comm)))
- 				return -EFAULT;
- 			return 0;
--		}
- 		case PR_GET_ENDIAN:
--			error = GET_ENDIAN(current, arg2);
-+			error = GET_ENDIAN(me, arg2);
- 			break;
- 		case PR_SET_ENDIAN:
--			error = SET_ENDIAN(current, arg2);
-+			error = SET_ENDIAN(me, arg2);
- 			break;
- 
- 		case PR_GET_SECCOMP:
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index c68f68d..44a2903 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1382,7 +1382,7 @@ out:
- 
- static int test_perm(int mode, int op)
- {
--	if (!current->euid)
-+	if (!current->act_as->euid)
- 		mode >>= 6;
- 	else if (in_egroup_p(0))
- 		mode >>= 3;
-diff --git a/kernel/timer.c b/kernel/timer.c
-index 2a00c22..e879c9b 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -987,25 +987,25 @@ asmlinkage long sys_getppid(void)
- asmlinkage long sys_getuid(void)
- {
- 	/* Only we change this so SMP safe */
--	return current->uid;
-+	return current->sec->uid;
- }
- 
- asmlinkage long sys_geteuid(void)
- {
- 	/* Only we change this so SMP safe */
--	return current->euid;
-+	return current->sec->euid;
- }
- 
- asmlinkage long sys_getgid(void)
- {
- 	/* Only we change this so SMP safe */
--	return current->gid;
-+	return current->sec->gid;
- }
- 
- asmlinkage long sys_getegid(void)
- {
- 	/* Only we change this so SMP safe */
--	return  current->egid;
-+	return  current->sec->egid;
- }
- 
- #endif
-diff --git a/kernel/tsacct.c b/kernel/tsacct.c
-index 4ab1b58..84c98ee 100644
---- a/kernel/tsacct.c
-+++ b/kernel/tsacct.c
-@@ -53,8 +53,8 @@ void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
- 		stats->ac_flag |= AXSIG;
- 	stats->ac_nice	 = task_nice(tsk);
- 	stats->ac_sched	 = tsk->policy;
--	stats->ac_uid	 = tsk->uid;
--	stats->ac_gid	 = tsk->gid;
-+	stats->ac_uid	 = tsk->sec->uid;
-+	stats->ac_gid	 = tsk->sec->gid;
- 	stats->ac_pid	 = tsk->pid;
- 	rcu_read_lock();
- 	stats->ac_ppid	 = pid_alive(tsk) ?
-diff --git a/kernel/uid16.c b/kernel/uid16.c
-index dd308ba..c56f6fe 100644
---- a/kernel/uid16.c
-+++ b/kernel/uid16.c
-@@ -86,9 +86,9 @@ asmlinkage long sys_getresuid16(old_uid_t __user *ruid, old_uid_t __user *euid,
- {
- 	int retval;
- 
--	if (!(retval = put_user(high2lowuid(current->uid), ruid)) &&
--	    !(retval = put_user(high2lowuid(current->euid), euid)))
--		retval = put_user(high2lowuid(current->suid), suid);
-+	if (!(retval = put_user(high2lowuid(current->sec->uid), ruid)) &&
-+	    !(retval = put_user(high2lowuid(current->sec->euid), euid)))
-+		retval = put_user(high2lowuid(current->sec->suid), suid);
- 
- 	return retval;
- }
-@@ -106,9 +106,9 @@ asmlinkage long sys_getresgid16(old_gid_t __user *rgid, old_gid_t __user *egid,
- {
- 	int retval;
- 
--	if (!(retval = put_user(high2lowgid(current->gid), rgid)) &&
--	    !(retval = put_user(high2lowgid(current->egid), egid)))
--		retval = put_user(high2lowgid(current->sgid), sgid);
-+	if (!(retval = put_user(high2lowgid(current->sec->gid), rgid)) &&
-+	    !(retval = put_user(high2lowgid(current->sec->egid), egid)))
-+		retval = put_user(high2lowgid(current->sec->sgid), sgid);
- 
- 	return retval;
- }
-@@ -166,20 +166,20 @@ asmlinkage long sys_getgroups16(int gidsetsize, old_gid_t __user *grouplist)
- 	if (gidsetsize < 0)
- 		return -EINVAL;
- 
--	get_group_info(current->group_info);
--	i = current->group_info->ngroups;
-+	get_group_info(current->sec->group_info);
-+	i = current->sec->group_info->ngroups;
- 	if (gidsetsize) {
- 		if (i > gidsetsize) {
- 			i = -EINVAL;
- 			goto out;
- 		}
--		if (groups16_to_user(grouplist, current->group_info)) {
-+		if (groups16_to_user(grouplist, current->sec->group_info)) {
- 			i = -EFAULT;
- 			goto out;
- 		}
- 	}
- out:
--	put_group_info(current->group_info);
-+	put_group_info(current->sec->group_info);
- 	return i;
- }
- 
-@@ -210,20 +210,20 @@ asmlinkage long sys_setgroups16(int gidsetsize, old_gid_t __user *grouplist)
- 
- asmlinkage long sys_getuid16(void)
- {
--	return high2lowuid(current->uid);
-+	return high2lowuid(current->sec->uid);
- }
- 
- asmlinkage long sys_geteuid16(void)
- {
--	return high2lowuid(current->euid);
-+	return high2lowuid(current->sec->euid);
- }
- 
- asmlinkage long sys_getgid16(void)
- {
--	return high2lowgid(current->gid);
-+	return high2lowgid(current->sec->gid);
- }
- 
- asmlinkage long sys_getegid16(void)
- {
--	return high2lowgid(current->egid);
-+	return high2lowgid(current->sec->egid);
- }
-diff --git a/kernel/user.c b/kernel/user.c
-index 8320a87..d9a84b1 100644
---- a/kernel/user.c
-+++ b/kernel/user.c
-@@ -416,11 +416,11 @@ void switch_uid(struct user_struct *new_user)
- 	 * cheaply with the new uid cache, so if it matters
- 	 * we should be checking for it.  -DaveM
- 	 */
--	old_user = current->user;
-+	old_user = current->sec->user;
- 	atomic_inc(&new_user->processes);
- 	atomic_dec(&old_user->processes);
- 	switch_uid_keyring(new_user);
--	current->user = new_user;
-+	current->sec->user = new_user;
- 	sched_switch_user(current);
- 
- 	/*
-diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
-index 7af90fc..fef8023 100644
---- a/kernel/user_namespace.c
-+++ b/kernel/user_namespace.c
-@@ -49,7 +49,7 @@ static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
- 	}
- 
- 	/* Reset current->user with a new one */
--	new_user = alloc_uid(ns, current->uid);
-+	new_user = alloc_uid(ns, current->sec->uid);
- 	if (!new_user) {
- 		free_uid(ns->root_user);
- 		kfree(ns);
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index 83c69f8..f7a3078 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -941,6 +941,7 @@ asmlinkage long sys_migrate_pages(pid_t pid, unsigned long maxnode,
- 		const unsigned long __user *old_nodes,
- 		const unsigned long __user *new_nodes)
- {
-+	struct task_security *act_as, *obj;
- 	struct mm_struct *mm;
- 	struct task_struct *task;
- 	nodemask_t old;
-@@ -975,8 +976,10 @@ asmlinkage long sys_migrate_pages(pid_t pid, unsigned long maxnode,
- 	 * capabilities, superuser privileges or the same
- 	 * userid as the target process.
- 	 */
--	if ((current->euid != task->suid) && (current->euid != task->uid) &&
--	    (current->uid != task->suid) && (current->uid != task->uid) &&
-+	act_as = current->act_as;
-+	obj = task->sec;
-+	if ((act_as->euid != obj->suid) && (act_as->euid != obj->uid) &&
-+	    (act_as->uid != obj->suid) && (act_as->uid != obj->uid) &&
- 	    !capable(CAP_SYS_NICE)) {
- 		err = -EPERM;
- 		goto out;
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 6a207e8..3fa4b4a 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -909,6 +909,7 @@ asmlinkage long sys_move_pages(pid_t pid, unsigned long nr_pages,
- 			const int __user *nodes,
- 			int __user *status, int flags)
- {
-+	struct task_security *act_as, *obj;
- 	int err = 0;
- 	int i;
- 	struct task_struct *task;
-@@ -942,8 +943,10 @@ asmlinkage long sys_move_pages(pid_t pid, unsigned long nr_pages,
- 	 * capabilities, superuser privileges or the same
- 	 * userid as the target process.
- 	 */
--	if ((current->euid != task->suid) && (current->euid != task->uid) &&
--	    (current->uid != task->suid) && (current->uid != task->uid) &&
-+	act_as = current->act_as;
-+	obj = task->sec;
-+	if ((act_as->euid != obj->suid) && (act_as->euid != obj->uid) &&
-+	    (act_as->uid != obj->suid) && (act_as->uid != obj->uid) &&
- 	    !capable(CAP_SYS_NICE)) {
- 		err = -EPERM;
- 		goto out2;
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index 91a081a..917a90e 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -125,8 +125,8 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
- 	 * Superuser processes are usually more important, so we make it
- 	 * less likely that we kill those.
- 	 */
--	if (cap_t(p->cap_effective) & CAP_TO_MASK(CAP_SYS_ADMIN) ||
--				p->uid == 0 || p->euid == 0)
-+	if (cap_t(p->sec->cap_effective) & CAP_TO_MASK(CAP_SYS_ADMIN) ||
-+				p->sec->uid == 0 || p->sec->euid == 0)
- 		points /= 4;
- 
- 	/*
-@@ -135,7 +135,7 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
- 	 * tend to only have this flag set on applications they think
- 	 * of as important.
- 	 */
--	if (cap_t(p->cap_effective) & CAP_TO_MASK(CAP_SYS_RAWIO))
-+	if (cap_t(p->sec->cap_effective) & CAP_TO_MASK(CAP_SYS_RAWIO))
- 		points /= 4;
- 
- 	/*
-diff --git a/net/ax25/af_ax25.c b/net/ax25/af_ax25.c
-index b4725ff..0181b89 100644
---- a/net/ax25/af_ax25.c
-+++ b/net/ax25/af_ax25.c
-@@ -1052,7 +1052,7 @@ static int ax25_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
- 	if (addr->fsa_ax25.sax25_family != AF_AX25)
- 		return -EINVAL;
- 
--	user = ax25_findbyuid(current->euid);
-+	user = ax25_findbyuid(current->act_as->euid);
- 	if (user) {
- 		call = user->call;
- 		ax25_uid_put(user);
-diff --git a/net/ax25/ax25_route.c b/net/ax25/ax25_route.c
-index 9ecf6f1..25978fb 100644
---- a/net/ax25/ax25_route.c
-+++ b/net/ax25/ax25_route.c
-@@ -419,7 +419,7 @@ int ax25_rt_autobind(ax25_cb *ax25, ax25_address *addr)
- 		goto put;
- 	}
- 
--	user = ax25_findbyuid(current->euid);
-+	user = ax25_findbyuid(current->act_as->euid);
- 	if (user) {
- 		ax25->source_addr = user->call;
- 		ax25_uid_put(user);
-diff --git a/net/core/scm.c b/net/core/scm.c
-index 10f5c65..703b174 100644
---- a/net/core/scm.c
-+++ b/net/core/scm.c
-@@ -44,11 +44,13 @@
- 
- static __inline__ int scm_check_creds(struct ucred *creds)
- {
-+	struct task_security *sec = current->act_as;
-+
- 	if ((creds->pid == task_tgid_vnr(current) || capable(CAP_SYS_ADMIN)) &&
--	    ((creds->uid == current->uid || creds->uid == current->euid ||
--	      creds->uid == current->suid) || capable(CAP_SETUID)) &&
--	    ((creds->gid == current->gid || creds->gid == current->egid ||
--	      creds->gid == current->sgid) || capable(CAP_SETGID))) {
-+	    ((creds->uid == sec->uid || creds->uid == sec->euid ||
-+	      creds->uid == sec->suid) || capable(CAP_SETUID)) &&
-+	    ((creds->gid == sec->gid || creds->gid == sec->egid ||
-+	      creds->gid == sec->sgid) || capable(CAP_SETGID))) {
- 	       return 0;
- 	}
- 	return -EPERM;
-diff --git a/net/ipv6/ip6_flowlabel.c b/net/ipv6/ip6_flowlabel.c
-index b12cc22..e3a7d66 100644
---- a/net/ipv6/ip6_flowlabel.c
-+++ b/net/ipv6/ip6_flowlabel.c
-@@ -364,7 +364,7 @@ fl_create(struct in6_flowlabel_req *freq, char __user *optval, int optlen, int *
- 		fl->owner = current->pid;
- 		break;
- 	case IPV6_FL_S_USER:
--		fl->owner = current->euid;
-+		fl->owner = current->act_as->euid;
- 		break;
- 	default:
- 		err = -EINVAL;
-diff --git a/net/netrom/af_netrom.c b/net/netrom/af_netrom.c
-index 972250c..2471ff9 100644
---- a/net/netrom/af_netrom.c
-+++ b/net/netrom/af_netrom.c
-@@ -599,7 +599,7 @@ static int nr_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
- 	} else {
- 		source = &addr->fsa_ax25.sax25_call;
- 
--		user = ax25_findbyuid(current->euid);
-+		user = ax25_findbyuid(current->act_as->euid);
- 		if (user) {
- 			nr->user_addr   = user->call;
- 			ax25_uid_put(user);
-@@ -673,7 +673,7 @@ static int nr_connect(struct socket *sock, struct sockaddr *uaddr,
- 		}
- 		source = (ax25_address *)dev->dev_addr;
- 
--		user = ax25_findbyuid(current->euid);
-+		user = ax25_findbyuid(current->act_as->euid);
- 		if (user) {
- 			nr->user_addr   = user->call;
- 			ax25_uid_put(user);
-diff --git a/net/rose/af_rose.c b/net/rose/af_rose.c
-index ed2d65c..e394077 100644
---- a/net/rose/af_rose.c
-+++ b/net/rose/af_rose.c
-@@ -670,7 +670,7 @@ static int rose_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
- 
- 	source = &addr->srose_call;
- 
--	user = ax25_findbyuid(current->euid);
-+	user = ax25_findbyuid(current->act_as->euid);
- 	if (user) {
- 		rose->source_call = user->call;
- 		ax25_uid_put(user);
-@@ -769,7 +769,7 @@ static int rose_connect(struct socket *sock, struct sockaddr *uaddr, int addr_le
- 			goto out_release;
- 		}
- 
--		user = ax25_findbyuid(current->euid);
-+		user = ax25_findbyuid(current->act_as->euid);
- 		if (!user) {
- 			err = -EINVAL;
- 			goto out_release;
-diff --git a/net/sunrpc/auth.c b/net/sunrpc/auth.c
-index 390a1ec..e254e56 100644
---- a/net/sunrpc/auth.c
-+++ b/net/sunrpc/auth.c
-@@ -339,7 +339,7 @@ rpcauth_lookupcred(struct rpc_auth *auth, int flags)
- 	struct auth_cred acred = {
- 		.uid = current_fsuid(),
- 		.gid = current_fsgid(),
--		.group_info = current->group_info,
-+		.group_info = current->act_as->group_info,
- 	};
- 	struct rpc_cred *ret;
- 
-@@ -375,7 +375,7 @@ rpcauth_bindcred(struct rpc_task *task)
- 	struct auth_cred acred = {
- 		.uid = current_fsuid(),
- 		.gid = current_fsgid(),
--		.group_info = current->group_info,
-+		.group_info = current->act_as->group_info,
- 	};
- 	struct rpc_cred *ret;
- 	int flags = 0;
-diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
-index 060bba4..974037d 100644
---- a/net/unix/af_unix.c
-+++ b/net/unix/af_unix.c
-@@ -484,8 +484,8 @@ static int unix_listen(struct socket *sock, int backlog)
- 	sk->sk_state		= TCP_LISTEN;
- 	/* set credentials so connect can copy them */
- 	sk->sk_peercred.pid	= task_tgid_vnr(current);
--	sk->sk_peercred.uid	= current->euid;
--	sk->sk_peercred.gid	= current->egid;
-+	sk->sk_peercred.uid	= current->act_as->euid;
-+	sk->sk_peercred.gid	= current->act_as->egid;
- 	err = 0;
- 
- out_unlock:
-@@ -1135,8 +1135,8 @@ restart:
- 	newsk->sk_state		= TCP_ESTABLISHED;
- 	newsk->sk_type		= sk->sk_type;
- 	newsk->sk_peercred.pid	= task_tgid_vnr(current);
--	newsk->sk_peercred.uid	= current->euid;
--	newsk->sk_peercred.gid	= current->egid;
-+	newsk->sk_peercred.uid	= current->act_as->euid;
-+	newsk->sk_peercred.gid	= current->act_as->egid;
- 	newu = unix_sk(newsk);
- 	newsk->sk_sleep		= &newu->peer_wait;
- 	otheru = unix_sk(other);
-@@ -1196,8 +1196,8 @@ static int unix_socketpair(struct socket *socka, struct socket *sockb)
- 	unix_peer(ska)=skb;
- 	unix_peer(skb)=ska;
- 	ska->sk_peercred.pid = skb->sk_peercred.pid = task_tgid_vnr(current);
--	ska->sk_peercred.uid = skb->sk_peercred.uid = current->euid;
--	ska->sk_peercred.gid = skb->sk_peercred.gid = current->egid;
-+	ska->sk_peercred.uid = skb->sk_peercred.uid = current->act_as->euid;
-+	ska->sk_peercred.gid = skb->sk_peercred.gid = current->act_as->egid;
- 
- 	if (ska->sk_type != SOCK_DGRAM) {
- 		ska->sk_state = TCP_ESTABLISHED;
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 3b0e0d0..c0c0b34 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -46,7 +46,7 @@ EXPORT_SYMBOL(securebits);
- 
- int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
- {
--	NETLINK_CB(skb).eff_cap = current->cap_effective;
-+	NETLINK_CB(skb).eff_cap = current_cap();
- 	return 0;
- }
- 
-@@ -68,7 +68,7 @@ EXPORT_SYMBOL(cap_netlink_recv);
- int cap_capable (struct task_struct *tsk, int cap)
- {
- 	/* Derived from include/linux/sched.h:capable. */
--	if (cap_raised(tsk->cap_effective, cap))
-+	if (cap_raised(tsk->act_as->cap_effective, cap))
- 		return 0;
- 	return -EPERM;
- }
-@@ -83,7 +83,8 @@ int cap_settime(struct timespec *ts, struct timezone *tz)
- int cap_ptrace (struct task_struct *parent, struct task_struct *child)
- {
- 	/* Derived from arch/i386/kernel/ptrace.c:sys_ptrace. */
--	if (!cap_issubset(child->cap_permitted, parent->cap_permitted) &&
-+	if (!cap_issubset(child->sec->cap_permitted,
-+			  parent->act_as->cap_permitted) &&
- 	    !__capable(parent, CAP_SYS_PTRACE))
- 		return -EPERM;
- 	return 0;
-@@ -92,10 +93,12 @@ int cap_ptrace (struct task_struct *parent, struct task_struct *child)
- int cap_capget (struct task_struct *target, kernel_cap_t *effective,
- 		kernel_cap_t *inheritable, kernel_cap_t *permitted)
- {
-+	struct task_security *sec = target->sec;
-+
- 	/* Derived from kernel/capability.c:sys_capget. */
--	*effective = cap_t (target->cap_effective);
--	*inheritable = cap_t (target->cap_inheritable);
--	*permitted = cap_t (target->cap_permitted);
-+	*effective = cap_t(sec->cap_effective);
-+	*inheritable = cap_t(sec->cap_inheritable);
-+	*permitted = cap_t(sec->cap_permitted);
- 	return 0;
- }
- 
-@@ -130,21 +133,24 @@ static inline int cap_inh_is_capped(void) { return 1; }
- int cap_capset_check (struct task_struct *target, kernel_cap_t *effective,
- 		      kernel_cap_t *inheritable, kernel_cap_t *permitted)
- {
-+	struct task_security *act_as = current->act_as;
-+	struct task_security *sec = target->sec;
-+
- 	if (cap_block_setpcap(target)) {
- 		return -EPERM;
- 	}
- 	if (cap_inh_is_capped()
- 	    && !cap_issubset(*inheritable,
--			     cap_combine(target->cap_inheritable,
--					 current->cap_permitted))) {
-+			     cap_combine(sec->cap_inheritable,
-+					 act_as->cap_permitted))) {
- 		/* incapable of using this inheritable set */
- 		return -EPERM;
- 	}
- 
- 	/* verify restrictions on target's new Permitted set */
- 	if (!cap_issubset (*permitted,
--			   cap_combine (target->cap_permitted,
--					current->cap_permitted))) {
-+			   cap_combine (sec->cap_permitted,
-+					act_as->cap_permitted))) {
- 		return -EPERM;
- 	}
- 
-@@ -159,9 +165,11 @@ int cap_capset_check (struct task_struct *target, kernel_cap_t *effective,
- void cap_capset_set (struct task_struct *target, kernel_cap_t *effective,
- 		     kernel_cap_t *inheritable, kernel_cap_t *permitted)
- {
--	target->cap_effective = *effective;
--	target->cap_inheritable = *inheritable;
--	target->cap_permitted = *permitted;
-+	struct task_security *sec = target->sec;
-+
-+	sec->cap_effective = *effective;
-+	sec->cap_inheritable = *inheritable;
-+	sec->cap_permitted = *permitted;
- }
- 
- static inline void bprm_clear_caps(struct linux_binprm *bprm)
-@@ -305,7 +313,7 @@ int cap_bprm_set_security (struct linux_binprm *bprm)
- 	 */
- 
- 	if (!issecure (SECURE_NOROOT)) {
--		if (bprm->e_uid == 0 || current->uid == 0) {
-+		if (bprm->e_uid == 0 || current->sec->uid == 0) {
- 			cap_set_full (bprm->cap_inheritable);
- 			cap_set_full (bprm->cap_permitted);
- 		}
-@@ -318,51 +326,54 @@ int cap_bprm_set_security (struct linux_binprm *bprm)
- 
- void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
- {
-+	struct task_security *sec = current->sec;
- 	/* Derived from fs/exec.c:compute_creds. */
- 	kernel_cap_t new_permitted, working;
- 
- 	new_permitted = cap_intersect (bprm->cap_permitted, cap_bset);
- 	working = cap_intersect (bprm->cap_inheritable,
--				 current->cap_inheritable);
-+				 sec->cap_inheritable);
- 	new_permitted = cap_combine (new_permitted, working);
- 
--	if (bprm->e_uid != current->uid || bprm->e_gid != current->gid ||
--	    !cap_issubset (new_permitted, current->cap_permitted)) {
-+	if (bprm->e_uid != sec->uid || bprm->e_gid != sec->gid ||
-+	    !cap_issubset (new_permitted, sec->cap_permitted)) {
- 		set_dumpable(current->mm, suid_dumpable);
- 		current->pdeath_signal = 0;
- 
- 		if (unsafe & ~LSM_UNSAFE_PTRACE_CAP) {
- 			if (!capable(CAP_SETUID)) {
--				bprm->e_uid = current->uid;
--				bprm->e_gid = current->gid;
-+				bprm->e_uid = sec->uid;
-+				bprm->e_gid = sec->gid;
- 			}
- 			if (!capable (CAP_SETPCAP)) {
- 				new_permitted = cap_intersect (new_permitted,
--							current->cap_permitted);
-+							sec->cap_permitted);
- 			}
- 		}
- 	}
- 
--	current->suid = current->euid = current->fsuid = bprm->e_uid;
--	current->sgid = current->egid = current->fsgid = bprm->e_gid;
-+	sec->suid = sec->euid = sec->fsuid = bprm->e_uid;
-+	sec->sgid = sec->egid = sec->fsgid = bprm->e_gid;
- 
- 	/* For init, we want to retain the capabilities set
- 	 * in the init_task struct. Thus we skip the usual
- 	 * capability rules */
- 	if (!is_global_init(current)) {
--		current->cap_permitted = new_permitted;
--		current->cap_effective = bprm->cap_effective ?
-+		sec->cap_permitted = new_permitted;
-+		sec->cap_effective = bprm->cap_effective ?
- 				new_permitted : 0;
- 	}
- 
--	/* AUD: Audit candidate if current->cap_effective is set */
-+	/* AUD: Audit candidate if sec->cap_effective is set */
- 
--	current->keep_capabilities = 0;
-+	sec->keep_capabilities = 0;
- }
- 
- int cap_bprm_secureexec (struct linux_binprm *bprm)
- {
--	if (current->uid != 0) {
-+	struct task_security *sec = current->sec;
-+
-+	if (sec->uid != 0) {
- 		if (bprm->cap_effective)
- 			return 1;
- 		if (!cap_isclear(bprm->cap_permitted))
-@@ -371,8 +382,8 @@ int cap_bprm_secureexec (struct linux_binprm *bprm)
- 			return 1;
- 	}
- 
--	return (current->euid != current->uid ||
--		current->egid != current->gid);
-+	return (sec->euid != sec->uid ||
-+		sec->egid != sec->gid);
- }
- 
- int cap_inode_setxattr(struct dentry *dentry, char *name, void *value,
-@@ -435,23 +446,27 @@ int cap_inode_removexattr(struct dentry *dentry, char *name)
- static inline void cap_emulate_setxuid (int old_ruid, int old_euid,
- 					int old_suid)
- {
-+	struct task_security *sec = current->sec;
-+
- 	if ((old_ruid == 0 || old_euid == 0 || old_suid == 0) &&
--	    (current->uid != 0 && current->euid != 0 && current->suid != 0) &&
--	    !current->keep_capabilities) {
--		cap_clear (current->cap_permitted);
--		cap_clear (current->cap_effective);
-+	    (sec->uid != 0 && sec->euid != 0 && sec->suid != 0) &&
-+	    !sec->keep_capabilities) {
-+		cap_clear (sec->cap_permitted);
-+		cap_clear (sec->cap_effective);
- 	}
--	if (old_euid == 0 && current->euid != 0) {
--		cap_clear (current->cap_effective);
-+	if (old_euid == 0 && sec->euid != 0) {
-+		cap_clear (sec->cap_effective);
- 	}
--	if (old_euid != 0 && current->euid == 0) {
--		current->cap_effective = current->cap_permitted;
-+	if (old_euid != 0 && sec->euid == 0) {
-+		sec->cap_effective = sec->cap_permitted;
- 	}
- }
- 
- int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid,
- 			  int flags)
- {
-+	struct task_security *sec = current->sec;
-+
- 	switch (flags) {
- 	case LSM_SETID_RE:
- 	case LSM_SETID_ID:
-@@ -473,13 +488,13 @@ int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid,
- 			 */
- 
- 			if (!issecure (SECURE_NO_SETUID_FIXUP)) {
--				if (old_fsuid == 0 && current_fsuid() != 0) {
--					cap_t (current->cap_effective) &=
-+				if (old_fsuid == 0 && sec->fsuid != 0) {
-+					cap_t (sec->cap_effective) &=
- 					    ~CAP_FS_MASK;
- 				}
--				if (old_fsuid != 0 && current_fsuid() == 0) {
--					cap_t (current->cap_effective) |=
--					    (cap_t (current->cap_permitted) &
-+				if (old_fsuid != 0 && sec->fsuid == 0) {
-+					cap_t (sec->cap_effective) |=
-+					    (cap_t (sec->cap_permitted) &
- 					     CAP_FS_MASK);
- 				}
- 			}
-@@ -505,7 +520,8 @@ int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid,
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 90ccb10..ba669a8 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -576,6 +576,8 @@ EXPORT_SYMBOL(end_page_writeback);
+  * @page: the page
+  *
+  * Clear PG_owner_priv_2 and wake up any processes waiting for that event.
++ * This is used to indicate - using PG_fscache_write (an alternate name for the
++ * same bit) - that a page has finished being written to the local disk cache.
   */
- static inline int cap_safe_nice(struct task_struct *p)
+ void end_page_owner_priv_2(struct page *page)
  {
--	if (!cap_issubset(p->cap_permitted, current->cap_permitted) &&
-+	if (!cap_issubset(p->sec->cap_permitted,
-+			  current->act_as->cap_permitted) &&
- 	    !__capable(current, CAP_SYS_NICE))
- 		return -EPERM;
- 	return 0;
-@@ -539,7 +555,7 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
- 	 * allowed.
- 	 * We must preserve legacy signal behavior in this case.
- 	 */
--	if (p->euid == 0 && p->uid == current->uid)
-+	if (p->sec->euid == 0 && p->sec->uid == current->act_as->uid)
- 		return 0;
- 
- 	/* sigcont is permitted within same session */
-@@ -554,7 +570,7 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
- 		 * Used only by usb drivers?
- 		 */
- 		return 0;
--	if (cap_issubset(p->cap_permitted, current->cap_permitted))
-+	if (cap_issubset(p->sec->cap_permitted, current->act_as->cap_permitted))
- 		return 0;
- 	if (capable(CAP_KILL))
- 		return 0;
-@@ -584,11 +600,12 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
- 
- void cap_task_reparent_to_init (struct task_struct *p)
- {
--	p->cap_effective = CAP_INIT_EFF_SET;
--	p->cap_inheritable = CAP_INIT_INH_SET;
--	p->cap_permitted = CAP_FULL_SET;
--	p->keep_capabilities = 0;
--	return;
-+	struct task_security *sec = p->sec;
-+
-+	sec->cap_effective = CAP_INIT_EFF_SET;
-+	sec->cap_inheritable = CAP_INIT_INH_SET;
-+	sec->cap_permitted = CAP_FULL_SET;
-+	sec->keep_capabilities = 0;
- }
- 
- int cap_syslog (int type)
-diff --git a/security/dummy.c b/security/dummy.c
-index 0e7f35c..ba7a197 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -37,11 +37,11 @@ static int dummy_capget (struct task_struct *target, kernel_cap_t * effective,
- 			 kernel_cap_t * inheritable, kernel_cap_t * permitted)
- {
- 	*effective = *inheritable = *permitted = 0;
--	if (target->euid == 0) {
-+	if (target->sec->euid == 0) {
- 		*permitted |= (~0 & ~CAP_FS_MASK);
- 		*effective |= (~0 & ~CAP_TO_MASK(CAP_SETPCAP) & ~CAP_FS_MASK);
- 	}
--	if (target->fsuid == 0) {
-+	if (target->sec->fsuid == 0) {
- 		*permitted |= CAP_FS_MASK;
- 		*effective |= CAP_FS_MASK;
- 	}
-@@ -71,7 +71,7 @@ static int dummy_acct (struct file *file)
- 
- static int dummy_capable (struct task_struct *tsk, int cap)
- {
--	if (cap_raised (tsk->cap_effective, cap))
-+	if (cap_raised(tsk->act_as->cap_effective, cap))
- 		return 0;
- 	return -EPERM;
- }
-@@ -93,7 +93,7 @@ static int dummy_quota_on (struct dentry *dentry)
- 
- static int dummy_syslog (int type)
- {
--	if ((type != 3 && type != 10) && current->euid)
-+	if ((type != 3 && type != 10) && current->act_as->euid)
- 		return -EPERM;
- 	return 0;
- }
-@@ -126,19 +126,24 @@ static void dummy_bprm_free_security (struct linux_binprm *bprm)
- 
- static void dummy_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
- {
--	if (bprm->e_uid != current->uid || bprm->e_gid != current->gid) {
-+	struct task_security *sec = current->sec;
-+
-+	if (bprm->e_uid != sec->uid || bprm->e_gid != sec->gid) {
- 		set_dumpable(current->mm, suid_dumpable);
- 
- 		if ((unsafe & ~LSM_UNSAFE_PTRACE_CAP) && !capable(CAP_SETUID)) {
--			bprm->e_uid = current->uid;
--			bprm->e_gid = current->gid;
-+			bprm->e_uid = sec->uid;
-+			bprm->e_gid = sec->gid;
- 		}
- 	}
- 
--	current->suid = current->euid = current->fsuid = bprm->e_uid;
--	current->sgid = current->egid = current->fsgid = bprm->e_gid;
-+	sec->suid = sec->euid = sec->fsuid = bprm->e_uid;
-+	sec->sgid = sec->egid = sec->fsgid = bprm->e_gid;
- 
--	dummy_capget(current, &current->cap_effective, &current->cap_inheritable, &current->cap_permitted);
-+	dummy_capget(current,
-+		     &sec->cap_effective,
-+		     &sec->cap_inheritable,
-+		     &sec->cap_permitted);
- }
- 
- static void dummy_bprm_post_apply_creds (struct linux_binprm *bprm)
-@@ -162,8 +167,8 @@ static int dummy_bprm_secureexec (struct linux_binprm *bprm)
- 	   in the AT_SECURE field to decide whether secure mode
- 	   is required.  Hence, this logic is required to preserve
- 	   the legacy decision algorithm used by the old userland. */
--	return (current->euid != current->uid ||
--		current->egid != current->gid);
-+	return (current->sec->euid != current->sec->uid ||
-+		current->sec->egid != current->sec->gid);
- }
- 
- static int dummy_sb_alloc_security (struct super_block *sb)
-@@ -492,7 +497,12 @@ static int dummy_task_setuid (uid_t id0, uid_t id1, uid_t id2, int flags)
- 
- static int dummy_task_post_setuid (uid_t id0, uid_t id1, uid_t id2, int flags)
- {
--	dummy_capget(current, &current->cap_effective, &current->cap_inheritable, &current->cap_permitted);
-+	struct task_security *sec = current->sec;
-+
-+	dummy_capget(current,
-+		     &sec->cap_effective,
-+		     &sec->cap_inheritable,
-+		     &sec->cap_permitted);
- 	return 0;
- }
- 
-@@ -579,7 +589,7 @@ static int dummy_task_prctl (int option, unsigned long arg2, unsigned long arg3,
- 
- static void dummy_task_reparent_to_init (struct task_struct *p)
- {
--	p->euid = p->fsuid = 0;
-+	p->sec->euid = p->sec->fsuid = 0;
- 	return;
- }
- 
-@@ -689,7 +699,7 @@ static int dummy_sem_semop (struct sem_array *sma,
- 
- static int dummy_netlink_send (struct sock *sk, struct sk_buff *skb)
- {
--	NETLINK_CB(skb).eff_cap = current->cap_effective;
-+	NETLINK_CB(skb).eff_cap = current->act_as->cap_effective;
- 	return 0;
- }
- 
-diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
-index b3a63dd..4051948 100644
---- a/security/keys/keyctl.c
-+++ b/security/keys/keyctl.c
-@@ -846,7 +846,7 @@ long keyctl_instantiate_key(key_serial_t id,
- 	/* the appropriate instantiation authorisation key must have been
- 	 * assumed before calling this */
- 	ret = -EPERM;
--	instkey = current->request_key_auth;
-+	instkey = current->sec->request_key_auth;
- 	if (!instkey)
- 		goto error;
- 
-@@ -895,8 +895,8 @@ long keyctl_instantiate_key(key_serial_t id,
- 	/* discard the assumed authority if it's just been disabled by
- 	 * instantiation of the key */
- 	if (ret == 0) {
--		key_put(current->request_key_auth);
--		current->request_key_auth = NULL;
-+		key_put(current->sec->request_key_auth);
-+		current->sec->request_key_auth = NULL;
- 	}
- 
- error2:
-@@ -924,7 +924,7 @@ long keyctl_negate_key(key_serial_t id, unsigned timeout, key_serial_t ringid)
- 	/* the appropriate instantiation authorisation key must have been
- 	 * assumed before calling this */
- 	ret = -EPERM;
--	instkey = current->request_key_auth;
-+	instkey = current->sec->request_key_auth;
- 	if (!instkey)
- 		goto error;
- 
-@@ -952,8 +952,8 @@ long keyctl_negate_key(key_serial_t id, unsigned timeout, key_serial_t ringid)
- 	/* discard the assumed authority if it's just been disabled by
- 	 * instantiation of the key */
- 	if (ret == 0) {
--		key_put(current->request_key_auth);
--		current->request_key_auth = NULL;
-+		key_put(current->sec->request_key_auth);
-+		current->sec->request_key_auth = NULL;
- 	}
- 
- error:
-@@ -968,6 +968,7 @@ error:
-  */
- long keyctl_set_reqkey_keyring(int reqkey_defl)
- {
-+	struct task_security *sec = current->sec;
- 	int ret;
- 
- 	switch (reqkey_defl) {
-@@ -987,10 +988,10 @@ long keyctl_set_reqkey_keyring(int reqkey_defl)
- 	case KEY_REQKEY_DEFL_USER_KEYRING:
- 	case KEY_REQKEY_DEFL_USER_SESSION_KEYRING:
- 	set:
--		current->jit_keyring = reqkey_defl;
-+		sec->jit_keyring = reqkey_defl;
- 
- 	case KEY_REQKEY_DEFL_NO_CHANGE:
--		return current->jit_keyring;
-+		return sec->jit_keyring;
- 
- 	case KEY_REQKEY_DEFL_GROUP_KEYRING:
- 	default:
-@@ -1055,8 +1056,8 @@ long keyctl_assume_authority(key_serial_t id)
- 
- 	/* we divest ourselves of authority if given an ID of 0 */
- 	if (id == 0) {
--		key_put(current->request_key_auth);
--		current->request_key_auth = NULL;
-+		key_put(current->sec->request_key_auth);
-+		current->sec->request_key_auth = NULL;
- 		ret = 0;
- 		goto error;
- 	}
-@@ -1072,8 +1073,8 @@ long keyctl_assume_authority(key_serial_t id)
- 		goto error;
- 	}
- 
--	key_put(current->request_key_auth);
--	current->request_key_auth = authkey;
-+	key_put(current->sec->request_key_auth);
-+	current->sec->request_key_auth = authkey;
- 	ret = authkey->serial;
- 
- error:
-diff --git a/security/keys/permission.c b/security/keys/permission.c
-index 3b41f9b..07898bd 100644
---- a/security/keys/permission.c
-+++ b/security/keys/permission.c
-@@ -22,6 +22,7 @@ int key_task_permission(const key_ref_t key_ref,
- 			struct task_struct *context,
- 			key_perm_t perm)
- {
-+	struct task_security *sec = context->act_as;
- 	struct key *key;
- 	key_perm_t kperm;
- 	int ret;
-@@ -29,7 +30,7 @@ int key_task_permission(const key_ref_t key_ref,
- 	key = key_ref_to_ptr(key_ref);
- 
- 	/* use the second 8-bits of permissions for keys the caller owns */
--	if (key->uid == context->fsuid) {
-+	if (key->uid == sec->fsuid) {
- 		kperm = key->perm >> 16;
- 		goto use_these_perms;
- 	}
-@@ -37,14 +38,14 @@ int key_task_permission(const key_ref_t key_ref,
- 	/* use the third 8-bits of permissions for keys the caller has a group
- 	 * membership in common with */
- 	if (key->gid != -1 && key->perm & KEY_GRP_ALL) {
--		if (key->gid == context->fsgid) {
-+		if (key->gid == sec->fsgid) {
- 			kperm = key->perm >> 8;
- 			goto use_these_perms;
- 		}
- 
--		task_lock(context);
--		ret = groups_search(context->group_info, key->gid);
--		task_unlock(context);
-+		spin_lock(&sec->lock);
-+		ret = groups_search(sec->group_info, key->gid);
-+		spin_unlock(&sec->lock);
- 
- 		if (ret) {
- 			kperm = key->perm >> 8;
-diff --git a/security/keys/process_keys.c b/security/keys/process_keys.c
-index 2a0eb94..98854b2 100644
---- a/security/keys/process_keys.c
-+++ b/security/keys/process_keys.c
-@@ -145,7 +145,7 @@ int install_thread_keyring(struct task_struct *tsk)
- 
- 	sprintf(buf, "_tid.%u", tsk->pid);
- 
--	keyring = keyring_alloc(buf, tsk->uid, tsk->gid, tsk,
-+	keyring = keyring_alloc(buf, tsk->sec->uid, tsk->sec->gid, tsk,
- 				KEY_ALLOC_QUOTA_OVERRUN, NULL);
- 	if (IS_ERR(keyring)) {
- 		ret = PTR_ERR(keyring);
-@@ -153,8 +153,8 @@ int install_thread_keyring(struct task_struct *tsk)
- 	}
- 
- 	task_lock(tsk);
--	old = tsk->thread_keyring;
--	tsk->thread_keyring = keyring;
-+	old = tsk->sec->thread_keyring;
-+	tsk->sec->thread_keyring = keyring;
- 	task_unlock(tsk);
- 
- 	ret = 0;
-@@ -180,7 +180,7 @@ int install_process_keyring(struct task_struct *tsk)
- 	if (!tsk->signal->process_keyring) {
- 		sprintf(buf, "_pid.%u", tsk->tgid);
- 
--		keyring = keyring_alloc(buf, tsk->uid, tsk->gid, tsk,
-+		keyring = keyring_alloc(buf, tsk->sec->uid, tsk->sec->gid, tsk,
- 					KEY_ALLOC_QUOTA_OVERRUN, NULL);
- 		if (IS_ERR(keyring)) {
- 			ret = PTR_ERR(keyring);
-@@ -226,7 +226,7 @@ static int install_session_keyring(struct task_struct *tsk,
- 		if (tsk->signal->session_keyring)
- 			flags = KEY_ALLOC_IN_QUOTA;
- 
--		keyring = keyring_alloc(buf, tsk->uid, tsk->gid, tsk,
-+		keyring = keyring_alloc(buf, tsk->sec->uid, tsk->sec->gid, tsk,
- 					flags, NULL);
- 		if (IS_ERR(keyring))
- 			return PTR_ERR(keyring);
-@@ -280,14 +280,14 @@ int copy_thread_group_keys(struct task_struct *tsk)
-  */
- int copy_keys(unsigned long clone_flags, struct task_struct *tsk)
- {
--	key_check(tsk->thread_keyring);
--	key_check(tsk->request_key_auth);
-+	key_check(tsk->sec->thread_keyring);
-+	key_check(tsk->sec->request_key_auth);
- 
- 	/* no thread keyring yet */
--	tsk->thread_keyring = NULL;
-+	tsk->sec->thread_keyring = NULL;
- 
- 	/* copy the request_key() authorisation for this thread */
--	key_get(tsk->request_key_auth);
-+	key_get(tsk->sec->request_key_auth);
- 
- 	return 0;
- 
-@@ -310,8 +310,8 @@ void exit_thread_group_keys(struct signal_struct *tg)
-  */
- void exit_keys(struct task_struct *tsk)
- {
--	key_put(tsk->thread_keyring);
--	key_put(tsk->request_key_auth);
-+	key_put(tsk->sec->thread_keyring);
-+	key_put(tsk->sec->request_key_auth);
- 
- } /* end exit_keys() */
- 
-@@ -325,8 +325,8 @@ int exec_keys(struct task_struct *tsk)
- 
- 	/* newly exec'd tasks don't get a thread keyring */
- 	task_lock(tsk);
--	old = tsk->thread_keyring;
--	tsk->thread_keyring = NULL;
-+	old = tsk->sec->thread_keyring;
-+	tsk->sec->thread_keyring = NULL;
- 	task_unlock(tsk);
- 
- 	key_put(old);
-@@ -361,10 +361,11 @@ int suid_keys(struct task_struct *tsk)
- void key_fsuid_changed(struct task_struct *tsk)
- {
- 	/* update the ownership of the thread keyring */
--	if (tsk->thread_keyring) {
--		down_write(&tsk->thread_keyring->sem);
--		tsk->thread_keyring->uid = tsk->fsuid;
--		up_write(&tsk->thread_keyring->sem);
-+	BUG_ON(!tsk->sec);
-+	if (tsk->sec->thread_keyring) {
-+		down_write(&tsk->sec->thread_keyring->sem);
-+		tsk->sec->thread_keyring->uid = tsk->sec->fsuid;
-+		up_write(&tsk->sec->thread_keyring->sem);
- 	}
- 
- } /* end key_fsuid_changed() */
-@@ -376,10 +377,11 @@ void key_fsuid_changed(struct task_struct *tsk)
- void key_fsgid_changed(struct task_struct *tsk)
- {
- 	/* update the ownership of the thread keyring */
--	if (tsk->thread_keyring) {
--		down_write(&tsk->thread_keyring->sem);
--		tsk->thread_keyring->gid = tsk->fsgid;
--		up_write(&tsk->thread_keyring->sem);
-+	BUG_ON(!tsk->sec);
-+	if (tsk->sec->thread_keyring) {
-+		down_write(&tsk->sec->thread_keyring->sem);
-+		tsk->sec->thread_keyring->gid = tsk->sec->fsgid;
-+		up_write(&tsk->sec->thread_keyring->sem);
- 	}
- 
- } /* end key_fsgid_changed() */
-@@ -414,9 +416,9 @@ key_ref_t search_process_keyrings(struct key_type *type,
- 	err = ERR_PTR(-EAGAIN);
- 
- 	/* search the thread keyring first */
--	if (context->thread_keyring) {
-+	if (context->sec->thread_keyring) {
- 		key_ref = keyring_search_aux(
--			make_key_ref(context->thread_keyring, 1),
-+			make_key_ref(context->sec->thread_keyring, 1),
- 			context, type, description, match);
- 		if (!IS_ERR(key_ref))
- 			goto found;
-@@ -483,7 +485,7 @@ key_ref_t search_process_keyrings(struct key_type *type,
- 	/* or search the user-session keyring */
- 	else {
- 		key_ref = keyring_search_aux(
--			make_key_ref(context->user->session_keyring, 1),
-+			make_key_ref(context->sec->user->session_keyring, 1),
- 			context, type, description, match);
- 		if (!IS_ERR(key_ref))
- 			goto found;
-@@ -505,20 +507,20 @@ key_ref_t search_process_keyrings(struct key_type *type,
- 	 * search the keyrings of the process mentioned there
- 	 * - we don't permit access to request_key auth keys via this method
- 	 */
--	if (context->request_key_auth &&
-+	if (context->sec->request_key_auth &&
- 	    context == current &&
- 	    type != &key_type_request_key_auth
- 	    ) {
- 		/* defend against the auth key being revoked */
--		down_read(&context->request_key_auth->sem);
-+		down_read(&context->sec->request_key_auth->sem);
- 
--		if (key_validate(context->request_key_auth) == 0) {
--			rka = context->request_key_auth->payload.data;
-+		if (key_validate(context->sec->request_key_auth) == 0) {
-+			rka = context->sec->request_key_auth->payload.data;
- 
- 			key_ref = search_process_keyrings(type, description,
- 							  match, rka->context);
- 
--			up_read(&context->request_key_auth->sem);
-+			up_read(&context->sec->request_key_auth->sem);
- 
- 			if (!IS_ERR(key_ref))
- 				goto found;
-@@ -535,7 +537,7 @@ key_ref_t search_process_keyrings(struct key_type *type,
- 				break;
- 			}
- 		} else {
--			up_read(&context->request_key_auth->sem);
-+			up_read(&context->sec->request_key_auth->sem);
- 		}
- 	}
- 
-@@ -577,7 +579,7 @@ key_ref_t lookup_user_key(struct task_struct *context, key_serial_t id,
- 
- 	switch (id) {
- 	case KEY_SPEC_THREAD_KEYRING:
--		if (!context->thread_keyring) {
-+		if (!context->sec->thread_keyring) {
- 			if (!create)
- 				goto error;
- 
-@@ -588,7 +590,7 @@ key_ref_t lookup_user_key(struct task_struct *context, key_serial_t id,
- 			}
- 		}
- 
--		key = context->thread_keyring;
-+		key = context->sec->thread_keyring;
- 		atomic_inc(&key->usage);
- 		key_ref = make_key_ref(key, 1);
- 		break;
-@@ -615,7 +617,7 @@ key_ref_t lookup_user_key(struct task_struct *context, key_serial_t id,
- 			/* always install a session keyring upon access if one
- 			 * doesn't exist yet */
- 			ret = install_session_keyring(
--				context, context->user->session_keyring);
-+				context, context->sec->user->session_keyring);
- 			if (ret < 0)
- 				goto error;
- 		}
-@@ -628,13 +630,13 @@ key_ref_t lookup_user_key(struct task_struct *context, key_serial_t id,
- 		break;
- 
- 	case KEY_SPEC_USER_KEYRING:
--		key = context->user->uid_keyring;
-+		key = context->sec->user->uid_keyring;
- 		atomic_inc(&key->usage);
- 		key_ref = make_key_ref(key, 1);
- 		break;
- 
- 	case KEY_SPEC_USER_SESSION_KEYRING:
--		key = context->user->session_keyring;
-+		key = context->sec->user->session_keyring;
- 		atomic_inc(&key->usage);
- 		key_ref = make_key_ref(key, 1);
- 		break;
-@@ -645,7 +647,7 @@ key_ref_t lookup_user_key(struct task_struct *context, key_serial_t id,
- 		goto error;
- 
- 	case KEY_SPEC_REQKEY_AUTH_KEY:
--		key = context->request_key_auth;
-+		key = context->sec->request_key_auth;
- 		if (!key)
- 			goto error;
- 
-@@ -747,7 +749,7 @@ long join_session_keyring(const char *name)
- 	keyring = find_keyring_by_name(name, 0);
- 	if (PTR_ERR(keyring) == -ENOKEY) {
- 		/* not found - try and create a new one */
--		keyring = keyring_alloc(name, tsk->uid, tsk->gid, tsk,
-+		keyring = keyring_alloc(name, tsk->sec->uid, tsk->sec->gid, tsk,
- 					KEY_ALLOC_IN_QUOTA, NULL);
- 		if (IS_ERR(keyring)) {
- 			ret = PTR_ERR(keyring);
-diff --git a/security/keys/request_key.c b/security/keys/request_key.c
-index 4979c7d..54b03bb 100644
---- a/security/keys/request_key.c
-+++ b/security/keys/request_key.c
-@@ -97,7 +97,8 @@ static int call_sbin_request_key(struct key_construction *cons,
- 
- 	/* we specify the process's default keyrings */
- 	sprintf(keyring_str[0], "%d",
--		tsk->thread_keyring ? tsk->thread_keyring->serial : 0);
-+		tsk->act_as->thread_keyring ?
-+		tsk->act_as->thread_keyring->serial : 0);
- 
- 	prkey = 0;
- 	if (tsk->signal->process_keyring)
-@@ -110,7 +111,7 @@ static int call_sbin_request_key(struct key_construction *cons,
- 		sskey = rcu_dereference(tsk->signal->session_keyring)->serial;
- 		rcu_read_unlock();
- 	} else {
--		sskey = tsk->user->session_keyring->serial;
-+		sskey = tsk->act_as->user->session_keyring->serial;
- 	}
- 
- 	sprintf(keyring_str[2], "%d", sskey);
-@@ -216,10 +217,10 @@ static void construct_key_make_link(struct key *key, struct key *dest_keyring)
- 
- 	/* find the appropriate keyring */
- 	if (!dest_keyring) {
--		switch (tsk->jit_keyring) {
-+		switch (tsk->act_as->jit_keyring) {
- 		case KEY_REQKEY_DEFL_DEFAULT:
- 		case KEY_REQKEY_DEFL_THREAD_KEYRING:
--			dest_keyring = tsk->thread_keyring;
-+			dest_keyring = tsk->act_as->thread_keyring;
- 			if (dest_keyring)
- 				break;
- 
-@@ -239,11 +240,11 @@ static void construct_key_make_link(struct key *key, struct key *dest_keyring)
- 				break;
- 
- 		case KEY_REQKEY_DEFL_USER_SESSION_KEYRING:
--			dest_keyring = tsk->user->session_keyring;
-+			dest_keyring = tsk->act_as->user->session_keyring;
- 			break;
- 
- 		case KEY_REQKEY_DEFL_USER_KEYRING:
--			dest_keyring = tsk->user->uid_keyring;
-+			dest_keyring = tsk->act_as->user->uid_keyring;
- 			break;
- 
- 		case KEY_REQKEY_DEFL_GROUP_KEYRING:
-diff --git a/security/keys/request_key_auth.c b/security/keys/request_key_auth.c
-index dab696d..9598670 100644
---- a/security/keys/request_key_auth.c
-+++ b/security/keys/request_key_auth.c
-@@ -162,22 +162,22 @@ struct key *request_key_auth_new(struct key *target, const void *callout_info,
- 
- 	/* see if the calling process is already servicing the key request of
- 	 * another process */
--	if (current->request_key_auth) {
-+	if (current->act_as->request_key_auth) {
- 		/* it is - use that instantiation context here too */
--		down_read(&current->request_key_auth->sem);
-+		down_read(&current->act_as->request_key_auth->sem);
- 
- 		/* if the auth key has been revoked, then the key we're
- 		 * servicing is already instantiated */
- 		if (test_bit(KEY_FLAG_REVOKED,
--			     &current->request_key_auth->flags))
-+			     &current->act_as->request_key_auth->flags))
- 			goto auth_key_revoked;
- 
--		irka = current->request_key_auth->payload.data;
-+		irka = current->act_as->request_key_auth->payload.data;
- 		rka->context = irka->context;
- 		rka->pid = irka->pid;
- 		get_task_struct(rka->context);
- 
--		up_read(&current->request_key_auth->sem);
-+		up_read(&current->act_as->request_key_auth->sem);
- 	}
- 	else {
- 		/* it isn't - use this process as the context */
-@@ -211,7 +211,7 @@ struct key *request_key_auth_new(struct key *target, const void *callout_info,
- 	return authkey;
- 
- auth_key_revoked:
--	up_read(&current->request_key_auth->sem);
-+	up_read(&current->act_as->request_key_auth->sem);
- 	kfree(rka->callout_info);
- 	kfree(rka);
- 	kleave("= -EKEYREVOKED");
-diff --git a/security/selinux/exports.c b/security/selinux/exports.c
-index b6f9694..f660690 100644
---- a/security/selinux/exports.c
-+++ b/security/selinux/exports.c
-@@ -56,7 +56,7 @@ void selinux_get_ipc_sid(const struct kern_ipc_perm *ipcp, u32 *sid)
- void selinux_get_task_sid(struct task_struct *tsk, u32 *sid)
- {
- 	if (selinux_enabled) {
--		struct task_security_struct *tsec = tsk->security;
-+		struct task_security_struct *tsec = tsk->sec->security;
- 		*sid = tsec->sid;
- 		return;
- 	}
-@@ -77,7 +77,7 @@ EXPORT_SYMBOL_GPL(selinux_string_to_sid);
- int selinux_relabel_packet_permission(u32 sid)
- {
- 	if (selinux_enabled) {
--		struct task_security_struct *tsec = current->security;
-+		struct task_security_struct *tsec = current->act_as->security;
- 
- 		return avc_has_perm(tsec->sid, sid, SECCLASS_PACKET,
- 				    PACKET__RELABELTO, NULL);
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index bd4cfab..e56529f 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -165,21 +165,21 @@ static int task_alloc_security(struct task_struct *task)
- 
- 	tsec->task = task;
- 	tsec->osid = tsec->sid = tsec->ptrace_sid = SECINITSID_UNLABELED;
--	task->security = tsec;
-+	task->sec->security = tsec;
- 
- 	return 0;
- }
- 
- static void task_free_security(struct task_struct *task)
- {
--	struct task_security_struct *tsec = task->security;
--	task->security = NULL;
-+	struct task_security_struct *tsec = task->sec->security;
-+	task->sec->security = NULL;
- 	kfree(tsec);
- }
- 
- static int inode_alloc_security(struct inode *inode)
- {
--	struct task_security_struct *tsec = current->security;
-+	struct task_security_struct *tsec = current->act_as->security;
- 	struct inode_security_struct *isec;
- 
- 	isec = kmem_cache_zalloc(sel_inode_cache, GFP_KERNEL);
-@@ -213,7 +213,7 @@ static void inode_free_security(struct inode *inode)
- 
- static int file_alloc_security(struct file *file)
- {
--	struct task_security_struct *tsec = current->security;
-+	struct task_security_struct *tsec = current->act_as->security;
- 	struct file_security_struct *fsec;
- 
- 	fsec = kzalloc(sizeof(struct file_security_struct), GFP_KERNEL);
-@@ -373,7 +373,7 @@ static int try_context_mount(struct super_block *sb, void *data)
- 	const char *name;
- 	u32 sid;
- 	int alloc = 0, rc = 0, seen = 0;
--	struct task_security_struct *tsec = current->security;
-+	struct task_security_struct *tsec = current->act_as->security;
- 	struct superblock_security_struct *sbsec = sb->s_security;
- 
- 	if (!data)
-@@ -1033,8 +1033,8 @@ static int task_has_perm(struct task_struct *tsk1,
- {
- 	struct task_security_struct *tsec1, *tsec2;
- 
--	tsec1 = tsk1->security;
--	tsec2 = tsk2->security;
-+	tsec1 = tsk1->act_as->security;
-+	tsec2 = tsk2->sec->security;
- 	return avc_has_perm(tsec1->sid, tsec2->sid,
- 			    SECCLASS_PROCESS, perms, NULL);
- }
-@@ -1046,7 +1046,7 @@ static int task_has_capability(struct task_struct *tsk,
- 	struct task_security_struct *tsec;
- 	struct avc_audit_data ad;
- 
--	tsec = tsk->security;
-+	tsec = tsk->sec->security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad,CAP);
- 	ad.tsk = tsk;
-@@ -1062,7 +1062,7 @@ static int task_has_system(struct task_struct *tsk,
- {
- 	struct task_security_struct *tsec;
- 
--	tsec = tsk->security;
-+	tsec = tsk->sec->security;
- 
- 	return avc_has_perm(tsec->sid, SECINITSID_KERNEL,
- 			    SECCLASS_SYSTEM, perms, NULL);
-@@ -1083,7 +1083,7 @@ static int inode_has_perm(struct task_struct *tsk,
- 	if (unlikely (IS_PRIVATE (inode)))
- 		return 0;
- 
--	tsec = tsk->security;
-+	tsec = tsk->sec->security;
- 	isec = inode->i_security;
- 
- 	if (!adp) {
-@@ -1123,7 +1123,7 @@ static int file_has_perm(struct task_struct *tsk,
- 				struct file *file,
- 				u32 av)
- {
--	struct task_security_struct *tsec = tsk->security;
-+	struct task_security_struct *tsec = tsk->sec->security;
- 	struct file_security_struct *fsec = file->f_security;
- 	struct vfsmount *mnt = file->f_path.mnt;
- 	struct dentry *dentry = file->f_path.dentry;
-@@ -1163,7 +1163,7 @@ static int may_create(struct inode *dir,
- 	struct avc_audit_data ad;
- 	int rc;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	dsec = dir->i_security;
- 	sbsec = dir->i_sb->s_security;
- 
-@@ -1200,7 +1200,7 @@ static int may_create_key(u32 ksid,
- {
- 	struct task_security_struct *tsec;
- 
--	tsec = ctx->security;
-+	tsec = ctx->sec->security;
- 
- 	return avc_has_perm(tsec->sid, ksid, SECCLASS_KEY, KEY__CREATE, NULL);
- }
-@@ -1221,7 +1221,7 @@ static int may_link(struct inode *dir,
- 	u32 av;
- 	int rc;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	dsec = dir->i_security;
- 	isec = dentry->d_inode->i_security;
- 
-@@ -1265,7 +1265,7 @@ static inline int may_rename(struct inode *old_dir,
- 	int old_is_dir, new_is_dir;
- 	int rc;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	old_dsec = old_dir->i_security;
- 	old_isec = old_dentry->d_inode->i_security;
- 	old_is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
-@@ -1318,7 +1318,7 @@ static int superblock_has_perm(struct task_struct *tsk,
- 	struct task_security_struct *tsec;
- 	struct superblock_security_struct *sbsec;
- 
--	tsec = tsk->security;
-+	tsec = tsk->act_as->security;
- 	sbsec = sb->s_security;
- 	return avc_has_perm(tsec->sid, sbsec->sid, SECCLASS_FILESYSTEM,
- 			    perms, ad);
-@@ -1373,8 +1373,8 @@ static inline u32 file_to_av(struct file *file)
- 
- static int selinux_ptrace(struct task_struct *parent, struct task_struct *child)
- {
--	struct task_security_struct *psec = parent->security;
--	struct task_security_struct *csec = child->security;
-+	struct task_security_struct *psec = parent->act_as->security;
-+	struct task_security_struct *csec = child->sec->security;
- 	int rc;
- 
- 	rc = secondary_ops->ptrace(parent,child);
-@@ -1482,7 +1482,7 @@ static int selinux_sysctl(ctl_table *table, int op)
- 	if (rc)
- 		return rc;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 
- 	rc = selinux_sysctl_get_sid(table, (op == 0001) ?
- 				    SECCLASS_DIR : SECCLASS_FILE, &tsid);
-@@ -1591,7 +1591,7 @@ static int selinux_syslog(int type)
- static int selinux_vm_enough_memory(struct mm_struct *mm, long pages)
- {
- 	int rc, cap_sys_admin = 0;
--	struct task_security_struct *tsec = current->security;
-+	struct task_security_struct *tsec = current->act_as->security;
- 
- 	rc = secondary_ops->capable(current, CAP_SYS_ADMIN);
- 	if (rc == 0)
-@@ -1644,7 +1644,7 @@ static int selinux_bprm_set_security(struct linux_binprm *bprm)
- 	if (bsec->set)
- 		return 0;
- 
--	tsec = current->security;
-+	tsec = current->sec->security;
- 	isec = inode->i_security;
- 
- 	/* Default to the current task SID. */
-@@ -1710,7 +1710,7 @@ static int selinux_bprm_check_security (struct linux_binprm *bprm)
- 
- static int selinux_bprm_secureexec (struct linux_binprm *bprm)
- {
--	struct task_security_struct *tsec = current->security;
-+	struct task_security_struct *tsec = current->sec->security;
- 	int atsecure = 0;
- 
- 	if (tsec->osid != tsec->sid) {
-@@ -1833,7 +1833,7 @@ static void selinux_bprm_apply_creds(struct linux_binprm *bprm, int unsafe)
- 
- 	secondary_ops->bprm_apply_creds(bprm, unsafe);
- 
--	tsec = current->security;
-+	tsec = current->sec->security;
- 
- 	bsec = bprm->security;
- 	sid = bsec->sid;
-@@ -1878,7 +1878,7 @@ static void selinux_bprm_post_apply_creds(struct linux_binprm *bprm)
- 	struct bprm_security_struct *bsec;
- 	int rc, i;
- 
--	tsec = current->security;
-+	tsec = current->sec->security;
- 	bsec = bprm->security;
- 
- 	if (bsec->unsafe) {
-@@ -2133,7 +2133,7 @@ static int selinux_inode_init_security(struct inode *inode, struct inode *dir,
- 	int rc;
- 	char *namep = NULL, *context;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	dsec = dir->i_security;
- 	sbsec = dir->i_sb->s_security;
- 
-@@ -2318,7 +2318,7 @@ static int selinux_inode_setotherxattr(struct dentry *dentry, char *name)
- 
- static int selinux_inode_setxattr(struct dentry *dentry, char *name, void *value, size_t size, int flags)
- {
--	struct task_security_struct *tsec = current->security;
-+	struct task_security_struct *tsec = current->act_as->security;
- 	struct inode *inode = dentry->d_inode;
- 	struct inode_security_struct *isec = inode->i_security;
- 	struct superblock_security_struct *sbsec;
-@@ -2492,7 +2492,7 @@ static int selinux_revalidate_file_permission(struct file *file, int mask)
- static int selinux_file_permission(struct file *file, int mask)
- {
- 	struct inode *inode = file->f_path.dentry->d_inode;
--	struct task_security_struct *tsec = current->security;
-+	struct task_security_struct *tsec = current->act_as->security;
- 	struct file_security_struct *fsec = file->f_security;
- 	struct inode_security_struct *isec = inode->i_security;
- 
-@@ -2600,7 +2600,8 @@ static int selinux_file_mmap(struct file *file, unsigned long reqprot,
- 			     unsigned long addr, unsigned long addr_only)
- {
- 	int rc = 0;
--	u32 sid = ((struct task_security_struct*)(current->security))->sid;
-+	u32 sid = ((struct task_security_struct *)
-+		   (current->act_as->security))->sid;
- 
- 	if (addr < mmap_min_addr)
- 		rc = avc_has_perm(sid, sid, SECCLASS_MEMPROTECT,
-@@ -2712,7 +2713,7 @@ static int selinux_file_set_fowner(struct file *file)
- 	struct task_security_struct *tsec;
- 	struct file_security_struct *fsec;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	fsec = file->f_security;
- 	fsec->fown_sid = tsec->sid;
- 
-@@ -2730,7 +2731,7 @@ static int selinux_file_send_sigiotask(struct task_struct *tsk,
- 	/* struct fown_struct is never outside the context of a struct file */
-         file = container_of(fown, struct file, f_owner);
- 
--	tsec = tsk->security;
-+	tsec = tsk->sec->security;
- 	fsec = file->f_security;
- 
- 	if (!signum)
-@@ -2793,12 +2794,12 @@ static int selinux_task_alloc_security(struct task_struct *tsk)
- 	struct task_security_struct *tsec1, *tsec2;
- 	int rc;
- 
--	tsec1 = current->security;
-+	tsec1 = current->act_as->security;
- 
- 	rc = task_alloc_security(tsk);
- 	if (rc)
- 		return rc;
--	tsec2 = tsk->security;
-+	tsec2 = tsk->sec->security;
- 
- 	tsec2->osid = tsec1->osid;
- 	tsec2->sid = tsec1->sid;
-@@ -2955,7 +2956,7 @@ static int selinux_task_kill(struct task_struct *p, struct siginfo *info,
- 		perm = PROCESS__SIGNULL; /* null signal; existence test */
- 	else
- 		perm = signal_to_av(sig);
--	tsec = p->security;
-+	tsec = p->sec->security;
- 	if (secid)
- 		rc = avc_has_perm(secid, tsec->sid, SECCLASS_PROCESS, perm, NULL);
- 	else
-@@ -2986,7 +2987,7 @@ static void selinux_task_reparent_to_init(struct task_struct *p)
- 
- 	secondary_ops->task_reparent_to_init(p);
- 
--	tsec = p->security;
-+	tsec = p->sec->security;
- 	tsec->osid = tsec->sid;
- 	tsec->sid = SECINITSID_KERNEL;
- 	return;
-@@ -2995,7 +2996,7 @@ static void selinux_task_reparent_to_init(struct task_struct *p)
- static void selinux_task_to_inode(struct task_struct *p,
- 				  struct inode *inode)
- {
--	struct task_security_struct *tsec = p->security;
-+	struct task_security_struct *tsec = p->sec->security;
- 	struct inode_security_struct *isec = inode->i_security;
- 
- 	isec->sid = tsec->sid;
-@@ -3227,7 +3228,7 @@ static int socket_has_perm(struct task_struct *task, struct socket *sock,
- 	struct avc_audit_data ad;
- 	int err = 0;
- 
--	tsec = task->security;
-+	tsec = task->act_as->security;
- 	isec = SOCK_INODE(sock)->i_security;
- 
- 	if (isec->sid == SECINITSID_KERNEL)
-@@ -3251,7 +3252,7 @@ static int selinux_socket_create(int family, int type,
- 	if (kern)
- 		goto out;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	newsid = tsec->sockcreate_sid ? : tsec->sid;
- 	err = avc_has_perm(tsec->sid, newsid,
- 			   socket_type_to_security_class(family, type,
-@@ -3272,7 +3273,7 @@ static int selinux_socket_post_create(struct socket *sock, int family,
- 
- 	isec = SOCK_INODE(sock)->i_security;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	newsid = tsec->sockcreate_sid ? : tsec->sid;
- 	isec->sclass = socket_type_to_security_class(family, type, protocol);
- 	isec->sid = kern ? SECINITSID_KERNEL : newsid;
-@@ -3317,7 +3318,7 @@ static int selinux_socket_bind(struct socket *sock, struct sockaddr *address, in
- 		struct sock *sk = sock->sk;
- 		u32 sid, node_perm, addrlen;
- 
--		tsec = current->security;
-+		tsec = current->act_as->security;
- 		isec = SOCK_INODE(sock)->i_security;
- 
- 		if (family == PF_INET) {
-@@ -4091,7 +4092,7 @@ static int ipc_alloc_security(struct task_struct *task,
- 			      struct kern_ipc_perm *perm,
- 			      u16 sclass)
- {
--	struct task_security_struct *tsec = task->security;
-+	struct task_security_struct *tsec = task->act_as->security;
- 	struct ipc_security_struct *isec;
- 
- 	isec = kzalloc(sizeof(struct ipc_security_struct), GFP_KERNEL);
-@@ -4143,7 +4144,7 @@ static int ipc_has_perm(struct kern_ipc_perm *ipc_perms,
- 	struct ipc_security_struct *isec;
- 	struct avc_audit_data ad;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	isec = ipc_perms->security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
-@@ -4174,7 +4175,7 @@ static int selinux_msg_queue_alloc_security(struct msg_queue *msq)
- 	if (rc)
- 		return rc;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	isec = msq->q_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
-@@ -4200,7 +4201,7 @@ static int selinux_msg_queue_associate(struct msg_queue *msq, int msqflg)
- 	struct ipc_security_struct *isec;
- 	struct avc_audit_data ad;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	isec = msq->q_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
-@@ -4246,7 +4247,7 @@ static int selinux_msg_queue_msgsnd(struct msg_queue *msq, struct msg_msg *msg,
- 	struct avc_audit_data ad;
- 	int rc;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	isec = msq->q_perm.security;
- 	msec = msg->security;
- 
-@@ -4294,7 +4295,7 @@ static int selinux_msg_queue_msgrcv(struct msg_queue *msq, struct msg_msg *msg,
- 	struct avc_audit_data ad;
- 	int rc;
- 
--	tsec = target->security;
-+	tsec = target->act_as->security;
- 	isec = msq->q_perm.security;
- 	msec = msg->security;
- 
-@@ -4321,7 +4322,7 @@ static int selinux_shm_alloc_security(struct shmid_kernel *shp)
- 	if (rc)
- 		return rc;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	isec = shp->shm_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
-@@ -4347,7 +4348,7 @@ static int selinux_shm_associate(struct shmid_kernel *shp, int shmflg)
- 	struct ipc_security_struct *isec;
- 	struct avc_audit_data ad;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	isec = shp->shm_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
-@@ -4420,7 +4421,7 @@ static int selinux_sem_alloc_security(struct sem_array *sma)
- 	if (rc)
- 		return rc;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	isec = sma->sem_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
-@@ -4446,7 +4447,7 @@ static int selinux_sem_associate(struct sem_array *sma, int semflg)
- 	struct ipc_security_struct *isec;
- 	struct avc_audit_data ad;
- 
--	tsec = current->security;
-+	tsec = current->act_as->security;
- 	isec = sma->sem_perm.security;
- 
- 	AVC_AUDIT_DATA_INIT(&ad, IPC);
-@@ -4565,7 +4566,7 @@ static int selinux_getprocattr(struct task_struct *p,
- 			return error;
- 	}
- 
--	tsec = p->security;
-+	tsec = p->sec->security;
- 
- 	if (!strcmp(name, "current"))
- 		sid = tsec->sid;
-@@ -4642,7 +4643,7 @@ static int selinux_setprocattr(struct task_struct *p,
- 	   operation.  See selinux_bprm_set_security for the execve
- 	   checks and may_create for the file creation checks. The
- 	   operation will then fail if the context is not permitted. */
--	tsec = p->security;
-+	tsec = p->sec->security;
- 	if (!strcmp(name, "exec"))
- 		tsec->exec_sid = sid;
- 	else if (!strcmp(name, "fscreate"))
-@@ -4720,7 +4721,7 @@ static void selinux_release_secctx(char *secdata, u32 seclen)
- static int selinux_key_alloc(struct key *k, struct task_struct *tsk,
- 			     unsigned long flags)
- {
--	struct task_security_struct *tsec = tsk->security;
-+	struct task_security_struct *tsec = tsk->sec->security;
- 	struct key_security_struct *ksec;
- 
- 	ksec = kzalloc(sizeof(struct key_security_struct), GFP_KERNEL);
-@@ -4755,7 +4756,7 @@ static int selinux_key_permission(key_ref_t key_ref,
- 
- 	key = key_ref_to_ptr(key_ref);
- 
--	tsec = ctx->security;
-+	tsec = ctx->sec->security;
- 	ksec = key->security;
- 
- 	/* if no specific permissions are requested, we skip the
-@@ -4978,7 +4979,7 @@ static __init int selinux_init(void)
- 	/* Set the security state for the initial task. */
- 	if (task_alloc_security(current))
- 		panic("SELinux:  Failed to initialize initial task.\n");
--	tsec = current->security;
-+	tsec = current->sec->security;
- 	tsec->osid = tsec->sid = SECINITSID_KERNEL;
- 
- 	sel_inode_cache = kmem_cache_create("selinux_inode_security",
-diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-index 2fa483f..ad306e1 100644
---- a/security/selinux/selinuxfs.c
-+++ b/security/selinux/selinuxfs.c
-@@ -80,7 +80,7 @@ static int task_has_security(struct task_struct *tsk,
- {
- 	struct task_security_struct *tsec;
- 
--	tsec = tsk->security;
-+	tsec = tsk->act_as->security;
- 	if (!tsec)
- 		return -EACCES;
- 
-diff --git a/security/selinux/xfrm.c b/security/selinux/xfrm.c
-index e076039..5291919 100644
---- a/security/selinux/xfrm.c
-+++ b/security/selinux/xfrm.c
-@@ -198,7 +198,7 @@ static int selinux_xfrm_sec_ctx_alloc(struct xfrm_sec_ctx **ctxp,
- 	struct xfrm_user_sec_ctx *uctx, u32 sid)
- {
- 	int rc = 0;
--	struct task_security_struct *tsec = current->security;
-+	struct task_security_struct *tsec = current->act_as->security;
- 	struct xfrm_sec_ctx *ctx = NULL;
- 	char *ctx_str = NULL;
- 	u32 str_len;
-@@ -336,7 +336,7 @@ void selinux_xfrm_policy_free(struct xfrm_policy *xp)
-  */
- int selinux_xfrm_policy_delete(struct xfrm_policy *xp)
- {
--	struct task_security_struct *tsec = current->security;
-+	struct task_security_struct *tsec = current->act_as->security;
- 	struct xfrm_sec_ctx *ctx = xp->security;
- 	int rc = 0;
- 
-@@ -378,7 +378,7 @@ void selinux_xfrm_state_free(struct xfrm_state *x)
-   */
- int selinux_xfrm_state_delete(struct xfrm_state *x)
- {
--	struct task_security_struct *tsec = current->security;
-+	struct task_security_struct *tsec = current->act_as->security;
- 	struct xfrm_sec_ctx *ctx = x->security;
- 	int rc = 0;
- 
 
