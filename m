@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYAWHq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbYAWHtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbYAWHq6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 02:46:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYAWHqu
+	id S1755279AbYAWHtm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 02:49:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbYAWHtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 02:46:50 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34456 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752417AbYAWHqt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 02:46:49 -0500
-Date: Wed, 23 Jan 2008 01:46:53 -0600
-From: Paul Jackson <pj@sgi.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org, hpa@zytor.com,
-       ak@suse.de, adaplas@pol.net, linux-kernel@vger.kernel.org
-Subject: Re: Could you please merge the x86_64 EFI boot support patchset?
-Message-Id: <20080123014653.6261020c.pj@sgi.com>
-In-Reply-To: <1201073166.4945.41.camel@caritas-dev.intel.com>
-References: <1194831950.17223.44.camel@caritas-dev.intel.com>
-	<20080123010051.969d21fd.pj@sgi.com>
-	<1201073166.4945.41.camel@caritas-dev.intel.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Jan 2008 02:49:35 -0500
+Received: from nn7.de ([85.214.94.156]:33041 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753005AbYAWHtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 02:49:35 -0500
+Subject: Re: 24rc8: unregister_netdevice: waiting for ... to become free.
+	Usage count = 1?
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080122.224442.142676954.davem@davemloft.net>
+References: <1201070541.22958.53.camel@localhost>
+	 <20080122.224442.142676954.davem@davemloft.net>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 23 Jan 2008 08:49:31 +0100
+Message-Id: <1201074571.22958.66.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang wrote:
-> This patchset has been merged into Linux 2.6.24.
+On Tue, 2008-01-22 at 22:44 -0800, David Miller wrote:
+> From: Soeren Sonnenburg <kernel@nn7.de>
+> Date: Wed, 23 Jan 2008 07:42:21 +0100
+> 
+> > Dear all,
+> > 
+> > since some 2.6.24rc version I suddenly experience such messages on
+> > console when trying to shutdown a vpn connection:
+> > 
+> > unregister_netdevice: waiting for tun0 to become free. Usage count = 1
+> > 
+> > or when removing an usb wlan dongle (although it was ifconfig wlan0
+> > down'd before)
+> 
+> Current GIT already has a fix for this, attached below:
 
-Excellent.
+Thank you very much for pointing this out!
 
-> Unfortunately, the new EFI support patches do not use EFI memory map for
-> system boot up ...  So, I think the resolution for your problem is the
-> "struct setup_data" mechanism proposed by H. Peter Anvin.
-
-So you're saying that the EFI in the kernel now still won't support more
-than 128 or so chunks of memory in the boottime memory map, because it
-still goes via the legacy E820h memory map code?
-
-I'll have to study the code more and give it a try.
-
-Are you optimistic that some variation of H. Peter Anvin's "struct
-setup_data" mechanism will make it into 2.6.25 or thereabouts?
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+git pull ; make ; ...
+Soeren
