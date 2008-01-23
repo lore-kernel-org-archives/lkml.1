@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbYAWASx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbYAWATP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755100AbYAWASx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 19:18:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbYAWASU
+	id S1755400AbYAWATP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 19:19:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYAWAS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 19:18:20 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:22203 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753555AbYAWASS (ORCPT
+	Tue, 22 Jan 2008 19:18:26 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:9104 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753913AbYAWASY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 19:18:18 -0500
+	Tue, 22 Jan 2008 19:18:24 -0500
 From: Andrew Patterson <andrew.patterson@hp.com>
-Subject: [PATCH 2/4] PCI ACPI: AER driver should only register PCIe devices
-	with _OSC.
+Subject: [PATCH 3/4] ACPI: Check for any matching CID when walking namespace.
 To: linux-pci@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, lenb@kernel.org, gregkh@suse.de,
        matthew@wil.cx, tom.l.nguyen@intel.com, linux-acpi@vger.kernel.org,
        Andrew Patterson <andrew.patterson@hp.com>
-Date: Tue, 22 Jan 2008 17:18:17 -0700
-Message-ID: <20080123001817.28190.42322.stgit@bluto.andrew>
+Date: Tue, 22 Jan 2008 17:18:22 -0700
+Message-ID: <20080123001822.28190.3147.stgit@bluto.andrew>
 In-Reply-To: <20080123001807.28190.32648.stgit@bluto.andrew>
 References: <20080123001807.28190.32648.stgit@bluto.andrew>
 User-Agent: StGIT/0.12.1
@@ -31,26 +30,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Andrew Patterson <andrew.patterson@hp.com>
 
-AER is only used with PCIe devices so we should only check PCIe devices for
-_OSC support.
+The callback function acpi_ns_get_device_callback called from
+acpi_get_devices() will check CID's if the HID does not match.  This code
+has a bug where it requires that all CIDs match the HID. Changed the code
+so that any CID match will do.
 
 Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
 ---
 
- drivers/pci/pcie/aer/aerdrv_acpi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/acpi/namespace/nsxfeval.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pci/pcie/aer/aerdrv_acpi.c b/drivers/pci/pcie/aer/aerdrv_acpi.c
-index 1a1eb45..f685bf5 100644
---- a/drivers/pci/pcie/aer/aerdrv_acpi.c
-+++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
-@@ -50,7 +50,7 @@ int aer_osc_setup(struct pcie_device *pciedev)
+diff --git a/drivers/acpi/namespace/nsxfeval.c b/drivers/acpi/namespace/nsxfeval.c
+index f39fbc6..e562b24 100644
+--- a/drivers/acpi/namespace/nsxfeval.c
++++ b/drivers/acpi/namespace/nsxfeval.c
+@@ -443,6 +443,7 @@ acpi_ns_get_device_callback(acpi_handle obj_handle,
+ 	struct acpica_device_id hid;
+ 	struct acpi_compatible_id_list *cid;
+ 	acpi_native_uint i;
++	int found;
+ 
+ 	status = acpi_ut_acquire_mutex(ACPI_MTX_NAMESPACE);
+ 	if (ACPI_FAILURE(status)) {
+@@ -496,16 +497,20 @@ acpi_ns_get_device_callback(acpi_handle obj_handle,
+ 
+ 			/* Walk the CID list */
+ 
++			found = 0;
+ 			for (i = 0; i < cid->count; i++) {
+ 				if (ACPI_STRNCMP(cid->id[i].value, info->hid,
+ 						 sizeof(struct
+-							acpi_compatible_id)) !=
++							acpi_compatible_id)) ==
+ 				    0) {
+-					ACPI_FREE(cid);
+-					return (AE_OK);
++					found = 1;
++					break;
+ 				}
+ 			}
+ 			ACPI_FREE(cid);
++			if (!found) {
++				return (AE_OK);
++			}
+ 		}
  	}
  
- 	if (handle) {
--		pci_osc_support_set(OSC_EXT_PCI_CONFIG_SUPPORT);
-+		pcie_osc_support_set(OSC_EXT_PCI_CONFIG_SUPPORT);
- 		status = pci_osc_control_set(handle,
- 					OSC_PCI_EXPRESS_AER_CONTROL |
- 					OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
 
