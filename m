@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbYAWUtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbYAWUw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbYAWUtA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 15:49:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbYAWUsw
+	id S1753220AbYAWUw3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 15:52:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYAWUwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 15:48:52 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56342 "EHLO mx1.redhat.com"
+	Wed, 23 Jan 2008 15:52:21 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:32819 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751793AbYAWUsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 15:48:51 -0500
+	id S1751135AbYAWUwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 15:52:20 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1201112977.5443.29.camel@localhost.localdomain>
-References: <1201112977.5443.29.camel@localhost.localdomain>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Al Viro <viro@ftp.linux.org.uk>, William H Taber <wtaber@us.ibm.com>,
-       William Cesar de Oliveira <owilliam@br.ibm.com>,
-       Richard Kissel <rkissel@us.ibm.com>, Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] Fix procfs task exe symlink
+In-Reply-To: <1200409128.9669.46.camel@moss-spartans.epoch.ncsc.mil>
+References: <1200409128.9669.46.camel@moss-spartans.epoch.ncsc.mil> <3466.1200319279@redhat.com> <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil> <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil> <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193859.24617.36392.stgit@warthog.procyon.org.uk> <25037.1197306473@redhat.com> <17868.1199897484@redhat.com> <3524.1200319577@redhat.com> 
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: dhowells@redhat.com, Daniel J Walsh <dwalsh@redhat.com>,
+       casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
 X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 23 Jan 2008 20:46:31 +0000
-Message-ID: <22275.1201121191@redhat.com>
+Date: Wed, 23 Jan 2008 20:52:12 +0000
+Message-ID: <22469.1201121532@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Helsley <matthltc@us.ibm.com> wrote:
+Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-> To solve the problem this patch changes the way that the kernel resolves a
-> task's exe symlink. Instead of walking the VMAs to find the first
-> executable file-backed VMA we store a reference to the exec'd file in the
-> mm_struct -- /foo/bar/jvm/bin/java in the example above.
+> Make sure that you or Dan submits a policy patch to register these
+> classes and permissions in the policy when the kernel patch is queued
+> for merge.
 
-Sounds interesting.
-
-> 	nommu-only code paths are untested -- lacking access to nommu system
-
-I could test it, but it'll have to wait until I get back from LCA in a couple
-of weeks time.
+Do I just send the attached patch to <selinux@tycho.nsa.gov>?  Or do I need to
+make a diff from a point in the tree nearer the root?  Is there anything else
+I need to alter whilst I'm at it?
 
 David
+---
+Index: policy/flask/security_classes
+===================================================================
+--- policy/flask/security_classes	(revision 2573)
++++ policy/flask/security_classes	(working copy)
+@@ -109,4 +109,7 @@
+ # network peer labels
+ class peer
+ 
++# kernel services that need to override task security
++class kernel_service
++
+ # FLASK
+Index: policy/flask/access_vectors
+===================================================================
+--- policy/flask/access_vectors	(revision 2573)
++++ policy/flask/access_vectors	(working copy)
+@@ -736,3 +736,10 @@
+ {
+ 	recv
+ }
++
++# kernel services that need to override task security
++class kernel_service
++{
++	use_as_override
++	create_files_as
++}
