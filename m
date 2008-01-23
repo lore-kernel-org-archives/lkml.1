@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbYAWQLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbYAWQLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbYAWQLQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 11:11:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYAWQFV
+	id S1755185AbYAWQLd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 11:11:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbYAWQFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 11:05:21 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:54999 "EHLO
+	Wed, 23 Jan 2008 11:05:23 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:55000 "EHLO
 	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754613AbYAWQE4 (ORCPT
+	with ESMTP id S1754489AbYAWQE4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 23 Jan 2008 11:04:56 -0500
-Message-Id: <20080123160441.893641491@goodmis.org>
+Message-Id: <20080123160441.236562634@goodmis.org>
 References: <20080123160236.969334052@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 23 Jan 2008 11:02:41 -0500
+Date: Wed, 23 Jan 2008 11:02:37 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,131 +29,79 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 05/20 -v5] add notrace annotations to vsyscall.
-Content-Disposition: inline; filename=mcount-add-x86-vdso-notrace-annotations.patch
+Subject: [PATCH 01/20 -v5] printk - dont wakeup klogd with interrupts disabled
+Content-Disposition: inline; filename=printk-no-klogd-on-irqs-disabled.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the notrace annotations to some of the vsyscall functions.
+[ This patch is added to the series since the wakeup timings trace
+  may lockup without it. ]
+
+I thought that one could place a printk anywhere without worrying.
+But it seems that it is not wise to place a printk where the runqueue
+lock is held.
+
+I just spent two hours debugging why some of my code was locking up,
+to find that the lockup was caused by some debugging printk's that
+I had in the scheduler.  The printk's were only in rare paths so
+they shouldn't be too much of a problem, but after I hit the printk
+the system locked up.
+
+Thinking that it was locking up on my code I went looking down the
+wrong path. I finally found (after examining an NMI dump) that
+the lockup happened because printk was trying to wakeup the klogd
+daemon, which caused a deadlock when the try_to_wakeup code tries
+to grab the runqueue lock.
+
+Since printks are seldom called with interrupts disabled, we can
+hold off the waking of klogd if they are. We don't have access to
+the runqueue locks from printk, but those locks need interrupts
+disabled in order to be held. 
+
+Calling printk with interrupts disabled should only be done for
+emergencies and debugging anyway.
+
+And with this patch, my code ran fine ;-)
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/vsyscall_64.c  |    3 ++-
- arch/x86/vdso/vclock_gettime.c |   15 ++++++++-------
- arch/x86/vdso/vgetcpu.c        |    3 ++-
- include/asm-x86/vsyscall.h     |    3 ++-
- 4 files changed, 14 insertions(+), 10 deletions(-)
+ kernel/printk.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
-Index: linux-mcount.git/arch/x86/kernel/vsyscall_64.c
+Index: linux-mcount.git/kernel/printk.c
 ===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/vsyscall_64.c	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/vsyscall_64.c	2008-01-23 10:26:49.000000000 -0500
-@@ -42,7 +42,8 @@
- #include <asm/topology.h>
- #include <asm/vgtod.h>
- 
--#define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
-+#define __vsyscall(nr) \
-+		__attribute__ ((unused, __section__(".vsyscall_" #nr))) notrace
- #define __syscall_clobber "r11","rcx","memory"
- #define __pa_vsymbol(x)			\
- 	({unsigned long v;  		\
-Index: linux-mcount.git/arch/x86/vdso/vclock_gettime.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/vdso/vclock_gettime.c	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/arch/x86/vdso/vclock_gettime.c	2008-01-23 10:26:49.000000000 -0500
-@@ -24,7 +24,7 @@
- 
- #define gtod vdso_vsyscall_gtod_data
- 
--static long vdso_fallback_gettime(long clock, struct timespec *ts)
-+notrace static long vdso_fallback_gettime(long clock, struct timespec *ts)
- {
- 	long ret;
- 	asm("syscall" : "=a" (ret) :
-@@ -32,7 +32,7 @@ static long vdso_fallback_gettime(long c
- 	return ret;
+--- linux-mcount.git.orig/kernel/printk.c	2008-01-18 06:29:15.000000000 -0500
++++ linux-mcount.git/kernel/printk.c	2008-01-18 06:32:38.000000000 -0500
+@@ -595,9 +595,11 @@ static int have_callable_console(void)
+  * @fmt: format string
+  *
+  * This is printk().  It can be called from any context.  We want it to work.
+- * Be aware of the fact that if oops_in_progress is not set, we might try to
+- * wake klogd up which could deadlock on runqueue lock if printk() is called
+- * from scheduler code.
++ *
++ * Note: if printk() is called with interrupts disabled, it will not wake
++ * up the klogd. This is to avoid a deadlock from calling printk() in schedule
++ * with the runqueue lock held and having the wake_up grab the runqueue lock
++ * as well.
+  *
+  * We try to grab the console_sem.  If we succeed, it's easy - we log the output and
+  * call the console drivers.  If we fail to get the semaphore we place the output
+@@ -978,7 +980,13 @@ void release_console_sem(void)
+ 	console_locked = 0;
+ 	up(&console_sem);
+ 	spin_unlock_irqrestore(&logbuf_lock, flags);
+-	if (wake_klogd)
++	/*
++	 * If we try to wake up klogd while printing with the runqueue lock
++	 * held, this will deadlock. We don't have access to the runqueue
++	 * lock from here, but just checking for interrupts disabled
++	 * should be enough.
++	 */
++	if (!irqs_disabled() && wake_klogd)
+ 		wake_up_klogd();
  }
- 
--static inline long vgetns(void)
-+notrace static inline long vgetns(void)
- {
- 	long v;
- 	cycles_t (*vread)(void);
-@@ -41,7 +41,7 @@ static inline long vgetns(void)
- 	return (v * gtod->clock.mult) >> gtod->clock.shift;
- }
- 
--static noinline int do_realtime(struct timespec *ts)
-+notrace static noinline int do_realtime(struct timespec *ts)
- {
- 	unsigned long seq, ns;
- 	do {
-@@ -55,7 +55,8 @@ static noinline int do_realtime(struct t
- }
- 
- /* Copy of the version in kernel/time.c which we cannot directly access */
--static void vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
-+notrace static void
-+vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
- {
- 	while (nsec >= NSEC_PER_SEC) {
- 		nsec -= NSEC_PER_SEC;
-@@ -69,7 +70,7 @@ static void vset_normalized_timespec(str
- 	ts->tv_nsec = nsec;
- }
- 
--static noinline int do_monotonic(struct timespec *ts)
-+notrace static noinline int do_monotonic(struct timespec *ts)
- {
- 	unsigned long seq, ns, secs;
- 	do {
-@@ -83,7 +84,7 @@ static noinline int do_monotonic(struct 
- 	return 0;
- }
- 
--int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
-+notrace int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
- {
- 	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
- 		switch (clock) {
-@@ -97,7 +98,7 @@ int __vdso_clock_gettime(clockid_t clock
- int clock_gettime(clockid_t, struct timespec *)
- 	__attribute__((weak, alias("__vdso_clock_gettime")));
- 
--int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
-+notrace int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
- {
- 	long ret;
- 	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
-Index: linux-mcount.git/arch/x86/vdso/vgetcpu.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/vdso/vgetcpu.c	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/arch/x86/vdso/vgetcpu.c	2008-01-23 10:26:49.000000000 -0500
-@@ -13,7 +13,8 @@
- #include <asm/vgtod.h>
- #include "vextern.h"
- 
--long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
-+notrace long
-+__vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
- {
- 	unsigned int dummy, p;
- 
-Index: linux-mcount.git/include/asm-x86/vsyscall.h
-===================================================================
---- linux-mcount.git.orig/include/asm-x86/vsyscall.h	2008-01-23 10:26:31.000000000 -0500
-+++ linux-mcount.git/include/asm-x86/vsyscall.h	2008-01-23 10:26:49.000000000 -0500
-@@ -24,7 +24,8 @@ enum vsyscall_num {
- 	((unused, __section__ (".vsyscall_gtod_data"),aligned(16)))
- #define __section_vsyscall_clock __attribute__ \
- 	((unused, __section__ (".vsyscall_clock"),aligned(16)))
--#define __vsyscall_fn __attribute__ ((unused,__section__(".vsyscall_fn")))
-+#define __vsyscall_fn \
-+	__attribute__ ((unused, __section__(".vsyscall_fn"))) notrace
- 
- #define VGETCPU_RDTSCP	1
- #define VGETCPU_LSL	2
+ EXPORT_SYMBOL(release_console_sem);
 
 -- 
