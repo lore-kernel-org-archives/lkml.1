@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985AbYAWLLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbYAWLMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752985AbYAWLLm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 06:11:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbYAWLLe
+	id S1753586AbYAWLMx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 06:12:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYAWLMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 06:11:34 -0500
-Received: from ns.suse.de ([195.135.220.2]:57767 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbYAWLLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 06:11:34 -0500
-From: Andi Kleen <andi@firstfloor.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/2] Relax restrictions on setting CONFIG_NUMA on x86
-Date: Wed, 23 Jan 2008 12:11:43 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       apw@shadowen.org
-References: <20080118153529.12646.5260.sendpatchset@skynet.skynet.ie> <200801231145.14915.andi@firstfloor.org> <20080123105757.GE21455@csn.ul.ie>
-In-Reply-To: <20080123105757.GE21455@csn.ul.ie>
+	Wed, 23 Jan 2008 06:12:41 -0500
+Received: from web32614.mail.mud.yahoo.com ([68.142.207.241]:46878 "HELO
+	web32614.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751512AbYAWLMk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 06:12:40 -0500
+X-YMail-OSG: k932wa0VM1kooGK6oo5i_9eZW57dX4yJ91siMWo9WKdUA72_
+X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.160
+Date: Wed, 23 Jan 2008 03:12:39 -0800 (PST)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+To: Alasdair G Kergon <agk@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>, Mike Snitzer <snitzer@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, jplatte@naasa.net,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       James.Bottomley@steeleye.com, Jens Axboe <jens.axboe@oracle.com>,
+       Milan Broz <mbroz@redhat.com>, Neil Brown <neilb@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801231211.43637.andi@firstfloor.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <739290.84170.qm@web32614.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+----- Original Message ----
+> From: Alasdair G Kergon <agk@redhat.com>
+> To: Martin Knoblauch <spamtrap@knobisoft.de>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>; Mel Gorman <mel@csn.ul.ie>; Fengguang Wu <wfg@mail.ustc.edu.cn>; Mike Snitzer <snitzer@gmail.com>; Peter Zijlstra <peterz@infradead.org>; jplatte@naasa.net; Ingo Molnar <mingo@elte.hu>; linux-kernel@vger.kernel.org; "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>; James.Bottomley@steeleye.com; Jens Axboe <jens.axboe@oracle.com>; Milan Broz <mbroz@redhat.com>; Neil Brown <neilb@suse.de>
+> Sent: Wednesday, January 23, 2008 12:40:52 AM
+> Subject: Re: regression: 100% io-wait with 2.6.24-rcX
+> 
+> On Tue, Jan 22, 2008 at 07:25:15AM -0800, Martin Knoblauch wrote:
+> >   [root@lpsdm52 ~]# dmsetup table
+> > VolGroup00-LogVol02: 0 350945280 linear 104:2 67109248
+> > VolGroup00-LogVol01: 0 8388608 linear 104:2 418054528
+> > VolGroup00-LogVol00: 0 67108864 linear 104:2 384
+> 
+> The IO should pass straight through simple linear targets like
+> that without needing to get broken up, so I wouldn't expect those patches to
+> make any difference in this particular case.
+> 
 
-> > I was pretty sure that a !NUMAQ i386 CONFIG_NUMA build
-> > already used that.
->
-> Presumably a GENERICARCH configuration
+Alasdair,
 
-GENERICARCH includes SUMMIT so yes.
+ LVM/DM are off the hook :-) I converted one box to direct using partitions and the performance is the same disappointment as with LVM/DM. Thanks anyway for looking at my problem.
 
-> > At least that was the case when I last looked. If that
-> > has changed it must have bitrotted recently.
->
-> I don't think it has bit-rotted. I was just not using a GENERICARCH
-> configuration.
+ I will move the discussion now to a new thread, targetting CCISS directly. 
 
-And no SUMMIT either?  Ok you already answered that later.
+Cheers
+Martin
 
--Andi
+
