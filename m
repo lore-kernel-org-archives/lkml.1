@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbYAWSCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbYAWSLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbYAWSCT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 13:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYAWSCK
+	id S1756162AbYAWSLn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 13:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbYAWSLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 13:02:10 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:55690 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbYAWSCJ (ORCPT
+	Wed, 23 Jan 2008 13:11:34 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:38683 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753953AbYAWSLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 13:02:09 -0500
-Date: Wed, 23 Jan 2008 19:02:08 +0100
-From: Jan Kara <jack@suse.cz>
-To: Rafael Sisto <rafael.sisto@gmail.com>
-Cc: Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: create a file in kernel mode. help please!
-Message-ID: <20080123180208.GD23304@atrey.karlin.mff.cuni.cz>
-References: <ee3dc96c0801182116q3d54148dl6773d76ff3160d91@mail.gmail.com> <ee3dc96c0801182117t6e40b46fr1b2d5826e22a7124@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ee3dc96c0801182117t6e40b46fr1b2d5826e22a7124@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 23 Jan 2008 13:11:33 -0500
+Subject: Re: [PATCH 19/20 -v5] Trace irq disabled critical timings
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Jan Kiszka <jan.kiszka@siemens.com>,
+       John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <20080123172712.GE18698@redhat.com>
+References: <20080123160236.969334052@goodmis.org>
+	 <20080123160444.197366580@goodmis.org> <20080123165353.GA12598@goodmis.org>
+	 <20080123171107.GB12598@goodmis.org>  <20080123172712.GE18698@redhat.com>
+Content-Type: text/plain
+Date: Wed, 23 Jan 2008 18:58:23 +0100
+Message-Id: <1201111103.6341.73.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
 
-> obviously this is a newbie question, but I couldn't find any
-> documentation on how to do it.. I tried several ways but couldnt do
-> it.
-> I designed a system call, so a user will call it, and a new file will
-> be created ('/tmp/filexx'). After that, I have another system call,
-> that will map the file into the maps of the user process. The idea is
-> the same as IPC...
+On Wed, 2008-01-23 at 12:27 -0500, Frank Ch. Eigler wrote:
+> Hi -
 > 
-> I managed to create the file with this function (in the first system call):
->         fd = filp_open(path, O_CREAT | O_RDWR , 777);
+> On Wed, Jan 23, 2008 at 12:11:07PM -0500, Steven Rostedt wrote:
+> > This patch adds latency tracing for critical timings
+> > (how long interrupts are disabled for).
+> > [...]
 > 
-> After that, the user will call another system call, and it will map
-> this file to the process maps.
-> something like this:
->          filp_open(route, O_RDWR,0 );
->          do_mmap(fp, 0, tamano, PROT_READ | PROT_WRITE | PROT_EXEC,
-> MAP_SHARED, 0);
-> 
-> After I call the second system call, the user tries to access the
-> memory, but gets the message "Bus Error".
-> I tried to manually create a file with vi, and then use the second
-> system call, and worked perfectly. I could use the shared memory
-> without problems.
-> 
-> The problems seems to be in the first system call (with filp_open),
-> when I try to create a new file... Can somebody suggest me something,
-> on how I could fix this issue?? It is very important because it is for
-> a college projects.
-  Hmm, I don't quite get what you are trying to achieve? Why can't user
-create the file via open(path, O_CREAT...) and then mmap() it? Why do
-you need a new system call for that?
+> Is there an opportunity here to share effort with latencytop, and
+> ideally to use markers as much as possible for these event hooks?
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+I'm still thinking latencytop should only record stack traces and do the
+rest in user-space. 
+
+Also, the things the latency tracer and latecytop measure are quite
+different. the latency tracer measures how long a non-schedulable
+section is, latencytop measures how a task was scheduled away.
+
