@@ -1,245 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYAWWcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYAWWcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbYAWWcJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 17:32:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYAWWbx
+	id S1755603AbYAWWcZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 17:32:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYAWWcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 17:31:53 -0500
-Received: from sd-6163.dedibox.fr ([88.191.46.45]:1208 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753853AbYAWWbv (ORCPT
+	Wed, 23 Jan 2008 17:32:10 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:51297 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754744AbYAWWcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 17:31:51 -0500
-From: Michael Opdenacker <michael-lists@free-electrons.com>
-Organization: Free Electrons
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH] x86: =?utf-8?q?fix=09unconditional=09arch/x86/kernel/pcspeaker=2Ec=3Fcompiling?=
-Date: Wed, 23 Jan 2008 23:30:11 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linux-tiny@selenic.com, Thomas Gleixner <tglx@linutronix.de>,
-       ralf@linux-mips.org
-References: <200801171643.49301.michael-lists@free-electrons.com> <4790D3E3.4060409@free-electrons.com> <1200676219.3835.8.camel@cinder.waste.org>
-In-Reply-To: <1200676219.3835.8.camel@cinder.waste.org>
+	Wed, 23 Jan 2008 17:32:08 -0500
+Date: Wed, 23 Jan 2008 22:29:49 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Miklos Szeredi <miklos@szeredi.hu>, a.p.zijlstra@chello.nl,
+       salikhmetov@gmail.com, linux-mm@kvack.org, jakob@unthought.net,
+       linux-kernel@vger.kernel.org, valdis.kletnieks@vt.edu, riel@redhat.com,
+       ksm@42.dk, staubach@redhat.com, jesper.juhl@gmail.com,
+       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
+       hidave.darkstar@gmail.com, hch@infradead.org
+Subject: Re: [PATCH -v8 3/4] Enable the MS_ASYNC functionality in sys_msync()
+In-Reply-To: <alpine.LFD.1.00.0801231329120.2803@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0801232216460.5465@blonde.site>
+References: <12010440803930-git-send-email-salikhmetov@gmail.com> 
+ <1201044083504-git-send-email-salikhmetov@gmail.com> 
+ <alpine.LFD.1.00.0801230836250.1741@woody.linux-foundation.org>
+ <1201110066.6341.65.camel@lappy> <alpine.LFD.1.00.0801231107520.1741@woody.linux-foundation.org>
+ <E1JHlh8-0003s8-Bb@pomaz-ex.szeredi.hu> <alpine.LFD.1.00.0801231248060.2803@woody.linux-foundation.org>
+ <E1JHmxa-0004BK-6X@pomaz-ex.szeredi.hu> <alpine.LFD.1.00.0801231329120.2803@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801232330.12331.michael-lists@free-electrons.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 January 2008, Matt Mackall wrote:
+On Wed, 23 Jan 2008, Linus Torvalds wrote:
+> On Wed, 23 Jan 2008, Miklos Szeredi wrote:
 > 
-> Probably makes sense to define it right next to INPUT_PCSPKR in
-> drivers/input/Kconfig.
+> > Sure, I would have though all of this stuff is 2.6.25, but it's your
+> > kernel... :)
 > 
-> Then do the appropriate fix for all arches mentioned in INPUT_PCSPKR.
-> 
-> For extra points, you can move the duplicate pcspeaker.c code out of all
-> those arches and stash it somewhere in drivers/input. Presumably it's
-> possible to get it to link into the kernel even when INPUT is modular.
+> Well, the plain added "file_update_time()" call addition looked like a 
+> trivial fix, and if there are actually *customers* that have bad backups 
+> due to this, then I think that part was worth doing. At least a "sync" 
+> will then sync the file times...
 
-Here's the patch, after spending some time to get familiar with git.
+Fair enough.
 
-The patch is against git x86/mm, and it seems to work fine on x86. However,
-on x86, you no longer have /sys/devices/platform/pcspkr after
-running "make allnoconfig". To get it, you have to explicitely add support
-to CONFIG_INPUT_PCSPKR (m or y). I hope this is fine.
+Something I dislike about it, though, is that it leaves the RAM-backed
+filesystems (ramfs, tmpfs, whatever) behaving visibly differently from
+the others.  Until now we've intentionally left them out of syncing and
+dirty accounting, because it's useless overhead for them (one can argue
+whether that's quite true of tmpfs overflowing out to swap, but that's
+a different debate).  So they won't be getting these faults on shared
+writable, so their file times won't get updated in the same way.
 
-I'm copying the MIPS maintainer as this patch touches his tree too.
+But I guess that's an aesthetic consideration, of less significance
+than bad backups - assuming not many people use backups of tmpfs.
 
-On MIPS, there should be no impact though, as CONFIG_PCSPEAKER is set in
-defconfig files.
-
-In other architectures where CONFIG_INPUT_PCSPKR can exist,
-there is a change: when CONFIG_INPUT_PCSPKR is set, the platform device
-will be added, while it didn't exist before. I hope this is fine.
-
-In a nutshell, this patch looks good because it removes a small amount
-of duplication between mips and x86. On the other hand, it introduces
-changes that may not be wanted. Is this worth it?
-
-Michael.
-
---
-Signed-off-by: Michael Opdenacker <michael@free-electrons.com>
-
----
- arch/mips/kernel/Makefile      |    1 -
- arch/mips/kernel/pcspeaker.c   |   28 ----------------------------
- arch/x86/kernel/Makefile       |    4 ----
- arch/x86/kernel/pcspeaker.c    |   20 --------------------
- drivers/input/misc/Kconfig     |    4 ++++
- drivers/input/misc/Makefile    |    1 +
- drivers/input/misc/pcspeaker.c |   28 ++++++++++++++++++++++++++++
- 7 files changed, 33 insertions(+), 53 deletions(-)
- delete mode 100644 arch/mips/kernel/pcspeaker.c
- delete mode 100644 arch/x86/kernel/pcspeaker.c
- create mode 100644 drivers/input/misc/pcspeaker.c
-
-diff --git a/arch/mips/kernel/Makefile b/arch/mips/kernel/Makefile
-index ffa0836..9e78e1a 100644
---- a/arch/mips/kernel/Makefile
-+++ b/arch/mips/kernel/Makefile
-@@ -76,7 +76,6 @@ obj-$(CONFIG_PROC_FS)		+= proc.o
- obj-$(CONFIG_64BIT)		+= cpu-bugs64.o
- 
- obj-$(CONFIG_I8253)		+= i8253.o
--obj-$(CONFIG_PCSPEAKER)		+= pcspeaker.o
- 
- obj-$(CONFIG_KEXEC)		+= machine_kexec.o relocate_kernel.o
- obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
-diff --git a/arch/mips/kernel/pcspeaker.c b/arch/mips/kernel/pcspeaker.c
-deleted file mode 100644
-index 475df69..0000000
---- a/arch/mips/kernel/pcspeaker.c
-+++ /dev/null
-@@ -1,28 +0,0 @@
--/*
-- * Copyright (C) 2006 IBM Corporation
-- *
-- * Implements device information for i8253 timer chip
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License version
-- * 2 as published by the Free Software Foundation
-- */
--
--#include <linux/platform_device.h>
--
--static __init int add_pcspkr(void)
--{
--	struct platform_device *pd;
--	int ret;
--
--	pd = platform_device_alloc("pcspkr", -1);
--	if (!pd)
--		return -ENOMEM;
--
--	ret = platform_device_add(pd);
--	if (ret)
--		platform_device_put(pd);
--
--	return ret;
--}
--device_initcall(add_pcspkr);
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index e8386eb..959ab30 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -69,10 +69,6 @@ obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
- obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
- obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o
- 
--ifdef CONFIG_INPUT_PCSPKR
--obj-y				+= pcspeaker.o
--endif
--
- obj-$(CONFIG_SCx200)		+= scx200_32.o
- 
- ###
-diff --git a/arch/x86/kernel/pcspeaker.c b/arch/x86/kernel/pcspeaker.c
-deleted file mode 100644
-index bc1f2d3..0000000
---- a/arch/x86/kernel/pcspeaker.c
-+++ /dev/null
-@@ -1,20 +0,0 @@
--#include <linux/platform_device.h>
--#include <linux/errno.h>
--#include <linux/init.h>
--
--static __init int add_pcspkr(void)
--{
--	struct platform_device *pd;
--	int ret;
--
--	pd = platform_device_alloc("pcspkr", -1);
--	if (!pd)
--		return -ENOMEM;
--
--	ret = platform_device_add(pd);
--	if (ret)
--		platform_device_put(pd);
--
--	return ret;
--}
--device_initcall(add_pcspkr);
-diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
-index 8f5c7b9..45b14ce 100644
---- a/drivers/input/misc/Kconfig
-+++ b/drivers/input/misc/Kconfig
-@@ -14,6 +14,7 @@ if INPUT_MISC
- 
- config INPUT_PCSPKR
- 	tristate "PC Speaker support"
-+	select PCSPEAKER
- 	depends on ALPHA || X86 || MIPS || PPC_PREP || PPC_CHRP || PPC_PSERIES
- 	help
- 	  Say Y here if you want the standard PC Speaker to be used for
-@@ -24,6 +25,9 @@ config INPUT_PCSPKR
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called pcspkr.
- 
-+config PCSPEAKER
-+        bool
-+
- config INPUT_SPARCSPKR
- 	tristate "SPARC Speaker support"
- 	depends on PCI && SPARC64
-diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
-index 3585b50..4e51822 100644
---- a/drivers/input/misc/Makefile
-+++ b/drivers/input/misc/Makefile
-@@ -6,6 +6,7 @@
- 
- obj-$(CONFIG_INPUT_SPARCSPKR)		+= sparcspkr.o
- obj-$(CONFIG_INPUT_PCSPKR)		+= pcspkr.o
-+obj-$(CONFIG_PCSPEAKER)			+= pcspeaker.o
- obj-$(CONFIG_INPUT_M68K_BEEP)		+= m68kspkr.o
- obj-$(CONFIG_INPUT_IXP4XX_BEEPER)	+= ixp4xx-beeper.o
- obj-$(CONFIG_INPUT_COBALT_BTNS)		+= cobalt_btns.o
-diff --git a/drivers/input/misc/pcspeaker.c b/drivers/input/misc/pcspeaker.c
-new file mode 100644
-index 0000000..475df69
---- /dev/null
-+++ b/drivers/input/misc/pcspeaker.c
-@@ -0,0 +1,28 @@
-+/*
-+ * Copyright (C) 2006 IBM Corporation
-+ *
-+ * Implements device information for i8253 timer chip
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version
-+ * 2 as published by the Free Software Foundation
-+ */
-+
-+#include <linux/platform_device.h>
-+
-+static __init int add_pcspkr(void)
-+{
-+	struct platform_device *pd;
-+	int ret;
-+
-+	pd = platform_device_alloc("pcspkr", -1);
-+	if (!pd)
-+		return -ENOMEM;
-+
-+	ret = platform_device_add(pd);
-+	if (ret)
-+		platform_device_put(pd);
-+
-+	return ret;
-+}
-+device_initcall(add_pcspkr);
--- 
-1.5.2.5
-
--- 
-Michael Opdenacker, Free Electrons
-Free Embedded Linux Training Materials
-on http://free-electrons.com/training
-(More than 1500 pages!)
+Hugh
