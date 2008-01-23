@@ -1,127 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbYAWKck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbYAWKhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752970AbYAWKck (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 05:32:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYAWKcd
+	id S1752897AbYAWKhT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 05:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYAWKhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 05:32:33 -0500
-Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:1493 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751454AbYAWKcc (ORCPT
+	Wed, 23 Jan 2008 05:37:07 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:19375 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750710AbYAWKhF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 05:32:32 -0500
-Date: Wed, 23 Jan 2008 11:29:41 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Jon Smirl <jonsmirl@gmail.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCHv2] i2c: adds support for i2c bus on Frescale CPM1/CPM2 
- controllers
-Message-ID: <20080123112941.23250948@hyperion.delvare>
-In-Reply-To: <20080103104121.58697148.sfr@canb.auug.org.au>
-References: <477BEB60.4070703@scram.de>
-	<20080103104121.58697148.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Jan 2008 05:37:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=x2f72Jey2UeR83NCATZFI/eTgJS5untbINlkK4BiDN78Y4zT4hQVOJoCWxtTjfLKeufcMhLobzdwKo4VTTzaFIstvH4aiWp1hELaz6d7ygwhPR59TOFR4rNVBdh42j7sN3713YwSn5r7M7EC3v7zpzJH8qMc0Bn7IyqupVPe3ic=
+Message-ID: <4df4ef0c0801230237g2f26f0d1j2d2ada2ce62ba284@mail.gmail.com>
+Date: Wed, 23 Jan 2008 13:37:03 +0300
+From: "Anton Salikhmetov" <salikhmetov@gmail.com>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: [PATCH -v8 4/4] The design document for memory-mapped file times update
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
+       hidave.darkstar@gmail.com, hch@infradead.org
+In-Reply-To: <E1JHbs1-00025n-Ac@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <12010440803930-git-send-email-salikhmetov@gmail.com>
+	 <1201044083554-git-send-email-salikhmetov@gmail.com>
+	 <E1JHbs1-00025n-Ac@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jochen,
-
-Sorry for the late answer.
-
-On Thu, 3 Jan 2008 10:41:21 +1100, Stephen Rothwell wrote:
-> Hi Jochen,
-> 
-> Just a few trivial things.
-> 
-> On Wed, 02 Jan 2008 20:52:00 +0100 Jochen Friedrich <jochen@scram.de> wrote:
+2008/1/23, Miklos Szeredi <miklos@szeredi.hu>:
+> I think it would be more logical to move this patch forward, before
+> the two patches which this document is actually describing.
+>
+> > Add a document, which describes how the POSIX requirements on updating
+> > memory-mapped file times are addressed in Linux.
 > >
-> > +++ b/drivers/i2c/busses/i2c-cpm.c
+> > Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
+> > ---
+> >  Documentation/vm/00-INDEX  |    2 +
+> >  Documentation/vm/msync.txt |  117 ++++++++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 119 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/Documentation/vm/00-INDEX b/Documentation/vm/00-INDEX
+> > index 2131b00..2726c8d 100644
+> > --- a/Documentation/vm/00-INDEX
+> > +++ b/Documentation/vm/00-INDEX
+> > @@ -6,6 +6,8 @@ hugetlbpage.txt
+> >       - a brief summary of hugetlbpage support in the Linux kernel.
+> >  locking
+> >       - info on how locking and synchronization is done in the Linux vm code.
+> > +msync.txt
+> > +     - the design document for memory-mapped file times update
+> >  numa
+> >       - information about NUMA specific code in the Linux vm.
+> >  numa_memory_policy.txt
+> > diff --git a/Documentation/vm/msync.txt b/Documentation/vm/msync.txt
+> > new file mode 100644
+> > index 0000000..571a766
+> > --- /dev/null
+> > +++ b/Documentation/vm/msync.txt
+> > @@ -0,0 +1,117 @@
 > > +
-> > +static irqreturn_t cpm_i2c_interrupt(int irq, void *dev_id)
-> > +{
-> > +	struct i2c_adapter *adap;
-> > +	struct cpm_i2c *cpm;
-> > +	struct i2c_reg __iomem *i2c_reg;
-> > +	int i;
+> > +     The msync() system call and memory-mapped file times
 > > +
-> > +	adap = (struct i2c_adapter *) dev_id;
-> 
-> This cast is unnecessary. In fact, you could just pass dev_id to the
-> following call to i2c_get_adapdata() and eliminate adap completely.
-> 
-> > +	/* Get 'me going again.
-> > +	 */
-> 
-> For short comments, just make them one line.  Similarly later as well.
-> 
-> > +	/* This chip can't do zero length writes. However, the i2c core uses
-> > +	   them to scan for devices. The best we can do is to convert them
-> > +	   into 1 byte reads */
-> 
-> For multiline comments, we normally do
-> /*
->  * blah ...
->  * more blah
->  */
-> 
-> > +static int cpm_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
-> > +{
+> > +     Copyright (C) 2008 Anton Salikhmetov
 > > +
-> > +	while (tptr < num) {
-> > +		/* Check for outstanding messages */
-> > +		dev_dbg(&adap->dev, "test ready.\n");
-> > +		if (!(tbdf[tptr].cbd_sc & BD_SC_READY)) {
-> > +			dev_dbg(&adap->dev, "ready.\n");
-> > +			rmsg = &msgs[tptr];
-> > +			ret = cpm_i2c_check_message(adap, rmsg, tptr, rptr);
-> > +			tptr++;
-> > +			if (rmsg->flags & I2C_M_RD)
-> > +				rptr++;
-> > +			if (ret) {
-> > +				cpm_i2c_force_close(adap);
-> > +				mutex_unlock(&cpm->i2c_mutex);
-> > +				return ret;
-> > +			}
-> > +		} else {
-> > +			dev_dbg(&adap->dev, "not ready.\n");
-> > +			ret = wait_event_interruptible_timeout(cpm->i2c_wait,
-> > +				!(tbdf[tptr].cbd_sc & BD_SC_READY), 1 * HZ);
-> > +			if (ret == 0) {
-> > +				cpm_i2c_force_close(adap);
-> > +				dev_dbg(&adap->dev, "I2C read: timeout!\n");
-> > +				mutex_unlock(&cpm->i2c_mutex);
-> > +				return -EREMOTEIO;
-> > +			}
-> 
-> You might want to consolidate the two error paths above using gotos to an
-> error return section below.
-> 
-> > +static void of_register_i2c_devices(struct i2c_adapter *adap,
-> > +				    struct device_node *adap_node)
-> > +{
-> > +	struct device_node *node = NULL;
+> > +The POSIX standard requires that any write reference to memory-mapped file
+> > +data should result in updating the ctime and mtime for that file. Moreover,
+> > +the standard mandates that updated file times should become visible to the
+> > +world no later than at the next call to msync().
 > > +
-> > +	while ((node = of_get_next_child(adap_node, node))) {
-> 
-> Use
-> 	for_each_child_of_node(adap_node, node) {
-> instead and you don't need to initialise "node" above.
-> 
-> > +static struct of_device_id cpm_i2c_match[] = {
-> 
-> const?
+> > +Failure to meet this requirement creates difficulties for certain classes
+> > +of important applications. For instance, database backup systems fail to
+> > +pick up the files modified via the mmap() interface. Also, this is a
+> > +security hole, which allows forging file data in such a manner that proving
+> > +the fact that file data was modified is not possible.
+> > +
+> > +Briefly put, this requirement can be stated as follows:
+> > +
+> > +     once the file data has changed, the operating system
+> > +     should acknowledge this fact by updating file metadata.
+> > +
+> > +This document describes how this POSIX requirement is addressed in Linux.
+> > +
+> > +1. Requirements
+> > +
+> > +1.1) the POSIX standard requires updating ctime and mtime not later
+> > +than at the call to msync() with MS_SYNC or MS_ASYNC flags;
+> > +
+> > +1.2) in existing POSIX implementations, ctime and mtime
+> > +get updated not later than at the call to fsync();
+> > +
+> > +1.3) in existing POSIX implementation, ctime and mtime
+> > +get updated not later than at the call to sync(), the "auto-update" feature;
+> > +
+> > +1.4) the customers require and the common sense suggests that
+> > +ctime and mtime should be updated not later than at the call to munmap()
+> > +or exit(), the latter function implying an implicit call to munmap();
+> > +
+> > +1.5) the (1.1) item should be satisfied if the file is a block device
+> > +special file;
+> > +
+> > +1.6) the (1.1) item should be satisfied for files residing on
+> > +memory-backed filesystems such as tmpfs, too.
+> > +
+> > +The following operating systems were used as the reference platforms
+> > +and are referred to as the "existing implementations" above:
+> > +HP-UX B.11.31 and FreeBSD 6.2-RELEASE.
+> > +
+> > +2. Lazy update
+> > +
+> > +Many attempts before the current version implemented the "lazy update" approach
+> > +to satisfying the requirements given above. Within the latter approach, ctime
+> > +and mtime get updated at last moment allowable.
+> > +
+> > +Since we don't update the file times immediately, some Flag has to be
+> > +used. When up, this Flag means that the file data was modified and
+> > +the file times need to be updated as soon as possible.
+> > +
+> > +Any existing "dirty" flag which, when up, mean that a page has been written to,
+> > +is not suitable for this purpose. Indeed, msync() called with MS_ASYNC
+> > +would have to reset this "dirty" flag after updating ctime and mtime.
+> > +The sys_msync() function itself is basically a no-op in the MS_ASYNC case.
+> > +Thereby, the synchronization routines relying upon this "dirty" flag
+> > +would lose data. Therefore, a new Flag has to be introduced.
+> > +
+> > +The (1.5) item coupled with (1.3) requirement leads to hard work with
+> > +the block device inodes. Specifically, during writeback it is impossible to
+> > +tell which block device file was originally mapped. Therefore, we need to
+> > +traverse the list of "active" devices associated with the block device inode.
+> > +This would lead to updating file times for block device files, which were not
+> > +taking part in the data transfer.
+> > +
+> > +Also all versions prior to version 6 failed to correctly process ctime and
+> > +mtime for files on the memory-backed filesystems such as tmpfs. So the (1.6)
+> > +requirement was not satisfied.
+>
+> Version -8 also fails: for ram backed filesystems page tables are not
+> write protected initially, nor after a sync.  This patch does write
+> protect them after an MS_ASYNC, but that's a bug in the current
+> context.
 
-Do you have an updated patch addressing Stephen's comment?
+I've already written in the cover letter that functional tests passed
+successfully.
+In particular, this means that everything is OK with tmpfs too:
 
-Note: you'd rather send updates of this patch to the i2c list rather
-than LKML.
+debian:~/times# ./times /mnt/file
+begin   1201084493      1201084493      1201084281
+write   1201084494      1201084494      1201084281
+mmap    1201084494      1201084494      1201084495
+b       1201084496      1201084496      1201084495
+msync b 1201084496      1201084496      1201084495
+c       1201084498      1201084498      1201084495
+msync c 1201084498      1201084498      1201084495
+d       1201084500      1201084500      1201084495
+munmap  1201084500      1201084500      1201084495
+close   1201084500      1201084500      1201084495
+sync    1201084500      1201084500      1201084495
+debian:~/times# mount | grep mnt
+tmpfs on /mnt type tmpfs (rw)
+debian:~/times#
 
-Thanks,
--- 
-Jean Delvare
+>
+> > +
+> > +If a write reference has occurred between two consecutive calls to msync()
+> > +with MS_ASYNC, the second call to the latter function should take into
+> > +account the last write reference. The last write reference can not be caught
+> > +if no pagefault occurs. Hence a pagefault needs to be forced. This can be done
+> > +using two different approaches. The first one is to synchronize data even when
+> > +msync() was called with MS_ASYNC. This is not acceptable because the current
+> > +design of the sys_msync() routine forbids starting I/O for the MS_ASYNC case.
+>
+> I don't think anyone forbids starting I/O, it's just too expensive,
+> especially if it means, waiting for previous writeback on page to
+> finish first.
+>
+> > +The second approach is to write protect the page for triggering a pagefault
+> > +at the next write reference. Note that the dirty flag for the page should not
+> > +be cleared thereby.
+> > +
+> > +In the "lazy update" approach, the requirements (1.1), (1.2), (1.3), and (1.4)
+> > +taken together result in adding code at least to the following kernel routines:
+> > +sys_msync(), do_fsync(), some routine in the unmap() call path, some routine
+> > +in the sync() call path.
+> > +
+> > +Finally, a file_update_time()-like function would have to be created for
+> > +processing the inode objects, not file objects. This is due to the fact that
+> > +during the sync() operation, the file object may not exist any more, only
+> > +the inode is known.
+> > +
+> > +To sum up: this "lazy" approach leads to massive changes, incurs overhead in
+> > +the block device case, and requires complicated design decisions.
+> > +
+> > +3. Immediate update
+> > +
+> > +OK, still reading? There's a better way.
+> > +
+> > +In a fashion analogous to what happens at write(2), react to the fact
+> > +that the page gets dirtied by updating the file times immediately.
+> > +Thereby any page writeback happens when the write reference has already
+> > +been accounted for from the view point of file times.
+> > +
+> > +The only problem which remains is to force refreshing file times at the write
+> > +reference following a call to msync() with MS_ASYNC. As mentioned above, all
+> > +that is needed here is to force a pagefault.
+> > +
+> > +The vma_wrprotect() routine introduced in this patch series is called
+> > +from sys_msync() in the MS_ASYNC case. The former routine is essentially
+> > +a version of existing page_mkclean_one() function from mm/rmap.c. Unlike
+> > +the latter function, the vma_wrprotect() does not touch the dirty bit.
+>
+> Benchmark results should be also added to the relevant sections, I
+> think.  There is a very definite cost to all this, and a 10x slowdown
+> is usually not taken lightly...
+>
+> Great document, btw :)
+>
+> Miklos
+>
