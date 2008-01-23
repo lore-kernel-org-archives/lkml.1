@@ -1,73 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753117AbYAWXRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbYAWXV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753117AbYAWXRW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 18:17:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYAWXRO
+	id S1753279AbYAWXV3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 18:21:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYAWXVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 18:17:14 -0500
-Received: from slowhand.arndnet.de ([88.198.19.76]:37686 "EHLO mail.unitix.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751536AbYAWXRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 18:17:13 -0500
-Message-ID: <4797CB21.8090605@i4.informatik.rwth-aachen.de>
-Date: Thu, 24 Jan 2008 00:17:53 +0100
-From: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Jordan Crouse <jordan.crouse@amd.com>
-CC: Willy Tarreau <w@1wt.eu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Lars Heete <hel@admin.de>,
-       Andres Salomon <dilinger@queued.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: x86: GEODE fix MFGPT input clock value
-References: <4795B14C.7040502@i4.informatik.rwth-aachen.de> <200801221111.21240.hel@admin.de> <4795D120.7070806@i4.informatik.rwth-aachen.de> <20080122192757.GC5241@cosmic.amd.com> <47965806.6080903@i4.informatik.rwth-aachen.de> <20080122211014.GA27870@elte.hu> <20080123211746.GA2969@1wt.eu> <20080123211859.GA3081@1wt.eu> <4797B8C4.9060102@zytor.com> <20080123221129.GA27022@1wt.eu> <20080123223830.GA26219@cosmic.amd.com>
-In-Reply-To: <20080123223830.GA26219@cosmic.amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jan 2008 18:21:21 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:52365 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751878AbYAWXVT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 18:21:19 -0500
+Date: Wed, 23 Jan 2008 16:20:23 -0700
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 41/49] ext4: Add multi block allocator for ext4
+In-reply-to: <20080123140727.f47e9c9d.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Theodore Ts'o" <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
+       alex@clusterfs.com, adilger@clusterfs.com,
+       aneesh.kumar@linux.vnet.ibm.com, sandeen@redhat.com,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Mail-followup-to: Andrew Morton <akpm@linux-foundation.org>,
+ Theodore Ts'o <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
+ alex@clusterfs.com, adilger@clusterfs.com, aneesh.kumar@linux.vnet.ibm.com,
+ sandeen@redhat.com, "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Message-id: <20080123232023.GA18891@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <1200970948-17903-34-git-send-email-tytso@mit.edu>
+ <1200970948-17903-35-git-send-email-tytso@mit.edu>
+ <1200970948-17903-36-git-send-email-tytso@mit.edu>
+ <1200970948-17903-37-git-send-email-tytso@mit.edu>
+ <1200970948-17903-38-git-send-email-tytso@mit.edu>
+ <1200970948-17903-39-git-send-email-tytso@mit.edu>
+ <1200970948-17903-40-git-send-email-tytso@mit.edu>
+ <1200970948-17903-41-git-send-email-tytso@mit.edu>
+ <1200970948-17903-42-git-send-email-tytso@mit.edu>
+ <20080123140727.f47e9c9d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Jordan Crouse schrieb:
-> On 23/01/08 23:11 +0100, Willy Tarreau wrote:
->> Hi Peter,
->>
->> On Wed, Jan 23, 2008 at 01:59:32PM -0800, H. Peter Anvin wrote:
->>> Willy Tarreau wrote:
->>>> The GEODE MFGPT code assumed that 32kHz was 32000 Hz while the boards
->>>> run on a 32.768 kHz digital watch crystal. In practise, it will not
->>>> change the timer's frequency as the skew was only 2.4%, but it
->>>> should provide more accurate intervals.
->>>> - *  Divisor   Hz      Min Delta (S) Max Delta (S)
->>> Seconds are "s", not "S" (S = siemens.)
->> You're quite right. Same as we should write kHz and not Khz. But I'm
->> used to change other people's work and particularly comments the least
->> possible. Do you want an update ?
+On Jan 23, 2008  14:07 -0800, Andrew Morton wrote:
+> > +#define mb_correct_addr_and_bit(bit, addr)		\
+> > +{							\
+> > +	bit += ((unsigned long) addr & 3UL) << 3;	\
+> > +	addr = (void *) ((unsigned long) addr & ~3UL);	\
+> > +}
 > 
-> Please do - I don't mind if you change the comments - better that they
-> are right.
+> Why do these exist?
 
-While you are on it, please include this one:
+They seem to be a holdover from when mballoc stored the buddy bitmaps
+on disk.  That no longer happens (to avoid bitmap vs. buddy consistency
+problems), so I suspect they can be removed.
 
---- a/arch/x86/kernel/mfgpt_32.c        2008-01-24 00:08:20.000000000 +0100
-+++ b/arch/x86/kernel/mfgpt_32.c        2008-01-24 00:05:17.000000000 +0100
-@@ -361,7 +361,7 @@
-                        &mfgpt_clockevent);
+I can't comment on many of the other issues because Alex wrote most
+of the code.
 
-        printk(KERN_INFO
--              "mfgpt-timer:  registering the MFGT timer as a clock event.\n");
-+              "mfgpt-timer:  registering the MFGPT timer as a clock event.\n");
-        clockevents_register_device(&mfgpt_clockevent);
+> Gosh what a lot of code.  Is it faster?
 
-        return 0;
+Yes, and also importantly it uses a lot less CPU to do a given amount
+of allocation, which is critical in our environments where there is
+very high disk bandwidth on a single node and CPU becomes the limiting
+factor of the IO speed.  This of course also helps any write-intensive
+environment where the CPU is doing something "useful".
+
+Some older test results include:
+https://ols2006.108.redhat.com/2007/Reprints/mathur-Reprint.pdf (Section 7)
+
+In the linux-ext4 thread "compilebench numbers for ext4":
+http://www.mail-archive.com/linux-ext4@vger.kernel.org/msg03834.html
+
+http://oss.oracle.com/~mason/compilebench/ext4/ext-create-compare.png
+http://oss.oracle.com/~mason/compilebench/ext4/ext-compile-compare.png
+http://oss.oracle.com/~mason/compilebench/ext4/ext-read-compare.png
+http://oss.oracle.com/~mason/compilebench/ext4/ext-rm-compare.png
+
+note the ext-read-compare.png graph shows lower read performance, but
+a couple of bugs in mballoc were since fixed to have ext4 allocate more
+contiguous extents.
+
+In the old linux-ext4 thread "[RFC] delayed allocation testing on node zefir"
+http://www.mail-archive.com/linux-ext4@vger.kernel.org/msg00587.html
+
+        : dd2048rw                             
+        : REAL   UTIME  STIME  READ    WRITTEN DETAILS
+EXT3    : 58.46  23     1491   2572    2097292 17 extents
+EXT4    : 44.56  19     1018   12      2097244 19 extents
+REISERFS: 56.80  26     1370   2952    2097336 457 extents
+JFS     : 45.77  22     984    0       2097216 1 extents
+XFS     : 50.97  20     1394   0       2100825 7 extents
+
+        : kernuntar                            
+        : REAL   UTIME  STIME  READ    WRITTEN DETAILS
+EXT3    : 56.99  5037   651    68      252016  
+EXT4    : 55.03  5034   553    36      249884  
+REISERFS: 52.55  4996   854    64      238068  
+JFS     : 70.15  5057   630    496     288116  
+XFS     : 72.84  5052   953    132     316798  
+
+        : kernstat                             
+        : REAL   UTIME  STIME  READ    WRITTEN DETAILS
+EXT3    : 2.83   8      15     5892    0       
+EXT4    : 0.51   9      10     5892    0       
+REISERFS: 0.81   7      49     2696    0       
+JFS     : 6.19   11     49     12552   0       
+XFS     : 2.09   9      61     6504    0       
+
+        : kerncat                              
+        : REAL   UTIME  STIME  READ    WRITTEN DETAILS
+EXT3    : 9.48   25     213    241624  0       
+EXT4    : 6.29   27     197    238560  0       
+REISERFS: 14.69  33     230    234744  0       
+JFS     : 23.51  23     231    244596  0       
+XFS     : 18.24  36     254    238548  0       
+
+        : kernrm                               
+        : REAL   UTIME  STIME  READ    WRITTEN DETAILS
+EXT3    : 4.82   4      108    9628    4672    
+EXT4    : 1.61   5      110    6536    4632    
+REISERFS: 3.15   8      276    2768    236     
+JFS     : 33.90  7      168    14400   33048   
+XFS     : 20.03  8      296    6632    86160   
 
 
-> Jordan
-> 
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
-Arnd
