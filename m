@@ -1,105 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbYAWWbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYAWWcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430AbYAWWbp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 17:31:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbYAWWbf
+	id S1754762AbYAWWcJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 17:32:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYAWWbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 17:31:35 -0500
-Received: from smtpout.bnl.gov ([130.199.3.136]:42543 "EHLO smtpout.bnl.gov"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751592AbYAWWbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 17:31:34 -0500
-X-Greylist: delayed 721 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jan 2008 17:31:34 EST
-Message-ID: <4797BD62.1070608@bnl.gov>
-Date: Wed, 23 Jan 2008 17:19:14 -0500
-From: Sev Binello <sev@bnl.gov>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.13pre) Gecko/20071018 Red Hat/1.0.9-6.el4 SeaMonkey/1.0.9
+	Wed, 23 Jan 2008 17:31:53 -0500
+Received: from sd-6163.dedibox.fr ([88.191.46.45]:1208 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753853AbYAWWbv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 17:31:51 -0500
+From: Michael Opdenacker <michael-lists@free-electrons.com>
+Organization: Free Electrons
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH] x86: =?utf-8?q?fix=09unconditional=09arch/x86/kernel/pcspeaker=2Ec=3Fcompiling?=
+Date: Wed, 23 Jan 2008 23:30:11 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linux-tiny@selenic.com, Thomas Gleixner <tglx@linutronix.de>,
+       ralf@linux-mips.org
+References: <200801171643.49301.michael-lists@free-electrons.com> <4790D3E3.4060409@free-electrons.com> <1200676219.3835.8.camel@cinder.waste.org>
+In-Reply-To: <1200676219.3835.8.camel@cinder.waste.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Many processes stuck in blk_congestion_wait
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-BNL-MailScanner-Information: Please contact the ITD Service Desk for more information
-X-BNL-MailScanner: Found to be clean
-X-BNL-MailScanner-SpamCheck: not spam (whitelisted),
-	SpamAssassin (not cached, score=-3.85, required 5,
-	autolearn=disabled, BAYES_00 -3.60, BNL_OK_FROMDOTGOV -0.25)
-X-BNL-MailScanner-From: sev@bnl.gov
+Content-Disposition: inline
+Message-Id: <200801232330.12331.michael-lists@free-electrons.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are experiencing numerous hangs/slow downs on our WS4 U5 nfs client 
-machines (not seen on WS3).
-Many processes end up in a D state for long periods of time
-and are in  blk_congestion_wait().
+On Friday 18 January 2008, Matt Mackall wrote:
+> 
+> Probably makes sense to define it right next to INPUT_PCSPKR in
+> drivers/input/Kconfig.
+> 
+> Then do the appropriate fix for all arches mentioned in INPUT_PCSPKR.
+> 
+> For extra points, you can move the duplicate pcspeaker.c code out of all
+> those arches and stash it somewhere in drivers/input. Presumably it's
+> possible to get it to link into the kernel even when INPUT is modular.
 
-Time in this state can vary,
-not sure what triggers them to come out, some don't
-But time in this state can be quite lengthy.
-Machines are running 2.6.9-55.0.9.ELsmp
+Here's the patch, after spending some time to get familiar with git.
 
-Below is a sample trace, they all look pretty much the same....
+The patch is against git x86/mm, and it seems to work fine on x86. However,
+on x86, you no longer have /sys/devices/platform/pcspkr after
+running "make allnoconfig". To get it, you have to explicitely add support
+to CONFIG_INPUT_PCSPKR (m or y). I hope this is fine.
 
-Any clues how to debug this ?
-Thanks
--Sev
+I'm copying the MIPS maintainer as this patch touches his tree too.
+
+On MIPS, there should be no impact though, as CONFIG_PCSPEAKER is set in
+defconfig files.
+
+In other architectures where CONFIG_INPUT_PCSPKR can exist,
+there is a change: when CONFIG_INPUT_PCSPKR is set, the platform device
+will be added, while it didn't exist before. I hope this is fine.
+
+In a nutshell, this patch looks good because it removes a small amount
+of duplication between mips and x86. On the other hand, it introduces
+changes that may not be wanted. Is this worth it?
+
+Michael.
+
+--
+Signed-off-by: Michael Opdenacker <michael@free-electrons.com>
+
+---
+ arch/mips/kernel/Makefile      |    1 -
+ arch/mips/kernel/pcspeaker.c   |   28 ----------------------------
+ arch/x86/kernel/Makefile       |    4 ----
+ arch/x86/kernel/pcspeaker.c    |   20 --------------------
+ drivers/input/misc/Kconfig     |    4 ++++
+ drivers/input/misc/Makefile    |    1 +
+ drivers/input/misc/pcspeaker.c |   28 ++++++++++++++++++++++++++++
+ 7 files changed, 33 insertions(+), 53 deletions(-)
+ delete mode 100644 arch/mips/kernel/pcspeaker.c
+ delete mode 100644 arch/x86/kernel/pcspeaker.c
+ create mode 100644 drivers/input/misc/pcspeaker.c
+
+diff --git a/arch/mips/kernel/Makefile b/arch/mips/kernel/Makefile
+index ffa0836..9e78e1a 100644
+--- a/arch/mips/kernel/Makefile
++++ b/arch/mips/kernel/Makefile
+@@ -76,7 +76,6 @@ obj-$(CONFIG_PROC_FS)		+= proc.o
+ obj-$(CONFIG_64BIT)		+= cpu-bugs64.o
+ 
+ obj-$(CONFIG_I8253)		+= i8253.o
+-obj-$(CONFIG_PCSPEAKER)		+= pcspeaker.o
+ 
+ obj-$(CONFIG_KEXEC)		+= machine_kexec.o relocate_kernel.o
+ obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
+diff --git a/arch/mips/kernel/pcspeaker.c b/arch/mips/kernel/pcspeaker.c
+deleted file mode 100644
+index 475df69..0000000
+--- a/arch/mips/kernel/pcspeaker.c
++++ /dev/null
+@@ -1,28 +0,0 @@
+-/*
+- * Copyright (C) 2006 IBM Corporation
+- *
+- * Implements device information for i8253 timer chip
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License version
+- * 2 as published by the Free Software Foundation
+- */
+-
+-#include <linux/platform_device.h>
+-
+-static __init int add_pcspkr(void)
+-{
+-	struct platform_device *pd;
+-	int ret;
+-
+-	pd = platform_device_alloc("pcspkr", -1);
+-	if (!pd)
+-		return -ENOMEM;
+-
+-	ret = platform_device_add(pd);
+-	if (ret)
+-		platform_device_put(pd);
+-
+-	return ret;
+-}
+-device_initcall(add_pcspkr);
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index e8386eb..959ab30 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -69,10 +69,6 @@ obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
+ obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
+ obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o
+ 
+-ifdef CONFIG_INPUT_PCSPKR
+-obj-y				+= pcspeaker.o
+-endif
+-
+ obj-$(CONFIG_SCx200)		+= scx200_32.o
+ 
+ ###
+diff --git a/arch/x86/kernel/pcspeaker.c b/arch/x86/kernel/pcspeaker.c
+deleted file mode 100644
+index bc1f2d3..0000000
+--- a/arch/x86/kernel/pcspeaker.c
++++ /dev/null
+@@ -1,20 +0,0 @@
+-#include <linux/platform_device.h>
+-#include <linux/errno.h>
+-#include <linux/init.h>
+-
+-static __init int add_pcspkr(void)
+-{
+-	struct platform_device *pd;
+-	int ret;
+-
+-	pd = platform_device_alloc("pcspkr", -1);
+-	if (!pd)
+-		return -ENOMEM;
+-
+-	ret = platform_device_add(pd);
+-	if (ret)
+-		platform_device_put(pd);
+-
+-	return ret;
+-}
+-device_initcall(add_pcspkr);
+diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+index 8f5c7b9..45b14ce 100644
+--- a/drivers/input/misc/Kconfig
++++ b/drivers/input/misc/Kconfig
+@@ -14,6 +14,7 @@ if INPUT_MISC
+ 
+ config INPUT_PCSPKR
+ 	tristate "PC Speaker support"
++	select PCSPEAKER
+ 	depends on ALPHA || X86 || MIPS || PPC_PREP || PPC_CHRP || PPC_PSERIES
+ 	help
+ 	  Say Y here if you want the standard PC Speaker to be used for
+@@ -24,6 +25,9 @@ config INPUT_PCSPKR
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called pcspkr.
+ 
++config PCSPEAKER
++        bool
++
+ config INPUT_SPARCSPKR
+ 	tristate "SPARC Speaker support"
+ 	depends on PCI && SPARC64
+diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
+index 3585b50..4e51822 100644
+--- a/drivers/input/misc/Makefile
++++ b/drivers/input/misc/Makefile
+@@ -6,6 +6,7 @@
+ 
+ obj-$(CONFIG_INPUT_SPARCSPKR)		+= sparcspkr.o
+ obj-$(CONFIG_INPUT_PCSPKR)		+= pcspkr.o
++obj-$(CONFIG_PCSPEAKER)			+= pcspeaker.o
+ obj-$(CONFIG_INPUT_M68K_BEEP)		+= m68kspkr.o
+ obj-$(CONFIG_INPUT_IXP4XX_BEEPER)	+= ixp4xx-beeper.o
+ obj-$(CONFIG_INPUT_COBALT_BTNS)		+= cobalt_btns.o
+diff --git a/drivers/input/misc/pcspeaker.c b/drivers/input/misc/pcspeaker.c
+new file mode 100644
+index 0000000..475df69
+--- /dev/null
++++ b/drivers/input/misc/pcspeaker.c
+@@ -0,0 +1,28 @@
++/*
++ * Copyright (C) 2006 IBM Corporation
++ *
++ * Implements device information for i8253 timer chip
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version
++ * 2 as published by the Free Software Foundation
++ */
++
++#include <linux/platform_device.h>
++
++static __init int add_pcspkr(void)
++{
++	struct platform_device *pd;
++	int ret;
++
++	pd = platform_device_alloc("pcspkr", -1);
++	if (!pd)
++		return -ENOMEM;
++
++	ret = platform_device_add(pd);
++	if (ret)
++		platform_device_put(pd);
++
++	return ret;
++}
++device_initcall(add_pcspkr);
+-- 
+1.5.2.5
 
 -- 
-
-Sev Binello
-Brookhaven National Laboratory
-Upton, New York
-631-344-5647
-sev@bnl.gov
-
-Jan 23 12:39:27 acnmcr4p kernel: RampEditor    D C02D6EB4  1288 
-21855      1         21857 22139 (NOTLB)
-Jan 23 12:39:27 acnmcr4p kernel: f6e5ec94 00200086 65cc8b98 c02d6eb4 
-f56a9430 e3923830 00200200 00000000 Jan 23 12:39:27 acnmcr4p kernel: 
-c35c4860 00000000 c35bc780 c35bbde0 00000000 00000000 0d1d4140 001553b9 
-Jan 23 12:39:27 acnmcr4p kernel:e3923830 e8fd93f0 e8fd955c 00000000 
-00200246 65cef381 65cef381 f6e5ed04 Jan 23 12:39:27 acnmcr4p kernel: 
-Call Trace:
-Jan 23 12:39:27 acnmcr4p kernel:  [<c02d6eb4>] common_interrupt+0x18/0x20
-Jan 23 12:39:27 acnmcr4p kernel:  [<c02d4c5a>] schedule_timeout+0x139/0x154
-Jan 23 12:39:27 acnmcr4p kernel:  [<c012a73a>] process_timeout+0x0/0x5
-Jan 23 12:39:27 acnmcr4p kernel:  [<c02d4b17>] 
-io_schedule_timeout+0x26/0x30
-Jan 23 12:39:27 acnmcr4p kernel:  [<c02267f8>] 
-blk_congestion_wait+0x64/0x78
-Jan 23 12:39:27 acnmcr4p kernel:  [<c012052d>] 
-autoremove_wake_function+0x0/0x2d
-Jan 23 12:39:27 acnmcr4p kernel:  [<c0145038>] 
-get_writeback_state+0x30/0x35
-Jan 23 12:39:27 acnmcr4p kernel:  [<c012052d>] 
-autoremove_wake_function+0x0/0x2d
-Jan 23 12:39:27 acnmcr4p kernel:  [<c0145291>] 
-balance_dirty_pages+0xbe/0x11c
-Jan 23 12:39:27 acnmcr4p kernel:  [<f8f86105>] 
-nfs_commit_write+0x43/0x72 [nfs]
-Jan 23 12:39:27 acnmcr4p kernel:  [<c0142517>] 
-generic_file_buffered_write+0x41f/0x501
-Jan 23 12:39:27 acnmcr4p kernel:  [<c01ac299>] inode_has_perm+0x4c/0x54
-Jan 23 12:39:27 acnmcr4p kernel:  [<c011dd34>] move_tasks+0x19d/0x202
-Jan 23 12:39:27 acnmcr4p kernel:  [<c0142982>] 
-__generic_file_aio_write_nolock+0x389/0x3b7
-Jan 23 12:39:27 acnmcr4p kernel:  [<c01429e9>] 
-generic_file_aio_write_nolock+0x39/0x7f
-Jan 23 12:39:27 acnmcr4p kernel:  [<c0142bd3>] 
-generic_file_aio_write+0x72/0xc6
-Jan 23 12:39:27 acnmcr4p kernel:  [<f8f86212>] nfs_file_write+0xde/0xf9 
-[nfs]
-Jan 23 12:39:27 acnmcr4p kernel:  [<c015b5b8>] do_sync_write+0x9e/0xcb
-Jan 23 12:39:27 acnmcr4p kernel:  [<c016be58>] poll_freewait+0x33/0x38
-Jan 23 12:39:27 acnmcr4p kernel:  [<c01adf3a>] 
-selinux_file_permission+0x117/0x120
-Jan 23 12:39:27 acnmcr4p kernel:  [<c012052d>] 
-autoremove_wake_function+0x0/0x2d
-Jan 23 12:39:27 acnmcr4p kernel:  [<c015b69b>] vfs_write+0xb6/0xe2
-Jan 23 12:39:27 acnmcr4p kernel:  [<c015b765>] sys_write+0x3c/0x62
-Jan 23 12:39:27 acnmcr4p kernel:  [<c02d64db>] syscall_call+0x7/0xb
-Jan 23 12:39:27 acnmcr4p kernel:  [<c02d007b>] 
-unix_dgram_sendmsg+0x23c/0x45d
-
-
+Michael Opdenacker, Free Electrons
+Free Embedded Linux Training Materials
+on http://free-electrons.com/training
+(More than 1500 pages!)
