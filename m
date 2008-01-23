@@ -1,57 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYAWSQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYAWS0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbYAWSQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 13:16:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbYAWSQU
+	id S1756862AbYAWS0p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 13:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYAWS0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 13:16:20 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:38111 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753293AbYAWSQT (ORCPT
+	Wed, 23 Jan 2008 13:26:36 -0500
+Received: from bipbip.grupopie.com ([195.23.16.24]:40230 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752331AbYAWS0f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 13:16:19 -0500
-Date: Wed, 23 Jan 2008 21:08:28 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrea Righi <righiandr@users.sourceforge.net>
-Cc: Naveen Gupta <ngupta@google.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Paul Menage <menage@google.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [PATCH] cgroup: limit block I/O bandwidth
-Message-ID: <20080123153828.GB12333@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Andrea Righi <righiandr@users.sourceforge.net>,
-	Naveen Gupta <ngupta@google.com>,
-	Jens Axboe <jens.axboe@oracle.com>, Paul Menage <menage@google.com>,
-	Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Pavel Emelyanov <xemul@openvz.org>
-References: <4791DC2C.9090405@users.sourceforge.net> <4793507B.6040706@users.sourceforge.net> <20080120143239.GS6258@kernel.dk> <47936BC1.9060805@users.sourceforge.net> <20080120160651.GU6258@kernel.dk> <4793E047.1000602@users.sourceforge.net> <2846be6b0801221102y2ad297e2u2f9df06e33b72162@mail.gmail.com> <47967805.4060307@users.sourceforge.net> <2846be6b0801221717j41984f93v920d271b948d39be@mail.gmail.com> <47975C0F.3010609@users.sourceforge.net>
+	Wed, 23 Jan 2008 13:26:35 -0500
+Message-ID: <479786D4.9080601@grupopie.com>
+Date: Wed, 23 Jan 2008 18:26:28 +0000
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <47975C0F.3010609@users.sourceforge.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/6] POWERPC: use KSYM_NAME_LEN
+References: <20080123173832.GA12877@cvg>
+In-Reply-To: <20080123173832.GA12877@cvg>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrea Righi <righiandr@users.sourceforge.net> [2008-01-23 16:23:59]:
+Cyrill Gorcunov wrote:
+> Use KSYM_NAME_LEN instead of numeric value.
 
-> Probably tracking who dirtied the pages would be the best approach, but
-> we want also to reduce the overhead of this tracking. So, we should find
-> a smart way to track which cgroup dirtied the pages and then only when
-> the i/o scheduler dispatches the write requests of those pages, account
-> the i/o operations to the opportune cgroup. In this way throttling could
-> be done probably in __set_page_dirty() as well.
->
+The patch series looks like a nice cleanup, except for a few things in 
+this patch.
 
-I think the OpenVZ controller works that way.
- 
-> -Andrea
+> Actually because of too small 'tmp' there is
+> a potential buffer overflow.
+
+I don't think there is. "tmp" is not being passed to kallsyms to be 
+filled with a symbol name, but it's being used to hold a name written by 
+the user to lookup an address.
+
+If the powerpc/xmon people feel that 63 characters is enough to hold a 
+symbol name, it's their problem, but there is no buffer overflow.
+
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
+> 
+> Index: linux-2.6.git/arch/powerpc/xmon/xmon.c
+> ===================================================================
+> --- linux-2.6.git.orig/arch/powerpc/xmon/xmon.c	2008-01-23 19:04:42.000000000 +0300
+> +++ linux-2.6.git/arch/powerpc/xmon/xmon.c	2008-01-23 19:12:45.000000000 +0300
+> @@ -69,7 +69,7 @@ static unsigned long ndump = 64;
+>  static unsigned long nidump = 16;
+>  static unsigned long ncsum = 4096;
+>  static int termch;
+> -static char tmpstr[128];
+> +static char tmpstr[KSYM_NAME_LEN];
+
+This one seems ok, since "tmpstr" is used everywhere to hold symbol names.
+
+>  #define JMP_BUF_LEN	23
+>  static long bus_error_jmp[JMP_BUF_LEN];
+> @@ -2354,7 +2354,7 @@ scanhex(unsigned long *vp)
+>  		}
+>  	} else if (c == '$') {
+>  		int i;
+> -		for (i=0; i<63; i++) {
+> +		for (i = 0; i < sizeof(tmpstr) / 2; i++) {
+
+This one is completely out of the blue. Why "sizeof(tmpstr) / 2"?
+
+It would make more sense to use "sizeof(tmpstr) - 1", but either way it 
+is a change in behavior.
+
+>  			c = inchar();
+>  			if (isspace(c)) {
+>  				termch = c;
+> @@ -2467,7 +2467,7 @@ symbol_lookup(void)
+>  {
+>  	int type = inchar();
+>  	unsigned long addr;
+> -	static char tmp[64];
+> +	static char tmp[KSYM_NAME_LEN];
+>  
+>  	switch (type) {
+>  	case 'a':
+> @@ -2476,7 +2476,7 @@ symbol_lookup(void)
+>  		termch = 0;
+>  		break;
+>  	case 's':
+> -		getstring(tmp, 64);
+> +		getstring(tmp, sizeof(tmp));
+>  		if (setjmp(bus_error_jmp) == 0) {
+>  			catch_memory_errors = 1;
+>  			sync();
+
+This also introduces a change in behavior. It is still a nice cleanup, 
+though. So, if the powerpc people feel they can spare an extra 64 bytes 
+of stack here, I guess it's ok.
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Paulo Marques - www.grupopie.com
+
+"As far as we know, our computer has never had an undetected error."
+Weisert
