@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757853AbYAWRcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758858AbYAWRvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757853AbYAWRcd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:32:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756510AbYAWRZS
+	id S1758858AbYAWRvs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:51:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757800AbYAWRvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:25:18 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:37769 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756104AbYAWRZQ (ORCPT
+	Wed, 23 Jan 2008 12:51:19 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56646 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757805AbYAWRvS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:25:16 -0500
-Date: Thu, 24 Jan 2008 02:25:15 +0900 (JST)
-Message-Id: <20080124.022515.226770887.ryov@valinux.co.jp>
-To: a.p.zijlstra@chello.nl
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: Re: [PATCH 0/2] dm-band: The I/O bandwidth controller: Overview
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <1201098755.6341.54.camel@lappy>
-References: <20080123.215350.193721890.ryov@valinux.co.jp>
-	<1201098755.6341.54.camel@lappy>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jan 2008 12:51:18 -0500
+Date: Wed, 23 Jan 2008 09:46:39 -0800
+From: Greg KH <greg@kroah.com>
+To: Ian Abbott <abbotti@mev.co.uk>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, gregkh@suse.de,
+       kristen.c.accardi@intel.com
+Subject: Re: [RESEND][PATCH-2.6.24-rc8] Fix fakephp deadlock
+Message-ID: <20080123174639.GB10387@kroah.com>
+References: <4795FD78.6020208@mev.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4795FD78.6020208@mev.co.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+On Tue, Jan 22, 2008 at 02:28:08PM +0000, Ian Abbott wrote:
+> #include <linux/init.h>
+> #include <linux/string.h>
+> #include <linux/slab.h>
+> +#include <linux/workqueue.h>
+> #include "../pci.h"
+> #if !defined(MODULE)
+> @@ -63,10 +64,13 @@ struct dummy_slot {
+> 	struct list_head node;
+> 	struct hotplug_slot *slot;
+> 	struct pci_dev *dev;
+> +	struct work_struct remove_work;
+> +	unsigned long removed;
 
-> What definition of bandwidth does it use? Does it for example account
-> for seek latency?
+You are treating "removed" as an atomic value, so why not just make it
+an atomic_t?
 
-The bandwidth in dm-band is determined by the proportion of the
-processing time of each device's tokens(I/Os) to the processing time
-of all device's tokens(I/Os).
-The processing time of one token(I/O) is determined by one I/O cycle 
-include seek latency, interrupt latency, etc...
+And what is protecting the fact that the flag could be set right after
+it gets checked?  I don't see a lock here :)
 
-Thanks,
-Ryo Tsuruta <ryov@valinux.co.jp>
+thanks,
+
+greg k-h
