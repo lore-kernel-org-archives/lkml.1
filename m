@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbYAWVOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbYAWVQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753227AbYAWVOi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 16:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYAWVOa
+	id S1753767AbYAWVQv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 16:16:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYAWVQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 16:14:30 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:48075 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752080AbYAWVO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 16:14:29 -0500
-Date: Wed, 23 Jan 2008 13:14:26 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Nishanth Aravamudan <nacc@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-       Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
- running on a memoryless node
-In-Reply-To: <84144f020801231302g2cafdda9kf7f916121dc56aa5@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0801231312580.15681@schroedinger.engr.sgi.com>
-References: <20080123075821.GA17713@aepfle.de>  <20080123121459.GA18631@aepfle.de>
- <20080123125236.GA18876@aepfle.de>  <20080123135513.GA14175@csn.ul.ie> 
- <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI> 
- <Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI> 
- <Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI> 
- <20080123155655.GB20156@csn.ul.ie>  <Pine.LNX.4.64.0801231906520.1028@sbz-30.cs.Helsinki.FI>
-  <20080123195220.GB3848@us.ibm.com> <84144f020801231302g2cafdda9kf7f916121dc56aa5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 23 Jan 2008 16:16:44 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:42860 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751511AbYAWVQn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 16:16:43 -0500
+To: torvalds@linux-foundation.org
+CC: miklos@szeredi.hu, a.p.zijlstra@chello.nl, salikhmetov@gmail.com,
+       linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
+       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+In-reply-to: <alpine.LFD.1.00.0801231248060.2803@woody.linux-foundation.org>
+	(message from Linus Torvalds on Wed, 23 Jan 2008 13:00:57 -0800 (PST))
+Subject: Re: [PATCH -v8 3/4] Enable the MS_ASYNC functionality in
+ sys_msync()
+References: <12010440803930-git-send-email-salikhmetov@gmail.com>  <1201044083504-git-send-email-salikhmetov@gmail.com>  <alpine.LFD.1.00.0801230836250.1741@woody.linux-foundation.org> <1201110066.6341.65.camel@lappy> <alpine.LFD.1.00.0801231107520.1741@woody.linux-foundation.org>
+ <E1JHlh8-0003s8-Bb@pomaz-ex.szeredi.hu> <alpine.LFD.1.00.0801231248060.2803@woody.linux-foundation.org>
+Message-Id: <E1JHmxa-0004BK-6X@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 23 Jan 2008 22:16:38 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jan 2008, Pekka Enberg wrote:
+> So it's not horribly hard, but it's kind of a separate issue right now. 
+> And while the *generic* page-writeback is easy enough to fix, I worry 
+> about low-level filesystems that have their own "writepages()" 
+> implementation. They could easily get that wrong.
 
-> I think Mel said that their configuration did work with 2.6.23
-> although I also wonder how that's possible. AFAIK there has been some
-> changes in the page allocator that might explain this. That is, if
-> kmem_getpages() returned pages for memoryless node before, bootstrap
-> would have worked.
+Yeah, nasty.
 
-Regular kmem_getpages is called with GFP_THISNODE set. There was some 
-breakage in 2.6.22 and before with GFP_THISNODE returning pages from the 
-wrong node if a node had no memory. So it may have worked accidentally and 
-in an unsafe manner because the pages would have been associated with the 
-wrong node which could trigger bug ons and locking troubles.
+How about doing it in a separate pass, similarly to
+wait_on_page_writeback()?  Just instead of waiting, clean the page
+tables for writeback pages.
 
+> So right now it seems that waiting for writeback to finish is the right 
+> and safe thing to do (and even so, I'm not actually willing to commit my 
+> suggested patch in 2.6.24, I think this needs more thinking about)
 
+Sure, I would have though all of this stuff is 2.6.25, but it's your
+kernel... :)
+
+Miklos
