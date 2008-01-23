@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbYAWRvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbYAWRqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758093AbYAWRvS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:51:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbYAWRvC
+	id S1757046AbYAWRqA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:46:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbYAWRpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:51:02 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54111 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753237AbYAWRvA (ORCPT
+	Wed, 23 Jan 2008 12:45:52 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:42970 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753759AbYAWRpv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:51:00 -0500
-Subject: Re: [PATCH -v8 3/4] Enable the MS_ASYNC functionality in
-	sys_msync()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Anton Salikhmetov <salikhmetov@gmail.com>, linux-mm@kvack.org,
-       jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
-       protasnb@gmail.com, miklos@szeredi.hu, r.e.wolff@bitwizard.nl,
-       hidave.darkstar@gmail.com, hch@infradead.org
-In-Reply-To: <alpine.LFD.1.00.0801230836250.1741@woody.linux-foundation.org>
-References: <12010440803930-git-send-email-salikhmetov@gmail.com>
-	 <1201044083504-git-send-email-salikhmetov@gmail.com>
-	 <alpine.LFD.1.00.0801230836250.1741@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 23 Jan 2008 18:41:06 +0100
-Message-Id: <1201110066.6341.65.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jan 2008 12:45:51 -0500
+Date: Wed, 23 Jan 2008 12:45:45 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Frank Ch. Eigler" <fche@redhat.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Jan Kiszka <jan.kiszka@siemens.com>,
+       John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 19/20 -v5] Trace irq disabled critical timings
+In-Reply-To: <20080123172712.GE18698@redhat.com>
+Message-ID: <Pine.LNX.4.58.0801231241090.13236@gandalf.stny.rr.com>
+References: <20080123160236.969334052@goodmis.org> <20080123160444.197366580@goodmis.org>
+ <20080123165353.GA12598@goodmis.org> <20080123171107.GB12598@goodmis.org>
+ <20080123172712.GE18698@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2008-01-23 at 09:05 -0800, Linus Torvalds wrote:
+On Wed, 23 Jan 2008, Frank Ch. Eigler wrote:
+> On Wed, Jan 23, 2008 at 12:11:07PM -0500, Steven Rostedt wrote:
+> > This patch adds latency tracing for critical timings
+> > (how long interrupts are disabled for).
+> > [...]
+>
+> Is there an opportunity here to share effort with latencytop, and
+> ideally to use markers as much as possible for these event hooks?
 
-> So here's even a patch to get you started. Do this:
-> 
-> 	git revert 204ec841fbea3e5138168edbc3a76d46747cc987
-> 
-> and then use this appended patch on top of that as a starting point for 
-> something that compiles and *possibly* works.
-> 
-> And no, I do *not* guarantee that this is right either! I have not tested 
-> it or thought about it a lot, and S390 tends to be odd about some of these 
-> things. In particular, I actually suspect that we should possibly do this 
-> the same way we do
-> 
-> 	ptep_clear_flush_young()
-> 
-> except we would do "ptep_clear_flush_wrprotect()". So even though this is 
-> a revert plus a simple patch to make it compile again (we've changed how 
-> we do dirty bits), I think a patch like this needs testing and other 
-> people like Nick and Peter to ack it.
-> 
-> Nick? Peter? Testing? Other comments?
+Well, I just found out about latencytop a couple of days ago when Arjan
+announced it. I took a quick look and it seems to be more of a general
+collection of information. This tracer pinpoints out specific maxes.
+Although I may be wrong (I have to admit, I haven't had the time to really
+look at what LatencyTop does, but I have been using this tracer in -rt for
+a number of years).
 
-It would need some addition piece to not call msync_interval() for
-MS_SYNC, and remove the balance_dirty_pages_ratelimited_nr() stuff.
+As for using markers, I just piggied back on top of lockdep, since it has
+the same hooks that I needed. If we were to replace them with markers,
+then I would say lockdep should use the markers too.
 
-But yeah, this pte walker is much better. 
+One thing about markers, only one probe may be allowed at a time. Perhaps
+we should fix this by using something like I did with the mcount hook.
 
-As for s390, I think they only differ on the dirty bit, and we should
-not be touching that.
+-- Steve
 
