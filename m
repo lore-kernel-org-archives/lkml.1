@@ -1,83 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbYAWK6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbYAWLCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753459AbYAWK6P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 05:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYAWK6B
+	id S1753249AbYAWLCQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 06:02:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbYAWLB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 05:58:01 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:51237 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750972AbYAWK6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 05:58:00 -0500
-Date: Wed, 23 Jan 2008 10:57:57 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       apw@shadowen.org
-Subject: Re: [PATCH 0/2] Relax restrictions on setting CONFIG_NUMA on x86
-Message-ID: <20080123105757.GE21455@csn.ul.ie>
-References: <20080118153529.12646.5260.sendpatchset@skynet.skynet.ie> <200801221433.29771.andi@firstfloor.org> <20080123102834.GC21455@csn.ul.ie> <200801231145.14915.andi@firstfloor.org>
+	Wed, 23 Jan 2008 06:01:59 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:52817 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751130AbYAWLB6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 06:01:58 -0500
+Date: Wed, 23 Jan 2008 13:01:39 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Dave Young <hidave.darkstar@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc8-mm1 : net tcp_input.c warnings
+In-Reply-To: <Pine.LNX.4.64.0801231034300.31652@kivilampi-30.cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0801231256360.31652@kivilampi-30.cs.helsinki.fi>
+References: <a8e1da0801220109v6bf8931ev50f2210402c3ba41@mail.gmail.com> 
+ <Pine.LNX.4.64.0801221115150.31652@kivilampi-30.cs.helsinki.fi> 
+ <a8e1da0801221744m37021e88h5c188e5b31ea42bf@mail.gmail.com> 
+ <20080122.190137.206066966.davem@davemloft.net> 
+ <Pine.LNX.4.64.0801230937270.31652@kivilampi-30.cs.helsinki.fi>
+ <a8e1da0801222344l101c2b90s363821c26bc8cb55@mail.gmail.com>
+ <Pine.LNX.4.64.0801231034300.31652@kivilampi-30.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <200801231145.14915.andi@firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: MULTIPART/MIXED; boundary="-696243703-2498209-1201077674=:31652"
+Content-ID: <Pine.LNX.4.64.0801231300530.31652@kivilampi-30.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (23/01/08 11:45), Andi Kleen didst pronounce:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696243703-2498209-1201077674=:31652
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0801231256362.31652@kivilampi-30.cs.helsinki.fi>
+
+On Wed, 23 Jan 2008, Ilpo Järvinen wrote:
+
+> On Wed, 23 Jan 2008, Dave Young wrote:
 > 
-> > > i386 already has srat parsing code (just written in a horrible hackish
-> > > way); but it exists arch/x86/kernel/srat_32.c
-> >
-> > Yes, I spotted that. Enabling it required a Kconfig change 
+> > On Jan 23, 2008 3:41 PM, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+> > >
+> > > On Tue, 22 Jan 2008, David Miller wrote:
+> > >
+> > > > From: "Dave Young" <hidave.darkstar@gmail.com>
+> > > > Date: Wed, 23 Jan 2008 09:44:30 +0800
+> > > >
+> > > > > On Jan 22, 2008 6:47 PM, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+> > > > > > [PATCH] [TCP]: debug S+L
+> > > > >
+> > > > > Thanks, If there's new findings I will let you know.
+> > > >
+> > > > Thanks for helping with this bug Dave.
+> > >
+> > > I noticed btw that there thing might (is likely to) spuriously trigger at
+> > > WARN_ON(sacked != tp->sacked_out); because those won't be equal when SACK
+> > > is not enabled. If that does happen too often, I send a fixed patch for
+> > > it, yet, the fact that I print print tp->rx_opt.sack_ok allows
+> > > identification of those cases already as it's zero when SACK is not
+> > > enabled.
+> > >
+> > > Just ask if you need the updated debug patch.
+> > 
+> > Thanks,  please send, I would like to get it.
 > 
-> does it?
+> There you go. I fixed non-SACK case by adding tcp_is_sack checks there and 
+> also added two verifys to tcp_ack to see if there's corruption outside of 
+> TCP.
 
-hmm, just a removal of (X86_SUMMIT || X86_GENERICARCH). When I was testing
-this I was probably using a PC-compatible configuration as that is what I
-was enabling at the time. It's a similar restriction for BOOT_IOREMAP.
+There's some discussion about a problem that is very likely the same as in 
+here (sorry for not remembering to cc you in there due to rapid progress):
 
-> I was pretty sure that a !NUMAQ i386 CONFIG_NUMA build
-> already used that.
+   http://marc.info/?t=120107174200003&r=1&w=2
 
-Presumably a GENERICARCH configuration
-
-> At least that was the case when I last looked. If that
-> has changed it must have bitrotted recently.
-> 
-
-I don't think it has bit-rotted. I was just not using a GENERICARCH
-configuration.
-
-> > or two and 
-> > enabling BOOT_IOREMAP. It then crashes early in boot on a call to strlen()
-> > so I went with the stubs and SRAT disabled for the moment.
-> 
-> Crashed on a Opteron box? That was always the case
-> 
-
-Yeah, elm3b6 from test.kernel.org is an Opteron-based NUMA machine. Oddly
-it's good to know that the nature of the crash has not changed.
-
-> If it crashed on a (older) Summit then it likely bitrotted, because that 
-> worked at some point. The code was originally written by Pat G. for Summit1
-> and I believe was at least used by some people (no distributions) for S2,
-> possible 3 too.
-> 
-
-Unfortunately, I don't have access to a Summit box so I cannot verify.
-
-> > Ok, understood. When I next revisit this, I'll look at making ACPI_SRAT
-> > and BOOT_IOREMAP work on normal machines and see what happens. Thanks.
-> 
-> Again the problem shouldn't be normal machines, but non Summit NUMA systems.
-> 
-
-Grand. I'll get back to this soon and see what can be done.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+ i.
+---696243703-2498209-1201077674=:31652--
