@@ -1,106 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYAWAgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbYAWAgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbYAWAgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 19:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYAWAgH
+	id S1752595AbYAWAgl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 19:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYAWAgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 19:36:07 -0500
-Received: from mail.tmr.com ([64.65.253.246]:52983 "EHLO gaimboi.tmr.com"
+	Tue, 22 Jan 2008 19:36:32 -0500
+Received: from www.tglx.de ([62.245.132.106]:33439 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751934AbYAWAgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 19:36:05 -0500
-Message-ID: <4796924D.1030503@tmr.com>
-Date: Tue, 22 Jan 2008 20:03:09 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1751736AbYAWAgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 19:36:31 -0500
+Date: Wed, 23 Jan 2008 01:35:55 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       jbeulich@novell.com, venkatesh.pallipadi@intel.com,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: CPA boot crash (was: [PATCH] [0/36] Great change_page_attr patch
+ series v3)
+In-Reply-To: <20080122142147.GD19936@wotan.suse.de>
+Message-ID: <alpine.LFD.1.00.0801221623210.3199@apollo.tec.linutronix.de>
+References: <200801161114.239449000@suse.de> <200801181819.58675.ak@suse.de> <20080121164052.GA11364@elte.hu> <200801211813.45102.ak@suse.de> <alpine.LFD.1.00.0801221119180.3199@apollo.tec.linutronix.de> <20080122132355.GA24320@wotan.suse.de>
+ <alpine.LFD.1.00.0801221439520.3199@apollo.tec.linutronix.de> <20080122142147.GD19936@wotan.suse.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Massive IDE problems. Who leaves data here?
-References: <fn5ivo$ck2$1@ger.gmane.org>
-In-Reply-To: <fn5ivo$ck2$1@ger.gmane.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manuel Reimer wrote:
-> Hello,
-> 
-> anything started with a try to burn Slackware 12.0 from the original DVD 
-> to an new medium with different boot settings. I always got corrupted 
-> results and didn't know why.
-> 
-> So I started with an "md5sum -c CHECKSUMS.md5" directly on the original 
-> media. This resulted in "anything OK".
-> 
-> Now I copied the whole DVD to my hard drive and created an ISO from it. 
-> I mounted the ISO locally and my md5sum now results in 5 corrupted files.
-> 
-> --> A Bug in mkisofs?
-> 
-> No, unfortunately not, as a md5sum on the copy, I have created from the 
-> original DVD by using "cp -vr" is corrupted, too!
-> 
-Possibly a known kernel problem, you may have read past the end of data 
-into the pad sectors of the DVD and gotten garbage at the end of the ISO 
-image. Use isoinfo to determine the correct size of the ISO filesystem, 
-and compare. You can try setting readahead on the DVD reader to zero 
-with blockdev.
+On Tue, 22 Jan 2008, Andi Kleen wrote:
+> According to you and Ingo "the global perspective" is to get
+> simple stuff first in. But in this case you're doing the complicated
+> (and worse the unfinished) stuff first which seems to be against
+> your own principles.
 
-If the file is smaller, other bug, if readahead hit EOF it returns no 
-data instead of a short read, the blockdev fix should handle that as 
-well. This was supposed to be fixed in recent kernels, that may be true.
+No, the global perspective is to get a stable and reliable system,
+which allows us to do new features like gbpages, PAT and whatever
+comes up next in a clean way.
 
-I suggest the cdwrite@other.debian.org mailing list is a better forum 
-for CD/DVD/BR problems, good technical people, unfortunately with 
-personal agendas in some cases.
+Your patches just shove another extra into the existing code base
+without doing any consolidation work and without any consideration of
+problems we need to urgently solve in this area.
 
-> So md5sum on the original DVD is OK, but after copying to my hard drive, 
-> several files are corrupted.
-> 
-That's odd, I would expect the data on the disk to just be the wrong 
-size, and get a CRC on that. You might also use readcd to pull the data, 
-that almost always does what it should.
+Your only care is to get stuff merged which is interesting for you. I
+can understand that, but it should be entirely clear to you as an
+engineer that ignoring the existing problems and adding more (even
+simple) stuff makes it more complex to consolidate and is nothing else
+than bad engineering.
 
-> I'm using kernel 2.6.21.5. Distribution is Slackware 12.0
-> All my "partitions" are LVs in LVM2
-> 
-> I also updated the kernel to 2.6.23.12 to test with this one, but I 
-> still get corrupted files.
-> 
-> Is this a LVM bug? Do I already have a corrupted LVM filesystem? How to 
-> check/fix it? Is this a known kernel bug? Which may be the reason for 
-> corrupted files?
-> 
-> I've created a backup of my important data to a second disc to a "real 
-> ext2 partition" (without LVM), but this is connected to the same IDE 
-> controller and I don't even know if I may still trust my mainboard...
-> 
-> I also get those kernel messages via dmesg:
-> 
-> http://pastebin.org/16537
-> 
-Could be anything, in no order dirty lens, bad drive, bad DVD, firmware 
-error, cable, power supply, acpi confused... could even be a poorly 
-handled end of data on the DVD. Not enough info for me to tell, for 
-sure. Trying readcd is cheap, turning off readahead on the DVD drive is 
-easy, if the problem persists you probably want to take it to the 
-mailing list.
+PAT is high on the requirements list, not because it's not complex (it
+definitely is), but simply because Linux has a years long of backlog
+(it's the only modern OS on the planet still not using PAT) and
+hardware makers are stepping beyond the limits of MTRRs. There is an
+increasing number of systems which don't work under Linux properly due
+to the MTRR limitations, but work perfectly fine with other
+OSs. Should we ignore that ?
 
-> Thank you very much in advance for any help!
-> 
-I'm not sure I helped, but you now have more and better things about 
-which to be confused.  ;-)
+While PAT is a 10 years old hardware feature, gbpages is a feature for
+a brand new chip, which is not even available to mere mortals in a
+useable form. And there is no real problem with not having gbpages for
+some time. So where is the pressure to get that in? Just because it
+can be done and happens to work on some test machine?
 
-> Yours
-> 
-> Manuel
-> 
+PAT patches have been around for years and nothing happened - while
+the first time gbpages were submitted was 19 days ago by you.
 
+Of all pending features, PAT has a priority simply because it
+affects users. The lack of gbpages does not. We are not going to rush
+PAT in before it is stable, but we hold everything off which
+interferes with getting it to that point.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Please stop arguing around with the subtle undertone of us having no
+clue about the topics. We looked into the whole set of pending issues,
+including your gbpages patchset and we well understand the
+implications. It is quite clear that we need to fix the underlying
+system _before_ we add more things to it. That applies to PAT, CPA and
+gbpages in the same way.
+
+In the end all of those features will benefit from a consolidated
+implementation.
+
+It's up to you whether you help to get there sooner or just sit back
+and argue in circles until others have done the hard work and you can
+add gbpages.
+
+Thanks,
+	tglx
