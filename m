@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbYAWReU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbYAWRt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758576AbYAWReU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbYAWRaP
+	id S1757496AbYAWRt2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:49:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYAWRtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:30:15 -0500
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:34517 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756703AbYAWRaN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:30:13 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAM8Hl0dMQWYq/2dsb2JhbACBV6xh
-Date: Wed, 23 Jan 2008 12:25:09 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 01/20 -v5] printk - dont wakeup klogd with interrupts
-	disabled
-Message-ID: <20080123172509.GC22229@Krystal>
-References: <20080123160236.969334052@goodmis.org> <20080123160441.236562634@goodmis.org> <1201107978.13596.16.camel@imap.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 23 Jan 2008 12:49:21 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48453 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752774AbYAWRtU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:49:20 -0500
+Message-ID: <47977DCA.3040904@redhat.com>
+Date: Wed, 23 Jan 2008 18:47:54 +0100
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrea Arcangeli <andrea@qumranet.com>
+CC: Christoph Lameter <clameter@sgi.com>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>,
+       linux-mm@kvack.org, daniel.blueman@quadrics.com, holt@sgi.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [PATCH] export notifier #1
+References: <478E4356.7030303@qumranet.com> <20080117162302.GI7170@v2.random> <478F9C9C.7070500@qumranet.com> <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <4797384B.7080200@redhat.com> <20080123154130.GC7141@v2.random>
+In-Reply-To: <20080123154130.GC7141@v2.random>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1201107978.13596.16.camel@imap.mvista.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:22:25 up 80 days, 22:27,  5 users,  load average: 0.96, 0.67,
-	0.46
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daniel Walker (dwalker@mvista.com) wrote:
+Andrea Arcangeli wrote:
+> Like Avi said, Xen is dealing with the linux pte only, so there's no
+> racy smp page fault to serialize against. Perhaps we can add another
+> notifier for Xen though.
 > 
-> On Wed, 2008-01-23 at 11:02 -0500, Steven Rostedt wrote:
-> 
-> > +	if (!irqs_disabled() && wake_klogd)
-> >  		wake_up_klogd();
-> 
-> This causes a regression .. When printk is called during an OOPS in
-> kernels without this change then the OOPS will get logged, since the
-> logging process (klogd) is woken to handle the messages.. If you apply
-> this change klogd doesn't wakeup, and hence doesn't log the oops.. So if
-> you remove the wakeup here you have to add it someplace else to maintain
-> the logging ..
-> 
-> (I'm not theorizing here, I have defects logged against this specific
-> piece of code..)
-> 
+> But I think it's still not enough for Xen to have a method called
+> before the ptep_clear_flush: rmap.c would get confused in
+> page_mkclean_one for example.
 
-Can we change this for :
-if (!(irqs_disabled() && !oops_in_progress) && wake_klogd)
-  wake_up_klogd();
+The current code sets a bunch of vma flags (VM_RESERVED, VM_DONTCOPY,
+VM_FOREIGN) so the VM doesn't try to handle those special mapping.  IIRC
+one of them was needed to not make rmap unhappy.
 
-?
-
-(totally untested)
-
-> Daniel
+> Nevertheless if you've any idea on how to use the notifiers for Xen
+> I'd be glad to help. Perhaps one workable way to change my patch to
+> work for you could be to pass the retval of ptep_clear_flush to the
+> notifiers themself. something like:
 > 
+> #define ptep_clear_flush(__vma, __address, __ptep)			\
+> ({									\
+> 	pte_t __pte;							\
+> 	__pte = ptep_get_and_clear((__vma)->vm_mm, __address, __ptep);	\
+> 	flush_tlb_page(__vma, __address);				\
+> 	__pte = mmu_notifier(invalidate_page, (__vma)->vm_mm, __address, __pte, __ptep);	\
+> 	__pte;								\
+> })
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Would not work.  Need to pass a pointer to the pte so the xen hypervisor
+can do unmap (aka pte_clear) and grant release as atomic operation.
+Thus passing the value of the pte entry isn't good enougth.
+
+Another maybe workable approach for Xen is to go through pv_ops
+(although pte_clear doesn't go through pv_ops right now, so this would
+be an additional hook too ...).
+
+cheers,
+  Gerd
+
