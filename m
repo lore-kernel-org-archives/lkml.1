@@ -1,128 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbYAWRmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757654AbYAWRf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758680AbYAWRmY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:42:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbYAWRmO
+	id S1757654AbYAWRf1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbYAWRc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:42:14 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42945 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753368AbYAWRmN (ORCPT
+	Wed, 23 Jan 2008 12:32:56 -0500
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:48002 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755597AbYAWRcy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:42:13 -0500
-Date: Wed, 23 Jan 2008 19:42:11 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Mel Gorman <mel@csn.ul.ie>
-cc: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-       Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
- running on a memoryless node
-In-Reply-To: <Pine.LNX.4.64.0801231906520.1028@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0801231941220.3647@sbz-30.cs.Helsinki.FI>
-References: <20080122214505.GA15674@aepfle.de>
- <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
- <20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
- <20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
- <20080123135513.GA14175@csn.ul.ie> <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
- <Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI>
- <Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
- <20080123155655.GB20156@csn.ul.ie> <Pine.LNX.4.64.0801231906520.1028@sbz-30.cs.Helsinki.FI>
+	Wed, 23 Jan 2008 12:32:54 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAKQIl0dMQWYq/2dsb2JhbACBV6xk
+Date: Wed, 23 Jan 2008 12:32:49 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Daniel Walker <dwalker@mvista.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 01/20 -v5] printk - dont wakeup klogd with interrupts
+	disabled
+Message-ID: <20080123173249.GA23503@Krystal>
+References: <20080123160236.969334052@goodmis.org> <20080123160441.236562634@goodmis.org> <1201107978.13596.16.camel@imap.mvista.com> <Pine.LNX.4.58.0801231213430.12932@gandalf.stny.rr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0801231213430.12932@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:29:31 up 80 days, 22:34,  5 users,  load average: 0.56, 0.46,
+	0.40
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jan 2008, Pekka J Enberg wrote:
-> As far as I can tell, there are two ways to fix this:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Wed, 23 Jan 2008, Daniel Walker wrote:
+> 
+> >
+> > On Wed, 2008-01-23 at 11:02 -0500, Steven Rostedt wrote:
+> >
+> > > +	if (!irqs_disabled() && wake_klogd)
+> > >  		wake_up_klogd();
+> >
+> > This causes a regression .. When printk is called during an OOPS in
+> > kernels without this change then the OOPS will get logged, since the
+> > logging process (klogd) is woken to handle the messages.. If you apply
+> > this change klogd doesn't wakeup, and hence doesn't log the oops.. So if
+> > you remove the wakeup here you have to add it someplace else to maintain
+> > the logging ..
+> >
+> > (I'm not theorizing here, I have defects logged against this specific
+> > piece of code..)
+> 
+> It wont get woken up anyway. Did you look at wake_up_klogd?
+> 
+> void wake_up_klogd(void)
+> {
+> 	if (!oops_in_progress && waitqueue_active(&log_wait))
+> 		wake_up_interruptible(&log_wait);
+> }
+> 
+> 
+> So if oops_in_progress is set, then it still wont get woken. Perhaps it
+> got woken some other way? Or is oops_in_progress not set in these oops?
+> 
+> One other solution is to make the runqueue locks visible externally. Like:
+> 
+> in sched.c:
+> 
+> int runqueue_is_locked(void)
+> {
+> 	int cpu = get_cpu();
+> 	struct rq *rq = cpu_rq(cpu);
+> 	int ret;
+> 
+> 	ret = spin_is_locked(&rq->lock);
+> 	put_cpu();
+> 	return ret;
+> }
+> 
+> And in printk we could do:
+> 
+> 	if (wake_klogd && !runqueue_is_locked())
+> 		wake_up_klogd();
+> 
+> This probably is the cleanest solution since it simply prevents the
+> deadlock from occurring.
+> 
 
-[snip]
- 
->   (2) initialize cache_cache.nodelists with initmem_list3 equivalents
->       for *each node hat has normal memory*
 
-An untested patch follows:
+FYI :
 
----
- mm/slab.c |   39 ++++++++++++++++++++-------------------
- 1 file changed, 20 insertions(+), 19 deletions(-)
+kernel/panic.c
 
-Index: linux-2.6/mm/slab.c
-===================================================================
---- linux-2.6.orig/mm/slab.c
-+++ linux-2.6/mm/slab.c
-@@ -304,11 +304,11 @@ struct kmem_list3 {
- /*
-  * Need this for bootstrapping a per node allocator.
-  */
--#define NUM_INIT_LISTS (2 * MAX_NUMNODES + 1)
-+#define NUM_INIT_LISTS (3 * MAX_NUMNODES)
- struct kmem_list3 __initdata initkmem_list3[NUM_INIT_LISTS];
- #define	CACHE_CACHE 0
--#define	SIZE_AC 1
--#define	SIZE_L3 (1 + MAX_NUMNODES)
-+#define	SIZE_AC MAX_NUMNODES
-+#define	SIZE_L3 (2 * MAX_NUMNODES)
- 
- static int drain_freelist(struct kmem_cache *cache,
- 			struct kmem_list3 *l3, int tofree);
-@@ -1410,6 +1410,22 @@ static void init_list(struct kmem_cache 
- }
- 
- /*
-+ * For setting up all the kmem_list3s for cache whose buffer_size is same as
-+ * size of kmem_list3.
-+ */
-+static void __init set_up_list3s(struct kmem_cache *cachep, int index)
-+{
-+	int node;
-+
-+	for_each_node_state(node, N_NORMAL_MEMORY) {
-+		cachep->nodelists[node] = &initkmem_list3[index + node];
-+		cachep->nodelists[node]->next_reap = jiffies +
-+		    REAPTIMEOUT_LIST3 +
-+		    ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
-+	}
-+}
-+
-+/*
-  * Initialisation.  Called after the page allocator have been initialised and
-  * before smp_init().
-  */
-@@ -1432,6 +1448,7 @@ void __init kmem_cache_init(void)
- 		if (i < MAX_NUMNODES)
- 			cache_cache.nodelists[i] = NULL;
- 	}
-+	set_up_list3s(&cache_cache, CACHE_CACHE);
- 
- 	/*
- 	 * Fragmentation resistance on low memory - only use bigger
-@@ -1964,22 +1981,6 @@ static void slab_destroy(struct kmem_cac
- 	}
- }
- 
--/*
-- * For setting up all the kmem_list3s for cache whose buffer_size is same as
-- * size of kmem_list3.
-- */
--static void __init set_up_list3s(struct kmem_cache *cachep, int index)
--{
--	int node;
--
--	for_each_node_state(node, N_NORMAL_MEMORY) {
--		cachep->nodelists[node] = &initkmem_list3[index + node];
--		cachep->nodelists[node]->next_reap = jiffies +
--		    REAPTIMEOUT_LIST3 +
--		    ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
--	}
--}
--
- static void __kmem_cache_destroy(struct kmem_cache *cachep)
- {
- 	int i;
+NORET_TYPE void panic(const char * fmt, ...)
+{
+....
+bust_spinlocks(1);
+...
+bust_spinlocks(0);
+...
+
+In bust_spinlocks :
+
+
+void __attribute__((weak)) bust_spinlocks(int yes)
+{
+        if (yes) {
+                ++oops_in_progress;
+        } else {
+#ifdef CONFIG_VT
+                unblank_screen();
+#endif
+                if (--oops_in_progress == 0)
+                        wake_up_klogd();
+        }
+}
+
+Where the final wake_up happens while oops_in_progress is 0, but
+interrupts are still disabled.
+
+So about my previous email, proposing testing oops_in_progress, it just
+won't work.
+
+Mathieu
+
+> -- Steve
+> 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
