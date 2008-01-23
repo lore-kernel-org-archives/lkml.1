@@ -1,99 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbYAWTIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752592AbYAWTWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756226AbYAWTIR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 14:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYAWTIE
+	id S1752592AbYAWTWq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 14:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984AbYAWTWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 14:08:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:2703 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752693AbYAWTIC (ORCPT
+	Wed, 23 Jan 2008 14:22:38 -0500
+Received: from wx-out-0506.google.com ([66.249.82.231]:13750 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbYAWTWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 14:08:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=rd80Z0ZM3pMabukbM85j2cFyQsF41TmLL/O2wIhp1YCAjxc/BRxY6fFWkarps0CZP9yrseNvf33t9i9VC4tqBJDUhfGU0Jstl8DVMBZvF9v0momTBOFxvdu49ZTt0XgAZ8d8OvXVHLnpNcKpcxm0L1G3Auq9RBi370GI2q6suT0=
-Date: Wed, 23 Jan 2008 22:07:42 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Paulo Marques <pmarques@grupopie.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/6] POWERPC: use KSYM_NAME_LEN
-Message-ID: <20080123190742.GH12877@cvg>
-References: <20080123173832.GA12877@cvg> <479786D4.9080601@grupopie.com> <20080123184343.GG12877@cvg> <47978E7D.9060606@grupopie.com>
+	Wed, 23 Jan 2008 14:22:34 -0500
+Message-ID: <479793FC.70701@codemonkey.ws>
+Date: Wed, 23 Jan 2008 13:22:36 -0600
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47978E7D.9060606@grupopie.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Newsgroups: gmane.linux.kernel.virtualization
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+CC: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: Re: [PATCH 0/2] dm-band: The I/O bandwidth controller: Overview
+References: <20080123.215350.193721890.ryov__34610.100350301$1201092994$gmane$org@valinux.co.jp>
+In-Reply-To: <20080123.215350.193721890.ryov__34610.100350301$1201092994$gmane$org@valinux.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Paulo Marques - Wed, Jan 23, 2008 at 06:59:09PM +0000]
-> Cyrill Gorcunov wrote:
->> [Paulo Marques - Wed, Jan 23, 2008 at 06:26:28PM +0000]
->>> Cyrill Gorcunov wrote:
->>>> [...]
->>>>  	case 's':
->>>> -		getstring(tmp, 64);
->>>> +		getstring(tmp, sizeof(tmp));
->>>>  		if (setjmp(bus_error_jmp) == 0) {
->>>>  			catch_memory_errors = 1;
->>>>  			sync();
->> just after that poin in the original code a call to kallsyms_lookup_name
->> is done - so i think it could be an overflow (of course it depends
->> on what *exactly* the name is being searched, and Paulo - I didn't
->> managed to get *the whole picture* of what is going on in this
->> code - so the thoughs were like: kallsyms_lookup_name could find
->> a quite long name restricted by KSYM_NAME_LEN (dunno how it could
->> happens - due to buggy code or due to memory corruption outside,
->> it does not matter - the only matter - it *could* find that long
->> name).
->
-> Ah, now I understand your confusion: kallsyms_lookup_name doesn't fill the 
-> name. It searches the name and returns the address. It is the _caller_ that 
-> fills the name, not kallsyms_lookup_name.
->
-> It is used for stuff like: "give me the address of function foo":
-> addr = kallsyms_lookup_name("foo");
->
+Hi,
 
-oh my, how could I oversight that... damn!!! my bad!!!
+I believe this work is very important especially in the context of 
+virtual machines.  I think it would be more useful though implemented in 
+the context of the IO scheduler.  Since we already support a notion of 
+IO priority, it seems reasonable to add a notion of an IO cap.
 
->> Anyway - it's just an attempt ;) we always could drop it far-far away ;)
->
-> I think that using KSYM_NAME_LEN would be a nice cleanup for xmon, but it 
-> is for the powerpc guys to decide if they want to do it. I just wanted to 
-> point the change in behavior so that it wouldn't go unnoticed.
+Regards,
 
-thanks, it's really important
+Anthony Liguori
 
->
-> For all we know, the stack may at that point be close to full and an extra 
-> 64 bytes may tip it over the edge.
->
+Ryo Tsuruta wrote:
+> Hi everyone,
+> 
+> I'm happy to announce that I've implemented a Block I/O bandwidth controller.
+> The controller is designed to be of use in a cgroup or virtual machine
+> environment. The current approach is that the controller is implemented as
+> a device-mapper driver.
+> 
+> What's dm-band all about?
+> ========================
+> Dm-band is an I/O bandwidth controller implemented as a device-mapper driver.
+> Several jobs using the same physical device have to share the bandwidth of
+> the device. Dm-band gives bandwidth to each job according to its weight, 
+> which each job can set its own value to.
+> 
+> At this time, a job is a group of processes with the same pid or pgrp or uid.
+> There is also a plan to make it support cgroup. A job can also be a virtual
+> machine such as KVM or Xen.
+> 
+>   +------+ +------+ +------+   +------+ +------+ +------+ 
+>   |cgroup| |cgroup| | the  |   | pid  | | pid  | | the  |  jobs
+>   |  A   | |  B   | |others|   |  X   | |  Y   | |others| 
+>   +--|---+ +--|---+ +--|---+   +--|---+ +--|---+ +--|---+   
+>   +--V----+---V---+----V---+   +--V----+---V---+----V---+   
+>   | group | group | default|   | group | group | default|  band groups
+>   |       |       |  group |   |       |       |  group | 
+>   +-------+-------+--------+   +-------+-------+--------+
+>   |         band1          |   |         band2          |  band devices
+>   +-----------|------------+   +-----------|------------+
+>   +-----------V--------------+-------------V------------+
+>   |                          |                          |
+>   |          sdb1            |           sdb2           |  physical devices
+>   +--------------------------+--------------------------+
+> 
+> 
+> How dm-band works.
+> ========================
+> Every band device has one band group, which by default is called the default
+> group.
+> 
+> Band devices can also have extra band groups in them. Each band group
+> has a job to support and a weight. Proportional to the weight, dm-band gives
+> tokens to the group.
+> 
+> A group passes on I/O requests that its job issues to the underlying
+> layer so long as it has tokens left, while requests are blocked
+> if there aren't any tokens left in the group. One token is consumed each
+> time the group passes on a request. Dm-band will refill groups with tokens
+> once all of groups that have requests on a given physical device use up their
+> tokens.
+> 
+> With this approach, a job running on a band group with large weight is
+> guaranteed to be able to issue a large number of I/O requests.
+> 
+> 
+> Getting started
+> =============
+> The following is a brief description how to control the I/O bandwidth of
+> disks. In this description, we'll take one disk with two partitions as an
+> example target.
+> 
+> You can also check the manual at Document/device-mapper/band.txt of the
+> linux kernel source tree for more information.
+> 
+> 
+> Create and map band devices
+> ---------------------------
+> Create two band devices "band1" and "band2" and map them to "/dev/sda1"
+> and "/dev/sda2" respectively.
+> 
+>  # echo "0 `blockdev --getsize /dev/sda1` band /dev/sda1 1" | dmsetup create band1
+>  # echo "0 `blockdev --getsize /dev/sda2` band /dev/sda2 1" | dmsetup create band2
+> 
+> If the commands are successful then the device files "/dev/mapper/band1"
+> and "/dev/mapper/band2" will have been created.
+> 
+> 
+> Bandwidth control
+> ----------------
+> In this example weights of 40 and 10 will be assigned to "band1" and
+> "band2" respectively. This is done using the following commands:
+> 
+>  # dmsetup message band1 0 weight 40
+>  # dmsetup message band2 0 weight 10
+> 
+> After these commands, "band1" can use 80% --- 40/(40+10)*100 --- of the
+> bandwidth of the physical disk "/dev/sda" while "band2" can use 20%.
+> 
+> 
+> Additional bandwidth control
+> ---------------------------
+> In this example two extra band groups are created on "band1".
+> The first group consists of all the processes with user-id 1000 and the
+> second group consists of all the processes with user-id 2000. Their
+> weights are 30 and 20 respectively.
+> 
+> Firstly the band group type of "band1" is set to "user".
+> Then, the user-id 1000 and 2000 groups are attached to "band1".
+> Finally, weights are assigned to the user-id 1000 and 2000 groups.
+> 
+>  # dmsetup message band1 0 type user
+>  # dmsetup message band1 0 attach 1000
+>  # dmsetup message band1 0 attach 2000
+>  # dmsetup message band1 0 weight 1000:30
+>  # dmsetup message band1 0 weight 2000:20
+> 
+> Now the processes in the user-id 1000 group can use 30% ---
+> 30/(30+20+40+10)*100 --- of the bandwidth of the physical disk.
+> 
+>  Band Device    Band Group                     Weight
+>   band1         user id 1000                     30
+>   band1         user id 2000                     20
+>   band1         default group(the other users)   40
+>   band2         default group                    10
+> 
+> 
+> Remove band devices
+> -------------------
+> Remove the band devices when no longer used.
+> 
+>   # dmsetup remove band1
+>   # dmsetup remove band2
+> 
+> 
+> TODO
+> ========================
+>   - Cgroup support. 
+>   - Control read and write requests separately.
+>   - Support WRITE_BARRIER.
+>   - Optimization.
+>   - More configuration tools. Or is the dmsetup command sufficient?
+>   - Other policies to schedule BIOs. Or is the weight policy sufficient?
+> 
+> Thanks,
+> Ryo Tsuruta
 
-oops, thanks for pointing out
-
->>> This also introduces a change in behavior. It is still a nice cleanup, 
->>> though. So, if the powerpc people feel they can spare an extra 64 bytes 
->>> of stack here, I guess it's ok.
->> Thanks a lot for review Paulo!
->
-> No problem. I always keep an eye out for kallsyms related stuff.
-
-;)
-
->
-> -- 
-> Paulo Marques - www.grupopie.com
->
-> "There cannot be a crisis today; my schedule is already full."
->
-		- Cyrill -
