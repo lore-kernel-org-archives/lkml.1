@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbYAWOMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754331AbYAWON6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754247AbYAWOMw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 09:12:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYAWOMp
+	id S1754331AbYAWON6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 09:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYAWONv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 09:12:45 -0500
-Received: from ext-ch1gw-7.online-age.net ([64.37.194.15]:34992 "EHLO
-	ext-ch1gw-7.online-age.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751942AbYAWOMo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 09:12:44 -0500
-Date: Wed, 23 Jan 2008 15:12:22 +0100
-From: Karl Kiniger <karl.kiniger@med.ge.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: David Newall <davidn@davidnewall.com>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for mm] Remove iBCS support
-Message-ID: <20080123141222.GA29243@wszip-kinigka.euro.med.ge.com>
-References: <20080120031153.GB6275@one.firstfloor.org> <4792D221.1010704@davidnewall.com> <20080120051822.GB19784@one.firstfloor.org> <4792DD22.4070902@davidnewall.com> <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122102436.GA15563@wszip-kinigka.euro.med.ge.com> <p73k5m1lygb.fsf@crumb.suse.de>
+	Wed, 23 Jan 2008 09:13:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48350 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751928AbYAWONu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 09:13:50 -0500
+Message-ID: <47974B54.30407@redhat.com>
+Date: Wed, 23 Jan 2008 15:12:36 +0100
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73k5m1lygb.fsf@crumb.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-GEHealthcare-MailScanner: Found to be clean
-X-GEHealthcare-MailScanner-From: karl.kiniger@med.ge.com
+To: Robin Holt <holt@sgi.com>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>,
+       kvm-devel@lists.sourceforge.net, daniel.blueman@quadrics.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [PATCH] export notifier #1
+References: <478E4356.7030303@qumranet.com> <20080117162302.GI7170@v2.random> <478F9C9C.7070500@qumranet.com> <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <4797384B.7080200@redhat.com> <20080123131939.GJ26420@sgi.com>
+In-Reply-To: <20080123131939.GJ26420@sgi.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 080123, Andi Kleen wrote:
-> Karl Kiniger <karl.kiniger@med.ge.com> writes:
+  Hi,
+
+>> That would render the notifies useless for Xen too.  Xen needs to
+>> intercept the actual pte clear and instead of just zapping it use the
+>> hypercall to do the unmap and release the grant.
 > 
-> > FYI, 
-> > 
-> > on http://www.feise.com/~jfeise/Downloads/linux-abi/
-> > 
-> > a patch named  linux-abi-2.6.22.3_3.diff.bz2 can be found.
+> We are tackling that by having our own page table hanging off the
+> structure representing our seg (thing created when we do the equiv of
+> your grant call).
+
+--verbose please.  I don't understand that "own page table" trick.  Is
+that page table actually used by the processor or is it just used to
+maintain some sort of page list?
+
+>> Current implementation uses a new vm_ops operation which is called if
+>> present instead of doing a ptep_get_and_clear_full().  It is in the
+>> XenSource tree only, mainline hasn't this yet due to implementing only
+>> the DomU bits so far.  When adding Dom0 support to mainline we'll need
+>> some way to handle it, and I'd like to see the notifies be designed in a
+>> way that Xen can simply use them.
 > 
-> So just add a reversed version of my binfmt_elf patch to that.
-> If people need to apply a patch anyways it doesn't make much
-> difference if it has a few more hunks.
+> Would the callouts Christoph proposed work for you if you maintained
+> your own page table and moved them after the callouts the mmu_notifiers
+> are using.
 
-it will force to recompile. The latest version of linux-abi  on 
-SourceForge is named ibcs-3_4.tgz and IIRC it can be built
-as an external module w/o kernel recompile.
+I *think* it would.  I'm not that deep in the VM details to be sure
+though.  One possible problem I see is that the hypercall does also tear
+down the mapping, so this isn't just a notify but also changes the page
+tables, which could confuse the VM later on when it comes to the actual
+pte clearing.
 
-Karl
+cheers,
+  Gerd
 
-> 
-> -Andi
-
--- 
-Karl Kiniger            mailto:karl.kiniger@med.ge.com
-GE Medical Systems Kretztechnik GmbH & Co OHG
-Tiefenbach 15           Tel: (++43) 7682-3800-710  Voip(GE): 1662 710
-A-4871 Zipf Austria     Fax: (++43) 7682-3800-47 C: +43 6991 3800 710
