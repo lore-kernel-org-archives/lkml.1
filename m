@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYAWXhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbYAWXs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbYAWXhu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 18:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbYAWXhl
+	id S1753199AbYAWXs6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 18:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbYAWXst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 18:37:41 -0500
-Received: from smtp.digitalpath.net ([65.164.104.14]:59281 "EHLO
-	smtp.digitalpath.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbYAWXha (ORCPT
+	Wed, 23 Jan 2008 18:48:49 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56894 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752009AbYAWXst (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 18:37:30 -0500
-Comment: DomainKeys? See http://antispam.yahoo.com/domainkeys
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=default; d=digitalpath.net;
-  b=tHqAuLU+QxXlmilhLfqPHaORTD6c4YbsreFMg0ExssoDQixGa+wnag8ODTKxbCTSPoZsnxi09duJY9Lgic5dE1TZpYLI8Lhkeq2Iz8rsDWtfhqcUMzY+PQJh1O5Ui1oG  ;
-Message-ID: <2414.65.164.104.9.1201131449.squirrel@webmail.digitalpath.net>
-Date: Wed, 23 Jan 2008 15:37:29 -0800 (PST)
-Subject: Write to MFGPT_NR_MSR causes immediate hard reset
-From: "Hasan Rashid" <hasan@digitalpath.net>
-To: linux-kernel@vger.kernel.org
-Reply-To: hasan@digitalpath.net
-User-Agent: SquirrelMail/1.4.11
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+	Wed, 23 Jan 2008 18:48:49 -0500
+Date: Wed, 23 Jan 2008 23:46:39 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Marcin Gil <marcin.gil@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: JMicron PATA 2.6.24-rc7 can't find drives
+Message-ID: <20080123234639.025cc859@lxorguk.ukuu.org.uk>
+In-Reply-To: <200801232323.36187.marcin.gil@gmail.com>
+References: <200801232323.36187.marcin.gil@gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> I have SATA drive connected to SATA0 and Maxtor IDE drive + DVD burner 
+> connected to single IDE slot.
+> 
+> Booting this kernel off the SATA drive works perfectly, however the IDE drive 
+> is not found/put into /dev. However the DVD is properly recognized and 
+> created as sr0.
+> 
+> Is this known problem? I've looked all over google and found out that people 
+> have problems with CD/DVD drives with pata_jmicron but in my case DVD is 
+> working ok but HDD is not.
+> 
+> Is there a solution for this or can I give you more information to help me 
+> solve this?
 
-I back ported the CS5536 MFGPT based watchdog timer from Kernel 2.6 to
-Kernel 2.4 (I have to). I am using the Alix2c0 board with TinyBios v0.99.
-I have been following the discussion on this thread “Re: 2.6.24-rc8 hangs
-at mfgpt-timer". I disabled the MFGPT workaround in the BIOS and it seems
-to load the module just fine (no more hangs). I get this when I load
-geode-mfgpt.o:
-
-################
-Found vendor: 0x1022h, device: 0x2090h
-reading from: 6206 reading from: 620e reading from: 6216 reading from:
-621e reading from: 6226 reading from: 622e reading from: 6236 reading
-from: 623e
-geode-mfgpt:  8 timers available.
-
-And when I load the watchdog module geodewdt.o:
-
-geode-mfgpt:  Registered timer 0
-written to: 6206 -- just something I am doing to verify the write
-operation written to: 6202
-
-Everything seems to be fine except when I try to setup a bit in
-MFGPT_NR_MSR that allows MFGPT0_CMP2 to perform a hard reset when the
-event fires, it resets it right away.
-
-/* Set up comparator 2 to reset when the event fires */
-//	geode_mfgpt_set_event(wdt_timer, MFGPT_CMP2, MFGPT_EVENT_RESET);
-
-I am not sure if the Clock Switch section 5.16.3 in the CS5536 data book,
-pointed by Willy Tarreau in one of his posts, is related to it. When the
-API module is loaded, it only executes read instructions on the
-MFGPT_REG_SETUP registers. Can anyone speculate as to why the board resets
-as soon as the watchdog timer module executes the geode_mfgpt_set_event
-function? Basically when this function is called, (0x100000)h is written
-to the MFGPT_NR_MSR register.
-
-TIA.
-
-Regards,
-Hasan Rashid
-Embedded Systems Software Engineer
-
-
+The output of dmesg after the boot would be a good start
