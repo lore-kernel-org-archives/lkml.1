@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760258AbYAXRG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbYAXRGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760258AbYAXRG0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 12:06:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757622AbYAXRBS
+	id S1754395AbYAXRGm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 12:06:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759570AbYAXRDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 12:01:18 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:32865 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757531AbYAXRBR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 12:01:17 -0500
-Message-ID: <4798C456.10602@davidnewall.com>
-Date: Fri, 25 Jan 2008 03:31:10 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for mm] Remove iBCS support
-References: <20080120031153.GB6275@one.firstfloor.org> <4792D221.1010704@davidnewall.com> <20080120051822.GB19784@one.firstfloor.org> <4792DD22.4070902@davidnewall.com> <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122111205.GA25090@elte.hu> <4796081A.7060505@davidnewall.com> <20080122154918.GA27006@elte.hu>
-In-Reply-To: <20080122154918.GA27006@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Jan 2008 12:03:34 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4056 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759549AbYAXRDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 12:03:32 -0500
+Date: Wed, 23 Jan 2008 20:59:30 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Cedric Le Goater <clg@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>
+Subject: Re: [PATCH 1/2] Extend sys_clone and sys_unshare system calls API
+Message-ID: <20080123205930.GA5233@ucw.cz>
+References: <478DFF8F.9030006@openvz.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <478DFF8F.9030006@openvz.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> unfortunately you have not replied to my (rather clear) question. Let me
-> repeat the question (which can be clearly seen in the quoted sections 
-> above). Andi made this assertion:
->
-> |  You seem to be under the illusion that iBCS2 support works currently 
-> |  in mainline and that only this patch would break it.
->
-> And you claimed that what Andi says is false:
->
-> ||  I cannot imagine what brings you to that conclusion.  Suffice to say 
-> ||  you are entirely and inexplicably wrong.
->   
-> All i did was to ask your proof for why you claim that Andi is wrong - 
->   
-I am under no illusion that iBCS2 support works currently in mainline. 
-I have said nothing that suggest otherwise.  Please stop wasting
-everyone's time, and especially mine, with this wilful failure to
-understand.
+On Wed 2008-01-16 15:58:55, Pavel Emelyanov wrote:
+> There's only one bit in the clone_flags left, so we won't be able 
+> to create more namespaces after we make it busy. Besides, for 
+> checkpoint/restart jobs we might want to create tasks with given
+> pids (virtual of course). And nobody knows for sure what else might 
+> be required from clone() in the future.
+> 
+> This is an attempt to create a extendable API for clone and unshare.
+> Actually this patch is a request for comment about the overall
+> design. If it will turn out to "look good", then we'll select some
+> better names for new flag and data types.
+> 
+> I use the last bit in the clone_flags for CLONE_LONGARG. When set it
+> will denote that the child_tidptr is not a pointer to a tid storage,
+> but the pointer to the struct long_clone_struct which currently 
+> looks like this:
+> 
+> struct long_clone_arg {
+> 	int size;
+> };
+
+Ugly as night, I'd say. (Al said it better). What about just adding
+clone2 syscall, that takes u64?
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
