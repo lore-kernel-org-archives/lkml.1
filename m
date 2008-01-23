@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbYAWGL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbYAWGVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755649AbYAWGL6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 01:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbYAWGLt
+	id S1755653AbYAWGVg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 01:21:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbYAWGV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 01:11:49 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:33675 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753274AbYAWGLt (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 01:11:49 -0500
-Date: Wed, 23 Jan 2008 17:11:36 +1100
-From: David Chinner <dgc@sgi.com>
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: do_remount_sb(RDONLY) race? (was: XFS oops under 2.6.23.9)
-Message-ID: <20080123061136.GS155259@sgi.com>
-References: <20080123053412.GN155259@sgi.com> <200801230554.m0N5sXJL001173@turbo.physics.adelaide.edu.au>
+	Wed, 23 Jan 2008 01:21:27 -0500
+Received: from mga01.intel.com ([192.55.52.88]:16676 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752999AbYAWGV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 01:21:26 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,236,1199692800"; 
+   d="scan'208";a="506810443"
+Subject: [RFC] some page can't be migrated
+From: Shaohua Li <shaohua.li@intel.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, clameter <clameter@sgi.com>
+Content-Type: text/plain
+Date: Wed, 23 Jan 2008 14:22:37 +0800
+Message-Id: <1201069357.32059.13.camel@sli10-desk.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801230554.m0N5sXJL001173@turbo.physics.adelaide.edu.au>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 23, 2008 at 04:24:33PM +1030, Jonathan Woithe wrote:
-> > On Wed, Jan 23, 2008 at 03:00:48PM +1030, Jonathan Woithe wrote:
-> > > Last night my laptop suffered an oops during closedown.  The full oops
-> > > reports can be downloaded from
-> > > 
-> > >   http://www.atrad.com.au/~jwoithe/xfs_oops/
-> > 
-> > Assertion failed: atomic_read(&mp->m_active_trans) == 0, file:
-> > fs/xfs/xfs_vfsops.c, line 689.
-> > 
-> > The remount read-only of the root drive supposedly completed
-> > while there was still active modification of the filesystem
-> > taking place.
-.....
-> > The read only flag only gets set *after* we've made the filesystem
-> > readonly, which means before we are truly read only, we can race
-> > with other threads opening files read/write or filesystem
-> > modifcations can take place.
-> > 
-> > The result of that race (if it is really unsafe) will be assert you
-> > see. The patch I wrote a couple of months ago to fix the problem
-> > is attached below....
-> 
-> Thanks for the patch.  I will apply it and see what happens.
-> 
-> Will this be in 2.6.24?
+Anonymous page might have fs-private metadata, the page is truncated. As
+the page hasn't mapping, page migration refuse to migrate the page. It
+appears the page is only freed in page reclaim and if zone watermark is
+low, the page is never freed, as a result migration always fail. I
+thought we could free the metadata so such page can be freed in
+migration and make migration more reliable?
 
-No - because hitting the problem is so rare that I'm not even
-sure it's a problem. One of the VFS gurus will need to comment
-on whether this really is a problem, and if so the correct fix
-is to do_remount_sb() so that it closes the hole for everyone.
+Thanks,
+Shaohua
 
-Cheers,
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 6a207e8..6bc38f7 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -633,6 +633,17 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
+ 			goto unlock;
+ 		wait_on_page_writeback(page);
+ 	}
++
++	/*
++	 * See truncate_complete_page(). Anonymous page might have
++	 * fs-private metadata, the page is truncated. Such page can't be
++	 * migrated. Try to free metadata, so the page can be freed.
++	 */
++	if (!page->mapping && !PageAnon(page) && PagePrivate(page)) {
++		try_to_release_page(page, GFP_KERNEL);
++		goto unlock;
++	}
++
+ 	/*
+ 	 * By try_to_unmap(), page->mapcount goes down to 0 here. In this case,
+ 	 * we cannot notice that anon_vma is freed while we migrates a page.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+
