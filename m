@@ -1,54 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbYAWOme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYAWOpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbYAWOme (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 09:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbYAWOm1
+	id S1754681AbYAWOpb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 09:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbYAWOpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 09:42:27 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:35693 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751599AbYAWOm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 09:42:26 -0500
-Date: Wed, 23 Jan 2008 14:42:23 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Olaf Hering <olaf@aepfle.de>
-Cc: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, lee.schermerhorn@hp.com,
-       Linux MM <linux-mm@kvack.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is running on a memoryless node
-Message-ID: <20080123144222.GA20156@csn.ul.ie>
-References: <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie> <20080122214505.GA15674@aepfle.de> <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com> <20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie> <20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de> <20080123135513.GA14175@csn.ul.ie> <20080123142759.GB19161@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080123142759.GB19161@aepfle.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 23 Jan 2008 09:45:21 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:26558 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752057AbYAWOpT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 09:45:19 -0500
+Date: Wed, 23 Jan 2008 08:44:39 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: sata_nv and 2.6.24 (was Re: fixed a bug of adma in rhel4u5 with
+ HDS7250SASUN500G.)
+In-reply-to: <479709BE.2090707@garzik.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Kuan Luo <kluo@nvidia.com>, Tejun Heo <htejun@gmail.com>,
+       Mark Lord <liml@rtr.ca>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Allen Martin <AMartin@nvidia.com>, Peer Chen <pchen@nvidia.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       David Milburn <dmilburn@redhat.com>
+Message-id: <479752D7.4020206@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <4781F008.9070404@gmail.com> <4782422C.8020202@rtr.ca>
+ <4782B73B.8080309@shaw.ca> <4782BC48.4000309@gmail.com>
+ <4782C008.3030902@shaw.ca> <4782CB62.7040901@gmail.com>
+ <4782CEF9.3040708@gmail.com> <4782DFFE.50301@shaw.ca>
+ <4782E5A8.9010305@gmail.com> <4782E63E.1000606@gmail.com>
+ <4782E78F.9050205@shaw.ca> <4782E912.1050204@gmail.com>
+ <4783493A.7070800@gmail.com> <47838B57.8020407@shaw.ca>
+ <47842A54.2060107@gmail.com> <47842ABA.2060605@gmail.com>
+ <47844471.4070705@shaw.ca> <47845708.6060900@gmail.com>
+ <478567D8.10601@shaw.ca>
+ <15F501D1A78BD343BE8F4D8DB854566B1BFE2ABF@hkemmail01.nvidia.com>
+ <478812C9.1000901@shaw.ca>
+ <15F501D1A78BD343BE8F4D8DB854566B1BFE2AC0@hkemmail01.nvidia.com>
+ <478AF10D.5080805@shaw.ca> <479709BE.2090707@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (23/01/08 15:27), Olaf Hering didst pronounce:
-> On Wed, Jan 23, Mel Gorman wrote:
+Jeff Garzik wrote:
+> Ping...  sata_nv status is still a bit open for 2.6.24, and I would like 
+> to move us forward a bit.
 > 
-> > This patch in combination with a partial revert of commit
-> > 04231b3002ac53f8a64a7bd142fde3fa4b6808c6 fixes a regression between 2.6.23
-> > and 2.6.24-rc8 where a PPC64 machine with all CPUS on a memoryless node fails
-> > to boot. If approved by the SLAB maintainers, it should be merged for 2.6.24.
-> 
-> This change alone does not help, its not the version I tested.
-> Will all the changes below go into 2.6.24 as well, in a seperate patch?
-> 
-> -       for_each_node_state(node, N_NORMAL_MEMORY) {
-> +       for_each_online_node(node) {
+> * Kuan's patch...  it has been confirmed (and is needed), correct?  can 
+> someone work up a good patch for 2.6.24?  The only one I ever received 
+> was badly word-wrapped, and at the time, Robert seemed uncertain of it, 
+> so I waited.
 
-Those changes are already in a separate patch and have been sent. I don't
-see it in git yet but it should be on the way.
+I can get you one later today hopefully.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> 
+> * ADMA ATAPI 4GB issues...  playing tricks with the ordering of 
+> allocations and DMA masks is just way too fragile.  We just cannot 
+> guarantee that all allocators work that way.  The obvious solution to me 
+> seems to be hardcoding the consistent DMA mask to 32-bit, but using 
+> 64-bit for regular dma mask if-and-only-if ADMA is enabled.
+
+That's not enough to fix the problem since there's issues with actual 
+transfer data being allocated above 4GB as well, not just the consistent 
+  allocations (it appears that blk_queue_bounce_limit setting to 32-bit 
+doesn't prevent this on x86_64). Either we play some funky games with 
+changing the DMA mask of the entire device to 32-bit if either port is 
+in ATAPI mode (which blew up when I tried it) or we add the ability to 
+set the DMA mask independently on each port (like by setting the mask on 
+the SCSI device and using that for DMA mapping instead) which requires 
+core changes.
+
+> 
+> * it sure seems like there are other open sata_nv ADMA issues -- can we 
+> hard-confirm or deny this?  bugzilla wasn't very helpful for me.  It 
+> doesn't seem like we can disable ADMA (to solve those issues) and get 
+> enough test time in (which is what I said a week (or more?) ago too...)
+
+The NCQ/non-NCQ command switching issue is still hitting some people 
+(last I heard Kuan was looking into this), also there's a hotplug issue 
+that Tejun reported..
+
+> 
+> It seems like we should be able to tackle the first two issues promptly, 
+> at least.
+> 
+>     Jeff
+> 
+> 
+> 
+> 
