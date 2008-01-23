@@ -1,274 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbYAWMZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbYAWMaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752964AbYAWMZr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 07:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYAWMZj
+	id S1753287AbYAWMaf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 07:30:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbYAWMa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 07:25:39 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:33090 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbYAWMZi (ORCPT
+	Wed, 23 Jan 2008 07:30:28 -0500
+Received: from mail.hevs.ch ([153.109.23.15]:43617 "EHLO mail.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751605AbYAWMa1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 07:25:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bjSnpueq/QAnz5DnlR9DA0vKE7qKs6BP1eKS0BnoaWBhm5jrWwavwEkZ1TX16Jh8NzG81DlRTxN9FYK4rmnZtWhTbem1GQQB1aKo8WVFyGJHb4fbvVXa5/9dWkZHhChUaM4Wm5+i66p17Rg3mkUfmYDVfTgeHpLTC2SbWzWfQtA=
-Message-ID: <4df4ef0c0801230425o13a1f3a6p87298c6767eb62ce@mail.gmail.com>
-Date: Wed, 23 Jan 2008 15:25:37 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [PATCH -v8 4/4] The design document for memory-mapped file times update
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
-       hidave.darkstar@gmail.com, hch@infradead.org
-In-Reply-To: <E1JHdav-0002MW-GH@pomaz-ex.szeredi.hu>
+	Wed, 23 Jan 2008 07:30:27 -0500
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH 6/6] atmel_serial: Add DMA support
+Date: Wed, 23 Jan 2008 13:30:32 +0100
+User-Agent: KMail/1.9.7
+Cc: Andrew Victor <linux@maxim.org.za>, kernel@avr32linux.org,
+       linux-kernel@vger.kernel.org, Remy Bohmer <linux@bohmer.net>,
+       Chip Coldwell <coldwell@redhat.com>
+References: <1201013444-30370-1-git-send-email-hskinnemoen@atmel.com> <200801221752.43830.marc.pignat@hevs.ch> <20080123125300.5d8d7006@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080123125300.5d8d7006@dhcp-252-066.norway.atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <12010440803930-git-send-email-salikhmetov@gmail.com>
-	 <1201044083554-git-send-email-salikhmetov@gmail.com>
-	 <E1JHbs1-00025n-Ac@pomaz-ex.szeredi.hu>
-	 <4df4ef0c0801230237g2f26f0d1j2d2ada2ce62ba284@mail.gmail.com>
-	 <E1JHdE4-0002Jk-QG@pomaz-ex.szeredi.hu>
-	 <E1JHdav-0002MW-GH@pomaz-ex.szeredi.hu>
+Message-Id: <200801231330.32777.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/23, Miklos Szeredi <miklos@szeredi.hu>:
-> > Ah, OK, this is becuase mmap doesn't actually set up the page tables
-> > by default.   Try adding MAP_POPULATE to the flags.
->
-> Here's an updated version of the program, with an added a '-r' option,
-> that performs a read access on the mapping before doing the write
-> (basically equivalent to MAP_POPULATE, but portable).
->
-> Please try this on a tmpfs file.
->
-> Thanks,
-> Miklos
->
-> ---
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <unistd.h>
-> #include <string.h>
-> #include <fcntl.h>
-> #include <sys/mman.h>
-> #include <sys/stat.h>
-> #include <sys/wait.h>
->
-> static const char *filename;
-> static int msync_flag = MS_ASYNC;
-> static int msync_fork = 0;
-> static int msync_read = 0;
->
-> static void print_times(const char *msg)
-> {
->         struct stat stbuf;
->         stat(filename, &stbuf);
->         printf("%s\t%li\t%li\t%li\n", msg, stbuf.st_ctime, stbuf.st_mtime,
->                stbuf.st_atime);
-> }
->
-> static void do_msync(void *addr, int len)
-> {
->         int res;
->         if (!msync_fork) {
->                 res = msync(addr, len, msync_flag);
->                 if (res == -1) {
->                         perror("msync");
->                         exit(1);
->                 }
->         } else {
->                 int pid = fork();
->                 if (pid == -1) {
->                         perror("fork");
->                         exit(1);
->                 }
->                 if (!pid) {
->                         int fd = open(filename, O_RDWR);
->                         if (fd == -1) {
->                                 perror("open");
->                                 exit(1);
->                         }
->                         addr = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
->                         if (addr == MAP_FAILED) {
->                                 perror("mmap");
->                                 exit(1);
->                         }
->                         res = msync(addr, len, msync_flag);
->                         if (res == -1) {
->                                 perror("msync");
->                                 exit(1);
->                         }
->                         exit(0);
->                 }
->                 wait(NULL);
->         }
-> }
->
-> static void usage(const char *progname)
-> {
->         fprintf(stderr, "usage: %s filename [-sfr]\n", progname);
->         fprintf(stderr, " -s: use MS_SYNC instead of MS_ASYNC\n");
->         fprintf(stderr, " -f: fork and perform msync in a different process\n");
->         fprintf(stderr, " -r: do a read access before each write access\n");
->         exit(1);
-> }
->
-> int main(int argc, char *argv[])
-> {
->         int res;
->         char *addr;
->         char tmp[32];
->         int fd;
->
->         if (argc < 2)
->                 usage(argv[0]);
->
->         filename = argv[1];
->         if (argc > 2) {
->                 char *s;
->                 if (argc > 3)
->                         usage(argv[0]);
->                 s = argv[2];
->                 if (s[0] != '-' || !s[1])
->                         usage(argv[0]);
->                 for (s++; *s; s++) {
->                         switch (*s) {
->                         case 's':
->                                 msync_flag = MS_SYNC;
->                                 break;
->                         case 'f':
->                                 msync_fork = 1;
->                                 break;
->                         case 'r':
->                                 msync_read = 1;
->                                 break;
->                         default:
->                                 usage(argv[0]);
->                         }
->                 }
->         }
->
->         fd = open(filename, O_RDWR | O_TRUNC | O_CREAT, 0666);
->         if (fd == -1) {
->                 perror(filename);
->                 return 1;
->         }
->         print_times("begin");
->         sleep(1);
->         write(fd, "wxyz\n", 4);
->         print_times("write");
->         sleep(1);
->         addr = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
->         if (addr == MAP_FAILED) {
->                 perror("mmap");
->                 return 1;
->         }
->         print_times("mmap");
->         sleep(1);
->
->         if (msync_read) {
->                 sprintf(tmp, "fetch %c", addr[1]);
->                 print_times(tmp);
->                 sleep(1);
->         }
->         addr[1] = 'b';
->         print_times("store b");
->         sleep(1);
->         do_msync(addr, 4);
->         print_times("msync");
->         sleep(1);
->
->         if (msync_read) {
->                 sprintf(tmp, "fetch %c", addr[2]);
->                 print_times(tmp);
->                 sleep(1);
->         }
->         addr[2] = 'c';
->         print_times("store c");
->         sleep(1);
->         do_msync(addr, 4);
->         print_times("msync");
->         sleep(1);
->
->         if (msync_read) {
->                 sprintf(tmp, "fetch %c", addr[3]);
->                 print_times(tmp);
->                 sleep(1);
->         }
->         addr[3] = 'd';
->         print_times("store d");
->         sleep(1);
->         res = munmap(addr, 4);
->         if (res == -1) {
->                 perror("munmap");
->                 return 1;
->         }
->         print_times("munmap");
->         sleep(1);
->
->         res = close(fd);
->         if (res == -1) {
->                 perror("close");
->                 return 1;
->         }
->         print_times("close");
->         sleep(1);
->         sync();
->         print_times("sync");
->
->         return 0;
-> }
->
+Hi!
 
-Miklos, thanks for your program. Its output is given below.
+On Wednesday 23 January 2008, Haavard Skinnemoen wrote:
+> On Tue, 22 Jan 2008 17:52:43 +0100
+> Marc Pignat <marc.pignat@hevs.ch> wrote:
+> 
+> > Hi!
+> > 
+> > I removed linux-arm-kernel@lists.arm.linux.org.uk from cc, it is a
+> > subscriber-only list.
+> 
+> Right. Does that mean I shouldn't Cc it on patches?
+extract from the linux-arm-kernel 'Mailing List Etiquette':
+             10. Cross-posting between linux-arm* lists and other lists. [[40]rmk]
+                Please do not do this. Subscribers on other lists may not be
+                subscribed to the linux-arm lists, so when they try to reply to
+                such a message, they will receive a bounce. This is deemed by
+                others to be rude behaviour on the part of the person who
+                originally cross-posted.
+> 
+> > On Tuesday 22 January 2008, Haavard Skinnemoen wrote:
+> > > From: Chip Coldwell <coldwell@redhat.com>
+> > ...
+> > > @@ -47,6 +50,11 @@
+> > >  
+> > >  #include "atmel_serial.h"
+> > >  
+> > > +#define SUPPORT_PDC
+> > > +#define PDC_BUFFER_SIZE		(L1_CACHE_BYTES << 3)
+> > > +#warning "Revisit"
+> > why add this warning?
+> 
+> Dunno. I suppose the PDC_BUFFER_SIZE and/or PDC_RX_TIMEOUT definitions
+> needs to be revisited? Chip?
+I just think there is no need to warn, even if definitions are sub-optimal.
 
-debian:~/miklos# mount | grep mnt
-tmpfs on /mnt type tmpfs (rw)
-debian:~/miklos# ./miklos /mnt/file
-begin   1201089989      1201089989      1201085868
-write   1201089990      1201089990      1201085868
-mmap    1201089990      1201089990      1201089991
-store b 1201089992      1201089992      1201089991
-msync   1201089992      1201089992      1201089991
-store c 1201089994      1201089994      1201089991
-msync   1201089994      1201089994      1201089991
-store d 1201089996      1201089996      1201089991
-munmap  1201089996      1201089996      1201089991
-close   1201089996      1201089996      1201089991
-sync    1201089996      1201089996      1201089991
-debian:~/miklos# ./miklos /mnt/file -r
-begin   1201090025      1201090025      1201089991
-write   1201090026      1201090026      1201089991
-mmap    1201090026      1201090026      1201090027
-fetch x 1201090026      1201090026      1201090027
-store b 1201090026      1201090026      1201090027
-msync   1201090026      1201090026      1201090027
-fetch y 1201090026      1201090026      1201090027
-store c 1201090032      1201090032      1201090027
-msync   1201090032      1201090032      1201090027
-fetch z 1201090032      1201090032      1201090027
-store d 1201090036      1201090036      1201090027
-munmap  1201090036      1201090036      1201090027
-close   1201090036      1201090036      1201090027
-sync    1201090036      1201090036      1201090027
-debian:~/miklos#
+> 
+> I don't really understand why the buffer size depends on the cache line
+> size either. Why don't we just set it to something nice and large, like
+> 512 (actually 1024 since there are two buffers), and be done with it?
+Probably for dma safety/performance, The PDC buffer start should be aligned to
+cache line, and the size be a multiple of cache line size.
 
-I think that after the patches applied the msync() system call does
-everything, which it is expected to do. The issue you're now talking
-about is one belonging to do_fsync() and the design of the tmpfs
-driver itself, I believe. Indeed, when the first write in the "-r"
-version of the test did not update the stamps, this is obviously not
-an msync() guilt.
+> 
+> And while we're at it, might as well move the SUPPORT_PDC definition
+> into Kconfig where it belongs...
+For me there is no need to disbable pdc support once working. PDC can be
+enabled/disabled in the board setup code. -> simply remove this definition.
 
-By the way, I would not like to move the "4/4" patch to the earlier
-place, because then it would describe the functionality, which had not
-been introduced yet.
+Regards
+
+Marc
+
