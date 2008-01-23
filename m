@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbYAWSAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbYAWRoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbYAWSAU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 13:00:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbYAWSAG
+	id S1756829AbYAWRoB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:44:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbYAWRnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 13:00:06 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:55122 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751785AbYAWSAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 13:00:04 -0500
-Date: Wed, 23 Jan 2008 19:00:12 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jon Loeliger <jdl@freescale.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       Scott Wood <scottwood@freescale.com>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCHv2 0/8] [POWERPC] 8xx cleanups
-Message-ID: <20080123180012.GA23313@uranus.ravnborg.org>
-References: <4797641F.4000902@scram.de> <CA8FFE19-B84A-426B-9B1C-EF0F7C87AE47@kernel.crashing.org> <20080123171252.GA22967@uranus.ravnborg.org> <47977A02.40506@freescale.com>
+	Wed, 23 Jan 2008 12:43:49 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:50372 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753250AbYAWRns (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:43:48 -0500
+Subject: Re: [PATCH 01/20 -v5] printk - dont wakeup klogd with interrupts
+	disabled
+From: Daniel Walker <dwalker@mvista.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <Pine.LNX.4.58.0801231213430.12932@gandalf.stny.rr.com>
+References: <20080123160236.969334052@goodmis.org>
+	 <20080123160441.236562634@goodmis.org>
+	 <1201107978.13596.16.camel@imap.mvista.com>
+	 <Pine.LNX.4.58.0801231213430.12932@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Wed, 23 Jan 2008 09:43:05 -0800
+Message-Id: <1201110185.13596.22.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47977A02.40506@freescale.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 23, 2008 at 11:31:46AM -0600, Jon Loeliger wrote:
-> Sam Ravnborg wrote:
-> >>What impact do the have on boards in arch/ppc being able to build?
-> >
-> >Byt the way what are the plans for powerpc?
-> >We have:
-> >arch/ppc
-> >arch/ppc64
-> >arch/powerpc
-> >
-> >It was my understanding that arch/powerpc was supposed
-> >to be the future unified powerpc architecture but it
-> >does not even provide a defconfig.
-> >
-> >And I do not see too much happening to do so - but that maybe
-> >because I looked at a wrong place.
-> 
-> You must have looked in the wrong place. :-)
-> 
-> arch/ppc is scheduled for removal from mainline in June.
-Good to hear.
 
-> arch/powerpc is under significant development, with lots
-> of defconfigs in arch/powerpc/configs.
-Double checked - it was my build script that used ARCH=ppc
-Now I just need to build another toolchain as the ppc750 could not build
-the defconfig. crosstool is my friend here.
+> 	if (wake_klogd && !runqueue_is_locked())
+> 		wake_up_klogd();
+> 
+> This probably is the cleanest solution since it simply prevents the
+> deadlock from occurring.
 
-	Sam
+Do you really need to call it with the runqueue lock held .. There are
+other issue with the calls at that level.. For instance in -rt these
+call can actually hang the system in the console laying from inside
+printk (something I reported more than 6 months ago) .. It would be
+better to move them around the scheduler rather than inside it..
+
+Daniel
+
