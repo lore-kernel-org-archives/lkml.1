@@ -1,229 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbYAWKhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbYAWKmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752897AbYAWKhT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 05:37:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYAWKhH
+	id S1752877AbYAWKmB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 05:42:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbYAWKlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 05:37:07 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:19375 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750710AbYAWKhF (ORCPT
+	Wed, 23 Jan 2008 05:41:52 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:29333 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751511AbYAWKlu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 05:37:05 -0500
+	Wed, 23 Jan 2008 05:41:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=x2f72Jey2UeR83NCATZFI/eTgJS5untbINlkK4BiDN78Y4zT4hQVOJoCWxtTjfLKeufcMhLobzdwKo4VTTzaFIstvH4aiWp1hELaz6d7ygwhPR59TOFR4rNVBdh42j7sN3713YwSn5r7M7EC3v7zpzJH8qMc0Bn7IyqupVPe3ic=
-Message-ID: <4df4ef0c0801230237g2f26f0d1j2d2ada2ce62ba284@mail.gmail.com>
-Date: Wed, 23 Jan 2008 13:37:03 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [PATCH -v8 4/4] The design document for memory-mapped file times update
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, r.e.wolff@bitwizard.nl,
-       hidave.darkstar@gmail.com, hch@infradead.org
-In-Reply-To: <E1JHbs1-00025n-Ac@pomaz-ex.szeredi.hu>
+        b=qAnDZxYJoV0wRAW/Yay9AEN0cdmZZ0A9i0BH8gWThnQc+c3L7eZEkwzXtlz7oZi/KRm0wpyt7hOhYW+6cX9jqBqE7+xnsi3X9KxvMLF/CKcqy1vMKSNvcILrpVU2o3yUBJe/bmBGpoeUU9HRErYVxIel134+FUfsgMGn3F6PS5w=
+Message-ID: <386072610801230241h750ea592h9658b14fd2aa7058@mail.gmail.com>
+Date: Wed, 23 Jan 2008 18:41:48 +0800
+From: "Bryan Wu" <cooloney.lkml@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: [PATCH] procfs: constify function pointer tables
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       "Ivan Kokshaysky" <ink@jurassic.park.msu.ru>,
+       "Bryan Wu" <bryan.wu@analog.com>, "Mikael Starvik" <starvik@axis.com>,
+       "David Howells" <dhowells@redhat.com>,
+       "Hirokazu Takata" <takata@linux-m32r.org>,
+       "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Kyle McMartin" <kyle@parisc-linux.org>,
+       "Matthew Wilcox" <matthew@wil.cx>, "Chris Zankel" <chris@zankel.net>
+In-Reply-To: <Pine.LNX.4.64.0801231005090.12676@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <12010440803930-git-send-email-salikhmetov@gmail.com>
-	 <1201044083554-git-send-email-salikhmetov@gmail.com>
-	 <E1JHbs1-00025n-Ac@pomaz-ex.szeredi.hu>
+References: <54038cd4f87a03884e4f59f8f3697889dfb63c54.1201030614.git.jengelh@computergmbh.de>
+	 <Pine.LNX.4.64.0801222055440.5722@fbirervta.pbzchgretzou.qr>
+	 <386072610801222018l79cca93dlda987af4c2036931@mail.gmail.com>
+	 <Pine.LNX.4.64.0801231005090.12676@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/23, Miklos Szeredi <miklos@szeredi.hu>:
-> I think it would be more logical to move this patch forward, before
-> the two patches which this document is actually describing.
+On Jan 23, 2008 5:06 PM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
 >
-> > Add a document, which describes how the POSIX requirements on updating
-> > memory-mapped file times are addressed in Linux.
+> On Jan 23 2008 12:18, Bryan Wu wrote:
+> >> [PATCH] procfs: constify function pointer tables
+> >> ---
+> >>  arch/alpha/kernel/setup.c     |    2 +-
+> >>  arch/blackfin/kernel/setup.c  |    2 +-
+> >>  [...]
+> >> diff --git a/arch/alpha/kernel/setup.c b/arch/alpha/kernel/setup.c
+> >> index bd5e68c..823f18e 100644
+> >> --- a/arch/alpha/kernel/setup.c
+> >> +++ b/arch/alpha/kernel/setup.c
+> >> @@ -1472,7 +1472,7 @@ c_stop(struct seq_file *f, void *v)
+> >>  {
+> >>  }
+> >>
+> >> -struct seq_operations cpuinfo_op = {
+> >> +const struct seq_operations cpuinfo_op = {
+> >>         .start  = c_start,
+> >>         .next   = c_next,
+> >>         .stop   = c_stop,
+> [...]
+> >Thanks, I understand the seq_xxx() API needs "const struct seq_operations *".
+> >So for Blackfin part, I agree with Mike.
 > >
-> > Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
-> > ---
-> >  Documentation/vm/00-INDEX  |    2 +
-> >  Documentation/vm/msync.txt |  117 ++++++++++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 119 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/Documentation/vm/00-INDEX b/Documentation/vm/00-INDEX
-> > index 2131b00..2726c8d 100644
-> > --- a/Documentation/vm/00-INDEX
-> > +++ b/Documentation/vm/00-INDEX
-> > @@ -6,6 +6,8 @@ hugetlbpage.txt
-> >       - a brief summary of hugetlbpage support in the Linux kernel.
-> >  locking
-> >       - info on how locking and synchronization is done in the Linux vm code.
-> > +msync.txt
-> > +     - the design document for memory-mapped file times update
-> >  numa
-> >       - information about NUMA specific code in the Linux vm.
-> >  numa_memory_policy.txt
-> > diff --git a/Documentation/vm/msync.txt b/Documentation/vm/msync.txt
-> > new file mode 100644
-> > index 0000000..571a766
-> > --- /dev/null
-> > +++ b/Documentation/vm/msync.txt
-> > @@ -0,0 +1,117 @@
-> > +
-> > +     The msync() system call and memory-mapped file times
-> > +
-> > +     Copyright (C) 2008 Anton Salikhmetov
-> > +
-> > +The POSIX standard requires that any write reference to memory-mapped file
-> > +data should result in updating the ctime and mtime for that file. Moreover,
-> > +the standard mandates that updated file times should become visible to the
-> > +world no later than at the next call to msync().
-> > +
-> > +Failure to meet this requirement creates difficulties for certain classes
-> > +of important applications. For instance, database backup systems fail to
-> > +pick up the files modified via the mmap() interface. Also, this is a
-> > +security hole, which allows forging file data in such a manner that proving
-> > +the fact that file data was modified is not possible.
-> > +
-> > +Briefly put, this requirement can be stated as follows:
-> > +
-> > +     once the file data has changed, the operating system
-> > +     should acknowledge this fact by updating file metadata.
-> > +
-> > +This document describes how this POSIX requirement is addressed in Linux.
-> > +
-> > +1. Requirements
-> > +
-> > +1.1) the POSIX standard requires updating ctime and mtime not later
-> > +than at the call to msync() with MS_SYNC or MS_ASYNC flags;
-> > +
-> > +1.2) in existing POSIX implementations, ctime and mtime
-> > +get updated not later than at the call to fsync();
-> > +
-> > +1.3) in existing POSIX implementation, ctime and mtime
-> > +get updated not later than at the call to sync(), the "auto-update" feature;
-> > +
-> > +1.4) the customers require and the common sense suggests that
-> > +ctime and mtime should be updated not later than at the call to munmap()
-> > +or exit(), the latter function implying an implicit call to munmap();
-> > +
-> > +1.5) the (1.1) item should be satisfied if the file is a block device
-> > +special file;
-> > +
-> > +1.6) the (1.1) item should be satisfied for files residing on
-> > +memory-backed filesystems such as tmpfs, too.
-> > +
-> > +The following operating systems were used as the reference platforms
-> > +and are referred to as the "existing implementations" above:
-> > +HP-UX B.11.31 and FreeBSD 6.2-RELEASE.
-> > +
-> > +2. Lazy update
-> > +
-> > +Many attempts before the current version implemented the "lazy update" approach
-> > +to satisfying the requirements given above. Within the latter approach, ctime
-> > +and mtime get updated at last moment allowable.
-> > +
-> > +Since we don't update the file times immediately, some Flag has to be
-> > +used. When up, this Flag means that the file data was modified and
-> > +the file times need to be updated as soon as possible.
-> > +
-> > +Any existing "dirty" flag which, when up, mean that a page has been written to,
-> > +is not suitable for this purpose. Indeed, msync() called with MS_ASYNC
-> > +would have to reset this "dirty" flag after updating ctime and mtime.
-> > +The sys_msync() function itself is basically a no-op in the MS_ASYNC case.
-> > +Thereby, the synchronization routines relying upon this "dirty" flag
-> > +would lose data. Therefore, a new Flag has to be introduced.
-> > +
-> > +The (1.5) item coupled with (1.3) requirement leads to hard work with
-> > +the block device inodes. Specifically, during writeback it is impossible to
-> > +tell which block device file was originally mapped. Therefore, we need to
-> > +traverse the list of "active" devices associated with the block device inode.
-> > +This would lead to updating file times for block device files, which were not
-> > +taking part in the data transfer.
-> > +
-> > +Also all versions prior to version 6 failed to correctly process ctime and
-> > +mtime for files on the memory-backed filesystems such as tmpfs. So the (1.6)
-> > +requirement was not satisfied.
+> >but there are still some other files need add "const":
+> >---
+> >/opt/git-tree/blackfin-2.6$ grep -r seq_operations arch/*
+> >arch/alpha/kernel/setup.c:struct seq_operations cpuinfo_op = {
 >
-> Version -8 also fails: for ram backed filesystems page tables are not
-> write protected initially, nor after a sync.  This patch does write
-> protect them after an MS_ASYNC, but that's a bug in the current
-> context.
+> The patch already touches that :-)
+>
 
-I've already written in the cover letter that functional tests passed
-successfully.
-In particular, this means that everything is OK with tmpfs too:
+Oh, this patch does not touch all, following is the missing list:
+---
+arch/arm/kernel/setup.c:struct seq_operations cpuinfo_op = {
+arch/arm/mach-davinci/clock.c:static struct seq_operations davinci_ck_op = {
+arch/avr32/kernel/cpu.c:struct seq_operations cpuinfo_op = {
+arch/avr32/mm/tlb.c:static struct seq_operations tlb_ops = {
+arch/ia64/hp/common/sba_iommu.c:static struct seq_operations ioc_seq_ops = {
+arch/ia64/kernel/perfmon.c:struct seq_operations pfm_seq_ops = {
+arch/ia64/kernel/setup.c:struct seq_operations cpuinfo_op = {
+arch/ia64/sn/kernel/sn2/sn2_smp.c:static struct seq_operations
+sn2_ptc_seq_ops = {
+arch/ia64/sn/kernel/sn2/sn_hwperf.c:static struct seq_operations
+sn_topology_seq_ops = {
+arch/mips/kernel/proc.c:struct seq_operations cpuinfo_op = {
+arch/powerpc/kernel/setup-common.c:struct seq_operations cpuinfo_op = {
+arch/powerpc/platforms/pseries/hvCall_inst.c:static struct
+seq_operations hcall_inst_seq_ops = {
+arch/s390/kernel/setup.c:struct seq_operations cpuinfo_op = {
+arch/sh/kernel/setup.c:struct seq_operations cpuinfo_op = {
+arch/sh64/kernel/setup.c:struct seq_operations cpuinfo_op = {
+arch/sparc/kernel/setup.c:struct seq_operations cpuinfo_op = {
+arch/sparc64/kernel/setup.c:struct seq_operations cpuinfo_op = {
+arch/x86/kernel/cpu/proc.c:struct seq_operations cpuinfo_op = {
+arch/x86/kernel/setup_64.c:struct seq_operations cpuinfo_op = {
+----
 
-debian:~/times# ./times /mnt/file
-begin   1201084493      1201084493      1201084281
-write   1201084494      1201084494      1201084281
-mmap    1201084494      1201084494      1201084495
-b       1201084496      1201084496      1201084495
-msync b 1201084496      1201084496      1201084495
-c       1201084498      1201084498      1201084495
-msync c 1201084498      1201084498      1201084495
-d       1201084500      1201084500      1201084495
-munmap  1201084500      1201084500      1201084495
-close   1201084500      1201084500      1201084495
-sync    1201084500      1201084500      1201084495
-debian:~/times# mount | grep mnt
-tmpfs on /mnt type tmpfs (rw)
-debian:~/times#
+maybe you did not use the latest git tree.
 
->
-> > +
-> > +If a write reference has occurred between two consecutive calls to msync()
-> > +with MS_ASYNC, the second call to the latter function should take into
-> > +account the last write reference. The last write reference can not be caught
-> > +if no pagefault occurs. Hence a pagefault needs to be forced. This can be done
-> > +using two different approaches. The first one is to synchronize data even when
-> > +msync() was called with MS_ASYNC. This is not acceptable because the current
-> > +design of the sys_msync() routine forbids starting I/O for the MS_ASYNC case.
->
-> I don't think anyone forbids starting I/O, it's just too expensive,
-> especially if it means, waiting for previous writeback on page to
-> finish first.
->
-> > +The second approach is to write protect the page for triggering a pagefault
-> > +at the next write reference. Note that the dirty flag for the page should not
-> > +be cleared thereby.
-> > +
-> > +In the "lazy update" approach, the requirements (1.1), (1.2), (1.3), and (1.4)
-> > +taken together result in adding code at least to the following kernel routines:
-> > +sys_msync(), do_fsync(), some routine in the unmap() call path, some routine
-> > +in the sync() call path.
-> > +
-> > +Finally, a file_update_time()-like function would have to be created for
-> > +processing the inode objects, not file objects. This is due to the fact that
-> > +during the sync() operation, the file object may not exist any more, only
-> > +the inode is known.
-> > +
-> > +To sum up: this "lazy" approach leads to massive changes, incurs overhead in
-> > +the block device case, and requires complicated design decisions.
-> > +
-> > +3. Immediate update
-> > +
-> > +OK, still reading? There's a better way.
-> > +
-> > +In a fashion analogous to what happens at write(2), react to the fact
-> > +that the page gets dirtied by updating the file times immediately.
-> > +Thereby any page writeback happens when the write reference has already
-> > +been accounted for from the view point of file times.
-> > +
-> > +The only problem which remains is to force refreshing file times at the write
-> > +reference following a call to msync() with MS_ASYNC. As mentioned above, all
-> > +that is needed here is to force a pagefault.
-> > +
-> > +The vma_wrprotect() routine introduced in this patch series is called
-> > +from sys_msync() in the MS_ASYNC case. The former routine is essentially
-> > +a version of existing page_mkclean_one() function from mm/rmap.c. Unlike
-> > +the latter function, the vma_wrprotect() does not touch the dirty bit.
->
-> Benchmark results should be also added to the relevant sections, I
-> think.  There is a very definite cost to all this, and a 10x slowdown
-> is usually not taken lightly...
->
-> Great document, btw :)
->
-> Miklos
->
+-Bryan Wu
