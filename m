@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbYAWUw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYAWUwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753220AbYAWUw3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 15:52:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYAWUwV
+	id S1754189AbYAWUwn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 15:52:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYAWUwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 15:52:21 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:32819 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751135AbYAWUwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 15:52:20 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1200409128.9669.46.camel@moss-spartans.epoch.ncsc.mil>
-References: <1200409128.9669.46.camel@moss-spartans.epoch.ncsc.mil> <3466.1200319279@redhat.com> <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil> <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil> <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil> <20071205193818.24617.79771.stgit@warthog.procyon.org.uk> <20071205193859.24617.36392.stgit@warthog.procyon.org.uk> <25037.1197306473@redhat.com> <17868.1199897484@redhat.com> <3524.1200319577@redhat.com> 
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: dhowells@redhat.com, Daniel J Walsh <dwalsh@redhat.com>,
-       casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM settings for task actions [try #2]
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 23 Jan 2008 20:52:12 +0000
-Message-ID: <22469.1201121532@redhat.com>
+	Wed, 23 Jan 2008 15:52:24 -0500
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:10664 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752035AbYAWUwW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 15:52:22 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Mika =?ISO-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <20080122203611.GA12892@elte.hu>
+References: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>
+	 <47939363.8040603@kolumbus.fi>
+	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>
+	 <479510CE.7010706@zytor.com>
+	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>
+	 <479551FD.5040801@zytor.com>
+	 <1201023401.5643.52.camel@localhost.localdomain>
+	 <479634A9.1090908@zytor.com>
+	 <1201031325.15491.66.camel@cthulhu.hellion.org.uk>
+	 <47964B7B.9000905@zytor.com>  <20080122203611.GA12892@elte.hu>
+Content-Type: text/plain
+Date: Wed, 23 Jan 2008 20:52:10 +0000
+Message-Id: <1201121530.30671.15.camel@cthulhu.hellion.org.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 192.168.1.223
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+	format.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-> Make sure that you or Dan submits a policy patch to register these
-> classes and permissions in the policy when the kernel patch is queued
-> for merge.
+On Tue, 2008-01-22 at 21:36 +0100, Ingo Molnar wrote:
+> * H. Peter Anvin <hpa@zytor.com> wrote:
+> 
+> >> Seems reasonable to me. I'll integrate your asm diff with the other 
+> >> changes and give it a whirl.
+> >
+> > This version boots into userspace on both PAE and !PAE.  You want to 
+> > take it from here?
+> 
+> ok, i'll wait for Ian to submit the final (tested) version then. A few 
+> possible complications are: PSE-less boxes, 32-bit PAGEALLOC bootups 
+> with tons of RAM, NX-less boxes and NX-able boxes :)
 
-Do I just send the attached patch to <selinux@tycho.nsa.gov>?  Or do I need to
-make a diff from a point in the tree nearer the root?  Is there anything else
-I need to alter whilst I'm at it?
+FYI, CONFIG_DEBUG_PAGEALLOC+PAE is broken. I'll dig in but it might be
+the weekend before I get a chance (there's a beer festival in town ;-)).
 
-David
----
-Index: policy/flask/security_classes
-===================================================================
---- policy/flask/security_classes	(revision 2573)
-+++ policy/flask/security_classes	(working copy)
-@@ -109,4 +109,7 @@
- # network peer labels
- class peer
- 
-+# kernel services that need to override task security
-+class kernel_service
-+
- # FLASK
-Index: policy/flask/access_vectors
-===================================================================
---- policy/flask/access_vectors	(revision 2573)
-+++ policy/flask/access_vectors	(working copy)
-@@ -736,3 +736,10 @@
- {
- 	recv
- }
-+
-+# kernel services that need to override task security
-+class kernel_service
-+{
-+	use_as_override
-+	create_files_as
-+}
+Ian.
+-- 
+Ian Campbell
+
+Flattery will get you everywhere.
+
