@@ -1,111 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbYAWKDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbYAWKET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752682AbYAWKDJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 05:03:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYAWKCz
+	id S1752875AbYAWKET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 05:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbYAWKEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 05:02:55 -0500
-Received: from web53704.mail.re2.yahoo.com ([206.190.37.25]:48594 "HELO
-	web53704.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751061AbYAWKCy (ORCPT
+	Wed, 23 Jan 2008 05:04:12 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:20211 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750972AbYAWKEK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 05:02:54 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=GKtrOKZrzHBzi4gpFwC53OyNlg0vL4XmNp7g3q5U3SavUPKGmT9ewzV5dQJ+2mZaM/VdhjNzdN3p9zrOktlYE+ojPbjf9ReKbTxcQT1YV+Bjc5i2hrIXVxH1gBhia7Ejbc55pxC7dpl+5gXz47EARvqIh+a1EAkecPMcR6FJktk=;
-X-YMail-OSG: LpNUb0MVM1n8lTHIlEyhnLHryfU1Oai3BlLlHxGe
-Date: Wed, 23 Jan 2008 01:56:14 -0800 (PST)
-From: Nagendra Tomar <tomer_iisc@yahoo.com>
-Subject: [PATCH 2.6.23.14] SCSI : scsi_device_lookup/scsi_device_lookup_by_target return NULL for an existent scsi_device
-To: James.Bottomley@SteelEye.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+	Wed, 23 Jan 2008 05:04:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EisQwEj3kXg4DVs0engNa89GQGmrMbVExn2TyzwCjG/ynmw2OrNOZyv033YqJELuq68F70q1wr+iuTmolXwa3JJrGnL9hjeBxMuIzf9dbD3CKKCzvb4dYxqUmtqGUXROWSt4Ae5AEmy3H/VhDDhG1cKnNsEugHEHjdXWqjTxF00=
+Message-ID: <9b06e8d20801230204t4450191eh996a9d45d3ec32a6@mail.gmail.com>
+Date: Wed, 23 Jan 2008 11:04:09 +0100
+From: "=?ISO-8859-1?Q?Lo=EFc_Greni=E9?=" <loic.grenie@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: vmalloc_32 and SLAB incompatible in 2.6.23.9
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <p73wsq0lw9r.fsf@crumb.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <622408.27957.qm@web53704.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <9b06e8d20801230114v1e09e5e8s6a4b438562c62619@mail.gmail.com>
+	 <p73wsq0lw9r.fsf@crumb.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+23 Jan 2008 10:35:28 +0100, Andi Kleen <andi@firstfloor.org>:
+> "Loïc Grenié" <loic.grenie@gmail.com> writes:
+>
+> >      Since GFP_DMA32 is not considered a valid flag, vmalloc_32 and
+> >   SLAB are incompatible in kernel 2.6.23.9 (and probably later ones).
+> >   It might be as simple as adding GFP_DMA32 everywhere where
+> >   GFP_DMA is used in mm/slab.c, but I don't dare do it. I personally
+> >   switched to SLUB.
+>
+> I don't think it would really work for slub either.
+>
+> If you look at /proc/slabinfo you see that there are separate DMA
+> caches. That is because sl[abo]b all cache objects and if the
+> objects have different requirements (like GFP_DMA, GFP_DMA32, GFP_KERNEL)
+> they would need different caches. Otherwise you risk getting
+> later objects originally allocated with the wrong flags.
+>
+> To make GFP_DMA32 work would require adding another set of DMA32
+> caches to all kmalloc caches etc or a separate one for each
+> custom kmem cache that you use that only gets _DMA32 objects.
+>
+> Better just use __get_free_pages() directly.
 
-__scsi_device_lookup and __scsi_device_lookup_by_target do not 
-check for the sdev_state and hence return scsi_devices with 
-sdev_state set to SDEV_DEL also. It has the following side effects.
+     vmalloc_32 is using __vmalloc. I am much too ignorant to try and change
+  anything in mm/*.[ch]. If vmalloc_32 is incompatible with sl[aou]b, should'nt
+  it be either modified or removed ?
 
-We can have two scsi_devices with the same HBTL queued in 
-the scsi_host->__devices/scsi_target->devices list, one
-in the SDEV_DEL state and the other in, say SDEV_RUNNING state. 
-    If the one in the SDEV_DEL state is before the one in SDEV_RUNNING 
-state, (which will almost always be the case) the scsi_device_lookup and 
-scsi_device_lookup_by_target will never find the totally legitimate
-scsi_device (the one in the SDEV_RUNNING state).
+        Thanks,
 
-This is because __scsi_device_lookup/__scsi_device_lookup_by_target 
-always returns the first one in the list (which in our case is the 
-one with the SDEV_DEL state) and the scsi_device_get() which is called by 
-scsi_device_lookup/scsi_device_lookup_by_target will return -ENXIO 
-for this scsi_device, resulting in scsi_device_lookup and 
-scsi_device_lookup_by_target to return NULL.
-
-        So we _cannot_ lookup a perfectly valid device present in the
-list of scsi_devices. 
-
-        The right thing to do is to not have __scsi_device_lookup
-and __scsi_device_lookup_by_target match a device if the scsi_device
-state is SDEV_DEL. This will also make these functions similar in 
-behaviour to their scsi_device_lookup/scsi_device_lookup_by_target
-counterparts, as the comments in the code suggest.
-
-        One way by which we can have two scsi_devices in the list is 
-as follows.        
-        Suppose a scsi_device has some outstanding command(s) when 
-scsi_remove_device is called for it. Due to the extra ref being held
-by the command in flight, the __scsi_remove_device->put_device call 
-will not actually free the scsi_device and it will remain in the 
-scsi_device list albeit in the SDEV_DEL state. Now if we do a 
-scsi_add_device for the same HBTL, a new device with the same HBTL
-(this one in SDEV_RUNNING state) gets added to the scsi_device list. 
-        
-        Infact if we call scsi_add_device one more time, it happily 
-goes ahead and tries to add it once more, as 
-scsi_probe_and_add_lun->scsi_device_lookup_by_target does not return
-the already existing device. This will though result in the kobject 
-EEXIST warning dump.
-
-        The patch below solves the problem described here by not
-returning scsi_devices in SDEV_DEL state, thus allowing scsi_device
-in SDEV_RUNNING state (if any) to be correctly returned, instead.
-
-
-Thanx,
-Tomar
-
-
-Signed-off-by: Nagendra Singh Tomar <nagendra_tomar@adaptec.com>
----
-
---- linux-2.6.23.14/drivers/scsi/scsi.c.orig	2008-01-23 18:06:02.000000000 +0530
-+++ linux-2.6.23.14/drivers/scsi/scsi.c	2008-01-23 19:17:35.000000000 +0530
-@@ -951,7 +951,7 @@ struct scsi_device *__scsi_device_lookup
- 	struct scsi_device *sdev;
- 
- 	list_for_each_entry(sdev, &starget->devices, same_target_siblings) {
--		if (sdev->lun ==lun)
-+		if (sdev->lun == lun && sdev->sdev_state != SDEV_DEL)
- 			return sdev;
- 	}
- 
-@@ -1008,7 +1008,7 @@ struct scsi_device *__scsi_device_lookup
- 
- 	list_for_each_entry(sdev, &shost->__devices, siblings) {
- 		if (sdev->channel == channel && sdev->id == id &&
--				sdev->lun ==lun)
-+			sdev->lun == lun && sdev->sdev_state != SDEV_DEL)
- 			return sdev;
- 	}
-
-
-
-      ___________________________________________________________
-Support the World Aids Awareness campaign this month with Yahoo! For Good http://uk.promotions.yahoo.com/forgood/
+              Loïc Grenié
