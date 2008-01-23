@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbYAWR11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbYAWRWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbYAWR11 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:27:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYAWRWh
+	id S1755675AbYAWRWO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbYAWRVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:22:37 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56127 "EHLO mx1.redhat.com"
+	Wed, 23 Jan 2008 12:21:11 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56017 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755353AbYAWRWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:22:00 -0500
+	id S1753436AbYAWRVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:21:01 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 14/27] FS-Cache: Recruit a couple of page flags for cache
-	management [try #2]
+Subject: [PATCH 03/27] KEYS: Allow the callout data to be passed as a blob
+	rather than a string [try #2]
 To: Trond.Myklebust@netapp.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 23 Jan 2008 17:21:53 +0000
-Message-ID: <20080123172153.11107.99755.stgit@warthog.procyon.org.uk>
+Date: Wed, 23 Jan 2008 17:20:55 +0000
+Message-ID: <20080123172055.11107.59983.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 References: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,352 +32,403 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recruit a couple of page flags to aid in cache management.  The following extra
-flags are defined:
+Allow the callout data to be passed as a blob rather than a string for internal
+kernel services that call any request_key_*() interface other than
+request_key().  request_key() itself still takes a NUL-terminated string.
 
- (1) PG_fscache (PG_private_2)
+The functions that change are:
 
-     The marked page is backed by a local cache and is pinning resources in the
-     cache driver.
-
- (2) PG_fscache_write (PG_owner_priv_2)
-
-     The marked page is being written to the local cache.  The page may not be
-     modified whilst this is in progress.
-
-If PG_fscache is set, then things that checked for PG_private will now also
-check for that.  This includes things like truncation and page invalidation.
-The function page_has_private() had been added to make the checks for both
-PG_private and PG_private_2 at the same time.
+	request_key_with_auxdata()
+	request_key_async()
+	request_key_async_with_auxdata()
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/splice.c                |    2 +-
- include/linux/page-flags.h |   39 +++++++++++++++++++++++++++++++++++++--
- include/linux/pagemap.h    |   11 +++++++++++
- mm/filemap.c               |   18 ++++++++++++++++++
- mm/migrate.c               |    2 +-
- mm/page_alloc.c            |    3 +++
- mm/readahead.c             |    9 +++++----
- mm/swap.c                  |    4 ++--
- mm/swap_state.c            |    4 ++--
- mm/truncate.c              |   10 +++++-----
- mm/vmscan.c                |    2 +-
- 11 files changed, 86 insertions(+), 18 deletions(-)
+ Documentation/keys-request-key.txt |   11 +++++---
+ Documentation/keys.txt             |   14 +++++++---
+ include/linux/key.h                |    9 ++++---
+ security/keys/internal.h           |    9 ++++---
+ security/keys/keyctl.c             |    7 ++++-
+ security/keys/request_key.c        |   49 ++++++++++++++++++++++--------------
+ security/keys/request_key_auth.c   |   12 +++++----
+ 7 files changed, 70 insertions(+), 41 deletions(-)
 
 
-diff --git a/fs/splice.c b/fs/splice.c
-index 6bdcb61..61edad7 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -58,7 +58,7 @@ static int page_cache_pipe_buf_steal(struct pipe_inode_info *pipe,
- 		 */
- 		wait_on_page_writeback(page);
+diff --git a/Documentation/keys-request-key.txt b/Documentation/keys-request-key.txt
+index 266955d..09b55e4 100644
+--- a/Documentation/keys-request-key.txt
++++ b/Documentation/keys-request-key.txt
+@@ -11,26 +11,29 @@ request_key*():
  
--		if (PagePrivate(page))
-+		if (page_has_private(page))
- 			try_to_release_page(page, GFP_KERNEL);
+ 	struct key *request_key(const struct key_type *type,
+ 				const char *description,
+-				const char *callout_string);
++				const char *callout_info);
  
- 		/*
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index 209d3a4..f375e3b 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -77,25 +77,32 @@
- #define PG_active		 6
- #define PG_slab			 7	/* slab debug (Suparna wants this) */
+ or:
  
--#define PG_owner_priv_1		 8	/* Owner use. If pagecache, fs may use*/
-+#define PG_owner_priv_1		 8	/* Owner use. fs may use in pagecache */
- #define PG_arch_1		 9
- #define PG_reserved		10
- #define PG_private		11	/* If pagecache, has fs-private data */
+ 	struct key *request_key_with_auxdata(const struct key_type *type,
+ 					     const char *description,
+-					     const char *callout_string,
++					     const char *callout_info,
++					     size_t callout_len,
+ 					     void *aux);
  
- #define PG_writeback		12	/* Page is under writeback */
-+#define PG_private_2		13	/* If pagecache, has fs aux data */
- #define PG_compound		14	/* Part of a compound page */
- #define PG_swapcache		15	/* Swap page: swp_entry_t in private */
+ or:
  
- #define PG_mappedtodisk		16	/* Has blocks allocated on-disk */
- #define PG_reclaim		17	/* To be reclaimed asap */
-+#define PG_owner_priv_2		18	/* Owner use. fs may use in pagecache */
- #define PG_buddy		19	/* Page is free, on buddy lists */
+ 	struct key *request_key_async(const struct key_type *type,
+ 				      const char *description,
+-				      const char *callout_string);
++				      const char *callout_info,
++				      size_t callout_len);
  
- /* PG_readahead is only used for file reads; PG_reclaim is only for writes */
- #define PG_readahead		PG_reclaim /* Reminder to do async read-ahead */
+ or:
  
--/* PG_owner_priv_1 users should have descriptive aliases */
-+/* PG_owner_priv_1/2 users should have descriptive aliases */
- #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
- #define PG_pinned		PG_owner_priv_1	/* Xen pinned pagetable */
-+#define PG_fscache_write	PG_owner_priv_2	/* Writing to local cache */
-+
-+/* PG_private_2 causes releasepage() and co to be invoked */
-+#define PG_fscache		PG_private_2	/* Backed by local cache */
-+
+ 	struct key *request_key_async_with_auxdata(const struct key_type *type,
+ 						   const char *description,
+-						   const char *callout_string,
++						   const char *callout_info,
++					     	   size_t callout_len,
+ 						   void *aux);
  
- #if (BITS_PER_LONG > 32)
- /*
-@@ -199,6 +206,23 @@ static inline void SetPageUptodate(struct page *page)
- #define TestClearPageWriteback(page) test_and_clear_bit(PG_writeback,	\
- 							&(page)->flags)
+ Or by userspace invoking the request_key system call:
+diff --git a/Documentation/keys.txt b/Documentation/keys.txt
+index 51652d3..b82d38d 100644
+--- a/Documentation/keys.txt
++++ b/Documentation/keys.txt
+@@ -771,7 +771,7 @@ payload contents" for more information.
  
-+#define PagePrivate2(page)	test_bit(PG_private_2, &(page)->flags)
-+#define SetPagePrivate2(page)	set_bit(PG_private_2, &(page)->flags)
-+#define ClearPagePrivate2(page)	clear_bit(PG_private_2, &(page)->flags)
-+#define TestSetPagePrivate2(page) test_and_set_bit(PG_private_2, &(page)->flags)
-+#define TestClearPagePrivate2(page) test_and_clear_bit(PG_private_2, \
-+						      &(page)->flags)
-+
-+#define PageOwnerPriv2(page)		test_bit(PG_owner_priv_2, \
-+						 &(page)->flags)
-+#define SetPageOwnerPriv2(page)		set_bit(PG_owner_priv_2, &(page)->flags)
-+#define ClearPageOwnerPriv2(page)	clear_bit(PG_owner_priv_2, \
-+						  &(page)->flags)
-+#define TestSetPageOwnerPriv2(page)	test_and_set_bit(PG_owner_priv_2, \
-+							 &(page)->flags)
-+#define TestClearPageOwnerPriv2(page)	test_and_clear_bit(PG_owner_priv_2, \
-+							   &(page)->flags)
-+
- #define PageBuddy(page)		test_bit(PG_buddy, &(page)->flags)
- #define __SetPageBuddy(page)	__set_bit(PG_buddy, &(page)->flags)
- #define __ClearPageBuddy(page)	__clear_bit(PG_buddy, &(page)->flags)
-@@ -272,4 +296,15 @@ static inline void set_page_writeback(struct page *page)
- 	test_set_page_writeback(page);
- }
+ 	struct key *request_key(const struct key_type *type,
+ 				const char *description,
+-				const char *callout_string);
++				const char *callout_info);
  
-+/**
-+ * page_has_private - Determine if page has private stuff
-+ * @page: The page to be checked
-+ *
-+ * Determine if a page has private stuff, indicating that release routines
-+ * should be invoked upon it.
-+ */
-+#define page_has_private(page)			\
-+	((page)->flags & ((1 << PG_private) |	\
-+			  (1 << PG_private_2)))
-+
- #endif	/* PAGE_FLAGS_H */
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index db8a410..1ab7f9a 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -212,6 +212,17 @@ static inline void wait_on_page_writeback(struct page *page)
- extern void end_page_writeback(struct page *page);
+     This is used to request a key or keyring with a description that matches
+     the description specified according to the key type's match function. This
+@@ -793,24 +793,28 @@ payload contents" for more information.
  
- /*
-+ * Wait for a PG_owner_priv_2 to become clear
-+ */
-+static inline void wait_on_page_owner_priv_2(struct page *page)
-+{
-+	if (PageOwnerPriv2(page))
-+		wait_on_page_bit(page, PG_owner_priv_2);
-+}
-+
-+extern void end_page_owner_priv_2(struct page *page);
-+
-+/*
-  * Fault a userspace page into pagetables.  Return non-zero on a fault.
-  *
-  * This assumes that two userspace pages are always sufficient.  That's
-diff --git a/mm/filemap.c b/mm/filemap.c
-index f4d0cde..5551410 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -572,6 +572,21 @@ void end_page_writeback(struct page *page)
- EXPORT_SYMBOL(end_page_writeback);
+ 	struct key *request_key_with_auxdata(const struct key_type *type,
+ 					     const char *description,
+-					     const char *callout_string,
++					     const void *callout_info,
++					     size_t callout_len,
+ 					     void *aux);
  
- /**
-+ * end_page_own - Clear PG_owner_priv_2 and wake up any waiters
-+ * @page: the page
-+ *
-+ * Clear PG_owner_priv_2 and wake up any processes waiting for that event.
-+ */
-+void end_page_owner_priv_2(struct page *page)
-+{
-+	if (!TestClearPageOwnerPriv2(page))
-+		BUG();
-+	smp_mb__after_clear_bit();
-+	wake_up_page(page, PG_owner_priv_2);
-+}
-+EXPORT_SYMBOL(end_page_owner_priv_2);
-+
-+/**
-  * __lock_page - get a lock on the page, assuming we need to sleep to get it
-  * @page: the page to lock
-  *
-@@ -2540,6 +2555,9 @@ out:
-  * (presumably at page->private).  If the release was successful, return `1'.
-  * Otherwise return zero.
-  *
-+ * This may also be called if PG_fscache is set on a page, indicating that the
-+ * page is known to the local caching routines.
-+ *
-  * The @gfp_mask argument specifies whether I/O may be performed to release
-  * this page (__GFP_IO), and whether the call may block (__GFP_WAIT).
-  *
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 3fa4b4a..0778cce 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -545,7 +545,7 @@ static int fallback_migrate_page(struct address_space *mapping,
- 	 * Buffers may be managed in a filesystem specific way.
- 	 * We must have no buffers or drop them.
- 	 */
--	if (PagePrivate(page) &&
-+	if (page_has_private(page) &&
- 	    !try_to_release_page(page, GFP_KERNEL))
- 		return -EAGAIN;
+     This is identical to request_key(), except that the auxiliary data is
+-    passed to the key_type->request_key() op if it exists.
++    passed to the key_type->request_key() op if it exists, and the callout_info
++    is a blob of length callout_len, if given (the length may be 0).
  
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index b2838c2..55b47da 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -230,6 +230,7 @@ static void bad_page(struct page *page)
- 	dump_stack();
- 	page->flags &= ~(1 << PG_lru	|
- 			1 << PG_private |
-+			1 << PG_fscache	|
- 			1 << PG_locked	|
- 			1 << PG_active	|
- 			1 << PG_dirty	|
-@@ -456,6 +457,7 @@ static inline int free_pages_check(struct page *page)
- 		(page->flags & (
- 			1 << PG_lru	|
- 			1 << PG_private |
-+			1 << PG_fscache	|
- 			1 << PG_locked	|
- 			1 << PG_active	|
- 			1 << PG_slab	|
-@@ -605,6 +607,7 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
- 		(page->flags & (
- 			1 << PG_lru	|
- 			1 << PG_private	|
-+			1 << PG_fscache	|
- 			1 << PG_locked	|
- 			1 << PG_active	|
- 			1 << PG_dirty	|
-diff --git a/mm/readahead.c b/mm/readahead.c
-index 75aa6b6..272ffc7 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -46,14 +46,15 @@ EXPORT_SYMBOL_GPL(file_ra_state_init);
  
- /*
-  * see if a page needs releasing upon read_cache_pages() failure
-- * - the caller of read_cache_pages() may have set PG_private before calling,
-- *   such as the NFS fs marking pages that are cached locally on disk, thus we
-- *   need to give the fs a chance to clean up in the event of an error
-+ * - the caller of read_cache_pages() may have set PG_private or PG_fscache
-+ *   before calling, such as the NFS fs marking pages that are cached locally
-+ *   on disk, thus we need to give the fs a chance to clean up in the event of
-+ *   an error
-  */
- static void read_cache_pages_invalidate_page(struct address_space *mapping,
- 					     struct page *page)
- {
--	if (PagePrivate(page)) {
-+	if (page_has_private(page)) {
- 		if (TestSetPageLocked(page))
- 			BUG();
- 		page->mapping = mapping;
-diff --git a/mm/swap.c b/mm/swap.c
-index 9ac8832..22d6e03 100644
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -455,8 +455,8 @@ void pagevec_strip(struct pagevec *pvec)
- 	for (i = 0; i < pagevec_count(pvec); i++) {
- 		struct page *page = pvec->pages[i];
+ (*) A key can be requested asynchronously by calling one of:
  
--		if (PagePrivate(page) && !TestSetPageLocked(page)) {
--			if (PagePrivate(page))
-+		if (page_has_private(page) && !TestSetPageLocked(page)) {
-+			if (page_has_private(page))
- 				try_to_release_page(page, 0);
- 			unlock_page(page);
+ 	struct key *request_key_async(const struct key_type *type,
+ 				      const char *description,
+-				      const char *callout_string);
++				      const void *callout_info,
++				      size_t callout_len);
+ 
+     or:
+ 
+ 	struct key *request_key_async_with_auxdata(const struct key_type *type,
+ 						   const char *description,
+-						   const char *callout_string,
++						   const char *callout_info,
++					     	   size_t callout_len,
+ 					     	   void *aux);
+ 
+     which are asynchronous equivalents of request_key() and
+diff --git a/include/linux/key.h b/include/linux/key.h
+index a70b8a8..163f864 100644
+--- a/include/linux/key.h
++++ b/include/linux/key.h
+@@ -208,16 +208,19 @@ extern struct key *request_key(struct key_type *type,
+ 
+ extern struct key *request_key_with_auxdata(struct key_type *type,
+ 					    const char *description,
+-					    const char *callout_info,
++					    const void *callout_info,
++					    size_t callout_len,
+ 					    void *aux);
+ 
+ extern struct key *request_key_async(struct key_type *type,
+ 				     const char *description,
+-				     const char *callout_info);
++				     const void *callout_info,
++				     size_t callout_len);
+ 
+ extern struct key *request_key_async_with_auxdata(struct key_type *type,
+ 						  const char *description,
+-						  const char *callout_info,
++						  const void *callout_info,
++						  size_t callout_len,
+ 						  void *aux);
+ 
+ extern int wait_for_key_construction(struct key *key, bool intr);
+diff --git a/security/keys/internal.h b/security/keys/internal.h
+index d36d693..f004835 100644
+--- a/security/keys/internal.h
++++ b/security/keys/internal.h
+@@ -109,7 +109,8 @@ extern int install_process_keyring(struct task_struct *tsk);
+ 
+ extern struct key *request_key_and_link(struct key_type *type,
+ 					const char *description,
+-					const char *callout_info,
++					const void *callout_info,
++					size_t callout_len,
+ 					void *aux,
+ 					struct key *dest_keyring,
+ 					unsigned long flags);
+@@ -120,13 +121,15 @@ extern struct key *request_key_and_link(struct key_type *type,
+ struct request_key_auth {
+ 	struct key		*target_key;
+ 	struct task_struct	*context;
+-	char			*callout_info;
++	void			*callout_info;
++	size_t			callout_len;
+ 	pid_t			pid;
+ };
+ 
+ extern struct key_type key_type_request_key_auth;
+ extern struct key *request_key_auth_new(struct key *target,
+-					const char *callout_info);
++					const void *callout_info,
++					size_t callout_len);
+ 
+ extern struct key *key_get_instantiation_authkey(key_serial_t target_id);
+ 
+diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
+index 8ec8432..1698bf9 100644
+--- a/security/keys/keyctl.c
++++ b/security/keys/keyctl.c
+@@ -152,6 +152,7 @@ asmlinkage long sys_request_key(const char __user *_type,
+ 	struct key_type *ktype;
+ 	struct key *key;
+ 	key_ref_t dest_ref;
++	size_t callout_len;
+ 	char type[32], *description, *callout_info;
+ 	long ret;
+ 
+@@ -169,12 +170,14 @@ asmlinkage long sys_request_key(const char __user *_type,
+ 
+ 	/* pull the callout info into kernel space */
+ 	callout_info = NULL;
++	callout_len = 0;
+ 	if (_callout_info) {
+ 		callout_info = strndup_user(_callout_info, PAGE_SIZE);
+ 		if (IS_ERR(callout_info)) {
+ 			ret = PTR_ERR(callout_info);
+ 			goto error2;
  		}
-diff --git a/mm/swap_state.c b/mm/swap_state.c
-index b526356..33f1e5c 100644
---- a/mm/swap_state.c
-+++ b/mm/swap_state.c
-@@ -76,7 +76,7 @@ static int __add_to_swap_cache(struct page *page, swp_entry_t entry,
++		callout_len = strlen(callout_info);
+ 	}
  
- 	BUG_ON(!PageLocked(page));
- 	BUG_ON(PageSwapCache(page));
--	BUG_ON(PagePrivate(page));
-+	BUG_ON(page_has_private(page));
- 	error = radix_tree_preload(gfp_mask);
- 	if (!error) {
- 		write_lock_irq(&swapper_space.tree_lock);
-@@ -129,7 +129,7 @@ void __delete_from_swap_cache(struct page *page)
- 	BUG_ON(!PageLocked(page));
- 	BUG_ON(!PageSwapCache(page));
- 	BUG_ON(PageWriteback(page));
--	BUG_ON(PagePrivate(page));
-+	BUG_ON(page_has_private(page));
+ 	/* get the destination keyring if specified */
+@@ -195,8 +198,8 @@ asmlinkage long sys_request_key(const char __user *_type,
+ 	}
  
- 	radix_tree_delete(&swapper_space.page_tree, page_private(page));
- 	set_page_private(page, 0);
-diff --git a/mm/truncate.c b/mm/truncate.c
-index cadc156..5b7d1c5 100644
---- a/mm/truncate.c
-+++ b/mm/truncate.c
-@@ -49,7 +49,7 @@ void do_invalidatepage(struct page *page, unsigned long offset)
- static inline void truncate_partial_page(struct page *page, unsigned partial)
+ 	/* do the search */
+-	key = request_key_and_link(ktype, description, callout_info, NULL,
+-				   key_ref_to_ptr(dest_ref),
++	key = request_key_and_link(ktype, description, callout_info,
++				   callout_len, NULL, key_ref_to_ptr(dest_ref),
+ 				   KEY_ALLOC_IN_QUOTA);
+ 	if (IS_ERR(key)) {
+ 		ret = PTR_ERR(key);
+diff --git a/security/keys/request_key.c b/security/keys/request_key.c
+index 6381e61..aee4897 100644
+--- a/security/keys/request_key.c
++++ b/security/keys/request_key.c
+@@ -161,21 +161,22 @@ error_alloc:
+  * call out to userspace for key construction
+  * - we ignore program failure and go on key status instead
+  */
+-static int construct_key(struct key *key, const char *callout_info, void *aux)
++static int construct_key(struct key *key, const void *callout_info,
++			 size_t callout_len, void *aux)
  {
- 	zero_user_page(page, partial, PAGE_CACHE_SIZE - partial, KM_USER0);
--	if (PagePrivate(page))
-+	if (page_has_private(page))
- 		do_invalidatepage(page, partial);
+ 	struct key_construction *cons;
+ 	request_key_actor_t actor;
+ 	struct key *authkey;
+ 	int ret;
+ 
+-	kenter("%d,%s,%p", key->serial, callout_info, aux);
++	kenter("%d,%p,%zu,%p", key->serial, callout_info, callout_len, aux);
+ 
+ 	cons = kmalloc(sizeof(*cons), GFP_KERNEL);
+ 	if (!cons)
+ 		return -ENOMEM;
+ 
+ 	/* allocate an authorisation key */
+-	authkey = request_key_auth_new(key, callout_info);
++	authkey = request_key_auth_new(key, callout_info, callout_len);
+ 	if (IS_ERR(authkey)) {
+ 		kfree(cons);
+ 		ret = PTR_ERR(authkey);
+@@ -331,6 +332,7 @@ alloc_failed:
+ static struct key *construct_key_and_link(struct key_type *type,
+ 					  const char *description,
+ 					  const char *callout_info,
++					  size_t callout_len,
+ 					  void *aux,
+ 					  struct key *dest_keyring,
+ 					  unsigned long flags)
+@@ -348,7 +350,7 @@ static struct key *construct_key_and_link(struct key_type *type,
+ 	key_user_put(user);
+ 
+ 	if (ret == 0) {
+-		ret = construct_key(key, callout_info, aux);
++		ret = construct_key(key, callout_info, callout_len, aux);
+ 		if (ret < 0)
+ 			goto construction_failed;
+ 	}
+@@ -370,7 +372,8 @@ construction_failed:
+  */
+ struct key *request_key_and_link(struct key_type *type,
+ 				 const char *description,
+-				 const char *callout_info,
++				 const void *callout_info,
++				 size_t callout_len,
+ 				 void *aux,
+ 				 struct key *dest_keyring,
+ 				 unsigned long flags)
+@@ -378,8 +381,8 @@ struct key *request_key_and_link(struct key_type *type,
+ 	struct key *key;
+ 	key_ref_t key_ref;
+ 
+-	kenter("%s,%s,%s,%p,%p,%lx",
+-	       type->name, description, callout_info, aux,
++	kenter("%s,%s,%p,%zu,%p,%p,%lx",
++	       type->name, description, callout_info, callout_len, aux,
+ 	       dest_keyring, flags);
+ 
+ 	/* search all the process keyrings for a key */
+@@ -398,7 +401,8 @@ struct key *request_key_and_link(struct key_type *type,
+ 			goto error;
+ 
+ 		key = construct_key_and_link(type, description, callout_info,
+-					     aux, dest_keyring, flags);
++					     callout_len, aux, dest_keyring,
++					     flags);
+ 	}
+ 
+ error:
+@@ -434,10 +438,13 @@ struct key *request_key(struct key_type *type,
+ 			const char *callout_info)
+ {
+ 	struct key *key;
++	size_t callout_len = 0;
+ 	int ret;
+ 
+-	key = request_key_and_link(type, description, callout_info, NULL,
+-				   NULL, KEY_ALLOC_IN_QUOTA);
++	if (callout_info)
++		callout_len = strlen(callout_info);
++	key = request_key_and_link(type, description, callout_info, callout_len,
++				   NULL, NULL, KEY_ALLOC_IN_QUOTA);
+ 	if (!IS_ERR(key)) {
+ 		ret = wait_for_key_construction(key, false);
+ 		if (ret < 0) {
+@@ -458,14 +465,15 @@ EXPORT_SYMBOL(request_key);
+  */
+ struct key *request_key_with_auxdata(struct key_type *type,
+ 				     const char *description,
+-				     const char *callout_info,
++				     const void *callout_info,
++				     size_t callout_len,
+ 				     void *aux)
+ {
+ 	struct key *key;
+ 	int ret;
+ 
+-	key = request_key_and_link(type, description, callout_info, aux,
+-				   NULL, KEY_ALLOC_IN_QUOTA);
++	key = request_key_and_link(type, description, callout_info, callout_len,
++				   aux, NULL, KEY_ALLOC_IN_QUOTA);
+ 	if (!IS_ERR(key)) {
+ 		ret = wait_for_key_construction(key, false);
+ 		if (ret < 0) {
+@@ -485,10 +493,12 @@ EXPORT_SYMBOL(request_key_with_auxdata);
+  */
+ struct key *request_key_async(struct key_type *type,
+ 			      const char *description,
+-			      const char *callout_info)
++			      const void *callout_info,
++			      size_t callout_len)
+ {
+-	return request_key_and_link(type, description, callout_info, NULL,
+-				    NULL, KEY_ALLOC_IN_QUOTA);
++	return request_key_and_link(type, description, callout_info,
++				    callout_len, NULL, NULL,
++				    KEY_ALLOC_IN_QUOTA);
  }
+ EXPORT_SYMBOL(request_key_async);
  
-@@ -100,7 +100,7 @@ truncate_complete_page(struct address_space *mapping, struct page *page)
+@@ -500,10 +510,11 @@ EXPORT_SYMBOL(request_key_async);
+  */
+ struct key *request_key_async_with_auxdata(struct key_type *type,
+ 					   const char *description,
+-					   const char *callout_info,
++					   const void *callout_info,
++					   size_t callout_len,
+ 					   void *aux)
+ {
+-	return request_key_and_link(type, description, callout_info, aux,
+-				    NULL, KEY_ALLOC_IN_QUOTA);
++	return request_key_and_link(type, description, callout_info,
++				    callout_len, aux, NULL, KEY_ALLOC_IN_QUOTA);
+ }
+ EXPORT_SYMBOL(request_key_async_with_auxdata);
+diff --git a/security/keys/request_key_auth.c b/security/keys/request_key_auth.c
+index 510f7be..6827ae3 100644
+--- a/security/keys/request_key_auth.c
++++ b/security/keys/request_key_auth.c
+@@ -61,7 +61,7 @@ static void request_key_auth_describe(const struct key *key,
  
- 	cancel_dirty_page(page, PAGE_CACHE_SIZE);
+ 	seq_puts(m, "key:");
+ 	seq_puts(m, key->description);
+-	seq_printf(m, " pid:%d ci:%zu", rka->pid, strlen(rka->callout_info));
++	seq_printf(m, " pid:%d ci:%zu", rka->pid, rka->callout_len);
  
--	if (PagePrivate(page))
-+	if (page_has_private(page))
- 		do_invalidatepage(page, 0);
+ } /* end request_key_auth_describe() */
  
- 	remove_from_page_cache(page);
-@@ -125,7 +125,7 @@ invalidate_complete_page(struct address_space *mapping, struct page *page)
- 	if (page->mapping != mapping)
- 		return 0;
+@@ -77,7 +77,7 @@ static long request_key_auth_read(const struct key *key,
+ 	size_t datalen;
+ 	long ret;
  
--	if (PagePrivate(page) && !try_to_release_page(page, 0))
-+	if (page_has_private(page) && !try_to_release_page(page, 0))
- 		return 0;
+-	datalen = strlen(rka->callout_info);
++	datalen = rka->callout_len;
+ 	ret = datalen;
  
- 	ret = remove_mapping(mapping, page);
-@@ -347,14 +347,14 @@ invalidate_complete_page2(struct address_space *mapping, struct page *page)
- 	if (page->mapping != mapping)
- 		return 0;
+ 	/* we can return the data as is */
+@@ -137,7 +137,8 @@ static void request_key_auth_destroy(struct key *key)
+  * create an authorisation token for /sbin/request-key or whoever to gain
+  * access to the caller's security data
+  */
+-struct key *request_key_auth_new(struct key *target, const char *callout_info)
++struct key *request_key_auth_new(struct key *target, const void *callout_info,
++				 size_t callout_len)
+ {
+ 	struct request_key_auth *rka, *irka;
+ 	struct key *authkey = NULL;
+@@ -152,7 +153,7 @@ struct key *request_key_auth_new(struct key *target, const char *callout_info)
+ 		kleave(" = -ENOMEM");
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+-	rka->callout_info = kmalloc(strlen(callout_info) + 1, GFP_KERNEL);
++	rka->callout_info = kmalloc(callout_len, GFP_KERNEL);
+ 	if (!rka->callout_info) {
+ 		kleave(" = -ENOMEM");
+ 		kfree(rka);
+@@ -186,7 +187,8 @@ struct key *request_key_auth_new(struct key *target, const char *callout_info)
+ 	}
  
--	if (PagePrivate(page) && !try_to_release_page(page, GFP_KERNEL))
-+	if (page_has_private(page) && !try_to_release_page(page, GFP_KERNEL))
- 		return 0;
+ 	rka->target_key = key_get(target);
+-	strcpy(rka->callout_info, callout_info);
++	memcpy(rka->callout_info, callout_info, callout_len);
++	rka->callout_len = callout_len;
  
- 	write_lock_irq(&mapping->tree_lock);
- 	if (PageDirty(page))
- 		goto failed;
- 
--	BUG_ON(PagePrivate(page));
-+	BUG_ON(page_has_private(page));
- 	__remove_from_page_cache(page);
- 	write_unlock_irq(&mapping->tree_lock);
- 	ClearPageUptodate(page);
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index e5a9597..ff2fa2d 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -578,7 +578,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 		 * process address space (page_count == 1) it can be freed.
- 		 * Otherwise, leave the page on the LRU so it is swappable.
- 		 */
--		if (PagePrivate(page)) {
-+		if (page_has_private(page)) {
- 			if (!try_to_release_page(page, sc->gfp_mask))
- 				goto activate_locked;
- 			if (!mapping && page_count(page) == 1)
+ 	/* allocate the auth key */
+ 	sprintf(desc, "%x", target->serial);
 
