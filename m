@@ -1,63 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbYAWKYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbYAWKZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbYAWKYP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 05:24:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbYAWKYF
+	id S1753183AbYAWKZk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 05:25:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYAWKZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 05:24:05 -0500
-Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:2071 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751745AbYAWKYD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 05:24:03 -0500
-Date: Wed, 23 Jan 2008 11:23:50 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: Jochen Friedrich <jochen@scram.de>, Scott Wood <scottwood@freescale.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       i2c@lm-sensors.org
-Subject: Re: [PATCH POWERPC] i2c: adds support for i2c bus on Frescale 
- CPM1/CPM2 controllers
-Message-ID: <20080123112350.629ee615@hyperion.delvare>
-In-Reply-To: <20071222001112.691b80c8@kernel.crashing.org>
-References: <476C15BC.3090807@scram.de>
-	<20071222001112.691b80c8@kernel.crashing.org>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jan 2008 05:25:32 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:59827 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750972AbYAWKZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 05:25:31 -0500
+Date: Wed, 23 Jan 2008 10:22:23 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       apw@shadowen.org
+Subject: Re: [PATCH 0/2] Relax restrictions on setting CONFIG_NUMA on x86
+Message-ID: <20080123102222.GA21455@csn.ul.ie>
+References: <20080118153529.12646.5260.sendpatchset@skynet.skynet.ie> <20080121093702.8FC2.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080123105810.F295.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080123105810.F295.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Dec 2007 00:11:12 +0300, Vitaly Bordug wrote:
-> On Fri, 21 Dec 2007 20:36:28 +0100
-> Jochen Friedrich wrote:
+On (23/01/08 11:04), KOSAKI Motohiro didst pronounce:
+> Hi mel
 > 
-> > Using the port of 2.4 code from Vitaly Bordug
-> > <vitb@kernel.crashing.org> and the actual algorithm used by the i2c
-> > driver of the DBox code on cvs.tuxboc.org from Tmbinc, Gillem
-> > (htoa@gmx.net). Renamed i2c-rpx.c and i2c-algo-8xx.c to i2c-cpm.c and
-> > converted the driver to an of_platform_driver.
+> > Hi 
 > > 
+> > > A fix[1] was merged to the x86.git tree that allowed NUMA kernels to boot
+> > > on normal x86 machines (and not just NUMA-Q, Summit etc.). I took a look
+> > > at the restrictions on setting NUMA on x86 to see if they could be lifted.
+> > 
+> > Interesting!
+> > 
+> > I will test tomorrow.
 > 
-> I had an attempt a while ago to do this but haven't had enough time to get it completed, so
-> I am glad to see it finally picked up. There was some sort of discussion that time, you seem to have some of those points
-> addressed but  something not, please
-> check: http://lkml.org/lkml/2007/5/8/45
+> Hmm...
+> It doesn't works on my machine.
 > 
-> (for instance, cpm_i2c_shutdown() and i2c_cpm_del_bus() are void because they cant' fail) 
+> panic at booting at __free_pages_ok() with blow call trace.
 > 
-> Also, why this was directed to Scott? This is lm-sensors stuff and is
-> Jean Delvare <khali@linux-fr.org> material...
+> [<hex number>] free_all_bootmem_core
+> [<hex number>] mem_init
+> [<hex number>] alloc_large_system_hash
+> [<hex number>] inode_init_early
+> [<hex number>] start_kernel
+> [<hex number>] unknown_bootoption
+> 
+> my machine spec
+> 	CPU:   Pentium4 with HT
+> 	MEM:   512M
+> 
+> I will try more investigate.
+> but I have no time for a while, sorry ;-)
+> 
+> 
+> BTW:
+> when config sparse mem turn on instead discontig mem.
+> panic at booting at get_pageblock_flags_group() with below call stack.
+> 
+> free_initrd
+> 	free_init_pages
+> 		free_hot_cold_page
+> 
 
-This is _i2c_ stuff and doesn't have _anything_ to do with lm-sensors.
-(Don't let the i2c list address fool you.)
-
-As the i2c subsystem maintainer, I am very pleased when contributors
-get their patches reviewed and tested by people with the knowledge and
-access to the target architecture and hardware. So Jochen did the right
-thing by sending this patch to Scott at first.
+To rule it out, can you also try with the patch below applied please? It
+should only make a difference on sparsemem so if discontigmem is still
+crashing, there is likely another problem. Assuming it crashes, please
+post the full dmesg output with loglevel=8 on the command line. Thanks
 
 -- 
-Jean Delvare
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
