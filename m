@@ -1,94 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbYAWRio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbYAWRbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756789AbYAWRio (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:38:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbYAWRic
+	id S1756867AbYAWRbE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:31:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbYAWRXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:38:32 -0500
-Received: from mail-relay-01.mailcluster.net ([77.221.130.213]:55718 "EHLO
-	mail-relay-01.mailcluster.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753281AbYAWRib (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:38:31 -0500
-X-Greylist: delayed 1611 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jan 2008 12:38:30 EST
-Message-ID: <47977546.8090904@vlnb.net>
-Date: Wed, 23 Jan 2008 20:11:34 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc5
-X-Accept-Language: en-us, ru, en
+	Wed, 23 Jan 2008 12:23:54 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56227 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755855AbYAWRW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:22:57 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 25/27] NFS: Configuration and mount option changes to enable
+	local caching on NFS [try #2]
+To: Trond.Myklebust@netapp.com
+Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, dhowells@redhat.com
+Date: Wed, 23 Jan 2008 17:22:52 +0000
+Message-ID: <20080123172251.11107.71065.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
+References: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-To: Bart Van Assche <bart.vanassche@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@hansenpartnership.com,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-In-Reply-To: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Van Assche wrote:
-> As you probably know there is a trend in enterprise computing towards
-> networked storage. This is illustrated by the emergence during the
-> past few years of standards like SRP (SCSI RDMA Protocol), iSCSI
-> (Internet SCSI) and iSER (iSCSI Extensions for RDMA). Two different
-> pieces of software are necessary to make networked storage possible:
-> initiator software and target software. As far as I know there exist
-> three different SCSI target implementations for Linux:
-> - The iSCSI Enterprise Target Daemon (IETD,
-> http://iscsitarget.sourceforge.net/);
-> - The Linux SCSI Target Framework (STGT, http://stgt.berlios.de/);
-> - The Generic SCSI Target Middle Level for Linux project (SCST,
-> http://scst.sourceforge.net/).
-> Since I was wondering which SCSI target software would be best suited
-> for an InfiniBand network, I started evaluating the STGT and SCST SCSI
-> target implementations. Apparently the performance difference between
-> STGT and SCST is small on 100 Mbit/s and 1 Gbit/s Ethernet networks,
-> but the SCST target software outperforms the STGT software on an
-> InfiniBand network. See also the following thread for the details:
-> http://sourceforge.net/mailarchive/forum.php?thread_name=e2e108260801170127w2937b2afg9bef324efa945e43%40mail.gmail.com&forum_name=scst-devel.
-> 
-> About the design of the SCST software: while one of the goals of the
-> STGT project was to keep the in-kernel code minimal, the SCST project
-> implements the whole SCSI target in kernel space. SCST is implemented
-> as a set of new kernel modules, only minimal changes to the existing
-> kernel are necessary before the SCST kernel modules can be used. This
-> is the same approach that will be followed in the very near future in
-> the OpenSolaris kernel (see also
-> http://opensolaris.org/os/project/comstar/). More information about
-> the design of SCST can be found here:
-> http://scst.sourceforge.net/doc/scst_pg.html.
-> 
-> My impression is that both the STGT and SCST projects are well
-> designed, well maintained and have a considerable user base. According
-> to the SCST maintainer (Vladislav Bolkhovitin), SCST is superior to
-> STGT with respect to features, performance, maturity, stability, and
-> number of existing target drivers. Unfortunately the SCST kernel code
-> lives outside the kernel tree, which makes SCST harder to use than
-> STGT.
-> 
-> As an SCST user, I would like to see the SCST kernel code integrated
-> in the mainstream kernel because of its excellent performance on an
-> InfiniBand network. Since the SCST project comprises about 14 KLOC,
-> reviewing the SCST code will take considerable time. Who will do this
-> reviewing work ? And with regard to the comments made by the
-> reviewers: Vladislav, do you have the time to carry out the
-> modifications requested by the reviewers ? I expect a.o. that
-> reviewers will ask to move SCST's configuration pseudofiles from
-> procfs to sysfs.
+Changes to the kernel configuration defintions and to the NFS mount options to
+allow the local caching support added by the previous patch to be enabled.
 
-Sure, I do, although I personally don't see much sense in such move.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-> Bart Van Assche.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+ fs/Kconfig        |    8 ++++++++
+ fs/nfs/client.c   |    2 ++
+ fs/nfs/internal.h |    1 +
+ fs/nfs/super.c    |   14 ++++++++++++++
+ 4 files changed, 25 insertions(+), 0 deletions(-)
+
+
+diff --git a/fs/Kconfig b/fs/Kconfig
+index e95b11c..39b1981 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1650,6 +1650,14 @@ config NFS_V4
+ 
+ 	  If unsure, say N.
+ 
++config NFS_FSCACHE
++	bool "Provide NFS client caching support (EXPERIMENTAL)"
++	depends on EXPERIMENTAL
++	depends on NFS_FS=m && FSCACHE || NFS_FS=y && FSCACHE=y
++	help
++	  Say Y here if you want NFS data to be cached locally on disc through
++	  the general filesystem cache manager
++
+ config NFS_DIRECTIO
+ 	bool "Allow direct I/O on NFS files"
+ 	depends on NFS_FS
+diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+index bcdc5d0..92f9b84 100644
+--- a/fs/nfs/client.c
++++ b/fs/nfs/client.c
+@@ -572,6 +572,7 @@ static int nfs_init_server(struct nfs_server *server,
+ 
+ 	/* Initialise the client representation from the mount data */
+ 	server->flags = data->flags & NFS_MOUNT_FLAGMASK;
++	server->options = data->options;
+ 
+ 	if (data->rsize)
+ 		server->rsize = nfs_block_size(data->rsize, NULL);
+@@ -931,6 +932,7 @@ static int nfs4_init_server(struct nfs_server *server,
+ 	/* Initialise the client representation from the mount data */
+ 	server->flags = data->flags & NFS_MOUNT_FLAGMASK;
+ 	server->caps |= NFS_CAP_ATOMIC_OPEN;
++	server->options = data->options;
+ 
+ 	if (data->rsize)
+ 		server->rsize = nfs_block_size(data->rsize, NULL);
+diff --git a/fs/nfs/internal.h b/fs/nfs/internal.h
+index f3acf48..ef09e00 100644
+--- a/fs/nfs/internal.h
++++ b/fs/nfs/internal.h
+@@ -35,6 +35,7 @@ struct nfs_parsed_mount_data {
+ 	int			acregmin, acregmax,
+ 				acdirmin, acdirmax;
+ 	int			namlen;
++	unsigned int		options;
+ 	unsigned int		bsize;
+ 	unsigned int		auth_flavor_len;
+ 	rpc_authflavor_t	auth_flavors[1];
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index 6dd628f..0542550 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -74,6 +74,7 @@ enum {
+ 	Opt_acl, Opt_noacl,
+ 	Opt_rdirplus, Opt_nordirplus,
+ 	Opt_sharecache, Opt_nosharecache,
++	Opt_fscache, Opt_nofscache,
+ 
+ 	/* Mount options that take integer arguments */
+ 	Opt_port,
+@@ -123,6 +124,8 @@ static match_table_t nfs_mount_option_tokens = {
+ 	{ Opt_nordirplus, "nordirplus" },
+ 	{ Opt_sharecache, "sharecache" },
+ 	{ Opt_nosharecache, "nosharecache" },
++	{ Opt_fscache, "fsc" },
++	{ Opt_nofscache, "nofsc" },
+ 
+ 	{ Opt_port, "port=%u" },
+ 	{ Opt_rsize, "rsize=%u" },
+@@ -459,6 +462,8 @@ static void nfs_show_mount_options(struct seq_file *m, struct nfs_server *nfss,
+ 	seq_printf(m, ",timeo=%lu", 10U * clp->retrans_timeo / HZ);
+ 	seq_printf(m, ",retrans=%u", clp->retrans_count);
+ 	seq_printf(m, ",sec=%s", nfs_pseudoflavour_to_name(nfss->client->cl_auth->au_flavor));
++	if (nfss->options & NFS_OPTION_FSCACHE)
++		seq_printf(m, ",fsc");
+ }
+ 
+ /*
+@@ -697,6 +702,15 @@ static int nfs_parse_mount_options(char *raw,
+ 			break;
+ 		case Opt_nosharecache:
+ 			mnt->flags |= NFS_MOUNT_UNSHARED;
++			mnt->options &= ~NFS_OPTION_FSCACHE;
++			break;
++		case Opt_fscache:
++			/* sharing is mandatory with fscache */
++			mnt->options |= NFS_OPTION_FSCACHE;
++			mnt->flags &= ~NFS_MOUNT_UNSHARED;
++			break;
++		case Opt_nofscache:
++			mnt->options &= ~NFS_OPTION_FSCACHE;
+ 			break;
+ 
+ 		case Opt_port:
 
