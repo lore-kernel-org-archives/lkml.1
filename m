@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751789AbYAWTjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbYAWTkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751789AbYAWTjI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 14:39:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbYAWTiy
+	id S1753415AbYAWTkf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 14:40:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYAWTk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 14:38:54 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:52575 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbYAWTix (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 14:38:53 -0500
-Date: Wed, 23 Jan 2008 13:35:41 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jon Loeliger <jdl@freescale.com>, Scott Wood <scottwood@freescale.com>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCHv2 0/8] [POWERPC] 8xx cleanups
-Message-ID: <20080123133541.24163d18@zod.rchland.ibm.com>
-In-Reply-To: <20080123180012.GA23313@uranus.ravnborg.org>
-References: <4797641F.4000902@scram.de>
-	<CA8FFE19-B84A-426B-9B1C-EF0F7C87AE47@kernel.crashing.org>
-	<20080123171252.GA22967@uranus.ravnborg.org>
-	<47977A02.40506@freescale.com>
-	<20080123180012.GA23313@uranus.ravnborg.org>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 Jan 2008 14:40:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39367 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751727AbYAWTkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 14:40:25 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Andrew Patterson <andrew.patterson@hp.com>, robert.moore@intel.com
+Subject: Re: [PATCH 3/4] ACPI: Check for any matching CID when walking namespace.
+Date: Wed, 23 Jan 2008 14:39:42 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@suse.de,
+       matthew@wil.cx, tom.l.nguyen@intel.com, linux-acpi@vger.kernel.org
+References: <20080123001807.28190.32648.stgit@bluto.andrew> <20080123001822.28190.3147.stgit@bluto.andrew>
+In-Reply-To: <20080123001822.28190.3147.stgit@bluto.andrew>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801231439.42735.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jan 2008 19:00:12 +0100
-Sam Ravnborg <sam@ravnborg.org> wrote:
+Right Greg, this is not only an ACPI patch, 
+but a patch that touches the ACPICA core.
+Lets get Bob to see if it applies to the latest upstream ACPICA code.
 
-> On Wed, Jan 23, 2008 at 11:31:46AM -0600, Jon Loeliger wrote:
-> > Sam Ravnborg wrote:
-> > >>What impact do the have on boards in arch/ppc being able to build?
-> > >
-> > >Byt the way what are the plans for powerpc?
-> > >We have:
-> > >arch/ppc
-> > >arch/ppc64
-> > >arch/powerpc
-> > >
-> > >It was my understanding that arch/powerpc was supposed
-> > >to be the future unified powerpc architecture but it
-> > >does not even provide a defconfig.
-> > >
-> > >And I do not see too much happening to do so - but that maybe
-> > >because I looked at a wrong place.
-> > 
-> > You must have looked in the wrong place. :-)
-> > 
-> > arch/ppc is scheduled for removal from mainline in June.
-> Good to hear.
+Andrew,
+Do you give Intel permission to accept this patch under
+both licenses on the top of the file, such that we can
+re-distribute it in ACPICA to all the OSs that use ACPICA?
+
+(hey, and check out the spiffy new acpica home page: http://acpica.org/ )
+
+thanks,
+-Len
+
+On Tuesday 22 January 2008 19:18, Andrew Patterson wrote:
+> From: Andrew Patterson <andrew.patterson@hp.com>
 > 
-> > arch/powerpc is under significant development, with lots
-> > of defconfigs in arch/powerpc/configs.
-> Double checked - it was my build script that used ARCH=ppc
-> Now I just need to build another toolchain as the ppc750 could not build
-> the defconfig. crosstool is my friend here.
-
-You'll need mkimage if you ever venture into some of the embedded board
-configs.  Just an FYI.
-
-josh
+> The callback function acpi_ns_get_device_callback called from
+> acpi_get_devices() will check CID's if the HID does not match.  This code
+> has a bug where it requires that all CIDs match the HID. Changed the code
+> so that any CID match will do.
+> 
+> Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
+> ---
+> 
+>  drivers/acpi/namespace/nsxfeval.c |   11 ++++++++---
+>  1 files changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/acpi/namespace/nsxfeval.c b/drivers/acpi/namespace/nsxfeval.c
+> index f39fbc6..e562b24 100644
+> --- a/drivers/acpi/namespace/nsxfeval.c
+> +++ b/drivers/acpi/namespace/nsxfeval.c
+> @@ -443,6 +443,7 @@ acpi_ns_get_device_callback(acpi_handle obj_handle,
+>  	struct acpica_device_id hid;
+>  	struct acpi_compatible_id_list *cid;
+>  	acpi_native_uint i;
+> +	int found;
+>  
+>  	status = acpi_ut_acquire_mutex(ACPI_MTX_NAMESPACE);
+>  	if (ACPI_FAILURE(status)) {
+> @@ -496,16 +497,20 @@ acpi_ns_get_device_callback(acpi_handle obj_handle,
+>  
+>  			/* Walk the CID list */
+>  
+> +			found = 0;
+>  			for (i = 0; i < cid->count; i++) {
+>  				if (ACPI_STRNCMP(cid->id[i].value, info->hid,
+>  						 sizeof(struct
+> -							acpi_compatible_id)) !=
+> +							acpi_compatible_id)) ==
+>  				    0) {
+> -					ACPI_FREE(cid);
+> -					return (AE_OK);
+> +					found = 1;
+> +					break;
+>  				}
+>  			}
+>  			ACPI_FREE(cid);
+> +			if (!found) {
+> +				return (AE_OK);
+> +			}
+>  		}
+>  	}
+>  
+> 
