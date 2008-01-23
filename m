@@ -1,140 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYAWRct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbYAWRf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbYAWRct (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:32:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbYAWR01
+	id S1758768AbYAWRf5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:35:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbYAWRdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:26:27 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:21908 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756363AbYAWR0Y (ORCPT
+	Wed, 23 Jan 2008 12:33:36 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:57249
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758386AbYAWRde (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:26:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=I8bJHaj+o82DVVKNIwVh28xIU486AZ/IvVe4cJgmrNm/yGjhGFk51Cq7DDGV9JBIQ9Gzzsaj1INNfGXo1fpb5p5lDuc5Qm0MM/qGXg4f5dDJcbm0BnvqigOYzx5kQn4Dk+SEo0p+/1iVnX9/ZU3tWf65E471Gt487+MkhEeHD9A=
-Message-ID: <4df4ef0c0801230926g39cd8d93vc705cf77f8164e55@mail.gmail.com>
-Date: Wed, 23 Jan 2008 20:26:20 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [PATCH -v8 3/4] Enable the MS_ASYNC functionality in sys_msync()
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
-       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
-In-Reply-To: <alpine.LFD.1.00.0801230836250.1741@woody.linux-foundation.org>
+	Wed, 23 Jan 2008 12:33:34 -0500
+Date: Wed, 23 Jan 2008 18:33:25 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [PATCH] export notifier #1
+Message-ID: <20080123173325.GG7141@v2.random>
+References: <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <20080122223139.GD15848@v2.random> <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com> <20080123114136.GE15848@v2.random> <20080123123230.GH26420@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <12010440803930-git-send-email-salikhmetov@gmail.com>
-	 <1201044083504-git-send-email-salikhmetov@gmail.com>
-	 <alpine.LFD.1.00.0801230836250.1741@woody.linux-foundation.org>
+In-Reply-To: <20080123123230.GH26420@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/23, Linus Torvalds <torvalds@linux-foundation.org>:
->
->
-> On Wed, 23 Jan 2008, Anton Salikhmetov wrote:
-> > +
-> > +             if (pte_dirty(*pte) && pte_write(*pte)) {
->
-> Not correct.
->
-> You still need to check "pte_present()" before you can test any other
-> bits. For a non-present pte, none of the other bits are defined, and for
-> all we know there might be architectures out there that require them to
-> be non-dirty.
->
-> As it is, you just possibly randomly corrupted the pte.
->
-> Yeah, on all architectures I know of, it the pte is clear, neither of
-> those tests will trigger, so it just happens to work, but it's still
-> wrong. And for a MAP_SHARED mapping, it should be either clear or valid,
-> although I can imagine that we might do swap-cache entries for tmpfs or
-> something (in which case trying to clear the write-enable bit would
-> corrupt the swap entry!).
->
-> So the bug might be hard or even impossible to trigger in practice, but
-> it's still wrong.
->
-> I realize that "page_mkclean_one()" doesn't do this very obviously, but
-> it's actually there (it's just hidden in page_check_address()).
->
-> Quite frankly, at this point I'm getting *very* tired of this series.
-> Especially since you ignored me when I suggested you just revert the
-> commit that removed the page table walking - and instead send in a buggy
-> patch.
->
-> Yes, the VM is hard. I agree. It's nasty. But exactly because it's nasty
-> and subtle and horrid, I'm also very anal about it, and I get really
-> nervous when somebody touches it without (a) knowing all the rules
-> intimately and (b) listening to people who do.
->
-> So here's even a patch to get you started. Do this:
->
->         git revert 204ec841fbea3e5138168edbc3a76d46747cc987
->
-> and then use this appended patch on top of that as a starting point for
-> something that compiles and *possibly* works.
->
-> And no, I do *not* guarantee that this is right either! I have not tested
-> it or thought about it a lot, and S390 tends to be odd about some of these
-> things. In particular, I actually suspect that we should possibly do this
-> the same way we do
->
->         ptep_clear_flush_young()
->
-> except we would do "ptep_clear_flush_wrprotect()". So even though this is
-> a revert plus a simple patch to make it compile again (we've changed how
-> we do dirty bits), I think a patch like this needs testing and other
-> people like Nick and Peter to ack it.
+On Wed, Jan 23, 2008 at 06:32:30AM -0600, Robin Holt wrote:
+> Christoph, Maybe you can clear one thing up.  Was this proposal an
+> addition to or replacement of Andrea's?  I assumed an addition.  I am
+> going to try to restrict my responses to ones appropriate for that
+> assumption.
 
-I'm very sorry for my bad code which can not pass LKML's review.
+It wasn't immediately obvious that this was an addition but really I
+don't mind either ways as long as a feature workable for KVM is
+included ;).
 
-I reassigned the bug #2645 to default assignee, Andrew Morton, because
-it seems that people start getting tired of my patch series.
+> > The remote instance is like a secondary TLB what you're doing in your
+> > code is as backwards as flushing the TLB _before_ clearing the PTE! If
+> > you want to call the secondary tlb flush outside locks we can argue
+> > about that, but I think you should do that _after_ clearing the linux
+> > pte IMHO. Otherwise you can as well move the tlb_flush_page before
+> > clearing the pte and you'll run in the same amount of smp races for
+> > the master MMU too.
+> 
+> I can agree to doing the flush after as long as I get a flag from the
+> mmu notifier saying this flush will be repeated later without locks
+> held.  That would be fine with me.  If we don't have that then the
 
-Thanks for your support.
+You want to be able to tell the mmu_notifier that you want the flush
+repeated without locks later? Sorry but then if you're always going to
+set the bitflag unconditionally, why don't you simply implement a
+second notifier in addition of my current ->invalidate_page (like
+->after_invalidate_page).
 
->
-> Nick? Peter? Testing? Other comments?
->
->                 Linus
->
-> ---
->  mm/msync.c |    9 ++++++---
->  1 files changed, 6 insertions(+), 3 deletions(-)
->
-> diff --git a/mm/msync.c b/mm/msync.c
-> index a30487f..9b0af8f 100644
-> --- a/mm/msync.c
-> +++ b/mm/msync.c
-> @@ -32,6 +32,7 @@ static unsigned long msync_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
->  again:
->         pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
->         do {
-> +               pte_t entry;
->                 struct page *page;
->
->                 if (progress >= 64) {
-> @@ -47,9 +48,11 @@ again:
->                 page = vm_normal_page(vma, addr, *pte);
->                 if (!page)
->                         continue;
-> -               if (ptep_clear_flush_dirty(vma, addr, pte) ||
-> -                               page_test_and_clear_dirty(page))
-> -                       ret += set_page_dirty(page);
-> +               entry = ptep_clear_flush(vma, addr, pte);
-> +               entry = pte_wrprotect(entry);
-> +               set_pte_at(mm, address, pte, entry);
-> +
-> +               ret += 1;
->                 progress += 3;
->         } while (pte++, addr += PAGE_SIZE, addr != end);
->         pte_unmap_unlock(pte - 1, ptl);
->
+We can then implement a method in rmap.c for you to call to do the
+final freeing of the page (pagecache/swapcache won't be collected
+unless it's a truncate, as long as you keep it pinned and you
+certainly don't want to wait a second round of lru scan before freeing
+the page after you release the external reference, so you may need to
+call this method before returning from the
+->after_invalidate_page). Infact I can call that method for you in the
+notifier implementation itself after all ->after_invalidate_pages have
+been called. (of course only if at least one of them was implemented
+and not-null)
+
+> export_notifiers would need to be expanded to cover all cases of pte
+> clearing.  Baring one of the two, I would argue we have an unworkable
+> solution for XPMEM.  This is because of allocations which is touched
+> upon later.
+
+mmu notifiers should already cover all pte clearing cases (export
+notifiers definitely don't instead!). It's not as important as for
+quadrics, we're mostly interested in rmap.c swapping and do_wp_page
+for KVM page sharing. But in the longer term protection changes and
+other things happening in the main MMU can also be tracked through mmu
+notifiers (something quadrics will likely need). Tracking the
+asm-generic/pgtable.h is all about trivially tracking all places
+without cluttering mm/*.c, so the mm/*.c remains more hackable and
+more readable.
+
+> As an example of thousands, we currently have one customer job that
+> has 16880 processors all with the same physical page faulted into their
+> address space.  The way XPMEM is currently structured, there is fan-out of
+> that PFN information so we would not need to queue up that many messages,
+> but it would still be considerable.  Our upcoming version of the hardware
+> will potentially make this fanout worse because we are going to allow
+> even more fine-grained divisions of the machine to help with memory
+> error containment.
+
+Well as long as you send these messages somewhat serially and you
+don't pretend to allocate all packets at once it should be ok. Perhaps
+you should preallocate all packets statically and serialize the access
+to the pool with a lock.
+
+What I'd like to stress to be sure it's crystal clear, is that in the
+mm/rmap.c path GFP_KERNEL==GFP_ATOMIC, infact both are = PF_MEMALLOC =
+TIF_MEMDIE = if mempool is empty it will crash. The argument that you
+need to sleep to allocate memory with GFP_KERNEL is totally bogus. If
+that's the only reason, you don't need to sleep at all. alloc_pages
+will not invoke the VM when called inside the VM, it will grab ram
+from PF_MEMALLOC instead. At most it will schedule so the only benefit
+would be lower -rt latency in the end.
+
+> We have a counter associated with a pfn that indicates when the pfn is no
+> longer referenced by other partitions.  This counter triggers changing of
+> memory protections so any subsequent access to this page will result in
+> a memory error on the remote partition (this should be an illegal case).
+
+As long as you keep a reference on the page too, you don't risk
+any corruption by flushing after.
+
+> > And how do they know when they can restart adding references if infact
+> > the VM _never_ calls into SetPageExported? (perhaps you forgot
+> > something in your patch to set PageExported again to notify the
+> > external reference that it can "de-freeze" and to restart adding
+> > references ;)
+> 
+> I assumed Christoph intended this to be part of our memory protection
+> changing phase.  Once we have raised memory protections for the page,
+> clear the bit.  When we lower memory protections, set the bit.
+
+The window that you must close with that bitflag is the request coming
+from the remote node to map the page after the linux pte has been
+cleared. If you map the page in a remote node after the linux pte has
+been cleared ->invalidate_page won't be called again because the page
+will look unmapped in the linux VM. Now invalidate_page will clear the
+bitflag, so the map requests will block. But where exactly you know
+that the linux pte has been cleared so you can "unblock" the map
+requests? If a page is not mapped by some linux pte, mm/rmap.c will
+never be called and this is why any notification in mm/rmap.c should
+track the "address space" and not the "physical page".
+
+In effect you don't care less about the address space of the task in
+the master node, so IMHO you're hooking your ->invalidate_page(page)
+(instead of my ->invalidate_page(mm, address)) in the very wrong
+place. You should hook it in mm/vmscan.c shrink-list so it will be
+invoked regardless if the pte is mapped or not. Then your model that
+passes the "page" instead of an "mm+address" will start to work
+without any need clearing/setting PG_exported bifflags, and you will
+automatically close the above race window without the need of ever
+clearing the PG_exported bitflag etc.... So again the current design
+of Christoph's patch really looks flawed to me.
+
+If you work the "pages" you should stick to pages and to stay away
+from mm/rmap.c and ignore whatever is mapped in the master address
+space of the task. mm/rmap.c only deals with ptes/sptes and other
+_virtual-tracked_ mappings.
+
+If you work with get_user_pages for page allocation (instead of
+alloc_pages) and the userland "virtual" addresses are your RAM backing
+store, like with KVM, then you should build an rmap structure based on
+_virtual_ addresses because the virtual addresses of the task will be
+all you care about, and then you will register the notifier in the
+"mm" and you will need ->invalidate_page to take an "address" as
+parameter and not a "page". All reference counting will be automatic,
+the userland task will run with all virtual memory visible
+automatically. You should make sure this model tied to the ram mapped
+in the userland task can't fit your needs and you really have to care
+about building stuff on top of physical pages instead of letting the
+VM decide which physical page or swap entry is going back your memory needs.
+
+> As I said before, I was under the assumption that Christoph was proposing
+> this as an addition to your notifiers, not a replacement.
+
+Ok. This wasn't my impression but again I'm fine either ways! ;)
