@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbYAWQFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbYAWQGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbYAWQFv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 11:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYAWQEx
+	id S1754987AbYAWQGK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 11:06:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbYAWQEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 11:04:53 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:63057 "EHLO
+	Wed, 23 Jan 2008 11:04:54 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:63058 "EHLO
 	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752646AbYAWQEu (ORCPT
+	with ESMTP id S1752695AbYAWQEu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 23 Jan 2008 11:04:50 -0500
-Message-Id: <20080123160443.853153432@goodmis.org>
+Message-Id: <20080123160442.383241528@goodmis.org>
 References: <20080123160236.969334052@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 23 Jan 2008 11:02:53 -0500
+Date: Wed, 23 Jan 2008 11:02:44 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -27,36 +27,61 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
        Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 17/20 -v5] Add marker in try_to_wake_up
-Content-Disposition: inline; filename=add-markers-to-wakeup.patch
+       Arjan van de Ven <arjan@infradead.org>
+Subject: [PATCH 08/20 -v5] initialize the clock source to jiffies clock.
+Content-Disposition: inline; filename=initialize-clocksource-to-jiffies.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add markers into the wakeup code, to allow the tracer to
-record wakeup timings.
+The latency tracer can call clocksource_read very early in bootup and
+before the clock source variable has been initialized. This results in a
+crash at boot up (even before earlyprintk is initialized). Since the
+clock->read variable points to NULL.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+This patch simply initializes the clock to use clocksource_jiffies, so
+that any early user of clocksource_read will not crash.
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+Acked-by: John Stultz <johnstul@us.ibm.com>
 ---
- kernel/sched.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ include/linux/clocksource.h |    3 +++
+ kernel/time/timekeeping.c   |    9 +++++++--
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-Index: linux-mcount.git/kernel/sched.c
+Index: linux-mcount.git/include/linux/clocksource.h
 ===================================================================
---- linux-mcount.git.orig/kernel/sched.c	2008-01-23 10:27:28.000000000 -0500
-+++ linux-mcount.git/kernel/sched.c	2008-01-23 10:27:45.000000000 -0500
-@@ -1633,6 +1633,10 @@ out_set_cpu:
+--- linux-mcount.git.orig/include/linux/clocksource.h	2008-01-23 10:26:57.000000000 -0500
++++ linux-mcount.git/include/linux/clocksource.h	2008-01-23 10:27:04.000000000 -0500
+@@ -273,6 +273,9 @@ extern struct clocksource* clocksource_g
+ extern void clocksource_change_rating(struct clocksource *cs, int rating);
+ extern void clocksource_resume(void);
  
- out_activate:
- #endif /* CONFIG_SMP */
-+	trace_mark(kernel_sched_wakeup,
-+		   "p %p rq->curr %p",
-+		   p, rq->curr);
++/* used to initialize clock */
++extern struct clocksource clocksource_jiffies;
 +
- 	schedstat_inc(p, se.nr_wakeups);
- 	if (sync)
- 		schedstat_inc(p, se.nr_wakeups_sync);
+ #ifdef CONFIG_GENERIC_TIME_VSYSCALL
+ extern void update_vsyscall(struct timespec *ts, struct clocksource *c);
+ extern void update_vsyscall_tz(void);
+Index: linux-mcount.git/kernel/time/timekeeping.c
+===================================================================
+--- linux-mcount.git.orig/kernel/time/timekeeping.c	2008-01-23 10:26:57.000000000 -0500
++++ linux-mcount.git/kernel/time/timekeeping.c	2008-01-23 10:27:04.000000000 -0500
+@@ -53,8 +53,13 @@ static inline void update_xtime_cache(u6
+ 	timespec_add_ns(&xtime_cache, nsec);
+ }
+ 
+-static struct clocksource *clock; /* pointer to current clocksource */
+-
++/*
++ * pointer to current clocksource
++ *  Just in case we use clocksource_read before we initialize
++ *  the actual clock source. Instead of calling a NULL read pointer
++ *  we return jiffies.
++ */
++static struct clocksource *clock = &clocksource_jiffies;
+ 
+ #ifdef CONFIG_GENERIC_TIME
+ /**
 
 -- 
