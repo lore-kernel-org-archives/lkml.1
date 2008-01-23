@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbYAWRt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbYAWRkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757496AbYAWRt2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:49:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYAWRtV
+	id S1758606AbYAWRkB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:40:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342AbYAWRi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:49:21 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48453 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752774AbYAWRtU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:49:20 -0500
-Message-ID: <47977DCA.3040904@redhat.com>
-Date: Wed, 23 Jan 2008 18:47:54 +0100
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 23 Jan 2008 12:38:56 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:38285 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757291AbYAWRiz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:38:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=qWUEsJON4kaYYk5D6jFdajbEd4DcDIXoTGW3RWrBew3TikRWkqz141O0OR6pr4x2hP4Q/0kfXGsRsYtM6n82FsF46kIxOxr8qqDpBOWASBpD5FsZSKB5Cy/jQE4RSGHZshbUztBaRf0zj813/w0946ij//n2WL3lcxBohndzlgg=
+Date: Wed, 23 Jan 2008 20:38:32 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 1/6] POWERPC: use KSYM_NAME_LEN
+Message-ID: <20080123173832.GA12877@cvg>
 MIME-Version: 1.0
-To: Andrea Arcangeli <andrea@qumranet.com>
-CC: Christoph Lameter <clameter@sgi.com>, Andrew Morton <akpm@osdl.org>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>,
-       linux-mm@kvack.org, daniel.blueman@quadrics.com, holt@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [kvm-devel] [PATCH] export notifier #1
-References: <478E4356.7030303@qumranet.com> <20080117162302.GI7170@v2.random> <478F9C9C.7070500@qumranet.com> <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <4797384B.7080200@redhat.com> <20080123154130.GC7141@v2.random>
-In-Reply-To: <20080123154130.GC7141@v2.random>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli wrote:
-> Like Avi said, Xen is dealing with the linux pte only, so there's no
-> racy smp page fault to serialize against. Perhaps we can add another
-> notifier for Xen though.
-> 
-> But I think it's still not enough for Xen to have a method called
-> before the ptep_clear_flush: rmap.c would get confused in
-> page_mkclean_one for example.
+Use KSYM_NAME_LEN instead of numeric value.
+Actually because of too small 'tmp' there is
+a potential buffer overflow.
 
-The current code sets a bunch of vma flags (VM_RESERVED, VM_DONTCOPY,
-VM_FOREIGN) so the VM doesn't try to handle those special mapping.  IIRC
-one of them was needed to not make rmap unhappy.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-> Nevertheless if you've any idea on how to use the notifiers for Xen
-> I'd be glad to help. Perhaps one workable way to change my patch to
-> work for you could be to pass the retval of ptep_clear_flush to the
-> notifiers themself. something like:
-> 
-> #define ptep_clear_flush(__vma, __address, __ptep)			\
-> ({									\
-> 	pte_t __pte;							\
-> 	__pte = ptep_get_and_clear((__vma)->vm_mm, __address, __ptep);	\
-> 	flush_tlb_page(__vma, __address);				\
-> 	__pte = mmu_notifier(invalidate_page, (__vma)->vm_mm, __address, __pte, __ptep);	\
-> 	__pte;								\
-> })
-
-Would not work.  Need to pass a pointer to the pte so the xen hypervisor
-can do unmap (aka pte_clear) and grant release as atomic operation.
-Thus passing the value of the pte entry isn't good enougth.
-
-Another maybe workable approach for Xen is to go through pv_ops
-(although pte_clear doesn't go through pv_ops right now, so this would
-be an additional hook too ...).
-
-cheers,
-  Gerd
-
+Index: linux-2.6.git/arch/powerpc/xmon/xmon.c
+===================================================================
+--- linux-2.6.git.orig/arch/powerpc/xmon/xmon.c	2008-01-23 19:04:42.000000000 +0300
++++ linux-2.6.git/arch/powerpc/xmon/xmon.c	2008-01-23 19:12:45.000000000 +0300
+@@ -69,7 +69,7 @@ static unsigned long ndump = 64;
+ static unsigned long nidump = 16;
+ static unsigned long ncsum = 4096;
+ static int termch;
+-static char tmpstr[128];
++static char tmpstr[KSYM_NAME_LEN];
+ 
+ #define JMP_BUF_LEN	23
+ static long bus_error_jmp[JMP_BUF_LEN];
+@@ -2354,7 +2354,7 @@ scanhex(unsigned long *vp)
+ 		}
+ 	} else if (c == '$') {
+ 		int i;
+-		for (i=0; i<63; i++) {
++		for (i = 0; i < sizeof(tmpstr) / 2; i++) {
+ 			c = inchar();
+ 			if (isspace(c)) {
+ 				termch = c;
+@@ -2467,7 +2467,7 @@ symbol_lookup(void)
+ {
+ 	int type = inchar();
+ 	unsigned long addr;
+-	static char tmp[64];
++	static char tmp[KSYM_NAME_LEN];
+ 
+ 	switch (type) {
+ 	case 'a':
+@@ -2476,7 +2476,7 @@ symbol_lookup(void)
+ 		termch = 0;
+ 		break;
+ 	case 's':
+-		getstring(tmp, 64);
++		getstring(tmp, sizeof(tmp));
+ 		if (setjmp(bus_error_jmp) == 0) {
+ 			catch_memory_errors = 1;
+ 			sync();
