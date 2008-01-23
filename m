@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbYAWTNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbYAWTL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756483AbYAWTNS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 14:13:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYAWTNK
+	id S1755818AbYAWTL3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 14:11:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYAWTLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 14:13:10 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54275 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753013AbYAWTNJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 14:13:09 -0500
-Date: Wed, 23 Jan 2008 19:13:06 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: [PATCH RESEND] Handle i_size > s_maxbytes correctly
-Message-ID: <20080123191306.GA17118@infradead.org>
-References: <20080123175440.GF10144@duck.suse.cz>
+	Wed, 23 Jan 2008 14:11:21 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45640 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753343AbYAWTLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 14:11:20 -0500
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Dave Hansen <haveblue@us.ibm.com>, mbligh@google.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Userspace tracing memory mappings
+References: <20080123160454.GA15405@Krystal>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Wed, 23 Jan 2008 14:01:20 -0500
+In-Reply-To: <20080123160454.GA15405@Krystal> (Mathieu Desnoyers's message of "Wed, 23 Jan 2008 11:04:54 -0500")
+Message-ID: <y0m3aso9xj3.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080123175440.GF10144@duck.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 23, 2008 at 06:54:41PM +0100, Jan Kara wrote:
->   A different solution (even with smaller impact) would be to not allow
-> files with i_size > s_maxbytes in VFS at all. For local filesystems we can
-> just check this on open and everything is fine
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
 
-Which we should do.
+> [...]  Since memory management is not my speciality, I would like to
+> know if there are some implementation details I should be aware of
+> for my LTTng userspace tracing buffers. Here is what I want to do
+> [...]
 
-> but with remote filesystems
-> such as OCFS2 (or NFS) filesize can be changed on the fly from a different
-> machine. So to avoid problems we can either introduce some locking to
-> prevent changes of i_size from other machines while we are in critical
-> sections (awww, I really don't think this is better) or truncate i_size to
-> s_maxbytes when we update i_size from what we've received via network /
-> shared storage (but then we'd have to track whether user truncated file to
-> some size or whether fs truncated it just for safety and apps could be
-> confused too). So I don't think this is really feasible.
+Would you mind offering some justification for requiring a kernel
+extension for user-space tracing?  What can the kernel enable in this
+context that a user-space library (which you already assume will be
+linked in) can't?
 
-The right fix for cluster filesystem is to have a coherent maximum file
-size for the whole cluster.  If that can't be done due to protocol
-reason we need to lock around i_size update and revoke access to the
-inode on the client that doesn't support it.  Which of course would
-require a working revoke to start with..
-
+- FChE
