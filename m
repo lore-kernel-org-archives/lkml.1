@@ -1,97 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbYAWWAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbYAWWEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbYAWWAw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 17:00:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbYAWWAm
+	id S1753237AbYAWWEQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 17:04:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYAWWEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 17:00:42 -0500
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:42021 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751379AbYAWWAk (ORCPT
+	Wed, 23 Jan 2008 17:04:00 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52149 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751571AbYAWWD7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 17:00:40 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAOpHl0dMQWYq/2dsb2JhbACBV6xc
-Date: Wed, 23 Jan 2008 16:55:37 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Dave Hansen <haveblue@us.ibm.com>, mbligh@google.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Userspace tracing memory mappings
-Message-ID: <20080123215537.GC2282@Krystal>
-References: <20080123160454.GA15405@Krystal> <y0m3aso9xj3.fsf@ton.toronto.redhat.com>
+	Wed, 23 Jan 2008 17:03:59 -0500
+Date: Wed, 23 Jan 2008 14:03:30 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Otavio Salvador <otavio@debian.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: USB looks to be restarting
+Message-Id: <20080123140330.1ca429c9.akpm@linux-foundation.org>
+In-Reply-To: <8763xv5c7d.fsf@ossystems.com.br>
+References: <8763xv5c7d.fsf@ossystems.com.br>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <y0m3aso9xj3.fsf@ton.toronto.redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:36:41 up 81 days,  2:42,  5 users,  load average: 0.29, 0.45,
-	0.28
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+
+(cc linux-usb)
+
+> On Tue, 15 Jan 2008 13:40:38 -0200 Otavio Salvador <otavio@debian.org> wrote:
+> Hello,
 > 
-> > [...]  Since memory management is not my speciality, I would like to
-> > know if there are some implementation details I should be aware of
-> > for my LTTng userspace tracing buffers. Here is what I want to do
-> > [...]
+> I have the following in my syslog:
 > 
-> Would you mind offering some justification for requiring a kernel
-> extension for user-space tracing?  What can the kernel enable in this
-> context that a user-space library (which you already assume will be
-> linked in) can't?
+> Jan 15 13:30:38 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 5
+> Jan 15 13:30:38 neumann kernel: usb 5-2: new low speed USB device using uhci_hcd and address 14
+> Jan 15 13:30:39 neumann kernel: usb 5-2: configuration #1 chosen from 1 choice
+> Jan 15 13:30:39 neumann kernel: input: PS/2+USB Mouse as /class/input/input6
+> Jan 15 13:30:39 neumann kernel: input,hidraw2: USB HID v1.11 Mouse [PS/2+USB Mouse] on usb-0000:00:1d.1-2
+> Jan 15 13:30:39 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 6
+> Jan 15 13:30:40 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 9
+> Jan 15 13:30:40 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 10
+> Jan 15 13:30:42 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 13
+> Jan 15 13:30:44 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 20
+> Jan 15 13:30:44 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 21
+> Jan 15 13:30:45 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 23
+> Jan 15 13:30:46 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 26
+> Jan 15 13:30:46 neumann kernel: usb 1-2: device descriptor read/64, error -71
+> Jan 15 13:30:47 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 27
+> Jan 15 13:30:48 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 28
+> Jan 15 13:30:48 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 29
+> Jan 15 13:30:49 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 30
+> Jan 15 13:30:50 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 32
+> Jan 15 13:30:50 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 33
+> Jan 15 13:30:52 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 39
+> Jan 15 13:30:54 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 45
+> Jan 15 13:30:56 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 53
+> Jan 15 13:30:57 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 58
+> Jan 15 13:31:00 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 68
+> Jan 15 13:31:02 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 75
+> Jan 15 13:31:02 neumann kernel: usb 1-2: device descriptor read/64, error -71
+> Jan 15 13:31:04 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 83
+> Jan 15 13:31:05 neumann kernel: usb 1-2: device descriptor read/64, error -71
+> Jan 15 13:31:05 neumann kernel: usb 1-2: device descriptor read/64, error -71
+> Jan 15 13:31:05 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 84
+> Jan 15 13:31:05 neumann kernel: usb 1-2: device descriptor read/64, error -71
+> Jan 15 13:31:05 neumann kernel: usb 1-2: device descriptor read/64, error -71
+> Jan 15 13:31:06 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 85
+> Jan 15 13:31:06 neumann kernel: usb 1-2: device not accepting address 85, error -71
+> Jan 15 13:31:06 neumann kernel: usb 1-2: new full speed USB device using uhci_hcd and address 86
+> Jan 15 13:31:06 neumann kernel: usb 1-2: device not accepting address 86, error -71
 > 
-> - FChE
-
-The kernel would provide :
-
-- System-wide activation of markers located in userspace code
-  example use : libc, NPTL tracing.
-- Ability to extract buffers of a crashed process
-- Ability to extract userspace tracing buffers upon kernel crash
-- Activation of userspace tracing at the same time as the kernel tracing
-  activation is done, without requiring messing up with signals.
-- Potentially filtering on events coming from userspace, without messing
-  up with signals.
-
-Another point is early boot tracing : tracing processes such as init
-requires to use syscalls rather than relying on debugfs/dev/proc file
-operations. And we can't dump the information to the disk yet, so we
-cannot expect the process itself to deal with file opening or socket
-opening that soon. Therefore, we have to divide tracing in two distinct
-actions : writing to the buffers and dumping the buffers (to disk or
-though the network).
-
-Another reason why we don't want to do everything is a single library is
-that it would account the disk write time to the traced process. If we
-do this from the kernel, we can know how many time it took because we
-trace it. Another, better yet, reason for this is that if we want to
-extract the data to disk or through the network, and want to get the
-last trace bits of a segfaulted process, we have to share the buffers
-with another process somehow. However, creating one extra process per
-traced process is kind of awkward.
-
-So the code itself would be a library in userspace. However, it would
-interact both with the kernel for trace activation and with a daemon to
-extract the information to disk or to the network. I start to think that
-a userspace library would be sufficient for the userspace part of this
-design (no need to modify vDSO).
-
-And system V shared memory has a limit on the number of such memory
-mapping one can have in the system that is way too low.
-
-Does it explain the purpose of the kernel interaction better ?
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> This happens with 2.6.23 and 2.6.24-rc7 kernels. (didn't test it with
+> previous release since this motherboard isn't well supported by them).
+> 
+> Does someone has any idea how to solve it?
+> 
+> 
