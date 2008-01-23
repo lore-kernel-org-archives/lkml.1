@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752415AbYAWLVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461AbYAWLYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752415AbYAWLVb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 06:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbYAWLVW
+	id S1752461AbYAWLYr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 06:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbYAWLYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 06:21:22 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:29032 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751113AbYAWLVU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 06:21:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=P3knBLADX6KOycV/9+xjOIM0OpLxp86fy0IxeVoeE/JkOQbh5Y7DEef51xnijOe8Pxxe1xVRemfCnYnWKW3MQBqU1qmyKFZ59EvdVPrROQc3ojqrMaW/BD3OPib1x8Vn6kqd/W4hvfIs/SfTd+vIB51azs/YjUOYzpeFX9j6hUw=
-Subject: Re: [PATCH] x86: make nx_enabled conditional on CONFIG_X86_PAE
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ian Campbell <ijc@hellion.org.uk>,
-       =?iso-8859-1?q??==?iso-8859-1?q? Mika
-	 =?ISO-8859-1?Q?Penttil=E4=3F=3D?= <mika.penttila@kolumbus.fi>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <p73odbdlyiu.fsf@crumb.suse.de>
-References: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>
-	 <47939363.8040603@kolumbus.fi>
-	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>
-	 <479510CE.7010706@zytor.com>
-	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>
-	 <479551FD.5040801@zytor.com>
-	 <1201023401.5643.52.camel@localhost.localdomain>
-	 <479634A9.1090908@zytor.com>
-	 <1201031325.15491.66.camel@cthulhu.hellion.org.uk>
-	 <47964B7B.9000905@zytor.com> <20080122203611.GA12892@elte.hu>
-	 <1201035611.16972.61.camel@brick>  <p73odbdlyiu.fsf@crumb.suse.de>
-Content-Type: text/plain
-Date: Wed, 23 Jan 2008 03:21:31 -0800
-Message-Id: <1201087291.16972.107.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 23 Jan 2008 06:24:40 -0500
+Received: from mail0.scram.de ([78.47.204.202]:53576 "EHLO mail0.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751085AbYAWLYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 06:24:39 -0500
+X-Spam-Score: -4.18
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.2 AWL AWL: From: address is in the auto white-list
+Message-ID: <479723CE.5020609@scram.de>
+Date: Wed, 23 Jan 2008 12:23:58 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, Jon Smirl <jonsmirl@gmail.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>
+Subject: Re: [PATCHv2] i2c: adds support for i2c bus on Frescale CPM1/CPM2
+  controllers
+References: <477BEB60.4070703@scram.de>	<20080103104121.58697148.sfr@canb.auug.org.au> <20080123112941.23250948@hyperion.delvare>
+In-Reply-To: <20080123112941.23250948@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-23 at 09:46 +0100, Andi Kleen wrote:
-> Harvey Harrison <harvey.harrison@gmail.com> writes:
-> 
-> > nx_enabled can only be set to non-zero when CONFIG_X86_PAE is
-> > set.  The only use not currently inside a CONFIG_X86_PAE block
-> > is the definition, the declaration and a conditional unlikely
-> > test in fault_32.c (is_prefetch).
-> 
-> The variable is pretty useless anyways; it can be probably
-> replaced with (__supported_pte_mask & _PAGE_NX). Just make
-> sure that the disable option still works, but that should
-> be possible with some care.
-> 
-> So if you feel the need to clean up things here convert it 
-> to using that. That will automatically be optimized away
-> on !PAE too because _PAGE_NX is 0 there.
-> 
+Hi Jean,
 
-Noted, will do.
+> Do you have an updated patch addressing Stephen's comment?
+> 
+> Note: you'd rather send updates of this patch to the i2c list rather
+> than LKML.
 
-Harvey
+I'm currently looking at that last patches from Jon and try to make this
+driver fit in there (+ the class override stuff).
 
+Note: will do. I just subscribed to this list.
+
+Thanks,
+Jochen
