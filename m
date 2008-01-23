@@ -1,43 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbYAWWhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYAWWlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbYAWWhy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 17:37:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbYAWWhm
+	id S1754215AbYAWWlJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 17:41:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYAWWkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 17:37:42 -0500
-Received: from smtp-out1.tiscali.nl ([195.241.79.176]:37298 "EHLO
-	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754021AbYAWWhl (ORCPT
+	Wed, 23 Jan 2008 17:40:55 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:8714 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750994AbYAWWky (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 17:37:41 -0500
-Message-ID: <4797C1AD.3040307@tiscali.nl>
-Date: Wed, 23 Jan 2008 23:37:33 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: jwboyer@linux.vnet.ibm.com, lkml <linux-kernel@vger.kernel.org>
-CC: linuxppc-dev@ozlabs.org
-Subject: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jan 2008 17:40:54 -0500
+Date: Wed, 23 Jan 2008 15:40:10 -0700
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 33/49] ext4: Add the journal checksum feature
+In-reply-to: <20080123140704.01249f86.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Theodore Ts'o" <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
+       girish@clusterfs.com, adilger@clusterfs.com, shaggy@linux.vnet.ibm.com,
+       cmm@us.ibm.com,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Mail-followup-to: Andrew Morton <akpm@linux-foundation.org>,
+ Theodore Ts'o <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
+ girish@clusterfs.com, adilger@clusterfs.com, shaggy@linux.vnet.ibm.com,
+ cmm@us.ibm.com, "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Message-id: <20080123224010.GF18433@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <1200970948-17903-26-git-send-email-tytso@mit.edu>
+ <1200970948-17903-27-git-send-email-tytso@mit.edu>
+ <1200970948-17903-28-git-send-email-tytso@mit.edu>
+ <1200970948-17903-29-git-send-email-tytso@mit.edu>
+ <1200970948-17903-30-git-send-email-tytso@mit.edu>
+ <1200970948-17903-31-git-send-email-tytso@mit.edu>
+ <1200970948-17903-32-git-send-email-tytso@mit.edu>
+ <1200970948-17903-33-git-send-email-tytso@mit.edu>
+ <1200970948-17903-34-git-send-email-tytso@mit.edu>
+ <20080123140704.01249f86.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-logical/bitand typo
+On Jan 23, 2008  14:07 -0800, Andrew Morton wrote:
+> > +{
+> > +	struct page *page = bh->b_page;
+> > +	char *addr;
+> > +	__u32 checksum;
+> > +
+> > +	addr = kmap_atomic(page, KM_USER0);
+> > +	checksum = crc32_be(crc32_sum,
+> > +		(void *)(addr + offset_in_page(bh->b_data)), bh->b_size);
+> > +	kunmap_atomic(addr, KM_USER0);
+> > +
+> > +	return checksum;
+> > +}
+> 
+> Can this buffer actually be in highmem?
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-index ebf9e21..dcfb459 100644
---- a/arch/powerpc/boot/4xx.c
-+++ b/arch/powerpc/boot/4xx.c
-@@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
- 	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
- 	cs = 0;
- 	while (val) {
--		if (val && 0x1)
-+		if (val & 0x1)
- 			cs++;
- 		val = val >> 1;
- 	}
+Yes, this was found during system testing.  While ext3/4 will only allocate
+buffer heads in lowmem, the jbd/jbd2 code can allocate buffers in highmem.
+I was surprised about this also.
+
+Please see the thread in ext4-devel:
+[PATCH][RFC]JBD2: Fix journal checksum kernel oops on NUMA
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
