@@ -1,171 +1,340 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbYAWRf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYAWRyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758768AbYAWRf5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:35:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbYAWRdg
+	id S1755977AbYAWRyv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYAWRyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:33:36 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:57249
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758386AbYAWRde (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:33:34 -0500
-Date: Wed, 23 Jan 2008 18:33:25 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Andrew Morton <akpm@osdl.org>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [kvm-devel] [PATCH] export notifier #1
-Message-ID: <20080123173325.GG7141@v2.random>
-References: <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <20080122223139.GD15848@v2.random> <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com> <20080123114136.GE15848@v2.random> <20080123123230.GH26420@sgi.com>
+	Wed, 23 Jan 2008 12:54:44 -0500
+Received: from styx.suse.cz ([82.119.242.94]:42907 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752433AbYAWRyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:54:43 -0500
+Date: Wed, 23 Jan 2008 18:54:41 +0100
+From: Jan Kara <jack@suse.cz>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mark Fasheh <mark.fasheh@oracle.com>
+Subject: [PATCH RESEND] Handle i_size > s_maxbytes correctly
+Message-ID: <20080123175440.GF10144@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080123123230.GH26420@sgi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 23, 2008 at 06:32:30AM -0600, Robin Holt wrote:
-> Christoph, Maybe you can clear one thing up.  Was this proposal an
-> addition to or replacement of Andrea's?  I assumed an addition.  I am
-> going to try to restrict my responses to ones appropriate for that
-> assumption.
+  Hi,
 
-It wasn't immediately obvious that this was an addition but really I
-don't mind either ways as long as a feature workable for KVM is
-included ;).
+  I'm resending improved patch for the problem:
+  Shortly, the problem is that we can mount a filesystem which has files
+with i_size greater than s_maxbytes (or generally the maximum size VFS can
+handle) - the easiest to test is to export NFS from a 64 bit machine to a
+32 bit one. Create a 16TB+4KB (sparse) file on the server and you'll notice
+that you can read only first 4 KB from the client (because end_index
+overflows in do_generic_mapping_read()). Clustered filesystems have similar
+problems and classical local filesystems can be affected as well (if you
+create a filesystem on a different machine than where you read it).  The
+patch introduces two functions for conversion of an offset into index /
+block number and these functions handle overflows. Andrew was concerned
+about the cost of checks for such exotic cases, so currently the cost is
+around 600 bytes of text size on i386 without LFS, 74 bytes on x86_64,
+impact on run time should be quite small (only one additional test when
+converting i_size to indexes or block numbers).
+  A different solution (even with smaller impact) would be to not allow
+files with i_size > s_maxbytes in VFS at all. For local filesystems we can
+just check this on open and everything is fine but with remote filesystems
+such as OCFS2 (or NFS) filesize can be changed on the fly from a different
+machine. So to avoid problems we can either introduce some locking to
+prevent changes of i_size from other machines while we are in critical
+sections (awww, I really don't think this is better) or truncate i_size to
+s_maxbytes when we update i_size from what we've received via network /
+shared storage (but then we'd have to track whether user truncated file to
+some size or whether fs truncated it just for safety and apps could be
+confused too). So I don't think this is really feasible.
+  Any suggestions for further improvement or other solutions welcome.
+Andrew, can I talk you to including this version of the fix ;)?
 
-> > The remote instance is like a secondary TLB what you're doing in your
-> > code is as backwards as flushing the TLB _before_ clearing the PTE! If
-> > you want to call the secondary tlb flush outside locks we can argue
-> > about that, but I think you should do that _after_ clearing the linux
-> > pte IMHO. Otherwise you can as well move the tlb_flush_page before
-> > clearing the pte and you'll run in the same amount of smp races for
-> > the master MMU too.
-> 
-> I can agree to doing the flush after as long as I get a flag from the
-> mmu notifier saying this flush will be repeated later without locks
-> held.  That would be fine with me.  If we don't have that then the
+                                                                Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
+---
 
-You want to be able to tell the mmu_notifier that you want the flush
-repeated without locks later? Sorry but then if you're always going to
-set the bitflag unconditionally, why don't you simply implement a
-second notifier in addition of my current ->invalidate_page (like
-->after_invalidate_page).
+Although we don't allow writes over s_maxbytes, it can happen that a file's
+size is larger than s_maxbytes. For example we can write the file from a
+computer with a different architecture (which has larger s_maxbytes), boot a
+kernel with a different set of config options (CONFIG_LBD...), or if two nodes
+in a [Ocfs2, and likely Gfs2] cluster have mounted the same file system and
+have different s_maxbytes.  Thus we have to make sure we don't crash / corrupt
+data when seeing such file (page offset of the last page needn't fit into
+pgoff_t, block offset into sector_t). Firstly, we make read() and mmap() return
+error when user tries to access the file above s_maxbytes, secondly we
+introduce functions offset_to_index_max() and offset_to_block_max() which
+return maximum number fitting into pgoff_t or sector_t, respectively, in
+case the number computed from the given offset would overflow. These
+functions should be used for conversion whenever we aren't sure whether the
+result fits in the destination type (which is actually only if converting
+i_size because all other cases are handled earlier in read/write/mmap).
 
-We can then implement a method in rmap.c for you to call to do the
-final freeing of the page (pagecache/swapcache won't be collected
-unless it's a truncate, as long as you keep it pinned and you
-certainly don't want to wait a second round of lru scan before freeing
-the page after you release the external reference, so you may need to
-call this method before returning from the
-->after_invalidate_page). Infact I can call that method for you in the
-notifier implementation itself after all ->after_invalidate_pages have
-been called. (of course only if at least one of them was implemented
-and not-null)
+Signed-off-by: Jan Kara <jack@suse.cz>
+CC: Mark Fasheh <mark.fasheh@oracle.com>
 
-> export_notifiers would need to be expanded to cover all cases of pte
-> clearing.  Baring one of the two, I would argue we have an unworkable
-> solution for XPMEM.  This is because of allocations which is touched
-> upon later.
-
-mmu notifiers should already cover all pte clearing cases (export
-notifiers definitely don't instead!). It's not as important as for
-quadrics, we're mostly interested in rmap.c swapping and do_wp_page
-for KVM page sharing. But in the longer term protection changes and
-other things happening in the main MMU can also be tracked through mmu
-notifiers (something quadrics will likely need). Tracking the
-asm-generic/pgtable.h is all about trivially tracking all places
-without cluttering mm/*.c, so the mm/*.c remains more hackable and
-more readable.
-
-> As an example of thousands, we currently have one customer job that
-> has 16880 processors all with the same physical page faulted into their
-> address space.  The way XPMEM is currently structured, there is fan-out of
-> that PFN information so we would not need to queue up that many messages,
-> but it would still be considerable.  Our upcoming version of the hardware
-> will potentially make this fanout worse because we are going to allow
-> even more fine-grained divisions of the machine to help with memory
-> error containment.
-
-Well as long as you send these messages somewhat serially and you
-don't pretend to allocate all packets at once it should be ok. Perhaps
-you should preallocate all packets statically and serialize the access
-to the pool with a lock.
-
-What I'd like to stress to be sure it's crystal clear, is that in the
-mm/rmap.c path GFP_KERNEL==GFP_ATOMIC, infact both are = PF_MEMALLOC =
-TIF_MEMDIE = if mempool is empty it will crash. The argument that you
-need to sleep to allocate memory with GFP_KERNEL is totally bogus. If
-that's the only reason, you don't need to sleep at all. alloc_pages
-will not invoke the VM when called inside the VM, it will grab ram
-from PF_MEMALLOC instead. At most it will schedule so the only benefit
-would be lower -rt latency in the end.
-
-> We have a counter associated with a pfn that indicates when the pfn is no
-> longer referenced by other partitions.  This counter triggers changing of
-> memory protections so any subsequent access to this page will result in
-> a memory error on the remote partition (this should be an illegal case).
-
-As long as you keep a reference on the page too, you don't risk
-any corruption by flushing after.
-
-> > And how do they know when they can restart adding references if infact
-> > the VM _never_ calls into SetPageExported? (perhaps you forgot
-> > something in your patch to set PageExported again to notify the
-> > external reference that it can "de-freeze" and to restart adding
-> > references ;)
-> 
-> I assumed Christoph intended this to be part of our memory protection
-> changing phase.  Once we have raised memory protections for the page,
-> clear the bit.  When we lower memory protections, set the bit.
-
-The window that you must close with that bitflag is the request coming
-from the remote node to map the page after the linux pte has been
-cleared. If you map the page in a remote node after the linux pte has
-been cleared ->invalidate_page won't be called again because the page
-will look unmapped in the linux VM. Now invalidate_page will clear the
-bitflag, so the map requests will block. But where exactly you know
-that the linux pte has been cleared so you can "unblock" the map
-requests? If a page is not mapped by some linux pte, mm/rmap.c will
-never be called and this is why any notification in mm/rmap.c should
-track the "address space" and not the "physical page".
-
-In effect you don't care less about the address space of the task in
-the master node, so IMHO you're hooking your ->invalidate_page(page)
-(instead of my ->invalidate_page(mm, address)) in the very wrong
-place. You should hook it in mm/vmscan.c shrink-list so it will be
-invoked regardless if the pte is mapped or not. Then your model that
-passes the "page" instead of an "mm+address" will start to work
-without any need clearing/setting PG_exported bifflags, and you will
-automatically close the above race window without the need of ever
-clearing the PG_exported bitflag etc.... So again the current design
-of Christoph's patch really looks flawed to me.
-
-If you work the "pages" you should stick to pages and to stay away
-from mm/rmap.c and ignore whatever is mapped in the master address
-space of the task. mm/rmap.c only deals with ptes/sptes and other
-_virtual-tracked_ mappings.
-
-If you work with get_user_pages for page allocation (instead of
-alloc_pages) and the userland "virtual" addresses are your RAM backing
-store, like with KVM, then you should build an rmap structure based on
-_virtual_ addresses because the virtual addresses of the task will be
-all you care about, and then you will register the notifier in the
-"mm" and you will need ->invalidate_page to take an "address" as
-parameter and not a "page". All reference counting will be automatic,
-the userland task will run with all virtual memory visible
-automatically. You should make sure this model tied to the ram mapped
-in the userland task can't fit your needs and you really have to care
-about building stuff on top of physical pages instead of letting the
-VM decide which physical page or swap entry is going back your memory needs.
-
-> As I said before, I was under the assumption that Christoph was proposing
-> this as an addition to your notifiers, not a replacement.
-
-Ok. This wasn't my impression but again I'm fine either ways! ;)
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 7249e01..4323a6d 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -1623,7 +1623,8 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+ 
+ 	BUG_ON(!PageLocked(page));
+ 
+-	last_block = (i_size_read(inode) - 1) >> inode->i_blkbits;
++	last_block = offset_to_block_max(i_size_read(inode) - 1,
++			inode->i_blkbits);
+ 
+ 	if (!page_has_buffers(page)) {
+ 		create_empty_buffers(page, blocksize,
+@@ -2084,7 +2085,8 @@ int block_read_full_page(struct page *page, get_block_t *get_block)
+ 	head = page_buffers(page);
+ 
+ 	iblock = (sector_t)page->index << (PAGE_CACHE_SHIFT - inode->i_blkbits);
+-	lblock = (i_size_read(inode)+blocksize-1) >> inode->i_blkbits;
++	lblock = offset_to_block_max(i_size_read(inode)+blocksize-1,
++			inode->i_blkbits);
+ 	bh = head;
+ 	nr = 0;
+ 	i = 0;
+@@ -2604,7 +2606,7 @@ int nobh_writepage(struct page *page, get_block_t *get_block,
+ {
+ 	struct inode * const inode = page->mapping->host;
+ 	loff_t i_size = i_size_read(inode);
+-	const pgoff_t end_index = i_size >> PAGE_CACHE_SHIFT;
++	const pgoff_t end_index = offset_to_index_max(i_size);
+ 	unsigned offset;
+ 	int ret;
+ 
+@@ -2804,7 +2806,7 @@ int block_write_full_page(struct page *page, get_block_t *get_block,
+ {
+ 	struct inode * const inode = page->mapping->host;
+ 	loff_t i_size = i_size_read(inode);
+-	const pgoff_t end_index = i_size >> PAGE_CACHE_SHIFT;
++	const pgoff_t end_index = offset_to_index_max(i_size);
+ 	unsigned offset;
+ 
+ 	/* Is the page fully inside i_size? */
+diff --git a/fs/mpage.c b/fs/mpage.c
+index d54f8f8..4d1d12c 100644
+--- a/fs/mpage.c
++++ b/fs/mpage.c
+@@ -190,7 +190,8 @@ do_mpage_readpage(struct bio *bio, struct page *page, unsigned nr_pages,
+ 
+ 	block_in_file = (sector_t)page->index << (PAGE_CACHE_SHIFT - blkbits);
+ 	last_block = block_in_file + nr_pages * blocks_per_page;
+-	last_block_in_file = (i_size_read(inode) + blocksize - 1) >> blkbits;
++	last_block_in_file = offset_to_block_max(i_size_read(inode) +
++			blocksize - 1, blkbits);
+ 	if (last_block > last_block_in_file)
+ 		last_block = last_block_in_file;
+ 	page_block = 0;
+@@ -526,7 +527,7 @@ static int __mpage_writepage(struct page *page, struct writeback_control *wbc,
+ 	 */
+ 	BUG_ON(!PageUptodate(page));
+ 	block_in_file = (sector_t)page->index << (PAGE_CACHE_SHIFT - blkbits);
+-	last_block = (i_size - 1) >> blkbits;
++	last_block = offset_to_block_max(i_size - 1, blkbits);
+ 	map_bh.b_page = page;
+ 	for (page_block = 0; page_block < blocks_per_page; ) {
+ 
+@@ -557,7 +558,7 @@ static int __mpage_writepage(struct page *page, struct writeback_control *wbc,
+ 	first_unmapped = page_block;
+ 
+ page_is_mapped:
+-	end_index = i_size >> PAGE_CACHE_SHIFT;
++	end_index = offset_to_index_max(i_size);
+ 	if (page->index >= end_index) {
+ 		/*
+ 		 * The page straddles i_size.  It must be zeroed out on each
+diff --git a/fs/read_write.c b/fs/read_write.c
+index ea1f94c..ed91acc 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -16,6 +16,7 @@
+ #include <linux/syscalls.h>
+ #include <linux/pagemap.h>
+ #include <linux/splice.h>
++#include <linux/mount.h>
+ #include "read_write.h"
+ 
+ #include <asm/uaccess.h>
+@@ -263,6 +264,11 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
+ 		return -EINVAL;
+ 	if (unlikely(!access_ok(VERIFY_WRITE, buf, count)))
+ 		return -EFAULT;
++	if (unlikely(*pos + count > file->f_vfsmnt->mnt_sb->s_maxbytes)) {
++		if (*pos >= file->f_vfsmnt->mnt_sb->s_maxbytes)
++			return -EOVERFLOW;
++		count = file->f_vfsmnt->mnt_sb->s_maxbytes - *pos;
++	}
+ 
+ 	ret = rw_verify_area(READ, file, pos, count);
+ 	if (ret >= 0) {
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index b3ec4a4..826e718 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1394,6 +1394,17 @@ static inline void inode_dec_link_count(struct inode *inode)
+ 	mark_inode_dirty(inode);
+ }
+ 
++/* Convert byte offset to block number, if number would overflow
++ * sector_t, return maximum value fitting there. */
++static inline sector_t offset_to_block_max(loff_t off, int shift)
++{
++	loff_t block = off >> shift;
++
++	if (unlikely(block != (sector_t)block))
++		return ~(sector_t)0;
++	return block;
++}
++
+ extern void touch_atime(struct vfsmount *mnt, struct dentry *dentry);
+ static inline void file_accessed(struct file *file)
+ {
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index db8a410..adfd195 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -148,6 +148,19 @@ static inline loff_t page_offset(struct page *page)
+ 	return ((loff_t)page->index) << PAGE_CACHE_SHIFT;
+ }
+ 
++/*
++ * Return index of a page on given offset, if index would overflow pgoff_t,
++ * return the maximum number fitting there.
++ */
++static inline pgoff_t offset_to_index_max(loff_t off)
++{
++	loff_t index = off >> PAGE_CACHE_SHIFT;
++
++	if (unlikely(index != (pgoff_t)index))
++		return ~((pgoff_t)0);
++	return index;
++}
++
+ static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
+ 					unsigned long address)
+ {
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 01e260f..e37be0c 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -380,7 +380,7 @@ int filemap_fdatawait(struct address_space *mapping)
+ 		return 0;
+ 
+ 	return wait_on_page_writeback_range(mapping, 0,
+-				(i_size - 1) >> PAGE_CACHE_SHIFT);
++				offset_to_index_max(i_size - 1));
+ }
+ EXPORT_SYMBOL(filemap_fdatawait);
+ 
+@@ -925,7 +925,7 @@ page_ok:
+ 		 */
+ 
+ 		isize = i_size_read(inode);
+-		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
++		end_index = offset_to_index_max(isize - 1);
+ 		if (unlikely(!isize || index > end_index)) {
+ 			page_cache_release(page);
+ 			goto out;
+@@ -1310,7 +1310,7 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 	int did_readaround = 0;
+ 	int ret = 0;
+ 
+-	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
++	size = offset_to_index_max(i_size_read(inode) + PAGE_CACHE_SIZE - 1);
+ 	if (vmf->pgoff >= size)
+ 		return VM_FAULT_SIGBUS;
+ 
+@@ -1385,7 +1385,7 @@ retry_find:
+ 		goto page_not_uptodate;
+ 
+ 	/* Must recheck i_size under page lock */
+-	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
++	size = offset_to_index_max(i_size_read(inode) + PAGE_CACHE_SIZE - 1);
+ 	if (unlikely(vmf->pgoff >= size)) {
+ 		unlock_page(page);
+ 		page_cache_release(page);
+diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
+index 5fa3fbf..e264b37 100644
+--- a/mm/filemap_xip.c
++++ b/mm/filemap_xip.c
+@@ -68,7 +68,7 @@ do_xip_mapping_read(struct address_space *mapping,
+ 	if (!isize)
+ 		goto out;
+ 
+-	end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
++	end_index = offset_to_index_max(isize - 1);
+ 	for (;;) {
+ 		struct page *page;
+ 		unsigned long nr, ret;
+@@ -220,7 +220,7 @@ static int xip_file_fault(struct vm_area_struct *area, struct vm_fault *vmf)
+ 
+ 	/* XXX: are VM_FAULT_ codes OK? */
+ 
+-	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
++	size = offset_to_index_max(i_size_read(inode) + PAGE_CACHE_SIZE - 1);
+ 	if (vmf->pgoff >= size)
+ 		return VM_FAULT_SIGBUS;
+ 
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 15678aa..e28ca6e 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -983,6 +983,13 @@ unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
+ 			if (locks_verify_locked(inode))
+ 				return -EAGAIN;
+ 
++			/*
++			 * Make sure we don't map more than fs is able to handle
++			 */
++			if ((((loff_t)pgoff) << PAGE_SHIFT) + len >
++			    inode->i_sb->s_maxbytes)
++				return -EINVAL;
++
+ 			vm_flags |= VM_SHARED | VM_MAYSHARE;
+ 			if (!(file->f_mode & FMODE_WRITE))
+ 				vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
+diff --git a/mm/readahead.c b/mm/readahead.c
+index c9c50ca..67ccd91 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -136,7 +136,7 @@ __do_page_cache_readahead(struct address_space *mapping, struct file *filp,
+ 	if (isize == 0)
+ 		goto out;
+ 
+-	end_index = ((isize - 1) >> PAGE_CACHE_SHIFT);
++	end_index = offset_to_index_max(isize - 1);
+ 
+ 	/*
+ 	 * Preallocate as many pages as we will need.
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index f071648..0951c7a 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -1082,7 +1082,7 @@ static int setup_swap_extents(struct swap_info_struct *sis, sector_t *span)
+ 	 */
+ 	probe_block = 0;
+ 	page_no = 0;
+-	last_block = i_size_read(inode) >> blkbits;
++	last_block = offset_to_block_max(i_size_read(inode), blkbits);
+ 	while ((probe_block + blocks_per_page) <= last_block &&
+ 			page_no < sis->max) {
+ 		unsigned block_in_page;
+@@ -1517,6 +1517,7 @@ asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
+ 		goto bad_swap;
+ 	}
+ 
++	/* This can possibly overflow but we discover that later */
+ 	swapfilesize = i_size_read(inode) >> PAGE_SHIFT;
+ 
+ 	/*
