@@ -1,121 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbYAWP5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbYAWP5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753986AbYAWP5T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 10:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYAWP5A
+	id S1754524AbYAWP5c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 10:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYAWP5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 23 Jan 2008 10:57:03 -0500
+Received: from el-out-1112.google.com ([209.85.162.176]:45495 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751700AbYAWP5A convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 23 Jan 2008 10:57:00 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:55734 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751536AbYAWP47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 10:56:59 -0500
-Date: Wed, 23 Jan 2008 15:56:55 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-       Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is running on a memoryless node
-Message-ID: <20080123155655.GB20156@csn.ul.ie>
-References: <20080122214505.GA15674@aepfle.de> <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com> <20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie> <20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de> <20080123135513.GA14175@csn.ul.ie> <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=g9xvgziXYdZCPzNTD/rS0Rq1ADkjJhmotbFLroXa+gtaxnPJR3etR5PIvck8W78jZJ4psK/hJQI4VV8wpGNQ8Iyl39D8ZGmWX4nJW0PMh7AekX+sjh6pseSvyeaY/HSNIBHuxe1Jr+dyU+R6wQTbthDipONc03ImfeTpYEK5xNY=
+Message-ID: <170fa0d20801230756r2e74c7c1ke8202e0d02737a63@mail.gmail.com>
+Date: Wed, 23 Jan 2008 10:56:57 -0500
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Salyzyn, Mark" <Mark_Salyzyn@adaptec.com>
+Subject: Re: AACRAID driver broken in 2.6.22.x (and beyond?) [WAS: Re: 2.6.22.16 MD raid1 doesn't mark removed disk faulty, MD thread goes UN]
+Cc: "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+       NeilBrown <neilb@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "K. Tanaka" <k-tanaka@ce.jp.nec.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+In-Reply-To: <532ABFBDAAC3A34EB12EBA6CEC2838F4394BB4F0@ADPE2K703.adaptec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <170fa0d20801221609r2cb7b518r1d8dc24b7d655d17@mail.gmail.com>
+	 <532ABFBDAAC3A34EB12EBA6CEC2838F4394BB4F0@ADPE2K703.adaptec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (23/01/08 16:49), Pekka J Enberg didst pronounce:
-> Hi,
-> 
-> On Wed, 23 Jan 2008, Pekka J Enberg wrote:
-> > > I still think Christoph's kmem_getpages() patch is correct (to fix 
-> > > cache_grow() oops) but I overlooked the fact that none the callers of 
-> > > ____cache_alloc_node() deal with bootstrapping (with the exception of 
-> > > __cache_alloc_node() that even has a comment about it).
-> > 
-> > So something like this (totally untested) patch on top of current git:
-> 
-> Sorry, removed a BUG_ON() from cache_alloc_refill() by mistake, here's a 
-> better one:
-> 
+On Jan 23, 2008 9:28 AM, Salyzyn, Mark <Mark_Salyzyn@adaptec.com> wrote:
+> At which version of the kernel did the aacraid driver allegedly first go broken? At which version did it get fixed? (Since 1.1.5-2451 is older than latest represented on kernel.org)
 
-Applied in combination with the N_NORMAL_MEMORY revert and it fails to
-boot. Console is as follows;
+snitzer:
+I don't know where the kernel.org aacraid driver first allegedly broke
+relative to this drive pull test.  All I know is 1.1.5-2451 enables
+the driver and raid1 layer to behave as expected at the system level.
+That is:
+1) the aacraid driver enables the pulled scsi device to be offlined
+2) the raid1 layer gets a write failure back from the pulled drive and
+marks that raid1 member faulty
 
-Linux version 2.6.24-rc8-autokern1 (root@gekko-lp3.ltc.austin.ibm.com)
-(gcc version 3.4.6 20060404 (Red Hat 3.4.6-3)) #2 SMP Wed Jan 23
-10:37:36 EST 2008
-[boot]0012 Setup Arch
-EEH: PCI Enhanced I/O Error Handling Enabled
-PPC64 nvram contains 7168 bytes
-Zone PFN ranges:
-  DMA             0 ->  1048576
-  Normal    1048576 ->  1048576
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    2:        0 ->  1048576
-Could not find start_pfn for node 0
-[boot]0015 Setup Done
-Built 2 zonelists in Node order, mobility grouping on.  Total pages: 1034240
-Policy zone: DMA
-Kernel command line: ro console=hvc0 autobench_args: root=/dev/sda6
-ABAT:1201101591 loglevel=8 
-[boot]0020 XICS Init
-xics: no ISA interrupt controller
-[boot]0021 XICS Done
-PID hash table entries: 4096 (order: 12, 32768 bytes)
-time_init: decrementer frequency = 238.059000 MHz
-time_init: processor frequency   = 1904.472000 MHz
-clocksource: timebase mult[10cd746] shift[22] registered
-clockevent: decrementer mult[3cf1] shift[16] cpu[0]
-Console: colour dummy device 80x25
-console handover: boot [udbg0] -> real [hvc0]
-Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
-Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
-freeing bootmem node 2
-Memory: 4105560k/4194304k available (5004k kernel code, 88744k reserved,
-876k data, 559k bss, 272k init)
-Unable to handle kernel paging request for data at address 0x00000040
-Faulting instruction address: 0xc0000000003c8ae8
-cpu 0x0: Vector: 300 (Data Access) at [c0000000005c3840]
-    pc: c0000000003c8ae8: __lock_text_start+0x20/0x88
-    lr: c0000000000dadb4: .cache_grow+0x7c/0x338
-    sp: c0000000005c3ac0
-   msr: 8000000000009032
-   dar: 40
- dsisr: 40000000
-  current = 0xc000000000500f10
-  paca    = 0xc000000000501b80
-    pid   = 0, comm = swapper
-enter ? for help
-[c0000000005c3b40] c0000000000dadb4 .cache_grow+0x7c/0x338
-[c0000000005c3c00] c0000000000db518 .fallback_alloc+0x1c0/0x224
-[c0000000005c3cb0] c0000000000db920 .kmem_cache_alloc+0xe0/0x14c
-[c0000000005c3d50] c0000000000dcbd0 .kmem_cache_create+0x230/0x4cc
-[c0000000005c3e30] c0000000004c049c .kmem_cache_init+0x1ec/0x51c
-[c0000000005c3ee0] c00000000049f8d8 .start_kernel+0x304/0x3fc
-[c0000000005c3f90] c000000000008594 .start_here_common+0x54/0xc0
+The demonstration of this is as follows:
+aacraid: Host adapter abort request (0,0,27,0)
+aacraid: Host adapter abort request (0,0,14,0)
+aacraid: Host adapter abort request (0,0,21,0)
+aacraid: Host adapter abort request (0,0,25,0)
+aacraid: Host adapter abort request (0,0,18,0)
+aacraid: Host adapter abort request (0,0,8,0)
+aacraid: Host adapter abort request (0,0,23,0)
+aacraid: Host adapter abort request (0,0,0,0)
+aacraid: Host adapter abort request (0,0,5,0)
+aacraid: Host adapter abort request (0,0,1,0)
+aacraid: Host adapter abort request (0,0,17,0)
+aacraid: Host adapter abort request (0,0,12,0)
+aacraid: Host adapter abort request (0,0,3,0)
+aacraid: Host adapter abort request (0,0,4,0)
+aacraid: Host adapter abort request (0,0,22,0)
+aacraid: Host adapter abort request (0,0,11,0)
+aacraid: Host adapter abort request (0,0,26,0)
+aacraid: Host adapter abort request (0,0,20,0)
+aacraid: Host adapter abort request (0,0,2,0)
+aacraid: Host adapter abort request (0,0,6,0)
+aacraid: Host adapter reset request. SCSI hang ?
+AAC: Host adapter BLINK LED 0x7
+AAC0: adapter kernel panic'd 7.
+AAC0: Non-DASD support enabled.
+AAC0: 64 Bit DAC enabled
+sd 0:0:27:0: scsi: Device offlined - not ready after error recovery
+sd 0:0:27:0: rejecting I/O to offline device
+md: super_written gets error=-5, uptodate=0
+raid1: Disk failure on sdab1, disabling device.
+        Operation continuing on 1 devices
+RAID1 conf printout:
+ --- wd:1 rd:2
+ disk 0, wo:1, o:0, dev:sdab1
+ disk 1, wo:0, o:1, dev:nbd2
+RAID1 conf printout:
+ --- wd:1 rd:2
+ disk 1, wo:0, o:1, dev:nbd2
 
-0xc0000000000dadb4 is in cache_grow (mm/slab.c:2782).
-2777            local_flags = flags & (GFP_CONSTRAINT_MASK|GFP_RECLAIM_MASK);
-2778    
-2779            /* Take the l3 list lock to change the colour_next on this node */
-2780            check_irq_off();
-2781            l3 = cachep->nodelists[nodeid];
-2782            spin_lock(&l3->list_lock);
-2783    
-2784            /* Get colour for the slab, and cal the next value. */
-2785            offset = l3->colour_next;
-2786            l3->colour_next++;
+Clearly the BlinkLED, firmware panic is _not_ good but in the end the
+system stays alive and functions as expected.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> How is the SATA disk'd arrayed on the aacraid controller? The controller is limited to generating 24 arrays and since /dev/sdac is the 29th target, it would appear we need more details on your array's topology inside the aacraid controller. If you are using the driver with aacraid.physical=1 and thus using the physical drives directly (in the case of a SATA disk, a SATr0.9 translation in the Firmware), this is not a supported configuration and was added only to enable limited experimentation. If there is a problem in that path in the driver, I will glad to fix it, but still unsupported.
+
+snitzer:
+I'm using the 5.2-0 (15206) firmware that is not limited to 24 arrays;
+it supports up to 30 AFAIK.  All disks are being exported to Linux as
+a 'Simple Volume'.  I'm not playing games with aacraid.physical=1
+
+Is the 5.2-0 (15206) firmware unsupported on the Adaptec 3085?
+
+I can try the same test with the most current 5.2-0 (15333) firmware
+to see if the drive pull behaves any differently with both the
+1.1.5-2451 and 2.6.22.16's 1.1-5[2437]-mh4.
+
+> You may need to acquire a diagnostic dump from the controller (Adaptec technical support can advise, it will depend on your application suite) and a report of any error recovery actions reported by the driver in the system log as initiated by the SCSI subsystem.
+
+snitzer:
+OK, I can engage Adaptec support on this.
+
+> There are no changes in the I/O path for the aacraid driver. Due to the simplicity of the I/O path to the processor based controller, it is unlikely to be an issue in this path. There have been several changes in the driver to deal with error recovery actions initiated by the SCSI subsystem. One likely candidate was to extend the default SCSI layer timeout because it was shorter than the adapter's firmware timeout. You can check if this is the issue by manually increasing the timeout for the target(s) via sysfs. There were recent patches to deal with orphaned commands resulting from devices being taken offline by the SCSI layer. There has been changes in the driver to reset the controller should it go into a BlinkLED (Firmware Assert) state. The symptom also acts like a condition in the older drivers (pre 08/08/2006 on scsi-misc-2.6, showing up in 2.6.20.4) which did not reset the adapter when it entered the BlinkLED state and merely allowed the system to lock, but alas you are working with a driver with this reset fix in the version you report. A BlinkLED condition generally indicates a serious hardware problem or target incompatibility; and is generally rare as they are a result of corner case conditions within the Adapter Firmware. The diagnostic dump reported by the Adaptec utilities should be able to point to the fault you are experiencing if these appear to be the root causes.
+
+snitzer:
+It would seem that 1.1.5-2451 has the firmware reset support given the
+log I provided above, no?   Anyway, with 2.6.22.16 when a drive is
+pulled using the aacraid 1.1-5[2437]-mh4 there is absolutely no errors
+from the aacraid driver; in fact the scsi layer doesn't see anything
+until I force the issue with explicit reads/writes to the device that
+was pulled.  It could be that on a drive pull the 1.1.5-2451 driver
+results in a BlinkLED, resets the firmware, and continues.  Whereas
+with the 1.1-5[2437]-mh4 I get no BlinkLED and as such Linux (both
+scsi and raid1) is completely unaware of any disconnect of the
+physical device.
+
+thanks,
+Mike
+
+> > -----Original Message-----
+> > From: Mike Snitzer [mailto:snitzer@gmail.com]
+> > Sent: Tuesday, January 22, 2008 7:10 PM
+> > To: linux-raid@vger.kernel.org; NeilBrown
+> > Cc: linux-kernel@vger.kernel.org; K. Tanaka; AACRAID;
+> > linux-scsi@vger.kernel.org
+> > Subject: AACRAID driver broken in 2.6.22.x (and beyond?)
+> > [WAS: Re: 2.6.22.16 MD raid1 doesn't mark removed disk
+> > faulty, MD thread goes UN]
+> >
+>
+> > On Jan 22, 2008 12:29 AM, Mike Snitzer <snitzer@gmail.com> wrote:
+> > > cc'ing Tanaka-san given his recent raid1 BUG report:
+> > > http://lkml.org/lkml/2008/1/14/515
+> > >
+> > >
+> > > On Jan 21, 2008 6:04 PM, Mike Snitzer <snitzer@gmail.com> wrote:
+> > > > Under 2.6.22.16, I physically pulled a SATA disk
+> > (/dev/sdac, connected to
+> > > > an aacraid controller) that was acting as the local raid1
+> > member of
+> > > > /dev/md30.
+> > > >
+> > > > Linux MD didn't see an /dev/sdac1 error until I tried
+> > forcing the issue by
+> > > > doing a read (with dd) from /dev/md30:
+> > ....
+> > > The raid1d thread is locked at line 720 in raid1.c
+> > (raid1d+2437); aka
+> > > freeze_array:
+> > >
+> > > (gdb) l *0x0000000000002539
+> > > 0x2539 is in raid1d (drivers/md/raid1.c:720).
+> > > 715              * wait until barrier+nr_pending match nr_queued+2
+> > > 716              */
+> > > 717             spin_lock_irq(&conf->resync_lock);
+> > > 718             conf->barrier++;
+> > > 719             conf->nr_waiting++;
+> > > 720             wait_event_lock_irq(conf->wait_barrier,
+> > > 721
+> > conf->barrier+conf->nr_pending ==
+> > > conf->nr_queued+2,
+> > > 722                                 conf->resync_lock,
+> > > 723
+> > raid1_unplug(conf->mddev->queue));
+> > > 724             spin_unlock_irq(&conf->resync_lock);
+> > >
+> > > Given Tanaka-san's report against 2.6.23 and me hitting
+> > what seems to
+> > > be the same deadlock in 2.6.22.16; it stands to reason this affects
+> > > raid1 in 2.6.24-rcX too.
+> >
+> > Turns out that the aacraid driver in 2.6.22.x is HORRIBLY BROKEN (when
+> > you pull a drive); it responds to MD's write requests with uptodate=1
+> > (in raid1_end_write_request) for the drive that was pulled!  I've not
+> > looked to see if aacraid has been fixed in newer kernels... are others
+> > aware of any crucial aacraid fixes in 2.6.23.x or 2.6.24?
+> >
+> > After the drive was physically pulled, and small periodic writes
+> > continued to the associated MD device, the raid1 MD driver did _NOT_
+> > detect the pulled drive's writes as having failed (verified this with
+> > systemtap).  MD happily thought the write completed to both members
+> > (so MD had no reason to mark the pulled drive "faulty"; or mark the
+> > raid "degraded").
+> >
+> > Installing an Adaptec-provided 1.1-5[2451] driver enabled raid1 to
+> > work as expected.
+> >
+> > That said, I now have a recipe for hitting the raid1 deadlock that
+> > Tanaka first reported over a week ago.  I'm still surprised that all
+> > of this chatter about that BUG hasn't drawn interest/scrutiny from
+> > others!?
+> >
+> > regards,
+> > Mike
+> >
+>
