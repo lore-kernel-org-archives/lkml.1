@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYAWRLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbYAWRMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbYAWRLx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYAWRLn
+	id S1755303AbYAWRMm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbYAWRMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:11:43 -0500
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:45756 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754631AbYAWRLl (ORCPT
+	Wed, 23 Jan 2008 12:12:34 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:36039 "EHLO
+	outbound9-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752267AbYAWRMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:11:41 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAC8El0dMQWYq/2dsb2JhbACBV6xm
-Date: Wed, 23 Jan 2008 12:11:39 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>,
+	Wed, 23 Jan 2008 12:12:33 -0500
+X-Greylist: delayed 2246 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 Jan 2008 12:12:33 EST
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <47976E00.2050404@am.sony.com>
+Date: Wed, 23 Jan 2008 08:40:32 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: CONFIG_MARKERS
-Message-ID: <20080123171139.GA22229@Krystal>
-References: <1201029235.18144.62.camel@perihelion> <y0modbdnt4e.fsf@ton.toronto.redhat.com> <20080123031005.GA16766@Krystal> <1201061860.25284.28.camel@perihelion> <20080123131442.GA6562@redhat.com> <20080123144811.GA12296@Krystal> <20080123150140.GA14066@Krystal> <1201106023.25284.58.camel@perihelion>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 08/20 -v5] initialize the clock source to jiffies clock.
+References: <20080123160236.969334052@goodmis.org> <20080123160442.383241528@goodmis.org>
+In-Reply-To: <20080123160442.383241528@goodmis.org>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1201106023.25284.58.camel@perihelion>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:08:57 up 80 days, 22:14,  6 users,  load average: 0.23, 0.24,
-	0.41
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-OriginalArrivalTime: 23 Jan 2008 16:34:59.0308 (UTC) FILETIME=[E51CBAC0:01C85DDD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jon Masters (jonathan@jonmasters.org) wrote:
-> On Wed, 2008-01-23 at 10:01 -0500, Mathieu Desnoyers wrote:
+Steven Rostedt wrote:
+> The latency tracer can call clocksource_read very early in bootup and
+> before the clock source variable has been initialized. This results in a
+> crash at boot up (even before earlyprintk is initialized). Since the
+> clock->read variable points to NULL.
 > 
-> > if (!(mod->taints & (TAINT_FORCED_MODULE | TAINT_PROPRIETARY_MODULE)))
-> > 
-> > Which remembers me to never write code before my first coffee in the
-> > morning ;)
-> 
-> I switched to decaf and joined a gym...for someone who used to have 23
-> shots of espresso some days, it's a change.
-> 
+> This patch simply initializes the clock to use clocksource_jiffies, so
+> that any early user of clocksource_read will not crash.
 
-I only have two a day, in the morning and exercise regularly. But still,
-coding with only one eye opened is not recommended. :)
+There's a similar problem with reads of sched_clock() too early
+on some architectures.  This problem reminds me of a fix I need
+to re-send to the ARM mailing list.  That aside, I heartily recommend
+applying this patch, whether the rest of this system gets mainlined
+or not.
 
-> But more importantly, are you going to take care of patching this up, or
-> shall I send something out? It's up to you.
-> 
+FWIW:
+Acked-by: Tim Bird <tim.bird@am.sony.com>
 
-I would prefer to wait until we have some clear statement on this issue
-before I submit a patch (allowing markers in proprietary modules or
-not).
+ -- Tim
 
-As soon as we have an answer, I'll cook the one-liner.
 
-Mathieu
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
-> Jon.
-> 
-> 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
