@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbYAWCF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbYAWCTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbYAWCF1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 21:05:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbYAWCFU
+	id S1753808AbYAWCTk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 Jan 2008 21:19:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbYAWCT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 21:05:20 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38165 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752507AbYAWCFT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 21:05:19 -0500
-Date: Wed, 23 Jan 2008 11:04:13 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/2] Relax restrictions on setting CONFIG_NUMA on x86
-Cc: kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, apw@shadowen.org
-In-Reply-To: <20080121093702.8FC2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080118153529.12646.5260.sendpatchset@skynet.skynet.ie> <20080121093702.8FC2.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20080123105810.F295.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 22 Jan 2008 21:19:28 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:40964 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751602AbYAWCT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 Jan 2008 21:19:27 -0500
+Message-ID: <4796A42B.6090501@garzik.org>
+Date: Tue, 22 Jan 2008 21:19:23 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Jay Cliburn <jacliburn@bellsouth.net>
+CC: csnook@redhat.com, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: [PATCH 06/26] atl1: update initialization parameters
+References: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>	<1199152804-3889-7-git-send-email-jacliburn@bellsouth.net>	<4795BDBB.10904@garzik.org> <20080122201346.6bb36ca2@osprey.hogchain.net>
+In-Reply-To: <20080122201346.6bb36ca2@osprey.hogchain.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi mel
-
-> Hi 
+Jay Cliburn wrote:
+> On Tue, 22 Jan 2008 04:56:11 -0500
+> Jeff Garzik <jeff@garzik.org> wrote:
 > 
-> > A fix[1] was merged to the x86.git tree that allowed NUMA kernels to boot
-> > on normal x86 machines (and not just NUMA-Q, Summit etc.). I took a look
-> > at the restrictions on setting NUMA on x86 to see if they could be lifted.
+>> jacliburn@bellsouth.net wrote:
+>>> From: Jay Cliburn <jacliburn@bellsouth.net>
+>>>
+>>> Update initialization parameters to match the current vendor driver
+>>> version 1.2.40.2.
 > 
-> Interesting!
+> [...]
 > 
-> I will test tomorrow.
+>> ACK without any better knowledge...  but is any addition insight 
+>> available at all?
+> 
+> No, sorry Jeff.  I simply took the vendor's current driver and matched
+> his initialization settings.  I can only assume he discovered these
+> values through lab testing.
+> 
+> For this and the other "conform to vendor driver" patches in this set, I
+> thought it important to have the in-tree driver match the vendor driver
+> as closely as possible.  The primary motivations are (1) my belief that
+> he's in a better position to test the NIC, and (2) to be able to go to
+> him for assistance occasionally and not be rejected because of
+> significant differences between his and our drivers.
 
-Hmm...
-It doesn't works on my machine.
+Since these changes are not simply moving code around, we really do need 
+full explanations for them, and to understand their need.
 
-panic at booting at __free_pages_ok() with blow call trace.
+Blindly copying code from an exterior driver is pointless, and no way at 
+all to run an engineering process.
 
-[<hex number>] free_all_bootmem_core
-[<hex number>] mem_init
-[<hex number>] alloc_large_system_hash
-[<hex number>] inode_init_early
-[<hex number>] start_kernel
-[<hex number>] unknown_bootoption
+If the driver is not going to get the review and attention necessary, 
+bug fixes and feedback attended-to, then there's not much point in 
+having this driver in the kernel at all.
 
-my machine spec
-	CPU:   Pentium4 with HT
-	MEM:   512M
+You will only lead yourself to frustration, if you set up a system where 
+changes only flow one way.  That's not how Linux development is done at all.
 
-I will try more investigate.
-but I have no time for a while, sorry ;-)
+	Jeff
 
-
-BTW:
-when config sparse mem turn on instead discontig mem.
-panic at booting at get_pageblock_flags_group() with below call stack.
-
-free_initrd
-	free_init_pages
-		free_hot_cold_page
-
-
-
-- kosaki
 
 
