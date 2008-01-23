@@ -1,130 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbYAWRdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbYAWRmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758406AbYAWRdh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756003AbYAWR21
+	id S1758680AbYAWRmY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:42:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbYAWRmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:28:27 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:57503 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756874AbYAWR2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:28:24 -0500
-Date: Wed, 23 Jan 2008 18:27:34 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>,
-       Andrew Victor <linux@maxim.org.za>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH] atmel_lcdfb: backlight control
-Message-ID: <20080123182734.45a84e82@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <4790BB53.3080407@atmel.com>
-References: <4790BB53.3080407@atmel.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+	Wed, 23 Jan 2008 12:42:14 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42945 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753368AbYAWRmN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:42:13 -0500
+Date: Wed, 23 Jan 2008 19:42:11 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       hanth Aravamudan <nacc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+       Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
+ running on a memoryless node
+In-Reply-To: <Pine.LNX.4.64.0801231906520.1028@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0801231941220.3647@sbz-30.cs.Helsinki.FI>
+References: <20080122214505.GA15674@aepfle.de>
+ <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
+ <20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
+ <20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
+ <20080123135513.GA14175@csn.ul.ie> <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
+ <Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI>
+ <Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
+ <20080123155655.GB20156@csn.ul.ie> <Pine.LNX.4.64.0801231906520.1028@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 15:44:35 +0100
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+On Wed, 23 Jan 2008, Pekka J Enberg wrote:
+> As far as I can tell, there are two ways to fix this:
 
-> From: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> On the sam9 EK boards, the LCD backlight is hooked up to a PWM output
-> from the LCD controller.  It's controlled by "contrast" registers though.
-> 
-> This patch lets boards declare that they have that kind of backlight
-> control.  The driver can then export this control, letting screenblank
-> and other operations actually take effect ... reducing the typically
-> substantial power drain from the backlight.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+[snip]
+ 
+>   (2) initialize cache_cache.nodelists with initmem_list3 equivalents
+>       for *each node hat has normal memory*
 
-Looks good to me. It won't affect any current AVR32 boards, although
-that may change in the future.
+An untested patch follows:
 
-A couple of minor comments below.
+---
+ mm/slab.c |   39 ++++++++++++++++++++-------------------
+ 1 file changed, 20 insertions(+), 19 deletions(-)
 
-> +static struct backlight_ops atmel_lcdc_bl_ops = {
-> +	.update_status = atmel_bl_update_status,
-> +	.get_brightness = atmel_bl_get_brightness,
-> +};
-
-This can be const, no?
-
-No it can't, since backlight_device_register() takes a non-const
-pointer for some reason...
-
-> +#else
-> +
-> +static inline void init_backlight(struct atmel_lcdfb_info *sinfo)
-> +{
-> +	dev_warn(&sinfo->pdev->dev, "backlight control is not available\n");
-> +}
-> +
-> +static inline void exit_contrast(struct atmel_lcdfb_info *sinfo)
-> +{
-> +}
-> +
-> +#endif
-
-This looks a bit asymmetric...
-
-> +static inline void init_contrast(struct atmel_lcdfb_info *sinfo)
-> +{
-> +	/* have some default contrast/backlight settings */
-> +	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
-> +	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, ATMEL_LCDC_CVAL_DEFAULT);
-> +
-> +	if (sinfo->lcdcon_is_backlight)
-> +		init_backlight(sinfo);
-> +}
-> +
->  
->  static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
->  	.type		= FB_TYPE_PACKED_PIXELS,
-> @@ -370,10 +472,6 @@ static int atmel_lcdfb_set_par(struct fb
->  	/* Disable all interrupts */
->  	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
->  
-> -	/* Set contrast */
-> -	value = ATMEL_LCDC_PS_DIV8 | ATMEL_LCDC_POL_POSITIVE | ATMEL_LCDC_ENA_PWMENABLE;
-> -	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, value);
-> -	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_VAL, ATMEL_LCDC_CVAL_DEFAULT);
->  	/* ...wait for DMA engine to become idle... */
->  	while (lcdc_readl(sinfo, ATMEL_LCDC_DMACON) & ATMEL_LCDC_DMABUSY)
->  		msleep(10);
-> @@ -577,6 +675,7 @@ static int __init atmel_lcdfb_probe(stru
->  		sinfo->default_monspecs = pdata_sinfo->default_monspecs;
->  		sinfo->atmel_lcdfb_power_control = pdata_sinfo->atmel_lcdfb_power_control;
->  		sinfo->guard_time = pdata_sinfo->guard_time;
-> +		sinfo->lcdcon_is_backlight = pdata_sinfo->lcdcon_is_backlight;
->  	} else {
->  		dev_err(dev, "cannot get default configuration\n");
->  		goto free_info;
-> @@ -670,6 +769,9 @@ static int __init atmel_lcdfb_probe(stru
->  		goto release_mem;
->  	}
->  
-> +	/* Initialize PWM for contrast or backlight ("off") */
-> +	init_contrast(sinfo);
-> +
->  	/* interrupt */
->  	ret = request_irq(sinfo->irq_base, atmel_lcdfb_interrupt, 0, pdev->name, info);
->  	if (ret) {
-> @@ -755,6 +857,7 @@ static int __exit atmel_lcdfb_remove(str
->  	if (!sinfo)
->  		return 0;
->  
-> +	exit_contrast(sinfo);
-
-Missing exit_contrast() in probe() error path?
-
-Haavard
+Index: linux-2.6/mm/slab.c
+===================================================================
+--- linux-2.6.orig/mm/slab.c
++++ linux-2.6/mm/slab.c
+@@ -304,11 +304,11 @@ struct kmem_list3 {
+ /*
+  * Need this for bootstrapping a per node allocator.
+  */
+-#define NUM_INIT_LISTS (2 * MAX_NUMNODES + 1)
++#define NUM_INIT_LISTS (3 * MAX_NUMNODES)
+ struct kmem_list3 __initdata initkmem_list3[NUM_INIT_LISTS];
+ #define	CACHE_CACHE 0
+-#define	SIZE_AC 1
+-#define	SIZE_L3 (1 + MAX_NUMNODES)
++#define	SIZE_AC MAX_NUMNODES
++#define	SIZE_L3 (2 * MAX_NUMNODES)
+ 
+ static int drain_freelist(struct kmem_cache *cache,
+ 			struct kmem_list3 *l3, int tofree);
+@@ -1410,6 +1410,22 @@ static void init_list(struct kmem_cache 
+ }
+ 
+ /*
++ * For setting up all the kmem_list3s for cache whose buffer_size is same as
++ * size of kmem_list3.
++ */
++static void __init set_up_list3s(struct kmem_cache *cachep, int index)
++{
++	int node;
++
++	for_each_node_state(node, N_NORMAL_MEMORY) {
++		cachep->nodelists[node] = &initkmem_list3[index + node];
++		cachep->nodelists[node]->next_reap = jiffies +
++		    REAPTIMEOUT_LIST3 +
++		    ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
++	}
++}
++
++/*
+  * Initialisation.  Called after the page allocator have been initialised and
+  * before smp_init().
+  */
+@@ -1432,6 +1448,7 @@ void __init kmem_cache_init(void)
+ 		if (i < MAX_NUMNODES)
+ 			cache_cache.nodelists[i] = NULL;
+ 	}
++	set_up_list3s(&cache_cache, CACHE_CACHE);
+ 
+ 	/*
+ 	 * Fragmentation resistance on low memory - only use bigger
+@@ -1964,22 +1981,6 @@ static void slab_destroy(struct kmem_cac
+ 	}
+ }
+ 
+-/*
+- * For setting up all the kmem_list3s for cache whose buffer_size is same as
+- * size of kmem_list3.
+- */
+-static void __init set_up_list3s(struct kmem_cache *cachep, int index)
+-{
+-	int node;
+-
+-	for_each_node_state(node, N_NORMAL_MEMORY) {
+-		cachep->nodelists[node] = &initkmem_list3[index + node];
+-		cachep->nodelists[node]->next_reap = jiffies +
+-		    REAPTIMEOUT_LIST3 +
+-		    ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
+-	}
+-}
+-
+ static void __kmem_cache_destroy(struct kmem_cache *cachep)
+ {
+ 	int i;
