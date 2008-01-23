@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758858AbYAWRvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYAWRvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758858AbYAWRvs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:51:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757800AbYAWRvT
+	id S1754845AbYAWRvd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:51:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757850AbYAWRvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:51:19 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56646 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757805AbYAWRvS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 23 Jan 2008 12:51:18 -0500
-Date: Wed, 23 Jan 2008 09:46:39 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40]:56644 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757180AbYAWRvQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:51:16 -0500
+Date: Wed, 23 Jan 2008 09:42:53 -0800
 From: Greg KH <greg@kroah.com>
-To: Ian Abbott <abbotti@mev.co.uk>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, gregkh@suse.de,
-       kristen.c.accardi@intel.com
-Subject: Re: [RESEND][PATCH-2.6.24-rc8] Fix fakephp deadlock
-Message-ID: <20080123174639.GB10387@kroah.com>
-References: <4795FD78.6020208@mev.co.uk>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org,
+       gregkh@suse.de, matthew@wil.cx, tom.l.nguyen@intel.com,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 3/4] ACPI: Check for any matching CID when walking
+	namespace.
+Message-ID: <20080123174253.GA10387@kroah.com>
+References: <20080123001807.28190.32648.stgit@bluto.andrew> <20080123001822.28190.3147.stgit@bluto.andrew>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4795FD78.6020208@mev.co.uk>
+In-Reply-To: <20080123001822.28190.3147.stgit@bluto.andrew>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2008 at 02:28:08PM +0000, Ian Abbott wrote:
-> #include <linux/init.h>
-> #include <linux/string.h>
-> #include <linux/slab.h>
-> +#include <linux/workqueue.h>
-> #include "../pci.h"
-> #if !defined(MODULE)
-> @@ -63,10 +64,13 @@ struct dummy_slot {
-> 	struct list_head node;
-> 	struct hotplug_slot *slot;
-> 	struct pci_dev *dev;
-> +	struct work_struct remove_work;
-> +	unsigned long removed;
+On Tue, Jan 22, 2008 at 05:18:22PM -0700, Andrew Patterson wrote:
+> From: Andrew Patterson <andrew.patterson@hp.com>
+> 
+> The callback function acpi_ns_get_device_callback called from
+> acpi_get_devices() will check CID's if the HID does not match.  This code
+> has a bug where it requires that all CIDs match the HID. Changed the code
+> so that any CID match will do.
+> 
+> Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
+> ---
+> 
+>  drivers/acpi/namespace/nsxfeval.c |   11 ++++++++---
+>  1 files changed, 8 insertions(+), 3 deletions(-)
 
-You are treating "removed" as an atomic value, so why not just make it
-an atomic_t?
-
-And what is protecting the fact that the flag could be set right after
-it gets checked?  I don't see a lock here :)
+This should probably go through the ACPI tree, not the PCI tree, right?
 
 thanks,
 
