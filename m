@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbYAWRXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbYAWR11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbYAWRXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYAWRVa
+	id S1757185AbYAWR11 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYAWRWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:21:30 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56040 "EHLO mx1.redhat.com"
+	Wed, 23 Jan 2008 12:22:37 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56127 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754776AbYAWRVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:21:15 -0500
+	id S1755353AbYAWRWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:22:00 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 04/27] KEYS: Add keyctl function to get a security label [try
-	#2]
+Subject: [PATCH 14/27] FS-Cache: Recruit a couple of page flags for cache
+	management [try #2]
 To: Trond.Myklebust@netapp.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 23 Jan 2008 17:21:00 +0000
-Message-ID: <20080123172100.11107.38147.stgit@warthog.procyon.org.uk>
+Date: Wed, 23 Jan 2008 17:21:53 +0000
+Message-ID: <20080123172153.11107.99755.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 References: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,322 +32,352 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a keyctl() function to get the security label of a key.
+Recruit a couple of page flags to aid in cache management.  The following extra
+flags are defined:
 
-The following is added to Documentation/keys.txt:
+ (1) PG_fscache (PG_private_2)
 
- (*) Get the LSM security context attached to a key.
+     The marked page is backed by a local cache and is pinning resources in the
+     cache driver.
 
-	long keyctl(KEYCTL_GET_SECURITY, key_serial_t key, char *buffer,
-		    size_t buflen)
+ (2) PG_fscache_write (PG_owner_priv_2)
 
-     This function returns a string that represents the LSM security context
-     attached to a key in the buffer provided.
+     The marked page is being written to the local cache.  The page may not be
+     modified whilst this is in progress.
 
-     Unless there's an error, it always returns the amount of data it could
-     produce, even if that's too big for the buffer, but it won't copy more
-     than requested to userspace. If the buffer pointer is NULL then no copy
-     will take place.
-
-     A NUL character is included at the end of the string if the buffer is
-     sufficiently big.  This is included in the returned count.  If no LSM is
-     in force then an empty string will be returned.
-
-     A process must have view permission on the key for this function to be
-     successful.
+If PG_fscache is set, then things that checked for PG_private will now also
+check for that.  This includes things like truncation and page invalidation.
+The function page_has_private() had been added to make the checks for both
+PG_private and PG_private_2 at the same time.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
 ---
 
- Documentation/keys.txt   |   21 +++++++++++++++
- include/linux/keyctl.h   |    1 +
- include/linux/security.h |   20 +++++++++++++-
- security/dummy.c         |    8 ++++++
- security/keys/compat.c   |    3 ++
- security/keys/keyctl.c   |   66 ++++++++++++++++++++++++++++++++++++++++++++++
- security/security.c      |    5 +++
- security/selinux/hooks.c |   21 +++++++++++++--
- 8 files changed, 141 insertions(+), 4 deletions(-)
+ fs/splice.c                |    2 +-
+ include/linux/page-flags.h |   39 +++++++++++++++++++++++++++++++++++++--
+ include/linux/pagemap.h    |   11 +++++++++++
+ mm/filemap.c               |   18 ++++++++++++++++++
+ mm/migrate.c               |    2 +-
+ mm/page_alloc.c            |    3 +++
+ mm/readahead.c             |    9 +++++----
+ mm/swap.c                  |    4 ++--
+ mm/swap_state.c            |    4 ++--
+ mm/truncate.c              |   10 +++++-----
+ mm/vmscan.c                |    2 +-
+ 11 files changed, 86 insertions(+), 18 deletions(-)
 
 
-diff --git a/Documentation/keys.txt b/Documentation/keys.txt
-index b82d38d..be424b0 100644
---- a/Documentation/keys.txt
-+++ b/Documentation/keys.txt
-@@ -711,6 +711,27 @@ The keyctl syscall functions are:
-      The assumed authoritative key is inherited across fork and exec.
+diff --git a/fs/splice.c b/fs/splice.c
+index 6bdcb61..61edad7 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -58,7 +58,7 @@ static int page_cache_pipe_buf_steal(struct pipe_inode_info *pipe,
+ 		 */
+ 		wait_on_page_writeback(page);
  
+-		if (PagePrivate(page))
++		if (page_has_private(page))
+ 			try_to_release_page(page, GFP_KERNEL);
  
-+ (*) Get the LSM security context attached to a key.
-+
-+	long keyctl(KEYCTL_GET_SECURITY, key_serial_t key, char *buffer,
-+		    size_t buflen)
-+
-+     This function returns a string that represents the LSM security context
-+     attached to a key in the buffer provided.
-+
-+     Unless there's an error, it always returns the amount of data it could
-+     produce, even if that's too big for the buffer, but it won't copy more
-+     than requested to userspace. If the buffer pointer is NULL then no copy
-+     will take place.
-+
-+     A NUL character is included at the end of the string if the buffer is
-+     sufficiently big.  This is included in the returned count.  If no LSM is
-+     in force then an empty string will be returned.
-+
-+     A process must have view permission on the key for this function to be
-+     successful.
-+
-+
- ===============
- KERNEL SERVICES
- ===============
-diff --git a/include/linux/keyctl.h b/include/linux/keyctl.h
-index 3365945..656ee6b 100644
---- a/include/linux/keyctl.h
-+++ b/include/linux/keyctl.h
-@@ -49,5 +49,6 @@
- #define KEYCTL_SET_REQKEY_KEYRING	14	/* set default request-key keyring */
- #define KEYCTL_SET_TIMEOUT		15	/* set key timeout */
- #define KEYCTL_ASSUME_AUTHORITY		16	/* assume request_key() authorisation */
-+#define KEYCTL_GET_SECURITY		17	/* get key security label */
+ 		/*
+diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+index 209d3a4..f375e3b 100644
+--- a/include/linux/page-flags.h
++++ b/include/linux/page-flags.h
+@@ -77,25 +77,32 @@
+ #define PG_active		 6
+ #define PG_slab			 7	/* slab debug (Suparna wants this) */
  
- #endif /*  _LINUX_KEYCTL_H */
-diff --git a/include/linux/security.h b/include/linux/security.h
-index ac05083..8d9e946 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -959,6 +959,17 @@ struct request_sock;
-  *	@perm describes the combination of permissions required of this key.
-  *	Return 1 if permission granted, 0 if permission denied and -ve it the
-  *      normal permissions model should be effected.
-+ * @key_getsecurity:
-+ *	Get a textual representation of the security context attached to a key
-+ *	for the purposes of honouring KEYCTL_GETSECURITY.  This function
-+ *	allocates the storage for the NUL-terminated string and the caller
-+ *	should free it.
-+ *	@key points to the key to be queried.
-+ *	@_buffer points to a pointer that should be set to point to the
-+ *	 resulting string (if no label or an error occurs).
-+ *	Return the length of the string (including terminating NUL) or -ve if
-+ *      an error.
-+ *	May also return 0 (and a NULL buffer pointer) if there is no label.
-  *
-  * Security hooks affecting all System V IPC operations.
-  *
-@@ -1437,7 +1448,7 @@ struct security_operations {
- 	int (*key_permission)(key_ref_t key_ref,
- 			      struct task_struct *context,
- 			      key_perm_t perm);
--
-+	int (*key_getsecurity)(struct key *key, char **_buffer);
- #endif	/* CONFIG_KEYS */
+-#define PG_owner_priv_1		 8	/* Owner use. If pagecache, fs may use*/
++#define PG_owner_priv_1		 8	/* Owner use. fs may use in pagecache */
+ #define PG_arch_1		 9
+ #define PG_reserved		10
+ #define PG_private		11	/* If pagecache, has fs-private data */
  
- };
-@@ -2567,6 +2578,7 @@ int security_key_alloc(struct key *key, struct task_struct *tsk, unsigned long f
- void security_key_free(struct key *key);
- int security_key_permission(key_ref_t key_ref,
- 			    struct task_struct *context, key_perm_t perm);
-+int security_key_getsecurity(struct key *key, char **_buffer);
+ #define PG_writeback		12	/* Page is under writeback */
++#define PG_private_2		13	/* If pagecache, has fs aux data */
+ #define PG_compound		14	/* Part of a compound page */
+ #define PG_swapcache		15	/* Swap page: swp_entry_t in private */
  
- #else
+ #define PG_mappedtodisk		16	/* Has blocks allocated on-disk */
+ #define PG_reclaim		17	/* To be reclaimed asap */
++#define PG_owner_priv_2		18	/* Owner use. fs may use in pagecache */
+ #define PG_buddy		19	/* Page is free, on buddy lists */
  
-@@ -2588,6 +2600,12 @@ static inline int security_key_permission(key_ref_t key_ref,
- 	return 0;
- }
+ /* PG_readahead is only used for file reads; PG_reclaim is only for writes */
+ #define PG_readahead		PG_reclaim /* Reminder to do async read-ahead */
  
-+static inline int security_key_getsecurity(struct key *key, char **_buffer)
-+{
-+	*_buffer = NULL;
-+	return 0;
-+}
+-/* PG_owner_priv_1 users should have descriptive aliases */
++/* PG_owner_priv_1/2 users should have descriptive aliases */
+ #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
+ #define PG_pinned		PG_owner_priv_1	/* Xen pinned pagetable */
++#define PG_fscache_write	PG_owner_priv_2	/* Writing to local cache */
 +
- #endif
- #endif /* CONFIG_KEYS */
++/* PG_private_2 causes releasepage() and co to be invoked */
++#define PG_fscache		PG_private_2	/* Backed by local cache */
++
  
-diff --git a/security/dummy.c b/security/dummy.c
-index 3ccfbbe..0e7f35c 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -949,6 +949,13 @@ static inline int dummy_key_permission(key_ref_t key_ref,
- {
- 	return 0;
- }
-+
-+static int dummy_key_getsecurity(struct key *key, char **_buffer)
-+{
-+	*_buffer = NULL;
-+	return 0;
-+}
-+
- #endif /* CONFIG_KEYS */
- 
- struct security_operations dummy_security_ops;
-@@ -1133,6 +1140,7 @@ void security_fixup_ops (struct security_operations *ops)
- 	set_to_dummy_if_null(ops, key_alloc);
- 	set_to_dummy_if_null(ops, key_free);
- 	set_to_dummy_if_null(ops, key_permission);
-+	set_to_dummy_if_null(ops, key_getsecurity);
- #endif	/* CONFIG_KEYS */
- 
- }
-diff --git a/security/keys/compat.c b/security/keys/compat.c
-index e10ec99..c766c68 100644
---- a/security/keys/compat.c
-+++ b/security/keys/compat.c
-@@ -79,6 +79,9 @@ asmlinkage long compat_sys_keyctl(u32 option,
- 	case KEYCTL_ASSUME_AUTHORITY:
- 		return keyctl_assume_authority(arg2);
- 
-+	case KEYCTL_GET_SECURITY:
-+		return keyctl_get_security(arg2, compat_ptr(arg3), arg4);
-+
- 	default:
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
-index 1698bf9..56e963b 100644
---- a/security/keys/keyctl.c
-+++ b/security/keys/keyctl.c
-@@ -20,6 +20,7 @@
- #include <linux/string.h>
- #include <linux/err.h>
- #include <linux/vmalloc.h>
-+#include <linux/security.h>
- #include <asm/uaccess.h>
- #include "internal.h"
- 
-@@ -1080,6 +1081,66 @@ error:
- 
- } /* end keyctl_assume_authority() */
- 
-+/*
-+ * get the security label of a key
-+ * - the key must grant us view permission
-+ * - if there's a buffer, we place up to buflen bytes of data into it
-+ * - unless there's an error, we return the amount of information available,
-+ *   irrespective of how much we may have copied (including the terminal NUL)
-+ * - implements keyctl(KEYCTL_GET_SECURITY)
-+ */
-+long keyctl_get_security(key_serial_t keyid,
-+			 char __user *buffer,
-+			 size_t buflen)
-+{
-+	struct key *key, *instkey;
-+	key_ref_t key_ref;
-+	char *context;
-+	long ret;
-+
-+	key_ref = lookup_user_key(NULL, keyid, 0, 1, KEY_VIEW);
-+	if (IS_ERR(key_ref)) {
-+		if (PTR_ERR(key_ref) != -EACCES)
-+			return PTR_ERR(key_ref);
-+
-+		/* viewing a key under construction is also permitted if we
-+		 * have the authorisation token handy */
-+		instkey = key_get_instantiation_authkey(keyid);
-+		if (IS_ERR(instkey))
-+			return PTR_ERR(key_ref);
-+		key_put(instkey);
-+
-+		key_ref = lookup_user_key(NULL, keyid, 0, 1, 0);
-+		if (IS_ERR(key_ref))
-+			return PTR_ERR(key_ref);
-+	}
-+
-+	key = key_ref_to_ptr(key_ref);
-+	ret = security_key_getsecurity(key, &context);
-+	if (ret == 0) {
-+		/* if no information was returned, give userspace an empty
-+		 * string */
-+		ret = 1;
-+		if (buffer && buflen > 0 &&
-+		    copy_to_user(buffer, "", 1) != 0)
-+			ret = -EFAULT;
-+	} else if (ret > 0) {
-+		/* return as much data as there's room for */
-+		if (buffer && buflen > 0) {
-+			if (buflen > ret)
-+				buflen = ret;
-+
-+			if (copy_to_user(buffer, context, buflen) != 0)
-+				ret = -EFAULT;
-+		}
-+
-+		kfree(context);
-+	}
-+
-+	key_ref_put(key_ref);
-+	return ret;
-+}
-+
- /*****************************************************************************/
+ #if (BITS_PER_LONG > 32)
  /*
-  * the key control system call
-@@ -1160,6 +1221,11 @@ asmlinkage long sys_keyctl(int option, unsigned long arg2, unsigned long arg3,
- 	case KEYCTL_ASSUME_AUTHORITY:
- 		return keyctl_assume_authority((key_serial_t) arg2);
+@@ -199,6 +206,23 @@ static inline void SetPageUptodate(struct page *page)
+ #define TestClearPageWriteback(page) test_and_clear_bit(PG_writeback,	\
+ 							&(page)->flags)
  
-+	case KEYCTL_GET_SECURITY:
-+		return keyctl_get_security((key_serial_t) arg2,
-+					   (char *) arg3,
-+					   (size_t) arg4);
++#define PagePrivate2(page)	test_bit(PG_private_2, &(page)->flags)
++#define SetPagePrivate2(page)	set_bit(PG_private_2, &(page)->flags)
++#define ClearPagePrivate2(page)	clear_bit(PG_private_2, &(page)->flags)
++#define TestSetPagePrivate2(page) test_and_set_bit(PG_private_2, &(page)->flags)
++#define TestClearPagePrivate2(page) test_and_clear_bit(PG_private_2, \
++						      &(page)->flags)
 +
- 	default:
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/security/security.c b/security/security.c
-index 0e1f1f1..16213e3 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -1079,4 +1079,9 @@ int security_key_permission(key_ref_t key_ref,
- 	return security_ops->key_permission(key_ref, context, perm);
++#define PageOwnerPriv2(page)		test_bit(PG_owner_priv_2, \
++						 &(page)->flags)
++#define SetPageOwnerPriv2(page)		set_bit(PG_owner_priv_2, &(page)->flags)
++#define ClearPageOwnerPriv2(page)	clear_bit(PG_owner_priv_2, \
++						  &(page)->flags)
++#define TestSetPageOwnerPriv2(page)	test_and_set_bit(PG_owner_priv_2, \
++							 &(page)->flags)
++#define TestClearPageOwnerPriv2(page)	test_and_clear_bit(PG_owner_priv_2, \
++							   &(page)->flags)
++
+ #define PageBuddy(page)		test_bit(PG_buddy, &(page)->flags)
+ #define __SetPageBuddy(page)	__set_bit(PG_buddy, &(page)->flags)
+ #define __ClearPageBuddy(page)	__clear_bit(PG_buddy, &(page)->flags)
+@@ -272,4 +296,15 @@ static inline void set_page_writeback(struct page *page)
+ 	test_set_page_writeback(page);
  }
  
-+int security_key_getsecurity(struct key *key, char **_buffer)
++/**
++ * page_has_private - Determine if page has private stuff
++ * @page: The page to be checked
++ *
++ * Determine if a page has private stuff, indicating that release routines
++ * should be invoked upon it.
++ */
++#define page_has_private(page)			\
++	((page)->flags & ((1 << PG_private) |	\
++			  (1 << PG_private_2)))
++
+ #endif	/* PAGE_FLAGS_H */
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index db8a410..1ab7f9a 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -212,6 +212,17 @@ static inline void wait_on_page_writeback(struct page *page)
+ extern void end_page_writeback(struct page *page);
+ 
+ /*
++ * Wait for a PG_owner_priv_2 to become clear
++ */
++static inline void wait_on_page_owner_priv_2(struct page *page)
 +{
-+	return security_ops->key_getsecurity(key, _buffer);
++	if (PageOwnerPriv2(page))
++		wait_on_page_bit(page, PG_owner_priv_2);
 +}
 +
- #endif	/* CONFIG_KEYS */
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 9f3124b..bd4cfab 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -4768,6 +4768,20 @@ static int selinux_key_permission(key_ref_t key_ref,
- 			    SECCLASS_KEY, perm, NULL);
++extern void end_page_owner_priv_2(struct page *page);
++
++/*
+  * Fault a userspace page into pagetables.  Return non-zero on a fault.
+  *
+  * This assumes that two userspace pages are always sufficient.  That's
+diff --git a/mm/filemap.c b/mm/filemap.c
+index f4d0cde..5551410 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -572,6 +572,21 @@ void end_page_writeback(struct page *page)
+ EXPORT_SYMBOL(end_page_writeback);
+ 
+ /**
++ * end_page_own - Clear PG_owner_priv_2 and wake up any waiters
++ * @page: the page
++ *
++ * Clear PG_owner_priv_2 and wake up any processes waiting for that event.
++ */
++void end_page_owner_priv_2(struct page *page)
++{
++	if (!TestClearPageOwnerPriv2(page))
++		BUG();
++	smp_mb__after_clear_bit();
++	wake_up_page(page, PG_owner_priv_2);
++}
++EXPORT_SYMBOL(end_page_owner_priv_2);
++
++/**
+  * __lock_page - get a lock on the page, assuming we need to sleep to get it
+  * @page: the page to lock
+  *
+@@ -2540,6 +2555,9 @@ out:
+  * (presumably at page->private).  If the release was successful, return `1'.
+  * Otherwise return zero.
+  *
++ * This may also be called if PG_fscache is set on a page, indicating that the
++ * page is known to the local caching routines.
++ *
+  * The @gfp_mask argument specifies whether I/O may be performed to release
+  * this page (__GFP_IO), and whether the call may block (__GFP_WAIT).
+  *
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 3fa4b4a..0778cce 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -545,7 +545,7 @@ static int fallback_migrate_page(struct address_space *mapping,
+ 	 * Buffers may be managed in a filesystem specific way.
+ 	 * We must have no buffers or drop them.
+ 	 */
+-	if (PagePrivate(page) &&
++	if (page_has_private(page) &&
+ 	    !try_to_release_page(page, GFP_KERNEL))
+ 		return -EAGAIN;
+ 
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index b2838c2..55b47da 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -230,6 +230,7 @@ static void bad_page(struct page *page)
+ 	dump_stack();
+ 	page->flags &= ~(1 << PG_lru	|
+ 			1 << PG_private |
++			1 << PG_fscache	|
+ 			1 << PG_locked	|
+ 			1 << PG_active	|
+ 			1 << PG_dirty	|
+@@ -456,6 +457,7 @@ static inline int free_pages_check(struct page *page)
+ 		(page->flags & (
+ 			1 << PG_lru	|
+ 			1 << PG_private |
++			1 << PG_fscache	|
+ 			1 << PG_locked	|
+ 			1 << PG_active	|
+ 			1 << PG_slab	|
+@@ -605,6 +607,7 @@ static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
+ 		(page->flags & (
+ 			1 << PG_lru	|
+ 			1 << PG_private	|
++			1 << PG_fscache	|
+ 			1 << PG_locked	|
+ 			1 << PG_active	|
+ 			1 << PG_dirty	|
+diff --git a/mm/readahead.c b/mm/readahead.c
+index 75aa6b6..272ffc7 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -46,14 +46,15 @@ EXPORT_SYMBOL_GPL(file_ra_state_init);
+ 
+ /*
+  * see if a page needs releasing upon read_cache_pages() failure
+- * - the caller of read_cache_pages() may have set PG_private before calling,
+- *   such as the NFS fs marking pages that are cached locally on disk, thus we
+- *   need to give the fs a chance to clean up in the event of an error
++ * - the caller of read_cache_pages() may have set PG_private or PG_fscache
++ *   before calling, such as the NFS fs marking pages that are cached locally
++ *   on disk, thus we need to give the fs a chance to clean up in the event of
++ *   an error
+  */
+ static void read_cache_pages_invalidate_page(struct address_space *mapping,
+ 					     struct page *page)
+ {
+-	if (PagePrivate(page)) {
++	if (page_has_private(page)) {
+ 		if (TestSetPageLocked(page))
+ 			BUG();
+ 		page->mapping = mapping;
+diff --git a/mm/swap.c b/mm/swap.c
+index 9ac8832..22d6e03 100644
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -455,8 +455,8 @@ void pagevec_strip(struct pagevec *pvec)
+ 	for (i = 0; i < pagevec_count(pvec); i++) {
+ 		struct page *page = pvec->pages[i];
+ 
+-		if (PagePrivate(page) && !TestSetPageLocked(page)) {
+-			if (PagePrivate(page))
++		if (page_has_private(page) && !TestSetPageLocked(page)) {
++			if (page_has_private(page))
+ 				try_to_release_page(page, 0);
+ 			unlock_page(page);
+ 		}
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index b526356..33f1e5c 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -76,7 +76,7 @@ static int __add_to_swap_cache(struct page *page, swp_entry_t entry,
+ 
+ 	BUG_ON(!PageLocked(page));
+ 	BUG_ON(PageSwapCache(page));
+-	BUG_ON(PagePrivate(page));
++	BUG_ON(page_has_private(page));
+ 	error = radix_tree_preload(gfp_mask);
+ 	if (!error) {
+ 		write_lock_irq(&swapper_space.tree_lock);
+@@ -129,7 +129,7 @@ void __delete_from_swap_cache(struct page *page)
+ 	BUG_ON(!PageLocked(page));
+ 	BUG_ON(!PageSwapCache(page));
+ 	BUG_ON(PageWriteback(page));
+-	BUG_ON(PagePrivate(page));
++	BUG_ON(page_has_private(page));
+ 
+ 	radix_tree_delete(&swapper_space.page_tree, page_private(page));
+ 	set_page_private(page, 0);
+diff --git a/mm/truncate.c b/mm/truncate.c
+index cadc156..5b7d1c5 100644
+--- a/mm/truncate.c
++++ b/mm/truncate.c
+@@ -49,7 +49,7 @@ void do_invalidatepage(struct page *page, unsigned long offset)
+ static inline void truncate_partial_page(struct page *page, unsigned partial)
+ {
+ 	zero_user_page(page, partial, PAGE_CACHE_SIZE - partial, KM_USER0);
+-	if (PagePrivate(page))
++	if (page_has_private(page))
+ 		do_invalidatepage(page, partial);
  }
  
-+static int selinux_key_getsecurity(struct key *key, char **_buffer)
-+{
-+	struct key_security_struct *ksec = key->security;
-+	char *context = NULL;
-+	unsigned len;
-+	int rc;
-+
-+	rc = security_sid_to_context(ksec->sid, &context, &len);
-+	if (!rc)
-+		rc = len;
-+	*_buffer = context;
-+	return rc;
-+}
-+
- #endif
+@@ -100,7 +100,7 @@ truncate_complete_page(struct address_space *mapping, struct page *page)
  
- static struct security_operations selinux_ops = {
-@@ -4943,9 +4957,10 @@ static struct security_operations selinux_ops = {
- #endif
+ 	cancel_dirty_page(page, PAGE_CACHE_SIZE);
  
- #ifdef CONFIG_KEYS
--	.key_alloc =                    selinux_key_alloc,
--	.key_free =                     selinux_key_free,
--	.key_permission =               selinux_key_permission,
-+	.key_alloc =			selinux_key_alloc,
-+	.key_free =			selinux_key_free,
-+	.key_permission =		selinux_key_permission,
-+	.key_getsecurity =		selinux_key_getsecurity,
- #endif
- };
+-	if (PagePrivate(page))
++	if (page_has_private(page))
+ 		do_invalidatepage(page, 0);
  
+ 	remove_from_page_cache(page);
+@@ -125,7 +125,7 @@ invalidate_complete_page(struct address_space *mapping, struct page *page)
+ 	if (page->mapping != mapping)
+ 		return 0;
+ 
+-	if (PagePrivate(page) && !try_to_release_page(page, 0))
++	if (page_has_private(page) && !try_to_release_page(page, 0))
+ 		return 0;
+ 
+ 	ret = remove_mapping(mapping, page);
+@@ -347,14 +347,14 @@ invalidate_complete_page2(struct address_space *mapping, struct page *page)
+ 	if (page->mapping != mapping)
+ 		return 0;
+ 
+-	if (PagePrivate(page) && !try_to_release_page(page, GFP_KERNEL))
++	if (page_has_private(page) && !try_to_release_page(page, GFP_KERNEL))
+ 		return 0;
+ 
+ 	write_lock_irq(&mapping->tree_lock);
+ 	if (PageDirty(page))
+ 		goto failed;
+ 
+-	BUG_ON(PagePrivate(page));
++	BUG_ON(page_has_private(page));
+ 	__remove_from_page_cache(page);
+ 	write_unlock_irq(&mapping->tree_lock);
+ 	ClearPageUptodate(page);
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index e5a9597..ff2fa2d 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -578,7 +578,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 		 * process address space (page_count == 1) it can be freed.
+ 		 * Otherwise, leave the page on the LRU so it is swappable.
+ 		 */
+-		if (PagePrivate(page)) {
++		if (page_has_private(page)) {
+ 			if (!try_to_release_page(page, sc->gfp_mask))
+ 				goto activate_locked;
+ 			if (!mapping && page_count(page) == 1)
 
