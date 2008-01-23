@@ -1,106 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757115AbYAWRb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbYAWRoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757115AbYAWRb0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbYAWRX4
+	id S1758041AbYAWRoe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:44:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbYAWRoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:23:56 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56233 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753353AbYAWRXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:23:03 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 26/27] NFS: Display local caching state [try #2]
-To: Trond.Myklebust@netapp.com
-Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 23 Jan 2008 17:22:57 +0000
-Message-ID: <20080123172257.11107.57297.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
-References: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	Wed, 23 Jan 2008 12:44:23 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:9499 "EHLO
+	outbound8-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753049AbYAWRoW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:44:22 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <47977E39.8000109@am.sony.com>
+Date: Wed, 23 Jan 2008 09:49:45 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Daniel Walker <dwalker@mvista.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 01/20 -v5] printk - dont wakeup klogd with interrupts
+ disabled
+References: <20080123160236.969334052@goodmis.org> <20080123160441.236562634@goodmis.org> <1201107978.13596.16.camel@imap.mvista.com> <20080123172509.GC22229@Krystal>
+In-Reply-To: <20080123172509.GC22229@Krystal>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Jan 2008 17:44:12.0620 (UTC) FILETIME=[90ADD8C0:01C85DE7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Display the local caching state in /proc/fs/nfsfs/volumes.
+Mathieu Desnoyers wrote:
+> Can we change this for :
+> if (!(irqs_disabled() && !oops_in_progress) && wake_klogd)
+>   wake_up_klogd();
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+!oops_in_progress is already inside wake_up_klogd().
 
- fs/nfs/client.c  |    7 ++++---
- fs/nfs/fscache.h |   15 +++++++++++++++
- 2 files changed, 19 insertions(+), 3 deletions(-)
+Also, I think you'd want that first '!' inside the parens.
 
+I've been working on a system to handle deferred displaying
+of printk messages, when printk is called in interrupt context.
+Currently on a serial console if printk is called with
+ints disabled, it can hold interrupts off for up to 20
+milliseconds.
 
-diff --git a/fs/nfs/client.c b/fs/nfs/client.c
-index 92f9b84..68d3124 100644
---- a/fs/nfs/client.c
-+++ b/fs/nfs/client.c
-@@ -1335,7 +1335,7 @@ static int nfs_volume_list_show(struct seq_file *m, void *v)
- 
- 	/* display header on line 1 */
- 	if (v == &nfs_volume_list) {
--		seq_puts(m, "NV SERVER   PORT DEV     FSID\n");
-+		seq_puts(m, "NV SERVER   PORT DEV     FSID              FSC\n");
- 		return 0;
- 	}
- 	/* display one transport per line on subsequent lines */
-@@ -1349,12 +1349,13 @@ static int nfs_volume_list_show(struct seq_file *m, void *v)
- 		 (unsigned long long) server->fsid.major,
- 		 (unsigned long long) server->fsid.minor);
- 
--	seq_printf(m, "v%d %02x%02x%02x%02x %4hx %-7s %-17s\n",
-+	seq_printf(m, "v%d %02x%02x%02x%02x %4hx %-7s %-17s %s\n",
- 		   clp->cl_nfsversion,
- 		   NIPQUAD(clp->cl_addr.sin_addr),
- 		   ntohs(clp->cl_addr.sin_port),
- 		   dev,
--		   fsid);
-+		   fsid,
-+		   nfs_server_fscache_state(server));
- 
- 	return 0;
- }
-diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
-index 144fb58..9a735fc 100644
---- a/fs/nfs/fscache.h
-+++ b/fs/nfs/fscache.h
-@@ -53,6 +53,17 @@ extern void __nfs_fscache_invalidate_page(struct page *, struct inode *);
- extern int nfs_fscache_release_page(struct page *, gfp_t);
- 
- /*
-+ * indicate the client caching state as readable text
-+ */
-+static inline const char *nfs_server_fscache_state(struct nfs_server *server)
-+{
-+	if (server->nfs_client->fscache &&
-+	    (server->options & NFS_OPTION_FSCACHE))
-+		return "yes";
-+	return "no ";
-+}
-+
-+/*
-  * release the caching state associated with a page if undergoing complete page
-  * invalidation
-  */
-@@ -109,6 +120,10 @@ static inline void nfs4_fscache_get_client_cookie(struct nfs_client *clp) {}
- static inline void nfs_fscache_release_client_cookie(struct nfs_client *clp) {}
- static inline void nfs_fscache_show_stats(struct seq_file *m,
- 					  struct nfs_server *nfss) {}
-+static inline const char *nfs_server_fscache_state(struct nfs_server *server)
-+{
-+	return "no ";
-+}
- 
- static inline void nfs_fscache_init_fh_cookie(struct inode *inode) {}
- static inline void nfs_fscache_enable_fh_cookie(struct inode *inode) {}
+My solution was to set up a worker thread to handle deferred
+printk activity.  I don't think this works for the oops case,
+because you don't want to defer the output.  However, I can
+post this code if you think it would help with this problem.
+
+I hesitate to just drop the call to wake_up_klogd() without
+some kind of mechanism call it later.  Waiting until the
+next printk will work to drain the buffer, but could lead
+to indefinite intervals with printks waiting to be logged.
+ -- Tim
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
