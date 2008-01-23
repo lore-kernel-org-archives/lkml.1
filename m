@@ -1,162 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbYAWMyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbYAWMzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754289AbYAWMyF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 07:54:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYAWMxx
+	id S1754163AbYAWMzW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 07:55:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbYAWMzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 07:53:53 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:56814 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754012AbYAWMxv (ORCPT
+	Wed, 23 Jan 2008 07:55:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44119 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752176AbYAWMzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 07:53:51 -0500
-Date: Wed, 23 Jan 2008 21:53:50 +0900 (JST)
-Message-Id: <20080123.215350.193721890.ryov@valinux.co.jp>
-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: [PATCH 0/2] dm-band: The I/O bandwidth controller: Overview
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jan 2008 07:55:08 -0500
+Date: Wed, 23 Jan 2008 12:55:04 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
+       linux-kernel@vger.kernel.org
+Subject: Re: do_remount_sb(RDONLY) race? (was: XFS oops under 2.6.23.9)
+Message-ID: <20080123125504.GC25395@infradead.org>
+References: <200801230430.m0N4UmpU029430@turbo.physics.adelaide.edu.au> <20080123053412.GN155259@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080123053412.GN155259@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone,
+On Wed, Jan 23, 2008 at 04:34:12PM +1100, David Chinner wrote:
+> I've had suspicions of a race in the remount-ro code in
+> do_remount_sb() w.r.t to the fs_may_remount_ro() check.  That is, we
+> do an unlocked check to see if we can remount readonly and then fail
+> to check again once we've locked the superblock out and start the
+> remount.
 
-I'm happy to announce that I've implemented a Block I/O bandwidth controller.
-The controller is designed to be of use in a cgroup or virtual machine
-environment. The current approach is that the controller is implemented as
-a device-mapper driver.
+This code is inherently racy, and will be replaced with a proper
+per-vfsmount writer count in 2.6.25 as part of the per-mount r/o patches.
 
-What's dm-band all about?
-========================
-Dm-band is an I/O bandwidth controller implemented as a device-mapper driver.
-Several jobs using the same physical device have to share the bandwidth of
-the device. Dm-band gives bandwidth to each job according to its weight, 
-which each job can set its own value to.
-
-At this time, a job is a group of processes with the same pid or pgrp or uid.
-There is also a plan to make it support cgroup. A job can also be a virtual
-machine such as KVM or Xen.
-
-  +------+ +------+ +------+   +------+ +------+ +------+ 
-  |cgroup| |cgroup| | the  |   | pid  | | pid  | | the  |  jobs
-  |  A   | |  B   | |others|   |  X   | |  Y   | |others| 
-  +--|---+ +--|---+ +--|---+   +--|---+ +--|---+ +--|---+   
-  +--V----+---V---+----V---+   +--V----+---V---+----V---+   
-  | group | group | default|   | group | group | default|  band groups
-  |       |       |  group |   |       |       |  group | 
-  +-------+-------+--------+   +-------+-------+--------+
-  |         band1          |   |         band2          |  band devices
-  +-----------|------------+   +-----------|------------+
-  +-----------V--------------+-------------V------------+
-  |                          |                          |
-  |          sdb1            |           sdb2           |  physical devices
-  +--------------------------+--------------------------+
-
-
-How dm-band works.
-========================
-Every band device has one band group, which by default is called the default
-group.
-
-Band devices can also have extra band groups in them. Each band group
-has a job to support and a weight. Proportional to the weight, dm-band gives
-tokens to the group.
-
-A group passes on I/O requests that its job issues to the underlying
-layer so long as it has tokens left, while requests are blocked
-if there aren't any tokens left in the group. One token is consumed each
-time the group passes on a request. Dm-band will refill groups with tokens
-once all of groups that have requests on a given physical device use up their
-tokens.
-
-With this approach, a job running on a band group with large weight is
-guaranteed to be able to issue a large number of I/O requests.
-
-
-Getting started
-=============
-The following is a brief description how to control the I/O bandwidth of
-disks. In this description, we'll take one disk with two partitions as an
-example target.
-
-You can also check the manual at Document/device-mapper/band.txt of the
-linux kernel source tree for more information.
-
-
-Create and map band devices
----------------------------
-Create two band devices "band1" and "band2" and map them to "/dev/sda1"
-and "/dev/sda2" respectively.
-
- # echo "0 `blockdev --getsize /dev/sda1` band /dev/sda1 1" | dmsetup create band1
- # echo "0 `blockdev --getsize /dev/sda2` band /dev/sda2 1" | dmsetup create band2
-
-If the commands are successful then the device files "/dev/mapper/band1"
-and "/dev/mapper/band2" will have been created.
-
-
-Bandwidth control
-----------------
-In this example weights of 40 and 10 will be assigned to "band1" and
-"band2" respectively. This is done using the following commands:
-
- # dmsetup message band1 0 weight 40
- # dmsetup message band2 0 weight 10
-
-After these commands, "band1" can use 80% --- 40/(40+10)*100 --- of the
-bandwidth of the physical disk "/dev/sda" while "band2" can use 20%.
-
-
-Additional bandwidth control
----------------------------
-In this example two extra band groups are created on "band1".
-The first group consists of all the processes with user-id 1000 and the
-second group consists of all the processes with user-id 2000. Their
-weights are 30 and 20 respectively.
-
-Firstly the band group type of "band1" is set to "user".
-Then, the user-id 1000 and 2000 groups are attached to "band1".
-Finally, weights are assigned to the user-id 1000 and 2000 groups.
-
- # dmsetup message band1 0 type user
- # dmsetup message band1 0 attach 1000
- # dmsetup message band1 0 attach 2000
- # dmsetup message band1 0 weight 1000:30
- # dmsetup message band1 0 weight 2000:20
-
-Now the processes in the user-id 1000 group can use 30% ---
-30/(30+20+40+10)*100 --- of the bandwidth of the physical disk.
-
- Band Device    Band Group                     Weight
-  band1         user id 1000                     30
-  band1         user id 2000                     20
-  band1         default group(the other users)   40
-  band2         default group                    10
-
-
-Remove band devices
--------------------
-Remove the band devices when no longer used.
-
-  # dmsetup remove band1
-  # dmsetup remove band2
-
-
-TODO
-========================
-  - Cgroup support. 
-  - Control read and write requests separately.
-  - Support WRITE_BARRIER.
-  - Optimization.
-  - More configuration tools. Or is the dmsetup command sufficient?
-  - Other policies to schedule BIOs. Or is the weight policy sufficient?
-
-Thanks,
-Ryo Tsuruta
