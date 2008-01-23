@@ -1,86 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756288AbYAWRzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758525AbYAWRdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756288AbYAWRzQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:55:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbYAWRy5
+	id S1758525AbYAWRdw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757557AbYAWR3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:54:57 -0500
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:44882 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756507AbYAWRyz (ORCPT
+	Wed, 23 Jan 2008 12:29:21 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:37136 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757545AbYAWR3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:54:55 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAIIOl0dMQWYq/2dsb2JhbACBV5AZnFE
-Date: Wed, 23 Jan 2008 12:54:46 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Jan Kiszka <jan.kiszka@siemens.com>,
-       John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 19/20 -v5] Trace irq disabled critical timings
-Message-ID: <20080123175446.GA24602@Krystal>
-References: <20080123160236.969334052@goodmis.org> <20080123160444.197366580@goodmis.org> <20080123165353.GA12598@goodmis.org> <20080123171107.GB12598@goodmis.org> <20080123172712.GE18698@redhat.com> <Pine.LNX.4.58.0801231241090.13236@gandalf.stny.rr.com>
+	Wed, 23 Jan 2008 12:29:19 -0500
+Date: Wed, 23 Jan 2008 19:29:15 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+cc: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       hanth Aravamudan <nacc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+       Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
+ running on a memoryless node
+In-Reply-To: <20080123155655.GB20156@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0801231906520.1028@sbz-30.cs.Helsinki.FI>
+References: <20080122214505.GA15674@aepfle.de>
+ <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
+ <20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
+ <20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
+ <20080123135513.GA14175@csn.ul.ie> <Pine.LNX.4.64.0801231611160.20050@sbz-30.cs.Helsinki.FI>
+ <Pine.LNX.4.64.0801231626320.21475@sbz-30.cs.Helsinki.FI>
+ <Pine.LNX.4.64.0801231648140.23343@sbz-30.cs.Helsinki.FI>
+ <20080123155655.GB20156@csn.ul.ie>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0801231241090.13236@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:54:14 up 80 days, 22:59,  5 users,  load average: 5.07, 4.16,
-	2.27
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Wed, 23 Jan 2008, Frank Ch. Eigler wrote:
-> > On Wed, Jan 23, 2008 at 12:11:07PM -0500, Steven Rostedt wrote:
-> > > This patch adds latency tracing for critical timings
-> > > (how long interrupts are disabled for).
-> > > [...]
-> >
-> > Is there an opportunity here to share effort with latencytop, and
-> > ideally to use markers as much as possible for these event hooks?
-> 
-> Well, I just found out about latencytop a couple of days ago when Arjan
-> announced it. I took a quick look and it seems to be more of a general
-> collection of information. This tracer pinpoints out specific maxes.
-> Although I may be wrong (I have to admit, I haven't had the time to really
-> look at what LatencyTop does, but I have been using this tracer in -rt for
-> a number of years).
-> 
-> As for using markers, I just piggied back on top of lockdep, since it has
-> the same hooks that I needed. If we were to replace them with markers,
-> then I would say lockdep should use the markers too.
-> 
-> One thing about markers, only one probe may be allowed at a time. Perhaps
-> we should fix this by using something like I did with the mcount hook.
-> 
+Hi,
 
-It's already in my -mm patches (multiple probes support). It's also in
-my current LTTng patchset.
+On Wed, 23 Jan 2008, Mel Gorman wrote:
+> Applied in combination with the N_NORMAL_MEMORY revert and it fails to
+> boot. Console is as follows;
 
-Mathieu
-
-> -- Steve
+Thanks for testing!
+ 
+On Wed, 23 Jan 2008, Mel Gorman wrote:
+> [c0000000005c3b40] c0000000000dadb4 .cache_grow+0x7c/0x338
+> [c0000000005c3c00] c0000000000db518 .fallback_alloc+0x1c0/0x224
+> [c0000000005c3cb0] c0000000000db920 .kmem_cache_alloc+0xe0/0x14c
+> [c0000000005c3d50] c0000000000dcbd0 .kmem_cache_create+0x230/0x4cc
+> [c0000000005c3e30] c0000000004c049c .kmem_cache_init+0x1ec/0x51c
+> [c0000000005c3ee0] c00000000049f8d8 .start_kernel+0x304/0x3fc
+> [c0000000005c3f90] c000000000008594 .start_here_common+0x54/0xc0
 > 
+> 0xc0000000000dadb4 is in cache_grow (mm/slab.c:2782).
+> 2777            local_flags = flags & (GFP_CONSTRAINT_MASK|GFP_RECLAIM_MASK);
+> 2778    
+> 2779            /* Take the l3 list lock to change the colour_next on this node */
+> 2780            check_irq_off();
+> 2781            l3 = cachep->nodelists[nodeid];
+> 2782            spin_lock(&l3->list_lock);
+> 2783    
+> 2784            /* Get colour for the slab, and cal the next value. */
+> 2785            offset = l3->colour_next;
+> 2786            l3->colour_next++;
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Ok, so it's too early to fallback_alloc() because in kmem_cache_init() we 
+do:
+
+        for (i = 0; i < NUM_INIT_LISTS; i++) {
+                kmem_list3_init(&initkmem_list3[i]);
+                if (i < MAX_NUMNODES)
+                        cache_cache.nodelists[i] = NULL;
+        }
+
+Fine. But, why are we hitting fallback_alloc() in the first place? It's 
+definitely not because of missing ->nodelists as we do:
+
+        cache_cache.nodelists[node] = &initkmem_list3[CACHE_CACHE];
+
+before attempting to set up kmalloc caches. Now, if I understood 
+correctly, we're booting off a memoryless node so kmem_getpages() will 
+return NULL thus forcing us to fallback_alloc() which is unavailable at 
+this point.
+
+As far as I can tell, there are two ways to fix this:
+
+  (1) don't boot off a memoryless node (why are we doing this in the first 
+      place?)
+  (2) initialize cache_cache.nodelists with initmem_list3 equivalents
+      for *each node hat has normal memory*
+
+I am still wondering why this worked before, though.
+
+			Pekka
