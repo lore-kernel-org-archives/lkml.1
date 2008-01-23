@@ -1,62 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753770AbYAWTzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYAWT6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753770AbYAWTzw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 14:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYAWTzo
+	id S1754146AbYAWT6Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 14:58:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbYAWT6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 14:55:44 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45820 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751690AbYAWTzn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 14:55:43 -0500
-To: torvalds@linux-foundation.org
-CC: a.p.zijlstra@chello.nl, salikhmetov@gmail.com, linux-mm@kvack.org,
-       jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
-       protasnb@gmail.com, miklos@szeredi.hu, r.e.wolff@bitwizard.nl,
-       hidave.darkstar@gmail.com, hch@infradead.org
-In-reply-to: <alpine.LFD.1.00.0801231107520.1741@woody.linux-foundation.org>
-	(message from Linus Torvalds on Wed, 23 Jan 2008 11:35:21 -0800 (PST))
-Subject: Re: [PATCH -v8 3/4] Enable the MS_ASYNC functionality in
- sys_msync()
-References: <12010440803930-git-send-email-salikhmetov@gmail.com>  <1201044083504-git-send-email-salikhmetov@gmail.com>  <alpine.LFD.1.00.0801230836250.1741@woody.linux-foundation.org> <1201110066.6341.65.camel@lappy> <alpine.LFD.1.00.0801231107520.1741@woody.linux-foundation.org>
-Message-Id: <E1JHlh8-0003s8-Bb@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 23 Jan 2008 20:55:34 +0100
+	Wed, 23 Jan 2008 14:58:04 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43941 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751675AbYAWT6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 14:58:01 -0500
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: Re: [PATCH 2/2] dm-band: The I/O bandwidth controller: Document
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080123.215350.193721890.ryov@valinux.co.jp>
+	<20080123.215844.71118155.ryov@valinux.co.jp>
+Date: Wed, 23 Jan 2008 20:57:57 +0100
+In-Reply-To: <20080123.215844.71118155.ryov@valinux.co.jp> (Ryo Tsuruta's message of "Wed\, 23 Jan 2008 21\:58\:44 +0900 \(JST\)")
+Message-ID: <p73lk6g9uwq.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > It would need some addition piece to not call msync_interval() for
-> > MS_SYNC, and remove the balance_dirty_pages_ratelimited_nr() stuff.
-> > 
-> > But yeah, this pte walker is much better. 
-> 
-> Actually, I think this patch is much better. 
-> 
-> Anyway, it's better because:
->  - it actually honors the range
->  - it uses the same code for MS_ASYNC and MS_SYNC
->  - it just avoids doing the "wait for" for MS_ASYNC.
-> 
-> However, it's totally untested, of course. What did you expect? Clean code 
-> _and_ testing? 
-> 
-> [ Side note: it is quite possible that we should not do the 
->   SYNC_FILE_RANGE_WAIT_BEFORE on MS_ASYNC, and just skip over pages that 
->   are busily under writeback already.
+Ryo Tsuruta <ryov@valinux.co.jp> writes:
 
-MS_ASYNC is not supposed to wait, so SYNC_FILE_RANGE_WAIT_BEFORE
-probably should not be used in that case.
+> Here is the document of dm-band.
 
-What would be perfect, is if we had a sync mode, that on encountering
-a page currently under writeback, would just do a page_mkclean() on
-it, so we still receive a page fault next time one of the mappings is
-dirtied, so the times can be updated.
+Could you please address in the document how the intended use
+cases/feature set etc. differs from CFQ2 io priorities?
 
-Would there be any difficulties with that?
+Thanks,
 
-Miklos
+-Andi
