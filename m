@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756346AbYAWS3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbYAWSCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756346AbYAWS3V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 13:29:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbYAWS3O
+	id S1755475AbYAWSCT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 13:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYAWSCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 13:29:14 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:6121 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753412AbYAWS3N (ORCPT
+	Wed, 23 Jan 2008 13:02:10 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:55690 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752168AbYAWSCJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 13:29:13 -0500
-Subject: Re: [PATCH 01/20 -v5] printk - dont wakeup klogd with interrupts
-	disabled
-From: Daniel Walker <dwalker@mvista.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <Pine.LNX.4.58.0801231315500.6127@gandalf.stny.rr.com>
-References: <20080123160236.969334052@goodmis.org>
-	 <20080123160441.236562634@goodmis.org>
-	 <1201107978.13596.16.camel@imap.mvista.com>
-	 <Pine.LNX.4.58.0801231213430.12932@gandalf.stny.rr.com>
-	 <1201110185.13596.22.camel@imap.mvista.com>
-	 <Pine.LNX.4.58.0801231315500.6127@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Wed, 23 Jan 2008 10:28:19 -0800
-Message-Id: <1201112899.13596.25.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jan 2008 13:02:09 -0500
+Date: Wed, 23 Jan 2008 19:02:08 +0100
+From: Jan Kara <jack@suse.cz>
+To: Rafael Sisto <rafael.sisto@gmail.com>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: create a file in kernel mode. help please!
+Message-ID: <20080123180208.GD23304@atrey.karlin.mff.cuni.cz>
+References: <ee3dc96c0801182116q3d54148dl6773d76ff3160d91@mail.gmail.com> <ee3dc96c0801182117t6e40b46fr1b2d5826e22a7124@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ee3dc96c0801182117t6e40b46fr1b2d5826e22a7124@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  Hi,
 
-On Wed, 2008-01-23 at 13:18 -0500, Steven Rostedt wrote:
+> obviously this is a newbie question, but I couldn't find any
+> documentation on how to do it.. I tried several ways but couldnt do
+> it.
+> I designed a system call, so a user will call it, and a new file will
+> be created ('/tmp/filexx'). After that, I have another system call,
+> that will map the file into the maps of the user process. The idea is
+> the same as IPC...
+> 
+> I managed to create the file with this function (in the first system call):
+>         fd = filp_open(path, O_CREAT | O_RDWR , 777);
+> 
+> After that, the user will call another system call, and it will map
+> this file to the process maps.
+> something like this:
+>          filp_open(route, O_RDWR,0 );
+>          do_mmap(fp, 0, tamano, PROT_READ | PROT_WRITE | PROT_EXEC,
+> MAP_SHARED, 0);
+> 
+> After I call the second system call, the user tries to access the
+> memory, but gets the message "Bus Error".
+> I tried to manually create a file with vi, and then use the second
+> system call, and worked perfectly. I could use the shared memory
+> without problems.
+> 
+> The problems seems to be in the first system call (with filp_open),
+> when I try to create a new file... Can somebody suggest me something,
+> on how I could fix this issue?? It is very important because it is for
+> a college projects.
+  Hmm, I don't quite get what you are trying to achieve? Why can't user
+create the file via open(path, O_CREAT...) and then mmap() it? Why do
+you need a new system call for that?
 
-> The wakeup hook in schedule is when we find out that we hit our max. I
-> could postpone that somehow, but that would require more glue code than I
-> would like to add.
-
-Which hook specifically ?
-
-> As for -rt, we've disabled printk for consoles not ATOMIC safe. So the
-> only consoles that will print in atomic sections so far are, earlyprintk
-> and the VGA.
-
-Is this code you added recently for tracing?
-
-Daniel
-
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
