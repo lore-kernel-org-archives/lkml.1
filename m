@@ -1,90 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886AbYAWWFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbYAWWFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754886AbYAWWFA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 17:05:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYAWWEn
+	id S1755019AbYAWWFe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 17:05:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYAWWFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 17:04:43 -0500
-Received: from namei.org ([69.55.235.186]:38975 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753710AbYAWWEl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 17:04:41 -0500
-Date: Thu, 24 Jan 2008 09:03:28 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: David Howells <dhowells@redhat.com>
-cc: Stephen Smalley <sds@tycho.nsa.gov>, Daniel J Walsh <dwalsh@redhat.com>,
-       casey@schaufler-ca.com, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 08/28] SECURITY: Allow kernel services to override LSM
- settings for task actions [try #2]
-In-Reply-To: <22469.1201121532@redhat.com>
-Message-ID: <Xine.LNX.4.64.0801240902460.21138@us.intercode.com.au>
-References: <1200409128.9669.46.camel@moss-spartans.epoch.ncsc.mil>
- <3466.1200319279@redhat.com> <1199902278.9393.283.camel@moss-spartans.epoch.ncsc.mil>
- <1197307397.18120.72.camel@moss-spartans.epoch.ncsc.mil>
- <1197305173.18120.60.camel@moss-spartans.epoch.ncsc.mil>
- <20071205193818.24617.79771.stgit@warthog.procyon.org.uk>
- <20071205193859.24617.36392.stgit@warthog.procyon.org.uk> <25037.1197306473@redhat.com>
- <17868.1199897484@redhat.com> <3524.1200319577@redhat.com> 
- <22469.1201121532@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 23 Jan 2008 17:05:22 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47535 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751977AbYAWWFU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 17:05:20 -0500
+Date: Wed, 23 Jan 2008 14:05:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Fasheh <mark.fasheh@oracle.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       mark.fasheh@oracle.com
+Subject: Re: [PATCH 03/30] ocfs2: Remove mount/unmount votes
+Message-Id: <20080123140509.4db5fb47.akpm@linux-foundation.org>
+In-Reply-To: <1200609356-17788-4-git-send-email-mark.fasheh@oracle.com>
+References: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com>
+	<1200609356-17788-4-git-send-email-mark.fasheh@oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jan 2008, David Howells wrote:
-
-> Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> On Thu, 17 Jan 2008 14:35:29 -0800 Mark Fasheh <mark.fasheh@oracle.com> wrote:
+> The node maps that are set/unset by these votes are no longer relevant, thus
+> we can remove the mount and umount votes. Since those are the last two
+> remaining votes, we can also remove the entire vote infrastructure.
 > 
-> > Make sure that you or Dan submits a policy patch to register these
-> > classes and permissions in the policy when the kernel patch is queued
-> > for merge.
+> The vote thread has been renamed to the downconvert thread, and the small
+> amount of functionality related to managing it has been moved into
+> fs/ocfs2/dlmglue.c. All references to votes have been removed or updated.
 > 
-> Do I just send the attached patch to <selinux@tycho.nsa.gov>?  
 
-That should be enough (and that list is on the cc).
+Locking looks fishy.
 
->Or do I need to
-> make a diff from a point in the tree nearer the root?  Is there anything else
-> I need to alter whilst I'm at it?
-> 
-> David
-> ---
-> Index: policy/flask/security_classes
-> ===================================================================
-> --- policy/flask/security_classes	(revision 2573)
-> +++ policy/flask/security_classes	(working copy)
-> @@ -109,4 +109,7 @@
->  # network peer labels
->  class peer
->  
-> +# kernel services that need to override task security
-> +class kernel_service
-> +
->  # FLASK
-> Index: policy/flask/access_vectors
-> ===================================================================
-> --- policy/flask/access_vectors	(revision 2573)
-> +++ policy/flask/access_vectors	(working copy)
-> @@ -736,3 +736,10 @@
->  {
->  	recv
->  }
-> +
-> +# kernel services that need to override task security
-> +class kernel_service
+>
+>...
+>
+> +static void ocfs2_downconvert_thread_do_work(struct ocfs2_super *osb)
 > +{
-> +	use_as_override
-> +	create_files_as
-> +}
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> +	unsigned long processed;
+> +	struct ocfs2_lock_res *lockres;
+> +
+> +	mlog_entry_void();
+> +
+> +	spin_lock(&osb->dc_task_lock);
+> +	/* grab this early so we know to try again if a state change and
+> +	 * wake happens part-way through our work  */
+> +	osb->dc_work_sequence = osb->dc_wake_sequence;
+> +
+> +	processed = osb->blocked_lock_count;
+> +	while (processed) {
+> +		BUG_ON(list_empty(&osb->blocked_lock_list));
+> +
+> +		lockres = list_entry(osb->blocked_lock_list.next,
+> +				     struct ocfs2_lock_res, l_blocked_list);
+> +		list_del_init(&lockres->l_blocked_list);
+> +		osb->blocked_lock_count--;
+> +		spin_unlock(&osb->dc_task_lock);
+> +
+> +		BUG_ON(!processed);
+> +		processed--;
+> +
+> +		ocfs2_process_blocked_lock(osb, lockres);
+> +
+> +		spin_lock(&osb->dc_task_lock);
+> +	}
+> +	spin_unlock(&osb->dc_task_lock);
 
--- 
-James Morris
-<jmorris@namei.org>
+Once the lock has been dropped there is (apparently) nothing to prevent
+alteration of the list and of ->blocked_lock_count.  If this happens,
+either items will be missed or we go BUG.
+
+> +	mlog_exit_void();
+> +}
+> +
+> +static int ocfs2_downconvert_thread_lists_empty(struct ocfs2_super *osb)
+> +{
+> +	int empty = 0;
+> +
+> +	spin_lock(&osb->dc_task_lock);
+> +	if (list_empty(&osb->blocked_lock_list))
+> +		empty = 1;
+> +
+> +	spin_unlock(&osb->dc_task_lock);
+> +	return empty;
+> +}
+
+This function appears to be returning a value which is unreliable once the
+lock was dropped.
+
+> +static int ocfs2_downconvert_thread_should_wake(struct ocfs2_super *osb)
+> +{
+> +	int should_wake = 0;
+> +
+> +	spin_lock(&osb->dc_task_lock);
+> +	if (osb->dc_work_sequence != osb->dc_wake_sequence)
+> +		should_wake = 1;
+> +	spin_unlock(&osb->dc_task_lock);
+> +
+> +	return should_wake;
+> +}
+
+Ditto.
+
+> +int ocfs2_downconvert_thread(void *arg)
+> +{
+> +	int status = 0;
+> +	struct ocfs2_super *osb = arg;
+> +
+> +	/* only quit once we've been asked to stop and there is no more
+> +	 * work available */
+> +	while (!(kthread_should_stop() &&
+> +		 ocfs2_downconvert_thread_lists_empty(osb))) {
+
+Extra whitespace
+
+> +		wait_event_interruptible(osb->dc_event,
+> +					 ocfs2_downconvert_thread_should_wake(osb) ||
+> +					 kthread_should_stop());
+> +
+> +		mlog(0, "downconvert_thread: awoken\n");
+> +
+> +		ocfs2_downconvert_thread_do_work(osb);
+> +	}
+> +
+> +	osb->dc_task = NULL;
+> +	return status;
+> +}
+> +
+
