@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbYAWR3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbYAWR16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757789AbYAWR3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbYAWRX0
+	id S1757368AbYAWR16 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:27:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbYAWRWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:23:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56215 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753956AbYAWRWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 23 Jan 2008 12:22:45 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56145 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755689AbYAWRWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:22:15 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 23/27] NFS: Fix memory leak [try #2]
+Subject: [PATCH 17/27] CacheFiles: Add missing copy_page export for ia64 [try
+	#2]
 To: Trond.Myklebust@netapp.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 23 Jan 2008 17:22:41 +0000
-Message-ID: <20080123172241.11107.75955.stgit@warthog.procyon.org.uk>
+Date: Wed, 23 Jan 2008 17:22:09 +0000
+Message-ID: <20080123172209.11107.62360.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 References: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -31,26 +32,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a memory leak whereby multiple clientaddr=xxx mount options just overwrite
-the duplicated client_address option pointer, without freeing the old memory.
+This one-line patch fixes the missing export of copy_page introduced
+by the cachefile patches.  This patch is not yet upstream, but is required
+for cachefile on ia64.  It will be pushed upstream when cachefile goes
+upstream.
 
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/nfs/super.c |    1 +
+ arch/ia64/kernel/ia64_ksyms.c |    1 +
  1 files changed, 1 insertions(+), 0 deletions(-)
 
 
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index 0b0c72a..7f5e747 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -936,6 +936,7 @@ static int nfs_parse_mount_options(char *raw,
- 			string = match_strdup(args);
- 			if (string == NULL)
- 				goto out_nomem;
-+			kfree(mnt->client_address);
- 			mnt->client_address = string;
- 			break;
- 		case Opt_mountaddr:
+diff --git a/arch/ia64/kernel/ia64_ksyms.c b/arch/ia64/kernel/ia64_ksyms.c
+index c3b4412..e64fd61 100644
+--- a/arch/ia64/kernel/ia64_ksyms.c
++++ b/arch/ia64/kernel/ia64_ksyms.c
+@@ -43,6 +43,7 @@ EXPORT_SYMBOL(__do_clear_user);
+ EXPORT_SYMBOL(__strlen_user);
+ EXPORT_SYMBOL(__strncpy_from_user);
+ EXPORT_SYMBOL(__strnlen_user);
++EXPORT_SYMBOL(copy_page);
+ 
+ /* from arch/ia64/lib */
+ extern void __divsi3(void);
 
