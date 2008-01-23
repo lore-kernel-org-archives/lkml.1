@@ -1,246 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbYAWEui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbYAWFAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757185AbYAWEui (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 Jan 2008 23:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYAWEta
+	id S1754010AbYAWFAO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 00:00:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbYAWE77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 Jan 2008 23:49:30 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58989 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753221AbYAWEt2 (ORCPT
+	Tue, 22 Jan 2008 23:59:59 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:5349 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753206AbYAWE75 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 Jan 2008 23:49:28 -0500
-Message-Id: <20080123044924.926408000@sgi.com>
-References: <20080123044924.508382000@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 22 Jan 2008 20:49:26 -0800
-From: travis@sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       mingo@elte.hu
-Cc: Christoph Lameter <clameter@sgi.com>, jeremy@goop.org, linux-mm@kvack.org,
+	Tue, 22 Jan 2008 23:59:57 -0500
+To: akepner@sgi.com
+Cc: Tony Luck <tony.luck@intel.com>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       David Miller <davem@davemloft.net>, Muli Ben-Yehuda <muli@il.ibm.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] x86_64: Fold pda into per cpu area
-Content-Disposition: inline; filename=x86_64_fold_pda
+Subject: Re: [RFC/PATCH] dma: dma_{un}map_{single|sg}_attrs() interface
+X-Message-Flag: Warning: May contain useful information
+References: <20080122024251.GJ30022@sgi.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 22 Jan 2008 20:59:50 -0800
+In-Reply-To: <20080122024251.GJ30022@sgi.com> (akepner@sgi.com's message of "Mon, 21 Jan 2008 18:42:51 -0800")
+Message-ID: <adawsq1qgqh.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 23 Jan 2008 04:59:51.0151 (UTC) FILETIME=[C91D07F0:01C85D7C]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Declare the pda as a per cpu variable. This will move the pda area
-    to an address accessible by the x86_64 per cpu macros.  Subtraction
-    of __per_cpu_start will make the offset based from the beginning
-    of the per cpu area.  Since %gs is pointing to the pda, it will
-    then also point to the per cpu variables and can be accessed thusly:
+ > --- a/include/linux/dma-attrs.h
+ > +++ b/include/linux/dma-attrs.h
+ > @@ -0,0 +1,33 @@
+ > +#ifndef _DMA_ATTR_H
+ > +#define _DMA_ATTR_H
+ > +
+ > +#include <linux/bug.h>
+ > +
+ > +enum {
+ > +	DMA_ATTR_INVALID,
+ > +	DMA_ATTR_BARRIER,
+ > +	DMA_ATTR_FOO,
+ > +	DMA_ATTR_GOO,
+ > +	DMA_ATTR_MAX,
+ > +};
+ > +
+ > +struct dma_attrs {
+ > +	unsigned flags;
+ > +};
+ > +
+ > +static inline int dma_set_attr(struct dma_attrs *attrs, unsigned attr) {
 
-	%gs:[&per_cpu_xxxx - __per_cpu_start]
+maybe this would be cleaner if you named the DMA_ATTR enum and used
+that instead of unsigned here (and below)?
 
-  * The boot_pdas are only needed in head64.c so move the declaration
-    over there and make it static.
+ > +	BUG_ON(attrs == NULL);
 
-  * Remove the code that allocates special pda data structures.
+does this BUG_ON() buy us much?  It seems the only thing we would fail
+to oops on is if someone did dma_set_attr(NULL, INVALID) and I'm not
+sure it's worth it to BUG here.
 
-Based on 2.6.24-rc8-mm1
+ > +	if (attr > DMA_ATTR_INVALID && attr < DMA_ATTR_MAX) {
+ > +		attrs->flags = (1 << attr);
+ > +		return 0;
+ > +	}
+ > +	return 1;
 
-Signed-off-by: Mike Travis <travis@sgi.com>
-Reviewed-by: Christoph Lameter <clameter@sgi.com>
+returning -EINVAL here instead of 1 would probably be more "kernelish".
 
----
- arch/x86/kernel/head64.c          |    6 ++++++
- arch/x86/kernel/setup64.c         |   12 ++++++++++--
- arch/x86/kernel/smpboot_64.c      |   16 ----------------
- include/asm-generic/vmlinux.lds.h |    1 +
- include/asm-x86/pda.h             |    1 -
- include/asm-x86/percpu.h          |   30 +++++++++++++++++++-----------
- include/linux/percpu.h            |   13 ++++++++++++-
- 7 files changed, 48 insertions(+), 31 deletions(-)
+ > +}
+ > +
+ > +static inline int dma_get_attr(struct dma_attrs *attrs, unsigned attr) {
+ > +	if (attrs) 
+ > +		 return attrs->flags & (1 << attr);
 
---- a/arch/x86/kernel/head64.c
-+++ b/arch/x86/kernel/head64.c
-@@ -22,6 +22,12 @@
- #include <asm/sections.h>
- #include <asm/kdebug.h>
- 
-+/*
-+ * Only used before the per cpu areas are setup. The use for the non possible
-+ * cpus continues after boot
-+ */
-+static struct x8664_pda boot_cpu_pda[NR_CPUS] __cacheline_aligned;
-+
- static void __init zap_identity_mappings(void)
- {
- 	pgd_t *pgd = pgd_offset_k(0UL);
---- a/arch/x86/kernel/setup64.c
-+++ b/arch/x86/kernel/setup64.c
-@@ -34,7 +34,9 @@ cpumask_t cpu_initialized __cpuinitdata 
- 
- struct x8664_pda *_cpu_pda[NR_CPUS] __read_mostly;
- EXPORT_SYMBOL(_cpu_pda);
--struct x8664_pda boot_cpu_pda[NR_CPUS] __cacheline_aligned;
-+
-+DEFINE_PER_CPU_FIRST(struct x8664_pda, pda);
-+EXPORT_PER_CPU_SYMBOL(pda);
- 
- struct desc_ptr idt_descr = { 256 * 16 - 1, (unsigned long) idt_table };
- 
-@@ -150,10 +152,16 @@ void __init setup_per_cpu_areas(void)
- 		}
- 		if (!ptr)
- 			panic("Cannot allocate cpu data for CPU %d\n", i);
--		cpu_pda(i)->data_offset = ptr - __per_cpu_start;
- 		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
-+		/* Relocate the pda */
-+		memcpy(ptr, cpu_pda(i), sizeof(struct x8664_pda));
-+		cpu_pda(i) = (struct x8664_pda *)ptr;
-+		cpu_pda(i)->data_offset = ptr - __per_cpu_start;
- 	}
- 
-+	/* Fix up pda for this processor .... */
-+	pda_init(0);
-+
- 	/* setup percpu data maps early */
- 	setup_per_cpu_maps();
- } 
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -566,22 +566,6 @@ static int __cpuinit do_boot_cpu(int cpu
- 		return -1;
- 	}
- 
--	/* Allocate node local memory for AP pdas */
--	if (cpu_pda(cpu) == &boot_cpu_pda[cpu]) {
--		struct x8664_pda *newpda, *pda;
--		int node = cpu_to_node(cpu);
--		pda = cpu_pda(cpu);
--		newpda = kmalloc_node(sizeof (struct x8664_pda), GFP_ATOMIC,
--				      node);
--		if (newpda) {
--			memcpy(newpda, pda, sizeof (struct x8664_pda));
--			cpu_pda(cpu) = newpda;
--		} else
--			printk(KERN_ERR
--		"Could not allocate node local PDA for CPU %d on node %d\n",
--				cpu, node);
--	}
--
- 	alternatives_smp_switch(1);
- 
- 	c_idle.idle = get_idle_for_cpu(cpu);
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -273,6 +273,7 @@
- 	. = ALIGN(align);						\
- 	__per_cpu_start = .;						\
- 	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {		\
-+		*(.data.percpu.first)					\
- 		*(.data.percpu)						\
- 		*(.data.percpu.shared_aligned)				\
- 	}								\
---- a/include/asm-x86/pda.h
-+++ b/include/asm-x86/pda.h
-@@ -39,7 +39,6 @@ struct x8664_pda {
- } ____cacheline_aligned_in_smp;
- 
- extern struct x8664_pda *_cpu_pda[];
--extern struct x8664_pda boot_cpu_pda[];
- extern void pda_init(int);
- 
- #define cpu_pda(i) (_cpu_pda[i])
---- a/include/asm-x86/percpu.h
-+++ b/include/asm-x86/percpu.h
-@@ -16,7 +16,14 @@
- #define __my_cpu_offset read_pda(data_offset)
- 
- #define per_cpu_offset(x) (__per_cpu_offset(x))
-+#define __percpu_seg "%%gs:"
-+/* Calculate the offset to use with the segment register */
-+#define seg_offset(name)   (*SHIFT_PERCPU_PTR(&per_cpu_var(name), \
-+				- (unsigned long)__per_cpu_start))
- 
-+#else
-+#define __percpu_seg ""
-+#define seg_offset(name)   per_cpu_var(name)
- #endif
- #include <asm-generic/percpu.h>
- 
-@@ -64,16 +71,11 @@ DECLARE_PER_CPU(struct x8664_pda, pda);
-  *    PER_CPU(cpu_gdt_descr, %ebx)
-  */
- #ifdef CONFIG_SMP
--
- #define __my_cpu_offset x86_read_percpu(this_cpu_off)
--
- /* fs segment starts at (positive) offset == __per_cpu_offset[cpu] */
- #define __percpu_seg "%%fs:"
--
- #else  /* !SMP */
--
- #define __percpu_seg ""
--
- #endif	/* SMP */
- 
- #include <asm-generic/percpu.h>
-@@ -81,6 +83,13 @@ DECLARE_PER_CPU(struct x8664_pda, pda);
- /* We can use this directly for local CPU (faster). */
- DECLARE_PER_CPU(unsigned long, this_cpu_off);
- 
-+#define seg_offset(name)	per_cpu_var(name)
-+
-+#endif /* __ASSEMBLY__ */
-+#endif /* !CONFIG_X86_64 */
-+
-+#ifndef __ASSEMBLY__
-+
- /* For arch-specific code, we can use direct single-insn ops (they
-  * don't give an lvalue though). */
- extern void __bad_percpu_size(void);
-@@ -132,11 +141,10 @@ extern void __bad_percpu_size(void);
- 		}						\
- 		ret__; })
- 
--#define x86_read_percpu(var) percpu_from_op("mov", per_cpu__##var)
--#define x86_write_percpu(var,val) percpu_to_op("mov", per_cpu__##var, val)
--#define x86_add_percpu(var,val) percpu_to_op("add", per_cpu__##var, val)
--#define x86_sub_percpu(var,val) percpu_to_op("sub", per_cpu__##var, val)
--#define x86_or_percpu(var,val) percpu_to_op("or", per_cpu__##var, val)
-+#define x86_read_percpu(var) percpu_from_op("mov", seg_offset(var))
-+#define x86_write_percpu(var,val) percpu_to_op("mov", seg_offset(var), val)
-+#define x86_add_percpu(var,val) percpu_to_op("add", seg_offset(var), val)
-+#define x86_sub_percpu(var,val) percpu_to_op("sub", seg_offset(var), val)
-+#define x86_or_percpu(var,val) percpu_to_op("or", seg_offset(var), val)
- #endif /* !__ASSEMBLY__ */
--#endif /* !CONFIG_X86_64 */
- #endif /* _ASM_X86_PERCPU_H_ */
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -9,6 +9,10 @@
- 
- #include <asm/percpu.h>
- 
-+#ifndef PER_CPU_ATTRIBUTES
-+#define PER_CPU_ATTRIBUTES
-+#endif
-+
- #ifdef CONFIG_SMP
- #define DEFINE_PER_CPU(type, name)					\
- 	__attribute__((__section__(".data.percpu")))			\
-@@ -18,11 +22,18 @@
- 	__attribute__((__section__(".data.percpu.shared_aligned")))	\
- 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name		\
- 	____cacheline_aligned_in_smp
-+
-+#define DEFINE_PER_CPU_FIRST(type, name)				\
-+	__attribute__((__section__(".data.percpu.first")))		\
-+	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
- #else
- #define DEFINE_PER_CPU(type, name)					\
- 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
- 
--#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)		      \
-+#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
-+	DEFINE_PER_CPU(type, name)
-+
-+#define DEFINE_PER_CPU_FIRST(type, name)				\
- 	DEFINE_PER_CPU(type, name)
- #endif
- 
+so it's OK to pass attrs == NULL into dma_get_attr() but not into
+dma_set_attr()?  seems kind of odd.
 
--- 
+ > +	return 0;
+ > +}
+
+It seems you're missing a way to initialize a struct dma_attrs.  How
+do I clear the flags field to start with?
+
+A macro like DEFINE_DMA_ATTRS() that initializes things for you (like
+LIST_HEAD or DEFINE_SPIN_LOCK) would probably be a good thing to have
+as well.
+
+Also I guess you could test ARCH_USES_DMA_ATTRS in this file and stub
+everything out and define an empty structure if it's not defined.
+save a few bytes of stack etc.
+
+ > +
+ > +#endif /* _DMA_ATTR_H */
