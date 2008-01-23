@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461AbYAWLYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbYAWLZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752461AbYAWLYr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 06:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbYAWLYk
+	id S1753400AbYAWLZw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 06:25:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbYAWLZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 06:24:40 -0500
-Received: from mail0.scram.de ([78.47.204.202]:53576 "EHLO mail0.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751085AbYAWLYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 06:24:39 -0500
-X-Spam-Score: -4.18
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.2 AWL AWL: From: address is in the auto white-list
-Message-ID: <479723CE.5020609@scram.de>
-Date: Wed, 23 Jan 2008 12:23:58 +0100
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Wed, 23 Jan 2008 06:25:43 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:50484 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751090AbYAWLZm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 06:25:42 -0500
+Date: Wed, 23 Jan 2008 12:25:41 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Bryan Wu <cooloney.lkml@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bryan Wu <bryan.wu@analog.com>, Mikael Starvik <starvik@axis.com>,
+       David Howells <dhowells@redhat.com>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Kyle McMartin <kyle@parisc-linux.org>, Matthew Wilcox <matthew@wil.cx>,
+       Chris Zankel <chris@zankel.net>
+Subject: Re: [PATCH] procfs: constify function pointer tables
+In-Reply-To: <386072610801230241h750ea592h9658b14fd2aa7058@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0801231224180.12676@fbirervta.pbzchgretzou.qr>
+References: <54038cd4f87a03884e4f59f8f3697889dfb63c54.1201030614.git.jengelh@computergmbh.de>
+  <Pine.LNX.4.64.0801222055440.5722@fbirervta.pbzchgretzou.qr> 
+ <386072610801222018l79cca93dlda987af4c2036931@mail.gmail.com> 
+ <Pine.LNX.4.64.0801231005090.12676@fbirervta.pbzchgretzou.qr>
+ <386072610801230241h750ea592h9658b14fd2aa7058@mail.gmail.com>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, Jon Smirl <jonsmirl@gmail.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>
-Subject: Re: [PATCHv2] i2c: adds support for i2c bus on Frescale CPM1/CPM2
-  controllers
-References: <477BEB60.4070703@scram.de>	<20080103104121.58697148.sfr@canb.auug.org.au> <20080123112941.23250948@hyperion.delvare>
-In-Reply-To: <20080123112941.23250948@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
 
-> Do you have an updated patch addressing Stephen's comment?
-> 
-> Note: you'd rather send updates of this patch to the i2c list rather
-> than LKML.
+On Jan 23 2008 18:41, Bryan Wu wrote:
+>Oh, this patch does not touch all, following is the missing list:
+>---
+[...]
+>arch/ia64/hp/common/sba_iommu.c:static struct seq_operations ioc_seq_ops = {
+>arch/ia64/kernel/perfmon.c:struct seq_operations pfm_seq_ops = {
+>arch/ia64/kernel/setup.c:struct seq_operations cpuinfo_op = {
+>arch/ia64/sn/kernel/sn2/sn2_smp.c:static struct seq_operations
+(and more)
+[...]
 
-I'm currently looking at that last patches from Jon and try to make this
-driver fit in there (+ the class override stuff).
-
-Note: will do. I just subscribed to this list.
-
-Thanks,
-Jochen
+They were sent as other separate patches to each maintainer.
+(without lkml, would have been a needless patchbomb.)
