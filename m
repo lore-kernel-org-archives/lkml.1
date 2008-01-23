@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbYAWQCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbYAWQCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754872AbYAWQCA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 11:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbYAWQBu
+	id S1755475AbYAWQCh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 11:02:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYAWQC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 11:01:50 -0500
-Received: from mail0.scram.de ([78.47.204.202]:34227 "EHLO mail0.scram.de"
+	Wed, 23 Jan 2008 11:02:27 -0500
+Received: from mail0.scram.de ([78.47.204.202]:42352 "EHLO mail0.scram.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752819AbYAWQBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 11:01:49 -0500
-X-Spam-Score: -4.214
+	id S1752433AbYAWQCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 11:02:25 -0500
+X-Spam-Score: -4.215
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
  * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
  *      [score: 0.0000]
  *  0.2 AWL AWL: From: address is in the auto white-list
-Message-ID: <479764D8.8010507@scram.de>
-Date: Wed, 23 Jan 2008 17:01:28 +0100
+Message-ID: <479764F5.1000105@scram.de>
+Date: Wed, 23 Jan 2008 17:01:57 +0100
 From: Jochen Friedrich <jochen@scram.de>
 User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
@@ -24,89 +24,536 @@ CC: Kumar Gala <galak@kernel.crashing.org>,
        Scott Wood <scottwood@freescale.com>,
        "Kernel, Linux" <linux-kernel@vger.kernel.org>,
        linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCHv2 6/8] [POWERPC] Get rid of conditional includes of board
- specific setup
+Subject: [PATCHv2 7/8] [POWERPC] Rename commproc to cpm1 and cpm2_common.c
+ to cpm2.c
 Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Directly include mpc885ads.h from mpc885ads_setup.c. Now we can get rid
-of the arch dependent includes in mpc8xx.h.
+Rename commproc.[ch] to cpm1.[ch] to be more consistent with cpm2. Also
+rename cpm2_common.c to cpm2.c as suggested by Scott Wood. Adjust the
+includes accordingly.
 
 Signed-off-by: Jochen Friedrich <jochen@scram.de>
 ---
-  arch/powerpc/platforms/8xx/mpc885ads_setup.c |    2 +
-  include/asm-powerpc/mpc8xx.h                 |   34 +++++++-------------------
-  2 files changed, 11 insertions(+), 25 deletions(-)
+  arch/powerpc/platforms/8xx/ep88xc.c           |    2 +-
+  arch/powerpc/platforms/8xx/mpc86xads_setup.c  |    2 +-
+  arch/powerpc/platforms/8xx/mpc885ads_setup.c  |    2 +-
+  arch/powerpc/sysdev/Makefile                  |    4 ++--
+  arch/powerpc/sysdev/{commproc.c => cpm1.c}    |    4 ++--
+  arch/powerpc/sysdev/{cpm2_common.c => cpm2.c} |    3 +--
+  arch/powerpc/sysdev/micropatch.c              |    2 +-
+  arch/ppc/8260_io/enet.c                       |    2 +-
+  arch/ppc/8xx_io/commproc.c                    |    2 +-
+  arch/ppc/8xx_io/enet.c                        |    6 +++---
+  arch/ppc/8xx_io/fec.c                         |    2 +-
+  arch/ppc/8xx_io/micropatch.c                  |    2 +-
+  arch/ppc/boot/simple/iic.c                    |    2 +-
+  arch/ppc/boot/simple/m8xx_tty.c               |    2 +-
+  arch/ppc/kernel/ppc_ksyms.c                   |    2 +-
+  arch/ppc/platforms/mpc866ads_setup.c          |    2 +-
+  arch/ppc/platforms/mpc885ads_setup.c          |    2 +-
+  arch/ppc/syslib/mpc8xx_devices.c              |    2 +-
+  arch/ppc/xmon/start_8xx.c                     |    2 +-
+  drivers/net/fec.c                             |    2 +-
+  drivers/net/fec.h                             |    2 +-
+  drivers/net/fec_8xx/fec_8xx-netta.c           |    2 +-
+  drivers/net/fec_8xx/fec_main.c                |    2 +-
+  drivers/net/fec_8xx/fec_mii.c                 |    2 +-
+  drivers/net/fs_enet/fs_enet.h                 |    2 +-
+  drivers/net/fs_enet/mac-fec.c                 |    2 +-
+  drivers/net/fs_enet/mac-scc.c                 |    2 +-
+  drivers/serial/68360serial.c                  |    2 +-
+  drivers/serial/cpm_uart/cpm_uart_cpm1.h       |    2 +-
+  include/asm-powerpc/{commproc.h => cpm1.h}    |    8 ++++----
+  include/asm-ppc/{commproc.h => cpm1.h}        |    8 ++++----
+  31 files changed, 41 insertions(+), 42 deletions(-)
+  rename arch/powerpc/sysdev/{commproc.c => cpm1.c} (99%)
+  rename arch/powerpc/sysdev/{cpm2_common.c => cpm2.c} (99%)
+  rename include/asm-powerpc/{commproc.h => cpm1.h} (99%)
+  rename include/asm-ppc/{commproc.h => cpm1.h} (99%)
 
-diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-index ae69e93..426b897 100644
---- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-@@ -40,6 +40,8 @@
+diff --git a/arch/powerpc/platforms/8xx/ep88xc.c b/arch/powerpc/platforms/8xx/ep88xc.c
+index 9365f07..d300576 100644
+--- a/arch/powerpc/platforms/8xx/ep88xc.c
++++ b/arch/powerpc/platforms/8xx/ep88xc.c
+@@ -15,7 +15,7 @@
+  #include <asm/machdep.h>
+  #include <asm/io.h>
+  #include <asm/udbg.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+  #include <asm/mpc8xx.h>
+
+  struct cpm_pin {
+diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
+index 7389590..a68509d 100644
+--- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
++++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
+@@ -23,7 +23,7 @@
+  #include <asm/time.h>
+  #include <asm/mpc8xx.h>
+  #include <asm/8xx_immap.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
   #include <asm/fs_pd.h>
   #include <asm/udbg.h>
 
-+#include "mpc885ads.h"
-+
-  static u32 __iomem *bcsr, *bcsr5;
+diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+index 426b897..f39447b 100644
+--- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
++++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+@@ -36,7 +36,7 @@
+  #include <asm/time.h>
+  #include <asm/mpc8xx.h>
+  #include <asm/8xx_immap.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+  #include <asm/fs_pd.h>
+  #include <asm/udbg.h>
 
-  #ifdef CONFIG_PCMCIA_M8XX
-diff --git a/include/asm-powerpc/mpc8xx.h b/include/asm-powerpc/mpc8xx.h
-index 2af9fcb..70fd8a7 100644
---- a/include/asm-powerpc/mpc8xx.h
-+++ b/include/asm-powerpc/mpc8xx.h
-@@ -1,16 +1,16 @@
--/* This is the single file included by all MPC8xx build options.
-- * Since there are many different boards and no standard configuration,
-- * we have a unique include file for each.  Rather than change every
-- * file that has to include MPC8xx configuration, they all include
-- * this one and the configuration switching is done here.
-+/*
-+ * Prototypes, etc. for the Freescale MPC8xx embedded cpu chips
-+ * May need to be cleaned as the port goes on ...
-+ *
-+ * Copyright (C) 2008 Jochen Friedrich <jochen@scram.de>
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 9a20ef4..61f2604 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -35,8 +35,8 @@ endif
+  # Temporary hack until we have migrated to asm-powerpc
+  ifeq ($(ARCH),powerpc)
+  obj-$(CONFIG_CPM)		+= cpm_common.o
+-obj-$(CONFIG_CPM2)		+= cpm2_common.o cpm2_pic.o
++obj-$(CONFIG_CPM2)		+= cpm2.o cpm2_pic.o
+  obj-$(CONFIG_PPC_DCR)		+= dcr.o
+-obj-$(CONFIG_8xx)		+= mpc8xx_pic.o commproc.o
++obj-$(CONFIG_8xx)		+= mpc8xx_pic.o cpm1.o
+  obj-$(CONFIG_UCODE_PATCH)	+= micropatch.o
+  endif
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/cpm1.c
+similarity index 99%
+rename from arch/powerpc/sysdev/commproc.c
+rename to arch/powerpc/sysdev/cpm1.c
+index ef82587..df8bd2b 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/cpm1.c
+@@ -33,7 +33,7 @@
+  #include <asm/page.h>
+  #include <asm/pgtable.h>
+  #include <asm/8xx_immap.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+  #include <asm/io.h>
+  #include <asm/tlbflush.h>
+  #include <asm/rheap.h>
+@@ -290,7 +290,7 @@ cpm_setbrg(uint brg, uint rate)
+  		out_be32(bp, (((BRG_UART_CLK / rate) - 1) << 1) | CPM_BRG_EN);
+  	else
+  		out_be32(bp, (((BRG_UART_CLK_DIV16 / rate) - 1) << 1) |
+-		             CPM_BRG_EN | CPM_BRG_DIV16);
++			      CPM_BRG_EN | CPM_BRG_DIV16);
+  }
+
+  #ifndef CONFIG_PPC_CPM_NEW_BINDING
+diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2.c
+similarity index 99%
+rename from arch/powerpc/sysdev/cpm2_common.c
+rename to arch/powerpc/sysdev/cpm2.c
+index f7188e2..7be7112 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
++++ b/arch/powerpc/sysdev/cpm2.c
+@@ -153,8 +153,7 @@ cpm2_fastbrg(uint brg, uint rate, int div16)
+
+  	if (brg < 4) {
+  		bp = cpm2_map_size(im_brgc1, 16);
+-	}
+-	else {
++	} else {
+  		bp = cpm2_map_size(im_brgc5, 16);
+  		brg -= 4;
+  	}
+diff --git a/arch/powerpc/sysdev/micropatch.c b/arch/powerpc/sysdev/micropatch.c
+index 712b10a..d8d6028 100644
+--- a/arch/powerpc/sysdev/micropatch.c
++++ b/arch/powerpc/sysdev/micropatch.c
+@@ -16,7 +16,7 @@
+  #include <asm/page.h>
+  #include <asm/pgtable.h>
+  #include <asm/8xx_immap.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+
+  /*
+   * I2C/SPI relocation patch arrays.
+diff --git a/arch/ppc/8260_io/enet.c b/arch/ppc/8260_io/enet.c
+index 615b658..3ea4db2 100644
+--- a/arch/ppc/8260_io/enet.c
++++ b/arch/ppc/8260_io/enet.c
+@@ -10,7 +10,7 @@
+   * This version of the driver is somewhat selectable for the different
+   * processor/board combinations.  It works for the boards I know about
+   * now, and should be easily modified to include others.  Some of the
+- * configuration information is contained in <asm/commproc.h> and the
++ * configuration information is contained in <asm/cpm1.h> and the
+   * remainder is here.
+   *
+   * Buffer descriptors are kept in the CPM dual port RAM, and the frame
+diff --git a/arch/ppc/8xx_io/commproc.c b/arch/ppc/8xx_io/commproc.c
+index 3f93af8..9d656de 100644
+--- a/arch/ppc/8xx_io/commproc.c
++++ b/arch/ppc/8xx_io/commproc.c
+@@ -34,7 +34,7 @@
+  #include <asm/page.h>
+  #include <asm/pgtable.h>
+  #include <asm/8xx_immap.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+  #include <asm/io.h>
+  #include <asm/tlbflush.h>
+  #include <asm/rheap.h>
+diff --git a/arch/ppc/8xx_io/enet.c b/arch/ppc/8xx_io/enet.c
+index eace3bc..c6d047a 100644
+--- a/arch/ppc/8xx_io/enet.c
++++ b/arch/ppc/8xx_io/enet.c
+@@ -8,7 +8,7 @@
+   * This version of the driver is somewhat selectable for the different
+   * processor/board combinations.  It works for the boards I know about
+   * now, and should be easily modified to include others.  Some of the
+- * configuration information is contained in <asm/commproc.h> and the
++ * configuration information is contained in <asm/cpm1.h> and the
+   * remainder is here.
+   *
+   * Buffer descriptors are kept in the CPM dual port RAM, and the frame
+@@ -43,7 +43,7 @@
+  #include <asm/pgtable.h>
+  #include <asm/mpc8xx.h>
+  #include <asm/uaccess.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+  #include <asm/cacheflush.h>
+
+  /*
+@@ -80,7 +80,7 @@
+   * programming documents for details unique to your board.
+   *
+   * For the TQM8xx(L) modules, there is no control register interface.
+- * All functions are directly controlled using I/O pins.  See <asm/commproc.h>.
++ * All functions are directly controlled using I/O pins.  See <asm/cpm1.h>.
    */
--#ifdef __KERNEL__
-  #ifndef __CONFIG_8xx_DEFS
-  #define __CONFIG_8xx_DEFS
 
--
--#ifdef CONFIG_8xx
--
-  extern void mpc8xx_restart(char *cmd);
-  extern void mpc8xx_calibrate_decr(void);
-  extern int mpc8xx_set_rtc_time(struct rtc_time *tm);
-@@ -18,22 +18,6 @@ extern void mpc8xx_get_rtc_time(struct rtc_time *tm);
-  extern void mpc8xx_pics_init(void);
-  extern unsigned int mpc8xx_get_irq(void);
+  /* The transmitter timeout
+diff --git a/arch/ppc/8xx_io/fec.c b/arch/ppc/8xx_io/fec.c
+index 0288279..11b0aa6 100644
+--- a/arch/ppc/8xx_io/fec.c
++++ b/arch/ppc/8xx_io/fec.c
+@@ -53,7 +53,7 @@
+  #include <asm/mpc8xx.h>
+  #include <asm/irq.h>
+  #include <asm/uaccess.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
 
--#ifdef CONFIG_FADS
--#include <platforms/fads.h>
--#endif
--
--#if defined(CONFIG_MPC86XADS)
--#include <platforms/8xx/mpc86xads.h>
--#endif
--
--#if defined(CONFIG_MPC885ADS)
--#include <platforms/8xx/mpc885ads.h>
--#endif
--
--#ifdef CONFIG_PCMCIA_M8XX
-  extern struct mpc8xx_pcmcia_ops m8xx_pcmcia_ops;
--#endif
+  #ifdef	CONFIG_USE_MDIO
+  /* Forward declarations of some structures to support different PHYs
+diff --git a/arch/ppc/8xx_io/micropatch.c b/arch/ppc/8xx_io/micropatch.c
+index cfad46b..9a5d95d 100644
+--- a/arch/ppc/8xx_io/micropatch.c
++++ b/arch/ppc/8xx_io/micropatch.c
+@@ -16,7 +16,7 @@
+  #include <asm/page.h>
+  #include <asm/pgtable.h>
+  #include <asm/8xx_immap.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
 
--#endif /* CONFIG_8xx */
-  #endif /* __CONFIG_8xx_DEFS */
--#endif /* __KERNEL__ */
+  /*
+   * I2C/SPI relocation patch arrays.
+diff --git a/arch/ppc/boot/simple/iic.c b/arch/ppc/boot/simple/iic.c
+index e4efd83..5e91489 100644
+--- a/arch/ppc/boot/simple/iic.c
++++ b/arch/ppc/boot/simple/iic.c
+@@ -5,7 +5,7 @@
+  #include <linux/types.h>
+  #include <asm/uaccess.h>
+  #include <asm/mpc8xx.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+
+
+  /* IIC functions.
+diff --git a/arch/ppc/boot/simple/m8xx_tty.c b/arch/ppc/boot/simple/m8xx_tty.c
+index ea615d8..f28924e 100644
+--- a/arch/ppc/boot/simple/m8xx_tty.c
++++ b/arch/ppc/boot/simple/m8xx_tty.c
+@@ -11,7 +11,7 @@
+  #include <linux/types.h>
+  #include <asm/uaccess.h>
+  #include <asm/mpc8xx.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+
+  #ifdef CONFIG_MBX
+  #define MBX_CSR1	((volatile u_char *)0xfa100000)
+diff --git a/arch/ppc/kernel/ppc_ksyms.c b/arch/ppc/kernel/ppc_ksyms.c
+index 22494ec..0d53dc3 100644
+--- a/arch/ppc/kernel/ppc_ksyms.c
++++ b/arch/ppc/kernel/ppc_ksyms.c
+@@ -45,7 +45,7 @@
+  #include <asm/dcr.h>
+
+  #ifdef  CONFIG_8xx
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+  #endif
+
+  extern void transfer_to_handler(void);
+diff --git a/arch/ppc/platforms/mpc866ads_setup.c b/arch/ppc/platforms/mpc866ads_setup.c
+index bf72204..62370f4 100644
+--- a/arch/ppc/platforms/mpc866ads_setup.c
++++ b/arch/ppc/platforms/mpc866ads_setup.c
+@@ -32,7 +32,7 @@
+  #include <asm/time.h>
+  #include <asm/ppcboot.h>
+  #include <asm/8xx_immap.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+  #include <asm/ppc_sys.h>
+  #include <asm/mpc8xx.h>
+
+diff --git a/arch/ppc/platforms/mpc885ads_setup.c b/arch/ppc/platforms/mpc885ads_setup.c
+index 87deaef..ba06cc0 100644
+--- a/arch/ppc/platforms/mpc885ads_setup.c
++++ b/arch/ppc/platforms/mpc885ads_setup.c
+@@ -31,7 +31,7 @@
+  #include <asm/time.h>
+  #include <asm/ppcboot.h>
+  #include <asm/8xx_immap.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+  #include <asm/ppc_sys.h>
+
+  extern unsigned char __res[];
+diff --git a/arch/ppc/syslib/mpc8xx_devices.c b/arch/ppc/syslib/mpc8xx_devices.c
+index c05ac87..80804ee 100644
+--- a/arch/ppc/syslib/mpc8xx_devices.c
++++ b/arch/ppc/syslib/mpc8xx_devices.c
+@@ -16,7 +16,7 @@
+  #include <linux/device.h>
+  #include <linux/serial_8250.h>
+  #include <linux/mii.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+  #include <asm/mpc8xx.h>
+  #include <asm/irq.h>
+  #include <asm/ppc_sys.h>
+diff --git a/arch/ppc/xmon/start_8xx.c b/arch/ppc/xmon/start_8xx.c
+index a48bd59..3097406 100644
+--- a/arch/ppc/xmon/start_8xx.c
++++ b/arch/ppc/xmon/start_8xx.c
+@@ -14,7 +14,7 @@
+  #include <linux/kernel.h>
+  #include <asm/8xx_immap.h>
+  #include <asm/mpc8xx.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+
+  extern void xmon_printf(const char *fmt, ...);
+  extern int xmon_8xx_write(char *str, int nb);
+diff --git a/drivers/net/fec.c b/drivers/net/fec.c
+index 0fbf1bb..0800cce 100644
+--- a/drivers/net/fec.c
++++ b/drivers/net/fec.c
+@@ -58,7 +58,7 @@
+  #else
+  #include <asm/8xx_immap.h>
+  #include <asm/mpc8xx.h>
+-#include "commproc.h"
++#include "cpm1.h"
+  #endif
+
+  #if defined(CONFIG_FEC2)
+diff --git a/drivers/net/fec.h b/drivers/net/fec.h
+index 1d42160..bcff463 100644
+--- a/drivers/net/fec.h
++++ b/drivers/net/fec.h
+@@ -111,7 +111,7 @@ typedef struct bufdesc {
+
+
+  /*
+- *	The following definitions courtesy of commproc.h, which where
++ *	The following definitions courtesy of cpm1.h, which where
+   *	Copyright (c) 1997 Dan Malek (dmalek@jlc.net).
+   */
+  #define BD_SC_EMPTY     ((ushort)0x8000)        /* Recieve is empty */
+diff --git a/drivers/net/fec_8xx/fec_8xx-netta.c b/drivers/net/fec_8xx/fec_8xx-netta.c
+index e492eb8..79deee2 100644
+--- a/drivers/net/fec_8xx/fec_8xx-netta.c
++++ b/drivers/net/fec_8xx/fec_8xx-netta.c
+@@ -26,7 +26,7 @@
+  #include <asm/mpc8xx.h>
+  #include <asm/irq.h>
+  #include <asm/uaccess.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+
+  #include "fec_8xx.h"
+
+diff --git a/drivers/net/fec_8xx/fec_main.c b/drivers/net/fec_8xx/fec_main.c
+index 8d2904f..795e22e 100644
+--- a/drivers/net/fec_8xx/fec_main.c
++++ b/drivers/net/fec_8xx/fec_main.c
+@@ -35,7 +35,7 @@
+  #include <asm/mpc8xx.h>
+  #include <asm/irq.h>
+  #include <asm/uaccess.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+
+  #include "fec_8xx.h"
+
+diff --git a/drivers/net/fec_8xx/fec_mii.c b/drivers/net/fec_8xx/fec_mii.c
+index e8e10a0..3b6ca29 100644
+--- a/drivers/net/fec_8xx/fec_mii.c
++++ b/drivers/net/fec_8xx/fec_mii.c
+@@ -34,7 +34,7 @@
+  #include <asm/mpc8xx.h>
+  #include <asm/irq.h>
+  #include <asm/uaccess.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+
+  /*************************************************/
+
+diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
+index c675e29..e05389c 100644
+--- a/drivers/net/fs_enet/fs_enet.h
++++ b/drivers/net/fs_enet/fs_enet.h
+@@ -12,7 +12,7 @@
+  #include <asm/fs_pd.h>
+
+  #ifdef CONFIG_CPM1
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+
+  struct fec_info {
+  	fec_t __iomem *fecp;
+diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
+index c1fee48..8a311d1 100644
+--- a/drivers/net/fs_enet/mac-fec.c
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -40,7 +40,7 @@
+  #include <asm/8xx_immap.h>
+  #include <asm/pgtable.h>
+  #include <asm/mpc8xx.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+  #endif
+
+  #ifdef CONFIG_PPC_CPM_NEW_BINDING
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index 1502dbf..d3cda70 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -39,7 +39,7 @@
+  #ifdef CONFIG_8xx
+  #include <asm/8xx_immap.h>
+  #include <asm/pgtable.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+  #endif
+
+  #ifdef CONFIG_PPC_CPM_NEW_BINDING
+diff --git a/drivers/serial/68360serial.c b/drivers/serial/68360serial.c
+index 2aa6bfe..2969ebc 100644
+--- a/drivers/serial/68360serial.c
++++ b/drivers/serial/68360serial.c
+@@ -39,7 +39,7 @@
+  #include <linux/delay.h>
+  #include <asm/irq.h>
+  #include <asm/m68360.h>
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+
+
+  #ifdef CONFIG_KGDB
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.h b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
+index 9b5465f..ddf46d3 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.h
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
+@@ -10,7 +10,7 @@
+  #ifndef CPM_UART_CPM1_H
+  #define CPM_UART_CPM1_H
+
+-#include <asm/commproc.h>
++#include <asm/cpm1.h>
+
+  /* defines for IRQs */
+  #ifndef CONFIG_PPC_CPM_NEW_BINDING
+diff --git a/include/asm-powerpc/commproc.h b/include/asm-powerpc/cpm1.h
+similarity index 99%
+rename from include/asm-powerpc/commproc.h
+rename to include/asm-powerpc/cpm1.h
+index ec87b8f..901a00b 100644
+--- a/include/asm-powerpc/commproc.h
++++ b/include/asm-powerpc/cpm1.h
+@@ -14,8 +14,8 @@
+   * IDMA1 space.  The remaining DP RAM is available for buffer descriptors
+   * or other use.
+   */
+-#ifndef __CPM_8XX__
+-#define __CPM_8XX__
++#ifndef __CPM1__
++#define __CPM1__
+
+  #include <asm/8xx_immap.h>
+  #include <asm/ptrace.h>
+@@ -82,7 +82,7 @@ extern int cpm_dpfree(unsigned long offset);
+  extern unsigned long cpm_dpalloc_fixed(unsigned long offset, uint size, uint align);
+  extern void cpm_dpdump(void);
+  extern void *cpm_dpram_addr(unsigned long offset);
+-extern uint cpm_dpram_phys(u8* addr);
++extern uint cpm_dpram_phys(u8 *addr);
+  #endif
+
+  extern void cpm_setbrg(uint brg, uint rate);
+@@ -747,4 +747,4 @@ enum cpm_clk {
+
+  int cpm1_clk_setup(enum cpm_clk_target target, int clock, int mode);
+
+-#endif /* __CPM_8XX__ */
++#endif /* __CPM1__ */
+diff --git a/include/asm-ppc/commproc.h b/include/asm-ppc/cpm1.h
+similarity index 99%
+rename from include/asm-ppc/commproc.h
+rename to include/asm-ppc/cpm1.h
+index 5418d6d..03035ac 100644
+--- a/include/asm-ppc/commproc.h
++++ b/include/asm-ppc/cpm1.h
+@@ -14,8 +14,8 @@
+   * IDMA1 space.  The remaining DP RAM is available for buffer descriptors
+   * or other use.
+   */
+-#ifndef __CPM_8XX__
+-#define __CPM_8XX__
++#ifndef __CPM1__
++#define __CPM1__
+
+  #include <asm/8xx_immap.h>
+  #include <asm/ptrace.h>
+@@ -72,7 +72,7 @@ extern int cpm_dpfree(unsigned long offset);
+  extern unsigned long cpm_dpalloc_fixed(unsigned long offset, uint size, uint align);
+  extern void cpm_dpdump(void);
+  extern void *cpm_dpram_addr(unsigned long offset);
+-extern uint cpm_dpram_phys(u8* addr);
++extern uint cpm_dpram_phys(u8 *addr);
+  extern void cpm_setbrg(uint brg, uint rate);
+
+  extern void cpm_load_patch(volatile immap_t *immr);
+@@ -685,4 +685,4 @@ typedef struct risc_timer_pram {
+  extern void cpm_install_handler(int vec, void (*handler)(void *), void *dev_id);
+  extern void cpm_free_handler(int vec);
+
+-#endif /* __CPM_8XX__ */
++#endif /* __CPM1__ */
 -- 
 1.5.3.8
 
