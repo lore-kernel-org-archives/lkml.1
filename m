@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbYAWSto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYAWSmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757302AbYAWSto (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 13:49:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbYAWSth
+	id S1756005AbYAWSmQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 13:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYAWSmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 13:49:37 -0500
-Received: from mail.suse.de ([195.135.220.2]:36838 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753315AbYAWStg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 13:49:36 -0500
-Date: Wed, 23 Jan 2008 10:42:39 -0800
-From: Greg KH <gregkh@suse.de>
-To: Ian Abbott <abbotti@mev.co.uk>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, kristen.c.accardi@intel.com
-Subject: Re: [RESEND][PATCH-2.6.24-rc8] Fix fakephp deadlock
-Message-ID: <20080123184239.GA22852@suse.de>
-References: <4795FD78.6020208@mev.co.uk> <20080123174639.GB10387@kroah.com> <4797899E.6020207@mev.co.uk>
+	Wed, 23 Jan 2008 13:42:03 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:38814 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752856AbYAWSmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 13:42:01 -0500
+Date: Wed, 23 Jan 2008 10:41:59 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: akpm@linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       hanth Aravamudan <nacc@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
+       Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] Fix boot problem in situations where the boot CPU is
+ running on a memoryless node
+In-Reply-To: <20080123135513.GA14175@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0801231040160.11430@schroedinger.engr.sgi.com>
+References: <20080118213011.GC10491@csn.ul.ie>
+ <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com>
+ <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie>
+ <20080122214505.GA15674@aepfle.de> <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
+ <20080123075821.GA17713@aepfle.de> <20080123105044.GD21455@csn.ul.ie>
+ <20080123121459.GA18631@aepfle.de> <20080123125236.GA18876@aepfle.de>
+ <20080123135513.GA14175@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4797899E.6020207@mev.co.uk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 23, 2008 at 06:38:22PM +0000, Ian Abbott wrote:
-> On 23/01/08 17:46, Greg KH wrote:
->> On Tue, Jan 22, 2008 at 02:28:08PM +0000, Ian Abbott wrote:
->>> #include <linux/init.h>
->>> #include <linux/string.h>
->>> #include <linux/slab.h>
->>> +#include <linux/workqueue.h>
->>> #include "../pci.h"
->>> #if !defined(MODULE)
->>> @@ -63,10 +64,13 @@ struct dummy_slot {
->>> 	struct list_head node;
->>> 	struct hotplug_slot *slot;
->>> 	struct pci_dev *dev;
->>> +	struct work_struct remove_work;
->>> +	unsigned long removed;
->> You are treating "removed" as an atomic value, so why not just make it
->> an atomic_t?
->
-> Because I'm using it as a boolean?
+On Wed, 23 Jan 2008, Mel Gorman wrote:
 
-Heh, an unsigned long as a boolean?  Come on... :)
+> This patch adds the necessary checks to make sure a kmem_list3 exists for
+> the preferred node used when growing the cache. If the preferred node has
+> no nodelist then the currently running node is used instead. This
+> problem only affects the SLAB allocator, SLUB appears to work fine.
 
->> And what is protecting the fact that the flag could be set right after
->> it gets checked?  I don't see a lock here :)
->
-> Okay, it looks like there might be a race condition between enable_slot() 
-> and disable_slot() if some other task calls disable_slot() while 
-> enable_slot() is between the test_bit() and flush_workqueue() calls.  I can 
-> fix that by avoiding the call to flush_workqueue() in enable_slot() and 
-> allocating and queueing a work queue item to defer the call to 
-> pci_rescan().  And enable_slot() won't then need to check if the slot was 
-> marked as removed - it can just go ahead and allocate and queue a work 
-> item.
+That is a dangerous thing to do. SLAB per cpu queues will contain foreign 
+objects which may cause troubles when pushing the objects back. I think we 
+may be lucky that these objects are consumed at boot. If all of the 
+foreign objects are consumed at boot then we are fine. At least an 
+explanation as to this issue should be added to the patch.
 
-That sounds reasonable.
-
-thanks,
-
-greg k-h
