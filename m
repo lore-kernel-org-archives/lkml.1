@@ -1,111 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYAWS0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbYAWSMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbYAWS0p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 13:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYAWS0g
+	id S1756155AbYAWSMd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 13:12:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbYAWSMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 13:26:36 -0500
-Received: from bipbip.grupopie.com ([195.23.16.24]:40230 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752331AbYAWS0f (ORCPT
+	Wed, 23 Jan 2008 13:12:20 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:1186 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752207AbYAWSMR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 13:26:35 -0500
-Message-ID: <479786D4.9080601@grupopie.com>
-Date: Wed, 23 Jan 2008 18:26:28 +0000
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Wed, 23 Jan 2008 13:12:17 -0500
+Date: Wed, 23 Jan 2008 11:12:16 -0700
+From: Alex Chiang <achiang@hp.com>
+To: lenb@kernel.org, tony.luck@intel.com, anil.s.keshavamurthy@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-hotplug@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: ACPI processor hotplug broken?
+Message-ID: <20080123181216.GE11311@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>, lenb@kernel.org,
+	tony.luck@intel.com, anil.s.keshavamurthy@intel.com,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linux-hotplug@vger.kernel.org, linux-ia64@vger.kernel.org
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/6] POWERPC: use KSYM_NAME_LEN
-References: <20080123173832.GA12877@cvg>
-In-Reply-To: <20080123173832.GA12877@cvg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
-> Use KSYM_NAME_LEN instead of numeric value.
+Is anyone out there successfully using the ACPI processor driver
+and CPU hotplug? I've been playing with it for the past few days,
+and it *almost* works on my platform (ia64), but not quite.
 
-The patch series looks like a nice cleanup, except for a few things in 
-this patch.
+I can offline/online a CPU successfully via the sysfs interface.
+It's when I try and add ACPI into the mix that stuff starts going
+wonky.
 
-> Actually because of too small 'tmp' there is
-> a potential buffer overflow.
+My understanding of reading the code and the stuff in
+Documentation/cpu-hotplug.txt is that what should be happening is
+this:
 
-I don't think there is. "tmp" is not being passed to kallsyms to be 
-filled with a symbol name, but it's being used to hold a name written by 
-the user to lookup an address.
+	- firmware sends ACPI_NOTIFY_BUS_CHECK or
+	  ACPI_NOTIFY_EJECT_REQUEST events to
+	  acpi_processor_hotplug_notify.
 
-If the powerpc/xmon people feel that 63 characters is enough to hold a 
-symbol name, it's their problem, but there is no buffer overflow.
+	- if we got an eject request, simply emit a cpu offline
+	  uevent and let a udev script do the right thing (in
+	  this case, echo 0 > /sys/devices/system/cpu/cpuX/online)
 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> ---
-> 
-> Index: linux-2.6.git/arch/powerpc/xmon/xmon.c
-> ===================================================================
-> --- linux-2.6.git.orig/arch/powerpc/xmon/xmon.c	2008-01-23 19:04:42.000000000 +0300
-> +++ linux-2.6.git/arch/powerpc/xmon/xmon.c	2008-01-23 19:12:45.000000000 +0300
-> @@ -69,7 +69,7 @@ static unsigned long ndump = 64;
->  static unsigned long nidump = 16;
->  static unsigned long ncsum = 4096;
->  static int termch;
-> -static char tmpstr[128];
-> +static char tmpstr[KSYM_NAME_LEN];
+	- if we got a bus/device check, it gets a little hairier,
+	  since the notify handler seems like it's going to
+	  toggle the state of the cpu.
 
-This one seems ok, since "tmpstr" is used everywhere to hold symbol names.
+	  	- first, try to find the cpu on the bus. If it
+		  does not exist, then call acpi_processor_device_add
+		  and we're done (after emitting a cpu online
+		  uevent)
 
->  #define JMP_BUF_LEN	23
->  static long bus_error_jmp[JMP_BUF_LEN];
-> @@ -2354,7 +2354,7 @@ scanhex(unsigned long *vp)
->  		}
->  	} else if (c == '$') {
->  		int i;
-> -		for (i=0; i<63; i++) {
-> +		for (i = 0; i < sizeof(tmpstr) / 2; i++) {
+		- else, we've found the cpu on the bus, so then
+		  check to see if its id is in the range of
+		  acceptable values. If so, we assume that it's
+		  online, and that we want to offline it, so emit
+		  a cpu offline uevent
 
-This one is completely out of the blue. Why "sizeof(tmpstr) / 2"?
+		- if cpu is on the bus, but id is outside range
+		  of acceptable values, then call acpi_processor_start
+		  and emit a cpu online uevent
 
-It would make more sense to use "sizeof(tmpstr) - 1", but either way it 
-is a change in behavior.
+Where I'm running into difficulty is in the bus/device check
+logic if the CPU has already been offlined via sysfs.
 
->  			c = inchar();
->  			if (isspace(c)) {
->  				termch = c;
-> @@ -2467,7 +2467,7 @@ symbol_lookup(void)
->  {
->  	int type = inchar();
->  	unsigned long addr;
-> -	static char tmp[64];
-> +	static char tmp[KSYM_NAME_LEN];
->  
->  	switch (type) {
->  	case 'a':
-> @@ -2476,7 +2476,7 @@ symbol_lookup(void)
->  		termch = 0;
->  		break;
->  	case 's':
-> -		getstring(tmp, 64);
-> +		getstring(tmp, sizeof(tmp));
->  		if (setjmp(bus_error_jmp) == 0) {
->  			catch_memory_errors = 1;
->  			sync();
+For some reason, the call to acpi_bus_get_device() succeeds, so
+the "toggle" logic inside acpi_processor_hotplug_notify() thinks
+that we want to offline the CPU, rather than onlining it.
 
-This also introduces a change in behavior. It is still a nice cleanup, 
-though. So, if the powerpc people feel they can spare an extra 64 bytes 
-of stack here, I guess it's ok.
+We keep emitting cpu offline uevents, but really, we should be
+emitting cpu online uevents.
 
--- 
-Paulo Marques - www.grupopie.com
+So something seems off, and at this point, the possibilities I
+can see are:
 
-"As far as we know, our computer has never had an undetected error."
-Weisert
+	- at some point during the sysfs offline process
+	  (cpu_down and friends), platform code should have
+	  removed the ACPI CPU device from the bus
+
+	- the toggle logic inside acpi_processor_hotplug_notify
+	  is broken, and the call to acpi_bus_get_device is bogus
+
+Anyone have any hints? Anyone using this successfully? Poking
+around in the x86/ tree wasn't very informative for me.
+
+Thanks.
+
+/ac
+
