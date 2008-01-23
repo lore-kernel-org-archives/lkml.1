@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbYAWWG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbYAWWHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755278AbYAWWG7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 17:06:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbYAWWGi
+	id S1754598AbYAWWHo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 17:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbYAWWGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 17:06:38 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51286 "EHLO
+	Wed, 23 Jan 2008 17:06:43 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59311 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755613AbYAWWGh (ORCPT
+	by vger.kernel.org with ESMTP id S1755136AbYAWWGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 17:06:37 -0500
-Date: Wed, 23 Jan 2008 14:06:39 -0800
+	Wed, 23 Jan 2008 17:06:41 -0500
+Date: Wed, 23 Jan 2008 14:06:43 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthias Wolle <Matthias.Wolle@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: LowFree/LowMem problem
-Message-Id: <20080123140639.828566dd.akpm@linux-foundation.org>
-In-Reply-To: <200801210632.42497.Matthias.Wolle@gmx.de>
-References: <200801210632.42497.Matthias.Wolle@gmx.de>
+To: "Miguel Ojeda" <maxextreme@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [WARNING -rc8] at fs/sysfs/dir.c:424 sysfs_add_one(), related
+ with processor (ACPI)
+Message-Id: <20080123140643.b56ea8eb.akpm@linux-foundation.org>
+In-Reply-To: <653402b90801210953u71a85f91udce9e382d588af09@mail.gmail.com>
+References: <653402b90801210953u71a85f91udce9e382d588af09@mail.gmail.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,32 +27,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 21 Jan 2008 06:32:41 +0100 Matthias Wolle <Matthias.Wolle@gmx.de> wrote:
-> Hi,
+> On Mon, 21 Jan 2008 18:53:18 +0100 "Miguel Ojeda" <maxextreme@gmail.com> wrote:
+> Booting 2.6.24-rc8 I get this:
 > 
-> my company is running several servers with kernel 2.6.23.12.  This are Dual 
-> Quad Core servers (CPU Intel) with 16GB RAM using a 32Bit kernel.
-> After some days nicely running the oom killer killed our processes.
-> Our research discovered that the free low memory was reduced to about 11MB. We 
-> found out that the decreasing of low memory is related to the count off 
-> executed and ended programs.
 > 
-> I could reproduce the same bug on a maschine with 2GB RAM without PAE (option 
-> 4GB HIGHMEM). The following code reproduces the bug.
+> sysfs: duplicate filename 'fan' can not be created
+> WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> Pid: 819, comm: modprobe Not tainted 2.6.24-rc8 #2
+>  [<c01b18ff>] sysfs_add_one+0x9f/0xe0
+>  [<c01b1e38>] create_dir+0x48/0x90
+>  [<c01b1ea9>] sysfs_create_dir+0x29/0x50
+>  [<c024873f>] kobject_get+0xf/0x20
+>  [<c0248bff>] kobject_add+0x8f/0x1b0
+>  [<c0248db1>] kobject_register+0x21/0x50
+>  [<c02dc6f1>] bus_add_driver+0x71/0x1e0
+>  [<f886402f>] acpi_fan_init+0x2f/0x4d [fan]
+>  [<c0148986>] sys_init_module+0x126/0x19b0
+>  [<c024af87>] rb_insert_color+0xb7/0xe0
+>  [<c029dc8d>] acpi_bus_register_driver+0x0/0x38
+>  [<c0104286>] syscall_call+0x7/0xb
+>  =======================
+> kobject_add failed for fan with -EEXIST, don't try to register things
+> with the same name in the same directory.
+> Pid: 819, comm: modprobe Not tainted 2.6.24-rc8 #2
+>  [<c0248c81>] kobject_add+0x111/0x1b0
+>  [<c0248db1>] kobject_register+0x21/0x50
+>  [<c02dc6f1>] bus_add_driver+0x71/0x1e0
+>  [<f886402f>] acpi_fan_init+0x2f/0x4d [fan]
+>  [<c0148986>] sys_init_module+0x126/0x19b0
+>  [<c024af87>] rb_insert_color+0xb7/0xe0
+>  [<c029dc8d>] acpi_bus_register_driver+0x0/0x38
+>  [<c0104286>] syscall_call+0x7/0xb
+>  =======================
+> processor: exports duplicate symbol acpi_processor_set_thermal_limit
+> (owned by kernel)
 > 
-> #!/bin/sh
 > 
-> while [ true ]; do
-> 	cat /proc/meminfo| grep LowFree
-> done
 > 
-> Please run this script only on a test system. It reduces the low memory quite 
-> fast (within minutes). 
+> After that, there are five more traces. Attached dmesg output and .config.
+> 
 
-That would be very strange.
-
-> The latest available kernel 2.6.24-rc8 is also affected.
-> 
-
-Can you please send the full dmesg output from one such oom-killing event?
+Cc linux-acpi.  If nothing happens (not uncommon) then please raise a
+report agaisnt acpi at bugzilla.kernel.org, thanks.
 
