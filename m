@@ -1,340 +1,474 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYAWRyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbYAWRcG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbYAWRyv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:54:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYAWRyo
+	id S1757112AbYAWRcG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:32:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbYAWRYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:54:44 -0500
-Received: from styx.suse.cz ([82.119.242.94]:42907 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752433AbYAWRyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:54:43 -0500
-Date: Wed, 23 Jan 2008 18:54:41 +0100
-From: Jan Kara <jack@suse.cz>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: [PATCH RESEND] Handle i_size > s_maxbytes correctly
-Message-ID: <20080123175440.GF10144@duck.suse.cz>
+	Wed, 23 Jan 2008 12:24:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56241 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755517AbYAWRXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:23:08 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 27/27] NFS: Separate caching by superblock,
+	explicitly if necessary [try #2]
+To: Trond.Myklebust@netapp.com
+Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, dhowells@redhat.com
+Date: Wed, 23 Jan 2008 17:23:02 +0000
+Message-ID: <20080123172302.11107.41427.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
+References: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+Separate caching by superblock, explicitly if necessary.  This means mounts of
+the same remote data with different parameters do not share cache objects for
+common files.  The administrator may also provide a uniquifier to further
+enhance the uniqueness.
 
-  I'm resending improved patch for the problem:
-  Shortly, the problem is that we can mount a filesystem which has files
-with i_size greater than s_maxbytes (or generally the maximum size VFS can
-handle) - the easiest to test is to export NFS from a 64 bit machine to a
-32 bit one. Create a 16TB+4KB (sparse) file on the server and you'll notice
-that you can read only first 4 KB from the client (because end_index
-overflows in do_generic_mapping_read()). Clustered filesystems have similar
-problems and classical local filesystems can be affected as well (if you
-create a filesystem on a different machine than where you read it).  The
-patch introduces two functions for conversion of an offset into index /
-block number and these functions handle overflows. Andrew was concerned
-about the cost of checks for such exotic cases, so currently the cost is
-around 600 bytes of text size on i386 without LFS, 74 bytes on x86_64,
-impact on run time should be quite small (only one additional test when
-converting i_size to indexes or block numbers).
-  A different solution (even with smaller impact) would be to not allow
-files with i_size > s_maxbytes in VFS at all. For local filesystems we can
-just check this on open and everything is fine but with remote filesystems
-such as OCFS2 (or NFS) filesize can be changed on the fly from a different
-machine. So to avoid problems we can either introduce some locking to
-prevent changes of i_size from other machines while we are in critical
-sections (awww, I really don't think this is better) or truncate i_size to
-s_maxbytes when we update i_size from what we've received via network /
-shared storage (but then we'd have to track whether user truncated file to
-some size or whether fs truncated it just for safety and apps could be
-confused too). So I don't think this is really feasible.
-  Any suggestions for further improvement or other solutions welcome.
-Andrew, can I talk you to including this version of the fix ;)?
+Where it is otherwise impossible to distinguish superblocks because all the
+parameters are identical, but the 'nosharecache' option is supplied, a
+uniquifying string must be supplied, else only the first mount will be
+permitted to use the cache.
 
-                                                                Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+If there's a key collision, then the second mount will disable caching and give
+a warning into the kernel log.
+
+There are three variant NFS mount options that can be added to a mount command
+to control caching for a mount.  Only the last one specified takes effect:
+
+ (*) Adding "fsc" will request caching.
+
+ (*) Adding "fsc=<string>" will request caching and also specify a uniquifier.
+
+ (*) Adding "nofsc" will disable caching.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
-Although we don't allow writes over s_maxbytes, it can happen that a file's
-size is larger than s_maxbytes. For example we can write the file from a
-computer with a different architecture (which has larger s_maxbytes), boot a
-kernel with a different set of config options (CONFIG_LBD...), or if two nodes
-in a [Ocfs2, and likely Gfs2] cluster have mounted the same file system and
-have different s_maxbytes.  Thus we have to make sure we don't crash / corrupt
-data when seeing such file (page offset of the last page needn't fit into
-pgoff_t, block offset into sector_t). Firstly, we make read() and mmap() return
-error when user tries to access the file above s_maxbytes, secondly we
-introduce functions offset_to_index_max() and offset_to_block_max() which
-return maximum number fitting into pgoff_t or sector_t, respectively, in
-case the number computed from the given offset would overflow. These
-functions should be used for conversion whenever we aren't sure whether the
-result fits in the destination type (which is actually only if converting
-i_size because all other cases are handled earlier in read/write/mmap).
+ fs/nfs/fscache-def.c      |   33 ++++++++++++
+ fs/nfs/fscache.c          |  122 ++++++++++++++++++++++++++++++++++++++++++++-
+ fs/nfs/fscache.h          |   46 ++++++++++++++++-
+ fs/nfs/internal.h         |    3 +
+ fs/nfs/super.c            |   24 +++++++--
+ include/linux/nfs_fs_sb.h |    3 +
+ 6 files changed, 220 insertions(+), 11 deletions(-)
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-CC: Mark Fasheh <mark.fasheh@oracle.com>
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 7249e01..4323a6d 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1623,7 +1623,8 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
+diff --git a/fs/nfs/fscache-def.c b/fs/nfs/fscache-def.c
+index bc20b7d..1d10b4e 100644
+--- a/fs/nfs/fscache-def.c
++++ b/fs/nfs/fscache-def.c
+@@ -117,6 +117,39 @@ const struct fscache_cookie_def nfs_cache_server_index_def = {
+ };
  
- 	BUG_ON(!PageLocked(page));
- 
--	last_block = (i_size_read(inode) - 1) >> inode->i_blkbits;
-+	last_block = offset_to_block_max(i_size_read(inode) - 1,
-+			inode->i_blkbits);
- 
- 	if (!page_has_buffers(page)) {
- 		create_empty_buffers(page, blocksize,
-@@ -2084,7 +2085,8 @@ int block_read_full_page(struct page *page, get_block_t *get_block)
- 	head = page_buffers(page);
- 
- 	iblock = (sector_t)page->index << (PAGE_CACHE_SHIFT - inode->i_blkbits);
--	lblock = (i_size_read(inode)+blocksize-1) >> inode->i_blkbits;
-+	lblock = offset_to_block_max(i_size_read(inode)+blocksize-1,
-+			inode->i_blkbits);
- 	bh = head;
- 	nr = 0;
- 	i = 0;
-@@ -2604,7 +2606,7 @@ int nobh_writepage(struct page *page, get_block_t *get_block,
- {
- 	struct inode * const inode = page->mapping->host;
- 	loff_t i_size = i_size_read(inode);
--	const pgoff_t end_index = i_size >> PAGE_CACHE_SHIFT;
-+	const pgoff_t end_index = offset_to_index_max(i_size);
- 	unsigned offset;
- 	int ret;
- 
-@@ -2804,7 +2806,7 @@ int block_write_full_page(struct page *page, get_block_t *get_block,
- {
- 	struct inode * const inode = page->mapping->host;
- 	loff_t i_size = i_size_read(inode);
--	const pgoff_t end_index = i_size >> PAGE_CACHE_SHIFT;
-+	const pgoff_t end_index = offset_to_index_max(i_size);
- 	unsigned offset;
- 
- 	/* Is the page fully inside i_size? */
-diff --git a/fs/mpage.c b/fs/mpage.c
-index d54f8f8..4d1d12c 100644
---- a/fs/mpage.c
-+++ b/fs/mpage.c
-@@ -190,7 +190,8 @@ do_mpage_readpage(struct bio *bio, struct page *page, unsigned nr_pages,
- 
- 	block_in_file = (sector_t)page->index << (PAGE_CACHE_SHIFT - blkbits);
- 	last_block = block_in_file + nr_pages * blocks_per_page;
--	last_block_in_file = (i_size_read(inode) + blocksize - 1) >> blkbits;
-+	last_block_in_file = offset_to_block_max(i_size_read(inode) +
-+			blocksize - 1, blkbits);
- 	if (last_block > last_block_in_file)
- 		last_block = last_block_in_file;
- 	page_block = 0;
-@@ -526,7 +527,7 @@ static int __mpage_writepage(struct page *page, struct writeback_control *wbc,
- 	 */
- 	BUG_ON(!PageUptodate(page));
- 	block_in_file = (sector_t)page->index << (PAGE_CACHE_SHIFT - blkbits);
--	last_block = (i_size - 1) >> blkbits;
-+	last_block = offset_to_block_max(i_size - 1, blkbits);
- 	map_bh.b_page = page;
- 	for (page_block = 0; page_block < blocks_per_page; ) {
- 
-@@ -557,7 +558,7 @@ static int __mpage_writepage(struct page *page, struct writeback_control *wbc,
- 	first_unmapped = page_block;
- 
- page_is_mapped:
--	end_index = i_size >> PAGE_CACHE_SHIFT;
-+	end_index = offset_to_index_max(i_size);
- 	if (page->index >= end_index) {
- 		/*
- 		 * The page straddles i_size.  It must be zeroed out on each
-diff --git a/fs/read_write.c b/fs/read_write.c
-index ea1f94c..ed91acc 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -16,6 +16,7 @@
- #include <linux/syscalls.h>
- #include <linux/pagemap.h>
- #include <linux/splice.h>
-+#include <linux/mount.h>
- #include "read_write.h"
- 
- #include <asm/uaccess.h>
-@@ -263,6 +264,11 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
- 		return -EINVAL;
- 	if (unlikely(!access_ok(VERIFY_WRITE, buf, count)))
- 		return -EFAULT;
-+	if (unlikely(*pos + count > file->f_vfsmnt->mnt_sb->s_maxbytes)) {
-+		if (*pos >= file->f_vfsmnt->mnt_sb->s_maxbytes)
-+			return -EOVERFLOW;
-+		count = file->f_vfsmnt->mnt_sb->s_maxbytes - *pos;
-+	}
- 
- 	ret = rw_verify_area(READ, file, pos, count);
- 	if (ret >= 0) {
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index b3ec4a4..826e718 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1394,6 +1394,17 @@ static inline void inode_dec_link_count(struct inode *inode)
- 	mark_inode_dirty(inode);
- }
- 
-+/* Convert byte offset to block number, if number would overflow
-+ * sector_t, return maximum value fitting there. */
-+static inline sector_t offset_to_block_max(loff_t off, int shift)
-+{
-+	loff_t block = off >> shift;
-+
-+	if (unlikely(block != (sector_t)block))
-+		return ~(sector_t)0;
-+	return block;
-+}
-+
- extern void touch_atime(struct vfsmount *mnt, struct dentry *dentry);
- static inline void file_accessed(struct file *file)
- {
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index db8a410..adfd195 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -148,6 +148,19 @@ static inline loff_t page_offset(struct page *page)
- 	return ((loff_t)page->index) << PAGE_CACHE_SHIFT;
- }
- 
-+/*
-+ * Return index of a page on given offset, if index would overflow pgoff_t,
-+ * return the maximum number fitting there.
+ /*
++ * Generate a key to describe a superblock key in the main NFS index
 + */
-+static inline pgoff_t offset_to_index_max(loff_t off)
++static uint16_t nfs_super_get_key(const void *cookie_netfs_data,
++				  void *buffer, uint16_t bufmax)
 +{
-+	loff_t index = off >> PAGE_CACHE_SHIFT;
++	const struct nfs_fscache_key *key;
++	const struct nfs_server *nfss = cookie_netfs_data;
++	uint16_t len;
 +
-+	if (unlikely(index != (pgoff_t)index))
-+		return ~((pgoff_t)0);
-+	return index;
++	key = nfss->fscache_key;
++	len = sizeof(key->key) + key->key.uniq_len;
++	if (len > bufmax) {
++		len = 0;
++	} else {
++		memcpy(buffer, &key->key, sizeof(key->key));
++		memcpy(buffer + sizeof(key->key),
++		       key->key.uniquifier, key->key.uniq_len);
++	}
++
++	return len;
 +}
 +
- static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
- 					unsigned long address)
- {
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 01e260f..e37be0c 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -380,7 +380,7 @@ int filemap_fdatawait(struct address_space *mapping)
- 		return 0;
- 
- 	return wait_on_page_writeback_range(mapping, 0,
--				(i_size - 1) >> PAGE_CACHE_SHIFT);
-+				offset_to_index_max(i_size - 1));
- }
- EXPORT_SYMBOL(filemap_fdatawait);
- 
-@@ -925,7 +925,7 @@ page_ok:
- 		 */
- 
- 		isize = i_size_read(inode);
--		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
-+		end_index = offset_to_index_max(isize - 1);
- 		if (unlikely(!isize || index > end_index)) {
- 			page_cache_release(page);
- 			goto out;
-@@ -1310,7 +1310,7 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- 	int did_readaround = 0;
- 	int ret = 0;
- 
--	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-+	size = offset_to_index_max(i_size_read(inode) + PAGE_CACHE_SIZE - 1);
- 	if (vmf->pgoff >= size)
- 		return VM_FAULT_SIGBUS;
- 
-@@ -1385,7 +1385,7 @@ retry_find:
- 		goto page_not_uptodate;
- 
- 	/* Must recheck i_size under page lock */
--	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-+	size = offset_to_index_max(i_size_read(inode) + PAGE_CACHE_SIZE - 1);
- 	if (unlikely(vmf->pgoff >= size)) {
- 		unlock_page(page);
- 		page_cache_release(page);
-diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
-index 5fa3fbf..e264b37 100644
---- a/mm/filemap_xip.c
-+++ b/mm/filemap_xip.c
-@@ -68,7 +68,7 @@ do_xip_mapping_read(struct address_space *mapping,
- 	if (!isize)
- 		goto out;
- 
--	end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
-+	end_index = offset_to_index_max(isize - 1);
- 	for (;;) {
- 		struct page *page;
- 		unsigned long nr, ret;
-@@ -220,7 +220,7 @@ static int xip_file_fault(struct vm_area_struct *area, struct vm_fault *vmf)
- 
- 	/* XXX: are VM_FAULT_ codes OK? */
- 
--	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-+	size = offset_to_index_max(i_size_read(inode) + PAGE_CACHE_SIZE - 1);
- 	if (vmf->pgoff >= size)
- 		return VM_FAULT_SIGBUS;
- 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 15678aa..e28ca6e 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -983,6 +983,13 @@ unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
- 			if (locks_verify_locked(inode))
- 				return -EAGAIN;
- 
-+			/*
-+			 * Make sure we don't map more than fs is able to handle
-+			 */
-+			if ((((loff_t)pgoff) << PAGE_SHIFT) + len >
-+			    inode->i_sb->s_maxbytes)
-+				return -EINVAL;
++/*
++ * The superblock index for the filesystem is defined by all the NFS parameters
++ * that might cause a separate superblock
++ */
++const struct fscache_cookie_def nfs_cache_super_index_def = {
++	.name		= "NFS.supers",
++	.type 		= FSCACHE_COOKIE_TYPE_INDEX,
++	.get_key	= nfs_super_get_key,
++};
 +
- 			vm_flags |= VM_SHARED | VM_MAYSHARE;
- 			if (!(file->f_mode & FMODE_WRITE))
- 				vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
-diff --git a/mm/readahead.c b/mm/readahead.c
-index c9c50ca..67ccd91 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -136,7 +136,7 @@ __do_page_cache_readahead(struct address_space *mapping, struct file *filp,
- 	if (isize == 0)
- 		goto out;
++/*
+  * Generate a key to describe an NFS inode in an NFS server's index
+  */
+ static uint16_t nfs_fh_get_key(const void *cookie_netfs_data,
+diff --git a/fs/nfs/fscache.c b/fs/nfs/fscache.c
+index 465f961..af9c65c 100644
+--- a/fs/nfs/fscache.c
++++ b/fs/nfs/fscache.c
+@@ -23,6 +23,9 @@
  
--	end_index = ((isize - 1) >> PAGE_CACHE_SHIFT);
-+	end_index = offset_to_index_max(isize - 1);
+ #define NFSDBG_FACILITY		NFSDBG_FSCACHE
  
- 	/*
- 	 * Preallocate as many pages as we will need.
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index f071648..0951c7a 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -1082,7 +1082,7 @@ static int setup_swap_extents(struct swap_info_struct *sis, sector_t *span)
- 	 */
- 	probe_block = 0;
- 	page_no = 0;
--	last_block = i_size_read(inode) >> blkbits;
-+	last_block = offset_to_block_max(i_size_read(inode), blkbits);
- 	while ((probe_block + blocks_per_page) <= last_block &&
- 			page_no < sis->max) {
- 		unsigned block_in_page;
-@@ -1517,6 +1517,7 @@ asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
- 		goto bad_swap;
++static struct rb_root nfs_fscache_keys = RB_ROOT;
++static DEFINE_SPINLOCK(nfs_fscache_keys_lock);
++
+ /*
+  * Get the per-client index cookie for an NFS client if the appropriate mount
+  * flag was set
+@@ -52,6 +55,118 @@ void nfs_fscache_release_client_cookie(struct nfs_client *clp)
+ }
+ 
+ /*
++ * get a cookie for a superblock
++ */
++void nfs_fscache_get_super_cookie(struct super_block *sb,
++				  struct nfs_parsed_mount_data *data)
++{
++	struct nfs_fscache_key *key, *xkey;
++	struct nfs_server *nfss = NFS_SB(sb);
++	struct rb_node **p, *parent;
++	const char *uniq = data->fscache_uniq ?: "";
++	int diff, ulen;
++
++	ulen = strlen(uniq);
++	key = kzalloc(sizeof(*key) + ulen, GFP_KERNEL);
++	if (!key)
++		return;
++
++	key->nfs_client = nfss->nfs_client;
++	key->key.super.s_flags = sb->s_flags & NFS_MS_MASK;
++	key->key.nfs_server.flags = nfss->flags;
++	key->key.nfs_server.rsize = nfss->rsize;
++	key->key.nfs_server.wsize = nfss->wsize;
++	key->key.nfs_server.acregmin = nfss->acregmin;
++	key->key.nfs_server.acregmax = nfss->acregmax;
++	key->key.nfs_server.acdirmin = nfss->acdirmin;
++	key->key.nfs_server.acdirmax = nfss->acdirmax;
++	key->key.nfs_server.fsid = nfss->fsid;
++	key->key.rpc_auth.au_flavor = nfss->client->cl_auth->au_flavor;
++
++	key->key.uniq_len = ulen;
++	memcpy(key->key.uniquifier, uniq, ulen);
++
++	spin_lock(&nfs_fscache_keys_lock);
++	p = &nfs_fscache_keys.rb_node;
++	parent = NULL;
++	while (*p) {
++		parent = *p;
++		xkey = rb_entry(parent, struct nfs_fscache_key, node);
++
++		if (key->nfs_client < xkey->nfs_client)
++			goto go_left;
++		if (key->nfs_client > xkey->nfs_client)
++			goto go_right;
++
++		diff = memcmp(&key->key, &xkey->key, sizeof(key->key));
++		if (diff < 0)
++			goto go_left;
++		if (diff > 0)
++			goto go_right;
++
++		if (key->key.uniq_len == 0)
++			goto non_unique;
++		diff = memcmp(key->key.uniquifier,
++			      xkey->key.uniquifier,
++			      key->key.uniq_len);
++		if (diff < 0)
++			goto go_left;
++		if (diff > 0)
++			goto go_right;
++		goto non_unique;
++
++	go_left:
++		p = &(*p)->rb_left;
++		continue;
++	go_right:
++		p = &(*p)->rb_right;
++	}
++
++	rb_link_node(&key->node, parent, p);
++	rb_insert_color(&key->node, &nfs_fscache_keys);
++	spin_unlock(&nfs_fscache_keys_lock);
++	nfss->fscache_key = key;
++
++	/* create a cache index for looking up filehandles */
++	nfss->fscache = fscache_acquire_cookie(nfss->nfs_client->fscache,
++					       &nfs_cache_super_index_def,
++					       nfss);
++	dfprintk(FSCACHE, "NFS: get superblock cookie (0x%p/0x%p)\n",
++		 nfss, nfss->fscache);
++	return;
++
++non_unique:
++	spin_unlock(&nfs_fscache_keys_lock);
++	kfree(key);
++	nfss->fscache_key = NULL;
++	nfss->fscache = NULL;
++	printk(KERN_WARNING "NFS:"
++	       " Cache request denied due to non-unique superblock keys\n");
++}
++
++/*
++ * release a per-superblock cookie
++ */
++void nfs_fscache_release_super_cookie(struct super_block *sb)
++{
++	struct nfs_server *nfss = NFS_SB(sb);
++
++	dfprintk(FSCACHE, "NFS: releasing superblock cookie (0x%p/0x%p)\n",
++		 nfss, nfss->fscache);
++
++	fscache_relinquish_cookie(nfss->fscache, 0);
++	nfss->fscache = NULL;
++
++	if (nfss->fscache_key) {
++		spin_lock(&nfs_fscache_keys_lock);
++		rb_erase(&nfss->fscache_key->node, &nfs_fscache_keys);
++		spin_unlock(&nfs_fscache_keys_lock);
++		kfree(nfss->fscache_key);
++		nfss->fscache_key = NULL;
++	}
++}
++
++/*
+  * Display statistics through /proc/pid/mountstats
+  */
+ void nfs_fscache_show_stats(struct seq_file *m, struct nfs_server *nfss)
+@@ -90,10 +205,9 @@ void nfs_fscache_enable_fh_cookie(struct inode *inode)
+ 		return;
+ 
+ 	if ((NFS_SB(sb)->options & NFS_OPTION_FSCACHE)) {
+-		nfsi->fscache = fscache_acquire_cookie(
+-			NFS_SB(sb)->nfs_client->fscache,
+-			&nfs_cache_fh_index_def,
+-			nfsi);
++		nfsi->fscache = fscache_acquire_cookie(NFS_SB(sb)->fscache,
++						       &nfs_cache_fh_index_def,
++						       nfsi);
+ 
+ 		dfprintk(FSCACHE, "NFS: get FH cookie (0x%p/0x%p/0x%p)\n",
+ 			 sb, nfsi, nfsi->fscache);
+diff --git a/fs/nfs/fscache.h b/fs/nfs/fscache.h
+index 9a735fc..484920a 100644
+--- a/fs/nfs/fscache.h
++++ b/fs/nfs/fscache.h
+@@ -20,10 +20,47 @@
+ #include <linux/fscache.h>
+ 
+ /*
++ * set of NFS FS-Cache objects that form a superblock key
++ */
++struct nfs_fscache_key {
++	struct rb_node		node;
++	struct nfs_client	*nfs_client;	/* the server */
++
++	/* the elements of the unique key - as used by nfs_compare_super() and
++	 * nfs_compare_mount_options() to distinguish superblocks */
++	struct {
++		struct {
++			unsigned long	s_flags;	/* various flags (& NFS_MS_MASK) */
++		} super;
++
++		struct {
++			struct nfs_fsid fsid;
++			int		flags;
++			unsigned int	rsize;		/* read size */
++			unsigned int	wsize;		/* write size */
++			unsigned int	acregmin;	/* attr cache timeouts */
++			unsigned int	acregmax;
++			unsigned int	acdirmin;
++			unsigned int	acdirmax;
++		} nfs_server;
++
++		struct {
++			rpc_authflavor_t au_flavor;
++		} rpc_auth;
++
++		/* uniquifier - can be used if nfs_server.flags includes
++		 * NFS_MOUNT_UNSHARED  */
++		u8 uniq_len;
++		char uniquifier[0];
++	} key;
++};
++
++/*
+  * fscache-def.c
+  */
+ extern struct fscache_netfs nfs_cache_netfs;
+ extern const struct fscache_cookie_def nfs_cache_server_index_def;
++extern const struct fscache_cookie_def nfs_cache_super_index_def;
+ extern const struct fscache_cookie_def nfs_cache_fh_index_def;
+ 
+ extern int nfs_fscache_register(void);
+@@ -34,6 +71,9 @@ extern void nfs_fscache_unregister(void);
+  */
+ extern void nfs_fscache_get_client_cookie(struct nfs_client *);
+ extern void nfs_fscache_release_client_cookie(struct nfs_client *);
++extern void nfs_fscache_get_super_cookie(struct super_block *,
++					 struct nfs_parsed_mount_data *);
++extern void nfs_fscache_release_super_cookie(struct super_block *);
+ extern void nfs_fscache_show_stats(struct seq_file *, struct nfs_server *);
+ extern void nfs_fscache_init_fh_cookie(struct inode *);
+ extern void nfs_fscache_enable_fh_cookie(struct inode *);
+@@ -57,8 +97,7 @@ extern int nfs_fscache_release_page(struct page *, gfp_t);
+  */
+ static inline const char *nfs_server_fscache_state(struct nfs_server *server)
+ {
+-	if (server->nfs_client->fscache &&
+-	    (server->options & NFS_OPTION_FSCACHE))
++	if (server->fscache && (server->options & NFS_OPTION_FSCACHE))
+ 		return "yes";
+ 	return "no ";
+ }
+@@ -118,6 +157,9 @@ static inline void nfs_fscache_unregister(void) {}
+ static inline void nfs_fscache_get_client_cookie(struct nfs_client *clp) {}
+ static inline void nfs4_fscache_get_client_cookie(struct nfs_client *clp) {}
+ static inline void nfs_fscache_release_client_cookie(struct nfs_client *clp) {}
++static inline void nfs_fscache_get_super_cookie(struct super_block *sb,
++						struct nfs_parsed_mount_data *data) {}
++static inline void nfs_fscache_release_super_cookie(struct super_block *sb) {}
+ static inline void nfs_fscache_show_stats(struct seq_file *m,
+ 					  struct nfs_server *nfss) {}
+ static inline const char *nfs_server_fscache_state(struct nfs_server *server)
+diff --git a/fs/nfs/internal.h b/fs/nfs/internal.h
+index ef09e00..68c5516 100644
+--- a/fs/nfs/internal.h
++++ b/fs/nfs/internal.h
+@@ -4,6 +4,8 @@
+ 
+ #include <linux/mount.h>
+ 
++#define NFS_MS_MASK (MS_RDONLY|MS_NOSUID|MS_NODEV|MS_NOEXEC|MS_SYNCHRONOUS)
++
+ struct nfs_string;
+ 
+ /* Maximum number of readahead requests
+@@ -40,6 +42,7 @@ struct nfs_parsed_mount_data {
+ 	unsigned int		auth_flavor_len;
+ 	rpc_authflavor_t	auth_flavors[1];
+ 	char			*client_address;
++	char			*fscache_uniq;
+ 
+ 	struct {
+ 		struct sockaddr_in	address;
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index 0542550..3e77681 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -91,6 +91,7 @@ enum {
+ 	/* Mount options that take string arguments */
+ 	Opt_sec, Opt_proto, Opt_mountproto,
+ 	Opt_addr, Opt_mountaddr, Opt_clientaddr,
++	Opt_fscache_uniq,
+ 
+ 	/* Mount options that are ignored */
+ 	Opt_userspace, Opt_deprecated,
+@@ -125,6 +126,7 @@ static match_table_t nfs_mount_option_tokens = {
+ 	{ Opt_sharecache, "sharecache" },
+ 	{ Opt_nosharecache, "nosharecache" },
+ 	{ Opt_fscache, "fsc" },
++	{ Opt_fscache_uniq, "fsc=%s" },
+ 	{ Opt_nofscache, "nofsc" },
+ 
+ 	{ Opt_port, "port=%u" },
+@@ -702,15 +704,24 @@ static int nfs_parse_mount_options(char *raw,
+ 			break;
+ 		case Opt_nosharecache:
+ 			mnt->flags |= NFS_MOUNT_UNSHARED;
+-			mnt->options &= ~NFS_OPTION_FSCACHE;
+ 			break;
+ 		case Opt_fscache:
+-			/* sharing is mandatory with fscache */
+ 			mnt->options |= NFS_OPTION_FSCACHE;
+-			mnt->flags &= ~NFS_MOUNT_UNSHARED;
++			kfree(mnt->fscache_uniq);
++			mnt->fscache_uniq = NULL;
+ 			break;
+ 		case Opt_nofscache:
+ 			mnt->options &= ~NFS_OPTION_FSCACHE;
++			kfree(mnt->fscache_uniq);
++			mnt->fscache_uniq = NULL;
++			break;
++		case Opt_fscache_uniq:
++			string = match_strdup(args);
++			if (!string)
++				goto out_nomem;
++			kfree(mnt->fscache_uniq);
++			mnt->fscache_uniq = string;
++			mnt->options |= NFS_OPTION_FSCACHE;
+ 			break;
+ 
+ 		case Opt_port:
+@@ -1288,8 +1299,6 @@ static void nfs_clone_super(struct super_block *sb,
+  	nfs_initialise_sb(sb);
+ }
+ 
+-#define NFS_MS_MASK (MS_RDONLY|MS_NOSUID|MS_NODEV|MS_NOEXEC|MS_SYNCHRONOUS)
+-
+ static int nfs_compare_mount_options(const struct super_block *s, const struct nfs_server *b, int flags)
+ {
+ 	const struct nfs_server *a = s->s_fs_info;
+@@ -1403,6 +1412,7 @@ static int nfs_get_sb(struct file_system_type *fs_type,
+ 	if (!s->s_root) {
+ 		/* initial superblock/root creation */
+ 		nfs_fill_super(s, &data);
++		nfs_fscache_get_super_cookie(s, &data);
  	}
  
-+	/* This can possibly overflow but we discover that later */
- 	swapfilesize = i_size_read(inode) >> PAGE_SHIFT;
+ 	mntroot = nfs_get_root(s, &mntfh);
+@@ -1418,6 +1428,7 @@ static int nfs_get_sb(struct file_system_type *fs_type,
  
- 	/*
+ out:
+ 	kfree(data.nfs_server.hostname);
++	kfree(data.fscache_uniq);
+ 	return error;
+ 
+ out_err_nosb:
+@@ -1438,6 +1449,7 @@ static void nfs_kill_super(struct super_block *s)
+ 	struct nfs_server *server = NFS_SB(s);
+ 
+ 	kill_anon_super(s);
++	nfs_fscache_release_super_cookie(s);
+ 	nfs_free_server(server);
+ }
+ 
+@@ -1752,6 +1764,7 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
+ 	if (!s->s_root) {
+ 		/* initial superblock/root creation */
+ 		nfs4_fill_super(s);
++		nfs_fscache_get_super_cookie(s, &data);
+ 	}
+ 
+ 	mntroot = nfs4_get_root(s, &mntfh);
+@@ -1769,6 +1782,7 @@ out:
+ 	kfree(data.client_address);
+ 	kfree(data.nfs_server.export_path);
+ 	kfree(data.nfs_server.hostname);
++	kfree(data.fscache_uniq);
+ 	return error;
+ 
+ out_free:
+diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
+index 3c8e15d..3309614 100644
+--- a/include/linux/nfs_fs_sb.h
++++ b/include/linux/nfs_fs_sb.h
+@@ -109,6 +109,9 @@ struct nfs_server {
+ 	dev_t			s_dev;		/* superblock dev numbers */
+ 
+ #ifdef CONFIG_NFS_FSCACHE
++	struct nfs_fscache_key	*fscache_key;	/* unique key for superblock */
++	struct fscache_cookie	*fscache;	/* superblock cookie */
++
+ 	/* statistical counters for local caching */
+ 	atomic_t		fscache_cnt_read_ok;
+ 	atomic_t		fscache_cnt_read_fail;
+
