@@ -1,75 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbYAWH0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbYAWHaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756109AbYAWH0R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 02:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbYAWH0D
+	id S1755636AbYAWHaB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 02:30:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYAWH3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 02:26:03 -0500
-Received: from mga02.intel.com ([134.134.136.20]:55810 "EHLO mga02.intel.com"
+	Wed, 23 Jan 2008 02:29:54 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60860 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753654AbYAWH0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 02:26:01 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,237,1199692800"; 
-   d="scan'208";a="328657951"
-Subject: Re: Could you please merge the x86_64 EFI boot support patchset?
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org, hpa@zytor.com,
-       ak@suse.de, adaplas@pol.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20080123010051.969d21fd.pj@sgi.com>
-References: <1194831950.17223.44.camel@caritas-dev.intel.com>
-	 <20080123010051.969d21fd.pj@sgi.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 23 Jan 2008 15:26:06 +0800
-Message-Id: <1201073166.4945.41.camel@caritas-dev.intel.com>
+	id S1752646AbYAWH3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 02:29:53 -0500
+Date: Wed, 23 Jan 2008 08:30:01 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, perex@perex.cz,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] sound: fix opti9xx/miro section mismatch
+Message-ID: <20080123073001.GC19132@uranus.ravnborg.org>
+References: <20080122213947.f044c040.randy.dunlap@oracle.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 23 Jan 2008 07:25:30.0038 (UTC) FILETIME=[21E55D60:01C85D91]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080122213947.f044c040.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-23 at 01:00 -0600, Paul Jackson wrote:
-> In Nov 2007, Huang Ying wrote:
-> > Could you please merge the following patchset:
-> > 
-> > [PATCH 0/2 -v3] x86_64 EFI boot support
-> > [PATCH 1/2 -v3] x86_64 EFI boot support: EFI frame buffer driver
-> > [PATCH 2/2 -v3] x86_64 EFI boot support: EFI boot document
+On Tue, Jan 22, 2008 at 09:39:47PM -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Huang - what has become of this patchset?
-
-This patchset has been merged into Linux 2.6.24.
-
-> We (SGI) have designs on a big honkin NUMA box using x86_64 arch, and
-> we are runnning up against the arbitrary limits on the memory map size
-> due to the ancient 4k zero page size limit (hence H. Peter Anvin added
-> to the CC list, since he knows a bazillion times more about any such
-> limits than I do.).  The limits on 128 or so local chunks of memory
-> imposed by the kernel code that invokes Int 15 E820h are too small for
-> us.
+> snd_opti93x_mixer() is only called by __devinit snd_opti93x_probe(),
+> so the former can also be __devinit.
 > 
-> Since we are already accustomed to dealing with EFI on our IA64
-> Itanium boxes, I'm figuring that it will be easier in the short run,
-> and better in the long run, to just use EFI on these upcoming big
-> x86_64 NUMA boxes.
+> snd_miro_mixer() is only called by __devinit snd_miro_probe(),
+> so the former can also be __devinit.
+> 
+> sound/isa/opti9xx/opti92x-ad1848.c:
+> WARNING: vmlinux.o(.text+0xf91cd7): Section mismatch: reference to .init.data:snd_opti93x_controls (between 'snd_opti93x_mixer' and 'snd_card_opti9xx_free')
+> WARNING: vmlinux.o(.text+0xf91d66): Section mismatch: reference to .init.data:snd_miro_controls (between 'snd_opti93x_mixer' and 'snd_card_opti9xx_free')
+> 
+> opti9xx/miro.c:
+> WARNING: vmlinux.o(.text+0xf926c2): Section mismatch: reference to .init.data:snd_miro_controls (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+> WARNING: vmlinux.o(.text+0xf926e5): Section mismatch: reference to .init.data:snd_miro_eq_controls (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+> WARNING: vmlinux.o(.text+0xf926f9): Section mismatch: reference to .init.data:snd_miro_line_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+> WARNING: vmlinux.o(.text+0xf92716): Section mismatch: reference to .init.data:snd_miro_amp_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+> WARNING: vmlinux.o(.text+0xf9273e): Section mismatch: reference to .init.data:snd_miro_preamp_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+> WARNING: vmlinux.o(.text+0xf92764): Section mismatch: reference to .init.data:snd_miro_capture_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+> WARNING: vmlinux.o(.text+0xf92783): Section mismatch: reference to .init.data:snd_miro_radio_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+> WARNING: vmlinux.o(.text+0xf9279a): Section mismatch: reference to .init.data:snd_miro_eq_controls (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+> WARNING: vmlinux.o(.text+0xf927b9): Section mismatch: reference to .init.data:snd_miro_radio_control (between 'snd_miro_mixer' and 'snd_legacy_find_free_ioport')
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-Unfortunately, the new EFI support patches do not use EFI memory map for
-system boot up (just for runtime service support). The EFI memory map is
-converted into E820 memory map in bootloader. The main reason for this
-change is to remove the duplication between E820 memory map and EFI
-memory map handling code.
-
-So, I think the resolution for your problem is the "struct setup_data"
-mechanism proposed by H. Peter Anvin. That is a linked list data
-structure for boot parameter without size limitation. I have ever writen
-a patch for it, but there are some issues for implementation scheme.
-Most people think it should be based on the "early reservation/early
-allocation" mechanism from Andi Kleen. So I am waiting that is merged by
--mm or git-x86.
-
-Best Regards,
-Huang Ying
-
+> ---
+>  sound/isa/opti9xx/miro.c           |    2 +-
+>  sound/isa/opti9xx/opti92x-ad1848.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux-2.6.24-rc8-git5.orig/sound/isa/opti9xx/miro.c
+> +++ linux-2.6.24-rc8-git5/sound/isa/opti9xx/miro.c
+> @@ -662,7 +662,7 @@ static int __devinit snd_set_aci_init_va
+>  	return 0;
+>  }
+>  
+> -static int snd_miro_mixer(struct snd_miro *miro)
+> +static int __devinit snd_miro_mixer(struct snd_miro *miro)
+>  {
+>  	struct snd_card *card;
+>  	unsigned int idx;
+> --- linux-2.6.24-rc8-git5.orig/sound/isa/opti9xx/opti92x-ad1848.c
+> +++ linux-2.6.24-rc8-git5/sound/isa/opti9xx/opti92x-ad1848.c
+> @@ -1595,7 +1595,7 @@ OPTi93X_DOUBLE("Capture Volume", 0, OPTi
+>  }
+>  };
+>                                          
+> -static int snd_opti93x_mixer(struct snd_opti93x *chip)
+> +static int __devinit snd_opti93x_mixer(struct snd_opti93x *chip)
+>  {
+>  	struct snd_card *card;
+>  	struct snd_kcontrol_new knew;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
