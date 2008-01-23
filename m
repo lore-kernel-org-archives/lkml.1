@@ -1,38 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbYAWJOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbYAWJVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752868AbYAWJOy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 04:14:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYAWJOm
+	id S1752588AbYAWJVW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 04:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYAWJVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 04:14:42 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:18293 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751134AbYAWJOl convert rfc822-to-8bit (ORCPT
+	Wed, 23 Jan 2008 04:21:09 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:59191 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751101AbYAWJVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 04:14:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=svm/JOJLtiSEKgZyLR7Eu+UgbA5EXWigVOmDrQut6l2+y5MyjDt5seAjc4FP3b9ofI16tWCUeg8F/OQK6rjh5vUhWkibJtm90SUIho0hniNXJIBG818KmERxUogS7yobMUJ+v8hMCsFcbFd10IZiimEuYn2K56gs3/Iv/ydPnAM=
-Message-ID: <9b06e8d20801230114v1e09e5e8s6a4b438562c62619@mail.gmail.com>
-Date: Wed, 23 Jan 2008 10:14:39 +0100
-From: "=?ISO-8859-1?Q?Lo=EFc_Greni=E9?=" <loic.grenie@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: vmalloc_32 and SLAB incompatible in 2.6.23.9
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 23 Jan 2008 04:21:08 -0500
+Date: Wed, 23 Jan 2008 01:27:31 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_64: should use array directly for early_ptr
+In-reply-to: <200801230056.16424.yinghai.lu@sun.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Travis <travis@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Message-id: <200801230127.32113.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200801230056.16424.yinghai.lu@sun.com>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-     Since GFP_DMA32 is not considered a valid flag, vmalloc_32 and
-  SLAB are incompatible in kernel 2.6.23.9 (and probably later ones).
-  It might be as simple as adding GFP_DMA32 everywhere where
-  GFP_DMA is used in mm/slab.c, but I don't dare do it. I personally
-  switched to SLUB.
+[PATCH] x86_64: should use array directly for early_ptr
 
-      Thanks,
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-          Loïc Grenié
+--- a/arch/x86/kernel/setup_64.c	2008-01-23 01:21:06.000000000 -0800
++++ b/arch/x86/kernel/setup_64.c	2008-01-23 01:21:24.000000000 -0800
+@@ -344,10 +344,10 @@
+ 
+ #ifdef CONFIG_SMP
+ 	/* setup to use the early static init tables during kernel startup */
+-	x86_cpu_to_apicid_early_ptr = (void *)&x86_cpu_to_apicid_init;
+-	x86_bios_cpu_apicid_early_ptr = (void *)&x86_bios_cpu_apicid_init;
++	x86_cpu_to_apicid_early_ptr = (void *)x86_cpu_to_apicid_init;
++	x86_bios_cpu_apicid_early_ptr = (void *)x86_bios_cpu_apicid_init;
+ #ifdef CONFIG_NUMA
+-	x86_cpu_to_node_map_early_ptr = (void *)&x86_cpu_to_node_map_init;
++	x86_cpu_to_node_map_early_ptr = (void *)x86_cpu_to_node_map_init;
+ #endif
+ #endif
+ 
