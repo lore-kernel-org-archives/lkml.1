@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbYAWR1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbYAWR0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757285AbYAWR1p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:27:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755836AbYAWRWn
+	id S1754237AbYAWR0S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbYAWRWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:22:43 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56132 "EHLO mx1.redhat.com"
+	Wed, 23 Jan 2008 12:22:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56075 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755582AbYAWRWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:22:05 -0500
+	id S1753335AbYAWRVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:21:38 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 15/27] FS-Cache: Provide an add_wait_queue_tail() function
+Subject: [PATCH 10/27] Security: Add a kernel_service object class to SELinux
 	[try #2]
 To: Trond.Myklebust@netapp.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 23 Jan 2008 17:21:59 +0000
-Message-ID: <20080123172158.11107.54199.stgit@warthog.procyon.org.uk>
+Date: Wed, 23 Jan 2008 17:21:32 +0000
+Message-ID: <20080123172132.11107.27461.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 References: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,90 +32,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide an add_wait_queue_tail() function to add a waiter to the back of a
-wait queue instead of the front.
+Add a 'kernel_service' object class to SELinux and give this object class two
+access vectors: 'use_as_override' and 'create_files_as'.
+
+The first vector is used to grant a process the right to nominate an alternate
+process security ID for the kernel to use as an override for the SELinux
+subjective security when accessing stuff on behalf of another process.
+
+For example, CacheFiles when accessing the cache on behalf on a process
+accessing an NFS file needs to use a subjective security ID appropriate to the
+cache rather then the one the calling process is using.  The cachefilesd
+daemon will nominate the security ID to be used.
+
+The second vector is used to grant a process the right to nominate a file
+creation label for a kernel service to use.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/pagemap.h |    7 +++++--
- include/linux/wait.h    |    2 ++
- kernel/wait.c           |   18 ++++++++++++++++++
- mm/filemap.c            |    2 +-
- 4 files changed, 26 insertions(+), 3 deletions(-)
+ security/selinux/include/av_perm_to_string.h |    2 ++
+ security/selinux/include/av_permissions.h    |    2 ++
+ security/selinux/include/class_to_string.h   |    1 +
+ security/selinux/include/flask.h             |    1 +
+ 4 files changed, 6 insertions(+), 0 deletions(-)
 
 
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index 1ab7f9a..00b108c 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -211,8 +211,11 @@ static inline void wait_on_page_writeback(struct page *page)
+diff --git a/security/selinux/include/av_perm_to_string.h b/security/selinux/include/av_perm_to_string.h
+index caa0634..6ba8200 100644
+--- a/security/selinux/include/av_perm_to_string.h
++++ b/security/selinux/include/av_perm_to_string.h
+@@ -164,3 +164,5 @@
+    S_(SECCLASS_DCCP_SOCKET, DCCP_SOCKET__NAME_CONNECT, "name_connect")
+    S_(SECCLASS_MEMPROTECT, MEMPROTECT__MMAP_ZERO, "mmap_zero")
+    S_(SECCLASS_PEER, PEER__RECV, "recv")
++   S_(SECCLASS_KERNEL_SERVICE, KERNEL_SERVICE__USE_AS_OVERRIDE, "use_as_override")
++   S_(SECCLASS_KERNEL_SERVICE, KERNEL_SERVICE__CREATE_FILES_AS, "create_files_as")
+diff --git a/security/selinux/include/av_permissions.h b/security/selinux/include/av_permissions.h
+index c2b5bb2..9500ba3 100644
+--- a/security/selinux/include/av_permissions.h
++++ b/security/selinux/include/av_permissions.h
+@@ -829,3 +829,5 @@
+ #define DCCP_SOCKET__NAME_CONNECT                 0x00800000UL
+ #define MEMPROTECT__MMAP_ZERO                     0x00000001UL
+ #define PEER__RECV                                0x00000001UL
++#define KERNEL_SERVICE__USE_AS_OVERRIDE           0x00000001UL
++#define KERNEL_SERVICE__CREATE_FILES_AS           0x00000002UL
+diff --git a/security/selinux/include/class_to_string.h b/security/selinux/include/class_to_string.h
+index b1b0d1d..efe9efa 100644
+--- a/security/selinux/include/class_to_string.h
++++ b/security/selinux/include/class_to_string.h
+@@ -71,3 +71,4 @@
+     S_(NULL)
+     S_(NULL)
+     S_("peer")
++    S_("kernel_service")
+diff --git a/security/selinux/include/flask.h b/security/selinux/include/flask.h
+index 09e9dd2..2bc251a 100644
+--- a/security/selinux/include/flask.h
++++ b/security/selinux/include/flask.h
+@@ -51,6 +51,7 @@
+ #define SECCLASS_DCCP_SOCKET                             60
+ #define SECCLASS_MEMPROTECT                              61
+ #define SECCLASS_PEER                                    68
++#define SECCLASS_KERNEL_SERVICE                          69
  
- extern void end_page_writeback(struct page *page);
- 
--/*
-- * Wait for a PG_owner_priv_2 to become clear
-+/**
-+ * wait_on_page_owner_priv_2 - Wait for PG_owner_priv_2 to become clear
-+ * @page: The page to monitor
-+ *
-+ * Wait for a PG_owner_priv_2 to become clear on the specified page.
-  */
- static inline void wait_on_page_owner_priv_2(struct page *page)
- {
-diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 0e68628..f1038d0 100644
---- a/include/linux/wait.h
-+++ b/include/linux/wait.h
-@@ -118,6 +118,8 @@ static inline int waitqueue_active(wait_queue_head_t *q)
- #define is_sync_wait(wait)	(!(wait) || ((wait)->private))
- 
- extern void FASTCALL(add_wait_queue(wait_queue_head_t *q, wait_queue_t * wait));
-+extern void FASTCALL(add_wait_queue_tail(wait_queue_head_t *q,
-+					 wait_queue_t *wait));
- extern void FASTCALL(add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t * wait));
- extern void FASTCALL(remove_wait_queue(wait_queue_head_t *q, wait_queue_t * wait));
- 
-diff --git a/kernel/wait.c b/kernel/wait.c
-index 444ddbf..7acc9cc 100644
---- a/kernel/wait.c
-+++ b/kernel/wait.c
-@@ -29,6 +29,24 @@ void fastcall add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait)
- }
- EXPORT_SYMBOL(add_wait_queue);
- 
-+/**
-+ * add_wait_queue_tail - Add a waiter to the back of a waitqueue
-+ * @q: the wait queue to append the waiter to
-+ * @wait: the waiter to be queued
-+ *
-+ * Add a waiter to the back of a waitqueue so that it gets woken up last.
-+ */
-+void fastcall add_wait_queue_tail(wait_queue_head_t *q, wait_queue_t *wait)
-+{
-+	unsigned long flags;
-+
-+	wait->flags &= ~WQ_FLAG_EXCLUSIVE;
-+	spin_lock_irqsave(&q->lock, flags);
-+	__add_wait_queue_tail(q, wait);
-+	spin_unlock_irqrestore(&q->lock, flags);
-+}
-+EXPORT_SYMBOL(add_wait_queue_tail);
-+
- void fastcall add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait)
- {
- 	unsigned long flags;
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 5551410..90ccb10 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -572,7 +572,7 @@ void end_page_writeback(struct page *page)
- EXPORT_SYMBOL(end_page_writeback);
- 
- /**
-- * end_page_own - Clear PG_owner_priv_2 and wake up any waiters
-+ * end_page_owner_priv_2 - Clear PG_owner_priv_2 and wake up any waiters
-  * @page: the page
-  *
-  * Clear PG_owner_priv_2 and wake up any processes waiting for that event.
+ /*
+  * Security identifier indices for initial entities
 
