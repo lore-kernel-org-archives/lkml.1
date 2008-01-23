@@ -1,125 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbYAWQyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbYAWRAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754476AbYAWQyQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 11:54:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYAWQyA
+	id S1754245AbYAWRAB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:00:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYAWQ7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 11:54:00 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:48839 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752267AbYAWQx7 (ORCPT
+	Wed, 23 Jan 2008 11:59:54 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:59640 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752394AbYAWQ7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 11:53:59 -0500
-Date: Wed, 23 Jan 2008 11:53:53 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 19/20 -v5] Trace irq disabled critical timings
-Message-ID: <20080123165353.GA12598@goodmis.org>
-References: <20080123160236.969334052@goodmis.org> <20080123160444.197366580@goodmis.org>
+	Wed, 23 Jan 2008 11:59:53 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=D2g58fT0XiqdQ6ZG2zjMECcYeISwl8VzdAknG//kh10lLBE9OMxH3Um/f8bsDdtgP
+	mRV8P3bwketumkAhfMSVA==
+Message-ID: <6599ad830801230859l298da3a7r208502993276c86b@mail.gmail.com>
+Date: Wed, 23 Jan 2008 08:59:49 -0800
+From: "Paul Menage" <menage@google.com>
+To: righiandr@users.sourceforge.net
+Subject: Re: [RFC] [PATCH] cgroup: limit network bandwidth
+Cc: "Naveen Gupta" <ngupta@google.com>, LKML <linux-kernel@vger.kernel.org>,
+       "David Miller" <davem@davemloft.net>
+In-Reply-To: <47976FE9.5030600@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080123160444.197366580@goodmis.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <47970448.7010609@users.sourceforge.net>
+	 <20080123092417.GA4542@balbir.in.ibm.com>
+	 <47976FE9.5030600@users.sourceforge.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 23, 2008 at 11:02:55AM -0500, Steven Rostedt wrote:
-> This patch adds latency tracing for critical timings
-> (how long interrupts are disabled for).
-> 
->  "irqsoff" is added to /debugfs/tracing/available_tracers
-> 
+On Jan 23, 2008 8:48 AM, Andrea Righi <righiandr@users.sourceforge.net> wrote:
+> >
+> > 1. Implementation of soft limits (limit on contention of resource)
+> >    gets harder
+>
+> Why? do you mean implementing a grace time when the soft-limit is
+> exceeded? this could be done in cgroup_nl_throttle() introducing 3
+> additional attributes to struct netlimit (i.e. hard_limit,
+> last_time_exceeded grace_time) and perform something like:
+> ...
+>         if ((current_rate > hard_limit) ||
+>             time_after(jiffies, last_time_exceeded + grace_time))
+>                         schedule_timeout(sleep);
+> ...
 
-> Index: linux-mcount.git/kernel/lockdep.c
-> ===================================================================
-> --- linux-mcount.git.orig/kernel/lockdep.c	2008-01-23 10:26:11.000000000 -0500
-> +++ linux-mcount.git/kernel/lockdep.c	2008-01-23 10:27:53.000000000 -0500
-> @@ -39,6 +39,7 @@
->  #include <linux/irqflags.h>
->  #include <linux/utsname.h>
->  #include <linux/hash.h>
-> +#include <linux/mcount.h>
->  
->  #include <asm/sections.h>
->  
-> @@ -2009,7 +2010,7 @@ void early_boot_irqs_on(void)
->  /*
->   * Hardirqs will be enabled:
->   */
-> -void trace_hardirqs_on(void)
-> +void notrace trace_hardirqs_on_caller(unsigned long a0)
->  {
->  	struct task_struct *curr = current;
->  	unsigned long ip;
-> @@ -2050,14 +2051,24 @@ void trace_hardirqs_on(void)
->  	curr->hardirq_enable_ip = ip;
->  	curr->hardirq_enable_event = ++curr->irq_events;
->  	debug_atomic_inc(&hardirqs_on_events);
-> +	time_hardirqs_on(CALLER_ADDR0, a0);
->  }
-> +EXPORT_SYMBOL(trace_hardirqs_on_caller);
->  
-> +void notrace trace_hardirqs_on(void) {
-> +	trace_hardirqs_on_caller(CALLER_ADDR0);
-> +}
->  EXPORT_SYMBOL(trace_hardirqs_on);
->  
+He's talking about cases where we want the behaviour to be
+work-conserving, whilst still offering guarantees in the event of
+contention. e.g. cgroups A and B each get a 20% guarantee on the TX
+path if they need it, but anyone can use any otherwise-idle bandwidth.
+(This is relatively straightforward to set up from userspace with the
+standard Linux traffic control tools).
 
-vvvvvvvvvvvvvvvv
+>
+> Yes, the integration with iptables (as Paul said), and traffic shaping
+> rules would be absolutely the right way(tm) in perspective. I was just
+> proposing a possible simple API to implement the limiting stuff.
 
-> +void notrace trace_hardirqs_off(void) {
-> +	trace_hardirqs_off_caller(CALLER_ADDR0);
-> +}
-> +EXPORT_SYMBOL(trace_hardirqs_off);
-> +
+But this issue (traffic control for cgroups) is too complex to be
+described by a simple API. Any simple API you choose to try to
+describe the limiting directly will be insufficient for a good number
+of the potential users. Better to just provide a (very simple) API to
+hook into the existing (complex) traffic control API and leave the
+tricky stuff to userspace, where anyone can construct arbitrarily
+complex queueing schemes with a shell script and a few calls to "tc".
 
-^^^^^^^^^^^^^^^^
-
->  /*
->   * Hardirqs were disabled:
->   */
-> -void trace_hardirqs_off(void)
-> +void notrace trace_hardirqs_off_caller(unsigned long a0)
->  {
->  	struct task_struct *curr = current;
->  
-> @@ -2075,10 +2086,15 @@ void trace_hardirqs_off(void)
->  		curr->hardirq_disable_ip = _RET_IP_;
->  		curr->hardirq_disable_event = ++curr->irq_events;
->  		debug_atomic_inc(&hardirqs_off_events);
-> +		time_hardirqs_off(CALLER_ADDR0, a0);
->  	} else
->  		debug_atomic_inc(&redundant_hardirqs_off);
->  }
->  
-
-
-> +void notrace trace_hardirqs_off(void) {
-> +	trace_hardirqs_off_caller(CALLER_ADDR0);
-> +}
-> +
->  EXPORT_SYMBOL(trace_hardirqs_off);
-> 
-
-
-Bah, I didn't refresh quilt! I'll update the website with a -v5a with
-this fix.
-
--- Steve
-
->  /*
+Paul
