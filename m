@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbYAWR3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbYAWR0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756354AbYAWR3M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 12:29:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbYAWRXV
+	id S1756912AbYAWR0u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 12:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbYAWRWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 12:23:21 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56192 "EHLO mx1.redhat.com"
+	Wed, 23 Jan 2008 12:22:32 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56102 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755367AbYAWRW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 12:22:27 -0500
+	id S1754340AbYAWRVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 12:21:50 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 19/27] CacheFiles: Add a hook to write a single page of data
-	to an inode [try #2]
+Subject: [PATCH 12/27] Security: Make NFSD work with detached security [try #2]
 To: Trond.Myklebust@netapp.com
 Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
        linux-security-module@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 23 Jan 2008 17:22:20 +0000
-Message-ID: <20080123172220.11107.70001.stgit@warthog.procyon.org.uk>
+Date: Wed, 23 Jan 2008 17:21:43 +0000
+Message-ID: <20080123172143.11107.1028.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 References: <20080123172038.11107.86025.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
@@ -32,172 +31,279 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an address space operation to write one single page of data to an inode at
-a page-aligned location (thus permitting the implementation to be highly
-optimised).  The data source is a single page.
+Make NFSD work with detached security, using the patches that excise the
+security information from task_struct to struct task_security as a base.
 
-This is used by CacheFiles to store the contents of netfs pages into their
-backing file pages.
+Each time NFSD wants a new security descriptor (to do NFS4 recovery or just to
+do NFS operations), a task_security record is derived from NFSD's *objective*
+security, modified and then applied as the *subjective* security.  This means
+(a) the changes are not visible to anyone looking at NFSD through /proc, (b)
+there is no leakage between two consecutive ops with different security
+configurations.
 
-Supply a generic implementation for this that uses the write_begin() and
-write_end() address_space operations to bind a copy directly into the page
-cache.
+Consideration should probably be given to caching the task_security record on
+the basis that there'll probably be several ops that will want to use any
+particular security configuration.
 
-Hook the Ext2 and Ext3 operations to the generic implementation.
+Furthermore, nfs4recover.c perhaps ought to set an appropriate LSM context on
+the record pointed to by rec_security so that the disk is accessed
+appropriately (see set_security_override[_from_ctx]()).
+
+NOTE!  This patch must be rolled in to one of the earlier security patches to
+make it compile fully.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- fs/ext2/inode.c    |    2 ++
- fs/ext3/inode.c    |    3 +++
- include/linux/fs.h |    7 ++++++
- mm/filemap.c       |   61 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 73 insertions(+), 0 deletions(-)
+ fs/nfsd/auth.c        |   31 +++++++++++++++++-------
+ fs/nfsd/nfs4recover.c |   64 +++++++++++++++++++++++++++++++------------------
+ 2 files changed, 62 insertions(+), 33 deletions(-)
 
 
-diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-index b1ab32a..cfa56e6 100644
---- a/fs/ext2/inode.c
-+++ b/fs/ext2/inode.c
-@@ -796,6 +796,7 @@ const struct address_space_operations ext2_aops = {
- 	.direct_IO		= ext2_direct_IO,
- 	.writepages		= ext2_writepages,
- 	.migratepage		= buffer_migrate_page,
-+	.write_one_page		= generic_file_buffered_write_one_page,
- };
+diff --git a/fs/nfsd/auth.c b/fs/nfsd/auth.c
+index b2e19c8..32d8e34 100644
+--- a/fs/nfsd/auth.c
++++ b/fs/nfsd/auth.c
+@@ -6,6 +6,7 @@
  
- const struct address_space_operations ext2_aops_xip = {
-@@ -814,6 +815,7 @@ const struct address_space_operations ext2_nobh_aops = {
- 	.direct_IO		= ext2_direct_IO,
- 	.writepages		= ext2_writepages,
- 	.migratepage		= buffer_migrate_page,
-+	.write_one_page		= generic_file_buffered_write_one_page,
- };
+ #include <linux/types.h>
+ #include <linux/sched.h>
++#include <linux/cred.h>
+ #include <linux/sunrpc/svc.h>
+ #include <linux/sunrpc/svcauth.h>
+ #include <linux/nfsd/nfsd.h>
+@@ -28,11 +29,17 @@ int nfsexp_flags(struct svc_rqst *rqstp, struct svc_export *exp)
  
- /*
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index bc918d3..435c684 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -1780,6 +1780,7 @@ static const struct address_space_operations ext3_ordered_aops = {
- 	.releasepage	= ext3_releasepage,
- 	.direct_IO	= ext3_direct_IO,
- 	.migratepage	= buffer_migrate_page,
-+	.write_one_page	= generic_file_buffered_write_one_page,
- };
+ int nfsd_setuser(struct svc_rqst *rqstp, struct svc_export *exp)
+ {
++	struct task_security *sec, *old;
+ 	struct svc_cred	cred = rqstp->rq_cred;
+ 	int i;
+ 	int flags = nfsexp_flags(rqstp, exp);
+ 	int ret;
  
- static const struct address_space_operations ext3_writeback_aops = {
-@@ -1794,6 +1795,7 @@ static const struct address_space_operations ext3_writeback_aops = {
- 	.releasepage	= ext3_releasepage,
- 	.direct_IO	= ext3_direct_IO,
- 	.migratepage	= buffer_migrate_page,
-+	.write_one_page	= generic_file_buffered_write_one_page,
- };
- 
- static const struct address_space_operations ext3_journalled_aops = {
-@@ -1807,6 +1809,7 @@ static const struct address_space_operations ext3_journalled_aops = {
- 	.bmap		= ext3_bmap,
- 	.invalidatepage	= ext3_invalidatepage,
- 	.releasepage	= ext3_releasepage,
-+	.write_one_page	= generic_file_buffered_write_one_page,
- };
- 
- void ext3_set_aops(struct inode *inode)
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 850d3fc..a3c3369 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -479,6 +479,11 @@ struct address_space_operations {
- 	int (*migratepage) (struct address_space *,
- 			struct page *, struct page *);
- 	int (*launder_page) (struct page *);
-+	/* write the contents of the source page over the page at the specified
-+	 * index in the target address space (the source page does not need to
-+	 * be related to the target address space) */
-+	int (*write_one_page)(struct address_space *, pgoff_t, struct page *);
++	/* derive the new security record from nfsd's objective security */
++	sec = get_kernel_security(current);
++	if (!sec)
++		return -ENOMEM;
 +
- };
+ 	if (flags & NFSEXP_ALLSQUASH) {
+ 		cred.cr_uid = exp->ex_anon_uid;
+ 		cred.cr_gid = exp->ex_anon_gid;
+@@ -56,24 +63,30 @@ int nfsd_setuser(struct svc_rqst *rqstp, struct svc_export *exp)
+ 		get_group_info(cred.cr_group_info);
  
- /*
-@@ -1801,6 +1806,8 @@ extern ssize_t generic_file_direct_write(struct kiocb *, const struct iovec *,
- 		unsigned long *, loff_t, loff_t *, size_t, size_t);
- extern ssize_t generic_file_buffered_write(struct kiocb *, const struct iovec *,
- 		unsigned long, loff_t, loff_t *, size_t, ssize_t);
-+extern int generic_file_buffered_write_one_page(struct address_space *,
-+						pgoff_t, struct page *);
- extern ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos);
- extern ssize_t do_sync_write(struct file *filp, const char __user *buf, size_t len, loff_t *ppos);
- extern void do_generic_mapping_read(struct address_space *mapping,
-diff --git a/mm/filemap.c b/mm/filemap.c
-index ba669a8..adfba8a 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -2337,6 +2337,67 @@ generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
+ 	if (cred.cr_uid != (uid_t) -1)
+-		current->act_as->fsuid = cred.cr_uid;
++		sec->fsuid = cred.cr_uid;
+ 	else
+-		current->act_as->fsuid = exp->ex_anon_uid;
++		sec->fsuid = exp->ex_anon_uid;
+ 	if (cred.cr_gid != (gid_t) -1)
+-		current->act_as->fsgid = cred.cr_gid;
++		sec->fsgid = cred.cr_gid;
+ 	else
+-		current->act_as->fsgid = exp->ex_anon_gid;
++		sec->fsgid = exp->ex_anon_gid;
+ 
+-	if (!cred.cr_group_info)
++	if (!cred.cr_group_info) {
++		put_task_security(sec);
+ 		return -ENOMEM;
+-	ret = set_groups(current->act_as, cred.cr_group_info);
++	}
++	ret = set_groups(sec, cred.cr_group_info);
+ 	put_group_info(cred.cr_group_info);
+ 	if ((cred.cr_uid)) {
+-		cap_t(current->act_as->cap_effective) &= ~CAP_NFSD_MASK;
++		cap_t(sec->cap_effective) &= ~CAP_NFSD_MASK;
+ 	} else {
+-		cap_t(current->act_as->cap_effective) |=
+-			(CAP_NFSD_MASK & current->act_as->cap_permitted);
++		cap_t(sec->cap_effective) |= CAP_NFSD_MASK & sec->cap_permitted;
+ 	}
++
++	/* set the new security as nfsd's subjective security */
++	old = current->act_as;
++	current->act_as = sec;
++	put_task_security(old);
+ 	return ret;
  }
- EXPORT_SYMBOL(generic_file_buffered_write);
  
-+/**
-+ * generic_file_buffered_write_one_page - Write a single page of data to an
-+ *	inode
-+ * @mapping - The address space of the target inode
-+ * @index - The target page in the target inode to fill
-+ * @source - The data to write into the target page
-+ *
-+ * Write the data from the source page to the page in the nominated address
-+ * space at the @index specified.  Note that the file will not be extended if
-+ * the page crosses the EOF marker, in which case only the first part of the
-+ * page will be written.
-+ *
-+ * The @source page does not need to have any association with the file or the
-+ * target page offset.
+diff --git a/fs/nfsd/nfs4recover.c b/fs/nfsd/nfs4recover.c
+index bf0217a..ae91262 100644
+--- a/fs/nfsd/nfs4recover.c
++++ b/fs/nfsd/nfs4recover.c
+@@ -46,27 +46,37 @@
+ #include <linux/scatterlist.h>
+ #include <linux/crypto.h>
+ #include <linux/sched.h>
++#include <linux/cred.h>
+ 
+ #define NFSDDBG_FACILITY                NFSDDBG_PROC
+ 
+ /* Globals */
+ static struct nameidata rec_dir;
+ static int rec_dir_init = 0;
++static struct task_security *rec_security;
+ 
++/*
++ * switch the special recovery access security in on the current task's
++ * subjective security
 + */
-+int generic_file_buffered_write_one_page(struct address_space *mapping,
-+					 pgoff_t index,
-+					 struct page *source)
-+{
-+	const struct address_space_operations *a_ops = mapping->a_ops;
-+	struct page *page;
-+	unsigned len;
-+	loff_t isize, pos;
-+	void *fsdata;
-+	int ret;
+ static void
+-nfs4_save_user(uid_t *saveuid, gid_t *savegid)
++nfs4_begin_secure(struct task_security **saved_sec)
+ {
+-	*saveuid = current->act_as->fsuid;
+-	*savegid = current->act_as->fsgid;
+-	current->act_as->fsuid = 0;
+-	current->act_as->fsgid = 0;
++	*saved_sec = current->act_as;
++	current->act_as = get_task_security(rec_security);
+ }
+ 
++/*
++ * return the current task's subjective security to its former glory
++ */
+ static void
+-nfs4_reset_user(uid_t saveuid, gid_t savegid)
++nfs4_end_secure(struct task_security *saved_sec)
+ {
+-	current->act_as->fsuid = saveuid;
+-	current->act_as->fsgid = savegid;
++	struct task_security *discard;
 +
-+	pos = index;
-+	pos <<= PAGE_CACHE_SHIFT;
++	discard = current->act_as;
++	current->act_as = saved_sec;
++	put_task_security(discard);
+ }
+ 
+ static void
+@@ -128,10 +138,9 @@ nfsd4_sync_rec_dir(void)
+ int
+ nfsd4_create_clid_dir(struct nfs4_client *clp)
+ {
++	struct task_security *saved_sec;
+ 	char *dname = clp->cl_recdir;
+ 	struct dentry *dentry;
+-	uid_t uid;
+-	gid_t gid;
+ 	int status;
+ 
+ 	dprintk("NFSD: nfsd4_create_clid_dir for \"%s\"\n", dname);
+@@ -139,7 +148,7 @@ nfsd4_create_clid_dir(struct nfs4_client *clp)
+ 	if (!rec_dir_init || clp->cl_firststate)
+ 		return 0;
+ 
+-	nfs4_save_user(&uid, &gid);
++	nfs4_begin_secure(&saved_sec);
+ 
+ 	/* lock the parent */
+ 	mutex_lock(&rec_dir.dentry->d_inode->i_mutex);
+@@ -163,7 +172,7 @@ out_unlock:
+ 		clp->cl_firststate = 1;
+ 		nfsd4_sync_rec_dir();
+ 	}
+-	nfs4_reset_user(uid, gid);
++	nfs4_end_secure(saved_sec);
+ 	dprintk("NFSD: nfsd4_create_clid_dir returns %d\n", status);
+ 	return status;
+ }
+@@ -206,20 +215,19 @@ nfsd4_build_dentrylist(void *arg, const char *name, int namlen,
+ static int
+ nfsd4_list_rec_dir(struct dentry *dir, recdir_func *f)
+ {
++	struct task_security *saved_sec;
+ 	struct file *filp;
+ 	struct dentry_list_arg dla = {
+ 		.parent = dir,
+ 	};
+ 	struct list_head *dentries = &dla.dentries;
+ 	struct dentry_list *child;
+-	uid_t uid;
+-	gid_t gid;
+ 	int status;
+ 
+ 	if (!rec_dir_init)
+ 		return 0;
+ 
+-	nfs4_save_user(&uid, &gid);
++	nfs4_begin_secure(&saved_sec);
+ 
+ 	filp = dentry_open(dget(dir), mntget(rec_dir.mnt), O_RDONLY);
+ 	status = PTR_ERR(filp);
+@@ -244,7 +252,7 @@ out:
+ 		dput(child->dentry);
+ 		kfree(child);
+ 	}
+-	nfs4_reset_user(uid, gid);
++	nfs4_end_secure(saved_sec);
+ 	return status;
+ }
+ 
+@@ -306,17 +314,16 @@ out:
+ void
+ nfsd4_remove_clid_dir(struct nfs4_client *clp)
+ {
+-	uid_t uid;
+-	gid_t gid;
++	struct task_security *saved_sec;
+ 	int status;
+ 
+ 	if (!rec_dir_init || !clp->cl_firststate)
+ 		return;
+ 
+ 	clp->cl_firststate = 0;
+-	nfs4_save_user(&uid, &gid);
++	nfs4_begin_secure(&saved_sec);
+ 	status = nfsd4_unlink_clid_dir(clp->cl_recdir, HEXDIR_LEN-1);
+-	nfs4_reset_user(uid, gid);
++	nfs4_end_secure(saved_sec);
+ 	if (status == 0)
+ 		nfsd4_sync_rec_dir();
+ 	if (status)
+@@ -387,8 +394,7 @@ nfsd4_recdir_load(void) {
+ void
+ nfsd4_init_recdir(char *rec_dirname)
+ {
+-	uid_t			uid = 0;
+-	gid_t			gid = 0;
++	struct task_security	*saved_sec;
+ 	int 			status;
+ 
+ 	printk("NFSD: Using %s as the NFSv4 state recovery directory\n",
+@@ -396,7 +402,15 @@ nfsd4_init_recdir(char *rec_dirname)
+ 
+ 	BUG_ON(rec_dir_init);
+ 
+-	nfs4_save_user(&uid, &gid);
++	/* derive the security record from this task's objective security */
++	rec_security = get_kernel_security(current);
++	if (!rec_security) {
++		printk("NFSD:"
++		       " unable to allocate recovery directory security\n");
++		return;
++	}
 +
-+	len = PAGE_CACHE_SIZE;
-+	isize = i_size_read(mapping->host);
-+	if ((isize >> PAGE_CACHE_SHIFT) == index)
-+		len = isize & (PAGE_CACHE_SIZE - 1);
++	nfs4_begin_secure(&saved_sec);
+ 
+ 	status = path_lookup(rec_dirname, LOOKUP_FOLLOW | LOOKUP_DIRECTORY,
+ 			&rec_dir);
+@@ -406,7 +420,8 @@ nfsd4_init_recdir(char *rec_dirname)
+ 
+ 	if (!status)
+ 		rec_dir_init = 1;
+-	nfs4_reset_user(uid, gid);
 +
-+	ret = pagecache_write_begin(NULL, mapping, pos, len,
-+				    AOP_FLAG_UNINTERRUPTIBLE, &page, &fsdata);
-+	if (ret < 0)
-+		goto sync;
-+
-+	copy_highpage(page, source);
-+
-+	ret = pagecache_write_end(NULL, mapping, pos, len, len, page, fsdata);
-+	if (ret < 0)
-+		goto sync;
-+
-+	balance_dirty_pages_ratelimited(mapping);
-+	cond_resched();
-+
-+sync:
-+	/* the caller must handle O_SYNC themselves, but we handle S_SYNC and
-+	 * MS_SYNCHRONOUS here */
-+	if (unlikely(IS_SYNC(mapping->host)) && !a_ops->writepage)
-+		ret = generic_osync_inode(mapping->host, mapping,
-+					     OSYNC_METADATA | OSYNC_DATA);
-+
-+	/* the caller must handle O_DIRECT for themselves */
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(generic_file_buffered_write_one_page);
-+
- static ssize_t
- __generic_file_aio_write_nolock(struct kiocb *iocb, const struct iovec *iov,
- 				unsigned long nr_segs, loff_t *ppos)
++	nfs4_end_secure(saved_sec);
+ }
+ 
+ void
+@@ -416,4 +431,5 @@ nfsd4_shutdown_recdir(void)
+ 		return;
+ 	rec_dir_init = 0;
+ 	path_release(&rec_dir);
++	put_task_security(rec_security);
+ }
 
