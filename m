@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbYAWTmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYAWTri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbYAWTmK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 14:42:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYAWTl5
+	id S1752766AbYAWTri (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 14:47:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYAWTr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 14:41:57 -0500
-Received: from styx.suse.cz ([82.119.242.94]:42938 "EHLO duck.suse.cz"
+	Wed, 23 Jan 2008 14:47:29 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:33616 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751615AbYAWTl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 14:41:57 -0500
-Date: Wed, 23 Jan 2008 20:41:55 +0100
-From: Jan Kara <jack@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>
-Subject: Re: [PATCH RESEND] Handle i_size > s_maxbytes correctly
-Message-ID: <20080123194155.GI10144@duck.suse.cz>
-References: <20080123175440.GF10144@duck.suse.cz> <20080123191306.GA17118@infradead.org>
+	id S1751393AbYAWTr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 14:47:29 -0500
+Date: Wed, 23 Jan 2008 11:47:27 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [PATCH] export notifier #1
+In-Reply-To: <20080123105246.GG26420@sgi.com>
+Message-ID: <Pine.LNX.4.64.0801231145210.13547@schroedinger.engr.sgi.com>
+References: <478F9C9C.7070500@qumranet.com> <20080117193252.GC24131@v2.random>
+ <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com>
+ <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random>
+ <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com>
+ <20080122223139.GD15848@v2.random> <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com>
+ <479716AD.5070708@qumranet.com> <20080123105246.GG26420@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080123191306.GA17118@infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 23-01-08 19:13:06, Christoph Hellwig wrote:
-> On Wed, Jan 23, 2008 at 06:54:41PM +0100, Jan Kara wrote:
-> >   A different solution (even with smaller impact) would be to not allow
-> > files with i_size > s_maxbytes in VFS at all. For local filesystems we can
-> > just check this on open and everything is fine
-> 
-> Which we should do.
-  I'm fine with that ;).
+On Wed, 23 Jan 2008, Robin Holt wrote:
 
-> > but with remote filesystems
-> > such as OCFS2 (or NFS) filesize can be changed on the fly from a different
-> > machine. So to avoid problems we can either introduce some locking to
-> > prevent changes of i_size from other machines while we are in critical
-> > sections (awww, I really don't think this is better) or truncate i_size to
-> > s_maxbytes when we update i_size from what we've received via network /
-> > shared storage (but then we'd have to track whether user truncated file to
-> > some size or whether fs truncated it just for safety and apps could be
-> > confused too). So I don't think this is really feasible.
+> > That won't work for kvm.  If we have a hundred virtual machines, that means
+> > 99 no-op notifications.
 > 
-> The right fix for cluster filesystem is to have a coherent maximum file
-> size for the whole cluster.  If that can't be done due to protocol
-> reason we need to lock around i_size update and revoke access to the
-> inode on the client that doesn't support it.  Which of course would
-> require a working revoke to start with..
-  But with which lock you'd like to lock-around i_size update? Note that
-you have to make sure you won't race even with read path which currently
-doesn't take any locks at all (except for page lock) if I'm right... So,
-e.g. NFS, would have to wrap generic_file_aio_read() in some lock to
-prevent inode updates while generic_file_aio_read() runs. That doesn't
-sound too appealing to me.
+> But 100 callouts holding spinlocks will not work for our implementation
+> and even if the callouts are made with spinlocks released, we would very
+> strongly prefer a single callout which messages the range to the other
+> side.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+
+Andrea wont have 99 no op notifications. You will have one notification to 
+the kvm subsystem (since there needs to be only one register operation 
+for a subsystem that wants to get notifications). What do you do there is 
+up to kvm. If you want to call some function 99 times then you are free to 
+do that.
