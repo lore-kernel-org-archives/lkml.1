@@ -1,147 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbYAWH6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbYAWIIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754974AbYAWH6R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 02:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYAWH6A
+	id S1754682AbYAWIIv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 03:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbYAWIIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 02:58:00 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:42344 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752932AbYAWH56 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 02:57:58 -0500
-Date: Wed, 23 Jan 2008 08:58:21 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       hanth Aravamudan <nacc@us.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       lee.schermerhorn@hp.com, Linux MM <linux-mm@kvack.org>,
-       akpm@linux-foundation.org
-Subject: Re: crash in kmem_cache_init
-Message-ID: <20080123075821.GA17713@aepfle.de>
-References: <20080117181222.GA24411@aepfle.de> <Pine.LNX.4.64.0801171049190.21058@schroedinger.engr.sgi.com> <20080117211511.GA25320@aepfle.de> <Pine.LNX.4.64.0801181043290.30348@schroedinger.engr.sgi.com> <20080118213011.GC10491@csn.ul.ie> <Pine.LNX.4.64.0801181414200.8924@schroedinger.engr.sgi.com> <20080118225713.GA31128@aepfle.de> <20080122195448.GA15567@csn.ul.ie> <20080122214505.GA15674@aepfle.de> <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801221417480.1912@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 23 Jan 2008 03:08:41 -0500
+Received: from mga03.intel.com ([143.182.124.21]:56234 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751536AbYAWIIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 03:08:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,237,1199692800"; 
+   d="scan'208";a="370289413"
+Subject: Re: Could you please merge the x86_64 EFI boot support patchset?
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org, hpa@zytor.com,
+       ak@suse.de, adaplas@pol.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20080123014653.6261020c.pj@sgi.com>
+References: <1194831950.17223.44.camel@caritas-dev.intel.com>
+	 <20080123010051.969d21fd.pj@sgi.com>
+	 <1201073166.4945.41.camel@caritas-dev.intel.com>
+	 <20080123014653.6261020c.pj@sgi.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 23 Jan 2008 16:07:55 +0800
+Message-Id: <1201075675.4945.44.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 23 Jan 2008 08:07:18.0087 (UTC) FILETIME=[F8CF4570:01C85D96]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, Christoph Lameter wrote:
-
-> > 0xc0000000000fe018 is in setup_cpu_cache (/home/olaf/kernel/git/linux-2.6-numa/mm/slab.c:2111).
-> > 2106                                    BUG_ON(!cachep->nodelists[node]);
-> > 2107                                    kmem_list3_init(cachep->nodelists[node]);
-> > 2108                            }
-> > 2109                    }
-> > 2110            }
+On Wed, 2008-01-23 at 01:46 -0600, Paul Jackson wrote:
+> Huang wrote:
+> > This patchset has been merged into Linux 2.6.24.
 > 
-> if (cachep->nodelists[numa_node_id()])
-> 	return;
+> Excellent.
+> 
+> > Unfortunately, the new EFI support patches do not use EFI memory map for
+> > system boot up ...  So, I think the resolution for your problem is the
+> > "struct setup_data" mechanism proposed by H. Peter Anvin.
+> 
+> So you're saying that the EFI in the kernel now still won't support more
+> than 128 or so chunks of memory in the boottime memory map, because it
+> still goes via the legacy E820h memory map code?
 
-Does not help.
+The kernel with EFI support can not support more than 128 or so chunks
+of memory. Because the EFI memory map is converted to E820 memory map in
+boot-loader (such as elilo).
 
+> I'll have to study the code more and give it a try.
+> 
+> Are you optimistic that some variation of H. Peter Anvin's "struct
+> setup_data" mechanism will make it into 2.6.25 or thereabouts?
 
-Linux version 2.6.24-rc8-ppc64 (olaf@lingonberry) (gcc version 4.1.2 20070115 (prerelease) (SUSE Linux)) #48 SMP Wed Jan 23 08:54:23 CET 2008
-[boot]0012 Setup Arch
-EEH: PCI Enhanced I/O Error Handling Enabled
-PPC64 nvram contains 8192 bytes
-Zone PFN ranges:
-  DMA             0 ->   892928
-  Normal     892928 ->   892928
-Movable zone start PFN for each node
-early_node_map[1] active PFN ranges
-    1:        0 ->   892928
-Could not find start_pfn for node 0
-[boot]0015 Setup Done
-Built 2 zonelists in Node order, mobility grouping on.  Total pages: 880720
-Policy zone: DMA
-Kernel command line: debug xmon=on panic=1  
-[boot]0020 XICS Init
-xics: no ISA interrupt controller
-[boot]0021 XICS Done
-PID hash table entries: 4096 (order: 12, 32768 bytes)
-time_init: decrementer frequency = 275.070000 MHz
-time_init: processor frequency   = 2197.800000 MHz
-clocksource: timebase mult[e8ab05] shift[22] registered
-clockevent: decrementer mult[466a] shift[16] cpu[0]
-Console: colour dummy device 80x25
-console handover: boot [udbg-1] -> real [hvc0]
-Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
-Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
-freeing bootmem node 1
-Memory: 3496632k/3571712k available (6188k kernel code, 75080k reserved, 1324k data, 1220k bss, 304k init)
-Kernel panic - not syncing: kmem_cache_create(): failed to create slab `size-32(DMA)'
+I think it may be merged into 2.6.26.
 
-Rebooting in 1 seconds..
+Best Regards,
+Huang Ying
 
----
- mm/slab.c |   17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
-
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -1590,7 +1590,7 @@ void __init kmem_cache_init(void)
- 		/* Replace the static kmem_list3 structures for the boot cpu */
- 		init_list(&cache_cache, &initkmem_list3[CACHE_CACHE], node);
- 
--		for_each_node_state(nid, N_NORMAL_MEMORY) {
-+		for_each_online_node(nid) {
- 			init_list(malloc_sizes[INDEX_AC].cs_cachep,
- 				  &initkmem_list3[SIZE_AC + nid], nid);
- 
-@@ -1968,7 +1968,7 @@ static void __init set_up_list3s(struct 
- {
- 	int node;
- 
--	for_each_node_state(node, N_NORMAL_MEMORY) {
-+	for_each_online_node(node) {
- 		cachep->nodelists[node] = &initkmem_list3[index + node];
- 		cachep->nodelists[node]->next_reap = jiffies +
- 		    REAPTIMEOUT_LIST3 +
-@@ -2108,6 +2108,8 @@ static int __init_refok setup_cpu_cache(
- 			}
- 		}
- 	}
-+	if (!cachep->nodelists[numa_node_id()])
-+		return -ENODEV;
- 	cachep->nodelists[numa_node_id()]->next_reap =
- 			jiffies + REAPTIMEOUT_LIST3 +
- 			((unsigned long)cachep) % REAPTIMEOUT_LIST3;
-@@ -2775,6 +2777,11 @@ static int cache_grow(struct kmem_cache 
- 	/* Take the l3 list lock to change the colour_next on this node */
- 	check_irq_off();
- 	l3 = cachep->nodelists[nodeid];
-+	if (!l3) {
-+		nodeid = numa_node_id();
-+		l3 = cachep->nodelists[nodeid];
-+	}
-+	BUG_ON(!l3);
- 	spin_lock(&l3->list_lock);
- 
- 	/* Get colour for the slab, and cal the next value. */
-@@ -3317,6 +3324,10 @@ static void *____cache_alloc_node(struct
- 	int x;
- 
- 	l3 = cachep->nodelists[nodeid];
-+	if (!l3) {
-+		nodeid = numa_node_id();
-+		l3 = cachep->nodelists[nodeid];
-+	}
- 	BUG_ON(!l3);
- 
- retry:
-@@ -3815,7 +3826,7 @@ static int alloc_kmemlist(struct kmem_ca
- 	struct array_cache *new_shared;
- 	struct array_cache **new_alien = NULL;
- 
--	for_each_node_state(node, N_NORMAL_MEMORY) {
-+	for_each_online_node(node) {
- 
-                 if (use_alien_caches) {
-                         new_alien = alloc_alien_cache(node, cachep->limit);
