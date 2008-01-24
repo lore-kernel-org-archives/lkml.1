@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbYAXRLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYAXRRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758820AbYAXRLh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 12:11:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbYAXRL0
+	id S1756588AbYAXRRX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 12:17:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbYAXRRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 12:11:26 -0500
-Received: from khc.piap.pl ([195.187.100.11]:55250 "EHLO khc.piap.pl"
+	Thu, 24 Jan 2008 12:17:14 -0500
+Received: from gw.goop.org ([64.81.55.164]:59227 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755499AbYAXRLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 12:11:25 -0500
-To: Marcin Gil <marcin.gil@gmail.com>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: JMicron PATA 2.6.24-rc7 can't find drives
-References: <200801232323.36187.marcin.gil@gmail.com>
-	<20080123234639.025cc859@lxorguk.ukuu.org.uk>
-	<479839B4.3060202@gmail.com>
-	<20080124142717.GA16173@csclub.uwaterloo.ca>
-	<4798A114.6010803@gmail.com>
-	<20080124144359.GD16171@csclub.uwaterloo.ca>
-	<4798A537.9000104@gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 24 Jan 2008 18:11:22 +0100
-In-Reply-To: <4798A537.9000104@gmail.com> (Marcin Gil's message of "Thu\, 24 Jan 2008 15\:48\:23 +0100")
-Message-ID: <m3abmvtah1.fsf@maximus.localdomain>
+	id S1753356AbYAXRRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 12:17:13 -0500
+Message-ID: <4798C817.6020702@goop.org>
+Date: Thu, 24 Jan 2008 09:17:11 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: =?ISO-8859-1?Q?=22Oliver_Pinter_=28Pint=E9r_Oliv=E9r=29=22?= 
+	<oliver.pntr@gmail.com>
+CC: Adrian Bunk <bunk@kernel.org>, David Miller <davem@davemloft.net>,
+       Greg KH <gregkh@suse.de>, Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Add common orderly_poweroff() to 2.6.22?
+References: <6101e8c40801210959v1e0f6e55w26187dc93a09a202@mail.gmail.com>
+In-Reply-To: <6101e8c40801210959v1e0f6e55w26187dc93a09a202@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcin Gil <marcin.gil@gmail.com> writes:
-
-> +-----+-----+
-> mobo  hdd   dvd
+Oliver Pinter (Pintér Olivér) wrote:
+> Hi all!
 >
-> I think that cable select would take dvd as master and hdd as slave.
-> This was not preferable when hdd was my primary drive. I can try
-> cable-select now since I boot off new SATA drive.
+> commit in mainline 10a0a8d4e3f6bf2d077f94344441909abe670f5a is go in
+> the satble 2.6.22
+>
+> the grund for this question is http://hup.hu/node/49773 .
+>   
 
-Is a master in the middle permitted by the specs at all?
--- 
-Krzysztof Halasa
+Is there a compelling reason?  I added it to remove some duplicate code, 
+but it isn't a bugfix or anything.
+
+    J
+
