@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbYAXRfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbYAXRhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756166AbYAXRfA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 12:35:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYAXRew
+	id S1755376AbYAXRhK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 12:37:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYAXRg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 12:34:52 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53976 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753709AbYAXRew (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 12:34:52 -0500
-Date: Thu, 24 Jan 2008 09:20:49 -0800
-From: Greg KH <greg@kroah.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Wilco Beekhuizen <wilcobeekhuizen@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
-Message-ID: <20080124172049.GA9665@kroah.com>
-References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com> <20080124013720.GA21978@kroah.com> <6c4c86470801240205u5361e090jc057270b03b5ebe7@mail.gmail.com> <84144f020801240319o1f51613fx6e823120f74a9cf9@mail.gmail.com> <20080124164418.GA8226@kroah.com> <84144f020801240906l7e018a95wfd4ad7736851dd63@mail.gmail.com>
+	Thu, 24 Jan 2008 12:36:58 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57514 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751707AbYAXRg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 12:36:58 -0500
+Date: Thu, 24 Jan 2008 18:37:08 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Cedric Le Goater <clg@fr.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH 1/2] Extend sys_clone and sys_unshare system calls API
+Message-ID: <20080124173708.GA4473@elf.ucw.cz>
+References: <478DFF8F.9030006@openvz.org> <20080123205930.GA5233@ucw.cz> <4798C664.1040409@fr.ibm.com> <1201195474.8329.38.camel@nimitz.home.sr71.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020801240906l7e018a95wfd4ad7736851dd63@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1201195474.8329.38.camel@nimitz.home.sr71.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 07:06:39PM +0200, Pekka Enberg wrote:
-> Hi Greg,
+On Thu 2008-01-24 09:24:34, Dave Hansen wrote:
+> On Thu, 2008-01-24 at 18:09 +0100, Cedric Le Goater wrote:
+> > yes but we would need more something like  : 
+> > 
+> >  long sys_clone64(unsigned long flags_high, unsigned long flag_low)
+> > 
+> > if we want the syscall to be supported on 32bit arch. clone2 is also 
+> > being used on ia64 already.
 > 
-> On Jan 24, 2008 6:44 PM, Greg KH <greg@kroah.com> wrote:
-> > No, that's not the problem.  The code should just be using
-> > usb_register_driver() and then doing what it needs to do in the probe()
-> > callback, like any other USB driver.
-> >
-> > By calling usb_find_device() it allows more than one driver to talk to
-> > the device at the same time, setting it up for some very bad things to
-> > possibly happen to the device.
-> >
-> > So a simple code change should be all that is needed to properly fix
-> > this.
-> >
-> > If you want, I can make up a patch, just point me at the version you
-> > wish me to modify.
+> Did we decide not to do something with a variable number of arguments?
 > 
-> As I already mentioned in private, the code is here:
-> 
-> http://www.init0.nl/iriverfs-r0.1.0.1-linux-2.6.23.patch.bz2
-> 
-> It's basically abusing the USB driver stack with a ->probe() function
-> that returns -ENODEV and doing device discovery at mount time. That,
-> however, is also broken as it assumes there's only one device plugged
-> in (we're not passing any device identifier to sys_mount).
+> 	sys_clonefoo(unsigned long *flags, int len);
 
-By returning -ENODEV, that still allows some other driver or user
-through usbfs to come in and start talking to the device, while this
-"driver" also touches it.  Not nice.
-
-> So it's not a simple code change at all.
-
-Just create a root directory for every device that is seen in the
-probe() function.  That should be pretty simple to do.
-
-thanks,
-
-greg k-h
+That is evil, because that means strace can no longer reliably print
+flags being used (for example).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
