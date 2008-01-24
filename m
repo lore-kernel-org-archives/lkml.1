@@ -1,51 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbYAZQDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbYAZQDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760151AbYAZQDR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 11:03:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbYAZPzs
+	id S1760284AbYAZQDb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 11:03:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbYAZPzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:55:48 -0500
+	Sat, 26 Jan 2008 10:55:54 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756502AbYAZPzq (ORCPT
+	with ESMTP id S1756653AbYAZPzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:55:46 -0500
+	Sat, 26 Jan 2008 10:55:51 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 36/52] [microblaze] io.h IO operations
-Date: Thu, 24 Jan 2008 16:03:11 +0100
-Message-Id: <c09d54c49393bedbe4ca43df0e35cefa5fcc649c.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 11/52] [microblaze] kernel modules support
+Date: Thu, 24 Jan 2008 16:02:46 +0100
+Message-Id: <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <43f77bd3045d72346eb39d3170de727050c835c1.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
- <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
- <873c2bf1f67696aa11014886470f6ba46f04e8d2.1201107832.git.monstr@monstr.eu>
- <516d173b1789ea533431e8f5ad05751c6a353c88.1201107832.git.monstr@monstr.eu>
- <068508828aac6298b4cc65b0cd7b2737a61c466c.1201107832.git.monstr@monstr.eu>
- <010fc233f82a8f7a591c9f8315ae03f9951139aa.1201107832.git.monstr@monstr.eu>
- <68faaf69ea03196d4a56a263707355e7e7eb5c6a.1201107832.git.monstr@monstr.eu>
- <4b7d90fc1b9bcb3c0b1b308c6460390f7bdf3824.1201107832.git.monstr@monstr.eu>
- <eb28582e845efb4f2f26054630895f26fa69866e.1201107832.git.monstr@monstr.eu>
- <64e6e541db30cc4f1ee5cd85da4bdea6024f75b8.1201107832.git.monstr@monstr.eu>
- <90badb264d0e4ec49fdaa76842a5e5f259681299.1201107832.git.monstr@monstr.eu>
- <a013a2b7044186c64d55cdafc8c9b29bc73a7fc5.1201107832.git.monstr@monstr.eu>
- <60642f04ebcf9f76da50a1d40191755f258edcc5.1201107832.git.monstr@monstr.eu>
- <240998be1af3774635995fd19248f8b3a9e8a702.1201107832.git.monstr@monstr.eu>
- <3bcb9581bc512fdd0a124ac8322af9e2a8adc975.1201107832.git.monstr@monstr.eu>
- <db7f441df21cfe296a44744747b28f379e75fd49.1201107832.git.monstr@monstr.eu>
- <e6309af7cc6550ef5b399fc0902f1926f9e52e58.1201107832.git.monstr@monstr.eu>
- <2d11eef3abada1f41658a532a483c6121ded8054.1201107832.git.monstr@monstr.eu>
- <48db19662b808ab6f5455dd7f2116e6544c50e95.1201107832.git.monstr@monstr.eu>
- <7b0cfa6ae11749e20c941d0a4f03577141e022f8.1201107832.git.monstr@monstr.eu>
- <2f3db7ba4fe41cb9888adabf0e4e052d4da5c37c.1201107832.git.monstr@monstr.eu>
- <d67010417928d04766e6dd74820b12c249d61814.1201107832.git.monstr@monstr.eu>
- <37627293f081fa40f21234944ddb878d5e711740.1201107832.git.monstr@monstr.eu>
- <105791d33ea12564c70be0dd3fafef386f8e1b55.1201107832.git.monstr@monstr.eu>
- <b501d439bdfabddbdef5935db86b6f64c83d55c4.1201107832.git.monstr@monstr.eu>
- <43f77bd3045d72346eb39d3170de727050c835c1.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -57,18 +32,312 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/io.h |  210 +++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 210 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/io.h
+ arch/microblaze/kernel/microblaze_ksyms.c |  129 +++++++++++++++++++++++++
+ arch/microblaze/kernel/module.c           |  149 +++++++++++++++++++++++++++++
+ include/asm-microblaze/module.h           |   41 ++++++++
+ 3 files changed, 319 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/microblaze_ksyms.c
+ create mode 100644 arch/microblaze/kernel/module.c
+ create mode 100644 include/asm-microblaze/module.h
 
-diff --git a/include/asm-microblaze/io.h b/include/asm-microblaze/io.h
+diff --git a/arch/microblaze/kernel/microblaze_ksyms.c b/arch/microblaze/kernel/microblaze_ksyms.c
 new file mode 100644
-index 0000000..a0a5401
+index 0000000..7ce8b36
 --- /dev/null
-+++ b/include/asm-microblaze/io.h
-@@ -0,0 +1,210 @@
++++ b/arch/microblaze/kernel/microblaze_ksyms.c
+@@ -0,0 +1,129 @@
 +/*
-+ * include/asm-microblaze/io.h
++ * linux/arch/microblaze/kernel/microblazeksyms.c
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/cryptohash.h>
++#include <linux/delay.h>
++#include <linux/in6.h>
++#include <linux/syscalls.h>
++
++#include <asm/checksum.h>
++#include <asm/io.h>
++#include <asm/page.h>
++#include <asm/system.h>
++#include <asm/uaccess.h>
++
++/* module handling */
++EXPORT_SYMBOL(PAGE_OFFSET);
++
++/*
++ * floating point math emulator support.
++ * These symbols will never change their calling convention...
++ */
++/* EXPORT_SYMBOL_ALIAS(kern_fp_enter,fp_enter);
++EXPORT_SYMBOL_ALIAS(fp_printk,printk);
++EXPORT_SYMBOL_ALIAS(fp_send_sig,send_sig);
++
++EXPORT_SYMBOL(__backtrace); */
++
++	/* platform dependent support */
++/* EXPORT_SYMBOL(__udelay);
++EXPORT_SYMBOL(__const_udelay); */
++
++	/* networking */
++EXPORT_SYMBOL(csum_partial);
++EXPORT_SYMBOL(csum_partial_copy);
++EXPORT_SYMBOL(csum_partial_copy_from_user);
++EXPORT_SYMBOL(ip_compute_csum);
++
++	/* io */
++/*#ifndef __raw_readsb
++EXPORT_SYMBOL(__raw_readsb);
++#endif
++#ifndef __raw_readsw
++EXPORT_SYMBOL(__raw_readsw);
++#endif
++#ifndef __raw_readsl
++EXPORT_SYMBOL(__raw_readsl);
++#endif
++#ifndef __raw_writesb
++EXPORT_SYMBOL(__raw_writesb);
++#endif
++#ifndef __raw_writesw
++EXPORT_SYMBOL(__raw_writesw);
++#endif
++#ifndef __raw_writesl
++EXPORT_SYMBOL(__raw_writesl);
++#endif*/
++
++	/* string / mem functions */
++/*EXPORT_SYMBOL(strchr);
++EXPORT_SYMBOL(strrchr);*/
++
++#ifdef __HAVE_ARCH_MEMSET
++EXPORT_SYMBOL(memset);
++#endif
++
++#ifdef __HAVE_ARCH_MEMCPY
++EXPORT_SYMBOL(memcpy);
++#endif
++
++#ifdef __HAVE_ARCH_MEMMOVE
++EXPORT_SYMBOL(memmove);
++#endif
++
++/* EXPORT_SYMBOL(memchr);
++EXPORT_SYMBOL(__memzero); */
++
++	/* user mem (segment) */
++/* EXPORT_SYMBOL(__strnlen_user);
++EXPORT_SYMBOL(__strncpy_from_user); */
++
++	/* crypto hash */
++/* EXPORT_SYMBOL(sha_transform); */
++
++
++/*
++ * libgcc functions - functions that are used internally by the
++ * compiler... (prototypes are not correct though, but that
++ * doesn't really matter since they're not versioned).
++ */
++extern void __ashldi3(void);
++EXPORT_SYMBOL(__ashldi3);
++extern void __ashrdi3(void);
++EXPORT_SYMBOL(__ashrdi3);
++extern void __divsi3(void);
++EXPORT_SYMBOL(__divsi3);
++extern void __lshrdi3(void);
++EXPORT_SYMBOL(__lshrdi3);
++extern void __modsi3(void);
++EXPORT_SYMBOL(__modsi3);
++extern void __mulsi3(void);
++EXPORT_SYMBOL(__mulsi3);
++extern void __muldi3(void);
++EXPORT_SYMBOL(__muldi3);
++extern void __ucmpdi2(void);
++EXPORT_SYMBOL(__ucmpdi2);
++extern void __udivsi3(void);
++EXPORT_SYMBOL(__udivsi3);
++extern void __umodsi3(void);
++EXPORT_SYMBOL(__umodsi3);
++/*extern void fpundefinstr(void);
++extern void fp_enter(void);*/
++
++	/* bitops */
++/* EXPORT_SYMBOL(_set_bit_le);
++EXPORT_SYMBOL(_test_and_set_bit_le);
++EXPORT_SYMBOL(_clear_bit_le);
++EXPORT_SYMBOL(_test_and_clear_bit_le);
++EXPORT_SYMBOL(_change_bit_le);
++EXPORT_SYMBOL(_test_and_change_bit_le);
++EXPORT_SYMBOL(_find_first_zero_bit_le);
++EXPORT_SYMBOL(_find_next_zero_bit_le);
++EXPORT_SYMBOL(_find_first_bit_le);
++EXPORT_SYMBOL(_find_next_bit_le); */
+diff --git a/arch/microblaze/kernel/module.c b/arch/microblaze/kernel/module.c
+new file mode 100644
+index 0000000..d2befac
+--- /dev/null
++++ b/arch/microblaze/kernel/module.c
+@@ -0,0 +1,149 @@
++/*
++ * linux/arch/microblaze/kernel/module.c
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++#include <linux/module.h>
++#include <linux/moduleloader.h>
++#include <linux/kernel.h>
++#include <linux/elf.h>
++#include <linux/vmalloc.h>
++#include <linux/slab.h>
++#include <linux/fs.h>
++#include <linux/string.h>
++
++#include <asm/pgtable.h>
++
++#if 0
++#define DBPRINTK(...) printk(__VA_ARGS__)
++#else
++#define DBPRINTK(...)
++#endif
++
++void *module_alloc(unsigned long size)
++{
++	void *ret;
++	ret = (size == 0) ? NULL : vmalloc(size);
++	DBPRINTK("module_alloc (%08lx@%08lx)\n", size, (unsigned long int)ret);
++	return ret;
++}
++
++void module_free(struct module *module, void *region)
++{
++	DBPRINTK("module_free(%s,%08lx)\n", module->name, region);
++	vfree(region);
++}
++
++int module_frob_arch_sections(Elf_Ehdr *hdr,
++				Elf_Shdr *sechdrs,
++				char *secstrings,
++				struct module *mod)
++{
++	return 0;
++}
++
++int
++apply_relocate(Elf32_Shdr * sechdrs, const char *strtab, unsigned int symindex,
++		unsigned int relsec, struct module *module)
++{
++
++	printk(KERN_ERR "module %s: ADD RELOCATION unsupported\n",
++		module->name);
++	return -ENOEXEC;
++
++}
++
++int
++apply_relocate_add(Elf32_Shdr * sechdrs, const char *strtab,
++	unsigned int symindex, unsigned int relsec, struct module *module)
++{
++
++	unsigned int i;
++	Elf32_Rela *rela = (void *)sechdrs[relsec].sh_addr;
++	Elf32_Sym *sym;
++	unsigned long int *location;
++	unsigned long int locoffs;
++	unsigned long int value;
++	unsigned long int old_value;
++
++	DBPRINTK("Applying add relocation section %u to %u\n",
++		relsec, sechdrs[relsec].sh_info);
++
++	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
++
++		location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr +
++				rela[i].r_offset;
++		sym = (Elf32_Sym *)sechdrs[symindex].sh_addr +
++			ELF32_R_SYM(rela[i].r_info);
++		value = sym->st_value + rela[i].r_addend;
++
++		switch (ELF32_R_TYPE(rela[i].r_info)) {
++
++		/*
++		 * Be careful! mb-gcc / mb-ld splits the relocs between the
++		 * text and the reloc table. In general this means we must
++		 * read the current contents of (*location), add any offset
++		 * then store the result back in
++		 */
++
++		case R_MICROBLAZE_32:
++			old_value = *location;
++			*location = value + old_value;
++			DBPRINTK("R_MICROBLAZE_32 (%08lx->%08lx)\n",
++				old_value, value);
++			break;
++
++		case R_MICROBLAZE_64:
++			old_value = ((location[0] & 0x0000FFFF) << 16) |
++				((location[1] & 0x0000FFFF));
++			value += old_value;
++			location[0] = (location[0] & 0xFFFF0000) |
++					(value >> 16);
++			location[1] = (location[1] & 0xFFFF0000) |
++					(value & 0xFFFF);
++			DBPRINTK("R_MICROBLAZE_64 (%08lx->%08lx)\n",
++				old_value, value);
++			break;
++
++		case R_MICROBLAZE_64_PCREL:
++			locoffs = (location[0] & 0xFFFF) << 16 |
++				(location[1] & 0xFFFF);
++			value -= (unsigned long int)(location) + 4 +
++				locoffs;
++			location[0] = (location[0] & 0xFFFF0000) |
++					(value >> 16);
++			location[1] = (location[1] & 0xFFFF0000) |
++					(value & 0xFFFF);
++			DBPRINTK("R_MICROBLAZE_64_PCREL (%08lx)\n",
++				value);
++			break;
++
++		case R_MICROBLAZE_NONE:
++			DBPRINTK("R_MICROBLAZE_NONE\n");
++			break;
++
++		default:
++			printk(KERN_ERR "module %s: "
++				"Unknown relocation: %u\n",
++				module->name,
++				ELF32_R_TYPE(rela->r_info));
++			return -ENOEXEC;
++		}
++	}
++	return 0;
++}
++
++int
++module_finalize(const Elf32_Ehdr * hdr, const Elf_Shdr *sechdrs,
++		struct module *module)
++{
++	return 0;
++}
++
++void
++module_arch_cleanup(struct module *mod)
++{
++}
+diff --git a/include/asm-microblaze/module.h b/include/asm-microblaze/module.h
+new file mode 100644
+index 0000000..97416e0
+--- /dev/null
++++ b/include/asm-microblaze/module.h
+@@ -0,0 +1,41 @@
++/*
++ * include/asm-microblaze/module.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -77,206 +346,37 @@ index 0000000..a0a5401
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_IO_H
-+#define _ASM_IO_H
++#ifndef _ASM_MODULE_H
++#define _ASM_MODULE_H
 +
-+#include <asm/byteorder.h>
-+#include <asm/page.h>
++#define EM_XILINX_MICROBLAZE 0xbaab
 +
-+static inline unsigned char __raw_readb(const volatile void *addr)
-+{
-+	return *(volatile unsigned char __force *)addr;
-+}
-+static inline unsigned short __raw_readw(const volatile void *addr)
-+{
-+	return *(volatile unsigned short __force *)addr;
-+}
-+static inline unsigned int __raw_readl(const volatile void *addr)
-+{
-+	return *(volatile unsigned int __force *)addr;
-+}
-+static inline unsigned long __raw_readq(const volatile void *addr)
-+{
-+	return *(volatile unsigned long __force *)addr;
-+}
-+static inline void __raw_writeb(unsigned char v, volatile void *addr)
-+{
-+	*(volatile unsigned char __force *)addr = v;
-+}
-+static inline void __raw_writew(unsigned short v, volatile void *addr)
-+{
-+	*(volatile unsigned short __force *)addr = v;
-+}
-+static inline void __raw_writel(unsigned int v, volatile void *addr)
-+{
-+	*(volatile unsigned int __force *)addr = v;
-+}
-+static inline void __raw_writeq(unsigned long v, volatile void *addr)
-+{
-+	*(volatile unsigned long __force *)addr = v;
-+}
++/* Microblaze Relocations */
++#define R_MICROBLAZE_NONE 0
++#define R_MICROBLAZE_32 1
++#define R_MICROBLAZE_32_PCREL 2
++#define R_MICROBLAZE_64_PCREL 3
++#define R_MICROBLAZE_32_PCREL_LO 4
++#define R_MICROBLAZE_64 5
++#define R_MICROBLAZE_32_LO 6
++#define R_MICROBLAZE_SRO32 7
++#define R_MICROBLAZE_SRW32 8
++#define R_MICROBLAZE_64_NONE 9
++#define R_MICROBLAZE_32_SYM_OP_SYM 10
++/* Keep this the last entry. */
++#define R_MICROBLAZE_NUM 11
 +
-+/*
-+ * read (readb, readw, readl, readq) and write (writeb, writew,
-+ * writel, writeq) accessors are for PCI and thus littel endian.
-+ * Linux 2.4 for Microblaze had this wrong.
-+ */
-+static inline unsigned char readb(const volatile void *addr)
-+{
-+	return *(volatile unsigned char __force *)addr;
-+}
-+static inline unsigned short readw(const volatile void *addr)
-+{
-+	return le16_to_cpu(*(volatile unsigned short __force *)addr);
-+}
-+static inline unsigned int readl(const volatile void *addr)
-+{
-+	return le32_to_cpu(*(volatile unsigned int __force *)addr);
-+}
-+static inline void writeb(unsigned char v, volatile void *addr)
-+{
-+	*(volatile unsigned char __force *)addr = v;
-+}
-+static inline void writew(unsigned short v, volatile void *addr)
-+{
-+	*(volatile unsigned short __force *)addr = cpu_to_le16(v);
-+}
-+static inline void writel(unsigned int v, volatile void __iomem *addr)
-+{
-+	*(volatile unsigned int __force *)addr = cpu_to_le32(v);
-+}
++struct mod_arch_specific {
++	int foo;
++};
 +
-+/* ioread and iowrite variants. thease are for now same as __raw_
-+ * variants of accessors. we might check for endianess in the feature
-+ */
-+#define ioread8(addr)		__raw_readb((u8 *)(addr))
-+#define ioread16(addr)		__raw_readw((u16 *)(addr))
-+#define ioread32(addr)		__raw_readl((u32 *)(addr))
-+#define iowrite8(v, addr)	__raw_writeb((u8)(v), (u8 *)(addr))
-+#define iowrite16(v, addr)	__raw_writew((u16)(v), (u16 *)(addr))
-+#define iowrite32(v, addr)	__raw_writel((u32)(v), (u32 *)(addr))
++#define Elf_Shdr	Elf32_Shdr
++#define Elf_Sym		Elf32_Sym
++#define Elf_Ehdr	Elf32_Ehdr
 +
-+/* These are the definitions for the x86 IO instructions
-+ * inb/inw/inl/outb/outw/outl, the "string" versions
-+ * insb/insw/insl/outsb/outsw/outsl, and the "pausing" versions
-+ * inb_p/inw_p/...
-+ * The macros don't do byte-swapping.
-+ */
-+#define inb(port)		readb((u8 *)((port)))
-+#define outb(val, port)		writeb((val), (u8 *)((unsigned long)(port)))
-+#define inw(port)		readw((u16 *)((port)))
-+#define outw(val, port)		writew((val), (u16 *)((unsigned long)(port)))
-+#define inl(port)		readl((u32 *)((port)))
-+#define outl(val, port)		writel((val), (u32 *)((unsigned long)(port)))
++typedef struct { volatile int counter; } module_t;
 +
-+#define inb_p(port)		inb((port))
-+#define outb_p(val, port)	outb((val), (port))
-+#define inw_p(port)		inw((port))
-+#define outw_p(val, port)	outw((val), (port))
-+#define inl_p(port)		inl((port))
-+#define outl_p(val, port)	outl((val), (port))
-+
-+#define memset_io(a, b, c)	memset((void *)(a), (b), (c))
-+#define memcpy_fromio(a, b, c)	memcpy((a), (void *)(b), (c))
-+#define memcpy_toio(a, b, c)	memcpy((void *)(a), (b), (c))
-+
-+/**
-+ *	virt_to_phys	-	map virtual addresses to physical
-+ *	@address: address to remap
-+ *
-+ *	The returned physical address is the physical (CPU) mapping for
-+ *	the memory address given. It is only valid to use this function on
-+ *	addresses directly mapped or allocated via kmalloc.
-+ *
-+ *	This function does not give bus mappings for DMA transfers. In
-+ *	almost all conceivable cases a device driver should not be using
-+ *	this function
-+ */
-+static inline unsigned long __iomem virt_to_phys(volatile void *address)
-+{
-+	return __pa((unsigned long)address);
-+}
-+
-+#define virt_to_bus virt_to_phys
-+
-+/**
-+ *	phys_to_virt	-	map physical address to virtual
-+ *	@address: address to remap
-+ *
-+ *	The returned virtual address is a current CPU mapping for
-+ *	the memory address given. It is only valid to use this function on
-+ *	addresses that have a kernel mapping
-+ *
-+ *	This function does not handle bus mappings for DMA transfers. In
-+ *	almost all conceivable cases a device driver should not be using
-+ *	this function
-+ */
-+static inline void *phys_to_virt(unsigned long address)
-+{
-+	return (void *)__va(address);
-+}
-+
-+#define bus_to_virt(a) phys_to_virt(a)
-+
-+static inline void *__ioremap(unsigned long address, unsigned long size,
-+			unsigned long flags)
-+{
-+	return (void *)address;
-+}
-+
-+
-+#define IO_SPACE_LIMIT ~(0UL)
-+
-+#define ioremap(physaddr, size)	((void *)(unsigned long)(physaddr))
-+#define iounmap(addr)		((void)0)
-+#define ioremap_nocache(physaddr, size)	ioremap(physaddr, size)
-+
-+/*
-+ * Convert a physical pointer to a virtual kernel pointer for /dev/mem
-+ * access
-+ */
-+#define xlate_dev_mem_ptr(p)	__va(p)
-+
-+/*
-+ * Convert a virtual cached pointer to an uncached pointer
-+ */
-+#define xlate_dev_kmem_ptr(p)	p
-+
-+/*
-+ * Big Endian
-+ */
-+#define out_be32(a, v) __raw_writel((v), (a))
-+#define out_be16(a, v) __raw_writew((v), (a))
-+
-+#define in_be32(a) __raw_readl(a)
-+#define in_be16(a) __raw_readw(a)
-+
-+/*
-+ * Little endian
-+ */
-+
-+#define out_le32(a, v) __raw_writel(__cpu_to_le32(v), (a));
-+#define out_le16(a, v) __raw_writew(__cpu_to_le16(v), (a))
-+
-+#define in_le32(a) __le32_to_cpu(__raw_readl(a))
-+#define in_le16(a) __le16_to_cpu(__raw_readw(a))
-+
-+/* Byte ops */
-+#define out_8(a, v) __raw_writeb((v), (a))
-+#define in_8(a) __raw_readb(a)
-+
-+/* FIXME */
-+static inline void __iomem *ioport_map(unsigned long port, unsigned int len)
-+{
-+	return (void __iomem *) (port);
-+}
-+
-+static inline void ioport_unmap(void __iomem *addr)
-+{
-+	/* Nothing to do */
-+}
-+
-+#endif /* _ASM_IO_H */
++#endif /* _ASM_MODULE_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
