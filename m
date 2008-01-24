@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761846AbYAZQJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761372AbYAZQKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761846AbYAZQJp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 11:09:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbYAZP5g
+	id S1761372AbYAZQKP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 11:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbYAZP5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:57:36 -0500
+	Sat, 26 Jan 2008 10:57:44 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757402AbYAZP5d (ORCPT
+	with ESMTP id S1757887AbYAZP5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:57:33 -0500
+	Sat, 26 Jan 2008 10:57:40 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 06/52] [microblaze] exception handling
-Date: Thu, 24 Jan 2008 16:03:31 +0100
-Message-Id: <2802c9c0575435ca5c412601eb30a04f3fe4eec6.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 07/52] [microblaze] Signal support
+Date: Thu, 24 Jan 2008 16:03:32 +0100
+Message-Id: <9e7bb497ba4b4ffbb368d9613a0105529791e6b8.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <e83ac9f205e3ef0524ded397faf91a7a0750100c.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <2802c9c0575435ca5c412601eb30a04f3fe4eec6.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -66,6 +66,7 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <62a6eb3ffa457cd0c126320a0e46509f06e00511.1201107832.git.monstr@monstr.eu>
  <c4d02deb7e0a9a243a961bfe066e5d05e72a836e.1201107832.git.monstr@monstr.eu>
  <e83ac9f205e3ef0524ded397faf91a7a0750100c.1201107832.git.monstr@monstr.eu>
+ <2802c9c0575435ca5c412601eb30a04f3fe4eec6.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -77,572 +78,757 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/exceptions.c           |   79 +++++
- arch/microblaze/kernel/hw_exception_handler.S |  395 +++++++++++++++++++++++++
- include/asm-microblaze/exceptions.h           |   66 ++++
- 3 files changed, 540 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/exceptions.c
- create mode 100644 arch/microblaze/kernel/hw_exception_handler.S
- create mode 100644 include/asm-microblaze/exceptions.h
+ arch/microblaze/kernel/signal.c |  534 +++++++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/signal.h |  199 +++++++++++++++
+ 2 files changed, 733 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/signal.c
+ create mode 100644 include/asm-microblaze/signal.h
 
-diff --git a/arch/microblaze/kernel/exceptions.c b/arch/microblaze/kernel/exceptions.c
+diff --git a/arch/microblaze/kernel/signal.c b/arch/microblaze/kernel/signal.c
 new file mode 100644
-index 0000000..9537667
+index 0000000..5b45387
 --- /dev/null
-+++ b/arch/microblaze/kernel/exceptions.c
-@@ -0,0 +1,79 @@
++++ b/arch/microblaze/kernel/signal.c
+@@ -0,0 +1,534 @@
 +/*
-+ * arch/microblaze/kernel/exceptions.c - HW exception handling
++ * arch/microblaze/kernel/signal.c -- Signal handling
 + *
-+ * Copyright 2007 Xilinx, Inc.
++ * Copyright (C) 2003,2004 John Williams <jwilliams@itee.uq.edu.au>
++ * Copyright (C) 2001 NEC Corporation
++ * Copyright (C) 2001 Miles Bader <miles@gnu.org>
++ * Copyright (C) 1999,2000 Niibe Yutaka & Kaz Kojima
++ * Copyright (C) 1991,1992 Linus Torvalds
 + *
 + * This file is subject to the terms and conditions of the GNU General
 + * Public License. See the file COPYING in the main directory of this
 + * archive for more details.
 + *
++ * 1997-11-28 Modified for POSIX.1b signals by Richard Henderson
++ *
++ * This file was was derived from the sh version, arch/sh/kernel/signal.c
 + */
 +
++#include <linux/sched.h>
++#include <linux/mm.h>
++#include <linux/smp.h>
++#include <linux/smp_lock.h>
 +#include <linux/kernel.h>
 +#include <linux/signal.h>
-+#include <linux/sched.h>
-+#include <asm/exceptions.h>
-+#include <asm/entry.h>		/* For KM CPU var */
++#include <linux/errno.h>
++#include <linux/wait.h>
++#include <linux/ptrace.h>
++#include <linux/unistd.h>
++#include <linux/stddef.h>
++#include <linux/personality.h>
++#include <linux/percpu.h>
++#include <asm/entry.h>
++#include <asm/ucontext.h>
++#include <asm/uaccess.h>
++#include <asm/pgtable.h>
++#include <asm/pgalloc.h>
++#include <asm/signal.h>
 +
-+/* Initialize_exception_handlers() - called from setup.c/trap_init() */
-+void initialize_exception_handlers(void)
++#define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
++
++asmlinkage int do_signal(struct pt_regs *regs, sigset_t *oldset, int in_sycall);
++
++/*
++ * Atomically swap in the new signal mask, and wait for a signal.
++ */
++asmlinkage int
++sys_sigsuspend(old_sigset_t mask, struct pt_regs *regs)
 +{
++	sigset_t saveset;
++
++	mask &= _BLOCKABLE;
++	spin_lock_irq(&current->sighand->siglock);
++	saveset = current->blocked;
++	siginitset(&current->blocked, mask);
++	recalc_sigpending();
++	spin_unlock_irq(&current->sighand->siglock);
++
++	regs->r3 = -EINTR;
++	while (1) {
++		current->state = TASK_INTERRUPTIBLE;
++		schedule();
++		if (do_signal(regs, &saveset, 1))
++			return -EINTR;
++	}
 +}
 +
-+#define MICROBLAZE_ILL_OPCODE_EXCEPTION	0x02
-+#define MICROBLAZE_IOPB_BUS_EXCEPTION	0x03
-+#define MICROBLAZE_DOPB_BUS_EXCEPTION	0x04
-+#define MICROBLAZE_DIV_ZERO_EXCEPTION	0x05
-+#define MICROBLAZE_FPU_EXCEPTION	0x06
-+
-+static void handle_unexpected_exception(unsigned int esr,
-+				unsigned int kernel_mode, unsigned int addr)
++asmlinkage int
++sys_rt_sigsuspend(sigset_t *unewset, size_t sigsetsize,
++		struct pt_regs *regs)
 +{
-+	printk(KERN_WARNING "Unexpected exception %02x in %s mode, PC=%08x\n",
-+		esr, kernel_mode ? "kernel" : "user", addr);
++	sigset_t saveset, newset;
++
++	/* XXX: Don't preclude handling different sized sigset_t's. */
++	if (sigsetsize != sizeof(sigset_t))
++		return -EINVAL;
++
++	if (copy_from_user(&newset, unewset, sizeof(newset)))
++		return -EFAULT;
++	sigdelsetmask(&newset, ~_BLOCKABLE);
++	spin_lock_irq(&current->sighand->siglock);
++	saveset = current->blocked;
++	current->blocked = newset;
++	recalc_sigpending();
++	spin_unlock_irq(&current->sighand->siglock);
++
++	regs->r3 = -EINTR;
++	while (1) {
++		current->state = TASK_INTERRUPTIBLE;
++		schedule();
++		if (do_signal(regs, &saveset, 1))
++			return -EINTR;
++	}
 +}
 +
-+static void handle_exception(const char *message, int signal,
-+				unsigned int kernel_mode, unsigned int addr)
++asmlinkage int
++sys_sigaction(int sig, const struct old_sigaction *act,
++		struct old_sigaction *oact)
 +{
-+	if (kernel_mode) {
-+		panic("%s in the kernel mode, PC=%08x\n", message, addr);
++	struct k_sigaction new_ka, old_ka;
++	int ret;
++
++	if (act) {
++		old_sigset_t mask;
++		if (!access_ok(VERIFY_READ, act, sizeof(*act)) ||
++			__get_user(new_ka.sa.sa_handler, &act->sa_handler) ||
++			__get_user(new_ka.sa.sa_restorer, &act->sa_restorer))
++			return -EFAULT;
++		__get_user(new_ka.sa.sa_flags, &act->sa_flags);
++		__get_user(mask, &act->sa_mask);
++		siginitset(&new_ka.sa.sa_mask, mask);
++	}
++
++	ret = do_sigaction(sig, act ? &new_ka : NULL, oact ? &old_ka : NULL);
++
++	if (!ret && oact) {
++		if (!access_ok(VERIFY_WRITE, oact, sizeof(*oact)) ||
++			__put_user(old_ka.sa.sa_handler, &oact->sa_handler) ||
++			__put_user(old_ka.sa.sa_restorer, &oact->sa_restorer))
++			return -EFAULT;
++		__put_user(old_ka.sa.sa_flags, &oact->sa_flags);
++		__put_user(old_ka.sa.sa_mask.sig[0], &oact->sa_mask);
++	}
++
++	return ret;
++}
++
++asmlinkage int
++sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
++		struct pt_regs *regs)
++{
++	return do_sigaltstack(uss, uoss, regs->r1);
++}
++
++/*
++ * Do a signal return; undo the signal stack.
++ */
++
++struct sigframe {
++	struct sigcontext sc;
++	unsigned long extramask[_NSIG_WORDS-1];
++	unsigned long tramp[2];	/* signal trampoline */
++};
++
++struct rt_sigframe {
++	struct siginfo info;
++	struct ucontext uc;
++	unsigned long tramp[2];	/* signal trampoline */
++};
++
++static int
++restore_sigcontext(struct pt_regs *regs, struct sigcontext *sc, int *rval_p)
++{
++	unsigned int err = 0;
++
++#define COPY(x)		err |= __get_user(regs->x, &sc->regs.x)
++	COPY(r0);	COPY(r1);
++	COPY(r2);	COPY(r3);	COPY(r4);	COPY(r5);
++	COPY(r6);	COPY(r7);	COPY(r8);	COPY(r9);
++	COPY(r10);	COPY(r11);	COPY(r12);	COPY(r13);
++	COPY(r14);	COPY(r15);	COPY(r16);	COPY(r17);
++	COPY(r18);	COPY(r19);	COPY(r20);	COPY(r21);
++	COPY(r22);	COPY(r23);	COPY(r24);	COPY(r25);
++	COPY(r26);	COPY(r27);	COPY(r28);	COPY(r29);
++	COPY(r30);	COPY(r31);
++	COPY(pc);	COPY(ear);	COPY(esr);	COPY(fsr);
++#undef COPY
++
++	* rval_p = regs->r3;
++
++	return err;
++}
++
++asmlinkage int sys_sigreturn(struct pt_regs *regs)
++{
++	struct sigframe *frame = (struct sigframe *)regs->r1;
++	sigset_t set;
++	int rval;
++
++	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
++		goto badframe;
++
++	if (__get_user(set.sig[0], &frame->sc.oldmask)
++		|| (_NSIG_WORDS > 1
++		&& __copy_from_user(&set.sig[1], &frame->extramask,
++					sizeof(frame->extramask))))
++		goto badframe;
++
++	sigdelsetmask(&set, ~_BLOCKABLE);
++
++	spin_lock_irq(&current->sighand->siglock);
++	current->blocked = set;
++	recalc_sigpending();
++	spin_unlock_irq(&current->sighand->siglock);
++
++	if (restore_sigcontext(regs, &frame->sc, &rval))
++		goto badframe;
++	return rval;
++
++badframe:
++	force_sig(SIGSEGV, current);
++	return 0;
++}
++
++asmlinkage int sys_rt_sigreturn(struct pt_regs *regs)
++{
++	struct rt_sigframe *frame = (struct rt_sigframe *)regs->r1;
++	sigset_t set;
++	stack_t st;
++	int rval;
++
++	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
++		goto badframe;
++
++	if (__copy_from_user(&set, &frame->uc.uc_sigmask, sizeof(set)))
++		goto badframe;
++
++	sigdelsetmask(&set, ~_BLOCKABLE);
++	spin_lock_irq(&current->sighand->siglock);
++	current->blocked = set;
++	recalc_sigpending();
++	spin_unlock_irq(&current->sighand->siglock);
++
++	if (restore_sigcontext(regs, &frame->uc.uc_mcontext, &rval))
++		goto badframe;
++
++	if (__copy_from_user((void *)&st, &frame->uc.uc_stack, sizeof(st)))
++		goto badframe;
++	/* It is more difficult to avoid calling this function than to
++	 call it and ignore errors. */
++	do_sigaltstack(&st, NULL, regs->r1);
++
++	return rval;
++
++badframe:
++	force_sig(SIGSEGV, current);
++	return 0;
++}
++
++/*
++ * Set up a signal frame.
++ */
++
++static int
++setup_sigcontext(struct sigcontext *sc, struct pt_regs *regs,
++		unsigned long mask)
++{
++	int err = 0;
++
++#define COPY(x)		err |= __put_user(regs->x, &sc->regs.x)
++	COPY(r0);	COPY(r1);
++	COPY(r2);	COPY(r3);	COPY(r4);	COPY(r5);
++	COPY(r6);	COPY(r7);	COPY(r8);	COPY(r9);
++	COPY(r10);	COPY(r11);	COPY(r12);	COPY(r13);
++	COPY(r14);	COPY(r15);	COPY(r16);	COPY(r17);
++	COPY(r18);	COPY(r19);	COPY(r20);	COPY(r21);
++	COPY(r22);	COPY(r23);	COPY(r24);	COPY(r25);
++	COPY(r26);	COPY(r27);	COPY(r28);	COPY(r29);
++	COPY(r30);	COPY(r31);
++	COPY(pc);	COPY(ear);	COPY(esr);	COPY(fsr);
++#undef COPY
++
++	err |= __put_user(mask, &sc->oldmask);
++
++	return err;
++}
++
++/*
++ * Determine which stack to use..
++ */
++static inline void *
++get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size)
++{
++	/* Default to using normal stack */
++	unsigned long sp = regs->r1;
++
++	if ((ka->sa.sa_flags & SA_ONSTACK) != 0 && !on_sig_stack(sp))
++		sp = current->sas_ss_sp + current->sas_ss_size;
++
++	return (void *)((sp - frame_size) & -8UL);
++}
++
++static void setup_frame(int sig, struct k_sigaction *ka,
++			sigset_t *set, struct pt_regs *regs)
++{
++	struct sigframe *frame;
++	int err = 0;
++	int signal;
++
++	frame = get_sigframe(ka, regs, sizeof(*frame));
++
++	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
++		goto give_sigsegv;
++
++	signal = current_thread_info()->exec_domain
++		&& current_thread_info()->exec_domain->signal_invmap
++		&& sig < 32
++		? current_thread_info()->exec_domain->signal_invmap[sig]
++		: sig;
++
++	err |= setup_sigcontext(&frame->sc, regs, set->sig[0]);
++
++	if (_NSIG_WORDS > 1) {
++		err |= __copy_to_user(frame->extramask, &set->sig[1],
++					sizeof(frame->extramask));
++	}
++
++	/* Set up to return from userspace. If provided, use a stub
++	 already in userspace. */
++	/* minus 8 is offset to cater for "rtsd r15,8" offset */
++	if (ka->sa.sa_flags & SA_RESTORER) {
++		regs->r15 = ((unsigned long)ka->sa.sa_restorer)-8;
 +	} else {
-+		force_sig(signal, current);
++		/* Note, these encodings are _big endian_! */
++
++		/* addi r12, r0, __NR_sigreturn */
++		err |= __put_user(0x31800000 | __NR_sigreturn ,
++				frame->tramp + 0);
++		/* brki r14, 0x8 */
++		err |= __put_user(0xb9cc0008, frame->tramp + 1);
++
++		/* Return from sighandler will jump to the tramp.
++		 Negative 8 offset because return is rtsd r15, 8 */
++		regs->r15 = ((unsigned long)frame->tramp)-8;
++
++#if 0
++		flush_cache_sigtramp((unsigned long)frame->tramp);
++#endif
 +	}
-+}
 +
-+asmlinkage void other_exception_handler(unsigned int esr, unsigned int addr)
-+{
-+	unsigned int kernel_mode = per_cpu(KM, 0);
++	if (err)
++		goto give_sigsegv;
 +
-+	switch (esr) {
++	/* Set up registers for signal handler */
++	regs->r1 = (unsigned long) frame;
++	/* Signal handler args: */
++	regs->r5 = signal; /* Arg 0: signum */
++	regs->r6 = (unsigned long) &frame->sc; /* arg 1: sigcontext */
 +
-+	case MICROBLAZE_ILL_OPCODE_EXCEPTION:
-+		handle_exception("Illegal instruction", SIGILL,
-+						kernel_mode, addr);
-+		break;
++	/* Offset of 4 to handle microblaze rtid r14, 0 */
++	regs->pc = (unsigned long)ka->sa.sa_handler;
 +
-+	case MICROBLAZE_IOPB_BUS_EXCEPTION:
-+		handle_exception("Instruction bus error", SIGBUS,
-+						kernel_mode, addr);
-+		break;
++	set_fs(USER_DS);
 +
-+	case MICROBLAZE_DOPB_BUS_EXCEPTION:
-+		handle_exception("Data bus error", SIGBUS, kernel_mode, addr);
-+		break;
-+
-+	case MICROBLAZE_DIV_ZERO_EXCEPTION:
-+		handle_exception("Divide by zero", SIGILL, kernel_mode, addr);
-+		break;
-+
-+	case MICROBLAZE_FPU_EXCEPTION:
-+		handle_exception("FPU error", SIGFPE, kernel_mode, addr);
-+		break;
-+
-+	default:
-+		handle_unexpected_exception(esr, kernel_mode, addr);
-+	}
++#ifdef DEBUG_SIG
++	printk(KERN_INFO "SIG deliver (%s:%d): sp=%p pc=%08lx\n",
++		current->comm, current->pid, frame, regs->pc);
++#endif
 +
 +	return;
++
++give_sigsegv:
++	if (sig == SIGSEGV)
++		ka->sa.sa_handler = SIG_DFL;
++	force_sig(SIGSEGV, current);
 +}
-diff --git a/arch/microblaze/kernel/hw_exception_handler.S b/arch/microblaze/kernel/hw_exception_handler.S
-new file mode 100644
-index 0000000..4c3b41b
---- /dev/null
-+++ b/arch/microblaze/kernel/hw_exception_handler.S
-@@ -0,0 +1,395 @@
-+/*
-+ *
-+ * arch/microblaze/kernel/hw_exception_handler.S
-+ *
-+ * Unaligned exception handling for Microblaze
-+ *
-+ * cleanup code (C) 2007 Michal Simek <monstr@monstr.eu>
-+ * uClinux customisation (C) 2005 John Williams
-+ *
-+ * Original code
-+ * Copyright (C) 2004 Xilinx, Inc. All rights reserved.
-+ *
-+ * Xilinx, Inc.
-+ * XILINX IS PROVIDING THIS DESIGN, CODE, OR INFORMATION "AS IS" AS A
-+ * COURTESY TO YOU. BY PROVIDING THIS DESIGN, CODE, OR INFORMATION AS
-+ * ONE POSSIBLE IMPLEMENTATION OF THIS FEATURE, APPLICATION OR
-+ * STANDARD, XILINX IS MAKING NO REPRESENTATION THAT THIS IMPLEMENTATION
-+ * IS FREE FROM ANY CLAIMS OF INFRINGEMENT, AND YOU ARE RESPONSIBLE
-+ * FOR OBTAINING ANY RIGHTS YOU MAY REQUIRE FOR YOUR IMPLEMENTATION.
-+ * XILINX EXPRESSLY DISCLAIMS ANY WARRANTY WHATSOEVER WITH RESPECT TO
-+ * THE ADEQUACY OF THE IMPLEMENTATION, INCLUDING BUT NOT LIMITED TO
-+ * ANY WARRANTIES OR REPRESENTATIONS THAT THIS IMPLEMENTATION IS FREE
-+ * FROM CLAIMS OF INFRINGEMENT, IMPLIED WARRANTIES OF MERCHANTABILITY
-+ * AND FITNESS FOR A PARTICULAR PURPOSE.
-+ *
-+ * $Id: hw_exception_handler.S,v 1.1.2.1 2007/03/16 16:09:57 imanuilov Exp $
-+ *
-+ */
++
++static void setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
++			sigset_t *set, struct pt_regs *regs)
++{
++	struct rt_sigframe *frame;
++	int err = 0;
++	int signal;
++
++	frame = get_sigframe(ka, regs, sizeof(*frame));
++
++	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
++		goto give_sigsegv;
++
++	signal = current_thread_info()->exec_domain
++		&& current_thread_info()->exec_domain->signal_invmap
++		&& sig < 32
++		? current_thread_info()->exec_domain->signal_invmap[sig]
++		: sig;
++
++	err |= copy_siginfo_to_user(&frame->info, info);
++
++	/* Create the ucontext. */
++	err |= __put_user(0, &frame->uc.uc_flags);
++	err |= __put_user(0, &frame->uc.uc_link);
++	err |= __put_user((void *)current->sas_ss_sp,
++			&frame->uc.uc_stack.ss_sp);
++	err |= __put_user(sas_ss_flags(regs->r1),
++			&frame->uc.uc_stack.ss_flags);
++	err |= __put_user(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
++	err |= setup_sigcontext(&frame->uc.uc_mcontext,
++			regs, set->sig[0]);
++	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
++
++	/* Set up to return from userspace. If provided, use a stub
++	 already in userspace. */
++	/* minus 8 is offset to cater for "rtsd r15,8" */
++	if (ka->sa.sa_flags & SA_RESTORER) {
++		regs->r15 = ((unsigned long)ka->sa.sa_restorer)-8;
++	} else {
++		/* addi r12, r0, __NR_sigreturn */
++		err |= __put_user(0x31800000 | __NR_rt_sigreturn ,
++				frame->tramp + 0);
++		/* brki r14, 0x8 */
++		err |= __put_user(0xb9cc0008, frame->tramp + 1);
++
++		/* Return from sighandler will jump to the tramp.
++		 Negative 8 offset because return is rtsd r15, 8 */
++		regs->r15 = ((unsigned long)frame->tramp)-8;
++
++#if 0
++		flush_cache_sigtramp((unsigned long)frame->tramp);
++#endif
++	}
++
++	if (err)
++		goto give_sigsegv;
++
++	/* Set up registers for signal handler */
++	regs->r1 = (unsigned long) frame;
++	/* Signal handler args: */
++	regs->r5 = signal; /* arg 0: signum */
++	regs->r6 = (unsigned long) &frame->info; /* arg 1: siginfo */
++	regs->r7 = (unsigned long) &frame->uc; /* arg2: ucontext */
++	/* Offset to handle microblaze rtid r14, 0 */
++	regs->pc = (unsigned long)ka->sa.sa_handler;
++
++	set_fs(USER_DS);
++
++#ifdef DEBUG_SIG
++	printk(KERN_INFO "SIG deliver (%s:%d): sp=%p pc=%08lx\n",
++		current->comm, current->pid, frame, regs->pc);
++#endif
++
++	return;
++
++give_sigsegv:
++	if (sig == SIGSEGV)
++		ka->sa.sa_handler = SIG_DFL;
++	force_sig(SIGSEGV, current);
++}
++
++/* Handle restarting system calls */
++static inline void
++handle_restart(struct pt_regs *regs, struct k_sigaction *ka, int has_handler)
++{
++	switch (regs->r3) {
++	case -ERESTART_RESTARTBLOCK:
++	case -ERESTARTNOHAND:
++		if (!has_handler)
++			goto do_restart;
++		regs->r3 = -EINTR;
++		break;
++	case -ERESTARTSYS:
++		if (has_handler && !(ka->sa.sa_flags & SA_RESTART)) {
++			regs->r3 = -EINTR;
++			break;
++	}
++	/* fallthrough */
++	case -ERESTARTNOINTR:
++do_restart:
++		/* offset of 4 bytes to re-execute trap (brki) instruction */
++		regs->pc -= 4;
++		break;
++	}
++}
 +
 +/*
-+ * Microblaze HW Exception Handler
-+ * - Non self-modifying exception handler for the following exception conditions
-+ * - Unalignment
-+ * - Instruction bus error
-+ * - Data bus error
-+ * - Illegal instruction opcode
-+ * - Divide-by-zero
-+ *
-+ * Note we disable interrupts during exception handling, otherwise we will
-+ * possibly get multiple re-entrancy if interrupt handles themselves cause
-+ * exceptions. JW
++ * OK, we're invoking a handler
 + */
 +
-+#include <linux/autoconf.h>
-+#include <asm/exceptions.h>
-+#include <asm/unistd.h>
++static void
++handle_signal(unsigned long sig, struct k_sigaction *ka,
++		siginfo_t *info, sigset_t *oldset, struct pt_regs *regs)
++{
++	/* Set up the stack frame */
++	if (ka->sa.sa_flags & SA_SIGINFO)
++		setup_rt_frame(sig, ka, info, oldset, regs);
++	else
++		setup_frame(sig, ka, oldset, regs);
 +
-+/* Helpful Macros */
-+#define EX_HANDLER_STACK_SIZ	(4*19)
-+#define RMSR_OFFSET		0
-+#define REG_OFFSET(regnum)	(4*regnum)
-+#define NUM_TO_REG(num)		r ## num
++	if (ka->sa.sa_flags & SA_ONESHOT)
++		ka->sa.sa_handler = SIG_DFL;
 +
-+#define R3_TO_STACK(regnum)	swi	r3, r1, REG_OFFSET(regnum)
-+#define R3_FROM_STACK(regnum)	lwi	r3, r1, REG_OFFSET(regnum)
-+
-+#define PUSH_REG(regnum)	swi NUM_TO_REG(regnum), r1, REG_OFFSET(regnum)
-+#define POP_REG(regnum)		lwi NUM_TO_REG(regnum), r1, REG_OFFSET(regnum)
-+
-+/* Uses r5 */
-+#define PUSH_MSR					\
-+	mfs	r5, rmsr;				\
-+	swi	r5, r1, RMSR_OFFSET;
-+
-+#define PUSH_MSR_AND_ENABLE_EXC				\
-+	mfs	r5, rmsr;				\
-+	swi	r5, r1, RMSR_OFFSET;			\
-+	ori	r5, r5, 0x100; /* Turn ON the EE bit */	\
-+	andi	r5, r5, ~2; /* Disable interrupts */	\
-+	mts	rmsr, r5;
-+
-+/* Uses r5 */
-+#define POP_MSR						\
-+	lwi	r5, r1, RMSR_OFFSET;			\
-+	mts	rmsr, r5;
-+
-+#define LWREG_NOP					\
-+	bri	ex_handler_unhandled;			\
-+	nop;
-+
-+#define SWREG_NOP					\
-+	bri	ex_handler_unhandled;			\
-+	nop;
-+
-+/* r3 is the source */
-+#define R3_TO_LWREG_V(regnum)				\
-+	R3_TO_STACK(regnum);				\
-+	bri	ex_handler_done;
-+
-+/* r3 is the source */
-+#define R3_TO_LWREG(regnum)				\
-+	or	NUM_TO_REG (regnum), r0, r3;		\
-+	bri	ex_handler_done;
-+
-+/* r3 is the target */
-+#define SWREG_TO_R3_V(regnum)				\
-+	R3_FROM_STACK (regnum);				\
-+	bri	ex_sw_tail;
-+
-+/* r3 is the target */
-+#define SWREG_TO_R3(regnum)				\
-+	or	r3, r0, NUM_TO_REG (regnum);		\
-+	bri	ex_sw_tail;
-+
-+.extern other_exception_handler /* Defined in exception.c */
++	if (!(ka->sa.sa_flags & SA_NODEFER)) {
++		spin_lock_irq(&current->sighand->siglock);
++		sigorsets(&current->blocked,
++				&current->blocked, &ka->sa.sa_mask);
++		sigaddset(&current->blocked, sig);
++		recalc_sigpending();
++		spin_unlock_irq(&current->sighand->siglock);
++	}
++}
 +
 +/*
-+ * hw_exception_handler - Handler for unaligned exceptions
-+ * Exception handler notes:
-+ * - Does not handle exceptions other than unaligned exceptions
-+ * - Does not handle exceptions during load into r17, r1, r0.
-+ * - Does not handle exceptions during store from r17 (cannot be done)
-+ *	and r1 (slows down common case)
++ * Note that 'init' is a special process: it doesn't get signals it doesn't
++ * want to handle. Thus you cannot kill init even with a SIGKILL even by
++ * mistake.
 + *
-+ * Relevant register structures
-+ *
-+ * EAR	- |----|----|----|----|----|----|----|----|
-+ *	- <  ##   32 bit faulting address     ##  >
-+ *
-+ * ESR	- |----|----|----|----|----| - | - |-----|-----|
-+ *	-			     W   S   REG   EXC
-+ *
-+ *
-+ * STACK FRAME STRUCTURE
-+ * ---------------------
-+ *
-+ *	+-------------+		+ 0
-+ *	|     MSR     |
-+ *	+-------------+		+ 4
-+ *	|     r1      |
-+ *	|      .      |
-+ *	|      .      |
-+ *	|      .      |
-+ *	|      .      |
-+ *	|     r18     |
-+ *	+-------------+		+ 76
-+ *	|      .      |
-+ *	|      .      |
++ * Note that we go through the signals twice: once to check the signals that
++ * the kernel can handle, and then we build all the user-level signal handling
++ * stack-frames in one go after that.
 + */
-+
-+.global _hw_exception_handler
-+.section .text
-+.align 4
-+.ent _hw_exception_handler
-+_hw_exception_handler:
-+	addik	r1, r1, -(EX_HANDLER_STACK_SIZ); /* Create stack frame */
-+	PUSH_REG(3);
-+	PUSH_REG(4);
-+	PUSH_REG(5);
-+	PUSH_REG(6);
-+	mfs	r3, resr;
-+
-+	andi	r5, r3, 0x1000;
-+	beqi	r5, not_in_delay_slot;
-+	mfs	r17, rbtr;
-+not_in_delay_slot:
-+
-+	PUSH_REG(17);
-+	/* Exceptions enabled here. This will allow nested exceptions */
-+	PUSH_MSR_AND_ENABLE_EXC;
-+
-+	andi	r5, r3, 0x1F; /* Extract ESR[EXC] */
-+
-+	xori	r6, r5, 1; /* 00001 = Unaligned Exception */
-+	/* Jump to unalignment exception handler */
-+	beqi	r6, handle_unaligned_ex;
-+
-+handle_other_ex: /* Handle Other exceptions here */
-+	/* Save other volatiles before we make procedure calls below */
-+	PUSH_REG(7);
-+	PUSH_REG(8);
-+	PUSH_REG(9);
-+	PUSH_REG(10);
-+	PUSH_REG(11);
-+	PUSH_REG(12);
-+	PUSH_REG(14);
-+	PUSH_REG(15);
-+	PUSH_REG(18);
-+
-+	andi	r5, r3, 0x1F; /* Load ESR[EC] */
-+	addk	r6, r17, r0; /* Load exception address */
-+	bralid	r15, other_exception_handler; /* Branch to the handler */
-+	nop;
-+
++int do_signal(struct pt_regs *regs, sigset_t *oldset, int in_syscall)
++{
++	siginfo_t info;
++	int signr;
++	struct k_sigaction ka;
++#ifdef DEBUG_SIG
++	printk(KERN_INFO "do signal: %p %p %d\n", regs, oldset, in_syscall);
++	printk(KERN_INFO "do signal2: %lx %lx %ld [%lx]\n", regs->pc, regs->r1,
++			regs->r12, current_thread_info()->flags);
++#endif
 +	/*
-+	* Trigger execution of the signal handler by enabling
-+	* interrupts and calling an invalid syscall.
-+	*/
-+	mfs	r5, rmsr;
-+	ori	r5, r5, 2;
-+	mts	rmsr, r5;
-+	addi	r12, r0, NR_syscalls;
-+	brki	r14, 0x08;
-+	mfs	r5, rmsr;
-+	andi	r5, r5, ~2;
-+	mts	rmsr, r5;
++	 * We want the common case to go fast, which
++	 * is why we may in certain cases get here from
++	 * kernel mode. Just return without doing anything
++	 * if so.
++	 */
++	if (!user_mode(regs))
++		return 1;
 +
-+	POP_REG(7); /* Restore other volatiles */
-+	POP_REG(8);
-+	POP_REG(9);
-+	POP_REG(10);
-+	POP_REG(11);
-+	POP_REG(12);
-+	POP_REG(14);
-+	POP_REG(15);
-+	POP_REG(18);
++	if (!oldset)
++		oldset = &current->blocked;
 +
-+	bri	ex_handler_done; /* Complete exception handling */
-+handle_unaligned_ex:
-+	andi	r6, r3, 0x3E0; /* Mask and extract the register operand */
-+	srl	r6, r6; /* r6 >> 5 */
-+	srl	r6, r6;
-+	srl	r6, r6;
-+	srl	r6, r6;
-+	srl	r6, r6;
-+	/* Store the register operand in a temporary location */
-+	sbi	r6, r0, ex_reg_op;
-+	mfs	r4, rear;
-+	andi	r6, r3, 0x400; /* Extract ESR[S] */
-+	bnei	r6, ex_sw;
-+ex_lw:
-+	andi	r6, r3, 0x800; /* Extract ESR[W] */
-+	beqi	r6, ex_lhw;
-+	lbui	r5, r4, 0; /* Exception address in r4 */
-+	/* Load a word, byte-by-byte from destination address
-+		and save it in tmp space */
-+	sbi	r5, r0, ex_tmp_data_loc_0;
-+	lbui	r5, r4, 1;
-+	sbi	r5, r0, ex_tmp_data_loc_1;
-+	lbui	r5, r4, 2;
-+	sbi	r5, r0, ex_tmp_data_loc_2;
-+	lbui	r5, r4, 3;
-+	sbi	r5, r0, ex_tmp_data_loc_3;
-+	/* Get the destination register value into r3 */
-+	lwi	r3, r0, ex_tmp_data_loc_0;
-+	bri	ex_lw_tail;
-+ex_lhw:
-+	lbui	r5, r4, 0; /* Exception address in r4 */
-+	/* Load a half-word, byte-by-byte from destination
-+		address and save it in tmp space */
-+	sbi	r5, r0, ex_tmp_data_loc_0;
-+	lbui	r5, r4, 1;
-+	sbi	r5, r0, ex_tmp_data_loc_1;
-+	/* Get the destination register value into r3 */
-+	lhui	r3, r0, ex_tmp_data_loc_0;
-+ex_lw_tail:
-+	/* Get the destination register number into r5 */
-+	lbui	r5, r0, ex_reg_op;
-+	/* Form load_word jump table offset (lw_table + (8 * regnum)) */
-+	la	r6, r0, lw_table;
-+	addk	r5, r5, r5;
-+	addk	r5, r5, r5;
-+	addk	r5, r5, r5;
-+	addk	r5, r5, r6;
-+	bra	r5;
-+ex_lw_end: /* Exception handling of load word, ends */
-+ex_sw:
-+	/* Get the destination register number into r5 */
-+	lbui	r5, r0, ex_reg_op;
-+	/* Form store_word jump table offset (sw_table + (8 * regnum)) */
-+	la	r6, r0, sw_table;
-+	add	r5, r5, r5;
-+	add	r5, r5, r5;
-+	add	r5, r5, r5;
-+	add	r5, r5, r6;
-+	bra	r5;
-+ex_sw_tail:
-+	mfs	r6, resr;
-+	andi	r6, r6, 0x800; /* Extract ESR[W] */
-+	beqi	r6, ex_shw;
-+	swi	r3, r0, ex_tmp_data_loc_0;
-+	/* Store the word, byte-by-byte into destination address */
-+	lbui	r3, r0, ex_tmp_data_loc_0;
-+	sbi	r3, r4, 0;
-+	lbui	r3, r0, ex_tmp_data_loc_1;
-+	sbi	r3, r4, 1;
-+	lbui	r3, r0, ex_tmp_data_loc_2;
-+	sbi	r3, r4, 2;
-+	lbui	r3, r0, ex_tmp_data_loc_3;
-+	sbi	r3, r4, 3;
-+	bri	ex_handler_done;
-+ex_shw:
-+	/* Store the lower half-word, byte-by-byte into destination address */
-+	swi	r3, r0, ex_tmp_data_loc_0;
-+	lbui	r3, r0, ex_tmp_data_loc_2;
-+	sbi	r3, r4, 0;
-+	lbui	r3, r0, ex_tmp_data_loc_3;
-+	sbi	r3, r4, 1;
-+ex_sw_end: /* Exception handling of store word, ends. */
++	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
++	if (signr > 0) {
++		/* Whee! Actually deliver the signal. */
++		if (in_syscall)
++			handle_restart(regs, &ka, 1);
++		handle_signal(signr, &ka, &info, oldset, regs);
++		return 1;
++	}
 +
-+ex_handler_done:
-+	POP_MSR;
-+	POP_REG(3);
-+	POP_REG(4);
-+	POP_REG(5);
-+	POP_REG(6);
-+	POP_REG(17);
-+	rted	r17, 0
-+	addik	r1, r1, (EX_HANDLER_STACK_SIZ); /* Restore stack frame */
-+ex_handler_unhandled:
-+	bri 0 /* UNHANDLED. TRAP HERE */
-+.end _hw_exception_handler
++	if (in_syscall)
++		handle_restart(regs, NULL, 0);
 +
-+/*
-+* hw_exception_handler Jump Table
-+* - Contains code snippets for each register that caused the unaligned exception
-+* - Hence exception handler is NOT self-modifying
-+* - Separate table for load exceptions and store exceptions.
-+* - Each table is of size: (8 * 32) = 256 bytes
-+*/
-+
-+.section .text
-+.align 4
-+lw_table:
-+lw_r0:	R3_TO_LWREG	(0);
-+lw_r1:	LWREG_NOP;
-+lw_r2:	R3_TO_LWREG	(2);
-+lw_r3:	R3_TO_LWREG_V	(3);
-+lw_r4:	R3_TO_LWREG_V	(4);
-+lw_r5:	R3_TO_LWREG_V	(5);
-+lw_r6:	R3_TO_LWREG_V	(6);
-+lw_r7:	R3_TO_LWREG	(7);
-+lw_r8:	R3_TO_LWREG	(8);
-+lw_r9:	R3_TO_LWREG	(9);
-+lw_r10:	R3_TO_LWREG	(10);
-+lw_r11:	R3_TO_LWREG	(11);
-+lw_r12:	R3_TO_LWREG	(12);
-+lw_r13:	R3_TO_LWREG	(13);
-+lw_r14:	R3_TO_LWREG	(14);
-+lw_r15:	R3_TO_LWREG	(15);
-+lw_r16:	R3_TO_LWREG	(16);
-+lw_r17:	LWREG_NOP;
-+lw_r18:	R3_TO_LWREG	(18);
-+lw_r19:	R3_TO_LWREG	(19);
-+lw_r20:	R3_TO_LWREG	(20);
-+lw_r21:	R3_TO_LWREG	(21);
-+lw_r22:	R3_TO_LWREG	(22);
-+lw_r23:	R3_TO_LWREG	(23);
-+lw_r24:	R3_TO_LWREG	(24);
-+lw_r25:	R3_TO_LWREG	(25);
-+lw_r26:	R3_TO_LWREG	(26);
-+lw_r27:	R3_TO_LWREG	(27);
-+lw_r28:	R3_TO_LWREG	(28);
-+lw_r29:	R3_TO_LWREG	(29);
-+lw_r30:	R3_TO_LWREG	(30);
-+lw_r31:	R3_TO_LWREG	(31);
-+
-+sw_table:
-+sw_r0:	SWREG_TO_R3	(0);
-+sw_r1:	SWREG_NOP;
-+sw_r2:	SWREG_TO_R3	(2);
-+sw_r3:	SWREG_TO_R3_V	(3);
-+sw_r4:	SWREG_TO_R3_V	(4);
-+sw_r5:	SWREG_TO_R3_V	(5);
-+sw_r6:	SWREG_TO_R3_V	(6);
-+sw_r7:	SWREG_TO_R3	(7);
-+sw_r8:	SWREG_TO_R3	(8);
-+sw_r9:	SWREG_TO_R3	(9);
-+sw_r10:	SWREG_TO_R3	(10);
-+sw_r11:	SWREG_TO_R3	(11);
-+sw_r12:	SWREG_TO_R3	(12);
-+sw_r13:	SWREG_TO_R3	(13);
-+sw_r14:	SWREG_TO_R3	(14);
-+sw_r15:	SWREG_TO_R3	(15);
-+sw_r16:	SWREG_TO_R3	(16);
-+sw_r17:	SWREG_NOP;
-+sw_r18:	SWREG_TO_R3	(18);
-+sw_r19:	SWREG_TO_R3	(19);
-+sw_r20:	SWREG_TO_R3	(20);
-+sw_r21:	SWREG_TO_R3	(21);
-+sw_r22:	SWREG_TO_R3	(22);
-+sw_r23:	SWREG_TO_R3	(23);
-+sw_r24:	SWREG_TO_R3	(24);
-+sw_r25:	SWREG_TO_R3	(25);
-+sw_r26:	SWREG_TO_R3	(26);
-+sw_r27:	SWREG_TO_R3	(27);
-+sw_r28:	SWREG_TO_R3	(28);
-+sw_r29:	SWREG_TO_R3	(29);
-+sw_r30:	SWREG_TO_R3	(30);
-+sw_r31:	SWREG_TO_R3	(31);
-+
-+/* Temporary data structures used in the handler */
-+.section .data
-+.align 4
-+ex_tmp_data_loc_0:
-+	.byte 0
-+ex_tmp_data_loc_1:
-+	.byte 0
-+ex_tmp_data_loc_2:
-+	.byte 0
-+ex_tmp_data_loc_3:
-+	.byte 0
-+ex_reg_op:
-+	.byte 0
-+
-diff --git a/include/asm-microblaze/exceptions.h b/include/asm-microblaze/exceptions.h
++	/* Did we come from a system call? */
++	return 0;
++}
+diff --git a/include/asm-microblaze/signal.h b/include/asm-microblaze/signal.h
 new file mode 100644
-index 0000000..3230cc0
+index 0000000..85e55f6
 --- /dev/null
-+++ b/include/asm-microblaze/exceptions.h
-@@ -0,0 +1,66 @@
++++ b/include/asm-microblaze/signal.h
+@@ -0,0 +1,199 @@
 +/*
-+ * include/asm-microblaze/exceptions.h
++ * include/asm-microblaze/signal.h
 + *
-+ * Preliminary support for HW exception handing for Microblaze
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + *
-+ * Copyright (C) 2005 John Williams <jwilliams@itee.uq.edu.au>
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
++ * Authors:
++ * Yasushi SHOJI <yashi@atmark-techno.com>
++ * Tetsuya OHKAWA <tetsuya@atmark-techno.com>
 + */
 +
-+#ifndef _ASM_EXCEPTIONS_H
-+#define _ASM_EXCEPTIONS_H
-+
-+#include <linux/autoconf.h>
++#ifndef _ASM_SIGNAL_H
++#define _ASM_SIGNAL_H
 +
 +#ifndef __ASSEMBLY__
++#include <linux/types.h>
++#include <linux/linkage.h>
 +
-+void initialize_exception_handlers(void);
-+asmlinkage void other_exception_handler(unsigned int esr, unsigned int addr);
++/* Avoid too many header ordering problems. */
++struct siginfo;
 +
-+/* Macros to enable and disable HW exceptions in the MSR */
-+/* Define MSR enable bit for HW exceptions */
-+#define HWEX_MSR_BIT (1 << 8)
++#ifdef __KERNEL__
 +
-+#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
-+#define __enable_hw_exceptions()					\
-+	__asm__ __volatile__ ("	msrset	r0, %0;				\
-+				nop; "					\
-+				:					\
-+				: "i" (HWEX_MSR_BIT)			\
-+				: "memory")
++/* Most things should be clean enough to redefine this at will, if care
++ is taken to make libc match. */
++#define _NSIG		64
++#define _NSIG_BPW	32
++#define _NSIG_WORDS	(_NSIG / _NSIG_BPW)
 +
-+#define __disable_hw_exceptions()					\
-+	__asm__ __volatile__ ("	msrclr r0, %0;				\
-+				nop; "					\
-+				:					\
-+				: "i" (HWEX_MSR_BIT)			\
-+				: "memory")
-+#else /* !CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR */
-+#define __enable_hw_exceptions()					\
-+	__asm__ __volatile__ ("						\
-+				mfs	r12, rmsr;			\
-+				ori	r12, r12, %0;			\
-+				mts	rmsr, r12;			\
-+				nop; "					\
-+				:					\
-+				: "i" (HWEX_MSR_BIT)			\
-+				: "memory", "r12")
++typedef unsigned long old_sigset_t; /* at least 32 bits */
 +
-+#define __disable_hw_exceptions()					\
-+	__asm__ __volatile__ ("						\
-+				mfs	r12, rmsr;			\
-+				andi	r12, r12, ~%0;			\
-+				mts	rmsr, r12;			\
-+				nop; "					\
-+				:					\
-+				: "i" (HWEX_MSR_BIT)			\
-+				: "memory", "r12")
-+#endif /* CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR */
++typedef struct {
++	unsigned long sig[_NSIG_WORDS];
++} sigset_t;
 +
-+#endif /*__ASSEMBLY__ */
++#else /* !__KERNEL__ */
 +
-+#endif /* _ASM_EXCEPTIONS_H */
++/* Here we must cater to libcs that poke about in kernel headers. */
++
++#define NSIG		32
++typedef unsigned long sigset_t;
++
++#endif /* __KERNEL__ */
++
++#endif /* __ASSEMBLY__ */
++
++#define SIGHUP		1
++#define SIGINT		2
++#define SIGQUIT		3
++#define SIGILL		4
++#define SIGTRAP		5
++#define SIGABRT		6
++#define SIGIOT		6
++#define SIGBUS		7
++#define SIGFPE		8
++#define SIGKILL		9
++#define SIGUSR1		10
++#define SIGSEGV		11
++#define SIGUSR2		12
++#define SIGPIPE		13
++#define SIGALRM		14
++#define SIGTERM		15
++#define SIGSTKFLT	16
++#define SIGCHLD		17
++#define SIGCONT		18
++#define SIGSTOP		19
++#define SIGTSTP		20
++#define SIGTTIN		21
++#define SIGTTOU		22
++#define SIGURG		23
++#define SIGXCPU		24
++#define SIGXFSZ		25
++#define SIGVTALRM	26
++#define SIGPROF		27
++#define SIGWINCH	28
++#define SIGIO		29
++#define SIGPOLL		SIGIO
++/*
++#define SIGLOST		29
++*/
++#define SIGPWR		30
++#define SIGSYS		31
++#define	SIGUNUSED	31
++
++/* These should not be considered constants from userland. */
++#define SIGRTMIN	32
++#define SIGRTMAX	_NSIG
++
++/*
++ * SA_FLAGS values:
++ *
++ * SA_ONSTACK indicates that a registered stack_t will be used.
++ * SA_RESTART flag to get restarting signals (which were the default long ago)
++ * SA_NOCLDSTOP flag to turn off SIGCHLD when children stop.
++ * SA_RESETHAND clears the handler when the signal is delivered.
++ * SA_NOCLDWAIT flag on SIGCHLD to inhibit zombies.
++ * SA_NODEFER prevents the current signal from being masked in the handler.
++ *
++ * SA_ONESHOT and SA_NOMASK are the historical Linux names for the Single
++ * Unix names RESETHAND and NODEFER respectively.
++ */
++#define SA_NOCLDSTOP	0x00000001
++#define SA_NOCLDWAIT	0x00000002
++#define SA_SIGINFO	0x00000004
++#define SA_ONSTACK	0x08000000
++#define SA_RESTART	0x10000000
++#define SA_NODEFER	0x40000000
++#define SA_RESETHAND	0x80000000
++
++#define SA_NOMASK	SA_NODEFER
++#define SA_ONESHOT	SA_RESETHAND
++
++#define SA_RESTORER	0x04000000
++
++/*
++ * sigaltstack controls
++ */
++#define SS_ONSTACK	1
++#define SS_DISABLE	2
++
++#define MINSIGSTKSZ	2048
++#define SIGSTKSZ	8192
++
++#ifndef __ASSEMBLY__
++#include <asm-generic/signal.h>
++
++#ifdef __KERNEL__
++
++struct old_sigaction {
++	__sighandler_t sa_handler;
++	old_sigset_t sa_mask;
++	unsigned long sa_flags;
++	void (*sa_restorer)(void);
++};
++
++struct sigaction {
++	__sighandler_t sa_handler;
++	unsigned long sa_flags;
++	void (*sa_restorer)(void);
++	sigset_t sa_mask; /* mask last for extensibility */
++};
++
++struct k_sigaction {
++	struct sigaction sa;
++};
++
++#else /* !__KERNEL__ */
++
++/* Here we must cater to libcs that poke about in kernel headers. */
++
++struct sigaction {
++	union {
++	__sighandler_t _sa_handler;
++	void (*_sa_sigaction)(int, struct siginfo *, void *);
++	} _u;
++	sigset_t sa_mask;
++	unsigned long sa_flags;
++	void (*sa_restorer)(void);
++};
++
++#define sa_handler	_u._sa_handler
++#define sa_sigaction	_u._sa_sigaction
++
++#endif /* __KERNEL__ */
++
++
++typedef struct sigaltstack {
++	void *ss_sp;
++	int ss_flags;
++	size_t ss_size;
++} stack_t;
++
++#ifdef __KERNEL__
++
++#include <asm/sigcontext.h>
++#undef __HAVE_ARCH_SIG_BITOPS
++
++#define ptrace_signal_deliver(regs, cookie) do { } while (0)
++
++#endif /* __KERNEL__ */
++
++asmlinkage int sys_sigsuspend(old_sigset_t mask, struct pt_regs *regs);
++asmlinkage int sys_rt_sigsuspend(sigset_t *unewset, size_t sigsetsize,
++					struct pt_regs *regs);
++asmlinkage int sys_sigaction(int sig, const struct old_sigaction *act,
++					struct old_sigaction *oact);
++asmlinkage int sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
++					struct pt_regs *regs);
++asmlinkage int sys_sigreturn(struct pt_regs *regs);
++asmlinkage int sys_rt_sigreturn(struct pt_regs *regs);
++
++
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* _ASM_SIGNAL_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
