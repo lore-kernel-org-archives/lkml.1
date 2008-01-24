@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbYAXM4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbYAXNBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbYAXM4Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 07:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbYAXM4B
+	id S1755474AbYAXNBS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 08:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYAXNBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 07:56:01 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:53950 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753311AbYAXM4A (ORCPT
+	Thu, 24 Jan 2008 08:01:04 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2799 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752922AbYAXNBB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 07:56:00 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
-Date: Thu, 24 Jan 2008 13:58:50 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Wilco Beekhuizen" <wilcobeekhuizen@gmail.com>, "Greg KH" <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com> <200801241324.26868.oliver@neukum.org> <84144f020801240434s3ce63e58m8ffb74d70c0aef32@mail.gmail.com>
-In-Reply-To: <84144f020801240434s3ce63e58m8ffb74d70c0aef32@mail.gmail.com>
+	Thu, 24 Jan 2008 08:01:01 -0500
+Date: Thu, 24 Jan 2008 13:00:53 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Theodore Ts'o" <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
+       aneesh.kumar@linux.vnet.ibm.com,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH 30/49] ext4: Convert truncate_mutex to read write semaphore.
+Message-ID: <20080124130018.GA11136@shadowen.org>
+References: <1200970948-17903-23-git-send-email-tytso@mit.edu> <1200970948-17903-24-git-send-email-tytso@mit.edu> <1200970948-17903-25-git-send-email-tytso@mit.edu> <1200970948-17903-26-git-send-email-tytso@mit.edu> <1200970948-17903-27-git-send-email-tytso@mit.edu> <1200970948-17903-28-git-send-email-tytso@mit.edu> <1200970948-17903-29-git-send-email-tytso@mit.edu> <1200970948-17903-30-git-send-email-tytso@mit.edu> <1200970948-17903-31-git-send-email-tytso@mit.edu> <20080123140659.5b70ae6b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801241358.51496.oliver@neukum.org>
+In-Reply-To: <20080123140659.5b70ae6b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 24. Januar 2008 13:34:00 schrieb Pekka Enberg:
-> Hi Oliver,
+On Wed, Jan 23, 2008 at 02:06:59PM -0800, Andrew Morton wrote:
+> > On Mon, 21 Jan 2008 22:02:09 -0500 "Theodore Ts'o" <tytso@MIT.EDU> wrote:
+> > +int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode, sector_t block,
+> > +			unsigned long max_blocks, struct buffer_head *bh,
+> > +			int create, int extend_disksize)
+> > +{
+> > +	int retval;
+> > +	if (create) {
+> > +		down_write((&EXT4_I(inode)->i_data_sem));
+> > +	} else {
+> > +		down_read((&EXT4_I(inode)->i_data_sem));
+> > +	}
+> > +	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
+> > +		retval =  ext4_ext_get_blocks(handle, inode, block, max_blocks,
+> > +				bh, create, extend_disksize);
+> > +	} else {
+> > +		retval = ext4_get_blocks_handle(handle, inode, block,
+> > +				max_blocks, bh, create, extend_disksize);
+> > +	}
+> > +	if (create) {
+> > +		up_write((&EXT4_I(inode)->i_data_sem));
+> > +	} else {
+> > +		up_read((&EXT4_I(inode)->i_data_sem));
+> > +	}
 > 
-> On Jan 24, 2008 2:24 PM, Oliver Neukum <oliver@neukum.org> wrote:
-> > > Sure but the filesystems in fs/ are general purpose and they can be
-> > > mounted on top of any block device (except for the in-memory ones like
-> >
-> > nfs, cifs, jffs, ...
+> This function has many unneeded braces.  checkpatch used to detect this
+> but it seems to have broken.
+
+This is a side effect of this rule:
+	
+	This does not apply if one branch of a conditional statement
+	is a single statement. Use braces in both branches.
+
+Basically each arm is being considered in isolation, each arm is seen as
+having a "sibling" arm with braces so it is permitted to have braces.
+Bugger.
+
+I guess I'll try and see if I can detect this.
+
+> > +	return retval;
+> > +}
+> >  static int ext4_get_block(struct inode *inode, sector_t iblock,
+> >  			struct buffer_head *bh_result, int create)
 > 
-> But none of them mess around with *hardware*. Sure, you can split it
-> in two: driver and filesystem but yet again, the latter is not general
-> purpose at all. I think this is somewhat similar to spufs which is
-> really hardware specific and thus not eligible for fs/.
+> Mising newline.
 
-So we put it into drivers/usb/misc
-Does that change the code?
+We could check for those ... will look to add in the next release.
 
-> On Jan 24, 2008 2:24 PM, Oliver Neukum <oliver@neukum.org> wrote:
-> > > sysfs). Furthermore, the problem with iriverfs is that it assumes that
-> > > there can be only one device plugged to the host. What we want is
-> > > something like
-> > >
-> > >   $ mount -t iriverfs /dev/iriver0 /mnt/media
-> > >
-> > > Which can be accomplished with an USB driver in driver/usb/ that
-> > > registers the special iriverfs.
-> >
-> > And what happens if you do
-> > mount -t vfat /dev/iriver0 /mnt/media ?
-> 
-> If /dev/iriver0 is registered as a block device, we read the
-> superblock but don't find a vfat filesystem and the mount fails as
-> expected. As for
-> 
->    mount -t iriverfs /dev/sd1 /mnt/media
-> 
-> we need to make sure file_system_type->get_sb() does something like
-> what drivers/mtd/mtdsuper.c::get_sb_mtd() does to make sure we only
-> let it mount if the block device is indeed an iriver player.
-
-How do you make a block device on top of this device? It has no notion
-of reading/writing arbitrary blocks. It operates on files.
-
-	Regards
-		Oliver
-
+-apw
