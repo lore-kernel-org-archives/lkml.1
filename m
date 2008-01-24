@@ -1,232 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbYAXUl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759347AbYAXUlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758856AbYAXUl0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 15:41:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbYAXUfl
+	id S1759347AbYAXUlm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 15:41:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757945AbYAXUfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 15:35:41 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:53339 "EHLO smtp.polymtl.ca"
+	Thu, 24 Jan 2008 15:35:42 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:53358 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757918AbYAXUfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 15:35:38 -0500
-Message-Id: <20080124203335.861249021@polymtl.ca>
+	id S1757921AbYAXUfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 15:35:39 -0500
+Message-Id: <20080124203341.690527178@polymtl.ca>
 References: <20080124202706.250598537@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jan 2008 15:27:15 -0500
+Date: Thu, 24 Jan 2008 15:27:28 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 09/26] Text Edit Lock - Alternative code for x86
-Content-Disposition: inline; filename=text-edit-lock-alternative-i386-and-x86_64.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Jan 2008 20:33:37 +0000
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@muc.de>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: [patch 22/26] Add __discard section to x86
+Content-Disposition: inline; filename=add-discard-section-to-x86.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Jan 2008 20:33:43 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a memcpy that should be a text_poke (in apply_alternatives).
-
-Use kernel_wp_save/kernel_wp_restore in text_poke to support DEBUG_RODATA
-correctly and so the CPU HOTPLUG special case can be removed.
-
-Add text_poke_early, for alternatives and paravirt boot-time and module load
-time patching.
-
-Notes:
-- A macro is used instead of an inline function to deal with circular header
-  include otherwise necessary for read_cr0 and preempt_disable/enable.
-
-Changelog:
-
-- Fix text_set and text_poke alignment check (mixed up bitwise and and or)
-- Remove text_set
-- Use the new macro INIT_ARRAY() to stop polluting the C files with ({ })
-  brackets (which breaks some c parsers in editors).
-- Export add_nops, so it can be used by others.
-- Remove x86 test for "wp_works_ok", it will just be ignored by the architecture
-  if not supported.
-- Document text_poke_early.
-- Remove clflush, since it breaks some VIA architectures and is not strictly
-  necessary.
-- Add kerneldoc to text_poke and text_poke_early.
-- Remove arg cr0 from kernel_wp_save/restore. Change the macro name for
-  kernel_wp_disable/enable.
+Add a __discard sectionto the linker script. Code produced in this section will
+not be put in the vmlinux file. This is useful when we have to calculate the
+size of an instruction before actually declaring it (for alignment purposes for
+instance). This is used by the immediate values.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: pageexec@freemail.hu
+Acked-by: H. Peter Anvin <hpa@zytor.com>
+CC: Andi Kleen <ak@muc.de>
+CC: Chuck Ebbert <cebbert@redhat.com>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>
 CC: Thomas Gleixner <tglx@linutronix.de>
 CC: Ingo Molnar <mingo@redhat.com>
-CC: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/x86/kernel/alternative.c |   56 ++++++++++++++++++++++++++++++++++--------
- include/asm-x86/alternative.h |   36 ++++++++++++++++++++++++++-
- 2 files changed, 81 insertions(+), 11 deletions(-)
+ arch/x86/kernel/vmlinux_32.lds.S |    1 +
+ arch/x86/kernel/vmlinux_64.lds.S |    1 +
+ 2 files changed, 2 insertions(+)
 
-Index: linux-2.6-lttng.mm/arch/x86/kernel/alternative.c
+Index: linux-2.6-lttng.mm/arch/x86/kernel/vmlinux_32.lds.S
 ===================================================================
---- linux-2.6-lttng.mm.orig/arch/x86/kernel/alternative.c	2008-01-24 14:10:42.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/x86/kernel/alternative.c	2008-01-24 14:23:52.000000000 -0500
-@@ -173,7 +173,7 @@ static const unsigned char*const * find_
- #endif /* CONFIG_X86_64 */
- 
- /* Use this to add nops to a buffer, then text_poke the whole buffer. */
--static void add_nops(void *insns, unsigned int len)
-+void add_nops(void *insns, unsigned int len)
- {
- 	const unsigned char *const *noptable = find_nop_table();
- 
-@@ -186,6 +186,7 @@ static void add_nops(void *insns, unsign
- 		len -= noplen;
+--- linux-2.6-lttng.mm.orig/arch/x86/kernel/vmlinux_32.lds.S	2008-01-24 14:40:42.000000000 -0500
++++ linux-2.6-lttng.mm/arch/x86/kernel/vmlinux_32.lds.S	2008-01-24 14:41:23.000000000 -0500
+@@ -201,6 +201,7 @@ SECTIONS
+   /* Sections to be discarded */
+   /DISCARD/ : {
+ 	*(.exitcall.exit)
++	*(__discard)
  	}
- }
-+EXPORT_SYMBOL_GPL(add_nops);
  
- extern struct alt_instr __alt_instructions[], __alt_instructions_end[];
- extern u8 *__smp_locks[], *__smp_locks_end[];
-@@ -219,7 +220,7 @@ void apply_alternatives(struct alt_instr
- 		memcpy(insnbuf, a->replacement, a->replacementlen);
- 		add_nops(insnbuf + a->replacementlen,
- 			 a->instrlen - a->replacementlen);
--		text_poke(instr, insnbuf, a->instrlen);
-+		text_poke_early(instr, insnbuf, a->instrlen);
- 	}
- }
- 
-@@ -234,7 +235,8 @@ static void alternatives_smp_lock(u8 **s
- 			continue;
- 		if (*ptr > text_end)
- 			continue;
--		text_poke(*ptr, ((unsigned char []){0xf0}), 1); /* add lock prefix */
-+		/* add lock prefix */
-+		text_poke(*ptr, INIT_ARRAY(unsigned char, 0xf0, 1), 1);
- 	};
- }
- 
-@@ -397,7 +399,7 @@ void apply_paravirt(struct paravirt_patc
- 
- 		/* Pad the rest with nops */
- 		add_nops(insnbuf + used, p->len - used);
--		text_poke(p->instr, insnbuf, p->len);
-+		text_poke_early(p->instr, insnbuf, p->len);
- 	}
- }
- extern struct paravirt_patch_site __start_parainstructions[],
-@@ -458,18 +460,52 @@ void __init alternative_instructions(voi
- #endif
- }
- 
--/*
-- * Warning:
-+/**
-+ * text_poke_early - Update instructions on a live kernel at boot time
-+ * @addr: address to modify
-+ * @opcode: source of the copy
-+ * @len: length to copy
-+ *
-  * When you use this code to patch more than one byte of an instruction
-  * you need to make sure that other CPUs cannot execute this code in parallel.
-- * Also no thread must be currently preempted in the middle of these instructions.
-- * And on the local CPU you need to be protected again NMI or MCE handlers
-- * seeing an inconsistent instruction while you patch.
-+ * Also no thread must be currently preempted in the middle of these
-+ * instructions.  And on the local CPU you need to be protected again NMI or MCE
-+ * handlers seeing an inconsistent instruction while you patch.
-+ * Warning: read_cr0 is modified by paravirt, this is why we have _early
-+ * versions. They are not in the __init section because they can be used at
-+ * module load time.
-  */
--void __kprobes text_poke(void *addr, unsigned char *opcode, int len)
-+void *text_poke_early(void *addr, const void *opcode, size_t len)
- {
- 	memcpy(addr, opcode, len);
- 	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
-+	return addr;
- }
-+
-+/**
-+ * text_poke - Update instructions on a live kernel
-+ * @addr: address to modify
-+ * @opcode: source of the copy
-+ * @len: length to copy
-+ *
-+ * Only atomic text poke/set should be allowed when not doing early patching.
-+ * It means the size must be writable atomically and the address must be aligned
-+ * in a way that permits an atomic write.
-+ */
-+void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
-+{
-+	BUG_ON(len > sizeof(long));
-+	BUG_ON((((long)addr + len - 1) & ~(sizeof(long) - 1))
-+		- ((long)addr & ~(sizeof(long) - 1)));
-+	kernel_wp_disable();
-+	memcpy(addr, opcode, len);
-+	kernel_wp_enable();
-+	sync_core();
-+	/* Could also do a CLFLUSH here to speed up CPU recovery; but
-+	   that causes hangs on some VIA CPUs. */
-+	return addr;
-+}
-+
-+
-Index: linux-2.6-lttng.mm/include/asm-x86/alternative.h
+   STABS_DEBUG
+Index: linux-2.6-lttng.mm/arch/x86/kernel/vmlinux_64.lds.S
 ===================================================================
---- linux-2.6-lttng.mm.orig/include/asm-x86/alternative.h	2008-01-24 14:25:01.000000000 -0500
-+++ linux-2.6-lttng.mm/include/asm-x86/alternative.h	2008-01-24 14:26:11.000000000 -0500
-@@ -4,6 +4,7 @@
- #include <linux/types.h>
- #include <linux/stddef.h>
- #include <asm/asm.h>
-+#include <asm/processor-flags.h>
+--- linux-2.6-lttng.mm.orig/arch/x86/kernel/vmlinux_64.lds.S	2008-01-24 14:40:42.000000000 -0500
++++ linux-2.6-lttng.mm/arch/x86/kernel/vmlinux_64.lds.S	2008-01-24 14:41:23.000000000 -0500
+@@ -226,6 +226,7 @@ SECTIONS
+   /DISCARD/ : {
+ 	*(.exitcall.exit)
+ 	*(.eh_frame)
++	*(__discard)
+ 	}
  
- /*
-  * Alternative inline assembly for SMP.
-@@ -156,6 +157,39 @@ apply_paravirt(struct paravirt_patch_sit
- #define __parainstructions_end	NULL
- #endif
- 
--extern void text_poke(void *addr, unsigned char *opcode, int len);
-+extern void add_nops(void *insns, unsigned int len);
-+
-+/*
-+ * Clear and restore the kernel write-protection flag on the local CPU.
-+ * Allows the kernel to edit read-only pages.
-+ * Side-effect: any interrupt handler running between save and restore will have
-+ * the ability to write to read-only pages.
-+ *
-+ * Warning:
-+ * Code patching in the UP case is safe if NMIs and MCE handlers are stopped and
-+ * no thread can be preempted in the instructions being modified (no iret to an
-+ * invalid instruction possible) or if the instructions are changed from a
-+ * consistent state to another consistent state atomically.
-+ * More care must be taken when modifying code in the SMP case because of
-+ * Intel's errata.
-+ * On the local CPU you need to be protected again NMI or MCE handlers seeing an
-+ * inconsistent instruction while you patch.
-+ * The _early version does not use read_cr0(), which can be paravirtualized.
-+ */
-+
-+extern void *text_poke(void *addr, const void *opcode, size_t len);
-+extern void *text_poke_early(void *addr, const void *opcode, size_t len);
-+
-+#define kernel_wp_disable()			\
-+do {						\
-+	preempt_disable();			\
-+	write_cr0(read_cr0() & ~X86_CR0_WP);	\
-+} while (0)
-+
-+#define kernel_wp_enable()			\
-+do {						\
-+	write_cr0(read_cr0() | X86_CR0_WP);	\
-+	preempt_enable();			\
-+} while (0)
- 
- #endif /* _ASM_X86_ALTERNATIVE_H */
+   STABS_DEBUG
 
 -- 
 Mathieu Desnoyers
