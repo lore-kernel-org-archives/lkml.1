@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYAXWR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbYAXWTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbYAXWR6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 17:17:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbYAXWRt
+	id S1757979AbYAXWTW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 17:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbYAXWTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 17:17:49 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:35966 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751981AbYAXWRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 17:17:48 -0500
-Subject: Re: [patch 19/26] mount options: fix jfs
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080124135713.76523ba6.akpm@linux-foundation.org>
-References: <20080124193341.166753833@szeredi.hu>
-	 <20080124193445.807705054@szeredi.hu>
-	 <1201209301.32767.4.camel@norville.austin.ibm.com>
-	 <20080124135713.76523ba6.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 24 Jan 2008 16:17:36 -0600
-Message-Id: <1201213056.32767.13.camel@norville.austin.ibm.com>
+	Thu, 24 Jan 2008 17:19:12 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48470 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754023AbYAXWTK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 17:19:10 -0500
+Date: Thu, 24 Jan 2008 22:17:47 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, ananth@in.ibm.com,
+       dhowells@redhat.com, jdike@addtoit.com, sam@ravnborg.org,
+       Adrian Bunk <adrian.bunk@movial.fi>,
+       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
+       oprofile-list@lists.sourceforge.net
+Subject: Re: [patch 02/26] Fix ARM to play nicely with generic Instrumentation menu
+Message-ID: <20080124221747.GB10388@flint.arm.linux.org.uk>
+References: <20080124202706.250598537@polymtl.ca> <20080124203333.128025422@polymtl.ca> <20080124211259.GA10388@flint.arm.linux.org.uk> <20080124212343.GB2181@Krystal>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080124212343.GB2181@Krystal>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-01-24 at 13:57 -0800, Andrew Morton wrote:
-
-> My usual algorithm here is to
+On Thu, Jan 24, 2008 at 04:23:43PM -0500, Mathieu Desnoyers wrote:
+> * Russell King (rmk+lkml@arm.linux.org.uk) wrote:
+> > On Thu, Jan 24, 2008 at 03:27:08PM -0500, Mathieu Desnoyers wrote:
+> > > The conflicting commit for 
+> > > move-kconfiginstrumentation-to-arch-kconfig-and-init-kconfig.patch
+> > > is the ARM fix from Linus :
+> > > 
+> > > commit 38ad9aebe70dc72df08851bbd1620d89329129ba
+> > 
+> > Since we have changes which depend on the location of these options,
+> > please hold off until the ARM tree merges in the next window:
+> > 
 > 
-> 1: queue all the patches and send the ones which have a maintainer to
->    that maintainer until he merges it.
-> 
-> 2: If the patches have a dependency upon (say) a VFS patch then I'll
->    merge the VFS patch and will then goto 1.
-> 
-> I don't think this particular patch has a VFS depencency so sure, merge
-> away.  You'll probably see that I merged it anyway, but I'll drop it again
-> when I see it turn up in your tree (I used to resync with the git trees
-> at least daily, but I now do this far less frequently because it is such
-> torture because everyone is paddling in everyone else's puddle).
+> Can you add me to the CC list of this patch please ?
 
-Merged.  Thanks.
+Not really because it's merged, and any discussion happened a few months
+back (though it was updated when Linus fixed your broken changes.)
 
-Shaggy
+You can read the patch set at 2007-12-17, via:
+
+http://lists.arm.linux.org.uk/lurker/search/20380101.000000.00000000@ml:linux-arm-kernel,kprobes.en.html
+
 -- 
-David Kleikamp
-IBM Linux Technology Center
-
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
