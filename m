@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbYAXMVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbYAXM0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbYAXMVn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 07:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYAXMVg
+	id S1755338AbYAXM0e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 07:26:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYAXM01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 07:21:36 -0500
-Received: from smtp-out001.kontent.com ([81.88.40.215]:55672 "EHLO
-	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753440AbYAXMVf (ORCPT
+	Thu, 24 Jan 2008 07:26:27 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:37586
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbYAXM00 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 07:21:35 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
-Date: Thu, 24 Jan 2008 13:24:26 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Wilco Beekhuizen" <wilcobeekhuizen@gmail.com>, "Greg KH" <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com> <200801241249.06577.oliver@neukum.org> <84144f020801240352r688fbbccu52ce9aa8ea3f199@mail.gmail.com>
-In-Reply-To: <84144f020801240352r688fbbccu52ce9aa8ea3f199@mail.gmail.com>
+	Thu, 24 Jan 2008 07:26:26 -0500
+Date: Thu, 24 Jan 2008 13:26:23 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Izik Eidus <izike@qumranet.com>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [PATCH] export notifier #1
+Message-ID: <20080124122623.GK7141@v2.random>
+References: <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <20080122223139.GD15848@v2.random> <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com> <479716AD.5070708@qumranet.com> <20080123105246.GG26420@sgi.com> <Pine.LNX.4.64.0801231145210.13547@schroedinger.engr.sgi.com> <4798289B.1000007@qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801241324.26868.oliver@neukum.org>
+In-Reply-To: <4798289B.1000007@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 24. Januar 2008 12:52:45 schrieb Pekka Enberg:
-> Hi Oliver,
-> 
-> On Jan 24, 2008 1:49 PM, Oliver Neukum <oliver@neukum.org> wrote:
-> > A quick glance through the files at sourceforge indicates that this
-> > device use a file transfer protocol. Mapping this to a simple device
-> > is hard. A fs is quite natural a representation of that.
-> 
-> Sure but the filesystems in fs/ are general purpose and they can be
-> mounted on top of any block device (except for the in-memory ones like
+On Thu, Jan 24, 2008 at 07:56:43AM +0200, Avi Kivity wrote:
+> What I need is a list of (mm, va) that map the page.  kvm doesn't have 
+> access to that, export notifiers do.  It seems reasonable that export 
+> notifier do that rmap walk since they are part of core mm, not kvm.
 
-nfs, cifs, jffs, ...
+Yes. Like said in earlier email we could ignore the slowdown and
+duplicate the mm/rmap.c code inside kvm, but that looks a bad layering
+violation and it's unnecessary, dirty and suboptimal IMHO.
 
-> sysfs). Furthermore, the problem with iriverfs is that it assumes that
-> there can be only one device plugged to the host. What we want is
-> something like
-> 
->   $ mount -t iriverfs /dev/iriver0 /mnt/media
-> 
-> Which can be accomplished with an USB driver in driver/usb/ that
-> registers the special iriverfs.
+> Alternatively, kvm can change its internal rmap structure to be page based 
+> instead of (mm, hva) based.  The problem here is to size this thing, as we 
+> don't know in advance (when the kvm module is loaded) whether 0% or 100% 
+> (or some value in between) of system memory will be used for kvm.
 
-And what happens if you do
-mount -t vfat /dev/iriver0 /mnt/media ?
-
-	Regards
-		Oliver
+Another issue is that for things like the page sharing driver, it's
+more convenient to be able to know exactly which "sptes" belongs to a
+certain userland mapping, and only that userland mapping (not all
+others mappings of the physical page). So if the rmap becomes page
+based, it'd be nice to still be able to find the "mm" associated with
+that certain spte pointer to skip all sptes in the other "mm" during
+the invalidate.
