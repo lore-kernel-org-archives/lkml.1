@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYAXMeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755726AbYAXMeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbYAXMeR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 07:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbYAXMeE
+	id S1755726AbYAXMeu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 07:34:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754418AbYAXMel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 07:34:04 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:63258 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754323AbYAXMeD (ORCPT
+	Thu, 24 Jan 2008 07:34:41 -0500
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:40625
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753737AbYAXMek (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 07:34:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=fAQ5JekQSPdo6zuUsU9j09/90BcjIV7NvKs5cTvhiItJN0tx8tc2RyB/jAkti5PrD+OuHd+nJLuK5SHCAbuz8FIYlbiNiTn8bMEzTfwNWdY9tgfqtE7T7o3scHGAk65tIH4iMaUhTmFUg7MB+jHlJlDON50NAgA5eMZ6KW0cvks=
-Message-ID: <84144f020801240434s3ce63e58m8ffb74d70c0aef32@mail.gmail.com>
-Date: Thu, 24 Jan 2008 14:34:00 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
-Cc: "Wilco Beekhuizen" <wilcobeekhuizen@gmail.com>, "Greg KH" <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200801241324.26868.oliver@neukum.org>
+	Thu, 24 Jan 2008 07:34:40 -0500
+Message-ID: <479885DC.8070100@qumranet.com>
+Date: Thu, 24 Jan 2008 14:34:36 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrea Arcangeli <andrea@qumranet.com>
+CC: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Izik Eidus <izike@qumranet.com>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [PATCH] export notifier #1
+References: <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <20080122223139.GD15848@v2.random> <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com> <479716AD.5070708@qumranet.com> <20080123105246.GG26420@sgi.com> <Pine.LNX.4.64.0801231145210.13547@schroedinger.engr.sgi.com> <4798289B.1000007@qumranet.com> <20080124122623.GK7141@v2.random>
+In-Reply-To: <20080124122623.GK7141@v2.random>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com>
-	 <200801241249.06577.oliver@neukum.org>
-	 <84144f020801240352r688fbbccu52ce9aa8ea3f199@mail.gmail.com>
-	 <200801241324.26868.oliver@neukum.org>
-X-Google-Sender-Auth: 7c34979ba5427298
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oliver,
-
-On Jan 24, 2008 2:24 PM, Oliver Neukum <oliver@neukum.org> wrote:
-> > Sure but the filesystems in fs/ are general purpose and they can be
-> > mounted on top of any block device (except for the in-memory ones like
+Andrea Arcangeli wrote:
+> On Thu, Jan 24, 2008 at 07:56:43AM +0200, Avi Kivity wrote:
+>   
+>> What I need is a list of (mm, va) that map the page.  kvm doesn't have 
+>> access to that, export notifiers do.  It seems reasonable that export 
+>> notifier do that rmap walk since they are part of core mm, not kvm.
+>>     
 >
-> nfs, cifs, jffs, ...
-
-But none of them mess around with *hardware*. Sure, you can split it
-in two: driver and filesystem but yet again, the latter is not general
-purpose at all. I think this is somewhat similar to spufs which is
-really hardware specific and thus not eligible for fs/.
-
-On Jan 24, 2008 2:24 PM, Oliver Neukum <oliver@neukum.org> wrote:
-> > sysfs). Furthermore, the problem with iriverfs is that it assumes that
-> > there can be only one device plugged to the host. What we want is
-> > something like
-> >
-> >   $ mount -t iriverfs /dev/iriver0 /mnt/media
-> >
-> > Which can be accomplished with an USB driver in driver/usb/ that
-> > registers the special iriverfs.
+> Yes. Like said in earlier email we could ignore the slowdown and
+> duplicate the mm/rmap.c code inside kvm, but that looks a bad layering
+> violation and it's unnecessary, dirty and suboptimal IMHO.
 >
-> And what happens if you do
-> mount -t vfat /dev/iriver0 /mnt/media ?
+>   
 
-If /dev/iriver0 is registered as a block device, we read the
-superblock but don't find a vfat filesystem and the mount fails as
-expected. As for
+Historical note: old kvm versions (like the what will eventually ship in 
+2.6.24) have a page-based rmap (hooking the rmap list off 
+page->private).  We changed that to an mm based rmap since page->private 
+is not available when kvm maps general userspace memory.
 
-   mount -t iriverfs /dev/sd1 /mnt/media
 
-we need to make sure file_system_type->get_sb() does something like
-what drivers/mtd/mtdsuper.c::get_sb_mtd() does to make sure we only
-let it mount if the block device is indeed an iriver player.
+>> Alternatively, kvm can change its internal rmap structure to be page based 
+>> instead of (mm, hva) based.  The problem here is to size this thing, as we 
+>> don't know in advance (when the kvm module is loaded) whether 0% or 100% 
+>> (or some value in between) of system memory will be used for kvm.
+>>     
+>
+> Another issue is that for things like the page sharing driver, it's
+> more convenient to be able to know exactly which "sptes" belongs to a
+> certain userland mapping, and only that userland mapping (not all
+> others mappings of the physical page). So if the rmap becomes page
+> based, it'd be nice to still be able to find the "mm" associated with
+> that certain spte pointer to skip all sptes in the other "mm" during
+> the invalidate.
+>   
 
-                        Pekka
+You also need the mm (or rather, the kvm structure, but they have a 1:1 
+relationship) to be able to lock and maintain the shadow structures 
+properly.
+
+-- 
+Any sufficiently difficult bug is indistinguishable from a feature.
+
