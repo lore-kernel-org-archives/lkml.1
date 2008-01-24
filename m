@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbYAXWAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757650AbYAXWCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757949AbYAXWAK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 17:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYAXV74
+	id S1757650AbYAXWCu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 17:02:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbYAXWCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 16:59:56 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46592 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754404AbYAXV7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 16:59:55 -0500
-Date: Thu, 24 Jan 2008 23:00:05 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild: Preparing for merge window
-Message-ID: <20080124220005.GB4204@uranus.ravnborg.org>
-References: <20080124215813.GA4204@uranus.ravnborg.org>
+	Thu, 24 Jan 2008 17:02:42 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35908 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755654AbYAXWCl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 17:02:41 -0500
+Date: Thu, 24 Jan 2008 13:57:13 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 19/26] mount options: fix jfs
+Message-Id: <20080124135713.76523ba6.akpm@linux-foundation.org>
+In-Reply-To: <1201209301.32767.4.camel@norville.austin.ibm.com>
+References: <20080124193341.166753833@szeredi.hu>
+	<20080124193445.807705054@szeredi.hu>
+	<1201209301.32767.4.camel@norville.austin.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080124215813.GA4204@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 10:58:13PM +0100, Sam Ravnborg wrote:
-> The following is the list of patches queued up for the merge window at the moment.
-> I have during the last week done several modpost changes to make section ismatch
-> warnings more reliable and I am happy with the modified modpost code now.
+> On Thu, 24 Jan 2008 15:15:01 -0600 Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
+> On Thu, 2008-01-24 at 20:34 +0100, Miklos Szeredi wrote:
+> > plain text document attachment (jfs_opts.patch)
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> > 
+> > Add iocharset= and errors= options to /proc/mounts for jfs
+> > filesystems.
+> > 
+> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> The warnings generated will if CONFIG_DEBUG_SECTION_MISMATCH=y be verbose
-> so it better guides the developer how to fix the warning.
+> Acked-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 > 
-> Other patches of interest:
+> Andrew,
+> Would you like me to add this to the jfs git tree, or would you like to
+> handle these patches as a set?
 > 
-> - We now have separate sections for all init/exit annotations
-> - We have restarted getting kconfig globalized, pending is widechar support
-> - Support for modules.order to tell in what order to load modules
-> - lots of small fixes/enhancements
-> 
-> The diffstat say that we touch a lot of files.
-> This is due to the following changes (mainly):
-> - consolidation touching all .lds.S files
-> - removal ofstale comment about make dep
-> - removal of obsolete __attribute_used__
-> - removal of TOPDIR
-> 
-> Patches will follow for review.
 
-Patches will be sent to linux-kbuild only.
+My usual algorithm here is to
 
-	Sam
+1: queue all the patches and send the ones which have a maintainer to
+   that maintainer until he merges it.
+
+2: If the patches have a dependency upon (say) a VFS patch then I'll
+   merge the VFS patch and will then goto 1.
+
+I don't think this particular patch has a VFS depencency so sure, merge
+away.  You'll probably see that I merged it anyway, but I'll drop it again
+when I see it turn up in your tree (I used to resync with the git trees
+at least daily, but I now do this far less frequently because it is such
+torture because everyone is paddling in everyone else's puddle).
