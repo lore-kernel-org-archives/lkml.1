@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbYAXWTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758411AbYAXWU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbYAXWTW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 17:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbYAXWTM
+	id S1758411AbYAXWU1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 17:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbYAXWUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 17:19:12 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48470 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754023AbYAXWTK (ORCPT
+	Thu, 24 Jan 2008 17:20:16 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:36423 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753817AbYAXWUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 17:19:10 -0500
-Date: Thu, 24 Jan 2008 22:17:47 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
+	Thu, 24 Jan 2008 17:20:14 -0500
+Subject: Re: [patch 01/26] Linux Kernel Markers Support for Proprierary
+	Modules
+From: Jon Masters <jonathan@jonmasters.org>
 To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, ananth@in.ibm.com,
-       dhowells@redhat.com, jdike@addtoit.com, sam@ravnborg.org,
-       Adrian Bunk <adrian.bunk@movial.fi>,
-       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
-       oprofile-list@lists.sourceforge.net
-Subject: Re: [patch 02/26] Fix ARM to play nicely with generic Instrumentation menu
-Message-ID: <20080124221747.GB10388@flint.arm.linux.org.uk>
-References: <20080124202706.250598537@polymtl.ca> <20080124203333.128025422@polymtl.ca> <20080124211259.GA10388@flint.arm.linux.org.uk> <20080124212343.GB2181@Krystal>
+       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20080124203332.749619937@polymtl.ca>
+References: <20080124202706.250598537@polymtl.ca>
+	 <20080124203332.749619937@polymtl.ca>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Thu, 24 Jan 2008 17:19:20 -0500
+Message-Id: <1201213160.25284.163.camel@perihelion>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080124212343.GB2181@Krystal>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 04:23:43PM -0500, Mathieu Desnoyers wrote:
-> * Russell King (rmk+lkml@arm.linux.org.uk) wrote:
-> > On Thu, Jan 24, 2008 at 03:27:08PM -0500, Mathieu Desnoyers wrote:
-> > > The conflicting commit for 
-> > > move-kconfiginstrumentation-to-arch-kconfig-and-init-kconfig.patch
-> > > is the ARM fix from Linus :
-> > > 
-> > > commit 38ad9aebe70dc72df08851bbd1620d89329129ba
-> > 
-> > Since we have changes which depend on the location of these options,
-> > please hold off until the ARM tree merges in the next window:
-> > 
-> 
-> Can you add me to the CC list of this patch please ?
 
-Not really because it's merged, and any discussion happened a few months
-back (though it was updated when Linus fixed your broken changes.)
+On Thu, 2008-01-24 at 15:27 -0500, Mathieu Desnoyers wrote:
 
-You can read the patch set at 2007-12-17, via:
+> There seems to be good arguments for markers to support proprierary modules. So
+> I am throwing this one-liner in and let's see how people react. It only makes
+> sure that a module that has been "forced" to be loaded won't have its markers
+> used. It is important to leave this check to make sure the kernel does not crash
+> by expecting the markers part of the struct module by mistake in the case there
+> is an incorrect checksum.
 
-http://lists.arm.linux.org.uk/lurker/search/20380101.000000.00000000@ml:linux-arm-kernel,kprobes.en.html
+Acked-by: Jon Masters <jcm@jonmasters.org>
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
