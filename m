@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbYAXMT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbYAXMVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754947AbYAXMT5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 07:19:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbYAXMTs
+	id S1755179AbYAXMVn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 07:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYAXMVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 07:19:48 -0500
-Received: from nz-out-0506.google.com ([64.233.162.237]:11916 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752553AbYAXMTr (ORCPT
+	Thu, 24 Jan 2008 07:21:36 -0500
+Received: from smtp-out001.kontent.com ([81.88.40.215]:55672 "EHLO
+	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753440AbYAXMVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 07:19:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ee2PngbnqMtlGgsR5AmIkPSaFHm8MksQ7mhvq2vZR8OOQHtTDOl1LgOHp+WgQ85ELPRcomtDRzvn1VpHc3YNcUHxuWafr96L/g9CgCes6j7/AQ9Oi7QsiBnFBN5g8reE+9DTRgf4zUZMt17pHU2k7CqzBRpcFmqnrFmhx6pHKkc=
-Message-ID: <cfd9edbf0801240419t669c9d9cl4cf0f821599fc7ad@mail.gmail.com>
-Date: Thu, 24 Jan 2008 13:19:45 +0100
-From: "=?ISO-8859-1?Q?Daniel_Sp=E5ng?=" <daniel.spang@gmail.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 3/8] mem_notify v5: introduce /dev/mem_notify new device (the core of this patch series)
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "Marcelo Tosatti" <marcelo@kvack.org>, "Rik van Riel" <riel@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080124132014.1769.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 24 Jan 2008 07:21:35 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
+Date: Thu, 24 Jan 2008 13:24:26 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Wilco Beekhuizen" <wilcobeekhuizen@gmail.com>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com> <200801241249.06577.oliver@neukum.org> <84144f020801240352r688fbbccu52ce9aa8ea3f199@mail.gmail.com>
+In-Reply-To: <84144f020801240352r688fbbccu52ce9aa8ea3f199@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080124130348.1760.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080124132014.1769.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <200801241324.26868.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi KOSAKI,
+Am Donnerstag, 24. Januar 2008 12:52:45 schrieb Pekka Enberg:
+> Hi Oliver,
+> 
+> On Jan 24, 2008 1:49 PM, Oliver Neukum <oliver@neukum.org> wrote:
+> > A quick glance through the files at sourceforge indicates that this
+> > device use a file transfer protocol. Mapping this to a simple device
+> > is hard. A fs is quite natural a representation of that.
+> 
+> Sure but the filesystems in fs/ are general purpose and they can be
+> mounted on top of any block device (except for the in-memory ones like
 
-On 1/24/08, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> +#define PROC_WAKEUP_GUARD  (10*HZ)
-[...]
-> +       timeout = info->last_proc_notify + PROC_WAKEUP_GUARD;
+nfs, cifs, jffs, ...
 
-If only one or a few processes are using the system I think 10 seconds
-is a little long time to wait before they get the notification again.
-Can we decrease this value? Or make it configurable under /proc? Or
-make it lower with fewer users? Something like:
+> sysfs). Furthermore, the problem with iriverfs is that it assumes that
+> there can be only one device plugged to the host. What we want is
+> something like
+> 
+>   $ mount -t iriverfs /dev/iriver0 /mnt/media
+> 
+> Which can be accomplished with an USB driver in driver/usb/ that
+> registers the special iriverfs.
 
-timeout = info->last_proc_notify + min(mem_notify_users, PROC_WAKEUP_GUARD);
+And what happens if you do
+mount -t vfat /dev/iriver0 /mnt/media ?
 
-Cheers,
-Daniel
+	Regards
+		Oliver
