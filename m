@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbYAXSeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYAXS57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241AbYAXSeF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 13:34:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYAXSdy
+	id S1755359AbYAXS57 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 13:57:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbYAXS5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 13:33:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:6322 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbYAXSdy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 13:33:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RNK9lTxsZdYYE41g1Koz9EmY85nBlbb4DyaFK6ErWQrWEtoj3Uxo88GMvo6X6/dQf+Y911wRQ6cNtprzqE9S6ZFrBBappa3r5U6ipHBGEFhj3Z+6vQO2GHcfoLd9PG8bfgcGvUIsZvcSywZANe5q0Udu5m5R11w0odAcpSkizOA=
-Message-ID: <6101e8c40801241033m7347ec5fof8e41c3fe7974feb@mail.gmail.com>
-Date: Thu, 24 Jan 2008 19:33:52 +0100
-From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
-	<oliver.pntr@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: Add common orderly_poweroff() to 2.6.22?
-Cc: "Adrian Bunk" <bunk@kernel.org>, "David Miller" <davem@davemloft.net>,
-       "Greg KH" <gregkh@suse.de>, "Greg KH" <greg@kroah.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Al Viro" <viro@zeniv.linux.org.uk>, "Arnd Bergmann" <arnd@arndb.de>
-In-Reply-To: <4798C817.6020702@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <6101e8c40801210959v1e0f6e55w26187dc93a09a202@mail.gmail.com>
-	 <4798C817.6020702@goop.org>
+	Thu, 24 Jan 2008 13:57:50 -0500
+Received: from waste.org ([66.93.16.53]:54576 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753270AbYAXS5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 13:57:49 -0500
+Subject: Re: [PATCH -v8 3/4] Enable the MS_ASYNC functionality in
+	sys_msync()
+From: Matt Mackall <mpm@selenic.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Anton Salikhmetov <salikhmetov@gmail.com>, linux-mm@kvack.org,
+       jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
+       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
+In-Reply-To: <200801241236.01114.nickpiggin@yahoo.com.au>
+References: <12010440803930-git-send-email-salikhmetov@gmail.com>
+	 <1201044083504-git-send-email-salikhmetov@gmail.com>
+	 <alpine.LFD.1.00.0801230836250.1741@woody.linux-foundation.org>
+	 <200801241236.01114.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Thu, 24 Jan 2008 12:56:13 -0600
+Message-Id: <1201200973.3897.31.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/24/08, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> Oliver Pinter (Pintér Olivér) wrote:
-> > Hi all!
-> >
-> > commit in mainline 10a0a8d4e3f6bf2d077f94344441909abe670f5a is go in
-> > the satble 2.6.22
-> >
-> > the grund for this question is http://hup.hu/node/49773 .
-> >
->
-> Is there a compelling reason?
 
-no, but in forum some person have the question, why the kernel call
-userspace program and it is secure or not...
+On Thu, 2008-01-24 at 12:36 +1100, Nick Piggin wrote:
+> On Thursday 24 January 2008 04:05, Linus Torvalds wrote:
+> > On Wed, 23 Jan 2008, Anton Salikhmetov wrote:
+> > > +
+> > > +		if (pte_dirty(*pte) && pte_write(*pte)) {
+> >
+> > Not correct.
+> >
+> > You still need to check "pte_present()" before you can test any other
+> > bits. For a non-present pte, none of the other bits are defined, and for
+> > all we know there might be architectures out there that require them to
+> > be non-dirty.
+> >
+> > As it is, you just possibly randomly corrupted the pte.
+> >
+> > Yeah, on all architectures I know of, it the pte is clear, neither of
+> > those tests will trigger, so it just happens to work, but it's still
+> > wrong.
+> 
+> Probably it can fail for !present nonlinear mappings on many
+> architectures.
 
- I added it to remove some duplicate code,
-> but it isn't a bugfix or anything.
->
->     J
->
->
+Definitely.
 
 -- 
-Thanks,
-Oliver
+Mathematics is the supreme nostalgia of our time.
+
