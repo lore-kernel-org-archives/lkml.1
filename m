@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760622AbYAZQFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760573AbYAZQGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760622AbYAZQFs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 11:05:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbYAZP4b
+	id S1760573AbYAZQGO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 11:06:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbYAZP4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:56:31 -0500
+	Sat, 26 Jan 2008 10:56:37 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757128AbYAZP43 (ORCPT
+	with ESMTP id S1757257AbYAZP4e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:56:29 -0500
+	Sat, 26 Jan 2008 10:56:34 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 31/52] [microblaze] pci header files
-Date: Thu, 24 Jan 2008 16:03:06 +0100
-Message-Id: <d67010417928d04766e6dd74820b12c249d61814.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 26/52] [microblaze] IPC support
+Date: Thu, 24 Jan 2008 16:03:01 +0100
+Message-Id: <e6309af7cc6550ef5b399fc0902f1926f9e52e58.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <2f3db7ba4fe41cb9888adabf0e4e052d4da5c37c.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <db7f441df21cfe296a44744747b28f379e75fd49.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -36,11 +36,6 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <240998be1af3774635995fd19248f8b3a9e8a702.1201107832.git.monstr@monstr.eu>
  <3bcb9581bc512fdd0a124ac8322af9e2a8adc975.1201107832.git.monstr@monstr.eu>
  <db7f441df21cfe296a44744747b28f379e75fd49.1201107832.git.monstr@monstr.eu>
- <e6309af7cc6550ef5b399fc0902f1926f9e52e58.1201107832.git.monstr@monstr.eu>
- <2d11eef3abada1f41658a532a483c6121ded8054.1201107832.git.monstr@monstr.eu>
- <48db19662b808ab6f5455dd7f2116e6544c50e95.1201107832.git.monstr@monstr.eu>
- <7b0cfa6ae11749e20c941d0a4f03577141e022f8.1201107832.git.monstr@monstr.eu>
- <2f3db7ba4fe41cb9888adabf0e4e052d4da5c37c.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -52,20 +47,359 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/pci-bridge.h |  146 +++++++++++++++++++++++++++++++++++
- include/asm-microblaze/pci.h        |  139 +++++++++++++++++++++++++++++++++
- 2 files changed, 285 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/pci-bridge.h
- create mode 100644 include/asm-microblaze/pci.h
+ arch/microblaze/kernel/sys_microblaze.c |  331 +++++++++++++++++++++++++++++++
+ include/asm-microblaze/ipc.h            |   18 ++
+ include/asm-microblaze/ipcbuf.h         |   38 ++++
+ 3 files changed, 387 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/sys_microblaze.c
+ create mode 100644 include/asm-microblaze/ipc.h
+ create mode 100644 include/asm-microblaze/ipcbuf.h
 
-diff --git a/include/asm-microblaze/pci-bridge.h b/include/asm-microblaze/pci-bridge.h
+diff --git a/arch/microblaze/kernel/sys_microblaze.c b/arch/microblaze/kernel/sys_microblaze.c
 new file mode 100644
-index 0000000..49d5dc4
+index 0000000..a14328f
 --- /dev/null
-+++ b/include/asm-microblaze/pci-bridge.h
-@@ -0,0 +1,146 @@
++++ b/arch/microblaze/kernel/sys_microblaze.c
+@@ -0,0 +1,331 @@
 +/*
-+ * include/asm-microblaze/pci-bridge.h
++ * arch/microblaze/kernel/sys_microblaze.c
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ * Copyright (C) 2007 PetaLogix
++ *
++ * Authors:
++ * John Williams <john.williams@petalogix.com>
++ * Yasushi SHOJI <yashi@atmark-techno.com>
++ * Tetsuya OHKAWA <tetsuya@atmark-techno.com>
++ */
++
++#include <linux/errno.h>
++#include <linux/mm.h>
++#include <linux/smp.h>
++#include <linux/smp_lock.h>
++#include <linux/syscalls.h>
++#include <linux/sem.h>
++#include <linux/msg.h>
++#include <linux/shm.h>
++#include <linux/stat.h>
++#include <linux/mman.h>
++#include <linux/sys.h>
++#include <linux/ipc.h>
++#include <linux/utsname.h>
++#include <linux/file.h>
++#include <linux/module.h>
++#include <linux/err.h>
++#include <linux/fs.h>
++
++#include <asm/uaccess.h>
++#include <linux/ipc.h>
++#include <asm/semaphore.h>
++#include <asm/unistd.h>
++
++/*
++ * sys_ipc() is the de-multiplexer for the SysV IPC calls..
++ *
++ * This is really horribly ugly.
++ */
++int
++sys_ipc(uint call, int first, int second, int third, void *ptr, long fifth)
++{
++	int version, ret;
++
++	version = call >> 16; /* hack for backward compatibility */
++	call &= 0xffff;
++
++	ret = -EINVAL;
++	switch (call) {
++	case SEMOP:
++		ret = sys_semop(first, (struct sembuf *)ptr, second);
++		break;
++	case SEMGET:
++		ret = sys_semget(first, second, third);
++		break;
++	case SEMCTL:
++	{
++		union semun fourth;
++
++		if (!ptr)
++			break;
++		if ((ret = access_ok(VERIFY_READ, ptr,
++					sizeof(long)) ? 0 : -EFAULT)
++			|| (ret = get_user(fourth.__pad, (void **)ptr)))
++			break;
++		ret = sys_semctl(first, second, third, fourth);
++		break;
++	}
++	case MSGSND:
++		ret = sys_msgsnd(first, (struct msgbuf *) ptr, second, third);
++		break;
++	case MSGRCV:
++		switch (version) {
++		case 0: {
++			struct ipc_kludge tmp;
++
++			if (!ptr)
++				break;
++			if ((ret = access_ok(VERIFY_READ, ptr,
++					sizeof(tmp)) ? 0 : -EFAULT)
++				|| (ret = copy_from_user(&tmp,
++						(struct ipc_kludge *) ptr,
++						sizeof(tmp))))
++				break;
++			ret = sys_msgrcv(first, tmp.msgp, second, tmp.msgtyp,
++					third);
++			break;
++			}
++		default:
++			ret = sys_msgrcv(first, (struct msgbuf *) ptr,
++					second, fifth, third);
++			break;
++		}
++		break;
++	case MSGGET:
++		ret = sys_msgget((key_t) first, second);
++		break;
++	case MSGCTL:
++		ret = sys_msgctl(first, second, (struct msqid_ds *) ptr);
++		break;
++	case SHMAT:
++		switch (version) {
++		default: {
++			ulong raddr;
++
++			if ((ret = access_ok(VERIFY_WRITE, (ulong *) third,
++					sizeof(ulong)) ? 0 : -EFAULT))
++				break;
++			ret = do_shmat(first, (char *) ptr, second, &raddr);
++			if (ret)
++				break;
++			ret = put_user(raddr, (ulong *) third);
++			break;
++			}
++		case 1:	/* iBCS2 emulator entry point */
++			if (!segment_eq(get_fs(), get_ds()))
++				break;
++			ret = do_shmat(first, (char *) ptr, second,
++					(ulong *) third);
++			break;
++		}
++		break;
++	case SHMDT:
++		ret = sys_shmdt((char *)ptr);
++		break;
++	case SHMGET:
++		ret = sys_shmget(first, second, third);
++		break;
++	case SHMCTL:
++		ret = sys_shmctl(first, second, (struct shmid_ds *) ptr);
++		break;
++	}
++
++	return ret;
++}
++
++long execve(const char *filename, char **argv, char **envp)
++{
++	struct pt_regs regs;
++	int ret;
++
++	memset(&regs, 0, sizeof(struct pt_regs));
++	local_save_flags(regs.msr);
++	ret = do_execve((char *)filename, (char __user * __user *)argv,
++			(char __user * __user *)envp, &regs);
++
++	if (ret < 0)
++		goto out;
++
++	/*
++	 * Save argc to the register structure for userspace.
++	 */
++	regs.r5 = ret; /* FIXME */
++
++	/*
++	 * We were successful. We won't be returning to our caller, but
++	 * instead to user space by manipulating the kernel stack.
++	 */
++	asm volatile ("addk	r5, r0, %0	\n\t"
++			"addk	r6, r0, %1	\n\t"
++			/* copy regs to top of stack */
++			"brlid	r15, memmove	\n\t"
++			"addik	r7, r0, %2	\n\t"
++			"brid	ret_to_user	\n\t"
++			/* reposition stack pointer */
++			"addk	r1, r0, r3	\n\t"
++			:
++			: "r" (task_pt_regs(current)),
++			"r" (&regs),
++			"i" (sizeof(regs))
++			: "r1", "r3", "r5", "r6", "r7", "r15", "memory");
++
++out:
++	return ret;
++}
++EXPORT_SYMBOL(execve);
++
++asmlinkage int sys_vfork(struct pt_regs *regs)
++{
++	return do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD, regs->r1,
++						regs, 0, NULL, NULL);
++}
++
++asmlinkage int sys_clone(int flags, unsigned long stack, struct pt_regs *regs)
++{
++	if (!stack)
++		stack = regs->r1;
++	return do_fork(flags, stack, regs, 0, NULL, NULL);
++}
++
++asmlinkage int sys_execve(char __user *filenamei, char __user * __user *argv,
++			char __user * __user *envp, struct pt_regs *regs)
++{
++	int error;
++	char *filename;
++
++	filename = getname(filenamei);
++	error = PTR_ERR(filename);
++	if (IS_ERR(filename))
++		goto out;
++	error = do_execve(filename, argv, envp, regs);
++	putname(filename);
++out:
++	return error;
++}
++
++asmlinkage int sys_pipe(unsigned long __user *fildes)
++{
++	int fd[2];
++	int error;
++
++	error = do_pipe(fd);
++	if (!error) {
++		if (copy_to_user(fildes, fd, 2*sizeof(int)))
++			error = -EFAULT;
++	}
++	return error;
++}
++
++static inline unsigned long
++do_mmap2(unsigned long addr, size_t len,
++	unsigned long prot, unsigned long flags,
++	unsigned long fd, unsigned long pgoff)
++{
++	struct file *file = NULL;
++	int ret = -EBADF;
++
++	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
++	if (!(flags & MAP_ANONYMOUS))
++		if (!(file = fget(fd))) {
++			printk(KERN_INFO "no fd in mmap\r\n");
++			goto out;
++		}
++
++	down_write(&current->mm->mmap_sem);
++	ret = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
++	up_write(&current->mm->mmap_sem);
++	if (file)
++		fput(file);
++out:
++	return ret;
++}
++
++unsigned long sys_mmap2(unsigned long addr, size_t len,
++			unsigned long prot, unsigned long flags,
++			unsigned long fd, unsigned long pgoff)
++{
++	return do_mmap2(addr, len, prot, flags, fd, pgoff);
++}
++
++unsigned long sys_mmap(unsigned long addr, size_t len,
++			unsigned long prot, unsigned long flags,
++			unsigned long fd, off_t offset)
++{
++	int err = -EINVAL;
++
++	if (offset & ~PAGE_MASK) {
++		printk(KERN_INFO "no pagemask in mmap\r\n");
++		goto out;
++	}
++
++	err = do_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
++out:
++	return err;
++}
++
++int sys_uname(struct old_utsname *name)
++{
++	int err = -EFAULT;
++
++	down_read(&uts_sem);
++	if (name && !copy_to_user(name, utsname(), sizeof(*name)))
++		err = 0;
++	up_read(&uts_sem);
++	return err;
++}
++
++int sys_olduname(struct oldold_utsname *name)
++{
++	int error;
++
++	if (!name)
++		return -EFAULT;
++	if (!access_ok(VERIFY_WRITE, name, sizeof(struct oldold_utsname)))
++		return -EFAULT;
++
++	down_read(&uts_sem);
++	error = __copy_to_user(&name->sysname, utsname()->sysname,
++				__OLD_UTS_LEN);
++	error -= __put_user(0, name->sysname + __OLD_UTS_LEN);
++	error -= __copy_to_user(&name->nodename, utsname()->nodename,
++				__OLD_UTS_LEN);
++	error -= __put_user(0, name->nodename + __OLD_UTS_LEN);
++	error -= __copy_to_user(&name->release, utsname()->release,
++				__OLD_UTS_LEN);
++	error -= __put_user(0, name->release + __OLD_UTS_LEN);
++	error -= __copy_to_user(&name->version, utsname()->version,
++				__OLD_UTS_LEN);
++	error -= __put_user(0, name->version + __OLD_UTS_LEN);
++	error -= __copy_to_user(&name->machine, utsname()->machine,
++				__OLD_UTS_LEN);
++	error = __put_user(0, name->machine + __OLD_UTS_LEN);
++	up_read(&uts_sem);
++
++	error = error ? -EFAULT : 0;
++	return error;
++}
++
++/*
++ * Do a system call from kernel instead of calling sys_execve so we
++ * end up with proper pt_regs.
++ */
++int kernel_execve(const char *filename, char *const argv[], char *const envp[])
++{
++	register const char *__a __asm__("r5") = filename;
++	register const void *__b __asm__("r6") = argv;
++	register const void *__c __asm__("r7") = envp;
++	register unsigned long __syscall __asm__("r12") = __NR_execve;
++	register unsigned long __ret __asm__("r3");
++	__asm__ __volatile__ ("brki r14, 0x8"
++			: "=r" (__ret), "=r" (__syscall)
++			: "1" (__syscall), "r" (__a), "r" (__b), "r" (__c)
++			: "r4", "r8", "r9",
++			"r10", "r11", "r14", "cc", "memory");
++	return __ret;
++}
+diff --git a/include/asm-microblaze/ipc.h b/include/asm-microblaze/ipc.h
+new file mode 100644
+index 0000000..041b0eb
+--- /dev/null
++++ b/include/asm-microblaze/ipc.h
+@@ -0,0 +1,18 @@
++/*
++ * include/asm-microblaze/ipc.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -74,287 +408,58 @@ index 0000000..49d5dc4
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_PCI_BRIDGE_H
-+#define _ASM_PCI_BRIDGE_H
-+#ifdef __KERNEL__
++#ifndef _ASM_IPC_H
++#define _ASM_IPC_H
 +
-+#include <linux/ioport.h>
-+#include <linux/pci.h>
++#include <asm-generic/ipc.h>
 +
-+struct device_node;
-+struct pci_controller;
++#endif /* _ASM_IPC_H */
++
++
+diff --git a/include/asm-microblaze/ipcbuf.h b/include/asm-microblaze/ipcbuf.h
+new file mode 100644
+index 0000000..742768d
+--- /dev/null
++++ b/include/asm-microblaze/ipcbuf.h
+@@ -0,0 +1,38 @@
++/*
++ * include/asm-microblaze/ipcbuf.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#ifndef _ASM_IPCBUF_H
++#define _ASM_IPCBUF_H
 +
 +/*
-+ * pci_io_base returns the memory address at which you can access
-+ * the I/O space for PCI bus number `bus' (or NULL on error).
++ * The user_ipc_perm structure for m68k architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * Pad space is left for:
++ * - 32-bit mode_t and seq
++ * - 2 miscellaneous 32-bit values
 + */
-+extern void __iomem *pci_bus_io_base(unsigned int bus);
-+extern unsigned long pci_bus_io_base_phys(unsigned int bus);
-+extern unsigned long pci_bus_mem_base_phys(unsigned int bus);
 +
-+/* Allocate a new PCI host bridge structure */
-+extern struct pci_controller *pcibios_alloc_controller(void);
-+
-+/* Helper function for setting up resources */
-+extern void pci_init_resource(struct resource *res, unsigned long start,
-+			unsigned long end, int flags, char *name);
-+
-+/* Get the PCI host controller for a bus */
-+extern struct pci_controller *pci_bus_to_hose(int bus);
-+
-+/* Get the PCI host controller for an OF device */
-+extern struct pci_controller
-+*pci_find_hose_for_OF_device(struct device_node *node);
-+
-+/* Fill up host controller resources from the OF node */
-+extern void
-+pci_process_bridge_OF_ranges(struct pci_controller *hose,
-+			struct device_node *dev, int primary);
-+
-+/*
-+ * Structure of a PCI controller (host bridge)
-+ */
-+struct pci_controller {
-+	int index; /* PCI domain number */
-+	struct pci_controller *next;
-+	struct pci_bus *bus;
-+	void *arch_data;
-+
-+	int first_busno;
-+	int last_busno;
-+	int bus_offset;
-+
-+	void __iomem *io_base_virt;
-+	unsigned long io_base_phys;
-+
-+	/* Some machines (PReP) have a non 1:1 mapping of
-+	 * the PCI memory space in the CPU bus space
-+	 */
-+	unsigned long pci_mem_offset;
-+
-+	struct pci_ops *ops;
-+	volatile unsigned int __iomem *cfg_addr;
-+	volatile void __iomem *cfg_data;
-+	/*
-+	 * If set, indirect method will set the cfg_type bit as
-+	 * needed to generate type 1 configuration transactions.
-+	 */
-+	int set_cfg_type;
-+
-+	/* Currently, we limit ourselves to 1 IO range and 3 mem
-+	 * ranges since the common pci_bus structure can't handle more
-+	 */
-+	struct resource	io_resource;
-+	struct resource mem_resources[3];
-+	int mem_resource_count;
-+
-+	/* Host bridge I/O and Memory space
-+	 * Used for BAR placement algorithms
-+	 */
-+	struct resource io_space;
-+	struct resource mem_space;
++struct ipc64_perm {
++	__kernel_key_t		key;
++	__kernel_uid32_t	uid;
++	__kernel_gid32_t	gid;
++	__kernel_uid32_t	cuid;
++	__kernel_gid32_t	cgid;
++	__kernel_mode_t		mode;
++	unsigned short		__pad1;
++	unsigned short		seq;
++	unsigned short		__pad2;
++	unsigned long		__unused1;
++	unsigned long		__unused2;
 +};
 +
-+/* These are used for config access before all the PCI probing
-+ has been done. */
-+int early_read_config_byte(struct pci_controller *hose, int bus, int dev_fn,
-+			int where, u8 *val);
-+int early_read_config_word(struct pci_controller *hose, int bus, int dev_fn,
-+			int where, u16 *val);
-+int early_read_config_dword(struct pci_controller *hose, int bus, int dev_fn,
-+			int where, u32 *val);
-+int early_write_config_byte(struct pci_controller *hose, int bus, int dev_fn,
-+			int where, u8 val);
-+int early_write_config_word(struct pci_controller *hose, int bus, int dev_fn,
-+			int where, u16 val);
-+int early_write_config_dword(struct pci_controller *hose, int bus, int dev_fn,
-+			int where, u32 val);
-+
-+extern void setup_indirect_pci_nomap(struct pci_controller *hose,
-+			void __iomem *cfg_addr, void __iomem *cfg_data);
-+extern void setup_indirect_pci(struct pci_controller *hose,
-+			u32 cfg_addr, u32 cfg_data);
-+extern void setup_grackle(struct pci_controller *hose);
-+
-+extern unsigned char common_swizzle(struct pci_dev *, unsigned char *);
-+
-+/*
-+ * The following code swizzles for exactly one bridge. The routine
-+ * common_swizzle below handles multiple bridges. But there are a
-+ * some boards that don't follow the PCI spec's suggestion so we
-+ * break this piece out separately.
-+ */
-+static inline unsigned char bridge_swizzle(unsigned char pin,
-+		unsigned char idsel)
-+{
-+	return (((pin-1) + idsel) % 4) + 1;
-+}
-+
-+/*
-+ * The following macro is used to lookup irqs in a standard table
-+ * format for those PPC systems that do not already have PCI
-+ * interrupts properly routed.
-+ */
-+/* FIXME - double check this */
-+#define PCI_IRQ_TABLE_LOOKUP						\
-+({ long _ctl_ = -1;							\
-+ if (idsel >= min_idsel && idsel <= max_idsel && pin <= irqs_per_slot)	\
-+	_ctl_ = pci_irq_table[idsel - min_idsel][pin-1];		\
-+	_ctl_; })
-+
-+/*
-+ * Scan the buses below a given PCI host bridge and assign suitable
-+ * resources to all devices found.
-+ */
-+extern int pciauto_bus_scan(struct pci_controller *, int);
-+
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_PCI_BRIDGE_H */
-diff --git a/include/asm-microblaze/pci.h b/include/asm-microblaze/pci.h
-new file mode 100644
-index 0000000..c7dac52
---- /dev/null
-+++ b/include/asm-microblaze/pci.h
-@@ -0,0 +1,139 @@
-+/*
-+ * include/asm-microblaze/pci.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _MICROBLAZE_PCI_H
-+#define _MICROBLAZE_PCI_H
-+#ifdef __KERNEL__
-+
-+#include <linux/types.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <asm/scatterlist.h>
-+#include <asm/io.h>
-+#include <asm/pci-bridge.h>
-+#include <asm-generic/pci-dma-compat.h>
-+
-+struct pci_dev;
-+
-+/* Values for the `which' argument to sys_pciconfig_iobase syscall. */
-+#define IOBASE_BRIDGE_NUMBER	0
-+#define IOBASE_MEMORY		1
-+#define IOBASE_IO		2
-+#define IOBASE_ISA_IO		3
-+#define IOBASE_ISA_MEM		4
-+
-+/*
-+ * Set this to 1 if you want the kernel to re-assign all PCI
-+ * bus numbers
-+ */
-+extern int pci_assign_all_busses;
-+
-+#define pcibios_assign_all_busses()	(pci_assign_all_busses)
-+#define pcibios_scan_all_fns(a, b)	0
-+
-+#define PCIBIOS_MIN_IO		0x1000
-+#define PCIBIOS_MIN_MEM		0x10000000
-+
-+extern inline void pcibios_set_master(struct pci_dev *dev)
-+{
-+	/* No special bus mastering setup handling */
-+}
-+
-+extern inline void pcibios_penalize_isa_irq(int irq, int active)
-+{
-+	/* We don't do dynamic PCI IRQ allocation */
-+}
-+
-+extern unsigned long pci_resource_to_bus(struct pci_dev *pdev,
-+						struct resource *res);
-+
-+/*
-+ * The PCI bus bridge can translate addresses issued by the processor(s)
-+ * into a different address on the PCI bus. On 32-bit cpus, we assume
-+ * this mapping is 1-1, but on 64-bit systems it often isn't.
-+ *
-+ * Obsolete ! Drivers should now use pci_resource_to_bus
-+ */
-+extern unsigned long phys_to_bus(unsigned long pa);
-+extern unsigned long pci_phys_to_bus(unsigned long pa, int busnr);
-+extern unsigned long pci_bus_to_phys(unsigned int ba, int busnr);
-+
-+/* The PCI address space does equal the physical memory
-+ * address space. The networking and block device layers use
-+ * this boolean for bounce buffer decisions.
-+ */
-+#define PCI_DMA_BUS_IS_PHYS	(1)
-+
-+/* pci_unmap_{page,single} is a nop so... */
-+#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)
-+#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)
-+#define pci_unmap_addr(PTR, ADDR_NAME)		(0)
-+#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)	do { } while (0)
-+#define pci_unmap_len(PTR, LEN_NAME)		(0)
-+#define pci_unmap_len_set(PTR, LEN_NAME, VAL)	do { } while (0)
-+
-+#ifdef CONFIG_PCI
-+static inline void pci_dma_burst_advice(struct pci_dev *pdev,
-+					enum pci_dma_burst_strategy *strat,
-+					unsigned long *strategy_parameter)
-+{
-+	*strat = PCI_DMA_BURST_INFINITY;
-+	*strategy_parameter = ~0UL;
-+}
-+#endif
-+
-+/*
-+ * At present there are very few 32-bit PPC machines that can have
-+ * memory above the 4GB point, and we don't support that.
-+ */
-+#define pci_dac_dma_supported(pci_dev, mask)	(0)
-+
-+/* Return the index of the PCI controller for device PDEV. */
-+#define pci_domain_nr(bus) ((struct pci_controller *)(bus)->sysdata)->index
-+
-+/* Set the name of the bus as it appears in /proc/bus/pci */
-+static inline int pci_proc_domain(struct pci_bus *bus)
-+{
-+	return 0;
-+}
-+
-+/* Map a range of PCI memory or I/O space for a device into user space */
-+int pci_mmap_page_range(struct pci_dev *pdev, struct vm_area_struct *vma,
-+			enum pci_mmap_state mmap_state, int write_combine);
-+
-+/* Tell drivers/pci/proc.c that we have pci_mmap_page_range() */
-+#define HAVE_PCI_MMAP	1
-+
-+extern void
-+pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region *region,
-+			struct resource *res);
-+
-+extern void
-+pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
-+			struct pci_bus_region *region);
-+
-+/* extern void pcibios_add_platform_entries(struct pci_dev *dev); */
-+
-+struct file;
-+extern pgprot_t	pci_phys_mem_access_prot(struct file *file,
-+					unsigned long offset,
-+					unsigned long size,
-+					pgprot_t prot);
-+
-+#define HAVE_ARCH_PCI_RESOURCE_TO_USER
-+extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
-+				const struct resource *rsrc,
-+				u64 *start, u64 *end);
-+
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _MICROBLAZE_PCI_H */
++#endif /* _ASM_IPCBUF_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
