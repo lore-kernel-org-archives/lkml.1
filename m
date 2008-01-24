@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbYAXQ5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756948AbYAXQ6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758092AbYAXQ5y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 11:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbYAXQxW
+	id S1756948AbYAXQ6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 11:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbYAXQxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 11:53:22 -0500
-Received: from smtp06.mtu.ru ([62.5.255.53]:64227 "EHLO smtp06.mtu.ru"
+	Thu, 24 Jan 2008 11:53:23 -0500
+Received: from smtp06.mtu.ru ([62.5.255.53]:64226 "EHLO smtp06.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753432AbYAXQxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 11:53:05 -0500
+	id S1753354AbYAXQxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 11:53:04 -0500
 From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
 To: ralf@linux-mips.org, linux-mips@linux-mips.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 11/17] [MIPS] Malta: else should follow close brace in malta_int.c
-Date: Thu, 24 Jan 2008 19:52:51 +0300
-Message-Id: <1201193577-4261-12-git-send-email-dmitri.vorobiev@gmail.com>
+Subject: [PATCH 10/17] [MIPS] Malta: remove a superfluous comment
+Date: Thu, 24 Jan 2008 19:52:50 +0300
+Message-Id: <1201193577-4261-11-git-send-email-dmitri.vorobiev@gmail.com>
 X-Mailer: git-send-email 1.5.3.6
 In-Reply-To: <1201193577-4261-1-git-send-email-dmitri.vorobiev@gmail.com>
 References: <1201193577-4261-1-git-send-email-dmitri.vorobiev@gmail.com>
@@ -23,39 +23,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes two errors reported by checkpatch.pl.
+Using the "We die here" comment right before calling the die()
+function is an extremely vivid example of overcommenting.
+
+Remove the redundant comment and save one line.
 
 No functional changes introduced.
 
 Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
 ---
- arch/mips/mips-boards/malta/malta_int.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ arch/mips/mips-boards/malta/malta_int.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
 diff --git a/arch/mips/mips-boards/malta/malta_int.c b/arch/mips/mips-boards/malta/malta_int.c
-index a268912..2473a77 100644
+index 41eb232..a268912 100644
 --- a/arch/mips/mips-boards/malta/malta_int.c
 +++ b/arch/mips/mips-boards/malta/malta_int.c
-@@ -329,8 +329,7 @@ void __init arch_init_irq(void)
- 		set_vi_handler(MSC01E_INT_COREHI, corehi_irqdispatch);
- 		setup_irq(MSC01E_INT_BASE+MSC01E_INT_I8259A, &i8259irq);
- 		setup_irq(MSC01E_INT_BASE+MSC01E_INT_COREHI, &corehi_irqaction);
--	}
--	else if (cpu_has_vint) {
-+	} else if (cpu_has_vint) {
- 		set_vi_handler(MIPSCPU_INT_I8259A, malta_hw0_irqdispatch);
- 		set_vi_handler(MIPSCPU_INT_COREHI, corehi_irqdispatch);
- #ifdef CONFIG_MIPS_MT_SMTC
-@@ -355,8 +354,7 @@ void __init arch_init_irq(void)
- 		setup_irq(MIPS_CPU_IRQ_BASE+MIPSCPU_INT_COREHI,
- 						&corehi_irqaction);
- #endif /* CONFIG_MIPS_MT_SMTC */
--	}
--	else {
-+	} else {
- 		setup_irq(MIPS_CPU_IRQ_BASE+MIPSCPU_INT_I8259A, &i8259irq);
- 		setup_irq(MIPS_CPU_IRQ_BASE+MIPSCPU_INT_COREHI,
- 						&corehi_irqaction);
+@@ -173,7 +173,6 @@ static void corehi_irqdispatch(void)
+ 		break;
+ 	}
+ 
+-	/* We die here*/
+ 	die("CoreHi interrupt", regs);
+ }
+ 
 -- 
 1.5.3
 
