@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758636AbYAXXKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbYAXXMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758636AbYAXXKh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 18:10:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYAXXK3
+	id S1758483AbYAXXMn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 18:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbYAXXMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 18:10:29 -0500
-Received: from zakalwe.fi ([80.83.5.154]:56383 "EHLO zakalwe.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755843AbYAXXK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 18:10:28 -0500
-X-Greylist: delayed 1196 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Jan 2008 18:10:28 EST
-Date: Fri, 25 Jan 2008 00:50:31 +0200
-From: Heikki Orsila <shdl@zakalwe.fi>
-To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tigran@aivazian.fsnet.co.uk
-Subject: Re: [PATCH 5/9] bfs: move function prototype to the proper header file
-Message-ID: <20080124225031.GC12172@zakalwe.fi>
-References: <1201213928-18183-1-git-send-email-dmitri.vorobiev@gmail.com> <1201213928-18183-6-git-send-email-dmitri.vorobiev@gmail.com>
+	Thu, 24 Jan 2008 18:12:36 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:51404 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754139AbYAXXMf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 18:12:35 -0500
+Message-ID: <47991A6C.8060007@zytor.com>
+Date: Thu, 24 Jan 2008 15:08:28 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1201213928-18183-6-git-send-email-dmitri.vorobiev@gmail.com>
-User-Agent: Mutt/1.5.11
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       =?UTF-8?B?TWlrYSBQZW50dGlsw6Q=?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+ format.
+References: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>	 <47939363.8040603@kolumbus.fi>	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>	 <479510CE.7010706@zytor.com>	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>	 <479551FD.5040801@zytor.com>	 <1201023401.5643.52.camel@localhost.localdomain>	 <479634A9.1090908@zytor.com>	 <1201031325.15491.66.camel@cthulhu.hellion.org.uk>	 <47964B7B.9000905@zytor.com>  <20080122203611.GA12892@elte.hu>	 <1201121530.30671.15.camel@cthulhu.hellion.org.uk>	 <4797E487.8010108@goop.org> <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <47990BDC.4070008@zytor.com> <479912B0.2080506@goop.org> <479913BA.8000506@zytor.com> <47991809.9060903@goop.org>
+In-Reply-To: <47991809.9060903@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 01:32:04AM +0300, Dmitri Vorobiev wrote:
-> diff --git a/fs/bfs/bfs.h b/fs/bfs/bfs.h
-> index 090b96e..ecc74bb 100644
-> --- a/fs/bfs/bfs.h
-> +++ b/fs/bfs/bfs.h
-...
-> +/* inode.c */
-> +extern void dump_imap(const char *, struct super_block *);
-> +
+Jeremy Fitzhardinge wrote:
+> H. Peter Anvin wrote:
+>> Yeah, and it's ugly for the kernel proper, so that bit is a 
+>> no-brainer.  It's just a matter of hammering out the details.
+>>
+>> It doesn't sound from the above that you have any opinion either way 
+>> about reusing the initial page tables or creating a new set, as long 
+>> as they're in the same format. 
+> 
+> Right.
+> 
+> Xen provides a initial set of pagetables in the appropriate format, so 
+> what head.S generates is moot.  For simplicity I graft the Xen-provided 
+> pagetables into swapper_pg_dir in xen_start_kernel, so it is the 
+> functional equivalent to the head.S pagetable construction.
+> 
+> We also don't (yet) support PSE, so that's a non-issue for us too.
+> 
 
-Functions should not be externed, remove extern keyword.
+While we're mucking around in this area, there is another thing which we 
+should eventually get around to fixing:
 
--- 
-Heikki Orsila			Barbie's law:
-heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
-http://www.iki.fi/shd
+we need a set of page tables with an identity mapping as well as the 
+kernel mapping, for trampolining (during startup, but also during things 
+like ACPI suspend/resume.)  Right now, we let those be the swapper page 
+tables, but that's probably not really a good idea, since it can hide bugs.
+
+	-hpa
