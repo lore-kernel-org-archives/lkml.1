@@ -1,1081 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbYAXKyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYAXLBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755561AbYAXKyU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 05:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYAXKyH
+	id S1755495AbYAXLBi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 06:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbYAXLB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 05:54:07 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:44297 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753835AbYAXKyB (ORCPT
+	Thu, 24 Jan 2008 06:01:28 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:42555 "EHLO
+	outbound3-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754083AbYAXLB1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 05:54:01 -0500
-X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
-X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
-X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
-X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
-X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
-X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
-Message-ID: <47986E44.3010101@grandegger.com>
-Date: Thu, 24 Jan 2008 11:53:56 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Thu, 24 Jan 2008 06:01:27 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Luotao Fu <l.fu@pengutronix.de>
-CC: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc
-References: <1200544050.318.18.camel@localhost.localdomain> <478F2A46.5070506@grandegger.com> <20080123145340.GE6200@pengutronix.de> <47976D06.1010900@grandegger.com>
-In-Reply-To: <47976D06.1010900@grandegger.com>
-X-Enigmail-Version: 0.94.4.0
+Subject: [patch] PCI: disable the MSI of AMD RS690
+Date: Thu, 24 Jan 2008 18:59:04 +0800
+Message-ID: <B90463BC30D2E446BA423D888DC85E501BF78E@sshaexmb1.amd.com>
+In-Reply-To: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch] PCI: disable the MSI of AMD RS690
+Thread-Index: AcgRZ03q+e8QbKDsTOCx0eCcyylAZBNDi9UA
+References: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com>
+From: "Shane Huang" <Shane.Huang@amd.com>
+To: gregkh@suse.de
+cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       htejun@gmail.com, "Shane Huang" <Shane.Huang@amd.com>
+X-OriginalArrivalTime: 24 Jan 2008 10:59:07.0525 (UTC)
+ FILETIME=[24206B50:01C85E78]
+X-WSS-ID: 6B86B0F72IW8644485-01-01
 Content-Type: multipart/mixed;
- boundary="------------050506090307080601030000"
+ boundary="----_=_NextPart_001_01C85E78.21D0FAE3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------050506090307080601030000
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Wolfgang Grandegger wrote:
-> Hi Fu,
-> 
-> Luotao Fu wrote:
->> Hi folks,
->>
->> On Thu, Jan 17, 2008 at 11:13:26AM +0100, Wolfgang Grandegger wrote:
->>> It builds and runs fine on my Icecube-MPC5200 board, now also with the
->>> latency tracer enabled. That's great. Still, "cyclictest -n -p80 -i1000"
->>> reports latencies up to 400 us and therefore I tried to trigger and save
->>> a high latency trace using:
->>>
->>>   # ./cyclictest -n -p80 -i1000 -b400
->>>   1.21 0.33 0.11 4/42 1048
->>>
->>>   T: 0 (  914) P:80 I:1000 C:  38726 Min:     61 Act:  107 Avg:  106
->>> Max:     377
->>>   [   91.042169] (      cyclictest-914  |#0): new 39733427 us user-latency.
->>>   bash-3.00# cat /proc/latency_trace > trace.log
->>>
->> I was doing some tests on my mpc5200b Board to reproduce the high latency as
->> measured by wolfgang.
->>
->> I ran some tests with 
->> while [ 1 ]; do ls /bin;done
->> as non-rt workload, as in Wolfgangs Scenario.
-> 
-> I also did some more measurements and made, by chance, interesting
-> observations. I will summarize in more detail later on. Here are some
-> preliminary results. My high latencies of up to 570us (without latency
-> tracer) seem to be caused mainly by the following setting:
-
-OK, here is the full report.
-
-I had the occasion to test Linux 2.6.24-rc8-rt1 on a TQM5200 module with
-a MPC5200 Rev.B processor and, what surprise, the latencies measured
-were much better:
-
-  CPU:   MPC5200B v2.2, Core v1.4 at 396 MHz
-         Bus 132 MHz, IPB 132 MHz, PCI 66 MHz
-  Board: TQM5200 (TQ-Components GmbH)
-         on a STK52xx carrier board
-
-  bash-3.00# ./cyclictest -n -p80 -t1 -i1000
-  2.91 4.81 13.72 1/50 23887
-
-  T: 0 (  976) P:80 I:1000 C:1634520 Min: 15 Act:  45 Avg:  68 Max:  138
-
-So far I used my very old Icecube eval board with a MPC5200 *Rev. *A for
-testing, This made me curious and I made measurements on a TQM5200
-module with a MPC5200 Rev.A processor as well booting the same kernel,
-but the results were the same:
-
-  CPU:   MPC5200 v1.2, Core v1.1 at 396 MHz
-         Bus 132 MHz, IPB 132 MHz, PCI 66 MHz
-  Board: TQM5200 (TQ-Components GmbH)
-         on a STK52xx carrier board
-
-  bash-3.00# ./cyclictest -n -p80 -i1000
-  52.31 96.08 61.61 2/51 9129
-
-  T: 0 (  976) P:80 I:1000 C: 795180 Min:  14 Act: 75 Avg:  69 Max:  134
-
-Hm, then I used that config for my Icecube and also on that board, the
-latency did not yet exceed 150us. With my old config, the latency jumped
-up to 500..600us within a minute or so. Therefore I started to study the
-impact of the different kernel options on the latency. Let's start from
-the *good* settings (see attached .config) giving the following results:
-
-  CPU:   MPC5200 v1.0, Core v1.1 at 198 MHz
-         Bus 132 MHz, IPB 66 MHz, PCI 33 MHz
-  Board: Motorola MPC5200 (IceCube)
-
-  bash-3.00# ./cyclictest -n -p80 -t1 -i1000
-  291.40 143.72 115.43 5/447 28227
-
-  T: 0 (  938) P:80 I:1000 C:3613444 Min: 17 Act: 68 Avg:  65 Max:  143
-
-  Note: this test was running for *1* hour.
-
-Then I repeated the measurements with the following configs:
-
-- .config and "CONFIG_RCU_TRACE=m":
-
-  bash-3.00# ./cyclictest -n -p80 -t1 -i1000
-  2.49 1.19 0.45 2/46 2846
-
-  T: 0 ( 1144) P:80 I:1000 C: 130362 Min: 17 Act: 57 Avg:  73 Max:  522
-
-  Note: High latencies show up quickly.
-
-- .config and CONFIG_NO_HZ=y:
-
-  bash-3.00# ./cyclictest -n -p80 -t1 -i1000
-  15.83 79.48 83.66 3/47 16861
-
-  T: 0 (  913) P:80 I:1000 C:1924513 Min: 20 Act: 81 Avg:  84 Max:  226
-
-- .config and CONFIG_PPC_BESTCOMM_GEN_BD=y
-
-  bash-3.00# ./cyclictest -n -p80 -t1 -i1000
-  87.81 116.12 85.31 3/47 11858
-
-  T: 0 (  914) P:80 I:1000 C:1389487 Min: 17 Act: 80 Avg:  67 Max:  147
-
-- .config and CONFIG_PREEMPT_RCU_BOOST is not set:
-
-  bash-3.00# ./cyclictest -n -p80 -t1 -i10000
-  81.36 103.93 67.34 3/46 9593
-
-  T: 0 (  913) P:80 I:10000 C:  91915 Min: 25 Act: 64 Avg:  72 Max:  298
-
-And here is my summary:
-
-- CONFIG_RCU_TRACE=m causes high latencies up to 500..600us.
-
-- CONFIG_NO_HZ=y increases the latency by 90 us, at least.
-
-- CONFIG_PPC_BESTCOMM_GEN_BD=y seems not to harm.
-
-- CONFIG_PREEMPT_RCU_BOOST is not set increases the latency by 150us, at
-  least
-
-For the tests I used a root file-system mounted via NFS and "while ls;
-do ls/bin; done" in one telnet window and "while ./hackbench 10; do
-./calibrator 400 32M cali; sleep 30; done" in another telnet window as
-non-rt load.
-
-I don't know if "my" .config is already optimal but a latency below
-150us seems more reasonable for that processor.
-
-Please comment.
-
-Wolfgang.
-
-
-
-
---------------050506090307080601030000
+------_=_NextPart_001_01C85E78.21D0FAE3
 Content-Type: text/plain;
- name="uImage-rt-test1.config"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="uImage-rt-test1.config"
+ charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.24-rc8-rt1
-# Wed Jan 23 11:40:51 2008
-#
-# CONFIG_PPC64 is not set
+This patch recover Tejun's commit
+4be8f906435a6af241821ab5b94b2b12cb7d57d8
+ because there is one MSI bug on RS690+SB600 board which will lead to
+boot failure. This bug is NOT same as the one in SB700 SATA controller,
+quirk_msi_intx_disable_bug does not work to SB600. Disablement the MSI
+of RS690 is the workaround.
 
-#
-# Processor support
-#
-CONFIG_6xx=y
-# CONFIG_PPC_85xx is not set
-# CONFIG_PPC_8xx is not set
-# CONFIG_40x is not set
-# CONFIG_44x is not set
-# CONFIG_E200 is not set
-CONFIG_PPC_FPU=y
-# CONFIG_ALTIVEC is not set
-CONFIG_PPC_STD_MMU=y
-CONFIG_PPC_STD_MMU_32=y
-# CONFIG_PPC_MM_SLICES is not set
-# CONFIG_SMP is not set
-CONFIG_PPC32=y
-CONFIG_WORD_SIZE=32
-CONFIG_PPC_MERGE=y
-CONFIG_MMU=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_TIME_VSYSCALL=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_IRQ_PER_CPU=y
-CONFIG_ARCH_HAS_ILOG2_U32=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_GENERIC_FIND_NEXT_BIT=y
-# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
-CONFIG_PPC=y
-CONFIG_EARLY_PRINTK=y
-CONFIG_GENERIC_NVRAM=y
-CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_PPC_OF=y
-CONFIG_OF=y
-# CONFIG_PPC_UDBG_16550 is not set
-# CONFIG_GENERIC_TBSYNC is not set
-CONFIG_AUDIT_ARCH=y
-CONFIG_GENERIC_BUG=y
-# CONFIG_DEFAULT_UIMAGE is not set
-# CONFIG_PPC_DCR_NATIVE is not set
-# CONFIG_PPC_DCR_MMIO is not set
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+Signed-off-by: Shane Huang <shane.huang@amd.com>
 
-#
-# General setup
-#
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-CONFIG_LOCALVERSION_AUTO=y
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-# CONFIG_POSIX_MQUEUE is not set
-# CONFIG_BSD_PROCESS_ACCT is not set
-# CONFIG_TASKSTATS is not set
-# CONFIG_USER_NS is not set
-# CONFIG_PID_NS is not set
-# CONFIG_AUDIT is not set
-# CONFIG_IKCONFIG is not set
-CONFIG_LOG_BUF_SHIFT=14
-# CONFIG_CGROUPS is not set
-# CONFIG_FAIR_GROUP_SCHED is not set
-CONFIG_SYSFS_DEPRECATED=y
-# CONFIG_RELAY is not set
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_INITRAMFS_SOURCE=""
-# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-CONFIG_SYSCTL=y
-# CONFIG_RADIX_TREE_CONCURRENT is not set
-CONFIG_EMBEDDED=y
-# CONFIG_SYSCTL_SYSCALL is not set
-CONFIG_KALLSYMS=y
-# CONFIG_KALLSYMS_ALL is not set
-# CONFIG_KALLSYMS_EXTRA_PASS is not set
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-# CONFIG_LOGBUFFER is not set
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_ANON_INODES=y
-# CONFIG_EPOLL is not set
-CONFIG_SIGNALFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_SLAB=y
-# CONFIG_SLUB is not set
-# CONFIG_SLOB is not set
-CONFIG_SLABINFO=y
-CONFIG_RT_MUTEXES=y
-# CONFIG_TINY_SHMEM is not set
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-# CONFIG_MODULE_FORCE_UNLOAD is not set
-# CONFIG_MODVERSIONS is not set
-# CONFIG_MODULE_SRCVERSION_ALL is not set
-# CONFIG_KMOD is not set
-CONFIG_BLOCK=y
-# CONFIG_LBD is not set
-# CONFIG_BLK_DEV_IO_TRACE is not set
-# CONFIG_LSF is not set
-# CONFIG_BLK_DEV_BSG is not set
 
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_AS=y
-# CONFIG_DEFAULT_DEADLINE is not set
-# CONFIG_DEFAULT_CFQ is not set
-# CONFIG_DEFAULT_NOOP is not set
-CONFIG_DEFAULT_IOSCHED="anticipatory"
+Since there is some word wrapping problem with my mail client MS outlook
+if I copy the patch into the text, so I'll also attach the patch as an
+attachment. Please check it.
 
-#
-# Platform support
-#
-CONFIG_PPC_MULTIPLATFORM=y
-# CONFIG_PPC_82xx is not set
-# CONFIG_PPC_83xx is not set
-# CONFIG_PPC_86xx is not set
-CONFIG_CLASSIC32=y
-# CONFIG_PPC_CHRP is not set
-CONFIG_PPC_MPC52xx=y
-CONFIG_PPC_MPC5200=y
-CONFIG_PPC_MPC5200_BUGFIX=y
-# CONFIG_PPC_EFIKA is not set
-CONFIG_PPC_LITE5200=y
-# CONFIG_PPC_MOTIONPRO is not set
-# CONFIG_PPC_TQM5200 is not set
-# CONFIG_PPC_CM5200 is not set
-# CONFIG_PPC_PMAC is not set
-# CONFIG_PPC_CELL is not set
-# CONFIG_PPC_CELL_NATIVE is not set
-# CONFIG_PQ2ADS is not set
-# CONFIG_EMBEDDED6xx is not set
-# CONFIG_MPIC is not set
-# CONFIG_MPIC_WEIRD is not set
-# CONFIG_PPC_I8259 is not set
-# CONFIG_PPC_RTAS is not set
-# CONFIG_MMIO_NVRAM is not set
-# CONFIG_PPC_MPC106 is not set
-# CONFIG_PPC_970_NAP is not set
-# CONFIG_PPC_INDIRECT_IO is not set
-# CONFIG_GENERIC_IOMAP is not set
-# CONFIG_CPU_FREQ is not set
-# CONFIG_TAU is not set
-# CONFIG_CPM2 is not set
-# CONFIG_FSL_ULI1575 is not set
-CONFIG_PPC_BESTCOMM=y
-CONFIG_PPC_BESTCOMM_ATA=y
-CONFIG_PPC_BESTCOMM_FEC=y
-# CONFIG_PPC_BESTCOMM_GEN_BD is not set
 
-#
-# Kernel options
-#
-# CONFIG_HIGHMEM is not set
-CONFIG_TICK_ONESHOT=y
-# CONFIG_NO_HZ is not set
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-# CONFIG_HZ_100 is not set
-CONFIG_HZ_250=y
-# CONFIG_HZ_300 is not set
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=250
-# CONFIG_PREEMPT_NONE is not set
-# CONFIG_PREEMPT_VOLUNTARY is not set
-# CONFIG_PREEMPT_DESKTOP is not set
-CONFIG_PREEMPT_RT=y
-CONFIG_PREEMPT=y
-CONFIG_PREEMPT_SOFTIRQS=y
-CONFIG_PREEMPT_HARDIRQS=y
-CONFIG_PREEMPT_BKL=y
-# CONFIG_CLASSIC_RCU is not set
-CONFIG_PREEMPT_RCU=y
-CONFIG_PREEMPT_RCU_BOOST=y
-CONFIG_RCU_TRACE=y
-CONFIG_RWSEM_GENERIC_SPINLOCK=y
-CONFIG_ASM_SEMAPHORES=y
-CONFIG_BINFMT_ELF=y
-# CONFIG_BINFMT_MISC is not set
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-# CONFIG_KEXEC is not set
-CONFIG_ARCH_FLATMEM_ENABLE=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-# CONFIG_SPARSEMEM_MANUAL is not set
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-# CONFIG_SPARSEMEM_STATIC is not set
-# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
-CONFIG_SPLIT_PTLOCK_CPUS=4
-# CONFIG_RESOURCES_64BIT is not set
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_VIRT_TO_BUS=y
-CONFIG_PROC_DEVICETREE=y
-# CONFIG_CMDLINE_BOOL is not set
-CONFIG_PM=y
-# CONFIG_PM_LEGACY is not set
-# CONFIG_PM_DEBUG is not set
-CONFIG_PM_SLEEP=y
-CONFIG_SUSPEND_UP_POSSIBLE=y
-CONFIG_SUSPEND=y
-CONFIG_HIBERNATION_UP_POSSIBLE=y
-# CONFIG_HIBERNATION is not set
-CONFIG_SECCOMP=y
-CONFIG_WANT_DEVICE_TREE=y
-CONFIG_DEVICE_TREE=""
-CONFIG_ISA_DMA_API=y
+diff -ruN old/drivers/pci/quirks.c new/drivers/pci/quirks.c
+--- old/drivers/pci/quirks.c	2008-01-07 05:45:38.000000000 +0800
++++ new/drivers/pci/quirks.c	2008-01-22 11:02:00.000000000 +0800
+@@ -1623,6 +1623,7 @@
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS,
+PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS400_200,
+quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480,
+quirk_disable_all_msi);
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS690,
+quirk_disable_all_msi);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_VT3351,
+quirk_disable_all_msi);
+=20
+ /* Disable MSI on chipsets that are known to not support it */
+diff -ruN old/include/linux/pci_ids.h new/include/linux/pci_ids.h
+--- old/include/linux/pci_ids.h	2008-01-07 05:45:38.000000000 +0800
++++ new/include/linux/pci_ids.h	2008-01-22 11:01:55.000000000 +0800
+@@ -360,6 +360,7 @@
+ #define PCI_DEVICE_ID_ATI_RS400_166     0x5a32
+ #define PCI_DEVICE_ID_ATI_RS400_200     0x5a33
+ #define PCI_DEVICE_ID_ATI_RS480         0x5950
++#define PCI_DEVICE_ID_ATI_RS690         0x7910
+ /* ATI IXP Chipset */
+ #define PCI_DEVICE_ID_ATI_IXP200_IDE	0x4349
+ #define PCI_DEVICE_ID_ATI_IXP200_SMBUS	0x4353
 
-#
-# Bus options
-#
-CONFIG_ZONE_DMA=y
-CONFIG_GENERIC_ISA_DMA=y
-# CONFIG_PPC_INDIRECT_PCI is not set
-CONFIG_FSL_SOC=y
-CONFIG_PCI=y
-CONFIG_PCI_DOMAINS=y
-CONFIG_PCI_SYSCALL=y
-# CONFIG_PCIEPORTBUS is not set
-CONFIG_ARCH_SUPPORTS_MSI=y
-# CONFIG_PCI_MSI is not set
-CONFIG_PCI_LEGACY=y
-# CONFIG_PCI_DEBUG is not set
-# CONFIG_PCCARD is not set
-# CONFIG_HOTPLUG_PCI is not set
 
-#
-# Advanced setup
-#
-# CONFIG_ADVANCED_OPTIONS is not set
 
-#
-# Default settings for advanced configuration options are used
-#
-CONFIG_HIGHMEM_START=0xfe000000
-CONFIG_LOWMEM_SIZE=0x30000000
-CONFIG_KERNEL_START=0xc0000000
-CONFIG_TASK_SIZE=0xc0000000
-CONFIG_BOOT_LOAD=0x00800000
+Thanks
+Best Regards
+Shane
 
-#
-# Networking
-#
-CONFIG_NET=y
 
-#
-# Networking options
-#
-CONFIG_PACKET=y
-# CONFIG_PACKET_MMAP is not set
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-CONFIG_XFRM_USER=m
-# CONFIG_XFRM_SUB_POLICY is not set
-# CONFIG_XFRM_MIGRATE is not set
-# CONFIG_NET_KEY is not set
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-# CONFIG_IP_ADVANCED_ROUTER is not set
-CONFIG_IP_FIB_HASH=y
-CONFIG_IP_PNP=y
-CONFIG_IP_PNP_DHCP=y
-CONFIG_IP_PNP_BOOTP=y
-# CONFIG_IP_PNP_RARP is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_IP_MROUTE is not set
-# CONFIG_ARPD is not set
-CONFIG_SYN_COOKIES=y
-# CONFIG_INET_AH is not set
-# CONFIG_INET_ESP is not set
-# CONFIG_INET_IPCOMP is not set
-# CONFIG_INET_XFRM_TUNNEL is not set
-# CONFIG_INET_TUNNEL is not set
-CONFIG_INET_XFRM_MODE_TRANSPORT=y
-CONFIG_INET_XFRM_MODE_TUNNEL=y
-CONFIG_INET_XFRM_MODE_BEET=y
-# CONFIG_INET_LRO is not set
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IPV6 is not set
-# CONFIG_INET6_XFRM_TUNNEL is not set
-# CONFIG_INET6_TUNNEL is not set
-# CONFIG_NETWORK_SECMARK is not set
-# CONFIG_NETFILTER is not set
-# CONFIG_IP_DCCP is not set
-# CONFIG_IP_SCTP is not set
-# CONFIG_TIPC is not set
-# CONFIG_ATM is not set
-# CONFIG_BRIDGE is not set
-# CONFIG_VLAN_8021Q is not set
-# CONFIG_DECNET is not set
-# CONFIG_LLC2 is not set
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
-# CONFIG_X25 is not set
-# CONFIG_LAPB is not set
-# CONFIG_ECONET is not set
-# CONFIG_WAN_ROUTER is not set
-# CONFIG_NET_SCHED is not set
+------_=_NextPart_001_01C85E78.21D0FAE3
+Content-Type: application/octet-stream;
+ name=disable_RS690_MSI.patch
+Content-Transfer-Encoding: base64
+Content-Description: disable_RS690_MSI.patch
+Content-Disposition: attachment;
+ filename=disable_RS690_MSI.patch
 
-#
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-# CONFIG_HAMRADIO is not set
-# CONFIG_CAN is not set
-# CONFIG_IRDA is not set
-# CONFIG_BT is not set
-# CONFIG_AF_RXRPC is not set
+ZGlmZiAtcnVOIG9sZC9kcml2ZXJzL3BjaS9xdWlya3MuYyBuZXcvZHJpdmVycy9wY2kvcXVpcmtz
+LmMKLS0tIG9sZC9kcml2ZXJzL3BjaS9xdWlya3MuYwkyMDA4LTAxLTA3IDA1OjQ1OjM4LjAwMDAw
+MDAwMCArMDgwMAorKysgbmV3L2RyaXZlcnMvcGNpL3F1aXJrcy5jCTIwMDgtMDEtMjIgMTE6MDI6
+MDAuMDAwMDAwMDAwICswODAwCkBAIC0xNjIzLDYgKzE2MjMsNyBAQAogREVDTEFSRV9QQ0lfRklY
+VVBfRklOQUwoUENJX1ZFTkRPUl9JRF9TRVJWRVJXT1JLUywgUENJX0RFVklDRV9JRF9TRVJWRVJX
+T1JLU19HQ05CX0xFLCBxdWlya19kaXNhYmxlX2FsbF9tc2kpOwogREVDTEFSRV9QQ0lfRklYVVBf
+RklOQUwoUENJX1ZFTkRPUl9JRF9BVEksIFBDSV9ERVZJQ0VfSURfQVRJX1JTNDAwXzIwMCwgcXVp
+cmtfZGlzYWJsZV9hbGxfbXNpKTsKIERFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1Jf
+SURfQVRJLCBQQ0lfREVWSUNFX0lEX0FUSV9SUzQ4MCwgcXVpcmtfZGlzYWJsZV9hbGxfbXNpKTsK
+K0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfQVRJLCBQQ0lfREVWSUNFX0lE
+X0FUSV9SUzY5MCwgcXVpcmtfZGlzYWJsZV9hbGxfbXNpKTsKIERFQ0xBUkVfUENJX0ZJWFVQX0ZJ
+TkFMKFBDSV9WRU5ET1JfSURfVklBLCBQQ0lfREVWSUNFX0lEX1ZJQV9WVDMzNTEsIHF1aXJrX2Rp
+c2FibGVfYWxsX21zaSk7CiAKIC8qIERpc2FibGUgTVNJIG9uIGNoaXBzZXRzIHRoYXQgYXJlIGtu
+b3duIHRvIG5vdCBzdXBwb3J0IGl0ICovCmRpZmYgLXJ1TiBvbGQvaW5jbHVkZS9saW51eC9wY2lf
+aWRzLmggbmV3L2luY2x1ZGUvbGludXgvcGNpX2lkcy5oCi0tLSBvbGQvaW5jbHVkZS9saW51eC9w
+Y2lfaWRzLmgJMjAwOC0wMS0wNyAwNTo0NTozOC4wMDAwMDAwMDAgKzA4MDAKKysrIG5ldy9pbmNs
+dWRlL2xpbnV4L3BjaV9pZHMuaAkyMDA4LTAxLTIyIDExOjAxOjU1LjAwMDAwMDAwMCArMDgwMApA
+QCAtMzYwLDYgKzM2MCw3IEBACiAjZGVmaW5lIFBDSV9ERVZJQ0VfSURfQVRJX1JTNDAwXzE2NiAg
+ICAgMHg1YTMyCiAjZGVmaW5lIFBDSV9ERVZJQ0VfSURfQVRJX1JTNDAwXzIwMCAgICAgMHg1YTMz
+CiAjZGVmaW5lIFBDSV9ERVZJQ0VfSURfQVRJX1JTNDgwICAgICAgICAgMHg1OTUwCisjZGVmaW5l
+IFBDSV9ERVZJQ0VfSURfQVRJX1JTNjkwICAgICAgICAgMHg3OTEwCiAvKiBBVEkgSVhQIENoaXBz
+ZXQgKi8KICNkZWZpbmUgUENJX0RFVklDRV9JRF9BVElfSVhQMjAwX0lERQkweDQzNDkKICNkZWZp
+bmUgUENJX0RFVklDRV9JRF9BVElfSVhQMjAwX1NNQlVTCTB4NDM1Mwo=
 
-#
-# Wireless
-#
-# CONFIG_CFG80211 is not set
-# CONFIG_WIRELESS_EXT is not set
-# CONFIG_MAC80211 is not set
-# CONFIG_IEEE80211 is not set
-# CONFIG_RFKILL is not set
-# CONFIG_NET_9P is not set
+------_=_NextPart_001_01C85E78.21D0FAE3--
 
-#
-# Device Drivers
-#
 
-#
-# Generic Driver Options
-#
-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-# CONFIG_FW_LOADER is not set
-# CONFIG_DEBUG_DRIVER is not set
-# CONFIG_DEBUG_DEVRES is not set
-# CONFIG_SYS_HYPERVISOR is not set
-# CONFIG_CONNECTOR is not set
-# CONFIG_MTD is not set
-CONFIG_OF_DEVICE=y
-# CONFIG_PARPORT is not set
-CONFIG_BLK_DEV=y
-# CONFIG_BLK_DEV_FD is not set
-# CONFIG_BLK_CPQ_DA is not set
-# CONFIG_BLK_CPQ_CISS_DA is not set
-# CONFIG_BLK_DEV_DAC960 is not set
-# CONFIG_BLK_DEV_UMEM is not set
-# CONFIG_BLK_DEV_COW_COMMON is not set
-CONFIG_BLK_DEV_LOOP=y
-# CONFIG_BLK_DEV_CRYPTOLOOP is not set
-# CONFIG_BLK_DEV_NBD is not set
-# CONFIG_BLK_DEV_SX8 is not set
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_COUNT=16
-CONFIG_BLK_DEV_RAM_SIZE=32768
-CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
-# CONFIG_CDROM_PKTCDVD is not set
-# CONFIG_ATA_OVER_ETH is not set
-CONFIG_MISC_DEVICES=y
-# CONFIG_PHANTOM is not set
-# CONFIG_EEPROM_93CX6 is not set
-# CONFIG_SGI_IOC4 is not set
-# CONFIG_TIFM_CORE is not set
-# CONFIG_IDE is not set
-
-#
-# SCSI device support
-#
-# CONFIG_RAID_ATTRS is not set
-CONFIG_SCSI=y
-CONFIG_SCSI_DMA=y
-# CONFIG_SCSI_TGT is not set
-# CONFIG_SCSI_NETLINK is not set
-# CONFIG_SCSI_PROC_FS is not set
-
-#
-# SCSI support type (disk, tape, CD-ROM)
-#
-# CONFIG_BLK_DEV_SD is not set
-# CONFIG_CHR_DEV_ST is not set
-# CONFIG_CHR_DEV_OSST is not set
-# CONFIG_BLK_DEV_SR is not set
-# CONFIG_CHR_DEV_SG is not set
-# CONFIG_CHR_DEV_SCH is not set
-
-#
-# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-#
-# CONFIG_SCSI_MULTI_LUN is not set
-# CONFIG_SCSI_CONSTANTS is not set
-# CONFIG_SCSI_LOGGING is not set
-# CONFIG_SCSI_SCAN_ASYNC is not set
-CONFIG_SCSI_WAIT_SCAN=m
-
-#
-# SCSI Transports
-#
-# CONFIG_SCSI_SPI_ATTRS is not set
-# CONFIG_SCSI_FC_ATTRS is not set
-# CONFIG_SCSI_ISCSI_ATTRS is not set
-# CONFIG_SCSI_SAS_LIBSAS is not set
-# CONFIG_SCSI_SRP_ATTRS is not set
-CONFIG_SCSI_LOWLEVEL=y
-# CONFIG_ISCSI_TCP is not set
-# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
-# CONFIG_SCSI_3W_9XXX is not set
-# CONFIG_SCSI_ACARD is not set
-# CONFIG_SCSI_AACRAID is not set
-# CONFIG_SCSI_AIC7XXX is not set
-# CONFIG_SCSI_AIC7XXX_OLD is not set
-# CONFIG_SCSI_AIC79XX is not set
-# CONFIG_SCSI_AIC94XX is not set
-# CONFIG_SCSI_DPT_I2O is not set
-# CONFIG_SCSI_ADVANSYS is not set
-# CONFIG_SCSI_ARCMSR is not set
-# CONFIG_MEGARAID_NEWGEN is not set
-# CONFIG_MEGARAID_LEGACY is not set
-# CONFIG_MEGARAID_SAS is not set
-# CONFIG_SCSI_HPTIOP is not set
-# CONFIG_SCSI_BUSLOGIC is not set
-# CONFIG_SCSI_DMX3191D is not set
-# CONFIG_SCSI_EATA is not set
-# CONFIG_SCSI_FUTURE_DOMAIN is not set
-# CONFIG_SCSI_GDTH is not set
-# CONFIG_SCSI_IPS is not set
-# CONFIG_SCSI_INITIO is not set
-# CONFIG_SCSI_INIA100 is not set
-# CONFIG_SCSI_STEX is not set
-# CONFIG_SCSI_SYM53C8XX_2 is not set
-# CONFIG_SCSI_IPR is not set
-# CONFIG_SCSI_QLOGIC_1280 is not set
-# CONFIG_SCSI_QLA_FC is not set
-# CONFIG_SCSI_QLA_ISCSI is not set
-# CONFIG_SCSI_LPFC is not set
-# CONFIG_SCSI_DC395x is not set
-# CONFIG_SCSI_DC390T is not set
-# CONFIG_SCSI_NSP32 is not set
-# CONFIG_SCSI_DEBUG is not set
-# CONFIG_SCSI_SRP is not set
-CONFIG_ATA=y
-# CONFIG_ATA_NONSTANDARD is not set
-# CONFIG_SATA_AHCI is not set
-# CONFIG_SATA_SVW is not set
-# CONFIG_ATA_PIIX is not set
-# CONFIG_SATA_MV is not set
-# CONFIG_SATA_NV is not set
-# CONFIG_PDC_ADMA is not set
-# CONFIG_SATA_QSTOR is not set
-# CONFIG_SATA_PROMISE is not set
-# CONFIG_SATA_SX4 is not set
-# CONFIG_SATA_SIL is not set
-# CONFIG_SATA_SIL24 is not set
-# CONFIG_SATA_SIS is not set
-# CONFIG_SATA_ULI is not set
-# CONFIG_SATA_VIA is not set
-# CONFIG_SATA_VITESSE is not set
-# CONFIG_SATA_INIC162X is not set
-# CONFIG_PATA_ALI is not set
-# CONFIG_PATA_AMD is not set
-# CONFIG_PATA_ARTOP is not set
-# CONFIG_PATA_ATIIXP is not set
-# CONFIG_PATA_CMD640_PCI is not set
-# CONFIG_PATA_CMD64X is not set
-# CONFIG_PATA_CS5520 is not set
-# CONFIG_PATA_CS5530 is not set
-# CONFIG_PATA_CYPRESS is not set
-# CONFIG_PATA_EFAR is not set
-# CONFIG_ATA_GENERIC is not set
-# CONFIG_PATA_HPT366 is not set
-# CONFIG_PATA_HPT37X is not set
-# CONFIG_PATA_HPT3X2N is not set
-# CONFIG_PATA_HPT3X3 is not set
-# CONFIG_PATA_IT821X is not set
-# CONFIG_PATA_IT8213 is not set
-# CONFIG_PATA_JMICRON is not set
-# CONFIG_PATA_TRIFLEX is not set
-# CONFIG_PATA_MARVELL is not set
-CONFIG_PATA_MPC52xx=y
-# CONFIG_PATA_MPIIX is not set
-# CONFIG_PATA_OLDPIIX is not set
-# CONFIG_PATA_NETCELL is not set
-# CONFIG_PATA_NS87410 is not set
-# CONFIG_PATA_NS87415 is not set
-# CONFIG_PATA_OPTI is not set
-# CONFIG_PATA_OPTIDMA is not set
-# CONFIG_PATA_PDC_OLD is not set
-# CONFIG_PATA_RADISYS is not set
-# CONFIG_PATA_RZ1000 is not set
-# CONFIG_PATA_SC1200 is not set
-# CONFIG_PATA_SERVERWORKS is not set
-# CONFIG_PATA_PDC2027X is not set
-# CONFIG_PATA_SIL680 is not set
-# CONFIG_PATA_SIS is not set
-# CONFIG_PATA_VIA is not set
-# CONFIG_PATA_WINBOND is not set
-# CONFIG_PATA_PLATFORM is not set
-# CONFIG_MD is not set
-# CONFIG_FUSION is not set
-
-#
-# IEEE 1394 (FireWire) support
-#
-# CONFIG_FIREWIRE is not set
-# CONFIG_IEEE1394 is not set
-# CONFIG_I2O is not set
-# CONFIG_MACINTOSH_DRIVERS is not set
-CONFIG_NETDEVICES=y
-# CONFIG_NETDEVICES_MULTIQUEUE is not set
-# CONFIG_DUMMY is not set
-# CONFIG_BONDING is not set
-# CONFIG_MACVLAN is not set
-# CONFIG_EQUALIZER is not set
-# CONFIG_TUN is not set
-# CONFIG_VETH is not set
-# CONFIG_ARCNET is not set
-CONFIG_PHYLIB=y
-
-#
-# MII PHY device drivers
-#
-# CONFIG_MARVELL_PHY is not set
-# CONFIG_DAVICOM_PHY is not set
-# CONFIG_QSEMI_PHY is not set
-# CONFIG_LXT_PHY is not set
-# CONFIG_CICADA_PHY is not set
-# CONFIG_VITESSE_PHY is not set
-# CONFIG_SMSC_PHY is not set
-# CONFIG_BROADCOM_PHY is not set
-# CONFIG_ICPLUS_PHY is not set
-# CONFIG_FIXED_PHY is not set
-# CONFIG_MDIO_BITBANG is not set
-CONFIG_NET_ETHERNET=y
-# CONFIG_MII is not set
-# CONFIG_HAPPYMEAL is not set
-# CONFIG_SUNGEM is not set
-# CONFIG_CASSINI is not set
-# CONFIG_NET_VENDOR_3COM is not set
-# CONFIG_NET_TULIP is not set
-# CONFIG_HP100 is not set
-# CONFIG_IBM_NEW_EMAC_ZMII is not set
-# CONFIG_IBM_NEW_EMAC_RGMII is not set
-# CONFIG_IBM_NEW_EMAC_TAH is not set
-# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
-# CONFIG_NET_PCI is not set
-# CONFIG_B44 is not set
-CONFIG_FEC_MPC52xx=y
-CONFIG_FEC_MPC52xx_MDIO=y
-# CONFIG_NETDEV_1000 is not set
-# CONFIG_NETDEV_10000 is not set
-# CONFIG_TR is not set
-
-#
-# Wireless LAN
-#
-# CONFIG_WLAN_PRE80211 is not set
-# CONFIG_WLAN_80211 is not set
-# CONFIG_WAN is not set
-# CONFIG_FDDI is not set
-# CONFIG_HIPPI is not set
-# CONFIG_PPP is not set
-# CONFIG_SLIP is not set
-# CONFIG_NET_FC is not set
-# CONFIG_SHAPER is not set
-# CONFIG_NETCONSOLE is not set
-# CONFIG_NETPOLL is not set
-# CONFIG_NET_POLL_CONTROLLER is not set
-# CONFIG_ISDN is not set
-# CONFIG_PHONE is not set
-
-#
-# Input device support
-#
-# CONFIG_INPUT is not set
-
-#
-# Hardware I/O ports
-#
-# CONFIG_SERIO is not set
-# CONFIG_GAMEPORT is not set
-
-#
-# Character devices
-#
-# CONFIG_VT is not set
-# CONFIG_SERIAL_NONSTANDARD is not set
-
-#
-# Serial drivers
-#
-# CONFIG_SERIAL_8250 is not set
-
-#
-# Non-8250 serial port support
-#
-# CONFIG_SERIAL_UARTLITE is not set
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-CONFIG_SERIAL_MPC52xx=y
-CONFIG_SERIAL_MPC52xx_CONSOLE=y
-CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD=9600
-# CONFIG_SERIAL_JSM is not set
-CONFIG_UNIX98_PTYS=y
-CONFIG_LEGACY_PTYS=y
-CONFIG_LEGACY_PTY_COUNT=256
-# CONFIG_IPMI_HANDLER is not set
-# CONFIG_HW_RANDOM is not set
-# CONFIG_NVRAM is not set
-# CONFIG_GEN_RTC is not set
-# CONFIG_R3964 is not set
-# CONFIG_APPLICOM is not set
-# CONFIG_RAW_DRIVER is not set
-# CONFIG_TCG_TPM is not set
-CONFIG_RMEM=m
-CONFIG_ALLOC_RTSJ_MEM=m
-CONFIG_DEVPORT=y
-# CONFIG_I2C is not set
-
-#
-# SPI support
-#
-# CONFIG_SPI is not set
-# CONFIG_SPI_MASTER is not set
-# CONFIG_W1 is not set
-# CONFIG_POWER_SUPPLY is not set
-# CONFIG_HWMON is not set
-# CONFIG_WATCHDOG is not set
-
-#
-# Sonics Silicon Backplane
-#
-CONFIG_SSB_POSSIBLE=y
-# CONFIG_SSB is not set
-
-#
-# Multifunction device drivers
-#
-# CONFIG_MFD_SM501 is not set
-
-#
-# Multimedia devices
-#
-# CONFIG_VIDEO_DEV is not set
-# CONFIG_DVB_CORE is not set
-# CONFIG_DAB is not set
-
-#
-# Graphics support
-#
-# CONFIG_AGP is not set
-# CONFIG_DRM is not set
-# CONFIG_VGASTATE is not set
-CONFIG_VIDEO_OUTPUT_CONTROL=m
-# CONFIG_FB is not set
-# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-
-#
-# Display device support
-#
-# CONFIG_DISPLAY_SUPPORT is not set
-
-#
-# Sound
-#
-# CONFIG_SOUND is not set
-CONFIG_USB_SUPPORT=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-# CONFIG_USB is not set
-
-#
-# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-#
-
-#
-# USB Gadget Support
-#
-# CONFIG_USB_GADGET is not set
-# CONFIG_MMC is not set
-# CONFIG_NEW_LEDS is not set
-# CONFIG_INFINIBAND is not set
-# CONFIG_EDAC is not set
-# CONFIG_RTC_CLASS is not set
-
-#
-# Userspace I/O
-#
-# CONFIG_UIO is not set
-
-#
-# File systems
-#
-CONFIG_EXT2_FS=y
-# CONFIG_EXT2_FS_XATTR is not set
-# CONFIG_EXT2_FS_XIP is not set
-CONFIG_EXT3_FS=y
-CONFIG_EXT3_FS_XATTR=y
-# CONFIG_EXT3_FS_POSIX_ACL is not set
-# CONFIG_EXT3_FS_SECURITY is not set
-# CONFIG_EXT4DEV_FS is not set
-CONFIG_JBD=y
-# CONFIG_JBD_DEBUG is not set
-CONFIG_FS_MBCACHE=y
-# CONFIG_REISERFS_FS is not set
-# CONFIG_JFS_FS is not set
-# CONFIG_FS_POSIX_ACL is not set
-# CONFIG_XFS_FS is not set
-# CONFIG_GFS2_FS is not set
-# CONFIG_OCFS2_FS is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_ROMFS_FS is not set
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-# CONFIG_QUOTA is not set
-CONFIG_DNOTIFY=y
-# CONFIG_AUTOFS_FS is not set
-# CONFIG_AUTOFS4_FS is not set
-# CONFIG_FUSE_FS is not set
-
-#
-# CD-ROM/DVD Filesystems
-#
-# CONFIG_ISO9660_FS is not set
-# CONFIG_UDF_FS is not set
-
-#
-# DOS/FAT/NT Filesystems
-#
-# CONFIG_MSDOS_FS is not set
-# CONFIG_VFAT_FS is not set
-# CONFIG_NTFS_FS is not set
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-# CONFIG_TMPFS_POSIX_ACL is not set
-# CONFIG_HUGETLB_PAGE is not set
-# CONFIG_CONFIGFS_FS is not set
-
-#
-# Miscellaneous filesystems
-#
-# CONFIG_ADFS_FS is not set
-# CONFIG_AFFS_FS is not set
-# CONFIG_HFS_FS is not set
-# CONFIG_HFSPLUS_FS is not set
-# CONFIG_BEFS_FS is not set
-# CONFIG_BFS_FS is not set
-# CONFIG_EFS_FS is not set
-# CONFIG_CRAMFS is not set
-# CONFIG_VXFS_FS is not set
-# CONFIG_HPFS_FS is not set
-# CONFIG_QNX4FS_FS is not set
-# CONFIG_SYSV_FS is not set
-# CONFIG_UFS_FS is not set
-CONFIG_NETWORK_FILESYSTEMS=y
-CONFIG_NFS_FS=y
-# CONFIG_NFS_V3 is not set
-# CONFIG_NFS_V4 is not set
-# CONFIG_NFS_DIRECTIO is not set
-# CONFIG_NFSD is not set
-CONFIG_ROOT_NFS=y
-CONFIG_LOCKD=y
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=y
-# CONFIG_SUNRPC_BIND34 is not set
-# CONFIG_RPCSEC_GSS_KRB5 is not set
-# CONFIG_RPCSEC_GSS_SPKM3 is not set
-# CONFIG_SMB_FS is not set
-# CONFIG_CIFS is not set
-# CONFIG_NCP_FS is not set
-# CONFIG_CODA_FS is not set
-# CONFIG_AFS_FS is not set
-
-#
-# Partition Types
-#
-# CONFIG_PARTITION_ADVANCED is not set
-CONFIG_MSDOS_PARTITION=y
-# CONFIG_NLS is not set
-# CONFIG_DLM is not set
-# CONFIG_UCC_SLOW is not set
-
-#
-# Library routines
-#
-CONFIG_BITREVERSE=y
-# CONFIG_CRC_CCITT is not set
-# CONFIG_CRC16 is not set
-# CONFIG_CRC_ITU_T is not set
-CONFIG_CRC32=y
-# CONFIG_CRC7 is not set
-# CONFIG_LIBCRC32C is not set
-CONFIG_PLIST=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
-# CONFIG_INSTRUMENTATION is not set
-CONFIG_MARKERS=y
-
-#
-# Kernel hacking
-#
-CONFIG_PRINTK_TIME=y
-CONFIG_ENABLE_WARN_DEPRECATED=y
-CONFIG_ENABLE_MUST_CHECK=y
-# CONFIG_MAGIC_SYSRQ is not set
-# CONFIG_UNUSED_SYMBOLS is not set
-CONFIG_DEBUG_FS=y
-# CONFIG_HEADERS_CHECK is not set
-CONFIG_DEBUG_KERNEL=y
-# CONFIG_DEBUG_SHIRQ is not set
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_SCHED_DEBUG=y
-# CONFIG_SCHEDSTATS is not set
-# CONFIG_TIMER_STATS is not set
-# CONFIG_DEBUG_SLAB is not set
-CONFIG_DEBUG_PREEMPT=y
-# CONFIG_DEBUG_RT_MUTEXES is not set
-# CONFIG_RT_MUTEX_TESTER is not set
-# CONFIG_DEBUG_SPINLOCK is not set
-# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
-# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-CONFIG_PREEMPT_TRACE=y
-# CONFIG_EVENT_TRACE is not set
-# CONFIG_FUNCTION_TRACE is not set
-# CONFIG_WAKEUP_TIMING is not set
-# CONFIG_CRITICAL_PREEMPT_TIMING is not set
-# CONFIG_CRITICAL_IRQSOFF_TIMING is not set
-# CONFIG_DEBUG_KOBJECT is not set
-# CONFIG_DEBUG_BUGVERBOSE is not set
-CONFIG_DEBUG_INFO=y
-# CONFIG_DEBUG_VM is not set
-# CONFIG_DEBUG_LIST is not set
-# CONFIG_DEBUG_SG is not set
-CONFIG_FORCED_INLINING=y
-# CONFIG_BOOT_PRINTK_DELAY is not set
-# CONFIG_RCU_TORTURE_TEST is not set
-# CONFIG_FAULT_INJECTION is not set
-CONFIG_HAVE_MCOUNT=y
-# CONFIG_SAMPLES is not set
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-# CONFIG_DEBUG_STACKOVERFLOW is not set
-# CONFIG_DEBUG_STACK_USAGE is not set
-# CONFIG_DEBUG_PAGEALLOC is not set
-# CONFIG_DEBUGGER is not set
-# CONFIG_VIRQ_DEBUG is not set
-# CONFIG_BDI_SWITCH is not set
-# CONFIG_BOOTX_TEXT is not set
-# CONFIG_PPC_EARLY_DEBUG is not set
-
-#
-# Security options
-#
-# CONFIG_KEYS is not set
-# CONFIG_SECURITY is not set
-# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-# CONFIG_CRYPTO is not set
-CONFIG_PPC_CLOCK=y
-CONFIG_PPC_LIB_RHEAP=y
-
---------------050506090307080601030000--
