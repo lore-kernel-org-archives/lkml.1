@@ -1,58 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbYAXFVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbYAXFWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753964AbYAXFVQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 00:21:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbYAXFVG
+	id S1754207AbYAXFWv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 00:22:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbYAXFWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 00:21:06 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55653 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbYAXFVF (ORCPT
+	Thu, 24 Jan 2008 00:22:43 -0500
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:43649 "EHLO
+	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750714AbYAXFWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 00:21:05 -0500
-Date: Thu, 24 Jan 2008 14:20:05 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: rossb@google.com (Ross Biro), rossb@google.com
-Subject: Re: [RFC][PATCH 1/2]: MM: Make Paget Tables Relocatable--Conditional  TLB Flush
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20080123161340.A1AAEDCA00@localhost>
-References: <20080123161340.A1AAEDCA00@localhost>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080124140913.5FFE.Y-GOTO@jp.fujitsu.com>
+	Thu, 24 Jan 2008 00:22:41 -0500
+Date: Thu, 24 Jan 2008 10:52:27 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Theodore Ts'o" <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH 23/49] Add buffer head related helper functions
+Message-ID: <20080124052227.GA7902@skywalker>
+References: <1200970948-17903-16-git-send-email-tytso@mit.edu> <1200970948-17903-17-git-send-email-tytso@mit.edu> <1200970948-17903-18-git-send-email-tytso@mit.edu> <1200970948-17903-19-git-send-email-tytso@mit.edu> <1200970948-17903-20-git-send-email-tytso@mit.edu> <1200970948-17903-21-git-send-email-tytso@mit.edu> <1200970948-17903-22-git-send-email-tytso@mit.edu> <1200970948-17903-23-git-send-email-tytso@mit.edu> <1200970948-17903-24-git-send-email-tytso@mit.edu> <20080123140648.788fbc49.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080123140648.788fbc49.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hello.
-
-This is a nitpick, but all of archtectures code except generic use
-MMF_NNED_FLUSH at clear_bit()...
-     ^
-Please fix misspell.
-
-Bye.
-
+On Wed, Jan 23, 2008 at 02:06:48PM -0800, Andrew Morton wrote:
+> > On Mon, 21 Jan 2008 22:02:02 -0500 "Theodore Ts'o" <tytso@MIT.EDU> wrote:
+> > +}
+> > +EXPORT_SYMBOL(bh_uptodate_or_lock);
+> > +/**
 > 
-> diff -uprwNbB -X 2.6.23/Documentation/dontdiff 2.6.23/arch/alpha/kernel/smp.c 2.6.23a/arch/alpha/kernel/smp.c
-> --- 2.6.23/arch/alpha/kernel/smp.c	2007-10-09 13:31:38.000000000 -0700
-> +++ 2.6.23a/arch/alpha/kernel/smp.c	2007-10-29 13:50:06.000000000 -0700
-> @@ -850,6 +850,8 @@ flush_tlb_mm(struct mm_struct *mm)
->  {
->  	preempt_disable();
->  
-> +	clear_bit(MMF_NNED_FLUSH, mm->flags);
-> +
->  	if (mm == current->active_mm) {
->  		flush_tlb_current(mm);
->  		if (atomic_read(&mm->mm_users) <= 1) {
+> Missing newline.
+> 
+> > + * bh_submit_read: Submit a locked buffer for reading
+> > + * @bh: struct buffer_head
+> > + *
+> > + * Returns a negative error
+> > + */
+> > +int bh_submit_read(struct buffer_head *bh)
+> > +{
+> > +	if (!buffer_locked(bh))
+> > +		lock_buffer(bh);
+> > +
+> > +	if (buffer_uptodate(bh))
+> > +		return 0;
+> 
+> Here it can lock the buffer then return zero
+> 
+> > +	get_bh(bh);
+> > +	bh->b_end_io = end_buffer_read_sync;
+> > +	submit_bh(READ, bh);
+> > +	wait_on_buffer(bh);
+> > +	if (buffer_uptodate(bh))
+> > +		return 0;
+> 
+> Here it will unlock the buffer and return zero.
+> 
+> This function is unusable when passed an unlocked buffer.
+> 
 
+Updated patch below.
 
--- 
-Yasunori Goto 
+commit 70d4ca32604e0935a8b9a49c5ac8b9c64c810693
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Thu Jan 24 10:50:24 2008 +0530
 
+    Add buffer head related helper functions
+    
+    Add buffer head related helper function bh_uptodate_or_lock and
+    bh_submit_read which can be used by file system
+    
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 7249e01..82aa2db 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -3213,6 +3213,53 @@ static int buffer_cpu_notify(struct notifier_block *self,
+ 	return NOTIFY_OK;
+ }
+ 
++/**
++ * bh_uptodate_or_lock: Test whether the buffer is uptodate
++ * @bh: struct buffer_head
++ *
++ * Return true if the buffer is up-to-date and false,
++ * with the buffer locked, if not.
++ */
++int bh_uptodate_or_lock(struct buffer_head *bh)
++{
++	if (!buffer_uptodate(bh)) {
++		lock_buffer(bh);
++		if (!buffer_uptodate(bh))
++			return 0;
++		unlock_buffer(bh);
++	}
++	return 1;
++}
++EXPORT_SYMBOL(bh_uptodate_or_lock);
++
++/**
++ * bh_submit_read: Submit a locked buffer for reading
++ * @bh: struct buffer_head
++ *
++ * Returns zero on success and -EIO on error.If the input
++ * buffer is not locked returns -EINVAL
++ *
++ */
++int bh_submit_read(struct buffer_head *bh)
++{
++	if (!buffer_locked(bh))
++		return -EINVAL;
++
++	if (buffer_uptodate(bh)) {
++		unlock_buffer(bh);
++		return 0;
++	}
++
++	get_bh(bh);
++	bh->b_end_io = end_buffer_read_sync;
++	submit_bh(READ, bh);
++	wait_on_buffer(bh);
++	if (buffer_uptodate(bh))
++		return 0;
++	return -EIO;
++}
++EXPORT_SYMBOL(bh_submit_read);
++
+ void __init buffer_init(void)
+ {
+ 	int nrpages;
+diff --git a/include/linux/buffer_head.h b/include/linux/buffer_head.h
+index da0d83f..e98801f 100644
+--- a/include/linux/buffer_head.h
++++ b/include/linux/buffer_head.h
+@@ -192,6 +192,8 @@ int sync_dirty_buffer(struct buffer_head *bh);
+ int submit_bh(int, struct buffer_head *);
+ void write_boundary_block(struct block_device *bdev,
+ 			sector_t bblock, unsigned blocksize);
++int bh_uptodate_or_lock(struct buffer_head *bh);
++int bh_submit_read(struct buffer_head *bh);
+ 
+ extern int buffer_heads_over_limit;
+ 
