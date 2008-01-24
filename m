@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbYAXM0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYAXMeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755338AbYAXM0e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 07:26:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYAXM01
+	id S1755442AbYAXMeR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 07:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbYAXMeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 07:26:27 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:37586
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbYAXM00 (ORCPT
+	Thu, 24 Jan 2008 07:34:04 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:63258 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754323AbYAXMeD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 07:26:26 -0500
-Date: Thu, 24 Jan 2008 13:26:23 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
-       Izik Eidus <izike@qumranet.com>, Andrew Morton <akpm@osdl.org>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [kvm-devel] [PATCH] export notifier #1
-Message-ID: <20080124122623.GK7141@v2.random>
-References: <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <20080122223139.GD15848@v2.random> <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com> <479716AD.5070708@qumranet.com> <20080123105246.GG26420@sgi.com> <Pine.LNX.4.64.0801231145210.13547@schroedinger.engr.sgi.com> <4798289B.1000007@qumranet.com>
+	Thu, 24 Jan 2008 07:34:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=fAQ5JekQSPdo6zuUsU9j09/90BcjIV7NvKs5cTvhiItJN0tx8tc2RyB/jAkti5PrD+OuHd+nJLuK5SHCAbuz8FIYlbiNiTn8bMEzTfwNWdY9tgfqtE7T7o3scHGAk65tIH4iMaUhTmFUg7MB+jHlJlDON50NAgA5eMZ6KW0cvks=
+Message-ID: <84144f020801240434s3ce63e58m8ffb74d70c0aef32@mail.gmail.com>
+Date: Thu, 24 Jan 2008 14:34:00 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Oliver Neukum" <oliver@neukum.org>
+Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
+Cc: "Wilco Beekhuizen" <wilcobeekhuizen@gmail.com>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200801241324.26868.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4798289B.1000007@qumranet.com>
+References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com>
+	 <200801241249.06577.oliver@neukum.org>
+	 <84144f020801240352r688fbbccu52ce9aa8ea3f199@mail.gmail.com>
+	 <200801241324.26868.oliver@neukum.org>
+X-Google-Sender-Auth: 7c34979ba5427298
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 07:56:43AM +0200, Avi Kivity wrote:
-> What I need is a list of (mm, va) that map the page.  kvm doesn't have 
-> access to that, export notifiers do.  It seems reasonable that export 
-> notifier do that rmap walk since they are part of core mm, not kvm.
+Hi Oliver,
 
-Yes. Like said in earlier email we could ignore the slowdown and
-duplicate the mm/rmap.c code inside kvm, but that looks a bad layering
-violation and it's unnecessary, dirty and suboptimal IMHO.
+On Jan 24, 2008 2:24 PM, Oliver Neukum <oliver@neukum.org> wrote:
+> > Sure but the filesystems in fs/ are general purpose and they can be
+> > mounted on top of any block device (except for the in-memory ones like
+>
+> nfs, cifs, jffs, ...
 
-> Alternatively, kvm can change its internal rmap structure to be page based 
-> instead of (mm, hva) based.  The problem here is to size this thing, as we 
-> don't know in advance (when the kvm module is loaded) whether 0% or 100% 
-> (or some value in between) of system memory will be used for kvm.
+But none of them mess around with *hardware*. Sure, you can split it
+in two: driver and filesystem but yet again, the latter is not general
+purpose at all. I think this is somewhat similar to spufs which is
+really hardware specific and thus not eligible for fs/.
 
-Another issue is that for things like the page sharing driver, it's
-more convenient to be able to know exactly which "sptes" belongs to a
-certain userland mapping, and only that userland mapping (not all
-others mappings of the physical page). So if the rmap becomes page
-based, it'd be nice to still be able to find the "mm" associated with
-that certain spte pointer to skip all sptes in the other "mm" during
-the invalidate.
+On Jan 24, 2008 2:24 PM, Oliver Neukum <oliver@neukum.org> wrote:
+> > sysfs). Furthermore, the problem with iriverfs is that it assumes that
+> > there can be only one device plugged to the host. What we want is
+> > something like
+> >
+> >   $ mount -t iriverfs /dev/iriver0 /mnt/media
+> >
+> > Which can be accomplished with an USB driver in driver/usb/ that
+> > registers the special iriverfs.
+>
+> And what happens if you do
+> mount -t vfat /dev/iriver0 /mnt/media ?
+
+If /dev/iriver0 is registered as a block device, we read the
+superblock but don't find a vfat filesystem and the mount fails as
+expected. As for
+
+   mount -t iriverfs /dev/sd1 /mnt/media
+
+we need to make sure file_system_type->get_sb() does something like
+what drivers/mtd/mtdsuper.c::get_sb_mtd() does to make sure we only
+let it mount if the block device is indeed an iriver player.
+
+                        Pekka
