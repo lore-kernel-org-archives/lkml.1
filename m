@@ -1,186 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbYAXJZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYAXJ3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbYAXJZe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 04:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbYAXJZW
+	id S1754625AbYAXJ3m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 04:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYAXJ3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 04:25:22 -0500
-Received: from hs-out-0708.google.com ([64.233.178.243]:57988 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753145AbYAXJZS (ORCPT
+	Thu, 24 Jan 2008 04:29:31 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:58939 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753289AbYAXJ33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 04:25:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WL6509zAEmflk6ZkydlgQgxel5l11ImyZdfGm3nHyWN0MIQ5N1KzbxknRC6WJzAb2iFj4W7JNtTK2LQygDqytSMjS/BaGImIAbbbg6lQL5fXxohVf7NmX7EmYECh4l5J5nMcDWWFZdQDG/8jjisKpJhPWgRuB8rTR24f7pjSdkE=
-Message-ID: <a8e1da0801240125x6c65a4bfva24ff50cef890eba@mail.gmail.com>
-Date: Thu, 24 Jan 2008 17:25:16 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bluetooth : lockdep warning on rfcomm
-Cc: "Marcel Holtmann" <marcel@holtmann.org>,
-       "David Miller" <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>,
-       bluez-devel@lists.sourceforge.net
-In-Reply-To: <a8e1da0801231902x5ab7691bq5a30e839f6c8cb71@mail.gmail.com>
+	Thu, 24 Jan 2008 04:29:29 -0500
+Message-Id: <47985B37.9000503@ce.jp.nec.com>
+Date: Thu, 24 Jan 2008 18:32:39 +0900
+From: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Neil Brown <neilb@suse.de>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: [BUG] The kernel thread for md RAID1 could cause a md RAID1 array
+ deadlock
+References: <478C240F.8070004@ce.jp.nec.com> <18328.1473.26122.647283@notabene.brown>
+In-Reply-To: <18328.1473.26122.647283@notabene.brown>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a8e1da0801231902x5ab7691bq5a30e839f6c8cb71@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 24, 2008 11:02 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> =============================================
-> [ INFO: possible recursive locking detected ]
-> 2.6.24-rc8-mm1 #8
-> ---------------------------------------------
-> bluepush/3213 is trying to acquire lock:
->  (sk_lock-AF_BLUETOOTH){--..}, at: [<f8978c80>]
-> l2cap_sock_bind+0x40/0x100 [l2cap]
->
-> but task is already holding lock:
->  (sk_lock-AF_BLUETOOTH){--..}, at: [<f894a31e>]
-> rfcomm_sock_connect+0x3e/0xe0 [rfcomm]
->
-> other info that might help us debug this:
-> 2 locks held by bluepush/3213:
->  #0:  (sk_lock-AF_BLUETOOTH){--..}, at: [<f894a31e>]
-> rfcomm_sock_connect+0x3e/0xe0 [rfcomm]
->  #1:  (rfcomm_mutex){--..}, at: [<f8947556>] rfcomm_dlc_open+0x26/0x60 [rfcomm]
->
-> stack backtrace:
-> Pid: 3213, comm: bluepush Not tainted 2.6.24-rc8-mm1 #8
->  [<c0132128>] ? printk+0x18/0x20
->  [<c0154437>] print_deadlock_bug+0xc7/0xe0
->  [<c01544bc>] check_deadlock+0x6c/0x80
->  [<c01548fc>] validate_chain+0x14c/0x320
->  [<c0156221>] __lock_acquire+0x1c1/0x730
->  [<c0156d89>] lock_acquire+0x79/0xb0
->  [<f8978c80>] ? l2cap_sock_bind+0x40/0x100 [l2cap]
->  [<c03c05f5>] lock_sock_nested+0x55/0x70
->  [<f8978c80>] ? l2cap_sock_bind+0x40/0x100 [l2cap]
->  [<f8978c80>] l2cap_sock_bind+0x40/0x100 [l2cap]
->  [<c03bdb4a>] kernel_bind+0xa/0x10
->  [<f8947afc>] rfcomm_session_create+0x4c/0x110 [rfcomm]
->  [<f8947509>] __rfcomm_dlc_open+0x129/0x150 [rfcomm]
->  [<f8947568>] rfcomm_dlc_open+0x38/0x60 [rfcomm]
->  [<f894a396>] rfcomm_sock_connect+0xb6/0xe0 [rfcomm]
->  [<c03bcd39>] sys_connect+0x99/0xd0
->  [<c010f509>] ? cache_add_dev+0x39/0x1a0
->  [<c015323d>] ? put_lock_stats+0xd/0x30
->  [<c01532c0>] ? lock_release_holdtime+0x60/0x80
->  [<c018e86c>] ? fget+0x7c/0x100
->  [<c0156b97>] ? __lock_release+0x47/0x70
->  [<c018e86c>] ? fget+0x7c/0x100
->  [<c02611b7>] ? copy_from_user+0x37/0x70
->  [<c03bd855>] sys_socketcall+0xa5/0x230
->  [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
->  [<c010501b>] ? restore_nocheck+0x12/0x15
->
+Hi,
 
-While fixing this issue, another locking dependency confused me. Are
-rfcomm_dev_lock and &d->lock in same lock class?
+Thank you for the patch.
+I have applied the patch to 2.6.23.14 and it works well.
 
-The warnings as following:
+- In case of 2.6.23.14, the problem is reproduced.
+- In case of 2.6.23.14 with this patch, raid1 works well so far.
+  The fault injection script continues to run, and it doesn't deadlock.
+  I will keep it running for a while.
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.24-rc8-mm1 #8
--------------------------------------------------------
-krfcommd/2912 is trying to acquire lock:
- (rfcomm_dev_lock){-.--}, at: [<f89d5bf2>]
-rfcomm_dev_state_change+0x92/0x160 [rfcomm]
-
-but task is already holding lock:
- (&d->lock){--..}, at: [<f89d15d3>] __rfcomm_dlc_close+0x43/0xd0 [rfcomm]
-
-which lock already depends on the new lock.
+Also, md raid10 seems to have the same problem.
+I will test raid10 applying this patch as well.
 
 
-the existing dependency chain (in reverse order) is:
-
--> #1 (&d->lock){--..}:
-       [<c0153b13>] add_lock_to_list+0x33/0x70
-       [<c01545a3>] check_prev_add+0xd3/0x200
-       [<f89d5311>] rfcomm_dev_add+0x191/0x300 [rfcomm]
-       [<c0154765>] check_prevs_add+0x95/0xe0
-       [<c01549ef>] validate_chain+0x23f/0x320
-       [<c0156221>] __lock_acquire+0x1c1/0x730
-       [<c0155539>] mark_held_locks+0x39/0x80
-       [<c0156d89>] lock_acquire+0x79/0xb0
-       [<f89d5311>] rfcomm_dev_add+0x191/0x300 [rfcomm]
-       [<c0436749>] _spin_lock+0x39/0x80
-       [<f89d5311>] rfcomm_dev_add+0x191/0x300 [rfcomm]
-       [<f89d5b10>] rfcomm_dev_data_ready+0x0/0x50 [rfcomm]
-       [<f89d5311>] rfcomm_dev_add+0x191/0x300 [rfcomm]
-       [<f89d565e>] rfcomm_create_dev+0x6e/0x100 [rfcomm]
-       [<c03c05fa>] lock_sock_nested+0x5a/0x70
-       [<f89d5ae3>] rfcomm_dev_ioctl+0x33/0x60 [rfcomm]
-       [<f89d4c8c>] rfcomm_sock_ioctl+0x2c/0x50 [rfcomm]
-       [<c03bc001>] sock_ioctl+0xc1/0x220
-       [<c03bbf40>] sock_ioctl+0x0/0x220
-       [<c019a366>] vfs_ioctl+0x76/0x90
-       [<c019a616>] do_vfs_ioctl+0x56/0x140
-       [<c019a762>] sys_ioctl+0x62/0x70
-       [<c0104fba>] syscall_call+0x7/0xb
-       [<ffffffff>] 0xffffffff
-
--> #0 (rfcomm_dev_lock){-.--}:
-       [<c0154504>] check_prev_add+0x34/0x200
-       [<c012a9ab>] default_wake_function+0xb/0x10
-       [<c0154765>] check_prevs_add+0x95/0xe0
-       [<c01549ef>] validate_chain+0x23f/0x320
-       [<c0156221>] __lock_acquire+0x1c1/0x730
-       [<c0156d89>] lock_acquire+0x79/0xb0
-       [<f89d5bf2>] rfcomm_dev_state_change+0x92/0x160 [rfcomm]
-       [<c04361e9>] _read_lock+0x39/0x80
-       [<f89d5bf2>] rfcomm_dev_state_change+0x92/0x160 [rfcomm]
-       [<f89d5bf2>] rfcomm_dev_state_change+0x92/0x160 [rfcomm]
-       [<f89d15e8>] __rfcomm_dlc_close+0x58/0xd0 [rfcomm]
-       [<f89d2523>] rfcomm_recv_ua+0x73/0x140 [rfcomm]
-       [<f89d3151>] rfcomm_recv_frame+0x171/0x1e0 [rfcomm]
-       [<c0155659>] trace_hardirqs_on+0xb9/0x130
-       [<c0436a39>] _spin_unlock_irqrestore+0x39/0x70
-       [<f89d3447>] rfcomm_run+0xe7/0x590 [rfcomm]
-       [<c0120000>] hpet_legacy_next_event+0x20/0x50
-       [<f89d3360>] rfcomm_run+0x0/0x590 [rfcomm]
-       [<c0146e0c>] kthread+0x5c/0xa0
-       [<c0146db0>] kthread+0x0/0xa0
-       [<c0105c17>] kernel_thread_helper+0x7/0x10
-       [<ffffffff>] 0xffffffff
-
-other info that might help us debug this:
-
-2 locks held by krfcommd/2912:
- #0:  (rfcomm_mutex){--..}, at: [<f89d33db>] rfcomm_run+0x7b/0x590 [rfcomm]
- #1:  (&d->lock){--..}, at: [<f89d15d3>] __rfcomm_dlc_close+0x43/0xd0 [rfcomm]
-
-stack backtrace:
-Pid: 2912, comm: krfcommd Not tainted 2.6.24-rc8-mm1 #8
- [<c0132128>] ? printk+0x18/0x20
- [<c0153cff>] print_circular_bug_tail+0x6f/0x80
- [<c0154504>] check_prev_add+0x34/0x200
- [<c012a9ab>] ? default_wake_function+0xb/0x10
- [<c0154765>] check_prevs_add+0x95/0xe0
- [<c01549ef>] validate_chain+0x23f/0x320
- [<c0156221>] __lock_acquire+0x1c1/0x730
- [<c0156d89>] lock_acquire+0x79/0xb0
- [<f89d5bf2>] ? rfcomm_dev_state_change+0x92/0x160 [rfcomm]
- [<c04361e9>] _read_lock+0x39/0x80
- [<f89d5bf2>] ? rfcomm_dev_state_change+0x92/0x160 [rfcomm]
- [<f89d5bf2>] rfcomm_dev_state_change+0x92/0x160 [rfcomm]
- [<f89d15e8>] __rfcomm_dlc_close+0x58/0xd0 [rfcomm]
- [<f89d2523>] rfcomm_recv_ua+0x73/0x140 [rfcomm]
- [<f89d3151>] rfcomm_recv_frame+0x171/0x1e0 [rfcomm]
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c0436a39>] ? _spin_unlock_irqrestore+0x39/0x70
- [<f89d3447>] rfcomm_run+0xe7/0x590 [rfcomm]
- [<c0120000>] ? hpet_legacy_next_event+0x20/0x50
- [<f89d3360>] ? rfcomm_run+0x0/0x590 [rfcomm]
- [<c0146e0c>] kthread+0x5c/0xa0
- [<c0146db0>] ? kthread+0x0/0xa0
- [<c0105c17>] kernel_thread_helper+0x7/0x10
- =======================
+Neil Brown wrote:
+> On Tuesday January 15, k-tanaka@ce.jp.nec.com wrote:
+>> This message describes the details about md-RAID1 issue found by
+>> testing the md RAID1 using the SCSI fault injection framework.
+>>
+>> Abstract:
+>> Both the error handler for md RAID1 and write access request to the md RAID1
+>> use raid1d kernel thread. The nr_pending flag could cause a race condition
+>> in raid1d, results in a raid1d deadlock.
+> 
+> Thanks for finding and reporting this.
+> 
+> I believe the following patch should fix the deadlock.
+> 
+> If you are able to repeat your test and confirm this I would
+> appreciate it.
+> 
+> Thanks,
+> NeilBrown
+> 
+> 
+> 
+> Fix deadlock in md/raid1 when handling a read error.
+> 
+> When handling a read error, we freeze the array to stop any other
+> IO while attempting to over-write with correct data.
+> 
+> This is done in the raid1d thread and must wait for all submitted IO
+> to complete (except for requests that failed and are sitting in the
+> retry queue - these are counted in ->nr_queue and will stay there during
+> a freeze).
+> 
+> However write requests need attention from raid1d as bitmap updates
+> might be required.  This can cause a deadlock as raid1 is waiting for
+> requests to finish that themselves need attention from raid1d.
+> 
+> So we create a new function 'flush_pending_writes' to give that attention,
+> and call it in freeze_array to be sure that we aren't waiting on raid1d.
+> 
+> Thanks to "K.Tanaka" <k-tanaka@ce.jp.nec.com> for finding and reporting
+> this problem.
+> 
+> Cc: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
+> Signed-off-by: Neil Brown <neilb@suse.de>
+> 
+-- 
+---------------------------------------------------------
+Kenichi TANAKA    | Open Source Software Platform Development Division
+                  | Computers Software Operations Unit, NEC Corporation
+                  | k-tanaka@ce.jp.nec.com
