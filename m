@@ -1,183 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYAXA20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYAXAmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYAXA20 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 19:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbYAXA2S
+	id S1753234AbYAXAmf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 19:42:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYAXAmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 19:28:18 -0500
-Received: from gw.goop.org ([64.81.55.164]:42120 "EHLO mail.goop.org"
+	Wed, 23 Jan 2008 19:42:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51133 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752203AbYAXA2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 19:28:18 -0500
-Message-ID: <4797DBA0.5020909@goop.org>
-Date: Wed, 23 Jan 2008 16:28:16 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1752619AbYAXAmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 19:42:24 -0500
+From: airlied@linux.ie
+To: torvalds@linux-foundation.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       =?utf-8?q?Carlos=20Mart=C3=ADn?= <inean@users.sourceforge.net>,
+       Dave Airlie <airlied@linux.ie>
+Subject: [PATCH] agp/intel: add support for E7221 chipset
+Date: Thu, 24 Jan 2008 10:34:09 +1000
+Message-Id: <1201134850-4543-1-git-send-email-airlied@linux.ie>
+X-Mailer: git-send-email 1.5.3.7
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: [PATCH UPDATE] x86: ignore spurious faults
-References: <4797D64D.1060105@goop.org> <1201133916.16972.124.camel@brick>
-In-Reply-To: <1201133916.16972.124.camel@brick>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When changing a kernel page from RO->RW, it's OK to leave stale TLB
-entries around, since doing a global flush is expensive and they pose
-no security problem.  They can, however, generate a spurious fault,
-which we should catch and simply return from (which will have the
-side-effect of reloading the TLB to the current PTE).
+From: Carlos Martín <inean@users.sf.net>
 
-This can occur when running under Xen, because it frequently changes
-kernel pages from RW->RO->RW to implement Xen's pagetable semantics.
-It could also occur when using CONFIG_DEBUG_PAGEALLOC, since it avoids
-doing a global TLB flush after changing page permissions.
+The E7221 chipset is a 915 rebadged for the Intel server line.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>
+Signed-off-by: Dave Airlie <airlied@linux.ie>
 ---
- arch/x86/mm/fault_32.c |   50 ++++++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/mm/fault_64.c |   50 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 100 insertions(+)
+ drivers/char/agp/intel-agp.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
 
-===================================================================
---- a/arch/x86/mm/fault_32.c
-+++ b/arch/x86/mm/fault_32.c
-@@ -324,6 +324,51 @@ static int is_f00f_bug(struct pt_regs *r
- }
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index d879619..03eac1e 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -10,6 +10,8 @@
+ #include <linux/agp_backend.h>
+ #include "agp.h"
  
- /*
-+ * Handle a spurious fault caused by a stale TLB entry.  This allows
-+ * us to lazily refresh the TLB when increasing the permissions of a
-+ * kernel page (RO -> RW or NX -> X).  Doing it eagerly is very
-+ * expensive since that implies doing a full cross-processor TLB
-+ * flush, even if no stale TLB entries exist on other processors.
-+ * There are no security implications to leaving a stale TLB when
-+ * increasing the permissions on a page.
-+ */
-+static int spurious_fault(unsigned long address,
-+			  unsigned long error_code)
-+{
-+	pgd_t *pgd;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+
-+	/* Reserved-bit violation or user access to kernel space? */
-+	if (error_code & (PF_USER | PF_RSVD))
-+		return 0;
-+
-+	pgd = init_mm.pgd + pgd_index(address);
-+	if (!pgd_present(*pgd))
-+		return 0;
-+
-+	pud = pud_offset(pgd, address);
-+	if (!pud_present(*pud))
-+		return 0;
-+
-+	pmd = pmd_offset(pud, address);
-+	if (!pmd_present(*pmd))
-+		return 0;
-+
-+	pte = pte_offset_kernel(pmd, address);
-+	if (!pte_present(*pte))
-+		return 0;
-+
-+	if ((error_code & PF_WRITE) && !pte_write(*pte))
-+		return 0;
-+	if ((error_code & PF_INSTR) && !pte_exec(*pte))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+/*
-  * Handle a fault on the vmalloc or module mapping area
-  *
-  * This assumes no large pages in there.
-@@ -446,6 +491,11 @@ void __kprobes do_page_fault(struct pt_r
- 		if (!(error_code & (PF_RSVD|PF_USER|PF_PROT)) &&
- 		    vmalloc_fault(address) >= 0)
- 			return;
-+
-+		/* Can handle a stale RO->RW TLB */
-+		if (spurious_fault(address, error_code))
-+			return;
-+
- 		/*
- 		 * Don't take the mm semaphore here. If we fixup a prefetch
- 		 * fault we could otherwise deadlock.
-===================================================================
---- a/arch/x86/mm/fault_64.c
-+++ b/arch/x86/mm/fault_64.c
-@@ -312,6 +312,51 @@ static noinline void pgtable_bad(unsigne
- }
- 
- /*
-+ * Handle a spurious fault caused by a stale TLB entry.  This allows
-+ * us to lazily refresh the TLB when increasing the permissions of a
-+ * kernel page (RO -> RW or NX -> X).  Doing it eagerly is very
-+ * expensive since that implies doing a full cross-processor TLB
-+ * flush, even if no stale TLB entries exist on other processors.
-+ * There are no security implications to leaving a stale TLB when
-+ * increasing the permissions on a page.
-+ */
-+static int spurious_fault(unsigned long address,
-+			  unsigned long error_code)
-+{
-+	pgd_t *pgd;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+
-+	/* Reserved-bit violation or user access to kernel space? */
-+	if (error_code & (PF_USER | PF_RSVD))
-+		return 0;
-+
-+	pgd = init_mm.pgd + pgd_index(address);
-+	if (!pgd_present(*pgd))
-+		return 0;
-+
-+	pud = pud_offset(pgd, address);
-+	if (!pud_present(*pud))
-+		return 0;
-+
-+	pmd = pmd_offset(pud, address);
-+	if (!pmd_present(*pmd))
-+		return 0;
-+
-+	pte = pte_offset_kernel(pmd, address);
-+	if (!pte_present(*pte))
-+		return 0;
-+
-+	if ((error_code & PF_WRITE) && !pte_write(*pte))
-+		return 0;
-+	if ((error_code & PF_INSTR) && !pte_exec(*pte))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+/*
-  * Handle a fault on the vmalloc area
-  *
-  * This assumes no large pages in there.
-@@ -443,6 +488,11 @@ asmlinkage void __kprobes do_page_fault(
- 			if (vmalloc_fault(address) >= 0)
- 				return;
- 		}
-+
-+		/* Can handle a stale RO->RW TLB */
-+		if (spurious_fault(address, error_code))
-+			return;
-+
- 		/*
- 		 * Don't take the mm semaphore here. If we fixup a prefetch
- 		 * fault we could otherwise deadlock.
++#define PCI_DEVICE_ID_INTEL_E7221_HB	0x2588
++#define PCI_DEVICE_ID_INTEL_E7221_IG	0x258a
+ #define PCI_DEVICE_ID_INTEL_82946GZ_HB      0x2970
+ #define PCI_DEVICE_ID_INTEL_82946GZ_IG      0x2972
+ #define PCI_DEVICE_ID_INTEL_82965G_1_HB     0x2980
+@@ -526,7 +528,8 @@ static void intel_i830_init_gtt_entries(void)
+ 			break;
+ 		case I915_GMCH_GMS_STOLEN_48M:
+ 			/* Check it's really I915G */
+-			if (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915G_HB ||
++			if (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_E7221_HB ||
++			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915G_HB ||
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB ||
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB ||
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GM_HB ||
+@@ -538,7 +541,8 @@ static void intel_i830_init_gtt_entries(void)
+ 			break;
+ 		case I915_GMCH_GMS_STOLEN_64M:
+ 			/* Check it's really I915G */
+-			if (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915G_HB ||
++			if (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_E7221_HB ||
++			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915G_HB ||
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82915GM_HB ||
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945G_HB ||
+ 			    agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82945GM_HB ||
+@@ -1854,6 +1858,8 @@ static const struct intel_driver_description {
+ 	{ PCI_DEVICE_ID_INTEL_82865_HB, PCI_DEVICE_ID_INTEL_82865_IG, 0, "865",
+ 		&intel_845_driver, &intel_830_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82875_HB, 0, 0, "i875", &intel_845_driver, NULL },
++	{ PCI_DEVICE_ID_INTEL_E7221_HB, PCI_DEVICE_ID_INTEL_E7221_IG, 0, "E7221 (i915)",
++		NULL, &intel_915_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82915G_HB, PCI_DEVICE_ID_INTEL_82915G_IG, 0, "915G",
+ 		NULL, &intel_915_driver },
+ 	{ PCI_DEVICE_ID_INTEL_82915GM_HB, PCI_DEVICE_ID_INTEL_82915GM_IG, 0, "915GM",
+@@ -2059,6 +2065,7 @@ static struct pci_device_id agp_intel_pci_table[] = {
+ 	ID(PCI_DEVICE_ID_INTEL_82875_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_7505_0),
+ 	ID(PCI_DEVICE_ID_INTEL_7205_0),
++	ID(PCI_DEVICE_ID_INTEL_E7221_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82915G_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82915GM_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_82945G_HB),
+-- 
+1.5.3.6
 
