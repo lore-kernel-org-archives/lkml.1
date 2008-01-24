@@ -1,59 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbYAXKjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbYAXKtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567AbYAXKjT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 05:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYAXKjL
+	id S1755158AbYAXKtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 05:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYAXKs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 05:39:11 -0500
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:48306 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753838AbYAXKjL (ORCPT
+	Thu, 24 Jan 2008 05:48:57 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:36766 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752774AbYAXKsz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 05:39:11 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAFb5l0c7pynT/2dsb2JhbAAIrzw
-X-IronPort-AV: E=Sophos;i="4.25,243,1199626200"; 
-   d="scan'208";a="39025406"
-Message-ID: <47986AC0.8000806@niasdigital.com>
-Date: Thu, 24 Jan 2008 21:38:56 +1100
-From: Ben Nizette <bn@niasdigital.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Thu, 24 Jan 2008 05:48:55 -0500
+In-Reply-To: <Pine.LNX.4.64.0801241108400.31652@kivilampi-30.cs.helsinki.fi>
+Subject: Re: 2.6.24-rc8-mm1 : net tcp_input.c warnings
+To: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Denys Fedoryshchenko <denys@visp.net.lb>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       netdev-owner@vger.kernel.org
+X-Mailer: Lotus Notes Release 7.0.1P July 04, 2006
+Message-ID: <OF55F9E87C.A024C73F-ON652573DA.003BF324-652573DA.003B3739@in.ibm.com>
+From: Krishna Kumar2 <krkumar2@in.ibm.com>
+Date: Thu, 24 Jan 2008 16:16:47 +0530
+X-MIMETrack: Serialize by Router on d23ml172/23/M/IBM(Release 7.0.2FP2HF300 | September
+ 14, 2007) at 01/24/2008 16:25:58
 MIME-Version: 1.0
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] define empty unxlate_dev_mem_ptr on AVR32
-References: <47972AD2.20801@niasdigital.com> <20080124112911.0b1592f4@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080124112911.0b1592f4@dhcp-252-066.norway.atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-type: text/plain; charset=ISO-8859-1
+Content-transfer-encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen wrote:
-> On Wed, 23 Jan 2008 22:53:54 +1100
-> Ben Nizette <bn@niasdigital.com> wrote:
-> 
->>  /*
->> + * We just keep an empty definition of this around (a-la the asm-generic
->> + * implementation) to keep /dev/mem happy
->> + */
->> +#define unxlate_dev_mem_ptr(p, a) {}
-> 
-> Thanks, but this should be either
-> 
-> #define unxlate_dev_mem_ptr(p, a) do { } while (0)
-> 
-> or
-> 
-> static inline void unxlate_dev_mem_ptr(unsigned long phys, void *addr)
-> {
-> }
-> 
-> I prefer the latter.
+Hi Ilpo,
 
-Yeah I don't know what came over me; Mia culpa :-)
+I have tried parallel iperfs with this patch and don't get any more
+warnings.
+I will run overnight to be sure.
 
-I prefer the latter too, though I think I was striving for consistency with the xlate_dev_mem_ptr #define.
+thanks,
 
---Ben
+- KK
+
+netdev-owner@vger.kernel.org wrote on 01/24/2008 03:24:18 PM:
+
+> On Thu, 24 Jan 2008, Dave Young wrote:
+>
+> Hi Dave (& others),
+>
+> > Thanks.
+>
+> Thanks a lot, I was first to ignore all these because they occurred
+> with newreno, but looked again... :-/
+>
+> > New warning trigged with your debug patch:
+>
+> This was probably with the earlier one I sent to you because there's
+still
+> this case remaining which itself is valid:
+>
+> > P: 5 L: 0 vs 0 S: 0 vs 1 w: 2044790889-2044796616 (0)
+>
+> ...snip... this is still ok state (S+L <= P):
+>
+> > P: 5 L: 0 vs 0 S: 0 vs 3 w: 2044790889-2044796616 (0)
+> > TCP wq(s)      <
+> > TCP wq(h) +++h+<
+> > l0 s3 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
+> > ------------[ cut here ]------------
+> > WARNING: at net/ipv4/tcp_input.c:2169 tcp_mark_head_lost+0x122/0x150()
+> > Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
+> > snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
+> > snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
+> > evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
+> > i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
+> > Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
+> >  [<c0132100>] ? have_callable_console+0x20/0x30
+> >  [<c0131844>] warn_on_slowpath+0x54/0x80
+> >  [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
+> >  [<c0132438>] ? vprintk+0x308/0x320
+> >  [<c0132438>] ? vprintk+0x308/0x320
+> >  [<c0132438>] ? vprintk+0x308/0x320
+> >  [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
+> >  [<c03f6052>] tcp_mark_head_lost+0x122/0x150
+> >  [<c03f60ca>] tcp_update_scoreboard+0x4a/0x190
+> >  [<c03f6e7a>] tcp_fastretrans_alert+0x4da/0x700
+> >  [<c03f7e63>] tcp_ack+0x1b3/0x3a0
+> >  [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
+> >  [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
+> >  [<c04021fb>] tcp_v4_rcv+0x5db/0x660
+> >  [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
+> >  [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
+> >  [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
+> >  [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
+> >  [<c0156b97>] ? __lock_release+0x47/0x70
+> >  [<c03e6147>] ip_local_deliver+0xb7/0xc0
+> >  [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
+> >  [<c03c01d8>] ? sock_def_readable+0x48/0xa0
+> >  [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
+> >  [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
+> >  [<c03e669f>] ip_rcv+0x18f/0x290
+> >  [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
+> >  [<c03c8da6>] netif_receive_skb+0x2b6/0x330
+> >  [<c03c8c17>] ? netif_receive_skb+0x127/0x330
+> >  [<c03c8ea3>] ? process_backlog+0x83/0x100
+> >  [<c03c8eae>] process_backlog+0x8e/0x100
+> >  [<c03c90bc>] net_rx_action+0x13c/0x230
+> >  [<c03c8fd9>] ? net_rx_action+0x59/0x230
+> >  [<c0136f63>] __do_softirq+0x93/0x120
+> >  [<c013706a>] do_softirq+0x7a/0x80
+> >  [<c0137135>] irq_exit+0x65/0x90
+> >  [<c01078b1>] do_IRQ+0x41/0x80
+> >  [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
+> >  [<c01059ca>] common_interrupt+0x2e/0x34
+> >  [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
+> >  [<c01033a0>] ? mwait_idle+0x0/0x20
+> >  [<c01033b2>] mwait_idle+0x12/0x20
+> >  [<c0103141>] cpu_idle+0x61/0x110
+> >  [<c04339fd>] rest_init+0x5d/0x60
+> >  [<c05a47fa>] start_kernel+0x1fa/0x260
+> >  [<c05a4190>] ? unknown_bootoption+0x0/0x130
+> >  =======================
+> > ---[ end trace 14b601818e6903ac ]---
+> > ------------[ cut here ]------------
+> > WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
+> > Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
+> > snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
+> > snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
+> > evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
+> > i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
+> > Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
+> >  [<c0132100>] ? have_callable_console+0x20/0x30
+> >  [<c0131844>] warn_on_slowpath+0x54/0x80
+> >  [<c01317da>] ? print_oops_end_marker+0x2a/0x30
+> >  [<c0131849>] ? warn_on_slowpath+0x59/0x80
+> >  [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
+> >  [<c0132438>] ? vprintk+0x308/0x320
+> >  [<c0132438>] ? vprintk+0x308/0x320
+> >  [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
+> >  [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
+> >  [<c03f5ffc>] tcp_mark_head_lost+0xcc/0x150
+> >  [<c03f60ca>] tcp_update_scoreboard+0x4a/0x190
+> >  [<c03f6e7a>] tcp_fastretrans_alert+0x4da/0x700
+> >  [<c03f7e63>] tcp_ack+0x1b3/0x3a0
+> >  [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
+> >  [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
+> >  [<c04021fb>] tcp_v4_rcv+0x5db/0x660
+> >  [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
+> >  [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
+> >  [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
+> >  [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
+> >  [<c0156b97>] ? __lock_release+0x47/0x70
+> >  [<c03e6147>] ip_local_deliver+0xb7/0xc0
+> >  [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
+> >  [<c03c01d8>] ? sock_def_readable+0x48/0xa0
+> >  [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
+> >  [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
+> >  [<c03e669f>] ip_rcv+0x18f/0x290
+> >  [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
+> >  [<c03c8da6>] netif_receive_skb+0x2b6/0x330
+> >  [<c03c8c17>] ? netif_receive_skb+0x127/0x330
+> >  [<c03c8ea3>] ? process_backlog+0x83/0x100
+> >  [<c03c8eae>] process_backlog+0x8e/0x100
+> >  [<c03c90bc>] net_rx_action+0x13c/0x230
+> >  [<c03c8fd9>] ? net_rx_action+0x59/0x230
+> >  [<c0136f63>] __do_softirq+0x93/0x120
+> >  [<c013706a>] do_softirq+0x7a/0x80
+> >  [<c0137135>] irq_exit+0x65/0x90
+> >  [<c01078b1>] do_IRQ+0x41/0x80
+> >  [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
+> >  [<c01059ca>] common_interrupt+0x2e/0x34
+> >  [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
+> >  [<c01033a0>] ? mwait_idle+0x0/0x20
+> >  [<c01033b2>] mwait_idle+0x12/0x20
+> >  [<c0103141>] cpu_idle+0x61/0x110
+> >  [<c04339fd>] rest_init+0x5d/0x60
+> >  [<c05a47fa>] start_kernel+0x1fa/0x260
+> >  [<c05a4190>] ? unknown_bootoption+0x0/0x130
+> >  =======================
+> > ---[ end trace 14b601818e6903ac ]---
+>
+> ...But this no longer is, and even more, L: 5 is not valid state at this
+> point all (should only happen if we went to RTO but it would reset S to
+> zero with newreno):
+>
+> > P: 5 L: 5 vs 5 S: 0 vs 3 w: 2044790889-2044796616 (0)
+> > TCP wq(s) LLLLl<
+> > TCP wq(h) +++h+<
+> > l5 s3 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
+>
+> Surprisingly, it was the first time the WARN_ON for left_out returned
+> correct location. This also explains why the patch I sent to Krishna
+> didn't print anything (it didn't end up into printing because I forgot
+> to add L+S>P check into to the state checking if).
+>
+> ...so please, could you (others than Denys) try this patch, it should
+> solve the issue. And Denys, could you confirm (and if necessary double
+> check) that the kernel you saw this similar problem with is the pure
+> Linus' mainline, i.e., without any net-2.6.25 or mm bits please, if so,
+> that problem persists. And anyway, there were some fackets_out related
+> problems reported as well and this doesn't help for that but I think I've
+
+> lost track of who was seeing it due to large number of reports :-), could
+
+> somebody refresh my memory because I currently don't have time to dig it
+> up from archives (at least on this week).
+>
+>
+> --
+>  i.
+>
+> --
+> [PATCH] [TCP]: NewReno must count every skb while marking losses
+>
+> NewReno should add cnt per skb (as with FACK) instead of depending
+> on SACKED_ACKED bits which won't be set with it at all.
+> Effectively, NewReno should always exists after the first
+> iteration anyway (or immediately if there's already head in
+> lost_out.
+>
+> This was fixed earlier in net-2.6.25 but got reverted among other
+> stuff and I didn't notice that this is still necessary (actually
+> wasn't even considering this case while trying to figure out the
+> reports because I lived with different kind of code than it in
+> reality was).
+>
+> This should solve the WARN_ONs in TCP code that as a result of
+> this triggered multiple times in every place we check for this
+> invariant.
+>
+> Special thanks to Dave Young <hidave.darkstar@gmail.com> and
+> Krishna Kumar2 <krkumar2@in.ibm.com> for trying with my debug
+> patches.
+>
+> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> ---
+>  net/ipv4/tcp_input.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
+> index 295490e..aa409a5 100644
+> --- a/net/ipv4/tcp_input.c
+> +++ b/net/ipv4/tcp_input.c
+> @@ -2156,7 +2156,7 @@ static void tcp_mark_head_lost(struct sock *sk, int
+
+> packets, int fast_rexmit)
+>        tp->lost_skb_hint = skb;
+>        tp->lost_cnt_hint = cnt;
+>
+> -      if (tcp_is_fack(tp) ||
+> +      if (tcp_is_fack(tp) || tcp_is_reno(tp) ||
+>            (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED))
+>           cnt += tcp_skb_pcount(skb);
+>
+> --
+> 1.5.2.2
+
