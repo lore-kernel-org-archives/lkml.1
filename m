@@ -1,307 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbYAXGMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754266AbYAXGTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754637AbYAXGMY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 01:12:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYAXGMQ
+	id S1754266AbYAXGTm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 01:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbYAXGTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 01:12:16 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:30089 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752528AbYAXGMP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 01:12:15 -0500
-Date: Wed, 23 Jan 2008 23:12:12 -0700
-From: dann frazier <dannf@dannf.org>
-To: Willy TARREAU <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org, Eric Sandeen <sandeen@redhat.com>
-Subject: [PATCH] 2.4: fix memory corruption from misinterpreted
-	bad_inode_ops return values
-Message-ID: <20080124061212.GA22079@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 24 Jan 2008 01:19:30 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:58712 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752985AbYAXGT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 01:19:29 -0500
+Date: Thu, 24 Jan 2008 17:19:20 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Poonam_Aggrwal-b10812 <b10812@freescale.com>
+Cc: kumar.gala@freescale.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       rubini@vision.unipv.it, linuxppc-dev@ozlabs.org,
+       michael.barkowski@freescale.com, rich.cutler@freescale.com,
+       timur@freescale.com, ashish.kalra@freescale.com
+Subject: Re: [PATCH] UCC TDM driver for QE based MPC83xx platforms.
+Message-Id: <20080124171920.49d805cb.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0801241014240.27491@linux121>
+References: <Pine.LNX.4.64.0801241014240.27491@linux121>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__24_Jan_2008_17_19_20_+1100_M8q4g+u4cutXlxEd"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a 2.4 backport of a linux-2.6 change by Eric Sandeen
-(commit be6aab0e9fa6d3c6d75aa1e38ac972d8b4ee82b8)
+--Signature=_Thu__24_Jan_2008_17_19_20_+1100_M8q4g+u4cutXlxEd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-CVE-2006-5753 was assigned for this issue.
+On Thu, 24 Jan 2008 10:16:42 +0530 (IST) Poonam_Aggrwal-b10812 <b10812@free=
+scale.com> wrote:
+>
+> +static int ucc_tdm_probe(struct of_device *ofdev,
+> +			 const struct of_device_id *match)
+> +{
+> +	struct device_node *np =3D ofdev->node;
+> +	struct resource res;
+> +	const unsigned int *prop;
+> +	u32 ucc_num, device_num, err, ret =3D 0;
+> +	struct device_node *np_tmp =3D NULL;
 
-I've built and boot-tested this, but I'm not sure how to exercise
-these codepaths.
+You don't need to initialise this.
 
-Commit log from 2.6 follows.
+> +	dma_addr_t physaddr;
+> +	void *tdm_buff;
+> +	struct ucc_tdm_info *ut_info;
+> +
+> +	prop =3D of_get_property(np, "device-id", NULL);
 
-  CVE-2006-5753 is for a case where an inode can be marked bad, switching
-  the ops to bad_inode_ops, which are all connected as:
+You should check for (prop =3D=3D NULL).
 
-  static int return_EIO(void)
-  {
-          return -EIO;
-  }
+> +	ucc_num =3D *prop - 1;
+> +	if ((ucc_num < 0) || (ucc_num > 7))
+> +		return -ENODEV;
+> +
+> +	ut_info =3D &utdm_info[ucc_num];
+> +	if (ut_info =3D=3D NULL) {
 
-  #define EIO_ERROR ((void *) (return_EIO))
+This cannot be NULL as you have just taken the address of an array
+element.
 
-  static struct inode_operations bad_inode_ops =
-  {
-          .create         = bad_inode_create
-  ...etc...
+> +	tdm_ctrl[device_num]->ut_info =3D ut_info;
+> +
+> +	tdm_ctrl[device_num]->ut_info->uf_info.ucc_num =3D ucc_num;
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is the same as "ut_info".
 
-  The problem here is that the void cast causes return types to not be
-  promoted, and for ops such as listxattr which expect more than 32 bits of
-  return value, the 32-bit -EIO is interpreted as a large positive 64-bit
-  number, i.e. 0x00000000fffffffa instead of 0xfffffffa.
+> +	tdm_ctrl[device_num]->ut_info->uf_info.tdm_tx_clk =3D
+> +			(char *) of_get_property(np, "fsl,tdm-tx-clk", NULL);
+                                ^
+We don't normall put spaces here.
 
-  This goes particularly badly when the return value is taken as a number of
-  bytes to copy into, say, a user's buffer for example...
+> +	tdm_ctrl[device_num]->ut_info->uf_info.tdm_rx_clk =3D
+> +			(char *) of_get_property(np, "fsl,tdm-rx-clk", NULL);
+                                ^
+Ditto. And later as well.
 
-  I originally had coded up the fix by creating a return_EIO_<TYPE> macro
-  for each return type, like this:
+> +	tdm_ctrl[device_num]->ut_info->uf_info.irq =3D
+> +					irq_of_parse_and_map(np, 0);
+> +	err =3D of_address_to_resource(np, 0, &res);
+> +	if (err) {
+> +		ret =3D EINVAL;
 
-  static int return_EIO_int(void)
-  {
-  	return -EIO;
-  }
-  #define EIO_ERROR_INT ((void *) (return_EIO_int))
+This should be -EINVAL or err.
 
-  static struct inode_operations bad_inode_ops =
-  {
-  	.create		= EIO_ERROR_INT,
-  ...etc...
+> +		goto get_property_error;
 
-  but Al felt that it was probably better to create an EIO-returner for each
-  actual op signature.  Since so few ops share a signature, I just went ahead
-  & created an EIO function for each individual file & inode op that returns
-  a value.
+You need to do something about unmapping the irq in the error path.
 
-Signed-off-by: dann frazier <dannf@hp.com>
----
- fs/bad_inode.c |  191 +++++++++++++++++++++++++++++++++++++++++++++++---------
- 1 files changed, 161 insertions(+), 30 deletions(-)
+> +	tdm_ctrl[device_num]->uf_regs =3D of_iomap(np, 0);
+> +
+> +	np_tmp =3D of_find_compatible_node(np_tmp, "slic", "legerity-slic");
+> +	if (np_tmp !=3D NULL)
+> +		tdm_ctrl[device_num]->leg_slic =3D 1;
+> +	else
+> +		tdm_ctrl[device_num]->leg_slic =3D 0;
 
-diff --git a/fs/bad_inode.c b/fs/bad_inode.c
-index 850ba5e..b6b1d7d 100644
---- a/fs/bad_inode.c
-+++ b/fs/bad_inode.c
-@@ -9,6 +9,76 @@
- #include <linux/fs.h>
- #include <linux/stat.h>
- #include <linux/sched.h>
-+#include <linux/poll.h>
-+
-+static loff_t bad_file_llseek(struct file *file, loff_t offset, int origin)
-+{
-+	return -EIO;
-+}
-+
-+static ssize_t bad_file_read(struct file *filp, char __user *buf,
-+			size_t size, loff_t *ppos)
-+{
-+        return -EIO;
-+}
-+
-+static ssize_t bad_file_write(struct file *filp, const char __user *buf,
-+			size_t siz, loff_t *ppos)
-+{
-+        return -EIO;
-+}
-+
-+static int bad_file_readdir(struct file *filp, void *dirent, filldir_t filldir)
-+{
-+	return -EIO;
-+}
-+
-+static unsigned int bad_file_poll(struct file *filp, poll_table *wait)
-+{
-+	return POLLERR;
-+}
-+
-+static int bad_file_ioctl (struct inode *inode, struct file *filp,
-+			unsigned int cmd, unsigned long arg)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_open(struct inode *inode, struct file *filp)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_flush(struct file *file)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_release(struct inode *inode, struct file *filp)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_fsync(struct file *file, struct dentry *dentry,
-+			int datasync)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_fasync(int fd, struct file *filp, int on)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_file_lock(struct file *file, int cmd, struct file_lock *fl)
-+{
-+	return -EIO;
-+}
- 
- /*
-  * The follow_link operation is special: it must behave as a no-op
-@@ -20,46 +90,107 @@ static int bad_follow_link(struct dentry *dent, struct nameidata *nd)
- 	return vfs_follow_link(nd, ERR_PTR(-EIO));
- }
- 
--static int return_EIO(void)
-+static struct file_operations bad_file_ops =
-+{
-+	llseek:		bad_file_llseek,
-+	read:		bad_file_read,
-+	write:		bad_file_write,
-+	readdir:	bad_file_readdir,
-+	poll:		bad_file_poll,
-+	ioctl:		bad_file_ioctl,
-+	mmap:		bad_file_mmap,
-+	open:		bad_file_open,
-+	flush:		bad_file_flush,
-+	release:	bad_file_release,
-+	fsync:		bad_file_fsync,
-+	fasync:		bad_file_fasync,
-+	lock:		bad_file_lock,
-+};
-+
-+static int bad_inode_create (struct inode *dir, struct dentry *dentry,
-+		int mode)
- {
- 	return -EIO;
- }
-+  
-+static struct dentry *bad_inode_lookup(struct inode *dir,
-+			struct dentry *dentry)
-+{
-+	return ERR_PTR(-EIO);
-+}
- 
--#define EIO_ERROR ((void *) (return_EIO))
-+static int bad_inode_link (struct dentry *old_dentry, struct inode *dir,
-+		struct dentry *dentry)
-+{
-+	return -EIO;
-+}
- 
--static struct file_operations bad_file_ops =
-+static int bad_inode_unlink(struct inode *dir, struct dentry *dentry)
- {
--	llseek:		EIO_ERROR,
--	read:		EIO_ERROR,
--	write:		EIO_ERROR,
--	readdir:	EIO_ERROR,
--	poll:		EIO_ERROR,
--	ioctl:		EIO_ERROR,
--	mmap:		EIO_ERROR,
--	open:		EIO_ERROR,
--	flush:		EIO_ERROR,
--	release:	EIO_ERROR,
--	fsync:		EIO_ERROR,
--	fasync:		EIO_ERROR,
--	lock:		EIO_ERROR,
--};
-+	return -EIO;
-+}
-+
-+static int bad_inode_symlink (struct inode *dir, struct dentry *dentry,
-+		const char *symname)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_mkdir(struct inode *dir, struct dentry *dentry,
-+			int mode)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_rmdir (struct inode *dir, struct dentry *dentry)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_mknod (struct inode *dir, struct dentry *dentry,
-+			int mode, int rdev)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_rename (struct inode *old_dir, struct dentry *old_dentry,
-+		struct inode *new_dir, struct dentry *new_dentry)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_readlink(struct dentry *dentry, char __user *buffer,
-+		int buflen)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_permission(struct inode *inode, int mask)
-+{
-+	return -EIO;
-+}
-+
-+static int bad_inode_revalidate(struct dentry *dentry)
-+{
-+	return -EIO;
-+}
- 
- struct inode_operations bad_inode_ops =
- {
--	create:		EIO_ERROR,
--	lookup:		EIO_ERROR,
--	link:		EIO_ERROR,
--	unlink:		EIO_ERROR,
--	symlink:	EIO_ERROR,
--	mkdir:		EIO_ERROR,
--	rmdir:		EIO_ERROR,
--	mknod:		EIO_ERROR,
--	rename:		EIO_ERROR,
--	readlink:	EIO_ERROR,
-+	create:		bad_inode_create,
-+	lookup:		bad_inode_lookup,
-+	link:		bad_inode_link,
-+	unlink:		bad_inode_unlink,
-+	symlink:	bad_inode_symlink,
-+	mkdir:		bad_inode_mkdir,
-+	rmdir:		bad_inode_rmdir,
-+	mknod:		bad_inode_mknod,
-+	rename:		bad_inode_rename,
-+	readlink:	bad_inode_readlink,
- 	follow_link:	bad_follow_link,
--	truncate:	EIO_ERROR,
--	permission:	EIO_ERROR,
--	revalidate:	EIO_ERROR,
-+	/* truncate returns void */
-+	permission:	bad_inode_permission,
-+	revalidate:	bad_inode_revalidate,
- };
- 
- 
--- 
-1.5.3.8
+	of_node_ut(np_tmp);
 
+> +	tdm_buff =3D dma_alloc_coherent(NULL, 2 * NR_BUFS * SAMPLE_DEPTH *
+> +				tdm_ctrl[device_num]->cfg_ctrl.active_num_ts,
+> +					&physaddr, GFP_KERNEL);
+> +	if (!tdm_buff) {
+> +		printk(KERN_ERR "ucc-tdm: could not allocate buffer"
+> +					"descriptors\n");
+> +		ret =3D -ENOMEM;
+> +		goto get_property_error;
 
+You need to unmap the uf_regs in the error path.
+
+> +get_property_error:
+> +	kfree(tdm_ctrl[device_num]);
+
+Do you need to set "tdm_ctrl[device_num]" to NULL and decrement
+num_tdm_devices?
+
+> +	return ret;
+> +}
+> +
+> +static int ucc_tdm_remove(struct of_device *ofdev)
+> +{
+> +	struct tdm_ctrl *tdm_c;
+> +	struct ucc_tdm_info *ut_info;
+> +	u32 ucc_num;
+> +
+> +	tdm_c =3D dev_get_drvdata(&(ofdev->dev));
+
+	dev_set_drvdata(&of_dev->dev, NULL);
+
+> +	ucc_num =3D tdm_c->ut_info->uf_info.ucc_num;
+> +	ut_info =3D &utdm_info[ucc_num];
+> +	tdm_stop(tdm_c);
+> +	tdm_deinit(tdm_c);
+> +
+> +	ucc_fast_free(tdm_c->uf_private);
+> +
+> +	dma_free_coherent(NULL, 2 * NR_BUFS * SAMPLE_DEPTH *
+> +				tdm_c->cfg_ctrl.active_num_ts,
+> +				tdm_c->tdm_input_data,
+> +				tdm_c->dma_input_addr);
+> +
+
+You need to unmap the uf_reg and the irq.
+
+> +static struct of_device_id ucc_tdm_match[] =3D {
+
+const, please.
+
+> +	{
+> +	 .type =3D "tdm",
+> +	 .compatible =3D "fsl,ucc-tdm",
+> +	 }, {},
+
+We euld normall format this like:
+
+	{ .type =3D "tdm", .compatible =3D "fsl,ucc-tdm", },
+	{},
+
+> +static struct of_platform_driver ucc_tdm_driver =3D {
+
+	.driver =3D {
+
+> +	.name =3D DRV_NAME,
+
+	},
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__24_Jan_2008_17_19_20_+1100_M8q4g+u4cutXlxEd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHmC3sTgG2atn1QN8RAgXGAJ4uMTjBoYK8ZY3LkcspcHfPKuvyEgCeOkVE
+mWEA3F5o5j/zT6OiVoK6aic=
+=y4E+
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__24_Jan_2008_17_19_20_+1100_M8q4g+u4cutXlxEd--
