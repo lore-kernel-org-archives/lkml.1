@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbYAXUob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758772AbYAXUou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759910AbYAXUob (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 15:44:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758262AbYAXUgt
+	id S1758772AbYAXUou (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 15:44:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757757AbYAXUh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 15:36:49 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:43994 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758258AbYAXUgs convert rfc822-to-8bit (ORCPT
+	Thu, 24 Jan 2008 15:37:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56372 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757436AbYAXUh0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 15:36:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=FgRh4xK66gT04txDpCTGCUciTq1njxrThwzqJbiNIVngaB5YDGF5Lk8ZkYsXBQ8pcS1/RXmnb9MYoK2T7gaH8G4mpqOf2Cxd0igHj6O647LdeLldXVdpNeJp+s1q32801YkDtOK//h/ZqXVmqrzITge3rHRkV6YKFL5Omo6qTlE=
-From: Marcin Gil <marcin.gil@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: JMicron PATA 2.6.24-rc7 can't find drives
-Date: Thu, 24 Jan 2008 21:36:25 +0100
-User-Agent: KMail/1.9.7
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <200801232323.36187.marcin.gil@gmail.com> <4798A537.9000104@gmail.com> <m3abmvtah1.fsf@maximus.localdomain>
-In-Reply-To: <m3abmvtah1.fsf@maximus.localdomain>
+	Thu, 24 Jan 2008 15:37:26 -0500
+Date: Thu, 24 Jan 2008 12:28:33 -0800
+From: Greg KH <greg@kroah.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Wilco Beekhuizen <wilcobeekhuizen@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
+Message-ID: <20080124202833.GA3216@kroah.com>
+References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com> <84144f020801240942y1c75c82geddc250b7e7814ac@mail.gmail.com> <20080124180313.GA16006@kroah.com> <200801242100.22090.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801242136.25554.marcin.gil@gmail.com>
+In-Reply-To: <200801242100.22090.oliver@neukum.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dnia czwartek 24 stycznia 2008, Krzysztof Halasa napisał:
-> Marcin Gil <marcin.gil@gmail.com> writes:
-> > +-----+-----+
-> > mobo  hdd   dvd
-> >
-> > I think that cable select would take dvd as master and hdd as slave.
-> > This was not preferable when hdd was my primary drive. I can try
-> > cable-select now since I boot off new SATA drive.
->
-> Is a master in the middle permitted by the specs at all?
+On Thu, Jan 24, 2008 at 09:00:21PM +0100, Oliver Neukum wrote:
+> Am Donnerstag, 24. Januar 2008 19:03:13 schrieb Greg KH:
+> > And the unplug issue at a filesystem level should be pretty trivial to
+> > handle, we do it all the time in /proc and /sys and other virtual
+> > filesystems (usbfs) with no problems.
+> 
+> A discussion about lifetime rules for objects in sysfs anyone? ;->
 
-I don't know. I had to do this because of the drive placement in the case.
-DVD drive is high above HDD drive -- thus I had to place DVD on the end.
+The objects (kobjects) are now separate from the sysfs core internals,
+so this should all be fixed up now :)
 
-I'll switch to cable select in the moment and report back to you.
+Anyway, sysfs is (hopefully) different from this filesystem, it should
+be able to be done using all of the ramfs code, and no "special" backing
+logic would be needed.  Like usbfs...
 
-Thank you,
--Marcin Gil
+And if you see problems in the usbfs implementation with regards to
+lifetime rules (becides the devices file), please let me know.
+
+thanks,
+
+greg k-h
