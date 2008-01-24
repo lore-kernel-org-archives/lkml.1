@@ -1,78 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYAXBPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbYAXBS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbYAXBPz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 20:15:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbYAXBPr
+	id S1753785AbYAXBS2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 20:18:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbYAXBSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 20:15:47 -0500
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:9286 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752393AbYAXBPq (ORCPT
+	Wed, 23 Jan 2008 20:18:17 -0500
+Received: from nz-out-0506.google.com ([64.233.162.225]:26948 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752764AbYAXBSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 20:15:46 -0500
-To: Tobias Winter <tobias@linuxdingsda.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel bug report 2.6.24-rc8 on core2quad q6600 with debian unstable amd64
-X-Message-Flag: Warning: May contain useful information
-References: <4797D86B.3060202@linuxdingsda.de>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 23 Jan 2008 17:15:44 -0800
-In-Reply-To: <4797D86B.3060202@linuxdingsda.de> (Tobias Winter's message of "Thu, 24 Jan 2008 01:14:35 +0100")
-Message-ID: <adaabmwowfz.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Wed, 23 Jan 2008 20:18:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=rfJLDv/5INaOoj1Hd+CpzCbpcXFgtZgE+QV8XX77CXPLLKqk1bses7uQmT10UMgQcWMO23Cxl0VdR1m8hr2yPYyajiWCvOcEpTRmQN+5hBa5U6vy2W8CdYNWh8XtvAqPT/IRhls6lLNC/NuCPNRRiOInHf1RXp/JVjFbZwlgE24=
+Date: Thu, 24 Jan 2008 09:19:26 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Marcel Holtmann <marcel@holtmann.org>, davem@davemloft.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net, cornelia.huck@de.ibm.com,
+       gombasg@sztaki.hu, htejun@gmail.com, viro@zeniv.linux.org.uk,
+       kay.sievers@vrfy.org, greg@kroah.com
+Subject: Re: [PATCH] bluetooth : move children of connection device to NULL
+	before connection down
+Message-ID: <20080124011926.GA2950@darkstar.te-china.tietoenator.com>
+References: <20080121044913.GA4162@darkstar.te-china.tietoenator.com> <20080121045401.GB4162@darkstar.te-china.tietoenator.com> <20080121.031417.171098597.davem@davemloft.net> <1200982696.7978.148.camel@aeonflux> <20080123140629.c24d4d68.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 24 Jan 2008 01:15:44.0572 (UTC) FILETIME=[A4BDA7C0:01C85E26]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20080123140629.c24d4d68.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > drivers/acpi/pci_bind.c: In function 'acpi_pci_unbind':<built-in>:0:
- > internal compiler error: Segmentation fault
- > Depending on which kernel i build, it fails on different things.
+On Wed, Jan 23, 2008 at 02:06:29PM -0800, Andrew Morton wrote:
+> > On Tue, 22 Jan 2008 07:18:16 +0100 Marcel Holtmann <marcel@holtmann.org> wrote:
+> > Hi Dave,
+> > 
+> > > > Add people missed in cc-list.
+> > > 
+> > > Thanks Dave for your continued efforts on Bluetooth bugs like this.
+> > > 
+> > > Marcel, are you going to review/ACK/integrate/push-upstream/whatever
+> > > any of these Bluetooth patches?
+> > > 
+> > > It hasn't been getting much love from you as of late, you are one of
+> > > the listed maintainers, and I don't want to lose any of Dave's
+> > > valuable bug fixing work.
+> > 
+> > I will be fully back in business next week. Just got stuck in a project
+> > that needed 200% of my time to get it going.
+> >
+> 
+> These patches in -mm:
+> 
+> bluetooth-hidp_process_hid_control-remove-unnecessary-parameter-dealing.patch
+> bluetooth-uninlining.patch
+> drivers-bluetooth-bpa10xc-fix-memleak.patch
+> drivers-bluetooth-btsdioc-fix-double-free.patch
+> bluetooth-blacklist-another-broadcom-bcm2035-device.patch
+> bluetooth-rfcomm-tty_close-before-destruct.patch
+> hci_ldisc-fix-null-pointer-deref.patch
+> 
+> could benefit from some attention please.
 
-Seems like a classic symptom of some sort of hardware fault/memory corruption...
+Hi, andrew
 
- > I tried disabling HPET and VT in the BIOS but that didn't help. I also
- > ruled out any memory problems with memtest86+.Don't know what else to do.
+For the patch bluetooth-rfcomm-tty_close-before-destruct.patch I have to rethinkabout it.
 
-So your memory may be OK... (memtest86 does miss some problem sometimes)
+1. The subject is not correct, should be rfcomm-tty-destroy-before-tty_close.
+2. Don't know what I was thinking that time, could you replace it with the following better one? Sorry for that.
 
- > [8.6.] SCSI information (from /proc/scsi/scsi)
- > Attached devices:
- > Host: scsi0 Channel: 00 Id: 01 Lun: 00
- >   Vendor: IBM-PCCO Model: DDRS-34560W   !# Rev: S97B
- >   Type:   Direct-Access                    ANSI  SCSI revision: 02
- > Host: scsi0 Channel: 00 Id: 05 Lun: 00
- >   Vendor: NEC      Model: CD-ROM DRIVE:464 Rev: 1.14
- >   Type:   CD-ROM                           ANSI  SCSI revision: 02
- > Host: scsi1 Channel: 00 Id: 00 Lun: 00
- >   Vendor: ATA      Model: Maxtor 6V250F0   Rev: VA11
- >   Type:   Direct-Access                    ANSI  SCSI revision: 05
- > Host: scsi2 Channel: 00 Id: 00 Lun: 00
- >   Vendor: ATA      Model: Maxtor 6V250F0   Rev: VA11
- >   Type:   Direct-Access                    ANSI  SCSI revision: 05
- > Host: scsi3 Channel: 00 Id: 00 Lun: 00
- >   Vendor: ATA      Model: Maxtor 6V250F0   Rev: VA11
- >   Type:   Direct-Access                    ANSI  SCSI revision: 05
- > Host: scsi4 Channel: 00 Id: 00 Lun: 00
- >   Vendor: ATA      Model: Maxtor 6V250F0   Rev: VA11
- >   Type:   Direct-Access                    ANSI  SCSI revision: 05
- > Host: scsi5 Channel: 00 Id: 00 Lun: 00
- >   Vendor: ATA      Model: Maxtor 6V250F0   Rev: VA11
- >   Type:   Direct-Access                    ANSI  SCSI revision: 05
- > Host: scsi6 Channel: 00 Id: 00 Lun: 00
- >   Vendor: ATA      Model: Maxtor 6V250F0   Rev: VA11
- >   Type:   Direct-Access                    ANSI  SCSI revision: 05
- > Host: scsi7 Channel: 00 Id: 00 Lun: 00
- >   Vendor: ATA      Model: Maxtor 6L250R0   Rev: BAJ4
- >   Type:   Direct-Access                    ANSI  SCSI revision: 05
- > Host: scsi7 Channel: 00 Id: 01 Lun: 00
- >   Vendor: ATA      Model: Maxtor 6L250R0   Rev: BAH4
- >   Type:   Direct-Access                    ANSI  SCSI revision: 05
+---
+rfcomm dev could be deleted in tty_hangup, so we must not call rfcomm_dev_del again to prevent from destroying rfcomm dev before tty close.
 
-That is a lot of hard drives... my guess would be that your power
-supply is marginal, a cable/adapter card isn't seated perfectly
-somewhere, something is overheating, or something like that.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
+
+---
+ net/bluetooth/rfcomm/tty.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+diff -upr a/net/bluetooth/rfcomm/tty.c b/net/bluetooth/rfcomm/tty.c
+--- a/net/bluetooth/rfcomm/tty.c	2008-01-24 09:03:59.000000000 +0800
++++ b/net/bluetooth/rfcomm/tty.c	2008-01-24 09:03:59.000000000 +0800
+@@ -429,6 +429,8 @@ static int rfcomm_release_dev(void __use
+ 	if (dev->tty)
+ 		tty_vhangup(dev->tty);
+ 
++	if (!test_bit(RFCOMM_RELEASE_ONHUP, &dev->flags))
++		rfcomm_dev_del(dev);
+ 	rfcomm_dev_del(dev);
+ 	rfcomm_dev_put(dev);
+ 	return 0;
