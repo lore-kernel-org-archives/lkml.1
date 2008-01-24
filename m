@@ -1,224 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbYAXIMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbYAXIRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753723AbYAXIMB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 03:12:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbYAXILw
+	id S1753723AbYAXIRv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 03:17:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYAXIRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 03:11:52 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:33537 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753124AbYAXILw (ORCPT
+	Thu, 24 Jan 2008 03:17:43 -0500
+Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:58989 "EHLO
+	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752774AbYAXIRm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 03:11:52 -0500
-Date: Thu, 24 Jan 2008 17:11:45 +0900 (JST)
-Message-Id: <20080124.171145.96940514.taka@valinux.co.jp>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: Re: [PATCH 0/2] dm-band: The I/O bandwidth controller: Overview
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-References: <20080123.215350.193721890.ryov__34610.100350301$1201092994$gmane$org@valinux.co.jp>
-	<479793FC.70701@codemonkey.ws>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-In-Reply-To: <479793FC.70701@codemonkey.ws>
+	Thu, 24 Jan 2008 03:17:42 -0500
+To: James.Bottomley@HansenPartnership.com
+Cc: linux-kernel@vger.kernel.org, tomof@acm.org
+Subject: [PATCH 1/2] ch: fix device minor number management bug
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: Text/Plain;
+	charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080124171738L.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 24 Jan 2008 17:17:38 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+ch_probe uses the total number of ch devices as minor.
 
-> Hi,
-> 
-> I believe this work is very important especially in the context of 
-> virtual machines.  I think it would be more useful though implemented in 
-> the context of the IO scheduler.  Since we already support a notion of 
-> IO priority, it seems reasonable to add a notion of an IO cap.
+ch_probe:
+	ch->minor = ch_devcount;
+...
+	ch_devcount++;
 
-I agree that what you proposed is the most straightforward approach.
-Ryo and I have also investigated the CFQ scheduler that It will be possible
-to enhance it to support bandwidth control with quite a few modification.
-I think both approach have pros and cons.
+Then ch_remove decreases ch_devcount:
 
-At this time, we have chosen the device-mapper approach because:
- - it can work with any I/O scheduler. Some people will want use the NOOP
-   scheduler against high-end storages.
- - only people who need I/O bandwidth control should use it.
- - it is independent to the I/O schedulers so that it will be easy to maintain.
- - it can keep the CFQ implementation simple.
+ch_remove:
+	ch_devcount--;
 
-The current the CFQ scheduler has some limitations if you want to control the
-bandwidths. The scheduler only has seven priority levels, which also means it
-has only seven classes. If you assign the same io-priority A to several VMs
---- virtual machines ---, these machines have to share the I/O bandwidth which
-is assign to the io-priority A class. If other VM with io-priority B which is
-lower than io-priority A and there is no other VM in the same io-priority B
-class, VM in the io-priority B class may be able to use large bandwidth than
-VMs in io-priority the A class.
+If you have two ch devices, e.g. sch0 and sch1, and remove sch0,
+ch_devcount is 1. Then if you add another ch device, ch_probe tries to
+create sch1. So you get a warning and fail to create sch1:
 
-I guess two level scheduling should be introduced in the CFQ scheduler if needed.
-The one is to choose the best cgroup or job, and the other is to choose the
-highest io-priority class.
+Jan 24 16:01:05 nice kernel: sysfs: duplicate filename 'sch1' can not be created
+Jan 24 16:01:05 nice kernel: WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+Jan 24 16:01:05 nice kernel: Pid: 2571, comm: iscsid Not tainted 2.6.24-rc7-ga3d2c2e8-dirty #1
+Jan 24 16:01:05 nice kernel:
+Jan 24 16:01:05 nice kernel: Call Trace:
+Jan 24 16:01:05 nice kernel:  [<ffffffff802a22b8>] sysfs_add_one+0x54/0xbd
+Jan 24 16:01:05 nice kernel:  [<ffffffff802a283c>] create_dir+0x4f/0x87
+Jan 24 16:01:05 nice kernel:  [<ffffffff802a28a9>] sysfs_create_dir+0x35/0x4a
+Jan 24 16:01:05 nice kernel:  [<ffffffff803069a1>] kobject_get+0x12/0x17
+Jan 24 16:01:05 nice kernel:  [<ffffffff80306ece>] kobject_add+0xf3/0x1a6
+Jan 24 16:01:05 nice kernel:  [<ffffffff8034252b>] class_device_add+0xaa/0x39d
+Jan 24 16:01:05 nice kernel:  [<ffffffff803428fb>] class_device_create+0xcb/0xfa
+Jan 24 16:01:05 nice kernel:  [<ffffffff80229e09>] printk+0x4e/0x56
+Jan 24 16:01:05 nice kernel:  [<ffffffff802a2054>] sysfs_ilookup_test+0x0/0xf
+Jan 24 16:01:05 nice kernel:  [<ffffffff88022580>] :ch:ch_probe+0xbe/0x61a
 
-There is another limitation that io-priority is global so that it affects
-all the disks to access. It isn't allowed to have a job use several io-priorities
-to access several disks respectively. I think "per disk io-priority" will be
-required.
+(snip)
 
-But the device-mapper approach also has a bad points.
-It is hard to get the capabilities and configurations of the underlying devices
-such as information of partitions or LUNs. So some configuration tools may
-probably be required.
+And you can't add new ch device any more.
 
-Thank you,
-Hirokazu Takahashi.
+This patch converts ch to use a common minor number management way,
+idr like sg and bsg do.
 
-> Regards,
-> 
-> Anthony Liguori
-> 
-> Ryo Tsuruta wrote:
-> > Hi everyone,
-> > 
-> > I'm happy to announce that I've implemented a Block I/O bandwidth controller.
-> > The controller is designed to be of use in a cgroup or virtual machine
-> > environment. The current approach is that the controller is implemented as
-> > a device-mapper driver.
-> > 
-> > What's dm-band all about?
-> > ========================
-> > Dm-band is an I/O bandwidth controller implemented as a device-mapper driver.
-> > Several jobs using the same physical device have to share the bandwidth of
-> > the device. Dm-band gives bandwidth to each job according to its weight, 
-> > which each job can set its own value to.
-> > 
-> > At this time, a job is a group of processes with the same pid or pgrp or uid.
-> > There is also a plan to make it support cgroup. A job can also be a virtual
-> > machine such as KVM or Xen.
-> > 
-> >   +------+ +------+ +------+   +------+ +------+ +------+ 
-> >   |cgroup| |cgroup| | the  |   | pid  | | pid  | | the  |  jobs
-> >   |  A   | |  B   | |others|   |  X   | |  Y   | |others| 
-> >   +--|---+ +--|---+ +--|---+   +--|---+ +--|---+ +--|---+   
-> >   +--V----+---V---+----V---+   +--V----+---V---+----V---+   
-> >   | group | group | default|   | group | group | default|  band groups
-> >   |       |       |  group |   |       |       |  group | 
-> >   +-------+-------+--------+   +-------+-------+--------+
-> >   |         band1          |   |         band2          |  band devices
-> >   +-----------|------------+   +-----------|------------+
-> >   +-----------V--------------+-------------V------------+
-> >   |                          |                          |
-> >   |          sdb1            |           sdb2           |  physical devices
-> >   +--------------------------+--------------------------+
-> > 
-> > 
-> > How dm-band works.
-> > ========================
-> > Every band device has one band group, which by default is called the default
-> > group.
-> > 
-> > Band devices can also have extra band groups in them. Each band group
-> > has a job to support and a weight. Proportional to the weight, dm-band gives
-> > tokens to the group.
-> > 
-> > A group passes on I/O requests that its job issues to the underlying
-> > layer so long as it has tokens left, while requests are blocked
-> > if there aren't any tokens left in the group. One token is consumed each
-> > time the group passes on a request. Dm-band will refill groups with tokens
-> > once all of groups that have requests on a given physical device use up their
-> > tokens.
-> > 
-> > With this approach, a job running on a band group with large weight is
-> > guaranteed to be able to issue a large number of I/O requests.
-> > 
-> > 
-> > Getting started
-> > =============
-> > The following is a brief description how to control the I/O bandwidth of
-> > disks. In this description, we'll take one disk with two partitions as an
-> > example target.
-> > 
-> > You can also check the manual at Document/device-mapper/band.txt of the
-> > linux kernel source tree for more information.
-> > 
-> > 
-> > Create and map band devices
-> > ---------------------------
-> > Create two band devices "band1" and "band2" and map them to "/dev/sda1"
-> > and "/dev/sda2" respectively.
-> > 
-> >  # echo "0 `blockdev --getsize /dev/sda1` band /dev/sda1 1" | dmsetup create band1
-> >  # echo "0 `blockdev --getsize /dev/sda2` band /dev/sda2 1" | dmsetup create band2
-> > 
-> > If the commands are successful then the device files "/dev/mapper/band1"
-> > and "/dev/mapper/band2" will have been created.
-> > 
-> > 
-> > Bandwidth control
-> > ----------------
-> > In this example weights of 40 and 10 will be assigned to "band1" and
-> > "band2" respectively. This is done using the following commands:
-> > 
-> >  # dmsetup message band1 0 weight 40
-> >  # dmsetup message band2 0 weight 10
-> > 
-> > After these commands, "band1" can use 80% --- 40/(40+10)*100 --- of the
-> > bandwidth of the physical disk "/dev/sda" while "band2" can use 20%.
-> > 
-> > 
-> > Additional bandwidth control
-> > ---------------------------
-> > In this example two extra band groups are created on "band1".
-> > The first group consists of all the processes with user-id 1000 and the
-> > second group consists of all the processes with user-id 2000. Their
-> > weights are 30 and 20 respectively.
-> > 
-> > Firstly the band group type of "band1" is set to "user".
-> > Then, the user-id 1000 and 2000 groups are attached to "band1".
-> > Finally, weights are assigned to the user-id 1000 and 2000 groups.
-> > 
-> >  # dmsetup message band1 0 type user
-> >  # dmsetup message band1 0 attach 1000
-> >  # dmsetup message band1 0 attach 2000
-> >  # dmsetup message band1 0 weight 1000:30
-> >  # dmsetup message band1 0 weight 2000:20
-> > 
-> > Now the processes in the user-id 1000 group can use 30% ---
-> > 30/(30+20+40+10)*100 --- of the bandwidth of the physical disk.
-> > 
-> >  Band Device    Band Group                     Weight
-> >   band1         user id 1000                     30
-> >   band1         user id 2000                     20
-> >   band1         default group(the other users)   40
-> >   band2         default group                    10
-> > 
-> > 
-> > Remove band devices
-> > -------------------
-> > Remove the band devices when no longer used.
-> > 
-> >   # dmsetup remove band1
-> >   # dmsetup remove band2
-> > 
-> > 
-> > TODO
-> > ========================
-> >   - Cgroup support. 
-> >   - Control read and write requests separately.
-> >   - Support WRITE_BARRIER.
-> >   - Optimization.
-> >   - More configuration tools. Or is the dmsetup command sufficient?
-> >   - Other policies to schedule BIOs. Or is the weight policy sufficient?
-> > 
-> > Thanks,
-> > Ryo Tsuruta
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ drivers/scsi/ch.c |   71 +++++++++++++++++++++++++++++-----------------------
+ 1 files changed, 40 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/scsi/ch.c b/drivers/scsi/ch.c
+index 765f2fc..2b07014 100644
+--- a/drivers/scsi/ch.c
++++ b/drivers/scsi/ch.c
+@@ -21,6 +21,7 @@
+ #include <linux/compat.h>
+ #include <linux/chio.h>			/* here are all the ioctls */
+ #include <linux/mutex.h>
++#include <linux/idr.h>
+ 
+ #include <scsi/scsi.h>
+ #include <scsi/scsi_cmnd.h>
+@@ -33,6 +34,7 @@
+ 
+ #define CH_DT_MAX       16
+ #define CH_TYPES        8
++#define CH_MAX_DEVS     128
+ 
+ MODULE_DESCRIPTION("device driver for scsi media changer devices");
+ MODULE_AUTHOR("Gerd Knorr <kraxel@bytesex.org>");
+@@ -113,9 +115,8 @@ typedef struct {
+ 	struct mutex	    lock;
+ } scsi_changer;
+ 
+-static LIST_HEAD(ch_devlist);
+-static DEFINE_SPINLOCK(ch_devlist_lock);
+-static int ch_devcount;
++static DEFINE_IDR(ch_index_idr);
++static DEFINE_SPINLOCK(ch_index_lock);
+ 
+ static struct scsi_driver ch_template =
+ {
+@@ -598,20 +599,17 @@ ch_release(struct inode *inode, struct file *file)
+ static int
+ ch_open(struct inode *inode, struct file *file)
+ {
+-	scsi_changer *tmp, *ch;
++	scsi_changer *ch;
+ 	int minor = iminor(inode);
+ 
+-	spin_lock(&ch_devlist_lock);
+-	ch = NULL;
+-	list_for_each_entry(tmp,&ch_devlist,list) {
+-		if (tmp->minor == minor)
+-			ch = tmp;
+-	}
++	spin_lock(&ch_index_lock);
++	ch = idr_find(&ch_index_idr, minor);
++
+ 	if (NULL == ch || scsi_device_get(ch->device)) {
+-		spin_unlock(&ch_devlist_lock);
++		spin_unlock(&ch_index_lock);
+ 		return -ENXIO;
+ 	}
+-	spin_unlock(&ch_devlist_lock);
++	spin_unlock(&ch_index_lock);
+ 
+ 	file->private_data = ch;
+ 	return 0;
+@@ -914,6 +912,7 @@ static int ch_probe(struct device *dev)
+ {
+ 	struct scsi_device *sd = to_scsi_device(dev);
+ 	struct class_device *class_dev;
++	int minor, ret = -ENOMEM;
+ 	scsi_changer *ch;
+ 
+ 	if (sd->type != TYPE_MEDIUM_CHANGER)
+@@ -923,7 +922,22 @@ static int ch_probe(struct device *dev)
+ 	if (NULL == ch)
+ 		return -ENOMEM;
+ 
+-	ch->minor = ch_devcount;
++	if (!idr_pre_get(&ch_index_idr, GFP_KERNEL))
++		goto free_ch;
++
++	spin_lock(&ch_index_lock);
++	ret = idr_get_new(&ch_index_idr, ch, &minor);
++	spin_unlock(&ch_index_lock);
++
++	if (ret)
++		goto free_ch;
++
++	if (minor > CH_MAX_DEVS) {
++		ret = -ENODEV;
++		goto remove_idr;
++	}
++
++	ch->minor = minor;
+ 	sprintf(ch->name,"ch%d",ch->minor);
+ 
+ 	class_dev = class_device_create(ch_sysfs_class, NULL,
+@@ -932,8 +946,8 @@ static int ch_probe(struct device *dev)
+ 	if (IS_ERR(class_dev)) {
+ 		printk(KERN_WARNING "ch%d: class_device_create failed\n",
+ 		       ch->minor);
+-		kfree(ch);
+-		return PTR_ERR(class_dev);
++		ret = PTR_ERR(class_dev);
++		goto remove_idr;
+ 	}
+ 
+ 	mutex_init(&ch->lock);
+@@ -942,35 +956,29 @@ static int ch_probe(struct device *dev)
+ 	if (init)
+ 		ch_init_elem(ch);
+ 
++	dev_set_drvdata(dev, ch);
+ 	sdev_printk(KERN_INFO, sd, "Attached scsi changer %s\n", ch->name);
+ 
+-	spin_lock(&ch_devlist_lock);
+-	list_add_tail(&ch->list,&ch_devlist);
+-	ch_devcount++;
+-	spin_unlock(&ch_devlist_lock);
+ 	return 0;
++remove_idr:
++	idr_remove(&ch_index_idr, minor);
++free_ch:
++	kfree(ch);
++	return ret;
+ }
+ 
+ static int ch_remove(struct device *dev)
+ {
+-	struct scsi_device *sd = to_scsi_device(dev);
+-	scsi_changer *tmp, *ch;
++	scsi_changer *ch = dev_get_drvdata(dev);
+ 
+-	spin_lock(&ch_devlist_lock);
+-	ch = NULL;
+-	list_for_each_entry(tmp,&ch_devlist,list) {
+-		if (tmp->device == sd)
+-			ch = tmp;
+-	}
+-	BUG_ON(NULL == ch);
+-	list_del(&ch->list);
+-	spin_unlock(&ch_devlist_lock);
++	spin_lock(&ch_index_lock);
++	idr_remove(&ch_index_idr, ch->minor);
++	spin_unlock(&ch_index_lock);
+ 
+ 	class_device_destroy(ch_sysfs_class,
+ 			     MKDEV(SCSI_CHANGER_MAJOR,ch->minor));
+ 	kfree(ch->dt);
+ 	kfree(ch);
+-	ch_devcount--;
+ 	return 0;
+ }
+ 
+@@ -1007,6 +1015,7 @@ static void __exit exit_ch_module(void)
+ 	scsi_unregister_driver(&ch_template.gendrv);
+ 	unregister_chrdev(SCSI_CHANGER_MAJOR, "ch");
+ 	class_destroy(ch_sysfs_class);
++	idr_destroy(&ch_index_idr);
+ }
+ 
+ module_init(init_ch_module);
+-- 
+1.5.3.4
+
