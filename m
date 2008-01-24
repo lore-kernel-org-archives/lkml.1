@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbYAZP6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbYAZP6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbYAZP6Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 10:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYAZPym
+	id S1758489AbYAZP6n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 10:58:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbYAZPyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:54:42 -0500
+	Sat, 26 Jan 2008 10:54:46 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755307AbYAZPyk (ORCPT
+	with ESMTP id S1755436AbYAZPyo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:54:40 -0500
+	Sat, 26 Jan 2008 10:54:44 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 37/52] [microblaze] headers for executables format FLAT, ELF
-Date: Thu, 24 Jan 2008 16:03:12 +0100
-Message-Id: <29ee870c02ea5d4c409644d7f0eb09cfbb1ec816.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 32/52] [microblaze] includes SHM*, msgbuf
+Date: Thu, 24 Jan 2008 16:03:07 +0100
+Message-Id: <37627293f081fa40f21234944ddb878d5e711740.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <c09d54c49393bedbe4ca43df0e35cefa5fcc649c.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <d67010417928d04766e6dd74820b12c249d61814.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -42,11 +42,6 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <7b0cfa6ae11749e20c941d0a4f03577141e022f8.1201107832.git.monstr@monstr.eu>
  <2f3db7ba4fe41cb9888adabf0e4e052d4da5c37c.1201107832.git.monstr@monstr.eu>
  <d67010417928d04766e6dd74820b12c249d61814.1201107832.git.monstr@monstr.eu>
- <37627293f081fa40f21234944ddb878d5e711740.1201107832.git.monstr@monstr.eu>
- <105791d33ea12564c70be0dd3fafef386f8e1b55.1201107832.git.monstr@monstr.eu>
- <b501d439bdfabddbdef5935db86b6f64c83d55c4.1201107832.git.monstr@monstr.eu>
- <43f77bd3045d72346eb39d3170de727050c835c1.1201107832.git.monstr@monstr.eu>
- <c09d54c49393bedbe4ca43df0e35cefa5fcc649c.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -58,20 +53,22 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/elf.h  |   24 +++++++++++
- include/asm-microblaze/flat.h |   93 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 117 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/elf.h
- create mode 100644 include/asm-microblaze/flat.h
+ include/asm-microblaze/msgbuf.h   |   41 +++++++++++++++++++++++++++++
+ include/asm-microblaze/shmbuf.h   |   52 +++++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/shmparam.h |   16 +++++++++++
+ 3 files changed, 109 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/msgbuf.h
+ create mode 100644 include/asm-microblaze/shmbuf.h
+ create mode 100644 include/asm-microblaze/shmparam.h
 
-diff --git a/include/asm-microblaze/elf.h b/include/asm-microblaze/elf.h
+diff --git a/include/asm-microblaze/msgbuf.h b/include/asm-microblaze/msgbuf.h
 new file mode 100644
-index 0000000..8b95630
+index 0000000..3f4d164
 --- /dev/null
-+++ b/include/asm-microblaze/elf.h
-@@ -0,0 +1,24 @@
++++ b/include/asm-microblaze/msgbuf.h
+@@ -0,0 +1,41 @@
 +/*
-+ * include/asm-microblaze/elf.h
++ * include/asm-microblaze/msgbuf.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -80,119 +77,117 @@ index 0000000..8b95630
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_ELF_H
-+#define _ASM_ELF_H
-+
-+#define EM_XILINX_MICROBLAZE 0xbaab
-+#define ELF_ARCH	EM_XILINX_MICROBLAZE
-+
-+#define elf_check_arch(x) ((x)->e_machine == EM_XILINX_MICROBLAZE)
++#ifndef _ASM_MSGBUF_H
++#define _ASM_MSGBUF_H
 +
 +/*
-+ * These are used to set parameters in the core dumps.
++ * The msqid64_ds structure for m68k architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * Pad space is left for:
++ * - 64-bit time_t to solve y2038 problem
++ * - 2 miscellaneous 32-bit values
 + */
-+#define ELF_CLASS	ELFCLASS32
 +
-+#endif /* _ASM_ELF_H */
-diff --git a/include/asm-microblaze/flat.h b/include/asm-microblaze/flat.h
++struct msqid64_ds {
++	struct ipc64_perm msg_perm;
++	__kernel_time_t msg_stime; /* last msgsnd time */
++	unsigned long __unused1;
++	__kernel_time_t msg_rtime; /* last msgrcv time */
++	unsigned long __unused2;
++	__kernel_time_t msg_ctime; /* last change time */
++	unsigned long __unused3;
++	unsigned long msg_cbytes; /* current number of bytes on queue */
++	unsigned long msg_qnum; /* number of messages in queue */
++	unsigned long msg_qbytes; /* max number of bytes on queue */
++	__kernel_pid_t msg_lspid; /* pid of last msgsnd */
++	__kernel_pid_t msg_lrpid; /* last receive pid */
++	unsigned long __unused4;
++	unsigned long __unused5;
++};
++
++#endif /* _ASM_MSGBUF_H */
+diff --git a/include/asm-microblaze/shmbuf.h b/include/asm-microblaze/shmbuf.h
 new file mode 100644
-index 0000000..1f50a97
+index 0000000..5571e2f
 --- /dev/null
-+++ b/include/asm-microblaze/flat.h
-@@ -0,0 +1,93 @@
++++ b/include/asm-microblaze/shmbuf.h
+@@ -0,0 +1,52 @@
 +/*
-+ * include/asm-microblaze/flat.h
++ * include/asm-microblaze/shmbuf.h
 + *
-+ * uClinux flat-format executables
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + *
-+ * Copyright (C) 2005 John Williams <jwilliams@itee.uq.edu.au>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _MICROBLAZE_FLAT_H
-+#define _MICROBLAZE_FLAT_H
-+
-+#include <asm/unaligned.h>
-+
-+#define	flat_stack_align(sp) /* nothing needed */
-+#define	flat_argvp_envp_on_stack()	0
-+#define	flat_old_ram_flag(flags)	(flags)
-+#define	flat_reloc_valid(reloc, size)	((reloc) <= (size))
-+#define	flat_set_persistent(relval, p)		0
++#ifndef _ASM_SHMBUF_H
++#define _ASM_SHMBUF_H
 +
 +/*
-+ * Microblaze works a little differently from other arches, because
-+ * of the MICROBLAZE_64 reloc type. Here, a 32 bit address is split
-+ * over two instructions, an 'imm' instruction which provides the top
-+ * 16 bits, then the instruction "proper" which provides the low 16
-+ * bits.
++ * The shmid64_ds structure for m68k architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * Pad space is left for:
++ * - 64-bit time_t to solve y2038 problem
++ * - 2 miscellaneous 32-bit values
 + */
 +
++struct shmid64_ds {
++	struct ipc64_perm	shm_perm; /* operation perms */
++	size_t			shm_segsz; /* size of segment (bytes) */
++	__kernel_time_t		shm_atime; /* last attach time */
++	unsigned long		__unused1;
++	__kernel_time_t		shm_dtime; /* last detach time */
++	unsigned long		__unused2;
++	__kernel_time_t		shm_ctime; /* last change time */
++	unsigned long		__unused3;
++	__kernel_pid_t		shm_cpid; /* pid of creator */
++	__kernel_pid_t		shm_lpid; /* pid of last operator */
++	unsigned long		shm_nattch; /* no. of current attaches */
++	unsigned long		__unused4;
++	unsigned long		__unused5;
++};
++
++struct shminfo64 {
++	unsigned long	shmmax;
++	unsigned long	shmmin;
++	unsigned long	shmmni;
++	unsigned long	shmseg;
++	unsigned long	shmall;
++	unsigned long	__unused1;
++	unsigned long	__unused2;
++	unsigned long	__unused3;
++	unsigned long	__unused4;
++};
++
++#endif /* _ASM_SHMBUF_H */
+diff --git a/include/asm-microblaze/shmparam.h b/include/asm-microblaze/shmparam.h
+new file mode 100644
+index 0000000..752498c
+--- /dev/null
++++ b/include/asm-microblaze/shmparam.h
+@@ -0,0 +1,16 @@
 +/*
-+ * Crack open a symbol reference and extract the address to be
-+ * relocated. rp is a potentially unaligned pointer to the
-+ * reference
++ * include/asm-microblaze/shmparam.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+static inline unsigned long
-+flat_get_addr_from_rp(unsigned long *rp, unsigned long relval,
-+			unsigned long flags, unsigned long *persistent)
-+{
-+	unsigned long addr;
-+	(void)flags;
++#ifndef _ASM_SHMPARAM_H
++#define _ASM_SHMPARAM_H
 +
-+	/* Is it a split 64/32 reference? */
-+	if (relval & 0x80000000) {
-+		/* Grab the two halves of the reference */
-+		unsigned long val_hi, val_lo;
++#define SHMLBA	PAGE_SIZE /* attach addr a multiple of this */
 +
-+		val_hi = get_unaligned(rp);
-+		val_lo = get_unaligned(rp+1);
-+
-+		/* Crack the address out */
-+		addr = ((val_hi & 0xffff) << 16) + (val_lo & 0xffff);
-+	} else {
-+		/* Get the address straight out */
-+		addr = get_unaligned(rp);
-+	}
-+
-+	return addr;
-+}
-+
-+/*
-+ * Insert an address into the symbol reference at rp. rp is potentially
-+ * unaligned.
-+ */
-+
-+static inline void
-+flat_put_addr_at_rp(unsigned long *rp, unsigned long addr, unsigned long relval)
-+{
-+	/* Is this a split 64/32 reloc? */
-+	if (relval & 0x80000000) {
-+		/* Get the two "halves" */
-+		unsigned long val_hi = get_unaligned(rp);
-+		unsigned long val_lo = get_unaligned(rp + 1);
-+
-+		/* insert the address */
-+		val_hi = (val_hi & 0xffff0000) | addr >> 16;
-+		val_lo = (val_lo & 0xffff0000) | (addr & 0xffff);
-+
-+		/* store the two halves back into memory */
-+		put_unaligned(val_hi, rp);
-+		put_unaligned(val_lo, rp+1);
-+	} else {
-+		/* Put it straight in, no messing around */
-+		put_unaligned(addr, rp);
-+	}
-+}
-+
-+#define	flat_get_relocate_addr(rel)	(rel & 0x7fffffff)
-+
-+#endif /* _MICROBLAZE_FLAT_H */
++#endif /* _ASM_SHMPARAM_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
