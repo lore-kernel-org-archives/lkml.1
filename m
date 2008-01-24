@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759928AbYAXREh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760000AbYAXREv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759928AbYAXREh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 12:04:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758358AbYAXQ6u
+	id S1760000AbYAXREv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 12:04:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758369AbYAXQ6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 11:58:50 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49787 "EHLO mx1.redhat.com"
+	Thu, 24 Jan 2008 11:58:51 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49788 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758286AbYAXQ6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758285AbYAXQ6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Jan 2008 11:58:40 -0500
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 17/19] dlm: change error message to debug
-Date: Thu, 24 Jan 2008 10:50:40 -0600
-Message-Id: <1201193442-8260-18-git-send-email-teigland@redhat.com>
+Subject: [PATCH 15/19] dlm: limit dir lookup loop
+Date: Thu, 24 Jan 2008 10:50:38 -0600
+Message-Id: <1201193442-8260-16-git-send-email-teigland@redhat.com>
 X-Mailer: git-send-email 1.5.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The invalid lockspace messages are normal and can appear relatively
-often.  They should be suppressed without debugging enabled.
+In a rare case we may need to repeat a local resource directory lookup
+due to a race with removing the rsb and removing the resdir record.
+We'll never need to do more than a single additional lookup, though,
+so the infinite loop around the lookup can be removed.  In addition
+to being unnecessary, the infinite loop is dangerous since some other
+unknown condition may appear causing the loop to never break.
 
 Signed-off-by: David Teigland <teigland@redhat.com>
 ---
- fs/dlm/lock.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ fs/dlm/lock.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index bc2e4ba..7ee7c7c 100644
+index fa68e9b..bc2e4ba 100644
 --- a/fs/dlm/lock.c
 +++ b/fs/dlm/lock.c
-@@ -3857,8 +3857,9 @@ void dlm_receive_buffer(struct dlm_header *hd, int nodeid)
+@@ -1851,7 +1851,7 @@ static void send_blocking_asts_all(struct dlm_rsb *r, struct dlm_lkb *lkb)
+ static int set_master(struct dlm_rsb *r, struct dlm_lkb *lkb)
+ {
+ 	struct dlm_ls *ls = r->res_ls;
+-	int error, dir_nodeid, ret_nodeid, our_nodeid = dlm_our_nodeid();
++	int i, error, dir_nodeid, ret_nodeid, our_nodeid = dlm_our_nodeid();
  
- 	ls = dlm_find_lockspace_global(hd->h_lockspace);
- 	if (!ls) {
--		log_print("invalid h_lockspace %x from %d cmd %d type %d",
--			  hd->h_lockspace, nodeid, hd->h_cmd, type);
-+		if (dlm_config.ci_log_debug)
-+			log_print("invalid lockspace %x from %d cmd %d type %d",
-+				  hd->h_lockspace, nodeid, hd->h_cmd, type);
+ 	if (rsb_flag(r, RSB_MASTER_UNCERTAIN)) {
+ 		rsb_clear_flag(r, RSB_MASTER_UNCERTAIN);
+@@ -1885,7 +1885,7 @@ static int set_master(struct dlm_rsb *r, struct dlm_lkb *lkb)
+ 		return 1;
+ 	}
  
- 		if (hd->h_cmd == DLM_RCOM && type == DLM_RCOM_STATUS)
- 			dlm_send_ls_not_ready(nodeid, rc);
+-	for (;;) {
++	for (i = 0; i < 2; i++) {
+ 		/* It's possible for dlm_scand to remove an old rsb for
+ 		   this same resource from the toss list, us to create
+ 		   a new one, look up the master locally, and find it
+@@ -1899,6 +1899,8 @@ static int set_master(struct dlm_rsb *r, struct dlm_lkb *lkb)
+ 		log_debug(ls, "dir_lookup error %d %s", error, r->res_name);
+ 		schedule();
+ 	}
++	if (error && error != -EEXIST)
++		return error;
+ 
+ 	if (ret_nodeid == our_nodeid) {
+ 		r->res_first_lkid = 0;
 -- 
 1.5.3.3
 
