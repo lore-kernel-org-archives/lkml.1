@@ -1,100 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbYAXJ67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbYAXKFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754683AbYAXJ67 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 04:58:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYAXJ6u
+	id S1754588AbYAXKFa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 05:05:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYAXKFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 04:58:50 -0500
-Received: from mga02.intel.com ([134.134.136.20]:8272 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752439AbYAXJ6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 04:58:49 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,243,1199692800"; 
-   d="scan'208";a="329263212"
-Subject: [PATCH] ACPI: create proc entry 'power' only if C2 or C3 is
-	supported
-From: Yi Yang <yi.y.yang@intel.com>
-Reply-To: yi.y.yang@intel.com
-To: linux-acpi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, lenb@kernel.org,
-       acpi-bugzilla@lists.sourceforge.net
-In-Reply-To: <1199762486.3551.22.camel@yangyi-dev.bj.intel.com>
-References: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com>
-	 <1198744900.3640.4.camel@yangyi-dev.bj.intel.com>
-	 <1198916553.3806.2.camel@yangyi-dev.bj.intel.com>
-	 <1199434602.19185.1.camel@yangyi-dev.bj.intel.com>
-	 <1199688961.3551.19.camel@yangyi-dev.bj.intel.com>
-	 <1199762486.3551.22.camel@yangyi-dev.bj.intel.com>
-Content-Type: text/plain
-Organization: Intel
-Date: Thu, 24 Jan 2008 08:45:32 +0800
-Message-Id: <1201135532.3969.3.camel@yangyi-dev.bj.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Thu, 24 Jan 2008 05:05:21 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:60711 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752321AbYAXKFU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 05:05:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LPfutfZuQOkNNIpkL2CmCRDY5Z0C5hNX3TZDTKjSoMeG5nsrmZ7hn1k0aAFxbhrN04jMC02NYwZiqYiEmnN+BBOSzX9B33pt0B6M0CYf1q0gYfwF7ciubYICmNSHATN/XRuONaCWHbaLvQMEVZUpAXwqP7lN5UyQ+UiNs7ljUXw=
+Message-ID: <6c4c86470801240205u5361e090jc057270b03b5ebe7@mail.gmail.com>
+Date: Thu, 24 Jan 2008 11:05:18 +0100
+From: "Wilco Beekhuizen" <wilcobeekhuizen@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080124013720.GA21978@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com>
+	 <20080124013720.GA21978@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: ACPI: Create proc entry 'power' only C2 or C3 is supported
-From: Yi Yang <yi.y.yang@intel.com>
+2008/1/24, Greg KH <greg@kroah.com>:
+> On Tue, Jan 22, 2008 at 08:18:32PM +0100, Wilco Beekhuizen wrote:
+> > 2.6.24-rc8 (possibly lower rc's too) has usb_find_device removed from
+> > usb.c. This causes problems when compiling modules that need
+> > usb_find_device.
+> > This patch puts the symbol back in place. Unless someone has a good
+> > reason not to include usb_find_device?
+>
+> I don't see any users in the kernel tree of this function that can be
+> built as a module.
+>
+> Do you know of any external modules that need it?  Any pointers to the
+> code anywhere?
+>
+> thanks,
+>
+> greg k-h
+>
 
-ACPI processor idle driver makes sense only if the processor supports
-C2 or C3. For legacy C0 and C1, just the original pm_idle is working
-, statistics info about promotion, demotion, latency, usage and
-duration are empty or 0, so these are misleading, users'll think their
-CPUs support C states (C2 or C3), /proc/acpi/processor/CPU*/power
-shouldn't exist for this case at all.
+Well I need it for my iriver mp3 player. This driver currently resides
+here: http://www.init0.nl/iriver.php
 
-This patch fixes this issue, it makes ACPI processor idle driver to create
-proc entry only if the processor supports C2 or C3.
+Most code is pretty ancient, I just manage it so it compiles with
+recent kernels. Is there somehting exported that is similar to
+usb_find_device?
 
-
-Signed-off-by: Yi Yang <yi.y.yang@intel.com>
----
- processor_idle.c |   23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
-
---- a/drivers/acpi/processor_idle.c	2008-01-24 05:34:29.000000000 +0800
-+++ b/drivers/acpi/processor_idle.c	2008-01-24 07:04:59.000000000 +0800
-@@ -1738,17 +1738,17 @@ int __cpuinit acpi_processor_power_init(
- 			pm_idle = acpi_processor_idle;
- 		}
- #endif
--	}
- 
--	/* 'power' [R] */
--	entry = create_proc_entry(ACPI_PROCESSOR_FILE_POWER,
--				  S_IRUGO, acpi_device_dir(device));
--	if (!entry)
--		return -EIO;
--	else {
--		entry->proc_fops = &acpi_processor_power_fops;
--		entry->data = acpi_driver_data(device);
--		entry->owner = THIS_MODULE;
-+		/* 'power' [R] */
-+		entry = create_proc_entry(ACPI_PROCESSOR_FILE_POWER,
-+					  S_IRUGO, acpi_device_dir(device));
-+		if (!entry)
-+			return -EIO;
-+		else {
-+			entry->proc_fops = &acpi_processor_power_fops;
-+			entry->data = acpi_driver_data(device);
-+			entry->owner = THIS_MODULE;
-+		}
- 	}
- 
- 	return 0;
-@@ -1763,7 +1763,8 @@ int acpi_processor_power_exit(struct acp
- #endif
- 	pr->flags.power_setup_done = 0;
- 
--	if (acpi_device_dir(device))
-+	if (acpi_device_dir(device) &&
-+		((pr->flags.power) && (!boot_option_idle_override)))
- 		remove_proc_entry(ACPI_PROCESSOR_FILE_POWER,
- 				  acpi_device_dir(device));
- 
-
-
+Wilco
