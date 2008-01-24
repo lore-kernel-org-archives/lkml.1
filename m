@@ -1,47 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbYAXRWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbYAXRXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbYAXRWg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 12:22:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbYAXRW2
+	id S1757515AbYAXRXz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 12:23:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbYAXRXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 12:22:28 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:54246 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752889AbYAXRW1 (ORCPT
+	Thu, 24 Jan 2008 12:23:44 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:4871 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752488AbYAXRXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 12:22:27 -0500
-Date: Thu, 24 Jan 2008 12:22:26 -0500
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Marcin Gil <marcin.gil@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: JMicron PATA 2.6.24-rc7 can't find drives
-Message-ID: <20080124172226.GG16171@csclub.uwaterloo.ca>
-References: <200801232323.36187.marcin.gil@gmail.com> <20080123234639.025cc859@lxorguk.ukuu.org.uk> <479839B4.3060202@gmail.com> <20080124142717.GA16173@csclub.uwaterloo.ca> <4798A114.6010803@gmail.com> <20080124144359.GD16171@csclub.uwaterloo.ca> <4798A537.9000104@gmail.com> <m3abmvtah1.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 Jan 2008 12:23:42 -0500
+Date: Thu, 24 Jan 2008 20:23:27 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: Poonam_Aggrwal-b10812 <b10812@freescale.com>, kumar.gala@freescale.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, rubini@vision.unipv.it, linuxppc-dev@ozlabs.org,
+       michael.barkowski@freescale.com, rich.cutler@freescale.com,
+       ashish.kalra@freescale.com
+Subject: Re: [PATCH UCC TDM 1/3 Updated] Platform changes for UCC TDM driver for MPC8323eRDB. Also includes related QE changes and dts entries.
+Message-ID: <20080124172327.GA6786@localhost.localdomain>
+Reply-To: avorontsov@ru.mvista.com
+References: <Pine.LNX.4.64.0801241553270.4984@linux121> <20080124154804.GA22178@localhost.localdomain> <4798B4F3.2010101@freescale.com> <20080124162345.GA27359@localhost.localdomain> <4798BDEB.2010501@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <m3abmvtah1.fsf@maximus.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <4798BDEB.2010501@freescale.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 06:11:22PM +0100, Krzysztof Halasa wrote:
-> Marcin Gil <marcin.gil@gmail.com> writes:
+On Thu, Jan 24, 2008 at 10:33:47AM -0600, Timur Tabi wrote:
+> Anton Vorontsov wrote:
 > 
-> > +-----+-----+
-> > mobo  hdd   dvd
-> >
-> > I think that cable select would take dvd as master and hdd as slave.
-> > This was not preferable when hdd was my primary drive. I can try
-> > cable-select now since I boot off new SATA drive.
+> >Are you saying that TDM is sharing same pins with the other QE device,
+> >and we can choose to use/not use some device depending on which driver
+> >is loaded?
 > 
-> Is a master in the middle permitted by the specs at all?
+> No.  I'd have to closely examine the DTS, but I don't think that UCC 
+> devices share pins at all.  But that isn't my point.
+> 
+> >In that particular case UCC configuration is static, for every UCC.
+> >So, we can set up all pins in the firmware/board file.
+> 
+> Yes, but deciding what the UCC does might not be static.  At what point do 
+> we declare, "UCC5 is for eth0 and eth0 only"?
+> 
+> The advantage of putting the pin configurations in the device tree is that 
+> they now become configurable.  I can envision a scenario where UCC5 could 
+> be either an Ethernet or a UART, depending on the setting of some jumpers 
+> on the board. That's what the QE was designed for: any UCC can do any task, 
+> and you can even have a UCC change its purpose while the system is running. 
+> So I don't want the pin configurations hard-coded into the kernel.  Having 
+> them in the device tree gives me some flexibility.
 
-On 40 pin cable select it was in fact required.  On 80pin the end is the
-master and the middle the slave which I believe is supposed to give
-better signal quality when only one device is in use.
+If hardware configuration is selected at the bootup time, by jumpers
+or switches, it's even easier to do it right. Without pio-map.
 
---
-Len Sorensen
+> For instance, I have a plan (that I keep postponing) to introduce a new 
+> feature in U-Boot where U-Boot can determine the settings of some board 
+> jumpers and modify the device tree accordingly. The instructions on how to 
+> modify the device tree would be embedded in the tree itself.
+
+Why you need to modify the device tree for that? Let the U-Boot simply
+setup pins for the kernel. Regarding kernel overwriting pins
+configuration...
+
+> I can't 
+> support this feature if the kernel calls par_io_config_pin() regardless of 
+> what's in the device tree.
+
+What I've understood from the previous debates, is that ideally kernel
+should not touch pins' configuration. Today we're using pio-map solely
+to fix up some old firmware misconfiguration. And we can do this in the
+board file still. To determine if we need to fixup the firmware or not,
+we can use some device tree property instead (firmware version?).
+
+p.s.
+I'm neither for pio-map nor against. I just want some consequence
+regarding this. Last thread ended with consequence that pio-map is a
+bad thing to use...
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
