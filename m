@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbYAXXzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbYAXX5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbYAXXzw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 18:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbYAXXzo
+	id S1755724AbYAXX5m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 18:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYAXX5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 18:55:44 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:39233 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061AbYAXXzn (ORCPT
+	Thu, 24 Jan 2008 18:57:34 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:50922 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751482AbYAXX5d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 18:55:43 -0500
-Message-ID: <4799247C.6090008@zytor.com>
-Date: Thu, 24 Jan 2008 15:51:24 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 24 Jan 2008 18:57:33 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 24 Jan 2008 15:57:31 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Pierre Habouzit <madcoder@debian.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: epoll and shared fd's
+In-Reply-To: <20080124084001.GB7356@artemis.madism.org>
+Message-ID: <Pine.LNX.4.64.0801241556130.29058@alien.or.mcafeemobile.com>
+References: <20080118134318.GD9607@artemis.madism.org>
+ <Pine.LNX.4.64.0801181257240.24685@alien.or.mcafeemobile.com>
+ <20080124084001.GB7356@artemis.madism.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>, Pavel Machek <pavel@ucw.cz>
-CC: Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?B?TWlrYSBQZW50dGlsw6Q=?= <mika.penttila@kolumbus.fi>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
- format.
-References: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>	 <47939363.8040603@kolumbus.fi>	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>	 <479510CE.7010706@zytor.com>	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>	 <479551FD.5040801@zytor.com>	 <1201023401.5643.52.camel@localhost.localdomain>	 <479634A9.1090908@zytor.com>	 <1201031325.15491.66.camel@cthulhu.hellion.org.uk>	 <47964B7B.9000905@zytor.com>  <20080122203611.GA12892@elte.hu>	 <1201121530.30671.15.camel@cthulhu.hellion.org.uk>	 <4797E487.8010108@goop.org> <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <47990BDC.4070008@zytor.com> <479912B0.2080506@goop.org> <479913BA.8000506@zytor.com> <47991809.9060903@goop.org> <47991A6C.8060007@zytor.com> <479921F5.9020902@goop.org>
-In-Reply-To: <479921F5.9020902@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
->> While we're mucking around in this area, there is another thing which 
->> we should eventually get around to fixing:
->>
->> we need a set of page tables with an identity mapping as well as the 
->> kernel mapping, for trampolining (during startup, but also during 
->> things like ACPI suspend/resume.)  Right now, we let those be the 
->> swapper page tables, but that's probably not really a good idea, since 
->> it can hide bugs.
-> 
-> So you're suggesting a second system pagetable which has a P=V alias as 
-> well as the normal kernel mapping, used only when we actually need that 
-> alias?  Sounds simple enough to arrange.
-> 
+On Thu, 24 Jan 2008, Pierre Habouzit wrote:
 
-I just looked at the ACPI suspend code, and it looks like it hacks its 
-own identity map at runtime.  Pavel, am I reading that code right?
+> On Fri, Jan 18, 2008 at 09:10:18PM +0000, Davide Libenzi wrote:
+> > On Fri, 18 Jan 2008, Pierre Habouzit wrote:
+> > 
+> > >   Hi,
+> > > 
+> > >   I just came across a strange behavior of epoll that seems to
+> > > contradict the documentation. Here is what happens:
+> > > 
+> > > * I have two processes P1 and P2, P1 accept()s connections, and send the
+> > >   resulting file descriptors to P2 through a unix socket.
+> > > 
+> > > * P2 registers the received socket in his epollfd.
+> > > 
+> > >   [time passes]
+> > > 
+> > > * P2 is done with the socket and closes it
+> > > 
+> > > * P2 gets events for the socket again !
+> > > 
+> > > 
+> > >   Though the documentation says that if a process closes a file
+> > > descriptor, it gets unregistered. And yes I'm sure that P2 doens't dup()
+> > > the file descriptor. Though (because of a bug) it was still open in
+> > > P1[0], hence the referenced socket still live at the kernel level.
+> > > 
+> > >   Of course the userland workaround is to force the EPOLL_CTL_DEL before
+> > > the close, which I now do, but costs me a syscall where I wanted to
+> > > spare one :|
+> > 
+> > For epoll, a close is when the kernel file* is released (that is, when all 
+> > its instances are gone).
+> > We could put a special handling in filp_close(), but I don't think is a 
+> > good idea, and we're better live with the current behaviour.
+> 
+>   Okay, maybe updating the linux manpages to be more clear about that is
+> the way to go then. Thanks
 
-	-hpa
+Sure. I'll send Michael Kerrisk and updated statement for the A6 answer in 
+the epoll man page.
+
+
+
+- Davide
+
+
