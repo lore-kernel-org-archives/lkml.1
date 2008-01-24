@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbYAZQCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbYAZQDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759391AbYAZQCx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 11:02:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756478AbYAZPzo
+	id S1760151AbYAZQDR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 11:03:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbYAZPzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:55:44 -0500
+	Sat, 26 Jan 2008 10:55:48 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756313AbYAZPzl (ORCPT
+	with ESMTP id S1756502AbYAZPzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:55:41 -0500
+	Sat, 26 Jan 2008 10:55:46 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 48/52] [microblaze] headers files entry.h current.h mman.h registers.h sembuf.h
-Date: Thu, 24 Jan 2008 16:03:23 +0100
-Message-Id: <807d570db44eeed03e3211b933a207f42cf569f0.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 36/52] [microblaze] io.h IO operations
+Date: Thu, 24 Jan 2008 16:03:11 +0100
+Message-Id: <c09d54c49393bedbe4ca43df0e35cefa5fcc649c.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <e445f6b37baf09d6469a0ad4eba189a7ca7ef7c3.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <43f77bd3045d72346eb39d3170de727050c835c1.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -46,18 +46,6 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <105791d33ea12564c70be0dd3fafef386f8e1b55.1201107832.git.monstr@monstr.eu>
  <b501d439bdfabddbdef5935db86b6f64c83d55c4.1201107832.git.monstr@monstr.eu>
  <43f77bd3045d72346eb39d3170de727050c835c1.1201107832.git.monstr@monstr.eu>
- <c09d54c49393bedbe4ca43df0e35cefa5fcc649c.1201107832.git.monstr@monstr.eu>
- <29ee870c02ea5d4c409644d7f0eb09cfbb1ec816.1201107832.git.monstr@monstr.eu>
- <99bfbc3fdb53003c11414681b2c73561d533c3ef.1201107832.git.monstr@monstr.eu>
- <1b21abdff6128297a902060b07a0c7ca6d8db633.1201107832.git.monstr@monstr.eu>
- <e173c10560cdf883ba3c7e639ca930f0627a2260.1201107832.git.monstr@monstr.eu>
- <155ee14d990137f7eb6fa76beee06c880c97e790.1201107832.git.monstr@monstr.eu>
- <34f2199d631406fbdf6b325a164e0d1899a3acb5.1201107832.git.monstr@monstr.eu>
- <14243bf49d44d1dbd6e377813f2635defcb82c4e.1201107832.git.monstr@monstr.eu>
- <01e493efdc1c8cb7ee0d5f8b7c73244e04680e71.1201107832.git.monstr@monstr.eu>
- <739e189a03021d2804f23d0774637a15038098bc.1201107832.git.monstr@monstr.eu>
- <d4eec3db9f6e6e86994444b8035d5e41db3f085b.1201107832.git.monstr@monstr.eu>
- <e445f6b37baf09d6469a0ad4eba189a7ca7ef7c3.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -69,26 +57,18 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/current.h   |   25 +++++++++++++++++++++++++
- include/asm-microblaze/entry.h     |   32 ++++++++++++++++++++++++++++++++
- include/asm-microblaze/mman.h      |   27 +++++++++++++++++++++++++++
- include/asm-microblaze/registers.h |   26 ++++++++++++++++++++++++++
- include/asm-microblaze/sembuf.h    |   36 ++++++++++++++++++++++++++++++++++++
- 5 files changed, 146 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/current.h
- create mode 100644 include/asm-microblaze/entry.h
- create mode 100644 include/asm-microblaze/mman.h
- create mode 100644 include/asm-microblaze/registers.h
- create mode 100644 include/asm-microblaze/sembuf.h
+ include/asm-microblaze/io.h |  210 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 210 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/io.h
 
-diff --git a/include/asm-microblaze/current.h b/include/asm-microblaze/current.h
+diff --git a/include/asm-microblaze/io.h b/include/asm-microblaze/io.h
 new file mode 100644
-index 0000000..4ff2a0f
+index 0000000..a0a5401
 --- /dev/null
-+++ b/include/asm-microblaze/current.h
-@@ -0,0 +1,25 @@
++++ b/include/asm-microblaze/io.h
+@@ -0,0 +1,210 @@
 +/*
-+ * include/asm-microblaze/current.h
++ * include/asm-microblaze/io.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -97,166 +77,206 @@ index 0000000..4ff2a0f
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_CURRENT_H
-+#define _ASM_CURRENT_H
++#ifndef _ASM_IO_H
++#define _ASM_IO_H
 +
-+#ifndef __ASSEMBLY__
++#include <asm/byteorder.h>
++#include <asm/page.h>
 +
-+/*
-+ * Dedicate r31 to keeping the current task pointer
-+ */
-+register struct task_struct *current asm("r31");
-+
-+#define get_current() current
-+
-+#endif
-+
-+#endif /* _ASM_CURRENT_H */
-diff --git a/include/asm-microblaze/entry.h b/include/asm-microblaze/entry.h
-new file mode 100644
-index 0000000..e298888
---- /dev/null
-+++ b/include/asm-microblaze/entry.h
-@@ -0,0 +1,32 @@
-+/*
-+ * include/asm-microblaze/entry.h
-+ *
-+ * Definitions used by low-level trap handlers
-+ *
-+ * Copyright (C) 2007 PetaLogix
-+ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
-+ */
-+
-+#ifndef _MICROBLAZE_ENTRY_H
-+#define _MICROBLAZE_ENTRY_H
-+
-+
-+#include <asm/percpu.h>
-+#include <asm/ptrace.h>
-+
-+/* These are per-cpu variables required in entry.S, among other
-+ places */
-+
-+DECLARE_PER_CPU(unsigned int, KSP); /* Saved kernel stack pointer */
-+DECLARE_PER_CPU(unsigned int, KM); /* Kernel/user mode */
-+DECLARE_PER_CPU(unsigned int, ENTRY_SP); /* Saved SP on kernel entry */
-+DECLARE_PER_CPU(unsigned int, R11_SAVE); /* Temp variable for entry */
-+DECLARE_PER_CPU(unsigned int, CURRENT_SAVE); /* Saved current pointer */
-+DECLARE_PER_CPU(unsigned int, SYSCALL_SAVE); /* Saved syscall number */
-+
-+#endif /* _MICROBLAZE_ENTRY_H */
-diff --git a/include/asm-microblaze/mman.h b/include/asm-microblaze/mman.h
-new file mode 100644
-index 0000000..7abf722
---- /dev/null
-+++ b/include/asm-microblaze/mman.h
-@@ -0,0 +1,27 @@
-+/*
-+ * include/asm-microblaze/mman.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_MMAN_H
-+#define _ASM_MMAN_H
-+
-+#include <asm-generic/mman.h>
-+
-+#define MAP_GROWSDOWN	0x0100 /* stack-like segment */
-+#define MAP_DENYWRITE	0x0800 /* ETXTBSY */
-+#define MAP_EXECUTABLE	0x1000 /* mark it as an executable */
-+#define MAP_LOCKED	0x2000 /* pages are locked */
-+#define MAP_NORESERVE	0x4000 /* don't check for reservations */
-+#define MAP_POPULATE	0x8000 /* populate (prefault) pagetables */
-+#define MAP_NONBLOCK	0x10000 /* do not block on IO */
-+
-+#define MCL_CURRENT	1 /* lock all current mappings */
-+#define MCL_FUTURE	2 /* lock all future mappings */
-+
-+#endif /* _ASM_MMAN_H */
-diff --git a/include/asm-microblaze/registers.h b/include/asm-microblaze/registers.h
-new file mode 100644
-index 0000000..98a27ae
---- /dev/null
-+++ b/include/asm-microblaze/registers.h
-@@ -0,0 +1,26 @@
-+/*
-+ * include/asm-microblaze/registers.c
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_REGISTERS_H
-+#define _ASM_REGISTERS_H
-+
-+#define MSR_BE	(1<<0)
-+#define MSR_IE	(1<<1)
-+#define MSR_C	(1<<2)
-+#define MSR_BIP	(1<<3)
-+#define MSR_FSL	(1<<4)
-+#define MSR_ICE	(1<<5)
-+#define MSR_DZ	(1<<6)
-+#define MSR_DCE	(1<<7)
-+#define MSR_EE	(1<<8)
-+#define MSR_EIP	(1<<9)
-+#define MSR_CC	(1<<31)
-+
-+#endif /* _ASM_REGISTERS_H */
-diff --git a/include/asm-microblaze/sembuf.h b/include/asm-microblaze/sembuf.h
-new file mode 100644
-index 0000000..8d82db8
---- /dev/null
-+++ b/include/asm-microblaze/sembuf.h
-@@ -0,0 +1,36 @@
-+/*
-+ * include/asm-microblaze/sembuf.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_SEMBUF_H
-+#define _ASM_SEMBUF_H
++static inline unsigned char __raw_readb(const volatile void *addr)
++{
++	return *(volatile unsigned char __force *)addr;
++}
++static inline unsigned short __raw_readw(const volatile void *addr)
++{
++	return *(volatile unsigned short __force *)addr;
++}
++static inline unsigned int __raw_readl(const volatile void *addr)
++{
++	return *(volatile unsigned int __force *)addr;
++}
++static inline unsigned long __raw_readq(const volatile void *addr)
++{
++	return *(volatile unsigned long __force *)addr;
++}
++static inline void __raw_writeb(unsigned char v, volatile void *addr)
++{
++	*(volatile unsigned char __force *)addr = v;
++}
++static inline void __raw_writew(unsigned short v, volatile void *addr)
++{
++	*(volatile unsigned short __force *)addr = v;
++}
++static inline void __raw_writel(unsigned int v, volatile void *addr)
++{
++	*(volatile unsigned int __force *)addr = v;
++}
++static inline void __raw_writeq(unsigned long v, volatile void *addr)
++{
++	*(volatile unsigned long __force *)addr = v;
++}
 +
 +/*
-+ * The semid64_ds structure for m68k architecture.
-+ * Note extra padding because this structure is passed back and forth
-+ * between kernel and user space.
++ * read (readb, readw, readl, readq) and write (writeb, writew,
++ * writel, writeq) accessors are for PCI and thus littel endian.
++ * Linux 2.4 for Microblaze had this wrong.
++ */
++static inline unsigned char readb(const volatile void *addr)
++{
++	return *(volatile unsigned char __force *)addr;
++}
++static inline unsigned short readw(const volatile void *addr)
++{
++	return le16_to_cpu(*(volatile unsigned short __force *)addr);
++}
++static inline unsigned int readl(const volatile void *addr)
++{
++	return le32_to_cpu(*(volatile unsigned int __force *)addr);
++}
++static inline void writeb(unsigned char v, volatile void *addr)
++{
++	*(volatile unsigned char __force *)addr = v;
++}
++static inline void writew(unsigned short v, volatile void *addr)
++{
++	*(volatile unsigned short __force *)addr = cpu_to_le16(v);
++}
++static inline void writel(unsigned int v, volatile void __iomem *addr)
++{
++	*(volatile unsigned int __force *)addr = cpu_to_le32(v);
++}
++
++/* ioread and iowrite variants. thease are for now same as __raw_
++ * variants of accessors. we might check for endianess in the feature
++ */
++#define ioread8(addr)		__raw_readb((u8 *)(addr))
++#define ioread16(addr)		__raw_readw((u16 *)(addr))
++#define ioread32(addr)		__raw_readl((u32 *)(addr))
++#define iowrite8(v, addr)	__raw_writeb((u8)(v), (u8 *)(addr))
++#define iowrite16(v, addr)	__raw_writew((u16)(v), (u16 *)(addr))
++#define iowrite32(v, addr)	__raw_writel((u32)(v), (u32 *)(addr))
++
++/* These are the definitions for the x86 IO instructions
++ * inb/inw/inl/outb/outw/outl, the "string" versions
++ * insb/insw/insl/outsb/outsw/outsl, and the "pausing" versions
++ * inb_p/inw_p/...
++ * The macros don't do byte-swapping.
++ */
++#define inb(port)		readb((u8 *)((port)))
++#define outb(val, port)		writeb((val), (u8 *)((unsigned long)(port)))
++#define inw(port)		readw((u16 *)((port)))
++#define outw(val, port)		writew((val), (u16 *)((unsigned long)(port)))
++#define inl(port)		readl((u32 *)((port)))
++#define outl(val, port)		writel((val), (u32 *)((unsigned long)(port)))
++
++#define inb_p(port)		inb((port))
++#define outb_p(val, port)	outb((val), (port))
++#define inw_p(port)		inw((port))
++#define outw_p(val, port)	outw((val), (port))
++#define inl_p(port)		inl((port))
++#define outl_p(val, port)	outl((val), (port))
++
++#define memset_io(a, b, c)	memset((void *)(a), (b), (c))
++#define memcpy_fromio(a, b, c)	memcpy((a), (void *)(b), (c))
++#define memcpy_toio(a, b, c)	memcpy((void *)(a), (b), (c))
++
++/**
++ *	virt_to_phys	-	map virtual addresses to physical
++ *	@address: address to remap
 + *
-+ * Pad space is left for:
-+ * - 64-bit time_t to solve y2038 problem
-+ * - 2 miscellaneous 32-bit values
++ *	The returned physical address is the physical (CPU) mapping for
++ *	the memory address given. It is only valid to use this function on
++ *	addresses directly mapped or allocated via kmalloc.
++ *
++ *	This function does not give bus mappings for DMA transfers. In
++ *	almost all conceivable cases a device driver should not be using
++ *	this function
++ */
++static inline unsigned long __iomem virt_to_phys(volatile void *address)
++{
++	return __pa((unsigned long)address);
++}
++
++#define virt_to_bus virt_to_phys
++
++/**
++ *	phys_to_virt	-	map physical address to virtual
++ *	@address: address to remap
++ *
++ *	The returned virtual address is a current CPU mapping for
++ *	the memory address given. It is only valid to use this function on
++ *	addresses that have a kernel mapping
++ *
++ *	This function does not handle bus mappings for DMA transfers. In
++ *	almost all conceivable cases a device driver should not be using
++ *	this function
++ */
++static inline void *phys_to_virt(unsigned long address)
++{
++	return (void *)__va(address);
++}
++
++#define bus_to_virt(a) phys_to_virt(a)
++
++static inline void *__ioremap(unsigned long address, unsigned long size,
++			unsigned long flags)
++{
++	return (void *)address;
++}
++
++
++#define IO_SPACE_LIMIT ~(0UL)
++
++#define ioremap(physaddr, size)	((void *)(unsigned long)(physaddr))
++#define iounmap(addr)		((void)0)
++#define ioremap_nocache(physaddr, size)	ioremap(physaddr, size)
++
++/*
++ * Convert a physical pointer to a virtual kernel pointer for /dev/mem
++ * access
++ */
++#define xlate_dev_mem_ptr(p)	__va(p)
++
++/*
++ * Convert a virtual cached pointer to an uncached pointer
++ */
++#define xlate_dev_kmem_ptr(p)	p
++
++/*
++ * Big Endian
++ */
++#define out_be32(a, v) __raw_writel((v), (a))
++#define out_be16(a, v) __raw_writew((v), (a))
++
++#define in_be32(a) __raw_readl(a)
++#define in_be16(a) __raw_readw(a)
++
++/*
++ * Little endian
 + */
 +
-+struct semid64_ds {
-+	struct ipc64_perm sem_perm; /* permissions .. see ipc.h */
-+	__kernel_time_t	sem_otime; /* last semop time */
-+	unsigned long	__unused1;
-+	__kernel_time_t	sem_ctime; /* last change time */
-+	unsigned long	__unused2;
-+	unsigned long	sem_nsems; /* no. of semaphores in array */
-+	unsigned long	__unused3;
-+	unsigned long	__unused4;
-+};
++#define out_le32(a, v) __raw_writel(__cpu_to_le32(v), (a));
++#define out_le16(a, v) __raw_writew(__cpu_to_le16(v), (a))
 +
++#define in_le32(a) __le32_to_cpu(__raw_readl(a))
++#define in_le16(a) __le16_to_cpu(__raw_readw(a))
 +
-+#endif /* _ASM_SEMBUF_H */
++/* Byte ops */
++#define out_8(a, v) __raw_writeb((v), (a))
++#define in_8(a) __raw_readb(a)
++
++/* FIXME */
++static inline void __iomem *ioport_map(unsigned long port, unsigned int len)
++{
++	return (void __iomem *) (port);
++}
++
++static inline void ioport_unmap(void __iomem *addr)
++{
++	/* Nothing to do */
++}
++
++#endif /* _ASM_IO_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
