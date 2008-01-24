@@ -1,71 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbYAXRI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760765AbYAXRIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbYAXRI0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 12:08:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759873AbYAXRHQ
+	id S1760765AbYAXRIl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 12:08:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760681AbYAXRIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 12:07:16 -0500
-Received: from re01.intra2net.com ([82.165.28.202]:4149 "EHLO
-	re01.intra2net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760548AbYAXRHN (ORCPT
+	Thu, 24 Jan 2008 12:08:10 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:32878 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758405AbYAXRIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 12:07:13 -0500
-X-Greylist: delayed 1014 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Jan 2008 12:07:13 EST
-From: "Gerd v. Egidy" <gerd.von.egidy@intra2net.com>
-Organization: Intra2net AG
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix oops on rmmod capidrv
-Date: Thu, 24 Jan 2008 17:50:14 +0100
-User-Agent: KMail/1.9.6
-Cc: kkeil@suse.de, kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de
+	Thu, 24 Jan 2008 12:08:09 -0500
+Message-ID: <4798C5F5.9080900@davidnewall.com>
+Date: Fri, 25 Jan 2008 03:38:05 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for mm] Remove iBCS support
+References: <20080119045918.GA12215@basil.nowhere.org>	<4792B191.2060801@davidnewall.com>	<20080120031153.GB6275@one.firstfloor.org>	<4792D221.1010704@davidnewall.com>	<20080120051822.GB19784@one.firstfloor.org>	<4792DD22.4070902@davidnewall.com>	<20080120055544.GB19861@one.firstfloor.org>	<4792E8E2.1090307@davidnewall.com>	<20080120072922.GA21047@one.firstfloor.org>	<4793F775.6090403@davidnewall.com>	<20080122111205.GA25090@elte.hu>	<4796081A.7060505@davidnewall.com> <20080122165015.5aca62ac@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080122165015.5aca62ac@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801241750.14669.gerd.von.egidy@intra2net.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Alan Cox wrote:
+>  
+>   
+>> You're being silly.  Either that or you're not reading what I write. 
+>> You know perfectly well iBCS2 compatibility doesn't work (anymore.)  The
+>> question, in my mind, is will it ever be made to work again?  I think
+>> the answer should be yes.
+>>     
+>
+> We await your patches. If you think it should be done then rework the
+> code, test it and figure how to merge it nicely.
 
-I think the patch below fixes a long-standing bug on rmmod capidrv. Please 
-apply.
-
-Kind regards,
-
-Gerd
-
-Fix overwriting the stack with the version string
-(it is currently 10 bytes + zero) when unloading the
-capidrv module. Safeguard against overwriting it
-should the version string grow in the future.
-
-Should fix Kernel Bug Tracker Bug 9696.
-
-Signed-off-by: Gerd v. Egidy <gerd.von.egidy@intra2net.com>
-
-diff -r -u linux-2.6.23.orig/drivers/isdn/capi/capidrv.c 
-linux-2.6.23/drivers/isdn/capi/capidrv.c
---- linux-2.6.23.orig/drivers/isdn/capi/capidrv.c	Tue Oct  9 22:31:38 2007
-+++ linux-2.6.23/drivers/isdn/capi/capidrv.c	Thu Jan 24 16:47:55 2008
-@@ -2306,13 +2306,14 @@
- 
- static void __exit capidrv_exit(void)
- {
--	char rev[10];
-+	char rev[32];
- 	char *p;
- 
- 	if ((p = strchr(revision, ':')) != 0) {
--		strcpy(rev, p + 1);
--		p = strchr(rev, '$');
--		*p = 0;
-+		strncpy(rev, p + 1, sizeof(rev));
-+		rev[sizeof(rev)-1] = 0;
-+		if ((p = strchr(rev, '$')) != 0)
-+			*p = 0;
- 	} else {
- 		strcpy(rev, " ??? ");
- 	}
+Apparently a patch already exists.
