@@ -1,80 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbYAXRzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYAXSJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbYAXRzs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 12:55:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbYAXRzk
+	id S1755355AbYAXSJi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 13:09:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYAXSJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 12:55:40 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:32888 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751915AbYAXRzj (ORCPT
+	Thu, 24 Jan 2008 13:09:30 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:22851 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbYAXSJ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 12:55:39 -0500
-Message-ID: <4798D10C.6090109@davidnewall.com>
-Date: Fri, 25 Jan 2008 04:25:24 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 24 Jan 2008 13:09:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=PYtTYxD5mbTKKgjm4k2mBLksebdC0kSYNP04PKSt4oBedU3/65HRVonaKKjxhRXYGhj0DBwkY6bxJn2zlw2E8/b0A+gwu7SyDcPSNaN8FFVyG2UA8sTGBYv9zSCGvGmN2r1j1fGsUDlt384mbgSt84KYHd9TW3aow71du5w+Wr8=
+Message-ID: <df35dfeb0801241009p24bdc766o7467ba82c403f9dc@mail.gmail.com>
+Date: Thu, 24 Jan 2008 10:09:27 -0800
+From: "Yum Rayan" <yum.rayan@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: sysctl table, s390 and xfs
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for mm] Remove iBCS support
-References: <20080120051822.GB19784@one.firstfloor.org> <4792DD22.4070902@davidnewall.com> <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122111205.GA25090@elte.hu> <4796081A.7060505@davidnewall.com> <20080122160114.GB23277@does.not.exist> <4798C511.8070305@davidnewall.com> <20080124172414.GD4476@does.not.exist>
-In-Reply-To: <20080124172414.GD4476@does.not.exist>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Removing dead code makes:
-> - the kernel smaller,
-> - the kernel faster and
-> - makes it easier to maintain the non-dead code.
->   
+With reference to 2.6.24-rc5, I see in <kernel/sysctl_check.c>
 
-The performance benefit is trivial, and the improvement to
-maintainability is even less.
+      3 #include "../arch/s390/appldata/appldata.h"
+      4 #include "../fs/xfs/linux-2.6/xfs_sysctl.h"
 
-> All of these are considered useful by the people who actually 
-> contribute to the Linux kernel.
->   
+Can this be done any better?
 
-Contributions to the kernel take forms other than just code.  I'm
-contributing in this very instance by putting the argument against
-removal of code.  Once removed it'll be much harder to re-insert than to
-repair in-situ.
+Should we move these headers to the standard <include> folder? Protect
+them with "#ifdef CONFIG_" ?
 
->> At one stage iBCS2 support DID work.  Now it doesn't.  Now there's an
->> argument that the remaining infrastructure should be removed.  This is
->> the wrong direction to take.
->>     
->
-> When did iBCS2 support work in a plain ftp.kernel.org kernel?
->   
-I don't know when.  Are you disputing that it ever did?  I think it's a
-given that once it worked.
-
-> And if you consider iBCS2 support that important I can only repeat that 
-> the language on Linux kernel are patches, not hot air.
->   
-
-Fools believe that code is the only acceptable offering, and you, by
-reputation, are not a fool.  There are plenty of examples where
-suggestions made on list have value far exceeding a lot of the code. 
-For that matter, some of the code that's offered is crap.  For that
-matter, good contributed code too often (and in some cases famously)
-gets ignored or rejected for reasons of ego.  You diminish yourself by
-implying that code is the only thing that matters, and present the
-impression that you know little about good development practice, in
-which design effort exceeds that of coding.  I do not believe you are a
-cowboy; stop talking like one.
-
-Look at the merits of iBCS2 support.  Is it desirable?  Yes.  Is it
-useful to remove what support remains?  Not particularly.  Does it
-improve performance?  Trivially; almost immeasurably.   Does it improve
-clarity?  No.  Does the code serve any useful purpose?  Yes, by acting
-as a reminder of work still be done.  It's like the /* XXX */ comments
-that are widely sprinkled through the system, only more concrete.  The
-benefits of removing it do not outweigh the benefits of leaving it.
+I have a x86 configuration and don't use XFS. Do I still need to carry
+these source files around?
