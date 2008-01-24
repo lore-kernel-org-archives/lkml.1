@@ -1,108 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbYAXRCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbYAXRCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759348AbYAXRCb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 12:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758320AbYAXQ6p
+	id S1759432AbYAXRCr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 12:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbYAXQ6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 11:58:45 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49777 "EHLO mx1.redhat.com"
+	Thu, 24 Jan 2008 11:58:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49784 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755860AbYAXQ6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 11:58:38 -0500
+	id S1758280AbYAXQ6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 11:58:39 -0500
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 12/19] dlm: reject messages from non-members
-Date: Thu, 24 Jan 2008 10:50:35 -0600
-Message-Id: <1201193442-8260-13-git-send-email-teigland@redhat.com>
+Subject: [PATCH 11/19] dlm: another call to confirm_master in receive_request_reply
+Date: Thu, 24 Jan 2008 10:50:34 -0600
+Message-Id: <1201193442-8260-12-git-send-email-teigland@redhat.com>
 X-Mailer: git-send-email 1.5.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Messages from nodes that are no longer members of the lockspace should be
-ignored.  When nodes are removed from the lockspace, recovery can
-sometimes complete quickly enough that messages arrive from a removed node
-after recovery has completed.  When processed, these messages would often
-cause an error message, and could in some cases change some state, causing
-problems.
+When a failed request (EBADR or ENOTBLK) is unlocked/canceled instead of
+retried, there may be other lkb's waiting on the rsb_lookup list for it
+to complete.  A call to confirm_master() is needed to move on to the next
+waiting lkb since the current one won't be retried.
 
 Signed-off-by: David Teigland <teigland@redhat.com>
 ---
- fs/dlm/lock.c   |    9 ++++++++-
- fs/dlm/member.c |    4 ++--
- fs/dlm/member.h |    3 ++-
- 3 files changed, 12 insertions(+), 4 deletions(-)
+ fs/dlm/lock.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index d5e8ea1..c3b9fca 100644
+index a758f1b..d5e8ea1 100644
 --- a/fs/dlm/lock.c
 +++ b/fs/dlm/lock.c
-@@ -1,7 +1,7 @@
- /******************************************************************************
- *******************************************************************************
- **
--**  Copyright (C) 2005-2007 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2005-2008 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -3643,6 +3643,13 @@ static void receive_lookup_reply(struct dlm_ls *ls, struct dlm_message *ms)
+@@ -1940,8 +1940,11 @@ static void confirm_master(struct dlm_rsb *r, int error)
+ 		break;
  
- static void _receive_message(struct dlm_ls *ls, struct dlm_message *ms)
- {
-+	if (!dlm_is_member(ls, ms->m_header.h_nodeid)) {
-+		log_debug(ls, "ignore non-member message %d from %d %x %x %d",
-+			  ms->m_type, ms->m_header.h_nodeid, ms->m_lkid,
-+			  ms->m_remid, ms->m_result);
-+		return;
-+	}
-+
- 	switch (ms->m_type) {
+ 	case -EAGAIN:
+-		/* the remote master didn't queue our NOQUEUE request;
+-		   make a waiting lkb the first_lkid */
++	case -EBADR:
++	case -ENOTBLK:
++		/* the remote request failed and won't be retried (it was
++		   a NOQUEUE, or has been canceled/unlocked); make a waiting
++		   lkb the first_lkid */
  
- 	/* messages sent to a master node */
-diff --git a/fs/dlm/member.c b/fs/dlm/member.c
-index e9cdcab..fa17f5a 100644
---- a/fs/dlm/member.c
-+++ b/fs/dlm/member.c
-@@ -1,7 +1,7 @@
- /******************************************************************************
- *******************************************************************************
- **
--**  Copyright (C) 2005-2007 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2005-2008 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -70,7 +70,7 @@ static void dlm_remove_member(struct dlm_ls *ls, struct dlm_member *memb)
- 	ls->ls_num_nodes--;
- }
+ 		r->res_first_lkid = 0;
  
--static int dlm_is_member(struct dlm_ls *ls, int nodeid)
-+int dlm_is_member(struct dlm_ls *ls, int nodeid)
- {
- 	struct dlm_member *memb;
- 
-diff --git a/fs/dlm/member.h b/fs/dlm/member.h
-index 927c08c..7a26fca 100644
---- a/fs/dlm/member.h
-+++ b/fs/dlm/member.h
-@@ -1,7 +1,7 @@
- /******************************************************************************
- *******************************************************************************
- **
--**  Copyright (C) 2005 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2005-2008 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -19,6 +19,7 @@ void dlm_clear_members(struct dlm_ls *ls);
- void dlm_clear_members_gone(struct dlm_ls *ls);
- int dlm_recover_members(struct dlm_ls *ls, struct dlm_recover *rv,int *neg_out);
- int dlm_is_removed(struct dlm_ls *ls, int nodeid);
-+int dlm_is_member(struct dlm_ls *ls, int nodeid);
- 
- #endif                          /* __MEMBER_DOT_H__ */
- 
+@@ -3382,6 +3385,7 @@ static void receive_request_reply(struct dlm_ls *ls, struct dlm_message *ms)
+ 		if (is_overlap(lkb)) {
+ 			/* we'll ignore error in cancel/unlock reply */
+ 			queue_cast_overlap(r, lkb);
++			confirm_master(r, result);
+ 			unhold_lkb(lkb); /* undoes create_lkb() */
+ 		} else
+ 			_request_lock(r, lkb);
 -- 
 1.5.3.3
 
