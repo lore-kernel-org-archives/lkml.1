@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757696AbYAXV7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbYAXWAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757696AbYAXV7R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 16:59:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYAXV67
+	id S1757949AbYAXWAK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 17:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYAXV74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 16:58:59 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:52639 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753778AbYAXV66 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 16:58:58 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
-In-Reply-To: Your message of "Thu, 24 Jan 2008 23:36:00 +0300."
-             <200801242336.00340.a1426z@gawab.com>
-From: Valdis.Kletnieks@vt.edu
-References: <200801242336.00340.a1426z@gawab.com>
+	Thu, 24 Jan 2008 16:59:56 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46592 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754404AbYAXV7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 16:59:55 -0500
+Date: Thu, 24 Jan 2008 23:00:05 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild: Preparing for merge window
+Message-ID: <20080124220005.GB4204@uranus.ravnborg.org>
+References: <20080124215813.GA4204@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1201211935_2846P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 24 Jan 2008 16:58:55 -0500
-Message-ID: <15182.1201211935@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080124215813.GA4204@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1201211935_2846P
-Content-Type: text/plain; charset=us-ascii
+On Thu, Jan 24, 2008 at 10:58:13PM +0100, Sam Ravnborg wrote:
+> The following is the list of patches queued up for the merge window at the moment.
+> I have during the last week done several modpost changes to make section ismatch
+> warnings more reliable and I am happy with the modified modpost code now.
+> 
+> The warnings generated will if CONFIG_DEBUG_SECTION_MISMATCH=y be verbose
+> so it better guides the developer how to fix the warning.
+> 
+> Other patches of interest:
+> 
+> - We now have separate sections for all init/exit annotations
+> - We have restarted getting kconfig globalized, pending is widechar support
+> - Support for modules.order to tell in what order to load modules
+> - lots of small fixes/enhancements
+> 
+> The diffstat say that we touch a lot of files.
+> This is due to the following changes (mainly):
+> - consolidation touching all .lds.S files
+> - removal ofstale comment about make dep
+> - removal of obsolete __attribute_used__
+> - removal of TOPDIR
+> 
+> Patches will follow for review.
 
-On Thu, 24 Jan 2008 23:36:00 +0300, Al Boldi said:
-> data=ordered mode has proven reliable over the years, and it does this by 
-> ordering filedata flushes before metadata flushes.  But this sometimes 
-> causes contention in the order of a 10x slowdown for certain apps, either 
-> due to the misuse of fsync or due to inherent behaviour like db's, as well 
-> as inherent starvation issues exposed by the data=ordered mode.
+Patches will be sent to linux-kbuild only.
 
-If they're misusing it, they should be fixed.  There should be a limit to
-how much the kernel will do to reduce the pain of doing stupid things.
-
-> This RFC proposes to introduce a tunable which allows to disable fsync and 
-> changes ordered into writeback writeout on a per-process basis like this:
-
-Well-written programs only call fsync() when they really do need the semantics
-of fsync.  Disabling that is just *asking* for trouble.
-
->From rfc2821:
-
-6.1 Reliable Delivery and Replies by Email
-
-   When the receiver-SMTP accepts a piece of mail (by sending a "250 OK"
-   message in response to DATA), it is accepting responsibility for
-   delivering or relaying the message.  It must take this responsibility
-   seriously.  It MUST NOT lose the message for frivolous reasons, such
-   as because the host later crashes or because of a predictable
-   resource shortage.
-
-Some people really *do* think "the CPU took a machine check and after replacing
-the motherboard, the resulting fsck ate the file" is a "frivolous" reason to
-lose data.
-
-But if you want to give them enough rope to shoot themselves in the foot with,
-I'd suggest abusing LD_PRELOAD to replace the fsync() glibc code instead.  No
-need to clutter the kernel with rope that can be (and has been) done in userspace.
-
---==_Exmh_1201211935_2846P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHmQofcC3lWbTT17ARAg91AJ9f8ErhsPm8ugAhC6S+gpNBr8OtWgCdF1VL
-7Wd8Yt1M2gL+8AUQTqQj9Rw=
-=2ISz
------END PGP SIGNATURE-----
-
---==_Exmh_1201211935_2846P--
+	Sam
