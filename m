@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbYAXPUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbYAXPUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756258AbYAXPUH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 10:20:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYAXPTv
+	id S1756029AbYAXPUg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 10:20:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbYAXPUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 10:19:51 -0500
-Received: from mail0.scram.de ([78.47.204.202]:43056 "EHLO mail0.scram.de"
+	Thu, 24 Jan 2008 10:20:22 -0500
+Received: from mail0.scram.de ([78.47.204.202]:36487 "EHLO mail0.scram.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751135AbYAXPTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 10:19:49 -0500
-X-Spam-Score: -4.269
+	id S1752506AbYAXPUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 10:20:19 -0500
+X-Spam-Score: -4.277
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
  * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
  *      [score: 0.0000]
  *  0.1 AWL AWL: From: address is in the auto white-list
-Message-ID: <4798AC8B.9090400@scram.de>
-Date: Thu, 24 Jan 2008 16:19:39 +0100
+Message-ID: <4798ACA5.5050106@scram.de>
+Date: Thu, 24 Jan 2008 16:20:05 +0100
 From: Jochen Friedrich <jochen@scram.de>
 User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
@@ -24,545 +24,300 @@ CC: Kumar Gala <galak@kernel.crashing.org>,
        Scott Wood <scottwood@freescale.com>,
        "Kernel, Linux" <linux-kernel@vger.kernel.org>,
        linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCHv3 6/7] [POWERPC] Rename commproc to cpm1 and cpm2_common.c
- to cpm2.c
+Subject: [PATCHv3 7/7] [POWERPC] Move definition of buffer descriptor to cpm.h
 Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename commproc.[ch] to cpm1.[ch] to be more consistent with cpm2. Also
-rename cpm2_common.c to cpm2.c as suggested by Scott Wood. Adjust the
-includes accordingly.
+Buffer descriptors are used by both CPM1 and CPM2. Move the definitions
+from the cpm dependent include file to common cpm.h
 
 Signed-off-by: Jochen Friedrich <jochen@scram.de>
 ---
- arch/powerpc/platforms/8xx/ep88xc.c           |    1 +
- arch/powerpc/platforms/8xx/mpc86xads_setup.c  |    2 +-
- arch/powerpc/platforms/8xx/mpc885ads_setup.c  |    2 +-
- arch/powerpc/sysdev/Makefile                  |    4 ++--
- arch/powerpc/sysdev/{commproc.c => cpm1.c}    |    4 ++--
- arch/powerpc/sysdev/{cpm2_common.c => cpm2.c} |    3 +--
- arch/powerpc/sysdev/micropatch.c              |    2 +-
- arch/ppc/8260_io/enet.c                       |    2 +-
- arch/ppc/8xx_io/commproc.c                    |    2 +-
- arch/ppc/8xx_io/enet.c                        |    6 +++---
- arch/ppc/8xx_io/fec.c                         |    2 +-
- arch/ppc/8xx_io/micropatch.c                  |    2 +-
- arch/ppc/boot/simple/iic.c                    |    2 +-
- arch/ppc/boot/simple/m8xx_tty.c               |    2 +-
- arch/ppc/kernel/ppc_ksyms.c                   |    2 +-
- arch/ppc/platforms/mpc866ads_setup.c          |    2 +-
- arch/ppc/platforms/mpc885ads_setup.c          |    2 +-
- arch/ppc/syslib/mpc8xx_devices.c              |    2 +-
- arch/ppc/xmon/start_8xx.c                     |    2 +-
- drivers/net/fec.c                             |    8 --------
- drivers/net/fec.h                             |    2 +-
- drivers/net/fec_8xx/fec_8xx-netta.c           |    2 +-
- drivers/net/fec_8xx/fec_main.c                |    2 +-
- drivers/net/fec_8xx/fec_mii.c                 |    2 +-
- drivers/net/fs_enet/fs_enet.h                 |    2 +-
- drivers/net/fs_enet/mac-fec.c                 |    2 +-
- drivers/net/fs_enet/mac-scc.c                 |    2 +-
- drivers/serial/68360serial.c                  |    2 +-
- drivers/serial/cpm_uart/cpm_uart_cpm1.h       |    2 +-
- include/asm-powerpc/{commproc.h => cpm1.h}    |    8 ++++----
- include/asm-ppc/{commproc.h => cpm1.h}        |    8 ++++----
- 31 files changed, 40 insertions(+), 48 deletions(-)
- rename arch/powerpc/sysdev/{commproc.c => cpm1.c} (99%)
- rename arch/powerpc/sysdev/{cpm2_common.c => cpm2.c} (99%)
- rename include/asm-powerpc/{commproc.h => cpm1.h} (99%)
- rename include/asm-ppc/{commproc.h => cpm1.h} (99%)
+ include/asm-powerpc/cpm.h  |   73 ++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/cpm1.h |   65 ---------------------------------------
+ include/asm-powerpc/cpm2.h |   64 --------------------------------------
+ 3 files changed, 73 insertions(+), 129 deletions(-)
 
-diff --git a/arch/powerpc/platforms/8xx/ep88xc.c b/arch/powerpc/platforms/8xx/ep88xc.c
-index 4897eda..a8dffa0 100644
---- a/arch/powerpc/platforms/8xx/ep88xc.c
-+++ b/arch/powerpc/platforms/8xx/ep88xc.c
-@@ -16,6 +16,7 @@
- #include <asm/io.h>
- #include <asm/udbg.h>
- #include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
- #include "mpc8xx.h"
- 
-diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-index c0dda53..c028a5b 100644
---- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-@@ -22,7 +22,7 @@
- #include <asm/system.h>
- #include <asm/time.h>
- #include <asm/8xx_immap.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- #include <asm/fs_pd.h>
- #include <asm/udbg.h>
- 
-diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-index 3be115e..6e7ded0 100644
---- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-@@ -36,7 +36,7 @@
- #include <asm/time.h>
- #include <asm/mpc8xx.h>
- #include <asm/8xx_immap.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- #include <asm/fs_pd.h>
- #include <asm/udbg.h>
- 
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index f17e7b8..928d75b 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -36,8 +36,8 @@ endif
- # Temporary hack until we have migrated to asm-powerpc
- ifeq ($(ARCH),powerpc)
- obj-$(CONFIG_CPM)		+= cpm_common.o
--obj-$(CONFIG_CPM2)		+= cpm2_common.o cpm2_pic.o
-+obj-$(CONFIG_CPM2)		+= cpm2.o cpm2_pic.o
- obj-$(CONFIG_PPC_DCR)		+= dcr.o
--obj-$(CONFIG_8xx)		+= mpc8xx_pic.o commproc.o
-+obj-$(CONFIG_8xx)		+= mpc8xx_pic.o cpm1.o
- obj-$(CONFIG_UCODE_PATCH)	+= micropatch.o
- endif
-diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/cpm1.c
-similarity index 99%
-rename from arch/powerpc/sysdev/commproc.c
-rename to arch/powerpc/sysdev/cpm1.c
-index ef82587..df8bd2b 100644
---- a/arch/powerpc/sysdev/commproc.c
-+++ b/arch/powerpc/sysdev/cpm1.c
-@@ -33,7 +33,7 @@
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/8xx_immap.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- #include <asm/io.h>
- #include <asm/tlbflush.h>
- #include <asm/rheap.h>
-@@ -290,7 +290,7 @@ cpm_setbrg(uint brg, uint rate)
- 		out_be32(bp, (((BRG_UART_CLK / rate) - 1) << 1) | CPM_BRG_EN);
- 	else
- 		out_be32(bp, (((BRG_UART_CLK_DIV16 / rate) - 1) << 1) |
--		             CPM_BRG_EN | CPM_BRG_DIV16);
-+			      CPM_BRG_EN | CPM_BRG_DIV16);
- }
- 
- #ifndef CONFIG_PPC_CPM_NEW_BINDING
-diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2.c
-similarity index 99%
-rename from arch/powerpc/sysdev/cpm2_common.c
-rename to arch/powerpc/sysdev/cpm2.c
-index f7188e2..7be7112 100644
---- a/arch/powerpc/sysdev/cpm2_common.c
-+++ b/arch/powerpc/sysdev/cpm2.c
-@@ -153,8 +153,7 @@ cpm2_fastbrg(uint brg, uint rate, int div16)
- 
- 	if (brg < 4) {
- 		bp = cpm2_map_size(im_brgc1, 16);
--	}
--	else {
-+	} else {
- 		bp = cpm2_map_size(im_brgc5, 16);
- 		brg -= 4;
- 	}
-diff --git a/arch/powerpc/sysdev/micropatch.c b/arch/powerpc/sysdev/micropatch.c
-index 712b10a..d8d6028 100644
---- a/arch/powerpc/sysdev/micropatch.c
-+++ b/arch/powerpc/sysdev/micropatch.c
-@@ -16,7 +16,7 @@
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/8xx_immap.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
- /*
-  * I2C/SPI relocation patch arrays.
-diff --git a/arch/ppc/8260_io/enet.c b/arch/ppc/8260_io/enet.c
-index 615b658..3ea4db2 100644
---- a/arch/ppc/8260_io/enet.c
-+++ b/arch/ppc/8260_io/enet.c
-@@ -10,7 +10,7 @@
-  * This version of the driver is somewhat selectable for the different
-  * processor/board combinations.  It works for the boards I know about
-  * now, and should be easily modified to include others.  Some of the
-- * configuration information is contained in <asm/commproc.h> and the
-+ * configuration information is contained in <asm/cpm1.h> and the
-  * remainder is here.
-  *
-  * Buffer descriptors are kept in the CPM dual port RAM, and the frame
-diff --git a/arch/ppc/8xx_io/commproc.c b/arch/ppc/8xx_io/commproc.c
-index 3f93af8..9d656de 100644
---- a/arch/ppc/8xx_io/commproc.c
-+++ b/arch/ppc/8xx_io/commproc.c
-@@ -34,7 +34,7 @@
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/8xx_immap.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- #include <asm/io.h>
- #include <asm/tlbflush.h>
- #include <asm/rheap.h>
-diff --git a/arch/ppc/8xx_io/enet.c b/arch/ppc/8xx_io/enet.c
-index eace3bc..c6d047a 100644
---- a/arch/ppc/8xx_io/enet.c
-+++ b/arch/ppc/8xx_io/enet.c
-@@ -8,7 +8,7 @@
-  * This version of the driver is somewhat selectable for the different
-  * processor/board combinations.  It works for the boards I know about
-  * now, and should be easily modified to include others.  Some of the
-- * configuration information is contained in <asm/commproc.h> and the
-+ * configuration information is contained in <asm/cpm1.h> and the
-  * remainder is here.
-  *
-  * Buffer descriptors are kept in the CPM dual port RAM, and the frame
-@@ -43,7 +43,7 @@
- #include <asm/pgtable.h>
- #include <asm/mpc8xx.h>
- #include <asm/uaccess.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- #include <asm/cacheflush.h>
- 
- /*
-@@ -80,7 +80,7 @@
-  * programming documents for details unique to your board.
-  *
-  * For the TQM8xx(L) modules, there is no control register interface.
-- * All functions are directly controlled using I/O pins.  See <asm/commproc.h>.
-+ * All functions are directly controlled using I/O pins.  See <asm/cpm1.h>.
-  */
- 
- /* The transmitter timeout
-diff --git a/arch/ppc/8xx_io/fec.c b/arch/ppc/8xx_io/fec.c
-index 0288279..11b0aa6 100644
---- a/arch/ppc/8xx_io/fec.c
-+++ b/arch/ppc/8xx_io/fec.c
-@@ -53,7 +53,7 @@
- #include <asm/mpc8xx.h>
- #include <asm/irq.h>
- #include <asm/uaccess.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
- #ifdef	CONFIG_USE_MDIO
- /* Forward declarations of some structures to support different PHYs
-diff --git a/arch/ppc/8xx_io/micropatch.c b/arch/ppc/8xx_io/micropatch.c
-index cfad46b..9a5d95d 100644
---- a/arch/ppc/8xx_io/micropatch.c
-+++ b/arch/ppc/8xx_io/micropatch.c
-@@ -16,7 +16,7 @@
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/8xx_immap.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
- /*
-  * I2C/SPI relocation patch arrays.
-diff --git a/arch/ppc/boot/simple/iic.c b/arch/ppc/boot/simple/iic.c
-index e4efd83..5e91489 100644
---- a/arch/ppc/boot/simple/iic.c
-+++ b/arch/ppc/boot/simple/iic.c
-@@ -5,7 +5,7 @@
+diff --git a/include/asm-powerpc/cpm.h b/include/asm-powerpc/cpm.h
+index fae83b1..77e39da 100644
+--- a/include/asm-powerpc/cpm.h
++++ b/include/asm-powerpc/cpm.h
+@@ -4,6 +4,79 @@
+ #include <linux/compiler.h>
  #include <linux/types.h>
- #include <asm/uaccess.h>
- #include <asm/mpc8xx.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
  
- 
- /* IIC functions.
-diff --git a/arch/ppc/boot/simple/m8xx_tty.c b/arch/ppc/boot/simple/m8xx_tty.c
-index ea615d8..f28924e 100644
---- a/arch/ppc/boot/simple/m8xx_tty.c
-+++ b/arch/ppc/boot/simple/m8xx_tty.c
-@@ -11,7 +11,7 @@
- #include <linux/types.h>
- #include <asm/uaccess.h>
- #include <asm/mpc8xx.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
- #ifdef CONFIG_MBX
- #define MBX_CSR1	((volatile u_char *)0xfa100000)
-diff --git a/arch/ppc/kernel/ppc_ksyms.c b/arch/ppc/kernel/ppc_ksyms.c
-index 22494ec..0d53dc3 100644
---- a/arch/ppc/kernel/ppc_ksyms.c
-+++ b/arch/ppc/kernel/ppc_ksyms.c
-@@ -45,7 +45,7 @@
- #include <asm/dcr.h>
- 
- #ifdef  CONFIG_8xx
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- #endif
- 
- extern void transfer_to_handler(void);
-diff --git a/arch/ppc/platforms/mpc866ads_setup.c b/arch/ppc/platforms/mpc866ads_setup.c
-index bf72204..62370f4 100644
---- a/arch/ppc/platforms/mpc866ads_setup.c
-+++ b/arch/ppc/platforms/mpc866ads_setup.c
-@@ -32,7 +32,7 @@
- #include <asm/time.h>
- #include <asm/ppcboot.h>
- #include <asm/8xx_immap.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- #include <asm/ppc_sys.h>
- #include <asm/mpc8xx.h>
- 
-diff --git a/arch/ppc/platforms/mpc885ads_setup.c b/arch/ppc/platforms/mpc885ads_setup.c
-index 87deaef..ba06cc0 100644
---- a/arch/ppc/platforms/mpc885ads_setup.c
-+++ b/arch/ppc/platforms/mpc885ads_setup.c
-@@ -31,7 +31,7 @@
- #include <asm/time.h>
- #include <asm/ppcboot.h>
- #include <asm/8xx_immap.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- #include <asm/ppc_sys.h>
- 
- extern unsigned char __res[];
-diff --git a/arch/ppc/syslib/mpc8xx_devices.c b/arch/ppc/syslib/mpc8xx_devices.c
-index c05ac87..80804ee 100644
---- a/arch/ppc/syslib/mpc8xx_devices.c
-+++ b/arch/ppc/syslib/mpc8xx_devices.c
-@@ -16,7 +16,7 @@
- #include <linux/device.h>
- #include <linux/serial_8250.h>
- #include <linux/mii.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- #include <asm/mpc8xx.h>
- #include <asm/irq.h>
- #include <asm/ppc_sys.h>
-diff --git a/arch/ppc/xmon/start_8xx.c b/arch/ppc/xmon/start_8xx.c
-index a48bd59..3097406 100644
---- a/arch/ppc/xmon/start_8xx.c
-+++ b/arch/ppc/xmon/start_8xx.c
-@@ -14,7 +14,7 @@
- #include <linux/kernel.h>
- #include <asm/8xx_immap.h>
- #include <asm/mpc8xx.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
- extern void xmon_printf(const char *fmt, ...);
- extern int xmon_8xx_write(char *str, int nb);
-diff --git a/drivers/net/fec.c b/drivers/net/fec.c
-index 0fbf1bb..7727cf5 100644
---- a/drivers/net/fec.c
-+++ b/drivers/net/fec.c
-@@ -49,17 +49,9 @@
- #include <asm/pgtable.h>
- #include <asm/cacheflush.h>
- 
--#if defined(CONFIG_M523x) || defined(CONFIG_M527x) || \
--    defined(CONFIG_M5272) || defined(CONFIG_M528x) || \
--    defined(CONFIG_M520x) || defined(CONFIG_M532x)
- #include <asm/coldfire.h>
- #include <asm/mcfsim.h>
- #include "fec.h"
--#else
--#include <asm/8xx_immap.h>
--#include <asm/mpc8xx.h>
--#include "commproc.h"
--#endif
- 
- #if defined(CONFIG_FEC2)
- #define	FEC_MAX_PORTS	2
-diff --git a/drivers/net/fec.h b/drivers/net/fec.h
-index 1d42160..bcff463 100644
---- a/drivers/net/fec.h
-+++ b/drivers/net/fec.h
-@@ -111,7 +111,7 @@ typedef struct bufdesc {
- 
- 
- /*
-- *	The following definitions courtesy of commproc.h, which where
-+ *	The following definitions courtesy of cpm1.h, which where
-  *	Copyright (c) 1997 Dan Malek (dmalek@jlc.net).
-  */
- #define BD_SC_EMPTY     ((ushort)0x8000)        /* Recieve is empty */
-diff --git a/drivers/net/fec_8xx/fec_8xx-netta.c b/drivers/net/fec_8xx/fec_8xx-netta.c
-index e492eb8..79deee2 100644
---- a/drivers/net/fec_8xx/fec_8xx-netta.c
-+++ b/drivers/net/fec_8xx/fec_8xx-netta.c
-@@ -26,7 +26,7 @@
- #include <asm/mpc8xx.h>
- #include <asm/irq.h>
- #include <asm/uaccess.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
- #include "fec_8xx.h"
- 
-diff --git a/drivers/net/fec_8xx/fec_main.c b/drivers/net/fec_8xx/fec_main.c
-index ab9637a..ca8d2e8 100644
---- a/drivers/net/fec_8xx/fec_main.c
-+++ b/drivers/net/fec_8xx/fec_main.c
-@@ -35,7 +35,7 @@
- #include <asm/mpc8xx.h>
- #include <asm/irq.h>
- #include <asm/uaccess.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
- #include "fec_8xx.h"
- 
-diff --git a/drivers/net/fec_8xx/fec_mii.c b/drivers/net/fec_8xx/fec_mii.c
-index e8e10a0..3b6ca29 100644
---- a/drivers/net/fec_8xx/fec_mii.c
-+++ b/drivers/net/fec_8xx/fec_mii.c
-@@ -34,7 +34,7 @@
- #include <asm/mpc8xx.h>
- #include <asm/irq.h>
- #include <asm/uaccess.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
- /*************************************************/
- 
-diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
-index c675e29..e05389c 100644
---- a/drivers/net/fs_enet/fs_enet.h
-+++ b/drivers/net/fs_enet/fs_enet.h
-@@ -12,7 +12,7 @@
- #include <asm/fs_pd.h>
- 
- #ifdef CONFIG_CPM1
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
- struct fec_info {
- 	fec_t __iomem *fecp;
-diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
-index c1fee48..8a311d1 100644
---- a/drivers/net/fs_enet/mac-fec.c
-+++ b/drivers/net/fs_enet/mac-fec.c
-@@ -40,7 +40,7 @@
- #include <asm/8xx_immap.h>
- #include <asm/pgtable.h>
- #include <asm/mpc8xx.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- #endif
- 
- #ifdef CONFIG_PPC_CPM_NEW_BINDING
-diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
-index fe3d8a6..d7ca319 100644
---- a/drivers/net/fs_enet/mac-scc.c
-+++ b/drivers/net/fs_enet/mac-scc.c
-@@ -40,7 +40,7 @@
- #include <asm/8xx_immap.h>
- #include <asm/pgtable.h>
- #include <asm/mpc8xx.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- #endif
- 
- #ifdef CONFIG_PPC_CPM_NEW_BINDING
-diff --git a/drivers/serial/68360serial.c b/drivers/serial/68360serial.c
-index 2aa6bfe..2969ebc 100644
---- a/drivers/serial/68360serial.c
-+++ b/drivers/serial/68360serial.c
-@@ -39,7 +39,7 @@
- #include <linux/delay.h>
- #include <asm/irq.h>
- #include <asm/m68360.h>
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
-  
- #ifdef CONFIG_KGDB
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.h b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-index 9b5465f..ddf46d3 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-@@ -10,7 +10,7 @@
- #ifndef CPM_UART_CPM1_H
- #define CPM_UART_CPM1_H
- 
--#include <asm/commproc.h>
-+#include <asm/cpm1.h>
- 
- /* defines for IRQs */
- #ifndef CONFIG_PPC_CPM_NEW_BINDING
-diff --git a/include/asm-powerpc/commproc.h b/include/asm-powerpc/cpm1.h
-similarity index 99%
-rename from include/asm-powerpc/commproc.h
-rename to include/asm-powerpc/cpm1.h
-index ec87b8f..901a00b 100644
---- a/include/asm-powerpc/commproc.h
++/* Buffer descriptors used by many of the CPM protocols. */
++typedef struct cpm_buf_desc {
++	ushort	cbd_sc;		/* Status and Control */
++	ushort	cbd_datlen;	/* Data length in buffer */
++	uint	cbd_bufaddr;	/* Buffer address in host memory */
++} cbd_t;
++
++/* Buffer descriptor control/status used by serial
++ */
++
++#define BD_SC_EMPTY	(0x8000)	/* Receive is empty */
++#define BD_SC_READY	(0x8000)	/* Transmit is ready */
++#define BD_SC_WRAP	(0x2000)	/* Last buffer descriptor */
++#define BD_SC_INTRPT	(0x1000)	/* Interrupt on change */
++#define BD_SC_LAST	(0x0800)	/* Last buffer in frame */
++#define BD_SC_TC	(0x0400)	/* Transmit CRC */
++#define BD_SC_CM	(0x0200)	/* Continous mode */
++#define BD_SC_ID	(0x0100)	/* Rec'd too many idles */
++#define BD_SC_P		(0x0100)	/* xmt preamble */
++#define BD_SC_BR	(0x0020)	/* Break received */
++#define BD_SC_FR	(0x0010)	/* Framing error */
++#define BD_SC_PR	(0x0008)	/* Parity error */
++#define BD_SC_NAK	(0x0004)	/* NAK - did not respond */
++#define BD_SC_OV	(0x0002)	/* Overrun */
++#define BD_SC_UN	(0x0002)	/* Underrun */
++#define BD_SC_CD	(0x0001)	/* */
++#define BD_SC_CL	(0x0001)	/* Collision */
++
++/* Buffer descriptor control/status used by Ethernet receive.
++ * Common to SCC and FCC.
++ */
++#define BD_ENET_RX_EMPTY	(0x8000)
++#define BD_ENET_RX_WRAP		(0x2000)
++#define BD_ENET_RX_INTR		(0x1000)
++#define BD_ENET_RX_LAST		(0x0800)
++#define BD_ENET_RX_FIRST	(0x0400)
++#define BD_ENET_RX_MISS		(0x0100)
++#define BD_ENET_RX_BC		(0x0080)	/* FCC Only */
++#define BD_ENET_RX_MC		(0x0040)	/* FCC Only */
++#define BD_ENET_RX_LG		(0x0020)
++#define BD_ENET_RX_NO		(0x0010)
++#define BD_ENET_RX_SH		(0x0008)
++#define BD_ENET_RX_CR		(0x0004)
++#define BD_ENET_RX_OV		(0x0002)
++#define BD_ENET_RX_CL		(0x0001)
++#define BD_ENET_RX_STATS	(0x01ff)	/* All status bits */
++
++/* Buffer descriptor control/status used by Ethernet transmit.
++ * Common to SCC and FCC.
++ */
++#define BD_ENET_TX_READY	(0x8000)
++#define BD_ENET_TX_PAD		(0x4000)
++#define BD_ENET_TX_WRAP		(0x2000)
++#define BD_ENET_TX_INTR		(0x1000)
++#define BD_ENET_TX_LAST		(0x0800)
++#define BD_ENET_TX_TC		(0x0400)
++#define BD_ENET_TX_DEF		(0x0200)
++#define BD_ENET_TX_HB		(0x0100)
++#define BD_ENET_TX_LC		(0x0080)
++#define BD_ENET_TX_RL		(0x0040)
++#define BD_ENET_TX_RCMASK	(0x003c)
++#define BD_ENET_TX_UN		(0x0002)
++#define BD_ENET_TX_CSL		(0x0001)
++#define BD_ENET_TX_STATS	(0x03ff)	/* All status bits */
++
++/* Buffer descriptor control/status used by Transparent mode SCC.
++ */
++#define BD_SCC_TX_LAST		(0x0800)
++
++/* Buffer descriptor control/status used by I2C.
++ */
++#define BD_I2C_START		(0x0400)
++
+ int cpm_muram_init(void);
+ unsigned long cpm_muram_alloc(unsigned long size, unsigned long align);
+ int cpm_muram_free(unsigned long offset);
+diff --git a/include/asm-powerpc/cpm1.h b/include/asm-powerpc/cpm1.h
+index 901a00b..b2ebd6a 100644
+--- a/include/asm-powerpc/cpm1.h
 +++ b/include/asm-powerpc/cpm1.h
-@@ -14,8 +14,8 @@
-  * IDMA1 space.  The remaining DP RAM is available for buffer descriptors
-  * or other use.
-  */
--#ifndef __CPM_8XX__
--#define __CPM_8XX__
-+#ifndef __CPM1__
-+#define __CPM1__
+@@ -91,32 +91,6 @@ extern void cpm_load_patch(cpm8xx_t *cp);
  
- #include <asm/8xx_immap.h>
- #include <asm/ptrace.h>
-@@ -82,7 +82,7 @@ extern int cpm_dpfree(unsigned long offset);
- extern unsigned long cpm_dpalloc_fixed(unsigned long offset, uint size, uint align);
- extern void cpm_dpdump(void);
- extern void *cpm_dpram_addr(unsigned long offset);
--extern uint cpm_dpram_phys(u8* addr);
-+extern uint cpm_dpram_phys(u8 *addr);
- #endif
+ extern void cpm_reset(void);
  
- extern void cpm_setbrg(uint brg, uint rate);
-@@ -747,4 +747,4 @@ enum cpm_clk {
+-/* Buffer descriptors used by many of the CPM protocols.
+-*/
+-typedef struct cpm_buf_desc {
+-	ushort	cbd_sc;		/* Status and Control */
+-	ushort	cbd_datlen;	/* Data length in buffer */
+-	uint	cbd_bufaddr;	/* Buffer address in host memory */
+-} cbd_t;
+-
+-#define BD_SC_EMPTY	((ushort)0x8000)	/* Receive is empty */
+-#define BD_SC_READY	((ushort)0x8000)	/* Transmit is ready */
+-#define BD_SC_WRAP	((ushort)0x2000)	/* Last buffer descriptor */
+-#define BD_SC_INTRPT	((ushort)0x1000)	/* Interrupt on change */
+-#define BD_SC_LAST	((ushort)0x0800)	/* Last buffer in frame */
+-#define BD_SC_TC	((ushort)0x0400)	/* Transmit CRC */
+-#define BD_SC_CM	((ushort)0x0200)	/* Continous mode */
+-#define BD_SC_ID	((ushort)0x0100)	/* Rec'd too many idles */
+-#define BD_SC_P		((ushort)0x0100)	/* xmt preamble */
+-#define BD_SC_BR	((ushort)0x0020)	/* Break received */
+-#define BD_SC_FR	((ushort)0x0010)	/* Framing error */
+-#define BD_SC_PR	((ushort)0x0008)	/* Parity error */
+-#define BD_SC_NAK	((ushort)0x0004)	/* NAK - did not respond */
+-#define BD_SC_OV	((ushort)0x0002)	/* Overrun */
+-#define BD_SC_UN	((ushort)0x0002)	/* Underrun */
+-#define BD_SC_CD	((ushort)0x0001)	/* ?? */
+-#define BD_SC_CL	((ushort)0x0001)	/* Collision */
+-
+ /* Parameter RAM offsets.
+ */
+ #define PROFF_SCC1	((uint)0x0000)
+@@ -446,41 +420,6 @@ typedef struct scc_enet {
+ #define SCC_PSMR_NIB22	((ushort)0x000a)	/* Start frame search */
+ #define SCC_PSMR_FDE	((ushort)0x0001)	/* Full duplex enable */
  
- int cpm1_clk_setup(enum cpm_clk_target target, int clock, int mode);
+-/* Buffer descriptor control/status used by Ethernet receive.
+-*/
+-#define BD_ENET_RX_EMPTY	((ushort)0x8000)
+-#define BD_ENET_RX_WRAP		((ushort)0x2000)
+-#define BD_ENET_RX_INTR		((ushort)0x1000)
+-#define BD_ENET_RX_LAST		((ushort)0x0800)
+-#define BD_ENET_RX_FIRST	((ushort)0x0400)
+-#define BD_ENET_RX_MISS		((ushort)0x0100)
+-#define BD_ENET_RX_LG		((ushort)0x0020)
+-#define BD_ENET_RX_NO		((ushort)0x0010)
+-#define BD_ENET_RX_SH		((ushort)0x0008)
+-#define BD_ENET_RX_CR		((ushort)0x0004)
+-#define BD_ENET_RX_OV		((ushort)0x0002)
+-#define BD_ENET_RX_CL		((ushort)0x0001)
+-#define BD_ENET_RX_BC		((ushort)0x0080)	/* DA is Broadcast */
+-#define BD_ENET_RX_MC		((ushort)0x0040)	/* DA is Multicast */
+-#define BD_ENET_RX_STATS	((ushort)0x013f)	/* All status bits */
+-
+-/* Buffer descriptor control/status used by Ethernet transmit.
+-*/
+-#define BD_ENET_TX_READY	((ushort)0x8000)
+-#define BD_ENET_TX_PAD		((ushort)0x4000)
+-#define BD_ENET_TX_WRAP		((ushort)0x2000)
+-#define BD_ENET_TX_INTR		((ushort)0x1000)
+-#define BD_ENET_TX_LAST		((ushort)0x0800)
+-#define BD_ENET_TX_TC		((ushort)0x0400)
+-#define BD_ENET_TX_DEF		((ushort)0x0200)
+-#define BD_ENET_TX_HB		((ushort)0x0100)
+-#define BD_ENET_TX_LC		((ushort)0x0080)
+-#define BD_ENET_TX_RL		((ushort)0x0040)
+-#define BD_ENET_TX_RCMASK	((ushort)0x003c)
+-#define BD_ENET_TX_UN		((ushort)0x0002)
+-#define BD_ENET_TX_CSL		((ushort)0x0001)
+-#define BD_ENET_TX_STATS	((ushort)0x03ff)	/* All status bits */
+-
+ /* SCC as UART
+ */
+ typedef struct scc_uart {
+@@ -549,8 +488,6 @@ typedef struct scc_trans {
+ 	uint	st_cmask;	/* Constant mask for CRC */
+ } scc_trans_t;
  
--#endif /* __CPM_8XX__ */
-+#endif /* __CPM1__ */
-diff --git a/include/asm-ppc/commproc.h b/include/asm-ppc/cpm1.h
-similarity index 99%
-rename from include/asm-ppc/commproc.h
-rename to include/asm-ppc/cpm1.h
-index 5418d6d..03035ac 100644
---- a/include/asm-ppc/commproc.h
-+++ b/include/asm-ppc/cpm1.h
-@@ -14,8 +14,8 @@
-  * IDMA1 space.  The remaining DP RAM is available for buffer descriptors
-  * or other use.
-  */
--#ifndef __CPM_8XX__
--#define __CPM_8XX__
-+#ifndef __CPM1__
-+#define __CPM1__
+-#define BD_SCC_TX_LAST		((ushort)0x0800)
+-
+ /* IIC parameter RAM.
+ */
+ typedef struct iic {
+@@ -574,8 +511,6 @@ typedef struct iic {
+ 	char	res2[2];	/* Reserved */
+ } iic_t;
  
- #include <asm/8xx_immap.h>
- #include <asm/ptrace.h>
-@@ -72,7 +72,7 @@ extern int cpm_dpfree(unsigned long offset);
- extern unsigned long cpm_dpalloc_fixed(unsigned long offset, uint size, uint align);
- extern void cpm_dpdump(void);
- extern void *cpm_dpram_addr(unsigned long offset);
--extern uint cpm_dpram_phys(u8* addr);
-+extern uint cpm_dpram_phys(u8 *addr);
- extern void cpm_setbrg(uint brg, uint rate);
+-#define BD_IIC_START		((ushort)0x0400)
+-
+ /* SPI parameter RAM.
+ */
+ typedef struct spi {
+diff --git a/include/asm-powerpc/cpm2.h b/include/asm-powerpc/cpm2.h
+index f1112c1..b93a53e 100644
+--- a/include/asm-powerpc/cpm2.h
++++ b/include/asm-powerpc/cpm2.h
+@@ -132,29 +132,6 @@ extern void cpm_setbrg(uint brg, uint rate);
+ extern void cpm2_fastbrg(uint brg, uint rate, int div16);
+ extern void cpm2_reset(void);
  
- extern void cpm_load_patch(volatile immap_t *immr);
-@@ -685,4 +685,4 @@ typedef struct risc_timer_pram {
- extern void cpm_install_handler(int vec, void (*handler)(void *), void *dev_id);
- extern void cpm_free_handler(int vec);
+-
+-/* Buffer descriptors used by many of the CPM protocols.
+-*/
+-typedef struct cpm_buf_desc {
+-	ushort	cbd_sc;		/* Status and Control */
+-	ushort	cbd_datlen;	/* Data length in buffer */
+-	uint	cbd_bufaddr;	/* Buffer address in host memory */
+-} cbd_t;
+-
+-#define BD_SC_EMPTY	((ushort)0x8000)	/* Receive is empty */
+-#define BD_SC_READY	((ushort)0x8000)	/* Transmit is ready */
+-#define BD_SC_WRAP	((ushort)0x2000)	/* Last buffer descriptor */
+-#define BD_SC_INTRPT	((ushort)0x1000)	/* Interrupt on change */
+-#define BD_SC_LAST	((ushort)0x0800)	/* Last buffer in frame */
+-#define BD_SC_CM	((ushort)0x0200)	/* Continous mode */
+-#define BD_SC_ID	((ushort)0x0100)	/* Rec'd too many idles */
+-#define BD_SC_P		((ushort)0x0100)	/* xmt preamble */
+-#define BD_SC_BR	((ushort)0x0020)	/* Break received */
+-#define BD_SC_FR	((ushort)0x0010)	/* Framing error */
+-#define BD_SC_PR	((ushort)0x0008)	/* Parity error */
+-#define BD_SC_OV	((ushort)0x0002)	/* Overrun */
+-#define BD_SC_CD	((ushort)0x0001)	/* ?? */
+-
+ /* Function code bits, usually generic to devices.
+ */
+ #define CPMFCR_GBL	((u_char)0x20)	/* Set memory snooping */
+@@ -456,43 +433,6 @@ typedef struct scc_enet {
+ #define SCC_PSMR_NIB22	((ushort)0x000a)	/* Start frame search */
+ #define SCC_PSMR_FDE	((ushort)0x0001)	/* Full duplex enable */
  
--#endif /* __CPM_8XX__ */
-+#endif /* __CPM1__ */
+-/* Buffer descriptor control/status used by Ethernet receive.
+- * Common to SCC and FCC.
+- */
+-#define BD_ENET_RX_EMPTY	((ushort)0x8000)
+-#define BD_ENET_RX_WRAP		((ushort)0x2000)
+-#define BD_ENET_RX_INTR		((ushort)0x1000)
+-#define BD_ENET_RX_LAST		((ushort)0x0800)
+-#define BD_ENET_RX_FIRST	((ushort)0x0400)
+-#define BD_ENET_RX_MISS		((ushort)0x0100)
+-#define BD_ENET_RX_BC		((ushort)0x0080)	/* FCC Only */
+-#define BD_ENET_RX_MC		((ushort)0x0040)	/* FCC Only */
+-#define BD_ENET_RX_LG		((ushort)0x0020)
+-#define BD_ENET_RX_NO		((ushort)0x0010)
+-#define BD_ENET_RX_SH		((ushort)0x0008)
+-#define BD_ENET_RX_CR		((ushort)0x0004)
+-#define BD_ENET_RX_OV		((ushort)0x0002)
+-#define BD_ENET_RX_CL		((ushort)0x0001)
+-#define BD_ENET_RX_STATS	((ushort)0x01ff)	/* All status bits */
+-
+-/* Buffer descriptor control/status used by Ethernet transmit.
+- * Common to SCC and FCC.
+- */
+-#define BD_ENET_TX_READY	((ushort)0x8000)
+-#define BD_ENET_TX_PAD		((ushort)0x4000)
+-#define BD_ENET_TX_WRAP		((ushort)0x2000)
+-#define BD_ENET_TX_INTR		((ushort)0x1000)
+-#define BD_ENET_TX_LAST		((ushort)0x0800)
+-#define BD_ENET_TX_TC		((ushort)0x0400)
+-#define BD_ENET_TX_DEF		((ushort)0x0200)
+-#define BD_ENET_TX_HB		((ushort)0x0100)
+-#define BD_ENET_TX_LC		((ushort)0x0080)
+-#define BD_ENET_TX_RL		((ushort)0x0040)
+-#define BD_ENET_TX_RCMASK	((ushort)0x003c)
+-#define BD_ENET_TX_UN		((ushort)0x0002)
+-#define BD_ENET_TX_CSL		((ushort)0x0001)
+-#define BD_ENET_TX_STATS	((ushort)0x03ff)	/* All status bits */
+-
+ /* SCC as UART
+ */
+ typedef struct scc_uart {
+@@ -562,8 +502,6 @@ typedef struct scc_trans {
+ 	uint	st_cmask;	/* Constant mask for CRC */
+ } scc_trans_t;
+ 
+-#define BD_SCC_TX_LAST		((ushort)0x0800)
+-
+ /* How about some FCCs.....
+ */
+ #define FCC_GFMR_DIAG_NORM	((uint)0x00000000)
+@@ -769,8 +707,6 @@ typedef struct spi {
+ 
+ #define SPI_EB		((u_char)0x10)		/* big endian byte order */
+ 
+-#define BD_IIC_START		((ushort)0x0400)
+-
+ /* IDMA parameter RAM
+ */
+ typedef struct idma {
 -- 
 1.5.3.8
-
 
