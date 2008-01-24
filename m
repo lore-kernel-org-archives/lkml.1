@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757059AbYAXWc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbYAXWck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757059AbYAXWc2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 17:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbYAXWcR
+	id S1758030AbYAXWck (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 17:32:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbYAXWcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 17:32:17 -0500
-Received: from smtp06.mtu.ru ([62.5.255.53]:63969 "EHLO smtp06.mtu.ru"
+	Thu, 24 Jan 2008 17:32:19 -0500
+Received: from smtp06.mtu.ru ([62.5.255.53]:52027 "EHLO smtp06.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751375AbYAXWcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 17:32:16 -0500
+	id S1754488AbYAXWcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 17:32:18 -0500
 From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
 To: trivial@kernel.org, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org, tigran@aivazian.fsnet.co.uk
-Subject: [PATCH 0/9] bfs: assorted cleanups
-Date: Fri, 25 Jan 2008 01:31:59 +0300
-Message-Id: <1201213928-18183-1-git-send-email-dmitri.vorobiev@gmail.com>
+Subject: [PATCH 1/9] bfs: remove a useless variable
+Date: Fri, 25 Jan 2008 01:32:00 +0300
+Message-Id: <1201213928-18183-2-git-send-email-dmitri.vorobiev@gmail.com>
 X-Mailer: git-send-email 1.5.3.6
+In-Reply-To: <1201213928-18183-1-git-send-email-dmitri.vorobiev@gmail.com>
+References: <1201213928-18183-1-git-send-email-dmitri.vorobiev@gmail.com>
 X-DCC-STREAM-Metrics: smtp06.mtu.ru 10002; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Adrian,
+In the bfs_fill_super() routine, the "sblock" variable is declared
+and assigned a value. However, this value is never used. This trivial
+patch removes this useless variable.
 
-Last time when I had sent some BFS bugfixes to the maintainer of
-this filesystem driver, he did not respond, and Andrew Morton
-had to take care of those.
+This was compile-tested by building the bfs driver both as a module
+and as a part of the kernel proper. Both build finished successfully.
 
-For this reason, and because the patches in this little patch bomb
-are trivial, I am sending this to you in the hope that these can
-be pushed upstream when the next merge window opens.
+Run time test was performed using a BFS image and verifying that the
+filesystem remained functional after the change.
 
-In case you'll be wondering why I need BFS: I teach system programming
-and operating systems at the premises of the Moscow State University.
-The BFS code is used as an example of a simple filesystem driver
-implementation in Linux. This hopefully explains why I want to have
-clean code in here :)
+Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+---
+ fs/bfs/inode.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Some checkpatch.pl stats follow.
+diff --git a/fs/bfs/inode.c b/fs/bfs/inode.c
+index a64a71d..2284657 100644
+--- a/fs/bfs/inode.c
++++ b/fs/bfs/inode.c
+@@ -368,7 +368,7 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
+ 		struct bfs_inode *di;
+ 		int block = (i - BFS_ROOT_INO) / BFS_INODES_PER_BLOCK + 1;
+ 		int off = (i - BFS_ROOT_INO) % BFS_INODES_PER_BLOCK;
+-		unsigned long sblock, eblock;
++		unsigned long eblock;
+ 
+ 		if (!off) {
+ 			brelse(bh);
+@@ -387,7 +387,6 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
+ 		set_bit(i, info->si_imap);
+ 		info->si_freeb -= BFS_FILEBLOCKS(di);
+ 
+-		sblock =  le32_to_cpu(di->i_sblock);
+ 		eblock =  le32_to_cpu(di->i_eblock);
+ 		if (eblock > info->si_lf_eblk)
+ 			info->si_lf_eblk = eblock;
+-- 
+1.5.3
 
-Before:
-
-----------------------------------------
-|         | errors | warnings | checks |
-----------------------------------------
-| bfs.h   |   2    |    0     |   0    |
-----------------------------------------
-| dir.c   |   7    |    1     |   4    |
-----------------------------------------
-| file.c  |   6    |    0     |   2    |
-----------------------------------------
-| inode.c |   11   |    0     |   3    |
-----------------------------------------
-
-After:
-
-----------------------------------------
-|         | errors | warnings | checks |
-----------------------------------------
-| bfs.h   |   0    |    0     |   0    |
-----------------------------------------
-| dir.c   |   0    |    0     |   0    |
-----------------------------------------
-| file.c  |   0    |    0     |   0    |
-----------------------------------------
-| inode.c |   0    |    0     |   0    |
-----------------------------------------
-
-Please consider.
-
-Thanks,
-
-Dmitri Vorobiev
