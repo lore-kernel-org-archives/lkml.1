@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbYAXQUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYAXQYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbYAXQUT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 11:20:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYAXQUG
+	id S1755955AbYAXQYU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 11:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbYAXQYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 11:20:06 -0500
-Received: from main.gmane.org ([80.91.229.2]:32977 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752537AbYAXQUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 11:20:05 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
-Subject: Re: Massive IDE problems. Who leaves data here?
-Date: Thu, 24 Jan 2008 17:26:05 +0100
-Message-ID: <4798BC1D.3070701@nurfuerspam.de>
-References: <fn5ivo$ck2$1@ger.gmane.org> <47965138.8060603@garzik.org>	 <fn5jsn$ful$1@ger.gmane.org>	 <2c0942db0801221246u678d2a20xef9cf93ee28eaf51@mail.gmail.com>	 <fn5l9c$l6m$1@ger.gmane.org> <2c0942db0801221312v66887218qe0b9c853384ccd0b@mail.gmail.com>
+	Thu, 24 Jan 2008 11:24:04 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:4681 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753181AbYAXQYB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 11:24:01 -0500
+Date: Thu, 24 Jan 2008 19:23:45 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: Poonam_Aggrwal-b10812 <b10812@freescale.com>, kumar.gala@freescale.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, rubini@vision.unipv.it, linuxppc-dev@ozlabs.org,
+       michael.barkowski@freescale.com, rich.cutler@freescale.com,
+       ashish.kalra@freescale.com
+Subject: Re: [PATCH UCC TDM 1/3 Updated] Platform changes for UCC TDM driver for MPC8323eRDB. Also includes related QE changes and dts entries.
+Message-ID: <20080124162345.GA27359@localhost.localdomain>
+Reply-To: avorontsov@ru.mvista.com
+References: <Pine.LNX.4.64.0801241553270.4984@linux121> <20080124154804.GA22178@localhost.localdomain> <4798B4F3.2010101@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: Jeff Garzik <jeff@garzik.org>
-X-Gmane-NNTP-Posting-Host: p4fd4ba1f.dip0.t-ipconnect.de
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.11) Gecko/20071129 SeaMonkey/1.1.7
-In-Reply-To: <2c0942db0801221312v66887218qe0b9c853384ccd0b@mail.gmail.com>
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <4798B4F3.2010101@freescale.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> Oy. Just know that without CC:ing people, I'm having to add Jeff back
-> in by hand, and we may not notice your messages. Please, with whatever
-> you're using to send email, CC: people that you want to read your
-> messages, okay? LKML gets a lot of messages, and it's easy to miss
-> some.
-
-Trying to do this with this message...
-
-> No, not in the least. When power supplies are on the edge and
-> overloaded, the quality of power drops. 12V lines may only supply 11
-> or less, etc. Some components in your computer will deal with it fine,
-> others won't.
+On Thu, Jan 24, 2008 at 09:55:31AM -0600, Timur Tabi wrote:
+> Anton Vorontsov wrote:
 > 
-> In general, if you have weird hardware problems and you're ruled out
-> memory and overheating, the power supply is almost always the next
-> thing to check.
+> >Can we not introduce new pio-maps in the device trees? There
+> >were debates regarding this, and if I understood everything
+> >correctly, pio-maps considered as a bad taste. Better
+> >do bunch of par_io_config_pin() in the board file. Better
+> >yet fixup the firmware (u-boot) to set up dedicated pins
+> >correctly.
+> 
+> I'm on the fence with respect to pio-maps vs. par_io_config_pin() calls.  
+> The problem is that the configuration of these pins is board-specific, but 
+> pins are used by devices.  A device driver can't call par_io_config_pin(), 
+> because the calls are different depending on which SoC and which UCC you're 
+> using.  The platform code can't call par_io_config_pin(), because that 
+> configuration depends on which drivers are loaded.
 
-I didn't rule out "memory" for sure. I'll try "memcheck" this evening.
+Are you saying that TDM is sharing same pins with the other QE device,
+and we can choose to use/not use some device depending on which driver
+is loaded? I think this particular board and patch isn't that case.
 
-Yours
+Even if someday there will be the case when drivers are mutually
+exclusive, i.e. presence of some driver should trigger pins
+reconfiguration, then anyway this should be handled differently.
 
-Manuel
+That is, we should not _register_ two mutually exclusive devices
+in the first place, so drivers will not probe them. That's board
+setup code authority, and pins configuration still should happen
+there.
 
+[ Irrelevant to UCCs and this particular case: lately I've
+  encountered one interesting case of Par IO usage. FHCI USB needs
+  switching between pin's dedicated functions and GPIO functions.
+  So, firstly it is using pins as dedicated, and later (at the bus
+  reset) driver turns them to act as GPIOs. This is still handled
+  without pio-map though, via gpios = <> property for that driver. ]
+
+> In other words, the pin configurations are dependent on the UCC 
+> configurations, and the UCC configurations are stored in the device tree.  
+> So it makes sense to put the pin configurations in the device tree, too.
+
+In that particular case UCC configuration is static, for every UCC.
+So, we can set up all pins in the firmware/board file.
+
+Please correct me if I'm wrong.
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
