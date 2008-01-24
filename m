@@ -1,76 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbYAXTjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbYAXTj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757985AbYAXTjl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 14:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbYAXTfQ
+	id S1758062AbYAXTj5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 14:39:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbYAXTfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 14:35:16 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46558 "EHLO
+	Thu, 24 Jan 2008 14:35:19 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:46564 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756175AbYAXTel (ORCPT
+	with ESMTP id S1756177AbYAXTeo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 14:34:41 -0500
-Message-Id: <20080124193437.670125114@szeredi.hu>
+	Thu, 24 Jan 2008 14:34:44 -0500
+Message-Id: <20080124193439.058832742@szeredi.hu>
 References: <20080124193341.166753833@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Thu, 24 Jan 2008 20:33:56 +0100
+Date: Thu, 24 Jan 2008 20:33:57 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [patch 15/26] mount options: fix hostfs
-Content-Disposition: inline; filename=hostfs_opts.patch
-Cc: Jeff Dike <jdike@addtoit.com>
+Subject: [patch 16/26] mount options: fix hpfs
+Content-Disposition: inline; filename=hpfs_opts.patch
+Cc: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Add the "host path" option to /proc/mounts for UML hostfs filesystems.
+Add a .show_options super operation to hpfs.
 
-The mount source (mnt_devname) should really be used for this, but not
-easy to change now in a backward compatible way.
+Use generic_show_options() and save the complete option string in
+hpfs_fill_super() and hpfs_remount_fs().
+
+Also add a small fix: hpfs_remount_fs() should return -EINVAL on
+error, instead of 1, which is not an error value.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/hostfs/hostfs_kern.c
+Index: linux/fs/hpfs/super.c
 ===================================================================
---- linux.orig/fs/hostfs/hostfs_kern.c	2008-01-17 19:00:55.000000000 +0100
-+++ linux/fs/hostfs/hostfs_kern.c	2008-01-21 19:19:55.000000000 +0100
-@@ -11,6 +11,7 @@
- #include <linux/mm.h>
- #include <linux/pagemap.h>
- #include <linux/statfs.h>
-+#include <linux/seq_file.h>
- #include "hostfs.h"
- #include "init.h"
- #include "kern.h"
-@@ -322,12 +323,25 @@ static void hostfs_destroy_inode(struct 
- 	kfree(HOSTFS_I(inode));
+--- linux.orig/fs/hpfs/super.c	2008-01-17 19:00:14.000000000 +0100
++++ linux/fs/hpfs/super.c	2008-01-23 23:36:53.000000000 +0100
+@@ -386,6 +386,7 @@ static int hpfs_remount_fs(struct super_
+ 	int lowercase, conv, eas, chk, errs, chkdsk, timeshift;
+ 	int o;
+ 	struct hpfs_sb_info *sbi = hpfs_sb(s);
++	char *new_opts = kstrdup(data, GFP_KERNEL);
+ 	
+ 	*flags |= MS_NOATIME;
+ 	
+@@ -398,15 +399,15 @@ static int hpfs_remount_fs(struct super_
+ 	if (!(o = parse_opts(data, &uid, &gid, &umask, &lowercase, &conv,
+ 	    &eas, &chk, &errs, &chkdsk, &timeshift))) {
+ 		printk("HPFS: bad mount options.\n");
+-	    	return 1;
++		goto out_err;
+ 	}
+ 	if (o == 2) {
+ 		hpfs_help();
+-		return 1;
++		goto out_err;
+ 	}
+ 	if (timeshift != sbi->sb_timeshift) {
+ 		printk("HPFS: timeshift can't be changed using remount.\n");
+-		return 1;
++		goto out_err;
+ 	}
+ 
+ 	unmark_dirty(s);
+@@ -419,7 +420,14 @@ static int hpfs_remount_fs(struct super_
+ 
+ 	if (!(*flags & MS_RDONLY)) mark_dirty(s);
+ 
++	kfree(s->s_options);
++	s->s_options = new_opts;
++
+ 	return 0;
++
++out_err:
++	kfree(new_opts);
++	return -EINVAL;
  }
  
-+static int hostfs_show_options(struct seq_file *seq, struct vfsmount *vfs)
-+{
-+	struct inode *root = vfs->mnt_sb->s_root->d_inode;
-+	const char *root_path = HOSTFS_I(root)->host_filename;
-+	size_t offset = strlen(root_ino) + 1;
-+
-+	if (strlen(root_path) > offset)
-+		seq_printf(seq, ",%s", root_path + offset);
-+
-+	return 0;
-+}
-+
- static const struct super_operations hostfs_sbops = {
- 	.alloc_inode	= hostfs_alloc_inode,
- 	.drop_inode	= generic_delete_inode,
- 	.delete_inode   = hostfs_delete_inode,
- 	.destroy_inode	= hostfs_destroy_inode,
- 	.statfs		= hostfs_statfs,
-+	.show_options	= hostfs_show_options,
+ /* Super operations */
+@@ -432,6 +440,7 @@ static const struct super_operations hpf
+ 	.put_super	= hpfs_put_super,
+ 	.statfs		= hpfs_statfs,
+ 	.remount_fs	= hpfs_remount_fs,
++	.show_options	= generic_show_options,
  };
  
- int hostfs_readdir(struct file *file, void *ent, filldir_t filldir)
+ static int hpfs_fill_super(struct super_block *s, void *options, int silent)
+@@ -454,6 +463,8 @@ static int hpfs_fill_super(struct super_
+ 
+ 	int o;
+ 
++	save_mount_options(s, options);
++
+ 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	if (!sbi)
+ 		return -ENOMEM;
 
 --
