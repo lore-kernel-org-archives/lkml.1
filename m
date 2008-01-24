@@ -1,160 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbYAXTmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758846AbYAXTm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbYAXTmn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 14:42:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbYAXTfm
+	id S1758846AbYAXTm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 14:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbYAXTfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 14:35:42 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46581 "EHLO
+	Thu, 24 Jan 2008 14:35:44 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:46576 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754076AbYAXTez (ORCPT
+	with ESMTP id S1756250AbYAXTev (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 14:34:55 -0500
-Message-Id: <20080124193451.012194162@szeredi.hu>
+	Thu, 24 Jan 2008 14:34:51 -0500
+Message-Id: <20080124193447.258770906@szeredi.hu>
 References: <20080124193341.166753833@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Thu, 24 Jan 2008 20:34:03 +0100
+Date: Thu, 24 Jan 2008 20:34:01 +0100
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [patch 22/26] mount options: fix reiserfs
-Content-Disposition: inline; filename=reiserfs_opts.patch
-Cc: Jeff Mahoney <jeffm@suse.com>
+Subject: [patch 20/26] mount options: fix ncpfs
+Content-Disposition: inline; filename=ncpfs_opts.patch
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Add a .show_options super operation to reiserfs.
+Add a .show_options super operation to ncpfs.
 
-Use generic_show_options() and save the complete option string in
-reiserfs_fill_super() and reiserfs_remount().
+Small fix: add FS_BINARY_MOUNTDATA to the filesystem type flags, since
+it can take binary data, as well as text (similarly to NFS).
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/reiserfs/super.c
+Index: linux/fs/ncpfs/inode.c
 ===================================================================
---- linux.orig/fs/reiserfs/super.c	2008-01-17 19:00:55.000000000 +0100
-+++ linux/fs/reiserfs/super.c	2008-01-22 21:20:33.000000000 +0100
-@@ -617,6 +617,7 @@ static const struct super_operations rei
- 	.unlockfs = reiserfs_unlockfs,
- 	.statfs = reiserfs_statfs,
- 	.remount_fs = reiserfs_remount,
-+	.show_options = generic_show_options,
- #ifdef CONFIG_QUOTA
- 	.quota_read = reiserfs_quota_read,
- 	.quota_write = reiserfs_quota_write,
-@@ -1138,6 +1139,7 @@ static int reiserfs_remount(struct super
- 	unsigned long safe_mask = 0;
- 	unsigned int commit_max_age = (unsigned int)-1;
- 	struct reiserfs_journal *journal = SB_JOURNAL(s);
-+	char *new_opts = kstrdup(arg, GFP_KERNEL);
- 	int err;
- #ifdef CONFIG_QUOTA
- 	int i;
-@@ -1153,7 +1155,8 @@ static int reiserfs_remount(struct super
- 			REISERFS_SB(s)->s_qf_names[i] = NULL;
- 		}
- #endif
--		return -EINVAL;
-+		err = -EINVAL;
-+		goto out_err;
- 	}
+--- linux.orig/fs/ncpfs/inode.c	2008-01-24 13:48:37.000000000 +0100
++++ linux/fs/ncpfs/inode.c	2008-01-24 15:57:17.000000000 +0100
+@@ -28,6 +28,8 @@
+ #include <linux/init.h>
+ #include <linux/smp_lock.h>
+ #include <linux/vfs.h>
++#include <linux/mount.h>
++#include <linux/seq_file.h>
  
- 	handle_attrs(s);
-@@ -1191,9 +1194,9 @@ static int reiserfs_remount(struct super
- 	}
+ #include <linux/ncp_fs.h>
  
- 	if (blocks) {
--		int rc = reiserfs_resize(s, blocks);
--		if (rc != 0)
--			return rc;
-+		err = reiserfs_resize(s, blocks);
-+		if (err != 0)
-+			goto out_err;
- 	}
+@@ -36,9 +38,15 @@
+ #include "ncplib_kernel.h"
+ #include "getopt.h"
  
- 	if (*mount_flags & MS_RDONLY) {
-@@ -1201,16 +1204,16 @@ static int reiserfs_remount(struct super
- 		/* remount read-only */
- 		if (s->s_flags & MS_RDONLY)
- 			/* it is read-only already */
--			return 0;
-+			goto out_ok;
- 		/* try to remount file system with read-only permissions */
- 		if (sb_umount_state(rs) == REISERFS_VALID_FS
- 		    || REISERFS_SB(s)->s_mount_state != REISERFS_VALID_FS) {
--			return 0;
-+			goto out_ok;
- 		}
- 
- 		err = journal_begin(&th, s, 10);
- 		if (err)
--			return err;
-+			goto out_err;
- 
- 		/* Mounting a rw partition read-only. */
- 		reiserfs_prepare_for_journal(s, SB_BUFFER_WITH_SB(s), 1);
-@@ -1220,11 +1223,13 @@ static int reiserfs_remount(struct super
- 		/* remount read-write */
- 		if (!(s->s_flags & MS_RDONLY)) {
- 			reiserfs_xattr_init(s, *mount_flags);
--			return 0;	/* We are read-write already */
-+			goto out_ok;	/* We are read-write already */
- 		}
- 
--		if (reiserfs_is_journal_aborted(journal))
--			return journal->j_errno;
-+		if (reiserfs_is_journal_aborted(journal)) {
-+			err = journal->j_errno;
-+			goto out_err;
-+		}
- 
- 		handle_data_mode(s, mount_options);
- 		handle_barrier_mode(s, mount_options);
-@@ -1232,7 +1237,7 @@ static int reiserfs_remount(struct super
- 		s->s_flags &= ~MS_RDONLY;	/* now it is safe to call journal_begin */
- 		err = journal_begin(&th, s, 10);
- 		if (err)
--			return err;
-+			goto out_err;
- 
- 		/* Mount a partition which is read-only, read-write */
- 		reiserfs_prepare_for_journal(s, SB_BUFFER_WITH_SB(s), 1);
-@@ -1247,7 +1252,7 @@ static int reiserfs_remount(struct super
- 	SB_JOURNAL(s)->j_must_wait = 1;
- 	err = journal_end(&th, s, 10);
- 	if (err)
--		return err;
-+		goto out_err;
- 	s->s_dirt = 0;
- 
- 	if (!(*mount_flags & MS_RDONLY)) {
-@@ -1255,7 +1260,14 @@ static int reiserfs_remount(struct super
- 		reiserfs_xattr_init(s, *mount_flags);
- 	}
- 
-+out_ok:
-+	kfree(s->s_options);
-+	s->s_options = new_opts;
- 	return 0;
++#define NCP_DEFAULT_FILE_MODE 0600
++#define NCP_DEFAULT_DIR_MODE 0700
++#define NCP_DEFAULT_TIME_OUT 10
++#define NCP_DEFAULT_RETRY_COUNT 20
 +
-+out_err:
-+	kfree(new_opts);
-+	return err;
+ static void ncp_delete_inode(struct inode *);
+ static void ncp_put_super(struct super_block *);
+ static int  ncp_statfs(struct dentry *, struct kstatfs *);
++static int  ncp_show_options(struct seq_file *, struct vfsmount *);
+ 
+ static struct kmem_cache * ncp_inode_cachep;
+ 
+@@ -96,6 +104,7 @@ static const struct super_operations ncp
+ 	.put_super	= ncp_put_super,
+ 	.statfs		= ncp_statfs,
+ 	.remount_fs	= ncp_remount,
++	.show_options	= ncp_show_options,
+ };
+ 
+ extern struct dentry_operations ncp_root_dentry_operations;
+@@ -304,6 +313,37 @@ static void ncp_stop_tasks(struct ncp_se
+ 	flush_scheduled_work();
  }
  
- static int read_super_block(struct super_block *s, int offset)
-@@ -1559,6 +1571,8 @@ static int reiserfs_fill_super(struct su
- 	struct reiserfs_sb_info *sbi;
- 	int errval = -EINVAL;
- 
-+	save_mount_options(s, data);
++static int  ncp_show_options(struct seq_file *seq, struct vfsmount *mnt)
++{
++	struct ncp_server *server = NCP_SBP(mnt->mnt_sb);
++	unsigned int tmp;
 +
- 	sbi = kzalloc(sizeof(struct reiserfs_sb_info), GFP_KERNEL);
- 	if (!sbi) {
- 		errval = -ENOMEM;
++	if (server->m.uid != 0)
++		seq_printf(seq, ",uid=%u", server->m.uid);
++	if (server->m.gid != 0)
++		seq_printf(seq, ",gid=%u", server->m.gid);
++	if (server->m.mounted_uid != 0)
++		seq_printf(seq, ",owner=%u", server->m.mounted_uid);
++	tmp = server->m.file_mode & S_IALLUGO;
++	if (tmp != NCP_DEFAULT_FILE_MODE)
++		seq_printf(seq, ",mode=0%o", tmp);
++	tmp = server->m.dir_mode & S_IALLUGO;
++	if (tmp != NCP_DEFAULT_DIR_MODE)
++		seq_printf(seq, ",dirmode=0%o", tmp);
++	if (server->m.time_out != NCP_DEFAULT_TIME_OUT * HZ / 100) {
++		tmp = server->m.time_out * 100 / HZ;
++		seq_printf(seq, ",timeout=%u", tmp);
++	}
++	if (server->m.retry_count != NCP_DEFAULT_RETRY_COUNT)
++		seq_printf(seq, ",retry=%u", server->m.retry_count);
++	if (server->m.flags != 0)
++		seq_printf(seq, ",flags=%lu", server->m.flags);
++	if (server->m.wdog_pid != NULL)
++		seq_printf(seq, ",wdogpid=%u", pid_vnr(server->m.wdog_pid));
++
++	return 0;
++}
++
+ static const struct ncp_option ncp_opts[] = {
+ 	{ "uid",	OPT_INT,	'u' },
+ 	{ "gid",	OPT_INT,	'g' },
+@@ -331,12 +371,12 @@ static int ncp_parse_options(struct ncp_
+ 	data->mounted_uid = 0;
+ 	data->wdog_pid = NULL;
+ 	data->ncp_fd = ~0;
+-	data->time_out = 10;
+-	data->retry_count = 20;
++	data->time_out = NCP_DEFAULT_TIME_OUT;
++	data->retry_count = NCP_DEFAULT_RETRY_COUNT;
+ 	data->uid = 0;
+ 	data->gid = 0;
+-	data->file_mode = 0600;
+-	data->dir_mode = 0700;
++	data->file_mode = NCP_DEFAULT_FILE_MODE;
++	data->dir_mode = NCP_DEFAULT_DIR_MODE;
+ 	data->info_fd = -1;
+ 	data->mounted_vol[0] = 0;
+ 	
+@@ -982,6 +1022,7 @@ static struct file_system_type ncp_fs_ty
+ 	.name		= "ncpfs",
+ 	.get_sb		= ncp_get_sb,
+ 	.kill_sb	= kill_anon_super,
++	.fs_flags	= FS_BINARY_MOUNTDATA,
+ };
+ 
+ static int __init init_ncp_fs(void)
 
 --
