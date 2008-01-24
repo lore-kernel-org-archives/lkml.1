@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYAXF1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbYAXF30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbYAXF1X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 00:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbYAXF1Q
+	id S1754553AbYAXF30 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 00:29:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbYAXF3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 00:27:16 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:51669 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbYAXF1P (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 00:27:15 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, Jon Masters <jcm@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: CONFIG_MARKERS
-In-Reply-To: Your message of "Wed, 23 Jan 2008 09:48:12 EST."
-             <20080123144811.GA12296@Krystal>
-From: Valdis.Kletnieks@vt.edu
-References: <1201029235.18144.62.camel@perihelion> <y0modbdnt4e.fsf@ton.toronto.redhat.com> <20080123031005.GA16766@Krystal> <1201061860.25284.28.camel@perihelion> <20080123131442.GA6562@redhat.com>
-            <20080123144811.GA12296@Krystal>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1201152358_2830P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 24 Jan 2008 00:25:58 -0500
-Message-ID: <27267.1201152358@turing-police.cc.vt.edu>
+	Thu, 24 Jan 2008 00:29:17 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:45569 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752175AbYAXF3Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 00:29:16 -0500
+Date: Thu, 24 Jan 2008 10:59:07 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Theodore Ts'o" <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH 30/49] ext4: Convert truncate_mutex to read write
+	semaphore.
+Message-ID: <20080124052907.GB7902@skywalker>
+References: <1200970948-17903-23-git-send-email-tytso@mit.edu> <1200970948-17903-24-git-send-email-tytso@mit.edu> <1200970948-17903-25-git-send-email-tytso@mit.edu> <1200970948-17903-26-git-send-email-tytso@mit.edu> <1200970948-17903-27-git-send-email-tytso@mit.edu> <1200970948-17903-28-git-send-email-tytso@mit.edu> <1200970948-17903-29-git-send-email-tytso@mit.edu> <1200970948-17903-30-git-send-email-tytso@mit.edu> <1200970948-17903-31-git-send-email-tytso@mit.edu> <20080123140659.5b70ae6b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080123140659.5b70ae6b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1201152358_2830P
-Content-Type: text/plain; charset=us-ascii
+On Wed, Jan 23, 2008 at 02:06:59PM -0800, Andrew Morton wrote:
+> > On Mon, 21 Jan 2008 22:02:09 -0500 "Theodore Ts'o" <tytso@MIT.EDU> wrote:
+> > +int ext4_get_blocks_wrap(handle_t *handle, struct inode *inode, sector_t block,
+> > +			unsigned long max_blocks, struct buffer_head *bh,
+> > +			int create, int extend_disksize)
+> > +{
+> > +	int retval;
+> > +	if (create) {
+> > +		down_write((&EXT4_I(inode)->i_data_sem));
+> > +	} else {
+> > +		down_read((&EXT4_I(inode)->i_data_sem));
+> > +	}
+> > +	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
+> > +		retval =  ext4_ext_get_blocks(handle, inode, block, max_blocks,
+> > +				bh, create, extend_disksize);
+> > +	} else {
+> > +		retval = ext4_get_blocks_handle(handle, inode, block,
+> > +				max_blocks, bh, create, extend_disksize);
+> > +	}
+> > +	if (create) {
+> > +		up_write((&EXT4_I(inode)->i_data_sem));
+> > +	} else {
+> > +		up_read((&EXT4_I(inode)->i_data_sem));
+> > +	}
+> 
+> This function has many unneeded braces.  checkpatch used to detect this
+> but it seems to have broken.
 
-On Wed, 23 Jan 2008 09:48:12 EST, Mathieu Desnoyers said:
-
-> This specific one is a kernel policy matter, and I personally don't
-> have a strong opinion about it. I agree that you raise a good counter
-> argument : it can be useful to proprietary modules users to be able to
-> extract tracing information from those modules to argue with their
-> vendors that their driver/hardware is broken (a tracer is _very_ useful
-> in that kind of situation).
-
-Amen, brother. Been there, done that, got the tshirt (not on Linux, but
-other operating systems).
-
->                             However, it is also useful to proprieraty
-> module writers who can benefit from the merged kernel/modules traces.
-> Do we want to give them this ability ? 
-
-The proprietary module writer has the *source* for the kernel and their module.
-There's no way you can prevent the proprietary module writers from using this
-feature as long as you allow other module writers to use it.
-
->                                           It would surely help writing
-> better proprieraty kernel modules.
-
-The biggest complaint against proprietary modules is that they make it
-impossible for *us* to debug.  And you want to argue *against* a feature that
-would allow them to develop better code that causes less crashes, and therefor
-less people *asking* for us to debug it?
-
-Remember - when a user tries a Linux box with a proprietary module, and the
-experience sucks because the module sucks, they will walk away thinking
-"Linux sucks", not "That module sucks".
+The follow up patch "ext4: Take read lock during overwrite case" removes
+those single line if statement.
 
 
---==_Exmh_1201152358_2830P
-Content-Type: application/pgp-signature
+> 
+> > +	return retval;
+> > +}
+> >  static int ext4_get_block(struct inode *inode, sector_t iblock,
+> >  			struct buffer_head *bh_result, int create)
+> 
+> Mising newline.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Fixed.
 
-iD8DBQFHmCFmcC3lWbTT17ARAqrqAJ0blfilJZPSXmsU7TSBiA6UUtDaEwCdGlX4
-hbNl9YoUg9SMOXjrDjnHCoY=
-=oBOx
------END PGP SIGNATURE-----
-
---==_Exmh_1201152358_2830P--
+-aneesh
