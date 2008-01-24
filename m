@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbYAXQMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbYAXQRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbYAXQMP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 11:12:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYAXQMA
+	id S1755547AbYAXQRm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 11:17:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYAXQRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 11:12:00 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45787 "EHLO mx1.redhat.com"
+	Thu, 24 Jan 2008 11:17:34 -0500
+Received: from main.gmane.org ([80.91.229.2]:59601 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752728AbYAXQL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 11:11:59 -0500
-Message-ID: <4798B8BA.9090203@redhat.com>
-Date: Thu, 24 Jan 2008 11:11:38 -0500
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 4/4] firewire: fw-core: react on bus resets while the
- config ROM is being fetched
-References: <tkrat.66a8b3070e07d80f@s5r6.in-berlin.de> <200711011453.35268.nickpiggin@yahoo.com.au> <4729A1BF.8010800@s5r6.in-berlin.de> <tkrat.288da3bd61ecfb20@s5r6.in-berlin.de> <tkrat.9c7056f105b7d6a9@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.9c7056f105b7d6a9@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752687AbYAXQRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 11:17:33 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
+Subject: Re: Massive IDE problems. Who leaves data here?
+Date: Thu, 24 Jan 2008 17:25:22 +0100
+Message-ID: <4798BBF2.5000508@nurfuerspam.de>
+References: <fn5ivo$ck2$1@ger.gmane.org> <47965138.8060603@garzik.org>	 <fn5jsn$ful$1@ger.gmane.org>	 <2c0942db0801221246u678d2a20xef9cf93ee28eaf51@mail.gmail.com>	 <fn5l9c$l6m$1@ger.gmane.org> <2c0942db0801221312v66887218qe0b9c853384ccd0b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: Jeff Garzik <jeff@garzik.org>
+X-Gmane-NNTP-Posting-Host: p4fd4ba1f.dip0.t-ipconnect.de
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.11) Gecko/20071129 SeaMonkey/1.1.7
+In-Reply-To: <2c0942db0801221312v66887218qe0b9c853384ccd0b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> read_rom() obtained a fresh new fw_device.generation for each read
-> transaction.  Hence it was able to continue reading in the middle of the
-> ROM even if a bus reset happened.  However the device may have modified
-> the ROM during the reset.  We would end up with a corrupt fetched ROM
-> image then.
-> 
-> Although all of this is quite unlikely, it is not impossible.
-> Therefore we now restart reading the ROM if the bus generation changed.
-> 
-> Side note:  The barrier in read_rom(), inserted by patch "firewire:
-> enforce access order between generation and node ID" is not necessary
-> anymore because the sequence of calls
-> 	fw_device_init() ->
-> 		read_bus_info_block() ->
-> 			read_rom()
-> 			read_rom()
-> 			read_rom()
-> 			...
-> will take care that generation is read before node_id, won't it?
-> 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Ray Lee wrote:
+> Oy. Just know that without CC:ing people, I'm having to add Jeff back
+> in by hand, and we may not notice your messages. Please, with whatever
+> you're using to send email, CC: people that you want to read your
+> messages, okay? LKML gets a lot of messages, and it's easy to miss
+> some.
 
-Based on a quick read through the code path, coupled with empirical evidence,
-yes, it appears safe to remove the barrier in read_rom().
+Trying to do this with this message...
 
-Signed-off-by: Jarod Wilson <jwilson@redhat.com>
+> No, not in the least. When power supplies are on the edge and
+> overloaded, the quality of power drops. 12V lines may only supply 11
+> or less, etc. Some components in your computer will deal with it fine,
+> others won't.
+> 
+> In general, if you have weird hardware problems and you're ruled out
+> memory and overheating, the power supply is almost always the next
+> thing to check.
 
--- 
-Jarod Wilson
-jwilson@redhat.com
+I didn't rule out "memory" for sure. I'll try "memcheck" this evening.
+
+Yours
+
+Manuel
 
