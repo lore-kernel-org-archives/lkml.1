@@ -1,71 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbYAXUp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbYAXUq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759013AbYAXUp6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 15:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758359AbYAXUjj
+	id S1759388AbYAXUq1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 15:46:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759016AbYAXUjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 15:39:39 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:60671 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758892AbYAXUji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 15:39:38 -0500
-X-Greylist: delayed 519 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Jan 2008 15:39:38 EST
-Message-ID: <4798F57C.8090300@tycho.nsa.gov>
-Date: Thu, 24 Jan 2008 15:30:52 -0500
-From: Eamon Walsh <ewalsh@tycho.nsa.gov>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 24 Jan 2008 15:39:54 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57695 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759007AbYAXUjx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 15:39:53 -0500
+Date: Thu, 24 Jan 2008 21:39:52 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 07/26] Add INIT_ARRAY() to kernel.h
+In-Reply-To: <20080124203335.082459062@polymtl.ca>
+Message-ID: <Pine.LNX.4.64.0801242137020.12676@fbirervta.pbzchgretzou.qr>
+References: <20080124202706.250598537@polymtl.ca> <20080124203335.082459062@polymtl.ca>
 MIME-Version: 1.0
-To: SELinux List <selinux@tycho.nsa.gov>
-CC: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Subject: [PATCH] selinux: make mls_compute_sid always polyinstantiate
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the requirement that the new and related object types 
-differ in order to polyinstantiate by MLS level.  This allows MLS 
-polyinstantiation to occur in the absence of explicit type_member rules 
-or when the type has not changed.
 
-Potential users of this support include pam_namespace.so (directory 
-polyinstantiation) and the SELinux X support (property polyinstantiation).
+On Jan 24 2008 15:27, Mathieu Desnoyers wrote:
+>such as:
+>text_poke(addr, INIT_ARRAY(unsigned char, 0xf0, len), len);
+ text_poke(addr, (unsigned char[]){[0 ... len-1] = val});
 
-Signed-off-by: Eamon Walsh <ewalsh@tycho.nsa.gov>
----
+Well ugliness is debatable, but at least:
 
- mls.c |   11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
+>+#define INIT_ARRAY(type, val, len) ((type [len]) { [0 ... (len)-1] = (val) })
+  #define INIT_ARRAY(type, val, len) ((type[]){[0 ... (len)-1] = (val)})
 
-
-diff --git a/security/selinux/ss/mls.c b/security/selinux/ss/mls.c
-index fb5d70a..3bbcb53 100644
---- a/security/selinux/ss/mls.c
-+++ b/security/selinux/ss/mls.c
-@@ -537,15 +537,8 @@ int mls_compute_sid(struct context *scontext,
- 			/* Use the process effective MLS attributes. */
- 			return mls_context_cpy_low(newcontext, scontext);
- 	case AVTAB_MEMBER:
--		/* Only polyinstantiate the MLS attributes if
--		   the type is being polyinstantiated */
--		if (newcontext->type != tcontext->type) {
--			/* Use the process effective MLS attributes. */
--			return mls_context_cpy_low(newcontext, scontext);
--		} else {
--			/* Use the related object MLS attributes. */
--			return mls_context_cpy(newcontext, tcontext);
--		}
-+		/* Use the process effective MLS attributes. */
-+		return mls_context_cpy_low(newcontext, scontext);
- 	default:
- 		return -EINVAL;
- 	}
-
-
-
--- 
-Eamon Walsh <ewalsh@tycho.nsa.gov>
-National Security Agency
-
+You can use type[].
