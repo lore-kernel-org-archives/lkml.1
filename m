@@ -1,103 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYAXASb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755005AbYAXATc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbYAXASb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 19:18:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYAXASX
+	id S1755005AbYAXATc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 19:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYAXATZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 19:18:23 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:22273 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbYAXASX (ORCPT
+	Wed, 23 Jan 2008 19:19:25 -0500
+Received: from smtp-out2.tiscali.nl ([195.241.79.177]:59661 "EHLO
+	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751753AbYAXATY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 19:18:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=nc10ilVtGYexrAxjxqwizHLA22r8RF3WA0Ujg9PPemx1PoE4R6mUeqzVybeJlKLxkRdTGpN/hMcSm9gDgDcaGKtudrdKRNPwXb60tMInG2qCf4axBBFxBucEdINMnZ57fvSsNvEpfV2dn9hzlaevNLHybcs1W9m5vFTjFZEQfUs=
-Subject: Re: [PATCH] x86: ignore spurious faults
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-In-Reply-To: <4797D64D.1060105@goop.org>
-References: <4797D64D.1060105@goop.org>
-Content-Type: text/plain
-Date: Wed, 23 Jan 2008 16:18:36 -0800
-Message-Id: <1201133916.16972.124.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 23 Jan 2008 19:19:24 -0500
+Message-ID: <4797D968.1030101@tiscali.nl>
+Date: Thu, 24 Jan 2008 01:18:48 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Joe Perches <joe@perches.com>
+CC: Andy Whitcroft <apw@shadowen.org>, jwboyer@linux.vnet.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
+References: <4797C1AD.3040307@tiscali.nl> <1201129527.4988.69.camel@localhost>
+In-Reply-To: <1201129527.4988.69.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-23 at 16:05 -0800, Jeremy Fitzhardinge wrote:
-> ===================================================================
-> --- a/arch/x86/mm/fault_32.c
-> +++ b/arch/x86/mm/fault_32.c
-> @@ -290,6 +290,53 @@ static int is_errata93(struct pt_regs *r
->  
+Joe Perches wrote:
+> On Wed, 2008-01-23 at 23:37 +0100, Roel Kluin wrote:
+>> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+>> ---
+>> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+>> index ebf9e21..dcfb459 100644
+>> --- a/arch/powerpc/boot/4xx.c
+>> +++ b/arch/powerpc/boot/4xx.c
+>> @@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
+>>  	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
+>>  	cs = 0;
+>>  	while (val) {
+>> -		if (val && 0x1)
+>> +		if (val & 0x1)
+>>  			cs++;
+>>  		val = val >> 1;
 > 
->  /*
-> + * Handle a spurious fault caused by a stale TLB entry.  This allows
-> + * us to lazily refresh the TLB when increasing the permissions of a
-> + * kernel page (RO -> RW or NX -> X).  Doing it eagerly is very
-> + * expensive since that implies doing a full cross-processor TLB
-> + * flush, even if no stale TLB entries exist on other processors.
-> + * There are no security implications to leaving a stale TLB when
-> + * increasing the permissions on a page.
-> + */
-> +static int spurious_fault(unsigned long address,
-> +			  unsigned long error_code)
-> +{
-> +	pgd_t *pgd;
-> +	pud_t *pud;
-> +	pmd_t *pmd;
-> +	pte_t *pte;
-> +
-> +	/* Reserved-bit violation or user access to kernel space? */
-> +	if (error_code & (PF_USER | PF_RSVD))
-> +		return 0;
-> +
-> +	pgd = init_mm.pgd + pgd_index(address);
-> +	if (!pgd_present(*pgd))
-> +		return 0;
-> +
-> +	pud = pud_offset(pgd, address);
-> +	if (!pud_present(*pud))
-> +		return 0;
-> +
-> +	pmd = pmd_offset(pud, address);
-> +	if (!pmd_present(*pmd))
-> +		return 0;
-> +
-> +	pte = pte_offset_kernel(pmd, address);
-> +	if (!pte_present(*pte))
-> +		return 0;
-> +	if ((error_code & 0x02) && !pte_write(*pte))
-> +		return 0;
+> I think this pattern should be added to checkpatch
 
-	if ((error_code & PF_WRITE) && !pte_write(*pte))
-		return 0;
+I agree but...
 
-> +
-> +#if _PAGE_NX
-> +	if ((error_code & PF_INSTR) && !pte_exec(*pte))
-> +		return 0;
-> +#endif
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+> index 579f50f..147e573 100755
+> --- a/scripts/checkpatch.pl
+> +++ b/scripts/checkpatch.pl
+> @@ -1337,6 +1337,11 @@ sub process {
+>  			}
+>  		}
+>  
+> +# Check for bitwise tests written as boolean
+> +		if ($line =~ /\&\&\s*0[xX]/) {
+> +			WARN("boolean test with hexadecimal, perhaps just 1 \&?\n" . $herecurr);
+> +		}
 > +
 
-How about dropping the #if and rely on the !pte_exec() test always
-being false when _PAGE_NX = 0?  The compiler should just trim this
-all away.
+when you use git-grep -n "\(&&\|||\)${s}0x\([A-Z0-9]*\|[a-z0-9]*\)",
+(with s="[[:space:]]*") there will be false positives like
 
-from pgtable.h:
+if (relocation < -0x20000 || 0x1fffc < relocation)
+if (ARCH_SUN4C_SUN4 && addr < 0xe0000000 && 0x20000000 - len < addr) {
+(and more)
 
-static inline int pte_exec(pte_t pte)           { return !(pte_val(pte)
-& _PAGE_NX); }
+However, if you search with
+git-grep -n " \(&&\|||\)${s}0x\([A-Z0-9]*\|[a-z0-9]*\)$s\()\|&&\|||\)"
+you won't get these false positives, but you do get the one I fixed.
 
-Cheers,
+Also there is the same logic flipped (though it did not give matches at
+this time):
+git-grep -n " \(&&\|||\|(\)${s}0x\([A-Z0-9]*\|[a-z0-9]*\)$s\(&&\|||\)"
 
-Harvey
+so i'd propose to change that to
+--
+Catch boolean tests with hexadecimals, based on suggestion by Joe Perches
 
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 579f50f..8ac7c7b 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1337,6 +1337,12 @@ sub process {
+ 			}
+ 		}
+ 
++# Check for bitwise tests written as boolean
++		if ($line =~ /(?:(?:\(|\&\&|\|\|)\s*0[xX]\s*(?:&&|\|\|)|
++				(?:\&\&|\|\|)\s*0[xX]\s*(?:\)|&&|\|\|))/) {
++			WARN("boolean test with hexadecimal, perhaps just 1 \& or \|?\n" . $herecurr);
++		}
++
+ # if and else should not have general statements after it
+ 		if ($line =~ /^.\s*(?:}\s*)?else\b(.*)/ &&
+ 		    $1 !~ /^\s*(?:\sif|{|\\|$)/) {
