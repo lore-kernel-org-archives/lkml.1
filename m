@@ -1,152 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbYAXMwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYAXMxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755636AbYAXMwV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 07:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbYAXMwJ
+	id S1755846AbYAXMxT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 07:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbYAXMxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 07:52:09 -0500
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:54644 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752553AbYAXMwH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 07:52:07 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FADYZmEdMQWYq/2dsb2JhbACBV5AfnUeCAA
-Date: Thu, 24 Jan 2008 07:47:04 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Valdis.Kletnieks@vt.edu, "Frank Ch. Eigler" <fche@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jon Masters <jcm@redhat.com>
-Subject: [PATCH] Linux Kernel Markers Support for Proprierary Modules
-Message-ID: <20080124124703.GB32559@Krystal>
-References: <1201029235.18144.62.camel@perihelion> <y0modbdnt4e.fsf@ton.toronto.redhat.com> <20080123031005.GA16766@Krystal> <1201061860.25284.28.camel@perihelion> <20080123131442.GA6562@redhat.com> <20080123144811.GA12296@Krystal> <27267.1201152358@turing-police.cc.vt.edu> <1201155569.25284.88.camel@perihelion>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 Jan 2008 07:53:07 -0500
+Received: from mail.mev.co.uk ([62.49.15.74]:46385 "EHLO mail.mev.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752137AbYAXMxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 07:53:06 -0500
+Message-ID: <47988A29.2050603@mev.co.uk>
+Date: Thu, 24 Jan 2008 12:52:57 +0000
+From: Ian Abbott <abbotti@mev.co.uk>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net, gregkh@suse.de,
+       kristen.c.accardi@intel.com
+Subject: [PATCH(v2) 2.6.24-rc8] Fix fakephp deadlock
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1201155569.25284.88.camel@perihelion>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 07:43:36 up 81 days, 17:49,  3 users,  load average: 1.14, 1.04,
-	0.60
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-OriginalArrivalTime: 24 Jan 2008 12:52:57.0601 (UTC) FILETIME=[0B2B4F10:01C85E88]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There seems to be good arguments for markers to support proprierary modules. So
-I am throwing this one-liner in and let's see how people react. It only makes
-sure that a module that has been "forced" to be loaded won't have its markers
-used. It is important to leave this check to make sure the kernel does not crash
-by expecting the markers part of the struct module by mistake in the case there
-is an incorrect checksum.
+From: Ian Abbott <abbotti@mev.co.uk>
 
-It applies fine on 2.6.24-rc8-git3.
+This is the second (or third if you count the resend) version of my
+patch to fix the problem of a process deadlocking itself when it uses
+the fakephp driver to fake the removal of a PCI device.
 
-Discussion so far :
-http://lkml.org/lkml/2008/1/22/226
+This section describes the changes since the first version of the
+patch.  Skip to the next section (after the "---") for the original
+rationale and (slightly modified) patch description, and for the patch
+itself.
 
-Jon Masters <jcm@redhat.com> writes:
-I notice in module.c:
+Greg KH hinted at a race condition in the first version of the patch.
+In the first version, the enable_slot() function checked that the slot
+was still valid and then flushed the work queue to perform any pending
+removals of slots from sysfs before it finally rescanned the PCI buses.
+Another task could have come in and marked the slot as disabled after
+the validity check but before flushing the work queue, and this would
+cause the task to deadlock while flushing the work queue (for similar
+reasons to the problem I was initially trying to fix).  (The sysfs
+attribute file's buffer semaphore wouldn't necessarily protect against
+that, because writing "0" to the "power" file can trigger a cascade of
+other slot removals that don't have that protection.)
 
-#ifdef CONFIG_MARKERS
-      if (!mod->taints)
-              marker_update_probe_range(mod->markers,
-                      mod->markers + mod->num_markers, NULL, NULL);
-#endif
+This version of the patch rewrites the enable_slot() function so it no
+longer flushes the work queue.  To maintain the proper sequencing, it
+allocates and queues a work queue item to perform the PCI rescan (the
+work queue is single-threaded).  I also removed the slot validity check
+as we don't really care which slot was used to trigger a rescan.
 
-Is this an attempt to not set a marker for proprietary modules? [...]
+Greg KH also seemed to have a problem with my use of unsigned long for
+the 'removed' member of 'struct dummy_slot'.  I need that for the
+test_and_set_bit() and a narrower type wouldn't make 'struct dummy_slot'
+any smaller (and there are other ways to save space in 'struct
+dummy_slot' if it is a problem, but they make the code trickier).
 
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-I can't seem to find any discussion about this aspect.  If this is the
-intent, it seems misguided to me.  There may instead be a relationship
-to TAINT_FORCED_{RMMOD,MODULE}.  Mathieu?
+On with the rationale and patch description....
 
-- FChE
-
-On Tue, 2008-01-22 at 22:10 -0500, Mathieu Desnoyers wrote:
-On my part, its mostly a matter of not crashing the kernel when someone
-tries to force modprobe of a proprietary module (where the checksums
-doesn't match) on a kernel that supports the markers. Not doing so
-causes the markers to try to find the marker-specific information in
-struct module which doesn't exist and OOPSes.
-
-Christoph's point of view is rather more drastic than mine : it's not
-interesting for the kernel community to help proprietary modules writers,
-so it's a good idea not to give them marker support. (I CC'ed him so he
-can clarify his position).
-
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-[...]
-Another way of looking at this though is that by allowing/encouraging
-proprietary module writers to include markers, we and their users get
-new diagnostic capabilities.  It constitutes a little bit of opening
-up, which IMO we should reward rather than punish.
-
-
-* Vladis Ketnieks (Valdis.Kletnieks@vt.edu) wrote:
-On Wed, 23 Jan 2008 09:48:12 EST, Mathieu Desnoyers said:
-
-> This specific one is a kernel policy matter, and I personally don't
-> have a strong opinion about it. I agree that you raise a good counter
-> argument : it can be useful to proprietary modules users to be able to
-> extract tracing information from those modules to argue with their
-> vendors that their driver/hardware is broken (a tracer is _very_ useful
-> in that kind of situation).
-
-Amen, brother. Been there, done that, got the tshirt (not on Linux, but
-other operating systems).
-
->                             However, it is also useful to proprieraty
-> module writers who can benefit from the merged kernel/modules traces.
-> Do we want to give them this ability ?
-
-The proprietary module writer has the *source* for the kernel and their module.
-There's no way you can prevent the proprietary module writers from using this
-feature as long as you allow other module writers to use it.
-
->                                           It would surely help writing
-> better proprieraty kernel modules.
-
-The biggest complaint against proprietary modules is that they make it
-impossible for *us* to debug.  And you want to argue *against* a feature that
-would allow them to develop better code that causes less crashes, and therefor
-less people *asking* for us to debug it?
-
-Remember - when a user tries a Linux box with a proprietary module, and the
-experience sucks because the module sucks, they will walk away thinking
-"Linux sucks", not "That module sucks".
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Jon Masters <jcm@redhat.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
 ---
- kernel/module.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+From: Ian Abbott <abbotti@mev.co.uk>
 
-Index: linux-2.6-lttng/kernel/module.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2008-01-24 07:29:10.000000000 -0500
-+++ linux-2.6-lttng/kernel/module.c	2008-01-24 07:37:56.000000000 -0500
-@@ -1992,7 +1992,7 @@ static struct module *load_module(void _
- 	add_kallsyms(mod, sechdrs, symindex, strindex, secstrings);
- 
- #ifdef CONFIG_MARKERS
--	if (!mod->taints)
-+	if (!(mod->taints & TAINT_FORCED_MODULE))
- 		marker_update_probe_range(mod->markers,
- 			mod->markers + mod->num_markers, NULL, NULL);
- #endif
+If the fakephp driver is used to emulate removal of a PCI device by
+writing text string "0" to the "power" sysfs attribute file, this causes
+its parent directory and its contents (including the "power" file) to be
+deleted before the write operation returns.  Unfortunately, it ends up
+in a deadlock waiting for itself to complete.
+
+The deadlock is as follows: sysfs_write_file calls flush_write_buffer
+which calls sysfs_get_active_two before calling power_write_file in
+pci_hotplug_core.c via the sysfs store operation. The power_write_file
+function calls disable_slot in fakephp.c via the slot operation.  The
+disable_slot function calls remove_slot which calls pci_hp_deregister
+(back in pci_hotplug_core.c) which calls fs_remove_slot which calls
+sysfs_remove_file to remove the "power" file. The sysfs_remove_file
+function calls sysfs_hash_and_remove which calls sysfs_addrm_finish
+which calls sysfs_deactivate. The sysfs_deactivate function sees that
+something has an active reference on the sysfs_dirent (from the
+previous call to sysfs_get_active_two back up the call stack somewhere)
+so waits for the active reference to go away, which is of course
+impossible.
+
+The problem has been present since 2.6.21.
+
+This patch breaks the deadlock by queuing work queue items on a single-
+threaded work queue to remove a slot from sysfs, and to rescan the PCI
+buses.  There is also some protection against disabling a slot that is
+already being removed.
+
+Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
+---
+
+--- linux-2.6.24-rc8/drivers/pci/hotplug/fakephp.c.orig	2008-01-03 16:50:05.000000000 +0000
++++ linux-2.6.24-rc8/drivers/pci/hotplug/fakephp.c	2008-01-24 10:58:02.000000000 +0000
+@@ -39,6 +39,7 @@
+ #include <linux/init.h>
+ #include <linux/string.h>
+ #include <linux/slab.h>
++#include <linux/workqueue.h>
+ #include "../pci.h"
+
+ #if !defined(MODULE)
+@@ -63,10 +64,13 @@ struct dummy_slot {
+ 	struct list_head node;
+ 	struct hotplug_slot *slot;
+ 	struct pci_dev *dev;
++	struct work_struct remove_work;
++	unsigned long removed;
+ };
+
+ static int debug;
+ static LIST_HEAD(slot_list);
++static struct workqueue_struct *dummyphp_wq;
+
+ static int enable_slot (struct hotplug_slot *slot);
+ static int disable_slot (struct hotplug_slot *slot);
+@@ -109,7 +113,7 @@ static int add_slot(struct pci_dev *dev)
+ 	slot->name = &dev->dev.bus_id[0];
+ 	dbg("slot->name = %s\n", slot->name);
+
+-	dslot = kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
++	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
+ 	if (!dslot)
+ 		goto error_info;
+
+@@ -164,6 +168,14 @@ static void remove_slot(struct dummy_slo
+ 		err("Problem unregistering a slot %s\n", dslot->slot->name);
+ }
+
++/* called from the single-threaded workqueue handler to remove a slot */
++static void remove_slot_worker(struct work_struct *work)
++{
++	struct dummy_slot *dslot =
++		container_of(work, struct dummy_slot, remove_work);
++	remove_slot(dslot);
++}
++
+ /**
+  * pci_rescan_slot - Rescan slot
+  * @temp: Device template. Should be set: bus and devfn.
+@@ -267,11 +279,24 @@ static inline void pci_rescan(void) {
+ 	pci_rescan_buses(&pci_root_buses);
+ }
+
++/* called from the single-threaded workqueue handler to rescan all pci buses */
++static void pci_rescan_worker(struct work_struct *work)
++{
++	kfree(work);
++	pci_rescan();
++}
+
+ static int enable_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	/* mis-use enable_slot for rescanning of the pci bus */
+-	pci_rescan();
++	struct work_struct *pci_rescan_work;
++
++	pci_rescan_work = kmalloc(sizeof(struct work_struct), GFP_KERNEL);
++	if (!pci_rescan_work)
++		return -ENOMEM;
++
++	INIT_WORK(pci_rescan_work, pci_rescan_worker);
++	queue_work(dummyphp_wq, pci_rescan_work);
+ 	return -ENODEV;
+ }
+
+@@ -306,6 +331,10 @@ static int disable_slot(struct hotplug_s
+ 		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
+ 		return -ENODEV;
+ 	}
++	if (test_and_set_bit(0, &dslot->removed)) {
++		dbg("Slot already scheduled for removal\n");
++		return -ENODEV;
++	}
+ 	/* search for subfunctions and disable them first */
+ 	if (!(dslot->dev->devfn & 7)) {
+ 		for (func = 1; func < 8; func++) {
+@@ -328,8 +357,9 @@ static int disable_slot(struct hotplug_s
+ 	/* remove the device from the pci core */
+ 	pci_remove_bus_device(dslot->dev);
+
+-	/* blow away this sysfs entry and other parts. */
+-	remove_slot(dslot);
++	/* queue work item to blow away this sysfs entry and other parts. */
++	INIT_WORK(&dslot->remove_work, remove_slot_worker);
++	queue_work(dummyphp_wq, &dslot->remove_work);
+
+ 	return 0;
+ }
+@@ -340,6 +370,7 @@ static void cleanup_slots (void)
+ 	struct list_head *next;
+ 	struct dummy_slot *dslot;
+
++	destroy_workqueue(dummyphp_wq);
+ 	list_for_each_safe (tmp, next, &slot_list) {
+ 		dslot = list_entry (tmp, struct dummy_slot, node);
+ 		remove_slot(dslot);
+@@ -351,6 +382,10 @@ static int __init dummyphp_init(void)
+ {
+ 	info(DRIVER_DESC "\n");
+
++	dummyphp_wq = create_singlethread_workqueue(MY_NAME);
++	if (!dummyphp_wq)
++		return -ENOMEM;
++
+ 	return pci_scan_buses();
+ }
+
+
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+-=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
+-=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
