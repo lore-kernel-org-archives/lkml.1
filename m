@@ -1,1369 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbYAXCnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbYAXCtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753928AbYAXCnW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 21:43:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYAXCnE
+	id S1753012AbYAXCtP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 21:49:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbYAXCs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 21:43:04 -0500
-Received: from wr-out-0506.google.com ([64.233.184.231]:23365 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752436AbYAXCm6 convert rfc822-to-8bit (ORCPT
+	Wed, 23 Jan 2008 21:48:59 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:17921 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751261AbYAXCs6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 21:42:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RnzTB2umuJIyYLIfq619fC+lVTescLTphgM1vfeyzJEtqLeGs17rkERdO4lcev6ov75xf5rV/ugr4rf6+akyLNVUSZUed27Tv2P+xk/YwikZN/HZKUCEAN9MRlkAZ36BQdyvw9rzwb0xFOwW+OXTiyZkmzoRM9R+yf0FGhlYa7c=
-Message-ID: <a8e1da0801231842m128d8261oc14135716a0a2d85@mail.gmail.com>
-Date: Thu, 24 Jan 2008 10:42:52 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Subject: Re: 2.6.24-rc8-mm1 : net tcp_input.c warnings
-Cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0801231256360.31652@kivilampi-30.cs.helsinki.fi>
+	Wed, 23 Jan 2008 21:48:58 -0500
+Date: Wed, 23 Jan 2008 18:48:44 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       tao.ma@oracle.com
+Subject: Re: [PATCH 13/30] ocfs2: Implement group add for online resize
+Message-ID: <20080124024844.GP23506@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com> <1200609356-17788-14-git-send-email-mark.fasheh@oracle.com> <20080123140554.bf3981e5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a8e1da0801220109v6bf8931ev50f2210402c3ba41@mail.gmail.com>
-	 <Pine.LNX.4.64.0801221115150.31652@kivilampi-30.cs.helsinki.fi>
-	 <a8e1da0801221744m37021e88h5c188e5b31ea42bf@mail.gmail.com>
-	 <20080122.190137.206066966.davem@davemloft.net>
-	 <Pine.LNX.4.64.0801230937270.31652@kivilampi-30.cs.helsinki.fi>
-	 <a8e1da0801222344l101c2b90s363821c26bc8cb55@mail.gmail.com>
-	 <Pine.LNX.4.64.0801231034300.31652@kivilampi-30.cs.helsinki.fi>
-	 <Pine.LNX.4.64.0801231256360.31652@kivilampi-30.cs.helsinki.fi>
+In-Reply-To: <20080123140554.bf3981e5.akpm@linux-foundation.org>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 23, 2008 7:01 PM, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
-> On Wed, 23 Jan 2008, Ilpo Järvinen wrote:
->
-> > On Wed, 23 Jan 2008, Dave Young wrote:
+On Wed, Jan 23, 2008 at 02:05:54PM -0800, Andrew Morton wrote:
+> > On Thu, 17 Jan 2008 14:35:39 -0800 Mark Fasheh <mark.fasheh@oracle.com> wrote:
+> > From: Tao Ma <tao.ma@oracle.com>
+> > 
+> > This patch adds the ability for a userspace program to request that a
+> > properly formatted cluster group be added to the main allocation bitmap for
+> > an Ocfs2 file system. The request is made via an ioctl, OCFS2_IOC_GROUP_ADD.
+> > On a high level, this is similar to ext3, but we use a different ioctl as
+> > the structure which has to be passed through is different.
+> > 
+> > During an online resize, tunefs.ocfs2 will format any new cluster groups
+> > which must be added to complete the resize, and call OCFS2_IOC_GROUP_ADD on
+> > each one. Kernel verifies that the core cluster group information is valid
+> > and then does the work of linking it into the global allocation bitmap.
+> > 
+> >  ...
 > >
-> > > On Jan 23, 2008 3:41 PM, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
-> > > >
-> > > > On Tue, 22 Jan 2008, David Miller wrote:
-> > > >
-> > > > > From: "Dave Young" <hidave.darkstar@gmail.com>
-> > > > > Date: Wed, 23 Jan 2008 09:44:30 +0800
-> > > > >
-> > > > > > On Jan 22, 2008 6:47 PM, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
-> > > > > > > [PATCH] [TCP]: debug S+L
-> > > > > >
-> > > > > > Thanks, If there's new findings I will let you know.
-> > > > >
-> > > > > Thanks for helping with this bug Dave.
-> > > >
-> > > > I noticed btw that there thing might (is likely to) spuriously trigger at
-> > > > WARN_ON(sacked != tp->sacked_out); because those won't be equal when SACK
-> > > > is not enabled. If that does happen too often, I send a fixed patch for
-> > > > it, yet, the fact that I print print tp->rx_opt.sack_ok allows
-> > > > identification of those cases already as it's zero when SACK is not
-> > > > enabled.
-> > > >
-> > > > Just ask if you need the updated debug patch.
-> > >
-> > > Thanks,  please send, I would like to get it.
-> >
-> > There you go. I fixed non-SACK case by adding tcp_is_sack checks there and
-> > also added two verifys to tcp_ack to see if there's corruption outside of
-> > TCP.
->
-> There's some discussion about a problem that is very likely the same as in
-> here (sorry for not remembering to cc you in there due to rapid progress):
->
->    http://marc.info/?t=120107174200003&r=1&w=2
+> > +/* Used to pass group descriptor data when online resize is done */
+> > +struct ocfs2_new_group_input {
+> > +	__u64 group;		/* Group descriptor's blkno. */
+> > +	__u32 clusters;		/* Total number of clusters in this group */
+> > +	__u32 frees;		/* Total free clusters in this group */
+> > +	__u16 chain;		/* Chain for this group */
+> > +	__u16 reserved1;
+> > +	__u32 reserved2;
+> > +};
+> 
+> Are we sure that all architectures will lay this out in the same way with
+> both 32-bit and 64-bit userspace?
 
-Thanks.
+I looked it over several times and haven't been able to find a problem -
+everything is aligned at 8 byte boundaries. Do you see anything that might
+be problematic?
 
-New warning trigged with your debug patch:
 
-ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:00:1b.0 to 64
-e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
-e100: Copyright(c) 1999-2006 Intel Corporation
-ACPI: PCI Interrupt 0000:03:08.0[A] -> GSI 20 (level, low) -> IRQ 20
-e100: eth1: e100_probe: addr 0xefaff000, irq 20, MAC addr 00:13:72:e7:4d:66
-eth0:  setting full-duplex.
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0150030>] ? timer_list_show_tickdevices+0xf0/0x110
- [<c010af95>] ? native_sched_clock+0x85/0xe0
- [<c0153251>] ? put_lock_stats+0x21/0x30
- [<c01532c0>] ? lock_release_holdtime+0x60/0x80
- [<c0186af4>] ? check_bytes_and_report+0x24/0xc0
- [<c0186af4>] ? check_bytes_and_report+0x24/0xc0
- [<c0186bf1>] ? check_pad_bytes+0x61/0x80
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c03f7509>] ? tcp_clean_rtx_queue+0x2d9/0x5b0
- [<c03f5540>] tcp_add_reno_sack+0x30/0x50
- [<c03f6d72>] tcp_fastretrans_alert+0x3d2/0x700
- [<c03f7e63>] tcp_ack+0x1b3/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f3e>] ? __do_softirq+0x6e/0x120
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 0 vs 0 S: 0 vs 1 w: 2044790889-2044796616 (0)
-TCP wq(s)      <
-TCP wq(h) +++h+<
-l0 s1 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0250030>] ? generic_make_request+0x1c0/0x2e0
- [<c0132128>] ? printk+0x18/0x20
- [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c03f674e>] tcp_try_to_open+0x2e/0x160
- [<c03f6e9e>] tcp_fastretrans_alert+0x4fe/0x700
- [<c03f7e63>] tcp_ack+0x1b3/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f3e>] ? __do_softirq+0x6e/0x120
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 0 vs 0 S: 0 vs 1 w: 2044790889-2044796616 (0)
-TCP wq(s)      <
-TCP wq(h) +++h+<
-l0 s1 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0186af4>] ? check_bytes_and_report+0x24/0xc0
- [<c0186bf1>] ? check_pad_bytes+0x61/0x80
- [<c0186dbd>] ? check_object+0xad/0x1e0
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c015561c>] ? trace_hardirqs_on+0x7c/0x130
- [<c03c1578>] ? kfree_skbmem+0x98/0xc0
- [<c03fcf03>] tcp_write_xmit+0x63/0x290
- [<c03c1578>] ? kfree_skbmem+0x98/0xc0
- [<c03fd147>] __tcp_push_pending_frames+0x17/0x80
- [<c03fa23e>] tcp_rcv_established+0x40e/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f3e>] ? __do_softirq+0x6e/0x120
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 0 vs 0 S: 0 vs 1 w: 2044790889-2044796616 (0)
-TCP wq(s)      <
-TCP wq(h) +++h+<
-l0 s1 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0132128>] ? printk+0x18/0x20
- [<c01317da>] ? print_oops_end_marker+0x2a/0x30
- [<c0131849>] ? warn_on_slowpath+0x59/0x80
- [<c025f9e4>] ? vsnprintf+0x2d4/0x4f0
- [<c0132128>] ? printk+0x18/0x20
- [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c0186bf1>] ? check_pad_bytes+0x61/0x80
- [<c03f7509>] tcp_clean_rtx_queue+0x2d9/0x5b0
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c03f7dd2>] tcp_ack+0x122/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f3e>] ? __do_softirq+0x6e/0x120
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 0 vs 0 S: 0 vs 1 w: 2044790889-2044796616 (0)
-TCP wq(s)      <
-TCP wq(h) +++h+<
-l0 s1 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0132438>] ? vprintk+0x308/0x320
- [<c025f9e4>] ? vsnprintf+0x2d4/0x4f0
- [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
- [<c0132438>] ? vprintk+0x308/0x320
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c03f7509>] ? tcp_clean_rtx_queue+0x2d9/0x5b0
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c03f6a93>] tcp_fastretrans_alert+0xf3/0x700
- [<c03f7e63>] tcp_ack+0x1b3/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f3e>] ? __do_softirq+0x6e/0x120
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 0 vs 0 S: 0 vs 1 w: 2044790889-2044796616 (0)
-TCP wq(s)      <
-TCP wq(h) +++h+<
-l0 s1 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0250030>] ? generic_make_request+0x1c0/0x2e0
- [<c0132128>] ? printk+0x18/0x20
- [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0132438>] ? vprintk+0x308/0x320
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c03f5540>] tcp_add_reno_sack+0x30/0x50
- [<c03f6d72>] tcp_fastretrans_alert+0x3d2/0x700
- [<c03f7e63>] tcp_ack+0x1b3/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f3e>] ? __do_softirq+0x6e/0x120
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 0 vs 0 S: 0 vs 2 w: 2044790889-2044796616 (0)
-TCP wq(s)      <
-TCP wq(h) +++h+<
-l0 s2 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0250030>] ? generic_make_request+0x1c0/0x2e0
- [<c0132128>] ? printk+0x18/0x20
- [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0132438>] ? vprintk+0x308/0x320
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c03f674e>] tcp_try_to_open+0x2e/0x160
- [<c03f6e9e>] tcp_fastretrans_alert+0x4fe/0x700
- [<c03f7e63>] tcp_ack+0x1b3/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f3e>] ? __do_softirq+0x6e/0x120
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 0 vs 0 S: 0 vs 2 w: 2044790889-2044796616 (0)
-TCP wq(s)      <
-TCP wq(h) +++h+<
-l0 s2 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0186af4>] ? check_bytes_and_report+0x24/0xc0
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0186bf1>] ? check_pad_bytes+0x61/0x80
- [<c0186dbd>] ? check_object+0xad/0x1e0
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c015561c>] ? trace_hardirqs_on+0x7c/0x130
- [<c03c1578>] ? kfree_skbmem+0x98/0xc0
- [<c03fcf03>] tcp_write_xmit+0x63/0x290
- [<c03c1578>] ? kfree_skbmem+0x98/0xc0
- [<c03fd147>] __tcp_push_pending_frames+0x17/0x80
- [<c03fa23e>] tcp_rcv_established+0x40e/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f3e>] ? __do_softirq+0x6e/0x120
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 0 vs 0 S: 0 vs 2 w: 2044790889-2044796616 (0)
-TCP wq(s)      <
-TCP wq(h) +++h+<
-l0 s2 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0132128>] ? printk+0x18/0x20
- [<c01317da>] ? print_oops_end_marker+0x2a/0x30
- [<c0131849>] ? warn_on_slowpath+0x59/0x80
- [<c025f9e4>] ? vsnprintf+0x2d4/0x4f0
- [<c0132128>] ? printk+0x18/0x20
- [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c0186bf1>] ? check_pad_bytes+0x61/0x80
- [<c03f7509>] tcp_clean_rtx_queue+0x2d9/0x5b0
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c03f7dd2>] tcp_ack+0x122/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 0 vs 0 S: 0 vs 2 w: 2044790889-2044796616 (0)
-TCP wq(s)      <
-TCP wq(h) +++h+<
-l0 s2 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0132438>] ? vprintk+0x308/0x320
- [<c025f9e4>] ? vsnprintf+0x2d4/0x4f0
- [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
- [<c0132438>] ? vprintk+0x308/0x320
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c03f7509>] ? tcp_clean_rtx_queue+0x2d9/0x5b0
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c03f6a93>] tcp_fastretrans_alert+0xf3/0x700
- [<c03f7e63>] tcp_ack+0x1b3/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 0 vs 0 S: 0 vs 2 w: 2044790889-2044796616 (0)
-TCP wq(s)      <
-TCP wq(h) +++h+<
-l0 s2 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0250030>] ? generic_make_request+0x1c0/0x2e0
- [<c0132128>] ? printk+0x18/0x20
- [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0132438>] ? vprintk+0x308/0x320
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c03f5540>] tcp_add_reno_sack+0x30/0x50
- [<c03f6d72>] tcp_fastretrans_alert+0x3d2/0x700
- [<c03f7e63>] tcp_ack+0x1b3/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 0 vs 0 S: 0 vs 3 w: 2044790889-2044796616 (0)
-TCP wq(s)      <
-TCP wq(h) +++h+<
-l0 s3 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_input.c:2169 tcp_mark_head_lost+0x122/0x150()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0132438>] ? vprintk+0x308/0x320
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c03f6052>] tcp_mark_head_lost+0x122/0x150
- [<c03f60ca>] tcp_update_scoreboard+0x4a/0x190
- [<c03f6e7a>] tcp_fastretrans_alert+0x4da/0x700
- [<c03f7e63>] tcp_ack+0x1b3/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c01317da>] ? print_oops_end_marker+0x2a/0x30
- [<c0131849>] ? warn_on_slowpath+0x59/0x80
- [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0132438>] ? vprintk+0x308/0x320
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c03f5ffc>] tcp_mark_head_lost+0xcc/0x150
- [<c03f60ca>] tcp_update_scoreboard+0x4a/0x190
- [<c03f6e7a>] tcp_fastretrans_alert+0x4da/0x700
- [<c03f7e63>] tcp_ack+0x1b3/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 5 vs 5 S: 0 vs 3 w: 2044790889-2044796616 (0)
-TCP wq(s) LLLLl<
-TCP wq(h) +++h+<
-l5 s3 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_output.c:1977 tcp_xmit_retransmit_queue+0x388/0x420()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0132438>] ? vprintk+0x308/0x320
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c03f5ffc>] ? tcp_mark_head_lost+0xcc/0x150
- [<c03fdf38>] tcp_xmit_retransmit_queue+0x388/0x420
- [<c03f6c27>] tcp_fastretrans_alert+0x287/0x700
- [<c03f7e63>] tcp_ack+0x1b3/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c01317da>] ? print_oops_end_marker+0x2a/0x30
- [<c0131849>] ? warn_on_slowpath+0x59/0x80
- [<c0132438>] ? vprintk+0x308/0x320
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c03f5ffc>] ? tcp_mark_head_lost+0xcc/0x150
- [<c03fdea4>] tcp_xmit_retransmit_queue+0x2f4/0x420
- [<c03f6c27>] tcp_fastretrans_alert+0x287/0x700
- [<c03f7e63>] tcp_ack+0x1b3/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 5 vs 5 S: 0 vs 3 w: 2044790889-2044796616 (0)
-TCP wq(s) LLLLl<
-TCP wq(h) +++h+<
-l5 s3 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_output.c:1467 tcp_write_xmit+0x288/0x290()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0186af4>] ? check_bytes_and_report+0x24/0xc0
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c0186bf1>] ? check_pad_bytes+0x61/0x80
- [<c0186dbd>] ? check_object+0xad/0x1e0
- [<c0155539>] ? mark_held_locks+0x39/0x80
- [<c01880ac>] ? __slab_free+0xac/0x150
- [<c015561c>] ? trace_hardirqs_on+0x7c/0x130
- [<c03c1578>] ? kfree_skbmem+0x98/0xc0
- [<c03fd128>] tcp_write_xmit+0x288/0x290
- [<c03c1578>] ? kfree_skbmem+0x98/0xc0
- [<c03fd147>] __tcp_push_pending_frames+0x17/0x80
- [<c03fa23e>] tcp_rcv_established+0x40e/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c01317da>] ? print_oops_end_marker+0x2a/0x30
- [<c0131849>] ? warn_on_slowpath+0x59/0x80
- [<c0186af4>] ? check_bytes_and_report+0x24/0xc0
- [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
- [<c0186bf1>] ? check_pad_bytes+0x61/0x80
- [<c0186dbd>] ? check_object+0xad/0x1e0
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c015561c>] ? trace_hardirqs_on+0x7c/0x130
- [<c03c1578>] ? kfree_skbmem+0x98/0xc0
- [<c03fcf03>] tcp_write_xmit+0x63/0x290
- [<c03c1578>] ? kfree_skbmem+0x98/0xc0
- [<c03fd147>] __tcp_push_pending_frames+0x17/0x80
- [<c03fa23e>] tcp_rcv_established+0x40e/0x710
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c04021fb>] tcp_v4_rcv+0x5db/0x660
- [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
- [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03e6147>] ip_local_deliver+0xb7/0xc0
- [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
- [<c03c01d8>] ? sock_def_readable+0x48/0xa0
- [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
- [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
- [<c03e669f>] ip_rcv+0x18f/0x290
- [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
- [<c03c8da6>] netif_receive_skb+0x2b6/0x330
- [<c03c8c17>] ? netif_receive_skb+0x127/0x330
- [<c03c8ea3>] ? process_backlog+0x83/0x100
- [<c03c8eae>] process_backlog+0x8e/0x100
- [<c03c90bc>] net_rx_action+0x13c/0x230
- [<c03c8fd9>] ? net_rx_action+0x59/0x230
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c01078b1>] do_IRQ+0x41/0x80
- [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
- [<c01059ca>] common_interrupt+0x2e/0x34
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 5 vs 5 S: 0 vs 3 w: 2044790889-2044796616 (0)
-TCP wq(s) LLLLl<
-TCP wq(h) +++h+<
-l5 s3 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_input.c:1767 tcp_enter_frto+0x28c/0x2a0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0156244>] ? __lock_acquire+0x1e4/0x730
- [<c010af95>] ? native_sched_clock+0x85/0xe0
- [<c03f58dc>] tcp_enter_frto+0x28c/0x2a0
- [<c03ff612>] tcp_retransmit_timer+0x102/0x400
- [<c043675b>] ? _spin_lock+0x4b/0x80
- [<c03ff924>] ? tcp_write_timer+0x14/0x110
- [<c03ffa03>] tcp_write_timer+0xf3/0x110
- [<c013b95b>] run_timer_softirq+0xbb/0x190
- [<c03ff910>] ? tcp_write_timer+0x0/0x110
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c011a91d>] smp_apic_timer_interrupt+0x2d/0x40
- [<c0105aab>] apic_timer_interrupt+0x33/0x38
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c01317da>] ? print_oops_end_marker+0x2a/0x30
- [<c0131849>] ? warn_on_slowpath+0x59/0x80
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c010af95>] ? native_sched_clock+0x85/0xe0
- [<c03f5748>] tcp_enter_frto+0xf8/0x2a0
- [<c03ff612>] tcp_retransmit_timer+0x102/0x400
- [<c043675b>] ? _spin_lock+0x4b/0x80
- [<c03ff924>] ? tcp_write_timer+0x14/0x110
- [<c03ffa03>] tcp_write_timer+0xf3/0x110
- [<c013b95b>] run_timer_softirq+0xbb/0x190
- [<c03ff910>] ? tcp_write_timer+0x0/0x110
- [<c0136f63>] __do_softirq+0x93/0x120
- [<c013706a>] do_softirq+0x7a/0x80
- [<c0137135>] irq_exit+0x65/0x90
- [<c011a91d>] smp_apic_timer_interrupt+0x2d/0x40
- [<c0105aab>] apic_timer_interrupt+0x33/0x38
- [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
- [<c01033a0>] ? mwait_idle+0x0/0x20
- [<c01033b2>] mwait_idle+0x12/0x20
- [<c0103141>] cpu_idle+0x61/0x110
- [<c04339fd>] rest_init+0x5d/0x60
- [<c05a47fa>] start_kernel+0x1fa/0x260
- [<c05a4190>] ? unknown_bootoption+0x0/0x130
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 5 vs 5 S: 0 vs 3 w: 2044790889-2044796616 (0)
-TCP wq(s) LLLLl<
-TCP wq(h) +++h+<
-l5 s3 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_output.c:1467 tcp_write_xmit+0x288/0x290()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 2987, comm: ssmtp Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0156244>] ? __lock_acquire+0x1e4/0x730
- [<c0155567>] ? mark_held_locks+0x67/0x80
- [<c03fd128>] tcp_write_xmit+0x288/0x290
- [<c03fd147>] __tcp_push_pending_frames+0x17/0x80
- [<c03f1130>] tcp_sendmsg+0x760/0xb40
- [<c01532c0>] ? lock_release_holdtime+0x60/0x80
- [<c03bb85c>] sock_sendmsg+0xdc/0x110
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0147420>] ? autoremove_wake_function+0x0/0x50
- [<c0156244>] ? __lock_acquire+0x1e4/0x730
- [<c010af95>] ? native_sched_clock+0x85/0xe0
- [<c03bb5ff>] ? sockfd_lookup_light+0x2f/0x70
- [<c03bcfe1>] sys_sendto+0xd1/0x120
- [<c010af95>] ? native_sched_clock+0x85/0xe0
- [<c015323d>] ? put_lock_stats+0xd/0x30
- [<c01532c0>] ? lock_release_holdtime+0x60/0x80
- [<c01413f1>] ? sys_times+0x81/0xe0
- [<c03bd062>] sys_send+0x32/0x40
- [<c03bd8e6>] sys_socketcall+0x136/0x230
- [<c010501b>] ? restore_nocheck+0x12/0x15
- [<c0104fba>] syscall_call+0x7/0xb
- =======================
----[ end trace 14b601818e6903ac ]---
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 2987, comm: ssmtp Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c01317da>] ? print_oops_end_marker+0x2a/0x30
- [<c0131849>] ? warn_on_slowpath+0x59/0x80
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0156244>] ? __lock_acquire+0x1e4/0x730
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c03fcf03>] tcp_write_xmit+0x63/0x290
- [<c03fd147>] __tcp_push_pending_frames+0x17/0x80
- [<c03f1130>] tcp_sendmsg+0x760/0xb40
- [<c01532c0>] ? lock_release_holdtime+0x60/0x80
- [<c03bb85c>] sock_sendmsg+0xdc/0x110
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0147420>] ? autoremove_wake_function+0x0/0x50
- [<c0156244>] ? __lock_acquire+0x1e4/0x730
- [<c010af95>] ? native_sched_clock+0x85/0xe0
- [<c03bb5ff>] ? sockfd_lookup_light+0x2f/0x70
- [<c03bcfe1>] sys_sendto+0xd1/0x120
- [<c010af95>] ? native_sched_clock+0x85/0xe0
- [<c015323d>] ? put_lock_stats+0xd/0x30
- [<c01532c0>] ? lock_release_holdtime+0x60/0x80
- [<c01413f1>] ? sys_times+0x81/0xe0
- [<c03bd062>] sys_send+0x32/0x40
- [<c03bd8e6>] sys_socketcall+0x136/0x230
- [<c010501b>] ? restore_nocheck+0x12/0x15
- [<c0104fba>] syscall_call+0x7/0xb
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 5 L: 5 vs 5 S: 0 vs 3 w: 2044790889-2044796616 (0)
-TCP wq(s) LLLLl<
-TCP wq(h) +++h+<
-l5 s3 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_input.c:2855 tcp_clean_rtx_queue+0x552/0x5b0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 2987, comm: ssmtp Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c0186dbd>] ? check_object+0xad/0x1e0
- [<c0155539>] ? mark_held_locks+0x39/0x80
- [<c01880ac>] ? __slab_free+0xac/0x150
- [<c015561c>] ? trace_hardirqs_on+0x7c/0x130
- [<c03c1534>] ? kfree_skbmem+0x54/0xc0
- [<c01881e7>] ? kmem_cache_free+0x97/0xe0
- [<c03c1534>] ? kfree_skbmem+0x54/0xc0
- [<c03c1534>] ? kfree_skbmem+0x54/0xc0
- [<c03c1534>] ? kfree_skbmem+0x54/0xc0
- [<c03f7782>] tcp_clean_rtx_queue+0x552/0x5b0
- [<c03f7dd2>] tcp_ack+0x122/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0147420>] ? autoremove_wake_function+0x0/0x50
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c03f17e3>] tcp_prequeue_process+0x73/0xa0
- [<c03f1dae>] tcp_recvmsg+0x42e/0x830
- [<c03c0873>] sock_common_recvmsg+0x43/0x60
- [<c03bbacf>] sock_recvmsg+0xef/0x120
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0147420>] ? autoremove_wake_function+0x0/0x50
- [<c03bb5ff>] ? sockfd_lookup_light+0x2f/0x70
- [<c03bd0f7>] sys_recvfrom+0x87/0xf0
- [<c015323d>] ? put_lock_stats+0xd/0x30
- [<c01532c0>] ? lock_release_holdtime+0x60/0x80
- [<c010af95>] ? native_sched_clock+0x85/0xe0
- [<c015323d>] ? put_lock_stats+0xd/0x30
- [<c01532c0>] ? lock_release_holdtime+0x60/0x80
- [<c013601f>] ? do_setitimer+0x1ef/0x2e0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03bd192>] sys_recv+0x32/0x40
- [<c03bd905>] sys_socketcall+0x155/0x230
- [<c010501b>] ? restore_nocheck+0x12/0x15
- [<c0104fba>] syscall_call+0x7/0xb
- =======================
----[ end trace 14b601818e6903ac ]---
-------------[ cut here ]------------
-WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-Pid: 2987, comm: ssmtp Not tainted 2.6.24-rc8-mm1 #8
- [<c0132100>] ? have_callable_console+0x20/0x30
- [<c0131844>] warn_on_slowpath+0x54/0x80
- [<c01317da>] ? print_oops_end_marker+0x2a/0x30
- [<c0131849>] ? warn_on_slowpath+0x59/0x80
- [<c0186dbd>] ? check_object+0xad/0x1e0
- [<c0155539>] ? mark_held_locks+0x39/0x80
- [<c01880ac>] ? __slab_free+0xac/0x150
- [<c015561c>] ? trace_hardirqs_on+0x7c/0x130
- [<c03c1534>] ? kfree_skbmem+0x54/0xc0
- [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
- [<c01881e7>] ? kmem_cache_free+0x97/0xe0
- [<c03c1534>] ? kfree_skbmem+0x54/0xc0
- [<c03c1534>] ? kfree_skbmem+0x54/0xc0
- [<c03f7509>] tcp_clean_rtx_queue+0x2d9/0x5b0
- [<c03f7dd2>] tcp_ack+0x122/0x3a0
- [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
- [<c0147420>] ? autoremove_wake_function+0x0/0x50
- [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
- [<c03f17e3>] tcp_prequeue_process+0x73/0xa0
- [<c03f1dae>] tcp_recvmsg+0x42e/0x830
- [<c03c0873>] sock_common_recvmsg+0x43/0x60
- [<c03bbacf>] sock_recvmsg+0xef/0x120
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0154982>] ? validate_chain+0x1d2/0x320
- [<c0147420>] ? autoremove_wake_function+0x0/0x50
- [<c03bb5ff>] ? sockfd_lookup_light+0x2f/0x70
- [<c03bd0f7>] sys_recvfrom+0x87/0xf0
- [<c015323d>] ? put_lock_stats+0xd/0x30
- [<c01532c0>] ? lock_release_holdtime+0x60/0x80
- [<c010af95>] ? native_sched_clock+0x85/0xe0
- [<c015323d>] ? put_lock_stats+0xd/0x30
- [<c01532c0>] ? lock_release_holdtime+0x60/0x80
- [<c013601f>] ? do_setitimer+0x1ef/0x2e0
- [<c0156b97>] ? __lock_release+0x47/0x70
- [<c03bd192>] sys_recv+0x32/0x40
- [<c03bd905>] sys_socketcall+0x155/0x230
- [<c010501b>] ? restore_nocheck+0x12/0x15
- [<c0104fba>] syscall_call+0x7/0xb
- =======================
----[ end trace 14b601818e6903ac ]---
-P: 4 L: 4 vs 4 S: 0 vs 3 w: 2044792269-2044796616 (0)
-TCP wq(s) LLLl<
-TCP wq(h) ++h+<
-l4 s3 f0 p4 seq: su2044792269 hs2044795029 sn2044796616
+> > +/* Add a new group descriptor to global_bitmap. */
+> > +int ocfs2_group_add(struct inode *inode, struct ocfs2_new_group_input *input)
+> > +{
+> > +	int ret;
+> > +	handle_t *handle;
+> > +	struct buffer_head *main_bm_bh = NULL;
+> > +	struct inode *main_bm_inode = NULL;
+> > +	struct ocfs2_dinode *fe = NULL;
+> > +	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
+> > +	struct buffer_head *group_bh = NULL;
+> > +	struct ocfs2_group_desc *group = NULL;
+> > +	struct ocfs2_chain_list *cl;
+> > +	struct ocfs2_chain_rec *cr;
+> > +	u16 cl_bpc;
+> > +
+> > +	mlog_entry_void();
+> > +
+> > +	if (ocfs2_is_hard_readonly(osb) || ocfs2_is_soft_readonly(osb))
+> > +		return -EROFS;
+> > +
+> > +	main_bm_inode = ocfs2_get_system_file_inode(osb,
+> > +						    GLOBAL_BITMAP_SYSTEM_INODE,
+> > +						    OCFS2_INVALID_SLOT);
+> > +	if (!main_bm_inode) {
+> > +		ret = -EINVAL;
+> > +		mlog_errno(ret);
+> > +		goto out;
+> > +	}
+> > +
+> > +	mutex_lock(&main_bm_inode->i_mutex);
+> > +
+> > +	ret = ocfs2_inode_lock(main_bm_inode, &main_bm_bh, 1);
+> > +	if (ret < 0) {
+> > +		mlog_errno(ret);
+> > +		goto out_mutex;
+> > +	}
+> > +
+> > +	fe = (struct ocfs2_dinode *)main_bm_bh->b_data;
+> > +
+> > +	if (le16_to_cpu(fe->id2.i_chain.cl_cpg) !=
+> > +				 ocfs2_group_bitmap_size(osb->sb) * 8) {
+> > +		mlog(ML_ERROR, "The disk is too old and small."
+> > +		     " Force to do offline resize.");
+> > +		ret = -EINVAL;
+> > +		goto out_unlock;
+> > +	}
+> > +
+> > +	ret = ocfs2_read_block(osb, input->group, &group_bh, 0, NULL);
+> > +	if (ret < 0) {
+> > +		mlog(ML_ERROR, "Can't read the group descriptor # %llu "
+> > +		     "from the device.", input->group);
+> > +		goto out;
+> 
+> Bug: goto wrong_place.  (Points at fault-injection code)
+
+Ooof, good catch - thanks. A fix for this is attached to this e-mail, and
+of course will be in ocfs2.git.
+
+
+> > +	}
+> > +
+> > +	ocfs2_set_new_buffer_uptodate(inode, group_bh);
+> > +
+> > +	ret = ocfs2_verify_group_and_input(main_bm_inode, fe, input, group_bh);
+> > +	if (ret) {
+> > +		mlog_errno(ret);
+> > +		goto out_unlock;
+> > +	}
+> > +
+> > +	mlog(0, "Add a new group  %llu in chain = %u, length = %u\n",
+> > +	     input->group, input->chain, input->clusters);
+> > +
+> > +	handle = ocfs2_start_trans(osb, OCFS2_GROUP_ADD_CREDITS);
+> > +	if (IS_ERR(handle)) {
+> > +		mlog_errno(PTR_ERR(handle));
+> > +		ret = -EINVAL;
+> > +		goto out_unlock;
+> > +	}
+> > +
+> > +	cl_bpc = le16_to_cpu(fe->id2.i_chain.cl_bpc);
+> > +	cl = &fe->id2.i_chain;
+> > +	cr = &cl->cl_recs[input->chain];
+> > +
+> > +	ret = ocfs2_journal_access(handle, main_bm_inode, group_bh,
+> > +				   OCFS2_JOURNAL_ACCESS_WRITE);
+> > +	if (ret < 0) {
+> > +		mlog_errno(ret);
+> > +		goto out_commit;
+> > +	}
+> > +
+> > +	group = (struct ocfs2_group_desc *)group_bh->b_data;
+> > +	group->bg_next_group = cr->c_blkno;
+> > +
+> > +	ret = ocfs2_journal_dirty(handle, group_bh);
+> > +	if (ret < 0) {
+> > +		mlog_errno(ret);
+> > +		goto out_commit;
+> > +	}
+> > +
+> > +	ret = ocfs2_journal_access(handle, main_bm_inode, main_bm_bh,
+> > +				   OCFS2_JOURNAL_ACCESS_WRITE);
+> 
+> hm.  Do we need to do that again?
+
+I think you're missing that those are two different buffers  :)
+
+
+> > +	spin_lock(&OCFS2_I(main_bm_inode)->ip_lock);
+> > +	OCFS2_I(main_bm_inode)->ip_clusters = le32_to_cpu(fe->i_clusters);
+> > +	le64_add_cpu(&fe->i_size, input->clusters << osb->s_clustersize_bits);
+> > +	spin_unlock(&OCFS2_I(main_bm_inode)->ip_lock);
+> > +	i_size_write(main_bm_inode, le64_to_cpu(fe->i_size));
+> 
+> Is i_mutex held?
+
+Yes.
+	--Mark
+
+--
+Mark Fasheh
+Principal Software Developer, Oracle
+mark.fasheh@oracle.com
+
+
+From: Mark Fasheh <mark.fasheh@oracle.com>
+
+ocfs2: fix goto error in ocfs2_group_add()
+
+We were jumping to the wrong label on read error which would have caused us
+to exit the function with locks held.
+
+Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
+---
+ fs/ocfs2/resize.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/ocfs2/resize.c b/fs/ocfs2/resize.c
+index a103698..261dabf 100644
+--- a/fs/ocfs2/resize.c
++++ b/fs/ocfs2/resize.c
+@@ -544,7 +544,7 @@ int ocfs2_group_add(struct inode *inode, struct ocfs2_new_group_input *input)
+ 	if (ret < 0) {
+ 		mlog(ML_ERROR, "Can't read the group descriptor # %llu "
+ 		     "from the device.", (unsigned long long)input->group);
+-		goto out;
++		goto out_unlock;
+ 	}
+ 
+ 	ocfs2_set_new_buffer_uptodate(inode, group_bh);
+-- 
+1.5.3.6
+
