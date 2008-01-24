@@ -1,145 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYAXEOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbYAXETQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYAXEOK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 23:14:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYAXEN5
+	id S1753978AbYAXETQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 23:19:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYAXETA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 23:13:57 -0500
-Received: from de01egw02.freescale.net ([192.88.165.103]:36059 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752493AbYAXEN4 convert rfc822-to-8bit (ORCPT
+	Wed, 23 Jan 2008 23:19:00 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53007 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbYAXES7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 23:13:56 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 23 Jan 2008 23:18:59 -0500
+Date: Thu, 24 Jan 2008 13:18:01 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH 0/8] mem_notify v5
+Cc: kosaki.motohiro@jp.fujitsu.com, Marcelo Tosatti <marcelo@kvack.org>,
+       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Message-Id: <20080124130348.1760.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH UCC TDM 0/3] UCC based TDM driver for QE based MPC83xx platforms
-Date: Thu, 24 Jan 2008 09:43:47 +0530
-Message-ID: <FBA61160C48B8D438F3323FEFB4EF2C279AE51@zin33exm24.fsl.freescale.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH UCC TDM 0/3] UCC based TDM driver for QE based MPC83xx platforms
-Thread-Index: AchdtwlLP3A0ExdZTWWQSDCISUH+MgAh0jTg
-From: "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>
-To: "Kumar Gala" <kumar.gala@freescale.com>, <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       <rubini@vision.unipv.it>, <linuxppc-dev@ozlabs.org>
-Cc: "Barkowski Michael" <Michael.Barkowski@freescale.com>,
-       "Phillips Kim" <Kim.Phillips@freescale.com>,
-       "Kalra Ashish" <ashish.kalra@freescale.com>,
-       "Tabi Timur" <timur@freescale.com>,
-       "Cutler Richard" <Rich.Cutler@freescale.com>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-Reworked patches after incorporating comments of Andrew, Stephen and
-Tabi and Kumar.
+The /dev/mem_notify is low memory notification device.
+it can avoid swappness and oom by cooperationg with the user process.
 
-Kumar could you please consider them for linux-2.6.25.
+You need not be annoyed by OOM any longer :)
+please any comments!
 
-There are three patches
-[PATCH 1/3] drivers/misc : UCC TDM driver for mpc83xx platforms. This
-driver is usable in VoIP iind of applications to interface with SLIC
-kind of devices to exchange TDM voice samples.
-The driver is right now in misc category and exposes a kind of non
-standard interface to the clients.
+patch list
+	[1/8] introduce poll_wait_exclusive() new API
+	[2/8] introduce wake_up_locked_nr() new API
+	[3/8] introduce /dev/mem_notify new device (the core of this patch series)
+	[4/8] memory_pressure_notify() caller
+	[5/8] add new mem_notify field to /proc/zoneinfo
+	[6/8] (optional) fixed incorrect shrink_zone
+	[7/8] ignore very small zone for prevent incorrect low mem notify.
+	[8/8] support fasync feature
 
-TDM Driver Interface Details
 
-The TDM driver right now is a misc driver with no subsystem as such.
+related discussion:
+--------------------------------------------------------------
+  LKML OOM notifications requirement discussion
+     http://www.gossamer-threads.com/lists/linux/kernel/832802?nohighlight=1#832802
+  OOM notifications patch [Marcelo Tosatti]
+     http://marc.info/?l=linux-kernel&m=119273914027743&w=2
+  mem notifications v3 [Marcelo Tosatti]
+     http://marc.info/?l=linux-mm&m=119852828327044&w=2
+  Thrashing notification patch  [Daniel Spang]
+     http://marc.info/?l=linux-mm&m=119427416315676&w=2
+  mem notification v4 [kosaki]
+     http://marc.info/?l=linux-mm&m=120035840523718&w=2
 
-The dts file keeps a track of the TDM devices present on the board.
-Depending on them the TDM driver initializes those many driver instances
-while coming up.
 
-The driver on the upper level can plug to more than one tdm clients
-depending on the availablity of TDM devices.
-At every new request of the TDM client to bind with a TDM device, a free
-driver instance is allocated to the client.
+Changelog
+-------------------------------------------------
+  v4 -> v5 (by KOSAKI Motohiro)
+    o rebase to 2.6.24-rc8-mm1
+    o change display order of /proc/zoneinfo
+    o ignore very small zone
+    o support fcntl(F_SETFL, FASYNC)
+    o fix some trivial bugs.
 
-The interface can be described as follows.
+  v3 -> v4 (by KOSAKI Motohiro)
+    o rebase to 2.6.24-rc6-mm1
+    o avoid wake up all.
+    o add judgement point to __free_one_page().
+    o add zone awareness.
 
-tdm_register_client(struct tdm_client *)
-	This API returns a pointer to the structure tdm_client which is
-of type
-	struct tdm_client {
-                u32 client_id;
-                u32 (*tdm_read)(u32 client_id, short chn_id, short
-*pcm_buffer, short len);
-                u32 (*tdm_write)(u32 client_id, short chn_id, short
-*pcm_buffer, short len);
-                wait_queue_head_t *wakeup_event;
-        }
+  v2 -> v3 (by Marcelo Tosatti)
+    o changes the notification point to happen whenever
+      the VM moves an anonymous page to the inactive list.
+    o implement notification rate limit.
 
-   It consists of:
-   - driver_handle: It is basically to identify the particular TDM
-device/driver instance.
-   - tdm_read: It is a function pointer returned by the TDM driver to be
-used to read TDM data from a particular TDM channel.
-   - tdm_write: It is a function pointer returned by the TDM driver to
-be used to write TDM data to a particular TDM channel.
-   - wakeup_event: It is address of a wait_queue event on which the
-client keeps on sleeping, and the TDM driver wakes it up periodically.
-The driver is configured to wake up the client after every 10ms.
+  v1(oom notify) -> v2 (by Marcelo Tosatti)
+    o name change
+    o notify timing change from just swap thrashing to
+      just before thrashing.
+    o also works with swapless device.
 
-Once the TDM client gets registered to a TDM driver instance and a TDM
-device, it interfaces with the driver using tdm_read, tdm_write and
-wakeup_event.
 
-Note: The TDM driver can be used by only kernel level modules. The
-driver does not expose any file interface for User Applications. Can be
-compared to the spi driver which interfaces with the SPI clients(kernel
-mode clients) through some APIs.
 
-This interface can be improved by writing a platform independent TDM
-layer. Then all the TDM platforms can be supported below this wrapper
-layer. This is planned to be done later.
 
-[PATCH 2/3] arch/ : Platform changes
-- device tree entries for UCC TDM driver for MPC8323ERDB platform.
-- QE changes related to TDM , like,
-	 1) Modified ucc_fast_init so that it can be used by fast UCC
-based TDM driver. Mainly changes have been made to configure TDM clocks
-and Fsyncs.
-
-	2) Modified get_brg_clk so that it can return the input frequncy
-and input source of any BRG by reading the corresponding entries from
-device tree.
-
-	3) Added new nodes brg and clocks in the device tree which
-represent input clocks for different BRGs.
-
-	4) Modified qe_setbrg accordingly.
-- new device tree entries added for "clocks" and "brg"
-
-[PATCH 3/3] Documentation
-- Modified Documentation to explain the device tree entries related to
-UCC TDM driver and the new nodes added("clocks" and "brg")
-
-The patch applies over a merge of galak's for-2.6.25 plus for-2.6.24
-plus of_doc_update branches.
-In brief the steps were
-git clone
-git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-powerpc-galak
-git checkout -b for-2.6.25 origin/for-2.6.25 git checkout -b for-2.6.24
-origin/for-2.6.24 git checkout -b of_doc_update origin/of_doc_update
-git pull . for-2.6.24    # merge the other two
-git pull . for-2.6.25 
-git checkout -b tdm      # clean slate for tdm rebase work
-
-Also after applying the patches changes have to be made corresponding to
-Tabi's patch "qe: add function qe_clock_source".
-
-The driver has been tested with a VoIP stack and application on
-MPC8323ERDB.
-
-With Regards
-Poonam 
- 
 
