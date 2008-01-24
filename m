@@ -1,144 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbYAXUi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758715AbYAXUin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758613AbYAXUi2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 15:38:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757283AbYAXUeX
+	id S1758715AbYAXUin (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 15:38:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbYAXUeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 15:34:23 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:58298 "EHLO smtp.polymtl.ca"
+	Thu, 24 Jan 2008 15:34:24 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:58295 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755514AbYAXUeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755532AbYAXUeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Jan 2008 15:34:20 -0500
-Message-Id: <20080124203336.309157418@polymtl.ca>
+Message-Id: <20080124203340.010461295@polymtl.ca>
 References: <20080124202706.250598537@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jan 2008 15:27:16 -0500
+Date: Thu, 24 Jan 2008 15:27:24 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       Roel Kluin <12o3l@tiscali.nl>
-Subject: [patch 10/26] Text Edit Lock - kprobes architecture independent support
-Content-Disposition: inline; filename=text-edit-lock-kprobes-architecture-independent.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Jan 2008 20:33:37 +0000
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [patch 18/26] Immediate Values - Powerpc Optimization
+Content-Disposition: inline; filename=immediate-values-powerpc-optimization.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Jan 2008 20:33:41 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the mutual exclusion provided by the text edit lock in the kprobes code. It
-allows coherent manipulation of the kernel code by other subsystems.
+PowerPC optimization of the immediate values which uses a li instruction,
+patched with an immediate value.
 
 Changelog:
-
-Move the kernel_text_lock/unlock out of the for loops.
+- Put imv_set and _imv_set in the architecture independent header.
+- Pack the __imv section. Use smallest types required for size (char).
+- Remove architecture specific update code : now handled by architecture
+  agnostic code.
+- Use imv_* instead of immediate_*.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: ananth@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
-CC: Roel Kluin <12o3l@tiscali.nl>
+CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: Paul Mackerras <paulus@samba.org>
 ---
- kernel/kprobes.c |   19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
+ arch/powerpc/Kconfig            |    1 
+ include/asm-powerpc/immediate.h |   55 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 56 insertions(+)
 
-Index: linux-2.6-lttng.mm/kernel/kprobes.c
+Index: linux-2.6-lttng.mm/include/asm-powerpc/immediate.h
 ===================================================================
---- linux-2.6-lttng.mm.orig/kernel/kprobes.c	2008-01-24 14:23:02.000000000 -0500
-+++ linux-2.6-lttng.mm/kernel/kprobes.c	2008-01-24 14:26:28.000000000 -0500
-@@ -43,6 +43,7 @@
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
- #include <linux/kdebug.h>
-+#include <linux/memory.h>
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng.mm/include/asm-powerpc/immediate.h	2008-01-24 14:30:45.000000000 -0500
+@@ -0,0 +1,55 @@
++#ifndef _ASM_POWERPC_IMMEDIATE_H
++#define _ASM_POWERPC_IMMEDIATE_H
++
++/*
++ * Immediate values. PowerPC architecture optimizations.
++ *
++ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <asm/asm-compat.h>
++
++/**
++ * imv_read - read immediate variable
++ * @name: immediate value name
++ *
++ * Reads the value of @name.
++ * Optimized version of the immediate.
++ * Do not use in __init and __exit functions. Use _imv_read() instead.
++ */
++#define imv_read(name)							\
++	({								\
++		__typeof__(name##__imv) value;				\
++		BUILD_BUG_ON(sizeof(value) > 8);			\
++		switch (sizeof(value)) {				\
++		case 1:							\
++			asm(".section __imv,\"a\",@progbits\n\t"	\
++					PPC_LONG "%c1, ((1f)-1)\n\t"	\
++					".byte 1\n\t"			\
++					".previous\n\t"			\
++					"li %0,0\n\t"			\
++					"1:\n\t"			\
++				: "=r" (value)				\
++				: "i" (&name##__imv));			\
++			break;						\
++		case 2:							\
++			asm(".section __imv,\"a\",@progbits\n\t"	\
++					PPC_LONG "%c1, ((1f)-2)\n\t"	\
++					".byte 2\n\t"			\
++					".previous\n\t"			\
++					"li %0,0\n\t"			\
++					"1:\n\t"			\
++				: "=r" (value)				\
++				: "i" (&name##__imv));			\
++			break;						\
++		case 4:							\
++		case 8:	value = name##__imv;				\
++			break;						\
++		};							\
++		value;							\
++	})
++
++#endif /* _ASM_POWERPC_IMMEDIATE_H */
+Index: linux-2.6-lttng.mm/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6-lttng.mm.orig/arch/powerpc/Kconfig	2008-01-24 14:18:34.000000000 -0500
++++ linux-2.6-lttng.mm/arch/powerpc/Kconfig	2008-01-24 14:30:45.000000000 -0500
+@@ -89,6 +89,7 @@ config PPC
+ 	default y
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
++	select HAVE_IMMEDIATE
  
- #include <asm-generic/sections.h>
- #include <asm/cacheflush.h>
-@@ -568,9 +569,10 @@ static int __kprobes __register_kprobe(s
- 		goto out;
- 	}
- 
-+	kernel_text_lock();
- 	ret = arch_prepare_kprobe(p);
- 	if (ret)
--		goto out;
-+		goto out_unlock_text;
- 
- 	INIT_HLIST_NODE(&p->hlist);
- 	hlist_add_head_rcu(&p->hlist,
-@@ -578,7 +580,8 @@ static int __kprobes __register_kprobe(s
- 
- 	if (kprobe_enabled)
- 		arch_arm_kprobe(p);
--
-+out_unlock_text:
-+	kernel_text_unlock();
- out:
- 	mutex_unlock(&kprobe_mutex);
- 
-@@ -621,8 +624,11 @@ valid_p:
- 		 * enabled - otherwise, the breakpoint would already have
- 		 * been removed. We save on flushing icache.
- 		 */
--		if (kprobe_enabled)
-+		if (kprobe_enabled) {
-+			kernel_text_lock();
- 			arch_disarm_kprobe(p);
-+			kernel_text_unlock();
-+		}
- 		hlist_del_rcu(&old_p->hlist);
- 		cleanup_p = 1;
- 	} else {
-@@ -644,9 +650,7 @@ valid_p:
- 			list_del_rcu(&p->list);
- 			kfree(old_p);
- 		}
--		mutex_lock(&kprobe_mutex);
- 		arch_remove_kprobe(p);
--		mutex_unlock(&kprobe_mutex);
- 	} else {
- 		mutex_lock(&kprobe_mutex);
- 		if (p->break_handler)
-@@ -717,7 +721,6 @@ static int __kprobes pre_handler_kretpro
- 		ri->rp = rp;
- 		ri->task = current;
- 		arch_prepare_kretprobe(ri, regs);
--
- 		/* XXX(hch): why is there no hlist_move_head? */
- 		hlist_del(&ri->uflist);
- 		hlist_add_head(&ri->uflist, &ri->rp->used_instances);
-@@ -940,11 +943,13 @@ static void __kprobes enable_all_kprobes
- 	if (kprobe_enabled)
- 		goto already_enabled;
- 
-+	kernel_text_lock();
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist)
- 			arch_arm_kprobe(p);
- 	}
-+	kernel_text_unlock();
- 
- 	kprobe_enabled = true;
- 	printk(KERN_INFO "Kprobes globally enabled\n");
-@@ -969,6 +974,7 @@ static void __kprobes disable_all_kprobe
- 
- 	kprobe_enabled = false;
- 	printk(KERN_INFO "Kprobes globally disabled\n");
-+	kernel_text_lock();
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist) {
-@@ -976,6 +982,7 @@ static void __kprobes disable_all_kprobe
- 				arch_disarm_kprobe(p);
- 		}
- 	}
-+	kernel_text_unlock();
- 
- 	mutex_unlock(&kprobe_mutex);
- 	/* Allow all currently running kprobes to complete */
+ config EARLY_PRINTK
+ 	bool
 
 -- 
 Mathieu Desnoyers
