@@ -1,96 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbYAXBS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbYAXBUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753785AbYAXBS2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 20:18:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbYAXBSR
+	id S1752774AbYAXBUb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 20:20:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbYAXBUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 20:18:17 -0500
-Received: from nz-out-0506.google.com ([64.233.162.225]:26948 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752764AbYAXBSQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 20:18:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=rfJLDv/5INaOoj1Hd+CpzCbpcXFgtZgE+QV8XX77CXPLLKqk1bses7uQmT10UMgQcWMO23Cxl0VdR1m8hr2yPYyajiWCvOcEpTRmQN+5hBa5U6vy2W8CdYNWh8XtvAqPT/IRhls6lLNC/NuCPNRRiOInHf1RXp/JVjFbZwlgE24=
-Date: Thu, 24 Jan 2008 09:19:26 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Marcel Holtmann <marcel@holtmann.org>, davem@davemloft.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net, cornelia.huck@de.ibm.com,
-       gombasg@sztaki.hu, htejun@gmail.com, viro@zeniv.linux.org.uk,
-       kay.sievers@vrfy.org, greg@kroah.com
-Subject: Re: [PATCH] bluetooth : move children of connection device to NULL
-	before connection down
-Message-ID: <20080124011926.GA2950@darkstar.te-china.tietoenator.com>
-References: <20080121044913.GA4162@darkstar.te-china.tietoenator.com> <20080121045401.GB4162@darkstar.te-china.tietoenator.com> <20080121.031417.171098597.davem@davemloft.net> <1200982696.7978.148.camel@aeonflux> <20080123140629.c24d4d68.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080123140629.c24d4d68.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 23 Jan 2008 20:20:24 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:41332 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752775AbYAXBUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 20:20:23 -0500
+Date: Wed, 23 Jan 2008 19:17:04 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org, sr@denx.de
+Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
+Message-ID: <20080123191704.2d74073a@zod.rchland.ibm.com>
+In-Reply-To: <4797C1AD.3040307@tiscali.nl>
+References: <4797C1AD.3040307@tiscali.nl>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 23, 2008 at 02:06:29PM -0800, Andrew Morton wrote:
-> > On Tue, 22 Jan 2008 07:18:16 +0100 Marcel Holtmann <marcel@holtmann.org> wrote:
-> > Hi Dave,
-> > 
-> > > > Add people missed in cc-list.
-> > > 
-> > > Thanks Dave for your continued efforts on Bluetooth bugs like this.
-> > > 
-> > > Marcel, are you going to review/ACK/integrate/push-upstream/whatever
-> > > any of these Bluetooth patches?
-> > > 
-> > > It hasn't been getting much love from you as of late, you are one of
-> > > the listed maintainers, and I don't want to lose any of Dave's
-> > > valuable bug fixing work.
-> > 
-> > I will be fully back in business next week. Just got stuck in a project
-> > that needed 200% of my time to get it going.
-> >
+On Wed, 23 Jan 2008 23:37:33 +0100
+Roel Kluin <12o3l@tiscali.nl> wrote:
+
+> logical/bitand typo
 > 
-> These patches in -mm:
-> 
-> bluetooth-hidp_process_hid_control-remove-unnecessary-parameter-dealing.patch
-> bluetooth-uninlining.patch
-> drivers-bluetooth-bpa10xc-fix-memleak.patch
-> drivers-bluetooth-btsdioc-fix-double-free.patch
-> bluetooth-blacklist-another-broadcom-bcm2035-device.patch
-> bluetooth-rfcomm-tty_close-before-destruct.patch
-> hci_ldisc-fix-null-pointer-deref.patch
-> 
-> could benefit from some attention please.
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+> index ebf9e21..dcfb459 100644
+> --- a/arch/powerpc/boot/4xx.c
+> +++ b/arch/powerpc/boot/4xx.c
+> @@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
+>  	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
+>  	cs = 0;
+>  	while (val) {
+> -		if (val && 0x1)
+> +		if (val & 0x1)
+>  			cs++;
+>  		val = val >> 1;
+>  	}
 
-Hi, andrew
+Hm, good catch.
 
-For the patch bluetooth-rfcomm-tty_close-before-destruct.patch I have to rethinkabout it.
+Stefan, have you had problems with this code at all?
 
-1. The subject is not correct, should be rfcomm-tty-destroy-before-tty_close.
-2. Don't know what I was thinking that time, could you replace it with the following better one? Sorry for that.
-
----
-rfcomm dev could be deleted in tty_hangup, so we must not call rfcomm_dev_del again to prevent from destroying rfcomm dev before tty close.
-
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
-
----
- net/bluetooth/rfcomm/tty.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff -upr a/net/bluetooth/rfcomm/tty.c b/net/bluetooth/rfcomm/tty.c
---- a/net/bluetooth/rfcomm/tty.c	2008-01-24 09:03:59.000000000 +0800
-+++ b/net/bluetooth/rfcomm/tty.c	2008-01-24 09:03:59.000000000 +0800
-@@ -429,6 +429,8 @@ static int rfcomm_release_dev(void __use
- 	if (dev->tty)
- 		tty_vhangup(dev->tty);
- 
-+	if (!test_bit(RFCOMM_RELEASE_ONHUP, &dev->flags))
-+		rfcomm_dev_del(dev);
- 	rfcomm_dev_del(dev);
- 	rfcomm_dev_put(dev);
- 	return 0;
+josh
