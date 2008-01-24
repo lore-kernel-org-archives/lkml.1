@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbYAXUoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbYAXUob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759810AbYAXUoQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 15:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757817AbYAXUgb
+	id S1759910AbYAXUob (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 15:44:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758262AbYAXUgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 15:36:31 -0500
-Received: from mummy.ncsc.mil ([144.51.88.129]:60014 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757376AbYAXUga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 15:36:30 -0500
-Subject: Re: [PATCH] selinux: make mls_compute_sid always polyinstantiate
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Eamon Walsh <ewalsh@tycho.nsa.gov>
-Cc: SELinux List <selinux@tycho.nsa.gov>, linux-kernel@vger.kernel.org,
-       James Morris <jmorris@namei.org>
-In-Reply-To: <4798F57C.8090300@tycho.nsa.gov>
-References: <4798F57C.8090300@tycho.nsa.gov>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Thu, 24 Jan 2008 15:36:18 -0500
-Message-Id: <1201206978.21288.139.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Jan 2008 15:36:49 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:43994 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758258AbYAXUgs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 15:36:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=FgRh4xK66gT04txDpCTGCUciTq1njxrThwzqJbiNIVngaB5YDGF5Lk8ZkYsXBQ8pcS1/RXmnb9MYoK2T7gaH8G4mpqOf2Cxd0igHj6O647LdeLldXVdpNeJp+s1q32801YkDtOK//h/ZqXVmqrzITge3rHRkV6YKFL5Omo6qTlE=
+From: Marcin Gil <marcin.gil@gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: JMicron PATA 2.6.24-rc7 can't find drives
+Date: Thu, 24 Jan 2008 21:36:25 +0100
+User-Agent: KMail/1.9.7
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+References: <200801232323.36187.marcin.gil@gmail.com> <4798A537.9000104@gmail.com> <m3abmvtah1.fsf@maximus.localdomain>
+In-Reply-To: <m3abmvtah1.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200801242136.25554.marcin.gil@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dnia czwartek 24 stycznia 2008, Krzysztof Halasa napisał:
+> Marcin Gil <marcin.gil@gmail.com> writes:
+> > +-----+-----+
+> > mobo  hdd   dvd
+> >
+> > I think that cable select would take dvd as master and hdd as slave.
+> > This was not preferable when hdd was my primary drive. I can try
+> > cable-select now since I boot off new SATA drive.
+>
+> Is a master in the middle permitted by the specs at all?
 
-On Thu, 2008-01-24 at 15:30 -0500, Eamon Walsh wrote:
-> This patch removes the requirement that the new and related object types 
-> differ in order to polyinstantiate by MLS level.  This allows MLS 
-> polyinstantiation to occur in the absence of explicit type_member rules 
-> or when the type has not changed.
-> 
-> Potential users of this support include pam_namespace.so (directory 
-> polyinstantiation) and the SELinux X support (property polyinstantiation).
-> 
-> Signed-off-by: Eamon Walsh <ewalsh@tycho.nsa.gov>
+I don't know. I had to do this because of the drive placement in the case.
+DVD drive is high above HDD drive -- thus I had to place DVD on the end.
 
-Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
+I'll switch to cable select in the moment and report back to you.
 
-> ---
-> 
->  mls.c |   11 ++---------
->  1 file changed, 2 insertions(+), 9 deletions(-)
-
-(nit:  use diffstat -p1 in the future)
-
-> 
-> diff --git a/security/selinux/ss/mls.c b/security/selinux/ss/mls.c
-> index fb5d70a..3bbcb53 100644
-> --- a/security/selinux/ss/mls.c
-> +++ b/security/selinux/ss/mls.c
-> @@ -537,15 +537,8 @@ int mls_compute_sid(struct context *scontext,
->  			/* Use the process effective MLS attributes. */
->  			return mls_context_cpy_low(newcontext, scontext);
->  	case AVTAB_MEMBER:
-> -		/* Only polyinstantiate the MLS attributes if
-> -		   the type is being polyinstantiated */
-> -		if (newcontext->type != tcontext->type) {
-> -			/* Use the process effective MLS attributes. */
-> -			return mls_context_cpy_low(newcontext, scontext);
-> -		} else {
-> -			/* Use the related object MLS attributes. */
-> -			return mls_context_cpy(newcontext, tcontext);
-> -		}
-> +		/* Use the process effective MLS attributes. */
-> +		return mls_context_cpy_low(newcontext, scontext);
->  	default:
->  		return -EINVAL;
->  	}
-> 
-> 
-> 
--- 
-Stephen Smalley
-National Security Agency
-
+Thank you,
+-Marcin Gil
