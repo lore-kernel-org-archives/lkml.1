@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759486AbYAXWe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757632AbYAXWen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759486AbYAXWe2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 17:34:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbYAXWcZ
+	id S1757632AbYAXWen (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 17:34:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756846AbYAXWc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 17:32:25 -0500
-Received: from smtp06.mtu.ru ([62.5.255.53]:52057 "EHLO smtp06.mtu.ru"
+	Thu, 24 Jan 2008 17:32:26 -0500
+Received: from smtp06.mtu.ru ([62.5.255.53]:52041 "EHLO smtp06.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756355AbYAXWcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 17:32:24 -0500
+	id S1756460AbYAXWcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 17:32:25 -0500
 From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
 To: trivial@kernel.org, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org, tigran@aivazian.fsnet.co.uk
-Subject: [PATCH 7/9] bfs: coding style cleanup in include/linux/bfs_fs.h
-Date: Fri, 25 Jan 2008 01:32:06 +0300
-Message-Id: <1201213928-18183-8-git-send-email-dmitri.vorobiev@gmail.com>
+Subject: [PATCH 8/9] bfs: remove multiple assignments
+Date: Fri, 25 Jan 2008 01:32:07 +0300
+Message-Id: <1201213928-18183-9-git-send-email-dmitri.vorobiev@gmail.com>
 X-Mailer: git-send-email 1.5.3.6
 In-Reply-To: <1201213928-18183-1-git-send-email-dmitri.vorobiev@gmail.com>
 References: <1201213928-18183-1-git-send-email-dmitri.vorobiev@gmail.com>
@@ -23,17 +23,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clean up errors found by checkpatch.pl.
-
-Before the patch:
-
-$ ./scripts/checkpatch.pl --file  include/linux/bfs_fs.h | grep total
-total: 5 errors, 3 warnings, 80 lines checked
-
-After the patch:
-
-$ ./scripts/checkpatch.pl --file  include/linux/bfs_fs.h | grep total
-total: 0 errors, 0 warnings, 83 lines checked
+The checkpatch.pl reported several warnings about multiple variable
+assignments in the BFS driver sources. This trivial patch fixes these
+warnings by giving each assignment its own line.
 
 No functional changes introduced.
 
@@ -42,52 +34,105 @@ as a module and as a part of the kernel proper.
 
 Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
 ---
- include/linux/bfs_fs.h |   17 ++++++++++-------
- 1 files changed, 10 insertions(+), 7 deletions(-)
+ fs/bfs/dir.c   |   13 +++++++++----
+ fs/bfs/file.c  |    6 ++++--
+ fs/bfs/inode.c |    7 +++++--
+ 3 files changed, 18 insertions(+), 8 deletions(-)
 
-diff --git a/include/linux/bfs_fs.h b/include/linux/bfs_fs.h
-index 8ed6dfd..d7b11a6 100644
---- a/include/linux/bfs_fs.h
-+++ b/include/linux/bfs_fs.h
-@@ -36,7 +36,7 @@ struct bfs_inode {
- 	__u32 i_padding[4];
- };
+diff --git a/fs/bfs/dir.c b/fs/bfs/dir.c
+index 2964505..94fed7a 100644
+--- a/fs/bfs/dir.c
++++ b/fs/bfs/dir.c
+@@ -104,7 +104,9 @@ static int bfs_create(struct inode *dir, struct dentry *dentry, int mode,
+ 	info->si_freei--;
+ 	inode->i_uid = current->fsuid;
+ 	inode->i_gid = (dir->i_mode & S_ISGID) ? dir->i_gid : current->fsgid;
+-	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
++	inode->i_mtime = CURRENT_TIME_SEC;
++	inode->i_atime = CURRENT_TIME_SEC;
++	inode->i_ctime = CURRENT_TIME_SEC;
+ 	inode->i_blocks = 0;
+ 	inode->i_op = &bfs_file_inops;
+ 	inode->i_fop = &bfs_file_operations;
+@@ -200,7 +202,8 @@ static int bfs_unlink(struct inode *dir, struct dentry *dentry)
+ 	}
+ 	de->ino = 0;
+ 	mark_buffer_dirty(bh);
+-	dir->i_ctime = dir->i_mtime = CURRENT_TIME_SEC;
++	dir->i_ctime = CURRENT_TIME_SEC;
++	dir->i_mtime = CURRENT_TIME_SEC;
+ 	mark_inode_dirty(dir);
+ 	inode->i_ctime = dir->i_ctime;
+ 	inode_dec_link_count(inode);
+@@ -220,7 +223,8 @@ static int bfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+ 	struct bfs_dirent *old_de, *new_de;
+ 	int error = -ENOENT;
  
--#define BFS_NAMELEN		14	
-+#define BFS_NAMELEN		14
- #define BFS_DIRENT_SIZE		16
- #define BFS_DIRS_PER_BLOCK	32
+-	old_bh = new_bh = NULL;
++	old_bh = NULL;
++	new_bh = NULL;
+ 	old_inode = old_dentry->d_inode;
+ 	if (S_ISDIR(old_inode->i_mode))
+ 		return -EINVAL;
+@@ -252,7 +256,8 @@ static int bfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+ 			goto end_rename;
+ 	}
+ 	old_de->ino = 0;
+-	old_dir->i_ctime = old_dir->i_mtime = CURRENT_TIME_SEC;
++	old_dir->i_ctime = CURRENT_TIME_SEC;
++	old_dir->i_mtime = CURRENT_TIME_SEC;
+ 	mark_inode_dirty(old_dir);
+ 	if (new_inode) {
+ 		new_inode->i_ctime = CURRENT_TIME_SEC;
+diff --git a/fs/bfs/file.c b/fs/bfs/file.c
+index f32b2a2..ab2fa66 100644
+--- a/fs/bfs/file.c
++++ b/fs/bfs/file.c
+@@ -111,7 +111,8 @@ static int bfs_get_block(struct inode *inode, sector_t block,
+ 				create, (unsigned long)block, phys);
+ 		map_bh(bh_result, sb, phys);
+ 		info->si_freeb -= phys - bi->i_eblock;
+-		info->si_lf_eblk = bi->i_eblock = phys;
++		info->si_lf_eblk = phys;
++		bi->i_eblock = phys;
+ 		mark_inode_dirty(inode);
+ 		mark_buffer_dirty(sbh);
+ 		err = 0;
+@@ -140,7 +141,8 @@ static int bfs_get_block(struct inode *inode, sector_t block,
+ 			create, (unsigned long)block, phys);
+ 	bi->i_sblock = phys;
+ 	phys += block;
+-	info->si_lf_eblk = bi->i_eblock = phys;
++	info->si_lf_eblk = phys;
++	bi->i_eblock = phys;
  
-@@ -61,20 +61,23 @@ struct bfs_super_block {
+ 	/*
+ 	 * This assumes nothing can write the inode back while we are here
+diff --git a/fs/bfs/inode.c b/fs/bfs/inode.c
+index 91d5686..7eefafb 100644
+--- a/fs/bfs/inode.c
++++ b/fs/bfs/inode.c
+@@ -157,7 +157,9 @@ static void bfs_delete_inode(struct inode *inode)
+ 	}
  
+ 	inode->i_size = 0;
+-	inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME_SEC;
++	inode->i_atime = CURRENT_TIME_SEC;
++	inode->i_mtime = CURRENT_TIME_SEC;
++	inode->i_ctime = CURRENT_TIME_SEC;
+ 	lock_kernel();
+ 	mark_inode_dirty(inode);
  
- #define BFS_OFF2INO(offset) \
--        ((((offset) - BFS_BSIZE) / sizeof(struct bfs_inode)) + BFS_ROOT_INO)
-+	((((offset) - BFS_BSIZE) / sizeof(struct bfs_inode)) + BFS_ROOT_INO)
- 
- #define BFS_INO2OFF(ino) \
- 	((__u32)(((ino) - BFS_ROOT_INO) * sizeof(struct bfs_inode)) + BFS_BSIZE)
- #define BFS_NZFILESIZE(ip) \
--        ((le32_to_cpu((ip)->i_eoffset) + 1) -  le32_to_cpu((ip)->i_sblock) * BFS_BSIZE)
-+	((le32_to_cpu((ip)->i_eoffset) + 1) - \
-+	 le32_to_cpu((ip)->i_sblock) * BFS_BSIZE)
- 
- #define BFS_FILESIZE(ip) \
--        ((ip)->i_sblock == 0 ? 0 : BFS_NZFILESIZE(ip))
-+	((ip)->i_sblock == 0 ? 0 : BFS_NZFILESIZE(ip))
- 
- #define BFS_FILEBLOCKS(ip) \
--        ((ip)->i_sblock == 0 ? 0 : (le32_to_cpu((ip)->i_eblock) + 1) -  le32_to_cpu((ip)->i_sblock))
-+	((ip)->i_sblock == 0 ? 0 : (le32_to_cpu((ip)->i_eblock) + 1) - \
-+	 le32_to_cpu((ip)->i_sblock))
- #define BFS_UNCLEAN(bfs_sb, sb)	\
--	((le32_to_cpu(bfs_sb->s_from) != -1) && (le32_to_cpu(bfs_sb->s_to) != -1) && !(sb->s_flags & MS_RDONLY))
--
-+	((le32_to_cpu(bfs_sb->s_from) != -1) && \
-+	(le32_to_cpu(bfs_sb->s_to) != -1) && \
-+	!(sb->s_flags & MS_RDONLY))
- 
- #endif	/* _LINUX_BFS_FS_H */
+@@ -213,7 +215,8 @@ static int bfs_statfs(struct dentry *dentry, struct kstatfs *buf)
+ 	buf->f_type = BFS_MAGIC;
+ 	buf->f_bsize = s->s_blocksize;
+ 	buf->f_blocks = info->si_blocks;
+-	buf->f_bfree = buf->f_bavail = info->si_freeb;
++	buf->f_bfree = info->si_freeb;
++	buf->f_bavail = info->si_freeb;
+ 	buf->f_files = info->si_lasti + 1 - BFS_ROOT_INO;
+ 	buf->f_ffree = info->si_freei;
+ 	buf->f_fsid.val[0] = (u32)id;
 -- 
 1.5.3
 
