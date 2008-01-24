@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbYAXKFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbYAXKPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588AbYAXKFa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 05:05:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYAXKFV
+	id S1754485AbYAXKPP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 05:15:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYAXKPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 05:05:21 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:60711 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752321AbYAXKFU (ORCPT
+	Thu, 24 Jan 2008 05:15:01 -0500
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:55375 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752397AbYAXKPA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 05:05:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LPfutfZuQOkNNIpkL2CmCRDY5Z0C5hNX3TZDTKjSoMeG5nsrmZ7hn1k0aAFxbhrN04jMC02NYwZiqYiEmnN+BBOSzX9B33pt0B6M0CYf1q0gYfwF7ciubYICmNSHATN/XRuONaCWHbaLvQMEVZUpAXwqP7lN5UyQ+UiNs7ljUXw=
-Message-ID: <6c4c86470801240205u5361e090jc057270b03b5ebe7@mail.gmail.com>
-Date: Thu, 24 Jan 2008 11:05:18 +0100
-From: "Wilco Beekhuizen" <wilcobeekhuizen@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080124013720.GA21978@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 24 Jan 2008 05:15:00 -0500
+Date: Thu, 24 Jan 2008 19:14:56 +0900 (JST)
+Message-Id: <20080124.191456.119427875.taka@valinux.co.jp>
+To: yamamoto@valinux.co.jp
+Cc: agk@redhat.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com
+Subject: Re: [dm-devel] [PATCH 0/2] dm-band: The I/O bandwidth controller:
+ Overview
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20080124033807.42D7B1E3C0C@siro.lan>
+References: <20080124.012103.105433865.taka@valinux.co.jp>
+	<20080124033807.42D7B1E3C0C@siro.lan>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com>
-	 <20080124013720.GA21978@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/24, Greg KH <greg@kroah.com>:
-> On Tue, Jan 22, 2008 at 08:18:32PM +0100, Wilco Beekhuizen wrote:
-> > 2.6.24-rc8 (possibly lower rc's too) has usb_find_device removed from
-> > usb.c. This causes problems when compiling modules that need
-> > usb_find_device.
-> > This patch puts the symbol back in place. Unless someone has a good
-> > reason not to include usb_find_device?
->
-> I don't see any users in the kernel tree of this function that can be
-> built as a module.
->
-> Do you know of any external modules that need it?  Any pointers to the
-> code anywhere?
->
-> thanks,
->
-> greg k-h
->
+Hi,
 
-Well I need it for my iriver mp3 player. This driver currently resides
-here: http://www.init0.nl/iriver.php
+> > > On Wed, Jan 23, 2008 at 09:53:50PM +0900, Ryo Tsuruta wrote:
+> > > > Dm-band gives bandwidth to each job according to its weight, 
+> > > > which each job can set its own value to.
+> > > > At this time, a job is a group of processes with the same pid or pgrp or uid.
+> > > 
+> > > It seems to rely on 'current' to classify bios and doesn't do it until the map
+> > > function is called, possibly in a different process context, so it won't
+> > > always identify the original source of the I/O correctly:
+> > 
+> > Yes, this should be mentioned in the document with the current implementation
+> > as you pointed out.
+> > 
+> > By the way, I think once a memory controller of cgroup is introduced, it will
+> > help to track down which cgroup is the original source.
+> 
+> do you mean to make this a part of the memory subsystem?
 
-Most code is pretty ancient, I just manage it so it compiles with
-recent kernels. Is there somehting exported that is similar to
-usb_find_device?
+I just think if the memory subsystem is in front of us, we don't need to
+reinvent the wheel.
 
-Wilco
+But I don't have a concrete image how the interface between dm-band and
+the memory subsystem should be designed yet. I'd be appreciate if some of
+the cgroup developers give some ideas about it.
+
+Thanks,
+Hirokazu Takahashi.
+
+
+> YAMAMOTO Takashi
+
