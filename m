@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755853AbYAXLPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYAXLTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755853AbYAXLPr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 06:15:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbYAXLPh
+	id S1754794AbYAXLTg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 06:19:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbYAXLT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 06:15:37 -0500
-Received: from iona.labri.fr ([147.210.8.143]:58017 "EHLO iona.labri.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755136AbYAXLPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 06:15:36 -0500
-Message-ID: <47987355.1020406@inria.fr>
-Date: Thu, 24 Jan 2008 12:15:33 +0100
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Thu, 24 Jan 2008 06:19:29 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:56343 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752068AbYAXLT2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 06:19:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=XEZHclmJXf6xDotRf97IcDPa3V/XUz0fR90Y7tNeWJEp8goxwBa3tbhtvVGkyrIItMZg/xoYioMegn0msBardq59c3q6b8C49DN2DRuDDjs2WAXXqoS7JeZFfW9ucIozzds4tWU0easgfqIEKawplYoDOzNXqKl5Z4i+MpwICGk=
+Message-ID: <84144f020801240319o1f51613fx6e823120f74a9cf9@mail.gmail.com>
+Date: Thu, 24 Jan 2008 13:19:25 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Wilco Beekhuizen" <wilcobeekhuizen@gmail.com>
+Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
+Cc: "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <6c4c86470801240205u5361e090jc057270b03b5ebe7@mail.gmail.com>
 MIME-Version: 1.0
-To: Shane Huang <Shane.Huang@amd.com>
-CC: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, htejun@gmail.com
-Subject: Re: [patch] PCI: disable the MSI of AMD RS690
-References: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com> <B90463BC30D2E446BA423D888DC85E501BF78E@sshaexmb1.amd.com>
-In-Reply-To: <B90463BC30D2E446BA423D888DC85E501BF78E@sshaexmb1.amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com>
+	 <20080124013720.GA21978@kroah.com>
+	 <6c4c86470801240205u5361e090jc057270b03b5ebe7@mail.gmail.com>
+X-Google-Sender-Auth: 6c55d44fe15c724c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shane Huang wrote:
-> This patch recover Tejun's commit
-> 4be8f906435a6af241821ab5b94b2b12cb7d57d8
->  because there is one MSI bug on RS690+SB600 board which will lead to
-> boot failure. This bug is NOT same as the one in SB700 SATA controller,
-> quirk_msi_intx_disable_bug does not work to SB600. Disablement the MSI
-> of RS690 is the workaround.
-> 
-> diff -ruN old/drivers/pci/quirks.c new/drivers/pci/quirks.c
-> --- old/drivers/pci/quirks.c	2008-01-07 05:45:38.000000000 +0800
-> +++ new/drivers/pci/quirks.c	2008-01-22 11:02:00.000000000 +0800
-> @@ -1623,6 +1623,7 @@
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS,
-> PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_disable_all_msi);
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS400_200,
-> quirk_disable_all_msi);
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480,
-> quirk_disable_all_msi);
-> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS690,
-> quirk_disable_all_msi);
+Hi Wilco,
 
-This patch disable MSI for the _whole_ system, not only behind the
-RS690. Is this on purpose? Is MSI really going to be broken on any
-bus that's _not_ behind RS690. If not, you might want to use 
-quirk_disable_msi() instead (as we do for AMD8131).
+On Jan 24, 2008 12:05 PM, Wilco Beekhuizen <wilcobeekhuizen@gmail.com> wrote:
+> Most code is pretty ancient, I just manage it so it compiles with
+> recent kernels. Is there somehting exported that is similar to
+> usb_find_device?
 
-Brice
+The problem is that iriverfs shouldn't be calling usb_find_device() at
+all. What happens when you plug in two players to the same computer?
+AFAICT the whole thing should be a proper USB driver in drivers/usb/
+and not a "filesystem" in fs/.
+
+                          Pekka
