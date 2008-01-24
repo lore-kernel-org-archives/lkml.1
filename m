@@ -1,94 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYAXJ3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYAXJbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754625AbYAXJ3m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 04:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYAXJ3b
+	id S1754684AbYAXJbj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 04:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYAXJbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 04:29:31 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:58939 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753289AbYAXJ33 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 04:29:29 -0500
-Message-Id: <47985B37.9000503@ce.jp.nec.com>
-Date: Thu, 24 Jan 2008 18:32:39 +0900
-From: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 24 Jan 2008 04:31:32 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:40072 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752805AbYAXJba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 04:31:30 -0500
+Message-ID: <47985AC4.9070104@atmel.com>
+Date: Thu, 24 Jan 2008 10:30:44 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, dm-devel@redhat.com
-Subject: Re: [BUG] The kernel thread for md RAID1 could cause a md RAID1 array
- deadlock
-References: <478C240F.8070004@ce.jp.nec.com> <18328.1473.26122.647283@notabene.brown>
-In-Reply-To: <18328.1473.26122.647283@notabene.brown>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: linux-fbdev-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>,
+       Andrew Victor <linux@maxim.org.za>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [Linux-fbdev-devel] [PATCH] atmel_lcdfb: backlight control -
+ tiny rework
+References: <4790BB53.3080407@atmel.com>
+In-Reply-To: <4790BB53.3080407@atmel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Tiny patch that removes not needed "inline" and renames 
+function : exit_contrast() -> exit_backlight().
+It adds the missing exit_backlight() in  probe() 
+error path.
 
-Thank you for the patch.
-I have applied the patch to 2.6.23.14 and it works well.
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+Follows comments from Andrew Morton and Haavard Skinnemoen.
+Thanks to both of you.
 
-- In case of 2.6.23.14, the problem is reproduced.
-- In case of 2.6.23.14 with this patch, raid1 works well so far.
-  The fault injection script continues to run, and it doesn't deadlock.
-  I will keep it running for a while.
+ drivers/video/atmel_lcdfb.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Also, md raid10 seems to have the same problem.
-I will test raid10 applying this patch as well.
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -118,7 +118,7 @@ static struct backlight_ops atmel_lcdc_b
+ 	.get_brightness = atmel_bl_get_brightness,
+ };
+ 
+-static inline void init_backlight(struct atmel_lcdfb_info *sinfo)
++static void init_backlight(struct atmel_lcdfb_info *sinfo)
+ {
+ 	struct backlight_device	*bl;
+ 
+@@ -142,7 +142,7 @@ static inline void init_backlight(struct
+ 	bl->props.brightness = atmel_bl_get_brightness(bl);
+ }
+ 
+-static inline void exit_contrast(struct atmel_lcdfb_info *sinfo)
++static void exit_backlight(struct atmel_lcdfb_info *sinfo)
+ {
+ 	if (sinfo->backlight)
+ 		backlight_device_unregister(sinfo->backlight);
+@@ -150,18 +150,18 @@ static inline void exit_contrast(struct 
+ 
+ #else
+ 
+-static inline void init_backlight(struct atmel_lcdfb_info *sinfo)
++static void init_backlight(struct atmel_lcdfb_info *sinfo)
+ {
+ 	dev_warn(&sinfo->pdev->dev, "backlight control is not available\n");
+ }
+ 
+-static inline void exit_contrast(struct atmel_lcdfb_info *sinfo)
++static void exit_backlight(struct atmel_lcdfb_info *sinfo)
+ {
+ }
+ 
+ #endif
+ 
+-static inline void init_contrast(struct atmel_lcdfb_info *sinfo)
++static void init_contrast(struct atmel_lcdfb_info *sinfo)
+ {
+ 	/* have some default contrast/backlight settings */
+ 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, contrast_ctr);
+@@ -823,6 +823,7 @@ free_cmap:
+ unregister_irqs:
+ 	free_irq(sinfo->irq_base, info);
+ unmap_mmio:
++	exit_backlight(sinfo);
+ 	iounmap(sinfo->mmio);
+ release_mem:
+  	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
+@@ -857,7 +858,7 @@ static int __exit atmel_lcdfb_remove(str
+ 	if (!sinfo)
+ 		return 0;
+ 
+-	exit_contrast(sinfo);
++	exit_backlight(sinfo);
+ 	if (sinfo->atmel_lcdfb_power_control)
+ 		sinfo->atmel_lcdfb_power_control(0);
+ 	unregister_framebuffer(info);
 
 
-Neil Brown wrote:
-> On Tuesday January 15, k-tanaka@ce.jp.nec.com wrote:
->> This message describes the details about md-RAID1 issue found by
->> testing the md RAID1 using the SCSI fault injection framework.
->>
->> Abstract:
->> Both the error handler for md RAID1 and write access request to the md RAID1
->> use raid1d kernel thread. The nr_pending flag could cause a race condition
->> in raid1d, results in a raid1d deadlock.
-> 
-> Thanks for finding and reporting this.
-> 
-> I believe the following patch should fix the deadlock.
-> 
-> If you are able to repeat your test and confirm this I would
-> appreciate it.
-> 
-> Thanks,
-> NeilBrown
-> 
-> 
-> 
-> Fix deadlock in md/raid1 when handling a read error.
-> 
-> When handling a read error, we freeze the array to stop any other
-> IO while attempting to over-write with correct data.
-> 
-> This is done in the raid1d thread and must wait for all submitted IO
-> to complete (except for requests that failed and are sitting in the
-> retry queue - these are counted in ->nr_queue and will stay there during
-> a freeze).
-> 
-> However write requests need attention from raid1d as bitmap updates
-> might be required.  This can cause a deadlock as raid1 is waiting for
-> requests to finish that themselves need attention from raid1d.
-> 
-> So we create a new function 'flush_pending_writes' to give that attention,
-> and call it in freeze_array to be sure that we aren't waiting on raid1d.
-> 
-> Thanks to "K.Tanaka" <k-tanaka@ce.jp.nec.com> for finding and reporting
-> this problem.
-> 
-> Cc: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
-> Signed-off-by: Neil Brown <neilb@suse.de>
-> 
--- 
----------------------------------------------------------
-Kenichi TANAKA    | Open Source Software Platform Development Division
-                  | Computers Software Operations Unit, NEC Corporation
-                  | k-tanaka@ce.jp.nec.com
