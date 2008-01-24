@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYAXOmD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbYAXOnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYAXOmD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 09:42:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbYAXOlx
+	id S1754481AbYAXOnS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 09:43:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbYAXOnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 09:41:53 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:38051
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751668AbYAXOlx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 09:41:53 -0500
-Date: Thu, 24 Jan 2008 15:41:51 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Andrew Morton <akpm@osdl.org>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, holt@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [kvm-devel] [PATCH] export notifier #1
-Message-ID: <20080124144150.GO7141@v2.random>
-References: <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <20080122223139.GD15848@v2.random> <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com> <20080123114136.GE15848@v2.random> <Pine.LNX.4.64.0801231149150.13547@schroedinger.engr.sgi.com> <20080124143454.GN7141@v2.random>
+	Thu, 24 Jan 2008 09:43:04 -0500
+Received: from rtr.ca ([76.10.145.34]:2118 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751981AbYAXOnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 09:43:01 -0500
+Message-ID: <4798A3F4.1070302@rtr.ca>
+Date: Thu, 24 Jan 2008 09:43:00 -0500
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080124143454.GN7141@v2.random>
+To: yi.y.yang@intel.com
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@kernel.org,
+       acpi-bugzilla@lists.sourceforge.net
+Subject: Re: [PATCH] ACPI: create proc entry 'power' only if C2 or C3 is	supported
+References: <1198738022.8950.3.camel@yangyi-dev.bj.intel.com>	 <1198744900.3640.4.camel@yangyi-dev.bj.intel.com>	 <1198916553.3806.2.camel@yangyi-dev.bj.intel.com>	 <1199434602.19185.1.camel@yangyi-dev.bj.intel.com>	 <1199688961.3551.19.camel@yangyi-dev.bj.intel.com>	 <1199762486.3551.22.camel@yangyi-dev.bj.intel.com> <1201135532.3969.3.camel@yangyi-dev.bj.intel.com>
+In-Reply-To: <1201135532.3969.3.camel@yangyi-dev.bj.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 03:34:54PM +0100, Andrea Arcangeli wrote:
-> set_page_dirty can be called inside ->invalidate_page if needed. But
-> I'm not against artificially setting the dirty bit of the pteval
-> returned by set_page_dirty, perhaps that's more efficient as it will
-              ^^^^^^^^^^^^^^ ptep_clear_flush of course
+> Subject: ACPI: Create proc entry 'power' only C2 or C3 is supported
+> From: Yi Yang <yi.y.yang@intel.com>
+> 
+> ACPI processor idle driver makes sense only if the processor supports
+> C2 or C3. For legacy C0 and C1, just the original pm_idle is working
+> , statistics info about promotion, demotion, latency, usage and
+> duration are empty or 0, so these are misleading, users'll think their
+> CPUs support C states (C2 or C3), /proc/acpi/processor/CPU*/power
+> shouldn't exist for this case at all.
+..
 
-> require a single locked op on the page_t.
+On the other hand, this change might send many of us scrambling
+to try and figure out which kernel CONFIG option is responsible
+for the expected /proc/acpi/processor/CPU*/power entries not showing up.
+Thus just adding to the confusion by as much as it saves.
+
+What do others think?
+
+
