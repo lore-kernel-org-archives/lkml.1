@@ -1,416 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbYAXKY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYAXKYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754590AbYAXKY1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 05:24:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYAXKYP
+	id S1755252AbYAXKYr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 05:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYAXKYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 05:24:15 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:57027 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751700AbYAXKYN (ORCPT
+	Thu, 24 Jan 2008 05:24:37 -0500
+Received: from po-out-1718.google.com ([72.14.252.155]:62056 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbYAXKYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 05:24:13 -0500
-Date: Thu, 24 Jan 2008 12:24:11 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Netdev <netdev@vger.kernel.org>
-cc: Dave Young <hidave.darkstar@gmail.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Krishna Kumar2 <krkumar2@in.ibm.com>,
-       Denys Fedoryshchenko <denys@visp.net.lb>,
-       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc8-mm1 : net tcp_input.c warnings
-In-Reply-To: <Pine.LNX.4.64.0801241108400.31652@kivilampi-30.cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0801241214080.31652@kivilampi-30.cs.helsinki.fi>
-References: <a8e1da0801220109v6bf8931ev50f2210402c3ba41@mail.gmail.com> 
- <Pine.LNX.4.64.0801221115150.31652@kivilampi-30.cs.helsinki.fi> 
- <a8e1da0801221744m37021e88h5c188e5b31ea42bf@mail.gmail.com> 
- <20080122.190137.206066966.davem@davemloft.net> 
- <Pine.LNX.4.64.0801230937270.31652@kivilampi-30.cs.helsinki.fi> 
- <a8e1da0801222344l101c2b90s363821c26bc8cb55@mail.gmail.com> 
- <Pine.LNX.4.64.0801231034300.31652@kivilampi-30.cs.helsinki.fi> 
- <Pine.LNX.4.64.0801231256360.31652@kivilampi-30.cs.helsinki.fi>
- <a8e1da0801231842m128d8261oc14135716a0a2d85@mail.gmail.com>
- <Pine.LNX.4.64.0801241108400.31652@kivilampi-30.cs.helsinki.fi>
+	Thu, 24 Jan 2008 05:24:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=mEoeRioj/rGvk3B0MhoZEa7aIUvab/j+segjM0xrIpC6dzlwuaFHgcllaN6DCqeJXiI+xl9eMO6+OCUpSTNayW3B87KpZUFEJfYdGDAgwooe5BIPBFob9ehHTBU9JfwTUUSTy+HYpt9VqRIl0TA01Qmrv8TXgptxM5TMYvVDpyU=
+Message-ID: <7cb41a5f0801240224l3077d320s2bded5bf605bb58c@mail.gmail.com>
+Date: Thu, 24 Jan 2008 17:24:18 +0700
+From: "NHA DAT SAI GON" <nhadepus08@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Ban can ho cao cap V-Star (Korea) Quan 7, TP.HCM -DA CAP NHAT CAN HO MOI
 MIME-Version: 1.0
-Content-Type: MULTIPART/Mixed; boundary="-696243703-1594222684-1201168458=:31652"
-Content-ID: <Pine.LNX.4.64.0801241214081.31652@kivilampi-30.cs.helsinki.fi>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Chao cac ban,
 
----696243703-1594222684-1201168458=:31652
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0801241214082.31652@kivilampi-30.cs.helsinki.fi>
+Ban nhan duoc email nay la do ban hoac mot ai do da dang ky dia chi
+email cua ban tai trang web: www.nhaban.net.tf, www.nhaban.vnn.bz,
+www.nhadep.us de nhan cac thong tin nha dat moi nhat cua chung toi.
 
-On Thu, 24 Jan 2008, Ilpo Järvinen wrote:
+Nay chung toi han hanh thong bao voi cac ban cac can ho cao cap chung
+toi dang chao ban (DEP NHAT -GIA TOT NHAT).
 
-> And anyway, there were some fackets_out related 
-> problems reported as well and this doesn't help for that but I think I've 
-> lost track of who was seeing it due to large number of reports :-), could 
-> somebody refresh my memory because I currently don't have time to dig it 
-> up from archives (at least on this week).
+Chung toi can ban mot so can ho cao cap V-Star cua Han Quoc xay dung o
+quan 7 (RAT GAN PHU MY HUNG), TP.HCM
 
-Here's the updated debug patch for net-2.6.25/mm for tracking 
-fackets_out inconsistencies (it won't work for trees which don't
-include net-2.6.25, mm does of course :-)).
+DA CAP NHAT CAC CAN HO MOI - MOI CAC BAN VAO XEM CHI TIET
 
-I hope I got it into good shape this time to avoid spurious stacktraces 
-but still maintaining 100% accuracy, but it's not a simple oneliner so I 
-might have missed something... :-)
+Vi tri tuyet voi, cac can ho thiet ke rat dep, hien dai, tien nghi, an
+ninh...va rat nhieu cac tien ich khac.
 
-I'd suggest that people trying with this first apply the newreno fix of 
-the previous mail to avoid already-fixed case from triggering.
+Can ho rat thich hop voi moi doi tuong, co the dung de o hoac dau tu...
 
--- 
- i.
+TOA NHA V-STAR DA HOAN THIEN PHAN MONG VA TANG HAM
 
---
-[PATCH] [TCP]: debug S+L (for net-2.5.26 / mm, incompatible with mainline)
+Moi quy khach vao xem chi tiet cu the o website:
 
----
- include/net/tcp.h     |    5 ++-
- net/ipv4/tcp_input.c  |   18 +++++++-
- net/ipv4/tcp_ipv4.c   |  127 +++++++++++++++++++++++++++++++++++++++++++++++++
- net/ipv4/tcp_output.c |   23 +++++++--
- 4 files changed, 165 insertions(+), 8 deletions(-)
+http://www.canhocaocap.net
 
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index 7de4ea3..552aa71 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -272,6 +272,9 @@ DECLARE_SNMP_STAT(struct tcp_mib, tcp_statistics);
- #define TCP_ADD_STATS_BH(field, val)	SNMP_ADD_STATS_BH(tcp_statistics, field, val)
- #define TCP_ADD_STATS_USER(field, val)	SNMP_ADD_STATS_USER(tcp_statistics, field, val)
- 
-+extern void tcp_print_queue(struct sock *sk);
-+extern void			tcp_verify_wq(struct sock *sk);
-+
- extern void			tcp_v4_err(struct sk_buff *skb, u32);
- 
- extern void			tcp_shutdown (struct sock *sk, int how);
-@@ -768,7 +771,7 @@ static inline __u32 tcp_current_ssthresh(const struct sock *sk)
- }
- 
- /* Use define here intentionally to get WARN_ON location shown at the caller */
--#define tcp_verify_left_out(tp)	WARN_ON(tcp_left_out(tp) > tp->packets_out)
-+#define tcp_verify_left_out(tp)		tcp_verify_wq((struct sock *)tp)
- 
- extern void tcp_enter_cwr(struct sock *sk, const int set_ssthresh);
- extern __u32 tcp_init_cwnd(struct tcp_sock *tp, struct dst_entry *dst);
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 19c449f..c897c93 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -1426,8 +1426,10 @@ tcp_sacktag_write_queue(struct sock *sk, struct sk_buff *ack_skb,
- 	int first_sack_index;
- 
- 	if (!tp->sacked_out) {
--		if (WARN_ON(tp->fackets_out))
-+		if (WARN_ON(tp->fackets_out)) {
-+			tcp_verify_left_out(tp);
- 			tp->fackets_out = 0;
-+		}
- 		tcp_highest_sack_reset(sk);
- 	}
- 
-@@ -2136,6 +2138,8 @@ static void tcp_mark_head_lost(struct sock *sk, int packets, int fast_rexmit)
- 	struct sk_buff *skb;
- 	int cnt;
- 
-+	tcp_verify_left_out(tp);
-+
- 	BUG_TRAP(packets <= tp->packets_out);
- 	if (tp->lost_skb_hint) {
- 		skb = tp->lost_skb_hint;
-@@ -2501,6 +2505,8 @@ static void tcp_fastretrans_alert(struct sock *sk, int pkts_acked, int flag)
- 				    (tcp_fackets_out(tp) > tp->reordering));
- 	int fast_rexmit = 0;
- 
-+	tcp_verify_left_out(tp);
-+
- 	if (WARN_ON(!tp->packets_out && tp->sacked_out))
- 		tp->sacked_out = 0;
- 	if (WARN_ON(!tp->sacked_out && tp->fackets_out))
-@@ -2645,6 +2651,10 @@ static void tcp_fastretrans_alert(struct sock *sk, int pkts_acked, int flag)
- 	if (do_lost || (tcp_is_fack(tp) && tcp_head_timedout(sk)))
- 		tcp_update_scoreboard(sk, fast_rexmit);
- 	tcp_cwnd_down(sk, flag);
-+
-+	WARN_ON(tcp_write_queue_head(sk) == NULL);
-+	WARN_ON(!tp->packets_out);
-+
- 	tcp_xmit_retransmit_queue(sk);
- }
- 
-@@ -2848,6 +2858,8 @@ static int tcp_clean_rtx_queue(struct sock *sk, int prior_fackets)
- 		tcp_clear_all_retrans_hints(tp);
- 	}
- 
-+	tcp_verify_left_out(tp);
-+
- 	if (skb && (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED))
- 		flag |= FLAG_SACK_RENEGING;
- 
-@@ -3175,6 +3187,8 @@ static int tcp_ack(struct sock *sk, struct sk_buff *skb, int flag)
- 	prior_fackets = tp->fackets_out;
- 	prior_in_flight = tcp_packets_in_flight(tp);
- 
-+	tcp_verify_left_out(tp);
-+
- 	if (!(flag & FLAG_SLOWPATH) && after(ack, prior_snd_una)) {
- 		/* Window is constant, pure forward advance.
- 		 * No more checks are required.
-@@ -3237,6 +3251,8 @@ static int tcp_ack(struct sock *sk, struct sk_buff *skb, int flag)
- 	if ((flag & FLAG_FORWARD_PROGRESS) || !(flag & FLAG_NOT_DUP))
- 		dst_confirm(sk->sk_dst_cache);
- 
-+	tcp_verify_left_out(tp);
-+
- 	return 1;
- 
- no_queue:
-diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
-index 9aea88b..e6e3ad5 100644
---- a/net/ipv4/tcp_ipv4.c
-+++ b/net/ipv4/tcp_ipv4.c
-@@ -108,6 +108,133 @@ struct inet_hashinfo __cacheline_aligned tcp_hashinfo = {
- 	.lhash_wait  = __WAIT_QUEUE_HEAD_INITIALIZER(tcp_hashinfo.lhash_wait),
- };
- 
-+void tcp_print_queue(struct sock *sk)
-+{
-+	struct tcp_sock *tp = tcp_sk(sk);
-+	struct sk_buff *skb;
-+	char s[50+1];
-+	char h[50+1];
-+	int idx = 0;
-+	int i;
-+
-+	i = 0;
-+	tcp_for_write_queue(skb, sk) {
-+		if (skb == tcp_send_head(sk))
-+			printk(KERN_ERR "head %u %p\n", i, skb);		
-+		else
-+			printk(KERN_ERR "skb %u %p\n", i, skb);
-+		i++;
-+	}
-+
-+	tcp_for_write_queue(skb, sk) {
-+		if (skb == tcp_send_head(sk))
-+			break;
-+
-+		for (i = 0; i < tcp_skb_pcount(skb); i++) {
-+			if (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED) {
-+				s[idx] = 'S';
-+				if (TCP_SKB_CB(skb)->sacked & TCPCB_LOST)
-+					s[idx] = 'B';
-+
-+			} else if (TCP_SKB_CB(skb)->sacked & TCPCB_LOST) {
-+				s[idx] = 'L';
-+			} else {
-+				s[idx] = ' ';
-+			}
-+			if (s[idx] != ' ' && skb->len < tp->mss_cache)
-+				s[idx] += 'a' - 'A';
-+
-+			if (i == 0) {
-+				if (skb == tcp_highest_sack(sk))
-+					h[idx] = 'h';
-+				else
-+					h[idx] = '+';
-+			} else {
-+				h[idx] = '-';
-+			}
-+
-+			if (++idx >= 50) {
-+				s[idx] = 0;
-+				h[idx] = 0;
-+				printk(KERN_ERR "TCP wq(s) %s\n", s);
-+				printk(KERN_ERR "TCP wq(h) %s\n", h);
-+				idx = 0;
-+			}
-+		}
-+	}
-+	if (idx) {
-+		s[idx] = '<';
-+		s[idx+1] = 0;
-+		h[idx] = '<';
-+		h[idx+1] = 0;
-+		printk(KERN_ERR "TCP wq(s) %s\n", s);
-+		printk(KERN_ERR "TCP wq(h) %s\n", h);
-+	}
-+	printk(KERN_ERR "l%u s%u f%u p%u seq: su%u hs%u sn%u\n",
-+		tp->lost_out, tp->sacked_out, tp->fackets_out, tp->packets_out,
-+		tp->snd_una, tcp_highest_sack_seq(tp), tp->snd_nxt);
-+}
-+
-+void tcp_verify_wq(struct sock *sk)
-+{
-+	struct tcp_sock *tp = tcp_sk(sk);
-+	u32 lost = 0;
-+	u32 sacked = 0;
-+	u32 packets = 0;
-+	u32 fackets = 0;
-+	int hs_valid = 0;
-+	struct sk_buff *skb;
-+
-+	tcp_for_write_queue(skb, sk) {
-+		if (skb == tcp_send_head(sk))
-+			break;
-+
-+		if ((fackets == packets) && (skb == tp->highest_sack))
-+			hs_valid = 1;
-+
-+		packets += tcp_skb_pcount(skb);
-+
-+		if (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED) {
-+			sacked += tcp_skb_pcount(skb);
-+			if (TCP_SKB_CB(skb)->sacked & TCPCB_LOST)
-+				printk(KERN_ERR "Sacked bitmap S+L: %u %u-%u/%u\n",
-+					TCP_SKB_CB(skb)->sacked,
-+					TCP_SKB_CB(skb)->end_seq - tp->snd_una,
-+					TCP_SKB_CB(skb)->seq - tp->snd_una,
-+					tp->snd_una);
-+			fackets = packets;
-+			hs_valid = 0;
-+		}
-+		if (TCP_SKB_CB(skb)->sacked & TCPCB_LOST)
-+			lost += tcp_skb_pcount(skb);
-+	}
-+
-+	if ((fackets == packets) && (tp->highest_sack == tcp_send_head(sk)))
-+		hs_valid = 1;
-+
-+	if ((lost != tp->lost_out) ||
-+	    (tcp_is_sack(tp) && (sacked != tp->sacked_out)) ||
-+	    ((sacked || (tcp_is_sack(tp) && tp->sacked_out)) && !hs_valid) ||
-+	    (packets != tp->packets_out) ||
-+	    (fackets != tp->fackets_out) ||
-+	    tcp_left_out(tp) > tp->packets_out) {
-+		printk(KERN_ERR "P: %u L: %u vs %u S: %u vs %u F: %u vs %u w: %u-%u (%u)\n",
-+			tp->packets_out,
-+			lost, tp->lost_out,
-+			sacked, tp->sacked_out,
-+			fackets, tp->fackets_out,
-+			tp->snd_una, tp->snd_nxt,
-+			tp->rx_opt.sack_ok);
-+		tcp_print_queue(sk);
-+	}
-+
-+	WARN_ON(lost != tp->lost_out);
-+	WARN_ON(tcp_is_sack(tp) && (sacked != tp->sacked_out));
-+	WARN_ON(packets != tp->packets_out);
-+	WARN_ON(fackets != tp->fackets_out);
-+	WARN_ON(tcp_left_out(tp) > tp->packets_out);
-+}
-+
- static int tcp_v4_get_port(struct sock *sk, unsigned short snum)
- {
- 	return inet_csk_get_port(&tcp_hashinfo, sk, snum,
-diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
-index 89f0188..8fb6628 100644
---- a/net/ipv4/tcp_output.c
-+++ b/net/ipv4/tcp_output.c
-@@ -779,10 +779,9 @@ int tcp_fragment(struct sock *sk, struct sk_buff *skb, u32 len,
- 			tp->lost_out -= diff;
- 
- 		/* Adjust Reno SACK estimate. */
--		if (tcp_is_reno(tp) && diff > 0) {
-+		if (tcp_is_reno(tp) && diff > 0)
- 			tcp_dec_pcount_approx_int(&tp->sacked_out, diff);
--			tcp_verify_left_out(tp);
--		}
-+
- 		tcp_adjust_fackets_out(sk, skb, diff);
- 	}
- 
-@@ -790,6 +789,8 @@ int tcp_fragment(struct sock *sk, struct sk_buff *skb, u32 len,
- 	skb_header_release(buff);
- 	tcp_insert_write_queue_after(skb, buff, sk);
- 
-+	tcp_verify_left_out(tp);
-+
- 	return 0;
- }
- 
-@@ -1463,6 +1464,7 @@ static int tcp_write_xmit(struct sock *sk, unsigned int mss_now, int nonagle)
- 	} else if (result > 0) {
- 		sent_pkts = 1;
- 	}
-+	tcp_verify_left_out(tp);
- 
- 	while ((skb = tcp_send_head(sk))) {
- 		unsigned int limit;
-@@ -1764,6 +1766,7 @@ static void tcp_retrans_try_collapse(struct sock *sk, struct sk_buff *skb,
- 	tcp_clear_retrans_hints_partial(tp);
- 
- 	sk_wmem_free_skb(sk, next_skb);
-+	tcp_verify_left_out(tp);
- }
- 
- /* Do a simple retransmit without using the backoff mechanisms in
-@@ -1795,13 +1798,13 @@ void tcp_simple_retransmit(struct sock *sk)
- 		}
- 	}
- 
-+	tcp_verify_left_out(tp);
-+
- 	tcp_clear_all_retrans_hints(tp);
- 
- 	if (!lost)
- 		return;
- 
--	tcp_verify_left_out(tp);
--
- 	/* Don't muck with the congestion window here.
- 	 * Reason is that we do not increase amount of _data_
- 	 * in network, but units changed and effective
-@@ -1888,6 +1891,8 @@ int tcp_retransmit_skb(struct sock *sk, struct sk_buff *skb)
- 			tcp_init_nondata_skb(skb, TCP_SKB_CB(skb)->end_seq - 1,
- 					     TCP_SKB_CB(skb)->flags);
- 			skb->ip_summed = CHECKSUM_NONE;
-+
-+			tcp_verify_left_out(tp);
- 		}
- 	}
- 
-@@ -1970,8 +1975,10 @@ void tcp_xmit_retransmit_queue(struct sock *sk)
- 			 * packet to be MSS sized and all the
- 			 * packet counting works out.
- 			 */
--			if (tcp_packets_in_flight(tp) >= tp->snd_cwnd)
-+			if (tcp_packets_in_flight(tp) >= tp->snd_cwnd) {
-+				tcp_verify_left_out(tp);
- 				return;
-+			}
- 
- 			if (sacked & TCPCB_LOST) {
- 				if (!(sacked & (TCPCB_SACKED_ACKED|TCPCB_SACKED_RETRANS))) {
-@@ -1997,6 +2004,8 @@ void tcp_xmit_retransmit_queue(struct sock *sk)
- 		}
- 	}
- 
-+	tcp_verify_left_out(tp);
-+
- 	/* OK, demanded retransmission is finished. */
- 
- 	/* Forward retransmissions are possible only during Recovery. */
-@@ -2054,6 +2063,8 @@ void tcp_xmit_retransmit_queue(struct sock *sk)
- 
- 		NET_INC_STATS_BH(LINUX_MIB_TCPFORWARDRETRANS);
- 	}
-+
-+	tcp_verify_left_out(tp);
- }
- 
- /* Send a fin.  The caller locks the socket for us.  This cannot be
--- 
-1.5.2.2
+Ban co the xem cac hinh anh toa nha, phong oc, cac tien ich, ban do...
 
----696243703-1594222684-1201168458=:31652--
+email: bannha@gmail.com
+
+Ngoai ra ban co the xem cac hinh kien truc nha dep o Sai Gon (http://nhadep.us)
+
+Xin cam on da xem tin
+
+***********************
+V-Star- Vstar- vstar - vsta - vta - korea
