@@ -1,259 +1,1081 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbYAXKtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbYAXKyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbYAXKtR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 05:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYAXKs5
+	id S1755561AbYAXKyU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 05:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYAXKyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 05:48:57 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:36766 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbYAXKsz convert rfc822-to-8bit (ORCPT
+	Thu, 24 Jan 2008 05:54:07 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:44297 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753835AbYAXKyB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 05:48:55 -0500
-In-Reply-To: <Pine.LNX.4.64.0801241108400.31652@kivilampi-30.cs.helsinki.fi>
-Subject: Re: 2.6.24-rc8-mm1 : net tcp_input.c warnings
-To: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Denys Fedoryshchenko <denys@visp.net.lb>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       netdev-owner@vger.kernel.org
-X-Mailer: Lotus Notes Release 7.0.1P July 04, 2006
-Message-ID: <OF55F9E87C.A024C73F-ON652573DA.003BF324-652573DA.003B3739@in.ibm.com>
-From: Krishna Kumar2 <krkumar2@in.ibm.com>
-Date: Thu, 24 Jan 2008 16:16:47 +0530
-X-MIMETrack: Serialize by Router on d23ml172/23/M/IBM(Release 7.0.2FP2HF300 | September
- 14, 2007) at 01/24/2008 16:25:58
+	Thu, 24 Jan 2008 05:54:01 -0500
+X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
+X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
+X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
+X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
+X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
+X-Auth-Info: F/KbNOx+t8uZvSzuP8YTXUpun31wX1AgBOZRcHHZipE=
+Message-ID: <47986E44.3010101@grandegger.com>
+Date: Thu, 24 Jan 2008 11:53:56 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Content-transfer-encoding: 8BIT
+To: Luotao Fu <l.fu@pengutronix.de>
+CC: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc
+References: <1200544050.318.18.camel@localhost.localdomain> <478F2A46.5070506@grandegger.com> <20080123145340.GE6200@pengutronix.de> <47976D06.1010900@grandegger.com>
+In-Reply-To: <47976D06.1010900@grandegger.com>
+X-Enigmail-Version: 0.94.4.0
+Content-Type: multipart/mixed;
+ boundary="------------050506090307080601030000"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ilpo,
+This is a multi-part message in MIME format.
+--------------050506090307080601030000
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-I have tried parallel iperfs with this patch and don't get any more
-warnings.
-I will run overnight to be sure.
+Wolfgang Grandegger wrote:
+> Hi Fu,
+> 
+> Luotao Fu wrote:
+>> Hi folks,
+>>
+>> On Thu, Jan 17, 2008 at 11:13:26AM +0100, Wolfgang Grandegger wrote:
+>>> It builds and runs fine on my Icecube-MPC5200 board, now also with the
+>>> latency tracer enabled. That's great. Still, "cyclictest -n -p80 -i1000"
+>>> reports latencies up to 400 us and therefore I tried to trigger and save
+>>> a high latency trace using:
+>>>
+>>>   # ./cyclictest -n -p80 -i1000 -b400
+>>>   1.21 0.33 0.11 4/42 1048
+>>>
+>>>   T: 0 (  914) P:80 I:1000 C:  38726 Min:     61 Act:  107 Avg:  106
+>>> Max:     377
+>>>   [   91.042169] (      cyclictest-914  |#0): new 39733427 us user-latency.
+>>>   bash-3.00# cat /proc/latency_trace > trace.log
+>>>
+>> I was doing some tests on my mpc5200b Board to reproduce the high latency as
+>> measured by wolfgang.
+>>
+>> I ran some tests with 
+>> while [ 1 ]; do ls /bin;done
+>> as non-rt workload, as in Wolfgangs Scenario.
+> 
+> I also did some more measurements and made, by chance, interesting
+> observations. I will summarize in more detail later on. Here are some
+> preliminary results. My high latencies of up to 570us (without latency
+> tracer) seem to be caused mainly by the following setting:
 
-thanks,
+OK, here is the full report.
 
-- KK
+I had the occasion to test Linux 2.6.24-rc8-rt1 on a TQM5200 module with
+a MPC5200 Rev.B processor and, what surprise, the latencies measured
+were much better:
 
-netdev-owner@vger.kernel.org wrote on 01/24/2008 03:24:18 PM:
+  CPU:   MPC5200B v2.2, Core v1.4 at 396 MHz
+         Bus 132 MHz, IPB 132 MHz, PCI 66 MHz
+  Board: TQM5200 (TQ-Components GmbH)
+         on a STK52xx carrier board
 
-> On Thu, 24 Jan 2008, Dave Young wrote:
->
-> Hi Dave (& others),
->
-> > Thanks.
->
-> Thanks a lot, I was first to ignore all these because they occurred
-> with newreno, but looked again... :-/
->
-> > New warning trigged with your debug patch:
->
-> This was probably with the earlier one I sent to you because there's
-still
-> this case remaining which itself is valid:
->
-> > P: 5 L: 0 vs 0 S: 0 vs 1 w: 2044790889-2044796616 (0)
->
-> ...snip... this is still ok state (S+L <= P):
->
-> > P: 5 L: 0 vs 0 S: 0 vs 3 w: 2044790889-2044796616 (0)
-> > TCP wq(s)      <
-> > TCP wq(h) +++h+<
-> > l0 s3 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
-> > ------------[ cut here ]------------
-> > WARNING: at net/ipv4/tcp_input.c:2169 tcp_mark_head_lost+0x122/0x150()
-> > Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-> > snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-> > snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-> > evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-> > i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-> > Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
-> >  [<c0132100>] ? have_callable_console+0x20/0x30
-> >  [<c0131844>] warn_on_slowpath+0x54/0x80
-> >  [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
-> >  [<c0132438>] ? vprintk+0x308/0x320
-> >  [<c0132438>] ? vprintk+0x308/0x320
-> >  [<c0132438>] ? vprintk+0x308/0x320
-> >  [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
-> >  [<c03f6052>] tcp_mark_head_lost+0x122/0x150
-> >  [<c03f60ca>] tcp_update_scoreboard+0x4a/0x190
-> >  [<c03f6e7a>] tcp_fastretrans_alert+0x4da/0x700
-> >  [<c03f7e63>] tcp_ack+0x1b3/0x3a0
-> >  [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
-> >  [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
-> >  [<c04021fb>] tcp_v4_rcv+0x5db/0x660
-> >  [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
-> >  [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
-> >  [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
-> >  [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
-> >  [<c0156b97>] ? __lock_release+0x47/0x70
-> >  [<c03e6147>] ip_local_deliver+0xb7/0xc0
-> >  [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
-> >  [<c03c01d8>] ? sock_def_readable+0x48/0xa0
-> >  [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
-> >  [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
-> >  [<c03e669f>] ip_rcv+0x18f/0x290
-> >  [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
-> >  [<c03c8da6>] netif_receive_skb+0x2b6/0x330
-> >  [<c03c8c17>] ? netif_receive_skb+0x127/0x330
-> >  [<c03c8ea3>] ? process_backlog+0x83/0x100
-> >  [<c03c8eae>] process_backlog+0x8e/0x100
-> >  [<c03c90bc>] net_rx_action+0x13c/0x230
-> >  [<c03c8fd9>] ? net_rx_action+0x59/0x230
-> >  [<c0136f63>] __do_softirq+0x93/0x120
-> >  [<c013706a>] do_softirq+0x7a/0x80
-> >  [<c0137135>] irq_exit+0x65/0x90
-> >  [<c01078b1>] do_IRQ+0x41/0x80
-> >  [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
-> >  [<c01059ca>] common_interrupt+0x2e/0x34
-> >  [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
-> >  [<c01033a0>] ? mwait_idle+0x0/0x20
-> >  [<c01033b2>] mwait_idle+0x12/0x20
-> >  [<c0103141>] cpu_idle+0x61/0x110
-> >  [<c04339fd>] rest_init+0x5d/0x60
-> >  [<c05a47fa>] start_kernel+0x1fa/0x260
-> >  [<c05a4190>] ? unknown_bootoption+0x0/0x130
-> >  =======================
-> > ---[ end trace 14b601818e6903ac ]---
-> > ------------[ cut here ]------------
-> > WARNING: at net/ipv4/tcp_ipv4.c:197 tcp_verify_wq+0x1b6/0x1c0()
-> > Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event
-> > snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss eeprom e100 psmouse
-> > snd_hda_intel snd_pcm snd_timer btusb bluetooth serio_raw snd 3c59x sg
-> > evdev thermal soundcore rtc_cmos snd_page_alloc rtc_core rtc_lib
-> > i2c_i801 processor button intel_agp dcdbas pcspkr agpgart
-> > Pid: 0, comm: swapper Not tainted 2.6.24-rc8-mm1 #8
-> >  [<c0132100>] ? have_callable_console+0x20/0x30
-> >  [<c0131844>] warn_on_slowpath+0x54/0x80
-> >  [<c01317da>] ? print_oops_end_marker+0x2a/0x30
-> >  [<c0131849>] ? warn_on_slowpath+0x59/0x80
-> >  [<c03ffe54>] ? tcp_print_queue+0x1a4/0x230
-> >  [<c0132438>] ? vprintk+0x308/0x320
-> >  [<c0132438>] ? vprintk+0x308/0x320
-> >  [<c0400096>] tcp_verify_wq+0x1b6/0x1c0
-> >  [<c03ffff6>] ? tcp_verify_wq+0x116/0x1c0
-> >  [<c03f5ffc>] tcp_mark_head_lost+0xcc/0x150
-> >  [<c03f60ca>] tcp_update_scoreboard+0x4a/0x190
-> >  [<c03f6e7a>] tcp_fastretrans_alert+0x4da/0x700
-> >  [<c03f7e63>] tcp_ack+0x1b3/0x3a0
-> >  [<c03fa21b>] tcp_rcv_established+0x3eb/0x710
-> >  [<c0401c05>] tcp_v4_do_rcv+0xe5/0x100
-> >  [<c04021fb>] tcp_v4_rcv+0x5db/0x660
-> >  [<c0401fa7>] ? tcp_v4_rcv+0x387/0x660
-> >  [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
-> >  [<c03e5f44>] ip_local_deliver_finish+0x84/0x1d0
-> >  [<c03e5eed>] ? ip_local_deliver_finish+0x2d/0x1d0
-> >  [<c0156b97>] ? __lock_release+0x47/0x70
-> >  [<c03e6147>] ip_local_deliver+0xb7/0xc0
-> >  [<c03e6202>] ip_rcv_finish+0xb2/0x3c0
-> >  [<c03c01d8>] ? sock_def_readable+0x48/0xa0
-> >  [<c03be061>] ? sock_queue_rcv_skb+0xb1/0x1a0
-> >  [<c03be0a7>] ? sock_queue_rcv_skb+0xf7/0x1a0
-> >  [<c03e669f>] ip_rcv+0x18f/0x290
-> >  [<c042fb10>] ? packet_rcv_spkt+0xd0/0x130
-> >  [<c03c8da6>] netif_receive_skb+0x2b6/0x330
-> >  [<c03c8c17>] ? netif_receive_skb+0x127/0x330
-> >  [<c03c8ea3>] ? process_backlog+0x83/0x100
-> >  [<c03c8eae>] process_backlog+0x8e/0x100
-> >  [<c03c90bc>] net_rx_action+0x13c/0x230
-> >  [<c03c8fd9>] ? net_rx_action+0x59/0x230
-> >  [<c0136f63>] __do_softirq+0x93/0x120
-> >  [<c013706a>] do_softirq+0x7a/0x80
-> >  [<c0137135>] irq_exit+0x65/0x90
-> >  [<c01078b1>] do_IRQ+0x41/0x80
-> >  [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
-> >  [<c01059ca>] common_interrupt+0x2e/0x34
-> >  [<c0103390>] ? mwait_idle_with_hints+0x40/0x50
-> >  [<c01033a0>] ? mwait_idle+0x0/0x20
-> >  [<c01033b2>] mwait_idle+0x12/0x20
-> >  [<c0103141>] cpu_idle+0x61/0x110
-> >  [<c04339fd>] rest_init+0x5d/0x60
-> >  [<c05a47fa>] start_kernel+0x1fa/0x260
-> >  [<c05a4190>] ? unknown_bootoption+0x0/0x130
-> >  =======================
-> > ---[ end trace 14b601818e6903ac ]---
->
-> ...But this no longer is, and even more, L: 5 is not valid state at this
-> point all (should only happen if we went to RTO but it would reset S to
-> zero with newreno):
->
-> > P: 5 L: 5 vs 5 S: 0 vs 3 w: 2044790889-2044796616 (0)
-> > TCP wq(s) LLLLl<
-> > TCP wq(h) +++h+<
-> > l5 s3 f0 p5 seq: su2044790889 hs2044795029 sn2044796616
->
-> Surprisingly, it was the first time the WARN_ON for left_out returned
-> correct location. This also explains why the patch I sent to Krishna
-> didn't print anything (it didn't end up into printing because I forgot
-> to add L+S>P check into to the state checking if).
->
-> ...so please, could you (others than Denys) try this patch, it should
-> solve the issue. And Denys, could you confirm (and if necessary double
-> check) that the kernel you saw this similar problem with is the pure
-> Linus' mainline, i.e., without any net-2.6.25 or mm bits please, if so,
-> that problem persists. And anyway, there were some fackets_out related
-> problems reported as well and this doesn't help for that but I think I've
+  bash-3.00# ./cyclictest -n -p80 -t1 -i1000
+  2.91 4.81 13.72 1/50 23887
 
-> lost track of who was seeing it due to large number of reports :-), could
+  T: 0 (  976) P:80 I:1000 C:1634520 Min: 15 Act:  45 Avg:  68 Max:  138
 
-> somebody refresh my memory because I currently don't have time to dig it
-> up from archives (at least on this week).
->
->
-> --
->  i.
->
-> --
-> [PATCH] [TCP]: NewReno must count every skb while marking losses
->
-> NewReno should add cnt per skb (as with FACK) instead of depending
-> on SACKED_ACKED bits which won't be set with it at all.
-> Effectively, NewReno should always exists after the first
-> iteration anyway (or immediately if there's already head in
-> lost_out.
->
-> This was fixed earlier in net-2.6.25 but got reverted among other
-> stuff and I didn't notice that this is still necessary (actually
-> wasn't even considering this case while trying to figure out the
-> reports because I lived with different kind of code than it in
-> reality was).
->
-> This should solve the WARN_ONs in TCP code that as a result of
-> this triggered multiple times in every place we check for this
-> invariant.
->
-> Special thanks to Dave Young <hidave.darkstar@gmail.com> and
-> Krishna Kumar2 <krkumar2@in.ibm.com> for trying with my debug
-> patches.
->
-> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-> ---
->  net/ipv4/tcp_input.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-> index 295490e..aa409a5 100644
-> --- a/net/ipv4/tcp_input.c
-> +++ b/net/ipv4/tcp_input.c
-> @@ -2156,7 +2156,7 @@ static void tcp_mark_head_lost(struct sock *sk, int
+So far I used my very old Icecube eval board with a MPC5200 *Rev. *A for
+testing, This made me curious and I made measurements on a TQM5200
+module with a MPC5200 Rev.A processor as well booting the same kernel,
+but the results were the same:
 
-> packets, int fast_rexmit)
->        tp->lost_skb_hint = skb;
->        tp->lost_cnt_hint = cnt;
->
-> -      if (tcp_is_fack(tp) ||
-> +      if (tcp_is_fack(tp) || tcp_is_reno(tp) ||
->            (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED))
->           cnt += tcp_skb_pcount(skb);
->
-> --
-> 1.5.2.2
+  CPU:   MPC5200 v1.2, Core v1.1 at 396 MHz
+         Bus 132 MHz, IPB 132 MHz, PCI 66 MHz
+  Board: TQM5200 (TQ-Components GmbH)
+         on a STK52xx carrier board
 
+  bash-3.00# ./cyclictest -n -p80 -i1000
+  52.31 96.08 61.61 2/51 9129
+
+  T: 0 (  976) P:80 I:1000 C: 795180 Min:  14 Act: 75 Avg:  69 Max:  134
+
+Hm, then I used that config for my Icecube and also on that board, the
+latency did not yet exceed 150us. With my old config, the latency jumped
+up to 500..600us within a minute or so. Therefore I started to study the
+impact of the different kernel options on the latency. Let's start from
+the *good* settings (see attached .config) giving the following results:
+
+  CPU:   MPC5200 v1.0, Core v1.1 at 198 MHz
+         Bus 132 MHz, IPB 66 MHz, PCI 33 MHz
+  Board: Motorola MPC5200 (IceCube)
+
+  bash-3.00# ./cyclictest -n -p80 -t1 -i1000
+  291.40 143.72 115.43 5/447 28227
+
+  T: 0 (  938) P:80 I:1000 C:3613444 Min: 17 Act: 68 Avg:  65 Max:  143
+
+  Note: this test was running for *1* hour.
+
+Then I repeated the measurements with the following configs:
+
+- .config and "CONFIG_RCU_TRACE=m":
+
+  bash-3.00# ./cyclictest -n -p80 -t1 -i1000
+  2.49 1.19 0.45 2/46 2846
+
+  T: 0 ( 1144) P:80 I:1000 C: 130362 Min: 17 Act: 57 Avg:  73 Max:  522
+
+  Note: High latencies show up quickly.
+
+- .config and CONFIG_NO_HZ=y:
+
+  bash-3.00# ./cyclictest -n -p80 -t1 -i1000
+  15.83 79.48 83.66 3/47 16861
+
+  T: 0 (  913) P:80 I:1000 C:1924513 Min: 20 Act: 81 Avg:  84 Max:  226
+
+- .config and CONFIG_PPC_BESTCOMM_GEN_BD=y
+
+  bash-3.00# ./cyclictest -n -p80 -t1 -i1000
+  87.81 116.12 85.31 3/47 11858
+
+  T: 0 (  914) P:80 I:1000 C:1389487 Min: 17 Act: 80 Avg:  67 Max:  147
+
+- .config and CONFIG_PREEMPT_RCU_BOOST is not set:
+
+  bash-3.00# ./cyclictest -n -p80 -t1 -i10000
+  81.36 103.93 67.34 3/46 9593
+
+  T: 0 (  913) P:80 I:10000 C:  91915 Min: 25 Act: 64 Avg:  72 Max:  298
+
+And here is my summary:
+
+- CONFIG_RCU_TRACE=m causes high latencies up to 500..600us.
+
+- CONFIG_NO_HZ=y increases the latency by 90 us, at least.
+
+- CONFIG_PPC_BESTCOMM_GEN_BD=y seems not to harm.
+
+- CONFIG_PREEMPT_RCU_BOOST is not set increases the latency by 150us, at
+  least
+
+For the tests I used a root file-system mounted via NFS and "while ls;
+do ls/bin; done" in one telnet window and "while ./hackbench 10; do
+./calibrator 400 32M cali; sleep 30; done" in another telnet window as
+non-rt load.
+
+I don't know if "my" .config is already optimal but a latency below
+150us seems more reasonable for that processor.
+
+Please comment.
+
+Wolfgang.
+
+
+
+
+--------------050506090307080601030000
+Content-Type: text/plain;
+ name="uImage-rt-test1.config"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="uImage-rt-test1.config"
+
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.24-rc8-rt1
+# Wed Jan 23 11:40:51 2008
+#
+# CONFIG_PPC64 is not set
+
+#
+# Processor support
+#
+CONFIG_6xx=y
+# CONFIG_PPC_85xx is not set
+# CONFIG_PPC_8xx is not set
+# CONFIG_40x is not set
+# CONFIG_44x is not set
+# CONFIG_E200 is not set
+CONFIG_PPC_FPU=y
+# CONFIG_ALTIVEC is not set
+CONFIG_PPC_STD_MMU=y
+CONFIG_PPC_STD_MMU_32=y
+# CONFIG_PPC_MM_SLICES is not set
+# CONFIG_SMP is not set
+CONFIG_PPC32=y
+CONFIG_WORD_SIZE=32
+CONFIG_PPC_MERGE=y
+CONFIG_MMU=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_TIME_VSYSCALL=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_IRQ_PER_CPU=y
+CONFIG_ARCH_HAS_ILOG2_U32=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
+CONFIG_PPC=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_GENERIC_NVRAM=y
+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_PPC_OF=y
+CONFIG_OF=y
+# CONFIG_PPC_UDBG_16550 is not set
+# CONFIG_GENERIC_TBSYNC is not set
+CONFIG_AUDIT_ARCH=y
+CONFIG_GENERIC_BUG=y
+# CONFIG_DEFAULT_UIMAGE is not set
+# CONFIG_PPC_DCR_NATIVE is not set
+# CONFIG_PPC_DCR_MMIO is not set
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_BROKEN_ON_SMP=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+# CONFIG_POSIX_MQUEUE is not set
+# CONFIG_BSD_PROCESS_ACCT is not set
+# CONFIG_TASKSTATS is not set
+# CONFIG_USER_NS is not set
+# CONFIG_PID_NS is not set
+# CONFIG_AUDIT is not set
+# CONFIG_IKCONFIG is not set
+CONFIG_LOG_BUF_SHIFT=14
+# CONFIG_CGROUPS is not set
+# CONFIG_FAIR_GROUP_SCHED is not set
+CONFIG_SYSFS_DEPRECATED=y
+# CONFIG_RELAY is not set
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+CONFIG_SYSCTL=y
+# CONFIG_RADIX_TREE_CONCURRENT is not set
+CONFIG_EMBEDDED=y
+# CONFIG_SYSCTL_SYSCALL is not set
+CONFIG_KALLSYMS=y
+# CONFIG_KALLSYMS_ALL is not set
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+# CONFIG_LOGBUFFER is not set
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+# CONFIG_EPOLL is not set
+CONFIG_SIGNALFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_SLAB=y
+# CONFIG_SLUB is not set
+# CONFIG_SLOB is not set
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+# CONFIG_TINY_SHMEM is not set
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+# CONFIG_MODULE_FORCE_UNLOAD is not set
+# CONFIG_MODVERSIONS is not set
+# CONFIG_MODULE_SRCVERSION_ALL is not set
+# CONFIG_KMOD is not set
+CONFIG_BLOCK=y
+# CONFIG_LBD is not set
+# CONFIG_BLK_DEV_IO_TRACE is not set
+# CONFIG_LSF is not set
+# CONFIG_BLK_DEV_BSG is not set
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+CONFIG_DEFAULT_AS=y
+# CONFIG_DEFAULT_DEADLINE is not set
+# CONFIG_DEFAULT_CFQ is not set
+# CONFIG_DEFAULT_NOOP is not set
+CONFIG_DEFAULT_IOSCHED="anticipatory"
+
+#
+# Platform support
+#
+CONFIG_PPC_MULTIPLATFORM=y
+# CONFIG_PPC_82xx is not set
+# CONFIG_PPC_83xx is not set
+# CONFIG_PPC_86xx is not set
+CONFIG_CLASSIC32=y
+# CONFIG_PPC_CHRP is not set
+CONFIG_PPC_MPC52xx=y
+CONFIG_PPC_MPC5200=y
+CONFIG_PPC_MPC5200_BUGFIX=y
+# CONFIG_PPC_EFIKA is not set
+CONFIG_PPC_LITE5200=y
+# CONFIG_PPC_MOTIONPRO is not set
+# CONFIG_PPC_TQM5200 is not set
+# CONFIG_PPC_CM5200 is not set
+# CONFIG_PPC_PMAC is not set
+# CONFIG_PPC_CELL is not set
+# CONFIG_PPC_CELL_NATIVE is not set
+# CONFIG_PQ2ADS is not set
+# CONFIG_EMBEDDED6xx is not set
+# CONFIG_MPIC is not set
+# CONFIG_MPIC_WEIRD is not set
+# CONFIG_PPC_I8259 is not set
+# CONFIG_PPC_RTAS is not set
+# CONFIG_MMIO_NVRAM is not set
+# CONFIG_PPC_MPC106 is not set
+# CONFIG_PPC_970_NAP is not set
+# CONFIG_PPC_INDIRECT_IO is not set
+# CONFIG_GENERIC_IOMAP is not set
+# CONFIG_CPU_FREQ is not set
+# CONFIG_TAU is not set
+# CONFIG_CPM2 is not set
+# CONFIG_FSL_ULI1575 is not set
+CONFIG_PPC_BESTCOMM=y
+CONFIG_PPC_BESTCOMM_ATA=y
+CONFIG_PPC_BESTCOMM_FEC=y
+# CONFIG_PPC_BESTCOMM_GEN_BD is not set
+
+#
+# Kernel options
+#
+# CONFIG_HIGHMEM is not set
+CONFIG_TICK_ONESHOT=y
+# CONFIG_NO_HZ is not set
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+# CONFIG_HZ_100 is not set
+CONFIG_HZ_250=y
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=250
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT_DESKTOP is not set
+CONFIG_PREEMPT_RT=y
+CONFIG_PREEMPT=y
+CONFIG_PREEMPT_SOFTIRQS=y
+CONFIG_PREEMPT_HARDIRQS=y
+CONFIG_PREEMPT_BKL=y
+# CONFIG_CLASSIC_RCU is not set
+CONFIG_PREEMPT_RCU=y
+CONFIG_PREEMPT_RCU_BOOST=y
+CONFIG_RCU_TRACE=y
+CONFIG_RWSEM_GENERIC_SPINLOCK=y
+CONFIG_ASM_SEMAPHORES=y
+CONFIG_BINFMT_ELF=y
+# CONFIG_BINFMT_MISC is not set
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+# CONFIG_KEXEC is not set
+CONFIG_ARCH_FLATMEM_ENABLE=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+# CONFIG_SPARSEMEM_MANUAL is not set
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+# CONFIG_SPARSEMEM_STATIC is not set
+# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
+CONFIG_SPLIT_PTLOCK_CPUS=4
+# CONFIG_RESOURCES_64BIT is not set
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_PROC_DEVICETREE=y
+# CONFIG_CMDLINE_BOOL is not set
+CONFIG_PM=y
+# CONFIG_PM_LEGACY is not set
+# CONFIG_PM_DEBUG is not set
+CONFIG_PM_SLEEP=y
+CONFIG_SUSPEND_UP_POSSIBLE=y
+CONFIG_SUSPEND=y
+CONFIG_HIBERNATION_UP_POSSIBLE=y
+# CONFIG_HIBERNATION is not set
+CONFIG_SECCOMP=y
+CONFIG_WANT_DEVICE_TREE=y
+CONFIG_DEVICE_TREE=""
+CONFIG_ISA_DMA_API=y
+
+#
+# Bus options
+#
+CONFIG_ZONE_DMA=y
+CONFIG_GENERIC_ISA_DMA=y
+# CONFIG_PPC_INDIRECT_PCI is not set
+CONFIG_FSL_SOC=y
+CONFIG_PCI=y
+CONFIG_PCI_DOMAINS=y
+CONFIG_PCI_SYSCALL=y
+# CONFIG_PCIEPORTBUS is not set
+CONFIG_ARCH_SUPPORTS_MSI=y
+# CONFIG_PCI_MSI is not set
+CONFIG_PCI_LEGACY=y
+# CONFIG_PCI_DEBUG is not set
+# CONFIG_PCCARD is not set
+# CONFIG_HOTPLUG_PCI is not set
+
+#
+# Advanced setup
+#
+# CONFIG_ADVANCED_OPTIONS is not set
+
+#
+# Default settings for advanced configuration options are used
+#
+CONFIG_HIGHMEM_START=0xfe000000
+CONFIG_LOWMEM_SIZE=0x30000000
+CONFIG_KERNEL_START=0xc0000000
+CONFIG_TASK_SIZE=0xc0000000
+CONFIG_BOOT_LOAD=0x00800000
+
+#
+# Networking
+#
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+# CONFIG_PACKET_MMAP is not set
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+CONFIG_XFRM_USER=m
+# CONFIG_XFRM_SUB_POLICY is not set
+# CONFIG_XFRM_MIGRATE is not set
+# CONFIG_NET_KEY is not set
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_FIB_HASH=y
+CONFIG_IP_PNP=y
+CONFIG_IP_PNP_DHCP=y
+CONFIG_IP_PNP_BOOTP=y
+# CONFIG_IP_PNP_RARP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_IP_MROUTE is not set
+# CONFIG_ARPD is not set
+CONFIG_SYN_COOKIES=y
+# CONFIG_INET_AH is not set
+# CONFIG_INET_ESP is not set
+# CONFIG_INET_IPCOMP is not set
+# CONFIG_INET_XFRM_TUNNEL is not set
+# CONFIG_INET_TUNNEL is not set
+CONFIG_INET_XFRM_MODE_TRANSPORT=y
+CONFIG_INET_XFRM_MODE_TUNNEL=y
+CONFIG_INET_XFRM_MODE_BEET=y
+# CONFIG_INET_LRO is not set
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+# CONFIG_TCP_CONG_ADVANCED is not set
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+# CONFIG_TCP_MD5SIG is not set
+# CONFIG_IPV6 is not set
+# CONFIG_INET6_XFRM_TUNNEL is not set
+# CONFIG_INET6_TUNNEL is not set
+# CONFIG_NETWORK_SECMARK is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_IP_DCCP is not set
+# CONFIG_IP_SCTP is not set
+# CONFIG_TIPC is not set
+# CONFIG_ATM is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_VLAN_8021Q is not set
+# CONFIG_DECNET is not set
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+# CONFIG_NET_SCHED is not set
+
+#
+# Network testing
+#
+# CONFIG_NET_PKTGEN is not set
+# CONFIG_HAMRADIO is not set
+# CONFIG_CAN is not set
+# CONFIG_IRDA is not set
+# CONFIG_BT is not set
+# CONFIG_AF_RXRPC is not set
+
+#
+# Wireless
+#
+# CONFIG_CFG80211 is not set
+# CONFIG_WIRELESS_EXT is not set
+# CONFIG_MAC80211 is not set
+# CONFIG_IEEE80211 is not set
+# CONFIG_RFKILL is not set
+# CONFIG_NET_9P is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+# CONFIG_FW_LOADER is not set
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+# CONFIG_SYS_HYPERVISOR is not set
+# CONFIG_CONNECTOR is not set
+# CONFIG_MTD is not set
+CONFIG_OF_DEVICE=y
+# CONFIG_PARPORT is not set
+CONFIG_BLK_DEV=y
+# CONFIG_BLK_DEV_FD is not set
+# CONFIG_BLK_CPQ_DA is not set
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_UMEM is not set
+# CONFIG_BLK_DEV_COW_COMMON is not set
+CONFIG_BLK_DEV_LOOP=y
+# CONFIG_BLK_DEV_CRYPTOLOOP is not set
+# CONFIG_BLK_DEV_NBD is not set
+# CONFIG_BLK_DEV_SX8 is not set
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=32768
+CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
+# CONFIG_CDROM_PKTCDVD is not set
+# CONFIG_ATA_OVER_ETH is not set
+CONFIG_MISC_DEVICES=y
+# CONFIG_PHANTOM is not set
+# CONFIG_EEPROM_93CX6 is not set
+# CONFIG_SGI_IOC4 is not set
+# CONFIG_TIFM_CORE is not set
+# CONFIG_IDE is not set
+
+#
+# SCSI device support
+#
+# CONFIG_RAID_ATTRS is not set
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+# CONFIG_SCSI_TGT is not set
+# CONFIG_SCSI_NETLINK is not set
+# CONFIG_SCSI_PROC_FS is not set
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+# CONFIG_BLK_DEV_SD is not set
+# CONFIG_CHR_DEV_ST is not set
+# CONFIG_CHR_DEV_OSST is not set
+# CONFIG_BLK_DEV_SR is not set
+# CONFIG_CHR_DEV_SG is not set
+# CONFIG_CHR_DEV_SCH is not set
+
+#
+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+#
+# CONFIG_SCSI_MULTI_LUN is not set
+# CONFIG_SCSI_CONSTANTS is not set
+# CONFIG_SCSI_LOGGING is not set
+# CONFIG_SCSI_SCAN_ASYNC is not set
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+# CONFIG_SCSI_SPI_ATTRS is not set
+# CONFIG_SCSI_FC_ATTRS is not set
+# CONFIG_SCSI_ISCSI_ATTRS is not set
+# CONFIG_SCSI_SAS_LIBSAS is not set
+# CONFIG_SCSI_SRP_ATTRS is not set
+CONFIG_SCSI_LOWLEVEL=y
+# CONFIG_ISCSI_TCP is not set
+# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
+# CONFIG_SCSI_3W_9XXX is not set
+# CONFIG_SCSI_ACARD is not set
+# CONFIG_SCSI_AACRAID is not set
+# CONFIG_SCSI_AIC7XXX is not set
+# CONFIG_SCSI_AIC7XXX_OLD is not set
+# CONFIG_SCSI_AIC79XX is not set
+# CONFIG_SCSI_AIC94XX is not set
+# CONFIG_SCSI_DPT_I2O is not set
+# CONFIG_SCSI_ADVANSYS is not set
+# CONFIG_SCSI_ARCMSR is not set
+# CONFIG_MEGARAID_NEWGEN is not set
+# CONFIG_MEGARAID_LEGACY is not set
+# CONFIG_MEGARAID_SAS is not set
+# CONFIG_SCSI_HPTIOP is not set
+# CONFIG_SCSI_BUSLOGIC is not set
+# CONFIG_SCSI_DMX3191D is not set
+# CONFIG_SCSI_EATA is not set
+# CONFIG_SCSI_FUTURE_DOMAIN is not set
+# CONFIG_SCSI_GDTH is not set
+# CONFIG_SCSI_IPS is not set
+# CONFIG_SCSI_INITIO is not set
+# CONFIG_SCSI_INIA100 is not set
+# CONFIG_SCSI_STEX is not set
+# CONFIG_SCSI_SYM53C8XX_2 is not set
+# CONFIG_SCSI_IPR is not set
+# CONFIG_SCSI_QLOGIC_1280 is not set
+# CONFIG_SCSI_QLA_FC is not set
+# CONFIG_SCSI_QLA_ISCSI is not set
+# CONFIG_SCSI_LPFC is not set
+# CONFIG_SCSI_DC395x is not set
+# CONFIG_SCSI_DC390T is not set
+# CONFIG_SCSI_NSP32 is not set
+# CONFIG_SCSI_DEBUG is not set
+# CONFIG_SCSI_SRP is not set
+CONFIG_ATA=y
+# CONFIG_ATA_NONSTANDARD is not set
+# CONFIG_SATA_AHCI is not set
+# CONFIG_SATA_SVW is not set
+# CONFIG_ATA_PIIX is not set
+# CONFIG_SATA_MV is not set
+# CONFIG_SATA_NV is not set
+# CONFIG_PDC_ADMA is not set
+# CONFIG_SATA_QSTOR is not set
+# CONFIG_SATA_PROMISE is not set
+# CONFIG_SATA_SX4 is not set
+# CONFIG_SATA_SIL is not set
+# CONFIG_SATA_SIL24 is not set
+# CONFIG_SATA_SIS is not set
+# CONFIG_SATA_ULI is not set
+# CONFIG_SATA_VIA is not set
+# CONFIG_SATA_VITESSE is not set
+# CONFIG_SATA_INIC162X is not set
+# CONFIG_PATA_ALI is not set
+# CONFIG_PATA_AMD is not set
+# CONFIG_PATA_ARTOP is not set
+# CONFIG_PATA_ATIIXP is not set
+# CONFIG_PATA_CMD640_PCI is not set
+# CONFIG_PATA_CMD64X is not set
+# CONFIG_PATA_CS5520 is not set
+# CONFIG_PATA_CS5530 is not set
+# CONFIG_PATA_CYPRESS is not set
+# CONFIG_PATA_EFAR is not set
+# CONFIG_ATA_GENERIC is not set
+# CONFIG_PATA_HPT366 is not set
+# CONFIG_PATA_HPT37X is not set
+# CONFIG_PATA_HPT3X2N is not set
+# CONFIG_PATA_HPT3X3 is not set
+# CONFIG_PATA_IT821X is not set
+# CONFIG_PATA_IT8213 is not set
+# CONFIG_PATA_JMICRON is not set
+# CONFIG_PATA_TRIFLEX is not set
+# CONFIG_PATA_MARVELL is not set
+CONFIG_PATA_MPC52xx=y
+# CONFIG_PATA_MPIIX is not set
+# CONFIG_PATA_OLDPIIX is not set
+# CONFIG_PATA_NETCELL is not set
+# CONFIG_PATA_NS87410 is not set
+# CONFIG_PATA_NS87415 is not set
+# CONFIG_PATA_OPTI is not set
+# CONFIG_PATA_OPTIDMA is not set
+# CONFIG_PATA_PDC_OLD is not set
+# CONFIG_PATA_RADISYS is not set
+# CONFIG_PATA_RZ1000 is not set
+# CONFIG_PATA_SC1200 is not set
+# CONFIG_PATA_SERVERWORKS is not set
+# CONFIG_PATA_PDC2027X is not set
+# CONFIG_PATA_SIL680 is not set
+# CONFIG_PATA_SIS is not set
+# CONFIG_PATA_VIA is not set
+# CONFIG_PATA_WINBOND is not set
+# CONFIG_PATA_PLATFORM is not set
+# CONFIG_MD is not set
+# CONFIG_FUSION is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+# CONFIG_FIREWIRE is not set
+# CONFIG_IEEE1394 is not set
+# CONFIG_I2O is not set
+# CONFIG_MACINTOSH_DRIVERS is not set
+CONFIG_NETDEVICES=y
+# CONFIG_NETDEVICES_MULTIQUEUE is not set
+# CONFIG_DUMMY is not set
+# CONFIG_BONDING is not set
+# CONFIG_MACVLAN is not set
+# CONFIG_EQUALIZER is not set
+# CONFIG_TUN is not set
+# CONFIG_VETH is not set
+# CONFIG_ARCNET is not set
+CONFIG_PHYLIB=y
+
+#
+# MII PHY device drivers
+#
+# CONFIG_MARVELL_PHY is not set
+# CONFIG_DAVICOM_PHY is not set
+# CONFIG_QSEMI_PHY is not set
+# CONFIG_LXT_PHY is not set
+# CONFIG_CICADA_PHY is not set
+# CONFIG_VITESSE_PHY is not set
+# CONFIG_SMSC_PHY is not set
+# CONFIG_BROADCOM_PHY is not set
+# CONFIG_ICPLUS_PHY is not set
+# CONFIG_FIXED_PHY is not set
+# CONFIG_MDIO_BITBANG is not set
+CONFIG_NET_ETHERNET=y
+# CONFIG_MII is not set
+# CONFIG_HAPPYMEAL is not set
+# CONFIG_SUNGEM is not set
+# CONFIG_CASSINI is not set
+# CONFIG_NET_VENDOR_3COM is not set
+# CONFIG_NET_TULIP is not set
+# CONFIG_HP100 is not set
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+# CONFIG_NET_PCI is not set
+# CONFIG_B44 is not set
+CONFIG_FEC_MPC52xx=y
+CONFIG_FEC_MPC52xx_MDIO=y
+# CONFIG_NETDEV_1000 is not set
+# CONFIG_NETDEV_10000 is not set
+# CONFIG_TR is not set
+
+#
+# Wireless LAN
+#
+# CONFIG_WLAN_PRE80211 is not set
+# CONFIG_WLAN_80211 is not set
+# CONFIG_WAN is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+# CONFIG_NET_FC is not set
+# CONFIG_SHAPER is not set
+# CONFIG_NETCONSOLE is not set
+# CONFIG_NETPOLL is not set
+# CONFIG_NET_POLL_CONTROLLER is not set
+# CONFIG_ISDN is not set
+# CONFIG_PHONE is not set
+
+#
+# Input device support
+#
+# CONFIG_INPUT is not set
+
+#
+# Hardware I/O ports
+#
+# CONFIG_SERIO is not set
+# CONFIG_GAMEPORT is not set
+
+#
+# Character devices
+#
+# CONFIG_VT is not set
+# CONFIG_SERIAL_NONSTANDARD is not set
+
+#
+# Serial drivers
+#
+# CONFIG_SERIAL_8250 is not set
+
+#
+# Non-8250 serial port support
+#
+# CONFIG_SERIAL_UARTLITE is not set
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_SERIAL_MPC52xx=y
+CONFIG_SERIAL_MPC52xx_CONSOLE=y
+CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD=9600
+# CONFIG_SERIAL_JSM is not set
+CONFIG_UNIX98_PTYS=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+# CONFIG_IPMI_HANDLER is not set
+# CONFIG_HW_RANDOM is not set
+# CONFIG_NVRAM is not set
+# CONFIG_GEN_RTC is not set
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+# CONFIG_RAW_DRIVER is not set
+# CONFIG_TCG_TPM is not set
+CONFIG_RMEM=m
+CONFIG_ALLOC_RTSJ_MEM=m
+CONFIG_DEVPORT=y
+# CONFIG_I2C is not set
+
+#
+# SPI support
+#
+# CONFIG_SPI is not set
+# CONFIG_SPI_MASTER is not set
+# CONFIG_W1 is not set
+# CONFIG_POWER_SUPPLY is not set
+# CONFIG_HWMON is not set
+# CONFIG_WATCHDOG is not set
+
+#
+# Sonics Silicon Backplane
+#
+CONFIG_SSB_POSSIBLE=y
+# CONFIG_SSB is not set
+
+#
+# Multifunction device drivers
+#
+# CONFIG_MFD_SM501 is not set
+
+#
+# Multimedia devices
+#
+# CONFIG_VIDEO_DEV is not set
+# CONFIG_DVB_CORE is not set
+# CONFIG_DAB is not set
+
+#
+# Graphics support
+#
+# CONFIG_AGP is not set
+# CONFIG_DRM is not set
+# CONFIG_VGASTATE is not set
+CONFIG_VIDEO_OUTPUT_CONTROL=m
+# CONFIG_FB is not set
+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+
+#
+# Display device support
+#
+# CONFIG_DISPLAY_SUPPORT is not set
+
+#
+# Sound
+#
+# CONFIG_SOUND is not set
+CONFIG_USB_SUPPORT=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+# CONFIG_USB is not set
+
+#
+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
+#
+
+#
+# USB Gadget Support
+#
+# CONFIG_USB_GADGET is not set
+# CONFIG_MMC is not set
+# CONFIG_NEW_LEDS is not set
+# CONFIG_INFINIBAND is not set
+# CONFIG_EDAC is not set
+# CONFIG_RTC_CLASS is not set
+
+#
+# Userspace I/O
+#
+# CONFIG_UIO is not set
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=y
+# CONFIG_EXT2_FS_XATTR is not set
+# CONFIG_EXT2_FS_XIP is not set
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_FS_XATTR=y
+# CONFIG_EXT3_FS_POSIX_ACL is not set
+# CONFIG_EXT3_FS_SECURITY is not set
+# CONFIG_EXT4DEV_FS is not set
+CONFIG_JBD=y
+# CONFIG_JBD_DEBUG is not set
+CONFIG_FS_MBCACHE=y
+# CONFIG_REISERFS_FS is not set
+# CONFIG_JFS_FS is not set
+# CONFIG_FS_POSIX_ACL is not set
+# CONFIG_XFS_FS is not set
+# CONFIG_GFS2_FS is not set
+# CONFIG_OCFS2_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_ROMFS_FS is not set
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+# CONFIG_QUOTA is not set
+CONFIG_DNOTIFY=y
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+# CONFIG_FUSE_FS is not set
+
+#
+# CD-ROM/DVD Filesystems
+#
+# CONFIG_ISO9660_FS is not set
+# CONFIG_UDF_FS is not set
+
+#
+# DOS/FAT/NT Filesystems
+#
+# CONFIG_MSDOS_FS is not set
+# CONFIG_VFAT_FS is not set
+# CONFIG_NTFS_FS is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+# CONFIG_TMPFS_POSIX_ACL is not set
+# CONFIG_HUGETLB_PAGE is not set
+# CONFIG_CONFIGFS_FS is not set
+
+#
+# Miscellaneous filesystems
+#
+# CONFIG_ADFS_FS is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_HFSPLUS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=y
+# CONFIG_NFS_V3 is not set
+# CONFIG_NFS_V4 is not set
+# CONFIG_NFS_DIRECTIO is not set
+# CONFIG_NFSD is not set
+CONFIG_ROOT_NFS=y
+CONFIG_LOCKD=y
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=y
+# CONFIG_SUNRPC_BIND34 is not set
+# CONFIG_RPCSEC_GSS_KRB5 is not set
+# CONFIG_RPCSEC_GSS_SPKM3 is not set
+# CONFIG_SMB_FS is not set
+# CONFIG_CIFS is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_CODA_FS is not set
+# CONFIG_AFS_FS is not set
+
+#
+# Partition Types
+#
+# CONFIG_PARTITION_ADVANCED is not set
+CONFIG_MSDOS_PARTITION=y
+# CONFIG_NLS is not set
+# CONFIG_DLM is not set
+# CONFIG_UCC_SLOW is not set
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+# CONFIG_CRC_CCITT is not set
+# CONFIG_CRC16 is not set
+# CONFIG_CRC_ITU_T is not set
+CONFIG_CRC32=y
+# CONFIG_CRC7 is not set
+# CONFIG_LIBCRC32C is not set
+CONFIG_PLIST=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+# CONFIG_INSTRUMENTATION is not set
+CONFIG_MARKERS=y
+
+#
+# Kernel hacking
+#
+CONFIG_PRINTK_TIME=y
+CONFIG_ENABLE_WARN_DEPRECATED=y
+CONFIG_ENABLE_MUST_CHECK=y
+# CONFIG_MAGIC_SYSRQ is not set
+# CONFIG_UNUSED_SYMBOLS is not set
+CONFIG_DEBUG_FS=y
+# CONFIG_HEADERS_CHECK is not set
+CONFIG_DEBUG_KERNEL=y
+# CONFIG_DEBUG_SHIRQ is not set
+CONFIG_DETECT_SOFTLOCKUP=y
+CONFIG_SCHED_DEBUG=y
+# CONFIG_SCHEDSTATS is not set
+# CONFIG_TIMER_STATS is not set
+# CONFIG_DEBUG_SLAB is not set
+CONFIG_DEBUG_PREEMPT=y
+# CONFIG_DEBUG_RT_MUTEXES is not set
+# CONFIG_RT_MUTEX_TESTER is not set
+# CONFIG_DEBUG_SPINLOCK is not set
+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+CONFIG_PREEMPT_TRACE=y
+# CONFIG_EVENT_TRACE is not set
+# CONFIG_FUNCTION_TRACE is not set
+# CONFIG_WAKEUP_TIMING is not set
+# CONFIG_CRITICAL_PREEMPT_TIMING is not set
+# CONFIG_CRITICAL_IRQSOFF_TIMING is not set
+# CONFIG_DEBUG_KOBJECT is not set
+# CONFIG_DEBUG_BUGVERBOSE is not set
+CONFIG_DEBUG_INFO=y
+# CONFIG_DEBUG_VM is not set
+# CONFIG_DEBUG_LIST is not set
+# CONFIG_DEBUG_SG is not set
+CONFIG_FORCED_INLINING=y
+# CONFIG_BOOT_PRINTK_DELAY is not set
+# CONFIG_RCU_TORTURE_TEST is not set
+# CONFIG_FAULT_INJECTION is not set
+CONFIG_HAVE_MCOUNT=y
+# CONFIG_SAMPLES is not set
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+# CONFIG_DEBUG_STACKOVERFLOW is not set
+# CONFIG_DEBUG_STACK_USAGE is not set
+# CONFIG_DEBUG_PAGEALLOC is not set
+# CONFIG_DEBUGGER is not set
+# CONFIG_VIRQ_DEBUG is not set
+# CONFIG_BDI_SWITCH is not set
+# CONFIG_BOOTX_TEXT is not set
+# CONFIG_PPC_EARLY_DEBUG is not set
+
+#
+# Security options
+#
+# CONFIG_KEYS is not set
+# CONFIG_SECURITY is not set
+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
+# CONFIG_CRYPTO is not set
+CONFIG_PPC_CLOCK=y
+CONFIG_PPC_LIB_RHEAP=y
+
+--------------050506090307080601030000--
