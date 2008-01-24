@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbYAXMjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYAXMmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbYAXMjU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 07:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYAXMjM
+	id S1753402AbYAXMmQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 07:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbYAXMmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 07:39:12 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:41063 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752137AbYAXMjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 07:39:12 -0500
-Date: Thu, 24 Jan 2008 14:39:09 +0200
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-To: David Fries <david@fries.net>
-Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH] W1: w1_therm.c standardize units to millidegrees C
-Message-ID: <20080124123909.GY30987@sci.fi>
-Mail-Followup-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
-	David Fries <david@fries.net>, linux-kernel@vger.kernel.org,
-	Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-References: <20080124020330.GA19155@spacedout.fries.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080124020330.GA19155@spacedout.fries.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 24 Jan 2008 07:42:03 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:65482 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752863AbYAXMmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 07:42:01 -0500
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrew Victor <linux@maxim.org.za>, Remy Bohmer <linux@bohmer.net>,
+       Chip Coldwell <coldwell@redhat.com>, Marc Pignat <marc.pignat@hevs.ch>,
+       David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH -mm v4 1/9] MAINTAINERS: Add myself as maintainer of the atmel_serial driver
+Date: Thu, 24 Jan 2008 13:41:43 +0100
+Message-Id: <1201178511-12133-2-git-send-email-hskinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.3.8
+In-Reply-To: <1201178511-12133-1-git-send-email-hskinnemoen@atmel.com>
+References: <1201178511-12133-1-git-send-email-hskinnemoen@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 23, 2008 at 08:03:30PM -0600, David Fries wrote:
-> Here is the patch to standardize the temperature units to millidegrees
-> C for the two sensor conversion routines.  Previously the routines
-> were,
-> 
-> w1_DS18B20_convert_temp degrees C
-> w1_DS18S20_convert_temp millidegrees C
-> 
-> Unfortunately this will break any program using the ds18b20 value as
-> it will now be 1000 times bigger.  Fortunately there can't be that
-> many users out there, or some of these bugs will have been fixed by
-> now, such as the negative C error (see previous patch) that makes me
-> think the ds18b20 is the better choice to change because of the
-> current bugs.
+The atmel_serial driver never had a MAINTAINERS entry, although Andrew
+Victor has effectively been acting as a maintainer since he got the
+driver merged into mainline in the first place.
 
-Why isn't w1_therm presented as a hwmon device?
+I'll keep Cc'ing Andrew on all patches, but I'm going to take the
+main responsibility for getting things moving upstream from now on.
 
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Acked-by: Andrew Victor <linux@maxim.org.za>
+---
+ MAINTAINERS |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 2340cfb..e349a9e 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -671,6 +671,12 @@ W:	http://www.atmel.com/products/AT91/
+ W:	http://www.at91.com/
+ S:	Maintained
+ 
++ATMEL AT91 / AT32 SERIAL DRIVER
++P:	Haavard Skinnemoen
++M:	hskinnemoen@atmel.com
++L:	linux-kernel@vger.kernel.org
++S:	Supported
++
+ ATMEL LCDFB DRIVER
+ P:	Nicolas Ferre
+ M:	nicolas.ferre@atmel.com
 -- 
-Ville Syrjälä
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+1.5.3.8
+
