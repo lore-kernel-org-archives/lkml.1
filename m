@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbYAXTF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbYAXTJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755235AbYAXTF0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 14:05:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYAXTFL
+	id S1755806AbYAXTJs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 14:09:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbYAXTJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 14:05:11 -0500
-Received: from phunq.net ([64.81.85.152]:60478 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751960AbYAXTFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 14:05:09 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: Theodore Tso <tytso@mit.edu>
-Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm patch]
-Date: Thu, 24 Jan 2008 11:04:53 -0800
-User-Agent: KMail/1.9.5
-Cc: Abhishek Rai <abhishekrai@google.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, linux-ext4@vger.kernel.org
-References: <200801140839.01986.abhishekrai@google.com> <200801192010.20699.phillips@phunq.net> <20080121025117.GB8105@mit.edu>
-In-Reply-To: <20080121025117.GB8105@mit.edu>
+	Thu, 24 Jan 2008 14:09:38 -0500
+Received: from gw.goop.org ([64.81.55.164]:39176 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752279AbYAXTJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 14:09:37 -0500
+Message-ID: <4798E26D.6010908@goop.org>
+Date: Thu, 24 Jan 2008 11:09:33 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801241104.53717.phillips@phunq.net>
+To: =?ISO-8859-1?Q?=22Oliver_Pinter_=28Pint=E9r_Oliv=E9r=29=22?= 
+	<oliver.pntr@gmail.com>
+CC: Adrian Bunk <bunk@kernel.org>, David Miller <davem@davemloft.net>,
+       Greg KH <gregkh@suse.de>, Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Add common orderly_poweroff() to 2.6.22?
+References: <6101e8c40801210959v1e0f6e55w26187dc93a09a202@mail.gmail.com>	 <4798C817.6020702@goop.org> <6101e8c40801241033m7347ec5fof8e41c3fe7974feb@mail.gmail.com>
+In-Reply-To: <6101e8c40801241033m7347ec5fof8e41c3fe7974feb@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 January 2008 18:51, Theodore Tso wrote:
-> On Sat, Jan 19, 2008 at 08:10:20PM -0800, Daniel Phillips wrote:
-> > I can see value in preemptively loading indirect blocks into the
-> > buffer cache, but is building a second-order extent tree really
-> > worth the effort?  Probing the buffer cache is very fast.
+Oliver Pinter (Pintér Olivér) wrote:
+> On 1/24/08, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>   
+>> Oliver Pinter (Pintér Olivér) wrote:
+>>     
+>>> Hi all!
+>>>
+>>> commit in mainline 10a0a8d4e3f6bf2d077f94344441909abe670f5a is go in
+>>> the satble 2.6.22
+>>>
+>>> the grund for this question is http://hup.hu/node/49773 .
+>>>
+>>>       
+>> Is there a compelling reason?
+>>     
 >
-> It's not that much effort, and for a big database (say, like a 50GB
-> database file), the indirect blocks would take up 50 megabytes of
-> memory.  Collapsing it into an extent tree would save that memory
-> into a few kilobytes.  I suppose a database server would probably
-> have 5-10GB's of memory, so the grand scheme of things it's not a
-> vast amount of memory, but the trick is keeping the indirect blocks
-> pinned so they don't get pushed out by some vast, gigunndo Java
-> application running in the same server as the database.  If you have
-> the indirect blocks encoded into the extent tree, then you don't have
-> to worry about that.
+> no, but in forum some person have the question, why the kernel call
+> userspace program and it is secure or not...
+>   
 
-Hi Ted,
+Ah, my non-existent knowledge of Hungarian wasn't up to interpreting 
+that page ;)
 
-OK I think you are right, because this is a nice step towards developing 
-an on-disk extent format for Ext4 that avoids committing design 
-mistakes to permanent storage.  The benefit can be proven using a pure 
-cache, in order to justify the considerable work necessary to make it 
-persistent.
+It should be secure if done properly.  Of course, if you set the 
+"poweroff" executable to something untrustworthy then you'll have a 
+problem, but there's no inherent security problem there.  And if you 
+want to do an orderly shutdown, you need to have some amount of help 
+from the userspace side of things, and invoking a command is the normal 
+way to do this.
 
-Chris and Jens have an effort going to implement a physical disk extent 
-cache for loop.c.  It is actually the same problem, and I smell a 
-library here.
-
-Issue: how do you propose to make this cache evictable?
-
-Regards,
-
-Daniel
+    J
