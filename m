@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYAXRRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbYAXRU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbYAXRRX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 12:17:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbYAXRRO
+	id S1756927AbYAXRU1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 12:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbYAXRUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 12:17:14 -0500
-Received: from gw.goop.org ([64.81.55.164]:59227 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753356AbYAXRRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 12:17:13 -0500
-Message-ID: <4798C817.6020702@goop.org>
-Date: Thu, 24 Jan 2008 09:17:11 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 24 Jan 2008 12:20:13 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:44294
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753231AbYAXRUM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 12:20:12 -0500
+Date: Thu, 24 Jan 2008 18:19:59 +0100
+From: Andrea Arcangeli <andrea@cpushare.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Helmut Grohne <helmut@subdivi.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: PROBLEM: SECCOMP documentation outdated in some arch/*/Kconfig
+Message-ID: <20080124171959.GR7141@v2.random>
+References: <20080122144156.GA29993@alf.mars> <20080122162156.e62e4285.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=22Oliver_Pinter_=28Pint=E9r_Oliv=E9r=29=22?= 
-	<oliver.pntr@gmail.com>
-CC: Adrian Bunk <bunk@kernel.org>, David Miller <davem@davemloft.net>,
-       Greg KH <gregkh@suse.de>, Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Add common orderly_poweroff() to 2.6.22?
-References: <6101e8c40801210959v1e0f6e55w26187dc93a09a202@mail.gmail.com>
-In-Reply-To: <6101e8c40801210959v1e0f6e55w26187dc93a09a202@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080122162156.e62e4285.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Pinter (Pintér Olivér) wrote:
-> Hi all!
->
-> commit in mainline 10a0a8d4e3f6bf2d077f94344441909abe670f5a is go in
-> the satble 2.6.22
->
-> the grund for this question is http://hup.hu/node/49773 .
->   
+On Tue, Jan 22, 2008 at 04:21:56PM -0800, Randy Dunlap wrote:
+> On Tue, 22 Jan 2008 15:41:58 +0100 Helmut Grohne wrote:
+> 
+> > Hi,
+> > 
+> > I didn't find out whom to report this bug to and thus report to
+> > linux-kernel@vger.kernel.org as described in
+> > http://kernel.org/pub/linux/docs/lkml/reporting-bugs.html.
+> 
+> Andrea cc-ed.
+> 
+> Helmut, would you care to make a patch that you think should be
+> applied to the current kernel source tree?
 
-Is there a compelling reason?  I added it to remove some duplicate code, 
-but it isn't a bugfix or anything.
+I'd like to point out CPUShare will soon become an encrypted p2p
+virtual ethernet (with mac->internet:port mapping managed by the
+server and routed through the buyer node if behind nat) of KVM
+machines (using -net tap,fd) so anything will run unmodified
+(including non-linux guest) and it can be trivally bridged to extend
+the local ethernet. This was forced because despite enormous buyer
+(and obviously seller) interest, very few of the buyers are capable of
+writing .c and .py software to make the required modifications to
+their apps to run on CPUShare (the JtR patch for seccomp was <500lines
+but it's still a way too high barrier, especially during this startup
+phase). After the switch to KVM, the only requirement to buy CPU power
+on CPUShare is to be able to create a livecd, something more people
+should be capable of doing.
 
-    J
-
+Given not everyone was happy with seccomp, this would be a good time
+to speak again against it, as I wouldn't be objecting its removal (not
+from a CPUShare POV at least). I'd personally like seccomp to stay and
+to update the Kconfig because I think it can be useful still and it's
+the most secure model.
