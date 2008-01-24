@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbYAXJdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbYAXJeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755177AbYAXJdg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 04:33:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbYAXJd2
+	id S1755279AbYAXJeU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 04:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbYAXJeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 04:33:28 -0500
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:33596 "EHLO
+	Thu, 24 Jan 2008 04:34:09 -0500
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:33599 "EHLO
 	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753440AbYAXJd1 (ORCPT
+	with ESMTP id S1753439AbYAXJeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 04:33:27 -0500
+	Thu, 24 Jan 2008 04:34:08 -0500
 From: Jiri Slaby <jirislaby@gmail.com>
 To: "Oyvind Aabling" <Oyvind.Aabling@uni-c.dk>
 Cc: <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
-Subject: [RFC 2/5] Char: moxa, cleanup module-param passed isa init
-Date: Thu, 24 Jan 2008 10:32:42 +0100
-Message-Id: <1201167165-27635-2-git-send-email-jirislaby@gmail.com>
+Subject: [RFC 3/5] Char: moxa, pci io space fixup
+Date: Thu, 24 Jan 2008 10:32:43 +0100
+Message-Id: <1201167165-27635-3-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <Pine.LNX.4.64.0801221042270.19094@dbs1.uni-c.dtu.dk>
 References: <Pine.LNX.4.64.0801221042270.19094@dbs1.uni-c.dtu.dk>
@@ -23,134 +23,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the code more readable, remap the base address directly. Describe
-module parameters.
+- request region before remapping pci io space
+- use ioremap, iounmap istead of iomap interface, because we use
+  readX/writeX for accessing this space because of isa support
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 ---
- drivers/char/moxa.c |   64 ++++++++++++++++++++++++++------------------------
- 1 files changed, 33 insertions(+), 31 deletions(-)
+ drivers/char/moxa.c |   16 +++++++++++++---
+ 1 files changed, 13 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index 7f4d1ec..485dea6 100644
+index 485dea6..ad51916 100644
 --- a/drivers/char/moxa.c
 +++ b/drivers/char/moxa.c
-@@ -95,7 +95,6 @@ MODULE_DEVICE_TABLE(pci, moxa_pcibrds);
- static struct moxa_board_conf {
- 	int boardType;
- 	int numPorts;
--	unsigned long baseAddr;
- 	int busType;
- 
- 	int loadstat;
-@@ -159,18 +158,21 @@ struct moxa_port {
- static int ttymajor = MOXAMAJOR;
- /* Variables for insmod */
- #ifdef MODULE
--static int baseaddr[4];
--static int type[4];
--static int numports[4];
-+static unsigned long baseaddr[MAX_BOARDS];
-+static unsigned int type[MAX_BOARDS];
-+static unsigned int numports[MAX_BOARDS];
- #endif
- 
- MODULE_AUTHOR("William Chen");
- MODULE_DESCRIPTION("MOXA Intellio Family Multiport Board Device Driver");
- MODULE_LICENSE("GPL");
- #ifdef MODULE
--module_param_array(type, int, NULL, 0);
--module_param_array(baseaddr, int, NULL, 0);
--module_param_array(numports, int, NULL, 0);
-+module_param_array(type, uint, NULL, 0);
-+MODULE_PARM_DESC(type, "card type: C218=2, C320=4");
-+module_param_array(baseaddr, ulong, NULL, 0);
-+MODULE_PARM_DESC(baseaddr, "base address");
-+module_param_array(numports, uint, NULL, 0);
-+MODULE_PARM_DESC(numports, "numports (ignored for C218)");
- #endif
- module_param(ttymajor, int, 0);
- 
-@@ -335,8 +337,9 @@ static struct pci_driver moxa_pci_driver = {
- 
- static int __init moxa_init(void)
- {
--	int i, numBoards = 0, retval = 0;
- 	struct moxa_port *ch;
-+	unsigned int i, isabrds = 0;
-+	int retval = 0;
- 
- 	printk(KERN_INFO "MOXA Intellio family driver version %s\n",
- 			MOXA_VERSION);
-@@ -380,46 +383,45 @@ static int __init moxa_init(void)
- 
- 	mod_timer(&moxaTimer, jiffies + HZ / 50);
- 
--	/* Find the boards defined form module args. */
-+	/* Find the boards defined from module args. */
- #ifdef MODULE
-+	{
-+	struct moxa_board_conf *brd = moxa_boards;
- 	for (i = 0; i < MAX_BOARDS; i++) {
--		if ((type[i] == MOXA_BOARD_C218_ISA) ||
--		    (type[i] == MOXA_BOARD_C320_ISA)) {
-+		if (!baseaddr[i])
-+			break;
-+		if (type[i] == MOXA_BOARD_C218_ISA ||
-+				type[i] == MOXA_BOARD_C320_ISA) {
- 			pr_debug("Moxa board %2d: %s board(baseAddr=%lx)\n",
--			       numBoards + 1, moxa_brdname[type[i] - 1],
--			       (unsigned long)baseaddr[i]);
--			if (numBoards >= MAX_BOARDS) {
--				printk(KERN_WARNING "More than %d MOXA "
--					"Intellio family boards found. Board "
--					"is ignored.\n", MAX_BOARDS);
-+					isabrds + 1, moxa_brdname[type[i] - 1],
-+					baseaddr[i]);
-+			brd->boardType = type[i];
-+			brd->numPorts = type[i] == MOXA_BOARD_C218_ISA ? 8 :
-+					numports[i];
-+			brd->busType = MOXA_BUS_TYPE_ISA;
-+			brd->basemem = ioremap(baseaddr[i], 0x4000);
-+			if (!brd->basemem) {
-+				printk(KERN_ERR "moxa: can't remap %lx\n",
-+						baseaddr[i]);
- 				continue;
- 			}
--			moxa_boards[numBoards].boardType = type[i];
--			if (type[i] == MOXA_BOARD_C218_ISA)
--				moxa_boards[numBoards].numPorts = 8;
--			else
--				moxa_boards[numBoards].numPorts = numports[i];
--			moxa_boards[numBoards].busType = MOXA_BUS_TYPE_ISA;
--			moxa_boards[numBoards].baseAddr = baseaddr[i];
--			numBoards++;
-+				
-+			brd++;
-+			isabrds++;
- 		}
+@@ -290,10 +290,17 @@ static int __devinit moxa_pci_probe(struct pci_dev *pdev,
  	}
+ 
+ 	board = &moxa_boards[i];
+-	board->basemem = pci_iomap(pdev, 2, 0x4000);
++
++	retval = pci_request_region(pdev, 2, "moxa-base");
++	if (retval) {
++		dev_err(&pdev->dev, "can't request pci region 2\n");
++		goto err;
 +	}
- #endif
- 
- #ifdef CONFIG_PCI
- 	retval = pci_register_driver(&moxa_pci_driver);
- 	if (retval) {
- 		printk(KERN_ERR "Can't register moxa pci driver!\n");
--		if (numBoards)
-+		if (isabrds)
- 			retval = 0;
++
++	board->basemem = ioremap(pci_resource_start(pdev, 2), 0x4000);
+ 	if (board->basemem == NULL) {
+ 		dev_err(&pdev->dev, "can't remap io space 2\n");
+-		goto err;
++		goto err_reg;
  	}
- #endif
  
--	for (i = 0; i < numBoards; i++) {
--		moxa_boards[i].basemem = ioremap(moxa_boards[i].baseAddr,
--				0x4000);
--	}
--
+ 	board->boardType = board_type;
+@@ -315,6 +322,8 @@ static int __devinit moxa_pci_probe(struct pci_dev *pdev,
+ 	pci_set_drvdata(pdev, board);
+ 
+ 	return (0);
++err_reg:
++	pci_release_region(pdev, 2);
+ err:
  	return retval;
  }
+@@ -323,8 +332,9 @@ static void __devexit moxa_pci_remove(struct pci_dev *pdev)
+ {
+ 	struct moxa_board_conf *brd = pci_get_drvdata(pdev);
  
+-	pci_iounmap(pdev, brd->basemem);
++	iounmap(brd->basemem);
+ 	brd->basemem = NULL;
++	pci_release_region(pdev, 2);
+ }
+ 
+ static struct pci_driver moxa_pci_driver = {
 -- 
 1.5.3.7
 
