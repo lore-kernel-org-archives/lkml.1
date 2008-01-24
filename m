@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYAZP5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbYAZP5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbYAZP5j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 10:57:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYAZPyc
+	id S1758139AbYAZP5y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 10:57:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYAZPyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:54:32 -0500
+	Sat, 26 Jan 2008 10:54:37 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752211AbYAZPya (ORCPT
+	with ESMTP id S1752797AbYAZPyf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:54:30 -0500
+	Sat, 26 Jan 2008 10:54:35 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 21/52] [microblaze] setup.c - system setting
-Date: Thu, 24 Jan 2008 16:02:56 +0100
-Message-Id: <a013a2b7044186c64d55cdafc8c9b29bc73a7fc5.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 23/52] [microblaze] process and init task function
+Date: Thu, 24 Jan 2008 16:02:58 +0100
+Message-Id: <240998be1af3774635995fd19248f8b3a9e8a702.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <90badb264d0e4ec49fdaa76842a5e5f259681299.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <60642f04ebcf9f76da50a1d40191755f258edcc5.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -31,6 +31,8 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <eb28582e845efb4f2f26054630895f26fa69866e.1201107832.git.monstr@monstr.eu>
  <64e6e541db30cc4f1ee5cd85da4bdea6024f75b8.1201107832.git.monstr@monstr.eu>
  <90badb264d0e4ec49fdaa76842a5e5f259681299.1201107832.git.monstr@monstr.eu>
+ <a013a2b7044186c64d55cdafc8c9b29bc73a7fc5.1201107832.git.monstr@monstr.eu>
+ <60642f04ebcf9f76da50a1d40191755f258edcc5.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,18 +44,20 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/setup.c |  170 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 170 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/setup.c
+ arch/microblaze/kernel/init_task.c |   31 +++++++++
+ arch/microblaze/kernel/process.c   |  129 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 160 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/init_task.c
+ create mode 100644 arch/microblaze/kernel/process.c
 
-diff --git a/arch/microblaze/kernel/setup.c b/arch/microblaze/kernel/setup.c
+diff --git a/arch/microblaze/kernel/init_task.c b/arch/microblaze/kernel/init_task.c
 new file mode 100644
-index 0000000..1d05fac
+index 0000000..7c6bce3
 --- /dev/null
-+++ b/arch/microblaze/kernel/setup.c
-@@ -0,0 +1,170 @@
++++ b/arch/microblaze/kernel/init_task.c
+@@ -0,0 +1,31 @@
 +/*
-+ * arch/microblaze/kernel/setup.c
++ * arch/microblaze/kernel/init_task.c
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -62,165 +66,161 @@ index 0000000..1d05fac
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#include <linux/init.h>
-+#include <linux/string.h>
-+#include <linux/seq_file.h>
-+#include <linux/cpu.h>
-+#include <linux/initrd.h>
-+#include <linux/console.h>
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/init_task.h>
++#include <linux/fs.h>
++#include <linux/mqueue.h>
 +
-+#include <asm/setup.h>
-+#include <asm/sections.h>
-+#include <asm/page.h>
-+#include <asm/io.h>
-+#include <asm/bug.h>
-+#include <asm/param.h>
-+#include <asm/cache.h>
-+#include <asm/cacheflush.h>
-+#include <asm/entry.h>
-+#include <asm/cpuinfo.h>
-+
-+#include <asm/system.h>
-+#include <asm/prom.h>
 +#include <asm/pgtable.h>
 +
-+DEFINE_PER_CPU(unsigned int, KSP);	/* Saved kernel stack pointer */
-+DEFINE_PER_CPU(unsigned int, KM);	/* Kernel/user mode */
-+DEFINE_PER_CPU(unsigned int, ENTRY_SP);	/* Saved SP on kernel entry */
-+DEFINE_PER_CPU(unsigned int, R11_SAVE);	/* Temp variable for entry */
-+DEFINE_PER_CPU(unsigned int, CURRENT_SAVE);	/* Saved current pointer */
++static struct fs_struct init_fs = INIT_FS;
++static struct files_struct init_files = INIT_FILES;
++static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
++static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
++struct mm_struct init_mm = INIT_MM(init_mm);
++EXPORT_SYMBOL(init_mm);
 +
-+char command_line[COMMAND_LINE_SIZE];
-+static char default_command_line[COMMAND_LINE_SIZE] __initdata = CONFIG_CMDLINE;
++union thread_union init_thread_union
++	__attribute__((__section__(".data.init_task"))) =
++{ INIT_THREAD_INFO(init_task) };
 +
-+void __init setup_arch(char **cmdline_p)
++struct task_struct init_task = INIT_TASK(init_task);
++EXPORT_SYMBOL(init_task);
+diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
+new file mode 100644
+index 0000000..679fe19
+--- /dev/null
++++ b/arch/microblaze/kernel/process.c
+@@ -0,0 +1,129 @@
++/*
++ * arch/microblaze/kernel/process.c
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/pm.h>
++
++#include <asm/system.h>
++
++/* FIXME */
++void show_regs(struct pt_regs *regs)
 +{
-+	console_verbose();
-+
-+	unflatten_device_tree();
-+	/* NOTE I think that this function is not necessary to call */
-+	/* irq_early_init(); */
-+	setup_cpuinfo();
-+
-+	__flush_icache_all();
-+	__enable_icache();
-+
-+	__flush_dcache_all();
-+	__enable_dcache();
-+
-+	panic_timeout = 120;
-+
-+	setup_memory();
-+	paging_init();
-+
-+#ifdef CONFIG_VT
-+#if defined(CONFIG_XILINX_CONSOLE)
-+	conswitchp = &xil_con;
-+#elif defined(CONFIG_DUMMY_CONSOLE)
-+	conswitchp = &dummy_con;
-+#endif
-+#endif
++	unsigned long *p;
++	int i;
++	printk(KERN_INFO "pc:\t0x%08lx\tsp:\t0x%08lx\n", regs->pc, regs->r1);
++	printk(KERN_INFO
++		"flags:\t0x%08lx\tear:\t0x%08lx\tesr:\t"
++		"0x%08lx\tfsr:\t0x%08lx\n",
++		regs->msr, regs->ear, regs->esr, regs->fsr);
++	printk(KERN_INFO
++		"r0:\t0x%08lx\tr1:\t0x%08lx\tr2:\t0x%08lx\tr3\t0x%08lx\n",
++		0L, regs->r1, regs->r2, regs->r3);
++	for (i = 4, p = &(regs->r4); i < 32; i += 4, p += 4) {
++		printk(KERN_INFO "r%i:\t0x%08lx\tr%i:\t0x%08lx\tr%i:\t"
++			"0x%08lx\tr%i:\t0x%08lx\n",
++			i, *p, i+1, *(p+1), i+2, *(p+2), i+3, *(p+3));
++	}
++	printk(KERN_INFO "\n");
 +}
 +
-+#ifdef CONFIG_MTD_UCLINUX_EBSS
-+/* Handle both romfs and cramfs types, without generating unnecessary
-+ code (ie no point checking for CRAMFS if it's not even enabled) */
-+inline unsigned get_romfs_len(unsigned *addr)
-+{
-+#ifdef CONFIG_ROMFS_FS
-+	if (memcmp(&addr[0], "-rom1fs-", 8) == 0) /* romfs */
-+		return be32_to_cpu(addr[2]);
-+#endif
++void (*pm_power_off)(void) = NULL;
++EXPORT_SYMBOL(pm_power_off);
 +
-+#ifdef CONFIG_CRAMFS
-+	if (addr[0] == le32_to_cpu(0x28cd3d45)) /* cramfs */
-+		return le32_to_cpu(addr[1]);
-+#endif
++void cpu_idle(void)
++{
++	set_thread_flag(TIF_POLLING_NRFLAG);
++
++	while (1) {
++		while (!need_resched())
++			cpu_relax();
++
++		preempt_enable_no_resched();
++		schedule();
++		preempt_disable();
++	}
++}
++
++void flush_thread(void)
++{
++}
++
++int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++		unsigned long unused,
++		struct task_struct *p, struct pt_regs *regs)
++{
++	struct pt_regs *childregs = task_pt_regs(p);
++	struct thread_info *ti = task_thread_info(p);
++
++	*childregs = *regs;
++
++	if (user_mode(regs))
++		childregs->r1 = usp;
++	else
++		childregs->r1 = ((unsigned long) ti) + THREAD_SIZE;
++
++	memset(&ti->cpu_context, 0, sizeof(struct cpu_context));
++	ti->cpu_context.sp = (unsigned long)childregs;
++	ti->cpu_context.msr = (unsigned long)childregs->msr;
++	ti->cpu_context.r15 = (unsigned long)ret_from_fork - 8;
++
++	if (clone_flags & CLONE_SETTLS)
++		;/* FIXME: not sure what to do */
++
 +	return 0;
 +}
-+#endif	/* CONFIG_MTD_UCLINUX_EBSS */
 +
-+void __init machine_early_init(const char *cmdline, unsigned int ram,
-+		unsigned int fdt)
++/*
++ * Return saved PC of a blocked thread.
++ * FIXME this needs to be checked
++ */
++unsigned long thread_saved_pc(struct task_struct *tsk)
 +{
-+	unsigned long *src, *dst = (unsigned long *)0x0;
-+	early_printk("Ramdisk addr 0x%08x, FDT 0x%08x\n", ram, fdt);
++	struct cpu_context *ctx =
++		&(((struct thread_info *)(tsk->stack))->cpu_context);
 +
-+#ifdef CONFIG_MTD_UCLINUX_EBSS
-+	{
-+		int size;
-+		unsigned int romfs_base;
-+		romfs_base = (ram ? ram : (unsigned int)&__init_end);
-+		/* if CONFIG_MTD_UCLINUX_EBSS is defined, assume ROMFS is at the
-+		 * end of kernel, which is ROMFS_LOCATION defined above. */
-+		size = PAGE_ALIGN(get_romfs_len((unsigned *)romfs_base));
-+		early_printk("Found romfs @ 0x%08x (0x%08x)\n",
-+				romfs_base, size);
-+		early_printk("#### klimit %p ####\n", klimit);
-+		BUG_ON(size < 0); /* What else can we do? */
-+
-+		/* Use memmove to handle likely case of memory overlap */
-+		early_printk("Moving 0x%08x bytes from 0x%08x to 0x%08x\n",
-+			size, romfs_base, &_ebss);
-+		memmove(&_ebss, (int *)romfs_base, size);
-+
-+		/* update klimit */
-+		klimit += PAGE_ALIGN(size);
-+		early_printk("New klimit: 0x%08x\n", klimit);
-+	}
-+#endif
-+
-+	memset(__bss_start, 0, __bss_stop-__bss_start);
-+	memset(_ssbss, 0, _esbss-_ssbss);
-+
-+	printk(KERN_NOTICE "Found FDT at 0x%08x\n", fdt);
-+	early_init_devtree((void *)fdt);
-+
-+	/* Copy command line passed from bootloader, or use default
-+	 if none provided, or forced */
-+#ifndef CONFIG_CMDLINE_FORCE
-+	if (cmdline && cmdline[0] != '\0')
-+		strlcpy(command_line, cmdline, COMMAND_LINE_SIZE);
++	/* Check whether the thread is blocked in resume() */
++	if (in_sched_functions(ctx->r15))
++		return ((unsigned long)ctx->r15);
 +	else
-+#endif
-+		strlcpy(command_line, default_command_line, COMMAND_LINE_SIZE);
-+
-+	for (src = __ivt_start; src < __ivt_end; src++, dst++)
-+		*dst = *src;
-+
-+	/* Initialize global data */
-+	per_cpu(KM, 0) = 0x1;	/* We start in kernel mode */
-+	per_cpu(CURRENT_SAVE, 0) = (unsigned long)current;
-+
++		return ctx->r14;
 +}
 +
-+void machine_restart(char *cmd)
++static void kernel_thread_helper(int (*fn)(void *), void *arg)
 +{
-+	printk(KERN_NOTICE "Machine restart...\n");
-+	dump_stack();
-+	while (1)
-+		;
++	fn(arg);
++	do_exit(-1);
 +}
 +
-+void machine_shutdown(void)
++int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 +{
-+	printk(KERN_NOTICE "Machine shutdown...\n");
-+	while (1)
-+		;
++	struct pt_regs regs;
++	int ret;
++
++	memset(&regs, 0, sizeof(regs));
++	/* store them in non-volatile registers */
++	regs.r5 = (unsigned long)fn;
++	regs.r6 = (unsigned long)arg;
++	local_save_flags(regs.msr);
++	regs.pc = (unsigned long)kernel_thread_helper;
++	regs.kernel_mode = 1;
++
++	ret = do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0,
++			&regs, 0, NULL, NULL);
++
++	return ret;
 +}
 +
-+void machine_halt(void)
++unsigned long get_wchan(struct task_struct *p)
 +{
-+	printk(KERN_NOTICE "Machine halt...\n");
-+	while (1)
-+		;
-+}
-+
-+void machine_power_off(void)
-+{
-+	printk(KERN_NOTICE "Machine power off...\n");
-+	while (1)
-+		;
++/* TBD (used by procfs) */
++	return 0;
 +}
 -- 
 1.5.4.rc4.14.g6fc74
