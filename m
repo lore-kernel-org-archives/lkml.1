@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753044AbYAZP7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbYAZQAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753044AbYAZP7t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 10:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYAZPy7
+	id S1756983AbYAZQAR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 11:00:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYAZPzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:54:59 -0500
+	Sat, 26 Jan 2008 10:55:06 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754748AbYAZPy5 (ORCPT
+	with ESMTP id S1756101AbYAZPzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:54:57 -0500
+	Sat, 26 Jan 2008 10:55:03 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 43/52] [microblaze] clinkage.h linkage.h sections.h kmap_types.h
-Date: Thu, 24 Jan 2008 16:03:18 +0100
-Message-Id: <14243bf49d44d1dbd6e377813f2635defcb82c4e.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 34/52] [microblaze] definitions of types
+Date: Thu, 24 Jan 2008 16:03:09 +0100
+Message-Id: <b501d439bdfabddbdef5935db86b6f64c83d55c4.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <34f2199d631406fbdf6b325a164e0d1899a3acb5.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <105791d33ea12564c70be0dd3fafef386f8e1b55.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -44,15 +44,6 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <d67010417928d04766e6dd74820b12c249d61814.1201107832.git.monstr@monstr.eu>
  <37627293f081fa40f21234944ddb878d5e711740.1201107832.git.monstr@monstr.eu>
  <105791d33ea12564c70be0dd3fafef386f8e1b55.1201107832.git.monstr@monstr.eu>
- <b501d439bdfabddbdef5935db86b6f64c83d55c4.1201107832.git.monstr@monstr.eu>
- <43f77bd3045d72346eb39d3170de727050c835c1.1201107832.git.monstr@monstr.eu>
- <c09d54c49393bedbe4ca43df0e35cefa5fcc649c.1201107832.git.monstr@monstr.eu>
- <29ee870c02ea5d4c409644d7f0eb09cfbb1ec816.1201107832.git.monstr@monstr.eu>
- <99bfbc3fdb53003c11414681b2c73561d533c3ef.1201107832.git.monstr@monstr.eu>
- <1b21abdff6128297a902060b07a0c7ca6d8db633.1201107832.git.monstr@monstr.eu>
- <e173c10560cdf883ba3c7e639ca930f0627a2260.1201107832.git.monstr@monstr.eu>
- <155ee14d990137f7eb6fa76beee06c880c97e790.1201107832.git.monstr@monstr.eu>
- <34f2199d631406fbdf6b325a164e0d1899a3acb5.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -64,59 +55,20 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/clinkage.h   |   29 +++++++++++++++++++++++++++++
- include/asm-microblaze/kmap_types.h |   31 +++++++++++++++++++++++++++++++
- include/asm-microblaze/linkage.h    |   17 +++++++++++++++++
- include/asm-microblaze/sections.h   |   19 +++++++++++++++++++
- 4 files changed, 96 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/clinkage.h
- create mode 100644 include/asm-microblaze/kmap_types.h
- create mode 100644 include/asm-microblaze/linkage.h
- create mode 100644 include/asm-microblaze/sections.h
+ include/asm-microblaze/posix_types.h |   75 ++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/types.h       |   64 +++++++++++++++++++++++++++++
+ 2 files changed, 139 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/posix_types.h
+ create mode 100644 include/asm-microblaze/types.h
 
-diff --git a/include/asm-microblaze/clinkage.h b/include/asm-microblaze/clinkage.h
+diff --git a/include/asm-microblaze/posix_types.h b/include/asm-microblaze/posix_types.h
 new file mode 100644
-index 0000000..697c6ac
+index 0000000..a05f61f
 --- /dev/null
-+++ b/include/asm-microblaze/clinkage.h
-@@ -0,0 +1,29 @@
++++ b/include/asm-microblaze/posix_types.h
+@@ -0,0 +1,75 @@
 +/*
-+ * include/asm-microblaze/clinkage.h
-+ *
-+ * Macros to reflect C symbol-naming conventions
-+ *
-+ * Copyright (C) 2003 John Williams <jwilliams@itee.uq.edu.au>
-+ * Copyright (C) 2001,2002 NEC Corporatione
-+ * Copyright (C) 2001,2002 Miles Bader <miles@gnu.org>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
-+ * Written by Miles Bader <miles@gnu.org>
-+ * Microblaze port by John Williams
-+ */
-+
-+#ifndef _MICROBLAZE_CLINKAGE_H
-+#define _MICROBLAZE_CLINKAGE_H
-+
-+#define __ASSEMBLY__
-+
-+#include <linux/linkage.h>
-+
-+#define C_SYMBOL_NAME(name)	name
-+#define C_ENTRY(name)		.globl name; .align 4; name
-+#define C_END(name)
-+
-+#endif /* _MICROBLAZE_CLINKAGE_H */
-diff --git a/include/asm-microblaze/kmap_types.h b/include/asm-microblaze/kmap_types.h
-new file mode 100644
-index 0000000..9258c0b
---- /dev/null
-+++ b/include/asm-microblaze/kmap_types.h
-@@ -0,0 +1,31 @@
-+/*
-+ * include/asm-microblaze/kmap_types.h
++ * include/asm-microblaze/posix_types.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -125,75 +77,141 @@ index 0000000..9258c0b
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_KMAP_TYPES_H
-+#define _ASM_KMAP_TYPES_H
++#ifndef _ASM_POSIX_TYPES_H
++#define _ASM_POSIX_TYPES_H
 +
-+enum km_type {
-+	KM_BOUNCE_READ,
-+	KM_SKB_SUNRPC_DATA,
-+	KM_SKB_DATA_SOFTIRQ,
-+	KM_USER0,
-+	KM_USER1,
-+	KM_BIO_SRC_IRQ,
-+	KM_BIO_DST_IRQ,
-+	KM_PTE0,
-+	KM_PTE1,
-+	KM_IRQ0,
-+	KM_IRQ1,
-+	KM_SOFTIRQ0,
-+	KM_SOFTIRQ1,
-+	KM_TYPE_NR,
-+};
-+
-+#endif /* _ASM_KMAP_TYPES_H */
-diff --git a/include/asm-microblaze/linkage.h b/include/asm-microblaze/linkage.h
-new file mode 100644
-index 0000000..c699956
---- /dev/null
-+++ b/include/asm-microblaze/linkage.h
-@@ -0,0 +1,17 @@
 +/*
-+ * include/asm-microblaze/linkage.h
++ * This file is generally used by user-level software, so you need to
++ * be a little careful about namespace pollution etc. Also, we cannot
++ * assume GCC is being used.
++ */
++
++typedef unsigned long	__kernel_ino_t;
++typedef unsigned short	__kernel_mode_t;
++typedef unsigned short	__kernel_nlink_t;
++typedef long		__kernel_off_t;
++typedef int		__kernel_pid_t;
++typedef unsigned short	__kernel_ipc_pid_t;
++typedef unsigned short	__kernel_uid_t;
++typedef unsigned short	__kernel_gid_t;
++typedef unsigned int	__kernel_size_t;
++typedef int		__kernel_ssize_t;
++typedef int		__kernel_ptrdiff_t;
++typedef long		__kernel_time_t;
++typedef long		__kernel_suseconds_t;
++typedef long		__kernel_clock_t;
++typedef int		__kernel_timer_t;
++typedef int		__kernel_clockid_t;
++typedef int		__kernel_daddr_t;
++typedef char *		__kernel_caddr_t;
++typedef unsigned short	__kernel_uid16_t;
++typedef unsigned short	__kernel_gid16_t;
++typedef unsigned int	__kernel_uid32_t;
++typedef unsigned int	__kernel_gid32_t;
++
++typedef unsigned short	__kernel_old_uid_t;
++typedef unsigned short	__kernel_old_gid_t;
++typedef unsigned short	__kernel_old_dev_t;
++
++#ifdef __GNUC__
++typedef long long	__kernel_loff_t;
++#endif
++
++typedef struct {
++#if defined(__KERNEL__) || defined(__USE_ALL)
++	int	val[2];
++#else /* !defined(__KERNEL__) && !defined(__USE_ALL) */
++	int	__val[2];
++#endif /* !defined(__KERNEL__) && !defined(__USE_ALL) */
++} __kernel_fsid_t;
++
++#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
++
++#undef	__FD_SET
++#define	__FD_SET(d, set)	((set)->fds_bits[__FDELT(d)] |= __FDMASK(d))
++
++#undef	__FD_CLR
++#define	__FD_CLR(d, set)	((set)->fds_bits[__FDELT(d)] &= ~__FDMASK(d))
++
++#undef	__FD_ISSET
++#define	__FD_ISSET(d, set)	(!!((set)->fds_bits[__FDELT(d)] & __FDMASK(d)))
++
++#undef	__FD_ZERO
++#define __FD_ZERO(fdsetp) (memset (fdsetp, 0, sizeof(*(fd_set *)fdsetp)))
++
++#endif /* defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2) */
++
++#endif /* _ASM_POSIX_TYPES_H */
+diff --git a/include/asm-microblaze/types.h b/include/asm-microblaze/types.h
+new file mode 100644
+index 0000000..3ba4b8d
+--- /dev/null
++++ b/include/asm-microblaze/types.h
+@@ -0,0 +1,64 @@
++/*
++ * include/asm-microblaze/types.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
 + *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * Copyright (C) Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_LINKAGE_H
-+#define _ASM_LINKAGE_H
++#ifndef _ASM_TYPES_H
++#define _ASM_TYPES_H
 +
-+#define __ALIGN		.align 4
-+#define __ALIGN_STR	".align 4"
++#ifndef __ASSEMBLY__
 +
-+#endif /* _ASM_LINKAGE_H */
-diff --git a/include/asm-microblaze/sections.h b/include/asm-microblaze/sections.h
-new file mode 100644
-index 0000000..43df5f6
---- /dev/null
-+++ b/include/asm-microblaze/sections.h
-@@ -0,0 +1,19 @@
++typedef unsigned short umode_t;
++
 +/*
-+ * include/asm-microblaze/sections.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
++ * header files exported to user space
 + */
 +
-+#ifndef _ASM_SECTIONS_H
-+#define _ASM_SECTIONS_H
++typedef __signed__ char __s8;
++typedef unsigned char __u8;
 +
-+#include <asm-generic/sections.h>
++typedef __signed__ short __s16;
++typedef unsigned short __u16;
 +
-+extern char _ssbss[], _esbss[];
-+extern unsigned long __ivt_start[], __ivt_end[];
++typedef __signed__ int __s32;
++typedef unsigned int __u32;
 +
-+#endif /* _ASM_SECTIONS_H */
++#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
++typedef __signed__ long long __s64;
++typedef unsigned long long __u64;
++#endif
++
++/*
++ * These aren't exported outside the kernel to avoid name space clashes
++ */
++#ifdef __KERNEL__
++
++typedef __signed__ char s8;
++typedef unsigned char u8;
++
++typedef __signed__ short s16;
++typedef unsigned short u16;
++
++typedef __signed__ int s32;
++typedef unsigned int u32;
++
++typedef __signed__ long long s64;
++typedef unsigned long long u64;
++
++
++#define BITS_PER_LONG 32
++
++/* Dma addresses are 32-bits wide. */
++
++typedef u32 dma_addr_t;
++
++#endif/* __KERNEL__ */
++#endif
++
++#endif /* _ASM_TYPES_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
