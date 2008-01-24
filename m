@@ -1,254 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbYAXEFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYAXEOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754088AbYAXEFi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 23:05:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbYAXEFa
+	id S1753906AbYAXEOK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 23:14:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYAXEN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 23:05:30 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:46235 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752828AbYAXEF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 23:05:28 -0500
-Date: Wed, 23 Jan 2008 22:05:25 -0600
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Andrew Morton <akpm@osdl.org>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, holt@sgi.com,
-       Hugh Dickins <hugh@veritas.com>, clameter@sgi.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Enhance mmu notifiers to accomplish a lockless implementation
-	(incomplete).
-Message-ID: <20080124040525.GM26420@sgi.com>
-References: <20080116124256.44033d48@bree.surriel.com> <478E4356.7030303@qumranet.com> <20080117162302.GI7170@v2.random> <478F9C9C.7070500@qumranet.com> <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <20080124020007.GL26420@sgi.com>
+	Wed, 23 Jan 2008 23:13:57 -0500
+Received: from de01egw02.freescale.net ([192.88.165.103]:36059 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbYAXEN4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 23:13:56 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080124020007.GL26420@sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH UCC TDM 0/3] UCC based TDM driver for QE based MPC83xx platforms
+Date: Thu, 24 Jan 2008 09:43:47 +0530
+Message-ID: <FBA61160C48B8D438F3323FEFB4EF2C279AE51@zin33exm24.fsl.freescale.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH UCC TDM 0/3] UCC based TDM driver for QE based MPC83xx platforms
+Thread-Index: AchdtwlLP3A0ExdZTWWQSDCISUH+MgAh0jTg
+From: "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>
+To: "Kumar Gala" <kumar.gala@freescale.com>, <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       <rubini@vision.unipv.it>, <linuxppc-dev@ozlabs.org>
+Cc: "Barkowski Michael" <Michael.Barkowski@freescale.com>,
+       "Phillips Kim" <Kim.Phillips@freescale.com>,
+       "Kalra Ashish" <ashish.kalra@freescale.com>,
+       "Tabi Timur" <timur@freescale.com>,
+       "Cutler Richard" <Rich.Cutler@freescale.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Expand the mmu_notifiers to allow for lockless callers.  To accomplish
-this, the function receiving notifications needs to implement an rmap
-equivalent.  The notification function is also responsible for tracking
-page dirty state.
 
-Version 2 brings with it __xip_unmap and do_wp_page so this is getting
-to the point where we can start testing.  It does compile now.
+Reworked patches after incorporating comments of Andrew, Stephen and
+Tabi and Kumar.
 
-I am traveling tomorrow but should be able to get back to this tomorrow
-evening or early Friday.
+Kumar could you please consider them for linux-2.6.25.
 
-Thank you for your attention,
-Robin Holt
+There are three patches
+[PATCH 1/3] drivers/misc : UCC TDM driver for mpc83xx platforms. This
+driver is usable in VoIP iind of applications to interface with SLIC
+kind of devices to exchange TDM voice samples.
+The driver is right now in misc category and exposes a kind of non
+standard interface to the clients.
 
-Index: mmu_notifiers/include/linux/export_notifier.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mmu_notifiers/include/linux/export_notifier.h	2008-01-23 21:24:33.000000000 -0600
-@@ -0,0 +1,50 @@
-+#ifndef _LINUX_EXPORT_NOTIFIER_H
-+#define _LINUX_EXPORT_NOTIFIER_H
-+
-+#include <linux/list.h>
-+#include <linux/mm_types.h>
-+
-+struct export_notifier {
-+	struct hlist_node hlist;
-+	const struct export_notifier_ops *ops;
-+};
-+
-+struct export_notifier_ops {
-+	/*
-+	 * Called with the page lock held after ptes are modified or removed.
-+	 *
-+	 * Must clear PageExported()
-+	 */
-+	void (*invalidate_page)(struct export_notifier *em, struct page *page);
-+};
-+
-+#ifdef CONFIG_EXPORT_NOTIFIER
-+
-+extern void export_notifier_register(struct export_notifier *em);
-+extern void export_notifier_unregister(struct export_notifier *em);
-+
-+extern struct hlist_head export_notifier_list;
-+
-+#define export_notifier(function, args...)					\
-+	do {									\
-+		struct export_notifier *__em;					\
-+		struct hlist_node *__n;						\
-+										\
-+		rcu_read_lock();						\
-+		hlist_for_each_entry_rcu(__em, __n, &export_notifier_list, 	\
-+						hlist)				\
-+			if (__em->ops->function)				\
-+				__em->ops->function(__em, args);		\
-+		rcu_read_unlock();						\
-+	} while (0);
-+
-+#else
-+
-+#define export_notifier(function, args...)
-+
-+static inline void export_notifier_register(struct export_notifier *em) {}
-+static inline void export_notifier_unregister(struct export_notifier *em) {}
-+
-+#endif
-+
-+#endif /* _LINUX_EXPORT_NOTIFIER_H */
-Index: mmu_notifiers/include/linux/page-flags.h
-===================================================================
---- mmu_notifiers.orig/include/linux/page-flags.h	2008-01-23 21:24:27.000000000 -0600
-+++ mmu_notifiers/include/linux/page-flags.h	2008-01-23 21:57:58.000000000 -0600
-@@ -105,6 +105,7 @@
-  * 64 bit  |           FIELDS             | ??????         FLAGS         |
-  *         63                            32                              0
-  */
-+#define PG_exported		30	/* Page is referenced by something not in the rmaps */
- #define PG_uncached		31	/* Page has been mapped as uncached */
- #endif
+TDM Driver Interface Details
+
+The TDM driver right now is a misc driver with no subsystem as such.
+
+The dts file keeps a track of the TDM devices present on the board.
+Depending on them the TDM driver initializes those many driver instances
+while coming up.
+
+The driver on the upper level can plug to more than one tdm clients
+depending on the availablity of TDM devices.
+At every new request of the TDM client to bind with a TDM device, a free
+driver instance is allocated to the client.
+
+The interface can be described as follows.
+
+tdm_register_client(struct tdm_client *)
+	This API returns a pointer to the structure tdm_client which is
+of type
+	struct tdm_client {
+                u32 client_id;
+                u32 (*tdm_read)(u32 client_id, short chn_id, short
+*pcm_buffer, short len);
+                u32 (*tdm_write)(u32 client_id, short chn_id, short
+*pcm_buffer, short len);
+                wait_queue_head_t *wakeup_event;
+        }
+
+   It consists of:
+   - driver_handle: It is basically to identify the particular TDM
+device/driver instance.
+   - tdm_read: It is a function pointer returned by the TDM driver to be
+used to read TDM data from a particular TDM channel.
+   - tdm_write: It is a function pointer returned by the TDM driver to
+be used to write TDM data to a particular TDM channel.
+   - wakeup_event: It is address of a wait_queue event on which the
+client keeps on sleeping, and the TDM driver wakes it up periodically.
+The driver is configured to wake up the client after every 10ms.
+
+Once the TDM client gets registered to a TDM driver instance and a TDM
+device, it interfaces with the driver using tdm_read, tdm_write and
+wakeup_event.
+
+Note: The TDM driver can be used by only kernel level modules. The
+driver does not expose any file interface for User Applications. Can be
+compared to the spi driver which interfaces with the SPI clients(kernel
+mode clients) through some APIs.
+
+This interface can be improved by writing a platform independent TDM
+layer. Then all the TDM platforms can be supported below this wrapper
+layer. This is planned to be done later.
+
+[PATCH 2/3] arch/ : Platform changes
+- device tree entries for UCC TDM driver for MPC8323ERDB platform.
+- QE changes related to TDM , like,
+	 1) Modified ucc_fast_init so that it can be used by fast UCC
+based TDM driver. Mainly changes have been made to configure TDM clocks
+and Fsyncs.
+
+	2) Modified get_brg_clk so that it can return the input frequncy
+and input source of any BRG by reading the corresponding entries from
+device tree.
+
+	3) Added new nodes brg and clocks in the device tree which
+represent input clocks for different BRGs.
+
+	4) Modified qe_setbrg accordingly.
+- new device tree entries added for "clocks" and "brg"
+
+[PATCH 3/3] Documentation
+- Modified Documentation to explain the device tree entries related to
+UCC TDM driver and the new nodes added("clocks" and "brg")
+
+The patch applies over a merge of galak's for-2.6.25 plus for-2.6.24
+plus of_doc_update branches.
+In brief the steps were
+git clone
+git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+powerpc-galak
+git checkout -b for-2.6.25 origin/for-2.6.25 git checkout -b for-2.6.24
+origin/for-2.6.24 git checkout -b of_doc_update origin/of_doc_update
+git pull . for-2.6.24    # merge the other two
+git pull . for-2.6.25 
+git checkout -b tdm      # clean slate for tdm rebase work
+
+Also after applying the patches changes have to be made corresponding to
+Tabi's patch "qe: add function qe_clock_source".
+
+The driver has been tested with a VoIP stack and application on
+MPC8323ERDB.
+
+With Regards
+Poonam 
  
-@@ -260,6 +261,14 @@ static inline void __ClearPageTail(struc
- #define SetPageUncached(page)	set_bit(PG_uncached, &(page)->flags)
- #define ClearPageUncached(page)	clear_bit(PG_uncached, &(page)->flags)
- 
-+#ifdef CONFIG_EXPORT_NOTIFIER
-+#define PageExported(page)	test_bit(PG_exported, &(page)->flags)
-+#define SetPageExported(page)	set_bit(PG_exported, &(page)->flags)
-+#define ClearPageExported(page)	clear_bit(PG_exported, &(page)->flags)
-+#else
-+#define PageExported(page)	0
-+#endif
-+
- struct page;	/* forward declaration */
- 
- extern void cancel_dirty_page(struct page *page, unsigned int account_size);
-Index: mmu_notifiers/mm/Kconfig
-===================================================================
---- mmu_notifiers.orig/mm/Kconfig	2008-01-23 21:24:27.000000000 -0600
-+++ mmu_notifiers/mm/Kconfig	2008-01-23 21:57:58.000000000 -0600
-@@ -197,3 +197,8 @@ config VIRT_TO_BUS
- config MMU_NOTIFIER
- 	def_bool y
- 	bool "MMU notifier, for paging KVM/RDMA"
-+
-+config EXPORT_NOTIFIER
-+	def_bool y
-+	depends on 64BIT
-+	bool "Export Notifier for notifying subsystems about changes to page mappings"
-Index: mmu_notifiers/mm/Makefile
-===================================================================
---- mmu_notifiers.orig/mm/Makefile	2008-01-23 21:24:27.000000000 -0600
-+++ mmu_notifiers/mm/Makefile	2008-01-23 21:24:33.000000000 -0600
-@@ -31,4 +31,4 @@ obj-$(CONFIG_MIGRATION) += migrate.o
- obj-$(CONFIG_SMP) += allocpercpu.o
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_MMU_NOTIFIER) += mmu_notifier.o
--
-+obj-$(CONFIG_EXPORT_NOTIFIER) += export_notifier.o
-Index: mmu_notifiers/mm/export_notifier.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mmu_notifiers/mm/export_notifier.c	2008-01-23 21:57:27.000000000 -0600
-@@ -0,0 +1,20 @@
-+#include <linux/export_notifier.h>
-+
-+HLIST_HEAD(export_notifier_list);
-+DEFINE_SPINLOCK(export_notifier_list_lock);
-+
-+void export_notifier_register(struct export_notifier *en)
-+{
-+	spin_lock(&export_notifier_list_lock);
-+	hlist_add_head_rcu(&en->hlist, &export_notifier_list);
-+	spin_unlock(&export_notifier_list_lock);
-+}
-+
-+void export_notifier_unregister(struct export_notifier *en)
-+{
-+	spin_lock(&export_notifier_list_lock);
-+	hlist_del_rcu(&en->hlist);
-+	spin_unlock(&export_notifier_list_lock);
-+}
-+
-+
-Index: mmu_notifiers/mm/rmap.c
-===================================================================
---- mmu_notifiers.orig/mm/rmap.c	2008-01-23 21:24:27.000000000 -0600
-+++ mmu_notifiers/mm/rmap.c	2008-01-23 21:57:27.000000000 -0600
-@@ -49,6 +49,7 @@
- #include <linux/rcupdate.h>
- #include <linux/module.h>
- #include <linux/kallsyms.h>
-+#include <linux/export_notifier.h>
- 
- #include <asm/tlbflush.h>
- 
-@@ -473,6 +474,8 @@ int page_mkclean(struct page *page)
- 		struct address_space *mapping = page_mapping(page);
- 		if (mapping) {
- 			ret = page_mkclean_file(mapping, page);
-+			if (unlikely(PageExported(page)))
-+				export_notifier(invalidate_page, page);
- 			if (page_test_dirty(page)) {
- 				page_clear_dirty(page);
- 				ret = 1;
-@@ -971,6 +974,9 @@ int try_to_unmap(struct page *page, int 
- 	else
- 		ret = try_to_unmap_file(page, migration);
- 
-+	if (unlikely(PageExported(page)))
-+		export_notifier(invalidate_page, page);
-+
- 	if (!page_mapped(page))
- 		ret = SWAP_SUCCESS;
- 	return ret;
-Index: mmu_notifiers/mm/fremap.c
-===================================================================
---- mmu_notifiers.orig/mm/fremap.c	2008-01-23 21:24:27.000000000 -0600
-+++ mmu_notifiers/mm/fremap.c	2008-01-23 21:57:27.000000000 -0600
-@@ -211,6 +211,7 @@ asmlinkage long sys_remap_file_pages(uns
- 		spin_unlock(&mapping->i_mmap_lock);
- 	}
- 
-+	mmu_notifier(invalidate_range, mm, start, start + size);
- 	err = populate_range(mm, vma, start, size, pgoff);
- 	if (!err && !(flags & MAP_NONBLOCK)) {
- 		if (unlikely(has_write_lock)) {
-Index: mmu_notifiers/mm/memory.c
-===================================================================
---- mmu_notifiers.orig/mm/memory.c	2008-01-23 21:24:27.000000000 -0600
-+++ mmu_notifiers/mm/memory.c	2008-01-23 21:57:27.000000000 -0600
-@@ -1637,6 +1637,7 @@ gotten:
- 	/*
- 	 * Re-check the pte - we dropped the lock
- 	 */
-+	mmu_notifier(invalidate_range, mm, address, address + PAGE_SIZE - 1);
- 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
- 	if (likely(pte_same(*page_table, orig_pte))) {
- 		if (old_page) {
-Index: mmu_notifiers/mm/filemap_xip.c
-===================================================================
---- mmu_notifiers.orig/mm/filemap_xip.c	2008-01-23 21:33:21.000000000 -0600
-+++ mmu_notifiers/mm/filemap_xip.c	2008-01-23 21:57:27.000000000 -0600
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/uio.h>
- #include <linux/rmap.h>
-+#include <linux/export_notifier.h>
- #include <linux/sched.h>
- #include <asm/tlbflush.h>
- 
-@@ -183,6 +184,7 @@ __xip_unmap (struct address_space * mapp
- 	if (!page)
- 		return;
- 
-+	export_notifier(invalidate_page, page);
- 	spin_lock(&mapping->i_mmap_lock);
- 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
- 		mm = vma->vm_mm;
+
