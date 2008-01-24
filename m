@@ -1,171 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbYAXUng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbYAXUnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759596AbYAXUng (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 15:43:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758057AbYAXUf6
+	id S1757892AbYAXUnv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 15:43:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758085AbYAXUgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 15:35:58 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:53469 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758063AbYAXUf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 15:35:57 -0500
-Message-Id: <20080124203333.128025422@polymtl.ca>
-References: <20080124202706.250598537@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Thu, 24 Jan 2008 15:27:08 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, ananth@in.ibm.com,
-       dhowells@redhat.com, jdike@addtoit.com, sam@ravnborg.org,
-       Adrian Bunk <adrian.bunk@movial.fi>,
-       Randy Dunlap <randy.dunlap@oracle.com>, phil.el@wanadoo.fr,
-       oprofile-list@lists.sourceforge.net
-Subject: [patch 02/26] Fix ARM to play nicely with generic Instrumentation menu
-Content-Disposition: inline; filename=fix-arm-to-play-nicely-with-generic-instrumentation-menu.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Jan 2008 20:33:34 +0000
+	Thu, 24 Jan 2008 15:36:03 -0500
+Received: from [212.12.190.108] ([212.12.190.108]:38806 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756955AbYAXUf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 15:35:59 -0500
+From: Al Boldi <a1426z@gawab.com>
+To: linux-fsdevel@vger.kernel.org
+Subject: [RFC] ext3: per-process soft-syncing data=ordered mode
+Date: Thu, 24 Jan 2008 23:36:00 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200801242336.00340.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The conflicting commit for 
-move-kconfiginstrumentation-to-arch-kconfig-and-init-kconfig.patch
-is the ARM fix from Linus :
+Greetings!
 
-commit 38ad9aebe70dc72df08851bbd1620d89329129ba
+data=ordered mode has proven reliable over the years, and it does this by 
+ordering filedata flushes before metadata flushes.  But this sometimes 
+causes contention in the order of a 10x slowdown for certain apps, either 
+due to the misuse of fsync or due to inherent behaviour like db's, as well 
+as inherent starvation issues exposed by the data=ordered mode.
 
-He just seemed to agree that my approach (just putting the missing ARM
-config options in arch/arm/Kconfig) works too. The main advantage it has
-is that it is smaller, does not need a cleanup in the future and does
-not break the following patches unnecessarily.
+data=writeback mode alleviates data=order mode slowdowns, but only works 
+per-mount and is too dangerous to run as a default mode.
 
-It's just been discussed here
+This RFC proposes to introduce a tunable which allows to disable fsync and 
+changes ordered into writeback writeout on a per-process basis like this:
 
-http://lkml.org/lkml/2008/1/15/267
+      echo 1 > /proc/`pidof process`/softsync
 
-However, Linus might prefer to stay with his own patch and I would
-totally understand it that late in the release cycle. Therefore I submit
-this for the next release cycle.
 
-After applying this patch,
-move-kconfiginstrumentation-to-arch-kconfig-and-init-kconfig.patch
-applies nicely in the -mm tree without any modification.
+Your comments are much welcome!
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: ananth@in.ibm.com
-CC: dhowells@redhat.com
-CC: jdike@addtoit.com
-CC: sam@ravnborg.org
-CC: Adrian Bunk <adrian.bunk@movial.fi>
-CC: Randy Dunlap <randy.dunlap@oracle.com>
-CC: phil.el@wanadoo.fr
-CC: oprofile-list@lists.sourceforge.net
----
- arch/arm/Kconfig                 |   19 +++++++++++++-
- arch/arm/Kconfig.instrumentation |   52 ---------------------------------------
- 2 files changed, 18 insertions(+), 53 deletions(-)
 
-Index: linux-2.6-lttng.mm/arch/arm/Kconfig
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/arm/Kconfig	2008-01-24 14:10:37.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/arm/Kconfig	2008-01-24 14:18:00.000000000 -0500
-@@ -144,6 +144,23 @@ config FIQ
- config ARCH_MTD_XIP
- 	bool
- 
-+if OPROFILE
-+
-+config OPROFILE_ARMV6
-+	def_bool y
-+	depends on CPU_V6 && !SMP
-+	select OPROFILE_ARM11_CORE
-+
-+config OPROFILE_MPCORE
-+	def_bool y
-+	depends on CPU_V6 && SMP
-+	select OPROFILE_ARM11_CORE
-+
-+config OPROFILE_ARM11_CORE
-+	bool
-+
-+endif
-+
- config VECTORS_BASE
- 	hex
- 	default 0xffff0000 if MMU || CPU_HIGH_VECTOR
-@@ -1132,7 +1149,7 @@ endmenu
- 
- source "fs/Kconfig"
- 
--source "arch/arm/Kconfig.instrumentation"
-+source "kernel/Kconfig.instrumentation"
- 
- source "arch/arm/Kconfig.debug"
- 
-Index: linux-2.6-lttng.mm/arch/arm/Kconfig.instrumentation
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/arm/Kconfig.instrumentation	2008-01-24 14:09:00.000000000 -0500
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,52 +0,0 @@
--menuconfig INSTRUMENTATION
--	bool "Instrumentation Support"
--	default y
--	---help---
--	  Say Y here to get to see options related to performance measurement,
--	  system-wide debugging, and testing. This option alone does not add any
--	  kernel code.
--
--	  If you say N, all options in this submenu will be skipped and
--	  disabled. If you're trying to debug the kernel itself, go see the
--	  Kernel Hacking menu.
--
--if INSTRUMENTATION
--
--config PROFILING
--	bool "Profiling support (EXPERIMENTAL)"
--	help
--	  Say Y here to enable the extended profiling support mechanisms used
--	  by profilers such as OProfile.
--
--config OPROFILE
--	tristate "OProfile system profiling (EXPERIMENTAL)"
--	depends on PROFILING && !UML
--	help
--	  OProfile is a profiling system capable of profiling the
--	  whole system, include the kernel, kernel modules, libraries,
--	  and applications.
--
--	  If unsure, say N.
--
--config OPROFILE_ARMV6
--	bool
--	depends on OPROFILE && CPU_V6 && !SMP
--	default y
--	select OPROFILE_ARM11_CORE
--
--config OPROFILE_MPCORE
--	bool
--	depends on OPROFILE && CPU_V6 && SMP
--	default y
--	select OPROFILE_ARM11_CORE
--
--config OPROFILE_ARM11_CORE
--	bool
--
--config MARKERS
--	bool "Activate markers"
--	help
--	  Place an empty function call at each marker site. Can be
--	  dynamically changed for a probe function.
--
--endif # INSTRUMENTATION
+Thanks!
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--
+Al
+
