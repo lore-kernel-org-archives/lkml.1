@@ -1,108 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbYAXSMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbYAXSQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbYAXSMR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 13:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbYAXSMH
+	id S1754054AbYAXSQZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 13:16:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYAXSQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 13:12:07 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:37835 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330AbYAXSMG (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 13:12:06 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.24-rc8-mm1 - Tons of extra interrupts..
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1201198324_2846P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 24 Jan 2008 13:12:04 -0500
-Message-ID: <31145.1201198324@turing-police.cc.vt.edu>
+	Thu, 24 Jan 2008 13:16:16 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:39016 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753469AbYAXSQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 13:16:15 -0500
+Date: Thu, 24 Jan 2008 20:14:43 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: David Newall <davidn@davidnewall.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for mm] Remove iBCS support
+Message-ID: <20080124181442.GE4476@does.not.exist>
+References: <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122111205.GA25090@elte.hu> <4796081A.7060505@davidnewall.com> <20080122160114.GB23277@does.not.exist> <4798C511.8070305@davidnewall.com> <20080124172414.GD4476@does.not.exist> <4798D10C.6090109@davidnewall.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4798D10C.6090109@davidnewall.com>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1201198324_2846P
-Content-Type: text/plain; charset=us-ascii
+On Fri, Jan 25, 2008 at 04:25:24AM +1030, David Newall wrote:
+> Adrian Bunk wrote:
+> > Removing dead code makes:
+> > - the kernel smaller,
+> > - the kernel faster and
+> > - makes it easier to maintain the non-dead code.
+> 
+> The performance benefit is trivial, and the improvement to
+> maintainability is even less.
 
-Dell Latitude D820 laptop, T7200 Core2 Duo, x86_64 kernel built with
-PREEMPT, NO_HZ, and HZ=1000. It's running basically idle with an X desktop session.
+The effects become bigger when you realize that there are many such 
+places in the kernel.
 
-I'm seeing large masses of rescheduling interrupts that are basically killing
-the C3 residency rate for no obvious reason/gain. I'm taking close to 500
-interrupts/second, of which close to 350 are unexplained and apparently
-gratuitous. Anybody have suggestions/clues on how to find out why I'm seeing
-this? (Quite possibly, I've got something misconfigured because I misunderstood
-the documentation - which would still indicate that the doc needs fixing at the
-least...)
+And the benefit of keeping it is zero.
 
-powertop reports:
+Even in the hypothetical case that someone would use it, he could simply 
+re-add it.
 
-     PowerTOP version 1.9       (C) 2007 Intel Corporation
+> > All of these are considered useful by the people who actually 
+> > contribute to the Linux kernel.
+> 
+> Contributions to the kernel take forms other than just code.  I'm
+> contributing in this very instance by putting the argument against
+> removal of code.  Once removed it'll be much harder to re-insert than to
+> repair in-situ.
 
-Cn                Avg residency       P-states (frequencies)
-C0 (cpu running)        ( 5.6%)         2.00 Ghz     1.2%
-C1                0.0ms ( 0.0%)         1.67 Ghz     0.0%
-C2                0.7ms ( 5.1%)         1333 Mhz     0.0%
-C3                2.1ms (89.3%)         1000 Mhz    98.8%
+What you are doing is not contributing but wasting other people's time.
 
+The only thing you could ever achieve with this kind of "contribution" 
+is to end up in some killfiles.
 
-Wakeups-from-idle per second : 494.9    interval: 10.0s
-no ACPI power usage estimate available
+> >> At one stage iBCS2 support DID work.  Now it doesn't.  Now there's an
+> >> argument that the remaining infrastructure should be removed.  This is
+> >> the wrong direction to take.
+> >>     
+> >
+> > When did iBCS2 support work in a plain ftp.kernel.org kernel?
+> >   
+> I don't know when.  Are you disputing that it ever did?  I think it's a
+> given that once it worked.
 
-Top causes for wakeups:
-  43.9% (190.3)      <kernel IPI> : Rescheduling interrupts 
-  29.4% (127.4)       <interrupt> : extra timer interrupt 
-   5.9% ( 25.6)                 X : do_setitimer (it_real_fn) 
-   5.0% ( 21.7)           gkrellm : schedule_timeout (process_timeout) 
-   3.9% ( 16.7)     group_balance : schedule_timeout (process_timeout) 
-   3.0% ( 13.2)       <interrupt> : iwl3945 
-   2.3% ( 10.0)     <kernel core> : ehci_work (ehci_watchdog) 
+AFAIK the kernel never shipped with iBCS2 support.
 
-/proc/interrupts (after about 10 hours of uptime, most of which was mostly
-idle and "fetchmail check the mail server every 5 minutes"):
+Which kernels under ftp://ftp.kernel.org/pub/linux/kernel/v*.*/ fulfill 
+your claim?
 
-           CPU0       CPU1       
-  0:   14507246          0   IO-APIC-edge      timer
-  1:      10748          0   IO-APIC-edge      i8042
-  8:          0          0   IO-APIC-edge      rtc
-  9:          3          0   IO-APIC-fasteoi   acpi
- 12:         86          0   IO-APIC-edge      i8042
- 14:     147067          0   IO-APIC-edge      ata_piix
- 15:         45          0   IO-APIC-edge      ata_piix
- 16:      91584          0   IO-APIC-fasteoi   nvidia
- 19:          9          0   IO-APIC-fasteoi   ohci1394, yenta
- 20:      51139          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
- 21:      34708          0   IO-APIC-fasteoi   uhci_hcd:usb3, HDA Intel
- 22:          0          0   IO-APIC-fasteoi   uhci_hcd:usb4
- 23:          0          0   IO-APIC-fasteoi   uhci_hcd:usb5
-312:     164320          0   PCI-MSI-edge      eth0
-313:     385582          0   PCI-MSI-edge      iwl3945
-314:       1343          0      none-edge    
-NMI:          0          0   Non-maskable interrupts
-LOC:    1263420    5737965   Local timer interrupts
-RES:    2285220    2305246   Rescheduling interrupts
-CAL:       4068       6172   function call interrupts
-TLB:      41441      44272   TLB shootdowns
-TRM:          0          0   Thermal event interrupts
-THR:          0          0   Threshold APIC interrupts
-SPU:          0          0   Spurious interrupts
-ERR:          0
+> > And if you consider iBCS2 support that important I can only repeat that 
+> > the language on Linux kernel are patches, not hot air.
+> 
+> Fools believe that code is the only acceptable offering, and you, by
+> reputation, are not a fool.  There are plenty of examples where
+> suggestions made on list have value far exceeding a lot of the code. 
+> For that matter, some of the code that's offered is crap.  For that
+> matter, good contributed code too often (and in some cases famously)
+> gets ignored or rejected for reasons of ego.  You diminish yourself by
+> implying that code is the only thing that matters, and present the
+> impression that you know little about good development practice, in
+> which design effort exceeds that of coding.  I do not believe you are a
+> cowboy; stop talking like one.
+> 
+> Look at the merits of iBCS2 support.  Is it desirable?  Yes.  Is it
+> useful to remove what support remains?  Not particularly.  Does it
+> improve performance?  Trivially; almost immeasurably.   Does it improve
+> clarity?  No.  Does the code serve any useful purpose?  Yes, by acting
+> as a reminder of work still be done.  It's like the /* XXX */ comments
+> that are widely sprinkled through the system, only more concrete.  The
+> benefits of removing it do not outweigh the benefits of leaving it.
 
-Any ideas/hints?
+The point is that ideas do not turn themselves into code.
 
---==_Exmh_1201198324_2846P
-Content-Type: application/pgp-signature
+And there are far too many people who want to see their great ideas 
+implemented without implementing it themselves.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Talking about a feature without having anyone willing to implement it 
+simply has no value.
 
-iD8DBQFHmNT0cC3lWbTT17ARAsPoAJ9ahyUhHevrNsIbHNzJl5ANI7gpTwCcD0gg
-wXV/mRVMdMlORJ1mu/yFVg8=
-=ISNs
------END PGP SIGNATURE-----
+cu
+Adrian
 
---==_Exmh_1201198324_2846P--
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
