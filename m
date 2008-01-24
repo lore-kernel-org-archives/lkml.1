@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYAXPN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbYAXPPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbYAXPN3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 10:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbYAXPNV
+	id S1754937AbYAXPPx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 10:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYAXPPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 10:13:21 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:34023 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751885AbYAXPNU (ORCPT
+	Thu, 24 Jan 2008 10:15:46 -0500
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:34223
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752498AbYAXPPp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 10:13:20 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=hXcMkmSBGKTytZTjyo3Jjv7Kp1LnOOQjqe1PgxFQ7Tp5tnZr1Y2LsS5C2c+sg/y0L
-	Oz56iqkZqBJm0BVOQxpjQ==
-Message-ID: <d43160c70801240713p1e7121c0k94ba210233a69dbb@mail.gmail.com>
-Date: Thu, 24 Jan 2008 10:13:14 -0500
-From: "Ross Biro" <rossb@google.com>
-To: "Yasunori Goto" <y-goto@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 1/2]: MM: Make Paget Tables Relocatable--Conditional TLB Flush
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20080124140913.5FFE.Y-GOTO@jp.fujitsu.com>
+	Thu, 24 Jan 2008 10:15:45 -0500
+Message-ID: <4798AB96.4000408@qumranet.com>
+Date: Thu, 24 Jan 2008 17:15:34 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrea Arcangeli <andrea@qumranet.com>
+CC: Christoph Lameter <clameter@sgi.com>, Izik Eidus <izike@qumranet.com>,
+       Andrew Morton <akpm@osdl.org>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, holt@sgi.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [kvm-devel] [PATCH] export notifier #1
+References: <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <20080122223139.GD15848@v2.random> <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com> <20080123114136.GE15848@v2.random> <Pine.LNX.4.64.0801231149150.13547@schroedinger.engr.sgi.com> <20080124143454.GN7141@v2.random>
+In-Reply-To: <20080124143454.GN7141@v2.random>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080123161340.A1AAEDCA00@localhost>
-	 <20080124140913.5FFE.Y-GOTO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 24, 2008 12:20 AM, Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
-> This is a nitpick, but all of archtectures code except generic use
-> MMF_NNED_FLUSH at clear_bit()...
+Andrea Arcangeli wrote:
+> The remote page fault
+>   
 
-I'd say that's a bit more than a nit.  Thanks for noticing that.
-Please hang on, I think I've figured out how to reduce the 3.5% page
-fault overhead to almost nothing.
+As we have two names for this ('shadow' and 'remote/export') I'd like to 
+suggest a neutral nomenclature.  How about 'secondary mmu' (and 
+secondary ptes (sptes), etc.)?  I think this fits xpmem, kvm, rdma, and dri.
 
-    Ross
+-- 
+Any sufficiently difficult bug is indistinguishable from a feature.
+
