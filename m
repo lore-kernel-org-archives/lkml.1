@@ -1,68 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYAXOxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbYAXOx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbYAXOxT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 09:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYAXOxJ
+	id S1755630AbYAXOx7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 09:53:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbYAXOxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 09:53:09 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:57175 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752132AbYAXOxG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 09:53:06 -0500
-Date: Thu, 24 Jan 2008 20:23:00 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Theodore Ts'o" <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
-       alex@clusterfs.com, adilger@clusterfs.com, sandeen@redhat.com,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH 41/49] ext4: Add multi block allocator for ext4
-Message-ID: <20080124145300.GD14348@skywalker>
-References: <1200970948-17903-35-git-send-email-tytso@mit.edu> <1200970948-17903-36-git-send-email-tytso@mit.edu> <1200970948-17903-37-git-send-email-tytso@mit.edu> <1200970948-17903-38-git-send-email-tytso@mit.edu> <1200970948-17903-39-git-send-email-tytso@mit.edu> <1200970948-17903-40-git-send-email-tytso@mit.edu> <1200970948-17903-41-git-send-email-tytso@mit.edu> <1200970948-17903-42-git-send-email-tytso@mit.edu> <20080123140727.f47e9c9d.akpm@linux-foundation.org> <20080124075614.GA14348@skywalker>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 Jan 2008 09:53:51 -0500
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:44345 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752588AbYAXOxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 09:53:50 -0500
+Date: Thu, 24 Jan 2008 17:53:32 +0300
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ville =?utf-8?B?U3lyasOkbMOk?= <syrjala@sci.fi>,
+       David Fries <david@fries.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] W1: w1_therm.c standardize units to millidegrees C
+Message-ID: <20080124145332.GA24193@2ka.mipt.ru>
+References: <20080124020330.GA19155@spacedout.fries.net> <20080124123909.GY30987@sci.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080124075614.GA14348@skywalker>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080124123909.GY30987@sci.fi>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 01:26:14PM +0530, Aneesh Kumar K.V wrote:
-> 
-> > 
-> > > +/* find most significant bit */
-> > > +static int fmsb(unsigned short word)
-> > > +{
-> > > +	int order;
-> > > +
-> > > +	if (word > 255) {
-> > > +		order = 7;
-> > > +		word >>= 8;
-> > > +	} else {
-> > > +		order = -1;
-> > > +	}
-> > > +
-> > > +	do {
-> > > +		order++;
-> > > +		word >>= 1;
-> > > +	} while (word != 0);
-> > > +
-> > > +	return order;
-> > > +}
-> > 
-> > Did we just reinvent fls()?
-> 
-> replaced by fls.
-> 
-> > 
+On Thu, Jan 24, 2008 at 02:39:09PM +0200, Ville Syrjälä (syrjala@sci.fi) wrote:
+> Why isn't w1_therm presented as a hwmon device?
 
-That should be fls() - 1;
+First, because it was created way earlier, second, because it is not a
+hardware monitor :)
+Feel free to create a driver to bind thermal sensors to hwmon framework,
+but I'm not sure it worth time.
 
-The full patch is at
-
-http://www.radian.org/~kvaneesh/ext4/jan-24-2008/mballoc-core.patch
-
-The patch is too big to inline.
-
--aneesh
+-- 
+	Evgeniy Polyakov
