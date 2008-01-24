@@ -1,81 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758292AbYAXVEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbYAXVF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758292AbYAXVEq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 16:04:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756452AbYAXVEi
+	id S1758672AbYAXVF6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 16:05:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbYAXVFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 16:04:38 -0500
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:52019 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754839AbYAXVEh (ORCPT
+	Thu, 24 Jan 2008 16:05:50 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:42184 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756652AbYAXVFt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 16:04:37 -0500
+	Thu, 24 Jan 2008 16:05:49 -0500
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FANOLmEdMQWYq/2dsb2JhbACBV5AfnT4
-Date: Thu, 24 Jan 2008 16:04:31 -0500
+X-IronPort-Anti-Spam-Result: Ah4FAP6MmEdMQWYq/2dsb2JhbACBV61u
+Date: Thu, 24 Jan 2008 16:05:47 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Randy Dunlap <randy.dunlap@oracle.com>
 Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 07/26] Add INIT_ARRAY() to kernel.h
-Message-ID: <20080124210431.GA1647@Krystal>
-References: <20080124202706.250598537@polymtl.ca> <20080124203335.082459062@polymtl.ca> <20080124125845.bf5767b8.randy.dunlap@oracle.com>
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [patch 03/26] Move Kconfig.instrumentation to arch/Kconfig and
+	init/Kconfig
+Message-ID: <20080124210547.GB1647@Krystal>
+References: <20080124202706.250598537@polymtl.ca> <20080124203333.499728934@polymtl.ca> <20080124130051.ec521347.randy.dunlap@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080124125845.bf5767b8.randy.dunlap@oracle.com>
+In-Reply-To: <20080124130051.ec521347.randy.dunlap@oracle.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:02:41 up 82 days,  2:08,  6 users,  load average: 0.59, 1.53,
-	1.52
+X-Uptime: 16:05:01 up 82 days,  2:10,  6 users,  load average: 0.49, 1.10,
+	1.35
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Randy Dunlap (randy.dunlap@oracle.com) wrote:
-> On Thu, 24 Jan 2008 15:27:13 -0500 Mathieu Desnoyers wrote:
+> On Thu, 24 Jan 2008 15:27:09 -0500 Mathieu Desnoyers wrote:
 > 
-> > Add initialization of an array, which needs brackets that would pollute kernel
-> > code, to kernel.h. It is used to declare arguments passed as function parameters
+> > Move the instrumentation Kconfig to
+> > 
+> > arch/Kconfig for architecture dependent options
+> >   - oprofile
+> >   - kprobes
+> > 
+> > and
+> > 
+> > init/Kconfig for architecture independent options
+> >   - profiling
+> >   - markers
+> > 
+> > Remove the "Instrumentation Support" menu. Everything moves to "General setup".
 > 
-> Hi Mathieu,
-> 
-> Maybe you have explained this previously, but please give a short
-> explanation of "brackets that would pollute kernel code".
-> 
-> Thanks.
+> Was this done based on a suggestion from someone (Linus)?
+> I prefer an Instrumentation menu, but whatever...
 > 
 
-Try opening such code in vim, and the syntax highlighting gets all
-messed up :-/
-
-The other option is to do the *right thing* and fix vim, of course, but
-this change won't be in distros for a while.
+Yes, it was Linus'suggestion. I prefer the instrumentation menu too, but
+in order to be consistent, we would have to create an instrumentation/
+directory in the kernel tree.
 
 Mathieu
 
-> > such as:
-> > text_poke(addr, INIT_ARRAY(unsigned char, 0xf0, len), len);
+> 
+> > Delete the kernel/Kconfig.instrumentation file.
 > > 
 > > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > CC: Linus Torvalds <torvalds@linux-foundation.org>
+> > CC: Sam Ravnborg <sam@ravnborg.org>
 > > ---
-> >  include/linux/kernel.h |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > Index: linux-2.6-lttng.mm/include/linux/kernel.h
-> > ===================================================================
-> > --- linux-2.6-lttng.mm.orig/include/linux/kernel.h	2008-01-24 14:10:54.000000000 -0500
-> > +++ linux-2.6-lttng.mm/include/linux/kernel.h	2008-01-24 14:23:06.000000000 -0500
-> > @@ -423,4 +423,6 @@ struct sysinfo {
-> >  #define NUMA_BUILD 0
-> >  #endif
-> >  
-> > +#define INIT_ARRAY(type, val, len) ((type [len]) { [0 ... (len)-1] = (val) })
-> > +
-> >  #endif
+> >  arch/Kconfig                   |   28 ++++++++++++++++++++
+> >  arch/alpha/Kconfig             |    2 -
+> >  arch/arm/Kconfig               |    2 -
+> >  arch/blackfin/Kconfig          |    2 -
+> >  arch/cris/Kconfig              |    2 -
+> >  arch/frv/Kconfig               |    2 -
+> >  arch/h8300/Kconfig             |    2 -
+> >  arch/ia64/Kconfig              |    2 -
+> >  arch/m32r/Kconfig              |    2 -
+> >  arch/m68k/Kconfig              |    2 -
+> >  arch/m68knommu/Kconfig         |    2 -
+> >  arch/mips/Kconfig              |    2 -
+> >  arch/parisc/Kconfig            |    2 -
+> >  arch/powerpc/Kconfig           |    2 -
+> >  arch/ppc/Kconfig               |    2 -
+> >  arch/s390/Kconfig              |    2 -
+> >  arch/sh/Kconfig                |    2 -
+> >  arch/sh64/Kconfig              |    2 -
+> >  arch/sparc/Kconfig             |    2 -
+> >  arch/sparc64/Kconfig           |    2 -
+> >  arch/um/Kconfig                |    2 -
+> >  arch/v850/Kconfig              |    2 -
+> >  arch/x86/Kconfig               |    2 -
+> >  arch/xtensa/Kconfig            |    2 -
+> >  init/Kconfig                   |   12 ++++++++
+> >  kernel/Kconfig.instrumentation |   55 -----------------------------------------
+> >  26 files changed, 40 insertions(+), 101 deletions(-)
 > 
 > ---
 > ~Randy
