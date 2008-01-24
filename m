@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbYAXBLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbYAXBNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbYAXBLW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 20:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYAXBLP
+	id S1753811AbYAXBNq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 20:13:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYAXBNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 20:11:15 -0500
-Received: from mail.vyatta.com ([216.93.170.194]:59302 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751375AbYAXBLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 20:11:14 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -2.599
-Date: Wed, 23 Jan 2008 17:07:48 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Tobias Winter <tobias@linuxdingsda.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel bug report 2.6.24-rc8 on core2quad q6600 with debian
- unstable amd64
-Message-ID: <20080123170748.36068472@deepthought>
-In-Reply-To: <4797D86B.3060202@linuxdingsda.de>
-References: <4797D86B.3060202@linuxdingsda.de>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 23 Jan 2008 20:13:38 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47840 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752320AbYAXBNh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 20:13:37 -0500
+Message-Id: <20080124011204.614765000@sgi.com>
+References: <20080124011204.470412000@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 23 Jan 2008 17:12:05 -0800
+From: travis@sgi.com
+To: mingo@elte.hu
+Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] x86: early cpu_to_node fix in numa_64.c
+Content-Disposition: inline; filename=cpu_to_node-fix-2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 Jan 2008 01:14:35 +0100
-Tobias Winter <tobias@linuxdingsda.de> wrote:
+Both of these references to cpu_to_node() can potentially occur
+before the "late" cpu_to_node map is setup.  Therefore, they
+should be changed to use early_cpu_to_node().
 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA512
-> 
-> Hi folks, I'm sending the bug report here, since i have no idea where
-> else to send it. I hope it is helping.
-> 
-> 
-> [1.] One line summary of the problem:
-> The kernel panics under high CPU/IO load, compilers segfault, mdadm
-> used to do so, too.
-> 
-> [2.] Full description of the problem/report:
-> I upgraded my system to fairly new hardware and find myself unable to
-> compile any kernel source and the system panics under high load e.g.
-> resyncing a RAID or building a kernel. Building kernel is 100% sure to
-> result in a kernel panic.
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86/mm/numa_64.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Sounds like bad memory. Run memtest for at least 24hrs.
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -251,7 +251,7 @@ void __init numa_init_array(void)
+ 
+ 	rr = first_node(node_online_map);
+ 	for (i = 0; i < NR_CPUS; i++) {
+-		if (cpu_to_node(i) != NUMA_NO_NODE)
++		if (early_cpu_to_node(i) != NUMA_NO_NODE)
+ 			continue;
+ 		numa_set_node(i, rr);
+ 		rr = next_node(rr, node_online_map);
+@@ -528,7 +528,8 @@ void __init numa_initmem_init(unsigned l
+ 
+ __cpuinit void numa_add_cpu(int cpu)
+ {
+-	set_bit(cpu, (unsigned long *)&node_to_cpumask_map[cpu_to_node(cpu)]);
++	set_bit(cpu,
++		(unsigned long *)&node_to_cpumask_map[early_cpu_to_node(cpu)]);
+ }
+ 
+ void __cpuinit numa_set_node(int cpu, int node)
+
+-- 
+
