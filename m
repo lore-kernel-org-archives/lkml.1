@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbYAXQRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbYAXQUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbYAXQRm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 11:17:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYAXQRe
+	id S1755968AbYAXQUT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 11:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYAXQUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 11:17:34 -0500
-Received: from main.gmane.org ([80.91.229.2]:59601 "EHLO ciao.gmane.org"
+	Thu, 24 Jan 2008 11:20:06 -0500
+Received: from main.gmane.org ([80.91.229.2]:32977 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752687AbYAXQRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 11:17:33 -0500
+	id S1752537AbYAXQUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 11:20:05 -0500
 X-Injected-Via-Gmane: http://gmane.org/
 To: linux-kernel@vger.kernel.org
 From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
 Subject: Re: Massive IDE problems. Who leaves data here?
-Date: Thu, 24 Jan 2008 17:25:22 +0100
-Message-ID: <4798BBF2.5000508@nurfuerspam.de>
+Date: Thu, 24 Jan 2008 17:26:05 +0100
+Message-ID: <4798BC1D.3070701@nurfuerspam.de>
 References: <fn5ivo$ck2$1@ger.gmane.org> <47965138.8060603@garzik.org>	 <fn5jsn$ful$1@ger.gmane.org>	 <2c0942db0801221246u678d2a20xef9cf93ee28eaf51@mail.gmail.com>	 <fn5l9c$l6m$1@ger.gmane.org> <2c0942db0801221312v66887218qe0b9c853384ccd0b@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8; format=flowed
