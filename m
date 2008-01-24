@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYAXJHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbYAXJOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbYAXJHP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 04:07:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbYAXJG5
+	id S1754118AbYAXJOa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 04:14:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYAXJOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 04:06:57 -0500
-Received: from sacred.ru ([62.205.161.221]:34739 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752878AbYAXJGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 04:06:55 -0500
-Message-ID: <479854E7.5080404@openvz.org>
-Date: Thu, 24 Jan 2008 12:05:43 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 24 Jan 2008 04:14:19 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:58424 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752863AbYAXJOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 04:14:18 -0500
+Message-ID: <479856CC.7070404@cn.fujitsu.com>
+Date: Thu, 24 Jan 2008 17:13:48 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: righiandr@users.sourceforge.net
-CC: Naveen Gupta <ngupta@google.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Paul Menage <menage@google.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cgroup: limit block I/O bandwidth
-References: <4791DC2C.9090405@users.sourceforge.net> <4793507B.6040706@users.sourceforge.net> <20080120143239.GS6258@kernel.dk> <47936BC1.9060805@users.sourceforge.net> <20080120160651.GU6258@kernel.dk> <4793E047.1000602@users.sourceforge.net> <2846be6b0801221102y2ad297e2u2f9df06e33b72162@mail.gmail.com> <47967805.4060307@users.sourceforge.net> <2846be6b0801221717j41984f93v920d271b948d39be@mail.gmail.com> <47975C0F.3010609@users.sourceforge.net> <20080123153828.GB12333@balbir.in.ibm.com> <4797A9C3.1000707@users.sourceforge.net>
-In-Reply-To: <4797A9C3.1000707@users.sourceforge.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] workqueue: make delayed_work_timer_fn() static
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 24 Jan 2008 12:05:33 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-> Balbir Singh wrote:
->> * Andrea Righi <righiandr@users.sourceforge.net> [2008-01-23 16:23:59]:
->>
->>> Probably tracking who dirtied the pages would be the best approach, but
->>> we want also to reduce the overhead of this tracking. So, we should find
->>> a smart way to track which cgroup dirtied the pages and then only when
->>> the i/o scheduler dispatches the write requests of those pages, account
->>> the i/o operations to the opportune cgroup. In this way throttling could
->>> be done probably in __set_page_dirty() as well.
->>>
->> I think the OpenVZ controller works that way.
-> 
-> Well... looking at the code it seems that OpenVZ doesn't use this
-> strategy, instead performs UBC-based I/O accounting looking at the
 
-We do track the task (well - the beancounter) who made the page
-dirty and then use this context for async write scheduling.
+delayed_work_timer_fn() is a timer function, make it static.
 
-> __set_page_dirty*() for writes and submit_bio() for reads. Then,
-> independently from accounting data, it uses per-UBC i/o priority model
-> that is mapped directly on the CFQ i/o priority model.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Vasisly Tarasov (out I/O guru ;)) has already prepared an RFC patchset
-for Jens with group scheduler (for sync requests only) and is going to
-send it this or next week.
+---
+ include/linux/timer.h |    2 --
+ kernel/workqueue.c    |    2 +-
+ 2 files changed, 1 insertions(+), 3 deletions(-)
 
-> -Andrea
-> 
+diff --git a/include/linux/timer.h b/include/linux/timer.h
+index 78cf899..090fa5e 100644
+--- a/include/linux/timer.h
++++ b/include/linux/timer.h
+@@ -124,8 +124,6 @@ static inline void timer_stats_timer_clear_start_info(struct timer_list *timer)
+ }
+ #endif
+ 
+-extern void delayed_work_timer_fn(unsigned long __data);
+-
+ /**
+  * add_timer - start a timer
+  * @timer: the timer to be added
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 52d5e7c..4d4715b 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -176,7 +176,7 @@ int fastcall queue_work(struct workqueue_struct *wq, struct work_struct *work)
+ }
+ EXPORT_SYMBOL_GPL(queue_work);
+ 
+-void delayed_work_timer_fn(unsigned long __data)
++static void delayed_work_timer_fn(unsigned long __data)
+ {
+ 	struct delayed_work *dwork = (struct delayed_work *)__data;
+ 	struct cpu_workqueue_struct *cwq = get_wq_data(&dwork->work);
+-- 1.5.4.rc3 
 
