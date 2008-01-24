@@ -1,1708 +1,659 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbYAXJfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbYAXJjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637AbYAXJfr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 04:35:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbYAXJfg
+	id S1755136AbYAXJjg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 04:39:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbYAXJj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 04:35:36 -0500
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:33611 "EHLO
-	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755492AbYAXJf3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 04:35:29 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: "Oyvind Aabling" <Oyvind.Aabling@uni-c.dk>
-Cc: <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
-Subject: [RFC 5/5] Char: moxa, add firmware loading
-Date: Thu, 24 Jan 2008 10:32:45 +0100
-Message-Id: <1201167165-27635-5-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <Pine.LNX.4.64.0801221042270.19094@dbs1.uni-c.dtu.dk>
-References: <Pine.LNX.4.64.0801221042270.19094@dbs1.uni-c.dtu.dk>
+	Thu, 24 Jan 2008 04:39:28 -0500
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:43533 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753390AbYAXJjY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 04:39:24 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Mika =?ISO-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <4797E487.8010108@goop.org>
+References: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>
+	 <47939363.8040603@kolumbus.fi>
+	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>
+	 <479510CE.7010706@zytor.com>
+	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>
+	 <479551FD.5040801@zytor.com>
+	 <1201023401.5643.52.camel@localhost.localdomain>
+	 <479634A9.1090908@zytor.com>
+	 <1201031325.15491.66.camel@cthulhu.hellion.org.uk>
+	 <47964B7B.9000905@zytor.com>  <20080122203611.GA12892@elte.hu>
+	 <1201121530.30671.15.camel@cthulhu.hellion.org.uk>
+	 <4797E487.8010108@goop.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 24 Jan 2008 09:39:04 +0000
+Message-Id: <1201167544.30671.64.camel@cthulhu.hellion.org.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 8BIT
+X-SA-Exim-Connect-IP: 192.168.1.223
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+	format.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Substitute ioctl load firmware interface by kernel firmware api.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+On Wed, 2008-01-23 at 17:06 -0800, Jeremy Fitzhardinge wrote:
+> Ian Campbell wrote:
+> > FYI, CONFIG_DEBUG_PAGEALLOC+PAE is broken. I'll dig in but it might be
+> > the weekend before I get a chance (there's a beer festival in town ;-)).
+> >   
+> 
+> I'm poking around trying to get Xen working again as well; I may end up 
+> fixing it in passing.
+
+Turns out that the initial mapping is extending well past the end of the
+128M of physical memory when DEBUG_PAGEALLOC is enabled due to the extra
+16M mapping. The overshoot is enough that it interferes with the vmalloc
+area. I see the same problem without the patch on non PAE if I reduce
+the RAM to 64M. There will be ~twice as many PAE boot page tables which
+explains why it triggers with 128M with the patch (INIT_MAP_BEYOND_END
+is 70M for !PAE and 138M with when DEBUG_PAGEALLOC is on).
+
+I don't see the crash with PAE before this patch. I think because the
+kernel page tables are wiped in native_pagetable_setup_start which would
+have blown away the mappings past the end of physical memory, avoiding
+the problem. I've added code to wipe those mappings past max_low_pfn
+from the boot page tables in pagetable_setup_start which has solved the
+problem and I think is the right way to do it since we don't know the
+correct limit of physical RAM in head_32.
+
+Tested patch follows. All four of {pae,!pae}x{paravirt,!
+paravirt}+DEBUG_PAGEALLOC boot to userspace on qemu (smp:2 mem:128)
+using cpu type 486 (no PSE or PAE or anything), pentium (PSE only),
+pentium3 (everything but NX) and qemu64 (everything, running 32 bit mode
+despite name). Exceptions are obviously 486 and pentium which didn't
+boot the PAE versions to userspace -- they correctly bailed during
+setup.
+
+I'm not sure how PSE comes to be used ever though -- an EFI only thing?
+Using the qemu monitor I could see a bunch of NX bits used when NX was
+available.
+
+I also booted both {!PAE,PAE}xPARAVIRT+DEBUG_PAGEALLOC on a physical
+pentium4 with 4G RAM with and without mem=16M.
+
+> At the moment I've got a problem with early_ioremap's bt_pte[] array 
+> ending up hanging around in init's pagetable, which Xen is most unhappy 
+> about.
+
+That sounds a lot like the problem I was having with the patch I sent
+you as well, although I never identified where the problematic mapping
+was.
+
+Ian.
+
 ---
- drivers/char/moxa.c | 1212 +++++++++++++++++++++------------------------------
- drivers/char/moxa.h |  296 +++++++++++++
- 2 files changed, 800 insertions(+), 708 deletions(-)
- create mode 100644 drivers/char/moxa.h
+x86_32: Construct 32 bit boot time page tables in native format.
 
-diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index cbf8e97..3c46345 100644
---- a/drivers/char/moxa.c
-+++ b/drivers/char/moxa.c
-@@ -25,6 +25,7 @@
- #include <linux/mm.h>
- #include <linux/ioport.h>
- #include <linux/errno.h>
-+#include <linux/firmware.h>
- #include <linux/signal.h>
- #include <linux/sched.h>
- #include <linux/timer.h>
-@@ -47,8 +48,12 @@
- #include <asm/io.h>
- #include <asm/uaccess.h>
- 
-+#include "moxa.h"
+Specifically the boot time page tables in a CONFIG_X86_PAE=y enabled
+kernel are in PAE format.
+
+early_ioremap is updated to use the standard page table accessors.
+
+Clear any mappings beyond max_low_pfn from the boot page tables in
+native_pagetable_setup_start because the initial mappings can extend
+beyond the range of physical memory and into the vmalloc area.
+
+Derived from patches by Eric Biederman and H. Peter Anvin.
+
+Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Mika PenttilÃ¤ <mika.penttila@kolumbus.fi>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+---
+ arch/x86/kernel/head_32.S    |  132 +++++++++++++++++++++++++++++++-----------
+ arch/x86/kernel/setup_32.c   |    4 +
+ arch/x86/mm/init_32.c        |   70 ++++++++--------------
+ arch/x86/mm/ioremap_32.c     |   53 ++++++++++-------
+ include/asm-x86/page_32.h    |    1 -
+ include/asm-x86/pgtable_32.h |    4 -
+ 6 files changed, 158 insertions(+), 106 deletions(-)
+
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+index 5d8c573..c6af2c0 100644
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -19,6 +19,10 @@
+ #include <asm/thread_info.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/setup.h>
++#include <asm/processor-flags.h>
 +
- #define MOXA_VERSION		"5.1k"
++/* Physical address */
++#define pa(X) ((X) - __PAGE_OFFSET)
  
-+#define MOXA_FW_HDRLEN		32
-+
- #define MOXAMAJOR		172
- #define MOXACUMAJOR		173
- 
-@@ -92,6 +97,8 @@ static struct pci_device_id moxa_pcibrds[] = {
- MODULE_DEVICE_TABLE(pci, moxa_pcibrds);
- #endif /* CONFIG_PCI */
- 
-+struct moxa_port;
-+
- static struct moxa_board_conf {
- 	int boardType;
- 	int numPorts;
-@@ -99,6 +106,8 @@ static struct moxa_board_conf {
- 
- 	int loadstat;
- 
-+	struct moxa_port *ports;
-+
- 	void __iomem *basemem;
- 	void __iomem *intNdx;
- 	void __iomem *intPend;
-@@ -156,6 +165,7 @@ struct moxa_port {
- #define WAKEUP_CHARS		256
- 
- static int ttymajor = MOXAMAJOR;
-+static int moxaCard;
- /* Variables for insmod */
- #ifdef MODULE
- static unsigned long baseaddr[MAX_BOARDS];
-@@ -208,7 +218,6 @@ static void moxa_receive_data(struct moxa_port *);
  /*
-  * moxa board interface functions:
+  * References to members of the new_cpu_data structure.
+@@ -80,10 +84,6 @@ INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE + ALLOCATOR_SLOP)*PAGE_
   */
--static void MoxaDriverInit(void);
- static int MoxaDriverIoctl(unsigned int, unsigned long, int);
- static int MoxaDriverPoll(void);
- static int MoxaPortsOfCard(int);
-@@ -263,6 +272,482 @@ static struct moxa_port moxa_ports[MAX_PORTS];
- static DEFINE_TIMER(moxaTimer, moxa_poll, 0, 0);
- static DEFINE_SPINLOCK(moxa_lock);
- 
-+static int moxa_check_fw_model(struct moxa_board_conf *brd, u8 model)
-+{
-+	switch (brd->boardType) {
-+	case MOXA_BOARD_C218_ISA:
-+	case MOXA_BOARD_C218_PCI:
-+		if (model != 1)
-+			goto err;
-+		break;
-+	case MOXA_BOARD_CP204J:
-+		if (model != 3)
-+			goto err;
-+		break;
-+	default:
-+		if (model != 2)
-+			goto err;
-+		break;
-+	}
-+	return 0;
-+err:
-+	return -EINVAL;
-+}
-+
-+static int moxa_check_fw(const void *ptr)
-+{
-+	const __le16 *lptr = ptr;
-+
-+	if (*lptr != cpu_to_le16(0x7980))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int moxa_load_bios(struct moxa_board_conf *brd, const u8 *buf,
-+		size_t len)
-+{
-+	void __iomem *baseAddr = brd->basemem;
-+	u16 tmp;
-+
-+	writeb(HW_reset, baseAddr + Control_reg);	/* reset */
-+	msleep(10);
-+	memset_io(baseAddr, 0, 4096);
-+	memcpy_toio(baseAddr, buf, len);	/* download BIOS */
-+	writeb(0, baseAddr + Control_reg);	/* restart */
-+
-+	msleep(2000);
-+
-+	switch (brd->boardType) {
-+	case MOXA_BOARD_C218_ISA:
-+	case MOXA_BOARD_C218_PCI:
-+		tmp = readw(baseAddr + C218_key);
-+		if (tmp != C218_KeyCode)
-+			goto err;
-+		break;
-+	case MOXA_BOARD_CP204J:
-+		tmp = readw(baseAddr + C218_key);
-+		if (tmp != CP204J_KeyCode)
-+			goto err;
-+		break;
-+	default:
-+		tmp = readw(baseAddr + C320_key);
-+		if (tmp != C320_KeyCode)
-+			goto err;
-+		tmp = readw(baseAddr + C320_status);
-+		if (tmp != STS_init) {
-+			printk(KERN_ERR "moxa: bios upload failed -- CPU/Basic "
-+					"module not found\n");
-+			return -EIO;
-+		}
-+		break;
-+	}
-+
-+	return 0;
-+err:
-+	printk(KERN_ERR "moxa: bios upload failed -- board not found\n");
-+	return -EIO;
-+}
-+
-+static int moxa_load_320b(struct moxa_board_conf *brd, const u8 *ptr,
-+		size_t len)
-+{
-+	void __iomem *baseAddr = brd->basemem;
-+
-+	writew(len - 7168 - 2, baseAddr + C320bapi_len);
-+	writeb(1, baseAddr + Control_reg);	/* Select Page 1 */
-+	memcpy_toio(baseAddr + DynPage_addr, ptr, 7168);
-+	writeb(2, baseAddr + Control_reg);	/* Select Page 2 */
-+	memcpy_toio(baseAddr + DynPage_addr, ptr + 7168, len - 7168);
-+
-+	return 0;
-+}
-+
-+static int moxa_load_c218(struct moxa_board_conf *brd, const void *ptr,
-+		size_t len)
-+{
-+	void __iomem *baseAddr = brd->basemem;
-+	const u16 *uptr = ptr;
-+	size_t len1, len2, j;
-+	unsigned int i;
-+	u16 usum, keycode;
-+	char retry;
-+
-+	if (brd->boardType == MOXA_BOARD_CP204J)
-+		keycode = CP204J_KeyCode;
-+	else
-+		keycode = C218_KeyCode;
-+	usum = 0;
-+	len1 = len >> 1;
-+	for (i = 0; i < len1; i++)
-+		usum += le16_to_cpu(*uptr++);
-+	retry = 0;
-+	do {
-+		len1 = len >> 1;
-+		j = 0;
-+		while (len1) {
-+			len2 = (len1 > 2048) ? 2048 : len1;
-+			len1 -= len2;
-+			memcpy_toio(baseAddr + C218_LoadBuf, ptr + j,
-+					len2 << 1);
-+			j += len2 << 1;
-+
-+			writew(len2, baseAddr + C218DLoad_len);
-+			writew(0, baseAddr + C218_key);
-+			for (i = 0; i < 100; i++) {
-+				if (readw(baseAddr + C218_key) == keycode)
-+					break;
-+				msleep(10);
-+			}
-+			if (readw(baseAddr + C218_key) != keycode)
-+				return -EIO;
-+		}
-+		writew(0, baseAddr + C218DLoad_len);
-+		writew(usum, baseAddr + C218check_sum);
-+		writew(0, baseAddr + C218_key);
-+		for (i = 0; i < 100; i++) {
-+			if (readw(baseAddr + C218_key) == keycode)
-+				break;
-+			msleep(10);
-+		}
-+		retry++;
-+	} while ((readb(baseAddr + C218chksum_ok) != 1) && (retry < 3));
-+	if (readb(baseAddr + C218chksum_ok) != 1) {
-+		return -EIO;
-+	}
-+	writew(0, baseAddr + C218_key);
-+	for (i = 0; i < 100; i++) {
-+		if (readw(baseAddr + Magic_no) == Magic_code)
-+			break;
-+		msleep(10);
-+	}
-+	if (readw(baseAddr + Magic_no) != Magic_code) {
-+		return -EIO;
-+	}
-+	writew(1, baseAddr + Disable_IRQ);
-+	writew(0, baseAddr + Magic_no);
-+	for (i = 0; i < 100; i++) {
-+		if (readw(baseAddr + Magic_no) == Magic_code)
-+			break;
-+		msleep(10);
-+	}
-+	if (readw(baseAddr + Magic_no) != Magic_code)
-+		return -EIO;
-+
-+	moxaCard = 1;
-+	brd->intNdx = baseAddr + IRQindex;
-+	brd->intPend = baseAddr + IRQpending;
-+	brd->intTable = baseAddr + IRQtable;
-+
-+	return 0;
-+}
-+
-+static int moxa_load_c320(struct moxa_board_conf *brd, const void *ptr,
-+		size_t len, int *numPorts)
-+{
-+	void __iomem *baseAddr = brd->basemem;
-+	const u16 *uptr = ptr;
-+	size_t wlen, len2, j;
-+	unsigned int i, retry;
-+	u16 usum;
-+
-+	usum = 0;
-+	wlen = len >> 1;
-+	for (i = 0; i < wlen; i++)
-+		usum += le16_to_cpu(uptr[i]);
-+	retry = 0;
-+	j = 0;
-+	do {
-+		while (wlen) {
-+			if (wlen > 2048)
-+				len2 = 2048;
-+			else
-+				len2 = wlen;
-+			wlen -= len2;
-+			len2 <<= 1;
-+			memcpy_toio(baseAddr + C320_LoadBuf, ptr + j, len2);
-+			len2 >>= 1;
-+			j += len2;
-+			writew(len2, baseAddr + C320DLoad_len);
-+			writew(0, baseAddr + C320_key);
-+			for (i = 0; i < 10; i++) {
-+				if (readw(baseAddr + C320_key) == C320_KeyCode)
-+					break;
-+				msleep(10);
-+			}
-+			if (readw(baseAddr + C320_key) != C320_KeyCode)
-+				return -EIO;
-+		}
-+		writew(0, baseAddr + C320DLoad_len);
-+		writew(usum, baseAddr + C320check_sum);
-+		writew(0, baseAddr + C320_key);
-+		for (i = 0; i < 10; i++) {
-+			if (readw(baseAddr + C320_key) == C320_KeyCode)
-+				break;
-+			msleep(10);
-+		}
-+		retry++;
-+	} while ((readb(baseAddr + C320chksum_ok) != 1) && (retry < 3));
-+	if (readb(baseAddr + C320chksum_ok) != 1)
-+		return -EIO;
-+	writew(0, baseAddr + C320_key);
-+	for (i = 0; i < 600; i++) {
-+		if (readw(baseAddr + Magic_no) == Magic_code)
-+			break;
-+		msleep(10);
-+	}
-+	if (readw(baseAddr + Magic_no) != Magic_code)
-+		return -EIO;
-+
-+	if (brd->busType == MOXA_BUS_TYPE_PCI) {	/* ASIC board */
-+		writew(0x3800, baseAddr + TMS320_PORT1);
-+		writew(0x3900, baseAddr + TMS320_PORT2);
-+		writew(28499, baseAddr + TMS320_CLOCK);
-+	} else {
-+		writew(0x3200, baseAddr + TMS320_PORT1);
-+		writew(0x3400, baseAddr + TMS320_PORT2);
-+		writew(19999, baseAddr + TMS320_CLOCK);
-+	}
-+	writew(1, baseAddr + Disable_IRQ);
-+	writew(0, baseAddr + Magic_no);
-+	for (i = 0; i < 500; i++) {
-+		if (readw(baseAddr + Magic_no) == Magic_code)
-+			break;
-+		msleep(10);
-+	}
-+	if (readw(baseAddr + Magic_no) != Magic_code)
-+		return -EIO;
-+
-+	j = readw(baseAddr + Module_cnt);
-+	if (j <= 0)
-+		return -EIO;
-+	*numPorts = j * 8;
-+	writew(j, baseAddr + Module_no);
-+	writew(0, baseAddr + Magic_no);
-+	for (i = 0; i < 600; i++) {
-+		if (readw(baseAddr + Magic_no) == Magic_code)
-+			break;
-+		msleep(10);
-+	}
-+	if (readw(baseAddr + Magic_no) != Magic_code)
-+		return -EIO;
-+	moxaCard = 1;
-+	brd->intNdx = baseAddr + IRQindex;
-+	brd->intPend = baseAddr + IRQpending;
-+	brd->intTable = baseAddr + IRQtable;
-+
-+	return 0;
-+}
-+
-+static int moxa_load_code(struct moxa_board_conf *brd, const void *ptr,
-+		size_t len)
-+{
-+	void __iomem *ofsAddr, *baseAddr = brd->basemem;
-+	struct moxa_port *port;
-+	int retval, i;
-+
-+	switch (brd->boardType) {
-+	case MOXA_BOARD_C218_ISA:
-+	case MOXA_BOARD_C218_PCI:
-+	case MOXA_BOARD_CP204J:
-+		retval = moxa_load_c218(brd, ptr, len);
-+		if (retval)
-+			return (retval);
-+		port = brd->ports;
-+		for (i = 0; i < brd->numPorts; i++, port++) {
-+			port->chkPort = 1;
-+			port->curBaud = 9600L;
-+			port->DCDState = 0;
-+			port->tableAddr = baseAddr + Extern_table +
-+					Extern_size * i;
-+			ofsAddr = port->tableAddr;
-+			writew(C218rx_mask, ofsAddr + RX_mask);
-+			writew(C218tx_mask, ofsAddr + TX_mask);
-+			writew(C218rx_spage + i * C218buf_pageno, ofsAddr + Page_rxb);
-+			writew(readw(ofsAddr + Page_rxb) + C218rx_pageno, ofsAddr + EndPage_rxb);
-+
-+			writew(C218tx_spage + i * C218buf_pageno, ofsAddr + Page_txb);
-+			writew(readw(ofsAddr + Page_txb) + C218tx_pageno, ofsAddr + EndPage_txb);
-+
-+		}
-+		break;
-+	default:
-+		retval = moxa_load_c320(brd, ptr, len, &brd->numPorts);
-+		if (retval)
-+			return (retval);
-+		port = brd->ports;
-+		for (i = 0; i < brd->numPorts; i++, port++) {
-+			port->chkPort = 1;
-+			port->curBaud = 9600L;
-+			port->DCDState = 0;
-+			port->tableAddr = baseAddr + Extern_table +
-+					Extern_size * i;
-+			ofsAddr = port->tableAddr;
-+			switch (brd->numPorts) {
-+			case 8:
-+				writew(C320p8rx_mask, ofsAddr + RX_mask);
-+				writew(C320p8tx_mask, ofsAddr + TX_mask);
-+				writew(C320p8rx_spage + i * C320p8buf_pgno, ofsAddr + Page_rxb);
-+				writew(readw(ofsAddr + Page_rxb) + C320p8rx_pgno, ofsAddr + EndPage_rxb);
-+				writew(C320p8tx_spage + i * C320p8buf_pgno, ofsAddr + Page_txb);
-+				writew(readw(ofsAddr + Page_txb) + C320p8tx_pgno, ofsAddr + EndPage_txb);
-+
-+				break;
-+			case 16:
-+				writew(C320p16rx_mask, ofsAddr + RX_mask);
-+				writew(C320p16tx_mask, ofsAddr + TX_mask);
-+				writew(C320p16rx_spage + i * C320p16buf_pgno, ofsAddr + Page_rxb);
-+				writew(readw(ofsAddr + Page_rxb) + C320p16rx_pgno, ofsAddr + EndPage_rxb);
-+				writew(C320p16tx_spage + i * C320p16buf_pgno, ofsAddr + Page_txb);
-+				writew(readw(ofsAddr + Page_txb) + C320p16tx_pgno, ofsAddr + EndPage_txb);
-+				break;
-+
-+			case 24:
-+				writew(C320p24rx_mask, ofsAddr + RX_mask);
-+				writew(C320p24tx_mask, ofsAddr + TX_mask);
-+				writew(C320p24rx_spage + i * C320p24buf_pgno, ofsAddr + Page_rxb);
-+				writew(readw(ofsAddr + Page_rxb) + C320p24rx_pgno, ofsAddr + EndPage_rxb);
-+				writew(C320p24tx_spage + i * C320p24buf_pgno, ofsAddr + Page_txb);
-+				writew(readw(ofsAddr + Page_txb), ofsAddr + EndPage_txb);
-+				break;
-+			case 32:
-+				writew(C320p32rx_mask, ofsAddr + RX_mask);
-+				writew(C320p32tx_mask, ofsAddr + TX_mask);
-+				writew(C320p32tx_ofs, ofsAddr + Ofs_txb);
-+				writew(C320p32rx_spage + i * C320p32buf_pgno, ofsAddr + Page_rxb);
-+				writew(readb(ofsAddr + Page_rxb), ofsAddr + EndPage_rxb);
-+				writew(C320p32tx_spage + i * C320p32buf_pgno, ofsAddr + Page_txb);
-+				writew(readw(ofsAddr + Page_txb), ofsAddr + EndPage_txb);
-+				break;
-+			}
-+		}
-+		break;
-+	}
-+	brd->loadstat = 1;
-+	return 0;
-+}
-+
-+static int moxa_load_fw(struct moxa_board_conf *brd, const struct firmware *fw)
-+{
-+	void *ptr = fw->data;
-+	char rsn[64];
-+	u16 lens[5];
-+	size_t len;
-+	unsigned int a, lenp, lencnt;
-+	int ret = -EINVAL;
-+	struct {
-+		__le32 magic;	/* 0x34303430 */
-+		u8 reserved1[2];
-+		u8 type;	/* UNIX = 3 */
-+		u8 model;	/* C218T=1, C320T=2, CP204=3 */
-+		u8 reserved2[8];
-+		__le16 len[5];
-+	} *hdr = ptr;
-+
-+	BUILD_BUG_ON(ARRAY_SIZE(hdr->len) != ARRAY_SIZE(lens));
-+
-+	if (fw->size < MOXA_FW_HDRLEN) {
-+		strcpy(rsn, "too short (even header won't fit)");
-+		goto err;
-+	}
-+	if (hdr->magic != cpu_to_le32(0x30343034)) {
-+		sprintf(rsn, "bad magic: %.8x", le32_to_cpu(hdr->magic));
-+		goto err;
-+	}
-+	if (hdr->type != 3) {
-+		sprintf(rsn, "not for linux, type is %u", hdr->type);
-+		goto err;
-+	}
-+	if (moxa_check_fw_model(brd, hdr->model)) {
-+		sprintf(rsn, "not for this card, model is %u", hdr->model);
-+		goto err;
-+	}
-+
-+	len = MOXA_FW_HDRLEN;
-+	lencnt = hdr->model == 2 ? 5 : 3;
-+	for (a = 0; a < ARRAY_SIZE(lens); a++) {
-+		lens[a] = le16_to_cpu(hdr->len[a]);
-+		if (lens[a] && len + lens[a] <= fw->size &&
-+				moxa_check_fw(&fw->data[len]))
-+			printk(KERN_WARNING "moxa firmware: unexpected input "
-+				"at offset %u, but going on\n", (u32)len);
-+		if (!lens[a] && a < lencnt) {
-+			sprintf(rsn, "too few entries in fw file");
-+			goto err;
-+		}
-+		len += lens[a];
-+	}
-+
-+	if (len != fw->size) {
-+		sprintf(rsn, "bad length: %u (should be %u)", (u32)fw->size,
-+				(u32)len);
-+		goto err;
-+	}
-+
-+	ptr += MOXA_FW_HDRLEN;
-+	lenp = 0; /* bios */
-+
-+	strcpy(rsn, "read above");
-+
-+	ret = moxa_load_bios(brd, ptr, lens[lenp]);
-+	if (ret)
-+		goto err;
-+
-+	/* we skip the tty section (lens[1]), since we don't need it */
-+	ptr += lens[lenp] + lens[lenp + 1];
-+	lenp += 2; /* comm */
-+
-+	if (hdr->model == 2) {
-+		moxa_load_320b(brd, ptr, lens[lenp]);
-+		/* skip another tty */
-+		ptr += lens[lenp] + lens[lenp + 1];
-+		lenp += 2;
-+	}
-+//	else
-+//		roundup(len, 2);
-+
-+	ret = moxa_load_code(brd, ptr, lens[lenp]);
-+	if (ret)
-+		goto err;
-+
-+	return 0;
-+err:
-+	printk(KERN_ERR "firmware failed to load, reason: %s\n", rsn);
-+	return ret;
-+}
-+
-+static int moxa_init_board(struct moxa_board_conf *brd, struct device *dev)
-+{
-+	const struct firmware *fw;
-+	const char *file;
-+	int ret;
-+
-+	switch (brd->boardType) {
-+	case MOXA_BOARD_C218_ISA:
-+	case MOXA_BOARD_C218_PCI:
-+		file = "c218tunx.cod";
-+		break;
-+	case MOXA_BOARD_CP204J:
-+		file = "cp204unx.cod";
-+		break;
-+	default:
-+		file = "c320tunx.cod";
-+		break;
-+	}
-+
-+	ret = request_firmware(&fw, file, dev);
-+	if (ret) {
-+		printk(KERN_ERR "request_firmware failed\n");
-+		goto end;
-+	}
-+
-+	ret = moxa_load_fw(brd, fw);
-+
-+	release_firmware(fw);
-+end:
-+	return ret;
-+}
-+
- #ifdef CONFIG_PCI
- static int __devinit moxa_pci_probe(struct pci_dev *pdev,
- 		const struct pci_device_id *ent)
-@@ -290,6 +775,7 @@ static int __devinit moxa_pci_probe(struct pci_dev *pdev,
- 	}
- 
- 	board = &moxa_boards[i];
-+	board->ports = &moxa_ports[i * MAX_PORTS_PER_BOARD];
- 
- 	retval = pci_request_region(pdev, 2, "moxa-base");
- 	if (retval) {
-@@ -319,9 +805,16 @@ static int __devinit moxa_pci_probe(struct pci_dev *pdev,
- 	}
- 	board->busType = MOXA_BUS_TYPE_PCI;
- 
-+	retval = moxa_init_board(board, &pdev->dev);
-+	if (retval)
-+		goto err_base;
-+
- 	pci_set_drvdata(pdev, board);
- 
- 	return (0);
-+err_base:
-+	iounmap(board->basemem);
-+	board->basemem = NULL;
- err_reg:
- 	pci_release_region(pdev, 2);
- err:
-@@ -406,6 +899,7 @@ static int __init moxa_init(void)
- 					isabrds + 1, moxa_brdname[type[i] - 1],
- 					baseaddr[i]);
- 			brd->boardType = type[i];
-+			brd->ports = &moxa_ports[isabrds * MAX_PORTS_PER_BOARD];
- 			brd->numPorts = type[i] == MOXA_BOARD_C218_ISA ? 8 :
- 					numports[i];
- 			brd->busType = MOXA_BUS_TYPE_ISA;
-@@ -415,6 +909,11 @@ static int __init moxa_init(void)
- 						baseaddr[i]);
- 				continue;
- 			}
-+			if (moxa_init_board(brd, NULL)) {
-+				iounmap(brd->basemem);
-+				brd->basemem = NULL;
-+				continue;
-+			}
- 				
- 			brd++;
- 			isabrds++;
-@@ -1074,297 +1573,6 @@ static void moxa_receive_data(struct moxa_port *ch)
- 	tty_schedule_flip(tp);
- }
- 
--#define Magic_code	0x404
+ .section .text.head,"ax",@progbits
+ ENTRY(startup_32)
+-	/* check to see if KEEP_SEGMENTS flag is meaningful */
+-	cmpw $0x207, BP_version(%esi)
+-	jb 1f
 -
--/*
-- *    System Configuration
-- */
--/*
-- *    for C218 BIOS initialization
-- */
--#define C218_ConfBase	0x800
--#define C218_status	(C218_ConfBase + 0)	/* BIOS running status    */
--#define C218_diag	(C218_ConfBase + 2)	/* diagnostic status      */
--#define C218_key	(C218_ConfBase + 4)	/* WORD (0x218 for C218) */
--#define C218DLoad_len	(C218_ConfBase + 6)	/* WORD           */
--#define C218check_sum	(C218_ConfBase + 8)	/* BYTE           */
--#define C218chksum_ok	(C218_ConfBase + 0x0a)	/* BYTE (1:ok)            */
--#define C218_TestRx	(C218_ConfBase + 0x10)	/* 8 bytes for 8 ports    */
--#define C218_TestTx	(C218_ConfBase + 0x18)	/* 8 bytes for 8 ports    */
--#define C218_RXerr	(C218_ConfBase + 0x20)	/* 8 bytes for 8 ports    */
--#define C218_ErrFlag	(C218_ConfBase + 0x28)	/* 8 bytes for 8 ports    */
--
--#define C218_LoadBuf	0x0F00
--#define C218_KeyCode	0x218
--#define CP204J_KeyCode	0x204
--
--/*
-- *    for C320 BIOS initialization
-- */
--#define C320_ConfBase	0x800
--#define C320_LoadBuf	0x0f00
--#define STS_init	0x05	/* for C320_status        */
--
--#define C320_status	C320_ConfBase + 0	/* BIOS running status    */
--#define C320_diag	C320_ConfBase + 2	/* diagnostic status      */
--#define C320_key	C320_ConfBase + 4	/* WORD (0320H for C320) */
--#define C320DLoad_len	C320_ConfBase + 6	/* WORD           */
--#define C320check_sum	C320_ConfBase + 8	/* WORD           */
--#define C320chksum_ok	C320_ConfBase + 0x0a	/* WORD (1:ok)            */
--#define C320bapi_len	C320_ConfBase + 0x0c	/* WORD           */
--#define C320UART_no	C320_ConfBase + 0x0e	/* WORD           */
--
--#define C320_KeyCode	0x320
--
--#define FixPage_addr	0x0000	/* starting addr of static page  */
--#define DynPage_addr	0x2000	/* starting addr of dynamic page */
--#define C218_start	0x3000	/* starting addr of C218 BIOS prg */
--#define Control_reg	0x1ff0	/* select page and reset control */
--#define HW_reset	0x80
--
--/*
-- *    Function Codes
-- */
--#define FC_CardReset	0x80
--#define FC_ChannelReset 1	/* C320 firmware not supported */
--#define FC_EnableCH	2
--#define FC_DisableCH	3
--#define FC_SetParam	4
--#define FC_SetMode	5
--#define FC_SetRate	6
--#define FC_LineControl	7
--#define FC_LineStatus	8
--#define FC_XmitControl	9
--#define FC_FlushQueue	10
--#define FC_SendBreak	11
--#define FC_StopBreak	12
--#define FC_LoopbackON	13
--#define FC_LoopbackOFF	14
--#define FC_ClrIrqTable	15
--#define FC_SendXon	16
--#define FC_SetTermIrq	17	/* C320 firmware not supported */
--#define FC_SetCntIrq	18	/* C320 firmware not supported */
--#define FC_SetBreakIrq	19
--#define FC_SetLineIrq	20
--#define FC_SetFlowCtl	21
--#define FC_GenIrq	22
--#define FC_InCD180	23
--#define FC_OutCD180	24
--#define FC_InUARTreg	23
--#define FC_OutUARTreg	24
--#define FC_SetXonXoff	25
--#define FC_OutCD180CCR	26
--#define FC_ExtIQueue	27
--#define FC_ExtOQueue	28
--#define FC_ClrLineIrq	29
--#define FC_HWFlowCtl	30
--#define FC_GetClockRate 35
--#define FC_SetBaud	36
--#define FC_SetDataMode  41
--#define FC_GetCCSR      43
--#define FC_GetDataError 45
--#define FC_RxControl	50
--#define FC_ImmSend	51
--#define FC_SetXonState	52
--#define FC_SetXoffState	53
--#define FC_SetRxFIFOTrig 54
--#define FC_SetTxFIFOCnt 55
--#define FC_UnixRate	56
--#define FC_UnixResetTimer 57
--
--#define	RxFIFOTrig1	0
--#define	RxFIFOTrig4	1
--#define	RxFIFOTrig8	2
--#define	RxFIFOTrig14	3
--
--/*
-- *    Dual-Ported RAM
-- */
--#define DRAM_global	0
--#define INT_data	(DRAM_global + 0)
--#define Config_base	(DRAM_global + 0x108)
--
--#define IRQindex	(INT_data + 0)
--#define IRQpending	(INT_data + 4)
--#define IRQtable	(INT_data + 8)
--
--/*
-- *    Interrupt Status
-- */
--#define IntrRx		0x01	/* receiver data O.K.             */
--#define IntrTx		0x02	/* transmit buffer empty  */
--#define IntrFunc	0x04	/* function complete              */
--#define IntrBreak	0x08	/* received break         */
--#define IntrLine	0x10	/* line status change
--				   for transmitter                */
--#define IntrIntr	0x20	/* received INTR code             */
--#define IntrQuit	0x40	/* received QUIT code             */
--#define IntrEOF 	0x80	/* received EOF code              */
--
--#define IntrRxTrigger 	0x100	/* rx data count reach tigger value */
--#define IntrTxTrigger 	0x200	/* tx data count below trigger value */
--
--#define Magic_no	(Config_base + 0)
--#define Card_model_no	(Config_base + 2)
--#define Total_ports	(Config_base + 4)
--#define Module_cnt	(Config_base + 8)
--#define Module_no	(Config_base + 10)
--#define Timer_10ms	(Config_base + 14)
--#define Disable_IRQ	(Config_base + 20)
--#define TMS320_PORT1	(Config_base + 22)
--#define TMS320_PORT2	(Config_base + 24)
--#define TMS320_CLOCK	(Config_base + 26)
--
--/*
-- *    DATA BUFFER in DRAM
-- */
--#define Extern_table	0x400	/* Base address of the external table
--				   (24 words *    64) total 3K bytes
--				   (24 words * 128) total 6K bytes */
--#define Extern_size	0x60	/* 96 bytes                       */
--#define RXrptr		0x00	/* read pointer for RX buffer     */
--#define RXwptr		0x02	/* write pointer for RX buffer    */
--#define TXrptr		0x04	/* read pointer for TX buffer     */
--#define TXwptr		0x06	/* write pointer for TX buffer    */
--#define HostStat	0x08	/* IRQ flag and general flag      */
--#define FlagStat	0x0A
--#define FlowControl	0x0C	/* B7 B6 B5 B4 B3 B2 B1 B0              */
--					/*  x  x  x  x  |  |  |  |            */
--					/*              |  |  |  + CTS flow   */
--					/*              |  |  +--- RTS flow   */
--					/*              |  +------ TX Xon/Xoff */
--					/*              +--------- RX Xon/Xoff */
--#define Break_cnt	0x0E	/* received break count   */
--#define CD180TXirq	0x10	/* if non-0: enable TX irq        */
--#define RX_mask 	0x12
--#define TX_mask 	0x14
--#define Ofs_rxb 	0x16
--#define Ofs_txb 	0x18
--#define Page_rxb	0x1A
--#define Page_txb	0x1C
--#define EndPage_rxb	0x1E
--#define EndPage_txb	0x20
--#define Data_error	0x22
--#define RxTrigger	0x28
--#define TxTrigger	0x2a
--
--#define rRXwptr 	0x34
--#define Low_water	0x36
--
--#define FuncCode	0x40
--#define FuncArg 	0x42
--#define FuncArg1	0x44
--
--#define C218rx_size	0x2000	/* 8K bytes */
--#define C218tx_size	0x8000	/* 32K bytes */
--
--#define C218rx_mask	(C218rx_size - 1)
--#define C218tx_mask	(C218tx_size - 1)
--
--#define C320p8rx_size	0x2000
--#define C320p8tx_size	0x8000
--#define C320p8rx_mask	(C320p8rx_size - 1)
--#define C320p8tx_mask	(C320p8tx_size - 1)
--
--#define C320p16rx_size	0x2000
--#define C320p16tx_size	0x4000
--#define C320p16rx_mask	(C320p16rx_size - 1)
--#define C320p16tx_mask	(C320p16tx_size - 1)
--
--#define C320p24rx_size	0x2000
--#define C320p24tx_size	0x2000
--#define C320p24rx_mask	(C320p24rx_size - 1)
--#define C320p24tx_mask	(C320p24tx_size - 1)
--
--#define C320p32rx_size	0x1000
--#define C320p32tx_size	0x1000
--#define C320p32rx_mask	(C320p32rx_size - 1)
--#define C320p32tx_mask	(C320p32tx_size - 1)
--
--#define Page_size	0x2000
--#define Page_mask	(Page_size - 1)
--#define C218rx_spage	3
--#define C218tx_spage	4
--#define C218rx_pageno	1
--#define C218tx_pageno	4
--#define C218buf_pageno	5
--
--#define C320p8rx_spage	3
--#define C320p8tx_spage	4
--#define C320p8rx_pgno	1
--#define C320p8tx_pgno	4
--#define C320p8buf_pgno	5
--
--#define C320p16rx_spage 3
--#define C320p16tx_spage 4
--#define C320p16rx_pgno	1
--#define C320p16tx_pgno	2
--#define C320p16buf_pgno 3
--
--#define C320p24rx_spage 3
--#define C320p24tx_spage 4
--#define C320p24rx_pgno	1
--#define C320p24tx_pgno	1
--#define C320p24buf_pgno 2
--
--#define C320p32rx_spage 3
--#define C320p32tx_ofs	C320p32rx_size
--#define C320p32tx_spage 3
--#define C320p32buf_pgno 1
--
--/*
-- *    Host Status
-- */
--#define WakeupRx	0x01
--#define WakeupTx	0x02
--#define WakeupBreak	0x08
--#define WakeupLine	0x10
--#define WakeupIntr	0x20
--#define WakeupQuit	0x40
--#define WakeupEOF	0x80	/* used in VTIME control */
--#define WakeupRxTrigger	0x100
--#define WakeupTxTrigger	0x200
--/*
-- *    Flag status
-- */
--#define Rx_over		0x01
--#define Xoff_state	0x02
--#define Tx_flowOff	0x04
--#define Tx_enable	0x08
--#define CTS_state	0x10
--#define DSR_state	0x20
--#define DCD_state	0x80
--/*
-- *    FlowControl
-- */
--#define CTS_FlowCtl	1
--#define RTS_FlowCtl	2
--#define Tx_FlowCtl	4
--#define Rx_FlowCtl	8
--#define IXM_IXANY	0x10
--
--#define LowWater	128
--
--#define DTR_ON		1
--#define RTS_ON		2
--#define CTS_ON		1
--#define DSR_ON		2
--#define DCD_ON		8
--
--/* mode definition */
--#define	MX_CS8		0x03
--#define	MX_CS7		0x02
--#define	MX_CS6		0x01
--#define	MX_CS5		0x00
--
--#define	MX_STOP1	0x00
--#define	MX_STOP15	0x04
--#define	MX_STOP2	0x08
--
--#define	MX_PARNONE	0x00
--#define	MX_PAREVEN	0x40
--#define	MX_PARODD	0xC0
--
+ 	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
+ 		us to not reload segments */
+ 	testb $(1<<6), BP_loadflags(%esi)
+@@ -92,7 +92,7 @@ ENTRY(startup_32)
  /*
-  *    Query
+  * Set segments to known values.
   */
-@@ -1378,55 +1586,22 @@ struct mon_str {
- #define 	DCD_changed	0x01
- #define 	DCD_oldstate	0x80
- 
--static unsigned char moxaBuff[10240];
- static int moxaLowWaterChk;
--static int moxaCard;
- static struct mon_str moxaLog;
- static int moxaFuncTout = HZ / 2;
- 
- static void moxafunc(void __iomem *, int, ushort);
- static void moxa_wait_finish(void __iomem *);
- static void moxa_low_water_check(void __iomem *);
--static int moxaloadbios(int, unsigned char __user *, int);
--static int moxafindcard(int);
--static int moxaload320b(int, unsigned char __user *, int);
--static int moxaloadcode(int, unsigned char __user *, int);
--static int moxaloadc218(int, void __iomem *, int);
--static int moxaloadc320(int, void __iomem *, int, int *);
- 
- /*****************************************************************************
-  *	Driver level functions: 					     *
-- *	1. MoxaDriverInit(void);					     *
-  *	2. MoxaDriverIoctl(unsigned int cmd, unsigned long arg, int port);   *
-  *	3. MoxaDriverPoll(void);					     *
-  *****************************************************************************/
--void MoxaDriverInit(void)
--{
--	struct moxa_port *p;
--	unsigned int i;
--
--	moxaFuncTout = HZ / 2;	/* 500 mini-seconds */
--	moxaCard = 0;
--	moxaLog.tick = 0;
--	moxaLowWaterChk = 0;
--	for (i = 0; i < MAX_PORTS; i++) {
--		p = &moxa_ports[i];
--		p->chkPort = 0;
--		p->lowChkFlag = 0;
--		p->lineCtrl = 0;
--		moxaLog.rxcnt[i] = 0;
--		moxaLog.txcnt[i] = 0;
--	}
--}
--
- #define	MOXA		0x400
- #define MOXA_GET_IQUEUE 	(MOXA + 1)	/* get input buffered count */
- #define MOXA_GET_OQUEUE 	(MOXA + 2)	/* get output buffered count */
--#define MOXA_INIT_DRIVER	(MOXA + 6)	/* moxaCard=0 */
--#define MOXA_LOAD_BIOS		(MOXA + 9)	/* download BIOS */
--#define MOXA_FIND_BOARD		(MOXA + 10)	/* Check if MOXA card exist? */
--#define MOXA_LOAD_C320B		(MOXA + 11)	/* download 320B firmware */
--#define MOXA_LOAD_CODE		(MOXA + 12)	/* download firmware */
- #define MOXA_GETDATACOUNT       (MOXA + 23)
- #define MOXA_GET_IOQUEUE	(MOXA + 27)
- #define MOXA_FLUSH_QUEUE	(MOXA + 28)
-@@ -1435,14 +1610,6 @@ void MoxaDriverInit(void)
- #define MOXA_GET_CUMAJOR        (MOXA + 64)
- #define MOXA_GETMSTATUS         (MOXA + 65)
- 
--struct dl_str {
--	char __user *buf;
--	int len;
--	int cardno;
--};
--
--static struct dl_str dltmp;
--
- void MoxaPortFlushData(int port, int mode)
- {
- 	void __iomem *ofsAddr;
-@@ -1464,23 +1631,12 @@ int MoxaDriverIoctl(unsigned int cmd, unsigned long arg, int port)
- 	void __user *argp = (void __user *)arg;
- 
- 	if (port == MAX_PORTS) {
--		if ((cmd != MOXA_GET_CONF) && (cmd != MOXA_INIT_DRIVER) &&
--		    (cmd != MOXA_LOAD_BIOS) && (cmd != MOXA_FIND_BOARD) && (cmd != MOXA_LOAD_C320B) &&
--		 (cmd != MOXA_LOAD_CODE) && (cmd != MOXA_GETDATACOUNT) &&
--		  (cmd != MOXA_GET_IOQUEUE) && (cmd != MOXA_GET_MAJOR) &&
-+		if ((cmd != MOXA_GET_CONF) && (cmd != MOXA_GETDATACOUNT) &&
-+		    (cmd != MOXA_GET_IOQUEUE) && (cmd != MOXA_GET_MAJOR) &&
- 		    (cmd != MOXA_GET_CUMAJOR) && (cmd != MOXA_GETMSTATUS))
- 			return (-EINVAL);
- 	}
- 	switch (cmd) {
--	case MOXA_GET_CONF:
--		if(copy_to_user(argp, &moxa_boards, MAX_BOARDS *
--				sizeof(struct moxa_board_conf)))
--			return -EFAULT;
--		return (0);
--	case MOXA_INIT_DRIVER:
--		if ((int) arg == 0x404)
--			MoxaDriverInit();
--		return (0);
- 	case MOXA_GETDATACOUNT:
- 		moxaLog.tick = jiffies;
- 		if(copy_to_user(argp, &moxaLog, sizeof(struct mon_str)))
-@@ -1547,40 +1703,10 @@ copy:
- 				return -EFAULT;
- 		}
- 		return 0;
--	} default:
--		return (-ENOIOCTLCMD);
--	case MOXA_LOAD_BIOS:
--	case MOXA_FIND_BOARD:
--	case MOXA_LOAD_C320B:
--	case MOXA_LOAD_CODE:
--		if (!capable(CAP_SYS_RAWIO))
--			return -EPERM;
--		break;
- 	}
--
--	if(copy_from_user(&dltmp, argp, sizeof(struct dl_str)))
--		return -EFAULT;
--	if(dltmp.cardno < 0 || dltmp.cardno >= MAX_BOARDS || dltmp.len < 0)
--		return -EINVAL;
--
--	switch(cmd)
--	{
--	case MOXA_LOAD_BIOS:
--		i = moxaloadbios(dltmp.cardno, dltmp.buf, dltmp.len);
--		return (i);
--	case MOXA_FIND_BOARD:
--		return moxafindcard(dltmp.cardno);
--	case MOXA_LOAD_C320B:
--		moxaload320b(dltmp.cardno, dltmp.buf, dltmp.len);
--	default: /* to keep gcc happy */
--		return (0);
--	case MOXA_LOAD_CODE:
--		i = moxaloadcode(dltmp.cardno, dltmp.buf, dltmp.len);
--		if (i == -1)
--			return (-EFAULT);
--		return (i);
--
- 	}
-+
-+	return -ENOIOCTLCMD;
- }
- 
- int MoxaDriverPoll(void)
-@@ -1935,7 +2061,6 @@ int MoxaPortsOfCard(int cardno)
+-1:	lgdt boot_gdt_descr - __PAGE_OFFSET
++	lgdt pa(boot_gdt_descr)
+ 	movl $(__BOOT_DS),%eax
+ 	movl %eax,%ds
+ 	movl %eax,%es
+@@ -105,8 +105,8 @@ ENTRY(startup_32)
   */
- int MoxaPortIsValid(int port)
- {
--
- 	if (moxaCard == 0)
- 		return (0);
- 	if (moxa_ports[port].chkPort == 0)
-@@ -2490,335 +2615,6 @@ static void moxa_low_water_check(void __iomem *ofsAddr)
- 	}
- }
+ 	cld
+ 	xorl %eax,%eax
+-	movl $__bss_start - __PAGE_OFFSET,%edi
+-	movl $__bss_stop - __PAGE_OFFSET,%ecx
++	movl $pa(__bss_start),%edi
++	movl $pa(__bss_stop),%ecx
+ 	subl %edi,%ecx
+ 	shrl $2,%ecx
+ 	rep ; stosl
+@@ -118,31 +118,32 @@ ENTRY(startup_32)
+  * (kexec on panic case). Hence copy out the parameters before initializing
+  * page tables.
+  */
+-	movl $(boot_params - __PAGE_OFFSET),%edi
++	movl $pa(boot_params),%edi
+ 	movl $(PARAM_SIZE/4),%ecx
+ 	cld
+ 	rep
+ 	movsl
+-	movl boot_params - __PAGE_OFFSET + NEW_CL_POINTER,%esi
++	movl pa(boot_params) + NEW_CL_POINTER,%esi
+ 	andl %esi,%esi
+ 	jz 1f			# No comand line
+-	movl $(boot_command_line - __PAGE_OFFSET),%edi
++	movl $pa(boot_command_line),%edi
+ 	movl $(COMMAND_LINE_SIZE/4),%ecx
+ 	rep
+ 	movsl
+ 1:
  
--static int moxaloadbios(int cardno, unsigned char __user *tmp, int len)
--{
--	void __iomem *baseAddr;
--	int i;
+ #ifdef CONFIG_PARAVIRT
+-	cmpw $0x207, (boot_params + BP_version - __PAGE_OFFSET)
++	/* This is can only trip for a broken bootloader... */
++	cmpw $0x207, pa(boot_params + BP_version)
+ 	jb default_entry
+ 
+ 	/* Paravirt-compatible boot parameters.  Look to see what architecture
+ 		we're booting under. */
+-	movl (boot_params + BP_hardware_subarch - __PAGE_OFFSET), %eax
++	movl pa(boot_params + BP_hardware_subarch), %eax
+ 	cmpl $num_subarch_entries, %eax
+ 	jae bad_subarch
+ 
+-	movl subarch_entries - __PAGE_OFFSET(,%eax,4), %eax
++	movl pa(subarch_entries)(,%eax,4), %eax
+ 	subl $__PAGE_OFFSET, %eax
+ 	jmp *%eax
+ 
+@@ -170,17 +171,77 @@ num_subarch_entries = (. - subarch_entries) / 4
+  * Mappings are created both at virtual address 0 (identity mapping)
+  * and PAGE_OFFSET for up to _end+sizeof(page tables)+INIT_MAP_BEYOND_END.
+  *
+- * Warning: don't use %esi or the stack in this code.  However, %esp
+- * can be used as a GPR if you really need it...
++ * Note that the stack is not yet set up!
+  */
+-page_pde_offset = (__PAGE_OFFSET >> 20);
++#define PTE_ATTR	0x007		/* PRESENT+RW+USER */
++#define PDE_ATTR	0x067		/* PRESENT+RW+USER+DIRTY+ACCESSED */
++#define PGD_ATTR	0x001		/* PRESENT (no other attributes) */
+ 
+ default_entry:
+-	movl $(pg0 - __PAGE_OFFSET), %edi
+-	movl $(swapper_pg_dir - __PAGE_OFFSET), %edx
+-	movl $0x007, %eax			/* 0x007 = PRESENT+RW+USER */
++#ifdef CONFIG_X86_PAE
++	/*
++	 * In PAE mode, the kernel PMD is shared, and __PAGE_OFFSET
++	 * is guaranteed to be a multiple of 1 GB (the PGD granulatity.)
++	 * Thus, we only need to set up a single PMD here; the identity
++	 * mapping is handled by pointing two PGD entries to the PMD.
++	 *
++	 * Note the upper half of each PMD or PTE are always zero at
++	 * this stage.
++	 */
++page_pde_offset = (__PAGE_OFFSET >> 27);
++	xorl %ebx,%ebx				/* %ebx is kept at zero */
++
++	movl $pa(pg0), %edi
++	movl $pa(swapper_pg_pmd), %edx
++	movl $PTE_ATTR, %eax
+ 10:
+-	leal 0x007(%edi),%ecx			/* Create PDE entry */
++	leal PDE_ATTR(%edi),%ecx		/* Create PMD entry */
++	movl %ecx,(%edx)			/* Store PMD entry */
++						/* Upper half already zero */
++	addl $8,%edx
++	movl $512,%ecx
++11:
++	stosl
++	xchgl %eax,%ebx
++	stosl
++	xchgl %eax,%ebx
++	addl $0x1000,%eax
++	/*
++	 * End condition: we must map up to and including INIT_MAP_BEYOND_END
++	 * bytes beyond the end of our own page tables.
++	 */
++	leal (INIT_MAP_BEYOND_END+PTE_ATTR)(%edi),%ebp
++	cmpl %ebp,%eax
++	ja 1f
++	loop 11b
++
++	/*
++	 * End condition: we must map up to and including INIT_MAP_BEYOND_END
++	 * bytes beyond the end of our own page tables.
++	 */
++	leal (INIT_MAP_BEYOND_END+PTE_ATTR)(%edi),%ebp
++	cmpl %ebp,%eax
++	jb 10b
++1:
++	movl %edi,pa(init_pg_tables_end)
++
++	/* Set up the PGD */
++	movl $pa(swapper_pg_pmd)+PGD_ATTR, %eax
++	movl %eax, pa(swapper_pg_dir)			/* Identity map */
++	movl %eax, pa(swapper_pg_dir+page_pde_offset)	/* Kernel map */
++
++	/* Do early initialization of the fixmap area */
++	movl $pa(swapper_pg_fixmap)+PDE_ATTR,%eax
++	movl %eax,pa(swapper_pg_pmd+0xff8)
++#else	/* Not PAE */
++
++page_pde_offset = (__PAGE_OFFSET >> 20);
++
++	movl $pa(pg0), %edi
++	movl $pa(swapper_pg_dir), %edx
++	movl $PTE_ATTR, %eax
++10:
++	leal PDE_ATTR(%edi),%ecx		/* Create PDE entry */
+ 	movl %ecx,(%edx)			/* Store identity PDE entry */
+ 	movl %ecx,page_pde_offset(%edx)		/* Store kernel PDE entry */
+ 	addl $4,%edx
+@@ -189,19 +250,20 @@ default_entry:
+ 	stosl
+ 	addl $0x1000,%eax
+ 	loop 11b
+-	/* End condition: we must map up to and including INIT_MAP_BEYOND_END */
+-	/* bytes beyond the end of our own page tables; the +0x007 is the attribute bits */
+-	leal (INIT_MAP_BEYOND_END+0x007)(%edi),%ebp
++	/*
++	 * End condition: we must map up to and including INIT_MAP_BEYOND_END
++	 * bytes beyond the end of our own page tables; the +0x007 is
++	 * the attribute bits
++	 */
++	leal (INIT_MAP_BEYOND_END+PTE_ATTR)(%edi),%ebp
+ 	cmpl %ebp,%eax
+ 	jb 10b
+-	movl %edi,(init_pg_tables_end - __PAGE_OFFSET)
 -
--	if(len < 0 || len > sizeof(moxaBuff))
--		return -EINVAL;
--	if(copy_from_user(moxaBuff, tmp, len))
--		return -EFAULT;
--	baseAddr = moxa_boards[cardno].basemem;
--	writeb(HW_reset, baseAddr + Control_reg);	/* reset */
--	msleep(10);
--	for (i = 0; i < 4096; i++)
--		writeb(0, baseAddr + i);	/* clear fix page */
--	for (i = 0; i < len; i++)
--		writeb(moxaBuff[i], baseAddr + i);	/* download BIOS */
--	writeb(0, baseAddr + Control_reg);	/* restart */
--	return (0);
--}
--
--static int moxafindcard(int cardno)
--{
--	void __iomem *baseAddr;
--	ushort tmp;
--
--	baseAddr = moxa_boards[cardno].basemem;
--	switch (moxa_boards[cardno].boardType) {
--	case MOXA_BOARD_C218_ISA:
--	case MOXA_BOARD_C218_PCI:
--		if ((tmp = readw(baseAddr + C218_key)) != C218_KeyCode) {
--			return (-1);
--		}
--		break;
--	case MOXA_BOARD_CP204J:
--		if ((tmp = readw(baseAddr + C218_key)) != CP204J_KeyCode) {
--			return (-1);
--		}
--		break;
--	default:
--		if ((tmp = readw(baseAddr + C320_key)) != C320_KeyCode) {
--			return (-1);
--		}
--		if ((tmp = readw(baseAddr + C320_status)) != STS_init) {
--			return (-2);
--		}
--	}
--	return (0);
--}
--
--static int moxaload320b(int cardno, unsigned char __user *tmp, int len)
--{
--	void __iomem *baseAddr;
--	int i;
--
--	if(len < 0 || len > sizeof(moxaBuff))
--		return -EINVAL;
--	if(copy_from_user(moxaBuff, tmp, len))
--		return -EFAULT;
--	baseAddr = moxa_boards[cardno].basemem;
--	writew(len - 7168 - 2, baseAddr + C320bapi_len);
--	writeb(1, baseAddr + Control_reg);	/* Select Page 1 */
--	for (i = 0; i < 7168; i++)
--		writeb(moxaBuff[i], baseAddr + DynPage_addr + i);
--	writeb(2, baseAddr + Control_reg);	/* Select Page 2 */
--	for (i = 0; i < (len - 7168); i++)
--		writeb(moxaBuff[i + 7168], baseAddr + DynPage_addr + i);
--	return (0);
--}
--
--static int moxaloadcode(int cardno, unsigned char __user *tmp, int len)
--{
--	void __iomem *baseAddr, *ofsAddr;
--	int retval, port, i;
--
--	if(len < 0 || len > sizeof(moxaBuff))
--		return -EINVAL;
--	if(copy_from_user(moxaBuff, tmp, len))
--		return -EFAULT;
--	baseAddr = moxa_boards[cardno].basemem;
--	switch (moxa_boards[cardno].boardType) {
--	case MOXA_BOARD_C218_ISA:
--	case MOXA_BOARD_C218_PCI:
--	case MOXA_BOARD_CP204J:
--		retval = moxaloadc218(cardno, baseAddr, len);
--		if (retval)
--			return (retval);
--		port = cardno * MAX_PORTS_PER_BOARD;
--		for (i = 0; i < moxa_boards[cardno].numPorts; i++, port++) {
--			struct moxa_port *p = &moxa_ports[port];
--
--			p->chkPort = 1;
--			p->curBaud = 9600L;
--			p->DCDState = 0;
--			p->tableAddr = baseAddr + Extern_table + Extern_size * i;
--			ofsAddr = p->tableAddr;
--			writew(C218rx_mask, ofsAddr + RX_mask);
--			writew(C218tx_mask, ofsAddr + TX_mask);
--			writew(C218rx_spage + i * C218buf_pageno, ofsAddr + Page_rxb);
--			writew(readw(ofsAddr + Page_rxb) + C218rx_pageno, ofsAddr + EndPage_rxb);
--
--			writew(C218tx_spage + i * C218buf_pageno, ofsAddr + Page_txb);
--			writew(readw(ofsAddr + Page_txb) + C218tx_pageno, ofsAddr + EndPage_txb);
--
--		}
--		break;
--	default:
--		retval = moxaloadc320(cardno, baseAddr, len,
--				      &moxa_boards[cardno].numPorts);
--		if (retval)
--			return (retval);
--		port = cardno * MAX_PORTS_PER_BOARD;
--		for (i = 0; i < moxa_boards[cardno].numPorts; i++, port++) {
--			struct moxa_port *p = &moxa_ports[port];
--
--			p->chkPort = 1;
--			p->curBaud = 9600L;
--			p->DCDState = 0;
--			p->tableAddr = baseAddr + Extern_table + Extern_size * i;
--			ofsAddr = p->tableAddr;
--			if (moxa_boards[cardno].numPorts == 8) {
--				writew(C320p8rx_mask, ofsAddr + RX_mask);
--				writew(C320p8tx_mask, ofsAddr + TX_mask);
--				writew(C320p8rx_spage + i * C320p8buf_pgno, ofsAddr + Page_rxb);
--				writew(readw(ofsAddr + Page_rxb) + C320p8rx_pgno, ofsAddr + EndPage_rxb);
--				writew(C320p8tx_spage + i * C320p8buf_pgno, ofsAddr + Page_txb);
--				writew(readw(ofsAddr + Page_txb) + C320p8tx_pgno, ofsAddr + EndPage_txb);
--
--			} else if (moxa_boards[cardno].numPorts == 16) {
--				writew(C320p16rx_mask, ofsAddr + RX_mask);
--				writew(C320p16tx_mask, ofsAddr + TX_mask);
--				writew(C320p16rx_spage + i * C320p16buf_pgno, ofsAddr + Page_rxb);
--				writew(readw(ofsAddr + Page_rxb) + C320p16rx_pgno, ofsAddr + EndPage_rxb);
--				writew(C320p16tx_spage + i * C320p16buf_pgno, ofsAddr + Page_txb);
--				writew(readw(ofsAddr + Page_txb) + C320p16tx_pgno, ofsAddr + EndPage_txb);
--
--			} else if (moxa_boards[cardno].numPorts == 24) {
--				writew(C320p24rx_mask, ofsAddr + RX_mask);
--				writew(C320p24tx_mask, ofsAddr + TX_mask);
--				writew(C320p24rx_spage + i * C320p24buf_pgno, ofsAddr + Page_rxb);
--				writew(readw(ofsAddr + Page_rxb) + C320p24rx_pgno, ofsAddr + EndPage_rxb);
--				writew(C320p24tx_spage + i * C320p24buf_pgno, ofsAddr + Page_txb);
--				writew(readw(ofsAddr + Page_txb), ofsAddr + EndPage_txb);
--			} else if (moxa_boards[cardno].numPorts == 32) {
--				writew(C320p32rx_mask, ofsAddr + RX_mask);
--				writew(C320p32tx_mask, ofsAddr + TX_mask);
--				writew(C320p32tx_ofs, ofsAddr + Ofs_txb);
--				writew(C320p32rx_spage + i * C320p32buf_pgno, ofsAddr + Page_rxb);
--				writew(readb(ofsAddr + Page_rxb), ofsAddr + EndPage_rxb);
--				writew(C320p32tx_spage + i * C320p32buf_pgno, ofsAddr + Page_txb);
--				writew(readw(ofsAddr + Page_txb), ofsAddr + EndPage_txb);
--			}
--		}
--		break;
--	}
--	moxa_boards[cardno].loadstat = 1;
--	return (0);
--}
--
--static int moxaloadc218(int cardno, void __iomem *baseAddr, int len)
--{
--	char retry;
--	int i, j, len1, len2;
--	ushort usum, *ptr, keycode;
--
--	if (moxa_boards[cardno].boardType == MOXA_BOARD_CP204J)
--		keycode = CP204J_KeyCode;
--	else
--		keycode = C218_KeyCode;
--	usum = 0;
--	len1 = len >> 1;
--	ptr = (ushort *) moxaBuff;
--	for (i = 0; i < len1; i++)
--		usum += le16_to_cpu(*(ptr + i));
--	retry = 0;
--	do {
--		len1 = len >> 1;
--		j = 0;
--		while (len1) {
--			len2 = (len1 > 2048) ? 2048 : len1;
--			len1 -= len2;
--			for (i = 0; i < len2 << 1; i++)
--				writeb(moxaBuff[i + j], baseAddr + C218_LoadBuf + i);
--			j += i;
--
--			writew(len2, baseAddr + C218DLoad_len);
--			writew(0, baseAddr + C218_key);
--			for (i = 0; i < 100; i++) {
--				if (readw(baseAddr + C218_key) == keycode)
--					break;
--				msleep(10);
--			}
--			if (readw(baseAddr + C218_key) != keycode) {
--				return (-1);
--			}
--		}
--		writew(0, baseAddr + C218DLoad_len);
--		writew(usum, baseAddr + C218check_sum);
--		writew(0, baseAddr + C218_key);
--		for (i = 0; i < 100; i++) {
--			if (readw(baseAddr + C218_key) == keycode)
--				break;
--			msleep(10);
--		}
--		retry++;
--	} while ((readb(baseAddr + C218chksum_ok) != 1) && (retry < 3));
--	if (readb(baseAddr + C218chksum_ok) != 1) {
--		return (-1);
--	}
--	writew(0, baseAddr + C218_key);
--	for (i = 0; i < 100; i++) {
--		if (readw(baseAddr + Magic_no) == Magic_code)
--			break;
--		msleep(10);
--	}
--	if (readw(baseAddr + Magic_no) != Magic_code) {
--		return (-1);
--	}
--	writew(1, baseAddr + Disable_IRQ);
--	writew(0, baseAddr + Magic_no);
--	for (i = 0; i < 100; i++) {
--		if (readw(baseAddr + Magic_no) == Magic_code)
--			break;
--		msleep(10);
--	}
--	if (readw(baseAddr + Magic_no) != Magic_code) {
--		return (-1);
--	}
--	moxaCard = 1;
--	moxa_boards[cardno].intNdx = baseAddr + IRQindex;
--	moxa_boards[cardno].intPend = baseAddr + IRQpending;
--	moxa_boards[cardno].intTable = baseAddr + IRQtable;
--	return (0);
--}
--
--static int moxaloadc320(int cardno, void __iomem *baseAddr, int len, int *numPorts)
--{
--	ushort usum;
--	int i, j, wlen, len2, retry;
--	ushort *uptr;
--
--	usum = 0;
--	wlen = len >> 1;
--	uptr = (ushort *) moxaBuff;
--	for (i = 0; i < wlen; i++)
--		usum += le16_to_cpu(uptr[i]);
--	retry = 0;
--	j = 0;
--	do {
--		while (wlen) {
--			if (wlen > 2048)
--				len2 = 2048;
--			else
--				len2 = wlen;
--			wlen -= len2;
--			len2 <<= 1;
--			for (i = 0; i < len2; i++)
--				writeb(moxaBuff[j + i], baseAddr + C320_LoadBuf + i);
--			len2 >>= 1;
--			j += i;
--			writew(len2, baseAddr + C320DLoad_len);
--			writew(0, baseAddr + C320_key);
--			for (i = 0; i < 10; i++) {
--				if (readw(baseAddr + C320_key) == C320_KeyCode)
--					break;
--				msleep(10);
--			}
--			if (readw(baseAddr + C320_key) != C320_KeyCode)
--				return (-1);
--		}
--		writew(0, baseAddr + C320DLoad_len);
--		writew(usum, baseAddr + C320check_sum);
--		writew(0, baseAddr + C320_key);
--		for (i = 0; i < 10; i++) {
--			if (readw(baseAddr + C320_key) == C320_KeyCode)
--				break;
--			msleep(10);
--		}
--		retry++;
--	} while ((readb(baseAddr + C320chksum_ok) != 1) && (retry < 3));
--	if (readb(baseAddr + C320chksum_ok) != 1)
--		return (-1);
--	writew(0, baseAddr + C320_key);
--	for (i = 0; i < 600; i++) {
--		if (readw(baseAddr + Magic_no) == Magic_code)
--			break;
--		msleep(10);
--	}
--	if (readw(baseAddr + Magic_no) != Magic_code)
--		return (-100);
--
--	if (moxa_boards[cardno].busType == MOXA_BUS_TYPE_PCI) {		/* ASIC board */
--		writew(0x3800, baseAddr + TMS320_PORT1);
--		writew(0x3900, baseAddr + TMS320_PORT2);
--		writew(28499, baseAddr + TMS320_CLOCK);
--	} else {
--		writew(0x3200, baseAddr + TMS320_PORT1);
--		writew(0x3400, baseAddr + TMS320_PORT2);
--		writew(19999, baseAddr + TMS320_CLOCK);
--	}
--	writew(1, baseAddr + Disable_IRQ);
--	writew(0, baseAddr + Magic_no);
--	for (i = 0; i < 500; i++) {
--		if (readw(baseAddr + Magic_no) == Magic_code)
--			break;
--		msleep(10);
--	}
--	if (readw(baseAddr + Magic_no) != Magic_code)
--		return (-102);
--
--	j = readw(baseAddr + Module_cnt);
--	if (j <= 0)
--		return (-101);
--	*numPorts = j * 8;
--	writew(j, baseAddr + Module_no);
--	writew(0, baseAddr + Magic_no);
--	for (i = 0; i < 600; i++) {
--		if (readw(baseAddr + Magic_no) == Magic_code)
--			break;
--		msleep(10);
--	}
--	if (readw(baseAddr + Magic_no) != Magic_code)
--		return (-102);
--	moxaCard = 1;
--	moxa_boards[cardno].intNdx = baseAddr + IRQindex;
--	moxa_boards[cardno].intPend = baseAddr + IRQpending;
--	moxa_boards[cardno].intTable = baseAddr + IRQtable;
--	return (0);
--}
--
- static void MoxaSetFifo(int port, int enable)
- {
- 	void __iomem *ofsAddr = moxa_ports[port].tableAddr;
-diff --git a/drivers/char/moxa.h b/drivers/char/moxa.h
-new file mode 100644
-index 0000000..2a38d17
---- /dev/null
-+++ b/drivers/char/moxa.h
-@@ -0,0 +1,296 @@
-+#ifndef MOXA_H_FILE
-+#define MOXA_H_FILE
-+
-+/*
-+ *    System Configuration
-+ */
-+
-+#define Magic_code	0x404
-+
-+/*
-+ *    for C218 BIOS initialization
-+ */
-+#define C218_ConfBase	0x800
-+#define C218_status	(C218_ConfBase + 0)	/* BIOS running status    */
-+#define C218_diag	(C218_ConfBase + 2)	/* diagnostic status      */
-+#define C218_key	(C218_ConfBase + 4)	/* WORD (0x218 for C218) */
-+#define C218DLoad_len	(C218_ConfBase + 6)	/* WORD           */
-+#define C218check_sum	(C218_ConfBase + 8)	/* BYTE           */
-+#define C218chksum_ok	(C218_ConfBase + 0x0a)	/* BYTE (1:ok)            */
-+#define C218_TestRx	(C218_ConfBase + 0x10)	/* 8 bytes for 8 ports    */
-+#define C218_TestTx	(C218_ConfBase + 0x18)	/* 8 bytes for 8 ports    */
-+#define C218_RXerr	(C218_ConfBase + 0x20)	/* 8 bytes for 8 ports    */
-+#define C218_ErrFlag	(C218_ConfBase + 0x28)	/* 8 bytes for 8 ports    */
-+
-+#define C218_LoadBuf	0x0F00
-+#define C218_KeyCode	0x218
-+#define CP204J_KeyCode	0x204
-+
-+/*
-+ *    for C320 BIOS initialization
-+ */
-+#define C320_ConfBase	0x800
-+#define C320_LoadBuf	0x0f00
-+#define STS_init	0x05	/* for C320_status        */
-+
-+#define C320_status	C320_ConfBase + 0	/* BIOS running status    */
-+#define C320_diag	C320_ConfBase + 2	/* diagnostic status      */
-+#define C320_key	C320_ConfBase + 4	/* WORD (0320H for C320) */
-+#define C320DLoad_len	C320_ConfBase + 6	/* WORD           */
-+#define C320check_sum	C320_ConfBase + 8	/* WORD           */
-+#define C320chksum_ok	C320_ConfBase + 0x0a	/* WORD (1:ok)            */
-+#define C320bapi_len	C320_ConfBase + 0x0c	/* WORD           */
-+#define C320UART_no	C320_ConfBase + 0x0e	/* WORD           */
-+
-+#define C320_KeyCode	0x320
-+
-+#define FixPage_addr	0x0000	/* starting addr of static page  */
-+#define DynPage_addr	0x2000	/* starting addr of dynamic page */
-+#define C218_start	0x3000	/* starting addr of C218 BIOS prg */
-+#define Control_reg	0x1ff0	/* select page and reset control */
-+#define HW_reset	0x80
-+
-+/*
-+ *    Function Codes
-+ */
-+#define FC_CardReset	0x80
-+#define FC_ChannelReset 1	/* C320 firmware not supported */
-+#define FC_EnableCH	2
-+#define FC_DisableCH	3
-+#define FC_SetParam	4
-+#define FC_SetMode	5
-+#define FC_SetRate	6
-+#define FC_LineControl	7
-+#define FC_LineStatus	8
-+#define FC_XmitControl	9
-+#define FC_FlushQueue	10
-+#define FC_SendBreak	11
-+#define FC_StopBreak	12
-+#define FC_LoopbackON	13
-+#define FC_LoopbackOFF	14
-+#define FC_ClrIrqTable	15
-+#define FC_SendXon	16
-+#define FC_SetTermIrq	17	/* C320 firmware not supported */
-+#define FC_SetCntIrq	18	/* C320 firmware not supported */
-+#define FC_SetBreakIrq	19
-+#define FC_SetLineIrq	20
-+#define FC_SetFlowCtl	21
-+#define FC_GenIrq	22
-+#define FC_InCD180	23
-+#define FC_OutCD180	24
-+#define FC_InUARTreg	23
-+#define FC_OutUARTreg	24
-+#define FC_SetXonXoff	25
-+#define FC_OutCD180CCR	26
-+#define FC_ExtIQueue	27
-+#define FC_ExtOQueue	28
-+#define FC_ClrLineIrq	29
-+#define FC_HWFlowCtl	30
-+#define FC_GetClockRate 35
-+#define FC_SetBaud	36
-+#define FC_SetDataMode  41
-+#define FC_GetCCSR      43
-+#define FC_GetDataError 45
-+#define FC_RxControl	50
-+#define FC_ImmSend	51
-+#define FC_SetXonState	52
-+#define FC_SetXoffState	53
-+#define FC_SetRxFIFOTrig 54
-+#define FC_SetTxFIFOCnt 55
-+#define FC_UnixRate	56
-+#define FC_UnixResetTimer 57
-+
-+#define	RxFIFOTrig1	0
-+#define	RxFIFOTrig4	1
-+#define	RxFIFOTrig8	2
-+#define	RxFIFOTrig14	3
-+
-+/*
-+ *    Dual-Ported RAM
-+ */
-+#define DRAM_global	0
-+#define INT_data	(DRAM_global + 0)
-+#define Config_base	(DRAM_global + 0x108)
-+
-+#define IRQindex	(INT_data + 0)
-+#define IRQpending	(INT_data + 4)
-+#define IRQtable	(INT_data + 8)
-+
-+/*
-+ *    Interrupt Status
-+ */
-+#define IntrRx		0x01	/* receiver data O.K.             */
-+#define IntrTx		0x02	/* transmit buffer empty  */
-+#define IntrFunc	0x04	/* function complete              */
-+#define IntrBreak	0x08	/* received break         */
-+#define IntrLine	0x10	/* line status change
-+				   for transmitter                */
-+#define IntrIntr	0x20	/* received INTR code             */
-+#define IntrQuit	0x40	/* received QUIT code             */
-+#define IntrEOF 	0x80	/* received EOF code              */
-+
-+#define IntrRxTrigger 	0x100	/* rx data count reach tigger value */
-+#define IntrTxTrigger 	0x200	/* tx data count below trigger value */
-+
-+#define Magic_no	(Config_base + 0)
-+#define Card_model_no	(Config_base + 2)
-+#define Total_ports	(Config_base + 4)
-+#define Module_cnt	(Config_base + 8)
-+#define Module_no	(Config_base + 10)
-+#define Timer_10ms	(Config_base + 14)
-+#define Disable_IRQ	(Config_base + 20)
-+#define TMS320_PORT1	(Config_base + 22)
-+#define TMS320_PORT2	(Config_base + 24)
-+#define TMS320_CLOCK	(Config_base + 26)
-+
-+/*
-+ *    DATA BUFFER in DRAM
-+ */
-+#define Extern_table	0x400	/* Base address of the external table
-+				   (24 words *    64) total 3K bytes
-+				   (24 words * 128) total 6K bytes */
-+#define Extern_size	0x60	/* 96 bytes                       */
-+#define RXrptr		0x00	/* read pointer for RX buffer     */
-+#define RXwptr		0x02	/* write pointer for RX buffer    */
-+#define TXrptr		0x04	/* read pointer for TX buffer     */
-+#define TXwptr		0x06	/* write pointer for TX buffer    */
-+#define HostStat	0x08	/* IRQ flag and general flag      */
-+#define FlagStat	0x0A
-+#define FlowControl	0x0C	/* B7 B6 B5 B4 B3 B2 B1 B0              */
-+					/*  x  x  x  x  |  |  |  |            */
-+					/*              |  |  |  + CTS flow   */
-+					/*              |  |  +--- RTS flow   */
-+					/*              |  +------ TX Xon/Xoff */
-+					/*              +--------- RX Xon/Xoff */
-+#define Break_cnt	0x0E	/* received break count   */
-+#define CD180TXirq	0x10	/* if non-0: enable TX irq        */
-+#define RX_mask 	0x12
-+#define TX_mask 	0x14
-+#define Ofs_rxb 	0x16
-+#define Ofs_txb 	0x18
-+#define Page_rxb	0x1A
-+#define Page_txb	0x1C
-+#define EndPage_rxb	0x1E
-+#define EndPage_txb	0x20
-+#define Data_error	0x22
-+#define RxTrigger	0x28
-+#define TxTrigger	0x2a
-+
-+#define rRXwptr 	0x34
-+#define Low_water	0x36
-+
-+#define FuncCode	0x40
-+#define FuncArg 	0x42
-+#define FuncArg1	0x44
-+
-+#define C218rx_size	0x2000	/* 8K bytes */
-+#define C218tx_size	0x8000	/* 32K bytes */
-+
-+#define C218rx_mask	(C218rx_size - 1)
-+#define C218tx_mask	(C218tx_size - 1)
-+
-+#define C320p8rx_size	0x2000
-+#define C320p8tx_size	0x8000
-+#define C320p8rx_mask	(C320p8rx_size - 1)
-+#define C320p8tx_mask	(C320p8tx_size - 1)
-+
-+#define C320p16rx_size	0x2000
-+#define C320p16tx_size	0x4000
-+#define C320p16rx_mask	(C320p16rx_size - 1)
-+#define C320p16tx_mask	(C320p16tx_size - 1)
-+
-+#define C320p24rx_size	0x2000
-+#define C320p24tx_size	0x2000
-+#define C320p24rx_mask	(C320p24rx_size - 1)
-+#define C320p24tx_mask	(C320p24tx_size - 1)
-+
-+#define C320p32rx_size	0x1000
-+#define C320p32tx_size	0x1000
-+#define C320p32rx_mask	(C320p32rx_size - 1)
-+#define C320p32tx_mask	(C320p32tx_size - 1)
-+
-+#define Page_size	0x2000
-+#define Page_mask	(Page_size - 1)
-+#define C218rx_spage	3
-+#define C218tx_spage	4
-+#define C218rx_pageno	1
-+#define C218tx_pageno	4
-+#define C218buf_pageno	5
-+
-+#define C320p8rx_spage	3
-+#define C320p8tx_spage	4
-+#define C320p8rx_pgno	1
-+#define C320p8tx_pgno	4
-+#define C320p8buf_pgno	5
-+
-+#define C320p16rx_spage 3
-+#define C320p16tx_spage 4
-+#define C320p16rx_pgno	1
-+#define C320p16tx_pgno	2
-+#define C320p16buf_pgno 3
-+
-+#define C320p24rx_spage 3
-+#define C320p24tx_spage 4
-+#define C320p24rx_pgno	1
-+#define C320p24tx_pgno	1
-+#define C320p24buf_pgno 2
-+
-+#define C320p32rx_spage 3
-+#define C320p32tx_ofs	C320p32rx_size
-+#define C320p32tx_spage 3
-+#define C320p32buf_pgno 1
-+
-+/*
-+ *    Host Status
-+ */
-+#define WakeupRx	0x01
-+#define WakeupTx	0x02
-+#define WakeupBreak	0x08
-+#define WakeupLine	0x10
-+#define WakeupIntr	0x20
-+#define WakeupQuit	0x40
-+#define WakeupEOF	0x80	/* used in VTIME control */
-+#define WakeupRxTrigger	0x100
-+#define WakeupTxTrigger	0x200
-+/*
-+ *    Flag status
-+ */
-+#define Rx_over		0x01
-+#define Xoff_state	0x02
-+#define Tx_flowOff	0x04
-+#define Tx_enable	0x08
-+#define CTS_state	0x10
-+#define DSR_state	0x20
-+#define DCD_state	0x80
-+/*
-+ *    FlowControl
-+ */
-+#define CTS_FlowCtl	1
-+#define RTS_FlowCtl	2
-+#define Tx_FlowCtl	4
-+#define Rx_FlowCtl	8
-+#define IXM_IXANY	0x10
-+
-+#define LowWater	128
-+
-+#define DTR_ON		1
-+#define RTS_ON		2
-+#define CTS_ON		1
-+#define DSR_ON		2
-+#define DCD_ON		8
-+
-+/* mode definition */
-+#define	MX_CS8		0x03
-+#define	MX_CS7		0x02
-+#define	MX_CS6		0x01
-+#define	MX_CS5		0x00
-+
-+#define	MX_STOP1	0x00
-+#define	MX_STOP15	0x04
-+#define	MX_STOP2	0x08
-+
-+#define	MX_PARNONE	0x00
-+#define	MX_PAREVEN	0x40
-+#define	MX_PARODD	0xC0
-+
+-	/* Do an early initialization of the fixmap area */
+-	movl $(swapper_pg_dir - __PAGE_OFFSET), %edx
+-	movl $(swapper_pg_pmd - __PAGE_OFFSET), %eax
+-	addl $0x67, %eax			/* 0x67 == _PAGE_TABLE */
+-	movl %eax, 4092(%edx)
++	movl %edi,pa(init_pg_tables_end)
+ 
++	/* Do early initialization of the fixmap area */
++	movl $pa(swapper_pg_fixmap)+PDE_ATTR,%eax
++	movl %eax,pa(swapper_pg_dir+0xffc)
 +#endif
+ 	jmp 3f
+ /*
+  * Non-boot CPU entry point; entered from trampoline.S
+@@ -241,7 +303,7 @@ ENTRY(startup_32_smp)
+  *	NOTE! We have to correct for the fact that we're
+  *	not yet offset PAGE_OFFSET..
+  */
+-#define cr4_bits mmu_cr4_features-__PAGE_OFFSET
++#define cr4_bits pa(mmu_cr4_features)
+ 	movl cr4_bits,%edx
+ 	andl %edx,%edx
+ 	jz 6f
+@@ -276,10 +338,10 @@ ENTRY(startup_32_smp)
+ /*
+  * Enable paging
+  */
+-	movl $swapper_pg_dir-__PAGE_OFFSET,%eax
++	movl $pa(swapper_pg_dir),%eax
+ 	movl %eax,%cr3		/* set the page table pointer.. */
+ 	movl %cr0,%eax
+-	orl $0x80000000,%eax
++	orl  $X86_CR0_PG,%eax
+ 	movl %eax,%cr0		/* ..and set paging (PG) bit */
+ 	ljmp $__BOOT_CS,$1f	/* Clear prefetch and normalize %eip */
+ 1:
+@@ -554,8 +616,12 @@ ENTRY(_stext)
+ 	.align PAGE_SIZE_asm
+ ENTRY(swapper_pg_dir)
+ 	.fill 1024,4,0
++#ifdef CONFIG_X86_PAE
+ ENTRY(swapper_pg_pmd)
+ 	.fill 1024,4,0
++#endif
++ENTRY(swapper_pg_fixmap)
++	.fill 1024,4,0
+ ENTRY(empty_zero_page)
+ 	.fill 4096,1,0
+ 
+diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
+index 2256338..b4b6652 100644
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -153,7 +153,11 @@ struct cpuinfo_x86 new_cpu_data __cpuinitdata = { 0, 0, 0, 0, -1, 1, 0, 0, -1 };
+ struct cpuinfo_x86 boot_cpu_data __read_mostly = { 0, 0, 0, 0, -1, 1, 0, 0, -1 };
+ EXPORT_SYMBOL(boot_cpu_data);
+ 
++#ifndef CONFIG_X86_PAE
+ unsigned long mmu_cr4_features;
++#else
++unsigned long mmu_cr4_features = X86_CR4_PAE;
++#endif
+ 
+ /* for MCA, but anyone else can use it if they want */
+ unsigned int machine_id;
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 358d3b9..b382889 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -43,6 +43,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/sections.h>
+ #include <asm/paravirt.h>
++#include <asm/setup.h>
+ 
+ unsigned int __VMALLOC_RESERVE = 128 << 20;
+ 
+@@ -343,44 +344,35 @@ extern void __init remap_numa_kva(void);
+ 
+ void __init native_pagetable_setup_start(pgd_t *base)
+ {
+-#ifdef CONFIG_X86_PAE
+-	int i;
++	unsigned long pfn, va;
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd;
++	pte_t *pte;
+ 
+ 	/*
+-	 * Init entries of the first-level page table to the
+-	 * zero page, if they haven't already been set up.
+-	 *
+-	 * In a normal native boot, we'll be running on a
+-	 * pagetable rooted in swapper_pg_dir, but not in PAE
+-	 * mode, so this will end up clobbering the mappings
+-	 * for the lower 24Mbytes of the address space,
+-	 * without affecting the kernel address space.
++	 * Remove any mappings which extend past the end of physical
++	 * memory from the boot time page table.
+ 	 */
+-	for (i = 0; i < USER_PTRS_PER_PGD; i++)
+-		set_pgd(&base[i],
+-			__pgd(__pa(empty_zero_page) | _PAGE_PRESENT));
+-
+-	/* Make sure kernel address space is empty so that a pagetable
+-	   will be allocated for it. */
+-	memset(&base[USER_PTRS_PER_PGD], 0,
+-	       KERNEL_PGD_PTRS * sizeof(pgd_t));
+-#else
++	for (pfn = max_low_pfn + 1; pfn < 1<<(32-PAGE_SHIFT); pfn++) {
++		va = PAGE_OFFSET + (pfn<<PAGE_SHIFT);
++		pgd = base + pgd_index(va);
++		if (!pgd_present(*pgd))
++			break;
++		pud = pud_offset(pgd, va);
++		pmd = pmd_offset(pud, va);
++		if (!pmd_present(*pmd))
++			break;
++		pte = pte_offset_kernel(pmd, va);
++		if (!pte_present(*pte))
++			break;
++		pte_clear(NULL, va, pte);
++	}
+ 	paravirt_alloc_pd(__pa(swapper_pg_dir) >> PAGE_SHIFT);
+-#endif
+ }
+ 
+ void __init native_pagetable_setup_done(pgd_t *base)
+ {
+-#ifdef CONFIG_X86_PAE
+-	/*
+-	 * Add low memory identity-mappings - SMP needs it when
+-	 * starting up on an AP from real-mode. In the non-PAE
+-	 * case we already have these mappings through head.S.
+-	 * All user-space mappings are explicitly cleared after
+-	 * SMP startup.
+-	 */
+-	set_pgd(&base[0], base[USER_PTRS_PER_PGD]);
+-#endif
+ }
+ 
+ /*
+@@ -389,9 +381,8 @@ void __init native_pagetable_setup_done(pgd_t *base)
+  * the boot process.
+  *
+  * If we're booting on native hardware, this will be a pagetable
+- * constructed in arch/i386/kernel/head.S, and not running in PAE mode
+- * (even if we'll end up running in PAE).  The root of the pagetable
+- * will be swapper_pg_dir.
++ * constructed in arch/x86/kernel/head_32.S.  The root of the
++ * pagetable will be swapper_pg_dir.
+  *
+  * If we're booting paravirtualized under a hypervisor, then there are
+  * more options: we may already be running PAE, and the pagetable may
+@@ -408,6 +399,7 @@ static void __init pagetable_init (void)
+ 	unsigned long vaddr, end;
+ 	pgd_t *pgd_base = swapper_pg_dir;
+ 
++	printk(KERN_CRIT "%s\n", __FUNCTION__);
+ 	paravirt_pagetable_setup_start(pgd_base);
+ 
+ 	/* Enable PSE if available */
+@@ -549,14 +541,6 @@ void __init paging_init(void)
+ 
+ 	load_cr3(swapper_pg_dir);
+ 
+-#ifdef CONFIG_X86_PAE
+-	/*
+-	 * We will bail out later - printk doesn't work right now so
+-	 * the user would just see a hanging kernel.
+-	 */
+-	if (cpu_has_pae)
+-		set_in_cr4(X86_CR4_PAE);
+-#endif
+ 	__flush_tlb_all();
+ 
+ 	kmap_init();
+@@ -686,10 +670,6 @@ void __init mem_init(void)
+ 	BUG_ON((unsigned long)high_memory      > VMALLOC_START);
+ #endif /* double-sanity-check paranoia */
+ 
+-#ifdef CONFIG_X86_PAE
+-	if (!cpu_has_pae)
+-		panic("cannot execute a PAE-enabled kernel on a PAE-less CPU!");
+-#endif
+ 	if (boot_cpu_data.wp_works_ok < 0)
+ 		test_wp_bit();
+ 
+diff --git a/arch/x86/mm/ioremap_32.c b/arch/x86/mm/ioremap_32.c
+index 96c3ed2..7827f01 100644
+--- a/arch/x86/mm/ioremap_32.c
++++ b/arch/x86/mm/ioremap_32.c
+@@ -220,40 +220,45 @@ static int __init early_ioremap_debug_setup(char *str)
+ __setup("early_ioremap_debug", early_ioremap_debug_setup);
+ 
+ static __initdata int after_paging_init;
+-static __initdata unsigned long bm_pte[1024]
++static __initdata pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)]
+ 				__attribute__((aligned(PAGE_SIZE)));
+ 
+-static inline unsigned long * __init early_ioremap_pgd(unsigned long addr)
++static inline pmd_t * __init early_ioremap_pmd(unsigned long addr)
+ {
+-	return (unsigned long *)swapper_pg_dir + ((addr >> 22) & 1023);
++	pgd_t *pgd = &swapper_pg_dir[pgd_index(addr)];
++	pud_t *pud = pud_offset(pgd, addr);
++	pmd_t *pmd = pmd_offset(pud, addr);
++
++	return pmd;
+ }
+ 
+-static inline unsigned long * __init early_ioremap_pte(unsigned long addr)
++static inline pte_t * __init early_ioremap_pte(unsigned long addr)
+ {
+-	return bm_pte + ((addr >> PAGE_SHIFT) & 1023);
++	return &bm_pte[pte_index(addr)];
+ }
+ 
+ void __init early_ioremap_init(void)
+ {
+-	unsigned long *pgd;
++	pmd_t *pmd;
+ 
+ 	if (early_ioremap_debug)
+ 		printk("early_ioremap_init()\n");
+ 
+-	pgd = early_ioremap_pgd(fix_to_virt(FIX_BTMAP_BEGIN));
+-	*pgd = __pa(bm_pte) | _PAGE_TABLE;
++	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
+ 	memset(bm_pte, 0, sizeof(bm_pte));
++	set_pmd(pmd, __pmd(__pa(bm_pte) | _PAGE_TABLE));
++
+ 	/*
+-	 * The boot-ioremap range spans multiple pgds, for which
++	 * The boot-ioremap range spans multiple pmds, for which
+ 	 * we are not prepared:
+ 	 */
+-	if (pgd != early_ioremap_pgd(fix_to_virt(FIX_BTMAP_END))) {
++	if (pmd != early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END))) {
+ 		WARN_ON(1);
+-		printk("pgd %p != %p\n",
+-			pgd, early_ioremap_pgd(fix_to_virt(FIX_BTMAP_END)));
+-		printk("fix_to_virt(FIX_BTMAP_BEGIN): %08lx\n",
++		printk(KERN_WARNING "pmd %p != %p\n",
++		       pmd, early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END)));
++		printk(KERN_WARNING "fix_to_virt(FIX_BTMAP_BEGIN): %08lx\n",
+ 			fix_to_virt(FIX_BTMAP_BEGIN));
+-		printk("fix_to_virt(FIX_BTMAP_END):   %08lx\n",
++		printk(KERN_WARNING "fix_to_virt(FIX_BTMAP_END):   %08lx\n",
+ 			fix_to_virt(FIX_BTMAP_END));
+ 
+ 		printk("FIX_BTMAP_END:       %d\n", FIX_BTMAP_END);
+@@ -263,27 +268,28 @@ void __init early_ioremap_init(void)
+ 
+ void __init early_ioremap_clear(void)
+ {
+-	unsigned long *pgd;
++	pmd_t *pmd;
+ 
+ 	if (early_ioremap_debug)
+ 		printk("early_ioremap_clear()\n");
+ 
+-	pgd = early_ioremap_pgd(fix_to_virt(FIX_BTMAP_BEGIN));
+-	*pgd = 0;
++	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
++	pmd_clear(pmd);
+ 	__flush_tlb_all();
+ }
+ 
+ void __init early_ioremap_reset(void)
+ {
+ 	enum fixed_addresses idx;
+-	unsigned long *pte, phys, addr;
++	unsigned long addr, phys;
++	pte_t *pte;
+ 
+ 	after_paging_init = 1;
+ 	for (idx = FIX_BTMAP_BEGIN; idx <= FIX_BTMAP_END; idx--) {
+ 		addr = fix_to_virt(idx);
+ 		pte = early_ioremap_pte(addr);
+-		if (!*pte & _PAGE_PRESENT) {
+-			phys = *pte & PAGE_MASK;
++		if (pte_present(*pte)) {
++			phys = pte_val(*pte) & PAGE_MASK;
+ 			set_fixmap(idx, phys);
+ 		}
+ 	}
+@@ -292,7 +298,8 @@ void __init early_ioremap_reset(void)
+ static void __init __early_set_fixmap(enum fixed_addresses idx,
+ 				   unsigned long phys, pgprot_t flags)
+ {
+-	unsigned long *pte, addr = __fix_to_virt(idx);
++	unsigned long addr = __fix_to_virt(idx);
++	pte_t *pte;
+ 
+ 	if (idx >= __end_of_fixed_addresses) {
+ 		BUG();
+@@ -300,9 +307,9 @@ static void __init __early_set_fixmap(enum fixed_addresses idx,
+ 	}
+ 	pte = early_ioremap_pte(addr);
+ 	if (pgprot_val(flags))
+-		*pte = (phys & PAGE_MASK) | pgprot_val(flags);
++		set_pte(pte, pfn_pte(phys >> PAGE_SHIFT, flags));
+ 	else
+-		*pte = 0;
++		pte_clear(NULL, addr, pte);
+ 	__flush_tlb_one(addr);
+ }
+ 
+diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
+index 11c4b39..8fc0473 100644
+--- a/include/asm-x86/page_32.h
++++ b/include/asm-x86/page_32.h
+@@ -48,7 +48,6 @@ typedef unsigned long	pgprotval_t;
+ typedef unsigned long	phys_addr_t;
+ 
+ typedef union { pteval_t pte, pte_low; } pte_t;
+-typedef pte_t boot_pte_t;
+ 
+ #endif	/* __ASSEMBLY__ */
+ #endif	/* CONFIG_X86_PAE */
+diff --git a/include/asm-x86/pgtable_32.h b/include/asm-x86/pgtable_32.h
+index 72eb06c..e8a6195 100644
+--- a/include/asm-x86/pgtable_32.h
++++ b/include/asm-x86/pgtable_32.h
+@@ -55,10 +55,6 @@ void paging_init(void);
+ #define USER_PGD_PTRS (PAGE_OFFSET >> PGDIR_SHIFT)
+ #define KERNEL_PGD_PTRS (PTRS_PER_PGD-USER_PGD_PTRS)
+ 
+-#define TWOLEVEL_PGDIR_SHIFT	22
+-#define BOOT_USER_PGD_PTRS (__PAGE_OFFSET >> TWOLEVEL_PGDIR_SHIFT)
+-#define BOOT_KERNEL_PGD_PTRS (1024-BOOT_USER_PGD_PTRS)
+-
+ /* Just any arbitrary offset to the start of the vmalloc VM area: the
+  * current 8MB value just means that there will be a 8MB "hole" after the
+  * physical memory until the kernel virtual memory starts.  That means that
 -- 
-1.5.3.7
+1.5.3.8
+
+
 
