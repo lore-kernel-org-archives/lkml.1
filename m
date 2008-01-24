@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbYAXTJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYAXTOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755806AbYAXTJs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 14:09:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbYAXTJi
+	id S1755970AbYAXTOw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 14:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbYAXTOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 14:09:38 -0500
-Received: from gw.goop.org ([64.81.55.164]:39176 "EHLO mail.goop.org"
+	Thu, 24 Jan 2008 14:14:44 -0500
+Received: from waste.org ([66.93.16.53]:57386 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752279AbYAXTJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 14:09:37 -0500
-Message-ID: <4798E26D.6010908@goop.org>
-Date: Thu, 24 Jan 2008 11:09:33 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=22Oliver_Pinter_=28Pint=E9r_Oliv=E9r=29=22?= 
-	<oliver.pntr@gmail.com>
-CC: Adrian Bunk <bunk@kernel.org>, David Miller <davem@davemloft.net>,
-       Greg KH <gregkh@suse.de>, Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Add common orderly_poweroff() to 2.6.22?
-References: <6101e8c40801210959v1e0f6e55w26187dc93a09a202@mail.gmail.com>	 <4798C817.6020702@goop.org> <6101e8c40801241033m7347ec5fof8e41c3fe7974feb@mail.gmail.com>
-In-Reply-To: <6101e8c40801241033m7347ec5fof8e41c3fe7974feb@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S1751960AbYAXTOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 14:14:43 -0500
+Subject: Re: [PATCH UPDATE] x86: ignore spurious faults
+From: Matt Mackall <mpm@selenic.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+In-Reply-To: <4797DBA0.5020909@goop.org>
+References: <4797D64D.1060105@goop.org> <1201133916.16972.124.camel@brick>
+	 <4797DBA0.5020909@goop.org>
+Content-Type: text/plain
+Date: Thu, 24 Jan 2008 13:14:06 -0600
+Message-Id: <1201202046.3897.41.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Pinter (Pintér Olivér) wrote:
-> On 1/24/08, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->   
->> Oliver Pinter (Pintér Olivér) wrote:
->>     
->>> Hi all!
->>>
->>> commit in mainline 10a0a8d4e3f6bf2d077f94344441909abe670f5a is go in
->>> the satble 2.6.22
->>>
->>> the grund for this question is http://hup.hu/node/49773 .
->>>
->>>       
->> Is there a compelling reason?
->>     
->
-> no, but in forum some person have the question, why the kernel call
-> userspace program and it is secure or not...
->   
 
-Ah, my non-existent knowledge of Hungarian wasn't up to interpreting 
-that page ;)
+On Wed, 2008-01-23 at 16:28 -0800, Jeremy Fitzhardinge wrote:
+> When changing a kernel page from RO->RW, it's OK to leave stale TLB
+> entries around, since doing a global flush is expensive and they pose
+> no security problem.  They can, however, generate a spurious fault,
+> which we should catch and simply return from (which will have the
+> side-effect of reloading the TLB to the current PTE).
+> 
+> This can occur when running under Xen, because it frequently changes
+> kernel pages from RW->RO->RW to implement Xen's pagetable semantics.
+> It could also occur when using CONFIG_DEBUG_PAGEALLOC, since it avoids
+> doing a global TLB flush after changing page permissions.
 
-It should be secure if done properly.  Of course, if you set the 
-"poweroff" executable to something untrustworthy then you'll have a 
-problem, but there's no inherent security problem there.  And if you 
-want to do an orderly shutdown, you need to have some amount of help 
-from the userspace side of things, and invoking a command is the normal 
-way to do this.
+There's perhaps an opportunity to do this lazy TLB trick in the mmap
+path as well, where RW mappings are initially mapped as RO so we can
+catch processes dirtying them and then switched to RW. If the mapping is
+shared across threads on multiple cores, we can defer synchronizing the
+TLBs on the others.
 
-    J
+-- 
+Mathematics is the supreme nostalgia of our time.
+
