@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbYAXHNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYAXHQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754575AbYAXHNa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 02:13:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYAXHNX
+	id S1754841AbYAXHQd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 02:16:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbYAXHQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 02:13:23 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:34083 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbYAXHNW (ORCPT
+	Thu, 24 Jan 2008 02:16:26 -0500
+Received: from xdsl-9553.wroclaw.dialog.net.pl ([84.40.234.81]:49016 "HELO
+	mail.alfa-net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752175AbYAXHQZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 02:13:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CrN4n9o5b62AdRkIgV07uzuQMb8nDoOwdiVWlf2lJxbCQg5ONXPA82bHucvEAfy7OgX/IEjeahpOCAZXO6s1FfTzT3zeJZfkqKH37YPXhuFUc0gC78IGKXad2ZiqOBRVHYPotrWRgnYzxTtvWmUT9RFYkbQAn+QMsOtIGsCotkc=
-Message-ID: <e2e108260801232313r519bd75m9bc26a6fe2e9ebeb@mail.gmail.com>
-Date: Thu, 24 Jan 2008 08:13:20 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.25
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-In-Reply-To: <ada7ii8xaao.fsf@cisco.com>
+	Thu, 24 Jan 2008 02:16:25 -0500
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Jan 2008 02:16:25 EST
+Message-ID: <479839B4.3060202@gmail.com>
+Date: Thu, 24 Jan 2008 08:09:40 +0100
+From: Marcin Gil <marcin.gil@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: JMicron PATA 2.6.24-rc7 can't find drives
+References: <200801232323.36187.marcin.gil@gmail.com> <20080123234639.025cc859@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080123234639.025cc859@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ada7ii8xaao.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 18, 2008 1:11 AM, Roland Dreier <rdreier@cisco.com> wrote:
+Alan Cox wrote:
+>> I have SATA drive connected to SATA0 and Maxtor IDE drive + DVD burner 
+>> connected to single IDE slot.
+>>
+>> Booting this kernel off the SATA drive works perfectly, however the IDE drive 
+>> is not found/put into /dev. However the DVD is properly recognized and 
+>> created as sr0.
+>>
+>> Is this known problem? I've looked all over google and found out that people 
+>> have problems with CD/DVD drives with pata_jmicron but in my case DVD is 
+>> working ok but HDD is not.
+>>
+>> Is there a solution for this or can I give you more information to help me 
+>> solve this?
+> 
+> The output of dmesg after the boot would be a good start
 
-> Anyway, here are all the pending things that I'm aware of.  As usual,
-> if something isn't already in my tree and isn't listed below, I
-> probably missed it or dropped it by mistake.  Please remind me again
-> in that case.
+Here it is:
+http://pastebin.com/md726431
 
-Are there any plans to merge the SDP (Sockets Direct Protocol) implementation ?
+Thank you very much!
+-Marcin Gil
 
-Bart.
