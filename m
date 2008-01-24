@@ -1,26 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbYAZQDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760458AbYAZQDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760284AbYAZQDb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 11:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbYAZPzy
+	id S1760458AbYAZQDs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 11:03:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbYAZPz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:55:54 -0500
+	Sat, 26 Jan 2008 10:55:59 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756653AbYAZPzv (ORCPT
+	with ESMTP id S1756816AbYAZPz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:55:51 -0500
+	Sat, 26 Jan 2008 10:55:57 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 11/52] [microblaze] kernel modules support
-Date: Thu, 24 Jan 2008 16:02:46 +0100
-Message-Id: <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 25/52] [microblaze] ptrace support
+Date: Thu, 24 Jan 2008 16:03:00 +0100
+Message-Id: <db7f441df21cfe296a44744747b28f379e75fd49.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <3bcb9581bc512fdd0a124ac8322af9e2a8adc975.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
+ <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
+ <873c2bf1f67696aa11014886470f6ba46f04e8d2.1201107832.git.monstr@monstr.eu>
+ <516d173b1789ea533431e8f5ad05751c6a353c88.1201107832.git.monstr@monstr.eu>
+ <068508828aac6298b4cc65b0cd7b2737a61c466c.1201107832.git.monstr@monstr.eu>
+ <010fc233f82a8f7a591c9f8315ae03f9951139aa.1201107832.git.monstr@monstr.eu>
+ <68faaf69ea03196d4a56a263707355e7e7eb5c6a.1201107832.git.monstr@monstr.eu>
+ <4b7d90fc1b9bcb3c0b1b308c6460390f7bdf3824.1201107832.git.monstr@monstr.eu>
+ <eb28582e845efb4f2f26054630895f26fa69866e.1201107832.git.monstr@monstr.eu>
+ <64e6e541db30cc4f1ee5cd85da4bdea6024f75b8.1201107832.git.monstr@monstr.eu>
+ <90badb264d0e4ec49fdaa76842a5e5f259681299.1201107832.git.monstr@monstr.eu>
+ <a013a2b7044186c64d55cdafc8c9b29bc73a7fc5.1201107832.git.monstr@monstr.eu>
+ <60642f04ebcf9f76da50a1d40191755f258edcc5.1201107832.git.monstr@monstr.eu>
+ <240998be1af3774635995fd19248f8b3a9e8a702.1201107832.git.monstr@monstr.eu>
+ <3bcb9581bc512fdd0a124ac8322af9e2a8adc975.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,173 +46,55 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/microblaze_ksyms.c |  129 +++++++++++++++++++++++++
- arch/microblaze/kernel/module.c           |  149 +++++++++++++++++++++++++++++
- include/asm-microblaze/module.h           |   41 ++++++++
- 3 files changed, 319 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/microblaze_ksyms.c
- create mode 100644 arch/microblaze/kernel/module.c
- create mode 100644 include/asm-microblaze/module.h
+ arch/microblaze/kernel/ptrace.c |  212 +++++++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/ptrace.h |   70 +++++++++++++
+ 2 files changed, 282 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/ptrace.c
+ create mode 100644 include/asm-microblaze/ptrace.h
 
-diff --git a/arch/microblaze/kernel/microblaze_ksyms.c b/arch/microblaze/kernel/microblaze_ksyms.c
+diff --git a/arch/microblaze/kernel/ptrace.c b/arch/microblaze/kernel/ptrace.c
 new file mode 100644
-index 0000000..7ce8b36
+index 0000000..f2939ea
 --- /dev/null
-+++ b/arch/microblaze/kernel/microblaze_ksyms.c
-@@ -0,0 +1,129 @@
++++ b/arch/microblaze/kernel/ptrace.c
+@@ -0,0 +1,212 @@
 +/*
-+ * linux/arch/microblaze/kernel/microblazeksyms.c
++ * arch/microblaze/kernel/ptrace.c -- `ptrace' system call
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/cryptohash.h>
-+#include <linux/delay.h>
-+#include <linux/in6.h>
-+#include <linux/syscalls.h>
-+
-+#include <asm/checksum.h>
-+#include <asm/io.h>
-+#include <asm/page.h>
-+#include <asm/system.h>
-+#include <asm/uaccess.h>
-+
-+/* module handling */
-+EXPORT_SYMBOL(PAGE_OFFSET);
-+
-+/*
-+ * floating point math emulator support.
-+ * These symbols will never change their calling convention...
-+ */
-+/* EXPORT_SYMBOL_ALIAS(kern_fp_enter,fp_enter);
-+EXPORT_SYMBOL_ALIAS(fp_printk,printk);
-+EXPORT_SYMBOL_ALIAS(fp_send_sig,send_sig);
-+
-+EXPORT_SYMBOL(__backtrace); */
-+
-+	/* platform dependent support */
-+/* EXPORT_SYMBOL(__udelay);
-+EXPORT_SYMBOL(__const_udelay); */
-+
-+	/* networking */
-+EXPORT_SYMBOL(csum_partial);
-+EXPORT_SYMBOL(csum_partial_copy);
-+EXPORT_SYMBOL(csum_partial_copy_from_user);
-+EXPORT_SYMBOL(ip_compute_csum);
-+
-+	/* io */
-+/*#ifndef __raw_readsb
-+EXPORT_SYMBOL(__raw_readsb);
-+#endif
-+#ifndef __raw_readsw
-+EXPORT_SYMBOL(__raw_readsw);
-+#endif
-+#ifndef __raw_readsl
-+EXPORT_SYMBOL(__raw_readsl);
-+#endif
-+#ifndef __raw_writesb
-+EXPORT_SYMBOL(__raw_writesb);
-+#endif
-+#ifndef __raw_writesw
-+EXPORT_SYMBOL(__raw_writesw);
-+#endif
-+#ifndef __raw_writesl
-+EXPORT_SYMBOL(__raw_writesl);
-+#endif*/
-+
-+	/* string / mem functions */
-+/*EXPORT_SYMBOL(strchr);
-+EXPORT_SYMBOL(strrchr);*/
-+
-+#ifdef __HAVE_ARCH_MEMSET
-+EXPORT_SYMBOL(memset);
-+#endif
-+
-+#ifdef __HAVE_ARCH_MEMCPY
-+EXPORT_SYMBOL(memcpy);
-+#endif
-+
-+#ifdef __HAVE_ARCH_MEMMOVE
-+EXPORT_SYMBOL(memmove);
-+#endif
-+
-+/* EXPORT_SYMBOL(memchr);
-+EXPORT_SYMBOL(__memzero); */
-+
-+	/* user mem (segment) */
-+/* EXPORT_SYMBOL(__strnlen_user);
-+EXPORT_SYMBOL(__strncpy_from_user); */
-+
-+	/* crypto hash */
-+/* EXPORT_SYMBOL(sha_transform); */
-+
-+
-+/*
-+ * libgcc functions - functions that are used internally by the
-+ * compiler... (prototypes are not correct though, but that
-+ * doesn't really matter since they're not versioned).
-+ */
-+extern void __ashldi3(void);
-+EXPORT_SYMBOL(__ashldi3);
-+extern void __ashrdi3(void);
-+EXPORT_SYMBOL(__ashrdi3);
-+extern void __divsi3(void);
-+EXPORT_SYMBOL(__divsi3);
-+extern void __lshrdi3(void);
-+EXPORT_SYMBOL(__lshrdi3);
-+extern void __modsi3(void);
-+EXPORT_SYMBOL(__modsi3);
-+extern void __mulsi3(void);
-+EXPORT_SYMBOL(__mulsi3);
-+extern void __muldi3(void);
-+EXPORT_SYMBOL(__muldi3);
-+extern void __ucmpdi2(void);
-+EXPORT_SYMBOL(__ucmpdi2);
-+extern void __udivsi3(void);
-+EXPORT_SYMBOL(__udivsi3);
-+extern void __umodsi3(void);
-+EXPORT_SYMBOL(__umodsi3);
-+/*extern void fpundefinstr(void);
-+extern void fp_enter(void);*/
-+
-+	/* bitops */
-+/* EXPORT_SYMBOL(_set_bit_le);
-+EXPORT_SYMBOL(_test_and_set_bit_le);
-+EXPORT_SYMBOL(_clear_bit_le);
-+EXPORT_SYMBOL(_test_and_clear_bit_le);
-+EXPORT_SYMBOL(_change_bit_le);
-+EXPORT_SYMBOL(_test_and_change_bit_le);
-+EXPORT_SYMBOL(_find_first_zero_bit_le);
-+EXPORT_SYMBOL(_find_next_zero_bit_le);
-+EXPORT_SYMBOL(_find_first_bit_le);
-+EXPORT_SYMBOL(_find_next_bit_le); */
-diff --git a/arch/microblaze/kernel/module.c b/arch/microblaze/kernel/module.c
-new file mode 100644
-index 0000000..d2befac
---- /dev/null
-+++ b/arch/microblaze/kernel/module.c
-@@ -0,0 +1,149 @@
-+/*
-+ * linux/arch/microblaze/kernel/module.c
++ * Copyright (C) 2007 PetaLogix
++ * Copyright (C) 2004-07 John Williams <john.williams@petalogix.com>
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * derived from arch/v850/kernel/ptrace.c
 + *
++ * Copyright (C) 2002,03 NEC Electronics Corporation
++ * Copyright (C) 2002,03 Miles Bader <miles@gnu.org>
++ *
++ * Derived from arch/mips/kernel/ptrace.c:
++ *
++ * Copyright (C) 1992 Ross Biro
++ * Copyright (C) Linus Torvalds
++ * Copyright (C) 1994, 95, 96, 97, 98, 2000 Ralf Baechle
++ * Copyright (C) 1996 David S. Miller
++ * Kevin D. Kissell, kevink@mips.com and Carsten Langgaard, carstenl@mips.com
++ * Copyright (C) 1999 MIPS Technologies, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
 + */
-+#include <linux/module.h>
-+#include <linux/moduleloader.h>
++
 +#include <linux/kernel.h>
-+#include <linux/elf.h>
-+#include <linux/vmalloc.h>
-+#include <linux/slab.h>
-+#include <linux/fs.h>
-+#include <linux/string.h>
++#include <linux/mm.h>
++#include <linux/sched.h>
++#include <linux/smp_lock.h>
++#include <linux/ptrace.h>
++#include <linux/signal.h>
 +
-+#include <asm/pgtable.h>
++#include <asm/errno.h>
++#include <asm/ptrace.h>
++#include <asm/processor.h>
++#include <asm/uaccess.h>
++#include <asm/asm-offsets.h>
 +
 +#if 0
 +#define DBPRINTK(...) printk(__VA_ARGS__)
@@ -206,138 +102,182 @@ index 0000000..d2befac
 +#define DBPRINTK(...)
 +#endif
 +
-+void *module_alloc(unsigned long size)
++/* Returns the address where the register at REG_OFFS in P is stashed away. */
++static microblaze_reg_t *reg_save_addr(unsigned reg_offs,
++					struct task_struct *t)
 +{
-+	void *ret;
-+	ret = (size == 0) ? NULL : vmalloc(size);
-+	DBPRINTK("module_alloc (%08lx@%08lx)\n", size, (unsigned long int)ret);
-+	return ret;
++	struct pt_regs *regs;
++
++	/*
++	 * Three basic cases:
++	 *
++	 * (1)	A register normally saved before calling the scheduler, is
++	 *	available in the kernel entry pt_regs structure at the top
++	 *	of the kernel stack. The kernel trap/irq exit path takes
++	 *	care to save/restore almost all registers for ptrace'd
++	 *	processes.
++	 *
++	 * (2)	A call-clobbered register, where the process P entered the
++	 *	kernel via [syscall] trap, is not stored anywhere; that's
++	 *	OK, because such registers are not expected to be preserved
++	 *	when the trap returns anyway (so we don't actually bother to
++	 *	test for this case).
++	 *
++	 * (3)	A few registers not used at all by the kernel, and so
++	 *	normally never saved except by context-switches, are in the
++	 *	context switch state.
++	 */
++
++	/* Register saved during kernel entry (or not available). */
++	regs = task_pt_regs(t);
++
++	return (microblaze_reg_t *)((char *)regs + reg_offs);
 +}
 +
-+void module_free(struct module *module, void *region)
++long arch_ptrace(struct task_struct *child, long request, long addr, long data)
 +{
-+	DBPRINTK("module_free(%s,%08lx)\n", module->name, region);
-+	vfree(region);
-+}
++	int rval;
 +
-+int module_frob_arch_sections(Elf_Ehdr *hdr,
-+				Elf_Shdr *sechdrs,
-+				char *secstrings,
-+				struct module *mod)
-+{
-+	return 0;
-+}
++	switch (request) {
++		unsigned long val, copied;
 +
-+int
-+apply_relocate(Elf32_Shdr * sechdrs, const char *strtab, unsigned int symindex,
-+		unsigned int relsec, struct module *module)
-+{
++	case PTRACE_PEEKTEXT: /* read word at location addr. */
++	case PTRACE_PEEKDATA:
++		DBPRINTK("PEEKTEXT/PEEKDATA at %08lX\n", addr);
++		copied = access_process_vm(child, addr, &val, sizeof(val), 0);
++		rval = -EIO;
++		if (copied != sizeof(val))
++			break;
++		rval = put_user(val, (unsigned long *)data);
++		goto out;
 +
-+	printk(KERN_ERR "module %s: ADD RELOCATION unsupported\n",
-+		module->name);
-+	return -ENOEXEC;
++	case PTRACE_POKETEXT: /* write the word at location addr. */
++	case PTRACE_POKEDATA:
++		DBPRINTK("POKETEXT/POKEDATA to %08lX\n", addr);
++		rval = 0;
++		if (access_process_vm(child, addr, &data, sizeof(data), 1)
++			== sizeof(data))
++			break;
++		rval = -EIO;
++		goto out;
 +
-+}
++	/* Read/write the word at location ADDR in the registers. */
++	case PTRACE_PEEKUSR:
++	case PTRACE_POKEUSR:
++		DBPRINTK("PEEKUSR/POKEUSR : 0x%08lx\n", addr);
++		rval = 0;
++		if (addr >= PT_SIZE && request == PTRACE_PEEKUSR) {
++			/* Special requests that don't actually correspond
++			 to offsets in struct pt_regs. */
++			if (addr == PT_TEXT_ADDR) {
++				val = child->mm->start_code;
++			} else if (addr == PT_DATA_ADDR) {
++				val = child->mm->start_data;
++			} else if (addr == PT_TEXT_LEN) {
++				val = child->mm->end_code
++					- child->mm->start_code;
++			} else {
++				rval = -EIO;
++			}
++		} else if (addr >= 0 && addr < PT_SIZE && (addr & 0x3) == 0) {
++			microblaze_reg_t *reg_addr = reg_save_addr(addr, child);
++			if (request == PTRACE_PEEKUSR) {
++				val = *reg_addr;
++			} else {
++				*reg_addr = data;
++			}
++		} else
++			rval = -EIO;
 +
-+int
-+apply_relocate_add(Elf32_Shdr * sechdrs, const char *strtab,
-+	unsigned int symindex, unsigned int relsec, struct module *module)
-+{
++		if (rval == 0 && request == PTRACE_PEEKUSR)
++			rval = put_user(val, (unsigned long *)data);
++		goto out;
 +
-+	unsigned int i;
-+	Elf32_Rela *rela = (void *)sechdrs[relsec].sh_addr;
-+	Elf32_Sym *sym;
-+	unsigned long int *location;
-+	unsigned long int locoffs;
-+	unsigned long int value;
-+	unsigned long int old_value;
-+
-+	DBPRINTK("Applying add relocation section %u to %u\n",
-+		relsec, sechdrs[relsec].sh_info);
-+
-+	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
-+
-+		location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr +
-+				rela[i].r_offset;
-+		sym = (Elf32_Sym *)sechdrs[symindex].sh_addr +
-+			ELF32_R_SYM(rela[i].r_info);
-+		value = sym->st_value + rela[i].r_addend;
-+
-+		switch (ELF32_R_TYPE(rela[i].r_info)) {
-+
-+		/*
-+		 * Be careful! mb-gcc / mb-ld splits the relocs between the
-+		 * text and the reloc table. In general this means we must
-+		 * read the current contents of (*location), add any offset
-+		 * then store the result back in
-+		 */
-+
-+		case R_MICROBLAZE_32:
-+			old_value = *location;
-+			*location = value + old_value;
-+			DBPRINTK("R_MICROBLAZE_32 (%08lx->%08lx)\n",
-+				old_value, value);
++	/* Continue and stop at next (return from) syscall */
++	case PTRACE_SYSCALL:
++		DBPRINTK("PTRACE_SYSCALL\n");
++	case PTRACE_SINGLESTEP:
++		DBPRINTK("PTRACE_SINGLESTEP\n");
++	/* Restart after a signal. */
++	case PTRACE_CONT:
++		DBPRINTK("PTRACE_CONT\n");
++		rval = -EIO;
++		if (!valid_signal(data))
 +			break;
 +
-+		case R_MICROBLAZE_64:
-+			old_value = ((location[0] & 0x0000FFFF) << 16) |
-+				((location[1] & 0x0000FFFF));
-+			value += old_value;
-+			location[0] = (location[0] & 0xFFFF0000) |
-+					(value >> 16);
-+			location[1] = (location[1] & 0xFFFF0000) |
-+					(value & 0xFFFF);
-+			DBPRINTK("R_MICROBLAZE_64 (%08lx->%08lx)\n",
-+				old_value, value);
-+			break;
++		if (request == PTRACE_SYSCALL)
++			set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
++		else
++			clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
 +
-+		case R_MICROBLAZE_64_PCREL:
-+			locoffs = (location[0] & 0xFFFF) << 16 |
-+				(location[1] & 0xFFFF);
-+			value -= (unsigned long int)(location) + 4 +
-+				locoffs;
-+			location[0] = (location[0] & 0xFFFF0000) |
-+					(value >> 16);
-+			location[1] = (location[1] & 0xFFFF0000) |
-+					(value & 0xFFFF);
-+			DBPRINTK("R_MICROBLAZE_64_PCREL (%08lx)\n",
-+				value);
-+			break;
++		child->exit_code = data;
++		DBPRINTK("wakeup_process\n");
++		wake_up_process(child);
++		rval = 0;
++		break;
 +
-+		case R_MICROBLAZE_NONE:
-+			DBPRINTK("R_MICROBLAZE_NONE\n");
++	/*
++	 * make the child exit. Best I can do is send it a sigkill.
++	 * perhaps it should be put in the status that it wants to
++	 * exit.
++	 */
++	case PTRACE_KILL:
++		DBPRINTK("PTRACE_KILL\n");
++		rval = 0;
++		if (child->exit_state == EXIT_ZOMBIE)	/* already dead */
 +			break;
++		child->exit_code = SIGKILL;
++		wake_up_process(child);
++		break;
 +
-+		default:
-+			printk(KERN_ERR "module %s: "
-+				"Unknown relocation: %u\n",
-+				module->name,
-+				ELF32_R_TYPE(rela->r_info));
-+			return -ENOEXEC;
-+		}
++	case PTRACE_DETACH: /* detach a process that was attached. */
++		DBPRINTK("PTRACE_DETACH\n");
++		rval = ptrace_detach(child, data);
++		break;
++
++	default:
++		rval = -EIO;
++		goto out;
 +	}
-+	return 0;
++ out:
++	return rval;
 +}
 +
-+int
-+module_finalize(const Elf32_Ehdr * hdr, const Elf_Shdr *sechdrs,
-+		struct module *module)
++#if 0
++static asmlinkage void syscall_trace(void)
 +{
-+	return 0;
++	if (!test_thread_flag(TIF_SYSCALL_TRACE))
++		return;
++	if (!(current->ptrace & PT_PTRACED))
++		return;
++	/* The 0x80 provides a way for the tracing parent to distinguish
++	 between a syscall stop and SIGTRAP delivery */
++	ptrace_notify(SIGTRAP | ((current->ptrace & PT_TRACESYSGOOD)
++				? 0x80 : 0));
++	/*
++	 * this isn't the same as continuing with a signal, but it will do
++	 * for normal use. strace only continues with a signal if the
++	 * stopping signal is not SIGTRAP. -brl
++	 */
++	if (current->exit_code) {
++		send_sig(current->exit_code, current, 1);
++		current->exit_code = 0;
++	}
 +}
++#endif
 +
-+void
-+module_arch_cleanup(struct module *mod)
++void ptrace_disable(struct task_struct *child)
 +{
++	/* nothing to do */
 +}
-diff --git a/include/asm-microblaze/module.h b/include/asm-microblaze/module.h
+diff --git a/include/asm-microblaze/ptrace.h b/include/asm-microblaze/ptrace.h
 new file mode 100644
-index 0000000..97416e0
+index 0000000..f583d72
 --- /dev/null
-+++ b/include/asm-microblaze/module.h
-@@ -0,0 +1,41 @@
++++ b/include/asm-microblaze/ptrace.h
+@@ -0,0 +1,70 @@
 +/*
-+ * include/asm-microblaze/module.h
++ * include/asm-microblaze/ptrace.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -346,37 +286,66 @@ index 0000000..97416e0
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_MODULE_H
-+#define _ASM_MODULE_H
++#ifndef _ASM_PTRACE_H
++#define _ASM_PTRACE_H
 +
-+#define EM_XILINX_MICROBLAZE 0xbaab
++#ifndef __ASSEMBLY__
++#include <asm/types.h>
 +
-+/* Microblaze Relocations */
-+#define R_MICROBLAZE_NONE 0
-+#define R_MICROBLAZE_32 1
-+#define R_MICROBLAZE_32_PCREL 2
-+#define R_MICROBLAZE_64_PCREL 3
-+#define R_MICROBLAZE_32_PCREL_LO 4
-+#define R_MICROBLAZE_64 5
-+#define R_MICROBLAZE_32_LO 6
-+#define R_MICROBLAZE_SRO32 7
-+#define R_MICROBLAZE_SRW32 8
-+#define R_MICROBLAZE_64_NONE 9
-+#define R_MICROBLAZE_32_SYM_OP_SYM 10
-+/* Keep this the last entry. */
-+#define R_MICROBLAZE_NUM 11
++typedef unsigned long microblaze_reg_t;
 +
-+struct mod_arch_specific {
-+	int foo;
++struct pt_regs {
++	microblaze_reg_t r0;
++	microblaze_reg_t r1;
++	microblaze_reg_t r2;
++	microblaze_reg_t r3;
++	microblaze_reg_t r4;
++	microblaze_reg_t r5;
++	microblaze_reg_t r6;
++	microblaze_reg_t r7;
++	microblaze_reg_t r8;
++	microblaze_reg_t r9;
++	microblaze_reg_t r10;
++	microblaze_reg_t r11;
++	microblaze_reg_t r12;
++	microblaze_reg_t r13;
++	microblaze_reg_t r14;
++	microblaze_reg_t r15;
++	microblaze_reg_t r16;
++	microblaze_reg_t r17;
++	microblaze_reg_t r18;
++	microblaze_reg_t r19;
++	microblaze_reg_t r20;
++	microblaze_reg_t r21;
++	microblaze_reg_t r22;
++	microblaze_reg_t r23;
++	microblaze_reg_t r24;
++	microblaze_reg_t r25;
++	microblaze_reg_t r26;
++	microblaze_reg_t r27;
++	microblaze_reg_t r28;
++	microblaze_reg_t r29;
++	microblaze_reg_t r30;
++	microblaze_reg_t r31;
++	microblaze_reg_t pc;
++	microblaze_reg_t msr;
++	microblaze_reg_t ear;
++	microblaze_reg_t esr;
++	microblaze_reg_t fsr;
++	int kernel_mode;
 +};
 +
-+#define Elf_Shdr	Elf32_Shdr
-+#define Elf_Sym		Elf32_Sym
-+#define Elf_Ehdr	Elf32_Ehdr
++#define kernel_mode(regs)		((regs)->kernel_mode)
++#define user_mode(regs)			(!kernel_mode(regs))
 +
-+typedef struct { volatile int counter; } module_t;
++#define instruction_pointer(regs)	((regs)->pc)
++#define profile_pc(regs)		instruction_pointer(regs)
 +
-+#endif /* _ASM_MODULE_H */
++extern void show_regs(struct pt_regs *);
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* _ASM_PTRACE_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
