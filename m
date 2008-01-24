@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYAZQBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbYAZQCH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759597AbYAZQBu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 11:01:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYAZPz2
+	id S1756980AbYAZQCH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 11:02:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbYAZPze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:55:28 -0500
+	Sat, 26 Jan 2008 10:55:34 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755316AbYAZPzX (ORCPT
+	with ESMTP id S1755391AbYAZPza (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:55:23 -0500
+	Sat, 26 Jan 2008 10:55:30 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 49/52] [microblaze] device.h param.h topology.h
-Date: Thu, 24 Jan 2008 16:03:24 +0100
-Message-Id: <990835fa238b139deac273e0573bcf5060e3ee80.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 35/52] [microblaze] ioctl support
+Date: Thu, 24 Jan 2008 16:03:10 +0100
+Message-Id: <43f77bd3045d72346eb39d3170de727050c835c1.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <807d570db44eeed03e3211b933a207f42cf569f0.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <b501d439bdfabddbdef5935db86b6f64c83d55c4.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -45,20 +45,6 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <37627293f081fa40f21234944ddb878d5e711740.1201107832.git.monstr@monstr.eu>
  <105791d33ea12564c70be0dd3fafef386f8e1b55.1201107832.git.monstr@monstr.eu>
  <b501d439bdfabddbdef5935db86b6f64c83d55c4.1201107832.git.monstr@monstr.eu>
- <43f77bd3045d72346eb39d3170de727050c835c1.1201107832.git.monstr@monstr.eu>
- <c09d54c49393bedbe4ca43df0e35cefa5fcc649c.1201107832.git.monstr@monstr.eu>
- <29ee870c02ea5d4c409644d7f0eb09cfbb1ec816.1201107832.git.monstr@monstr.eu>
- <99bfbc3fdb53003c11414681b2c73561d533c3ef.1201107832.git.monstr@monstr.eu>
- <1b21abdff6128297a902060b07a0c7ca6d8db633.1201107832.git.monstr@monstr.eu>
- <e173c10560cdf883ba3c7e639ca930f0627a2260.1201107832.git.monstr@monstr.eu>
- <155ee14d990137f7eb6fa76beee06c880c97e790.1201107832.git.monstr@monstr.eu>
- <34f2199d631406fbdf6b325a164e0d1899a3acb5.1201107832.git.monstr@monstr.eu>
- <14243bf49d44d1dbd6e377813f2635defcb82c4e.1201107832.git.monstr@monstr.eu>
- <01e493efdc1c8cb7ee0d5f8b7c73244e04680e71.1201107832.git.monstr@monstr.eu>
- <739e189a03021d2804f23d0774637a15038098bc.1201107832.git.monstr@monstr.eu>
- <d4eec3db9f6e6e86994444b8035d5e41db3f085b.1201107832.git.monstr@monstr.eu>
- <e445f6b37baf09d6469a0ad4eba189a7ca7ef7c3.1201107832.git.monstr@monstr.eu>
- <807d570db44eeed03e3211b933a207f42cf569f0.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -70,55 +56,20 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/device.h   |   27 ++++++++
- include/asm-microblaze/param.h    |   36 +++++++++++
- include/asm-microblaze/topology.h |  124 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 187 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/device.h
- create mode 100644 include/asm-microblaze/param.h
- create mode 100644 include/asm-microblaze/topology.h
+ include/asm-microblaze/ioctl.h  |   84 +++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/ioctls.h |   93 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 177 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/ioctl.h
+ create mode 100644 include/asm-microblaze/ioctls.h
 
-diff --git a/include/asm-microblaze/device.h b/include/asm-microblaze/device.h
+diff --git a/include/asm-microblaze/ioctl.h b/include/asm-microblaze/ioctl.h
 new file mode 100644
-index 0000000..c0e203c
+index 0000000..c65a664
 --- /dev/null
-+++ b/include/asm-microblaze/device.h
-@@ -0,0 +1,27 @@
++++ b/include/asm-microblaze/ioctl.h
+@@ -0,0 +1,84 @@
 +/*
-+ * Arch specific extensions to struct device
-+ *
-+ * This file is released under the GPLv2
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_DEVICE_H
-+#define _ASM_MICROBLAZE_DEVICE_H
-+
-+struct dma_mapping_ops;
-+struct device_node;
-+
-+struct dev_archdata {
-+	/* Optional pointer to an OF device node */
-+	struct device_node	*of_node;
-+
-+	/* DMA operations on that device */
-+	struct dma_mapping_ops	*dma_ops;
-+	void			*dma_data;
-+
-+	/* NUMA node if applicable */
-+	int			numa_node;
-+};
-+
-+#endif /* _ASM_MICROBLAZE_DEVICE_H */
-+
-+
-diff --git a/include/asm-microblaze/param.h b/include/asm-microblaze/param.h
-new file mode 100644
-index 0000000..b79d739
---- /dev/null
-+++ b/include/asm-microblaze/param.h
-@@ -0,0 +1,36 @@
-+/*
-+ * include/asm-microblaze/param.h
++ * include/asm-microblaze/ioctl.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -127,40 +78,88 @@ index 0000000..b79d739
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_PARAM_H
-+#define _ASM_PARAM_H
++#ifndef _MICROBLAZE_IOCTL_H
++#define _MICROBLAZE_IOCTL_H
 +
-+#ifdef __KERNEL__
-+# define HZ		100 /* internal timer frequency */
-+# define USER_HZ	100 /* for user interfaces in "ticks" */
-+# define CLOCKS_PER_SEC (USER_HZ) /* frequnzy at which times() counts */
-+#endif
-+
-+#ifndef NGROUPS
-+#define NGROUPS		32
-+#endif
-+
-+#ifndef NOGROUP
-+#define NOGROUP		(-1)
-+#endif
-+
-+#define EXEC_PAGESIZE	4096
-+
-+#ifndef HZ
-+#define HZ 100
-+#endif
-+
-+#define MAXHOSTNAMELEN	64 /* max length of hostname */
-+
-+#endif /* _ASM_PARAM_H */
-diff --git a/include/asm-microblaze/topology.h b/include/asm-microblaze/topology.h
-new file mode 100644
-index 0000000..4d3e2e7
---- /dev/null
-+++ b/include/asm-microblaze/topology.h
-@@ -0,0 +1,124 @@
 +/*
-+ * include/asm-microblaze/topology.h
++ * this was copied from the alpha as it's a bit cleaner there.
++ * -- Cort
++ */
++
++#define _IOC_NRBITS	8
++#define _IOC_TYPEBITS	8
++#define _IOC_SIZEBITS	13
++#define _IOC_DIRBITS	3
++
++#define _IOC_NRMASK	((1 << _IOC_NRBITS)-1)
++#define _IOC_TYPEMASK	((1 << _IOC_TYPEBITS)-1)
++#define _IOC_SIZEMASK	((1 << _IOC_SIZEBITS)-1)
++#define _IOC_DIRMASK	((1 << _IOC_DIRBITS)-1)
++
++#define _IOC_NRSHIFT	0
++#define _IOC_TYPESHIFT	(_IOC_NRSHIFT+_IOC_NRBITS)
++#define _IOC_SIZESHIFT	(_IOC_TYPESHIFT+_IOC_TYPEBITS)
++#define _IOC_DIRSHIFT	(_IOC_SIZESHIFT+_IOC_SIZEBITS)
++
++/*
++ * Direction bits _IOC_NONE could be 0, but OSF/1 gives it a bit.
++ * And this turns out useful to catch old ioctl numbers in header
++ * files for us.
++ */
++#define _IOC_NONE	1U
++#define _IOC_READ	2U
++#define _IOC_WRITE	4U
++
++#define _IOC(dir, type, nr, size) \
++	(((dir) << _IOC_DIRSHIFT) | \
++	((type) << _IOC_TYPESHIFT) | \
++	((nr) << _IOC_NRSHIFT) | \
++	((size) << _IOC_SIZESHIFT))
++
++/* provoke compile error for invalid uses of size argument */
++extern unsigned int __invalid_size_argument_for_IOC;
++#define _IOC_TYPECHECK(t) \
++	((sizeof(t) == sizeof(t[1]) && \
++	sizeof(t) < (1 << _IOC_SIZEBITS)) ? \
++	sizeof(t) : __invalid_size_argument_for_IOC)
++
++/* used to create numbers */
++#define _IO(type, nr)		_IOC(_IOC_NONE, (type), (nr), 0)
++#define _IOR(type, nr, size) \
++			_IOC(_IOC_READ, (type), (nr), (_IOC_TYPECHECK(size)))
++#define _IOW(type, nr, size) \
++			_IOC(_IOC_WRITE, (type), (nr), (_IOC_TYPECHECK(size)))
++#define _IOWR(type, nr, size) \
++		_IOC(_IOC_READ|_IOC_WRITE, (type), (nr), (_IOC_TYPECHECK(size)))
++#define _IOR_BAD(type, nr, size) \
++			_IOC(_IOC_READ, (type), (nr), sizeof(size))
++#define _IOW_BAD(type, nr, size) \
++			_IOC(_IOC_WRITE, (type), (nr), sizeof(size))
++#define _IOWR_BAD(type, nr, size) \
++			_IOC(_IOC_READ|_IOC_WRITE, (type), (nr), sizeof(size))
++
++/* used to decode them.. */
++#define _IOC_DIR(nr)		(((nr) >> _IOC_DIRSHIFT) & _IOC_DIRMASK)
++#define _IOC_TYPE(nr)		(((nr) >> _IOC_TYPESHIFT) & _IOC_TYPEMASK)
++#define _IOC_NR(nr)		(((nr) >> _IOC_NRSHIFT) & _IOC_NRMASK)
++#define _IOC_SIZE(nr)		(((nr) >> _IOC_SIZESHIFT) & _IOC_SIZEMASK)
++
++/* various drivers, such as the pcmcia stuff, need these... */
++#define IOC_IN		(_IOC_WRITE << _IOC_DIRSHIFT)
++#define IOC_OUT		(_IOC_READ << _IOC_DIRSHIFT)
++#define IOC_INOUT	((_IOC_WRITE|_IOC_READ) << _IOC_DIRSHIFT)
++#define IOCSIZE_MASK	(_IOC_SIZEMASK << _IOC_SIZESHIFT)
++#define IOCSIZE_SHIFT	(_IOC_SIZESHIFT)
++
++#endif /* _MICROBLAZE_IOCTL_H */
+diff --git a/include/asm-microblaze/ioctls.h b/include/asm-microblaze/ioctls.h
+new file mode 100644
+index 0000000..2ea08e0
+--- /dev/null
++++ b/include/asm-microblaze/ioctls.h
+@@ -0,0 +1,93 @@
++/*
++ * include/asm-microblaze/ioctls.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -169,120 +168,89 @@ index 0000000..4d3e2e7
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_TOPOLOGY_H
-+#define _ASM_TOPOLOGY_H
-+#ifdef __KERNEL__
++#ifndef _ASM_IOCTLS_H
++#define _ASM_IOCTLS_H
 +
-+struct sys_device;
-+struct device_node;
++#include <asm/ioctl.h>
 +
-+#ifdef CONFIG_NUMA
++/* 0x54 is just a magic number to make these relatively unique ('T') */
 +
-+#include <asm/mmzone.h>
++#define TCGETS		0x5401
++#define TCSETS		0x5402
++#define TCSETSW		0x5403
++#define TCSETSF		0x5404
++#define TCGETA		0x5405
++#define TCSETA		0x5406
++#define TCSETAW		0x5407
++#define TCSETAF		0x5408
++#define TCSBRK		0x5409
++#define TCXONC		0x540A
++#define TCFLSH		0x540B
++#define TIOCEXCL	0x540C
++#define TIOCNXCL	0x540D
++#define TIOCSCTTY	0x540E
++#define TIOCGPGRP	0x540F
++#define TIOCSPGRP	0x5410
++#define TIOCOUTQ	0x5411
++#define TIOCSTI		0x5412
++#define TIOCGWINSZ	0x5413
++#define TIOCSWINSZ	0x5414
++#define TIOCMGET	0x5415
++#define TIOCMBIS	0x5416
++#define TIOCMBIC	0x5417
++#define TIOCMSET	0x5418
++#define TIOCGSOFTCAR	0x5419
++#define TIOCSSOFTCAR	0x541A
++#define FIONREAD	0x541B
++#define TIOCINQ		FIONREAD
++#define TIOCLINUX	0x541C
++#define TIOCCONS	0x541D
++#define TIOCGSERIAL	0x541E
++#define TIOCSSERIAL	0x541F
++#define TIOCPKT		0x5420
++#define FIONBIO		0x5421
++#define TIOCNOTTY	0x5422
++#define TIOCSETD	0x5423
++#define TIOCGETD	0x5424
++#define TCSBRKP		0x5425 /* Needed for POSIX tcsendbreak() */
++#define TIOCTTYGSTRUCT	0x5426 /* For debugging only */
++#define TIOCSBRK	0x5427 /* BSD compatibility */
++#define TIOCCBRK	0x5428 /* BSD compatibility */
++#define TIOCGSID	0x5429 /* Return the session ID of FD */
++/* Get Pty Number (of pty-mux device) */
++#define TIOCGPTN	_IOR('T', 0x30, unsigned int)
++#define TIOCSPTLCK	_IOW('T', 0x31, int) /* Lock/unlock Pty */
 +
-+static inline int cpu_to_node(int cpu)
-+{
-+	return numa_cpu_lookup_table[cpu];
-+}
++#define FIONCLEX	0x5450 /* these numbers need to be adjusted. */
++#define FIOCLEX		0x5451
++#define FIOASYNC	0x5452
++#define TIOCSERCONFIG	0x5453
++#define TIOCSERGWILD	0x5454
++#define TIOCSERSWILD	0x5455
++#define TIOCGLCKTRMIOS	0x5456
++#define TIOCSLCKTRMIOS	0x5457
++#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
++#define TIOCSERGETLSR	0x5459 /* Get line status register */
++#define TIOCSERGETMULTI 0x545A /* Get multiport config */
++#define TIOCSERSETMULTI 0x545B /* Set multiport config */
 +
-+#define parent_node(node)	(node)
++#define TIOCMIWAIT	0x545C /* wait for a change on serial input line(s) */
++#define TIOCGICOUNT	0x545D /* read serial port inline interrupt counts */
 +
-+static inline cpumask_t node_to_cpumask(int node)
-+{
-+	return numa_cpumask_lookup_table[node];
-+}
++#define	FIOQSIZE	0x545E
 +
-+static inline int node_to_first_cpu(int node)
-+{
-+	cpumask_t tmp;
-+	tmp = node_to_cpumask(node);
-+	return first_cpu(tmp);
-+}
++/* Used for packet mode */
++#define TIOCPKT_DATA		0
++#define TIOCPKT_FLUSHREAD	1
++#define TIOCPKT_FLUSHWRITE	2
++#define TIOCPKT_STOP		4
++#define TIOCPKT_START		8
++#define TIOCPKT_NOSTOP		16
++#define TIOCPKT_DOSTOP		32
 +
-+int of_node_to_nid(struct device_node *device);
++#define TIOCSER_TEMT	0x01 /* Transmitter physically empty */
 +
-+struct pci_bus;
-+#ifdef CONFIG_PCI
-+extern int pcibus_to_node(struct pci_bus *bus);
-+#else
-+static inline int pcibus_to_node(struct pci_bus *bus)
-+{
-+	return -1;
-+}
-+#endif
-+
-+#define pcibus_to_cpumask(bus)	(pcibus_to_node(bus) == -1 ? \
-+					CPU_MASK_ALL : \
-+					node_to_cpumask(pcibus_to_node(bus)) \
-+				)
-+
-+/* sched_domains SD_NODE_INIT for PPC64 machines */
-+#define SD_NODE_INIT (struct sched_domain) {		\
-+	.span			= CPU_MASK_NONE,	\
-+	.parent			= NULL,			\
-+	.child			= NULL,			\
-+	.groups			= NULL,			\
-+	.min_interval		= 8,			\
-+	.max_interval		= 32,			\
-+	.busy_factor		= 32,			\
-+	.imbalance_pct		= 125,			\
-+	.cache_nice_tries	= 1,			\
-+	.busy_idx		= 3,			\
-+	.idle_idx		= 1,			\
-+	.newidle_idx		= 2,			\
-+	.wake_idx		= 1,			\
-+	.flags			= SD_LOAD_BALANCE	\
-+				| SD_BALANCE_EXEC	\
-+				| SD_BALANCE_NEWIDLE	\
-+				| SD_WAKE_IDLE		\
-+				| SD_SERIALIZE		\
-+				| SD_WAKE_BALANCE,	\
-+	.last_balance		= jiffies,		\
-+	.balance_interval	= 1,			\
-+	.nr_balance_failed	= 0,			\
-+}
-+
-+extern void __init dump_numa_cpu_topology(void);
-+
-+extern int sysfs_add_device_to_node(struct sys_device *dev, int nid);
-+extern void sysfs_remove_device_from_node(struct sys_device *dev, int nid);
-+
-+#else
-+
-+static inline int of_node_to_nid(struct device_node *device)
-+{
-+	return 0;
-+}
-+
-+static inline void dump_numa_cpu_topology(void) {}
-+
-+static inline int sysfs_add_device_to_node(struct sys_device *dev, int nid)
-+{
-+	return 0;
-+}
-+
-+static inline void sysfs_remove_device_from_node(struct sys_device *dev,
-+						int nid)
-+{
-+}
-+
-+#include <asm-generic/topology.h>
-+
-+#endif /* CONFIG_NUMA */
-+
-+#ifdef CONFIG_SMP
-+#include <asm/cputable.h>
-+#define smt_capable()		(cpu_has_feature(CPU_FTR_SMT))
-+
-+#ifdef CONFIG_PPC64
-+#include <asm/smp.h>
-+
-+#define topology_thread_siblings(cpu)	(cpu_sibling_map[cpu])
-+#endif
-+#endif
-+
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_TOPOLOGY_H */
++#endif /* _ASM_IOCTLS_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
