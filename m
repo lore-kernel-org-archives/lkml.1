@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbYAZP5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbYAZP6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758139AbYAZP5y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 10:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYAZPyh
+	id S1756719AbYAZP6Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 10:58:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYAZPym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:54:37 -0500
+	Sat, 26 Jan 2008 10:54:42 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752797AbYAZPyf (ORCPT
+	with ESMTP id S1755307AbYAZPyk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:54:35 -0500
+	Sat, 26 Jan 2008 10:54:40 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 23/52] [microblaze] process and init task function
-Date: Thu, 24 Jan 2008 16:02:58 +0100
-Message-Id: <240998be1af3774635995fd19248f8b3a9e8a702.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 37/52] [microblaze] headers for executables format FLAT, ELF
+Date: Thu, 24 Jan 2008 16:03:12 +0100
+Message-Id: <29ee870c02ea5d4c409644d7f0eb09cfbb1ec816.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <60642f04ebcf9f76da50a1d40191755f258edcc5.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <c09d54c49393bedbe4ca43df0e35cefa5fcc649c.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -33,6 +33,20 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <90badb264d0e4ec49fdaa76842a5e5f259681299.1201107832.git.monstr@monstr.eu>
  <a013a2b7044186c64d55cdafc8c9b29bc73a7fc5.1201107832.git.monstr@monstr.eu>
  <60642f04ebcf9f76da50a1d40191755f258edcc5.1201107832.git.monstr@monstr.eu>
+ <240998be1af3774635995fd19248f8b3a9e8a702.1201107832.git.monstr@monstr.eu>
+ <3bcb9581bc512fdd0a124ac8322af9e2a8adc975.1201107832.git.monstr@monstr.eu>
+ <db7f441df21cfe296a44744747b28f379e75fd49.1201107832.git.monstr@monstr.eu>
+ <e6309af7cc6550ef5b399fc0902f1926f9e52e58.1201107832.git.monstr@monstr.eu>
+ <2d11eef3abada1f41658a532a483c6121ded8054.1201107832.git.monstr@monstr.eu>
+ <48db19662b808ab6f5455dd7f2116e6544c50e95.1201107832.git.monstr@monstr.eu>
+ <7b0cfa6ae11749e20c941d0a4f03577141e022f8.1201107832.git.monstr@monstr.eu>
+ <2f3db7ba4fe41cb9888adabf0e4e052d4da5c37c.1201107832.git.monstr@monstr.eu>
+ <d67010417928d04766e6dd74820b12c249d61814.1201107832.git.monstr@monstr.eu>
+ <37627293f081fa40f21234944ddb878d5e711740.1201107832.git.monstr@monstr.eu>
+ <105791d33ea12564c70be0dd3fafef386f8e1b55.1201107832.git.monstr@monstr.eu>
+ <b501d439bdfabddbdef5935db86b6f64c83d55c4.1201107832.git.monstr@monstr.eu>
+ <43f77bd3045d72346eb39d3170de727050c835c1.1201107832.git.monstr@monstr.eu>
+ <c09d54c49393bedbe4ca43df0e35cefa5fcc649c.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,20 +58,20 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/init_task.c |   31 +++++++++
- arch/microblaze/kernel/process.c   |  129 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 160 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/init_task.c
- create mode 100644 arch/microblaze/kernel/process.c
+ include/asm-microblaze/elf.h  |   24 +++++++++++
+ include/asm-microblaze/flat.h |   93 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 117 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/elf.h
+ create mode 100644 include/asm-microblaze/flat.h
 
-diff --git a/arch/microblaze/kernel/init_task.c b/arch/microblaze/kernel/init_task.c
+diff --git a/include/asm-microblaze/elf.h b/include/asm-microblaze/elf.h
 new file mode 100644
-index 0000000..7c6bce3
+index 0000000..8b95630
 --- /dev/null
-+++ b/arch/microblaze/kernel/init_task.c
-@@ -0,0 +1,31 @@
++++ b/include/asm-microblaze/elf.h
+@@ -0,0 +1,24 @@
 +/*
-+ * arch/microblaze/kernel/init_task.c
++ * include/asm-microblaze/elf.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -66,162 +80,119 @@ index 0000000..7c6bce3
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/init_task.h>
-+#include <linux/fs.h>
-+#include <linux/mqueue.h>
++#ifndef _ASM_ELF_H
++#define _ASM_ELF_H
 +
-+#include <asm/pgtable.h>
++#define EM_XILINX_MICROBLAZE 0xbaab
++#define ELF_ARCH	EM_XILINX_MICROBLAZE
 +
-+static struct fs_struct init_fs = INIT_FS;
-+static struct files_struct init_files = INIT_FILES;
-+static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
-+static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-+struct mm_struct init_mm = INIT_MM(init_mm);
-+EXPORT_SYMBOL(init_mm);
++#define elf_check_arch(x) ((x)->e_machine == EM_XILINX_MICROBLAZE)
 +
-+union thread_union init_thread_union
-+	__attribute__((__section__(".data.init_task"))) =
-+{ INIT_THREAD_INFO(init_task) };
++/*
++ * These are used to set parameters in the core dumps.
++ */
++#define ELF_CLASS	ELFCLASS32
 +
-+struct task_struct init_task = INIT_TASK(init_task);
-+EXPORT_SYMBOL(init_task);
-diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
++#endif /* _ASM_ELF_H */
+diff --git a/include/asm-microblaze/flat.h b/include/asm-microblaze/flat.h
 new file mode 100644
-index 0000000..679fe19
+index 0000000..1f50a97
 --- /dev/null
-+++ b/arch/microblaze/kernel/process.c
-@@ -0,0 +1,129 @@
++++ b/include/asm-microblaze/flat.h
+@@ -0,0 +1,93 @@
 +/*
-+ * arch/microblaze/kernel/process.c
++ * include/asm-microblaze/flat.h
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * uClinux flat-format executables
 + *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * Copyright (C) 2005 John Williams <jwilliams@itee.uq.edu.au>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ *
 + */
 +
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/pm.h>
++#ifndef _MICROBLAZE_FLAT_H
++#define _MICROBLAZE_FLAT_H
 +
-+#include <asm/system.h>
++#include <asm/unaligned.h>
 +
-+/* FIXME */
-+void show_regs(struct pt_regs *regs)
++#define	flat_stack_align(sp) /* nothing needed */
++#define	flat_argvp_envp_on_stack()	0
++#define	flat_old_ram_flag(flags)	(flags)
++#define	flat_reloc_valid(reloc, size)	((reloc) <= (size))
++#define	flat_set_persistent(relval, p)		0
++
++/*
++ * Microblaze works a little differently from other arches, because
++ * of the MICROBLAZE_64 reloc type. Here, a 32 bit address is split
++ * over two instructions, an 'imm' instruction which provides the top
++ * 16 bits, then the instruction "proper" which provides the low 16
++ * bits.
++ */
++
++/*
++ * Crack open a symbol reference and extract the address to be
++ * relocated. rp is a potentially unaligned pointer to the
++ * reference
++ */
++
++static inline unsigned long
++flat_get_addr_from_rp(unsigned long *rp, unsigned long relval,
++			unsigned long flags, unsigned long *persistent)
 +{
-+	unsigned long *p;
-+	int i;
-+	printk(KERN_INFO "pc:\t0x%08lx\tsp:\t0x%08lx\n", regs->pc, regs->r1);
-+	printk(KERN_INFO
-+		"flags:\t0x%08lx\tear:\t0x%08lx\tesr:\t"
-+		"0x%08lx\tfsr:\t0x%08lx\n",
-+		regs->msr, regs->ear, regs->esr, regs->fsr);
-+	printk(KERN_INFO
-+		"r0:\t0x%08lx\tr1:\t0x%08lx\tr2:\t0x%08lx\tr3\t0x%08lx\n",
-+		0L, regs->r1, regs->r2, regs->r3);
-+	for (i = 4, p = &(regs->r4); i < 32; i += 4, p += 4) {
-+		printk(KERN_INFO "r%i:\t0x%08lx\tr%i:\t0x%08lx\tr%i:\t"
-+			"0x%08lx\tr%i:\t0x%08lx\n",
-+			i, *p, i+1, *(p+1), i+2, *(p+2), i+3, *(p+3));
++	unsigned long addr;
++	(void)flags;
++
++	/* Is it a split 64/32 reference? */
++	if (relval & 0x80000000) {
++		/* Grab the two halves of the reference */
++		unsigned long val_hi, val_lo;
++
++		val_hi = get_unaligned(rp);
++		val_lo = get_unaligned(rp+1);
++
++		/* Crack the address out */
++		addr = ((val_hi & 0xffff) << 16) + (val_lo & 0xffff);
++	} else {
++		/* Get the address straight out */
++		addr = get_unaligned(rp);
 +	}
-+	printk(KERN_INFO "\n");
-+}
 +
-+void (*pm_power_off)(void) = NULL;
-+EXPORT_SYMBOL(pm_power_off);
-+
-+void cpu_idle(void)
-+{
-+	set_thread_flag(TIF_POLLING_NRFLAG);
-+
-+	while (1) {
-+		while (!need_resched())
-+			cpu_relax();
-+
-+		preempt_enable_no_resched();
-+		schedule();
-+		preempt_disable();
-+	}
-+}
-+
-+void flush_thread(void)
-+{
-+}
-+
-+int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
-+		unsigned long unused,
-+		struct task_struct *p, struct pt_regs *regs)
-+{
-+	struct pt_regs *childregs = task_pt_regs(p);
-+	struct thread_info *ti = task_thread_info(p);
-+
-+	*childregs = *regs;
-+
-+	if (user_mode(regs))
-+		childregs->r1 = usp;
-+	else
-+		childregs->r1 = ((unsigned long) ti) + THREAD_SIZE;
-+
-+	memset(&ti->cpu_context, 0, sizeof(struct cpu_context));
-+	ti->cpu_context.sp = (unsigned long)childregs;
-+	ti->cpu_context.msr = (unsigned long)childregs->msr;
-+	ti->cpu_context.r15 = (unsigned long)ret_from_fork - 8;
-+
-+	if (clone_flags & CLONE_SETTLS)
-+		;/* FIXME: not sure what to do */
-+
-+	return 0;
++	return addr;
 +}
 +
 +/*
-+ * Return saved PC of a blocked thread.
-+ * FIXME this needs to be checked
++ * Insert an address into the symbol reference at rp. rp is potentially
++ * unaligned.
 + */
-+unsigned long thread_saved_pc(struct task_struct *tsk)
-+{
-+	struct cpu_context *ctx =
-+		&(((struct thread_info *)(tsk->stack))->cpu_context);
 +
-+	/* Check whether the thread is blocked in resume() */
-+	if (in_sched_functions(ctx->r15))
-+		return ((unsigned long)ctx->r15);
-+	else
-+		return ctx->r14;
++static inline void
++flat_put_addr_at_rp(unsigned long *rp, unsigned long addr, unsigned long relval)
++{
++	/* Is this a split 64/32 reloc? */
++	if (relval & 0x80000000) {
++		/* Get the two "halves" */
++		unsigned long val_hi = get_unaligned(rp);
++		unsigned long val_lo = get_unaligned(rp + 1);
++
++		/* insert the address */
++		val_hi = (val_hi & 0xffff0000) | addr >> 16;
++		val_lo = (val_lo & 0xffff0000) | (addr & 0xffff);
++
++		/* store the two halves back into memory */
++		put_unaligned(val_hi, rp);
++		put_unaligned(val_lo, rp+1);
++	} else {
++		/* Put it straight in, no messing around */
++		put_unaligned(addr, rp);
++	}
 +}
 +
-+static void kernel_thread_helper(int (*fn)(void *), void *arg)
-+{
-+	fn(arg);
-+	do_exit(-1);
-+}
++#define	flat_get_relocate_addr(rel)	(rel & 0x7fffffff)
 +
-+int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
-+{
-+	struct pt_regs regs;
-+	int ret;
-+
-+	memset(&regs, 0, sizeof(regs));
-+	/* store them in non-volatile registers */
-+	regs.r5 = (unsigned long)fn;
-+	regs.r6 = (unsigned long)arg;
-+	local_save_flags(regs.msr);
-+	regs.pc = (unsigned long)kernel_thread_helper;
-+	regs.kernel_mode = 1;
-+
-+	ret = do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0,
-+			&regs, 0, NULL, NULL);
-+
-+	return ret;
-+}
-+
-+unsigned long get_wchan(struct task_struct *p)
-+{
-+/* TBD (used by procfs) */
-+	return 0;
-+}
++#endif /* _MICROBLAZE_FLAT_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
