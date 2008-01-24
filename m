@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbYAZQAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759003AbYAZQAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756983AbYAZQAR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 11:00:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYAZPzG
+	id S1759003AbYAZQAs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 11:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbYAZPzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:55:06 -0500
+	Sat, 26 Jan 2008 10:55:12 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756101AbYAZPzD (ORCPT
+	with ESMTP id S1753583AbYAZPzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:55:03 -0500
+	Sat, 26 Jan 2008 10:55:08 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 34/52] [microblaze] definitions of types
-Date: Thu, 24 Jan 2008 16:03:09 +0100
-Message-Id: <b501d439bdfabddbdef5935db86b6f64c83d55c4.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 22/52] [microblaze] asm-offsets
+Date: Thu, 24 Jan 2008 16:02:57 +0100
+Message-Id: <60642f04ebcf9f76da50a1d40191755f258edcc5.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <105791d33ea12564c70be0dd3fafef386f8e1b55.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <a013a2b7044186c64d55cdafc8c9b29bc73a7fc5.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -32,18 +32,6 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <64e6e541db30cc4f1ee5cd85da4bdea6024f75b8.1201107832.git.monstr@monstr.eu>
  <90badb264d0e4ec49fdaa76842a5e5f259681299.1201107832.git.monstr@monstr.eu>
  <a013a2b7044186c64d55cdafc8c9b29bc73a7fc5.1201107832.git.monstr@monstr.eu>
- <60642f04ebcf9f76da50a1d40191755f258edcc5.1201107832.git.monstr@monstr.eu>
- <240998be1af3774635995fd19248f8b3a9e8a702.1201107832.git.monstr@monstr.eu>
- <3bcb9581bc512fdd0a124ac8322af9e2a8adc975.1201107832.git.monstr@monstr.eu>
- <db7f441df21cfe296a44744747b28f379e75fd49.1201107832.git.monstr@monstr.eu>
- <e6309af7cc6550ef5b399fc0902f1926f9e52e58.1201107832.git.monstr@monstr.eu>
- <2d11eef3abada1f41658a532a483c6121ded8054.1201107832.git.monstr@monstr.eu>
- <48db19662b808ab6f5455dd7f2116e6544c50e95.1201107832.git.monstr@monstr.eu>
- <7b0cfa6ae11749e20c941d0a4f03577141e022f8.1201107832.git.monstr@monstr.eu>
- <2f3db7ba4fe41cb9888adabf0e4e052d4da5c37c.1201107832.git.monstr@monstr.eu>
- <d67010417928d04766e6dd74820b12c249d61814.1201107832.git.monstr@monstr.eu>
- <37627293f081fa40f21234944ddb878d5e711740.1201107832.git.monstr@monstr.eu>
- <105791d33ea12564c70be0dd3fafef386f8e1b55.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -55,163 +43,134 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/posix_types.h |   75 ++++++++++++++++++++++++++++++++++
- include/asm-microblaze/types.h       |   64 +++++++++++++++++++++++++++++
- 2 files changed, 139 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/posix_types.h
- create mode 100644 include/asm-microblaze/types.h
+ arch/microblaze/kernel/asm-offsets.c |  118 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 118 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/asm-offsets.c
 
-diff --git a/include/asm-microblaze/posix_types.h b/include/asm-microblaze/posix_types.h
+diff --git a/arch/microblaze/kernel/asm-offsets.c b/arch/microblaze/kernel/asm-offsets.c
 new file mode 100644
-index 0000000..a05f61f
+index 0000000..f01aa3b
 --- /dev/null
-+++ b/include/asm-microblaze/posix_types.h
-@@ -0,0 +1,75 @@
++++ b/arch/microblaze/kernel/asm-offsets.c
+@@ -0,0 +1,118 @@
 +/*
-+ * include/asm-microblaze/posix_types.h
++ * arch/microblaze/kernel/asm-offset.c
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
 + *
++ * Copyright (C) 2007 PetaLogix
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_POSIX_TYPES_H
-+#define _ASM_POSIX_TYPES_H
++#include <linux/stddef.h>
++#include <linux/sched.h>
++#include <linux/kernel_stat.h>
++#include <linux/ptrace.h>
++#include <linux/hardirq.h>
++#include <linux/thread_info.h>
 +
-+/*
-+ * This file is generally used by user-level software, so you need to
-+ * be a little careful about namespace pollution etc. Also, we cannot
-+ * assume GCC is being used.
-+ */
++#define DEFINE(sym, val) asm volatile("\n->" #sym " %0 " #val : : "i" (val))
++#define BLANK() asm volatile("\n->" : :)
 +
-+typedef unsigned long	__kernel_ino_t;
-+typedef unsigned short	__kernel_mode_t;
-+typedef unsigned short	__kernel_nlink_t;
-+typedef long		__kernel_off_t;
-+typedef int		__kernel_pid_t;
-+typedef unsigned short	__kernel_ipc_pid_t;
-+typedef unsigned short	__kernel_uid_t;
-+typedef unsigned short	__kernel_gid_t;
-+typedef unsigned int	__kernel_size_t;
-+typedef int		__kernel_ssize_t;
-+typedef int		__kernel_ptrdiff_t;
-+typedef long		__kernel_time_t;
-+typedef long		__kernel_suseconds_t;
-+typedef long		__kernel_clock_t;
-+typedef int		__kernel_timer_t;
-+typedef int		__kernel_clockid_t;
-+typedef int		__kernel_daddr_t;
-+typedef char *		__kernel_caddr_t;
-+typedef unsigned short	__kernel_uid16_t;
-+typedef unsigned short	__kernel_gid16_t;
-+typedef unsigned int	__kernel_uid32_t;
-+typedef unsigned int	__kernel_gid32_t;
++int main(int argc, char *argv[])
++{
++	/* struct pt_regs */
++	DEFINE(PT_SIZE, sizeof(struct pt_regs));
++	DEFINE(PT_MSR, offsetof(struct pt_regs, msr));
++	DEFINE(PT_EAR, offsetof(struct pt_regs, ear));
++	DEFINE(PT_ESR, offsetof(struct pt_regs, esr));
++	DEFINE(PT_FSR, offsetof(struct pt_regs, fsr));
++	DEFINE(PT_PC, offsetof(struct pt_regs, pc));
++	DEFINE(PT_R0, offsetof(struct pt_regs, r0));
++	DEFINE(PT_R1, offsetof(struct pt_regs, r1));
++	DEFINE(PT_R2, offsetof(struct pt_regs, r2));
++	DEFINE(PT_R3, offsetof(struct pt_regs, r3));
++	DEFINE(PT_R4, offsetof(struct pt_regs, r4));
++	DEFINE(PT_R5, offsetof(struct pt_regs, r5));
++	DEFINE(PT_R6, offsetof(struct pt_regs, r6));
++	DEFINE(PT_R7, offsetof(struct pt_regs, r7));
++	DEFINE(PT_R8, offsetof(struct pt_regs, r8));
++	DEFINE(PT_R9, offsetof(struct pt_regs, r9));
++	DEFINE(PT_R10, offsetof(struct pt_regs, r10));
++	DEFINE(PT_R11, offsetof(struct pt_regs, r11));
++	DEFINE(PT_R12, offsetof(struct pt_regs, r12));
++	DEFINE(PT_R13, offsetof(struct pt_regs, r13));
++	DEFINE(PT_R14, offsetof(struct pt_regs, r14));
++	DEFINE(PT_R15, offsetof(struct pt_regs, r15));
++	DEFINE(PT_R16, offsetof(struct pt_regs, r16));
++	DEFINE(PT_R17, offsetof(struct pt_regs, r17));
++	DEFINE(PT_R18, offsetof(struct pt_regs, r18));
++	DEFINE(PT_R19, offsetof(struct pt_regs, r19));
++	DEFINE(PT_R20, offsetof(struct pt_regs, r20));
++	DEFINE(PT_R21, offsetof(struct pt_regs, r21));
++	DEFINE(PT_R22, offsetof(struct pt_regs, r22));
++	DEFINE(PT_R23, offsetof(struct pt_regs, r23));
++	DEFINE(PT_R24, offsetof(struct pt_regs, r24));
++	DEFINE(PT_R25, offsetof(struct pt_regs, r25));
++	DEFINE(PT_R26, offsetof(struct pt_regs, r26));
++	DEFINE(PT_R27, offsetof(struct pt_regs, r27));
++	DEFINE(PT_R28, offsetof(struct pt_regs, r28));
++	DEFINE(PT_R29, offsetof(struct pt_regs, r29));
++	DEFINE(PT_R30, offsetof(struct pt_regs, r30));
++	DEFINE(PT_R31, offsetof(struct pt_regs, r31));
++	DEFINE(PT_MODE, offsetof(struct pt_regs, kernel_mode));
++	BLANK();
 +
-+typedef unsigned short	__kernel_old_uid_t;
-+typedef unsigned short	__kernel_old_gid_t;
-+typedef unsigned short	__kernel_old_dev_t;
++	/* Magic offsets for PTRACE PEEK/POKE etc */
++	DEFINE(PT_TEXT_ADDR, sizeof(struct pt_regs) + 1);
++	DEFINE(PT_TEXT_LEN, sizeof(struct pt_regs) + 2);
++	DEFINE(PT_DATA_ADDR, sizeof(struct pt_regs) + 3);
++	BLANK();
 +
-+#ifdef __GNUC__
-+typedef long long	__kernel_loff_t;
-+#endif
++	/* struct task_struct */
++	DEFINE(TS_THREAD_INFO, offsetof(struct task_struct, stack));
 +
-+typedef struct {
-+#if defined(__KERNEL__) || defined(__USE_ALL)
-+	int	val[2];
-+#else /* !defined(__KERNEL__) && !defined(__USE_ALL) */
-+	int	__val[2];
-+#endif /* !defined(__KERNEL__) && !defined(__USE_ALL) */
-+} __kernel_fsid_t;
++	/* struct thread_info */
++	DEFINE(TI_TASK, offsetof(struct thread_info, task));
++	DEFINE(TI_EXEC_DOMAIN, offsetof(struct thread_info, exec_domain));
++	DEFINE(TI_FLAGS, offsetof(struct thread_info, flags));
++	DEFINE(TI_STATUS, offsetof(struct thread_info, status));
++	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
++	DEFINE(TI_PRE_COUNT, offsetof(struct thread_info, preempt_count));
++	DEFINE(TI_ADDR_LIMIT, offsetof(struct thread_info, addr_limit));
++	DEFINE(TI_RESTART_BLOCK, offsetof(struct thread_info, restart_block));
++	DEFINE(TI_CPU_CONTEXT, offsetof(struct thread_info, cpu_context));
++	BLANK();
 +
-+#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
++	/* struct cpu_context */
++	DEFINE(CC_SP, offsetof(struct cpu_context, sp)); /* r1 */
++	DEFINE(CC_R2, offsetof(struct cpu_context, r2));
++	/* dedicated registers */
++	DEFINE(CC_R13, offsetof(struct cpu_context, r13));
++	DEFINE(CC_R14, offsetof(struct cpu_context, r14));
++	DEFINE(CC_R15, offsetof(struct cpu_context, r15));
++	DEFINE(CC_R16, offsetof(struct cpu_context, r16));
++	DEFINE(CC_R17, offsetof(struct cpu_context, r17));
++	DEFINE(CC_R18, offsetof(struct cpu_context, r18));
++	/* non-volatile registers */
++	DEFINE(CC_R19, offsetof(struct cpu_context, r19));
++	DEFINE(CC_R20, offsetof(struct cpu_context, r20));
++	DEFINE(CC_R21, offsetof(struct cpu_context, r21));
++	DEFINE(CC_R22, offsetof(struct cpu_context, r22));
++	DEFINE(CC_R23, offsetof(struct cpu_context, r23));
++	DEFINE(CC_R24, offsetof(struct cpu_context, r24));
++	DEFINE(CC_R25, offsetof(struct cpu_context, r25));
++	DEFINE(CC_R26, offsetof(struct cpu_context, r26));
++	DEFINE(CC_R27, offsetof(struct cpu_context, r27));
++	DEFINE(CC_R28, offsetof(struct cpu_context, r28));
++	DEFINE(CC_R29, offsetof(struct cpu_context, r29));
++	DEFINE(CC_R30, offsetof(struct cpu_context, r30));
++	/* special purpose registers */
++	DEFINE(CC_MSR, offsetof(struct cpu_context, msr));
++	DEFINE(CC_EAR, offsetof(struct cpu_context, ear));
++	DEFINE(CC_ESR, offsetof(struct cpu_context, esr));
++	DEFINE(CC_FSR, offsetof(struct cpu_context, fsr));
++	BLANK();
 +
-+#undef	__FD_SET
-+#define	__FD_SET(d, set)	((set)->fds_bits[__FDELT(d)] |= __FDMASK(d))
-+
-+#undef	__FD_CLR
-+#define	__FD_CLR(d, set)	((set)->fds_bits[__FDELT(d)] &= ~__FDMASK(d))
-+
-+#undef	__FD_ISSET
-+#define	__FD_ISSET(d, set)	(!!((set)->fds_bits[__FDELT(d)] & __FDMASK(d)))
-+
-+#undef	__FD_ZERO
-+#define __FD_ZERO(fdsetp) (memset (fdsetp, 0, sizeof(*(fd_set *)fdsetp)))
-+
-+#endif /* defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2) */
-+
-+#endif /* _ASM_POSIX_TYPES_H */
-diff --git a/include/asm-microblaze/types.h b/include/asm-microblaze/types.h
-new file mode 100644
-index 0000000..3ba4b8d
---- /dev/null
-+++ b/include/asm-microblaze/types.h
-@@ -0,0 +1,64 @@
-+/*
-+ * include/asm-microblaze/types.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_TYPES_H
-+#define _ASM_TYPES_H
-+
-+#ifndef __ASSEMBLY__
-+
-+typedef unsigned short umode_t;
-+
-+/*
-+ * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
-+ * header files exported to user space
-+ */
-+
-+typedef __signed__ char __s8;
-+typedef unsigned char __u8;
-+
-+typedef __signed__ short __s16;
-+typedef unsigned short __u16;
-+
-+typedef __signed__ int __s32;
-+typedef unsigned int __u32;
-+
-+#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
-+typedef __signed__ long long __s64;
-+typedef unsigned long long __u64;
-+#endif
-+
-+/*
-+ * These aren't exported outside the kernel to avoid name space clashes
-+ */
-+#ifdef __KERNEL__
-+
-+typedef __signed__ char s8;
-+typedef unsigned char u8;
-+
-+typedef __signed__ short s16;
-+typedef unsigned short u16;
-+
-+typedef __signed__ int s32;
-+typedef unsigned int u32;
-+
-+typedef __signed__ long long s64;
-+typedef unsigned long long u64;
-+
-+
-+#define BITS_PER_LONG 32
-+
-+/* Dma addresses are 32-bits wide. */
-+
-+typedef u32 dma_addr_t;
-+
-+#endif/* __KERNEL__ */
-+#endif
-+
-+#endif /* _ASM_TYPES_H */
++	return 0;
++}
 -- 
 1.5.4.rc4.14.g6fc74
 
