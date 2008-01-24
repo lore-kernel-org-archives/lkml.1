@@ -1,57 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYAXHW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbYAXHa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753511AbYAXHW3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 02:22:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbYAXHWT
+	id S1753636AbYAXHa3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 02:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbYAXHaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 02:22:19 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59825 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbYAXHWT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 02:22:19 -0500
-Date: Thu, 24 Jan 2008 08:56:05 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove BKL from sysctl(2)
-Message-ID: <20080124075605.GB6814@one.firstfloor.org>
-References: <20080122202727.GB1975@martell.zuzino.mipt.ru> <20080123105140.3406e25b@lxorguk.ukuu.org.uk> <p73k5m0lrxq.fsf@crumb.suse.de> <20080123113800.1cecbc59@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
+	Thu, 24 Jan 2008 02:30:18 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:25972 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752185AbYAXHaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 02:30:17 -0500
+Date: Thu, 24 Jan 2008 08:30:13 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, knikanth@novell.com
+Subject: Re: [PATCH 1/6] ioprio: move io priority from task_struct to  io_context
+Message-ID: <20080124073012.GM6258@kernel.dk>
+References: <1200995361-24001-1-git-send-email-jens.axboe@oracle.com> <1200995361-24001-2-git-send-email-jens.axboe@oracle.com> <20080123140747.39bb13d8.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080123113800.1cecbc59@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080123140747.39bb13d8.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes - that's why I am wondering if we want a general 'sysctl' mutex or
-> just to fix the specific case. The corename case is nasty as it is timing
-> dependant against user activity rather than the less interesting "root
-> can be silly" type of problem.
+On Wed, Jan 23 2008, Andrew Morton wrote:
+> > On Tue, 22 Jan 2008 10:49:16 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > This is where it belongs and then it doesn't take up space for a
+> > process that doesn't do IO.
+> > 
+> > ...
+> >
+> >  struct io_context *get_io_context(gfp_t gfp_flags, int node)
+> >  {
+> > -	struct io_context *ret;
+> > -	ret = current_io_context(gfp_flags, node);
+> > -	if (likely(ret))
+> > -		atomic_inc(&ret->refcount);
+> > +	struct io_context *ret = NULL;
+> > +
+> > +	do {
+> > +		ret = current_io_context(gfp_flags, node);
+> > +		if (unlikely(!ret))
+> > +			break;
+> > +	} while (!atomic_inc_not_zero(&ret->refcount));
+> 
+> Looks weird.  Could do with a comment.  Or unweirding ;)
+> 
+> What's going on here?
 
-I think for the strings it would be better to just do a kind of copy-on-write.
-As in don't use the array directly, but a pointer instead and then sysctl 
-allocates a new string, switches the pointer around
-and then does a RCU delayed free on the old string if it wasn't in .data.
+In the unlikely event that we find a task that is on its way to exiting.
+This hunk should actually be a part of the cfq lockless stuff...
 
-This would also have the advantage that the small upper limits these 
-strings currently have are gone and actually save a little memory in 
-the common case of them not being changed.
+> >  	return ret;
+> >  }
+> >  EXPORT_SYMBOL(get_io_context);
+> > diff --git a/fs/ioprio.c b/fs/ioprio.c
+> > index e4e01bc..a760040 100644
+> > --- a/fs/ioprio.c
+> > +++ b/fs/ioprio.c
+> > @@ -41,18 +41,29 @@ static int set_task_ioprio(struct task_struct *task, int ioprio)
+> >  		return err;
+> >  
+> >  	task_lock(task);
+> > +	do {
+> > +		ioc = task->io_context;
+> > +		/* see wmb() in current_io_context() */
+> > +		smp_read_barrier_depends();
+> > +		if (ioc)
+> > +			break;
+> >  
+> > -	task->ioprio = ioprio;
+> > -
+> > -	ioc = task->io_context;
+> > -	/* see wmb() in current_io_context() */
+> > -	smp_read_barrier_depends();
+> > +		ioc = alloc_io_context(GFP_ATOMIC, -1);
+> > +		if (!ioc) {
+> > +			err = -ENOMEM;
+> > +			break;
+> > +		}
+> > +		task->io_context = ioc;
+> > +		ioc->task = task;
+> > +	} while (1);
+> 
+> argh.  Can't sit there in a loop retrying GFP_ATOMIC!
 
-Only case that wouldn't fix would be someone keeping the string accessed
-over a sleep point. And for preemptible kernels it would need rcu_read_lock().
-So no free lunch without code auditing. But it would be probably the best
-way to go forward longer term.
+It's not, read the loop again!
 
-For multi number arrays the code ideally needs to be robust against temporary
-inconsistencies.
+> > -	if (ioc)
+> > +	if (!err) {
+> > +		ioc->ioprio = ioprio;
+> >  		ioc->ioprio_changed = 1;
+> > +	}
+> >  
+> >  	task_unlock(task);
+> > -	return 0;
+> > +	return err;
+> >  }
+> >  
+> >  asmlinkage long sys_ioprio_set(int which, int who, int ioprio)
+> >
+> > ...
+> >
+> >  void put_io_context(struct io_context *ioc);
+> >  void exit_io_context(void);
+> >  struct io_context *get_io_context(gfp_t gfp_flags, int node);
+> > +struct io_context *alloc_io_context(gfp_t, int);
+> >  void copy_io_context(struct io_context **pdst, struct io_context **psrc);
+> >  void swap_io_context(struct io_context **ioc1, struct io_context **ioc2);
+> 
+> The rest of the declarations around here nicely name their args.
 
-BTW while interesting in theory in practice i suspect the actual likelyhood
-of a user actually hitting such a race is pretty small because sysctls tend
-to be set up a boot only where not much is going on.
+A clear sign I didn't put those declarations there, but the inconsistent
+style is surely not a good thing. Will fix that up.
 
--Andi
+> > +static int copy_io(struct task_struct *tsk)
+> > +{
+> > +	struct io_context *ioc = current->io_context;
+> > +
+> > +	if (!ioc)
+> > +		return 0;
+> > +
+> > +	if (ioprio_valid(ioc->ioprio)) {
+> > +		tsk->io_context = alloc_io_context(GFP_KERNEL, -1);
+> > +		if (unlikely(!tsk->io_context))
+> > +			return -ENOMEM;
+> > +
+> > +		tsk->io_context->task = tsk;
+> > +		tsk->io_context->ioprio = ioc->ioprio;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> 
+> Should this depend on CONFIG_BLOCK?
+
+Good questions, checks... Looks like it would break, I'll do a
+!CONFIG_BLOCK fixup round.
+
+-- 
+Jens Axboe
 
