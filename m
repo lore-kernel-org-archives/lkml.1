@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbYAXPPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbYAXPQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754937AbYAXPPx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 10:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYAXPPq
+	id S1755522AbYAXPQn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 10:16:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYAXPQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 10:15:46 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:34223
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752498AbYAXPPp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 10:15:45 -0500
-Message-ID: <4798AB96.4000408@qumranet.com>
-Date: Thu, 24 Jan 2008 17:15:34 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 24 Jan 2008 10:16:35 -0500
+Received: from mail0.scram.de ([78.47.204.202]:47491 "EHLO mail0.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752583AbYAXPQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 10:16:34 -0500
+X-Spam-Score: -4.231
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.2 AWL AWL: From: address is in the auto white-list
+Message-ID: <4798AB95.8040405@scram.de>
+Date: Thu, 24 Jan 2008 16:15:33 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-To: Andrea Arcangeli <andrea@qumranet.com>
-CC: Christoph Lameter <clameter@sgi.com>, Izik Eidus <izike@qumranet.com>,
-       Andrew Morton <akpm@osdl.org>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, holt@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [kvm-devel] [PATCH] export notifier #1
-References: <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random> <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random> <20080122200858.GB15848@v2.random> <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com> <20080122223139.GD15848@v2.random> <Pine.LNX.4.64.0801221433080.2271@schroedinger.engr.sgi.com> <20080123114136.GE15848@v2.random> <Pine.LNX.4.64.0801231149150.13547@schroedinger.engr.sgi.com> <20080124143454.GN7141@v2.random>
-In-Reply-To: <20080124143454.GN7141@v2.random>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+CC: Kumar Gala <galak@kernel.crashing.org>,
+       Scott Wood <scottwood@freescale.com>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: [PATCHv3 0/7] [POWERPC] 8xx cleanups
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli wrote:
-> The remote page fault
->   
+Hi,
 
-As we have two names for this ('shadow' and 'remote/export') I'd like to 
-suggest a neutral nomenclature.  How about 'secondary mmu' (and 
-secondary ptes (sptes), etc.)?  I think this fits xpmem, kvm, rdma, and dri.
+this is a series against paulus for-2.6.25 tree to clean up various 8xx related stuff.
+The series can be pulled from git://git.bocc.de/dbox2.git cleanup.
+Old patches 2+4 have been merged into Patch 2. Patch 4 has been modified to move the
+prototypes into a new platforms/8xx/mpc8xx.h. Patch 5 leaves the PCMCIA bits in
+asm-powerpc/mpc8xx.h as this driver needs to be fixed first (unfortunately, i don't
+have an 8xx board with PCMCIA). I would suggest removing asm-powerpc/mpc8xx.h after
+ARCH=ppc is gone to avoid adding #ifdefs to all shared drivers.
 
--- 
-Any sufficiently difficult bug is indistinguishable from a feature.
+I also modified an option in Thunderbird so i hope whitespaces are OK now :-/
 
+[POWERPC] Remove unused m8xx_cpm_hostalloc/free/dump()
+[POWERPC] Rename m8xx_pic_init to mpc8xx_pics_init
+[POWERPC] Remove unneeded and misspelled prototype m8xx_calibrate_decr
+[POWERPC] Remove sysdev/commproc.h
+[POWERPC] Get rid of conditional includes of board specific setup
+[POWERPC] Rename commproc to cpm1 and cpm2_common.c to cpm2.c
+[POWERPC] Move definition of buffer descriptor to cpm.h
+
+Thanks,
+Jochen
