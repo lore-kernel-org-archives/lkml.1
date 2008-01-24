@@ -1,87 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbYAXBmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbYAXBnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945AbYAXBmg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 20:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYAXBmZ
+	id S1754413AbYAXBnb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 20:43:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbYAXBnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 20:42:25 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:51451 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751338AbYAXBmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 20:42:24 -0500
-Message-ID: <4797ECF8.9000606@garzik.org>
-Date: Wed, 23 Jan 2008 20:42:16 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 23 Jan 2008 20:43:23 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:63441 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751936AbYAXBnW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 20:43:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=GkWQULCNk1/AFGI3PHL8Whr2eR3rwHMxhMTO1MMG5WOHRWLEJg7qNqtklFlTWq5ivlN/e1rRidYq6tBMw6SKDFTcqubjfExluOg1+xwDbcwpSolnVfPwu6AdMAT+nR9fQZMRyxZYHgYB019/XIwtEgBrKfDD3L0x80MFclOtLrE=
+Date: Thu, 24 Jan 2008 09:44:36 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Miguel Ojeda <maxextreme@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [WARNING -rc8] at fs/sysfs/dir.c:424 sysfs_add_one(), related
+	with processor (ACPI)
+Message-ID: <20080124014436.GA3020@darkstar.te-china.tietoenator.com>
+References: <653402b90801210953u71a85f91udce9e382d588af09@mail.gmail.com> <20080123140643.b56ea8eb.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: Kuan Luo <kluo@nvidia.com>, Tejun Heo <htejun@gmail.com>,
-       Mark Lord <liml@rtr.ca>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Allen Martin <AMartin@nvidia.com>, Peer Chen <pchen@nvidia.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       David Milburn <dmilburn@redhat.com>
-Subject: Re: sata_nv and 2.6.24 (was Re: fixed a bug of adma in rhel4u5 with
- HDS7250SASUN500G.)
-References: <4781F008.9070404@gmail.com> <4782422C.8020202@rtr.ca> <4782B73B.8080309@shaw.ca> <4782BC48.4000309@gmail.com> <4782C008.3030902@shaw.ca> <4782CB62.7040901@gmail.com> <4782CEF9.3040708@gmail.com> <4782DFFE.50301@shaw.ca> <4782E5A8.9010305@gmail.com> <4782E63E.1000606@gmail.com> <4782E78F.9050205@shaw.ca> <4782E912.1050204@gmail.com> <4783493A.7070800@gmail.com> <47838B57.8020407@shaw.ca> <47842A54.2060107@gmail.com> <47842ABA.2060605@gmail.com> <47844471.4070705@shaw.ca> <47845708.6060900@gmail.com> <478567D8.10601@shaw.ca> <15F501D1A78BD343BE8F4D8DB854566B1BFE2ABF@hkemmail01.nvidia.com> <478812C9.1000901@shaw.ca> <15F501D1A78BD343BE8F4D8DB854566B1BFE2AC0@hkemmail01.nvidia.com> <478AF10D.5080805@shaw.ca> <479709BE.2090707@garzik.org> <479752D7.4020206@shaw.ca>
-In-Reply-To: <479752D7.4020206@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080123140643.b56ea8eb.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Jeff Garzik wrote:
->> Ping...  sata_nv status is still a bit open for 2.6.24, and I would 
->> like to move us forward a bit.
->>
->> * Kuan's patch...  it has been confirmed (and is needed), correct?  
->> can someone work up a good patch for 2.6.24?  The only one I ever 
->> received was badly word-wrapped, and at the time, Robert seemed 
->> uncertain of it, so I waited.
-> 
-> I can get you one later today hopefully.
-> 
->>
->> * ADMA ATAPI 4GB issues...  playing tricks with the ordering of 
->> allocations and DMA masks is just way too fragile.  We just cannot 
->> guarantee that all allocators work that way.  The obvious solution to 
->> me seems to be hardcoding the consistent DMA mask to 32-bit, but using 
->> 64-bit for regular dma mask if-and-only-if ADMA is enabled.
-> 
-> That's not enough to fix the problem since there's issues with actual 
-> transfer data being allocated above 4GB as well, not just the consistent 
->  allocations (it appears that blk_queue_bounce_limit setting to 32-bit 
-> doesn't prevent this on x86_64). Either we play some funky games with 
-> changing the DMA mask of the entire device to 32-bit if either port is 
-> in ATAPI mode (which blew up when I tried it) or we add the ability to 
-> set the DMA mask independently on each port (like by setting the mask on 
-> the SCSI device and using that for DMA mapping instead) which requires 
-> core changes.
+On Wed, Jan 23, 2008 at 02:06:43PM -0800, Andrew Morton wrote:
+> > On Mon, 21 Jan 2008 18:53:18 +0100 "Miguel Ojeda" <maxextreme@gmail.com> wrote:
+> > Booting 2.6.24-rc8 I get this:
+> > 
+> > 
+> > sysfs: duplicate filename 'fan' can not be created
+> > WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+> > Pid: 819, comm: modprobe Not tainted 2.6.24-rc8 #2
+> >  [<c01b18ff>] sysfs_add_one+0x9f/0xe0
+> >  [<c01b1e38>] create_dir+0x48/0x90
+> >  [<c01b1ea9>] sysfs_create_dir+0x29/0x50
+> >  [<c024873f>] kobject_get+0xf/0x20
+> >  [<c0248bff>] kobject_add+0x8f/0x1b0
+> >  [<c0248db1>] kobject_register+0x21/0x50
+> >  [<c02dc6f1>] bus_add_driver+0x71/0x1e0
+> >  [<f886402f>] acpi_fan_init+0x2f/0x4d [fan]
+> >  [<c0148986>] sys_init_module+0x126/0x19b0
+> >  [<c024af87>] rb_insert_color+0xb7/0xe0
+> >  [<c029dc8d>] acpi_bus_register_driver+0x0/0x38
+> >  [<c0104286>] syscall_call+0x7/0xb
+> >  =======================
+> > kobject_add failed for fan with -EEXIST, don't try to register things
+> > with the same name in the same directory.
+> > Pid: 819, comm: modprobe Not tainted 2.6.24-rc8 #2
+> >  [<c0248c81>] kobject_add+0x111/0x1b0
+> >  [<c0248db1>] kobject_register+0x21/0x50
+> >  [<c02dc6f1>] bus_add_driver+0x71/0x1e0
+> >  [<f886402f>] acpi_fan_init+0x2f/0x4d [fan]
+> >  [<c0148986>] sys_init_module+0x126/0x19b0
+> >  [<c024af87>] rb_insert_color+0xb7/0xe0
+> >  [<c029dc8d>] acpi_bus_register_driver+0x0/0x38
+> >  [<c0104286>] syscall_call+0x7/0xb
+> >  =======================
+> > processor: exports duplicate symbol acpi_processor_set_thermal_limit
+> > (owned by kernel)
+> > 
 
-Its all funky games that no other driver is doing...  There is one 
-guaranteed to work scenario -- set all masks and bounce limits etc. to 
-32-bit.  There is also one highly-likely-to-work scenario, disabling 
-ADMA by default.
+Could apply following debug patch and see the result?
 
 
->> * it sure seems like there are other open sata_nv ADMA issues -- can 
->> we hard-confirm or deny this?  bugzilla wasn't very helpful for me.  
->> It doesn't seem like we can disable ADMA (to solve those issues) and 
->> get enough test time in (which is what I said a week (or more?) ago 
->> too...)
-> 
-> The NCQ/non-NCQ command switching issue is still hitting some people 
-> (last I heard Kuan was looking into this), also there's a hotplug issue 
-> that Tejun reported..
-
-The former implies we need to disable swncq for 2.6.24, if it's not 
-stable yet.
-
-	Jeff
-
+diff -upr linux/fs/sysfs/dir.c linux.new/fs/sysfs/dir.c
+--- linux/fs/sysfs/dir.c	2008-01-23 09:56:24.000000000 +0800
++++ linux.new/fs/sysfs/dir.c	2008-01-23 09:59:12.000000000 +0800
+@@ -418,6 +418,8 @@ void sysfs_addrm_start(struct sysfs_addr
+  */
+ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ {
++	if (!strcmp(sd->s_name, "fan"))
++		dump_stack();
+ 	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
+ 		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
+ 		       "can not be created\n", sd->s_name);
 
