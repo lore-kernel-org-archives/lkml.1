@@ -1,86 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbYAXDVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbYAXD2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753018AbYAXDVk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 22:21:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYAXDVb
+	id S1753880AbYAXD2Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 22:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYAXD2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 22:21:31 -0500
-Received: from hqemgate03.nvidia.com ([216.228.112.145]:13087 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752576AbYAXDVa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 22:21:30 -0500
-X-PGP-Universal: processed;
-	by hqnvupgp02.nvidia.com on Wed, 23 Jan 2008 19:21:24 -0800
-X-MimeOLE: Produced By Microsoft Exchange V6.5
+	Wed, 23 Jan 2008 22:28:12 -0500
+Received: from ns.suse.de ([195.135.220.2]:48438 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752588AbYAXD2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 22:28:10 -0500
+From: Neil Brown <neilb@suse.de>
+To: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
+Date: Thu, 24 Jan 2008 14:28:01 +1100
 MIME-Version: 1.0
-Subject: RE: fixed a bug of adma in rhel4u5 with HDS7250SASUN500G.
-Date: Thu, 24 Jan 2008 11:20:51 +0800
-Message-ID: <15F501D1A78BD343BE8F4D8DB854566B1BFE2ACA@hkemmail01.nvidia.com>
-In-Reply-To: <4797DF30.6050208@shaw.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: fixed a bug of adma in rhel4u5 with HDS7250SASUN500G.
-Thread-Index: AcheJ1Xf+iGeiZb7QMqdwPctI/3TJAADEhPg
-References: <4781F008.9070404@gmail.com> <4782422C.8020202@rtr.ca> <4782B73B.8080309@shaw.ca> <4782BC48.4000309@gmail.com> <4782C008.3030902@shaw.ca> <4782CB62.7040901@gmail.com> <4782CEF9.3040708@gmail.com> <4782DFFE.50301@shaw.ca> <4782E5A8.9010305@gmail.com> <4782E63E.1000606@gmail.com> <4782E78F.9050205@shaw.ca> <4782E912.1050204@gmail.com> <4783493A.7070800@gmail.com> <47838B57.8020407@shaw.ca> <47842A54.2060107@gmail.com> <47842ABA.2060605@gmail.com> <47844471.4070705@shaw.ca> <47845708.6060900@gmail.com> <478567D8.10601@shaw.ca> <15F501D1A78BD343BE8F4D8DB854566B1BFE2ABF@hkemmail01.nvidia.com> <478812C9.1000901@shaw.ca> <15F501D1A78BD343BE8F4D8DB854566B1BFE2AC0@hkemmail01.nvidia.com> <4797DF30.6050208@shaw.ca>
-From: "Kuan Luo" <kluo@nvidia.com>
-To: "Robert Hancock" <hancockr@shaw.ca>, "Allen Martin" <AMartin@nvidia.com>
-Cc: "Tejun Heo" <htejun@gmail.com>, "Mark Lord" <liml@rtr.ca>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       "Peer Chen" <pchen@nvidia.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "David Milburn" <dmilburn@redhat.com>
-X-OriginalArrivalTime: 24 Jan 2008 03:20:52.0686 (UTC) FILETIME=[1FECEEE0:01C85E38]
-Content-class: urn:content-classes:message
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18328.1473.26122.647283@notabene.brown>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: [BUG] The kernel thread for md RAID1 could cause a md RAID1 array deadlock
+In-Reply-To: message from K.Tanaka on Tuesday January 15
+References: <478C240F.8070004@ce.jp.nec.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert worte.
+On Tuesday January 15, k-tanaka@ce.jp.nec.com wrote:
 > 
-> Kuan, does this patch (using the notifiers to see if the command is 
-> really done) still work if one port on the controller has 
-> ADMA disabled 
-> because it's in ATAPI mode? I seem to recall Allen Martin mentioning 
-> that notifiers wouldn't work in this case.
+> This message describes the details about md-RAID1 issue found by
+> testing the md RAID1 using the SCSI fault injection framework.
 > 
+> Abstract:
+> Both the error handler for md RAID1 and write access request to the md RAID1
+> use raid1d kernel thread. The nr_pending flag could cause a race condition
+> in raid1d, results in a raid1d deadlock.
 
-I just tried the 2.6.24-rc7 sata_nv driver with one hd and  one cdrom in
-the same controller. 
-I mkfs hd and mounted the cdrom and no error happened.
+Thanks for finding and reporting this.
 
-Allen,  is there anything about notifier that we should pay attention
-to?
+I believe the following patch should fix the deadlock.
 
-> 
-> > 
-> > * it sure seems like there are other open sata_nv ADMA 
-> issues -- can we 
-> > hard-confirm or deny this?  bugzilla wasn't very helpful 
-> for me.  It 
-> > doesn't seem like we can disable ADMA (to solve those 
-> issues) and get 
-> > enough test time in (which is what I said a week (or more?) 
-> ago too...)
-> 
-> The NCQ/non-NCQ command switching issue is still hitting some people 
-> (last I heard Kuan was looking into this), also there's a 
-> hotplug issue 
-> that Tejun reported..
-> 
-I have not yet reproduced the switching issue even if i removed the
-udelay function according to your metholds.
-I tried the 2.6.24-rc7. 
- I don't know what kernel version can easily reproduce the issue or
-mabye i omit some steps during test.
+If you are able to repeat your test and confirm this I would
+appreciate it.
 
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+Thanks,
+NeilBrown
+
+
+
+Fix deadlock in md/raid1 when handling a read error.
+
+When handling a read error, we freeze the array to stop any other
+IO while attempting to over-write with correct data.
+
+This is done in the raid1d thread and must wait for all submitted IO
+to complete (except for requests that failed and are sitting in the
+retry queue - these are counted in ->nr_queue and will stay there during
+a freeze).
+
+However write requests need attention from raid1d as bitmap updates
+might be required.  This can cause a deadlock as raid1 is waiting for
+requests to finish that themselves need attention from raid1d.
+
+So we create a new function 'flush_pending_writes' to give that attention,
+and call it in freeze_array to be sure that we aren't waiting on raid1d.
+
+Thanks to "K.Tanaka" <k-tanaka@ce.jp.nec.com> for finding and reporting
+this problem.
+
+Cc: "K.Tanaka" <k-tanaka@ce.jp.nec.com>
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./drivers/md/raid1.c |   66 ++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 45 insertions(+), 21 deletions(-)
+
+diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
+--- .prev/drivers/md/raid1.c	2008-01-18 11:19:09.000000000 +1100
++++ ./drivers/md/raid1.c	2008-01-24 14:21:55.000000000 +1100
+@@ -592,6 +592,37 @@ static int raid1_congested(void *data, i
+ }
+ 
+ 
++static int flush_pending_writes(conf_t *conf)
++{
++	/* Any writes that have been queue but are awaiting
++	 * bitmap updates get flushed here.
++	 * We return 1 if any requests were actually submitted.
++	 */
++	int rv = 0;
++
++	spin_lock_irq(&conf->device_lock);
++
++	if (conf->pending_bio_list.head) {
++		struct bio *bio;
++		bio = bio_list_get(&conf->pending_bio_list);
++		blk_remove_plug(conf->mddev->queue);
++		spin_unlock_irq(&conf->device_lock);
++		/* flush any pending bitmap writes to
++		 * disk before proceeding w/ I/O */
++		bitmap_unplug(conf->mddev->bitmap);
++
++		while (bio) { /* submit pending writes */
++			struct bio *next = bio->bi_next;
++			bio->bi_next = NULL;
++			generic_make_request(bio);
++			bio = next;
++		}
++		rv = 1;
++	} else
++		spin_unlock_irq(&conf->device_lock);
++	return rv;
++}
++
+ /* Barriers....
+  * Sometimes we need to suspend IO while we do something else,
+  * either some resync/recovery, or reconfigure the array.
+@@ -678,10 +709,14 @@ static void freeze_array(conf_t *conf)
+ 	spin_lock_irq(&conf->resync_lock);
+ 	conf->barrier++;
+ 	conf->nr_waiting++;
++	spin_unlock_irq(&conf->resync_lock);
++
++	spin_lock_irq(&conf->resync_lock);
+ 	wait_event_lock_irq(conf->wait_barrier,
+ 			    conf->barrier+conf->nr_pending == conf->nr_queued+2,
+ 			    conf->resync_lock,
+-			    raid1_unplug(conf->mddev->queue));
++			    ({ flush_pending_writes(conf);
++			       raid1_unplug(conf->mddev->queue); }));
+ 	spin_unlock_irq(&conf->resync_lock);
+ }
+ static void unfreeze_array(conf_t *conf)
+@@ -907,6 +942,9 @@ static int make_request(struct request_q
+ 	blk_plug_device(mddev->queue);
+ 	spin_unlock_irqrestore(&conf->device_lock, flags);
+ 
++	/* In case raid1d snuck into freeze_array */
++	wake_up(&conf->wait_barrier);
++
+ 	if (do_sync)
+ 		md_wakeup_thread(mddev->thread);
+ #if 0
+@@ -1473,28 +1511,14 @@ static void raid1d(mddev_t *mddev)
+ 	
+ 	for (;;) {
+ 		char b[BDEVNAME_SIZE];
+-		spin_lock_irqsave(&conf->device_lock, flags);
+-
+-		if (conf->pending_bio_list.head) {
+-			bio = bio_list_get(&conf->pending_bio_list);
+-			blk_remove_plug(mddev->queue);
+-			spin_unlock_irqrestore(&conf->device_lock, flags);
+-			/* flush any pending bitmap writes to disk before proceeding w/ I/O */
+-			bitmap_unplug(mddev->bitmap);
+-
+-			while (bio) { /* submit pending writes */
+-				struct bio *next = bio->bi_next;
+-				bio->bi_next = NULL;
+-				generic_make_request(bio);
+-				bio = next;
+-			}
+-			unplug = 1;
+ 
+-			continue;
+-		}
++		unplug += flush_pending_writes(conf);
+ 
+-		if (list_empty(head))
++		spin_lock_irqsave(&conf->device_lock, flags);
++		if (list_empty(head)) {
++			spin_unlock_irqrestore(&conf->device_lock, flags);
+ 			break;
++		}
+ 		r1_bio = list_entry(head->prev, r1bio_t, retry_list);
+ 		list_del(head->prev);
+ 		conf->nr_queued--;
+@@ -1590,7 +1614,7 @@ static void raid1d(mddev_t *mddev)
+ 			}
+ 		}
+ 	}
+-	spin_unlock_irqrestore(&conf->device_lock, flags);
++
+ 	if (unplug)
+ 		unplug_slaves(mddev);
+ }
