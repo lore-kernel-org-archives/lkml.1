@@ -1,123 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758715AbYAXUin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbYAXUi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758715AbYAXUin (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 15:38:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbYAXUeY
+	id S1758821AbYAXUi5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 15:38:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbYAXUeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 15:34:24 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:58295 "EHLO smtp.polymtl.ca"
+	Thu, 24 Jan 2008 15:34:25 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:58310 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755532AbYAXUeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 15:34:20 -0500
-Message-Id: <20080124203340.010461295@polymtl.ca>
+	id S1755354AbYAXUeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 15:34:21 -0500
+Message-Id: <20080124203333.917931422@polymtl.ca>
 References: <20080124202706.250598537@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jan 2008 15:27:24 -0500
+Date: Thu, 24 Jan 2008 15:27:10 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Hellwig <hch@infradead.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [patch 18/26] Immediate Values - Powerpc Optimization
-Content-Disposition: inline; filename=immediate-values-powerpc-optimization.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Jan 2008 20:33:41 +0000
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net
+Subject: [patch 04/26] Kprobes - use a mutex to protect the instruction pages list.
+Content-Disposition: inline; filename=kprobes-use-mutex-for-insn-pages.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Jan 2008 20:33:35 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PowerPC optimization of the immediate values which uses a li instruction,
-patched with an immediate value.
-
-Changelog:
-- Put imv_set and _imv_set in the architecture independent header.
-- Pack the __imv section. Use smallest types required for size (char).
-- Remove architecture specific update code : now handled by architecture
-  agnostic code.
-- Use imv_* instead of immediate_*.
+Protect the instruction pages list by a specific insn pages mutex, called in 
+get_insn_slot() and free_insn_slot(). It makes sure that architectures that does
+not need to call arch_remove_kprobe() does not take an unneeded kprobes mutex.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: Paul Mackerras <paulus@samba.org>
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: hch@infradead.org
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
 ---
- arch/powerpc/Kconfig            |    1 
- include/asm-powerpc/immediate.h |   55 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 56 insertions(+)
+ kernel/kprobes.c |   27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
 
-Index: linux-2.6-lttng.mm/include/asm-powerpc/immediate.h
+Index: linux-2.6-lttng/kernel/kprobes.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng.mm/include/asm-powerpc/immediate.h	2008-01-24 14:30:45.000000000 -0500
-@@ -0,0 +1,55 @@
-+#ifndef _ASM_POWERPC_IMMEDIATE_H
-+#define _ASM_POWERPC_IMMEDIATE_H
-+
-+/*
-+ * Immediate values. PowerPC architecture optimizations.
-+ *
-+ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#include <asm/asm-compat.h>
-+
-+/**
-+ * imv_read - read immediate variable
-+ * @name: immediate value name
-+ *
-+ * Reads the value of @name.
-+ * Optimized version of the immediate.
-+ * Do not use in __init and __exit functions. Use _imv_read() instead.
-+ */
-+#define imv_read(name)							\
-+	({								\
-+		__typeof__(name##__imv) value;				\
-+		BUILD_BUG_ON(sizeof(value) > 8);			\
-+		switch (sizeof(value)) {				\
-+		case 1:							\
-+			asm(".section __imv,\"a\",@progbits\n\t"	\
-+					PPC_LONG "%c1, ((1f)-1)\n\t"	\
-+					".byte 1\n\t"			\
-+					".previous\n\t"			\
-+					"li %0,0\n\t"			\
-+					"1:\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&name##__imv));			\
-+			break;						\
-+		case 2:							\
-+			asm(".section __imv,\"a\",@progbits\n\t"	\
-+					PPC_LONG "%c1, ((1f)-2)\n\t"	\
-+					".byte 2\n\t"			\
-+					".previous\n\t"			\
-+					"li %0,0\n\t"			\
-+					"1:\n\t"			\
-+				: "=r" (value)				\
-+				: "i" (&name##__imv));			\
-+			break;						\
-+		case 4:							\
-+		case 8:	value = name##__imv;				\
-+			break;						\
-+		};							\
-+		value;							\
-+	})
-+
-+#endif /* _ASM_POWERPC_IMMEDIATE_H */
-Index: linux-2.6-lttng.mm/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-lttng.mm.orig/arch/powerpc/Kconfig	2008-01-24 14:18:34.000000000 -0500
-+++ linux-2.6-lttng.mm/arch/powerpc/Kconfig	2008-01-24 14:30:45.000000000 -0500
-@@ -89,6 +89,7 @@ config PPC
- 	default y
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
-+	select HAVE_IMMEDIATE
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-27 11:48:56.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2007-08-27 11:48:58.000000000 -0400
+@@ -95,6 +95,10 @@ enum kprobe_slot_state {
+ 	SLOT_USED = 2,
+ };
  
- config EARLY_PRINTK
- 	bool
++/*
++ * Protects the kprobe_insn_pages list. Can nest into kprobe_mutex.
++ */
++static DEFINE_MUTEX(kprobe_insn_mutex);
+ static struct hlist_head kprobe_insn_pages;
+ static int kprobe_garbage_slots;
+ static int collect_garbage_slots(void);
+@@ -131,7 +135,9 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ {
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos;
++	kprobe_opcode_t *ret;
+ 
++	mutex_lock(&kprobe_insn_mutex);
+  retry:
+ 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
+ 		if (kip->nused < INSNS_PER_PAGE) {
+@@ -140,7 +146,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 				if (kip->slot_used[i] == SLOT_CLEAN) {
+ 					kip->slot_used[i] = SLOT_USED;
+ 					kip->nused++;
+-					return kip->insns + (i * MAX_INSN_SIZE);
++					ret = kip->insns + (i * MAX_INSN_SIZE);
++					goto end;
+ 				}
+ 			}
+ 			/* Surprise!  No unused slots.  Fix kip->nused. */
+@@ -154,8 +161,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	}
+ 	/* All out of space.  Need to allocate a new page. Use slot 0. */
+ 	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
+-	if (!kip)
+-		return NULL;
++	if (!kip) {
++		ret = NULL;
++		goto end;
++	}
+ 
+ 	/*
+ 	 * Use module_alloc so this page is within +/- 2GB of where the
+@@ -165,7 +174,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	kip->insns = module_alloc(PAGE_SIZE);
+ 	if (!kip->insns) {
+ 		kfree(kip);
+-		return NULL;
++		ret = NULL;
++		goto end;
+ 	}
+ 	INIT_HLIST_NODE(&kip->hlist);
+ 	hlist_add_head(&kip->hlist, &kprobe_insn_pages);
+@@ -173,7 +183,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	kip->slot_used[0] = SLOT_USED;
+ 	kip->nused = 1;
+ 	kip->ngarbage = 0;
+-	return kip->insns;
++	ret = kip->insns;
++end:
++	mutex_unlock(&kprobe_insn_mutex);
++	return ret;
+ }
+ 
+ /* Return 1 if all garbages are collected, otherwise 0. */
+@@ -207,7 +220,7 @@ static int __kprobes collect_garbage_slo
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos, *next;
+ 
+-	/* Ensure no-one is preepmted on the garbages */
++	/* Ensure no-one is preempted on the garbages */
+ 	if (check_safety() != 0)
+ 		return -EAGAIN;
+ 
+@@ -231,6 +244,7 @@ void __kprobes free_insn_slot(kprobe_opc
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos;
+ 
++	mutex_lock(&kprobe_insn_mutex);
+ 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
+ 		if (kip->insns <= slot &&
+ 		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
+@@ -247,6 +261,7 @@ void __kprobes free_insn_slot(kprobe_opc
+ 
+ 	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
+ 		collect_garbage_slots();
++	mutex_unlock(&kprobe_insn_mutex);
+ }
+ #endif
+ 
 
 -- 
 Mathieu Desnoyers
