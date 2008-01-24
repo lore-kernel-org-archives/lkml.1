@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYAXQA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYAXQDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbYAXQA3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 11:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYAXQAV
+	id S1755548AbYAXQDm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 11:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbYAXQDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 11:00:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44740 "EHLO mx3.mail.elte.hu"
+	Thu, 24 Jan 2008 11:03:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36312 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752687AbYAXQAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 11:00:21 -0500
-Date: Thu, 24 Jan 2008 16:59:38 +0100
+	id S1752642AbYAXQDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 11:03:34 -0500
+Date: Thu, 24 Jan 2008 17:03:13 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: travis@sgi.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] x86: add percpu, cpu_to_node debug options
-Message-ID: <20080124155938.GC4857@elte.hu>
-References: <20080122230409.198261000@sgi.com> <20080122230409.514557000@sgi.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] x86: Unify fault_32|64.c by ifdef'd function bodies
+Message-ID: <20080124160313.GD4857@elte.hu>
+References: <1201046803.16972.92.camel@brick>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080122230409.514557000@sgi.com>
+In-Reply-To: <1201046803.16972.92.camel@brick>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
+X-ELTE-SpamScore: -0.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0606]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* travis@sgi.com <travis@sgi.com> wrote:
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> +config THREAD_ORDER
-> +	int "Kernel stack size (in page order)"
-> +	range 1 3
-> +	depends on X86_64
-> +	default "3" if X86_SMP
-> +	default "1"
-> +	help
-> +	  Increases kernel stack size.
+> It's about time to get on with unifying these files, elimination of 
+> the ugly ifdefs can occur in the unified file.
 
-you keep sending this broken portion, please dont ... 
+thanks, i could apply the first two patches - but not the third one 
+because some small differences crept in. I've done that by hand. Nice 
+work btw!
 
 	Ingo
