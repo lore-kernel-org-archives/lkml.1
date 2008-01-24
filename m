@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752494AbYAXNcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbYAXNg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752494AbYAXNcr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 08:32:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYAXNcj
+	id S1752686AbYAXNg7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 08:36:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYAXNgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 08:32:39 -0500
-Received: from mail.hevs.ch ([153.109.23.15]:35788 "EHLO mail.hevs.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751312AbYAXNci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 08:32:38 -0500
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH -mm v4 0/9] atmel_serial cleanups and improvements
-Date: Thu, 24 Jan 2008 14:32:48 +0100
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andrew Victor <linux@maxim.org.za>, Remy Bohmer <linux@bohmer.net>,
-       Chip Coldwell <coldwell@redhat.com>,
-       David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <1201178511-12133-1-git-send-email-hskinnemoen@atmel.com>
-In-Reply-To: <1201178511-12133-1-git-send-email-hskinnemoen@atmel.com>
+	Thu, 24 Jan 2008 08:36:51 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58663 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751591AbYAXNgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 08:36:50 -0500
+Date: Thu, 24 Jan 2008 10:00:49 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>, Kirill Korotaev <dev@sw.ru>
+Subject: Re: [PATCH] printk deadlocks if called with runqueue lock held
+Message-ID: <20080124090048.GB10217@elf.ucw.cz>
+References: <Pine.LNX.4.58.0801172000430.32679@gandalf.stny.rr.com> <20080123133149.GA4059@ucw.cz> <Pine.LNX.4.58.0801231335450.9982@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801241432.49036.marc.pignat@hevs.ch>
+In-Reply-To: <Pine.LNX.4.58.0801231335450.9982@gandalf.stny.rr.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tested and working on at91rm9200 using 2.6.24-rc8, in one word... ack.
+On Wed 2008-01-23 13:36:12, Steven Rostedt wrote:
+> 
+> 
+> On Wed, 23 Jan 2008, Pavel Machek wrote:
+> >
+> > Could try_to_wakeup use trylock, and only avoid wakeup if lock is
+> > already held?
+> > 							Pavel
+> 
+> I could imagine a lot of missed wakeups caused by that.
 
-Regards
+...alternative being suggested is to miss _all_ the wakeups. So
+"missing some" seems like better alternative.
 
-Marc
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
