@@ -1,658 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbYAXMoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbYAXMwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699AbYAXMoz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 07:44:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbYAXMmS
+	id S1755636AbYAXMwV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 07:52:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbYAXMwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 07:42:18 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:52135 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753440AbYAXMmC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 07:42:02 -0500
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+	Thu, 24 Jan 2008 07:52:09 -0500
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:54644 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752553AbYAXMwH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 07:52:07 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FADYZmEdMQWYq/2dsb2JhbACBV5AfnUeCAA
+Date: Thu, 24 Jan 2008 07:47:04 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andrew Victor <linux@maxim.org.za>, Remy Bohmer <linux@bohmer.net>,
-       Chip Coldwell <coldwell@redhat.com>, Marc Pignat <marc.pignat@hevs.ch>,
-       David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH -mm v4 7/9] atmel_serial: Add DMA support
-Date: Thu, 24 Jan 2008 13:41:49 +0100
-Message-Id: <1201178511-12133-8-git-send-email-hskinnemoen@atmel.com>
-X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <1201178511-12133-7-git-send-email-hskinnemoen@atmel.com>
-References: <1201178511-12133-1-git-send-email-hskinnemoen@atmel.com>
- <1201178511-12133-2-git-send-email-hskinnemoen@atmel.com>
- <1201178511-12133-3-git-send-email-hskinnemoen@atmel.com>
- <1201178511-12133-4-git-send-email-hskinnemoen@atmel.com>
- <1201178511-12133-5-git-send-email-hskinnemoen@atmel.com>
- <1201178511-12133-6-git-send-email-hskinnemoen@atmel.com>
- <1201178511-12133-7-git-send-email-hskinnemoen@atmel.com>
+Cc: Valdis.Kletnieks@vt.edu, "Frank Ch. Eigler" <fche@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jon Masters <jcm@redhat.com>
+Subject: [PATCH] Linux Kernel Markers Support for Proprierary Modules
+Message-ID: <20080124124703.GB32559@Krystal>
+References: <1201029235.18144.62.camel@perihelion> <y0modbdnt4e.fsf@ton.toronto.redhat.com> <20080123031005.GA16766@Krystal> <1201061860.25284.28.camel@perihelion> <20080123131442.GA6562@redhat.com> <20080123144811.GA12296@Krystal> <27267.1201152358@turing-police.cc.vt.edu> <1201155569.25284.88.camel@perihelion>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1201155569.25284.88.camel@perihelion>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 07:43:36 up 81 days, 17:49,  3 users,  load average: 1.14, 1.04,
+	0.60
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chip Coldwell <coldwell@redhat.com>
+There seems to be good arguments for markers to support proprierary modules. So
+I am throwing this one-liner in and let's see how people react. It only makes
+sure that a module that has been "forced" to be loaded won't have its markers
+used. It is important to leave this check to make sure the kernel does not crash
+by expecting the markers part of the struct module by mistake in the case there
+is an incorrect checksum.
 
-This patch is based on the DMA-patch by Chip Coldwell for the
-AT91/AT32 serial USARTS, with some tweaks to make it apply neatly on
-top of the other patches in this series.
+It applies fine on 2.6.24-rc8-git3.
 
-The RX and TX code has been moved to a tasklet and reworked a bit.
-Instead of depending on the ENDRX and TIMEOUT bits in CSR, we simply
-grab as much data as we can from the DMA buffers. I think this closes
-a race where the ENDRX bit is set after we read CSR but before we read
-RPR, although I haven't confirmed this.
+Discussion so far :
+http://lkml.org/lkml/2008/1/22/226
 
-Similarly, the two TX handlers (ENDTX and TXBUFE) have been combined
-into one. Since the current code only uses a single TX buffer, there's
-no point in handling those interrupts separately.
+Jon Masters <jcm@redhat.com> writes:
+I notice in module.c:
 
-This also fixes a DMA sync bug in the original patch.
+#ifdef CONFIG_MARKERS
+      if (!mod->taints)
+              marker_update_probe_range(mod->markers,
+                      mod->markers + mod->num_markers, NULL, NULL);
+#endif
 
-[linux@bohmer.net: rebased onto irq-splitup patch]
-[hskinnemoen@atmel.com: moved to tasklet, fixed dma bug, misc cleanups]
-Signed-off-by: Remy Bohmer <linux@bohmer.net>
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Is this an attempt to not set a marker for proprietary modules? [...]
+
+* Frank Ch. Eigler (fche@redhat.com) wrote:
+I can't seem to find any discussion about this aspect.  If this is the
+intent, it seems misguided to me.  There may instead be a relationship
+to TAINT_FORCED_{RMMOD,MODULE}.  Mathieu?
+
+- FChE
+
+On Tue, 2008-01-22 at 22:10 -0500, Mathieu Desnoyers wrote:
+On my part, its mostly a matter of not crashing the kernel when someone
+tries to force modprobe of a proprietary module (where the checksums
+doesn't match) on a kernel that supports the markers. Not doing so
+causes the markers to try to find the marker-specific information in
+struct module which doesn't exist and OOPSes.
+
+Christoph's point of view is rather more drastic than mine : it's not
+interesting for the kernel community to help proprietary modules writers,
+so it's a good idea not to give them marker support. (I CC'ed him so he
+can clarify his position).
+
+* Frank Ch. Eigler (fche@redhat.com) wrote:
+[...]
+Another way of looking at this though is that by allowing/encouraging
+proprietary module writers to include markers, we and their users get
+new diagnostic capabilities.  It constitutes a little bit of opening
+up, which IMO we should reward rather than punish.
+
+
+* Vladis Ketnieks (Valdis.Kletnieks@vt.edu) wrote:
+On Wed, 23 Jan 2008 09:48:12 EST, Mathieu Desnoyers said:
+
+> This specific one is a kernel policy matter, and I personally don't
+> have a strong opinion about it. I agree that you raise a good counter
+> argument : it can be useful to proprietary modules users to be able to
+> extract tracing information from those modules to argue with their
+> vendors that their driver/hardware is broken (a tracer is _very_ useful
+> in that kind of situation).
+
+Amen, brother. Been there, done that, got the tshirt (not on Linux, but
+other operating systems).
+
+>                             However, it is also useful to proprieraty
+> module writers who can benefit from the merged kernel/modules traces.
+> Do we want to give them this ability ?
+
+The proprietary module writer has the *source* for the kernel and their module.
+There's no way you can prevent the proprietary module writers from using this
+feature as long as you allow other module writers to use it.
+
+>                                           It would surely help writing
+> better proprieraty kernel modules.
+
+The biggest complaint against proprietary modules is that they make it
+impossible for *us* to debug.  And you want to argue *against* a feature that
+would allow them to develop better code that causes less crashes, and therefor
+less people *asking* for us to debug it?
+
+Remember - when a user tries a Linux box with a proprietary module, and the
+experience sucks because the module sucks, they will walk away thinking
+"Linux sucks", not "That module sucks".
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "Frank Ch. Eigler" <fche@redhat.com>
+CC: Jon Masters <jcm@redhat.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/serial/Kconfig        |   15 ++
- drivers/serial/atmel_serial.c |  393 ++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 384 insertions(+), 24 deletions(-)
+ kernel/module.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index d7e1996..67bfbb0 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -380,6 +380,21 @@ config SERIAL_ATMEL_CONSOLE
- 	  console is the device which receives all kernel messages and
- 	  warnings and which allows logins in single user mode).
+Index: linux-2.6-lttng/kernel/module.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/module.c	2008-01-24 07:29:10.000000000 -0500
++++ linux-2.6-lttng/kernel/module.c	2008-01-24 07:37:56.000000000 -0500
+@@ -1992,7 +1992,7 @@ static struct module *load_module(void _
+ 	add_kallsyms(mod, sechdrs, symindex, strindex, secstrings);
  
-+config SERIAL_ATMEL_PDC
-+	bool "Support DMA transfers on AT91 / AT32 serial port"
-+	depends on SERIAL_ATMEL
-+	default y
-+	help
-+	  Say Y here if you wish to use the PDC to do DMA transfers to
-+	  and from the Atmel AT91 / AT32 serial port. In order to
-+	  actually use DMA transfers, make sure that the use_dma_tx
-+	  and use_dma_rx members in the atmel_uart_data struct is set
-+	  appropriately for each port.
-+
-+	  Note that break and error handling currently doesn't work
-+	  properly when DMA is enabled. Make sure that ports where
-+	  this matters don't use DMA.
-+
- config SERIAL_ATMEL_TTYAT
- 	bool "Install as device ttyATn instead of ttySn"
- 	depends on SERIAL_ATMEL=y
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index 0e65e98..e4f9449 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -7,6 +7,8 @@
-  *  Based on drivers/char/serial_sa1100.c, by Deep Blue Solutions Ltd.
-  *  Based on drivers/char/serial.c, by Linus Torvalds, Theodore Ts'o.
-  *
-+ *  DMA support added by Chip Coldwell.
-+ *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-  * the Free Software Foundation; either version 2 of the License, or
-@@ -33,6 +35,7 @@
- #include <linux/sysrq.h>
- #include <linux/tty_flip.h>
- #include <linux/platform_device.h>
-+#include <linux/dma-mapping.h>
- #include <linux/atmel_pdc.h>
- 
- #include <asm/io.h>
-@@ -47,6 +50,10 @@
- 
- #include "atmel_serial.h"
- 
-+#define PDC_BUFFER_SIZE		512
-+/* Revisit: We should calculate this based on the actual port settings */
-+#define PDC_RX_TIMEOUT		(3 * 10)		/* 3 bytes */
-+
- #if defined(CONFIG_SERIAL_ATMEL_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
- #define SUPPORT_SYSRQ
+ #ifdef CONFIG_MARKERS
+-	if (!mod->taints)
++	if (!(mod->taints & TAINT_FORCED_MODULE))
+ 		marker_update_probe_range(mod->markers,
+ 			mod->markers + mod->num_markers, NULL, NULL);
  #endif
-@@ -104,6 +111,13 @@
- static int (*atmel_open_hook)(struct uart_port *);
- static void (*atmel_close_hook)(struct uart_port *);
- 
-+struct atmel_dma_buffer {
-+	unsigned char	*buf;
-+	dma_addr_t	dma_addr;
-+	size_t		dma_size;
-+	unsigned int	ofs;
-+};
-+
- struct atmel_uart_char {
- 	u16		status;
- 	u16		ch;
-@@ -120,6 +134,13 @@ struct atmel_uart_port {
- 	unsigned short		suspended;	/* is port suspended? */
- 	int			break_active;	/* break being received */
- 
-+	short			use_dma_rx;	/* enable PDC receiver */
-+	short			pdc_rx_idx;	/* current PDC RX buffer */
-+	struct atmel_dma_buffer	pdc_rx[2];	/* PDC receier */
-+
-+	short			use_dma_tx;	/* enable PDC transmitter */
-+	struct atmel_dma_buffer	pdc_tx;		/* PDC transmitter */
-+
- 	struct tasklet_struct	tasklet;
- 	unsigned int		irq_status;
- 	unsigned int		irq_status_prev;
-@@ -129,10 +150,39 @@ struct atmel_uart_port {
- 
- static struct atmel_uart_port atmel_ports[ATMEL_MAX_UART];
- 
-+#define PDC_RX_BUF(port)	&(port)->pdc_rx[(port)->pdc_rx_idx]
-+#define PDC_RX_SWITCH(port)	(port)->pdc_rx_idx = !(port)->pdc_rx_idx
-+
- #ifdef SUPPORT_SYSRQ
- static struct console atmel_console;
- #endif
- 
-+#ifdef CONFIG_SERIAL_ATMEL_PDC
-+static bool atmel_use_dma_rx(struct uart_port *port)
-+{
-+	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
-+
-+	return atmel_port->use_dma_rx;
-+}
-+
-+static bool atmel_use_dma_tx(struct uart_port *port)
-+{
-+	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
-+
-+	return atmel_port->use_dma_tx;
-+}
-+#else
-+static bool atmel_use_dma_rx(struct uart_port *port)
-+{
-+	return false;
-+}
-+
-+static bool atmel_use_dma_tx(struct uart_port *port)
-+{
-+	return false;
-+}
-+#endif
-+
- /*
-  * Return TIOCSER_TEMT when transmitter FIFO and Shift register is empty.
-  */
-@@ -214,7 +264,12 @@ static u_int atmel_get_mctrl(struct uart_port *port)
-  */
- static void atmel_stop_tx(struct uart_port *port)
- {
--	UART_PUT_IDR(port, ATMEL_US_TXRDY);
-+	if (atmel_use_dma_tx(port)) {
-+		/* disable PDC transmit */
-+		UART_PUT_PTCR(port, ATMEL_PDC_TXTDIS);
-+		UART_PUT_IDR(port, ATMEL_US_ENDTX | ATMEL_US_TXBUFE);
-+	} else
-+		UART_PUT_IDR(port, ATMEL_US_TXRDY);
- }
- 
- /*
-@@ -222,7 +277,17 @@ static void atmel_stop_tx(struct uart_port *port)
-  */
- static void atmel_start_tx(struct uart_port *port)
- {
--	UART_PUT_IER(port, ATMEL_US_TXRDY);
-+	if (atmel_use_dma_tx(port)) {
-+		if (UART_GET_PTSR(port) & ATMEL_PDC_TXTEN)
-+			/* The transmitter is already running.  Yes, we
-+			   really need this.*/
-+			return;
-+
-+		UART_PUT_IER(port, ATMEL_US_ENDTX | ATMEL_US_TXBUFE);
-+		/* re-enable PDC transmit */
-+		UART_PUT_PTCR(port, ATMEL_PDC_TXTEN);
-+	} else
-+		UART_PUT_IER(port, ATMEL_US_TXRDY);
- }
- 
- /*
-@@ -230,7 +295,12 @@ static void atmel_start_tx(struct uart_port *port)
-  */
- static void atmel_stop_rx(struct uart_port *port)
- {
--	UART_PUT_IDR(port, ATMEL_US_RXRDY);
-+	if (atmel_use_dma_rx(port)) {
-+		/* disable PDC receive */
-+		UART_PUT_PTCR(port, ATMEL_PDC_RXTDIS);
-+		UART_PUT_IDR(port, ATMEL_US_ENDRX | ATMEL_US_TIMEOUT);
-+	} else
-+		UART_PUT_IDR(port, ATMEL_US_RXRDY);
- }
- 
- /*
-@@ -279,6 +349,27 @@ atmel_buffer_rx_char(struct uart_port *port, unsigned int status,
- }
- 
- /*
-+ * Deal with parity, framing and overrun errors.
-+ */
-+static void atmel_pdc_rxerr(struct uart_port *port, unsigned int status)
-+{
-+	/* clear error */
-+	UART_PUT_CR(port, ATMEL_US_RSTSTA);
-+
-+	if (status & ATMEL_US_RXBRK) {
-+		/* ignore side-effect */
-+		status &= ~(ATMEL_US_PARE | ATMEL_US_FRAME);
-+		port->icount.brk++;
-+	}
-+	if (status & ATMEL_US_PARE)
-+		port->icount.parity++;
-+	if (status & ATMEL_US_FRAME)
-+		port->icount.frame++;
-+	if (status & ATMEL_US_OVRE)
-+		port->icount.overrun++;
-+}
-+
-+/*
-  * Characters received (called from interrupt handler)
-  */
- static void atmel_rx_chars(struct uart_port *port)
-@@ -365,6 +456,25 @@ atmel_handle_receive(struct uart_port *port, unsigned int pending)
- {
- 	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
- 
-+	if (atmel_use_dma_rx(port)) {
-+		/*
-+		 * PDC receive. Just schedule the tasklet and let it
-+		 * figure out the details.
-+		 *
-+		 * TODO: We're not handling error flags correctly at
-+		 * the moment.
-+		 */
-+		if (pending & (ATMEL_US_ENDRX | ATMEL_US_TIMEOUT)) {
-+			UART_PUT_IDR(port, (ATMEL_US_ENDRX
-+						| ATMEL_US_TIMEOUT));
-+			tasklet_schedule(&atmel_port->tasklet);
-+		}
-+
-+		if (pending & (ATMEL_US_RXBRK | ATMEL_US_OVRE |
-+				ATMEL_US_FRAME | ATMEL_US_PARE))
-+			atmel_pdc_rxerr(port, pending);
-+	}
-+
- 	/* Interrupt receive */
- 	if (pending & ATMEL_US_RXRDY)
- 		atmel_rx_chars(port);
-@@ -387,10 +497,18 @@ atmel_handle_transmit(struct uart_port *port, unsigned int pending)
- {
- 	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
- 
--	/* Interrupt transmit */
--	if (pending & ATMEL_US_TXRDY) {
--		UART_PUT_IDR(port, ATMEL_US_TXRDY);
--		tasklet_schedule(&atmel_port->tasklet);
-+	if (atmel_use_dma_tx(port)) {
-+		/* PDC transmit */
-+		if (pending & (ATMEL_US_ENDTX | ATMEL_US_TXBUFE)) {
-+			UART_PUT_IDR(port, ATMEL_US_ENDTX | ATMEL_US_TXBUFE);
-+			tasklet_schedule(&atmel_port->tasklet);
-+		}
-+	} else {
-+		/* Interrupt transmit */
-+		if (pending & ATMEL_US_TXRDY) {
-+			UART_PUT_IDR(port, ATMEL_US_TXRDY);
-+			tasklet_schedule(&atmel_port->tasklet);
-+		}
- 	}
- }
- 
-@@ -418,20 +536,67 @@ static irqreturn_t atmel_interrupt(int irq, void *dev_id)
- 	struct uart_port *port = dev_id;
- 	unsigned int status, pending, pass_counter = 0;
- 
--	status = UART_GET_CSR(port);
--	pending = status & UART_GET_IMR(port);
--	while (pending) {
-+	do {
-+		status = UART_GET_CSR(port);
-+		pending = status & UART_GET_IMR(port);
-+		if (!pending)
-+			break;
-+
- 		atmel_handle_receive(port, pending);
- 		atmel_handle_status(port, pending, status);
- 		atmel_handle_transmit(port, pending);
-+	} while (pass_counter++ < ATMEL_ISR_PASS_LIMIT);
- 
--		if (pass_counter++ > ATMEL_ISR_PASS_LIMIT)
--			break;
-+	return IRQ_HANDLED;
-+}
- 
--		status = UART_GET_CSR(port);
--		pending = status & UART_GET_IMR(port);
-+/*
-+ * Called from tasklet with ENDTX and TXBUFE interrupts disabled.
-+ */
-+static void atmel_tx_dma(struct uart_port *port)
-+{
-+	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
-+	struct circ_buf *xmit = &port->info->xmit;
-+	struct atmel_dma_buffer *pdc = &atmel_port->pdc_tx;
-+	int count;
-+
-+	xmit->tail += pdc->ofs;
-+	if (xmit->tail >= SERIAL_XMIT_SIZE)
-+		xmit->tail -= SERIAL_XMIT_SIZE;
-+
-+	port->icount.tx += pdc->ofs;
-+	pdc->ofs = 0;
-+
-+	if (!uart_circ_empty(xmit)) {
-+		/* more to transmit - setup next transfer */
-+
-+		/* disable PDC transmit */
-+		UART_PUT_PTCR(port, ATMEL_PDC_TXTDIS);
-+		dma_sync_single_for_device(port->dev,
-+					   pdc->dma_addr,
-+					   pdc->dma_size,
-+					   DMA_TO_DEVICE);
-+
-+		if (xmit->tail < xmit->head)
-+			count = xmit->head - xmit->tail;
-+		else
-+			count = SERIAL_XMIT_SIZE - xmit->tail;
-+		pdc->ofs = count;
-+
-+		UART_PUT_TPR(port, pdc->dma_addr + xmit->tail);
-+		UART_PUT_TCR(port, count);
-+		/* re-enable PDC transmit and interrupts */
-+		UART_PUT_PTCR(port, ATMEL_PDC_TXTEN);
-+		UART_PUT_IER(port, ATMEL_US_ENDTX | ATMEL_US_TXBUFE);
-+	} else {
-+		/* nothing left to transmit - disable the transmitter */
-+
-+		/* disable PDC transmit */
-+		UART_PUT_PTCR(port, ATMEL_PDC_TXTDIS);
- 	}
--	return IRQ_HANDLED;
-+
-+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
-+		uart_write_wakeup(port);
- }
- 
- static void atmel_rx_from_ring(struct uart_port *port)
-@@ -502,6 +667,76 @@ static void atmel_rx_from_ring(struct uart_port *port)
- 	spin_lock(&port->lock);
- }
- 
-+static void atmel_rx_from_dma(struct uart_port *port)
-+{
-+	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
-+	struct tty_struct *tty = port->info->tty;
-+	struct atmel_dma_buffer *pdc;
-+	int rx_idx = atmel_port->pdc_rx_idx;
-+	unsigned int head;
-+	unsigned int tail;
-+	unsigned int count;
-+
-+	do {
-+		/* Reset the UART timeout early so that we don't miss one */
-+		UART_PUT_CR(port, ATMEL_US_STTTO);
-+
-+		pdc = &atmel_port->pdc_rx[rx_idx];
-+		head = UART_GET_RPR(port) - pdc->dma_addr;
-+		tail = pdc->ofs;
-+
-+		/* If the PDC has switched buffers, RPR won't contain
-+		 * any address within the current buffer. Since head
-+		 * is unsigned, we just need a one-way comparison to
-+		 * find out.
-+		 *
-+		 * In this case, we just need to consume the entire
-+		 * buffer and resubmit it for DMA. This will clear the
-+		 * ENDRX bit as well, so that we can safely re-enable
-+		 * all interrupts below.
-+		 */
-+		if (head >= pdc->dma_size)
-+			head = pdc->dma_size;
-+
-+		if (likely(head != tail)) {
-+			dma_sync_single_for_cpu(port->dev, pdc->dma_addr,
-+					pdc->dma_size, DMA_FROM_DEVICE);
-+
-+			count = head - tail;
-+			tty_insert_flip_string(tty, pdc->buf + pdc->ofs, count);
-+
-+			dma_sync_single_for_device(port->dev, pdc->dma_addr,
-+					pdc->dma_size, DMA_FROM_DEVICE);
-+
-+			port->icount.rx += count;
-+			pdc->ofs = head;
-+		}
-+
-+		/*
-+		 * If the current buffer is full, we need to check if
-+		 * the next one contains any additional data.
-+		 */
-+		if (head >= pdc->dma_size) {
-+			pdc->ofs = 0;
-+			UART_PUT_RNPR(port, pdc->dma_addr);
-+			UART_PUT_RNCR(port, pdc->dma_size);
-+
-+			rx_idx = !rx_idx;
-+			atmel_port->pdc_rx_idx = rx_idx;
-+		}
-+	} while (head >= pdc->dma_size);
-+
-+	/*
-+	 * Drop the lock here since it might end up calling
-+	 * uart_start(), which takes the lock.
-+	 */
-+	spin_unlock(&port->lock);
-+	tty_flip_buffer_push(tty);
-+	spin_lock(&port->lock);
-+
-+	UART_PUT_IER(port, ATMEL_US_ENDRX | ATMEL_US_TIMEOUT);
-+}
-+
- /*
-  * tasklet handling tty stuff outside the interrupt handler.
-  */
-@@ -515,7 +750,10 @@ static void atmel_tasklet_func(unsigned long data)
- 	/* The interrupt handler does not take the lock */
- 	spin_lock(&port->lock);
- 
--	atmel_tx_chars(port);
-+	if (atmel_use_dma_tx(port))
-+		atmel_tx_dma(port);
-+	else
-+		atmel_tx_chars(port);
- 
- 	status = atmel_port->irq_status;
- 	status_change = status ^ atmel_port->irq_status_prev;
-@@ -537,7 +775,10 @@ static void atmel_tasklet_func(unsigned long data)
- 		atmel_port->irq_status_prev = status;
- 	}
- 
--	atmel_rx_from_ring(port);
-+	if (atmel_use_dma_rx(port))
-+		atmel_rx_from_dma(port);
-+	else
-+		atmel_rx_from_ring(port);
- 
- 	spin_unlock(&port->lock);
- }
-@@ -547,6 +788,7 @@ static void atmel_tasklet_func(unsigned long data)
-  */
- static int atmel_startup(struct uart_port *port)
- {
-+	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
- 	int retval;
- 
- 	/*
-@@ -567,6 +809,56 @@ static int atmel_startup(struct uart_port *port)
- 	}
- 
- 	/*
-+	 * Initialize DMA (if necessary)
-+	 */
-+	if (atmel_use_dma_rx(port)) {
-+		int i;
-+
-+		for (i = 0; i < 2; i++) {
-+			struct atmel_dma_buffer *pdc = &atmel_port->pdc_rx[i];
-+
-+			pdc->buf = kmalloc(PDC_BUFFER_SIZE, GFP_KERNEL);
-+			if (pdc->buf == NULL) {
-+				if (i != 0) {
-+					dma_unmap_single(port->dev,
-+						atmel_port->pdc_rx[0].dma_addr,
-+						PDC_BUFFER_SIZE,
-+						DMA_FROM_DEVICE);
-+					kfree(atmel_port->pdc_rx[0].buf);
-+				}
-+				free_irq(port->irq, port);
-+				return -ENOMEM;
-+			}
-+			pdc->dma_addr = dma_map_single(port->dev,
-+						       pdc->buf,
-+						       PDC_BUFFER_SIZE,
-+						       DMA_FROM_DEVICE);
-+			pdc->dma_size = PDC_BUFFER_SIZE;
-+			pdc->ofs = 0;
-+		}
-+
-+		atmel_port->pdc_rx_idx = 0;
-+
-+		UART_PUT_RPR(port, atmel_port->pdc_rx[0].dma_addr);
-+		UART_PUT_RCR(port, PDC_BUFFER_SIZE);
-+
-+		UART_PUT_RNPR(port, atmel_port->pdc_rx[1].dma_addr);
-+		UART_PUT_RNCR(port, PDC_BUFFER_SIZE);
-+	}
-+	if (atmel_use_dma_tx(port)) {
-+		struct atmel_dma_buffer *pdc = &atmel_port->pdc_tx;
-+		struct circ_buf *xmit = &port->info->xmit;
-+
-+		pdc->buf = xmit->buf;
-+		pdc->dma_addr = dma_map_single(port->dev,
-+					       pdc->buf,
-+					       SERIAL_XMIT_SIZE,
-+					       DMA_TO_DEVICE);
-+		pdc->dma_size = SERIAL_XMIT_SIZE;
-+		pdc->ofs = 0;
-+	}
-+
-+	/*
- 	 * If there is a specific "open" function (to register
- 	 * control line interrupts)
- 	 */
-@@ -585,8 +877,18 @@ static int atmel_startup(struct uart_port *port)
- 	/* enable xmit & rcvr */
- 	UART_PUT_CR(port, ATMEL_US_TXEN | ATMEL_US_RXEN);
- 
--	/* enable receive only */
--	UART_PUT_IER(port, ATMEL_US_RXRDY);
-+	if (atmel_use_dma_rx(port)) {
-+		/* set UART timeout */
-+		UART_PUT_RTOR(port, PDC_RX_TIMEOUT);
-+		UART_PUT_CR(port, ATMEL_US_STTTO);
-+
-+		UART_PUT_IER(port, ATMEL_US_ENDRX | ATMEL_US_TIMEOUT);
-+		/* enable PDC controller */
-+		UART_PUT_PTCR(port, ATMEL_PDC_RXTEN);
-+	} else {
-+		/* enable receive only */
-+		UART_PUT_IER(port, ATMEL_US_RXRDY);
-+	}
- 
- 	return 0;
- }
-@@ -596,6 +898,38 @@ static int atmel_startup(struct uart_port *port)
-  */
- static void atmel_shutdown(struct uart_port *port)
- {
-+	struct atmel_uart_port *atmel_port = (struct atmel_uart_port *)port;
-+	/*
-+	 * Ensure everything is stopped.
-+	 */
-+	atmel_stop_rx(port);
-+	atmel_stop_tx(port);
-+
-+	/*
-+	 * Shut-down the DMA.
-+	 */
-+	if (atmel_use_dma_rx(port)) {
-+		int i;
-+
-+		for (i = 0; i < 2; i++) {
-+			struct atmel_dma_buffer *pdc = &atmel_port->pdc_rx[i];
-+
-+			dma_unmap_single(port->dev,
-+					 pdc->dma_addr,
-+					 pdc->dma_size,
-+					 DMA_FROM_DEVICE);
-+			kfree(pdc->buf);
-+		}
-+	}
-+	if (atmel_use_dma_tx(port)) {
-+		struct atmel_dma_buffer *pdc = &atmel_port->pdc_tx;
-+
-+		dma_unmap_single(port->dev,
-+				 pdc->dma_addr,
-+				 pdc->dma_size,
-+				 DMA_TO_DEVICE);
-+	}
-+
- 	/*
- 	 * Disable all interrupts, port and break condition.
- 	 */
-@@ -707,6 +1041,10 @@ static void atmel_set_termios(struct uart_port *port, struct ktermios *termios,
- 	if (termios->c_iflag & (BRKINT | PARMRK))
- 		port->read_status_mask |= ATMEL_US_RXBRK;
- 
-+	if (atmel_use_dma_rx(port))
-+		/* need to enable error interrupts */
-+		UART_PUT_IER(port, port->read_status_mask);
-+
- 	/*
- 	 * Characters to ignore
- 	 */
-@@ -892,6 +1230,11 @@ static void __devinit atmel_init_port(struct atmel_uart_port *atmel_port,
- 		clk_enable(atmel_port->clk);
- 		port->uartclk = clk_get_rate(atmel_port->clk);
- 	}
-+
-+	atmel_port->use_dma_rx = data->use_dma_rx;
-+	atmel_port->use_dma_tx = data->use_dma_tx;
-+	if (atmel_use_dma_tx(port))
-+		port->fifosize = PDC_BUFFER_SIZE;
- }
- 
- /*
-@@ -1126,11 +1469,13 @@ static int __devinit atmel_serial_probe(struct platform_device *pdev)
- 	port = &atmel_ports[pdev->id];
- 	atmel_init_port(port, pdev);
- 
--	ret = -ENOMEM;
--	data = kmalloc(ATMEL_SERIAL_RINGSIZE, GFP_KERNEL);
--	if (!data)
--		goto err_alloc_ring;
--	port->rx_ring.buf = data;
-+	if (!atmel_use_dma_rx(&port->uart)) {
-+		ret = -ENOMEM;
-+		data = kmalloc(ATMEL_SERIAL_RINGSIZE, GFP_KERNEL);
-+		if (!data)
-+			goto err_alloc_ring;
-+		port->rx_ring.buf = data;
-+	}
- 
- 	ret = uart_add_one_port(&atmel_uart, &port->uart);
- 	if (ret)
 -- 
-1.5.3.8
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
