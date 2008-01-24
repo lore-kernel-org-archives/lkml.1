@@ -1,56 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbYAXRGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760508AbYAXRG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754395AbYAXRGm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 12:06:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759570AbYAXRDe
+	id S1760508AbYAXRG7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 12:06:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759873AbYAXRE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 12:03:34 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4056 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759549AbYAXRDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 12:03:32 -0500
-Date: Wed, 23 Jan 2008 20:59:30 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Cedric Le Goater <clg@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH 1/2] Extend sys_clone and sys_unshare system calls API
-Message-ID: <20080123205930.GA5233@ucw.cz>
-References: <478DFF8F.9030006@openvz.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <478DFF8F.9030006@openvz.org>
-User-Agent: Mutt/1.5.9i
+	Thu, 24 Jan 2008 12:04:27 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:32869 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756233AbYAXREZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 12:04:25 -0500
+Message-ID: <4798C511.8070305@davidnewall.com>
+Date: Fri, 25 Jan 2008 03:34:17 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for mm] Remove iBCS support
+References: <20080120031153.GB6275@one.firstfloor.org> <4792D221.1010704@davidnewall.com> <20080120051822.GB19784@one.firstfloor.org> <4792DD22.4070902@davidnewall.com> <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122111205.GA25090@elte.hu> <4796081A.7060505@davidnewall.com> <20080122160114.GB23277@does.not.exist>
+In-Reply-To: <20080122160114.GB23277@does.not.exist>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-01-16 15:58:55, Pavel Emelyanov wrote:
-> There's only one bit in the clone_flags left, so we won't be able 
-> to create more namespaces after we make it busy. Besides, for 
-> checkpoint/restart jobs we might want to create tasks with given
-> pids (virtual of course). And nobody knows for sure what else might 
-> be required from clone() in the future.
-> 
-> This is an attempt to create a extendable API for clone and unshare.
-> Actually this patch is a request for comment about the overall
-> design. If it will turn out to "look good", then we'll select some
-> better names for new flag and data types.
-> 
-> I use the last bit in the clone_flags for CLONE_LONGARG. When set it
-> will denote that the child_tidptr is not a pointer to a tid storage,
-> but the pointer to the struct long_clone_struct which currently 
-> looks like this:
-> 
-> struct long_clone_arg {
-> 	int size;
-> };
+Adrian Bunk wrote:
+> But Linux kernel development is not driven by people producing hot air 
+> about what they wish to see in the future, Linux kernel development is 
+> driven by people sending patches.
 
-Ugly as night, I'd say. (Al said it better). What about just adding
-clone2 syscall, that takes u64?
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Removal of code is not development.  It's the opposite of development.
+
+At one stage iBCS2 support DID work.  Now it doesn't.  Now there's an
+argument that the remaining infrastructure should be removed.  This is
+the wrong direction to take.
