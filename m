@@ -1,139 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbYAXUmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbYAXUnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759504AbYAXUmu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 15:42:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757975AbYAXUfp
+	id S1758689AbYAXUnP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 15:43:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757979AbYAXUfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 15:35:45 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:53390 "EHLO smtp.polymtl.ca"
+	Thu, 24 Jan 2008 15:35:47 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:53395 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757594AbYAXUfo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757963AbYAXUfo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 Jan 2008 15:35:44 -0500
-Message-Id: <20080124203332.749619937@polymtl.ca>
+Message-Id: <20080124203339.058366192@polymtl.ca>
 References: <20080124202706.250598537@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jan 2008 15:27:07 -0500
+Date: Thu, 24 Jan 2008 15:27:22 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Jon Masters <jcm@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, Andi Kleen <ak@muc.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Chuck Ebbert <cebbert@redhat.com>,
        Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [patch 01/26] Linux Kernel Markers Support for Proprierary Modules
-Content-Disposition: inline; filename=markers-support-for-proprietary-modules.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Jan 2008 20:33:34 +0000
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 16/26] Immediate Values - x86 Optimization
+Content-Disposition: inline; filename=immediate-values-x86-optimization.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 24 Jan 2008 20:33:40 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There seems to be good arguments for markers to support proprierary modules. So
-I am throwing this one-liner in and let's see how people react. It only makes
-sure that a module that has been "forced" to be loaded won't have its markers
-used. It is important to leave this check to make sure the kernel does not crash
-by expecting the markers part of the struct module by mistake in the case there
-is an incorrect checksum.
+x86 optimization of the immediate values which uses a movl with code patching
+to set/unset the value used to populate the register used as variable source.
 
+Changelog:
+- Use text_poke_early with cr0 WP save/restore to patch the bypass. We are doing
+  non atomic writes to a code region only touched by us (nobody can execute it
+  since we are protected by the imv_mutex).
+- Put imv_set and _imv_set in the architecture independent header.
+- Use $0 instead of %2 with (0) operand.
+- Add x86_64 support, ready for i386+x86_64 -> x86 merge.
+- Use asm-x86/asm.h.
 
-Discussion so far :
-http://lkml.org/lkml/2008/1/22/226
+Ok, so the most flexible solution that I see, that should fit for both
+x86 and x86_64 would be :
+1 byte  :       "=q" : "a", "b", "c", or "d" register for the i386.  For
+                       x86-64 it is equivalent to "r" class (for 8-bit
+                       instructions that do not use upper halves).
+2, 4, 8 bytes : "=r" : A register operand is allowed provided that it is in a
+                       general register.
 
-Jon Masters <jcm@redhat.com> writes:
-I notice in module.c:
+- "Redux" immediate values : no need to put a breakpoint, therefore, no
+  need to know where the instruction starts. It's therefore OK to have a
+  REX prefix.
 
-#ifdef CONFIG_MARKERS
-      if (!mod->taints)
-              marker_update_probe_range(mod->markers,
-                      mod->markers + mod->num_markers, NULL, NULL);
-#endif
-
-Is this an attempt to not set a marker for proprietary modules? [...]
-
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-I can't seem to find any discussion about this aspect.  If this is the
-intent, it seems misguided to me.  There may instead be a relationship
-to TAINT_FORCED_{RMMOD,MODULE}.  Mathieu?
-
-- FChE
-
-On Tue, 2008-01-22 at 22:10 -0500, Mathieu Desnoyers wrote:
-On my part, its mostly a matter of not crashing the kernel when someone
-tries to force modprobe of a proprietary module (where the checksums
-doesn't match) on a kernel that supports the markers. Not doing so
-causes the markers to try to find the marker-specific information in
-struct module which doesn't exist and OOPSes.
-
-Christoph's point of view is rather more drastic than mine : it's not
-interesting for the kernel community to help proprietary modules writers,
-so it's a good idea not to give them marker support. (I CC'ed him so he
-can clarify his position).
-
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-[...]
-Another way of looking at this though is that by allowing/encouraging
-proprietary module writers to include markers, we and their users get
-new diagnostic capabilities.  It constitutes a little bit of opening
-up, which IMO we should reward rather than punish.
-
-
-* Vladis Ketnieks (Valdis.Kletnieks@vt.edu) wrote:
-On Wed, 23 Jan 2008 09:48:12 EST, Mathieu Desnoyers said:
-
-> This specific one is a kernel policy matter, and I personally don't
-> have a strong opinion about it. I agree that you raise a good counter
-> argument : it can be useful to proprietary modules users to be able to
-> extract tracing information from those modules to argue with their
-> vendors that their driver/hardware is broken (a tracer is _very_ useful
-> in that kind of situation).
-
-Amen, brother. Been there, done that, got the tshirt (not on Linux, but
-other operating systems).
-
->                             However, it is also useful to proprieraty
-> module writers who can benefit from the merged kernel/modules traces.
-> Do we want to give them this ability ?
-
-The proprietary module writer has the *source* for the kernel and their module.
-There's no way you can prevent the proprietary module writers from using this
-feature as long as you allow other module writers to use it.
-
->                                           It would surely help writing
-> better proprieraty kernel modules.
-
-The biggest complaint against proprietary modules is that they make it
-impossible for *us* to debug.  And you want to argue *against* a feature that
-would allow them to develop better code that causes less crashes, and therefor
-less people *asking* for us to debug it?
-
-Remember - when a user tries a Linux box with a proprietary module, and the
-experience sucks because the module sucks, they will walk away thinking
-"Linux sucks", not "That module sucks".
+- Bugfix : 8 bytes 64 bits immediate value was declared as "4 bytes" in the
+  immediate structure.
+- Change the immediate.c update code to support variable length opcodes.
+- Vastly simplified, using a busy looping IPI with interrupts disabled.
+  Does not protect against NMI nor MCE.
+- Pack the __imv section. Use smallest types required for size (char).
+- Use imv_* instead of immediate_*.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Jon Masters <jcm@redhat.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Andi Kleen <ak@muc.de>
+CC: "H. Peter Anvin" <hpa@zytor.com>
+CC: Chuck Ebbert <cebbert@redhat.com>
 CC: Christoph Hellwig <hch@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>
 ---
- kernel/module.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/Kconfig            |    1 
+ include/asm-x86/immediate.h |   77 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 78 insertions(+)
 
-Index: linux-2.6-lttng.mm/kernel/module.c
+Index: linux-2.6-lttng.mm/include/asm-x86/immediate.h
 ===================================================================
---- linux-2.6-lttng.mm.orig/kernel/module.c	2008-01-24 14:17:23.000000000 -0500
-+++ linux-2.6-lttng.mm/kernel/module.c	2008-01-24 14:17:33.000000000 -0500
-@@ -1989,7 +1989,7 @@ static struct module *load_module(void _
- 	add_kallsyms(mod, sechdrs, symindex, strindex, secstrings);
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng.mm/include/asm-x86/immediate.h	2008-01-24 14:30:09.000000000 -0500
+@@ -0,0 +1,77 @@
++#ifndef _ASM_X86_IMMEDIATE_H
++#define _ASM_X86_IMMEDIATE_H
++
++/*
++ * Immediate values. x86 architecture optimizations.
++ *
++ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <asm/asm.h>
++
++/**
++ * imv_read - read immediate variable
++ * @name: immediate value name
++ *
++ * Reads the value of @name.
++ * Optimized version of the immediate.
++ * Do not use in __init and __exit functions. Use _imv_read() instead.
++ * If size is bigger than the architecture long size, fall back on a memory
++ * read.
++ *
++ * Make sure to populate the initial static 64 bits opcode with a value
++ * what will generate an instruction with 8 bytes immediate value (not the REX.W
++ * prefixed one that loads a sign extended 32 bits immediate value in a r64
++ * register).
++ */
++#define imv_read(name)							\
++	({								\
++		__typeof__(name##__imv) value;				\
++		BUILD_BUG_ON(sizeof(value) > 8);			\
++		switch (sizeof(value)) {				\
++		case 1:							\
++			asm(".section __imv,\"a\",@progbits\n\t"	\
++				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
++				".byte %c2\n\t"				\
++				".previous\n\t"				\
++				"mov $0,%0\n\t"				\
++				"3:\n\t"				\
++				: "=q" (value)				\
++				: "i" (&name##__imv),			\
++				  "i" (sizeof(value)));			\
++			break;						\
++		case 2:							\
++		case 4:							\
++			asm(".section __imv,\"a\",@progbits\n\t"	\
++				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
++				".byte %c2\n\t"				\
++				".previous\n\t"				\
++				"mov $0,%0\n\t"				\
++				"3:\n\t"				\
++				: "=r" (value)				\
++				: "i" (&name##__imv),			\
++				  "i" (sizeof(value)));			\
++			break;						\
++		case 8:							\
++			if (sizeof(long) < 8) {				\
++				value = name##__imv;			\
++				break;					\
++			}						\
++			asm(".section __imv,\"a\",@progbits\n\t"	\
++				_ASM_PTR "%c1, (3f)-%c2\n\t"		\
++				".byte %c2\n\t"				\
++				".previous\n\t"				\
++				"mov $0xFEFEFEFE01010101,%0\n\t" 	\
++				"3:\n\t"				\
++				: "=r" (value)				\
++				: "i" (&name##__imv),			\
++				  "i" (sizeof(value)));			\
++			break;						\
++		};							\
++		value;							\
++	})
++
++#endif /* _ASM_X86_IMMEDIATE_H */
+Index: linux-2.6-lttng.mm/arch/x86/Kconfig
+===================================================================
+--- linux-2.6-lttng.mm.orig/arch/x86/Kconfig	2008-01-24 14:18:34.000000000 -0500
++++ linux-2.6-lttng.mm/arch/x86/Kconfig	2008-01-24 14:30:09.000000000 -0500
+@@ -20,6 +20,7 @@ config X86
+ 	def_bool y
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
++	select HAVE_IMMEDIATE
  
- #ifdef CONFIG_MARKERS
--	if (!mod->taints)
-+	if (!(mod->taints & TAINT_FORCED_MODULE))
- 		marker_update_probe_range(mod->markers,
- 			mod->markers + mod->num_markers);
- #endif
+ config GENERIC_LOCKBREAK
+ 	def_bool n
 
 -- 
 Mathieu Desnoyers
