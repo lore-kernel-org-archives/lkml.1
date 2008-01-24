@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbYAXOvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYAXOxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755105AbYAXOvm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 09:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYAXOve
+	id S1754059AbYAXOxT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 09:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYAXOxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 09:51:34 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:58119 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752337AbYAXOvd (ORCPT
+	Thu, 24 Jan 2008 09:53:09 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:57175 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752132AbYAXOxG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 09:51:33 -0500
-Date: Thu, 24 Jan 2008 09:51:32 -0500
-To: Marcin Gil <marcin.gil@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: JMicron PATA 2.6.24-rc7 can't find drives
-Message-ID: <20080124145132.GE16171@csclub.uwaterloo.ca>
-References: <200801232323.36187.marcin.gil@gmail.com> <20080123234639.025cc859@lxorguk.ukuu.org.uk> <479839B4.3060202@gmail.com> <20080124142717.GA16173@csclub.uwaterloo.ca> <4798A114.6010803@gmail.com> <20080124144359.GD16171@csclub.uwaterloo.ca> <4798A537.9000104@gmail.com>
+	Thu, 24 Jan 2008 09:53:06 -0500
+Date: Thu, 24 Jan 2008 20:23:00 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Theodore Ts'o" <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
+       alex@clusterfs.com, adilger@clusterfs.com, sandeen@redhat.com,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH 41/49] ext4: Add multi block allocator for ext4
+Message-ID: <20080124145300.GD14348@skywalker>
+References: <1200970948-17903-35-git-send-email-tytso@mit.edu> <1200970948-17903-36-git-send-email-tytso@mit.edu> <1200970948-17903-37-git-send-email-tytso@mit.edu> <1200970948-17903-38-git-send-email-tytso@mit.edu> <1200970948-17903-39-git-send-email-tytso@mit.edu> <1200970948-17903-40-git-send-email-tytso@mit.edu> <1200970948-17903-41-git-send-email-tytso@mit.edu> <1200970948-17903-42-git-send-email-tytso@mit.edu> <20080123140727.f47e9c9d.akpm@linux-foundation.org> <20080124075614.GA14348@skywalker>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4798A537.9000104@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <20080124075614.GA14348@skywalker>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 03:48:23PM +0100, Marcin Gil wrote:
-> Yes, this is 80-wire cable; both are connected on the same cable. HDD is 
-> master and DVD is slave. I'll later try disconnecting DVD and see what 
-> happens. I didn't set cable-select due to how these drives are connected
+On Thu, Jan 24, 2008 at 01:26:14PM +0530, Aneesh Kumar K.V wrote:
 > 
-> +-----+-----+
-> mobo  hdd   dvd
+> > 
+> > > +/* find most significant bit */
+> > > +static int fmsb(unsigned short word)
+> > > +{
+> > > +	int order;
+> > > +
+> > > +	if (word > 255) {
+> > > +		order = 7;
+> > > +		word >>= 8;
+> > > +	} else {
+> > > +		order = -1;
+> > > +	}
+> > > +
+> > > +	do {
+> > > +		order++;
+> > > +		word >>= 1;
+> > > +	} while (word != 0);
+> > > +
+> > > +	return order;
+> > > +}
+> > 
+> > Did we just reinvent fls()?
 > 
-> I think that cable select would take dvd as master and hdd as slave.
-> This was not preferable when hdd was my primary drive. I can try 
-> cable-select now since I boot off new SATA drive.
+> replaced by fls.
+> 
+> > 
 
-Does the BIOS see the HD on the jmicron when doing disk detection?
+That should be fls() - 1;
 
-I remember once forgetting to connect power to a driver and spending a
-while wondering why the drive wasn't showing up anywhere.
+The full patch is at
 
---
-Len Sorensen
+http://www.radian.org/~kvaneesh/ext4/jan-24-2008/mballoc-core.patch
+
+The patch is too big to inline.
+
+-aneesh
