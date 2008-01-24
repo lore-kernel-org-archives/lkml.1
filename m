@@ -1,47 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbYAXANH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbYAXAOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753448AbYAXANH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 19:13:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYAXAMz
+	id S1754048AbYAXAOs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 19:14:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYAXAOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 19:12:55 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36754 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751900AbYAXAMy (ORCPT
+	Wed, 23 Jan 2008 19:14:37 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52703 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752453AbYAXAOg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 19:12:54 -0500
-Date: Wed, 23 Jan 2008 16:11:36 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: a.p.zijlstra@chello.nl, salikhmetov@gmail.com, linux-mm@kvack.org,
-       jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
-       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
-       hch@infradead.org
-Subject: Re: [PATCH -v8 3/4] Enable the MS_ASYNC functionality in
- sys_msync()
-In-Reply-To: <E1JHpaa-0004a9-8B@pomaz-ex.szeredi.hu>
-Message-ID: <alpine.LFD.1.00.0801231610220.2803@woody.linux-foundation.org>
-References: <12010440803930-git-send-email-salikhmetov@gmail.com>  <1201044083504-git-send-email-salikhmetov@gmail.com>  <alpine.LFD.1.00.0801230836250.1741@woody.linux-foundation.org> <1201110066.6341.65.camel@lappy> <alpine.LFD.1.00.0801231107520.1741@woody.linux-foundation.org>
- <E1JHlh8-0003s8-Bb@pomaz-ex.szeredi.hu> <alpine.LFD.1.00.0801231248060.2803@woody.linux-foundation.org> <E1JHmxa-0004BK-6X@pomaz-ex.szeredi.hu> <alpine.LFD.1.00.0801231329120.2803@woody.linux-foundation.org> <E1JHpaa-0004a9-8B@pomaz-ex.szeredi.hu>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 23 Jan 2008 19:14:36 -0500
+Subject: [GIT PATCH] SCSI bug fix for 2.6.24-rc8
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 23 Jan 2008 18:14:24 -0600
+Message-Id: <1201133664.3110.114.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hopefully this should resolve the outstanding initio failures.
+
+Patch is available here:
+
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+
+Full patch attached.
+
+James
+
+---
+
+From: Stuart Swales <stuart.swales@croftnuisk.co.uk>
+Date: Wed, 23 Jan 2008 20:00:48 +0000
+Subject: [SCSI] initio: fix module hangs on loading
+
+I've verified (on my Initio 9100 with a DAT drive) that the
+2.6.24-rc8-git6 initio module still hangs on loading.
+
+These fixes (other than the printk) are needed to get the module to load
+ok (and work correctly) with my adapter & tape drive.
+
+a) printk cosmetic fix
+
+b) cblk->sglen needs setting for later DMA I/O routines to use
+
+c) host->bios_addr needs setting for debug output correctness
+
+d) semaph & semaph_lock initialisation had got lost since 2.6.22
+
+e) since 2.6.22 the bios data address was truncated to 16 bits (needs 20
+when shifted left)
+
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ drivers/scsi/initio.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/scsi/initio.c b/drivers/scsi/initio.c
+index 01bf018..a10a5c7 100644
+--- a/drivers/scsi/initio.c
++++ b/drivers/scsi/initio.c
+@@ -823,7 +823,7 @@ static void initio_append_busy_scb(struct initio_host * host, struct scsi_ctrl_b
+ {
+ 
+ #if DEBUG_QUEUE
+-	printk("append busy SCB %o; ", scbp);
++	printk("append busy SCB %p; ", scbp);
+ #endif
+ 	if (scbp->tagmsg)
+ 		host->act_tags[scbp->target]++;
+@@ -2609,6 +2609,7 @@ static void initio_build_scb(struct initio_host * host, struct scsi_ctrl_blk * c
+ 		cblk->bufptr = cpu_to_le32((u32)dma_addr);
+ 		cmnd->SCp.dma_handle = dma_addr;
+ 
++		cblk->sglen = nseg;
+ 
+ 		cblk->flags |= SCF_SG;	/* Turn on SG list flag       */
+ 		total_len = 0;
+@@ -2869,6 +2870,7 @@ static int initio_probe_one(struct pci_dev *pdev,
+ 	host = (struct initio_host *)shost->hostdata;
+ 	memset(host, 0, sizeof(struct initio_host));
+ 	host->addr = pci_resource_start(pdev, 0);
++	host->bios_addr = bios_seg;
+ 
+ 	if (!request_region(host->addr, 256, "i91u")) {
+ 		printk(KERN_WARNING "initio: I/O port range 0x%x is busy.\n", host->addr);
+@@ -2895,6 +2897,8 @@ static int initio_probe_one(struct pci_dev *pdev,
+ 
+ 	host->pci_dev = pdev;
+ 
++	host->semaph = 1;
++	spin_lock_init(&host->semaph_lock);
+ 	host->num_scbs = num_scb;
+ 	host->scb = scb;
+ 	host->next_pending = scb;
+@@ -2911,7 +2915,7 @@ static int initio_probe_one(struct pci_dev *pdev,
+ 	host->last_avail = prev;
+ 	spin_lock_init(&host->avail_lock);
+ 
+-	initio_init(host, phys_to_virt(bios_seg << 4));
++	initio_init(host, phys_to_virt(((u32)bios_seg << 4)));
+ 
+ 	host->jsstatus0 = 0;
+ 
+-- 
+1.5.3.7
 
 
-On Thu, 24 Jan 2008, Miklos Szeredi wrote:
-> 
-> But I still think this approach should work.  Untested, might eat your
-> children, so please don't apply to any kernel.
 
-Yes, something like that should work.
-
-The important part is to not do the "TestClearPageDirty()" separately, the 
-rest of it can be done well enough.
-
-		Linus
