@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbYAZPzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756913AbYAZP4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756469AbYAZPzn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 10:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbYAZPyP
+	id S1756913AbYAZP4B (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 10:56:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbYAZPyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:54:15 -0500
+	Sat, 26 Jan 2008 10:54:19 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752801AbYAZPyD (ORCPT
+	with ESMTP id S1754650AbYAZPyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:54:03 -0500
+	Sat, 26 Jan 2008 10:54:09 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 39/52] [microblaze] headers for irq
-Date: Thu, 24 Jan 2008 16:03:14 +0100
-Message-Id: <1b21abdff6128297a902060b07a0c7ca6d8db633.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 41/52] [microblaze] headers pgalloc.h pgtable.h
+Date: Thu, 24 Jan 2008 16:03:16 +0100
+Message-Id: <155ee14d990137f7eb6fa76beee06c880c97e790.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <99bfbc3fdb53003c11414681b2c73561d533c3ef.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <e173c10560cdf883ba3c7e639ca930f0627a2260.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -49,6 +49,8 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <c09d54c49393bedbe4ca43df0e35cefa5fcc649c.1201107832.git.monstr@monstr.eu>
  <29ee870c02ea5d4c409644d7f0eb09cfbb1ec816.1201107832.git.monstr@monstr.eu>
  <99bfbc3fdb53003c11414681b2c73561d533c3ef.1201107832.git.monstr@monstr.eu>
+ <1b21abdff6128297a902060b07a0c7ca6d8db633.1201107832.git.monstr@monstr.eu>
+ <e173c10560cdf883ba3c7e639ca930f0627a2260.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -60,22 +62,20 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/hardirq.h  |   31 +++++++++++++++++++++++++++++++
- include/asm-microblaze/hw_irq.h   |   19 +++++++++++++++++++
- include/asm-microblaze/irq_regs.h |   19 +++++++++++++++++++
- 3 files changed, 69 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/hardirq.h
- create mode 100644 include/asm-microblaze/hw_irq.h
- create mode 100644 include/asm-microblaze/irq_regs.h
+ include/asm-microblaze/pgalloc.h |   16 ++++++++++++
+ include/asm-microblaze/pgtable.h |   50 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 66 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/pgalloc.h
+ create mode 100644 include/asm-microblaze/pgtable.h
 
-diff --git a/include/asm-microblaze/hardirq.h b/include/asm-microblaze/hardirq.h
+diff --git a/include/asm-microblaze/pgalloc.h b/include/asm-microblaze/pgalloc.h
 new file mode 100644
-index 0000000..61cd3c0
+index 0000000..c6fd99d
 --- /dev/null
-+++ b/include/asm-microblaze/hardirq.h
-@@ -0,0 +1,31 @@
++++ b/include/asm-microblaze/pgalloc.h
+@@ -0,0 +1,16 @@
 +/*
-+ * include/asm-microblaze/hardirq.h
++ * include/asm-microblaze/pgalloc.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -84,35 +84,20 @@ index 0000000..61cd3c0
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_HARDIRQ_H
-+#define _ASM_HARDIRQ_H
++#ifndef _ASM_PGALLOC_H
++#define _ASM_PGALLOC_H
 +
-+#include <linux/cache.h>
-+#include <linux/irq.h>
-+#include <asm/irq.h>
-+#include <asm/current.h>
-+#include <asm/ptrace.h>
++#define check_pgt_cache()	do {} while (0)
 +
-+/* should be defined in each interrupt controller driver */
-+extern unsigned int get_irq(struct pt_regs *regs);
-+
-+typedef struct {
-+	unsigned int __softirq_pending;
-+} ____cacheline_aligned irq_cpustat_t;
-+
-+void ack_bad_irq(unsigned int irq);
-+
-+#include <linux/irq_cpustat.h> /* Standard mappings for irq_cpustat_t above */
-+
-+#endif /* _ASM_HARDIRQ_H */
-diff --git a/include/asm-microblaze/hw_irq.h b/include/asm-microblaze/hw_irq.h
++#endif /* _ASM_PGALLOC_H */
+diff --git a/include/asm-microblaze/pgtable.h b/include/asm-microblaze/pgtable.h
 new file mode 100644
-index 0000000..e7a0956
+index 0000000..6e9db76
 --- /dev/null
-+++ b/include/asm-microblaze/hw_irq.h
-@@ -0,0 +1,19 @@
++++ b/include/asm-microblaze/pgtable.h
+@@ -0,0 +1,50 @@
 +/*
-+ * include/asm-microblaze/hw_irq.h
++ * include/asm-microblaze/pgtable.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -121,40 +106,46 @@ index 0000000..e7a0956
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_HW_IRQ_H
-+#define _ASM_HW_IRQ_H
++#ifndef _ASM_PGTABLE_H
++#define _ASM_PGTABLE_H
 +
-+static inline void hw_resend_irq(struct hw_interrupt_type *h, unsigned int i)
-+{
-+	/* Nothing to do */
-+}
++#define pgd_present(pgd)	(1) /* pages are always present on NO_MM */
++#define pgd_none(pgd)		(0)
++#define pgd_bad(pgd)		(0)
++#define pgd_clear(pgdp)
++#define kern_addr_valid(addr)	(1)
++#define	pmd_offset(a, b)	((void *) 0)
 +
-+#endif /* _ASM_HW_IRQ_H */
-diff --git a/include/asm-microblaze/irq_regs.h b/include/asm-microblaze/irq_regs.h
-new file mode 100644
-index 0000000..702b051
---- /dev/null
-+++ b/include/asm-microblaze/irq_regs.h
-@@ -0,0 +1,19 @@
-+/*
-+ * include/asm-microblaze/irq_regs.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
++#define PAGE_NONE		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_SHARED		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_COPY		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_READONLY		__pgprot(0) /* these mean nothing to NO_MM */
++#define PAGE_KERNEL		__pgprot(0) /* these mean nothing to NO_MM */
 +
-+#ifndef _ASM_IRQ_REGS_H
-+#define _ASM_IRQ_REGS_H
++#define __swp_type(x)		(0)
++#define __swp_offset(x)		(0)
++#define __swp_entry(typ, off)	((swp_entry_t) { ((typ) | ((off) << 7)) })
++#define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) })
++#define __swp_entry_to_pte(x)	((pte_t) { (x).val })
 +
-+#include <asm-generic/irq_regs.h>
++#ifndef __ASSEMBLY__
++static inline int pte_file(pte_t pte) { return 0; }
++#endif
 +
-+#endif /* _ASM_IRQ_REGS_H */
++#define ZERO_PAGE(vaddr)	({ BUG(); NULL; })
 +
++#define swapper_pg_dir ((pgd_t *) NULL)
 +
++#define pgtable_cache_init()	do {} while (0)
 +
++#define io_remap_pfn_range(vma, vaddr, pfn, size, prot)		\
++		remap_pfn_range(vma, vaddr, pfn, size, prot)
++
++#define arch_enter_lazy_cpu_mode()	do {} while (0)
++
++void paging_init(void);
++
++#endif /* _ASM_PGTABLE_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
