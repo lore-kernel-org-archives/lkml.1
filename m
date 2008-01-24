@@ -1,121 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYAXQnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYAXQsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbYAXQnr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 11:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYAXQnd
+	id S1755209AbYAXQsc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 11:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbYAXQsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 11:43:33 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:51598 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755373AbYAXQnc (ORCPT
+	Thu, 24 Jan 2008 11:48:21 -0500
+Received: from de01egw01.freescale.net ([192.88.165.102]:60222 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752088AbYAXQsU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 11:43:32 -0500
-Date: Thu, 24 Jan 2008 08:42:52 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       knikanth@novell.com
-Subject: Re: [PATCH 4/6] block: cfq: make the io contect sharing lockless
-Message-ID: <20080124164252.GB14706@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1200995361-24001-1-git-send-email-jens.axboe@oracle.com> <1200995361-24001-5-git-send-email-jens.axboe@oracle.com> <20080123140819.d53bc976.akpm@linux-foundation.org>
+	Thu, 24 Jan 2008 11:48:20 -0500
+Message-ID: <4798BDEB.2010501@freescale.com>
+Date: Thu, 24 Jan 2008 10:33:47 -0600
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080123140819.d53bc976.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: avorontsov@ru.mvista.com
+CC: Poonam_Aggrwal-b10812 <b10812@freescale.com>, kumar.gala@freescale.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, rubini@vision.unipv.it, linuxppc-dev@ozlabs.org,
+       michael.barkowski@freescale.com, rich.cutler@freescale.com,
+       ashish.kalra@freescale.com
+Subject: Re: [PATCH UCC TDM 1/3 Updated] Platform changes for UCC TDM driver
+ for MPC8323eRDB. Also includes related QE changes and dts entries.
+References: <Pine.LNX.4.64.0801241553270.4984@linux121> <20080124154804.GA22178@localhost.localdomain> <4798B4F3.2010101@freescale.com> <20080124162345.GA27359@localhost.localdomain>
+In-Reply-To: <20080124162345.GA27359@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 23, 2008 at 02:08:19PM -0800, Andrew Morton wrote:
-> > On Tue, 22 Jan 2008 10:49:19 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
-> > The io context sharing introduced a per-ioc spinlock, that would protect
-> > the cfq io context lookup. That is a regression from the original, since
-> > we never needed any locking there because the ioc/cic were process private.
-> > 
-> > The cic lookup is changed from an rbtree construct to a radix tree, which
-> > we can then use RCU to make the reader side lockless. That is the performance
-> > critical path, modifying the radix tree is only done on process creation
-> > (when that process first does IO, actually) and on process exit (if that
-> > process has done IO).
-> 
-> Perhaps Paul would review the rcu usage here sometime?
+Anton Vorontsov wrote:
 
-I will take a look -- long plane trip about 36 hours from now.  ;-)
+> Are you saying that TDM is sharing same pins with the other QE device,
+> and we can choose to use/not use some device depending on which driver
+> is loaded?
 
-							Thanx, Paul
+No.  I'd have to closely examine the DTS, but I don't think that UCC devices 
+share pins at all.  But that isn't my point.
 
-> > +/*
-> > + * Add cic into ioc, using cfqd as the search key. This enables us to lookup
-> > + * the process specific cfq io context when entered from the block layer.
-> > + * Also adds the cic to a per-cfqd list, used when this queue is removed.
-> > + */
-> > +static inline int
-> 
-> There's a lot of pointless inlining in there.
-> 
-> > +++ b/block/ll_rw_blk.c
-> > @@ -3831,6 +3831,16 @@ int __init blk_dev_init(void)
-> >  	return 0;
-> >  }
-> >  
-> > +static void cfq_dtor(struct io_context *ioc)
-> > +{
-> > +	struct cfq_io_context *cic[1];
-> > +	int r;
-> > +
-> > +	r = radix_tree_gang_lookup(&ioc->radix_root, (void **) cic, 0, 1);
-> > +	if (r > 0)
-> > +		cic[0]->dtor(ioc);
-> > +}
-> 
-> Some comments here might help others who are wondering why we can't just
-> use radix_tree_lookup().
-> 
-> > +static void cfq_exit(struct io_context *ioc)
-> > +{
-> > +	struct cfq_io_context *cic[1];
-> > +	int r;
-> > +
-> > +	rcu_read_lock();
-> > +	r = radix_tree_gang_lookup(&ioc->radix_root, (void **) cic, 0, 1);
-> > +	rcu_read_unlock();
-> > +
-> > +	if (r > 0)
-> > +		cic[0]->exit(ioc);
-> > +}
-> 
-> ditto.
-> 
-> >  /* Called by the exitting task */
-> >  void exit_io_context(void)
-> >  {
-> >  	struct io_context *ioc;
-> > -	struct cfq_io_context *cic;
-> >  
-> >  	task_lock(current);
-> >  	ioc = current->io_context;
-> > @@ -3876,11 +3891,7 @@ void exit_io_context(void)
-> >  	if (atomic_dec_and_test(&ioc->nr_tasks)) {
-> >  		if (ioc->aic && ioc->aic->exit)
-> >  			ioc->aic->exit(ioc->aic);
-> > -		if (ioc->cic_root.rb_node != NULL) {
-> > -			cic = rb_entry(rb_first(&ioc->cic_root),
-> > -				struct cfq_io_context, rb_node);
-> > -			cic->exit(ioc);
-> > -		}
-> > +		cfq_exit(ioc);
-> >  
-> >  		put_io_context(ioc);
-> >  	}
-> > @@ -3900,7 +3911,7 @@ struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
-> >  		ret->last_waited = jiffies; /* doesn't matter... */
-> >  		ret->nr_batch_requests = 0; /* because this is 0 */
-> >  		ret->aic = NULL;
-> > -		ret->cic_root.rb_node = NULL;
-> > +		INIT_RADIX_TREE(&ret->radix_root, GFP_ATOMIC | __GFP_HIGH);
-> 
-> Did this need to be atomic?
-> 
-> 
+> In that particular case UCC configuration is static, for every UCC.
+> So, we can set up all pins in the firmware/board file.
+
+Yes, but deciding what the UCC does might not be static.  At what point do we 
+declare, "UCC5 is for eth0 and eth0 only"?
+
+The advantage of putting the pin configurations in the device tree is that they 
+now become configurable.  I can envision a scenario where UCC5 could be either 
+an Ethernet or a UART, depending on the setting of some jumpers on the board. 
+That's what the QE was designed for: any UCC can do any task, and you can even 
+have a UCC change its purpose while the system is running.  So I don't want the 
+pin configurations hard-coded into the kernel.  Having them in the device tree 
+gives me some flexibility.
+
+For instance, I have a plan (that I keep postponing) to introduce a new feature 
+in U-Boot where U-Boot can determine the settings of some board jumpers and 
+modify the device tree accordingly.  The instructions on how to modify the 
+device tree would be embedded in the tree itself.  I can't support this feature 
+if the kernel calls par_io_config_pin() regardless of what's in the device tree.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
