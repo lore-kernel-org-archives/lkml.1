@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761621AbYAZQI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbYAZQJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761621AbYAZQI7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 11:08:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbYAZP5Y
+	id S1761412AbYAZQJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 11:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757371AbYAZP5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:57:24 -0500
+	Sat, 26 Jan 2008 10:57:31 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755980AbYAZP5U (ORCPT
+	with ESMTP id S1756727AbYAZP51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:57:20 -0500
+	Sat, 26 Jan 2008 10:57:27 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 42/52] [microblaze] system.h pvr.h processor.h
-Date: Thu, 24 Jan 2008 16:03:17 +0100
-Message-Id: <34f2199d631406fbdf6b325a164e0d1899a3acb5.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 08/52] [microblaze] Interrupt handling, timer support, supported function
+Date: Thu, 24 Jan 2008 16:03:33 +0100
+Message-Id: <671df2e842f46f829133f893b5388e29a797494d.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <155ee14d990137f7eb6fa76beee06c880c97e790.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <9e7bb497ba4b4ffbb368d9613a0105529791e6b8.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -52,6 +52,22 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <1b21abdff6128297a902060b07a0c7ca6d8db633.1201107832.git.monstr@monstr.eu>
  <e173c10560cdf883ba3c7e639ca930f0627a2260.1201107832.git.monstr@monstr.eu>
  <155ee14d990137f7eb6fa76beee06c880c97e790.1201107832.git.monstr@monstr.eu>
+ <34f2199d631406fbdf6b325a164e0d1899a3acb5.1201107832.git.monstr@monstr.eu>
+ <14243bf49d44d1dbd6e377813f2635defcb82c4e.1201107832.git.monstr@monstr.eu>
+ <01e493efdc1c8cb7ee0d5f8b7c73244e04680e71.1201107832.git.monstr@monstr.eu>
+ <739e189a03021d2804f23d0774637a15038098bc.1201107832.git.monstr@monstr.eu>
+ <d4eec3db9f6e6e86994444b8035d5e41db3f085b.1201107832.git.monstr@monstr.eu>
+ <e445f6b37baf09d6469a0ad4eba189a7ca7ef7c3.1201107832.git.monstr@monstr.eu>
+ <807d570db44eeed03e3211b933a207f42cf569f0.1201107832.git.monstr@monstr.eu>
+ <990835fa238b139deac273e0573bcf5060e3ee80.1201107832.git.monstr@monstr.eu>
+ <993cd20fd7ee4ec891f1354690f93ca62d7871ec.1201107832.git.monstr@monstr.eu>
+ <e83ad9fcfb12993d8d20ce6663e563b8b496273e.1201107832.git.monstr@monstr.eu>
+ <e22e05ebd297de6f7d5dd0bf2eecf20d6749d571.1201107832.git.monstr@monstr.eu>
+ <62a6eb3ffa457cd0c126320a0e46509f06e00511.1201107832.git.monstr@monstr.eu>
+ <c4d02deb7e0a9a243a961bfe066e5d05e72a836e.1201107832.git.monstr@monstr.eu>
+ <e83ac9f205e3ef0524ded397faf91a7a0750100c.1201107832.git.monstr@monstr.eu>
+ <2802c9c0575435ca5c412601eb30a04f3fe4eec6.1201107832.git.monstr@monstr.eu>
+ <9e7bb497ba4b4ffbb368d9613a0105529791e6b8.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -63,308 +79,269 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/processor.h |   89 +++++++++++++++++
- include/asm-microblaze/pvr.h       |  185 ++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/system.h    |  185 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 459 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/processor.h
- create mode 100644 include/asm-microblaze/pvr.h
- create mode 100644 include/asm-microblaze/system.h
+ arch/microblaze/kernel/hack.c  |   88 +++++++++++++++++++++++++
+ arch/microblaze/kernel/intc.c  |  141 ++++++++++++++++++++++++++++++++++++++++
+ arch/microblaze/kernel/irq.c   |   88 +++++++++++++++++++++++++
+ arch/microblaze/kernel/timer.c |  134 ++++++++++++++++++++++++++++++++++++++
+ include/asm-microblaze/hack.h  |   19 ++++++
+ include/asm-microblaze/irq.h   |   34 ++++++++++
+ 6 files changed, 504 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/hack.c
+ create mode 100644 arch/microblaze/kernel/intc.c
+ create mode 100644 arch/microblaze/kernel/irq.c
+ create mode 100644 arch/microblaze/kernel/timer.c
+ create mode 100644 include/asm-microblaze/hack.h
+ create mode 100644 include/asm-microblaze/irq.h
 
-diff --git a/include/asm-microblaze/processor.h b/include/asm-microblaze/processor.h
+diff --git a/arch/microblaze/kernel/hack.c b/arch/microblaze/kernel/hack.c
 new file mode 100644
-index 0000000..15cda64
+index 0000000..627f06d
 --- /dev/null
-+++ b/include/asm-microblaze/processor.h
-@@ -0,0 +1,89 @@
++++ b/arch/microblaze/kernel/hack.c
+@@ -0,0 +1,88 @@
 +/*
-+ * include/asm-microblaze/processor.h
++ * arch/microblaze/kernel/hack.c
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
 + *
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ */
++
++#include <linux/interrupt.h>
++#include <asm/hack.h>
++
++#undef DEBUG
++
++#ifdef DEBUG
++#define DBG(fmt...) printk(fmt)
++#else
++#define DBG(fmt...)
++#endif
++
++/* NOTE
++ * self-modified part of code for improvement of interrupt controller
++ * save instruction in interrupt rutine
++ */
++void function_hack(const int *arr_fce, const unsigned int base)
++{
++	unsigned int flags = 0;
++	unsigned int j, i;
++	unsigned int *addr = NULL;
++
++	local_irq_save(flags);
++	__disable_icache();
++
++	/* zero terminated array */
++	for (j = 0; arr_fce[j] != 0; j++) {
++		/* get start address of function */
++		addr = (unsigned int *) arr_fce[j];
++		DBG("%s: func(%d) at 0x%x\n",
++					__FUNCTION__, j, (unsigned int) addr);
++		for (i = 0;; i++) {
++			DBG("%s: instruction code at %d: 0x%x\n",
++						__FUNCTION__, i, addr[i]);
++			if (addr[i] == 0xb0001234) {
++				/* detecting of lwi or swi instruction */
++				if ((addr[i+1] & 0xec00ff00) == 0xe800ff00) {
++					DBG("%s: curr instr, "
++						"(%d):0x%x, "
++						"next(%d):0x%x\n",
++						 __FUNCTION__, i, addr[i], i+1,
++								addr[i+1]);
++					addr[i] = 0xb0000000 + (base >> 16);
++					addr[i+1] = (addr[i+1] & 0xffff00ff) +
++							(base & 0xffff);
++					__invalidate_icache(addr[i]);
++					__invalidate_icache(addr[i+1]);
++					DBG("%s: hack instr, "
++						"(%d):0x%x, "
++						"next(%d):0x%x\n",
++						 __FUNCTION__, i, addr[i], i+1,
++								addr[i+1]);
++				} else /* detection addik for ack */
++				if ((addr[i+1] & 0xfc00ff00) == 0x3000ff00) {
++					DBG("%s: curr instr, "
++						"(%d):0x%x, "
++						"next(%d):0x%x\n",
++						 __FUNCTION__, i, addr[i], i+1,
++								addr[i+1]);
++					addr[i] = 0xb0000000 + (base >> 16);
++					addr[i+1] = (addr[i+1] & 0xffff00ff) +
++							(base & 0xffff);
++					__invalidate_icache(addr[i]);
++					__invalidate_icache(addr[i+1]);
++					DBG("%s: hack instr, "
++						"(%d):0x%x, "
++						"next(%d):0x%x\n",
++						 __FUNCTION__, i, addr[i], i+1,
++								addr[i+1]);
++				}
++			} else if (addr[i] == 0xb60f0008) {
++				DBG("%s: end of array %d\n",
++							__FUNCTION__, i);
++				break;
++			}
++		}
++	}
++	local_irq_restore(flags);
++} /* end of self-modified code */
+diff --git a/arch/microblaze/kernel/intc.c b/arch/microblaze/kernel/intc.c
+new file mode 100644
+index 0000000..7ed6a3a
+--- /dev/null
++++ b/arch/microblaze/kernel/intc.c
+@@ -0,0 +1,141 @@
++/*
++ * arch/microblaze/kernel/intc.c
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
++#include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/autoconf.h>
++#include <asm/page.h>
++#include <asm/io.h>
 +
-+#ifndef _ASM_PROCESSOR_H
-+#define _ASM_PROCESSOR_H
++#include <asm/prom.h>
++#include <asm/irq.h>
++#include <asm/hack.h>
++unsigned int NR_IRQ;
 +
-+#include <asm/ptrace.h>
-+#include <asm/setup.h>
++/* No one else should require these constants, so define them locally here. */
++#define ISR 0x00			/* Interrupt Status Register */
++#define IPR 0x04			/* Interrupt Pending Register */
++#define IER 0x08			/* Interrupt Enable Register */
++#define IAR 0x0c			/* Interrupt Acknowledge Register */
++#define SIE 0x10			/* Set Interrupt Enable bits */
++#define CIE 0x14			/* Clear Interrupt Enable bits */
++#define IVR 0x18			/* Interrupt Vector Register */
++#define MER 0x1c			/* Master Enable Register */
 +
-+/*
-+ * User space process size: memory size
-+ *
-+ * TASK_SIZE on MMU cpu is usually 1GB. However, on no-MMU arch, both
-+ * user processes and the kernel is on the same memory region. They
-+ * both share the memory space and that is limited by the amount of
-+ * physical memory. thus, we set TASK_SIZE == amount of total memory.
-+ */
++#define MER_ME (1<<0)
++#define MER_HIE (1<<1)
 +
-+#define TASK_SIZE	(0x81000000 - 0x80000000)
-+
-+/*
-+ * Default implementation of macro that returns current
-+ * instruction pointer ("program counter").
-+ */
-+#define current_text_addr() ({ __label__ _l; _l: &&_l; })
-+
-+/*
-+ * This decides where the kernel will search for a free chunk of vm
-+ * space during mmap's. We won't be using it
-+ */
-+#define TASK_UNMAPPED_BASE	0
-+
-+struct task_struct;
-+
-+/* thread_struct is gone. use thread_info instead. */
-+struct thread_struct { };
-+#define INIT_THREAD	{ }
-+
-+/* Do necessary setup to start up a newly executed thread. */
-+static inline void start_thread(struct pt_regs *regs,
-+				unsigned long pc,
-+				unsigned long usp)
++static void __init opb_intc_enable(unsigned int irq)
 +{
-+	regs->pc = pc;
-+	regs->r1 = usp;
-+	regs->kernel_mode = 0;
++	unsigned int mask = (0x00000001 << (irq & 31));
++	pr_debug("enable: %d\n", irq);
++	iowrite32(mask, HACK_BASE_ADDR + SIE);
 +}
 +
-+/* Free all resources held by a thread. */
-+static inline void release_thread(struct task_struct *dead_task)
++static void opb_intc_disable(unsigned int irq)
 +{
++	unsigned long mask = (0x00000001 << (irq & 31));
++	pr_debug("disable: %d\n", irq);
++	iowrite32(mask, HACK_BASE_ADDR + CIE);
 +}
 +
-+/* Free all resources held by a thread. */
-+static inline void exit_thread(void)
++static void opb_intc_disable_and_ack(unsigned int irq)
 +{
++	unsigned long mask = (0x00000001 << (irq & 31));
++	pr_debug("disable_and_ack: %d\n", irq);
++	iowrite32(mask, HACK_BASE_ADDR + CIE);
++	/* ack edge triggered intr */
++	if (!(irq_desc[irq].status & IRQ_LEVEL))
++		iowrite32(mask, HACK_BASE_ADDR + IAR);
 +}
 +
-+extern unsigned long thread_saved_pc(struct task_struct *t);
++static void opb_intc_end(unsigned int irq)
++{
++	unsigned long mask = (0x00000001 << (irq & 31));
 +
-+extern unsigned long get_wchan(struct task_struct *p);
++	pr_debug("end: %d\n", irq);
++	if (!(irq_desc[irq].status & (IRQ_DISABLED | IRQ_INPROGRESS))) {
++		iowrite32(mask, HACK_BASE_ADDR + SIE);
++		/* ack level sensitive intr */
++		if (irq_desc[irq].status & IRQ_LEVEL)
++			iowrite32(mask, HACK_BASE_ADDR + IAR);
++	}
++}
 +
-+/* FIXME */
-+#define cpu_relax()		do {} while (0)
-+#define prepare_to_copy(tsk)	do {} while (0)
-+
-+/*
-+ * create a kernel thread without removing it from tasklists
-+ */
-+extern int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
-+
-+/* #define task_thread_info(task) (task)->thread_info */
-+/* #define task_stack_page(task) ((void*)((task)->thread_info)) */
-+
-+#define task_pt_regs(tsk) \
-+		(((struct pt_regs *)(THREAD_SIZE + task_stack_page(tsk))) - 1)
-+
-+
-+#define KSTK_EIP(tsk)	(0)
-+#define KSTK_ESP(tsk)	(0)
-+
-+#endif /* _ASM_PROCESSOR_H */
-diff --git a/include/asm-microblaze/pvr.h b/include/asm-microblaze/pvr.h
-new file mode 100644
-index 0000000..f76bb6e
---- /dev/null
-+++ b/include/asm-microblaze/pvr.h
-@@ -0,0 +1,185 @@
-+/*
-+ * include/asm-microblaze/pvr.h
-+ *
-+ * Support for the MicroBlaze PVR (Processor Version Register)
-+ *
-+ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
-+ * Copyright (C) 2007 PetaLogix
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
-+ */
-+#ifndef _ASM_PVR_H
-+#define _ASM_PVR_H
-+
-+#define PVR_MSR_BIT 0x400
-+
-+struct pvr_s {
-+	unsigned pvr[16];
++static struct irq_chip opb_intc = {
++	.name = "OPB-INTC",
++	.enable = opb_intc_enable,
++	.disable = opb_intc_disable,
++	.ack = opb_intc_disable_and_ack,
++	.end = opb_intc_end,
 +};
 +
-+/* The following taken from Xilinx's standalone BSP pvr.h */
++unsigned int get_irq(struct pt_regs *regs)
++{
++	int irq;
 +
-+/* Basic PVR mask */
-+#define PVR0_PVR_FULL_MASK		0x80000000
-+#define PVR0_USE_BARREL_MASK		0x40000000
-+#define PVR0_USE_DIV_MASK		0x20000000
-+#define PVR0_USE_HW_MUL_MASK		0x10000000
-+#define PVR0_USE_FPU_MASK		0x08000000
-+#define PVR0_USE_EXCEPTION_MASK		0x04000000
-+#define PVR0_USE_ICACHE_MASK		0x02000000
-+#define PVR0_USE_DCACHE_MASK		0x01000000
-+#define PVR0_VERSION_MASK		0x0000FF00
-+#define PVR0_USER1_MASK			0x000000FF
++	/*
++	 * NOTE: This function is the one that needs to be improved in
++	 * order to handle multiple interrupt controllers. It currently
++	 * is hardcoded to check for interrupts only on the first INTC.
++	 */
 +
-+/* User 2 PVR mask */
-+#define PVR1_USER2_MASK			0xFFFFFFFF
++	irq = ioread32(HACK_BASE_ADDR + IVR);
++	pr_debug("get_irq: %d\n", irq);
 +
-+/* Configuration PVR masks */
-+#define PVR2_D_OPB_MASK			0x80000000
-+#define PVR2_D_LMB_MASK			0x40000000
-+#define PVR2_I_OPB_MASK			0x20000000
-+#define PVR2_I_LMB_MASK			0x10000000
-+#define PVR2_INTERRUPT_IS_EDGE_MASK	0x08000000
-+#define PVR2_EDGE_IS_POSITIVE_MASK	0x04000000
-+#define PVR2_USE_MSR_INSTR		0x00020000
-+#define PVR2_USE_PCMP_INSTR		0x00010000
-+#define PVR2_AREA_OPTIMISED		0x00008000
-+#define PVR2_USE_BARREL_MASK		0x00004000
-+#define PVR2_USE_DIV_MASK		0x00002000
-+#define PVR2_USE_HW_MUL_MASK		0x00001000
-+#define PVR2_USE_FPU_MASK		0x00000800
-+#define PVR2_USE_MUL64_MASK		0x00000400
-+#define PVR2_OPCODE_0x0_ILLEGAL_MASK	0x00000040
-+#define PVR2_UNALIGNED_EXCEPTION_MASK	0x00000020
-+#define PVR2_ILL_OPCODE_EXCEPTION_MASK	0x00000010
-+#define PVR2_IOPB_BUS_EXCEPTION_MASK	0x00000008
-+#define PVR2_DOPB_BUS_EXCEPTION_MASK	0x00000004
-+#define PVR2_DIV_ZERO_EXCEPTION_MASK	0x00000002
-+#define PVR2_FPU_EXCEPTION_MASK		0x00000001
++	return irq;
++}
 +
-+/* Debug and exception PVR masks */
-+#define PVR3_DEBUG_ENABLED_MASK		0x80000000
-+#define PVR3_NUMBER_OF_PC_BRK_MASK	0x1E000000
-+#define PVR3_NUMBER_OF_RD_ADDR_BRK_MASK	0x00380000
-+#define PVR3_NUMBER_OF_WR_ADDR_BRK_MASK	0x0000E000
-+#define PVR3_FSL_LINKS_MASK		0x00000380
++void __init init_IRQ(void)
++{
++	int i = 0;
++	unsigned int intc_baseaddr = 0;
++	int handle = 0x010;
++	struct device_node *intc;
++	int arr_func[] = {
++				(int)&get_irq,
++				(int)&opb_intc_enable,
++				(int)&opb_intc_disable,
++				(int)&opb_intc_disable_and_ack,
++				(int)&opb_intc_end,
++				0
++			};
 +
-+/* ICache config PVR masks */
-+#define PVR4_USE_ICACHE_MASK		0x80000000
-+#define PVR4_ICACHE_ADDR_TAG_BITS_MASK	0x7C000000
-+#define PVR4_ICACHE_USE_FSL_MASK	0x02000000
-+#define PVR4_ICACHE_ALLOW_WR_MASK	0x01000000
-+#define PVR4_ICACHE_LINE_LEN_MASK	0x00E00000
-+#define PVR4_ICACHE_BYTE_SIZE_MASK	0x001F0000
++	intc = of_find_compatible_node(NULL, NULL, "xlnx,opb-intc");
++	intc_baseaddr = *(int *) of_get_property(intc, "reg", NULL);
++	/* intc_baseaddr = (unsigned long) ioremap(intc_baseaddr, PAGE_SIZE); */
++	NR_IRQ = *(int *) of_get_property(intc, "xlnx,num-intr-inputs", NULL);
 +
-+/* DCache config PVR masks */
-+#define PVR5_USE_DCACHE_MASK		0x80000000
-+#define PVR5_DCACHE_ADDR_TAG_BITS_MASK	0x7C000000
-+#define PVR5_DCACHE_USE_FSL_MASK	0x02000000
-+#define PVR5_DCACHE_ALLOW_WR_MASK	0x01000000
-+#define PVR5_DCACHE_LINE_LEN_MASK	0x00E00000
-+#define PVR5_DCACHE_BYTE_SIZE_MASK	0x001F0000
++	function_hack((int *) arr_func, intc_baseaddr);
 +
-+/* ICache base address PVR mask */
-+#define PVR6_ICACHE_BASEADDR_MASK	0xFFFFFFFF
++	printk(KERN_INFO "OPB INTC #0 at 0x%08lX, handle 0x%x\n",
++		(unsigned long) intc_baseaddr, handle);
 +
-+/* ICache high address PVR mask */
-+#define PVR7_ICACHE_HIGHADDR_MASK	0xFFFFFFFF
++	/*
++	 * Disable all external interrupts until they are
++	 * explicity requested.
++	 */
++	iowrite32(0, intc_baseaddr + IER);
 +
-+/* DCache base address PVR mask */
-+#define PVR8_DCACHE_BASEADDR_MASK	0xFFFFFFFF
++	/* Acknowledge any pending interrupts just in case. */
++	iowrite32(0xffffffff, intc_baseaddr + IAR);
 +
-+/* DCache high address PVR mask */
-+#define PVR9_DCACHE_HIGHADDR_MASK	0xFFFFFFFF
++	/* Turn on the Master Enable. */
++	iowrite32(MER_HIE|MER_ME, intc_baseaddr + MER);
 +
-+/* Target family PVR mask */
-+#define PVR10_TARGET_FAMILY_MASK	0xFF000000
++	for (i = 0; i < NR_IRQ; ++i) {
++		irq_desc[i].chip = &opb_intc;
 +
-+/* MSR Reset value PVR mask */
-+#define PVR11_MSR_RESET_VALUE_MASK	0x000007FF
-+
-+
-+/* PVR access macros */
-+#define PVR_IS_FULL(pvr)		(pvr.pvr[0] & PVR0_PVR_FULL_MASK)
-+#define PVR_USE_BARREL(pvr)		(pvr.pvr[0] & PVR0_USE_BARREL_MASK)
-+#define PVR_USE_DIV(pvr)		(pvr.pvr[0] & PVR0_USE_DIV_MASK)
-+#define PVR_USE_HW_MUL(pvr)		(pvr.pvr[0] & PVR0_USE_HW_MUL_MASK)
-+#define PVR_USE_FPU(pvr)		(pvr.pvr[0] & PVR0_USE_FPU_MASK)
-+#define PVR_USE_ICACHE(pvr)		(pvr.pvr[0] & PVR0_USE_ICACHE_MASK)
-+#define PVR_USE_DCACHE(pvr)		(pvr.pvr[0] & PVR0_USE_DCACHE_MASK)
-+#define PVR_VERSION(pvr)	((pvr.pvr[0] & PVR0_VERSION_MASK) >> 8)
-+#define PVR_USER1(pvr)			(pvr.pvr[0] & PVR0_USER1_MASK)
-+#define PVR_USER2(pvr)			(pvr.pvr[1] & PVR1_USER2_MASK)
-+
-+#define PVR_D_OPB(pvr)			(pvr.pvr[2] & PVR2_D_OPB_MASK)
-+#define PVR_D_LMB(pvr)			(pvr.pvr[2] & PVR2_D_LMB_MASK)
-+#define PVR_I_OPB(pvr)			(pvr.pvr[2] & PVR2_I_OPB_MASK)
-+#define PVR_I_LMB(pvr)			(pvr.pvr[2] & PVR2_I_LMB_MASK)
-+#define PVR_INTERRUPT_IS_EDGE(pvr) \
-+			(pvr.pvr[2] & PVR2_INTERRUPT_IS_EDGE_MASK)
-+#define PVR_EDGE_IS_POSITIVE(pvr) \
-+			(pvr.pvr[2] & PVR2_EDGE_IS_POSITIVE_MASK)
-+#define PVR_USE_MSR_INSTR(pvr)		(pvr.pvr[2] & PVR2_USE_MSR_INSTR)
-+#define PVR_USE_PCMP_INSTR(pvr)		(pvr.pvr[2] & PVR2_USE_PCMP_INSTR)
-+#define PVR_AREA_OPTIMISED(pvr)		(pvr.pvr[2] & PVR2_AREA_OPTIMISED)
-+#define PVR_USE_MUL64(pvr)		(pvr.pvr[2] & PVR2_USE_MUL64_MASK)
-+#define PVR_OPCODE_0x0_ILLEGAL(pvr) \
-+			(pvr.pvr[2] & PVR2_OPCODE_0x0_ILLEGAL_MASK)
-+#define PVR_UNALIGNED_EXCEPTION(pvr) \
-+			(pvr.pvr[2] & PVR2_UNALIGNED_EXCEPTION_MASK)
-+#define PVR_ILL_OPCODE_EXCEPTION(pvr) \
-+			(pvr.pvr[2] & PVR2_ILL_OPCODE_EXCEPTION_MASK)
-+#define PVR_IOPB_BUS_EXCEPTION(pvr) \
-+			(pvr.pvr[2] & PVR2_IOPB_BUS_EXCEPTION_MASK)
-+#define PVR_DOPB_BUS_EXCEPTION(pvr) \
-+			(pvr.pvr[2] & PVR2_DOPB_BUS_EXCEPTION_MASK)
-+#define PVR_DIV_ZERO_EXCEPTION(pvr) \
-+			(pvr.pvr[2] & PVR2_DIV_ZERO_EXCEPTION_MASK)
-+#define PVR_FPU_EXCEPTION(pvr)		(pvr.pvr[2] & PVR2_FPU_EXCEPTION_MASK)
-+
-+#define PVR_DEBUG_ENABLED(pvr)		(pvr.pvr[3] & PVR3_DEBUG_ENABLED_MASK)
-+#define PVR_NUMBER_OF_PC_BRK(pvr) \
-+			((pvr.pvr[3] & PVR3_NUMBER_OF_PC_BRK_MASK) >> 25)
-+#define PVR_NUMBER_OF_RD_ADDR_BRK(pvr) \
-+			((pvr.pvr[3] & PVR3_NUMBER_OF_RD_ADDR_BRK_MASK) >> 19)
-+#define PVR_NUMBER_OF_WR_ADDR_BRK(pvr) \
-+			((pvr.pvr[3] & PVR3_NUMBER_OF_WR_ADDR_BRK_MASK) >> 13)
-+#define PVR_FSL_LINKS(pvr)	((pvr.pvr[3] & PVR3_FSL_LINKS_MASK) >> 7)
-+
-+#define PVR_ICACHE_ADDR_TAG_BITS(pvr) \
-+			((pvr.pvr[4] & PVR4_ICACHE_ADDR_TAG_BITS_MASK) >> 26)
-+#define PVR_ICACHE_USE_FSL(pvr)		(pvr.pvr[4] & PVR4_ICACHE_USE_FSL_MASK)
-+#define PVR_ICACHE_ALLOW_WR(pvr)	(pvr.pvr[4] & PVR4_ICACHE_ALLOW_WR_MASK)
-+#define PVR_ICACHE_LINE_LEN(pvr) \
-+			(1 << ((pvr.pvr[4] & PVR4_ICACHE_LINE_LEN_MASK) >> 21))
-+#define PVR_ICACHE_BYTE_SIZE(pvr) \
-+			(1 << ((pvr.pvr[4] & PVR4_ICACHE_BYTE_SIZE_MASK) >> 16))
-+
-+#define PVR_DCACHE_ADDR_TAG_BITS(pvr) \
-+			((pvr.pvr[5] & PVR5_DCACHE_ADDR_TAG_BITS_MASK) >> 26)
-+#define PVR_DCACHE_USE_FSL(pvr)		(pvr.pvr[5] & PVR5_DCACHE_USE_FSL_MASK)
-+#define PVR_DCACHE_ALLOW_WR(pvr)	(pvr.pvr[5] & PVR5_DCACHE_ALLOW_WR_MASK)
-+#define PVR_DCACHE_LINE_LEN(pvr) \
-+			(1 << ((pvr.pvr[5] & PVR5_DCACHE_LINE_LEN_MASK) >> 21))
-+#define PVR_DCACHE_BYTE_SIZE(pvr) \
-+			(1 << ((pvr.pvr[5] & PVR5_DCACHE_BYTE_SIZE_MASK) >> 16))
-+
-+
-+#define PVR_ICACHE_BASEADDR(pvr)	(pvr.pvr[6] & PVR6_ICACHE_BASEADDR_MASK)
-+#define PVR_ICACHE_HIGHADDR(pvr)	(pvr.pvr[7] & PVR7_ICACHE_HIGHADDR_MASK)
-+
-+#define PVR_DCACHE_BASEADDR(pvr)	(pvr.pvr[8] & PVR8_DCACHE_BASEADDR_MASK)
-+#define PVR_DCACHE_HIGHADDR(pvr)	(pvr.pvr[9] & PVR9_DCACHE_HIGHADDR_MASK)
-+
-+#define PVR_TARGET_FAMILY(pvr)	((pvr.pvr[10] & PVR10_TARGET_FAMILY_MASK) >> 24)
-+
-+#define PVR_MSR_RESET_VALUE(pvr) \
-+				(pvr.pvr[11] & PVR11_MSR_RESET_VALUE_MASK)
-+
-+int cpu_has_pvr(void);
-+void get_pvr(struct pvr_s *pvr);
-+
-+#endif
-diff --git a/include/asm-microblaze/system.h b/include/asm-microblaze/system.h
++		if (handle & (0x00000001 << i))
++			irq_desc[i].status &= ~IRQ_LEVEL;
++		else
++			irq_desc[i].status |= IRQ_LEVEL;
++	}
++}
+diff --git a/arch/microblaze/kernel/irq.c b/arch/microblaze/kernel/irq.c
 new file mode 100644
-index 0000000..12fbb61
+index 0000000..9b27199
 --- /dev/null
-+++ b/include/asm-microblaze/system.h
-@@ -0,0 +1,185 @@
++++ b/arch/microblaze/kernel/irq.c
+@@ -0,0 +1,88 @@
 +/*
-+ * include/asm-microblaze/system.h
++ * arch/microblaze/kernel/process.c
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -373,181 +350,289 @@ index 0000000..12fbb61
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_SYSTEM_H
-+#define _ASM_SYSTEM_H
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/hardirq.h>
++#include <linux/interrupt.h>
++#include <linux/irqflags.h>
++#include <linux/seq_file.h>
++#include <linux/kernel_stat.h>
 +
-+#include <linux/autoconf.h>
-+#include <asm/registers.h>
++#include <asm/irq.h>
 +
-+struct task_struct;
-+struct thread_info;
-+
-+extern struct task_struct *_switch_to(struct thread_info *prev,
-+					struct thread_info *next);
-+
-+#define switch_to(prev, next, last)					\
-+	do {								\
-+		(last) = _switch_to(task_thread_info(prev),		\
-+					task_thread_info(next));	\
-+	} while (0)
-+
-+#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
-+
-+#define local_irq_save(flags)				\
-+	do {						\
-+		asm volatile ("# local_irq_save	\n\t"	\
-+				"msrclr %0, %1	\n\t"	\
-+				: "=r"(flags)		\
-+				: "i"(MSR_IE)		\
-+				: "memory");		\
-+	} while (0)
-+
-+#define local_irq_disable()					\
-+	do {							\
-+		asm volatile ("# local_irq_disable \n\t"	\
-+				"msrclr r0, %0 \n\t"		\
-+				:				\
-+				: "i"(MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
-+
-+#define local_irq_enable()					\
-+	do {							\
-+		asm volatile ("# local_irq_enable \n\t"		\
-+				"msrset	r0, %0 \n\t"		\
-+				:				\
-+				: "i"(MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
-+
-+#else /* CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR == 0 */
-+
-+#define local_irq_save(flags)					\
-+	do {							\
-+		register unsigned tmp;				\
-+		asm volatile ("# local_irq_save	\n\t"		\
-+				"mfs	%0, rmsr \n\t"		\
-+				"andi	%1, %0, %2 \n\t"	\
-+				"mts	rmsr, %1 \n\t"		\
-+				"nop \n\t"			\
-+				: "=r"(flags), "=r" (tmp)	\
-+				: "i"(~MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
-+
-+#define local_irq_disable()					\
-+	do {							\
-+		register unsigned tmp;				\
-+		asm volatile ("# local_irq_disable \n\t"	\
-+				"mfs	%0, rmsr \n\t"		\
-+				"andi	%0, %0, %1 \n\t"	\
-+				"mts	rmsr, %0 \n\t"		\
-+				"nop \n\t"			\
-+				: "=r"(tmp)			\
-+				: "i"(~MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
-+
-+#define local_irq_enable()					\
-+	do {							\
-+		register unsigned tmp;				\
-+		asm volatile ("# local_irq_enable \n\t"		\
-+				"mfs	%0, rmsr \n\t"		\
-+				"ori	%0, %0, %1 \n\t"	\
-+				"mts	rmsr, %0 \n\t"		\
-+				"nop \n\t"			\
-+				: "=r"(tmp)			\
-+				: "i"(MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
-+
-+#endif /* CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR */
-+
-+#define local_save_flags(flags)					\
-+	do {							\
-+		asm volatile ("# local_save_flags \n\t"		\
-+				"mfs	%0, rmsr \n\t"		\
-+				: "=r"(flags)			\
-+				:				\
-+				: "memory");			\
-+	} while (0)
-+
-+#define local_irq_restore(flags)			\
-+	do {						\
-+		asm volatile ("# local_irq_restore \n\t"\
-+				"mts	rmsr, %0 \n\t"	\
-+				:			\
-+				:"r"(flags)		\
-+				: "memory");		\
-+	} while (0)
-+
-+static inline int irqs_disabled(void)
++/*
++ * 'what should we do if we get a hw irq event on an illegal vector'.
++ * each architecture has to answer this themselves.
++ */
++void ack_bad_irq(unsigned int irq)
 +{
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
-+	return ((flags & MSR_IE) == 0);
++	printk(KERN_WARNING "unexpected IRQ trap at vector %02x\n", irq);
 +}
 +
-+#define smp_read_barrier_depends()	do {} while (0)
-+#define read_barrier_depends()		do {} while (0)
-+
-+#define nop()			asm volatile ("nop")
-+#define mb()			barrier()
-+#define rmb()			mb()
-+#define wmb()			mb()
-+#define set_mb(var, value)	do { var = value; mb(); } while (0)
-+#define set_wmb(var, value)	do { var = value; wmb(); } while (0)
-+
-+#define smp_mb()		mb()
-+#define smp_rmb()		rmb()
-+#define smp_wmb()		wmb()
-+
-+void show_trace(struct task_struct *task, unsigned long *stack);
-+void __bad_xchg(volatile void *ptr, int size);
-+
-+static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
-+								int size)
++void do_IRQ(struct pt_regs *regs)
 +{
-+	unsigned long ret;
++	unsigned int irq;
++
++	irq_enter();
++	set_irq_regs(regs);
++	irq = get_irq(regs);
++	BUG_ON(irq == -1U);
++	__do_IRQ(irq);
++
++	irq_exit();
++}
++
++int show_interrupts(struct seq_file *p, void *v)
++{
++	int i = *(loff_t *) v, j;
++	struct irqaction *action;
 +	unsigned long flags;
 +
-+	switch (size) {
-+	case 1:
-+		local_irq_save(flags);
-+		ret = *(volatile unsigned char *)ptr;
-+		*(volatile unsigned char *)ptr = x;
-+		local_irq_restore(flags);
-+		break;
-+
-+	case 4:
-+		local_irq_save(flags);
-+		ret = *(volatile unsigned long *)ptr;
-+		*(volatile unsigned long *)ptr = x;
-+		local_irq_restore(flags);
-+		break;
-+	default:
-+		__bad_xchg(ptr, size), ret = 0;
-+		break;
++	if (i == 0) {
++		seq_printf(p, "		");
++		for_each_online_cpu(j)
++			seq_printf(p, "CPU%-8d", j);
++		seq_putc(p, '\n');
 +	}
 +
-+	return ret;
++	if (i < NR_IRQ) {
++		spin_lock_irqsave(&irq_desc[i].lock, flags);
++		action = irq_desc[i].action;
++		if (!action)
++			goto skip;
++		seq_printf(p, "%3d: ", i);
++#ifndef CONFIG_SMP
++		seq_printf(p, "%10u ", kstat_irqs(i));
++#else
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ", kstat_cpu(j).irqs[i]);
++#endif
++		seq_printf(p, " %8s", irq_desc[i].status &
++					IRQ_LEVEL ? "level": "edge");
++		seq_printf(p, " %8s", irq_desc[i].chip->name);
++		seq_printf(p, "  %s", action->name);
++
++		for (action = action->next; action; action = action->next)
++			seq_printf(p, ", %s", action->name);
++
++		seq_putc(p, '\n');
++skip:
++		spin_unlock_irqrestore(&irq_desc[i].lock, flags);
++	}
++	return 0;
 +}
 +
-+#define xchg(ptr,x) \
-+	((__typeof__(*(ptr))) __xchg((unsigned long)(x), (ptr), sizeof(*(ptr))))
++/*unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
++{
++	printk ("ERROR %s\n",__FUNCTION__);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(irq_of_parse_and_map);*/
+diff --git a/arch/microblaze/kernel/timer.c b/arch/microblaze/kernel/timer.c
+new file mode 100644
+index 0000000..a686cd7
+--- /dev/null
++++ b/arch/microblaze/kernel/timer.c
+@@ -0,0 +1,134 @@
++/*
++ * arch/microblaze/kernel/timer.c
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
 +
-+extern void *cacheable_memcpy(void *, const void *, unsigned int);
-+void free_init_pages(char *what, unsigned long begin, unsigned long end);
-+void free_initmem(void);
-+extern char *klimit;
-+extern void ret_from_fork(void);
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/param.h>
++#include <linux/interrupt.h>
++#include <linux/profile.h>
++#include <linux/irq.h>
++#include <asm/io.h>
++#include <asm/cpuinfo.h>
++#include <asm/setup.h>
 +
-+#ifdef CONFIG_MTD_UCLINUX_EBSS
-+extern char *_ebss;
-+#endif
++#include <asm/prom.h>
++#include <asm/hack.h>
++#include <asm/irq.h>
 +
-+#endif /* _ASM_SYSTEM_H */
++#define TCSR0	(0x00)
++#define TLR0	(0x04)
++#define TCR0	(0x08)
++#define TCSR1	(0x10)
++#define TLR1	(0x14)
++#define TCR1	(0x18)
++
++#define TCSR_MDT	(1<<0)
++#define TCSR_UDT	(1<<1)
++#define TCSR_GENT	(1<<2)
++#define TCSR_CAPT	(1<<3)
++#define TCSR_ARHT	(1<<4)
++#define TCSR_LOAD	(1<<5)
++#define TCSR_ENIT	(1<<6)
++#define TCSR_ENT	(1<<7)
++#define TCSR_TINT	(1<<8)
++#define TCSR_PWMA	(1<<9)
++#define TCSR_ENALL	(1<<10)
++
++static void timer_ack(void)
++{
++	iowrite32(ioread32(HACK_BASE_ADDR + TCSR0), HACK_BASE_ADDR + TCSR0);
++}
++
++irqreturn_t timer_interrupt(int irq, void *dev_id)
++{
++	heartbeat();
++
++	timer_ack();
++
++	write_seqlock(&xtime_lock);
++
++	do_timer(1);
++	update_process_times(user_mode(get_irq_regs()));
++	profile_tick(CPU_PROFILING);
++
++	write_sequnlock(&xtime_lock);
++
++	return IRQ_HANDLED;
++}
++
++static struct irqaction timer_irqaction = {
++	.handler = timer_interrupt,
++	.flags = IRQF_DISABLED,
++	.name = "timer",
++};
++
++unsigned long do_gettimeoffset(void)
++{
++	/* Current counter value */
++	unsigned int tcr = ioread32(HACK_BASE_ADDR + TCR0);
++
++	/* Load register value (couting down */
++	unsigned int tcmp = ioread32(HACK_BASE_ADDR + TLR0);
++
++	/* Offset, in nanoseconds */
++	/* FIXME remove loading from structure - build in is faster */
++	unsigned long offset = (tcmp-tcr)/(cpuinfo->cpu_clock_freq/1000000);
++
++	return offset;
++}
++
++void system_timer_init(void)
++{
++	int irq = 0;
++	struct device_node *timer;
++	unsigned int timer_baseaddr = 0;
++	int arr_func[] = {
++				(int)&do_gettimeoffset,
++				(int)&timer_ack,
++				0
++			};
++
++	timer = of_find_compatible_node(NULL, NULL, "xlnx,opb-timer");
++	timer_baseaddr = *(int *) of_get_property(timer, "reg", NULL);
++	/* timer_baseaddr =
++		(unsigned long) ioremap(timer_baseaddr, PAGE_SIZE); */
++	irq = *(int *) of_get_property(timer, "interrupts", NULL);
++
++	function_hack((int *) arr_func, timer_baseaddr);
++
++	printk(KERN_INFO "OPB TIMER #0 at 0x%08x, irq=%d\n",
++		timer_baseaddr, irq);
++
++	/* set the initial value to the load register */
++	iowrite32(cpuinfo->cpu_clock_freq/HZ, timer_baseaddr + TLR0);
++
++	/* load the initial value */
++	iowrite32(TCSR_LOAD, timer_baseaddr + TCSR0);
++
++	/* see opb timer data sheet for detail
++	 * !ENALL - don't enable 'em all
++	 * !PWMA - disable pwm
++	 * TINT - clear interrupt status
++	 * ENT- enable timer itself
++	 * EINT - enable interrupt
++	 * !LOAD - clear the bit to let go
++	 * ARHT - auto reload
++	 * !CAPT - no external trigger
++	 * !GENT - no external signal
++	 * UDT - set the timer as down counter
++	 * !MDT0 - generate mode
++	 *
++	 */
++	iowrite32(TCSR_TINT|TCSR_ENT|TCSR_ENIT|TCSR_ARHT|TCSR_UDT,
++			timer_baseaddr + TCSR0);
++
++	setup_irq(irq, &timer_irqaction);
++}
+diff --git a/include/asm-microblaze/hack.h b/include/asm-microblaze/hack.h
+new file mode 100644
+index 0000000..5bfd557
+--- /dev/null
++++ b/include/asm-microblaze/hack.h
+@@ -0,0 +1,19 @@
++/*
++ * include/asm-microblaze/hack.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ */
++
++/*
++ * HACK_BASE_ADDR is constant address for hack function.
++ * do not change this value - it is hardcoded in hack function
++ * arch/microblaze/kernel/hack.c:function_hack()
++ */
++
++#define HACK_BASE_ADDR	0x1234ff00
++
++void function_hack(const int *arr_fce, const unsigned int base);
+diff --git a/include/asm-microblaze/irq.h b/include/asm-microblaze/irq.h
+new file mode 100644
+index 0000000..1d9b9c4
+--- /dev/null
++++ b/include/asm-microblaze/irq.h
+@@ -0,0 +1,34 @@
++/*
++ * include/asm-microblaze/irq.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#ifndef _ASM_IRQ_H
++#define _ASM_IRQ_H
++
++#include <linux/seq_file.h>
++#define NR_IRQS 32
++#include <linux/irq.h>
++
++extern unsigned int NR_IRQ;
++extern void ledoff(void);
++
++#define NO_IRQ (-1)
++
++static inline int irq_canonicalize(int irq)
++{
++	return (irq);
++}
++
++struct pt_regs;
++extern void do_IRQ(struct pt_regs *regs);
++extern void __init init_IRQ(void);
++int show_interrupts(struct seq_file *p, void *v);
++irqreturn_t timer_interrupt(int irq, void *dev_id);
++
++#endif /* _ASM_IRQ_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
