@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbYAXDiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYAXEEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753750AbYAXDiT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 22:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbYAXDiJ
+	id S1753571AbYAXEEx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 23:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYAXEEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 22:38:09 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:36518 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751392AbYAXDiI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 22:38:08 -0500
-To: taka@valinux.co.jp
-Cc: agk@redhat.com, xen-devel@lists.xensource.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, dm-devel@redhat.com
-Subject: Re: [dm-devel] [PATCH 0/2] dm-band: The I/O bandwidth controller:
- Overview
-In-Reply-To: Your message of "Thu, 24 Jan 2008 01:21:03 +0900 (JST)"
-	<20080124.012103.105433865.taka@valinux.co.jp>
-References: <20080124.012103.105433865.taka@valinux.co.jp>
-X-Mailer: Cue version 0.8 (070404-1613/takashi)
+	Wed, 23 Jan 2008 23:04:44 -0500
+Received: from gate.crashing.org ([63.228.1.57]:52550 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752567AbYAXEEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 23:04:43 -0500
+Subject: Re: [kvm-devel] [PATCH] export notifier #1
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Avi Kivity <avi@qumranet.com>
+Cc: Robin Holt <holt@sgi.com>, Gerd Hoffmann <kraxel@redhat.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <47974C78.7050509@qumranet.com>
+References: <478E4356.7030303@qumranet.com>
+	 <20080117162302.GI7170@v2.random> <478F9C9C.7070500@qumranet.com>
+	 <20080117193252.GC24131@v2.random> <20080121125204.GJ6970@v2.random>
+	 <4795F9D2.1050503@qumranet.com> <20080122144332.GE7331@v2.random>
+	 <20080122200858.GB15848@v2.random>
+	 <Pine.LNX.4.64.0801221232040.28197@schroedinger.engr.sgi.com>
+	 <4797384B.7080200@redhat.com> <20080123131939.GJ26420@sgi.com>
+	 <47974C78.7050509@qumranet.com>
+Content-Type: text/plain
+Date: Thu, 24 Jan 2008 15:03:07 +1100
+Message-Id: <1201147387.6815.29.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20080124033807.42D7B1E3C0C@siro.lan>
-Date: Thu, 24 Jan 2008 12:38:07 +0900 (JST)
-From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi,
-> 
-> > On Wed, Jan 23, 2008 at 09:53:50PM +0900, Ryo Tsuruta wrote:
-> > > Dm-band gives bandwidth to each job according to its weight, 
-> > > which each job can set its own value to.
-> > > At this time, a job is a group of processes with the same pid or pgrp or uid.
-> > 
-> > It seems to rely on 'current' to classify bios and doesn't do it until the map
-> > function is called, possibly in a different process context, so it won't
-> > always identify the original source of the I/O correctly:
-> 
-> Yes, this should be mentioned in the document with the current implementation
-> as you pointed out.
-> 
-> By the way, I think once a memory controller of cgroup is introduced, it will
-> help to track down which cgroup is the original source.
 
-do you mean to make this a part of the memory subsystem?
+On Wed, 2008-01-23 at 16:17 +0200, Avi Kivity wrote:
+> Robin Holt wrote:
+> > On Wed, Jan 23, 2008 at 01:51:23PM +0100, Gerd Hoffmann wrote:
+> >   
+> >> Jumping in here, looks like this could develop into a direction useful
+> >> for Xen.
+> >>
+> >> Background:  Xen has a mechanism called "grant tables" for page sharing.
+> >>  Guest #1 can issue a "grant" for another guest #2, which in turn then
+> >> can use that grant to map the page owned by guest #1 into its address
+> >> space.  This is used by the virtual network/disk drivers, i.e. typically
+> >> Domain-0 (which has access to the real hardware) maps pages of other
+> >> guests to fill in disk/network data.
+> >>     
+> >
+> > This is extremely similar to what XPMEM is providing.
+> >
+> >   
+> 
+> I think that in Xen's case the page tables are the normal cpu page 
+> tables, not an external mmu (like RDMA, kvm, and XPMEM).
 
-YAMAMOTO Takashi
+However, that will be useful to the DRI folks as modern video chips are
+growing MMU with even page fault capabilities.
+
+Ben.
+
+
