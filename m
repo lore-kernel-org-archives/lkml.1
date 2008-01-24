@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbYAZQBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYAZQBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758798AbYAZQBc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 11:01:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbYAZPzX
+	id S1759597AbYAZQBu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 11:01:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYAZPz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:55:23 -0500
+	Sat, 26 Jan 2008 10:55:28 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754867AbYAZPzS (ORCPT
+	with ESMTP id S1755316AbYAZPzX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:55:18 -0500
+	Sat, 26 Jan 2008 10:55:23 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 40/52] [microblaze] atomic.h bitops.h byteorder.h
-Date: Thu, 24 Jan 2008 16:03:15 +0100
-Message-Id: <e173c10560cdf883ba3c7e639ca930f0627a2260.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 49/52] [microblaze] device.h param.h topology.h
+Date: Thu, 24 Jan 2008 16:03:24 +0100
+Message-Id: <990835fa238b139deac273e0573bcf5060e3ee80.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <1b21abdff6128297a902060b07a0c7ca6d8db633.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <807d570db44eeed03e3211b933a207f42cf569f0.1201107832.git.monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
  <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
@@ -50,6 +50,15 @@ References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
  <29ee870c02ea5d4c409644d7f0eb09cfbb1ec816.1201107832.git.monstr@monstr.eu>
  <99bfbc3fdb53003c11414681b2c73561d533c3ef.1201107832.git.monstr@monstr.eu>
  <1b21abdff6128297a902060b07a0c7ca6d8db633.1201107832.git.monstr@monstr.eu>
+ <e173c10560cdf883ba3c7e639ca930f0627a2260.1201107832.git.monstr@monstr.eu>
+ <155ee14d990137f7eb6fa76beee06c880c97e790.1201107832.git.monstr@monstr.eu>
+ <34f2199d631406fbdf6b325a164e0d1899a3acb5.1201107832.git.monstr@monstr.eu>
+ <14243bf49d44d1dbd6e377813f2635defcb82c4e.1201107832.git.monstr@monstr.eu>
+ <01e493efdc1c8cb7ee0d5f8b7c73244e04680e71.1201107832.git.monstr@monstr.eu>
+ <739e189a03021d2804f23d0774637a15038098bc.1201107832.git.monstr@monstr.eu>
+ <d4eec3db9f6e6e86994444b8035d5e41db3f085b.1201107832.git.monstr@monstr.eu>
+ <e445f6b37baf09d6469a0ad4eba189a7ca7ef7c3.1201107832.git.monstr@monstr.eu>
+ <807d570db44eeed03e3211b933a207f42cf569f0.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -61,22 +70,55 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/atomic.h    |  108 ++++++++++++++++++++++++++++++++++++
- include/asm-microblaze/bitops.h    |   29 ++++++++++
- include/asm-microblaze/byteorder.h |   23 ++++++++
- 3 files changed, 160 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/atomic.h
- create mode 100644 include/asm-microblaze/bitops.h
- create mode 100644 include/asm-microblaze/byteorder.h
+ include/asm-microblaze/device.h   |   27 ++++++++
+ include/asm-microblaze/param.h    |   36 +++++++++++
+ include/asm-microblaze/topology.h |  124 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 187 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-microblaze/device.h
+ create mode 100644 include/asm-microblaze/param.h
+ create mode 100644 include/asm-microblaze/topology.h
 
-diff --git a/include/asm-microblaze/atomic.h b/include/asm-microblaze/atomic.h
+diff --git a/include/asm-microblaze/device.h b/include/asm-microblaze/device.h
 new file mode 100644
-index 0000000..f7be329
+index 0000000..c0e203c
 --- /dev/null
-+++ b/include/asm-microblaze/atomic.h
-@@ -0,0 +1,108 @@
++++ b/include/asm-microblaze/device.h
+@@ -0,0 +1,27 @@
 +/*
-+ * include/asm-microblaze/atomic.h
++ * Arch specific extensions to struct device
++ *
++ * This file is released under the GPLv2
++ */
++
++#ifndef _ASM_MICROBLAZE_DEVICE_H
++#define _ASM_MICROBLAZE_DEVICE_H
++
++struct dma_mapping_ops;
++struct device_node;
++
++struct dev_archdata {
++	/* Optional pointer to an OF device node */
++	struct device_node	*of_node;
++
++	/* DMA operations on that device */
++	struct dma_mapping_ops	*dma_ops;
++	void			*dma_data;
++
++	/* NUMA node if applicable */
++	int			numa_node;
++};
++
++#endif /* _ASM_MICROBLAZE_DEVICE_H */
++
++
+diff --git a/include/asm-microblaze/param.h b/include/asm-microblaze/param.h
+new file mode 100644
+index 0000000..b79d739
+--- /dev/null
++++ b/include/asm-microblaze/param.h
+@@ -0,0 +1,36 @@
++/*
++ * include/asm-microblaze/param.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
@@ -85,168 +127,162 @@ index 0000000..f7be329
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_ATOMIC_H
-+#define _ASM_ATOMIC_H
++#ifndef _ASM_PARAM_H
++#define _ASM_PARAM_H
 +
-+#include <linux/compiler.h> /* likely */
-+#include <asm/system.h> /* local_irq_XXX and friends */
-+
-+typedef struct { volatile int counter; } atomic_t;
-+
-+#define ATOMIC_INIT(i)		{ (i) }
-+#define atomic_read(v)		((v)->counter)
-+#define atomic_set(v, i)	(((v)->counter) = (i))
-+
-+#define atomic_inc(v)		(atomic_add_return(1, (v)))
-+#define atomic_dec(v)		(atomic_sub_return(1, (v)))
-+
-+#define atomic_add(i, v)	(atomic_add_return(i, (v)))
-+#define atomic_sub(i, v)	(atomic_sub_return(i, (v)))
-+
-+#define atomic_inc_return(v)	(atomic_add_return(1, (v)))
-+#define atomic_dec_return(v)	(atomic_sub_return(1, (v)))
-+
-+#define atomic_inc_and_test(v)	(atomic_add_return(1, (v)) == 0)
-+#define atomic_dec_and_test(v)	(atomic_sub_return(1, (v)) == 0)
-+
-+#define atomic_inc_not_zero(v)	(atomic_add_unless((v), 1, 0))
-+
-+#define atomic_sub_and_test(i, v) (atomic_sub_return((i), (v)) == 0)
-+
-+static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	int ret;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	ret = v->counter;
-+	if (likely(ret == old))
-+		v->counter = new;
-+	local_irq_restore(flags);
-+
-+	return ret;
-+}
-+
-+static inline int atomic_add_unless(atomic_t *v, int a, int u)
-+{
-+	int c, old;
-+
-+	c = atomic_read(v);
-+	while (c != u && (old = atomic_cmpxchg((v), c, c + a)) != c)
-+		c = old;
-+	return c != u;
-+}
-+
-+static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	*addr &= ~mask;
-+	local_irq_restore(flags);
-+}
-+
-+/**
-+ * atomic_add_return - add and return
-+ * @i: integer value to add
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically adds @i to @v and returns @i + @v
-+ */
-+static __inline__ int atomic_add_return(int i, atomic_t *v)
-+{
-+	unsigned long flags;
-+	int val;
-+
-+	local_irq_save(flags);
-+	val = v->counter;
-+	v->counter = val += i;
-+	local_irq_restore(flags);
-+
-+	return val;
-+}
-+
-+static inline int atomic_sub_return(int i, atomic_t *v)
-+{
-+	return atomic_add_return(-i, v);
-+}
-+
-+#define atomic_add_negative(a, v)	(atomic_add_return((a), (v)) < 0)
-+#define atomic_xchg(v, new) (xchg(&((v)->counter), new))
-+
-+/* Atomic operations are already serializing */
-+#define smp_mb__before_atomic_dec()	barrier()
-+#define smp_mb__after_atomic_dec()	barrier()
-+#define smp_mb__before_atomic_inc()	barrier()
-+#define smp_mb__after_atomic_inc()	barrier()
-+
-+#include <asm-generic/atomic.h>
-+
-+#endif /* _ASM_ATOMIC_H */
-diff --git a/include/asm-microblaze/bitops.h b/include/asm-microblaze/bitops.h
-new file mode 100644
-index 0000000..4078d90
---- /dev/null
-+++ b/include/asm-microblaze/bitops.h
-@@ -0,0 +1,29 @@
-+/*
-+ * include/asm-microblaze/auxvec.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _MICROBLAZE_BITOPS_H
-+#define _MICROBLAZE_BITOPS_H
-+
-+/*
-+ * Copyright 1992, Linus Torvalds.
-+ */
-+
-+#include <linux/autoconf.h>
-+#include <asm/byteorder.h> /* swab32 */
-+#include <asm/system.h> /* save_flags */
-+
-+/*
-+ * clear_bit() doesn't provide any barrier for the compiler.
-+ */
-+#define smp_mb__before_clear_bit()	barrier()
-+#define smp_mb__after_clear_bit()	barrier()
-+#include <asm-generic/bitops.h>
-+
-+#endif /* _MICROBLAZE_BITOPS_H */
-diff --git a/include/asm-microblaze/byteorder.h b/include/asm-microblaze/byteorder.h
-new file mode 100644
-index 0000000..df9dbbe
---- /dev/null
-+++ b/include/asm-microblaze/byteorder.h
-@@ -0,0 +1,23 @@
-+/*
-+ * include/asm-microblaze/byteorder.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_BYTEORDER_H
-+#define _ASM_BYTEORDER_H
-+
-+#include <asm/types.h>
-+
-+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
-+#define __BYTEORDER_HAS_U64__
-+#define __SWAB_64_THRU_32__
++#ifdef __KERNEL__
++# define HZ		100 /* internal timer frequency */
++# define USER_HZ	100 /* for user interfaces in "ticks" */
++# define CLOCKS_PER_SEC (USER_HZ) /* frequnzy at which times() counts */
 +#endif
 +
-+#include <linux/byteorder/big_endian.h>
++#ifndef NGROUPS
++#define NGROUPS		32
++#endif
 +
-+#endif /* _ASM_BYTEORDER_H */
++#ifndef NOGROUP
++#define NOGROUP		(-1)
++#endif
++
++#define EXEC_PAGESIZE	4096
++
++#ifndef HZ
++#define HZ 100
++#endif
++
++#define MAXHOSTNAMELEN	64 /* max length of hostname */
++
++#endif /* _ASM_PARAM_H */
+diff --git a/include/asm-microblaze/topology.h b/include/asm-microblaze/topology.h
+new file mode 100644
+index 0000000..4d3e2e7
+--- /dev/null
++++ b/include/asm-microblaze/topology.h
+@@ -0,0 +1,124 @@
++/*
++ * include/asm-microblaze/topology.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#ifndef _ASM_TOPOLOGY_H
++#define _ASM_TOPOLOGY_H
++#ifdef __KERNEL__
++
++struct sys_device;
++struct device_node;
++
++#ifdef CONFIG_NUMA
++
++#include <asm/mmzone.h>
++
++static inline int cpu_to_node(int cpu)
++{
++	return numa_cpu_lookup_table[cpu];
++}
++
++#define parent_node(node)	(node)
++
++static inline cpumask_t node_to_cpumask(int node)
++{
++	return numa_cpumask_lookup_table[node];
++}
++
++static inline int node_to_first_cpu(int node)
++{
++	cpumask_t tmp;
++	tmp = node_to_cpumask(node);
++	return first_cpu(tmp);
++}
++
++int of_node_to_nid(struct device_node *device);
++
++struct pci_bus;
++#ifdef CONFIG_PCI
++extern int pcibus_to_node(struct pci_bus *bus);
++#else
++static inline int pcibus_to_node(struct pci_bus *bus)
++{
++	return -1;
++}
++#endif
++
++#define pcibus_to_cpumask(bus)	(pcibus_to_node(bus) == -1 ? \
++					CPU_MASK_ALL : \
++					node_to_cpumask(pcibus_to_node(bus)) \
++				)
++
++/* sched_domains SD_NODE_INIT for PPC64 machines */
++#define SD_NODE_INIT (struct sched_domain) {		\
++	.span			= CPU_MASK_NONE,	\
++	.parent			= NULL,			\
++	.child			= NULL,			\
++	.groups			= NULL,			\
++	.min_interval		= 8,			\
++	.max_interval		= 32,			\
++	.busy_factor		= 32,			\
++	.imbalance_pct		= 125,			\
++	.cache_nice_tries	= 1,			\
++	.busy_idx		= 3,			\
++	.idle_idx		= 1,			\
++	.newidle_idx		= 2,			\
++	.wake_idx		= 1,			\
++	.flags			= SD_LOAD_BALANCE	\
++				| SD_BALANCE_EXEC	\
++				| SD_BALANCE_NEWIDLE	\
++				| SD_WAKE_IDLE		\
++				| SD_SERIALIZE		\
++				| SD_WAKE_BALANCE,	\
++	.last_balance		= jiffies,		\
++	.balance_interval	= 1,			\
++	.nr_balance_failed	= 0,			\
++}
++
++extern void __init dump_numa_cpu_topology(void);
++
++extern int sysfs_add_device_to_node(struct sys_device *dev, int nid);
++extern void sysfs_remove_device_from_node(struct sys_device *dev, int nid);
++
++#else
++
++static inline int of_node_to_nid(struct device_node *device)
++{
++	return 0;
++}
++
++static inline void dump_numa_cpu_topology(void) {}
++
++static inline int sysfs_add_device_to_node(struct sys_device *dev, int nid)
++{
++	return 0;
++}
++
++static inline void sysfs_remove_device_from_node(struct sys_device *dev,
++						int nid)
++{
++}
++
++#include <asm-generic/topology.h>
++
++#endif /* CONFIG_NUMA */
++
++#ifdef CONFIG_SMP
++#include <asm/cputable.h>
++#define smt_capable()		(cpu_has_feature(CPU_FTR_SMT))
++
++#ifdef CONFIG_PPC64
++#include <asm/smp.h>
++
++#define topology_thread_siblings(cpu)	(cpu_sibling_map[cpu])
++#endif
++#endif
++
++#endif /* __KERNEL__ */
++#endif /* _ASM_TOPOLOGY_H */
 -- 
 1.5.4.rc4.14.g6fc74
 
