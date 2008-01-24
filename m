@@ -1,33 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbYAXXtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbYAXXvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbYAXXtw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 18:49:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbYAXXtm
+	id S1756750AbYAXXvy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 18:51:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbYAXXvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 18:49:42 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:64135 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751411AbYAXXtl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 18:49:41 -0500
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [PATCH 2.6.25] RDMA/cxgb3: Fix the T3A workaround checks.
-X-Message-Flag: Warning: May contain useful information
-References: <20080124223016.772.18293.stgit@dell3.ogc.int>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 24 Jan 2008 15:49:39 -0800
-In-Reply-To: <20080124223016.772.18293.stgit@dell3.ogc.int> (Steve Wise's message of "Thu, 24 Jan 2008 16:30:16 -0600")
-Message-ID: <adaejc6n5rg.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Thu, 24 Jan 2008 18:51:47 -0500
+Received: from gw.goop.org ([64.81.55.164]:36597 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751482AbYAXXvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 18:51:46 -0500
+Message-ID: <4799248F.9080404@goop.org>
+Date: Thu, 24 Jan 2008 15:51:43 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 24 Jan 2008 23:49:39.0914 (UTC) FILETIME=[C8C722A0:01C85EE3]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       =?UTF-8?B?TWlrYSBQZW50dGlsw6Q=?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+ format.
+References: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>	 <47939363.8040603@kolumbus.fi>	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>	 <479510CE.7010706@zytor.com>	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>	 <479551FD.5040801@zytor.com>	 <1201023401.5643.52.camel@localhost.localdomain>	 <479634A9.1090908@zytor.com>	 <1201031325.15491.66.camel@cthulhu.hellion.org.uk>	 <47964B7B.9000905@zytor.com>  <20080122203611.GA12892@elte.hu>	 <1201121530.30671.15.camel@cthulhu.hellion.org.uk>	 <4797E487.8010108@goop.org> <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <47990BDC.4070008@zytor.com> <479912B0.2080506@goop.org> <479913BA.8000506@zytor.com> <47991809.9060903@goop.org> <47991A6C.8060007@zytor.com> <479921F5.9020902@goop.org> <479922D0.3010708@zytor.com>
+In-Reply-To: <479922D0.3010708@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks, applied.
+H. Peter Anvin wrote:
+> Yes.  We'd use it during initialization and at other times when we 
+> need trampolining, but give the swapper something which only has the 
+> kernel map.
+
+Hm, though Xen makes it all a bit more complex, as usual.  In the PAE 
+case it wouldn't allow the pmd to be shared, so you'd have to allocate a 
+new pmd and copy into it.  There's probably a way to deal with it within 
+the existing paravirt hooks...
+
+    J
