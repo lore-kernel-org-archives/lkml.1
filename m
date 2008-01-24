@@ -1,114 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbYAXSQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbYAXSXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754054AbYAXSQZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 13:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYAXSQQ
+	id S1755918AbYAXSXP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 13:23:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYAXSXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 13:16:16 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:39016 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753469AbYAXSQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 13:16:15 -0500
-Date: Thu, 24 Jan 2008 20:14:43 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: David Newall <davidn@davidnewall.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for mm] Remove iBCS support
-Message-ID: <20080124181442.GE4476@does.not.exist>
-References: <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122111205.GA25090@elte.hu> <4796081A.7060505@davidnewall.com> <20080122160114.GB23277@does.not.exist> <4798C511.8070305@davidnewall.com> <20080124172414.GD4476@does.not.exist> <4798D10C.6090109@davidnewall.com>
+	Thu, 24 Jan 2008 13:23:01 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35217 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752088AbYAXSXA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 13:23:00 -0500
+Date: Thu, 24 Jan 2008 10:03:13 -0800
+From: Greg KH <greg@kroah.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Wilco Beekhuizen <wilcobeekhuizen@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
+Message-ID: <20080124180313.GA16006@kroah.com>
+References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com> <20080124013720.GA21978@kroah.com> <6c4c86470801240205u5361e090jc057270b03b5ebe7@mail.gmail.com> <84144f020801240319o1f51613fx6e823120f74a9cf9@mail.gmail.com> <20080124164418.GA8226@kroah.com> <84144f020801240906l7e018a95wfd4ad7736851dd63@mail.gmail.com> <20080124172049.GA9665@kroah.com> <84144f020801240942y1c75c82geddc250b7e7814ac@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4798D10C.6090109@davidnewall.com>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+In-Reply-To: <84144f020801240942y1c75c82geddc250b7e7814ac@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 04:25:24AM +1030, David Newall wrote:
-> Adrian Bunk wrote:
-> > Removing dead code makes:
-> > - the kernel smaller,
-> > - the kernel faster and
-> > - makes it easier to maintain the non-dead code.
+On Thu, Jan 24, 2008 at 07:42:20PM +0200, Pekka Enberg wrote:
+> Hi Greg,
 > 
-> The performance benefit is trivial, and the improvement to
-> maintainability is even less.
-
-The effects become bigger when you realize that there are many such 
-places in the kernel.
-
-And the benefit of keeping it is zero.
-
-Even in the hypothetical case that someone would use it, he could simply 
-re-add it.
-
-> > All of these are considered useful by the people who actually 
-> > contribute to the Linux kernel.
-> 
-> Contributions to the kernel take forms other than just code.  I'm
-> contributing in this very instance by putting the argument against
-> removal of code.  Once removed it'll be much harder to re-insert than to
-> repair in-situ.
-
-What you are doing is not contributing but wasting other people's time.
-
-The only thing you could ever achieve with this kind of "contribution" 
-is to end up in some killfiles.
-
-> >> At one stage iBCS2 support DID work.  Now it doesn't.  Now there's an
-> >> argument that the remaining infrastructure should be removed.  This is
-> >> the wrong direction to take.
-> >>     
+> On Jan 24, 2008 7:20 PM, Greg KH <greg@kroah.com> wrote:
+> > > So it's not a simple code change at all.
 > >
-> > When did iBCS2 support work in a plain ftp.kernel.org kernel?
-> >   
-> I don't know when.  Are you disputing that it ever did?  I think it's a
-> given that once it worked.
-
-AFAIK the kernel never shipped with iBCS2 support.
-
-Which kernels under ftp://ftp.kernel.org/pub/linux/kernel/v*.*/ fulfill 
-your claim?
-
-> > And if you consider iBCS2 support that important I can only repeat that 
-> > the language on Linux kernel are patches, not hot air.
+> > Just create a root directory for every device that is seen in the
+> > probe() function.  That should be pretty simple to do.
 > 
-> Fools believe that code is the only acceptable offering, and you, by
-> reputation, are not a fool.  There are plenty of examples where
-> suggestions made on list have value far exceeding a lot of the code. 
-> For that matter, some of the code that's offered is crap.  For that
-> matter, good contributed code too often (and in some cases famously)
-> gets ignored or rejected for reasons of ego.  You diminish yourself by
-> implying that code is the only thing that matters, and present the
-> impression that you know little about good development practice, in
-> which design effort exceeds that of coding.  I do not believe you are a
-> cowboy; stop talking like one.
-> 
-> Look at the merits of iBCS2 support.  Is it desirable?  Yes.  Is it
-> useful to remove what support remains?  Not particularly.  Does it
-> improve performance?  Trivially; almost immeasurably.   Does it improve
-> clarity?  No.  Does the code serve any useful purpose?  Yes, by acting
-> as a reminder of work still be done.  It's like the /* XXX */ comments
-> that are widely sprinkled through the system, only more concrete.  The
-> benefits of removing it do not outweigh the benefits of leaving it.
+> Yeah, that would work but why do we want to mount all devices under
+> the same mount point? If you move device discovery to ->probe() it's
+> simple to have per-device mount points by overriding ->get_sb() to
+> check for USB_DEVICE_MAJOR and look up the actual device, no?
+> Otherwise you have to deal with device plug/unplug at filesystem
+> level...
 
-The point is that ideas do not turn themselves into code.
+Yes, you could do that (per device mount), but it might be confusing for
+users to have to control things that way.
 
-And there are far too many people who want to see their great ideas 
-implemented without implementing it themselves.
+And the unplug issue at a filesystem level should be pretty trivial to
+handle, we do it all the time in /proc and /sys and other virtual
+filesystems (usbfs) with no problems.
 
-Talking about a feature without having anyone willing to implement it 
-simply has no value.
+thanks,
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+greg k-h
