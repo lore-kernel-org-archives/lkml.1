@@ -1,56 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755014AbYAXLw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbYAXLxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755014AbYAXLw4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 06:52:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbYAXLwr
+	id S1755298AbYAXLxz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 06:53:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbYAXLxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 06:52:47 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:51744 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752207AbYAXLwr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 06:52:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=cIK0RbV0/diadRlqqIxbdvwJZzA/DbOi+3T/1Na7GqvTx77pOH+KhTAPyGLfEagjf2guGMiF+VpfePrkNwF4xWd6eK7SMtMlimDSdy8lDnMIqYFarA4+hIFc8PHo82iNiNRlhslANnpTgDhJ6ilBrJTy75K/wIuneB/lG/qLCiE=
-Message-ID: <84144f020801240352r688fbbccu52ce9aa8ea3f199@mail.gmail.com>
-Date: Thu, 24 Jan 2008 13:52:45 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: [PATCH] Missing usb_find_device symbol from usb.c
-Cc: "Wilco Beekhuizen" <wilcobeekhuizen@gmail.com>, "Greg KH" <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200801241249.06577.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Jan 2008 06:53:48 -0500
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:15886
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753562AbYAXLxr convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 06:53:47 -0500
+Message-Id: <47988A7F.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Thu, 24 Jan 2008 11:54:23 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Roman Zippel" <zippel@linux-m68k.org>, <sam@ravnborg.org>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tristate choices with mixed tristate and boolean
+	values (v3)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <6c4c86470801221118x530ee074qedb1da5eac1ca473@mail.gmail.com>
-	 <6c4c86470801240205u5361e090jc057270b03b5ebe7@mail.gmail.com>
-	 <84144f020801240319o1f51613fx6e823120f74a9cf9@mail.gmail.com>
-	 <200801241249.06577.oliver@neukum.org>
-X-Google-Sender-Auth: 5de89f4c58c608da
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oliver,
+Change kconfig behavior so that mixing bool and tristate config
+settings in a choice is possible and has the desired effect of offering
+just the tristate options individually if the choice gets set to M, and
+a normal boolean selection if the choice gets set to Y.
 
-On Jan 24, 2008 1:49 PM, Oliver Neukum <oliver@neukum.org> wrote:
-> A quick glance through the files at sourceforge indicates that this
-> device use a file transfer protocol. Mapping this to a simple device
-> is hard. A fs is quite natural a representation of that.
+Also fix scripts/kconfig/conf's handling of children of choice values -
+there may be more than one immediate child, and all of them need to be
+processed.
 
-Sure but the filesystems in fs/ are general purpose and they can be
-mounted on top of any block device (except for the in-memory ones like
-sysfs). Furthermore, the problem with iriverfs is that it assumes that
-there can be only one device plugged to the host. What we want is
-something like
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-  $ mount -t iriverfs /dev/iriver0 /mnt/media
+---
+ scripts/kconfig/conf.c |    4 ++--
+ scripts/kconfig/expr.c |   10 ++++++++--
+ scripts/kconfig/menu.c |   33 ++++++++++++++++++++++++++++++---
+ 3 files changed, 45 insertions(+), 7 deletions(-)
 
-Which can be accomplished with an USB driver in driver/usb/ that
-registers the special iriverfs.
+--- linux-2.6.24-rc8/scripts/kconfig/conf.c
++++ 2.6.24-rc8-tristate-choices/scripts/kconfig/conf.c
+@@ -399,9 +399,9 @@ static int conf_choice(struct menu *menu
+ 			continue;
+ 		}
+ 		sym_set_choice_value(sym, child->sym);
+-		if (child->list) {
++		for (child = child->list; child; child = child->next) {
+ 			indent += 2;
+-			conf(child->list);
++			conf(child);
+ 			indent -= 2;
+ 		}
+ 		return 1;
+--- linux-2.6.24-rc8/scripts/kconfig/expr.c
++++ 2.6.24-rc8-tristate-choices/scripts/kconfig/expr.c
+@@ -1034,12 +1034,18 @@ void expr_print(struct expr *e, void (*f
+ 		expr_print(e->left.expr, fn, data, E_NOT);
+ 		break;
+ 	case E_EQUAL:
+-		fn(data, e->left.sym, e->left.sym->name);
++		if (e->left.sym->name)
++			fn(data, e->left.sym, e->left.sym->name);
++		else
++			fn(data, NULL, "<choice>");
+ 		fn(data, NULL, "=");
+ 		fn(data, e->right.sym, e->right.sym->name);
+ 		break;
+ 	case E_UNEQUAL:
+-		fn(data, e->left.sym, e->left.sym->name);
++		if (e->left.sym->name)
++			fn(data, e->left.sym, e->left.sym->name);
++		else
++			fn(data, NULL, "<choice>");
+ 		fn(data, NULL, "!=");
+ 		fn(data, e->right.sym, e->right.sym->name);
+ 		break;
+--- linux-2.6.24-rc8/scripts/kconfig/menu.c
++++ 2.6.24-rc8-tristate-choices/scripts/kconfig/menu.c
+@@ -239,9 +239,11 @@ void menu_finalize(struct menu *parent)
+ 			for (menu = parent->list; menu; menu = menu->next) {
+ 				if (menu->sym) {
+ 					current_entry = parent;
+-					menu_set_type(menu->sym->type);
++					if (sym->type == S_UNKNOWN)
++						menu_set_type(menu->sym->type);
+ 					current_entry = menu;
+-					menu_set_type(sym->type);
++					if (menu->sym->type == S_UNKNOWN)
++						menu_set_type(sym->type);
+ 					break;
+ 				}
+ 			}
+@@ -326,7 +328,37 @@ void menu_finalize(struct menu *parent)
+ 					    "values not supported");
+ 			}
+ 			current_entry = menu;
+-			menu_set_type(sym->type);
++			if (menu->sym->type == S_UNKNOWN)
++				menu_set_type(sym->type);
++			/* Non-tristate choice values of tristate choices must
++			 * depend on the choice being set to Y. The choice
++			 * values' dependencies were propagated to their
++			 * properties above, so the change here must be re-
++			 * propagated. */
++			if (sym->type == S_TRISTATE && menu->sym->type != S_TRISTATE) {
++				basedep = expr_alloc_comp(E_EQUAL, sym, &symbol_yes);
++				basedep = expr_alloc_and(basedep, menu->dep);
++				basedep = expr_eliminate_dups(basedep);
++				menu->dep = basedep;
++				for (prop = menu->sym->prop; prop; prop = prop->next) {
++					if (prop->menu != menu)
++						continue;
++					dep = expr_alloc_and(expr_copy(basedep),
++							     prop->visible.expr);
++					dep = expr_eliminate_dups(dep);
++					dep = expr_trans_bool(dep);
++					prop->visible.expr = dep;
++					if (prop->type == P_SELECT) {
++						struct symbol *es = prop_get_symbol(prop);
++						dep2 = expr_alloc_symbol(menu->sym);
++						dep = expr_alloc_and(dep2,
++								     expr_copy(dep));
++						dep = expr_alloc_or(es->rev_dep.expr, dep);
++						dep = expr_eliminate_dups(dep);
++						es->rev_dep.expr = dep;
++					}
++				}
++			}
+ 			menu_add_symbol(P_CHOICE, sym, NULL);
+ 			prop = sym_get_choice_prop(sym);
+ 			for (ep = &prop->expr; *ep; ep = &(*ep)->left.expr)
 
-                        Pekka
+
+
