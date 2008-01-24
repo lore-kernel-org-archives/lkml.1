@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYAXHHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbYAXHLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbYAXHHh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 02:07:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYAXHHJ
+	id S1754151AbYAXHLS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 02:11:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbYAXHLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 02:07:09 -0500
-Received: from gate.crashing.org ([63.228.1.57]:48100 "EHLO gate.crashing.org"
+	Thu, 24 Jan 2008 02:11:07 -0500
+Received: from cantor.suse.de ([195.135.220.2]:42636 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752265AbYAXHHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 02:07:08 -0500
-Subject: Re: [PATCH v2][POWERPC] Always build setup-bus.c on powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <Pine.LNX.4.64.0801240037380.22221@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0801240006380.21347@blarg.am.freescale.net>
-	 <1201156120.6815.48.camel@pasglop>
-	 <8642742F-E8BF-43C7-9FE4-AAF54855ECF7@kernel.crashing.org>
-	 <Pine.LNX.4.64.0801240037380.22221@blarg.am.freescale.net>
-Content-Type: text/plain
-Date: Thu, 24 Jan 2008 18:06:35 +1100
-Message-Id: <1201158395.6815.50.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	id S1752265AbYAXHLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 02:11:06 -0500
+From: Andi Kleen <andi@firstfloor.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] x86: ignore spurious faults
+Date: Thu, 24 Jan 2008 08:11:19 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>
+References: <4797D64D.1060105@goop.org> <p73hch3afbm.fsf@bingen.suse.de> <479837F3.8090905@goop.org>
+In-Reply-To: <479837F3.8090905@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801240811.20093.andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 24 January 2008 08:02:11 Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+> > Jeremy Fitzhardinge <jeremy@goop.org> writes:
+> >> /*
+> >> + * Handle a spurious fault caused by a stale TLB entry.  This allows
+> >
+> > vmalloc_fault already has nearly the same logic. You should look
+> > at sharing the code.
+>
+> Hm, I see what you mean, but its hard to see how to share much code
+> there.  It's a case of "two lines common, one line different" repeated 4
+> times or so.
 
-On Thu, 2008-01-24 at 00:38 -0600, Kumar Gala wrote:
-> The common arch/powerpc code calls in to functions in setup-bus.c
-> so some builds of ppc32 would fail.
-> 
-> Note, ppc32 usage of setup-irq.c is limited to arch/ppc and should be
-> removed when arch/ppc goes away.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+The core common logic is checking if the fault agrees with the page tables.
+If not do different things.
 
-Ack. Funny I didn't catch it on my 4xx testing, I must have always had
-HOTPLUG enabled.
-
-> ---
-> 
-> Here's the proper diff, will send this via paulus.
-> 
->  drivers/pci/Makefile |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
-> index 5550556..f697f3d 100644
-> --- a/drivers/pci/Makefile
-> +++ b/drivers/pci/Makefile
-> @@ -32,7 +32,7 @@ obj-$(CONFIG_ARM) += setup-bus.o setup-irq.o
->  obj-$(CONFIG_PARISC) += setup-bus.o
->  obj-$(CONFIG_SUPERH) += setup-bus.o setup-irq.o
->  obj-$(CONFIG_PPC32) += setup-irq.o
-> -obj-$(CONFIG_PPC64) += setup-bus.o
-> +obj-$(CONFIG_PPC) += setup-bus.o
->  obj-$(CONFIG_MIPS) += setup-bus.o setup-irq.o
->  obj-$(CONFIG_X86_VISWS) += setup-irq.o
-> 
-
+-Andi
