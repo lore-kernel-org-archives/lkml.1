@@ -1,222 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbYAXCtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbYAXDDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753012AbYAXCtP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 21:49:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbYAXCs7
+	id S1753360AbYAXDDU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 22:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbYAXDDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 21:48:59 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:17921 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751261AbYAXCs6 (ORCPT
+	Wed, 23 Jan 2008 22:03:00 -0500
+Received: from wx-out-0506.google.com ([66.249.82.230]:2102 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752266AbYAXDC7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 21:48:58 -0500
-Date: Wed, 23 Jan 2008 18:48:44 -0800
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       tao.ma@oracle.com
-Subject: Re: [PATCH 13/30] ocfs2: Implement group add for online resize
-Message-ID: <20080124024844.GP23506@ca-server1.us.oracle.com>
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
-References: <1200609356-17788-1-git-send-email-mark.fasheh@oracle.com> <1200609356-17788-14-git-send-email-mark.fasheh@oracle.com> <20080123140554.bf3981e5.akpm@linux-foundation.org>
+	Wed, 23 Jan 2008 22:02:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ettH1x2fCNGi8OvaKLNYlRoPw5E5mphRu3xPxiy6NbwQdC2g60HTXG2QH5fqVY1v7Hv8fR4bRjkJQo03mu/metF7ppe3iiaVXUvn3WNek12/rpEZfS4q18yC17Y5+L6MCeM/0jm0rEwtrdLdy1T1WZ5ikGzLmNj4V/UMrL4kFl4=
+Message-ID: <a8e1da0801231902x5ab7691bq5a30e839f6c8cb71@mail.gmail.com>
+Date: Thu, 24 Jan 2008 11:02:55 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: bluetooth : lockdep warning on rfcomm
+Cc: "Marcel Holtmann" <marcel@holtmann.org>,
+       "David Miller" <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>,
+       bluez-devel@lists.sourceforge.net
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080123140554.bf3981e5.akpm@linux-foundation.org>
-Organization: Oracle Corporation
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 23, 2008 at 02:05:54PM -0800, Andrew Morton wrote:
-> > On Thu, 17 Jan 2008 14:35:39 -0800 Mark Fasheh <mark.fasheh@oracle.com> wrote:
-> > From: Tao Ma <tao.ma@oracle.com>
-> > 
-> > This patch adds the ability for a userspace program to request that a
-> > properly formatted cluster group be added to the main allocation bitmap for
-> > an Ocfs2 file system. The request is made via an ioctl, OCFS2_IOC_GROUP_ADD.
-> > On a high level, this is similar to ext3, but we use a different ioctl as
-> > the structure which has to be passed through is different.
-> > 
-> > During an online resize, tunefs.ocfs2 will format any new cluster groups
-> > which must be added to complete the resize, and call OCFS2_IOC_GROUP_ADD on
-> > each one. Kernel verifies that the core cluster group information is valid
-> > and then does the work of linking it into the global allocation bitmap.
-> > 
-> >  ...
-> >
-> > +/* Used to pass group descriptor data when online resize is done */
-> > +struct ocfs2_new_group_input {
-> > +	__u64 group;		/* Group descriptor's blkno. */
-> > +	__u32 clusters;		/* Total number of clusters in this group */
-> > +	__u32 frees;		/* Total free clusters in this group */
-> > +	__u16 chain;		/* Chain for this group */
-> > +	__u16 reserved1;
-> > +	__u32 reserved2;
-> > +};
-> 
-> Are we sure that all architectures will lay this out in the same way with
-> both 32-bit and 64-bit userspace?
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.24-rc8-mm1 #8
+---------------------------------------------
+bluepush/3213 is trying to acquire lock:
+ (sk_lock-AF_BLUETOOTH){--..}, at: [<f8978c80>]
+l2cap_sock_bind+0x40/0x100 [l2cap]
 
-I looked it over several times and haven't been able to find a problem -
-everything is aligned at 8 byte boundaries. Do you see anything that might
-be problematic?
+but task is already holding lock:
+ (sk_lock-AF_BLUETOOTH){--..}, at: [<f894a31e>]
+rfcomm_sock_connect+0x3e/0xe0 [rfcomm]
 
+other info that might help us debug this:
+2 locks held by bluepush/3213:
+ #0:  (sk_lock-AF_BLUETOOTH){--..}, at: [<f894a31e>]
+rfcomm_sock_connect+0x3e/0xe0 [rfcomm]
+ #1:  (rfcomm_mutex){--..}, at: [<f8947556>] rfcomm_dlc_open+0x26/0x60 [rfcomm]
 
-> > +/* Add a new group descriptor to global_bitmap. */
-> > +int ocfs2_group_add(struct inode *inode, struct ocfs2_new_group_input *input)
-> > +{
-> > +	int ret;
-> > +	handle_t *handle;
-> > +	struct buffer_head *main_bm_bh = NULL;
-> > +	struct inode *main_bm_inode = NULL;
-> > +	struct ocfs2_dinode *fe = NULL;
-> > +	struct ocfs2_super *osb = OCFS2_SB(inode->i_sb);
-> > +	struct buffer_head *group_bh = NULL;
-> > +	struct ocfs2_group_desc *group = NULL;
-> > +	struct ocfs2_chain_list *cl;
-> > +	struct ocfs2_chain_rec *cr;
-> > +	u16 cl_bpc;
-> > +
-> > +	mlog_entry_void();
-> > +
-> > +	if (ocfs2_is_hard_readonly(osb) || ocfs2_is_soft_readonly(osb))
-> > +		return -EROFS;
-> > +
-> > +	main_bm_inode = ocfs2_get_system_file_inode(osb,
-> > +						    GLOBAL_BITMAP_SYSTEM_INODE,
-> > +						    OCFS2_INVALID_SLOT);
-> > +	if (!main_bm_inode) {
-> > +		ret = -EINVAL;
-> > +		mlog_errno(ret);
-> > +		goto out;
-> > +	}
-> > +
-> > +	mutex_lock(&main_bm_inode->i_mutex);
-> > +
-> > +	ret = ocfs2_inode_lock(main_bm_inode, &main_bm_bh, 1);
-> > +	if (ret < 0) {
-> > +		mlog_errno(ret);
-> > +		goto out_mutex;
-> > +	}
-> > +
-> > +	fe = (struct ocfs2_dinode *)main_bm_bh->b_data;
-> > +
-> > +	if (le16_to_cpu(fe->id2.i_chain.cl_cpg) !=
-> > +				 ocfs2_group_bitmap_size(osb->sb) * 8) {
-> > +		mlog(ML_ERROR, "The disk is too old and small."
-> > +		     " Force to do offline resize.");
-> > +		ret = -EINVAL;
-> > +		goto out_unlock;
-> > +	}
-> > +
-> > +	ret = ocfs2_read_block(osb, input->group, &group_bh, 0, NULL);
-> > +	if (ret < 0) {
-> > +		mlog(ML_ERROR, "Can't read the group descriptor # %llu "
-> > +		     "from the device.", input->group);
-> > +		goto out;
-> 
-> Bug: goto wrong_place.  (Points at fault-injection code)
-
-Ooof, good catch - thanks. A fix for this is attached to this e-mail, and
-of course will be in ocfs2.git.
-
-
-> > +	}
-> > +
-> > +	ocfs2_set_new_buffer_uptodate(inode, group_bh);
-> > +
-> > +	ret = ocfs2_verify_group_and_input(main_bm_inode, fe, input, group_bh);
-> > +	if (ret) {
-> > +		mlog_errno(ret);
-> > +		goto out_unlock;
-> > +	}
-> > +
-> > +	mlog(0, "Add a new group  %llu in chain = %u, length = %u\n",
-> > +	     input->group, input->chain, input->clusters);
-> > +
-> > +	handle = ocfs2_start_trans(osb, OCFS2_GROUP_ADD_CREDITS);
-> > +	if (IS_ERR(handle)) {
-> > +		mlog_errno(PTR_ERR(handle));
-> > +		ret = -EINVAL;
-> > +		goto out_unlock;
-> > +	}
-> > +
-> > +	cl_bpc = le16_to_cpu(fe->id2.i_chain.cl_bpc);
-> > +	cl = &fe->id2.i_chain;
-> > +	cr = &cl->cl_recs[input->chain];
-> > +
-> > +	ret = ocfs2_journal_access(handle, main_bm_inode, group_bh,
-> > +				   OCFS2_JOURNAL_ACCESS_WRITE);
-> > +	if (ret < 0) {
-> > +		mlog_errno(ret);
-> > +		goto out_commit;
-> > +	}
-> > +
-> > +	group = (struct ocfs2_group_desc *)group_bh->b_data;
-> > +	group->bg_next_group = cr->c_blkno;
-> > +
-> > +	ret = ocfs2_journal_dirty(handle, group_bh);
-> > +	if (ret < 0) {
-> > +		mlog_errno(ret);
-> > +		goto out_commit;
-> > +	}
-> > +
-> > +	ret = ocfs2_journal_access(handle, main_bm_inode, main_bm_bh,
-> > +				   OCFS2_JOURNAL_ACCESS_WRITE);
-> 
-> hm.  Do we need to do that again?
-
-I think you're missing that those are two different buffers  :)
-
-
-> > +	spin_lock(&OCFS2_I(main_bm_inode)->ip_lock);
-> > +	OCFS2_I(main_bm_inode)->ip_clusters = le32_to_cpu(fe->i_clusters);
-> > +	le64_add_cpu(&fe->i_size, input->clusters << osb->s_clustersize_bits);
-> > +	spin_unlock(&OCFS2_I(main_bm_inode)->ip_lock);
-> > +	i_size_write(main_bm_inode, le64_to_cpu(fe->i_size));
-> 
-> Is i_mutex held?
-
-Yes.
-	--Mark
-
---
-Mark Fasheh
-Principal Software Developer, Oracle
-mark.fasheh@oracle.com
-
-
-From: Mark Fasheh <mark.fasheh@oracle.com>
-
-ocfs2: fix goto error in ocfs2_group_add()
-
-We were jumping to the wrong label on read error which would have caused us
-to exit the function with locks held.
-
-Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
----
- fs/ocfs2/resize.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/ocfs2/resize.c b/fs/ocfs2/resize.c
-index a103698..261dabf 100644
---- a/fs/ocfs2/resize.c
-+++ b/fs/ocfs2/resize.c
-@@ -544,7 +544,7 @@ int ocfs2_group_add(struct inode *inode, struct ocfs2_new_group_input *input)
- 	if (ret < 0) {
- 		mlog(ML_ERROR, "Can't read the group descriptor # %llu "
- 		     "from the device.", (unsigned long long)input->group);
--		goto out;
-+		goto out_unlock;
- 	}
- 
- 	ocfs2_set_new_buffer_uptodate(inode, group_bh);
--- 
-1.5.3.6
-
+stack backtrace:
+Pid: 3213, comm: bluepush Not tainted 2.6.24-rc8-mm1 #8
+ [<c0132128>] ? printk+0x18/0x20
+ [<c0154437>] print_deadlock_bug+0xc7/0xe0
+ [<c01544bc>] check_deadlock+0x6c/0x80
+ [<c01548fc>] validate_chain+0x14c/0x320
+ [<c0156221>] __lock_acquire+0x1c1/0x730
+ [<c0156d89>] lock_acquire+0x79/0xb0
+ [<f8978c80>] ? l2cap_sock_bind+0x40/0x100 [l2cap]
+ [<c03c05f5>] lock_sock_nested+0x55/0x70
+ [<f8978c80>] ? l2cap_sock_bind+0x40/0x100 [l2cap]
+ [<f8978c80>] l2cap_sock_bind+0x40/0x100 [l2cap]
+ [<c03bdb4a>] kernel_bind+0xa/0x10
+ [<f8947afc>] rfcomm_session_create+0x4c/0x110 [rfcomm]
+ [<f8947509>] __rfcomm_dlc_open+0x129/0x150 [rfcomm]
+ [<f8947568>] rfcomm_dlc_open+0x38/0x60 [rfcomm]
+ [<f894a396>] rfcomm_sock_connect+0xb6/0xe0 [rfcomm]
+ [<c03bcd39>] sys_connect+0x99/0xd0
+ [<c010f509>] ? cache_add_dev+0x39/0x1a0
+ [<c015323d>] ? put_lock_stats+0xd/0x30
+ [<c01532c0>] ? lock_release_holdtime+0x60/0x80
+ [<c018e86c>] ? fget+0x7c/0x100
+ [<c0156b97>] ? __lock_release+0x47/0x70
+ [<c018e86c>] ? fget+0x7c/0x100
+ [<c02611b7>] ? copy_from_user+0x37/0x70
+ [<c03bd855>] sys_socketcall+0xa5/0x230
+ [<c0155659>] ? trace_hardirqs_on+0xb9/0x130
+ [<c010501b>] ? restore_nocheck+0x12/0x15
