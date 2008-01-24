@@ -1,404 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbYAXISM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYAXIgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753295AbYAXISM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 03:18:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbYAXIRx
+	id S1753836AbYAXIgf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 03:36:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbYAXIgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 03:17:53 -0500
-Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:51725 "EHLO
-	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753807AbYAXIRv (ORCPT
+	Thu, 24 Jan 2008 03:36:25 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:49357 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752843AbYAXIgY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 03:17:51 -0500
-To: James.Bottomley@HansenPartnership.com
-Cc: linux-kernel@vger.kernel.org, tomof@acm.org
-Subject: [PATCH 2/2] ch: remove forward declarations
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain;
-	charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080124171746H.fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 24 Jan 2008 17:17:46 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Thu, 24 Jan 2008 03:36:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=sk2v/XA8K2KCKtGB6dt9mbjhbcvJW8oQtFLBi/Yudxotf584wjFEbJ0xLGrfzfcqu6k5OsFIO1UVTdh2MqJdyBagrWNK/GOBQWc7wrTOD0ITFdxRx7RZEmf81HisR4kW/T4HMGGmc+nfefAuzg3lgrCDwSZmn9+09XBSoxDnOes=
+From: Denis Cheng <crquan@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] USB: Use menuconfig objects
+Date: Thu, 24 Jan 2008 16:36:31 +0800
+Message-Id: <1201163791-5167-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.3.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This moves ch_template and changer_fops structs to the end of file and
-removes forward declarations.
+commit 04d06ad0f1fdb499af84ae3d7969e2136a462f38 have added menuconfig support
+for the whole USB Kconfig, but there are still menuconfig need for usb/serial,
+usb/atm, and usb/gadget, so that the user can disable all the options in that
+menu at once instead of having to disable each option separately.
 
-This also removes some trailing whitespace.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Denis Cheng <crquan@gmail.com>
 ---
- drivers/scsi/ch.c |  120 ++++++++++++++++++++++++-----------------------------
- 1 files changed, 54 insertions(+), 66 deletions(-)
+ drivers/usb/atm/Kconfig    |    9 ++++-----
+ drivers/usb/gadget/Kconfig |    9 +++++----
+ drivers/usb/serial/Kconfig |   11 ++++-------
+ 3 files changed, 13 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/scsi/ch.c b/drivers/scsi/ch.c
-index 2b07014..7aad154 100644
---- a/drivers/scsi/ch.c
-+++ b/drivers/scsi/ch.c
-@@ -90,16 +90,6 @@ static const char * vendor_labels[CH_TYPES-4] = {
+diff --git a/drivers/usb/atm/Kconfig b/drivers/usb/atm/Kconfig
+index b450cba..86e6403 100644
+--- a/drivers/usb/atm/Kconfig
++++ b/drivers/usb/atm/Kconfig
+@@ -2,10 +2,7 @@
+ # USB/ATM DSL configuration
+ #
  
- #define MAX_RETRIES   1
- 
--static int  ch_probe(struct device *);
--static int  ch_remove(struct device *);
--static int  ch_open(struct inode * inode, struct file * filp);
--static int  ch_release(struct inode * inode, struct file * filp);
--static long ch_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
--#ifdef CONFIG_COMPAT
--static long ch_ioctl_compat(struct file * filp,
--			    unsigned int cmd, unsigned long arg);
--#endif
+-menu "USB DSL modem support"
+-	depends on USB
 -
- static struct class * ch_sysfs_class;
+-config USB_ATM
++menuconfig USB_ATM
+ 	tristate "USB DSL modem support"
+ 	depends on USB && ATM
+ 	select CRC32
+@@ -18,6 +15,8 @@ config USB_ATM
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called usbatm.
  
- typedef struct {
-@@ -118,27 +108,6 @@ typedef struct {
- static DEFINE_IDR(ch_index_idr);
- static DEFINE_SPINLOCK(ch_index_lock);
++if USB_ATM
++
+ config USB_SPEEDTOUCH
+ 	tristate "Speedtouch USB support"
+ 	depends on USB_ATM
+@@ -70,4 +69,4 @@ config USB_XUSBATM
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called xusbatm.
  
--static struct scsi_driver ch_template =
--{
--	.owner     	= THIS_MODULE,
--	.gendrv     	= {
--		.name	= "ch",
--		.probe  = ch_probe,
--		.remove = ch_remove,
--	},
--};
+-endmenu
++endif # USB_ATM
+diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+index f81d08d..8393176 100644
+--- a/drivers/usb/gadget/Kconfig
++++ b/drivers/usb/gadget/Kconfig
+@@ -12,10 +12,9 @@
+ # With help from a special transceiver and a "Mini-AB" jack, systems with
+ # both kinds of controller can also support "USB On-the-Go" (CONFIG_USB_OTG).
+ #
+-menu "USB Gadget Support"
+ 
+-config USB_GADGET
+-	tristate "Support for USB Gadgets"
++menuconfig USB_GADGET
++	tristate "USB Gadget Support"
+ 	help
+ 	   USB is a master/slave protocol, organized with one master
+ 	   host (such as a PC) controlling up to 127 peripheral devices.
+@@ -42,6 +41,8 @@ config USB_GADGET
+ 	   For more information, see <http://www.linux-usb.org/gadget> and
+ 	   the kernel DocBook documentation for this API.
+ 
++if USB_GADGET
++
+ config USB_GADGET_DEBUG
+ 	boolean "Debugging messages"
+ 	depends on USB_GADGET && DEBUG_KERNEL && EXPERIMENTAL
+@@ -546,4 +547,4 @@ config USB_MIDI_GADGET
+ 
+ endchoice
+ 
+-endmenu
++endif # USB_GADGET
+diff --git a/drivers/usb/serial/Kconfig b/drivers/usb/serial/Kconfig
+index 4a86696..0474412 100644
+--- a/drivers/usb/serial/Kconfig
++++ b/drivers/usb/serial/Kconfig
+@@ -2,10 +2,7 @@
+ # USB Serial device configuration
+ #
+ 
+-menu "USB Serial Converter support"
+-	depends on USB!=n
 -
--static const struct file_operations changer_fops =
--{
--	.owner		= THIS_MODULE,
--	.open		= ch_open,
--	.release	= ch_release,
--	.unlocked_ioctl	= ch_ioctl,
--#ifdef CONFIG_COMPAT
--	.compat_ioctl	= ch_ioctl_compat,
--#endif
--};
+-config USB_SERIAL
++menuconfig USB_SERIAL
+ 	tristate "USB Serial Converter support"
+ 	depends on USB
+ 	---help---
+@@ -20,6 +17,8 @@ config USB_SERIAL
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called usbserial.
+ 
++if USB_SERIAL
++
+ config USB_SERIAL_CONSOLE
+ 	bool "USB Serial Console device support (EXPERIMENTAL)"
+ 	depends on USB_SERIAL=y && EXPERIMENTAL
+@@ -590,6 +589,4 @@ config USB_EZUSB
+ 	depends on USB_SERIAL_KEYSPAN_PDA || USB_SERIAL_XIRCOM || USB_SERIAL_KEYSPAN || USB_SERIAL_WHITEHEAT
+ 	default y
+ 
 -
- static const struct {
- 	unsigned char  sense;
- 	unsigned char  asc;
-@@ -207,7 +176,7 @@ ch_do_scsi(scsi_changer *ch, unsigned char *cmd,
- {
- 	int errno, retries = 0, timeout, result;
- 	struct scsi_sense_hdr sshdr;
--	
-+
- 	timeout = (cmd[0] == INITIALIZE_ELEMENT_STATUS)
- 		? timeout_init : timeout_move;
- 
-@@ -245,7 +214,7 @@ static int
- ch_elem_to_typecode(scsi_changer *ch, u_int elem)
- {
- 	int i;
--	
-+
- 	for (i = 0; i < CH_TYPES; i++) {
- 		if (elem >= ch->firsts[i]  &&
- 		    elem <  ch->firsts[i] +
-@@ -261,15 +230,15 @@ ch_read_element_status(scsi_changer *ch, u_int elem, char *data)
- 	u_char  cmd[12];
- 	u_char  *buffer;
- 	int     result;
--	
-+
- 	buffer = kmalloc(512, GFP_KERNEL | GFP_DMA);
- 	if(!buffer)
- 		return -ENOMEM;
--	
-+
-  retry:
- 	memset(cmd,0,sizeof(cmd));
- 	cmd[0] = READ_ELEMENT_STATUS;
--	cmd[1] = (ch->device->lun << 5) | 
-+	cmd[1] = (ch->device->lun << 5) |
- 		(ch->voltags ? 0x10 : 0) |
- 		ch_elem_to_typecode(ch,elem);
- 	cmd[2] = (elem >> 8) & 0xff;
-@@ -296,7 +265,7 @@ ch_read_element_status(scsi_changer *ch, u_int elem, char *data)
- 	return result;
- }
- 
--static int 
-+static int
- ch_init_elem(scsi_changer *ch)
- {
- 	int err;
-@@ -322,7 +291,7 @@ ch_readconfig(scsi_changer *ch)
- 	buffer = kzalloc(512, GFP_KERNEL | GFP_DMA);
- 	if (!buffer)
- 		return -ENOMEM;
--	
-+
- 	memset(cmd,0,sizeof(cmd));
- 	cmd[0] = MODE_SENSE;
- 	cmd[1] = ch->device->lun << 5;
-@@ -365,7 +334,7 @@ ch_readconfig(scsi_changer *ch)
- 	} else {
- 		vprintk("reading element address assigment page failed!\n");
- 	}
--	
-+
- 	/* vendor specific element types */
- 	for (i = 0; i < 4; i++) {
- 		if (0 == vendor_counts[i])
-@@ -443,7 +412,7 @@ static int
- ch_position(scsi_changer *ch, u_int trans, u_int elem, int rotate)
- {
- 	u_char  cmd[10];
--	
-+
- 	dprintk("position: 0x%x\n",elem);
- 	if (0 == trans)
- 		trans = ch->firsts[CHET_MT];
-@@ -462,7 +431,7 @@ static int
- ch_move(scsi_changer *ch, u_int trans, u_int src, u_int dest, int rotate)
- {
- 	u_char  cmd[12];
--	
-+
- 	dprintk("move: 0x%x => 0x%x\n",src,dest);
- 	if (0 == trans)
- 		trans = ch->firsts[CHET_MT];
-@@ -484,7 +453,7 @@ ch_exchange(scsi_changer *ch, u_int trans, u_int src,
- 	    u_int dest1, u_int dest2, int rotate1, int rotate2)
- {
- 	u_char  cmd[12];
--	
-+
- 	dprintk("exchange: 0x%x => 0x%x => 0x%x\n",
- 		src,dest1,dest2);
- 	if (0 == trans)
-@@ -501,7 +470,7 @@ ch_exchange(scsi_changer *ch, u_int trans, u_int src,
- 	cmd[8]  = (dest2 >> 8) & 0xff;
- 	cmd[9]  =  dest2       & 0xff;
- 	cmd[10] = (rotate1 ? 1 : 0) | (rotate2 ? 2 : 0);
--	
-+
- 	return ch_do_scsi(ch, cmd, NULL,0, DMA_NONE);
- }
- 
-@@ -539,14 +508,14 @@ ch_set_voltag(scsi_changer *ch, u_int elem,
- 		elem, tag);
- 	memset(cmd,0,sizeof(cmd));
- 	cmd[0]  = SEND_VOLUME_TAG;
--	cmd[1] = (ch->device->lun << 5) | 
-+	cmd[1] = (ch->device->lun << 5) |
- 		ch_elem_to_typecode(ch,elem);
- 	cmd[2] = (elem >> 8) & 0xff;
- 	cmd[3] = elem        & 0xff;
- 	cmd[5] = clear
- 		? (alternate ? 0x0d : 0x0c)
- 		: (alternate ? 0x0b : 0x0a);
--	
-+
- 	cmd[9] = 255;
- 
- 	memcpy(buffer,tag,32);
-@@ -562,7 +531,7 @@ static int ch_gstatus(scsi_changer *ch, int type, unsigned char __user *dest)
- 	int retval = 0;
- 	u_char data[16];
- 	unsigned int i;
--	
-+
- 	mutex_lock(&ch->lock);
- 	for (i = 0; i < ch->counts[type]; i++) {
- 		if (0 != ch_read_element_status
-@@ -629,18 +598,18 @@ static long ch_ioctl(struct file *file,
- 	scsi_changer *ch = file->private_data;
- 	int retval;
- 	void __user *argp = (void __user *)arg;
--	
-+
- 	switch (cmd) {
- 	case CHIOGPARAMS:
- 	{
- 		struct changer_params params;
--		
-+
- 		params.cp_curpicker = 0;
- 		params.cp_npickers  = ch->counts[CHET_MT];
- 		params.cp_nslots    = ch->counts[CHET_ST];
- 		params.cp_nportals  = ch->counts[CHET_IE];
- 		params.cp_ndrives   = ch->counts[CHET_DT];
--		
-+
- 		if (copy_to_user(argp, &params, sizeof(params)))
- 			return -EFAULT;
- 		return 0;
-@@ -670,11 +639,11 @@ static long ch_ioctl(struct file *file,
- 			return -EFAULT;
- 		return 0;
- 	}
--	
-+
- 	case CHIOPOSITION:
- 	{
- 		struct changer_position pos;
--		
-+
- 		if (copy_from_user(&pos, argp, sizeof (pos)))
- 			return -EFAULT;
- 
-@@ -689,7 +658,7 @@ static long ch_ioctl(struct file *file,
- 		mutex_unlock(&ch->lock);
- 		return retval;
- 	}
--	
-+
- 	case CHIOMOVE:
- 	{
- 		struct changer_move mv;
-@@ -702,7 +671,7 @@ static long ch_ioctl(struct file *file,
- 			dprintk("CHIOMOVE: invalid parameter\n");
- 			return -EBADSLT;
- 		}
--		
-+
- 		mutex_lock(&ch->lock);
- 		retval = ch_move(ch,0,
- 				 ch->firsts[mv.cm_fromtype] + mv.cm_fromunit,
-@@ -715,7 +684,7 @@ static long ch_ioctl(struct file *file,
- 	case CHIOEXCHANGE:
- 	{
- 		struct changer_exchange mv;
--		
-+
- 		if (copy_from_user(&mv, argp, sizeof (mv)))
- 			return -EFAULT;
- 
-@@ -725,7 +694,7 @@ static long ch_ioctl(struct file *file,
- 			dprintk("CHIOEXCHANGE: invalid parameter\n");
- 			return -EBADSLT;
- 		}
--		
-+
- 		mutex_lock(&ch->lock);
- 		retval = ch_exchange
- 			(ch,0,
-@@ -740,7 +709,7 @@ static long ch_ioctl(struct file *file,
- 	case CHIOGSTATUS:
- 	{
- 		struct changer_element_status ces;
--		
-+
- 		if (copy_from_user(&ces, argp, sizeof (ces)))
- 			return -EFAULT;
- 		if (ces.ces_type < 0 || ces.ces_type >= CH_TYPES)
-@@ -756,19 +725,19 @@ static long ch_ioctl(struct file *file,
- 		u_char  *buffer;
- 		unsigned int elem;
- 		int     result,i;
--		
-+
- 		if (copy_from_user(&cge, argp, sizeof (cge)))
- 			return -EFAULT;
- 
- 		if (0 != ch_checkrange(ch, cge.cge_type, cge.cge_unit))
- 			return -EINVAL;
- 		elem = ch->firsts[cge.cge_type] + cge.cge_unit;
--		
-+
- 		buffer = kmalloc(512, GFP_KERNEL | GFP_DMA);
- 		if (!buffer)
- 			return -ENOMEM;
- 		mutex_lock(&ch->lock);
--		
-+
- 	voltag_retry:
- 		memset(cmd,0,sizeof(cmd));
- 		cmd[0] = READ_ELEMENT_STATUS;
-@@ -779,7 +748,7 @@ static long ch_ioctl(struct file *file,
- 		cmd[3] = elem        & 0xff;
- 		cmd[5] = 1;
- 		cmd[9] = 255;
--		
-+
- 		if (0 == (result = ch_do_scsi(ch, cmd, buffer, 256, DMA_FROM_DEVICE))) {
- 			cge.cge_status = buffer[18];
- 			cge.cge_flags = 0;
-@@ -819,7 +788,7 @@ static long ch_ioctl(struct file *file,
- 		}
- 		kfree(buffer);
- 		mutex_unlock(&ch->lock);
--		
-+
- 		if (copy_to_user(argp, &cge, sizeof (cge)))
- 			return -EFAULT;
- 		return result;
-@@ -832,7 +801,7 @@ static long ch_ioctl(struct file *file,
- 		mutex_unlock(&ch->lock);
- 		return retval;
- 	}
--		
-+
- 	case CHIOSVOLTAG:
- 	{
- 		struct changer_set_voltag csv;
-@@ -873,7 +842,7 @@ static long ch_ioctl_compat(struct file * file,
- 			    unsigned int cmd, unsigned long arg)
- {
- 	scsi_changer *ch = file->private_data;
--	
-+
- 	switch (cmd) {
- 	case CHIOGPARAMS:
- 	case CHIOGVPARAMS:
-@@ -889,7 +858,7 @@ static long ch_ioctl_compat(struct file * file,
- 	{
- 		struct changer_element_status32 ces32;
- 		unsigned char __user *data;
--		
-+
- 		if (copy_from_user(&ces32, (void __user *)arg, sizeof (ces32)))
- 			return -EFAULT;
- 		if (ces32.ces_type < 0 || ces32.ces_type >= CH_TYPES)
-@@ -982,10 +951,29 @@ static int ch_remove(struct device *dev)
- 	return 0;
- }
- 
-+static struct scsi_driver ch_template = {
-+	.owner     	= THIS_MODULE,
-+	.gendrv     	= {
-+		.name	= "ch",
-+		.probe  = ch_probe,
-+		.remove = ch_remove,
-+	},
-+};
-+
-+static const struct file_operations changer_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= ch_open,
-+	.release	= ch_release,
-+	.unlocked_ioctl	= ch_ioctl,
-+#ifdef CONFIG_COMPAT
-+	.compat_ioctl	= ch_ioctl_compat,
-+#endif
-+};
-+
- static int __init init_ch_module(void)
- {
- 	int rc;
--	
-+
- 	printk(KERN_INFO "SCSI Media Changer driver v" VERSION " \n");
-         ch_sysfs_class = class_create(THIS_MODULE, "scsi_changer");
-         if (IS_ERR(ch_sysfs_class)) {
-@@ -1010,7 +998,7 @@ static int __init init_ch_module(void)
- 	return rc;
- }
- 
--static void __exit exit_ch_module(void) 
-+static void __exit exit_ch_module(void)
- {
- 	scsi_unregister_driver(&ch_template.gendrv);
- 	unregister_chrdev(SCSI_CHANGER_MAJOR, "ch");
+-endmenu
+-
++endif # USB_SERIAL
 -- 
-1.5.3.4
+1.5.3.5
 
