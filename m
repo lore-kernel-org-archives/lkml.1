@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbYAXRFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbYAXRGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbYAXRFr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 12:05:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758379AbYAXQ6x
+	id S1758069AbYAXRGG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 12:06:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758516AbYAXQ7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 11:58:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49782 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758279AbYAXQ6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 11:58:39 -0500
-From: David Teigland <teigland@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 14/19] dlm: reject normal unlock when lock is waiting for lookup
-Date: Thu, 24 Jan 2008 10:50:37 -0600
-Message-Id: <1201193442-8260-15-git-send-email-teigland@redhat.com>
-X-Mailer: git-send-email 1.5.3.3
+	Thu, 24 Jan 2008 11:59:13 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:43171 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757179AbYAXQ7M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 11:59:12 -0500
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH] IB/ehca: Prevent sending UD packets to QP0
+User-Agent: KMail/1.8.2
+Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+X-Length: 2328
+Date: Thu, 24 Jan 2008 17:59:08 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200801241759.09065.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Non-forced unlocks should be rejected if the lock is waiting on the
-rsb_lookup list for another lock to establish the master node.
+IB spec doesn't allow packets to QP0 sent on any other VL than VL15.
+Hardware doesn't filter those packets on the send side, so we need to do
+this in the driver and firmware.
 
-Signed-off-by: David Teigland <teigland@redhat.com>
+As eHCA doesn't support QP0, we can just filter out all traffic going to
+QP0, regardless of SL or VL.
+
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 ---
- fs/dlm/lock.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_reqs.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index c2890ef..fa68e9b 100644
---- a/fs/dlm/lock.c
-+++ b/fs/dlm/lock.c
-@@ -2110,17 +2110,18 @@ static int validate_unlock_args(struct dlm_lkb *lkb, struct dlm_args *args)
- 	/* an lkb may be waiting for an rsb lookup to complete where the
- 	   lookup was initiated by another lock */
- 
--	if (args->flags & (DLM_LKF_CANCEL | DLM_LKF_FORCEUNLOCK)) {
--		if (!list_empty(&lkb->lkb_rsb_lookup)) {
-+	if (!list_empty(&lkb->lkb_rsb_lookup)) {
-+		if (args->flags & (DLM_LKF_CANCEL | DLM_LKF_FORCEUNLOCK)) {
- 			log_debug(ls, "unlock on rsb_lookup %x", lkb->lkb_id);
- 			list_del_init(&lkb->lkb_rsb_lookup);
- 			queue_cast(lkb->lkb_resource, lkb,
- 				   args->flags & DLM_LKF_CANCEL ?
- 				   -DLM_ECANCEL : -DLM_EUNLOCK);
- 			unhold_lkb(lkb); /* undoes create_lkb() */
--			rv = -EBUSY;
--			goto out;
+diff --git a/drivers/infiniband/hw/ehca/ehca_reqs.c b/drivers/infiniband/hw/ehca/ehca_reqs.c
+index 3aacc8c..2ce8cff 100644
+--- a/drivers/infiniband/hw/ehca/ehca_reqs.c
++++ b/drivers/infiniband/hw/ehca/ehca_reqs.c
+@@ -209,6 +209,10 @@ static inline int ehca_write_swqe(struct ehca_qp *qp,
+ 			ehca_gen_err("wr.ud.ah is NULL. qp=%p", qp);
+ 			return -EINVAL;
  		}
-+		/* caller changes -EBUSY to 0 for CANCEL and FORCEUNLOCK */
-+		rv = -EBUSY;
-+		goto out;
- 	}
++		if (unlikely(send_wr->wr.ud.remote_qpn == 0)) {
++			ehca_gen_err("dest QP# is 0. qp=%x", qp->real_qp_num);
++			return -EINVAL;
++		}
+ 		my_av = container_of(send_wr->wr.ud.ah, struct ehca_av, ib_ah);
+ 		wqe_p->u.ud_av.ud_av = my_av->av;
  
- 	/* cancel not allowed with another cancel/unlock in progress */
 -- 
-1.5.3.3
+1.5.2
+
 
