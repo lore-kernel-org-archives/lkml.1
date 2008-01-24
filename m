@@ -1,84 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbYAXAEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbYAXAFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753199AbYAXAEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 19:04:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbYAXAEJ
+	id S1753747AbYAXAFe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 19:05:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYAXAF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 19:04:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:9560 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751753AbYAXAEG (ORCPT
+	Wed, 23 Jan 2008 19:05:26 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:58446 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752031AbYAXAFZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 19:04:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=O2HUX9aQpbzU0JYP/z9z3ts68Mhq+mLtspkbMR8g4wfDbUX2cEDzOtHfSGSJtNUrWs1r9K6rSNpeVzvZEJtx92KPdTj1ShXiFrqmORrlP5WWVci3GqLbnqDrpayfTXWJq5ckmUDAzlAIxOydRxpu6nE84k+RfSnJUEQe1vYUS8s=
-From: Chris Clayton <chris2553@googlemail.com>
-Reply-To: chris2553@googlemail.com
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: Silent crash witk 2-6.24-rc8-git4
-Date: Thu, 24 Jan 2008 00:03:31 +0000
-User-Agent: KMail/1.9.7
-Cc: linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <200801220603.02986.chris2553@googlemail.com> <200801231642.58782.chris2553@googlemail.com> <20080123190207.GB3129@tuxdriver.com>
-In-Reply-To: <20080123190207.GB3129@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801240003.31666.chris2553@googlemail.com>
+	Wed, 23 Jan 2008 19:05:25 -0500
+To: torvalds@linux-foundation.org
+CC: miklos@szeredi.hu, a.p.zijlstra@chello.nl, salikhmetov@gmail.com,
+       linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com, akpm@linux-foundation.org,
+       protasnb@gmail.com, r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com,
+       hch@infradead.org
+In-reply-to: <alpine.LFD.1.00.0801231329120.2803@woody.linux-foundation.org>
+	(message from Linus Torvalds on Wed, 23 Jan 2008 13:36:45 -0800 (PST))
+Subject: Re: [PATCH -v8 3/4] Enable the MS_ASYNC functionality in
+ sys_msync()
+References: <12010440803930-git-send-email-salikhmetov@gmail.com>  <1201044083504-git-send-email-salikhmetov@gmail.com>  <alpine.LFD.1.00.0801230836250.1741@woody.linux-foundation.org> <1201110066.6341.65.camel@lappy> <alpine.LFD.1.00.0801231107520.1741@woody.linux-foundation.org>
+ <E1JHlh8-0003s8-Bb@pomaz-ex.szeredi.hu> <alpine.LFD.1.00.0801231248060.2803@woody.linux-foundation.org> <E1JHmxa-0004BK-6X@pomaz-ex.szeredi.hu> <alpine.LFD.1.00.0801231329120.2803@woody.linux-foundation.org>
+Message-Id: <E1JHpaa-0004a9-8B@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 24 Jan 2008 01:05:04 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the reply, John.
-
-On Wednesday 23 January 2008, John W. Linville wrote:
-> On Wed, Jan 23, 2008 at 04:42:58PM +0000, Chris Clayton wrote:
-> > On Wednesday 23 January 2008, Chris Clayton wrote:
-> > > Hi again.
-> > > 
-> > > On Tuesday 22 January 2008, Chris Clayton wrote:
-> > > > Hi,
-> > 
-> > and here's another, slightly more complete, one, this time from 2.6.24-rc8-git6
-> > (the none I sent earlier was from -git4, by the way)
-> > 
-> > Call Trace:
-> > [<c011440a>] __update_rq_clock+0x1a/0xf0
-> > [<e08ff59d>] rt2x00lib_txdone+0x9d/0xd0 [rt2x00lib]
-> > [<e0909573>] rt61pci_txdone+0x153/0x1f0 [rt61pci]
-> > [<e09096ad>] rt61pci_interrupt+0x9d/0xb0 [rt61pci]
+> > How about doing it in a separate pass, similarly to
+> > wait_on_page_writeback()?  Just instead of waiting, clean the page
+> > tables for writeback pages.
 > 
-> I suspect this could relate to this commit:
+> That sounds like a good idea, but it doesn't work.
 > 
-> commit 62bc060b8ed5fcdafd87da5ab17bdd59a39ebcc9
-> Author: Mattias Nissler <mattias.nissler@gmx.de>
-> Date:   Mon Nov 12 15:03:12 2007 +0100
+> The thing is, we need to hold the page-table lock over the whole sequence 
+> of
 > 
->     rt2x00: Allow rt61 to catch up after a missing tx report
+> 	if (page_mkclean(page))
+> 		set_page_dirty(page);
+> 	if (TestClearPageDirty(page))
+> 		..
 > 
-> Could you revert that patch, rebuild, and try to recreate the problem?
+> and there's a big comment about why in clear_page_dirty_for_io().
 > 
-
-I've reverted the patch by hand - the original patch on linux-wireless doesn't match the present state of the code
-in rt61pci.c and I'm not a git user. I'm pretty sure I've got it right, however.
-
-Problem now is that we are back where we were a few weeks ago because my wireless connection dies
-almost immediately after I start the download and from dmesg I see:
-
-phy0 -> rt2x00pci_write_tx_data: Error - Arrived at non-free entry in the non-full queue 2.
-Please file bug report to http://rt2x00.serialmonkey.com.
-
-Chris
-
-> Thanks!
+> So if you split it up, so that the first phase is that
 > 
-> John
+> 	if (page_mkclean(page))
+> 		set_page_dirty(page);
+> 
+> and the second phase is the one that just does a
+> 
+> 	if (TestClearPageDirty(page))
+> 		writeback(..)
+> 
+> and having dropped the page lock in between, then you lose: because 
+> another thread migth have faulted in and re-dirtied the page table entry, 
+> and you MUST NOT do that "TestClearPageDirty()" in that case!
+> 
+> That dirty bit handling is really really important, and it's sadly also 
+> really really easy to get wrong (usually in ways that are hard to even 
+> notice: things still work 99% of the time, and you might just be leaking 
+> memory slowly, and fsync/msync() might not write back memory mapped data 
+> to disk at all etc).
 
+OK.
 
+But I still think this approach should work.  Untested, might eat your
+children, so please don't apply to any kernel.
 
--- 
-Beer is proof that God loves us and wants us to be happy - Benjamin Franklin
+Miklos
+
+Index: linux/mm/msync.c
+===================================================================
+--- linux.orig/mm/msync.c	2008-01-24 00:18:31.000000000 +0100
++++ linux/mm/msync.c	2008-01-24 00:50:37.000000000 +0100
+@@ -10,9 +10,91 @@
+ #include <linux/fs.h>
+ #include <linux/mm.h>
+ #include <linux/mman.h>
++#include <linux/pagemap.h>
+ #include <linux/file.h>
+ #include <linux/syscalls.h>
+ #include <linux/sched.h>
++#include <linux/pagevec.h>
++#include <linux/rmap.h>
++#include <linux/backing-dev.h>
++
++static void mkclean_writeback_pages(struct address_space *mapping,
++				    pgoff_t start, pgoff_t end)
++{
++	struct pagevec pvec;
++	pgoff_t index;
++
++	if (!mapping_cap_account_dirty(mapping))
++		return;
++
++	if (end < start)
++		return;
++
++	pagevec_init(&pvec, 0);
++	index = start;
++	while (index <= end) {
++		unsigned i;
++		int nr_pages = min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1;
++
++		nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
++					      PAGECACHE_TAG_WRITEBACK,
++					      nr_pages);
++		if (!nr_pages)
++			break;
++
++		for (i = 0; i < nr_pages; i++) {
++			struct page *page = pvec.pages[i];
++
++			/* until radix tree lookup accepts end_index */
++			if (page->index > end)
++				continue;
++
++			lock_page(page);
++			if (page_mkclean(page))
++				set_page_dirty(page);
++			unlock_page(page);
++		}
++		pagevec_release(&pvec);
++		cond_resched();
++	}
++}
++
++static int msync_range(struct file *file, loff_t start, unsigned long len, unsigned int sync)
++{
++	int ret;
++	struct address_space *mapping = file->f_mapping;
++	loff_t end = start + len - 1;
++	int sync_flags = SYNC_FILE_RANGE_WRITE;
++
++	if (sync) {
++		sync_flags |= SYNC_FILE_RANGE_WAIT_BEFORE;
++	} else {
++		/*
++		 * For MS_ASYNC, don't wait for writback already in
++		 * progress, but instead just clean the page tables.
++		 */
++		mkclean_writeback_pages(mapping,
++					start >> PAGE_CACHE_SHIFT,
++					end >> PAGE_CACHE_SHIFT);
++	}
++
++	ret = do_sync_mapping_range(mapping, start, end, sync_flags);
++	if (ret || !sync)
++		return ret;
++
++	if (file->f_op && file->f_op->fsync) {
++		mutex_lock(&mapping->host->i_mutex);
++		ret = file->f_op->fsync(file, file->f_path.dentry, 0);
++		mutex_unlock(&mapping->host->i_mutex);
++
++		if (ret < 0)
++			return ret;
++	}
++
++	return wait_on_page_writeback_range(mapping,
++			start >> PAGE_CACHE_SHIFT,
++			end >> PAGE_CACHE_SHIFT);
++}
+ 
+ /*
+  * MS_SYNC syncs the entire file - including mappings.
+@@ -77,18 +159,36 @@ asmlinkage long sys_msync(unsigned long 
+ 			goto out_unlock;
+ 		}
+ 		file = vma->vm_file;
+-		start = vma->vm_end;
+-		if ((flags & MS_SYNC) && file &&
+-				(vma->vm_flags & VM_SHARED)) {
++
++		if (file && (vma->vm_flags & VM_SHARED) &&
++		    (flags & (MS_SYNC | MS_ASYNC))) {
++			loff_t offset;
++			unsigned long len;
++
++			/*
++			 * We need to do all of this before we release the mmap_sem,
++			 * since "vma" isn't available after that.
++			 */
++			offset = start - vma->vm_start;
++			offset += vma->vm_pgoff << PAGE_SHIFT;
++			len = end;
++			if (len > vma->vm_end)
++				len = vma->vm_end;
++			len -= start;
++
++			/* Update start here, since vm_end will be gone too.. */
++			start = vma->vm_end;
+ 			get_file(file);
+ 			up_read(&mm->mmap_sem);
+-			error = do_fsync(file, 0);
++
++			error = msync_range(file, offset, len, flags & MS_SYNC);
+ 			fput(file);
+ 			if (error || start >= end)
+ 				goto out;
+ 			down_read(&mm->mmap_sem);
+ 			vma = find_vma(mm, start);
+ 		} else {
++			start = vma->vm_end;
+ 			if (start >= end) {
+ 				error = 0;
+ 				goto out_unlock;
+
