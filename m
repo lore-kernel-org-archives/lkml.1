@@ -1,61 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbYAZPys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbYAZPzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755773AbYAZPys (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 10:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbYAZPyL
+	id S1755015AbYAZPzR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 10:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYAZPyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:54:11 -0500
+	Sat, 26 Jan 2008 10:54:14 -0500
 Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1177 "EHLO
 	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753834AbYAZPxx (ORCPT
+	with ESMTP id S1754625AbYAZPx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:53:53 -0500
+	Sat, 26 Jan 2008 10:53:58 -0500
 From: monstr@monstr.eu
 To: monstr@monstr.eu
 Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
        john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 46/52] [microblaze] sigcontext.h siginfo.h
-Date: Thu, 24 Jan 2008 16:03:21 +0100
-Message-Id: <d4eec3db9f6e6e86994444b8035d5e41db3f085b.1201107832.git.monstr@monstr.eu>
+Subject: [PATCH 10/52] [microblaze] Generic dts file for platforms
+Date: Thu, 24 Jan 2008 16:02:45 +0100
+Message-Id: <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <739e189a03021d2804f23d0774637a15038098bc.1201107832.git.monstr@monstr.eu>
+In-Reply-To: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
 References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
- <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
- <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
- <873c2bf1f67696aa11014886470f6ba46f04e8d2.1201107832.git.monstr@monstr.eu>
- <516d173b1789ea533431e8f5ad05751c6a353c88.1201107832.git.monstr@monstr.eu>
- <068508828aac6298b4cc65b0cd7b2737a61c466c.1201107832.git.monstr@monstr.eu>
- <010fc233f82a8f7a591c9f8315ae03f9951139aa.1201107832.git.monstr@monstr.eu>
- <68faaf69ea03196d4a56a263707355e7e7eb5c6a.1201107832.git.monstr@monstr.eu>
- <4b7d90fc1b9bcb3c0b1b308c6460390f7bdf3824.1201107832.git.monstr@monstr.eu>
- <eb28582e845efb4f2f26054630895f26fa69866e.1201107832.git.monstr@monstr.eu>
- <64e6e541db30cc4f1ee5cd85da4bdea6024f75b8.1201107832.git.monstr@monstr.eu>
- <90badb264d0e4ec49fdaa76842a5e5f259681299.1201107832.git.monstr@monstr.eu>
- <a013a2b7044186c64d55cdafc8c9b29bc73a7fc5.1201107832.git.monstr@monstr.eu>
- <60642f04ebcf9f76da50a1d40191755f258edcc5.1201107832.git.monstr@monstr.eu>
- <240998be1af3774635995fd19248f8b3a9e8a702.1201107832.git.monstr@monstr.eu>
- <3bcb9581bc512fdd0a124ac8322af9e2a8adc975.1201107832.git.monstr@monstr.eu>
- <db7f441df21cfe296a44744747b28f379e75fd49.1201107832.git.monstr@monstr.eu>
- <e6309af7cc6550ef5b399fc0902f1926f9e52e58.1201107832.git.monstr@monstr.eu>
- <2d11eef3abada1f41658a532a483c6121ded8054.1201107832.git.monstr@monstr.eu>
- <48db19662b808ab6f5455dd7f2116e6544c50e95.1201107832.git.monstr@monstr.eu>
- <7b0cfa6ae11749e20c941d0a4f03577141e022f8.1201107832.git.monstr@monstr.eu>
- <2f3db7ba4fe41cb9888adabf0e4e052d4da5c37c.1201107832.git.monstr@monstr.eu>
- <d67010417928d04766e6dd74820b12c249d61814.1201107832.git.monstr@monstr.eu>
- <37627293f081fa40f21234944ddb878d5e711740.1201107832.git.monstr@monstr.eu>
- <105791d33ea12564c70be0dd3fafef386f8e1b55.1201107832.git.monstr@monstr.eu>
- <b501d439bdfabddbdef5935db86b6f64c83d55c4.1201107832.git.monstr@monstr.eu>
- <43f77bd3045d72346eb39d3170de727050c835c1.1201107832.git.monstr@monstr.eu>
- <c09d54c49393bedbe4ca43df0e35cefa5fcc649c.1201107832.git.monstr@monstr.eu>
- <29ee870c02ea5d4c409644d7f0eb09cfbb1ec816.1201107832.git.monstr@monstr.eu>
- <99bfbc3fdb53003c11414681b2c73561d533c3ef.1201107832.git.monstr@monstr.eu>
- <1b21abdff6128297a902060b07a0c7ca6d8db633.1201107832.git.monstr@monstr.eu>
- <e173c10560cdf883ba3c7e639ca930f0627a2260.1201107832.git.monstr@monstr.eu>
- <155ee14d990137f7eb6fa76beee06c880c97e790.1201107832.git.monstr@monstr.eu>
- <34f2199d631406fbdf6b325a164e0d1899a3acb5.1201107832.git.monstr@monstr.eu>
- <14243bf49d44d1dbd6e377813f2635defcb82c4e.1201107832.git.monstr@monstr.eu>
- <01e493efdc1c8cb7ee0d5f8b7c73244e04680e71.1201107832.git.monstr@monstr.eu>
- <739e189a03021d2804f23d0774637a15038098bc.1201107832.git.monstr@monstr.eu>
 In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -67,62 +31,153 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- include/asm-microblaze/sigcontext.h |   21 +++++++++++++++++++++
- include/asm-microblaze/siginfo.h    |   17 +++++++++++++++++
- 2 files changed, 38 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/sigcontext.h
- create mode 100644 include/asm-microblaze/siginfo.h
+ arch/microblaze/platform/generic/system.dts |  137 +++++++++++++++++++++++++++
+ 1 files changed, 137 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/platform/generic/system.dts
 
-diff --git a/include/asm-microblaze/sigcontext.h b/include/asm-microblaze/sigcontext.h
+diff --git a/arch/microblaze/platform/generic/system.dts b/arch/microblaze/platform/generic/system.dts
 new file mode 100644
-index 0000000..edb53f2
+index 0000000..91eac31
 --- /dev/null
-+++ b/include/asm-microblaze/sigcontext.h
-@@ -0,0 +1,21 @@
++++ b/arch/microblaze/platform/generic/system.dts
+@@ -0,0 +1,137 @@
 +/*
-+ * include/asm-microblaze/sigcontext.h
++ * (C) Copyright 2007 Michal Simek
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * Michal SIMEK <monstr@monstr.eu>
 + *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ *
++ * CAUTION: This file is automatically generated by libgen.
++ * Version: Xilinx EDK 9.2 EDK_Jm.16
++ * Generate by U-BOOT v4.00.b
 + */
 +
-+#ifndef _ASM_SIGCONTEXT_H
-+#define _ASM_SIGCONTEXT_H
-+
-+#include <asm/ptrace.h>
-+
-+struct sigcontext {
-+	struct pt_regs regs;
-+	unsigned long oldmask;
-+};
-+
-+#endif /* _ASM_SIGCONTEXT_H */
-diff --git a/include/asm-microblaze/siginfo.h b/include/asm-microblaze/siginfo.h
-new file mode 100644
-index 0000000..ade99c0
---- /dev/null
-+++ b/include/asm-microblaze/siginfo.h
-@@ -0,0 +1,17 @@
-+/*
-+ * include/asm-microblaze/siginfo.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_SIGINFO_H
-+#define _ASM_SIGINFO_H
-+
-+#include <linux/types.h>
-+#include <asm-generic/siginfo.h>
-+
-+#endif /* _ASM_SIGINFO_H */
++/ {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	compatible = "ibm,opb";
++	model = "testing";
++	DDR_SDRAM_32Mx16: memory@44000000 {
++		device_type = "memory";
++		reg = < 44000000 2000000 >;
++	} ;
++	chosen {
++		bootargs = "root=mtdblock0";
++	} ;
++	cpus {
++		#address-cells = <1>;
++		#cpus = <1>;
++		#size-cells = <0>;
++		microblaze,5.00.c@0 {
++			clock-frequency = <3f940ab>;
++			d-cache-baseaddr = <44000000>;
++			d-cache-highaddr = <47ffffff>;
++			d-cache-line-size = <10>;
++			d-cache-size = <2000>;
++			device_type = "cpu";
++			i-cache-baseaddr = <44000000>;
++			i-cache-highaddr = <47ffffff>;
++			i-cache-line-size = <10>;
++			i-cache-size = <2000>;
++			reg = <0>;
++			timebase-frequency = <3f940ab>;
++			xlnx,addr-tag-bits = <d>;
++			xlnx,allow-dcache-wr = <1>;
++			xlnx,allow-icache-wr = <1>;
++			xlnx,cache-byte-size = <2000>;
++			xlnx,d-lmb = <1>;
++			xlnx,d-opb = <1>;
++			xlnx,data-size = <20>;
++			xlnx,dcache-addr-tag = <d>;
++			xlnx,dcache-byte-size = <2000>;
++			xlnx,dcache-line-len = <4>;
++			xlnx,dcache-use-fsl = <1>;
++			xlnx,debug-enabled = <1>;
++			xlnx,div-zero-exception = <0>;
++			xlnx,dopb-bus-exception = <0>;
++			xlnx,dynamic-bus-sizing = <1>;
++			xlnx,edge-is-positive = <1>;
++			xlnx,fpu-exception = <0>;
++			xlnx,fsl-data-size = <20>;
++			xlnx,fsl-links = <1>;
++			xlnx,i-lmb = <1>;
++			xlnx,i-opb = <1>;
++			xlnx,icache-line-len = <4>;
++			xlnx,icache-use-fsl = <1>;
++			xlnx,ill-opcode-exception = <0>;
++			xlnx,instance = "microblaze_0";
++			xlnx,interrupt-is-edge = <0>;
++			xlnx,iopb-bus-exception = <0>;
++			xlnx,number-of-pc-brk = <2>;
++			xlnx,number-of-rd-addr-brk = <0>;
++			xlnx,number-of-wr-addr-brk = <0>;
++			xlnx,opcode-0x0-illegal = <0>;
++			xlnx,pvr = <2>;
++			xlnx,pvr-user1 = <0>;
++			xlnx,pvr-user2 = <0>;
++			xlnx,reset-msr = <0>;
++			xlnx,sco = <0>;
++			xlnx,unaligned-exceptions = <0>;
++			xlnx,use-barrel = <1>;
++			xlnx,use-dcache = <1>;
++			xlnx,use-div = <1>;
++			xlnx,use-fpu = <0>;
++			xlnx,use-hw-mul = <1>;
++			xlnx,use-icache = <1>;
++			xlnx,use-msr-instr = <1>;
++			xlnx,use-pcmp-instr = <1>;
++		} ;
++	} ;
++	opb_v20 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "xlnx,opb-v20-1.10.c", "xlnx,opb-v20";
++		RS232_DTE: serial@40600000 {
++			compatible = "xlnx,opb-uartlite-1.00.b", "xlnx,opb-uartlite", "xilinx,uartlite";
++			interrupt-parent = <&opb_intc_0>;
++			interrupts = < 2 0 >;
++			reg = < 40600000 10000 >;
++			xlnx,baudrate = <1c200>;
++			xlnx,clk-freq = <3f940ab>;
++			xlnx,data-bits = <8>;
++			xlnx,odd-parity = <0>;
++			xlnx,use-parity = <0>;
++		} ;
++		opb_intc_0: interrupt-controller@41200000 {
++			#interrupt-cells = <2>;
++			compatible = "xlnx,opb-intc-1.00.c", "xlnx,opb-intc";
++			interrupt-controller ;
++			reg = < 41200000 10000 >;
++			xlnx,num-intr-inputs = <5>;
++		} ;
++		opb_timer_0: opb-timer@41c00000 {
++			compatible = "xlnx,opb-timer-1.00.b", "xlnx,opb-timer";
++			interrupt-parent = <&opb_intc_0>;
++			interrupts = < 0 0 >;
++			reg = < 41c00000 10000 >;
++			xlnx,count-width = <20>;
++			xlnx,gen0-assert = <1>;
++			xlnx,gen1-assert = <1>;
++			xlnx,one-timer-only = <1>;
++			xlnx,trig0-assert = <1>;
++			xlnx,trig1-assert = <1>;
++		} ;
++	} ;
++}  ;
 -- 
 1.5.4.rc4.14.g6fc74
 
