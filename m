@@ -1,290 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbYAXV6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757696AbYAXV7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757327AbYAXV6W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 16:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYAXV6J
+	id S1757696AbYAXV7R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 16:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYAXV67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 16:58:09 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46113 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753778AbYAXV6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 16:58:06 -0500
-Date: Thu, 24 Jan 2008 22:58:13 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: kbuild: Preparing for merge window
-Message-ID: <20080124215813.GA4204@uranus.ravnborg.org>
+	Thu, 24 Jan 2008 16:58:59 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:52639 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753778AbYAXV66 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 16:58:58 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
+In-Reply-To: Your message of "Thu, 24 Jan 2008 23:36:00 +0300."
+             <200801242336.00340.a1426z@gawab.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200801242336.00340.a1426z@gawab.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.4.2.1i
+Content-Type: multipart/signed; boundary="==_Exmh_1201211935_2846P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 24 Jan 2008 16:58:55 -0500
+Message-ID: <15182.1201211935@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following is the list of patches queued up for the merge window at the moment.
-I have during the last week done several modpost changes to make section ismatch
-warnings more reliable and I am happy with the modified modpost code now.
+--==_Exmh_1201211935_2846P
+Content-Type: text/plain; charset=us-ascii
 
-The warnings generated will if CONFIG_DEBUG_SECTION_MISMATCH=y be verbose
-so it better guides the developer how to fix the warning.
+On Thu, 24 Jan 2008 23:36:00 +0300, Al Boldi said:
+> data=ordered mode has proven reliable over the years, and it does this by 
+> ordering filedata flushes before metadata flushes.  But this sometimes 
+> causes contention in the order of a 10x slowdown for certain apps, either 
+> due to the misuse of fsync or due to inherent behaviour like db's, as well 
+> as inherent starvation issues exposed by the data=ordered mode.
 
-Other patches of interest:
+If they're misusing it, they should be fixed.  There should be a limit to
+how much the kernel will do to reduce the pain of doing stupid things.
 
-- We now have separate sections for all init/exit annotations
-- We have restarted getting kconfig globalized, pending is widechar support
-- Support for modules.order to tell in what order to load modules
-- lots of small fixes/enhancements
+> This RFC proposes to introduce a tunable which allows to disable fsync and 
+> changes ordered into writeback writeout on a per-process basis like this:
 
-The diffstat say that we touch a lot of files.
-This is due to the following changes (mainly):
-- consolidation touching all .lds.S files
-- removal ofstale comment about make dep
-- removal of obsolete __attribute_used__
-- removal of TOPDIR
+Well-written programs only call fsync() when they really do need the semantics
+of fsync.  Disabling that is just *asking* for trouble.
 
-Patches will follow for review.
+>From rfc2821:
 
-	Sam
+6.1 Reliable Delivery and Replies by Email
 
-Adrian Bunk (4):
-      Remove references to "make dep"
-      kconfig: remove "enable"
-      remove __attribute_used__
-      asm-generic/vmlix.lds.h: simplify __mem{init,exit}* dependencies
+   When the receiver-SMTP accepts a piece of mail (by sending a "250 OK"
+   message in response to DATA), it is accepting responsibility for
+   delivering or relaying the message.  It must take this responsibility
+   seriously.  It MUST NOT lose the message for frivolous reasons, such
+   as because the host later crashes or because of a predictable
+   resource shortage.
 
-Andi Kleen (3):
-      kbuild: declare the modpost error functions as printf like
-      kbuild: fix format string warnings in modpost
-      kbuild: fix a buffer overflow in modpost
+Some people really *do* think "the CPU took a machine check and after replacing
+the motherboard, the resulting fsck ate the file" is a "frivolous" reason to
+lose data.
 
-Andreas Mohr (1):
-      kbuild: eradicate bashisms in scripts/patch-kernel
+But if you want to give them enough rope to shoot themselves in the foot with,
+I'd suggest abusing LD_PRELOAD to replace the fsync() glibc code instead.  No
+need to clutter the kernel with rope that can be (and has been) done in userspace.
 
-Andres Salomon (1):
-      kconfig: use getopt() in conf.c for handling command line arguments
+--==_Exmh_1201211935_2846P
+Content-Type: application/pgp-signature
 
-Aron Griffis (1):
-      kbuild: support mercurial in setlocalversion
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-Daniel De Graaf (1):
-      kbuild: support ARCH=x86 in buildtar
+iD8DBQFHmQofcC3lWbTT17ARAg91AJ9f8ErhsPm8ugAhC6S+gpNBr8OtWgCdF1VL
+7Wd8Yt1M2gL+8AUQTqQj9Rw=
+=2ISz
+-----END PGP SIGNATURE-----
 
-EGRY Gabor (10):
-      kconfig: update-po-config info
-      kconfig: whitespace removing
-      kconfig: missing macros in gconfig
-      kconfig: gettext support for gconfig
-      kconfig: macro fix in menu.c
-      kconfig: gettext support for xconfig
-      kconfig: gettext support for menuconfig
-      kconfig: gettext support for lxdialog
-      kconfig: gettext support for config
-      kconfig: gconfig: symbol fix
-
-Geert Uytterhoeven (1):
-      kbuild: Add missing srctree prefix for includecheck and versioncheck
-
-Jan Beulich (2):
-      kbuild: scripts/mkmakefile: dynamic determination of output directory
-      kconfig: tristate choices with mixed tristate and boolean values
-
-Jan Engelhardt (1):
-      kconfig: allow overriding symbols
-
-Johannes Berg (7):
-      kernel-doc: fix xml output mode
-      kernel-doc: init kernel version
-      kernel-doc: single DOC: selection
-      kernel-doc: process functions, not DOC:
-      kernel-doc: use no-doc option
-      kernel-doc: new P directive for DOC: sections
-      convert drivers/base/power/Makefile to ccflags
-
-Ladislav Michl (3):
-      kconfig: make kconfig MinGW friendly
-      kconfig: fix whitespace and sort includes in conf.c
-      kconfig: use C89 random functions in conf.c
-
-Mike Frysinger (1):
-      kbuild: fixup genksyms usage/getopt
-
-Randy Dunlap (3):
-      kbuild: add 'includecheck' help text
-      kconfig: add hints/tips/tricks to Documentation/kbuild/kconfig-language.txt
-      kbuild: minor scripts/decodecode update
-
-Robert P. J. Day (2):
-      Kbuild: Clarify the rpm-related make packaging targets
-      A few corrections to include/linux/Kbuild
-
-Roman Zippel (3):
-      kconfig: explicitly introduce expression list
-      kconfig: environment symbol support
-      kconfig: use environment option
-
-Sam Ravnborg (22):
-      kbuild: document versioncheck in make help
-      kconfig: if ncurses-devel is missing then say so
-      kbuild: fix buglet in gcc-version.sh
-      kbuild: ignore *.order files
-      kbuild: fix installing external modules
-      kconfig: rename E_OR & friends to avoid name clash
-      kconfig: delete unused FILE_ and SYMBOL_ flags
-      kbuild: clean up modpost.c
-      kbuild: fix so modpost can now check any .o file
-      kbuild: try harder to find symbol names in modpost
-      kbuild: code refactoring in modpost
-      kbuild: introduce blacklisting in modpost
-      kbuild: check section names consistently in modpost
-      all archs: consolidate init and exit sections in vmlinux.lds.h
-      compiler.h: introduce __section()
-      Use separate sections for __dev/__cpu/__mem code/data
-      kbuild: introduce new option to enhance section mismatch analysis
-      kbuild: link vmlinux.o before kallsyms passes
-      kbuild: use simpler section mismatch warnings in modpost
-      kbuild: introduce a few helpers in modpost
-      kbuild: simplified warning report in modpost
-      kbuild: add verbose option to Section mismatch reporting in modpost
-
-Tejun Heo (1):
-      kbuild: implement modules.order
-
-Theodore Ts'o (3):
-      kbuild: change CONFIG_LOCALVERSION_AUTO to use a git-describe-ish format
-      kbuild: fix scripts/setlocalversion to avoid erroneous -dirty tag
-      kbuild: fix false positive -dirty tag caused by make-kpkg
-
-Uwe Kleine-König (1):
-      kbuild: ignore cache modifiers for generating the tags files
-
-Valdis Kletnieks (1):
-      kbuild: document 'make prepare' in 'make help'
-
-Vegard Nossum (1):
-      aic7(3*x): fix firmware build
-
-WANG Cong (4):
-      CRIS: Remove 'TOPDIR' from Makefiles
-      INFINIBAND: Remove 'TOPDIR' from Makefiles
-      FRV: Drop 'TOPDIR' from Makefiles
-      FS: Remove dead code
-
- .gitignore                                  |    1 +
- Documentation/kbuild/kconfig-language.txt   |   75 ++-
- Makefile                                    |   28 +-
- arch/alpha/kernel/vmlinux.lds.S             |    8 +-
- arch/alpha/lib/dec_and_lock.c               |    3 +-
- arch/arm/kernel/vmlinux.lds.S               |   10 +-
- arch/arm/mach-imx/Makefile                  |    3 -
- arch/arm/mach-netx/Makefile                 |    3 -
- arch/avr32/kernel/vmlinux.lds.S             |    8 +-
- arch/blackfin/kernel/vmlinux.lds.S          |    8 +-
- arch/cris/arch-v10/vmlinux.lds.S            |    8 +-
- arch/cris/arch-v32/boot/compressed/Makefile |    2 +-
- arch/cris/arch-v32/vmlinux.lds.S            |    8 +-
- arch/frv/boot/Makefile                      |    8 +-
- arch/frv/kernel/gdb-stub.c                  |    2 +-
- arch/frv/kernel/vmlinux.lds.S               |   14 +-
- arch/h8300/kernel/vmlinux.lds.S             |    8 +-
- arch/ia64/kernel/vmlinux.lds.S              |    8 +-
- arch/m32r/kernel/vmlinux.lds.S              |   12 +-
- arch/m68k/kernel/vmlinux-std.lds            |    8 +-
- arch/m68k/kernel/vmlinux-sun3.lds           |    8 +-
- arch/m68knommu/kernel/vmlinux.lds.S         |    8 +-
- arch/mips/kernel/vmlinux.lds.S              |    8 +-
- arch/mips/tx4927/common/Makefile            |    4 -
- arch/mips/tx4938/common/Makefile            |    4 -
- arch/mips/tx4938/toshiba_rbtx4938/Makefile  |    4 -
- arch/parisc/kernel/vmlinux.lds.S            |    8 +-
- arch/powerpc/boot/Makefile                  |    2 +-
- arch/powerpc/kernel/sysfs.c                 |    2 +-
- arch/powerpc/kernel/vmlinux.lds.S           |   10 +-
- arch/powerpc/oprofile/op_model_power4.c     |    6 +-
- arch/ppc/kernel/vmlinux.lds.S               |    8 +-
- arch/s390/kernel/vmlinux.lds.S              |    8 +-
- arch/sh/kernel/vmlinux.lds.S                |    8 +-
- arch/sh64/kernel/Makefile                   |    4 -
- arch/sh64/kernel/vmlinux.lds.S              |    8 +-
- arch/sh64/lib/Makefile                      |    4 -
- arch/sh64/mach-cayman/Makefile              |    4 -
- arch/sh64/mm/Makefile                       |    4 -
- arch/sparc/kernel/vmlinux.lds.S             |    8 +-
- arch/sparc64/kernel/unaligned.c             |    2 +-
- arch/sparc64/kernel/vmlinux.lds.S           |    8 +-
- arch/um/include/init.h                      |   26 +-
- arch/um/kernel/dyn.lds.S                    |    4 +-
- arch/um/kernel/uml.lds.S                    |    4 +-
- arch/v850/kernel/vmlinux.lds.S              |   10 +-
- arch/x86/kernel/vmlinux_32.lds.S            |   14 +-
- arch/x86/kernel/vmlinux_64.lds.S            |   19 +-
- arch/xtensa/kernel/vmlinux.lds.S            |    9 +-
- arch/xtensa/mm/Makefile                     |    4 -
- arch/xtensa/platform-iss/Makefile           |    5 -
- drivers/base/power/Makefile                 |    8 +-
- drivers/infiniband/hw/cxgb3/Makefile        |    3 +-
- drivers/rapidio/rio.h                       |    4 +-
- drivers/scsi/aic7xxx/Makefile               |   45 +-
- fs/compat_ioctl.c                           |    2 +-
- fs/smbfs/Makefile                           |   20 -
- include/asm-avr32/setup.h                   |    2 +-
- include/asm-generic/vmlinux.lds.h           |   86 ++-
- include/asm-ia64/gcc_intrin.h               |    2 +-
- include/asm-sh/machvec.h                    |    2 +-
- include/asm-sh/thread_info.h                |    2 +-
- include/asm-x86/thread_info_32.h            |    2 +-
- include/linux/Kbuild                        |    8 +-
- include/linux/compiler-gcc3.h               |    2 -
- include/linux/compiler-gcc4.h               |    1 -
- include/linux/compiler.h                    |    9 +-
- include/linux/elfnote.h                     |    2 +-
- include/linux/init.h                        |  102 ++--
- include/linux/module.h                      |    4 +-
- include/linux/moduleparam.h                 |    4 +-
- include/linux/pci.h                         |    2 +-
- init/Kconfig                                |    8 +
- lib/Kconfig.debug                           |   32 +
- scripts/Makefile.build                      |   26 +-
- scripts/Makefile.lib                        |    6 +
- scripts/Makefile.modinst                    |    2 +-
- scripts/Makefile.modpost                    |    1 +
- scripts/basic/docproc.c                     |   44 +-
- scripts/decodecode                          |   17 +-
- scripts/gcc-version.sh                      |    5 +-
- scripts/genksyms/genksyms.c                 |   10 +-
- scripts/kconfig/Makefile                    |   39 +-
- scripts/kconfig/POTFILES.in                 |    7 +
- scripts/kconfig/conf.c                      |   69 +-
- scripts/kconfig/confdata.c                  |   24 +-
- scripts/kconfig/expr.c                      |   32 +-
- scripts/kconfig/expr.h                      |   16 +-
- scripts/kconfig/gconf.c                     |   16 +-
- scripts/kconfig/lex.zconf.c_shipped         |    5 +
- scripts/kconfig/lkc.h                       |    5 +
- scripts/kconfig/lxdialog/check-lxdialog.sh  |   16 +-
- scripts/kconfig/lxdialog/checklist.c        |    4 +-
- scripts/kconfig/lxdialog/dialog.h           |   11 +-
- scripts/kconfig/lxdialog/inputbox.c         |    4 +-
- scripts/kconfig/lxdialog/menubox.c          |    6 +-
- scripts/kconfig/lxdialog/textbox.c          |    2 +-
- scripts/kconfig/lxdialog/util.c             |   32 +-
- scripts/kconfig/lxdialog/yesno.c            |    4 +-
- scripts/kconfig/mconf.c                     |  112 +--
- scripts/kconfig/menu.c                      |   49 +-
- scripts/kconfig/qconf.cc                    |  109 ++--
- scripts/kconfig/symbol.c                    |   79 ++-
- scripts/kconfig/util.c                      |   23 +-
- scripts/kconfig/zconf.gperf                 |    2 +-
- scripts/kconfig/zconf.hash.c_shipped        |   19 +-
- scripts/kconfig/zconf.l                     |    5 +
- scripts/kernel-doc                          |   85 ++-
- scripts/mkmakefile                          |   10 +-
- scripts/mod/modpost.c                       | 1178 +++++++++++++++-----------
- scripts/mod/modpost.h                       |    2 +
- scripts/package/Makefile                    |    5 +-
- scripts/package/buildtar                    |    4 +-
- scripts/patch-kernel                        |   22 +-
- scripts/setlocalversion                     |   29 +-
- 115 files changed, 1753 insertions(+), 1185 deletions(-)
+--==_Exmh_1201211935_2846P--
