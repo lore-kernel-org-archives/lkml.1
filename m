@@ -1,67 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbYAXNOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752494AbYAXNcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755982AbYAXNOk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 08:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbYAXNO2
+	id S1752494AbYAXNcr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 08:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYAXNcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 08:14:28 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:25493 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753282AbYAXNO1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 08:14:27 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=dp/9paBdaDgXmv+xuZda3zUal2gID9uBp4nCCOsPAZ+kg22HbzGWAfrwUxtI/Evay
-	pw+UGxXipLsCztu3VGqWg==
-Message-ID: <d9885f0f0801240514u76d8922bn1a2cdd5a75ad6639@mail.gmail.com>
-Date: Thu, 24 Jan 2008 08:14:21 -0500
-From: "Abhishek Rai" <abhishekrai@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [CALL FOR TESTING] Make Ext3 fsck way faster [2.6.24-rc6 -mm patch]
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       rohitseth@google.com
-In-Reply-To: <20080123234905.35664ed6.akpm@linux-foundation.org>
+	Thu, 24 Jan 2008 08:32:39 -0500
+Received: from mail.hevs.ch ([153.109.23.15]:35788 "EHLO mail.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751312AbYAXNci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 08:32:38 -0500
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH -mm v4 0/9] atmel_serial cleanups and improvements
+Date: Thu, 24 Jan 2008 14:32:48 +0100
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andrew Victor <linux@maxim.org.za>, Remy Bohmer <linux@bohmer.net>,
+       Chip Coldwell <coldwell@redhat.com>,
+       David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <1201178511-12133-1-git-send-email-hskinnemoen@atmel.com>
+In-Reply-To: <1201178511-12133-1-git-send-email-hskinnemoen@atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200801230412.16992.abhishekrai@google.com>
-	 <20080123234905.35664ed6.akpm@linux-foundation.org>
+Message-Id: <200801241432.49036.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No, it didn't. I measured read from a 10GB sequentially laid out file
-with standard benchmarking practices (cold cache, multiple runs, low
-std. deviation in results, etc.) and here are the results:
+Tested and working on at91rm9200 using 2.6.24-rc8, in one word... ack.
 
-File created by vanilla Ext3 being read by vanilla Ext3:
-Total: 3m16.1s
-User: 0.0.5s
-Sys: 13.9
+Regards
 
-File created by mc Ext3 being read by mc Ext3 (with the buffer
-boundary logic disabled):
-Total: 3m15.5s
-User: 0.05s
-Sys: 13.6s
+Marc
 
-Thanks,
-Abhishek
-
-On Jan 24, 2008 2:49 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Wed, 23 Jan 2008 04:12:16 -0500 Abhishek Rai <abhishekrai@google.com> wrote:
-> > > I'm wondering about the interaction between this code and the
-> > > buffer_boundary() logic.  I guess we should disable the buffer_boundary()
-> > > handling when this code is in effect.  Have you reviewed and tested that
-> > > aspect?
-> >
-> > Thanks for pointing this out, I had totally missed this issue in my change. I've now made the call to set_buffer_boundary() in ext3_get_blocks_handle() subject to metacluster option being set.
-> >
->
-> Did it make any performance difference?  iirc the buffer_boundary stuff was
-> worth around 10% on a single linear read of a large, well-laid-out file.
->
