@@ -1,473 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbYAXAWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYAXA0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754746AbYAXAWw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 19:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbYAXAWo
+	id S1753906AbYAXA0l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 19:26:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYAXA0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 19:22:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39510 "EHLO ogre.sisk.pl"
+	Wed, 23 Jan 2008 19:26:34 -0500
+Received: from gw.goop.org ([64.81.55.164]:56393 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751159AbYAXAWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 19:22:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: factor out common s2ram wakeup code
-Date: Thu, 24 Jan 2008 01:20:05 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: kernel list <linux-kernel@vger.kernel.org>, mingo@redhat.com,
-       tglx@linutronix.de, hpa@zytor.com
-References: <20080122193719.GA3791@elf.ucw.cz>
-In-Reply-To: <20080122193719.GA3791@elf.ucw.cz>
+	id S1752576AbYAXA0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 Jan 2008 19:26:33 -0500
+Message-ID: <4797DB37.5040507@goop.org>
+Date: Wed, 23 Jan 2008 16:26:31 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] x86: ignore spurious faults
+References: <4797D64D.1060105@goop.org> <1201133916.16972.124.camel@brick>
+In-Reply-To: <1201133916.16972.124.camel@brick>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801240120.06096.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 22 of January 2008, Pavel Machek wrote:
-> 
-> It seems to compile 32/64bit, and work 32bit...
+Harvey Harrison wrote:
+> On Wed, 2008-01-23 at 16:05 -0800, Jeremy Fitzhardinge wrote:
+>   
+>> ===================================================================
+>> --- a/arch/x86/mm/fault_32.c
+>> +++ b/arch/x86/mm/fault_32.c
+>> @@ -290,6 +290,53 @@ static int is_errata93(struct pt_regs *r
+>>  
+>>
+>>  /*
+>> + * Handle a spurious fault caused by a stale TLB entry.  This allows
+>> + * us to lazily refresh the TLB when increasing the permissions of a
+>> + * kernel page (RO -> RW or NX -> X).  Doing it eagerly is very
+>> + * expensive since that implies doing a full cross-processor TLB
+>> + * flush, even if no stale TLB entries exist on other processors.
+>> + * There are no security implications to leaving a stale TLB when
+>> + * increasing the permissions on a page.
+>> + */
+>> +static int spurious_fault(unsigned long address,
+>> +			  unsigned long error_code)
+>> +{
+>> +	pgd_t *pgd;
+>> +	pud_t *pud;
+>> +	pmd_t *pmd;
+>> +	pte_t *pte;
+>> +
+>> +	/* Reserved-bit violation or user access to kernel space? */
+>> +	if (error_code & (PF_USER | PF_RSVD))
+>> +		return 0;
+>> +
+>> +	pgd = init_mm.pgd + pgd_index(address);
+>> +	if (!pgd_present(*pgd))
+>> +		return 0;
+>> +
+>> +	pud = pud_offset(pgd, address);
+>> +	if (!pud_present(*pud))
+>> +		return 0;
+>> +
+>> +	pmd = pmd_offset(pud, address);
+>> +	if (!pmd_present(*pmd))
+>> +		return 0;
+>> +
+>> +	pte = pte_offset_kernel(pmd, address);
+>> +	if (!pte_present(*pte))
+>> +		return 0;
+>> +	if ((error_code & 0x02) && !pte_write(*pte))
+>> +		return 0;
+>>     
+>
+> 	if ((error_code & PF_WRITE) && !pte_write(*pte))
+> 		return 0;
+>   
 
-It also works on a 64-bit system.
+Oops, thanks.  Overlooked that one.
 
-Thanks,
-Rafael
+> How about dropping the #if and rely on the !pte_exec() test always
+> being false when _PAGE_NX = 0?  The compiler should just trim this
+> all away.
+>
+> from pgtable.h:
+>
+> static inline int pte_exec(pte_t pte)           { return !(pte_val(pte)
+> & _PAGE_NX); }
+>   
 
+Thanks for reminding me; I thought of this the other day, but forgot to 
+do it.  Will post an updated patch shortly.
 
-> --- 
-> 
-> Factor out common real-mode part of wakeup_{32,64}.S.
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> ---
-> commit 2fac1886274433c64e76611e6b1ba2318c5914a4
-> tree 2d6bdc7c2eda9845b57e1d7128b187df1b1fd2c9
-> parent 7a9546efcc4d90040a52c003eb9a303200c41f86
-> author Pavel <pavel@amd.ucw.cz> Tue, 22 Jan 2008 20:34:03 +0100
-> committer Pavel <pavel@amd.ucw.cz> Tue, 22 Jan 2008 20:34:03 +0100
-> 
->  arch/x86/kernel/acpi/wakeup.S    |  111 ++++++++++++++++++++++++++++++++++
->  arch/x86/kernel/acpi/wakeup_32.S |  118 +-----------------------------------
->  arch/x86/kernel/acpi/wakeup_64.S |  125 +-------------------------------------
->  3 files changed, 116 insertions(+), 238 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/acpi/wakeup.S b/arch/x86/kernel/acpi/wakeup.S
-> new file mode 100644
-> index 0000000..38205c8
-> --- /dev/null
-> +++ b/arch/x86/kernel/acpi/wakeup.S
-> @@ -0,0 +1,111 @@
-> +# Copyright 2003, 2008 Pavel Machek <pavel@suse.cz>, distribute under GPLv2
-> +
-> +#define BEEP \
-> +	inb	$97, %al; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$3, %al; 	\
-> +	outb	%al, $97; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$-74, %al; 	\
-> +	outb	%al, $67; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$-119, %al; 	\
-> +	outb	%al, $66; 	\
-> +	outb	%al, $0x80; 	\
-> +	movb	$15, %al; 	\
-> +	outb	%al, $66;
-> +
-> +ALIGN
-> +	.align	4096
-> +ENTRY(wakeup_start)
-> +wakeup_code:
-> +	wakeup_code_start = .
-> +	.code16
-> +
-> +	cli
-> +	cld
-> +
-> +	# setup data segment
-> +	movw	%cs, %ax
-> +	movw	%ax, %ds					# Make ds:0 point to wakeup_start
-> +	movw	%ax, %ss
-> +
-> +	testl   $4, realmode_flags - wakeup_code
-> +	jz      1f
-> +	BEEP
-> +1:
-> +	mov	$(wakeup_stack - wakeup_code), %sp		# Private stack is needed for ASUS board
-> +
-> +	pushl	$0						# Kill any dangerous flags
-> +	popfl
-> +
-> +
-> +	movl	real_magic - wakeup_code, %eax
-> +	cmpl	$0x12345678, %eax
-> +	jne	bogus_real_magic
-> +
-> +	testl	$1, realmode_flags - wakeup_code
-> +	jz	1f
-> +	lcall   $0xc000,$3
-> +	movw	%cs, %ax
-> +	movw	%ax, %ds					# Bios might have played with that
-> +	movw	%ax, %ss
-> +1:
-> +
-> +	testl	$2, realmode_flags - wakeup_code
-> +	jz	mode_done
-> +	mov	video_mode - wakeup_code, %ax
-> +	call	mode_set
-> +	jmp	mode_done
-> +
-> +/* This code uses an extended set of video mode numbers. These include:
-> + * Aliases for standard modes
-> + *	NORMAL_VGA (-1)
-> + *	EXTENDED_VGA (-2)
-> + *	ASK_VGA (-3)
-> + * Video modes numbered by menu position -- NOT RECOMMENDED because of lack
-> + * of compatibility when extending the table. These are between 0x00 and 0xff.
-> + */
-> +#define VIDEO_FIRST_MENU 0x0000
-> +
-> +/* Standard BIOS video modes (BIOS number + 0x0100) */
-> +#define VIDEO_FIRST_BIOS 0x0100
-> +
-> +/* VESA BIOS video modes (VESA number + 0x0200) */
-> +#define VIDEO_FIRST_VESA 0x0200
-> +
-> +/* Video7 special modes (BIOS number + 0x0900) */
-> +#define VIDEO_FIRST_V7 0x0900
-> +
-> +# Setting of user mode (AX=mode ID) => CF=success
-> +
-> +# For now, we only handle VESA modes (0x0200..0x03ff).  To handle other
-> +# modes, we should probably compile in the video code from the boot
-> +# directory.
-> +.code16
-> +mode_set:
-> +	movw	%ax, %bx
-> +	subb	$VIDEO_FIRST_VESA>>8, %bh
-> +	cmpb	$2, %bh
-> +	jb	check_vesa
-> +
-> +setbad:
-> +	clc
-> +	ret
-> +
-> +check_vesa:
-> +	orw	$0x4000, %bx			# Use linear frame buffer
-> +	movw	$0x4f02, %ax			# VESA BIOS mode set call
-> +	int	$0x10
-> +	cmpw	$0x004f, %ax			# AL=4f if implemented
-> +	jnz	setbad				# AH=0 if OK
-> +
-> +	stc
-> +	ret
-> +	
-> +bogus_real_magic:
-> +	jmp bogus_real_magic
-> +
-> +real_magic:	.quad 0
-> +video_mode:	.quad 0
-> +realmode_flags:	.quad 0
-> diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
-> index 1e931aa..9b26909 100644
-> --- a/arch/x86/kernel/acpi/wakeup_32.S
-> +++ b/arch/x86/kernel/acpi/wakeup_32.S
-> @@ -3,73 +3,11 @@ #include <linux/linkage.h>
->  #include <asm/segment.h>
->  #include <asm/page.h>
->  
-> -#
-> -# wakeup_code runs in real mode, and at unknown address (determined at run-time).
-> -# Therefore it must only use relative jumps/calls. 
-> -#
-> -# Do we need to deal with A20? It is okay: ACPI specs says A20 must be enabled
-> -#
-> -# If physical address of wakeup_code is 0x12345, BIOS should call us with
-> -# cs = 0x1234, eip = 0x05
-> -#
-> -
-> -#define BEEP \
-> -	inb	$97, %al; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$3, %al; 	\
-> -	outb	%al, $97; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$-74, %al; 	\
-> -	outb	%al, $67; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$-119, %al; 	\
-> -	outb	%al, $66; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$15, %al; 	\
-> -	outb	%al, $66;
-> -
-> -ALIGN
-> -	.align	4096
-> -ENTRY(wakeup_start)
-> -wakeup_code:
-> -	wakeup_code_start = .
-> -	.code16
-> -
-> -	cli
-> -	cld
-> -
-> -	# setup data segment
-> -	movw	%cs, %ax
-> -	movw	%ax, %ds					# Make ds:0 point to wakeup_start
-> -	movw	%ax, %ss
-> -
-> -	testl   $4, realmode_flags - wakeup_code
-> -	jz      1f
-> -	BEEP
-> -1:
-> -	mov	$(wakeup_stack - wakeup_code), %sp		# Private stack is needed for ASUS board
-> +# Copyright 2003, 2008 Pavel Machek <pavel@suse.cz>, distribute under GPLv2
->  
-> -	pushl	$0						# Kill any dangerous flags
-> -	popfl
-> -
-> -	movl	real_magic - wakeup_code, %eax
-> -	cmpl	$0x12345678, %eax
-> -	jne	bogus_real_magic
-> -
-> -	testl	$1, realmode_flags - wakeup_code
-> -	jz	1f
-> -	lcall   $0xc000,$3
-> -	movw	%cs, %ax
-> -	movw	%ax, %ds					# Bios might have played with that
-> -	movw	%ax, %ss
-> -1:
-> -
-> -	testl	$2, realmode_flags - wakeup_code
-> -	jz	1f
-> -	mov	video_mode - wakeup_code, %ax
-> -	call	mode_set
-> -1:
-> +#include "wakeup.S"
->  
-> +mode_done:
->  	# set up page table
->  	movl	$swsusp_pg_dir-__PAGE_OFFSET, %eax
->  	movl	%eax, %cr3
-> @@ -109,60 +47,10 @@ real_save_gdt:	.word 0
->  real_save_cr0:	.long 0
->  real_save_cr3:	.long 0
->  real_save_cr4:	.long 0
-> -real_magic:	.long 0
-> -video_mode:	.long 0
-> -realmode_flags:	.long 0
->  real_efer_save_restore:	.long 0
->  real_save_efer_edx: 	.long 0
->  real_save_efer_eax: 	.long 0
->  
-> -bogus_real_magic:
-> -	jmp bogus_real_magic
-> -
-> -/* This code uses an extended set of video mode numbers. These include:
-> - * Aliases for standard modes
-> - *	NORMAL_VGA (-1)
-> - *	EXTENDED_VGA (-2)
-> - *	ASK_VGA (-3)
-> - * Video modes numbered by menu position -- NOT RECOMMENDED because of lack
-> - * of compatibility when extending the table. These are between 0x00 and 0xff.
-> - */
-> -#define VIDEO_FIRST_MENU 0x0000
-> -
-> -/* Standard BIOS video modes (BIOS number + 0x0100) */
-> -#define VIDEO_FIRST_BIOS 0x0100
-> -
-> -/* VESA BIOS video modes (VESA number + 0x0200) */
-> -#define VIDEO_FIRST_VESA 0x0200
-> -
-> -/* Video7 special modes (BIOS number + 0x0900) */
-> -#define VIDEO_FIRST_V7 0x0900
-> -
-> -# Setting of user mode (AX=mode ID) => CF=success
-> -
-> -# For now, we only handle VESA modes (0x0200..0x03ff).  To handle other
-> -# modes, we should probably compile in the video code from the boot
-> -# directory.
-> -mode_set:
-> -	movw	%ax, %bx
-> -	subb	$VIDEO_FIRST_VESA>>8, %bh
-> -	cmpb	$2, %bh
-> -	jb	check_vesa
-> -
-> -setbad:
-> -	clc
-> -	ret
-> -
-> -check_vesa:
-> -	orw	$0x4000, %bx			# Use linear frame buffer
-> -	movw	$0x4f02, %ax			# VESA BIOS mode set call
-> -	int	$0x10
-> -	cmpw	$0x004f, %ax			# AL=4f if implemented
-> -	jnz	setbad				# AH=0 if OK
-> -
-> -	stc
-> -	ret
-> -
->  	.code32
->  	ALIGN
->  
-> diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
-> index 5ed3bc5..b02d97f 100644
-> --- a/arch/x86/kernel/acpi/wakeup_64.S
-> +++ b/arch/x86/kernel/acpi/wakeup_64.S
-> @@ -7,78 +7,10 @@ #include <asm/msr.h>
->  #include <asm/asm-offsets.h>
->  
->  # Copyright 2003 Pavel Machek <pavel@suse.cz>, distribute under GPLv2
-> -#
-> -# wakeup_code runs in real mode, and at unknown address (determined at run-time).
-> -# Therefore it must only use relative jumps/calls. 
-> -#
-> -# Do we need to deal with A20? It is okay: ACPI specs says A20 must be enabled
-> -#
-> -# If physical address of wakeup_code is 0x12345, BIOS should call us with
-> -# cs = 0x1234, eip = 0x05
-> -#
-> -
-> -#define BEEP \
-> -	inb	$97, %al; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$3, %al; 	\
-> -	outb	%al, $97; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$-74, %al; 	\
-> -	outb	%al, $67; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$-119, %al; 	\
-> -	outb	%al, $66; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$15, %al; 	\
-> -	outb	%al, $66;
-> -
-> -
-> -ALIGN
-> -	.align	16
-> -ENTRY(wakeup_start)
-> -wakeup_code:
-> -	wakeup_code_start = .
-> -	.code16
-> -
-> -# Running in *copy* of this code, somewhere in low 1MB.
-> -
-> -	cli
-> -	cld
-> -	# setup data segment
-> -	movw	%cs, %ax
-> -	movw	%ax, %ds		# Make ds:0 point to wakeup_start
-> -	movw	%ax, %ss
-> -
-> -	# Data segment must be set up before we can see whether to beep.
-> -	testl   $4, realmode_flags - wakeup_code
-> -	jz      1f
-> -	BEEP
-> -1:
-> -
-> -					# Private stack is needed for ASUS board
-> -	mov	$(wakeup_stack - wakeup_code), %sp
-> -
-> -	pushl	$0			# Kill any dangerous flags
-> -	popfl
->  
-> -	movl	real_magic - wakeup_code, %eax
-> -	cmpl	$0x12345678, %eax
-> -	jne	bogus_real_magic
-> -
-> -	testl	$1, realmode_flags - wakeup_code
-> -	jz	1f
-> -	lcall   $0xc000,$3
-> -	movw	%cs, %ax
-> -	movw	%ax, %ds		# Bios might have played with that
-> -	movw	%ax, %ss
-> -1:
-> -
-> -	testl	$2, realmode_flags - wakeup_code
-> -	jz	1f
-> -	mov	video_mode - wakeup_code, %ax
-> -	call	mode_set
-> -1:
-> +#include "wakeup.S"
->  
-> +mode_done:
->  	mov	%ds, %ax			# Find 32bit wakeup_code addr
->  	movzx   %ax, %esi			# (Convert %ds:gdt to a liner ptr)
->  	shll    $4, %esi
-> @@ -227,64 +159,11 @@ gdt_48a:
->  	.word	0x800				# gdt limit=2048,
->  						#  256 GDT entries
->  	.long   gdta - wakeup_code              # gdt base (relocated in later)
-> -	
-> -real_magic:	.quad 0
-> -video_mode:	.quad 0
-> -realmode_flags:	.quad 0
-> -
-> -.code16
-> -bogus_real_magic:
-> -	jmp bogus_real_magic
->  
->  .code64
->  bogus_64_magic:
->  	jmp bogus_64_magic
->  
-> -/* This code uses an extended set of video mode numbers. These include:
-> - * Aliases for standard modes
-> - *	NORMAL_VGA (-1)
-> - *	EXTENDED_VGA (-2)
-> - *	ASK_VGA (-3)
-> - * Video modes numbered by menu position -- NOT RECOMMENDED because of lack
-> - * of compatibility when extending the table. These are between 0x00 and 0xff.
-> - */
-> -#define VIDEO_FIRST_MENU 0x0000
-> -
-> -/* Standard BIOS video modes (BIOS number + 0x0100) */
-> -#define VIDEO_FIRST_BIOS 0x0100
-> -
-> -/* VESA BIOS video modes (VESA number + 0x0200) */
-> -#define VIDEO_FIRST_VESA 0x0200
-> -
-> -/* Video7 special modes (BIOS number + 0x0900) */
-> -#define VIDEO_FIRST_V7 0x0900
-> -
-> -# Setting of user mode (AX=mode ID) => CF=success
-> -
-> -# For now, we only handle VESA modes (0x0200..0x03ff).  To handle other
-> -# modes, we should probably compile in the video code from the boot
-> -# directory.
-> -.code16
-> -mode_set:
-> -	movw	%ax, %bx
-> -	subb	$VIDEO_FIRST_VESA>>8, %bh
-> -	cmpb	$2, %bh
-> -	jb	check_vesa
-> -
-> -setbad:
-> -	clc
-> -	ret
-> -
-> -check_vesa:
-> -	orw	$0x4000, %bx			# Use linear frame buffer
-> -	movw	$0x4f02, %ax			# VESA BIOS mode set call
-> -	int	$0x10
-> -	cmpw	$0x004f, %ax			# AL=4f if implemented
-> -	jnz	setbad				# AH=0 if OK
-> -
-> -	stc
-> -	ret
-> -
->  wakeup_stack_begin:	# Stack grows down
->  
->  .org	0xff0
-> 
-
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+    J
