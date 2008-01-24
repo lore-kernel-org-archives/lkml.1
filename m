@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYAXHQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbYAXHQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbYAXHQd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 02:16:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbYAXHQ0
+	id S1753456AbYAXHQy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 02:16:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbYAXHQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 02:16:26 -0500
-Received: from xdsl-9553.wroclaw.dialog.net.pl ([84.40.234.81]:49016 "HELO
-	mail.alfa-net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752175AbYAXHQZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 02:16:25 -0500
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 Jan 2008 02:16:25 EST
-Message-ID: <479839B4.3060202@gmail.com>
-Date: Thu, 24 Jan 2008 08:09:40 +0100
-From: Marcin Gil <marcin.gil@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Thu, 24 Jan 2008 02:16:44 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43981 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752316AbYAXHQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 02:16:43 -0500
+To: Matthias Wolle <Matthias.Wolle@gmx.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: LowFree/LowMem problem
+From: Andi Kleen <andi@firstfloor.org>
+References: <200801210632.42497.Matthias.Wolle@gmx.de>
+	<20080123140639.828566dd.akpm@linux-foundation.org>
+	<200801232340.54258.Matthias.Wolle@gmx.de>
+Date: Thu, 24 Jan 2008 08:16:41 +0100
+In-Reply-To: <200801232340.54258.Matthias.Wolle@gmx.de> (Matthias Wolle's message of "Wed\, 23 Jan 2008 23\:40\:54 +0100")
+Message-ID: <p73d4rrae1y.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: JMicron PATA 2.6.24-rc7 can't find drives
-References: <200801232323.36187.marcin.gil@gmail.com> <20080123234639.025cc859@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080123234639.025cc859@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> I have SATA drive connected to SATA0 and Maxtor IDE drive + DVD burner 
->> connected to single IDE slot.
->>
->> Booting this kernel off the SATA drive works perfectly, however the IDE drive 
->> is not found/put into /dev. However the DVD is properly recognized and 
->> created as sr0.
->>
->> Is this known problem? I've looked all over google and found out that people 
->> have problems with CD/DVD drives with pata_jmicron but in my case DVD is 
->> working ok but HDD is not.
->>
->> Is there a solution for this or can I give you more information to help me 
->> solve this?
-> 
-> The output of dmesg after the boot would be a good start
+Matthias Wolle <Matthias.Wolle@gmx.de> writes:
 
-Here it is:
-http://pastebin.com/md726431
+> Jan 17 23:31:58 franklin72 kernel: sshd invoked oom-killer: gfp_mask=0xd0, order=0, oomkilladj=0
+> Jan 17 23:31:58 franklin72 kernel: cat invoked oom-killer: gfp_mask=0x84d0, order=0, oomkilladj=0
+> Jan 17 23:31:58 franklin72 kernel:  [<c014af39>] out_of_memory+0x69/0x1a4
+> Jan 17 23:31:58 franklin72 kernel:  [<c014c588>] __alloc_pages+0x20a/0x291
+> Jan 17 23:31:58 franklin72 kernel:  [<c0153618>] __pte_alloc+0x11/0x94
 
-Thank you very much!
--Marcin Gil
+Do you perhaps have a kernel compiled without CONFIG_HIGHPTE? Normally
+__pte_alloc should be able to allocate highmem unless that option is 
+not set. Before HIGHPTE was implemented running out of low memory
+due to page tables was pretty common.
 
+BTW the ultimate fix for most lowmem problems is to go 64bit
+
+-Andi
