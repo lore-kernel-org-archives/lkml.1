@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbYAXAxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbYAXAyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753384AbYAXAxS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 Jan 2008 19:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbYAXAxG
+	id S1753936AbYAXAyB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 Jan 2008 19:54:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbYAXAxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 Jan 2008 19:53:06 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45314 "EHLO
+	Wed, 23 Jan 2008 19:53:53 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:45335 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752407AbYAXAxF (ORCPT
+	with ESMTP id S1752505AbYAXAxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 Jan 2008 19:53:05 -0500
+	Wed, 23 Jan 2008 19:53:52 -0500
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 24 Jan 2008 01:52:25 +0100 (CET)
+Date: Thu, 24 Jan 2008 01:53:19 +0100 (CET)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 0/4] firewire: order of memory accesses (bus generation vs.
- node ID)
+Subject: [PATCH 1/4] firewire: fw-sbp2: use device generation, not card
+ generation
 To: linux1394-devel@lists.sourceforge.net
 cc: linux-kernel@vger.kernel.org,
        =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
        Jarod Wilson <jwilson@redhat.com>,
        Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <4729A1BF.8010800@s5r6.in-berlin.de>
-Message-ID: <tkrat.288da3bd61ecfb20@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.288da3bd61ecfb20@s5r6.in-berlin.de>
+Message-ID: <tkrat.a4385a83e8dc9e8d@s5r6.in-berlin.de>
 References: <tkrat.66a8b3070e07d80f@s5r6.in-berlin.de>
  <200711011453.35268.nickpiggin@yahoo.com.au>
  <4729A1BF.8010800@s5r6.in-berlin.de>
+ <tkrat.288da3bd61ecfb20@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=us-ascii
 Content-Disposition: INLINE
@@ -32,26 +33,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I now updated some patches from November according to comments I
-received from Nick back then.  As Jarod found out now while testing the
-November versions, parts of these patches actually fix multiply reported
-bugs.
+There was a small window where a login or reconnect job could use an
+already updated card generation with an outdated node ID.  We have to
+use the fw_device.generation here, not the fw_card.generation, because
+the generation must never be newer than the node ID when we emit a
+transaction.  This cannot be guaranteed with fw_card.generation.
 
-While updating this stuff, I also found two more read sites where the
-read order was not properly enforced.
+Furthermore, the target's and initiator's node IDs can be obtained from
+fw_device and fw_card.  Dereferencing their underlying topology objects
+is not necessary.
 
-Incoming:
-1/4 firewire: fw-sbp2: use device generation, not card generation
-2/4 firewire: fw-cdev: use device generation, not card generation
-3/4 firewire: enforce access order between generation and node ID
-4/4 firewire: fw-core: react on bus resets while the config ROM is being fetched
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
- drivers/firewire/fw-cdev.c     |    3 ++-
- drivers/firewire/fw-device.c   |   33 ++++++++++++++++++++++++---------
- drivers/firewire/fw-device.h   |   12 ++++++++++++
- drivers/firewire/fw-sbp2.c     |   14 ++++++++------
- drivers/firewire/fw-topology.c |    5 +++++
- 5 files changed, 51 insertions(+), 16 deletions(-)
+Rework of patch "firewire: fw-sbp2: enforce read order of device
+generation and node ID" from November 1 2007.
+
+This code also needs barriers to work precisely as intended.  They will
+be added by a subsequent patch which consistently updates readers and
+writers of .generation and .node_id.
+
+ drivers/firewire/fw-sbp2.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -671,9 +671,9 @@ static void sbp2_login(struct work_struc
+ 	struct sbp2_login_response response;
+ 	int generation, node_id, local_node_id;
+ 
+-	generation    = device->card->generation;
+-	node_id       = device->node->node_id;
+-	local_node_id = device->card->local_node->node_id;
++	generation    = device->generation;
++	node_id       = device->node_id;
++	local_node_id = device->card->node_id;
+ 
+ 	if (sbp2_send_management_orb(lu, node_id, generation,
+ 				SBP2_LOGIN_REQUEST, lu->lun, &response) < 0) {
+@@ -921,9 +921,9 @@ static void sbp2_reconnect(struct work_s
+ 	struct fw_device *device = fw_device(unit->device.parent);
+ 	int generation, node_id, local_node_id;
+ 
+-	generation    = device->card->generation;
+-	node_id       = device->node->node_id;
+-	local_node_id = device->card->local_node->node_id;
++	generation    = device->generation;
++	node_id       = device->node_id;
++	local_node_id = device->card->node_id;
+ 
+ 	if (sbp2_send_management_orb(lu, node_id, generation,
+ 				     SBP2_RECONNECT_REQUEST,
+
 -- 
 Stefan Richter
 -=====-==--- ---= ==---
