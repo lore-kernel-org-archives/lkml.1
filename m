@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYAYH75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761431AbYAYIAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbYAYH75 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:59:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760800AbYAYHnK
+	id S1761431AbYAYIAe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762833AbYAYHpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:43:10 -0500
-Received: from gw.goop.org ([64.81.55.164]:47824 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762267AbYAYHnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:43:09 -0500
-Message-ID: <4799930B.40006@goop.org>
-Date: Thu, 24 Jan 2008 23:43:07 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: trim ram need to check if mtrr is there v2
-References: <47993F1A.5070408@goop.org> <4799400C.1060102@zytor.com> <200801241947.55223.yinghai.lu@sun.com>
-In-Reply-To: <200801241947.55223.yinghai.lu@sun.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Jan 2008 02:45:01 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4625 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762688AbYAYHo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:44:59 -0500
+Date: Fri, 25 Jan 2008 07:44:46 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Michael Buesch <mb@bu3sch.de>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, bcm43xx-dev@lists.berlios.de,
+       Alessandro Rubini <rubini@vision.unipv.it>,
+       Richard Purdie <rpurdie@rpsys.net>, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH -mm 1/5] PM: Export device_pm_schedule_removal
+Message-ID: <20080125074446.GB4134@ucw.cz>
+References: <200801250127.21966.rjw@sisk.pl> <200801250130.26591.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801250130.26591.rjw@sisk.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> [PATCH] x86: trim ram need to check if mtrr is there v2
->
->   
->>> Jeremy Fitzhardinge wrote:
->>> When booting a current x86.git kernel under kvm, I get this:
->>>
->>> (qemu) Linux version 2.6.24-rc8 (jeremy@ezr) (gcc version 4.1.2 20070925 
->>> (Red Hat 4.1.2-33)) #1928 SMP PREEMPT Thu Jan 24 17:09:04 PST 2008
->>> early_ioremap_init()
->>> BIOS-provided physical RAM map:
->>> BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
->>> BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
->>> BIOS-e820: 00000000000e8000 - 0000000000100000 (reserved)
->>> BIOS-e820: 0000000000100000 - 000000001fff0000 (usable)
->>> BIOS-e820: 000000001fff0000 - 0000000020000000 (ACPI data)
->>> BIOS-e820: 00000000fffc0000 - 0000000100000000 (reserved)
->>> console [earlyser0] enabled
->>> 0MB HIGHMEM available.
->>> 511MB LOWMEM available.
->>> Scan SMP from c0000000 for 1024 bytes.
->>> Scan SMP from c009fc00 for 1024 bytes.
->>> Scan SMP from c00f0000 for 65536 bytes.
->>> Scan SMP from c009fc00 for 1024 bytes.
->>> ***************
->>> **** WARNING: likely BIOS bug
->>> **** MTRRs don't cover all of memory, trimmed 131056 pages
->>> ***************
->>>       
->> H. Peter Anvin wrote:
->> Looks like the code doesn't check that the CPU *has* MTRRs...
->>     
->
-> so check it mtrr is there, also check if mem less 4G and is AMD as early
->   
+On Fri 2008-01-25 01:30:25, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Move the declaration of device_pm_schedule_removal() to device.h
+> and make it exported, as it will be used directly by some drivers
+> for unregistering device objects during suspend/resume cycles in a
+> safe way.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Thanks, this gets me to usermode under kvm.
+ACK.
 
-    J
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
