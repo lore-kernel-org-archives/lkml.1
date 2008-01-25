@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYAYFWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbYAYF0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756219AbYAYFWW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 00:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYAYFWO
+	id S1755381AbYAYF0P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 00:26:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbYAYF0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 00:22:14 -0500
-Received: from mga02.intel.com ([134.134.136.20]:3909 "EHLO mga02.intel.com"
+	Fri, 25 Jan 2008 00:26:01 -0500
+Received: from 1wt.eu ([62.212.114.60]:1603 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752659AbYAYFWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 00:22:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,248,1199692800"; 
-   d="scan'208";a="329720567"
-Subject: [PATCH] x86: ioremap_nocache fix
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 25 Jan 2008 13:22:41 +0800
-Message-Id: <1201238561.15972.17.camel@caritas-dev.intel.com>
+	id S1752674AbYAYF0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 00:26:00 -0500
+Date: Fri, 25 Jan 2008 05:53:21 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: dann frazier <dannf@dannf.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.4: fix memory corruption from misinterpreted	bad_inode_ops return values
+Message-ID: <20080125045320.GA24179@1wt.eu>
+References: <20080124061212.GA22079@ldl.fc.hp.com> <20080124195624.GJ8953@1wt.eu> <4798FDF2.3000605@redhat.com> <20080124223904.GA28495@colo.lackof.org> <479915AA.9020604@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 25 Jan 2008 05:21:58.0592 (UTC) FILETIME=[3527F400:01C85F12]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <479915AA.9020604@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a bug of ioremap_nocache. ioremap_nocache() will call
-__ioremap() with flags != 0 to do the real work, which will call
-change_page_attr_addr() if phys_addr + size - 1 < (end_pfn_map << PAGE_SHIFT).
-But some pages between 0 ~ end_pfn_map << PAGE_SHIFT are not mapped by 
-identity map, this will make change_page_attr_addr failed.
+On Thu, Jan 24, 2008 at 04:48:10PM -0600, Eric Sandeen wrote:
+> dann frazier wrote:
+> 
+> > Thanks Eric. Sounds like my comment about exercising these code paths
+> > wasn't too clear - the comments with your patch do make the issue
+> > clear, and this program demonstrates the void cast promotion issue
+> > well. I'm just not sure of a good way to demonstrate that my backport
+> > of this patch doesn't break anything for 2.4.
+> 
+> Ugh, no, that was my fault, I blindly copied & pasted something from a
+> bug which I thought was a testcase, but isn't.  Sorry!
+> 
+> I originally saw this problem on an fsfuzzed filesystem; I don't think I
+> still have that image around, though.
 
-This patch is based on latest x86 git and has been tested on x86_64 platform.
+OK, that doesn't matter that much. At least the patch makes sense and
+your example shows why original code is wrong, so I will merge it. If
+anybody had a problem with it, the code would be easily bisectable
+(there are so few patches in 2.4) and it's easy to revert it.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-
----
- arch/x86/mm/ioremap_64.c |    7 +++++++
- 1 file changed, 7 insertions(+)
-
---- a/arch/x86/mm/ioremap_64.c
-+++ b/arch/x86/mm/ioremap_64.c
-@@ -41,8 +41,15 @@ ioremap_change_attr(unsigned long phys_a
- 	if (phys_addr + size - 1 < (end_pfn_map << PAGE_SHIFT)) {
- 		unsigned long npages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
- 		unsigned long vaddr = (unsigned long) __va(phys_addr);
-+		int level;
- 
- 		/*
-+		 * If there is no identity map for this address,
-+		 * change_page_attr_addr is unnecessary
-+		 */
-+		if (!lookup_address(vaddr, &level))
-+			return err;
-+		/*
-  		 * Must use a address here and not struct page because the phys addr
- 		 * can be a in hole between nodes and not have an memmap entry.
- 		 */
+Thanks to you both, Eric and Dann !
+Willy
 
