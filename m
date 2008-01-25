@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762717AbYAYI4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761411AbYAYI6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762717AbYAYI4t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:56:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbYAYI4e
+	id S1761411AbYAYI6V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756993AbYAYI6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:56:34 -0500
-Received: from mta2.cl.cam.ac.uk ([128.232.0.14]:52502 "EHLO mta2.cl.cam.ac.uk"
+	Fri, 25 Jan 2008 03:58:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53697 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753944AbYAYI4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 03:56:33 -0500
-X-Greylist: delayed 4792 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Jan 2008 03:56:33 EST
-User-Agent: Microsoft-Entourage/11.3.6.070618
-Date: Fri, 25 Jan 2008 07:36:42 +0000
-Subject: Re: [PATCH UPDATE] x86: ignore spurious faults
-From: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-To: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Matt Mackall <mpm@selenic.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, Jan Beulich <jbeulich@novell.com>
-Message-ID: <C3BF420A.12CFE%Keir.Fraser@cl.cam.ac.uk>
-Thread-Topic: [PATCH UPDATE] x86: ignore spurious faults
-Thread-Index: AchfJQc+RasJYssYEdyw+AAWy6hiGQ==
-In-Reply-To: <47992CB2.8050606@goop.org>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	id S1756960AbYAYI6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 03:58:09 -0500
+Date: Fri, 25 Jan 2008 09:57:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/6] x86: make early_ioremap_debug early_param
+Message-ID: <20080125085755.GB23708@elte.hu>
+References: <1201240495.15972.44.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201240495.15972.44.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25/1/08 00:26, "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
 
->> I (obviously) don't know exactly how the TLB works in x86, but I
->> thought that on a miss, the CPU walks the pagetables first before
->> faulting? Maybe that's not the case if there is an RO entry
->> actually in the TLB?
->>   
-> 
-> My understanding is that it will fault immediately if there's a TLB
-> entry, and rewalk the tables on return from the fault before restarting
-> the instruction, so there's no need for an explicit TLB flush.  The TLB
-> doesn't have a notion of negative cache entries, so any entry represents
-> a present page of some variety.
+* Huang, Ying <ying.huang@intel.com> wrote:
 
-Yes, write access with a r/o TLB entry causes the TLB entry to be flushed
-and an immediate #PF with no page walk. This is a hardware optimisation for
-copy-on-write demand faults. Both Intel and AMD implement it.
+> This patch makes "early_ioremap_debug" a early parameter, because 
+> "early_ioreamp/early_iounmap" is only used during early boot stage.
 
- -- Keir
+oops, indeed!
 
+> @@ -215,9 +215,9 @@ static int __init early_ioremap_debug_se
+>  {
+>  	early_ioremap_debug = 1;
+>  
+> -	return 1;
+> +	return 0;
+>  }
+> -__setup("early_ioremap_debug", early_ioremap_debug_setup);
+> +early_param("early_ioremap_debug", early_ioremap_debug_setup);
 
+thanks, applied.
+
+	Ingo
