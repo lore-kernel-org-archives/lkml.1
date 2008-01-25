@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761685AbYAYHd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbYAYHe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761685AbYAYHd6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758675AbYAYHRj
+	id S1761505AbYAYHe2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:34:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758100AbYAYHRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:17:39 -0500
-Received: from ns2.suse.de ([195.135.220.15]:47622 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 02:17:43 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47629 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757038AbYAYHRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:17:37 -0500
+	id S1759224AbYAYHRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:17:42 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 056/196] kset: convert dlm to use kset_create
-Date: Thu, 24 Jan 2008 23:09:54 -0800
-Message-Id: <1201245134-4876-56-git-send-email-gregkh@suse.de>
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: [PATCH 057/196] kset: convert pci hotplug to use kset_create_and_add
+Date: Thu, 24 Jan 2008 23:09:55 -0800
+Message-Id: <1201245134-4876-57-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -23,69 +23,145 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dynamically create the kset instead of declaring it statically.
+This also renames pci_hotplug_slots_subsys to pcis_hotplug_slots_kset
+catch all current users with a build error instead of a build warning
+which can easily be missed.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/dlm/lockspace.c |   20 +++++++++-----------
- 1 files changed, 9 insertions(+), 11 deletions(-)
+ drivers/pci/hotplug/acpiphp_ibm.c      |    4 ++--
+ drivers/pci/hotplug/pci_hotplug_core.c |   23 +++++++++++------------
+ drivers/pci/hotplug/rpadlpar_sysfs.c   |    2 +-
+ include/linux/pci_hotplug.h            |    2 +-
+ 4 files changed, 15 insertions(+), 16 deletions(-)
 
-diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
-index 18e4a17..83a9c4d 100644
---- a/fs/dlm/lockspace.c
-+++ b/fs/dlm/lockspace.c
-@@ -166,7 +166,7 @@ static struct kobj_type dlm_ktype = {
- 	.release       = lockspace_kobj_release,
+diff --git a/drivers/pci/hotplug/acpiphp_ibm.c b/drivers/pci/hotplug/acpiphp_ibm.c
+index 47d26b6..750ebd7 100644
+--- a/drivers/pci/hotplug/acpiphp_ibm.c
++++ b/drivers/pci/hotplug/acpiphp_ibm.c
+@@ -429,7 +429,7 @@ static int __init ibm_acpiphp_init(void)
+ 	int retval = 0;
+ 	acpi_status status;
+ 	struct acpi_device *device;
+-	struct kobject *sysdir = &pci_hotplug_slots_subsys.kobj;
++	struct kobject *sysdir = &pci_hotplug_slots_kset->kobj;
+ 
+ 	dbg("%s\n", __FUNCTION__);
+ 
+@@ -476,7 +476,7 @@ init_return:
+ static void __exit ibm_acpiphp_exit(void)
+ {
+ 	acpi_status status;
+-	struct kobject *sysdir = &pci_hotplug_slots_subsys.kobj;
++	struct kobject *sysdir = &pci_hotplug_slots_kset->kobj;
+ 
+ 	dbg("%s\n", __FUNCTION__);
+ 
+diff --git a/drivers/pci/hotplug/pci_hotplug_core.c b/drivers/pci/hotplug/pci_hotplug_core.c
+index ce1cff0..175e0c8 100644
+--- a/drivers/pci/hotplug/pci_hotplug_core.c
++++ b/drivers/pci/hotplug/pci_hotplug_core.c
+@@ -61,7 +61,7 @@ static int debug;
+ 
+ static LIST_HEAD(pci_hotplug_slot_list);
+ 
+-struct kset pci_hotplug_slots_subsys;
++struct kset *pci_hotplug_slots_kset;
+ 
+ static ssize_t hotplug_slot_attr_show(struct kobject *kobj,
+ 		struct attribute *attr, char *buf)
+@@ -96,8 +96,6 @@ static struct kobj_type hotplug_slot_ktype = {
+ 	.release = &hotplug_slot_release,
  };
  
--static struct kset dlm_kset;
-+static struct kset *dlm_kset;
- 
- static int kobject_setup(struct dlm_ls *ls)
- {
-@@ -180,7 +180,7 @@ static int kobject_setup(struct dlm_ls *ls)
- 	if (error)
- 		return error;
- 
--	ls->ls_kobj.kset = &dlm_kset;
-+	ls->ls_kobj.kset = dlm_kset;
- 	ls->ls_kobj.ktype = &dlm_ktype;
- 	return 0;
- }
-@@ -218,24 +218,22 @@ static int do_uevent(struct dlm_ls *ls, int in)
- 
- int dlm_lockspace_init(void)
- {
--	int error;
+-decl_subsys_name(pci_hotplug_slots, slots, NULL);
 -
- 	ls_count = 0;
- 	mutex_init(&ls_lock);
- 	INIT_LIST_HEAD(&lslist);
- 	spin_lock_init(&lslist_lock);
+ /* these strings match up with the values in pci_bus_speed */
+ static char *pci_bus_speed_strings[] = {
+ 	"33 MHz PCI",		/* 0x00 */
+@@ -633,7 +631,7 @@ int pci_hp_register (struct hotplug_slot *slot)
+ 	}
  
--	kobject_set_name(&dlm_kset.kobj, "dlm");
--	dlm_kset.kobj.kset = &kernel_subsys;
--	error = kset_register(&dlm_kset);
--	if (error)
--		printk("dlm_lockspace_init: cannot register kset %d\n", error);
--	return error;
-+	dlm_kset = kset_create_and_add("dlm", NULL, &kernel_subsys.kobj);
-+	if (!dlm_kset) {
-+		printk(KERN_WARNING "%s: can not create kset\n", __FUNCTION__);
-+		return -ENOMEM;
-+	}
-+	return 0;
- }
+ 	kobject_set_name(&slot->kobj, "%s", slot->name);
+-	slot->kobj.kset = &pci_hotplug_slots_subsys;
++	slot->kobj.kset = pci_hotplug_slots_kset;
+ 	slot->kobj.ktype = &hotplug_slot_ktype;
  
- void dlm_lockspace_exit(void)
+ 	/* this can fail if we have already registered a slot with the same name */
+@@ -702,10 +700,11 @@ static int __init pci_hotplug_init (void)
  {
--	kset_unregister(&dlm_kset);
-+	kset_unregister(dlm_kset);
+ 	int result;
+ 
+-	pci_hotplug_slots_subsys.kobj.kset = &pci_bus_type.subsys;
+-	result = subsystem_register(&pci_hotplug_slots_subsys);
+-	if (result) {
+-		err("Register subsys with error %d\n", result);
++	pci_hotplug_slots_kset = kset_create_and_add("slots", NULL,
++						     &pci_bus_type.subsys.kobj);
++	if (!pci_hotplug_slots_kset) {
++		result = -ENOMEM;
++		err("Register subsys error\n");
+ 		goto exit;
+ 	}
+ 	result = cpci_hotplug_init(debug);
+@@ -716,9 +715,9 @@ static int __init pci_hotplug_init (void)
+ 
+ 	info (DRIVER_DESC " version: " DRIVER_VERSION "\n");
+ 	goto exit;
+-	
++
+ err_subsys:
+-	subsystem_unregister(&pci_hotplug_slots_subsys);
++	kset_unregister(pci_hotplug_slots_kset);
+ exit:
+ 	return result;
+ }
+@@ -726,7 +725,7 @@ exit:
+ static void __exit pci_hotplug_exit (void)
+ {
+ 	cpci_hotplug_exit();
+-	subsystem_unregister(&pci_hotplug_slots_subsys);
++	kset_unregister(pci_hotplug_slots_kset);
  }
  
- static int dlm_scand(void *data)
+ module_init(pci_hotplug_init);
+@@ -738,7 +737,7 @@ MODULE_LICENSE("GPL");
+ module_param(debug, bool, 0644);
+ MODULE_PARM_DESC(debug, "Debugging mode enabled or not");
+ 
+-EXPORT_SYMBOL_GPL(pci_hotplug_slots_subsys);
++EXPORT_SYMBOL_GPL(pci_hotplug_slots_kset);
+ EXPORT_SYMBOL_GPL(pci_hp_register);
+ EXPORT_SYMBOL_GPL(pci_hp_deregister);
+ EXPORT_SYMBOL_GPL(pci_hp_change_slot_info);
+diff --git a/drivers/pci/hotplug/rpadlpar_sysfs.c b/drivers/pci/hotplug/rpadlpar_sysfs.c
+index 7609093..5c3ddb6 100644
+--- a/drivers/pci/hotplug/rpadlpar_sysfs.c
++++ b/drivers/pci/hotplug/rpadlpar_sysfs.c
+@@ -130,7 +130,7 @@ struct kobj_type ktype_dlpar_io = {
+ 
+ struct kset dlpar_io_kset = {
+ 	.kobj = {.ktype = &ktype_dlpar_io,
+-		 .parent = &pci_hotplug_slots_subsys.kobj},
++		 .parent = &pci_hotplug_slots_kset->kobj},
+ };
+ 
+ int dlpar_sysfs_init(void)
+diff --git a/include/linux/pci_hotplug.h b/include/linux/pci_hotplug.h
+index ab4cb6e..8f67e8f 100644
+--- a/include/linux/pci_hotplug.h
++++ b/include/linux/pci_hotplug.h
+@@ -174,7 +174,7 @@ extern int pci_hp_register		(struct hotplug_slot *slot);
+ extern int pci_hp_deregister		(struct hotplug_slot *slot);
+ extern int __must_check pci_hp_change_slot_info	(struct hotplug_slot *slot,
+ 						 struct hotplug_slot_info *info);
+-extern struct kset pci_hotplug_slots_subsys;
++extern struct kset *pci_hotplug_slots_kset;
+ 
+ /* PCI Setting Record (Type 0) */
+ struct hpp_type0 {
 -- 
 1.5.3.8
 
