@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbYAYHX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759793AbYAYHYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759622AbYAYHX5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758566AbYAYHPq
+	id S1759793AbYAYHYW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758616AbYAYHPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:15:46 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47499 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 02:15:50 -0500
+Received: from ns2.suse.de ([195.135.220.15]:47502 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758551AbYAYHPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:15:45 -0500
+	id S1757493AbYAYHPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:15:49 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       "Michael A. Halcrow" <mahalcro@us.ibm.com>,
-       "Michael C. Thompson" <mcthomps@us.ibm.com>,
-       Tyler Hicks <tyhicks@ou.edu>
-Subject: [PATCH 029/196] ecryptfs: clean up attribute mess
-Date: Thu, 24 Jan 2008 23:09:27 -0800
-Message-Id: <1201245134-4876-29-git-send-email-gregkh@suse.de>
+Cc: Emil Medve <Emilian.Medve@Freescale.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 030/196] driver core: Make the dev_*() family of macros in device.h complete
+Date: Thu, 24 Jan 2008 23:09:28 -0800
+Message-Id: <1201245134-4876-30-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -25,156 +23,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It isn't that hard to add simple kset attributes, so don't go through
-all the gyrations of creating your own object type and show and store
-functions.  Just use the functions that are already present.  This makes
-things much simpler.
+From: Emil Medve <Emilian.Medve@Freescale.com>
 
-Note, the version_str string violates the "one value per file" rule for
-sysfs.  I suggest changing this now (individual files per type supported
-is one suggested way.)
+Removed duplicates defined elsewhere
 
-
-Cc: Michael A. Halcrow <mahalcro@us.ibm.com>
-Cc: Michael C. Thompson <mcthomps@us.ibm.com>
-Cc: Tyler Hicks <tyhicks@ou.edu>
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ecryptfs/main.c |   85 +++++++++++-----------------------------------------
- 1 files changed, 18 insertions(+), 67 deletions(-)
+ drivers/i2c/chips/isp1301_omap.c |    6 ------
+ drivers/isdn/gigaset/gigaset.h   |    6 ------
+ include/linux/device.h           |   24 +++++++++++++++---------
+ 3 files changed, 15 insertions(+), 21 deletions(-)
 
-diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
-index e5580bc..f9f3247 100644
---- a/fs/ecryptfs/main.c
-+++ b/fs/ecryptfs/main.c
-@@ -734,58 +734,14 @@ static int ecryptfs_init_kmem_caches(void)
- 	return 0;
+diff --git a/drivers/i2c/chips/isp1301_omap.c b/drivers/i2c/chips/isp1301_omap.c
+index b767603..ebfbb29 100644
+--- a/drivers/i2c/chips/isp1301_omap.c
++++ b/drivers/i2c/chips/isp1301_omap.c
+@@ -259,12 +259,6 @@ static inline const char *state_name(struct isp1301 *isp)
+ 	return state_string(isp->otg.state);
  }
  
--struct ecryptfs_obj {
--	char *name;
--	struct list_head slot_list;
--	struct kobject kobj;
--};
+-#ifdef	VERBOSE
+-#define	dev_vdbg			dev_dbg
+-#else
+-#define	dev_vdbg(dev, fmt, arg...)	do{}while(0)
+-#endif
 -
--struct ecryptfs_attribute {
--	struct attribute attr;
--	ssize_t(*show) (struct ecryptfs_obj *, char *);
--	ssize_t(*store) (struct ecryptfs_obj *, const char *, size_t);
--};
--
--static ssize_t
--ecryptfs_attr_store(struct kobject *kobj,
--		    struct attribute *attr, const char *buf, size_t len)
--{
--	struct ecryptfs_obj *obj = container_of(kobj, struct ecryptfs_obj,
--						kobj);
--	struct ecryptfs_attribute *attribute =
--		container_of(attr, struct ecryptfs_attribute, attr);
--
--	return (attribute->store ? attribute->store(obj, buf, len) : 0);
--}
--
--static ssize_t
--ecryptfs_attr_show(struct kobject *kobj, struct attribute *attr, char *buf)
--{
--	struct ecryptfs_obj *obj = container_of(kobj, struct ecryptfs_obj,
--						kobj);
--	struct ecryptfs_attribute *attribute =
--		container_of(attr, struct ecryptfs_attribute, attr);
--
--	return (attribute->show ? attribute->show(obj, buf) : 0);
--}
--
--static struct sysfs_ops ecryptfs_sysfs_ops = {
--	.show = ecryptfs_attr_show,
--	.store = ecryptfs_attr_store
--};
-+static decl_subsys(ecryptfs, NULL, NULL);
+ /*-------------------------------------------------------------------------*/
  
--static struct kobj_type ecryptfs_ktype = {
--	.sysfs_ops = &ecryptfs_sysfs_ops
--};
--
--static decl_subsys(ecryptfs, &ecryptfs_ktype, NULL);
--
--static ssize_t version_show(struct ecryptfs_obj *obj, char *buff)
-+static ssize_t version_show(struct kset *kset, char *buff)
- {
- 	return snprintf(buff, PAGE_SIZE, "%d\n", ECRYPTFS_VERSIONING_MASK);
- }
- 
--static struct ecryptfs_attribute sysfs_attr_version = __ATTR_RO(version);
-+static struct subsys_attribute version_attr = __ATTR_RO(version);
- 
- static struct ecryptfs_version_str_map_elem {
- 	u32 flag;
-@@ -799,7 +755,7 @@ static struct ecryptfs_version_str_map_elem {
- 	{ECRYPTFS_VERSIONING_MULTKEY, "multiple keys per file"}
+ /* NOTE:  some of this ISP1301 setup is specific to H2 boards;
+diff --git a/drivers/isdn/gigaset/gigaset.h b/drivers/isdn/gigaset/gigaset.h
+index a0317ab..02bdaf2 100644
+--- a/drivers/isdn/gigaset/gigaset.h
++++ b/drivers/isdn/gigaset/gigaset.h
+@@ -106,12 +106,6 @@ enum debuglevel {
+ 					 activated */
  };
  
--static ssize_t version_str_show(struct ecryptfs_obj *obj, char *buff)
-+static ssize_t version_str_show(struct kset *kset, char *buff)
- {
- 	int i;
- 	int remaining = PAGE_SIZE;
-@@ -826,7 +782,17 @@ out:
- 	return total_written;
- }
+-/* missing from linux/device.h ... */
+-#ifndef dev_notice
+-#define dev_notice(dev, format, arg...)		\
+-	dev_printk(KERN_NOTICE , dev , format , ## arg)
+-#endif
+-
+ /* Kernel message macros for situations where dev_printk and friends cannot be
+  * used for lack of reliable access to a device structure.
+  * linux/usb.h already contains these but in an obsolete form which clutters
+diff --git a/include/linux/device.h b/include/linux/device.h
+index cf4ae5c..dbbbe89 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -565,6 +565,21 @@ extern const char *dev_driver_string(struct device *dev);
+ #define dev_printk(level, dev, format, arg...)	\
+ 	printk(level "%s %s: " format , dev_driver_string(dev) , (dev)->bus_id , ## arg)
  
--static struct ecryptfs_attribute sysfs_attr_version_str = __ATTR_RO(version_str);
-+static struct subsys_attribute version_attr_str = __ATTR_RO(version_str);
++#define dev_emerg(dev, format, arg...)		\
++	dev_printk(KERN_EMERG , dev , format , ## arg)
++#define dev_alert(dev, format, arg...)		\
++	dev_printk(KERN_ALERT , dev , format , ## arg)
++#define dev_crit(dev, format, arg...)		\
++	dev_printk(KERN_CRIT , dev , format , ## arg)
++#define dev_err(dev, format, arg...)		\
++	dev_printk(KERN_ERR , dev , format , ## arg)
++#define dev_warn(dev, format, arg...)		\
++	dev_printk(KERN_WARNING , dev , format , ## arg)
++#define dev_notice(dev, format, arg...)		\
++	dev_printk(KERN_NOTICE , dev , format , ## arg)
++#define dev_info(dev, format, arg...)		\
++	dev_printk(KERN_INFO , dev , format , ## arg)
 +
-+static struct attribute *attributes[] = {
-+	&version_attr.attr,
-+	&version_attr_str.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group attr_group = {
-+	.attrs = attributes,
-+};
- 
- static int do_sysfs_registration(void)
- {
-@@ -838,23 +804,11 @@ static int do_sysfs_registration(void)
- 		       "Unable to register ecryptfs sysfs subsystem\n");
- 		goto out;
- 	}
--	rc = sysfs_create_file(&ecryptfs_subsys.kobj,
--			       &sysfs_attr_version.attr);
-+	rc = sysfs_create_group(&ecryptfs_subsys.kobj, &attr_group);
- 	if (rc) {
- 		printk(KERN_ERR
--		       "Unable to create ecryptfs version attribute\n");
-+		       "Unable to create ecryptfs version attributes\n");
- 		subsystem_unregister(&ecryptfs_subsys);
--		goto out;
--	}
--	rc = sysfs_create_file(&ecryptfs_subsys.kobj,
--			       &sysfs_attr_version_str.attr);
--	if (rc) {
--		printk(KERN_ERR
--		       "Unable to create ecryptfs version_str attribute\n");
--		sysfs_remove_file(&ecryptfs_subsys.kobj,
--				  &sysfs_attr_version.attr);
--		subsystem_unregister(&ecryptfs_subsys);
--		goto out;
- 	}
- out:
- 	return rc;
-@@ -862,10 +816,7 @@ out:
- 
- static void do_sysfs_unregistration(void)
- {
--	sysfs_remove_file(&ecryptfs_subsys.kobj,
--			  &sysfs_attr_version.attr);
--	sysfs_remove_file(&ecryptfs_subsys.kobj,
--			  &sysfs_attr_version_str.attr);
-+	sysfs_remove_group(&ecryptfs_subsys.kobj, &attr_group);
- 	subsystem_unregister(&ecryptfs_subsys);
+ #ifdef DEBUG
+ #define dev_dbg(dev, format, arg...)		\
+ 	dev_printk(KERN_DEBUG , dev , format , ## arg)
+@@ -586,15 +601,6 @@ dev_vdbg(struct device * dev, const char * fmt, ...)
  }
+ #endif
  
+-#define dev_err(dev, format, arg...)		\
+-	dev_printk(KERN_ERR , dev , format , ## arg)
+-#define dev_info(dev, format, arg...)		\
+-	dev_printk(KERN_INFO , dev , format , ## arg)
+-#define dev_warn(dev, format, arg...)		\
+-	dev_printk(KERN_WARNING , dev , format , ## arg)
+-#define dev_notice(dev, format, arg...)		\
+-	dev_printk(KERN_NOTICE , dev , format , ## arg)
+-
+ /* Create alias, so I can be autoloaded. */
+ #define MODULE_ALIAS_CHARDEV(major,minor) \
+ 	MODULE_ALIAS("char-major-" __stringify(major) "-" __stringify(minor))
 -- 
 1.5.3.8
 
