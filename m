@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbYAYLMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYAYLNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbYAYLMk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 06:12:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbYAYLMc
+	id S1756588AbYAYLNJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 06:13:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbYAYLMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 06:12:32 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47406 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752543AbYAYLMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 06:12:30 -0500
-Date: Fri, 25 Jan 2008 12:12:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: trim ram need to check if mtrr is there v2
-Message-ID: <20080125111219.GB20026@elte.hu>
-References: <47993F1A.5070408@goop.org> <4799400C.1060102@zytor.com> <200801241947.55223.yinghai.lu@sun.com> <4799930B.40006@goop.org> <86802c440801250013p1a35b126l30fb7479b110e97d@mail.gmail.com>
+	Fri, 25 Jan 2008 06:12:54 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:41917 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752646AbYAYLMx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 06:12:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=upxMgWsV07qkl2dSIMo2kyL+qrS/ZYOe0ufT7wlRXptMsqYGXKQAdhM5QEt93qDnulyI0T3aeGtQOdP0YjajfctgLjnEBf7EiyhjKdDKcyOsPNNsrkbXzwakGneK14ujRksK0UcFM02sCmkz/7NKJQuYPkV6vK5mQl01HrQZsDM=
+Message-ID: <4799C42C.7030501@gmail.com>
+Date: Fri, 25 Jan 2008 14:12:44 +0300
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440801250013p1a35b126l30fb7479b110e97d@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Adrian Bunk <bunk@kernel.org>
+CC: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       Heikki Orsila <shdl@zakalwe.fi>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, trivial@kernel.org
+Subject: Re: [PATCH 5/9] bfs: move function prototype to the proper header
+ file
+References: <1201213928-18183-1-git-send-email-dmitri.vorobiev@gmail.com> <1201213928-18183-6-git-send-email-dmitri.vorobiev@gmail.com> <20080124225031.GC12172@zakalwe.fi> <47991B7C.6000208@gmail.com> <Pine.LNX.4.61.0801242318560.8513@ginsburg.homenet> <20080125104217.GA6700@does.not.exist>
+In-Reply-To: <20080125104217.GA6700@does.not.exist>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> is_cpu(INTEL) already make sure we have mtrr_if got assigned and 
-> cpu_has_mtrr.
+Adrian Bunk пишет:
+> On Thu, Jan 24, 2008 at 11:22:21PM +0000, Tigran Aivazian wrote:
+>> On Fri, 25 Jan 2008, Dmitri Vorobiev wrote:
+>>
+>>> Heikki Orsila пишет:
+>>>>> +extern void dump_imap(const char *, struct super_block *);
+>>>>> +
+>>>> Functions should not be externed, remove extern keyword.
+>>>>
+>>> Care to explain why?
+>> because dump_imap() is just a BFS' internal helper (for debugging 
+>> purposes only btw) to dump the inode map via printk. Why should it be 
+>> moved into the header, i.e. where one expects to see things potentially 
+>> visible by the rest of the kernel?
+>> ...
 > 
-> may need to fix qemu instead...
+> fs/bfs/bfs.h is not visible to the rest of the kernel, it's the right 
+> place for bfs-internal code.
+> 
+> Whether there's an "extern" written is just a syntax thing with zero 
+> semantical implications. We tend to not write the "extern" in the 
+> kernel, but that's nothing cast in stone.
 
-no ...
+Adrian, thanks for the feedback.
 
-lets not do non-sensical trimming of RAM, ok? Emit a warning but never 
-trim all of RAM and make the system unbootable. Trimmed RAM is something 
-that users can pester board/BIOS vendors with. Non-booting kernels is 
-something _we_ get pestered with ;-)
+The next version of this patch series will not have the extern keyword
+for this helper. I'll try to have the second version sent to trivial
+by tomorrow.
 
-	Ingo
+Dmitri
+
