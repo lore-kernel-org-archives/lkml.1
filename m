@@ -1,112 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYAYD6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbYAYD7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbYAYD6l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 22:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYAYD6d
+	id S1755902AbYAYD7U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 22:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYAYD7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 22:58:33 -0500
-Received: from mga11.intel.com ([192.55.52.93]:13941 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752514AbYAYD6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 22:58:32 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,247,1199692800"; 
-   d="scan'208";a="507903505"
-Subject: Re: [RFC] some page can't be migrated
-From: Shaohua Li <shaohua.li@intel.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0801241931500.32043@schroedinger.engr.sgi.com>
-References: <1201069357.32059.13.camel@sli10-desk.sh.intel.com>
-	 <Pine.LNX.4.64.0801241931500.32043@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Fri, 25 Jan 2008 11:59:50 +0800
-Message-Id: <1201233590.28282.13.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Jan 2008 22:59:05 -0500
+Received: from az33egw01.freescale.net ([192.88.158.102]:50526 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754172AbYAYD7B convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 22:59:01 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH UCC TDM 3/3 ] Modified Documentation to explain dtsentries for TDM driver
+Date: Fri, 25 Jan 2008 09:28:19 +0530
+Message-ID: <FBA61160C48B8D438F3323FEFB4EF2C279AFF5@zin33exm24.fsl.freescale.net>
+In-Reply-To: <20080124201226.GA3926@loki.buserror.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH UCC TDM 3/3 ] Modified Documentation to explain dtsentries for TDM driver
+Thread-Index: AchexWsjHuEbItgTSs+HjiksO0mNFwAQJVEg
+References: <Pine.LNX.4.64.0801241022070.27491@linux121> <20080124201226.GA3926@loki.buserror.net>
+From: "Aggrwal Poonam" <Poonam.Aggrwal@freescale.com>
+To: "Wood Scott" <scottwood@freescale.com>
+Cc: "Gala Kumar" <kumar.gala@freescale.com>, <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       <rubini@vision.unipv.it>, <linuxppc-dev@ozlabs.org>,
+       "Barkowski Michael" <Michael.Barkowski@freescale.com>,
+       "Cutler Richard" <Rich.Cutler@freescale.com>,
+       "Tabi Timur" <timur@freescale.com>,
+       "Kalra Ashish" <ashish.kalra@freescale.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Scott
 
-On Thu, 2008-01-24 at 19:37 -0800, Christoph Lameter wrote:
-> On Wed, 23 Jan 2008, Shaohua Li wrote:
-> 
-> > +
-> > +	/*
-> > +	 * See truncate_complete_page(). Anonymous page might have
-> > +	 * fs-private metadata, the page is truncated. Such page can't be
-> > +	 * migrated. Try to free metadata, so the page can be freed.
-> > +	 */
-> 
-> Well maybe you should change the comment to refer to an orphaned page. 
-> That is what Nick used. Also change the comment in truncate_complete_page. 
-> Anonymous page is confusing here because you check that it is *not* an 
-> anonymous page.
-> 
-> > +	if (!page->mapping && !PageAnon(page) && PagePrivate(page)) {
-> > +		try_to_release_page(page, GFP_KERNEL);
-> > +		goto unlock;
-> > +	}
-> > +
-> 
-> 
-> Could you move that into the corner case handling that follows?
-> 
-> So it would be something like
-> 
-> if (!page->mapping) {
-> 	if (!PageAnon(page) && PagePrivate(page))
-> 		try_to_relase_page(page, GFP_KERNEL);
-> 	goto rcu_unlock;
-> }
-Ok, changed.
+The device tree already has a brg-frequency  property in qe node which
+is the value of BRGCLK. The function get_brg_clk uses this property to
+find the value of BRGCLK.
+In case this value is 0(some older u-boots populate bus-frequency
+property of qe and not the brg-frequency), get_brg_clk  uses
+bus-frequency/2 as BRGCLK.
 
-Orphaned page might have fs-private metadata, the page is truncated. As
-the page hasn't mapping, page migration refuse to migrate the page. It
-appears the page is only freed in page reclaim and if zone watermark is
-low, the page is never freed, as a result migration always fail. I
-thought we could free the metadata so such page can be freed in
-migration and make migration more reliable.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 6a207e8..e82acc9 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -652,8 +652,16 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
- 	 * Calling try_to_unmap() against a page->mapping==NULL page is
- 	 * BUG. So handle it here.
- 	 */
--	if (!page->mapping)
-+	if (!page->mapping) {
-+		/*
-+		 * See truncate_complete_page(). Orphaned page might have
-+		 * fs-private metadata, the page is truncated. Such page can't
-+		 * be migrated. Try to free metadata, so the page can be freed.
-+		 */
-+		if (!PageAnon(page) && PagePrivate(page))
-+			try_to_release_page(page, GFP_KERNEL);
- 		goto rcu_unlock;
-+	}
- 	/* Establish migration ptes or remove ptes */
- 	try_to_unmap(page, 1);
+With Regards
+Poonam 
  
-diff --git a/mm/truncate.c b/mm/truncate.c
-index cadc156..62fd8cd 100644
---- a/mm/truncate.c
-+++ b/mm/truncate.c
-@@ -84,7 +84,7 @@ EXPORT_SYMBOL(cancel_dirty_page);
  
- /*
-  * If truncate cannot remove the fs-private metadata from the page, the page
-- * becomes anonymous.  It will be left on the LRU and may even be mapped into
-+ * becomes orphaned.  It will be left on the LRU and may even be mapped into
-  * user pagetables if we're racing with filemap_fault().
-  *
-  * We need to bale out if page->mapping is no longer equal to the original
 
+-----Original Message-----
+From: Wood Scott 
+Sent: Friday, January 25, 2008 1:42 AM
+To: Aggrwal Poonam
+Cc: Gala Kumar; akpm@linux-foundation.org; linux-kernel@vger.kernel.org;
+netdev@vger.kernel.org; rubini@vision.unipv.it; linuxppc-dev@ozlabs.org;
+Barkowski Michael; Cutler Richard; Tabi Timur; Kalra Ashish
+Subject: Re: [PATCH UCC TDM 3/3 ] Modified Documentation to explain
+dtsentries for TDM driver
 
+On Thu, Jan 24, 2008 at 10:24:13AM +0530, Poonam_Aggrwal-b10812 wrote:
+> +  ix) Baud Rate Generator (BRG)
+> +
+> +  Required properties:
+> +  - compatible : shpuld be "fsl,cpm-brg"
+> +  - fsl,brg-sources : define the input clock for all 16 BRGs. The
+input
+> +    clock source could be 1 to 24 for CLK1 to CLK24. Zero means that
+the
+> +    particular BRG will be driven by QE clock(BRGCLK).
+
+Should also have a clock-frequency property to specify what BRGCLK is.
+
+-Scott
