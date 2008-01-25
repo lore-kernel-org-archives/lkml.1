@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932576AbYAYIdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbYAYIeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932576AbYAYIdk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764131AbYAYIBd
+	id S1762186AbYAYIeL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:34:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760679AbYAYIBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:01:33 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53735 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 03:01:35 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53758 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760679AbYAYIAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 03:00:06 -0500
+	id S1763884AbYAYIAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 03:00:08 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 178/196] kobject: update the kobject/kset documentation
-Date: Thu, 24 Jan 2008 23:33:27 -0800
-Message-Id: <1201246425-5058-99-git-send-email-gregkh@suse.de>
+Subject: [PATCH 151/196] Driver core: move the static kobject out of struct driver
+Date: Thu, 24 Jan 2008 23:33:00 -0800
+Message-Id: <1201246425-5058-72-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -22,411 +22,530 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This provides a much-needed kobject and kset documentation update.
-
-Thanks to Kay Sievers, Alan Stern, Jonathan Corbet, Randy Dunlap, Jan
-Engelhardt, and others for reviewing and providing help with this
-document.
+This patch removes the kobject, and a few other driver-core-only fields
+out of struct driver and into the driver core only.  Now drivers can be
+safely create on the stack or statically (like they currently are.)
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/kobject.txt |  386 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 386 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/kobject.txt
+ drivers/base/base.h     |    8 +++++
+ drivers/base/bus.c      |   71 +++++++++++++++++++++++++---------------------
+ drivers/base/dd.c       |   24 ++++++++--------
+ drivers/base/driver.c   |   40 +++++++++++++++++---------
+ drivers/base/module.c   |   12 ++++----
+ drivers/base/platform.c |    2 +-
+ include/linux/device.h  |   16 ++++------
+ 7 files changed, 99 insertions(+), 74 deletions(-)
 
-diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
-new file mode 100644
-index 0000000..bf3256e
---- /dev/null
-+++ b/Documentation/kobject.txt
-@@ -0,0 +1,386 @@
-+Everything you never wanted to know about kobjects, ksets, and ktypes
-+
-+Greg Kroah-Hartman <gregkh@suse.de>
-+
-+Based on an original article by Jon Corbet for lwn.net written October 1,
-+2003 and located at http://lwn.net/Articles/51437/
-+
-+Last updated December 19, 2007
-+
-+
-+Part of the difficulty in understanding the driver model - and the kobject
-+abstraction upon which it is built - is that there is no obvious starting
-+place. Dealing with kobjects requires understanding a few different types,
-+all of which make reference to each other. In an attempt to make things
-+easier, we'll take a multi-pass approach, starting with vague terms and
-+adding detail as we go. To that end, here are some quick definitions of
-+some terms we will be working with.
-+
-+ - A kobject is an object of type struct kobject.  Kobjects have a name
-+   and a reference count.  A kobject also has a parent pointer (allowing
-+   objects to be arranged into hierarchies), a specific type, and,
-+   usually, a representation in the sysfs virtual filesystem.
-+
-+   Kobjects are generally not interesting on their own; instead, they are
-+   usually embedded within some other structure which contains the stuff
-+   the code is really interested in.
-+
-+   No structure should EVER have more than one kobject embedded within it.
-+   If it does, the reference counting for the object is sure to be messed
-+   up and incorrect, and your code will be buggy.  So do not do this.
-+
-+ - A ktype is the type of object that embeds a kobject.  Every structure
-+   that embeds a kobject needs a corresponding ktype.  The ktype controls
-+   what happens to the kobject when it is created and destroyed.
-+
-+ - A kset is a group of kobjects.  These kobjects can be of the same ktype
-+   or belong to different ktypes.  The kset is the basic container type for
-+   collections of kobjects. Ksets contain their own kobjects, but you can
-+   safely ignore that implementation detail as the kset core code handles
-+   this kobject automatically.
-+
-+   When you see a sysfs directory full of other directories, generally each
-+   of those directories corresponds to a kobject in the same kset.
-+
-+We'll look at how to create and manipulate all of these types. A bottom-up
-+approach will be taken, so we'll go back to kobjects.
-+
-+
-+Embedding kobjects
-+
-+It is rare for kernel code to create a standalone kobject, with one major
-+exception explained below.  Instead, kobjects are used to control access to
-+a larger, domain-specific object.  To this end, kobjects will be found
-+embedded in other structures.  If you are used to thinking of things in
-+object-oriented terms, kobjects can be seen as a top-level, abstract class
-+from which other classes are derived.  A kobject implements a set of
-+capabilities which are not particularly useful by themselves, but which are
-+nice to have in other objects.  The C language does not allow for the
-+direct expression of inheritance, so other techniques - such as structure
-+embedding - must be used.
-+
-+So, for example, the UIO code has a structure that defines the memory
-+region associated with a uio device:
-+
-+struct uio_mem {
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index 0547236..3b0f395 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -27,6 +27,14 @@ struct bus_type_private {
+ 	struct bus_type *bus;
+ };
+ 
++struct driver_private {
 +	struct kobject kobj;
-+	unsigned long addr;
-+	unsigned long size;
-+	int memtype;
-+	void __iomem *internal_addr;
++	struct klist klist_devices;
++	struct klist_node knode_bus;
++	struct module_kobject *mkobj;
++	struct device_driver *driver;
 +};
-+
-+If you have a struct uio_mem structure, finding its embedded kobject is
-+just a matter of using the kobj member.  Code that works with kobjects will
-+often have the opposite problem, however: given a struct kobject pointer,
-+what is the pointer to the containing structure?  You must avoid tricks
-+(such as assuming that the kobject is at the beginning of the structure)
-+and, instead, use the container_of() macro, found in <linux/kernel.h>:
-+
-+	container_of(pointer, type, member)
-+
-+where pointer is the pointer to the embedded kobject, type is the type of
-+the containing structure, and member is the name of the structure field to
-+which pointer points.  The return value from container_of() is a pointer to
-+the given type. So, for example, a pointer "kp" to a struct kobject
-+embedded within a struct uio_mem could be converted to a pointer to the
-+containing uio_mem structure with:
-+
-+    struct uio_mem *u_mem = container_of(kp, struct uio_mem, kobj);
-+
-+Programmers often define a simple macro for "back-casting" kobject pointers
-+to the containing type.
-+
-+
-+Initialization of kobjects
-+
-+Code which creates a kobject must, of course, initialize that object. Some
-+of the internal fields are setup with a (mandatory) call to kobject_init():
-+
-+    void kobject_init(struct kobject *kobj, struct kobj_type *ktype);
-+
-+The ktype is required for a kobject to be created properly, as every kobject
-+must have an associated kobj_type.  After calling kobject_init(), to
-+register the kobject with sysfs, the function kobject_add() must be called:
-+
-+    int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, ...);
-+
-+This sets up the parent of the kobject and the name for the kobject
-+properly.  If the kobject is to be associated with a specific kset,
-+kobj->kset must be assigned before calling kobject_add().  If a kset is
-+associated with a kobject, then the parent for the kobject can be set to
-+NULL in the call to kobject_add() and then the kobject's parent will be the
-+kset itself.
-+
-+As the name of the kobject is set when it is added to the kernel, the name
-+of the kobject should never be manipulated directly.  If you must change
-+the name of the kobject, call kobject_rename():
-+
-+    int kobject_rename(struct kobject *kobj, const char *new_name);
-+
-+There is a function called kobject_set_name() but that is legacy cruft and
-+is being removed.  If your code needs to call this function, it is
-+incorrect and needs to be fixed.
-+
-+To properly access the name of the kobject, use the function
-+kobject_name():
-+
-+    const char *kobject_name(const struct kobject * kobj);
-+
-+There is a helper function to both initialize and add the kobject to the
-+kernel at the same time, called supprisingly enough kobject_init_and_add():
-+
-+    int kobject_init_and_add(struct kobject *kobj, struct kobj_type *ktype,
-+                             struct kobject *parent, const char *fmt, ...);
-+
-+The arguments are the same as the individual kobject_init() and
-+kobject_add() functions described above.
-+
-+
-+Uevents
-+
-+After a kobject has been registered with the kobject core, you need to
-+announce to the world that it has been created.  This can be done with a
-+call to kobject_uevent():
-+
-+    int kobject_uevent(struct kobject *kobj, enum kobject_action action);
-+
-+Use the KOBJ_ADD action for when the kobject is first added to the kernel.
-+This should be done only after any attributes or children of the kobject
-+have been initialized properly, as userspace will instantly start to look
-+for them when this call happens.
-+
-+When the kobject is removed from the kernel (details on how to do that is
-+below), the uevent for KOBJ_REMOVE will be automatically created by the
-+kobject core, so the caller does not have to worry about doing that by
-+hand.
-+
-+
-+Reference counts
-+
-+One of the key functions of a kobject is to serve as a reference counter
-+for the object in which it is embedded. As long as references to the object
-+exist, the object (and the code which supports it) must continue to exist.
-+The low-level functions for manipulating a kobject's reference counts are:
-+
-+    struct kobject *kobject_get(struct kobject *kobj);
-+    void kobject_put(struct kobject *kobj);
-+
-+A successful call to kobject_get() will increment the kobject's reference
-+counter and return the pointer to the kobject.
-+
-+When a reference is released, the call to kobject_put() will decrement the
-+reference count and, possibly, free the object. Note that kobject_init()
-+sets the reference count to one, so the code which sets up the kobject will
-+need to do a kobject_put() eventually to release that reference.
-+
-+Because kobjects are dynamic, they must not be declared statically or on
-+the stack, but instead, always allocated dynamically.  Future versions of
-+the kernel will contain a run-time check for kobjects that are created
-+statically and will warn the developer of this improper usage.
-+
-+If all that you want to use a kobject for is to provide a reference counter
-+for your structure, please use the struct kref instead; a kobject would be
-+overkill.  For more information on how to use struct kref, please see the
-+file Documentation/kref.txt in the Linux kernel source tree.
-+
-+
-+Creating "simple" kobjects
-+
-+Sometimes all that a developer wants is a way to create a simple directory
-+in the sysfs hierarchy, and not have to mess with the whole complication of
-+ksets, show and store functions, and other details.  This is the one
-+exception where a single kobject should be created.  To create such an
-+entry, use the function:
-+
-+    struct kobject *kobject_create_and_add(char *name, struct kobject *parent);
-+
-+This function will create a kobject and place it in sysfs in the location
-+underneath the specified parent kobject.  To create simple attributes
-+associated with this kobject, use:
-+
-+    int sysfs_create_file(struct kobject *kobj, struct attribute *attr);
-+or
-+    int sysfs_create_group(struct kobject *kobj, struct attribute_group *grp);
-+
-+Both types of attributes used here, with a kobject that has been created
-+with the kobject_create_and_add(), can be of type kobj_attribute, so no
-+special custom attribute is needed to be created.
-+
-+See the example module, samples/kobject/kobject-example.c for an
-+implementation of a simple kobject and attributes.
-+
-+
-+
-+ktypes and release methods
-+
-+One important thing still missing from the discussion is what happens to a
-+kobject when its reference count reaches zero. The code which created the
-+kobject generally does not know when that will happen; if it did, there
-+would be little point in using a kobject in the first place. Even
-+predictable object lifecycles become more complicated when sysfs is brought
-+in as other portions of the kernel can get a reference on any kobject that
-+is registered in the system.
-+
-+The end result is that a structure protected by a kobject cannot be freed
-+before its reference count goes to zero. The reference count is not under
-+the direct control of the code which created the kobject. So that code must
-+be notified asynchronously whenever the last reference to one of its
-+kobjects goes away.
-+
-+Once you registered your kobject via kobject_add(), you must never use
-+kfree() to free it directly. The only safe way is to use kobject_put(). It
-+is good practice to always use kobject_put() after kobject_init() to avoid
-+errors creeping in.
-+
-+This notification is done through a kobject's release() method. Usually
-+such a method has a form like:
-+
-+    void my_object_release(struct kobject *kobj)
-+    {
-+    	    struct my_object *mine = container_of(kobj, struct my_object, kobj);
-+
-+	    /* Perform any additional cleanup on this object, then... */
-+	    kfree(mine);
-+    }
-+
-+One important point cannot be overstated: every kobject must have a
-+release() method, and the kobject must persist (in a consistent state)
-+until that method is called. If these constraints are not met, the code is
-+flawed.  Note that the kernel will warn you if you forget to provide a
-+release() method.  Do not try to get rid of this warning by providing an
-+"empty" release function; you will be mocked mercilessly by the kobject
-+maintainer if you attempt this.
-+
-+Note, the name of the kobject is available in the release function, but it
-+must NOT be changed within this callback.  Otherwise there will be a memory
-+leak in the kobject core, which makes people unhappy.
-+
-+Interestingly, the release() method is not stored in the kobject itself;
-+instead, it is associated with the ktype. So let us introduce struct
-+kobj_type:
-+
-+    struct kobj_type {
-+	    void (*release)(struct kobject *);
-+	    struct sysfs_ops	*sysfs_ops;
-+	    struct attribute	**default_attrs;
-+    };
-+
-+This structure is used to describe a particular type of kobject (or, more
-+correctly, of containing object). Every kobject needs to have an associated
-+kobj_type structure; a pointer to that structure must be specified when you
-+call kobject_init() or kobject_init_and_add().
-+
-+The release field in struct kobj_type is, of course, a pointer to the
-+release() method for this type of kobject. The other two fields (sysfs_ops
-+and default_attrs) control how objects of this type are represented in
-+sysfs; they are beyond the scope of this document.
-+
-+The default_attrs pointer is a list of default attributes that will be
-+automatically created for any kobject that is registered with this ktype.
-+
-+
-+ksets
-+
-+A kset is merely a collection of kobjects that want to be associated with
-+each other.  There is no restriction that they be of the same ktype, but be
-+very careful if they are not.
-+
-+A kset serves these functions:
-+
-+ - It serves as a bag containing a group of objects. A kset can be used by
-+   the kernel to track "all block devices" or "all PCI device drivers."
-+
-+ - A kset is also a subdirectory in sysfs, where the associated kobjects
-+   with the kset can show up.  Every kset contains a kobject which can be
-+   set up to be the parent of other kobjects; the top-level directories of
-+   the sysfs hierarchy are constructed in this way.
-+
-+ - Ksets can support the "hotplugging" of kobjects and influence how
-+   uevent events are reported to user space.
-+
-+In object-oriented terms, "kset" is the top-level container class; ksets
-+contain their own kobject, but that kobject is managed by the kset code and
-+should not be manipulated by any other user.
-+
-+A kset keeps its children in a standard kernel linked list.  Kobjects point
-+back to their containing kset via their kset field. In almost all cases,
-+the kobjects belonging to a ket have that kset (or, strictly, its embedded
-+kobject) in their parent.
-+
-+As a kset contains a kobject within it, it should always be dynamically
-+created and never declared statically or on the stack.  To create a new
-+kset use:
-+  struct kset *kset_create_and_add(const char *name,
-+				   struct kset_uevent_ops *u,
-+				   struct kobject *parent);
-+
-+When you are finished with the kset, call:
-+  void kset_unregister(struct kset *kset);
-+to destroy it.
-+
-+An example of using a kset can be seen in the
-+samples/kobject/kset-example.c file in the kernel tree.
-+
-+If a kset wishes to control the uevent operations of the kobjects
-+associated with it, it can use the struct kset_uevent_ops to handle it:
-+
-+struct kset_uevent_ops {
-+        int (*filter)(struct kset *kset, struct kobject *kobj);
-+        const char *(*name)(struct kset *kset, struct kobject *kobj);
-+        int (*uevent)(struct kset *kset, struct kobject *kobj,
-+                      struct kobj_uevent_env *env);
-+};
-+
-+
-+The filter function allows a kset to prevent a uevent from being emitted to
-+userspace for a specific kobject.  If the function returns 0, the uevent
-+will not be emitted.
-+
-+The name function will be called to override the default name of the kset
-+that the uevent sends to userspace.  By default, the name will be the same
-+as the kset itself, but this function, if present, can override that name.
-+
-+The uevent function will be called when the uevent is about to be sent to
-+userspace to allow more environment variables to be added to the uevent.
-+
-+One might ask how, exactly, a kobject is added to a kset, given that no
-+functions which perform that function have been presented.  The answer is
-+that this task is handled by kobject_add().  When a kobject is passed to
-+kobject_add(), its kset member should point to the kset to which the
-+kobject will belong.  kobject_add() will handle the rest.
-+
-+If the kobject belonging to a kset has no parent kobject set, it will be
-+added to the kset's directory.  Not all members of a kset do necessarily
-+live in the kset directory.  If an explicit parent kobject is assigned
-+before the kobject is added, the kobject is registered with the kset, but
-+added below the parent kobject.
-+
-+
-+Kobject removal
-+
-+After a kobject has been registered with the kobject core successfully, it
-+must be cleaned up when the code is finished with it.  To do that, call
-+kobject_put().  By doing this, the kobject core will automatically clean up
-+all of the memory allocated by this kobject.  If a KOBJ_ADD uevent has been
-+sent for the object, a corresponding KOBJ_REMOVE uevent will be sent, and
-+any other sysfs housekeeping will be handled for the caller properly.
-+
-+If you need to do a two-stage delete of the kobject (say you are not
-+allowed to sleep when you need to destroy the object), then call
-+kobject_del() which will unregister the kobject from sysfs.  This makes the
-+kobject "invisible", but it is not cleaned up, and the reference count of
-+the object is still the same.  At a later time call kobject_put() to finish
-+the cleanup of the memory associated with the kobject.
-+
-+kobject_del() can be used to drop the reference to the parent object, if
-+circular references are constructed.  It is valid in some cases, that a
-+parent objects references a child.  Circular references _must_ be broken
-+with an explicit call to kobject_del(), so that a release functions will be
-+called, and the objects in the former circle release each other.
-+
-+
-+Example code to copy from
-+
-+For a more complete example of using ksets and kobjects properly, see the
-+sample/kobject/kset-example.c code.
++#define to_driver(obj) container_of(obj, struct driver_private, kobj)
+ 
+ /* initialisation functions */
+ extern int devices_init(void);
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index 04d3850..aa0c986 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -3,6 +3,8 @@
+  *
+  * Copyright (c) 2002-3 Patrick Mochel
+  * Copyright (c) 2002-3 Open Source Development Labs
++ * Copyright (c) 2007 Greg Kroah-Hartman <gregkh@suse.de>
++ * Copyright (c) 2007 Novell Inc.
+  *
+  * This file is released under the GPLv2
+  *
+@@ -24,7 +26,6 @@
+  */
+ 
+ #define to_drv_attr(_attr) container_of(_attr, struct driver_attribute, attr)
+-#define to_driver(obj) container_of(obj, struct device_driver, kobj)
+ 
+ 
+ static int __must_check bus_rescan_devices_helper(struct device *dev,
+@@ -49,11 +50,11 @@ static ssize_t
+ drv_attr_show(struct kobject * kobj, struct attribute * attr, char * buf)
+ {
+ 	struct driver_attribute * drv_attr = to_drv_attr(attr);
+-	struct device_driver * drv = to_driver(kobj);
++	struct driver_private *drv_priv = to_driver(kobj);
+ 	ssize_t ret = -EIO;
+ 
+ 	if (drv_attr->show)
+-		ret = drv_attr->show(drv, buf);
++		ret = drv_attr->show(drv_priv->driver, buf);
+ 	return ret;
+ }
+ 
+@@ -62,11 +63,11 @@ drv_attr_store(struct kobject * kobj, struct attribute * attr,
+ 	       const char * buf, size_t count)
+ {
+ 	struct driver_attribute * drv_attr = to_drv_attr(attr);
+-	struct device_driver * drv = to_driver(kobj);
++	struct driver_private *drv_priv = to_driver(kobj);
+ 	ssize_t ret = -EIO;
+ 
+ 	if (drv_attr->store)
+-		ret = drv_attr->store(drv, buf, count);
++		ret = drv_attr->store(drv_priv->driver, buf, count);
+ 	return ret;
+ }
+ 
+@@ -75,22 +76,12 @@ static struct sysfs_ops driver_sysfs_ops = {
+ 	.store	= drv_attr_store,
+ };
+ 
+-
+-static void driver_release(struct kobject * kobj)
++static void driver_release(struct kobject *kobj)
+ {
+-	/*
+-	 * Yes this is an empty release function, it is this way because struct
+-	 * device is always a static object, not a dynamic one.  Yes, this is
+-	 * not nice and bad, but remember, drivers are code, reference counted
+-	 * by the module count, not a device, which is really data.  And yes,
+-	 * in the future I do want to have all drivers be created dynamically,
+-	 * and am working toward that goal, but it will take a bit longer...
+-	 *
+-	 * But do not let this example give _anyone_ the idea that they can
+-	 * create a release function without any code in it at all, to do that
+-	 * is almost always wrong.  If you have any questions about this,
+-	 * please send an email to <greg@kroah.com>
+-	 */
++	struct driver_private *drv_priv = to_driver(kobj);
++
++	pr_debug("%s: freeing %s\n", __FUNCTION__, kobject_name(kobj));
++	kfree(drv_priv);
+ }
+ 
+ static struct kobj_type driver_ktype = {
+@@ -350,7 +341,13 @@ struct device * bus_find_device(struct bus_type *bus,
+ static struct device_driver * next_driver(struct klist_iter * i)
+ {
+ 	struct klist_node * n = klist_next(i);
+-	return n ? container_of(n, struct device_driver, knode_bus) : NULL;
++	struct driver_private *drv_priv;
++
++	if (n) {
++		drv_priv = container_of(n, struct driver_private, knode_bus);
++		return drv_priv->driver;
++	}
++	return NULL;
+ }
+ 
+ /**
+@@ -384,7 +381,7 @@ int bus_for_each_drv(struct bus_type * bus, struct device_driver * start,
+ 		return -EINVAL;
+ 
+ 	klist_iter_init_node(&bus->p->klist_drivers, &i,
+-			     start ? &start->knode_bus : NULL);
++			     start ? &start->p->knode_bus : NULL);
+ 	while ((drv = next_driver(&i)) && !error)
+ 		error = fn(drv, data);
+ 	klist_iter_exit(&i);
+@@ -620,7 +617,7 @@ static ssize_t driver_uevent_store(struct device_driver *drv,
+ 	enum kobject_action action;
+ 
+ 	if (kobject_action_type(buf, count, &action) == 0)
+-		kobject_uevent(&drv->kobj, action);
++		kobject_uevent(&drv->p->kobj, action);
+ 	return count;
+ }
+ static DRIVER_ATTR(uevent, S_IWUSR, NULL, driver_uevent_store);
+@@ -632,19 +629,29 @@ static DRIVER_ATTR(uevent, S_IWUSR, NULL, driver_uevent_store);
+  */
+ int bus_add_driver(struct device_driver *drv)
+ {
+-	struct bus_type * bus = bus_get(drv->bus);
++	struct bus_type *bus;
++	struct driver_private *priv;
+ 	int error = 0;
+ 
++	bus = bus_get(drv->bus);
+ 	if (!bus)
+ 		return -EINVAL;
+ 
+ 	pr_debug("bus %s: add driver %s\n", bus->name, drv->name);
+-	error = kobject_set_name(&drv->kobj, "%s", drv->name);
++
++	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	error = kobject_set_name(&priv->kobj, "%s", drv->name);
+ 	if (error)
+ 		goto out_put_bus;
+-	drv->kobj.kset = bus->p->drivers_kset;
+-	drv->kobj.ktype = &driver_ktype;
+-	error = kobject_register(&drv->kobj);
++	priv->kobj.kset = bus->p->drivers_kset;
++	priv->kobj.ktype = &driver_ktype;
++	klist_init(&priv->klist_devices, NULL, NULL);
++	priv->driver = drv;
++	drv->p = priv;
++	error = kobject_register(&priv->kobj);
+ 	if (error)
+ 		goto out_put_bus;
+ 
+@@ -653,7 +660,7 @@ int bus_add_driver(struct device_driver *drv)
+ 		if (error)
+ 			goto out_unregister;
+ 	}
+-	klist_add_tail(&drv->knode_bus, &bus->p->klist_drivers);
++	klist_add_tail(&priv->knode_bus, &bus->p->klist_drivers);
+ 	module_add_driver(drv->owner, drv);
+ 
+ 	error = driver_create_file(drv, &driver_attr_uevent);
+@@ -676,7 +683,7 @@ int bus_add_driver(struct device_driver *drv)
+ 
+ 	return error;
+ out_unregister:
+-	kobject_unregister(&drv->kobj);
++	kobject_unregister(&priv->kobj);
+ out_put_bus:
+ 	bus_put(bus);
+ 	return error;
+@@ -699,11 +706,11 @@ void bus_remove_driver(struct device_driver * drv)
+ 	remove_bind_files(drv);
+ 	driver_remove_attrs(drv->bus, drv);
+ 	driver_remove_file(drv, &driver_attr_uevent);
+-	klist_remove(&drv->knode_bus);
++	klist_remove(&drv->p->knode_bus);
+ 	pr_debug("bus %s: remove driver %s\n", drv->bus->name, drv->name);
+ 	driver_detach(drv);
+ 	module_remove_driver(drv);
+-	kobject_unregister(&drv->kobj);
++	kobject_unregister(&drv->p->kobj);
+ 	bus_put(drv->bus);
+ }
+ 
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 7bf0e67..87a348c 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -11,6 +11,8 @@
+  *
+  *	Copyright (c) 2002-5 Patrick Mochel
+  *	Copyright (c) 2002-3 Open Source Development Labs
++ *	Copyright (c) 2007 Greg Kroah-Hartman <gregkh@suse.de>
++ *	Copyright (c) 2007 Novell Inc.
+  *
+  *	This file is released under the GPLv2
+  */
+@@ -23,8 +25,6 @@
+ #include "base.h"
+ #include "power/power.h"
+ 
+-#define to_drv(node) container_of(node, struct device_driver, kobj.entry)
+-
+ 
+ static void driver_bound(struct device *dev)
+ {
+@@ -41,20 +41,20 @@ static void driver_bound(struct device *dev)
+ 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 					     BUS_NOTIFY_BOUND_DRIVER, dev);
+ 
+-	klist_add_tail(&dev->knode_driver, &dev->driver->klist_devices);
++	klist_add_tail(&dev->knode_driver, &dev->driver->p->klist_devices);
+ }
+ 
+ static int driver_sysfs_add(struct device *dev)
+ {
+ 	int ret;
+ 
+-	ret = sysfs_create_link(&dev->driver->kobj, &dev->kobj,
++	ret = sysfs_create_link(&dev->driver->p->kobj, &dev->kobj,
+ 			  kobject_name(&dev->kobj));
+ 	if (ret == 0) {
+-		ret = sysfs_create_link(&dev->kobj, &dev->driver->kobj,
++		ret = sysfs_create_link(&dev->kobj, &dev->driver->p->kobj,
+ 					"driver");
+ 		if (ret)
+-			sysfs_remove_link(&dev->driver->kobj,
++			sysfs_remove_link(&dev->driver->p->kobj,
+ 					kobject_name(&dev->kobj));
+ 	}
+ 	return ret;
+@@ -65,7 +65,7 @@ static void driver_sysfs_remove(struct device *dev)
+ 	struct device_driver *drv = dev->driver;
+ 
+ 	if (drv) {
+-		sysfs_remove_link(&drv->kobj, kobject_name(&dev->kobj));
++		sysfs_remove_link(&drv->p->kobj, kobject_name(&dev->kobj));
+ 		sysfs_remove_link(&dev->kobj, "driver");
+ 	}
+ }
+@@ -339,15 +339,15 @@ void driver_detach(struct device_driver * drv)
+ 	struct device * dev;
+ 
+ 	for (;;) {
+-		spin_lock(&drv->klist_devices.k_lock);
+-		if (list_empty(&drv->klist_devices.k_list)) {
+-			spin_unlock(&drv->klist_devices.k_lock);
++		spin_lock(&drv->p->klist_devices.k_lock);
++		if (list_empty(&drv->p->klist_devices.k_list)) {
++			spin_unlock(&drv->p->klist_devices.k_lock);
+ 			break;
+ 		}
+-		dev = list_entry(drv->klist_devices.k_list.prev,
++		dev = list_entry(drv->p->klist_devices.k_list.prev,
+ 				struct device, knode_driver.n_node);
+ 		get_device(dev);
+-		spin_unlock(&drv->klist_devices.k_lock);
++		spin_unlock(&drv->p->klist_devices.k_lock);
+ 
+ 		if (dev->parent)	/* Needed for USB */
+ 			down(&dev->parent->sem);
+diff --git a/drivers/base/driver.c b/drivers/base/driver.c
+index 633ae1d..5aacff2 100644
+--- a/drivers/base/driver.c
++++ b/drivers/base/driver.c
+@@ -3,6 +3,8 @@
+  *
+  * Copyright (c) 2002-3 Patrick Mochel
+  * Copyright (c) 2002-3 Open Source Development Labs
++ * Copyright (c) 2007 Greg Kroah-Hartman <gregkh@suse.de>
++ * Copyright (c) 2007 Novell Inc.
+  *
+  * This file is released under the GPLv2
+  *
+@@ -15,7 +17,6 @@
+ #include "base.h"
+ 
+ #define to_dev(node) container_of(node, struct device, driver_list)
+-#define to_drv(obj) container_of(obj, struct device_driver, kobj)
+ 
+ 
+ static struct device * next_device(struct klist_iter * i)
+@@ -44,7 +45,7 @@ int driver_for_each_device(struct device_driver * drv, struct device * start,
+ 	if (!drv)
+ 		return -EINVAL;
+ 
+-	klist_iter_init_node(&drv->klist_devices, &i,
++	klist_iter_init_node(&drv->p->klist_devices, &i,
+ 			     start ? &start->knode_driver : NULL);
+ 	while ((dev = next_device(&i)) && !error)
+ 		error = fn(dev, data);
+@@ -80,7 +81,7 @@ struct device * driver_find_device(struct device_driver *drv,
+ 	if (!drv)
+ 		return NULL;
+ 
+-	klist_iter_init_node(&drv->klist_devices, &i,
++	klist_iter_init_node(&drv->p->klist_devices, &i,
+ 			     (start ? &start->knode_driver : NULL));
+ 	while ((dev = next_device(&i)))
+ 		if (match(dev, data) && get_device(dev))
+@@ -100,7 +101,7 @@ int driver_create_file(struct device_driver * drv, struct driver_attribute * att
+ {
+ 	int error;
+ 	if (get_driver(drv)) {
+-		error = sysfs_create_file(&drv->kobj, &attr->attr);
++		error = sysfs_create_file(&drv->p->kobj, &attr->attr);
+ 		put_driver(drv);
+ 	} else
+ 		error = -EINVAL;
+@@ -117,7 +118,7 @@ int driver_create_file(struct device_driver * drv, struct driver_attribute * att
+ void driver_remove_file(struct device_driver * drv, struct driver_attribute * attr)
+ {
+ 	if (get_driver(drv)) {
+-		sysfs_remove_file(&drv->kobj, &attr->attr);
++		sysfs_remove_file(&drv->p->kobj, &attr->attr);
+ 		put_driver(drv);
+ 	}
+ }
+@@ -143,7 +144,7 @@ int driver_add_kobj(struct device_driver *drv, struct kobject *kobj,
+ 	if (!name)
+ 		return -ENOMEM;
+ 
+-	return kobject_add_ng(kobj, &drv->kobj, "%s", name);
++	return kobject_add_ng(kobj, &drv->p->kobj, "%s", name);
+ }
+ EXPORT_SYMBOL_GPL(driver_add_kobj);
+ 
+@@ -153,7 +154,15 @@ EXPORT_SYMBOL_GPL(driver_add_kobj);
+  */
+ struct device_driver * get_driver(struct device_driver * drv)
+ {
+-	return drv ? to_drv(kobject_get(&drv->kobj)) : NULL;
++	if (drv) {
++		struct driver_private *priv;
++		struct kobject *kobj;
++
++		kobj = kobject_get(&drv->p->kobj);
++		priv = to_driver(kobj);
++		return priv->driver;
++	}
++	return NULL;
+ }
+ 
+ 
+@@ -163,7 +172,7 @@ struct device_driver * get_driver(struct device_driver * drv)
+  */
+ void put_driver(struct device_driver * drv)
+ {
+-	kobject_put(&drv->kobj);
++	kobject_put(&drv->p->kobj);
+ }
+ 
+ static int driver_add_groups(struct device_driver *drv,
+@@ -174,10 +183,10 @@ static int driver_add_groups(struct device_driver *drv,
+ 
+ 	if (groups) {
+ 		for (i = 0; groups[i]; i++) {
+-			error = sysfs_create_group(&drv->kobj, groups[i]);
++			error = sysfs_create_group(&drv->p->kobj, groups[i]);
+ 			if (error) {
+ 				while (--i >= 0)
+-					sysfs_remove_group(&drv->kobj,
++					sysfs_remove_group(&drv->p->kobj,
+ 							   groups[i]);
+ 				break;
+ 			}
+@@ -193,7 +202,7 @@ static void driver_remove_groups(struct device_driver *drv,
+ 
+ 	if (groups)
+ 		for (i = 0; groups[i]; i++)
+-			sysfs_remove_group(&drv->kobj, groups[i]);
++			sysfs_remove_group(&drv->p->kobj, groups[i]);
+ }
+ 
+ 
+@@ -214,7 +223,6 @@ int driver_register(struct device_driver * drv)
+ 	    (drv->bus->shutdown && drv->shutdown)) {
+ 		printk(KERN_WARNING "Driver '%s' needs updating - please use bus_type methods\n", drv->name);
+ 	}
+-	klist_init(&drv->klist_devices, NULL, NULL);
+ 	ret = bus_add_driver(drv);
+ 	if (ret)
+ 		return ret;
+@@ -250,8 +258,12 @@ void driver_unregister(struct device_driver * drv)
+ struct device_driver *driver_find(const char *name, struct bus_type *bus)
+ {
+ 	struct kobject *k = kset_find_obj(bus->p->drivers_kset, name);
+-	if (k)
+-		return to_drv(k);
++	struct driver_private *priv;
++
++	if (k) {
++		priv = to_driver(k);
++		return priv->driver;
++	}
+ 	return NULL;
+ }
+ 
+diff --git a/drivers/base/module.c b/drivers/base/module.c
+index cad07be..103be9c 100644
+--- a/drivers/base/module.c
++++ b/drivers/base/module.c
+@@ -50,7 +50,7 @@ void module_add_driver(struct module *mod, struct device_driver *drv)
+ 		if (mkobj) {
+ 			mk = container_of(mkobj, struct module_kobject, kobj);
+ 			/* remember our module structure */
+-			drv->mkobj = mk;
++			drv->p->mkobj = mk;
+ 			/* kset_find_obj took a reference */
+ 			kobject_put(mkobj);
+ 		}
+@@ -60,11 +60,11 @@ void module_add_driver(struct module *mod, struct device_driver *drv)
+ 		return;
+ 
+ 	/* Don't check return codes; these calls are idempotent */
+-	no_warn = sysfs_create_link(&drv->kobj, &mk->kobj, "module");
++	no_warn = sysfs_create_link(&drv->p->kobj, &mk->kobj, "module");
+ 	driver_name = make_driver_name(drv);
+ 	if (driver_name) {
+ 		module_create_drivers_dir(mk);
+-		no_warn = sysfs_create_link(mk->drivers_dir, &drv->kobj,
++		no_warn = sysfs_create_link(mk->drivers_dir, &drv->p->kobj,
+ 					    driver_name);
+ 		kfree(driver_name);
+ 	}
+@@ -78,12 +78,12 @@ void module_remove_driver(struct device_driver *drv)
+ 	if (!drv)
+ 		return;
+ 
+-	sysfs_remove_link(&drv->kobj, "module");
++	sysfs_remove_link(&drv->p->kobj, "module");
+ 
+ 	if (drv->owner)
+ 		mk = &drv->owner->mkobj;
+-	else if (drv->mkobj)
+-		mk = drv->mkobj;
++	else if (drv->p->mkobj)
++		mk = drv->p->mkobj;
+ 	if (mk && mk->drivers_dir) {
+ 		driver_name = make_driver_name(drv);
+ 		if (driver_name) {
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index d56a05f..bdd59e8 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -499,7 +499,7 @@ int __init_or_module platform_driver_probe(struct platform_driver *drv,
+ 	 */
+ 	spin_lock(&platform_bus_type.p->klist_drivers.k_lock);
+ 	drv->probe = NULL;
+-	if (code == 0 && list_empty(&drv->driver.klist_devices.k_list))
++	if (code == 0 && list_empty(&drv->driver.p->klist_devices.k_list))
+ 		retval = -ENODEV;
+ 	drv->driver.probe = platform_drv_probe_fail;
+ 	spin_unlock(&platform_bus_type.p->klist_drivers.k_lock);
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 721ee31..92ba3a8 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -32,6 +32,7 @@
+ 
+ struct device;
+ struct device_driver;
++struct driver_private;
+ struct class;
+ struct class_device;
+ struct bus_type;
+@@ -113,16 +114,11 @@ extern struct kset *bus_get_kset(struct bus_type *bus);
+ extern struct klist *bus_get_device_klist(struct bus_type *bus);
+ 
+ struct device_driver {
+-	const char		* name;
+-	struct bus_type		* bus;
+-
+-	struct kobject		kobj;
+-	struct klist		klist_devices;
+-	struct klist_node	knode_bus;
++	const char		*name;
++	struct bus_type		*bus;
+ 
+-	struct module		* owner;
+-	const char 		* mod_name;	/* used for built-in modules */
+-	struct module_kobject	* mkobj;
++	struct module		*owner;
++	const char 		*mod_name;	/* used for built-in modules */
+ 
+ 	int	(*probe)	(struct device * dev);
+ 	int	(*remove)	(struct device * dev);
+@@ -130,6 +126,8 @@ struct device_driver {
+ 	int	(*suspend)	(struct device * dev, pm_message_t state);
+ 	int	(*resume)	(struct device * dev);
+ 	struct attribute_group **groups;
++
++	struct driver_private *p;
+ };
+ 
+ 
 -- 
 1.5.3.8
 
