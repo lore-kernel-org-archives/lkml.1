@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761314AbYAYHbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbYAYHcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761314AbYAYHbm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759099AbYAYHRL
+	id S1760012AbYAYHcA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:32:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbYAYHRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:17:11 -0500
-Received: from mail.suse.de ([195.135.220.2]:52729 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 02:17:15 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47604 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757774AbYAYHRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:17:09 -0500
+	id S1758596AbYAYHRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:17:13 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 049/196] kobject: convert securityfs to use kobject_create
-Date: Thu, 24 Jan 2008 23:09:47 -0800
-Message-Id: <1201245134-4876-49-git-send-email-gregkh@suse.de>
+Subject: [PATCH 050/196] kobject: convert debugfs to use kobject_create
+Date: Thu, 24 Jan 2008 23:09:48 -0800
+Message-Id: <1201245134-4876-50-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -26,42 +26,50 @@ We don't need a kset here, a simple kobject will do just fine, so
 dynamically create the kobject and use it.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Acked-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- security/inode.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ fs/debugfs/inode.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/security/inode.c b/security/inode.c
-index 9e42f5f..dfc5978 100644
---- a/security/inode.c
-+++ b/security/inode.c
-@@ -315,20 +315,19 @@ void securityfs_remove(struct dentry *dentry)
+diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
+index f7f1351..6672142 100644
+--- a/fs/debugfs/inode.c
++++ b/fs/debugfs/inode.c
+@@ -426,20 +426,19 @@ exit:
  }
- EXPORT_SYMBOL_GPL(securityfs_remove);
+ EXPORT_SYMBOL_GPL(debugfs_rename);
  
--static decl_subsys(security, NULL);
-+static struct kobject *security_kobj;
+-static decl_subsys(debug, NULL);
++static struct kobject *debug_kobj;
  
- static int __init securityfs_init(void)
+ static int __init debugfs_init(void)
  {
  	int retval;
  
--	security_subsys.kobj.kset = &kernel_subsys;
--	retval = subsystem_register(&security_subsys);
+-	debug_subsys.kobj.kset = &kernel_subsys;
+-	retval = subsystem_register(&debug_subsys);
 -	if (retval)
 -		return retval;
-+	security_kobj = kobject_create_and_add("security", &kernel_subsys.kobj);
-+	if (!security_kobj)
++	debug_kobj = kobject_create_and_add("debug", &kernel_subsys.kobj);
++	if (!debug_kobj)
 +		return -EINVAL;
  
- 	retval = register_filesystem(&fs_type);
+ 	retval = register_filesystem(&debug_fs_type);
  	if (retval)
--		subsystem_unregister(&security_subsys);
-+		kobject_unregister(security_kobj);
+-		subsystem_unregister(&debug_subsys);
++		kobject_unregister(debug_kobj);
  	return retval;
  }
  
+@@ -447,7 +446,7 @@ static void __exit debugfs_exit(void)
+ {
+ 	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
+ 	unregister_filesystem(&debug_fs_type);
+-	subsystem_unregister(&debug_subsys);
++	kobject_unregister(debug_kobj);
+ }
+ 
+ core_initcall(debugfs_init);
 -- 
 1.5.3.8
 
