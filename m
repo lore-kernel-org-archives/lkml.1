@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbYAYIBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763649AbYAYIBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764074AbYAYIBB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:01:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757546AbYAYHr4
+	id S1763649AbYAYIBb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763011AbYAYHtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:47:56 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2075 "EHLO spitz.ucw.cz"
+	Fri, 25 Jan 2008 02:49:39 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2083 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759871AbYAYHrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:47:55 -0500
-Date: Fri, 25 Jan 2008 07:47:46 +0000
+	id S1762162AbYAYHti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:49:38 -0500
+Date: Fri, 25 Jan 2008 07:49:10 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Michael Buesch <mb@bu3sch.de>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, bcm43xx-dev@lists.berlios.de,
-       Alessandro Rubini <rubini@vision.unipv.it>,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH -mm 5/5] b43: Avoid unregistering device objects during suspend
-Message-ID: <20080125074746.GC4134@ucw.cz>
-References: <200801250127.21966.rjw@sisk.pl> <200801250137.34275.rjw@sisk.pl>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Mika =?iso-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native format.
+Message-ID: <20080125074910.GD4134@ucw.cz>
+References: <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <47990BDC.4070008@zytor.com> <479912B0.2080506@goop.org> <479913BA.8000506@zytor.com> <47991809.9060903@goop.org> <47991A6C.8060007@zytor.com> <479921F5.9020902@goop.org> <4799247C.6090008@zytor.com> <20080125002054.GA2059@elf.ucw.cz> <47992D0E.2070700@zytor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801250137.34275.rjw@sisk.pl>
+In-Reply-To: <47992D0E.2070700@zytor.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-01-25 01:37:33, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Thu 2008-01-24 16:27:58, H. Peter Anvin wrote:
+> Pavel Machek wrote:
+> >>>
+> >>I just looked at the ACPI suspend code, and it looks 
+> >>like it hacks its own identity map at runtime.  Pavel, 
+> >>am I reading that code right?
+> >
+> >Yes, I think so, I believe we do it on both 32 and 64 
+> >bit now.
+> >
 > 
-> Modify the b43 driver to avoid deadlocking suspend and resume,
-> which happens as a result of attempting to unregister device objects
-> locked by the PM core during suspend/resume cycles.  Also, make it
-> use a suspend-safe method of unregistering device object in the
-> resume error path.
+> So the background to this... we need an identity map to 
+> trampoline at early boot, obviously, but we'd like it to 
+> not stick around more than necessary.  We have 
+> zap_low_mappings() now but it's not really sufficient.
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Acked-by: Michael Buesch <mb@bu3sch.de>
+> Secondary SMP processors need these mappings during 
+> trampolining -- presumably including CPU hotplug -- and 
+> I'm suspecting it might simply make sense to use a 
+> separate set of page tables (with both the identity and 
+> the kernel map) for trampolining and just keep them 
+> around.  That way they would be usable for ACPI as well.
 
-Maybe we should have global suspend_in_progress (or maybe system_state
-== suspending?) and automatically switch to schedule_removal() while
-it is set?
-
+That would enable some cleanups, yes.
+						Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
