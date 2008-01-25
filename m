@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbYAYNSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbYAYNT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbYAYNSW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 08:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYAYNSN
+	id S1754617AbYAYNT2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 08:19:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbYAYNTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 08:18:13 -0500
-Received: from mta2.cl.cam.ac.uk ([128.232.0.14]:34059 "EHLO mta2.cl.cam.ac.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753404AbYAYNSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 08:18:11 -0500
-User-Agent: Microsoft-Entourage/11.3.6.070618
-Date: Fri, 25 Jan 2008 13:17:32 +0000
-Subject: Re: [PATCH UPDATE] x86: ignore spurious faults
-From: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-To: Andi Kleen <ak@suse.de>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, Jan Beulich <jbeulich@novell.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Matt Mackall <mpm@selenic.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-ID: <C3BF91EC.1B6D5%Keir.Fraser@cl.cam.ac.uk>
-Thread-Topic: [PATCH UPDATE] x86: ignore spurious faults
-Thread-Index: AchfVKRk4uDAKMtHEdygEQAX8io7RQ==
-In-Reply-To: <200801251119.52798.ak@suse.de>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Fri, 25 Jan 2008 08:19:20 -0500
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:35353 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753602AbYAYNTT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 08:19:19 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FACBxmUdMQWYq/2dsb2JhbACBV6xy
+Date: Fri, 25 Jan 2008 08:14:12 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 07/26] Add INIT_ARRAY() to kernel.h
+Message-ID: <20080125131411.GA20299@Krystal>
+References: <20080124202706.250598537@polymtl.ca> <20080124203335.082459062@polymtl.ca> <20080124125845.bf5767b8.randy.dunlap@oracle.com> <20080124210431.GA1647@Krystal> <47991989.8060205@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <47991989.8060205@zytor.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:13:46 up 82 days, 18:19,  3 users,  load average: 0.16, 0.32,
+	0.34
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25/1/08 10:19, "Andi Kleen" <ak@suse.de> wrote:
+* H. Peter Anvin (hpa@zytor.com) wrote:
+> Mathieu Desnoyers wrote:
+>> Try opening such code in vim, and the syntax highlighting gets all
+>> messed up :-/
+>> The other option is to do the *right thing* and fix vim, of course, but
+>> this change won't be in distros for a while.
+>
+> Let's get this straight...
+>
+> You're suggesting introducing a pointless, ugly macro into the kernel 
+> because of a vim bug?
+>
+> *Plonk!*
+>
 
->> Whether this a problem in light of Xen spurious faults depends on whether
->> NMI handlers touch dynamically-allocated data.
-> 
-> How do you define dynamically-allocated data?
+heh, yup, I guess we should drop this patch. As you point out, it makes
+no sense.
 
-Anything that could have been a read-only pte or ldt page in a previous life
-with no intervening TLB flush. So get_free_page(), kmalloc(), vmalloc(), ...
+Mathieu
 
-Actually I think we are fine, now I think about it some more, because we
-only clear the software NMI-in-flight flag if the guest executes IRET via
-the hypervisor. Most Xen Linux guests only do IRET via the hypervisor when
-the current context is an NMI handler (additionally x86_64 also does so when
-returning to ring 3). Most importantly for this case, we will *not* IRET via
-the hypervisor when returning from a #PF context nested in an NMI context.
-Hence the NMI-in-flight flag will not be cleared, and guest virtual NMIs
-will not nest. So that's a relief!
+> 	-hpa
 
- -- Keir
-
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
