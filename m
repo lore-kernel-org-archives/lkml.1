@@ -1,59 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760643AbYAYVVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYAYVVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760643AbYAYVVS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 16:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbYAYVVK
+	id S1756804AbYAYVVl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 16:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760550AbYAYVVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 16:21:10 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:40011 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751431AbYAYVVJ (ORCPT
+	Fri, 25 Jan 2008 16:21:31 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:26260 "EHLO
+	outbound9-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753349AbYAYVVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 16:21:09 -0500
-Subject: Re: [GIT PATCH] driver core patches against 2.6.24
-From: Jon Masters <jonathan@jonmasters.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <479A3ED3.6020808@goop.org>
-References: <20080125071127.GA4860@kroah.com>
-	 <alpine.LFD.1.00.0801251035150.2979@hp.linux-foundation.org>
-	 <20080125185213.GA23475@suse.de>
-	 <alpine.LFD.1.00.0801251108480.2979@hp.linux-foundation.org>
-	 <479A3ED3.6020808@goop.org>
+	Fri, 25 Jan 2008 16:21:30 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Avi Kivity" <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+cc: "Joerg Roedel" <joerg.roedel@amd.com>
+Subject: [PATCH 4/8] X86: export information about NPT to generic x86
+ code
+Date: Fri, 25 Jan 2008 21:53:09 +0100
+Message-ID: <1201294393-22613-5-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.3.7
+In-Reply-To: <1201294393-22613-1-git-send-email-joerg.roedel@amd.com>
+References: <1201294393-22613-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 25 Jan 2008 20:53:14.0583 (UTC)
+ FILETIME=[4DD78E70:01C85F94]
+MIME-Version: 1.0
+X-WSS-ID: 6B8493B52IW8829088-01-01
 Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Fri, 25 Jan 2008 16:20:27 -0500
-Message-Id: <1201296027.32422.80.camel@perihelion>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The generic x86 code has to know if the specific implementation uses Nested
+Paging. In the generic code Nested Paging is called Hardware Assisted Paging
+(HAP) to avoid confusion with (future) HAP implementations of other vendors.
+This patch exports the availability of HAP to the generic x86 code.
 
-On Fri, 2008-01-25 at 11:56 -0800, Jeremy Fitzhardinge wrote:
-> Linus Torvalds wrote:
-> > I'm too lazy to want to do my own initrd. I just use the prepackaged ones 
-> > and rely on the fact that my private kernel will refuse to load modules 
-> > that aren't meant for it anyway.
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/svm.c         |    7 +++++++
+ arch/x86/kvm/vmx.c         |    7 +++++++
+ include/asm-x86/kvm_host.h |    2 ++
+ 3 files changed, 16 insertions(+), 0 deletions(-)
 
-> initrds generally aren't prepackaged, but generated on install (at least 
-> with Fedora).  You can regenerate them with "mkinitrd -f 
-> /boot/initrd-2.6.24.img 2.6.24".  Also, I find that "make 
-> modules_install install" does it automatically from a kernel build.
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 2e718ff..d0bfdd8 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1678,6 +1678,11 @@ static bool svm_cpu_has_accelerated_tpr(void)
+ 	return false;
+ }
+ 
++static bool svm_hap_enabled(void)
++{
++	return npt_enabled;
++}
++
+ static struct kvm_x86_ops svm_x86_ops = {
+ 	.cpu_has_kvm_support = has_svm,
+ 	.disabled_by_bios = is_disabled,
+@@ -1734,6 +1739,8 @@ static struct kvm_x86_ops svm_x86_ops = {
+ 	.inject_pending_vectors = do_interrupt_requests,
+ 
+ 	.set_tss_addr = svm_set_tss_addr,
++
++	.hap_enabled = svm_hap_enabled,
+ };
+ 
+ static int __init svm_init(void)
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 00a00e4..8feb775 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -2631,6 +2631,11 @@ static void __init vmx_check_processor_compat(void *rtn)
+ 	}
+ }
+ 
++static bool vmx_hap_enabled(void)
++{
++	return false;
++}
++
+ static struct kvm_x86_ops vmx_x86_ops = {
+ 	.cpu_has_kvm_support = cpu_has_kvm_support,
+ 	.disabled_by_bios = vmx_disabled_by_bios,
+@@ -2688,6 +2693,8 @@ static struct kvm_x86_ops vmx_x86_ops = {
+ 	.inject_pending_vectors = do_interrupt_requests,
+ 
+ 	.set_tss_addr = vmx_set_tss_addr,
++
++	.hap_enabled = vmx_hap_enabled,
+ };
+ 
+ static int __init vmx_init(void)
+diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
+index 67ae307..45a9d05 100644
+--- a/include/asm-x86/kvm_host.h
++++ b/include/asm-x86/kvm_host.h
+@@ -392,6 +392,8 @@ struct kvm_x86_ops {
+ 				       struct kvm_run *run);
+ 
+ 	int (*set_tss_addr)(struct kvm *kvm, unsigned int addr);
++
++	bool (*hap_enabled)(void);
+ };
+ 
+ extern struct kvm_x86_ops *kvm_x86_ops;
+-- 
+1.5.3.7
 
-Right. I assumed that Linus was calling mkinitrd but was being bitten by
-one of the occasional assumptions (I believe we make in that script)
-that certain things are always modular. I just mailed the maintainer,
-suggesting we screen against the one of the Modules.* files (perhaps
-Modules.order might become a good candidate in due course...).
-
-Jon.
 
 
