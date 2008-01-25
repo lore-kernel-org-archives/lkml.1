@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932591AbYAYI3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932637AbYAYI36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932591AbYAYI3j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:29:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761167AbYAYIBR
+	id S932637AbYAYI36 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:29:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764043AbYAYIBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:01:17 -0500
-Received: from mx2.suse.de ([195.135.220.15]:53727 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 03:01:19 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53719 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764095AbYAYIAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 03:00:03 -0500
+	id S1763880AbYAYIAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 03:00:02 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jens Axboe <axboe@kernel.dk>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 120/196] Kobject: change drivers/block/pktcdvd.c to use kobject_init_and_add
-Date: Thu, 24 Jan 2008 23:32:29 -0800
-Message-Id: <1201246425-5058-41-git-send-email-gregkh@suse.de>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Swen Schillig <swen@vnet.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 147/196] zfcp: Use device_driver default attribute groups.
+Date: Thu, 24 Jan 2008 23:32:56 -0800
+Message-Id: <1201246425-5058-68-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -23,43 +23,100 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop using kobject_register, as this way we can control the sending of
-the uevent properly, after everything is properly initialized.
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-Cc: Jens Axboe <axboe@kernel.dk>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
+CC: Swen Schillig <swen@vnet.ibm.com>
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/block/pktcdvd.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/s390/scsi/zfcp_ccw.c          |   14 ++++----------
+ drivers/s390/scsi/zfcp_ext.h          |    3 +--
+ drivers/s390/scsi/zfcp_sysfs_driver.c |   27 ++++-----------------------
+ 3 files changed, 9 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-index 17da699..d1ee383 100644
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -110,17 +110,18 @@ static struct pktcdvd_kobj* pkt_kobj_create(struct pktcdvd_device *pd,
- 					struct kobj_type* ktype)
+diff --git a/drivers/s390/scsi/zfcp_ccw.c b/drivers/s390/scsi/zfcp_ccw.c
+index e01cbf1..86c3f65 100644
+--- a/drivers/s390/scsi/zfcp_ccw.c
++++ b/drivers/s390/scsi/zfcp_ccw.c
+@@ -52,6 +52,9 @@ static struct ccw_driver zfcp_ccw_driver = {
+ 	.set_offline = zfcp_ccw_set_offline,
+ 	.notify      = zfcp_ccw_notify,
+ 	.shutdown    = zfcp_ccw_shutdown,
++	.driver = {
++		.groups = zfcp_driver_attr_groups,
++	},
+ };
+ 
+ MODULE_DEVICE_TABLE(ccw, zfcp_ccw_device_id);
+@@ -251,16 +254,7 @@ zfcp_ccw_notify(struct ccw_device *ccw_device, int event)
+ int __init
+ zfcp_ccw_register(void)
  {
- 	struct pktcdvd_kobj *p;
-+	int error;
-+
- 	p = kzalloc(sizeof(*p), GFP_KERNEL);
- 	if (!p)
- 		return NULL;
--	kobject_set_name(&p->kobj, "%s", name);
--	p->kobj.parent = parent;
--	p->kobj.ktype = ktype;
- 	p->pd = pd;
--	if (kobject_register(&p->kobj) != 0) {
-+	error = kobject_init_and_add(&p->kobj, ktype, parent, "%s", name);
-+	if (error) {
- 		kobject_put(&p->kobj);
- 		return NULL;
- 	}
-+	kobject_uevent(&p->kobj, KOBJ_ADD);
- 	return p;
+-	int retval;
+-
+-	retval = ccw_driver_register(&zfcp_ccw_driver);
+-	if (retval)
+-		goto out;
+-	retval = zfcp_sysfs_driver_create_files(&zfcp_ccw_driver.driver);
+-	if (retval)
+-		ccw_driver_unregister(&zfcp_ccw_driver);
+- out:
+-	return retval;
++	return ccw_driver_register(&zfcp_ccw_driver);
  }
- /*
+ 
+ /**
+diff --git a/drivers/s390/scsi/zfcp_ext.h b/drivers/s390/scsi/zfcp_ext.h
+index 8534cf0..06b1079 100644
+--- a/drivers/s390/scsi/zfcp_ext.h
++++ b/drivers/s390/scsi/zfcp_ext.h
+@@ -27,8 +27,7 @@
+ extern struct zfcp_data zfcp_data;
+ 
+ /******************************** SYSFS  *************************************/
+-extern int  zfcp_sysfs_driver_create_files(struct device_driver *);
+-extern void zfcp_sysfs_driver_remove_files(struct device_driver *);
++extern struct attribute_group *zfcp_driver_attr_groups[];
+ extern int  zfcp_sysfs_adapter_create_files(struct device *);
+ extern void zfcp_sysfs_adapter_remove_files(struct device *);
+ extern int  zfcp_sysfs_port_create_files(struct device *, u32);
+diff --git a/drivers/s390/scsi/zfcp_sysfs_driver.c b/drivers/s390/scsi/zfcp_sysfs_driver.c
+index 005e62f..651edd5 100644
+--- a/drivers/s390/scsi/zfcp_sysfs_driver.c
++++ b/drivers/s390/scsi/zfcp_sysfs_driver.c
+@@ -98,28 +98,9 @@ static struct attribute_group zfcp_driver_attr_group = {
+ 	.attrs = zfcp_driver_attrs,
+ };
+ 
+-/**
+- * zfcp_sysfs_create_driver_files - create sysfs driver files
+- * @dev: pointer to belonging device
+- *
+- * Create all sysfs attributes of the zfcp device driver
+- */
+-int
+-zfcp_sysfs_driver_create_files(struct device_driver *drv)
+-{
+-	return sysfs_create_group(&drv->kobj, &zfcp_driver_attr_group);
+-}
+-
+-/**
+- * zfcp_sysfs_remove_driver_files - remove sysfs driver files
+- * @dev: pointer to belonging device
+- *
+- * Remove all sysfs attributes of the zfcp device driver
+- */
+-void
+-zfcp_sysfs_driver_remove_files(struct device_driver *drv)
+-{
+-	sysfs_remove_group(&drv->kobj, &zfcp_driver_attr_group);
+-}
++struct attribute_group *zfcp_driver_attr_groups[] = {
++	&zfcp_driver_attr_group,
++	NULL,
++};
+ 
+ #undef ZFCP_LOG_AREA
 -- 
 1.5.3.8
 
