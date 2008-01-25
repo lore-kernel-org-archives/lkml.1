@@ -1,50 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760256AbYAYTDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760426AbYAYTDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760256AbYAYTDX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 14:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbYAYTDH
+	id S1760426AbYAYTDj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 14:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757740AbYAYTDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 14:03:07 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50664 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756843AbYAYTDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 14:03:06 -0500
-Date: Fri, 25 Jan 2008 20:02:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Yinghai Lu <Yinghai.Lu@Sun.COM>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: trim ram need to check if mtrr is there v3
-Message-ID: <20080125190252.GB2518@elte.hu>
-References: <47993F1A.5070408@goop.org> <200801241947.55223.yinghai.lu@sun.com> <4799930B.40006@goop.org> <200801250042.53074.yinghai.lu@sun.com> <20080125110935.GA20026@elte.hu> <479A317D.6020202@goop.org>
+	Fri, 25 Jan 2008 14:03:10 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:41597 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756843AbYAYTDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 14:03:08 -0500
+Date: Fri, 25 Jan 2008 11:03:07 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Robin Holt <holt@sgi.com>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 1/4] mmu_notifier: Core code
+In-Reply-To: <20080125185646.GQ3058@sgi.com>
+Message-ID: <Pine.LNX.4.64.0801251058170.3198@schroedinger.engr.sgi.com>
+References: <20080125055606.102986685@sgi.com> <20080125055801.212744875@sgi.com>
+ <20080125183934.GO26420@sgi.com> <Pine.LNX.4.64.0801251041040.672@schroedinger.engr.sgi.com>
+ <20080125185646.GQ3058@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <479A317D.6020202@goop.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0085]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 25 Jan 2008, Robin Holt wrote:
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> > > > +void mmu_notifier_release(struct mm_struct *mm)
+> > > > +{
+> > > > +	struct mmu_notifier *mn;
+> > > > +	struct hlist_node *n;
+> > > > +
+> > > > +	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
+> > > > +		rcu_read_lock();
+> > > > +		hlist_for_each_entry_rcu(mn, n,
+> > > > +					  &mm->mmu_notifier.head, hlist) {
+> > > > +			if (mn->ops->release)
+> > > > +				mn->ops->release(mn, mm);
+> > > > +			hlist_del(&mn->hlist);
+> > > 
+> > > I think the hlist_del needs to be before the function callout so we can free
+> > > the structure without a use-after-free issue.
+> > 
+> > The list head is in the mm_struct. This will be freed later.
+> > 
+> 
+> I meant the structure pointed to by &mn.  I assume it is intended that
+> structure be kmalloc'd as part of a larger structure.  The driver is the
+> entity which created that structure and should be the one to free it.
 
->> and:
->>
->>   WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 45MB 
->>   of RAM.
->
-> Though I don't see this form of message; have you pushed your changes 
-> out to the public x86.git#mm tree?
+mn will be pointing to the listhead in the mm_struct one after the other. 
+You mean the ops structure?
 
-it's available ... 3 .. 2 ... 1 ... NOW! ;-)
+> > > > +void mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm)
+> > > > +{
+> > > > +	spin_lock(&mmu_notifier_list_lock);
+> > > 
+> > > Shouldn't this really be protected by the down_write(mmap_sem)?  Maybe:
+> > 
+> > Ok. We could switch this to mmap_sem protection for the mm_struct but the 
+> > rmap notifier is not associated with an mm_struct. So we would need to 
+> > keep it there. Since we already have a spinlock: Just use it for both to 
+> > avoid further complications.
+> 
+> But now you are putting a global lock in where it is inappropriate.
 
-	Ingo
+The lock is only used during register and unregister. Very low level 
+usage.
+
+> > > XPMEM, would also benefit from a call early.  We could make all the
+> > > segments as being torn down and start the recalls.  We already have
+> > > this code in and working (have since it was first written 6 years ago).
+> > > In this case, all segments are torn down with a single message to each
+> > > of the importing partitions.  In contrast, the teardown code which would
+> > > happen now would be one set of messages for each vma.
+> > 
+> > So we need an additional global teardown call? Then we'd need to switch 
+> > off the vma based invalidate_range()?
+> 
+> No, EXACTLY what I originally was asking for, either move this call site
+> up, introduce an additional mmu_notifier op, or place this one in two
+> locations with a flag indicating which call is being made.
+
+Add a new invalidate_all() call? Then on exit we do
+
+1. invalidate_all()
+
+2. invalidate_range() for each vma
+
+3. release()
+
+We cannot simply move the call up because there will be future range 
+callbacks on vma invalidation.
+
+
