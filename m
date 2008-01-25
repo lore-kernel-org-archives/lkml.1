@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764689AbYAYIG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760020AbYAYIH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764689AbYAYIG5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:06:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764091AbYAYH7y
+	id S1760020AbYAYIH0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763762AbYAYH7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:59:54 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53540 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 02:59:55 -0500
+Received: from mail.suse.de ([195.135.220.2]:59393 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764048AbYAYH7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:59:41 -0500
+	id S1763593AbYAYH7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:59:42 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 177/196] kobject: remove old, outdated documentation.
-Date: Thu, 24 Jan 2008 23:33:26 -0800
-Message-Id: <1201246425-5058-98-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Tony Luck <tony.luck@intel.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 124/196] Kobject: change arch/ia64/kernel/topology.c to use kobject_init_and_add
+Date: Thu, 24 Jan 2008 23:32:33 -0800
+Message-Id: <1201246425-5058-45-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -22,311 +23,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As we are replacing the documentation, it's easier to do this in a two
-stage pass, delete the old file and add the new one.
+Stop using kobject_register, as this way we can control the sending of
+the uevent properly, after everything is properly initialized.
 
+Cc: Tony Luck <tony.luck@intel.com>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/kobject.txt |  289 ---------------------------------------------
- 1 files changed, 0 insertions(+), 289 deletions(-)
- delete mode 100644 Documentation/kobject.txt
+ arch/ia64/kernel/topology.c |   17 +++++++++--------
+ 1 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
-deleted file mode 100644
-index ca86a88..0000000
---- a/Documentation/kobject.txt
-+++ /dev/null
-@@ -1,289 +0,0 @@
--The kobject Infrastructure
--
--Patrick Mochel <mochel@osdl.org>
--
--Updated: 3 June 2003
--
--
--Copyright (c)  2003 Patrick Mochel
--Copyright (c)  2003 Open Source Development Labs
--
--
--0. Introduction
--
--The kobject infrastructure performs basic object management that larger
--data structures and subsystems can leverage, rather than reimplement
--similar functionality. This functionality primarily concerns:
--
--- Object reference counting.
--- Maintaining lists (sets) of objects.
--- Object set locking.
--- Userspace representation. 
--
--The infrastructure consists of a number of object types to support
--this functionality. Their programming interfaces are described below
--in detail, and briefly here:
--
--- kobjects	a simple object.
--- kset		a set of objects of a certain type.
--- ktype		a set of helpers for objects of a common type. 
--
--
--The kobject infrastructure maintains a close relationship with the
--sysfs filesystem. Each kobject that is registered with the kobject
--core receives a directory in sysfs. Attributes about the kobject can
--then be exported. Please see Documentation/filesystems/sysfs.txt for
--more information. 
--
--The kobject infrastructure provides a flexible programming interface,
--and allows kobjects and ksets to be used without being registered
--(i.e. with no sysfs representation). This is also described later. 
--
--
--1. kobjects
--
--1.1 Description
--
--
--struct kobject is a simple data type that provides a foundation for
--more complex object types. It provides a set of basic fields that
--almost all complex data types share. kobjects are intended to be
--embedded in larger data structures and replace fields they duplicate. 
--
--1.2 Definition
--
--struct kobject {
--	const char		* k_name;
--	struct kref		kref;
--	struct list_head	entry;
--	struct kobject		* parent;
--	struct kset		* kset;
--	struct kobj_type	* ktype;
--	struct sysfs_dirent	* sd;
--	wait_queue_head_t	poll;
--};
--
--void kobject_init(struct kobject *);
--int kobject_add(struct kobject *);
--int kobject_register(struct kobject *);
--
--void kobject_del(struct kobject *);
--void kobject_unregister(struct kobject *);
--
--struct kobject * kobject_get(struct kobject *);
--void kobject_put(struct kobject *);
--
--
--1.3 kobject Programming Interface
--
--kobjects may be dynamically added and removed from the kobject core
--using kobject_register() and kobject_unregister(). Registration
--includes inserting the kobject in the list of its dominant kset and
--creating a directory for it in sysfs.
--
--Alternatively, one may use a kobject without adding it to its kset's list
--or exporting it via sysfs, by simply calling kobject_init(). An
--initialized kobject may later be added to the object hierarchy by
--calling kobject_add(). An initialized kobject may be used for
--reference counting.
--
--Note: calling kobject_init() then kobject_add() is functionally
--equivalent to calling kobject_register().
--
--When a kobject is unregistered, it is removed from its kset's list,
--removed from the sysfs filesystem, and its reference count is decremented.
--List and sysfs removal happen in kobject_del(), and may be called
--manually. kobject_put() decrements the reference count, and may also
--be called manually. 
--
--A kobject's reference count may be incremented with kobject_get(),
--which returns a valid reference to a kobject; and decremented with 
--kobject_put(). An object's reference count may only be incremented if
--it is already positive. 
--
--When a kobject's reference count reaches 0, the method struct
--kobj_type::release() (which the kobject's kset points to) is called.
--This allows any memory allocated for the object to be freed.
--
--
--NOTE!!! 
--
--It is _imperative_ that you supply a destructor for dynamically
--allocated kobjects to free them if you are using kobject reference
--counts. The reference count controls the lifetime of the object.
--If it goes to 0, then it is assumed that the object will
--be freed and cannot be used. 
--
--More importantly, you must free the object there, and not immediately
--after an unregister call. If someone else is referencing the object
--(e.g. through a sysfs file), they will obtain a reference to the
--object, assume it's valid and operate on it. If the object is
--unregistered and freed in the meantime, the operation will then
--reference freed memory and go boom. 
--
--This can be prevented, in the simplest case, by defining a release
--method and freeing the object from there only. Note that this will not
--secure reference count/object management models that use a dual
--reference count or do other wacky things with the reference count
--(like the networking layer). 
--
--
--1.4 sysfs
--
--Each kobject receives a directory in sysfs. This directory is created
--under the kobject's parent directory. 
--
--If a kobject does not have a parent when it is registered, its parent
--becomes its dominant kset. 
--
--If a kobject does not have a parent nor a dominant kset, its directory
--is created at the top-level of the sysfs partition.
--
--
--
--2. ksets
--
--2.1 Description
--
--A kset is a set of kobjects that are embedded in the same type. 
--
--
--struct kset {
--	struct kobj_type	* ktype;
--	struct list_head	list;
--	struct kobject		kobj;
--	struct kset_uevent_ops	* uevent_ops;
--};
--
--
--void kset_init(struct kset * k);
--int kset_add(struct kset * k);
--int kset_register(struct kset * k);
--void kset_unregister(struct kset * k);
--
--struct kset * kset_get(struct kset * k);
--void kset_put(struct kset * k);
--
--struct kobject * kset_find_obj(struct kset *, char *);
--
--
--The type that the kobjects are embedded in is described by the ktype
--pointer.
--
--A kset contains a kobject itself, meaning that it may be registered in
--the kobject hierarchy and exported via sysfs. More importantly, the
--kset may be embedded in a larger data type, and may be part of another
--kset (of that object type). 
--
--For example, a block device is an object (struct gendisk) that is
--contained in a set of block devices. It may also contain a set of
--partitions (struct hd_struct) that have been found on the device. The
--following code snippet illustrates how to express this properly.
--
--	 struct gendisk * disk;
--	 ...
--	 disk->kset.kobj.kset = &block_kset;
--	 disk->kset.ktype = &partition_ktype;
--	 kset_register(&disk->kset);
--
--- The kset that the disk's embedded object belongs to is the
--  block_kset, and is pointed to by disk->kset.kobj.kset. 
--
--- The type of objects on the disk's _subordinate_ list are partitions, 
--  and is set in disk->kset.ktype. 
--
--- The kset is then registered, which handles initializing and adding
--  the embedded kobject to the hierarchy. 
--
--
--2.2 kset Programming Interface 
--
--All kset functions, except kset_find_obj(), eventually forward the
--calls to their embedded kobjects after performing kset-specific
--operations. ksets offer a similar programming model to kobjects: they
--may be used after they are initialized, without registering them in
--the hierarchy. 
--
--kset_find_obj() may be used to locate a kobject with a particular
--name. The kobject, if found, is returned. 
--
--There are also some helper functions which names point to the formerly
--existing "struct subsystem", whose functions have been taken over by
--ksets.
--
--
--decl_subsys(name,type,uevent_ops)
--
--Declares a kset named '<name>_subsys' of type <type> with
--uevent_ops <uevent_ops>. For example,
--
--decl_subsys(devices, &ktype_device, &device_uevent_ops);
--
--is equivalent to doing:
--
--struct kset devices_subsys = {
--     .ktype = &ktype_devices,
--     .uevent_ops = &device_uevent_ops,
--};
--kobject_set_name(&devices_subsys, name);
--
--The objects that are registered with a subsystem that use the
--subsystem's default list must have their kset ptr set properly. These
--objects may have embedded kobjects or ksets. The
--following helper makes setting the kset easier:
--
--
--kobj_set_kset_s(obj,subsys)
--
--- Assumes that obj->kobj exists, and is a struct kobject.
--- Sets the kset of that kobject to the kset <subsys>.
--
--int subsystem_register(struct kset *s);
--void subsystem_unregister(struct kset *s);
--
--These are just wrappers around the respective kset_* functions.
--
--2.3 sysfs
--
--ksets are represented in sysfs when their embedded kobjects are
--registered. They follow the same rules of parenting, with one
--exception. If a kset does not have a parent, nor is its embedded
--kobject part of another kset, the kset's parent becomes its dominant
--subsystem. 
--
--If the kset does not have a parent, its directory is created at the
--sysfs root. This should only happen when the kset registered is
--embedded in a subsystem itself. 
--
--
--3. struct ktype
--
--3.1. Description
--
--struct kobj_type {
--	void (*release)(struct kobject *);
--	struct sysfs_ops	* sysfs_ops;
--	struct attribute	** default_attrs;
--};
--
--
--Object types require specific functions for converting between the
--generic object and the more complex type. struct kobj_type provides
--the object-specific fields, which include:
--
--- release: Called when the kobject's reference count reaches 0. This
--  should convert the object to the more complex type and free it. 
--
--- sysfs_ops: Provides conversion functions for sysfs access. Please
--  see the sysfs documentation for more information. 
--
--- default_attrs: Default attributes to be exported via sysfs when the
--  object is registered.Note that the last attribute has to be
--  initialized to NULL ! You can find a complete implementation
--  in block/genhd.c
--
--
--Instances of struct kobj_type are not registered; only referenced by
--the kset. A kobj_type may be referenced by an arbitrary number of
--ksets, as there may be disparate sets of identical objects. 
--
+diff --git a/arch/ia64/kernel/topology.c b/arch/ia64/kernel/topology.c
+index 14261fe..c4311e3 100644
+--- a/arch/ia64/kernel/topology.c
++++ b/arch/ia64/kernel/topology.c
+@@ -354,17 +354,16 @@ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
+ 	if (unlikely(retval < 0))
+ 		return retval;
+ 
+-	all_cpu_cache_info[cpu].kobj.parent = &sys_dev->kobj;
+-	kobject_set_name(&all_cpu_cache_info[cpu].kobj, "%s", "cache");
+-	all_cpu_cache_info[cpu].kobj.ktype = &cache_ktype_percpu_entry;
+-	retval = kobject_register(&all_cpu_cache_info[cpu].kobj);
++	retval = kobject_init_and_add(&all_cpu_cache_info[cpu].kobj,
++				      &cache_ktype_percpu_entry, &sys_dev->kobj,
++				      "%s", "cache");
+ 
+ 	for (i = 0; i < all_cpu_cache_info[cpu].num_cache_leaves; i++) {
+ 		this_object = LEAF_KOBJECT_PTR(cpu,i);
+-		this_object->kobj.parent = &all_cpu_cache_info[cpu].kobj;
+-		kobject_set_name(&(this_object->kobj), "index%1lu", i);
+-		this_object->kobj.ktype = &cache_ktype;
+-		retval = kobject_register(&(this_object->kobj));
++		retval = kobject_init_and_add(&(this_object->kobj),
++					      &cache_ktype,
++					      &all_cpu_cache_info[cpu].kobj,
++					      "index%1lu", i);
+ 		if (unlikely(retval)) {
+ 			for (j = 0; j < i; j++) {
+ 				kobject_unregister(
+@@ -374,7 +373,9 @@ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
+ 			cpu_cache_sysfs_exit(cpu);
+ 			break;
+ 		}
++		kobject_uevent(&(this_object->kobj), KOBJ_ADD);
+ 	}
++	kobject_uevent(&all_cpu_cache_info[cpu].kobj, KOBJ_ADD);
+ 	return retval;
+ }
+ 
 -- 
 1.5.3.8
 
