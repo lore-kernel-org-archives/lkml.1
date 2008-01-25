@@ -1,108 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756373AbYAYAvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbYAYA63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756373AbYAYAvQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 19:51:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYAYAtN
+	id S1753430AbYAYA63 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 19:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbYAYA6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 19:49:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45222 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752041AbYAYAtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 19:49:06 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mm 4/5] Leds: Add possibility to remove leds classdevs during suspend/resume
-Date: Fri, 25 Jan 2008 01:36:29 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Michael Buesch <mb@bu3sch.de>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       bcm43xx-dev@lists.berlios.de,
-       Alessandro Rubini <rubini@vision.unipv.it>,
-       Richard Purdie <rpurdie@rpsys.net>
-References: <200801250127.21966.rjw@sisk.pl>
-In-Reply-To: <200801250127.21966.rjw@sisk.pl>
+	Thu, 24 Jan 2008 19:58:19 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:55680 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751124AbYAYA6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 19:58:18 -0500
+Message-ID: <47993428.7000001@sgi.com>
+Date: Thu, 24 Jan 2008 16:58:16 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, jeremy@goop.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] percpu: Optimize percpu accesses
+References: <20080123044924.508382000@sgi.com> <20080124224613.GA24855@elte.hu> <47992AA8.6040804@sgi.com> <20080125002543.GA931@elte.hu>
+In-Reply-To: <20080125002543.GA931@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801250136.30292.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
+> 
+>>> tried it on x86.git and 1/3 did not build and 2/3 causes a boot hang 
+>>> with the attached .config.
+>> The build error was fixed with the note I sent to you yesterday with a 
+>> "fixup" patch for changes in -mm but not in x86.git (attached).
+> 
+> no, that build error was in patch #2, and your later patch made it 
+> possible for me to bisect down to that point. #1 failed differently. 
+> (and not in module.c - dont remember the details - let me know if you 
+> cannot reproduce - the hang in #2 was the more significant bug.) The 
+> hang gave no messages on the earlyprintk serial console.
+> 
+> 	Ingo
 
-Make it possible to unregister a led classdev object in a safe way
-during a suspend/resume cycle.
+I may need them then.  I updated to your latest available git tree
+and applied the patchset I sent and I got this build error:
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/leds/led-class.c |   13 +++++++++----
- include/linux/leds.h     |   10 +++++++++-
- 2 files changed, 18 insertions(+), 5 deletions(-)
+kernel/module.c:345: error: expected identifier or '(' before 'char'
+kernel/module.c:345: error: expected ')' before numeric constant
 
-Index: linux-2.6.24-rc8-mm1/drivers/leds/led-class.c
-===================================================================
---- linux-2.6.24-rc8-mm1.orig/drivers/leds/led-class.c
-+++ linux-2.6.24-rc8-mm1/drivers/leds/led-class.c
-@@ -137,12 +137,14 @@ err_out:
- EXPORT_SYMBOL_GPL(led_classdev_register);
- 
- /**
-- * led_classdev_unregister - unregisters a object of led_properties class.
-+ * __led_classdev_unregister - unregisters a object of led_properties class.
-  * @led_cdev: the led device to unregister
-+ * @suspended: indicates whether system-wide suspend or resume is in progress
-  *
-  * Unregisters a previously registered via led_classdev_register object.
-  */
--void led_classdev_unregister(struct led_classdev *led_cdev)
-+void __led_classdev_unregister(struct led_classdev *led_cdev,
-+				      bool suspended)
- {
- 	device_remove_file(led_cdev->dev, &dev_attr_brightness);
- #ifdef CONFIG_LEDS_TRIGGERS
-@@ -153,13 +155,16 @@ void led_classdev_unregister(struct led_
- 	up_write(&led_cdev->trigger_lock);
- #endif
- 
--	device_unregister(led_cdev->dev);
-+	if (suspended)
-+		device_pm_schedule_removal(led_cdev->dev);
-+	else
-+		device_unregister(led_cdev->dev);
- 
- 	down_write(&leds_list_lock);
- 	list_del(&led_cdev->node);
- 	up_write(&leds_list_lock);
- }
--EXPORT_SYMBOL_GPL(led_classdev_unregister);
-+EXPORT_SYMBOL_GPL(__led_classdev_unregister);
- 
- static int __init leds_init(void)
- {
-Index: linux-2.6.24-rc8-mm1/include/linux/leds.h
-===================================================================
---- linux-2.6.24-rc8-mm1.orig/include/linux/leds.h
-+++ linux-2.6.24-rc8-mm1/include/linux/leds.h
-@@ -59,7 +59,15 @@ struct led_classdev {
- 
- extern int led_classdev_register(struct device *parent,
- 				 struct led_classdev *led_cdev);
--extern void led_classdev_unregister(struct led_classdev *led_cdev);
-+extern void __led_classdev_unregister(struct led_classdev *led_cdev, bool sus);
-+static inline void led_classdev_unregister(struct led_classdev *lcd)
-+{
-+	__led_classdev_unregister(lcd, false);
-+}
-+static inline void led_classdev_unregister_suspended(struct led_classdev *lcd)
-+{
-+	__led_classdev_unregister(lcd, true);
-+}
- extern void led_classdev_suspend(struct led_classdev *led_cdev);
- extern void led_classdev_resume(struct led_classdev *led_cdev);
- 
+With the fixup patch, all my test configs (and your config) build cleanly.
 
+The hang though, I'm getting as well and am debugging it now (alibi
+slowly since it's happening so early.  Too bad grub doesn't have kdb
+in it... ;-)
+
+Thanks,
+Mike
