@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbYAYDB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbYAYDDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754609AbYAYDB7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 22:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbYAYDBt
+	id S1754946AbYAYDDn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 22:03:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbYAYDDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 22:01:49 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:52940 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752549AbYAYDBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 22:01:48 -0500
-Message-ID: <47995115.9090903@garzik.org>
-Date: Thu, 24 Jan 2008 22:01:41 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 24 Jan 2008 22:03:32 -0500
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:27104 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752459AbYAYDDb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 22:03:31 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Z9nPyN1aZDz/Clmqu+1C8J99Vb9dexdicUHd9gyNudZK4AK4PnyB9vP9jrhArotnh4dCACBZFf8J/oh0N98bvZJ3Wrk3yRQ9LFp3npUt6aiDaNbeKzBgS1BvvYg91pewSIC7VT7hWzYprupIMj3+Ku0tdfLQ1f7NRR9JvP77iDk=  ;
+X-YMail-OSG: z5eKaZQVM1mlp97yHwkVfa1nlB.sH_mbCBuBqJ.0_kZ6c0OSrTu8mm_uGXaB0LYpxh2gaT2.MA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Shaohua Li <shaohua.li@intel.com>
+Subject: Re: [RFC] some page can't be migrated
+Date: Fri, 25 Jan 2008 14:03:23 +1100
+User-Agent: KMail/1.9.5
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, clameter <clameter@sgi.com>
+References: <1201069357.32059.13.camel@sli10-desk.sh.intel.com>
+In-Reply-To: <1201069357.32059.13.camel@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-To: Jay Cliburn <jacliburn@bellsouth.net>
-CC: csnook@redhat.com, linux-kernel@vger.kernel.org,
-       atl1-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: Re: [PATCH 09/26] atl1: refactor tx processing
-References: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>	<1199152804-3889-10-git-send-email-jacliburn@bellsouth.net>	<4795BE39.6000505@garzik.org>	<20080122183109.5ab80802@osprey.hogchain.net> <20080124190024.1b81238e@osprey.hogchain.net>
-In-Reply-To: <20080124190024.1b81238e@osprey.hogchain.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200801251403.23236.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Cliburn wrote:
-> On Tue, 22 Jan 2008 18:31:09 -0600
-> Jay Cliburn <jacliburn@bellsouth.net> wrote:
-> 
->> On Tue, 22 Jan 2008 04:58:17 -0500
->> Jeff Garzik <jeff@garzik.org> wrote:
->>
-> [...]
->>> for such a huge patch, this description is very tiny.  [describe]
->>> what is refactored, and why.
-> 
-> Is this one any better?
-> 
-> 
-> 
->>From df475e2eea401f9dc18ca23dab538b99fb9e710c Mon Sep 17 00:00:00 2001
-> From: Jay Cliburn <jacliburn@bellsouth.net>
-> Date: Wed, 23 Jan 2008 21:36:36 -0600
-> Subject: [PATCH] atl1: simplify tx packet descriptor
-> 
-> The transmit packet descriptor consists of four 32-bit words, with word 3
-> upper bits overloaded depending upon the condition of its bits 3 and 4.
-> The driver currently duplicates all word 2 and some word 3 register bit
-> definitions unnecessarily and also uses a set of nested structures in its
-> definition of the TPD without good cause. This patch adds a lengthy
-> comment describing the TPD, eliminates duplicate TPD bit definitions,
-> and simplifies the TPD structure itself. It also expands the TSO check
-> to correctly handle custom checksum versus TSO processing using the revised
-> TPD definitions. Finally, shorten some variable names in the transmit
-> processing path to reduce line lengths, rename some variables to better
-> describe their purpose (e.g., nseg versus m), and add a comment or two
-> to better describe what the code is doing.
-> 
-> Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
-> ---
->  drivers/net/atlx/atl1.c |  265 +++++++++++++++++++++++++----------------------
->  drivers/net/atlx/atl1.h |  201 +++++++++++++++++++-----------------
->  2 files changed, 246 insertions(+), 220 deletions(-)
+On Wednesday 23 January 2008 17:22, Shaohua Li wrote:
+> Anonymous page might have fs-private metadata, the page is truncated. As
+> the page hasn't mapping, page migration refuse to migrate the page. It
+> appears the page is only freed in page reclaim and if zone watermark is
+> low, the page is never freed, as a result migration always fail. I
+> thought we could free the metadata so such page can be freed in
+> migration and make migration more reliable?
 
-Yep, better.
+Anonymous pages should not have fs-private metadata.
 
-	Jeff
+Orphaned pages I guess you mean? They should not be accessable via
+the pagecache or the page tables, so how do they keep tangling up
+migration? Where/how is migration finding these pages?!
 
 
-
+>
+> Thanks,
+> Shaohua
+>
+> diff --git a/mm/migrate.c b/mm/migrate.c
+> index 6a207e8..6bc38f7 100644
+> --- a/mm/migrate.c
+> +++ b/mm/migrate.c
+> @@ -633,6 +633,17 @@ static int unmap_and_move(new_page_t get_new_page,
+> unsigned long private, goto unlock;
+>  		wait_on_page_writeback(page);
+>  	}
+> +
+> +	/*
+> +	 * See truncate_complete_page(). Anonymous page might have
+> +	 * fs-private metadata, the page is truncated. Such page can't be
+> +	 * migrated. Try to free metadata, so the page can be freed.
+> +	 */
+> +	if (!page->mapping && !PageAnon(page) && PagePrivate(page)) {
+> +		try_to_release_page(page, GFP_KERNEL);
+> +		goto unlock;
+> +	}
+> +
+>  	/*
+>  	 * By try_to_unmap(), page->mapcount goes down to 0 here. In this case,
+>  	 * we cannot notice that anon_vma is freed while we migrates a page.
+>
+>
+> --
