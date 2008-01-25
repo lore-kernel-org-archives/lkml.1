@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbYAYJU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760118AbYAYJWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762298AbYAYJU2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 04:20:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759058AbYAYJTs
+	id S1760118AbYAYJWy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 04:22:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbYAYJWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 04:19:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51114 "EHLO mx2.mail.elte.hu"
+	Fri, 25 Jan 2008 04:22:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53423 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756955AbYAYJTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 04:19:46 -0500
-Date: Fri, 25 Jan 2008 10:19:23 +0100
+	id S1754206AbYAYJWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 04:22:36 -0500
+Date: Fri, 25 Jan 2008 10:22:21 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Huang, Ying" <ying.huang@intel.com>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/6] x86: fix some bugs about EFI runtime code mapping
-Message-ID: <20080125091923.GE23708@elte.hu>
-References: <1201240501.15972.46.camel@caritas-dev.intel.com> <4799914C.5060709@goop.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] x86: use reboot_type on EFI 32
+Message-ID: <20080125092221.GF23708@elte.hu>
+References: <1201240504.15972.47.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4799914C.5060709@goop.org>
+In-Reply-To: <1201240504.15972.47.camel@caritas-dev.intel.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,26 +36,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Huang, Ying <ying.huang@intel.com> wrote:
 
->>  +#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
->> +static void __init runtime_code_page_mkexec(void)
->> +{
->> +	efi_memory_desc_t *md;
->> +	unsigned long end;
->> +	void *p;
->> +
->> +	if (!(__supported_pte_mask & _PAGE_NX))
->> +		return;
->>   
->
-> On 32-bit non-PAE, _PAGE_NX == 0, so this if() statement should be 
-> sufficient to disable the whole function at compile time without 
-> needing the outer #if defined wrapper.
+> This patch makes reboot_type of BOOT_EFI is used on i386 too. Because 
+> correpsonding reboot code of i386 and x86_64 is merged.
 
-good point. The patch fixes bugs and the consolidation it does is very 
-nice so i've applied it already, but we could indeed further consolidate 
-it and make it a nice #ifdef-less function. Could one of you send an 
-add-on patch for this?
+> -#ifdef CONFIG_X86_64
+>  	/* Setup for EFI runtime service */
+>  	reboot_type = BOOT_EFI;
+>  
+> -#endif
+
+thanks, applied.
 
 	Ingo
