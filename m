@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbYAYKZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbYAYK1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757913AbYAYKZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 05:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbYAYKZT
+	id S1759530AbYAYK1m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 05:27:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbYAYK1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 05:25:19 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:10469 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754381AbYAYKZR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 05:25:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=kk8jRlX+7a9hGsgJY2xt/Er/BQ3+P/v5GMDOdv4t13jYJjm0gwrTFnRmxsaY5BdrENZjA5PV1zn0FPIRX/NqFwgu68fGv38a1H4zFNJlHJssyrsI2dJ3iGiDL/gLO9AzrzNXmT2usecasVXjSUrPo5h2ZtpFp5tgRRHOB1RWOGQ=
-Message-ID: <4799B906.5000607@gmail.com>
-Date: Fri, 25 Jan 2008 13:25:10 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+	Fri, 25 Jan 2008 05:27:34 -0500
+Received: from mail0.scram.de ([78.47.204.202]:39850 "EHLO mail0.scram.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753176AbYAYK1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 05:27:33 -0500
+X-Spam-Score: -4.258
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+ * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+ *      [score: 0.0000]
+ *  0.1 AWL AWL: From: address is in the auto white-list
+Message-ID: <4799B985.70605@scram.de>
+Date: Fri, 25 Jan 2008 11:27:17 +0100
+From: Jochen Friedrich <jochen@scram.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-To: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-CC: trivial@kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tigran@aivazian.fsnet.co.uk
-Subject: Re: [PATCH 0/9] bfs: assorted cleanups
-References: <1201213928-18183-1-git-send-email-dmitri.vorobiev@gmail.com>
-In-Reply-To: <1201213928-18183-1-git-send-email-dmitri.vorobiev@gmail.com>
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 8bit
+To: Kumar Gala <galak@kernel.crashing.org>
+CC: Vitaly Bordug <vitb@kernel.crashing.org>,
+       Scott Wood <scottwood@freescale.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCHv3 6/7] [POWERPC] Rename commproc to cpm1 and cpm2_common.c
+ to cpm2.c
+References: <4798AC8B.9090400@scram.de> <F4B3DC7D-AC57-4C37-8708-5A3E73F5F97C@kernel.crashing.org>
+In-Reply-To: <F4B3DC7D-AC57-4C37-8708-5A3E73F5F97C@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitri Vorobiev пишет:
-> Hello Adrian,
-> 
-> Last time when I had sent some BFS bugfixes to the maintainer of
-> this filesystem driver, he did not respond, and Andrew Morton
-> had to take care of those.
-> 
-> For this reason, and because the patches in this little patch bomb
-> are trivial, I am sending this to you in the hope that these can
-> be pushed upstream when the next merge window opens.
+Hi Kumar,
 
-Adrian, please drop this version of the patches. I'll send you a new
-one addressing the feedback and indicating the ack I received from the
-driver maintainer in a private email.
+>> drivers/net/fec.c                             |    8 --------
+>> drivers/net/fec.h                             |    2 +-
+> 
+> asm-m68knommu/commproc.h ?? these are only built on coldfire.
+
+Yes. Here I just removed dead code (commented out using #ifdef on coldfire). Apparently the driver was
+used on MPC8xx before or was copied from there but never cleaned up? Maybe this should be a seperate patch?
+
+>> drivers/serial/68360serial.c                  |    2 +-
+> 
+> I think this is using asm-m68knommu/commproc.h
+
+Oops, that one slipped through :-/.
 
 Thanks,
-
-Dmitri
+Jochen
