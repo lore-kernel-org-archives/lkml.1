@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754663AbYAYERT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYAYEbO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754663AbYAYERT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 23:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbYAYERK
+	id S1754605AbYAYEbO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 23:31:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYAYEa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 23:17:10 -0500
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:24118 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751379AbYAYERK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 23:17:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=E4QgSk20mazRtFykGrreiavH95WVhW21XVLZxMszYCv38GQDEIE2mh994PId3iV7yKoAv0OnThwyk8QAS8oa9DelWxBlmkCWnAX7Y0GQmxhk1CTlLLVPRTgxtDVW+kUWKD2omzVlSh+nTfDL+vYlR2s/vh/Dm0eK9/ACdjESKJM=  ;
-X-YMail-OSG: TqCmYnQVM1nLpF9NlE.UXknB0NRa9DLuc7Xt.IwwR8Y33G5AHhgi3tRcv7d9dW07mKFtnDyA0g--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [RFC] some page can't be migrated
-Date: Fri, 25 Jan 2008 15:17:02 +1100
-User-Agent: KMail/1.9.5
-Cc: Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1201069357.32059.13.camel@sli10-desk.sh.intel.com> <1201233590.28282.13.camel@sli10-desk.sh.intel.com> <Pine.LNX.4.64.0801242000320.1932@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0801242000320.1932@schroedinger.engr.sgi.com>
+	Thu, 24 Jan 2008 23:30:59 -0500
+Received: from mx2.suse.de ([195.135.220.15]:39316 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753065AbYAYEa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 23:30:58 -0500
+Date: Thu, 24 Jan 2008 20:33:42 -0800
+From: Greg KH <gregkh@suse.de>
+To: Shane Huang <Shane.Huang@amd.com>
+Cc: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [patch] PCI: modify SB700 SATA MSI quirk
+Message-ID: <20080125043342.GA13458@suse.de>
+References: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com> <B90463BC30D2E446BA423D888DC85E501BF78E@sshaexmb1.amd.com> <B90463BC30D2E446BA423D888DC85E501BF796@sshaexmb1.amd.com> <B90463BC30D2E446BA423D888DC85E501BF8F0@sshaexmb1.amd.com> <4799591B.5090905@gmail.com> <B90463BC30D2E446BA423D888DC85E501BF905@sshaexmb1.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801251517.02287.nickpiggin@yahoo.com.au>
+In-Reply-To: <B90463BC30D2E446BA423D888DC85E501BF905@sshaexmb1.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 January 2008 15:01, Christoph Lameter wrote:
-> Acked-by: Christoph Lameter <clameter@sgi.com>
->
-> Nick? Ok with you too?
+On Fri, Jan 25, 2008 at 11:48:29AM +0800, Shane Huang wrote:
+> Hi Tejun:
+> 
+> 
+> > You need to merge the above two messages into one patch description.
+> > 
+> > After S-O-B, you can put --- and between it and the patch 
+> > body, you can say things which you wanna mention but don't 
+> > think should be included in commit message.
+> 
+> OK, I'll have to submit another update patch later.
 
-Yeah, for memory hot remove that makes sense. A comment
-might be in order, at least a reference to the orphaned
-page code in vmscan.c.
+I recommend running the scripts/checkpatch.pl script on any proposed
+patches like this before you send them.  It will find a lot of these
+problems for you :)
 
-Otherwise, it is OK by me.
+thanks,
 
-Acked-by: Nick Piggin <npiggin@suse.de>
+greg k-h
