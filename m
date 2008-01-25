@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbYAYJKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759976AbYAYJMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754928AbYAYJKx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 04:10:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbYAYJKc
+	id S1759976AbYAYJMG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 04:12:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbYAYJLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 04:10:32 -0500
-Received: from orion2.pixelized.ch ([195.190.190.13]:54948 "EHLO
-	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758135AbYAYJK2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 04:10:28 -0500
-Message-ID: <4799A773.2030702@cateee.net>
-Date: Fri, 25 Jan 2008 10:10:11 +0100
-From: "Giacomo A. Catenazzi" <cate@cateee.net>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 25 Jan 2008 04:11:47 -0500
+Received: from ns.suse.de ([195.135.220.2]:41281 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751582AbYAYJLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 04:11:45 -0500
+From: Andi Kleen <ak@novell.com>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH UPDATE] x86: ignore spurious faults
+Date: Fri, 25 Jan 2008 10:11:36 +0100
+User-Agent: KMail/1.9.6
+Cc: "Jan Beulich" <jbeulich@novell.com>,
+       "Keir Fraser" <Keir.Fraser@cl.cam.ac.uk>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Harvey Harrison" <harvey.harrison@gmail.com>,
+       "Matt Mackall" <mpm@selenic.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <47992CB2.8050606@goop.org> <4799A8A6.76E4.0078.0@novell.com> <200801251938.39231.nickpiggin@yahoo.com.au>
+In-Reply-To: <200801251938.39231.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.24
-References: <alpine.LFD.1.00.0801241506500.15329@hp.linux-foundation.org> <alpine.LFD.1.00.0801241529440.15329@hp.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0801241529440.15329@hp.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801251011.36934.ak@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Friday 25 January 2008 09:38:38 Nick Piggin wrote:
+> On Friday 25 January 2008 19:15, Jan Beulich wrote:
+> > Actually, another thought: permitting (and handling) spurious faults for
+> > kernel mappings conflicts with NMI handling, i.e. great care would be
+> > needed to ensure the NMI path cannot touch any such mapping. So
+> > even the present Xen/Linux Dom0 implementation may have some
+> > (perhaps unlikely) problems here, and it would get worse if we added
+> > e.g. a virtual watchdog NMI (something I am considering, which would
+> > then extend the problem to DomU-s).
 > 
-> On Thu, 24 Jan 2008, Linus Torvalds wrote:
->> The release is out there (both git trees and as tarballs/patches), and for 
->> the next week many kernel developers will be at (or flying into/out of) 
->> LCA in Melbourne, so let's hope it's a good one.
-> 
-> Since I already had two kernel developers asking about the merge window 
-> and whether people (including me) traveling will impact it, the plan right 
-> now is to keep the impact pretty minimal. So yes, it will probably extend 
-> the window from the regular two weeks, but *hopefully* not by more than a 
-> few days.
+> Can you explain how they conflict?
 
-As a tester, I'm not so happy.
-The last few merge windows were a nightmare for us (the tester).
-It remember me the 2.1.x times, but with few differences:
-- more changes, so bugs are unnoticed/ignored in the first weeks or
-- or people are pushing more patches possible, so they delay
-   bug corrections to later times (after merge windows).
+NMI is blocked by the hardware until IRET and when a page fault happens inside 
+the NMI handler the early IRET unblocks it and then NMIs can nest, which
+will lead to stack corruption.
 
-If it continues so, I should stop testing the kernel on the
-merge windows (but it seems that other testers already give up
-the early merge phase).
+-Andi
 
-As a tester I would like:
-- slow merges, so that developer could rebase and test
-   (compile test) the interaction of the new code.
-- you will introduce a new step on git management:
-   Every changeset is compile-tested before going out to the world.
-   I think this can be done automatically, and I think that one or
-   two configurations are enough to find most of the problems.
-
-Happy LCA,
-ciao
-	cate
