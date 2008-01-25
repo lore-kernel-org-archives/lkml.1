@@ -1,337 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbYAYLBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbYAYLJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755075AbYAYLBY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 06:01:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYAYLBN
+	id S1755203AbYAYLJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 06:09:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbYAYLJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 06:01:13 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:39295 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbYAYLBK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 06:01:10 -0500
-To: linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC] ext3 freeze feature
-Message-Id: <20080125195938t-sato@mail.jp.nec.com>
-Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:1K0086
-From: "Takashi Sato" <t-sato@yk.jp.nec.com>
-Date: Fri, 25 Jan 2008 19:59:38 +0900
+	Fri, 25 Jan 2008 06:09:50 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40288 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752404AbYAYLJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 06:09:49 -0500
+Date: Fri, 25 Jan 2008 12:09:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: trim ram need to check if mtrr is there v3
+Message-ID: <20080125110935.GA20026@elte.hu>
+References: <47993F1A.5070408@goop.org> <200801241947.55223.yinghai.lu@sun.com> <4799930B.40006@goop.org> <200801250042.53074.yinghai.lu@sun.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <200801250042.53074.yinghai.lu@sun.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Currently, ext3 doesn't have the freeze feature which suspends write
-requests.  So, we cannot get a backup which keeps the filesystem's
-consistency with the storage device's features (snapshot, replication)
-while it is mounted.
-In many case, a commercial filesystems (e.g. VxFS) has the freeze
-feature and it would be used to get the consistent backup.
+* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-So I am planning on implementing the ioctl of the freeze feature for ext3.
-I think we can get the consistent backup with the following steps.
-1. Freeze the filesystem with ioctl.
-2. Separate the replication volume or get the snapshot
-   with the storage device's feature.
-3. Unfreeze the filesystem with ioctl.
-4. Get the backup from the separated replication volume
-   or the snapshot.
+> [PATCH] x86: trim ram need to check if mtrr is there v3
 
-The usage of the ioctl is as below.
- int ioctl(int fd, int cmd, long *timeval)
- fd: The file descriptor of the mountpoint.
- cmd: EXT3_IOC_FREEZE for the freeze or EXT3_IOC_THAW for the unfreeze.
- timeval: The timeout value expressed in seconds.
-          If it's 0, the timeout isn't set.
- Return value: 0 if the operation succeeds. Otherwise, -1.
+> > H. Peter Anvin wrote:
+> > Looks like the code doesn't check that the CPU *has* MTRRs...
+> 
+> so more strict check if mtrr is there really.
+> bail out if mtrr all blank when qemu cpu model is used
+> 
+> and check if is AMD as early
+> also remove 4G less check, according to hpa.
 
-I have made sure that write requests were suspended with the experimental
-patch for this feature and attached it in this mail.
+thanks, applied. Shouldnt we put in an exception for when there is MTRR 
+support, but they dont cover anything. Still emit a warning - but 
+booting up real slow is still better than losing all of RAM and crashing 
+...
 
-The points of the implementation are followings.
-- Add calls of the freeze function (freeze_bdev) and
-  the unfreeze function (thaw_bdev) in ext3_ioctl().
+i also updated the messages, they now go like this:
 
-- ext3_freeze_timeout() which calls the unfreeze function (thaw_bdev)
-  is registered to the delayed work queue to unfreeze the filesystem
-  automatically after the lapse of the specified time.
+  WARNING: strange, CPU MTRRs all blank?
 
-Any comments are very welcome.
+and:
 
-Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
----
-diff -uprN -X linux-2.6.24-rc8/Documentation/dontdiff linux-2.6.24-rc8/fs/ext3/ioctl.c linux-2.6.24-rc8-freeze/fs/ext3/ioctl.c
---- linux-2.6.24-rc8/fs/ext3/ioctl.c	2008-01-16 13:22:48.000000000 +0900
-+++ linux-2.6.24-rc8-freeze/fs/ext3/ioctl.c	2008-01-22 18:20:33.000000000 +0900
-@@ -254,6 +254,42 @@ flags_err:
- 		return err;
- 	}
- 
-+	case EXT3_IOC_FREEZE: {
-+		long timeout_sec;
-+		long timeout_msec;
-+		if (!capable(CAP_SYS_ADMIN))
-+			return -EPERM;
-+		if (inode->i_sb->s_frozen != SB_UNFROZEN)
-+			return -EINVAL;
-+		/* arg(sec) to tick value */
-+		get_user(timeout_sec, (long __user *) arg);
-+		timeout_msec = timeout_sec * 1000;
-+		if (timeout_msec < 0)
-+			return -EINVAL;
-+
-+		/* Freeze */
-+		freeze_bdev(inode->i_sb->s_bdev);
-+
-+		/* set up unfreeze timer */
-+		if (timeout_msec > 0)
-+			ext3_add_freeze_timeout(EXT3_SB(inode->i_sb),
-+						timeout_msec);
-+		return 0;
-+	}
-+	case EXT3_IOC_THAW: {
-+		if (!capable(CAP_SYS_ADMIN))
-+			return -EPERM;
-+		if (inode->i_sb->s_frozen == SB_UNFROZEN)
-+			return -EINVAL;
-+
-+		/* delete unfreeze timer */
-+		ext3_del_freeze_timeout(EXT3_SB(inode->i_sb));
-+
-+		/* Unfreeze */
-+		thaw_bdev(inode->i_sb->s_bdev, inode->i_sb);
-+
-+		return 0;
-+	}
- 
- 	default:
- 		return -ENOTTY;
-diff -uprN -X linux-2.6.24-rc8/Documentation/dontdiff linux-2.6.24-rc8/fs/ext3/super.c linux-2.6.24-rc8-freeze/fs/ext3/super.c
---- linux-2.6.24-rc8/fs/ext3/super.c	2008-01-16 13:22:48.000000000 +0900
-+++ linux-2.6.24-rc8-freeze/fs/ext3/super.c	2008-01-22 18:20:33.000000000 +0900
-@@ -63,6 +63,7 @@ static int ext3_statfs (struct dentry * 
- static void ext3_unlockfs(struct super_block *sb);
- static void ext3_write_super (struct super_block * sb);
- static void ext3_write_super_lockfs(struct super_block *sb);
-+static void ext3_freeze_timeout(struct work_struct *work);
- 
- /*
-  * Wrappers for journal_start/end.
-@@ -323,6 +324,44 @@ void ext3_update_dynamic_rev(struct supe
- }
- 
- /*
-+ * ext3_add_freeze_timeout - Add timeout for ext3 freeze.
-+ *
-+ * @sbi			: ext3 super block
-+ * @timeout_msec	: timeout period
-+ *
-+ * Add the delayed work for ext3 freeze timeout
-+ * to the delayed work queue.
-+ */
-+void ext3_add_freeze_timeout(struct ext3_sb_info *sbi,
-+			long timeout_msec)
-+{
-+	s64 timeout_jiffies = msecs_to_jiffies(timeout_msec);
-+
-+	/*
-+	 * setup freeze timeout function
-+	 */
-+	INIT_DELAYED_WORK(&sbi->s_freeze_timeout, ext3_freeze_timeout);
-+
-+	/* set delayed work queue */
-+	cancel_delayed_work(&sbi->s_freeze_timeout);
-+	schedule_delayed_work(&sbi->s_freeze_timeout, timeout_jiffies);
-+}
-+
-+/*
-+ * ext3_del_freeze_timeout - Delete timeout for ext3 freeze.
-+ *
-+ * @sbi	: ext3 super block
-+ *
-+ * Delete the delayed work for ext3 freeze timeout
-+ * from the delayed work queue.
-+ */
-+void ext3_del_freeze_timeout(struct ext3_sb_info *sbi)
-+{
-+	if (delayed_work_pending(&sbi->s_freeze_timeout))
-+		cancel_delayed_work(&sbi->s_freeze_timeout);
-+}
-+
-+/*
-  * Open the external journal device
-  */
- static struct block_device *ext3_blkdev_get(dev_t dev)
-@@ -2367,10 +2406,31 @@ static void ext3_unlockfs(struct super_b
- 		EXT3_SET_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
- 		ext3_commit_super(sb, EXT3_SB(sb)->s_es, 1);
- 		unlock_super(sb);
--		journal_unlock_updates(EXT3_SB(sb)->s_journal);
-+		journal_unlock_updates_if_needed(EXT3_SB(sb)->s_journal);
- 	}
- }
- 
-+/*
-+ * ext3_freeze_timeout - Thaw the filesystem.
-+ *
-+ * @work	: work queue (delayed_work.work)
-+ *
-+ * Called by the delayed work when elapsing the timeout period.
-+ * Thaw the filesystem.
-+ */
-+static void ext3_freeze_timeout(struct work_struct *work)
-+{
-+	struct ext3_sb_info *sbi = container_of(work,
-+				struct ext3_sb_info,
-+				s_freeze_timeout.work);
-+	struct super_block *sb = get_super_block(sbi);
-+
-+	BUG_ON(sb == NULL);
-+
-+	if (sb->s_frozen != SB_UNFROZEN)
-+		thaw_bdev(sb->s_bdev, sb);
-+}
-+
- static int ext3_remount (struct super_block * sb, int * flags, char * data)
- {
- 	struct ext3_super_block * es;
-diff -uprN -X linux-2.6.24-rc8/Documentation/dontdiff linux-2.6.24-rc8/fs/jbd/journal.c linux-2.6.24-rc8-freeze/fs/jbd/journal.c
---- linux-2.6.24-rc8/fs/jbd/journal.c	2008-01-16 13:22:48.000000000 +0900
-+++ linux-2.6.24-rc8-freeze/fs/jbd/journal.c	2008-01-22 18:20:33.000000000 +0900
-@@ -46,6 +46,7 @@ EXPORT_SYMBOL(journal_extend);
- EXPORT_SYMBOL(journal_stop);
- EXPORT_SYMBOL(journal_lock_updates);
- EXPORT_SYMBOL(journal_unlock_updates);
-+EXPORT_SYMBOL(journal_unlock_updates_if_needed);
- EXPORT_SYMBOL(journal_get_write_access);
- EXPORT_SYMBOL(journal_get_create_access);
- EXPORT_SYMBOL(journal_get_undo_access);
-diff -uprN -X linux-2.6.24-rc8/Documentation/dontdiff linux-2.6.24-rc8/fs/jbd/transaction.c linux-2.6.24-rc8-freeze/fs/jbd/transaction.c
---- linux-2.6.24-rc8/fs/jbd/transaction.c	2008-01-16 13:22:48.000000000 +0900
-+++ linux-2.6.24-rc8-freeze/fs/jbd/transaction.c	2008-01-22 18:20:33.000000000 +0900
-@@ -485,6 +485,29 @@ void journal_unlock_updates (journal_t *
- 	wake_up(&journal->j_wait_transaction_locked);
- }
- 
-+/**
-+ * journal_unlock_updates_if_needed	 - release barrier if needed.
-+ *
-+ * @journal:  Journal to release the barrier on.
-+ *
-+ * Release a transaction barrier obtained if barrier count is not 0.
-+ * Should be called without the journal lock held.
-+ */
-+void journal_unlock_updates_if_needed(journal_t *journal)
-+{
-+	spin_lock(&journal->j_state_lock);
-+
-+	if (!journal->j_barrier_count) {
-+		spin_unlock(&journal->j_state_lock);
-+		return;
-+	}
-+
-+	--journal->j_barrier_count;
-+	spin_unlock(&journal->j_state_lock);
-+	mutex_unlock(&journal->j_barrier);
-+	wake_up(&journal->j_wait_transaction_locked);
-+}
-+
- /*
-  * Report any unexpected dirty buffers which turn up.  Normally those
-  * indicate an error, but they can occur if the user is running (say)
-diff -uprN -X linux-2.6.24-rc8/Documentation/dontdiff linux-2.6.24-rc8/fs/super.c linux-2.6.24-rc8-freeze/fs/super.c
---- linux-2.6.24-rc8/fs/super.c	2008-01-16 13:22:48.000000000 +0900
-+++ linux-2.6.24-rc8-freeze/fs/super.c	2008-01-22 18:20:33.000000000 +0900
-@@ -950,3 +950,30 @@ struct vfsmount *kern_mount_data(struct 
- }
- 
- EXPORT_SYMBOL_GPL(kern_mount_data);
-+
-+/**
-+ * get_super_block - get super_block
-+ * @s_fs_info	: filesystem dependent information
-+ * 		  (super_block.s_fs_info)
-+ *
-+ * Get super_block which holds s_fs_info from super_blocks.
-+ * get_super_block() returns a pointer of super block or
-+ * %NULL if it have failed.
-+ */
-+struct super_block *get_super_block(void *s_fs_info)
-+{
-+	struct super_block *sb;
-+
-+	spin_lock(&sb_lock);
-+	sb = sb_entry(super_blocks.prev);
-+	for (; sb != sb_entry(&super_blocks);
-+				sb = sb_entry(sb->s_list.prev)) {
-+		if (sb->s_fs_info == s_fs_info) {
-+			spin_unlock(&sb_lock);
-+			return sb;
-+		}
-+	}
-+	spin_unlock(&sb_lock);
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(get_super_block);
-diff -uprN -X linux-2.6.24-rc8/Documentation/dontdiff linux-2.6.24-rc8/include/linux/ext3_fs.h linux-2.6.24-rc8-freeze/include/linux/ext3_fs.h
---- linux-2.6.24-rc8/include/linux/ext3_fs.h	2008-01-16 13:22:48.000000000 +0900
-+++ linux-2.6.24-rc8-freeze/include/linux/ext3_fs.h	2008-01-22 18:20:33.000000000 +0900
-@@ -225,6 +225,8 @@ struct ext3_new_group_data {
- #endif
- #define EXT3_IOC_GETRSVSZ		_IOR('f', 5, long)
- #define EXT3_IOC_SETRSVSZ		_IOW('f', 6, long)
-+#define EXT3_IOC_FREEZE			_IOW('f', 9, long)
-+#define EXT3_IOC_THAW			_IOW('f', 10, long)
- 
- /*
-  * ioctl commands in 32 bit emulation
-@@ -864,6 +866,9 @@ extern void ext3_abort (struct super_blo
- extern void ext3_warning (struct super_block *, const char *, const char *, ...)
- 	__attribute__ ((format (printf, 3, 4)));
- extern void ext3_update_dynamic_rev (struct super_block *sb);
-+extern void ext3_add_freeze_timeout(struct ext3_sb_info *sbi,
-+			long timeout_msec);
-+extern void ext3_del_freeze_timeout(struct ext3_sb_info *sbi);
- 
- #define ext3_std_error(sb, errno)				\
- do {								\
-diff -uprN -X linux-2.6.24-rc8/Documentation/dontdiff linux-2.6.24-rc8/include/linux/ext3_fs_sb.h linux-2.6.24-rc8-freeze/include/linux/ext3_fs_sb.h
---- linux-2.6.24-rc8/include/linux/ext3_fs_sb.h	2008-01-16 13:22:48.000000000 +0900
-+++ linux-2.6.24-rc8-freeze/include/linux/ext3_fs_sb.h	2008-01-22 18:20:33.000000000 +0900
-@@ -81,6 +81,8 @@ struct ext3_sb_info {
- 	char *s_qf_names[MAXQUOTAS];		/* Names of quota files with journalled quota */
- 	int s_jquota_fmt;			/* Format of quota to use */
- #endif
-+	/* Delayed work for freeze */
-+	struct delayed_work s_freeze_timeout;
- };
- 
- #endif	/* _LINUX_EXT3_FS_SB */
-diff -uprN -X linux-2.6.24-rc8/Documentation/dontdiff linux-2.6.24-rc8/include/linux/fs.h linux-2.6.24-rc8-freeze/include/linux/fs.h
---- linux-2.6.24-rc8/include/linux/fs.h	2008-01-16 13:22:48.000000000 +0900
-+++ linux-2.6.24-rc8-freeze/include/linux/fs.h	2008-01-22 18:20:33.000000000 +0900
-@@ -2095,6 +2095,7 @@ struct ctl_table;
- int proc_nr_files(struct ctl_table *table, int write, struct file *filp,
- 		  void __user *buffer, size_t *lenp, loff_t *ppos);
- 
-+extern struct super_block *get_super_block(void *s_fs_info);
- 
- #endif /* __KERNEL__ */
- #endif /* _LINUX_FS_H */
-diff -uprN -X linux-2.6.24-rc8/Documentation/dontdiff linux-2.6.24-rc8/include/linux/jbd.h linux-2.6.24-rc8-freeze/include/linux/jbd.h
---- linux-2.6.24-rc8/include/linux/jbd.h	2008-01-16 13:22:48.000000000 +0900
-+++ linux-2.6.24-rc8-freeze/include/linux/jbd.h	2008-01-22 18:20:33.000000000 +0900
-@@ -905,6 +905,7 @@ extern int	 journal_stop(handle_t *);
- extern int	 journal_flush (journal_t *);
- extern void	 journal_lock_updates (journal_t *);
- extern void	 journal_unlock_updates (journal_t *);
-+extern void	 journal_unlock_updates_if_needed(journal_t *);
- 
- extern journal_t * journal_init_dev(struct block_device *bdev,
- 				struct block_device *fs_dev,
+  WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 45MB of RAM.
 
+	Ingo
