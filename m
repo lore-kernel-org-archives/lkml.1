@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763275AbYAYHwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbYAYHw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763275AbYAYHwj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:52:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760997AbYAYHgH
+	id S1759601AbYAYHw6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:52:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761438AbYAYHgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:36:07 -0500
-Received: from ns1.suse.de ([195.135.220.2]:55275 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 02:36:12 -0500
+Received: from mx2.suse.de ([195.135.220.15]:49904 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761426AbYAYHgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:36:05 -0500
+	id S1761450AbYAYHgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:36:10 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Mark Fasheh <mark.fasheh@oracle.com>,
-       Kurt Hackel <kurt.hackel@oracle.com>
-Subject: [PATCH 093/196] kset: convert ocfs2 to use kset_create
-Date: Thu, 24 Jan 2008 23:32:02 -0800
-Message-Id: <1201246425-5058-14-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 094/196] kset: convert block_subsys to use kset_create
+Date: Thu, 24 Jan 2008 23:32:03 -0800
+Message-Id: <1201246425-5058-15-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -24,163 +22,165 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dynamically create the kset instead of declaring it statically.
-
-Also use the new kobj_attribute which cleans up this file a _lot_.
+Dynamically create the kset instead of declaring it statically.  We also
+rename block_subsys to block_kset to catch all users of this symbol
+with a build error instead of an easy-to-ignore build warning.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Mark Fasheh <mark.fasheh@oracle.com>
-Cc: Kurt Hackel <kurt.hackel@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ocfs2/cluster/masklog.c |    4 +-
- fs/ocfs2/cluster/sys.c     |   83 +++++++++++--------------------------------
- 2 files changed, 23 insertions(+), 64 deletions(-)
+ block/genhd.c         |   34 ++++++++++++++++------------------
+ fs/partitions/check.c |    6 +++---
+ 2 files changed, 19 insertions(+), 21 deletions(-)
 
-diff --git a/fs/ocfs2/cluster/masklog.c b/fs/ocfs2/cluster/masklog.c
-index dead319..23c732f 100644
---- a/fs/ocfs2/cluster/masklog.c
-+++ b/fs/ocfs2/cluster/masklog.c
-@@ -146,7 +146,7 @@ static struct kset mlog_kset = {
- 	.kobj   = {.ktype = &mlog_ktype},
+diff --git a/block/genhd.c b/block/genhd.c
+index 32227b7..69aa738 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -17,7 +17,8 @@
+ #include <linux/buffer_head.h>
+ #include <linux/mutex.h>
+ 
+-struct kset block_subsys;
++struct kset *block_kset;
++static struct kset_uevent_ops block_uevent_ops;
+ static DEFINE_MUTEX(block_subsys_lock);
+ 
+ /*
+@@ -221,7 +222,7 @@ void __init printk_all_partitions(void)
+ 
+ 	mutex_lock(&block_subsys_lock);
+ 	/* For each block device... */
+-	list_for_each_entry(sgp, &block_subsys.list, kobj.entry) {
++	list_for_each_entry(sgp, &block_kset->list, kobj.entry) {
+ 		char buf[BDEVNAME_SIZE];
+ 		/*
+ 		 * Don't show empty devices or things that have been surpressed
+@@ -270,7 +271,7 @@ static void *part_start(struct seq_file *part, loff_t *pos)
+ 	loff_t l = *pos;
+ 
+ 	mutex_lock(&block_subsys_lock);
+-	list_for_each(p, &block_subsys.list)
++	list_for_each(p, &block_kset->list)
+ 		if (!l--)
+ 			return list_entry(p, struct gendisk, kobj.entry);
+ 	return NULL;
+@@ -280,7 +281,7 @@ static void *part_next(struct seq_file *part, void *v, loff_t *pos)
+ {
+ 	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
+ 	++*pos;
+-	return p==&block_subsys.list ? NULL :
++	return p==&block_kset->list ? NULL :
+ 		list_entry(p, struct gendisk, kobj.entry);
+ }
+ 
+@@ -295,7 +296,7 @@ static int show_partition(struct seq_file *part, void *v)
+ 	int n;
+ 	char buf[BDEVNAME_SIZE];
+ 
+-	if (&sgp->kobj.entry == block_subsys.list.next)
++	if (&sgp->kobj.entry == block_kset->list.next)
+ 		seq_puts(part, "major minor  #blocks  name\n\n");
+ 
+ 	/* Don't show non-partitionable removeable devices or empty devices */
+@@ -345,15 +346,14 @@ static struct kobject *base_probe(dev_t dev, int *part, void *data)
+ 
+ static int __init genhd_device_init(void)
+ {
+-	int err;
+-
+ 	bdev_map = kobj_map_init(base_probe, &block_subsys_lock);
+ 	blk_dev_init();
+-	err = subsystem_register(&block_subsys);
+-	if (err < 0)
+-		printk(KERN_WARNING "%s: subsystem_register error: %d\n",
+-			__FUNCTION__, err);
+-	return err;
++	block_kset = kset_create_and_add("block", &block_uevent_ops, NULL);
++	if (!block_kset) {
++		printk(KERN_WARNING "%s: kset_create error\n", __FUNCTION__);
++		return -ENOMEM;
++	}
++	return 0;
+ }
+ 
+ subsys_initcall(genhd_device_init);
+@@ -584,8 +584,6 @@ static struct kset_uevent_ops block_uevent_ops = {
+ 	.uevent		= block_uevent,
  };
  
--int mlog_sys_init(struct kset *o2cb_subsys)
-+int mlog_sys_init(struct kset *o2cb_kset)
+-decl_subsys(block, &block_uevent_ops);
+-
+ /*
+  * aggregate disk stat collector.  Uses the same stats that the sysfs
+  * entries do, above, but makes them available through one seq_file.
+@@ -603,7 +601,7 @@ static void *diskstats_start(struct seq_file *part, loff_t *pos)
+ 	struct list_head *p;
+ 
+ 	mutex_lock(&block_subsys_lock);
+-	list_for_each(p, &block_subsys.list)
++	list_for_each(p, &block_kset->list)
+ 		if (!k--)
+ 			return list_entry(p, struct gendisk, kobj.entry);
+ 	return NULL;
+@@ -613,7 +611,7 @@ static void *diskstats_next(struct seq_file *part, void *v, loff_t *pos)
  {
- 	int i = 0;
- 
-@@ -157,7 +157,7 @@ int mlog_sys_init(struct kset *o2cb_subsys)
- 	mlog_attr_ptrs[i] = NULL;
- 
- 	kobject_set_name(&mlog_kset.kobj, "logmask");
--	mlog_kset.kobj.kset = o2cb_subsys;
-+	mlog_kset.kobj.kset = o2cb_kset;
- 	return kset_register(&mlog_kset);
+ 	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
+ 	++*pos;
+-	return p==&block_subsys.list ? NULL :
++	return p==&block_kset->list ? NULL :
+ 		list_entry(p, struct gendisk, kobj.entry);
  }
  
-diff --git a/fs/ocfs2/cluster/sys.c b/fs/ocfs2/cluster/sys.c
-index 880d013..a4b0773 100644
---- a/fs/ocfs2/cluster/sys.c
-+++ b/fs/ocfs2/cluster/sys.c
-@@ -28,96 +28,55 @@
- #include <linux/module.h>
- #include <linux/kobject.h>
- #include <linux/sysfs.h>
-+#include <linux/fs.h>
+@@ -629,7 +627,7 @@ static int diskstats_show(struct seq_file *s, void *v)
+ 	int n = 0;
  
- #include "ocfs2_nodemanager.h"
- #include "masklog.h"
- #include "sys.h"
- 
--struct o2cb_attribute {
--	struct attribute	attr;
--	ssize_t (*show)(char *buf);
--	ssize_t (*store)(const char *buf, size_t count);
--};
--
--#define O2CB_ATTR(_name, _mode, _show, _store)	\
--struct o2cb_attribute o2cb_attr_##_name = __ATTR(_name, _mode, _show, _store)
--
--#define to_o2cb_attr(_attr) container_of(_attr, struct o2cb_attribute, attr)
- 
--static ssize_t o2cb_interface_revision_show(char *buf)
-+static ssize_t version_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			    char *buf)
- {
- 	return snprintf(buf, PAGE_SIZE, "%u\n", O2NM_API_VERSION);
- }
--
--static O2CB_ATTR(interface_revision, S_IFREG | S_IRUGO, o2cb_interface_revision_show, NULL);
-+static struct kobj_attribute attr_version =
-+	__ATTR(interface_revision, S_IFREG | S_IRUGO, version_show, NULL);
- 
- static struct attribute *o2cb_attrs[] = {
--	&o2cb_attr_interface_revision.attr,
-+	&attr_version.attr,
+ 	/*
+-	if (&sgp->kobj.entry == block_subsys.kset.list.next)
++	if (&sgp->kobj.entry == block_kset->list.next)
+ 		seq_puts(s,	"major minor name"
+ 				"     rio rmerge rsect ruse wio wmerge "
+ 				"wsect wuse running use aveq"
+@@ -721,7 +719,7 @@ struct gendisk *alloc_disk_node(int minors, int node_id)
+ 			}
+ 		}
+ 		disk->minors = minors;
+-		disk->kobj.kset = &block_subsys;
++		disk->kobj.kset = block_kset;
+ 		disk->kobj.ktype = &ktype_block;
+ 		kobject_init(&disk->kobj);
+ 		rand_initialize_disk(disk);
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 69685bb..9184215 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -316,7 +316,7 @@ static struct attribute * default_attrs[] = {
  	NULL,
  };
  
--static ssize_t
--o2cb_show(struct kobject * kobj, struct attribute * attr, char * buffer);
--static ssize_t
--o2cb_store(struct kobject * kobj, struct attribute * attr,
--	   const char * buffer, size_t count);
--static struct sysfs_ops o2cb_sysfs_ops = {
--	.show	= o2cb_show,
--	.store	= o2cb_store,
-+static struct attribute_group o2cb_attr_group = {
-+	.attrs = o2cb_attrs,
- };
+-extern struct kset block_subsys;
++extern struct kset *block_kset;
  
--static struct kobj_type o2cb_subsys_type = {
--	.default_attrs	= o2cb_attrs,
--	.sysfs_ops	= &o2cb_sysfs_ops,
--};
--
--/* gives us o2cb_subsys */
--static decl_subsys(o2cb, NULL);
--
--static ssize_t
--o2cb_show(struct kobject * kobj, struct attribute * attr, char * buffer)
--{
--	struct o2cb_attribute *o2cb_attr = to_o2cb_attr(attr);
--	struct kset *sbs = to_kset(kobj);
--
--	BUG_ON(sbs != &o2cb_subsys);
--
--	if (o2cb_attr->show)
--		return o2cb_attr->show(buffer);
--	return -EIO;
--}
--
--static ssize_t
--o2cb_store(struct kobject * kobj, struct attribute * attr,
--	     const char * buffer, size_t count)
--{
--	struct o2cb_attribute *o2cb_attr = to_o2cb_attr(attr);
--	struct kset *sbs = to_kset(kobj);
--
--	BUG_ON(sbs != &o2cb_subsys);
--
--	if (o2cb_attr->store)
--		return o2cb_attr->store(buffer, count);
--	return -EIO;
--}
-+static struct kset *o2cb_kset;
- 
- void o2cb_sys_shutdown(void)
+ static void part_release(struct kobject *kobj)
  {
- 	mlog_sys_shutdown();
--	subsystem_unregister(&o2cb_subsys);
-+	kset_unregister(o2cb_kset);
- }
+@@ -393,7 +393,7 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
+ 	kobject_add(&p->kobj);
+ 	if (!disk->part_uevent_suppress)
+ 		kobject_uevent(&p->kobj, KOBJ_ADD);
+-	sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem");
++	sysfs_create_link(&p->kobj, &block_kset->kobj, "subsystem");
+ 	if (flags & ADDPART_FLAG_WHOLEDISK) {
+ 		static struct attribute addpartattr = {
+ 			.name = "whole_disk",
+@@ -448,7 +448,7 @@ static int disk_sysfs_symlinks(struct gendisk *disk)
+ 			goto err_out_dev_link;
+ 	}
  
- int o2cb_sys_init(void)
- {
- 	int ret;
- 
--	o2cb_subsys.kobj.ktype = &o2cb_subsys_type;
--	ret = subsystem_register(&o2cb_subsys);
-+	o2cb_kset = kset_create_and_add("o2cb", NULL, fs_kobj);
-+	if (!o2cb_kset)
-+		return -ENOMEM;
-+
-+	ret = sysfs_create_group(&o2cb_kset->kobj, &o2cb_attr_group);
- 	if (ret)
--		return ret;
-+		goto error;
- 
--	ret = mlog_sys_init(&o2cb_subsys);
-+	ret = mlog_sys_init(o2cb_kset);
- 	if (ret)
--		subsystem_unregister(&o2cb_subsys);
-+		goto error;
-+	return 0;
-+error:
-+	kset_unregister(o2cb_kset);
- 	return ret;
- }
+-	err = sysfs_create_link(&disk->kobj, &block_subsys.kobj,
++	err = sysfs_create_link(&disk->kobj, &block_kset->kobj,
+ 				"subsystem");
+ 	if (err)
+ 		goto err_out_disk_name_lnk;
 -- 
 1.5.3.8
 
