@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbYAYHPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbYAYHQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758655AbYAYHPw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:15:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756816AbYAYHON
+	id S1758759AbYAYHQS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757613AbYAYHOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:14:13 -0500
-Received: from mx1.suse.de ([195.135.220.2]:52387 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 02:14:15 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47441 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756399AbYAYHOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:14:10 -0500
+	id S1756399AbYAYHOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:14:14 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Bryan Wu <bryan.wu@analog.com>, Li Yang <leo@zh-kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 008/196] Chinese: add translation of volatile-considered-harmful.txt
-Date: Thu, 24 Jan 2008 23:09:06 -0800
-Message-Id: <1201245134-4876-8-git-send-email-gregkh@suse.de>
+Cc: Li Yang <leo@zh-kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 009/196] Chinese: add translation of sparse.txt
+Date: Thu, 24 Jan 2008 23:09:07 -0800
+Message-Id: <1201245134-4876-9-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -23,23 +22,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bryan Wu <bryan.wu@analog.com>
+From: Li Yang <leo@zh-kernel.org>
 
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 Signed-off-by: Li Yang <leo@zh-kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- .../zh_CN/volatile-considered-harmful.txt          |  113 ++++++++++++++++++++
- 1 files changed, 113 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/zh_CN/volatile-considered-harmful.txt
+ Documentation/zh_CN/sparse.txt |  100 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 100 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/zh_CN/sparse.txt
 
-diff --git a/Documentation/zh_CN/volatile-considered-harmful.txt b/Documentation/zh_CN/volatile-considered-harmful.txt
+diff --git a/Documentation/zh_CN/sparse.txt b/Documentation/zh_CN/sparse.txt
 new file mode 100644
-index 0000000..ba8149d
+index 0000000..75992a6
 --- /dev/null
-+++ b/Documentation/zh_CN/volatile-considered-harmful.txt
-@@ -0,0 +1,113 @@
-+Chinese translated version of Documentation/volatile-considered-harmful.txt
++++ b/Documentation/zh_CN/sparse.txt
+@@ -0,0 +1,100 @@
++﻿Chinese translated version of Documentation/sparse.txt
 +
 +If you have any comment or update to the content, please contact the
 +original document maintainer directly.  However, if you have a problem
@@ -47,111 +45,98 @@ index 0000000..ba8149d
 +help.  Contact the Chinese maintainer if this translation is outdated
 +or if there is a problem with the translation.
 +
-+Maintainer: Jonathan Corbet <corbet@lwn.net>
-+Chinese maintainer: Bryan Wu <bryan.wu@analog.com>
++Chinese maintainer: Li Yang <leo@zh-kernel.org>
 +---------------------------------------------------------------------
-+Documentation/volatile-considered-harmful.txt 的中文翻译
++Documentation/sparse.txt 的中文翻译
 +
 +如果想评论或更新本文的内容，请直接联系原文档的维护者。如果你使用英文
 +交流有困难的话，也可以向中文版维护者求助。如果本翻译更新不及时或者翻
 +译存在问题，请联系中文版维护者。
 +
-+英文版维护者： Jonathan Corbet <corbet@lwn.net>
-+中文版维护者： 伍鹏  Bryan Wu <bryan.wu@analog.com>
-+中文版翻译者： 伍鹏  Bryan Wu <bryan.wu@analog.com>
-+中文版校译者： 张汉辉  Eugene Teo <eugeneteo@kernel.sg>
-+               杨瑞  Dave Young <hidave.darkstar@gmail.com>
++中文版维护者： 李阳  Li Yang <leo@zh-kernel.org>
++中文版翻译者： 李阳  Li Yang <leo@zh-kernel.org>
++
++
 +以下为正文
 +---------------------------------------------------------------------
 +
-+为什么不应该使用“volatile”类型
-+------------------------------
++Copyright 2004 Linus Torvalds
++Copyright 2004 Pavel Machek <pavel@suse.cz>
++Copyright 2006 Bob Copeland <me@bobcopeland.com>
 +
-+C程序员通常认为volatile表示某个变量可以在当前执行的线程之外被改变；因此，在内核
-+中用到共享数据结构时，常常会有C程序员喜欢使用volatile这类变量。换句话说，他们经
-+常会把volatile类型看成某种简易的原子变量，当然它们不是。在内核中使用volatile几
-+乎总是错误的；本文档将解释为什么这样。
++使用 sparse 工具做类型检查
++~~~~~~~~~~~~~~~~~~~~~~~~~~
 +
-+理解volatile的关键是知道它的目的是用来消除优化，实际上很少有人真正需要这样的应
-+用。在内核中，程序员必须防止意外的并发访问破坏共享的数据结构，这其实是一个完全
-+不同的任务。用来防止意外并发访问的保护措施，可以更加高效的避免大多数优化相关的
-+问题。
++"__bitwise" 是一种类型属性，所以你应该这样使用它：
 +
-+像volatile一样，内核提供了很多原语来保证并发访问时的数据安全（自旋锁, 互斥量,内
-+存屏障等等），同样可以防止意外的优化。如果可以正确使用这些内核原语，那么就没有
-+必要再使用volatile。如果仍然必须使用volatile，那么几乎可以肯定在代码的某处有一
-+个bug。在正确设计的内核代码中，volatile能带来的仅仅是使事情变慢。
++        typedef int __bitwise pm_request_t;
 +
-+思考一下这段典型的内核代码：
++        enum pm_request {
++                PM_SUSPEND = (__force pm_request_t) 1,
++                PM_RESUME = (__force pm_request_t) 2
++        };
 +
-+    spin_lock(&the_lock);
-+    do_something_on(&shared_data);
-+    do_something_else_with(&shared_data);
-+    spin_unlock(&the_lock);
++这样会使 PM_SUSPEND 和 PM_RESUME 成为位方式(bitwise)整数（使用"__force"
++是因为 sparse 会抱怨改变位方式的类型转换，但是这里我们确实需要强制进行转
++换）。而且因为所有枚举值都使用了相同的类型，这里的"enum pm_request"也将
++会使用那个类型做为底层实现。
 +
-+如果所有的代码都遵循加锁规则，当持有the_lock的时候，不可能意外的改变shared_data的
-+值。任何可能访问该数据的其他代码都会在这个锁上等待。自旋锁原语跟内存屏障一样—— 它
-+们显式的用来书写成这样 —— 意味着数据访问不会跨越它们而被优化。所以本来编译器认为
-+它知道在shared_data里面将有什么，但是因为spin_lock()调用跟内存屏障一样，会强制编
-+译器忘记它所知道的一切。那么在访问这些数据时不会有优化的问题。
++而且使用 gcc 编译的时候，所有的 __bitwise/__force 都会消失，最后在 gcc
++看来它们只不过是普通的整数。
 +
-+如果shared_data被声名为volatile，锁操作将仍然是必须的。就算我们知道没有其他人正在
-+使用它，编译器也将被阻止优化对临界区内shared_data的访问。在锁有效的同时，
-+shared_data不是volatile的。在处理共享数据的时候，适当的锁操作可以不再需要
-+volatile —— 并且是有潜在危害的。
++坦白来说，你并不需要使用枚举类型。上面那些实际都可以浓缩成一个特殊的"int
++__bitwise"类型。
 +
-+volatile的存储类型最初是为那些内存映射的I/O寄存器而定义。在内核里，寄存器访问也应
-+该被锁保护，但是人们也不希望编译器“优化”临界区内的寄存器访问。内核里I/O的内存访问
-+是通过访问函数完成的；不赞成通过指针对I/O内存的直接访问，并且不是在所有体系架构上
-+都能工作。那些访问函数正是为了防止意外优化而写的，因此，再说一次，volatile类型不
-+是必需的。
++所以更简单的办法只要这样做：
 +
-+另一种引起用户可能使用volatile的情况是当处理器正忙着等待一个变量的值。正确执行一
-+个忙等待的方法是：
++	typedef int __bitwise pm_request_t;
 +
-+    while (my_variable != what_i_want)
-+        cpu_relax();
++	#define PM_SUSPEND ((__force pm_request_t) 1)
++	#define PM_RESUME ((__force pm_request_t) 2)
 +
-+cpu_relax()调用会降低CPU的能量消耗或者让位于超线程双处理器；它也作为内存屏障一样出
-+现，所以，再一次，volatile不是必需的。当然，忙等待一开始就是一种反常规的做法。
++现在你就有了严格的类型检查所需要的所有基础架构。
 +
-+在内核中，一些稀少的情况下volatile仍然是有意义的：
++一个小提醒：常数整数"0"是特殊的。你可以直接把常数零当作位方式整数使用而
++不用担心 sparse 会抱怨。这是因为"bitwise"（恰如其名）是用来确保不同位方
++式类型不会被弄混（小尾模式，大尾模式，cpu尾模式，或者其他），对他们来说
++常数"0"确实是特殊的。
 +
-+  - 在一些体系架构的系统上，允许直接的I/0内存访问，那么前面提到的访问函数可以使用
-+    volatile。基本上，每一个访问函数调用它自己都是一个小的临界区域并且保证了按照
-+    程序员期望的那样发生访问操作。
++获取 sparse 工具
++~~~~~~~~~~~~~~~~
 +
-+  - 某些会改变内存的内联汇编代码虽然没有什么其他明显的附作用，但是有被GCC删除的可
-+    能性。在汇编声明中加上volatile关键字可以防止这种删除操作。
++你可以从 Sparse 的主页获取最新的发布版本：
 +
-+  - Jiffies变量是一种特殊情况，虽然每次引用它的时候都可以有不同的值，但读jiffies
-+    变量时不需要任何特殊的加锁保护。所以jiffies变量可以使用volatile，但是不赞成
-+    其他跟jiffies相同类型变量使用volatile。Jiffies被认为是一种“愚蠢的遗留物"
-+    （Linus的话）因为解决这个问题比保持现状要麻烦的多。
++	http://www.kernel.org/pub/linux/kernel/people/josh/sparse/
 +
-+  - 由于某些I/0设备可能会修改连续一致的内存,所以有时,指向连续一致内存的数据结构
-+    的指针需要正确的使用volatile。网络适配器使用的环状缓存区正是这类情形的一个例
-+    子，其中适配器用改变指针来表示哪些描述符已经处理过了。
++或者，你也可以使用 git 克隆最新的 sparse 开发版本：
 +
-+对于大多代码，上述几种可以使用volatile的情况都不适用。所以，使用volatile是一种
-+bug并且需要对这样的代码额外仔细检查。那些试图使用volatile的开发人员需要退一步想想
-+他们真正想实现的是什么。
++	git://git.kernel.org/pub/scm/linux/kernel/git/josh/sparse.git
 +
-+非常欢迎删除volatile变量的补丁 － 只要证明这些补丁完整的考虑了并发问题。
++DaveJ 把每小时自动生成的 git 源码树 tar 包放在以下地址：
 +
-+注释
-+----
++	http://www.codemonkey.org.uk/projects/git-snapshots/sparse/
 +
-+[1] http://lwn.net/Articles/233481/
-+[2] http://lwn.net/Articles/233482/
++一旦你下载了源码，只要以普通用户身份运行：
 +
-+致谢
-+----
++	make
++	make install
 +
-+最初由Randy Dunlap推动并作初步研究
-+由Jonathan Corbet撰写
-+参考Satyam Sharma，Johannes Stezenbach，Jesper Juhl，Heikki Orsila，
-+H. Peter Anvin，Philipp Hahn和Stefan Richter的意见改善了本档。
++它将会被自动安装到你的 ~/bin 目录下。
++
++使用 sparse 工具
++~~~~~~~~~~~~~~~~
++
++用"make C=1"命令来编译内核，会对所有重新编译的 C 文件使用 sparse 工具。
++或者使用"make C=2"命令，无论文件是否被重新编译都会对其使用 sparse 工具。
++如果你已经编译了内核，用后一种方式可以很快地检查整个源码树。
++
++make 的可选变量 CHECKFLAGS 可以用来向 sparse 工具传递参数。编译系统会自
++动向 sparse 工具传递 -Wbitwise 参数。你可以定义 __CHECK_ENDIAN__ 来进行
++大小尾检查。
++
++	make C=2 CHECKFLAGS="-D__CHECK_ENDIAN__"
++
++这些检查默认都是被关闭的，因为他们通常会产生大量的警告。
 -- 
 1.5.3.8
 
