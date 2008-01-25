@@ -1,104 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760426AbYAYTDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760622AbYAYTD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760426AbYAYTDj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 14:03:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757740AbYAYTDK
+	id S1760622AbYAYTD6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 14:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757641AbYAYTDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 14:03:10 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:41597 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756843AbYAYTDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 14:03:08 -0500
-Date: Fri, 25 Jan 2008 11:03:07 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Robin Holt <holt@sgi.com>
-cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 1/4] mmu_notifier: Core code
-In-Reply-To: <20080125185646.GQ3058@sgi.com>
-Message-ID: <Pine.LNX.4.64.0801251058170.3198@schroedinger.engr.sgi.com>
-References: <20080125055606.102986685@sgi.com> <20080125055801.212744875@sgi.com>
- <20080125183934.GO26420@sgi.com> <Pine.LNX.4.64.0801251041040.672@schroedinger.engr.sgi.com>
- <20080125185646.GQ3058@sgi.com>
+	Fri, 25 Jan 2008 14:03:47 -0500
+Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:3415 "EHLO
+	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757995AbYAYTDq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 14:03:46 -0500
+Message-ID: <479A326E.7020302@xs4all.nl>
+Date: Fri, 25 Jan 2008 20:03:10 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org, mb@bu3sch.de,
+       folkert@vanheusden.com
+Subject: Re: enable dual rng on VIA C7
+References: <47374EA4.1060009@xs4all.nl>	<20071125233949.f64b2ecd.akpm@linux-foundation.org>	<474AFC2F.1040309@xs4all.nl>	<20071126185843.GD15764@redhat.com>	<474C40FA.1070501@xs4all.nl>	<20071127185053.GA30057@redhat.com> <20071127125109.a2ef96f2.akpm@linux-foundation.org>
+In-Reply-To: <20071127125109.a2ef96f2.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.2
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jan 2008, Robin Holt wrote:
-
-> > > > +void mmu_notifier_release(struct mm_struct *mm)
-> > > > +{
-> > > > +	struct mmu_notifier *mn;
-> > > > +	struct hlist_node *n;
-> > > > +
-> > > > +	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
-> > > > +		rcu_read_lock();
-> > > > +		hlist_for_each_entry_rcu(mn, n,
-> > > > +					  &mm->mmu_notifier.head, hlist) {
-> > > > +			if (mn->ops->release)
-> > > > +				mn->ops->release(mn, mm);
-> > > > +			hlist_del(&mn->hlist);
-> > > 
-> > > I think the hlist_del needs to be before the function callout so we can free
-> > > the structure without a use-after-free issue.
-> > 
-> > The list head is in the mm_struct. This will be freed later.
-> > 
+Andrew Morton wrote:
+> On Tue, 27 Nov 2007 13:50:53 -0500
+> Dave Jones <davej@redhat.com> wrote:
 > 
-> I meant the structure pointed to by &mn.  I assume it is intended that
-> structure be kmalloc'd as part of a larger structure.  The driver is the
-> entity which created that structure and should be the one to free it.
-
-mn will be pointing to the listhead in the mm_struct one after the other. 
-You mean the ops structure?
-
-> > > > +void mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm)
-> > > > +{
-> > > > +	spin_lock(&mmu_notifier_list_lock);
-> > > 
-> > > Shouldn't this really be protected by the down_write(mmap_sem)?  Maybe:
-> > 
-> > Ok. We could switch this to mmap_sem protection for the mm_struct but the 
-> > rmap notifier is not associated with an mm_struct. So we would need to 
-> > keep it there. Since we already have a spinlock: Just use it for both to 
-> > avoid further complications.
+>> On Tue, Nov 27, 2007 at 05:08:26PM +0100, Udo van den Heuvel wrote:
+(...)
+>>  > Yes, I think that's a big step in the right direction!
+(...)
+>> Andrew, want to throw that in the -mm pile for a while?
+>>
 > 
-> But now you are putting a global lock in where it is inappropriate.
-
-The lock is only used during register and unregister. Very low level 
-usage.
-
-> > > XPMEM, would also benefit from a call early.  We could make all the
-> > > segments as being torn down and start the recalls.  We already have
-> > > this code in and working (have since it was first written 6 years ago).
-> > > In this case, all segments are torn down with a single message to each
-> > > of the importing partitions.  In contrast, the teardown code which would
-> > > happen now would be one set of messages for each vma.
-> > 
-> > So we need an additional global teardown call? Then we'd need to switch 
-> > off the vma based invalidate_range()?
+> Did that, renamed to "via-rng: enable secondary noise source on CPUs where
+> it is present".
 > 
-> No, EXACTLY what I originally was asking for, either move this call site
-> up, introduce an additional mmu_notifier op, or place this one in two
-> locations with a flag indicating which call is being made.
+> Has anyone tested it?
 
-Add a new invalidate_all() call? Then on exit we do
-
-1. invalidate_all()
-
-2. invalidate_range() for each vma
-
-3. release()
-
-We cannot simply move the call up because there will be future range 
-callbacks on vma invalidation.
-
-
+Works for me.
+Did anyone else have a look?
