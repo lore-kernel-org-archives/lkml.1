@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbYAYF5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbYAYF6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755615AbYAYF5Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 00:57:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbYAYF4x
+	id S1756989AbYAYF6S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 00:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYAYF6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 00:56:53 -0500
-Received: from mga03.intel.com ([143.182.124.21]:39197 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753357AbYAYF4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 00:56:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,248,1199692800"; 
-   d="scan'208";a="371109572"
-Subject: [PATCH 5/6] x86: use reboot_type on EFI 32
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 25 Jan 2008 13:55:04 +0800
-Message-Id: <1201240504.15972.47.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 25 Jan 2008 05:54:21.0886 (UTC) FILETIME=[BB7315E0:01C85F16]
+	Fri, 25 Jan 2008 00:58:05 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44085 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752878AbYAYF6E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 00:58:04 -0500
+Message-Id: <20080125055606.102986685@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 24 Jan 2008 21:56:06 -0800
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>
+Cc: Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: [patch 0/4] [RFC] MMU Notifiers V1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes reboot_type of BOOT_EFI is used on i386 too. Because
-correpsonding reboot code of i386 and x86_64 is merged.
+This is a patchset implementing MMU notifier callbacks based on Andrea's
+earlier work. These are needed if Linux pages are referenced from something
+else than tracked by the rmaps of the kernel.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+To do:
 
----
- arch/x86/kernel/efi.c |    2 --
- 1 file changed, 2 deletions(-)
+- Make locking requirements for the callbacks consistent and
+  document them accurately.
+- Insure that the callbacks are complete
+- Feedback from uses of the callbacks for KVM, RDMA, XPmem and GRU
 
---- a/arch/x86/kernel/efi.c
-+++ b/arch/x86/kernel/efi.c
-@@ -371,11 +371,9 @@ void __init efi_init(void)
- 		printk(KERN_WARNING "Kernel-defined memdesc"
- 		       "doesn't match the one from EFI!\n");
- 
--#ifdef CONFIG_X86_64
- 	/* Setup for EFI runtime service */
- 	reboot_type = BOOT_EFI;
- 
--#endif
- #if EFI_DEBUG
- 	print_efi_memmap();
- #endif
+Andrea's mmu_notifier #4 -> RFC V1
 
+- Merge subsystem rmap based with Linux rmap based approach
+- Move Linux rmap based notifiers out of macro
+- Try to account for what locks are held while the notifiers are
+  called.
+- Develop a patch sequence that separates out the different types of
+  hooks so that it is easier to review their use.
+- Avoid adding #include to linux/mm_types.h
+- Integrate RCU logic suggested by Peter.
+
+-- 
