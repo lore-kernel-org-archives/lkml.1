@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760229AbYAYW5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760933AbYAYXAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760229AbYAYW5t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 17:57:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756683AbYAYW5l
+	id S1760933AbYAYXAe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 18:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759463AbYAYXAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 17:57:41 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44950 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754690AbYAYW5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 17:57:40 -0500
-Date: Fri, 25 Jan 2008 23:57:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
+	Fri, 25 Jan 2008 18:00:10 -0500
+Received: from xenotime.net ([66.160.160.81]:44091 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759746AbYAYXAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 18:00:08 -0500
+Date: Fri, 25 Jan 2008 15:00:02 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
 To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 183/196] driver core: fix build with SYSFS=n
-Message-ID: <20080125225723.GA26475@elte.hu>
-References: <20080125071127.GA4860@kroah.com> <1201246425-5058-104-git-send-email-gregkh@suse.de> <20080125222530.GA23769@elte.hu> <20080125223858.GA15723@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080125223858.GA15723@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: compile error in current git
+Message-Id: <20080125150002.09cdacb8.rdunlap@xenotime.net>
+In-Reply-To: <20080125221731.GB15172@suse.de>
+References: <479A4867.9040302@goop.org>
+	<20080125221731.GB15172@suse.de>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 25 Jan 2008 14:17:31 -0800 Greg KH wrote:
 
-* Greg KH <gregkh@suse.de> wrote:
-
-> > Changes like this (and it now leaked into Linus' tree as well) kill 
-> > bisectability.
+> On Fri, Jan 25, 2008 at 12:36:55PM -0800, Jeremy Fitzhardinge wrote:
+> > When compiling current git with CONFIG_BLOCK disabled, I'm seeing this 
+> > compile error:
+> >
+> >  CC      drivers/base/core.o
+> > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c: In function 
+> > ???device_add_class_symlinks???:
+> > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c:655: error: 
+> > ???part_type??? undeclared (first use in this function)
+> > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c:655: error: (Each 
+> > undeclared identifier is reported only once
+> > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c:655: error: for each 
+> > function it appears in.)
+> > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c: In function 
+> > ???device_remove_class_symlinks???:
+> > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c:728: error: 
+> > ???part_type??? undeclared (first use in this function)
+> > make[4]: *** [drivers/base/core.o] Error 1
 > 
-> The odds that a "normal" person has sysfs turned off and modules 
-> enabled, trying to bisect things, is pretty slim :)
+> Hm, I thought we fixed the CONFIG_BLOCK disabled issues with Randy's
+> older patch.  Randy, wasn't this already addressed somehow?
 
-that "slim" combination is what i use for about 25% of all my bisections 
-- i build, boot and stress-test randconfig configs.
+My earlier email fixed one problem but noted that there were
+still some other issues.
 
-If i find a problem with a given .config, i do _not_ go around and 
-change the .config to make a bisection point work. (and the automated 
-bisection scripts definitely wont do it either.)
+> Jeremy, do you have a .config I can use to try to duplicate and fix
+> this?
 
-so what is a 'weird config' to you is a real testing barrier for others. 
-And crap like that quickly mounts up. Having a buildable and bootable 
-kernel at every bisection point is a _must_.
+yes, please...
 
-Please! :-)
-
-	Ingo
+---
+~Randy
