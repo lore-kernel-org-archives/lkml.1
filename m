@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbYAYKkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbYAYKl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756450AbYAYKkb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 05:40:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYAYKkX
+	id S1755650AbYAYKl2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 05:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYAYKlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 05:40:23 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:18808 "EHLO
-	outbound5-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752606AbYAYKkV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 05:40:21 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 25 Jan 2008 05:41:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43830 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751512AbYAYKlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 05:41:18 -0500
+Date: Fri, 25 Jan 2008 11:41:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Minoru Usui <usui@mxm.nes.nec.co.jp>
+Cc: linux-kernel@vger.kernel.org, magnus.damm@gmail.com
+Subject: Re: [PATCH] Fix NUMA emulation for x86_64
+Message-ID: <20080125104107.GS23708@elte.hu>
+References: <20080125.171613.41631926.usui@mxm.nes.nec.co.jp>
 MIME-Version: 1.0
-Subject: RE: [patch] PCI: disable the MSI of AMD RS690
-Date: Fri, 25 Jan 2008 18:39:53 +0800
-Message-ID: <B90463BC30D2E446BA423D888DC85E501BFB4C@sshaexmb1.amd.com>
-In-Reply-To: <47987355.1020406@inria.fr>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch] PCI: disable the MSI of AMD RS690
-Thread-Index: AcheeoIQ6o7l8RZMQ46HIPqIaEQjZgAtIfkA
-References: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com>
- <B90463BC30D2E446BA423D888DC85E501BF78E@sshaexmb1.amd.com>
- <47987355.1020406@inria.fr>
-From: "Shane Huang" <Shane.Huang@amd.com>
-To: "Brice Goglin" <Brice.Goglin@inria.fr>, gregkh@suse.de
-cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       htejun@gmail.com, "Shane Huang" <Shane.Huang@amd.com>
-X-OriginalArrivalTime: 25 Jan 2008 10:39:57.0585 (UTC)
- FILETIME=[A11F4010:01C85F3E]
-X-WSS-ID: 6B87630C2IW8769298-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080125.171613.41631926.usui@mxm.nes.nec.co.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Brice:
 
+* Minoru Usui <usui@mxm.nes.nec.co.jp> wrote:
 
-> > +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS690,
-> > quirk_disable_all_msi);
-> 
-> This patch disable MSI for the _whole_ system, not only behind the
-> RS690. Is this on purpose? Is MSI really going to be broken on any
-> bus that's _not_ behind RS690. If not, you might want to use 
-> quirk_disable_msi() instead (as we do for AMD8131).
+> I found a small bug of NUMA emulation code for x86_64. 
+> (CONFIG_NUMA_EMU) If machine is non-NUMA, find_node_by_addr() should 
+> return NUMA_NO_NODE, but current implementation code returns existent 
+> maximum NUMA node number + 1. This is not existent NUMA node number.
+>
+> However, this behaviour does not affect NUMA emulation fortunately, 
+> because acpi_fake_nodes() that is caller of find_node_by_addr() gets 
+> pxm (proximity domain) by node_to_pxm() from non-existent NUMA node 
+> number that was returned by find_node_by_addr(). node_to_pxm() returns 
+> PXM_INVAL that means illegal or non-existent NUMA node number.
 
+thanks, i have applied your fix to x86.git.
 
-quirk_disable_msi() can not fix the issue in my debug, 
-quirk_msi_intx_disable_bug() which can fix SB700 SATA MSI bug does not
-work either.
-quirk_disable_all_msi is the only workaround I found.
+It seems this does not need to be backported to v2.6.24.1 because 
+node_to_pxm() masked the bad effects of this bug, right?
 
-If there is any other guy who also has one SB600+RS690 board, and can
-help
-to  verify this RS690 MSI disablement patch with a new kernel version
-such as
-2.6.24-rc7,  that's great.
-
-
-BTW:
-RS690 MSI disablement should NOT affect SB700 MSI, because as I know, 
-there will not be the combination of RS690+SB700 on the market.
-
-
-Thanks
-Shane
-
-
+	Ingo
