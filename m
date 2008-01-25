@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbYAYFVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYAYFWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755789AbYAYFVE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 00:21:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbYAYFUy
+	id S1756219AbYAYFWW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 00:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYAYFWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 00:20:54 -0500
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:44194 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752659AbYAYFUx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 00:20:53 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=K6NLvIa1/lS46/sWqzNFuRE5oIz5P9Z2OxpJSvNXLjNbiq4kj/fPIrhpjK0dL5+hdWECyZkJOT1Locln14UmAKGh9rphjYInLdW2DCezk7LqUPaP4TtbFBIZj+rg6PiDMH8ty2FBbZBTt8dpORtmUREiquiOwPznwEIA9tc60lA=  ;
-X-YMail-OSG: BlIEiXYVM1lOdAgSizOBxjutSOQEIAvCvIsWUWw_MkhZmmGyFoExZB0CbWKLiW3bjkSRfK8oCA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: [RFC] some page can't be migrated
-Date: Fri, 25 Jan 2008 16:20:38 +1100
-User-Agent: KMail/1.9.5
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, clameter <clameter@sgi.com>
-References: <1201069357.32059.13.camel@sli10-desk.sh.intel.com> <200801251403.23236.nickpiggin@yahoo.com.au> <1201230571.28282.2.camel@sli10-desk.sh.intel.com>
-In-Reply-To: <1201230571.28282.2.camel@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 25 Jan 2008 00:22:14 -0500
+Received: from mga02.intel.com ([134.134.136.20]:3909 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752659AbYAYFWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 00:22:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,248,1199692800"; 
+   d="scan'208";a="329720567"
+Subject: [PATCH] x86: ioremap_nocache fix
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801251620.38236.nickpiggin@yahoo.com.au>
+Date: Fri, 25 Jan 2008 13:22:41 +0800
+Message-Id: <1201238561.15972.17.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+X-OriginalArrivalTime: 25 Jan 2008 05:21:58.0592 (UTC) FILETIME=[3527F400:01C85F12]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 January 2008 14:09, Shaohua Li wrote:
-> On Fri, 2008-01-25 at 14:03 +1100, Nick Piggin wrote:
-> > On Wednesday 23 January 2008 17:22, Shaohua Li wrote:
-> > > Anonymous page might have fs-private metadata, the page is truncated.
-> > > As the page hasn't mapping, page migration refuse to migrate the page.
-> > > It appears the page is only freed in page reclaim and if zone watermark
-> > > is low, the page is never freed, as a result migration always fail. I
-> > > thought we could free the metadata so such page can be freed in
-> > > migration and make migration more reliable?
-> >
-> > Anonymous pages should not have fs-private metadata.
-> >
-> > Orphaned pages I guess you mean?
->
-> yes, maybe, but the comments in truncate_complete_page called the page
-> anonymous.
+This patch fixes a bug of ioremap_nocache. ioremap_nocache() will call
+__ioremap() with flags != 0 to do the real work, which will call
+change_page_attr_addr() if phys_addr + size - 1 < (end_pfn_map << PAGE_SHIFT).
+But some pages between 0 ~ end_pfn_map << PAGE_SHIFT are not mapped by 
+identity map, this will make change_page_attr_addr failed.
 
-Ah, I see. I think we should use orphaned (or anything except
-anonymous) to describe these pages.
+This patch is based on latest x86 git and has been tested on x86_64 platform.
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+---
+ arch/x86/mm/ioremap_64.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+--- a/arch/x86/mm/ioremap_64.c
++++ b/arch/x86/mm/ioremap_64.c
+@@ -41,8 +41,15 @@ ioremap_change_attr(unsigned long phys_a
+ 	if (phys_addr + size - 1 < (end_pfn_map << PAGE_SHIFT)) {
+ 		unsigned long npages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 		unsigned long vaddr = (unsigned long) __va(phys_addr);
++		int level;
+ 
+ 		/*
++		 * If there is no identity map for this address,
++		 * change_page_attr_addr is unnecessary
++		 */
++		if (!lookup_address(vaddr, &level))
++			return err;
++		/*
+  		 * Must use a address here and not struct page because the phys addr
+ 		 * can be a in hole between nodes and not have an memmap entry.
+ 		 */
+
