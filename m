@@ -1,65 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbYAYAlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915AbYAYAtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbYAYAlS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 19:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYAYAlJ
+	id S1752915AbYAYAtT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 19:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbYAYAtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 19:41:09 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41158 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750714AbYAYAlI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 19:41:08 -0500
-Message-ID: <47992F31.1070705@zytor.com>
-Date: Thu, 24 Jan 2008 16:37:05 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 24 Jan 2008 19:49:03 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45190 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751740AbYAYAtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 19:49:01 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm 3/5] HWRNG: Add possibility to remove hwrng devices during suspend/resume
+Date: Fri, 25 Jan 2008 01:35:24 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Michael Buesch <mb@bu3sch.de>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       bcm43xx-dev@lists.berlios.de,
+       Alessandro Rubini <rubini@vision.unipv.it>,
+       Richard Purdie <rpurdie@rpsys.net>
+References: <200801250127.21966.rjw@sisk.pl>
+In-Reply-To: <200801250127.21966.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?B?TWlrYSBQZW50dGlsw6Q=?= <mika.penttila@kolumbus.fi>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
- format.
-References: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>	 <47939363.8040603@kolumbus.fi>	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>	 <479510CE.7010706@zytor.com>	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>	 <479551FD.5040801@zytor.com>	 <1201023401.5643.52.camel@localhost.localdomain>	 <479634A9.1090908@zytor.com>	 <1201031325.15491.66.camel@cthulhu.hellion.org.uk>	 <47964B7B.9000905@zytor.com>  <20080122203611.GA12892@elte.hu>	 <1201121530.30671.15.camel@cthulhu.hellion.org.uk>	 <4797E487.8010108@goop.org> <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <47990BDC.4070008@zytor.com> <479912B0.2080506@goop.org> <479913BA.8000506@zytor.com> <47991809.9060903@goop.org> <47991A6C.8060007@zytor.com> <479921F5.9020902@goop.org> <479922D0.3010708@zytor.com> <4799248F.9080404@goop.org> <47992710.2060108@zytor.com> <47992948.60308@goop.org> <47992A3B.7000607@zytor.com> <47992DD9.8060604@goop.org>
-In-Reply-To: <47992DD9.8060604@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Disposition: inline
+Message-Id: <200801250135.26009.rjw@sisk.pl>
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
->> No, if Xen wasn't an issue there wouldn't be anything to do for the 
->> PAE case at all (since the PGD is trivial.)
->>
->> Copying PMDs is more or less an analogous case of the !PAE case, once 
->> the allocation is already done.  The allocation should be trivial 
->> though, since this would be a one-time thing.
-> 
-> I think we're in vehement agreement here.  In either case, its just a 
-> matter of something like:
-> 
->    memcpy(pgd, &pgd[USER_PTRS_PER_PGD], sizeof(pgd_t) * 
-> KERNEL_PTRS_PER_PGD);
->     
-> which would work for both PAE and non-PAE.
-> 
->>> It would be easy enough to add some code on xen side to look for pmd 
->>> aliases when using/pinning a pagetable, and allocate'n'copy a new pmd 
->>> page as needed.  That way the core code can ignore the issue.
->>
->> As much as I'd rather see Xen fixing this than having it continue to 
->> impact the kernel, I presume it will take some time to flush the 
->> broken hypervisors out? 
-> 
-> Sorry, I was unclear.  I meant in the purely Xen-specific parts of the 
-> kernel (arch/x86/xen).  It wouldn't require a hypervisor change.
-> 
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Oh, that makes that option much more viable and probably preferrable.
+Make it possible to unregister a Hardware Random Number Generator
+device object in a safe way during a suspend/resume cycle.
 
-	-hpa
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Michael Buesch <mb@bu3sch.de>
+---
+ drivers/char/hw_random/core.c |   10 +++++-----
+ include/linux/hw_random.h     |   10 +++++++++-
+ 2 files changed, 14 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.24-rc8-mm1/drivers/char/hw_random/core.c
+===================================================================
+--- linux-2.6.24-rc8-mm1.orig/drivers/char/hw_random/core.c
++++ linux-2.6.24-rc8-mm1/drivers/char/hw_random/core.c
+@@ -234,11 +234,11 @@ static DEVICE_ATTR(rng_available, S_IRUG
+ 		   NULL);
+ 
+ 
+-static void unregister_miscdev(void)
++static void unregister_miscdev(bool suspended)
+ {
+ 	device_remove_file(rng_miscdev.this_device, &dev_attr_rng_available);
+ 	device_remove_file(rng_miscdev.this_device, &dev_attr_rng_current);
+-	misc_deregister(&rng_miscdev);
++	__misc_deregister(&rng_miscdev, suspended);
+ }
+ 
+ static int register_miscdev(void)
+@@ -313,7 +313,7 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(hwrng_register);
+ 
+-void hwrng_unregister(struct hwrng *rng)
++void __hwrng_unregister(struct hwrng *rng, bool suspended)
+ {
+ 	int err;
+ 
+@@ -332,11 +332,11 @@ void hwrng_unregister(struct hwrng *rng)
+ 		}
+ 	}
+ 	if (list_empty(&rng_list))
+-		unregister_miscdev();
++		unregister_miscdev(suspended);
+ 
+ 	mutex_unlock(&rng_mutex);
+ }
+-EXPORT_SYMBOL_GPL(hwrng_unregister);
++EXPORT_SYMBOL_GPL(__hwrng_unregister);
+ 
+ 
+ MODULE_DESCRIPTION("H/W Random Number Generator (RNG) driver");
+Index: linux-2.6.24-rc8-mm1/include/linux/hw_random.h
+===================================================================
+--- linux-2.6.24-rc8-mm1.orig/include/linux/hw_random.h
++++ linux-2.6.24-rc8-mm1/include/linux/hw_random.h
+@@ -44,7 +44,15 @@ struct hwrng {
+ /** Register a new Hardware Random Number Generator driver. */
+ extern int hwrng_register(struct hwrng *rng);
+ /** Unregister a Hardware Random Number Generator driver. */
+-extern void hwrng_unregister(struct hwrng *rng);
++extern void __hwrng_unregister(struct hwrng *rng, bool suspended);
++static inline void hwrng_unregister(struct hwrng *rng)
++{
++	__hwrng_unregister(rng, false);
++}
++static inline void hwrng_unregister_suspended(struct hwrng *rng)
++{
++	__hwrng_unregister(rng, true);
++}
+ 
+ #endif /* __KERNEL__ */
+ #endif /* LINUX_HWRANDOM_H_ */
+
