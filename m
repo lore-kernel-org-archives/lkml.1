@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760901AbYAYJuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762148AbYAYJv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760901AbYAYJuu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 04:50:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539AbYAYJuk
+	id S1762148AbYAYJv0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 04:51:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbYAYJvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 04:50:40 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47013 "EHLO mx3.mail.elte.hu"
+	Fri, 25 Jan 2008 04:51:14 -0500
+Received: from ns1.suse.de ([195.135.220.2]:45597 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754459AbYAYJuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 04:50:39 -0500
-Date: Fri, 25 Jan 2008 10:50:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] x86: fixes some bugs about EFI memory map handling
-Message-ID: <20080125095016.GI23708@elte.hu>
-References: <1201240507.15972.48.camel@caritas-dev.intel.com> <20080125093131.GG23708@elte.hu> <1201254015.15972.66.camel@caritas-dev.intel.com>
+	id S1754587AbYAYJvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 04:51:12 -0500
+From: Andi Kleen <ak@novell.com>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+Subject: Re: [PATCH UPDATE] x86: ignore spurious faults
+Date: Fri, 25 Jan 2008 10:51:07 +0100
+User-Agent: KMail/1.9.6
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Jan Beulich <jbeulich@novell.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Matt Mackall <mpm@selenic.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <C3BF59DD.1B68F%Keir.Fraser@cl.cam.ac.uk>
+In-Reply-To: <C3BF59DD.1B68F%Keir.Fraser@cl.cam.ac.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1201254015.15972.66.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200801251051.08117.ak@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Huang, Ying <ying.huang@intel.com> wrote:
+> Whether this a problem in light of Xen spurious faults depends on whether
+> NMI handlers touch dynamically-allocated data. And if they do, it still
+> depends on the exact scenario. If it is likely to be a problem, a Xen pv_op
+> can flush the TLB on NMI entry, or we could have Xen do that implicitly
+> before invoking the guest NMI handler.
 
-> On Fri, 2008-01-25 at 10:31 +0100, Ingo Molnar wrote:
-> > * Huang, Ying <ying.huang@intel.com> wrote:
-> > 
-> > > This patch fixes some bugs of EFI memory handing code.
-> > > 
-> > > - On x86_64, it is possible that EFI memory map can not be mapped via
-> > >   identity map, so efi_map_memmap is removed, just use early_ioremap.
-> > > 
-> > > - On i386, the EFI memory map mapping take effect cross paging_init,
-> > >   so it is not necessary to use efi_map_memmap.
-> > > 
-> > > - EFI memory map is unmapped in efi_enter_virtual_mode to avoid
-> > >   early_ioremap leak.
-> > 
-> > thanks, applied.
-> > 
-> > btw., it would be nice to consolidate this some more. Why is there a 
-> > separate efi_ioremap(), which is mapped to ioremap() on 32-bit, and 
-> > which is mapped to a fixmap based special mapper on 64-bit?
-> > 
-> > To me it appears this wants to be ioremap() on both 64-bit and 
-> > 32-bit, and we could remove efi_ioremap() altogether. Hm?
-> 
-> To support kexec, I want to map the EFI memory area on same virtual 
-> address on different boot of different version of kernel. Then, the 
-> EFI runtime service will always get the same execution environment. 
-> This is because a weakness of EFI runtime service, it can not reset 
-> its execution environment, except reboot.
+For PV kernels it would probably be better to just implement a truly
+nesting NMI trigger method instead of the one bit state of the real hardware.
 
-so this basically means that on 32-bit kexec wont work right - i.e. only 
-64-bit has been enhanced this way? What am i missing?
+Actually I'm not sure NMIs are really that useful for guests. Most things
+done traditionally by NMIs are probably better done outside the guest
+in a virtualized environment.
 
-	Ingo
+-Andi
