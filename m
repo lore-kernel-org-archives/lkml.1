@@ -1,222 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbYAYQYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbYAYQ3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755013AbYAYQYS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 11:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbYAYQYJ
+	id S1755196AbYAYQ3a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 11:29:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYAYQ3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 11:24:09 -0500
-Received: from mail.mev.co.uk ([62.49.15.74]:50059 "EHLO mail.mev.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752744AbYAYQYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 11:24:08 -0500
-Message-ID: <479A0D1C.8080401@mev.co.uk>
-Date: Fri, 25 Jan 2008 16:23:56 +0000
-From: Ian Abbott <abbotti@mev.co.uk>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, gregkh@suse.de,
-       kristen.c.accardi@intel.com
-Subject: [PATCH(v3) 2.6.24] Fix fakephp deadlock
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 Jan 2008 11:29:22 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:61494 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752482AbYAYQ3V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 11:29:21 -0500
+Date: Fri, 25 Jan 2008 08:27:10 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Anton Salikhmetov <salikhmetov@gmail.com>
+Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
+       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
+       staubach@redhat.com, jesper.juhl@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
+       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
+Subject: Re: [PATCH -v8 4/4] The design document for memory-mapped file
+ times update
+Message-Id: <20080125082710.09f321c1.randy.dunlap@oracle.com>
+In-Reply-To: <1201044083554-git-send-email-salikhmetov@gmail.com>
+References: <12010440803930-git-send-email-salikhmetov@gmail.com>
+	<1201044083554-git-send-email-salikhmetov@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jan 2008 16:23:56.0552 (UTC) FILETIME=[AEE7B080:01C85F6E]
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Abbott <abbotti@mev.co.uk>
+On Wed, 23 Jan 2008 02:21:20 +0300 Anton Salikhmetov wrote:
 
-This is the third version of my patch to fix the problem of a process
-deadlocking itself when it uses the fakephp driver to fake the removal
-of a PCI device.
+> Add a document, which describes how the POSIX requirements on updating
+> memory-mapped file times are addressed in Linux.
 
-This section describes the changes since the first version of the
-patch.  Skip to the next section (after the "---") for the original
-rationale and (slightly modified) patch description, and for the patch
-itself.
+Hi Anton,
 
-Greg KH hinted at a race condition in the first version of the patch.
-In the first version, the enable_slot() function checked that the slot
-was still valid and then flushed the work queue to perform any pending
-removals of slots from sysfs before it finally rescanned the PCI buses.
-Another task could have come in and marked the slot as disabled after
-the validity check but before flushing the work queue, and this would
-cause the task to deadlock while flushing the work queue (for similar
-reasons to the problem I was initially trying to fix).  (The sysfs
-attribute file's buffer semaphore wouldn't necessarily protect against
-that, because writing "0" to the "power" file can trigger a cascade of
-other slot removals that don't have that protection.)
+Just a few small comments below...
 
-The second version of the patch rewrote the enable_slot() function so
-it no longer flushes the work queue.  To maintain the proper sequencing,
-it allocated and queued a work queue item to perform the PCI rescan (the
-work queue is single-threaded).  I also removed the slot validity check
-as we don't really care which slot was used to trigger a rescan.
+> Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
+> ---
+>  Documentation/vm/00-INDEX  |    2 +
+>  Documentation/vm/msync.txt |  117 ++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 119 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/vm/00-INDEX b/Documentation/vm/00-INDEX
+> index 2131b00..2726c8d 100644
+> --- a/Documentation/vm/00-INDEX
+> +++ b/Documentation/vm/00-INDEX
+> @@ -6,6 +6,8 @@ hugetlbpage.txt
+>  	- a brief summary of hugetlbpage support in the Linux kernel.
+>  locking
+>  	- info on how locking and synchronization is done in the Linux vm code.
+> +msync.txt
+> +	- the design document for memory-mapped file times update
+>  numa
+>  	- information about NUMA specific code in the Linux vm.
+>  numa_memory_policy.txt
+> diff --git a/Documentation/vm/msync.txt b/Documentation/vm/msync.txt
+> new file mode 100644
+> index 0000000..571a766
+> --- /dev/null
+> +++ b/Documentation/vm/msync.txt
+> @@ -0,0 +1,117 @@
+> +
+> +	The msync() system call and memory-mapped file times
+> +
+> +	Copyright (C) 2008 Anton Salikhmetov
+> +
+> +The POSIX standard requires that any write reference to memory-mapped file
+> +data should result in updating the ctime and mtime for that file. Moreover,
+> +the standard mandates that updated file times should become visible to the
+> +world no later than at the next call to msync().
+> +
+> +Failure to meet this requirement creates difficulties for certain classes
+> +of important applications. For instance, database backup systems fail to
+> +pick up the files modified via the mmap() interface. Also, this is a
+> +security hole, which allows forging file data in such a manner that proving
+> +the fact that file data was modified is not possible.
+> +
+> +Briefly put, this requirement can be stated as follows:
+> +
+> +	once the file data has changed, the operating system
+> +	should acknowledge this fact by updating file metadata.
+> +
+> +This document describes how this POSIX requirement is addressed in Linux.
+> +
+> +1. Requirements
+> +
+> +1.1) the POSIX standard requires updating ctime and mtime not later
+> +than at the call to msync() with MS_SYNC or MS_ASYNC flags;
+> +
+> +1.2) in existing POSIX implementations, ctime and mtime
+> +get updated not later than at the call to fsync();
+> +
+> +1.3) in existing POSIX implementation, ctime and mtime
+> +get updated not later than at the call to sync(), the "auto-update" feature;
+> +
+> +1.4) the customers require and the common sense suggests that
+> +ctime and mtime should be updated not later than at the call to munmap()
+> +or exit(), the latter function implying an implicit call to munmap();
+> +
+> +1.5) the (1.1) item should be satisfied if the file is a block device
+> +special file;
+> +
+> +1.6) the (1.1) item should be satisfied for files residing on
+> +memory-backed filesystems such as tmpfs, too.
+> +
+> +The following operating systems were used as the reference platforms
+> +and are referred to as the "existing implementations" above:
+> +HP-UX B.11.31 and FreeBSD 6.2-RELEASE.
+> +
+> +2. Lazy update
+> +
+> +Many attempts before the current version implemented the "lazy update" approach
+> +to satisfying the requirements given above. Within the latter approach, ctime
+> +and mtime get updated at last moment allowable.
+> +
+> +Since we don't update the file times immediately, some Flag has to be
+> +used. When up, this Flag means that the file data was modified and
+> +the file times need to be updated as soon as possible.
 
-This third version of the patch uses a single statically allocated work
-queue item to perform the PCI rescan instead of allocating one
-dynamically in the enable_slot() function.  When enable_slot() is
-called, it first cancels any queued PCI rescan work item and then
-requeues it.  This means a previously scheduled PCI rescan may be
-skipped, but that shouldn't matter.  The important thing is that the
-new PCI rescan is performed after any previously scheduled removals
-of PCI slots from sysfs.
+I would s/up/set/ above and below.
 
-Greg KH also seemed to have a problem with my use of unsigned long for
-the 'removed' member of 'struct dummy_slot'.  I need that for the
-test_and_set_bit() and a narrower type wouldn't make 'struct dummy_slot'
-any smaller (and there are other ways to save space in 'struct
-dummy_slot' if it is a problem, but they make the code trickier).
+> +Any existing "dirty" flag which, when up, mean that a page has been written to,
 
-On with the rationale and patch description....
+s/mean/means/
 
+> +is not suitable for this purpose. Indeed, msync() called with MS_ASYNC
+> +would have to reset this "dirty" flag after updating ctime and mtime.
+> +The sys_msync() function itself is basically a no-op in the MS_ASYNC case.
+> +Thereby, the synchronization routines relying upon this "dirty" flag
+> +would lose data. Therefore, a new Flag has to be introduced.
+> +
+> +The (1.5) item coupled with (1.3) requirement leads to hard work with
+> +the block device inodes. Specifically, during writeback it is impossible to
+> +tell which block device file was originally mapped. Therefore, we need to
+> +traverse the list of "active" devices associated with the block device inode.
+> +This would lead to updating file times for block device files, which were not
+> +taking part in the data transfer.
+> +
+> +Also all versions prior to version 6 failed to correctly process ctime and
+> +mtime for files on the memory-backed filesystems such as tmpfs. So the (1.6)
+> +requirement was not satisfied.
+> +
+> +If a write reference has occurred between two consecutive calls to msync()
+> +with MS_ASYNC, the second call to the latter function should take into
+> +account the last write reference. The last write reference can not be caught
+
+s/can not/cannot/
+
+> +if no pagefault occurs. Hence a pagefault needs to be forced. This can be done
+> +using two different approaches. The first one is to synchronize data even when
+> +msync() was called with MS_ASYNC. This is not acceptable because the current
+> +design of the sys_msync() routine forbids starting I/O for the MS_ASYNC case.
+> +The second approach is to write protect the page for triggering a pagefault
+
+s/write protect/write-protect/
+
+> +at the next write reference. Note that the dirty flag for the page should not
+> +be cleared thereby.
+> +
+> +In the "lazy update" approach, the requirements (1.1), (1.2), (1.3), and (1.4)
+> +taken together result in adding code at least to the following kernel routines:
+> +sys_msync(), do_fsync(), some routine in the unmap() call path, some routine
+> +in the sync() call path.
+> +
+> +Finally, a file_update_time()-like function would have to be created for
+> +processing the inode objects, not file objects. This is due to the fact that
+> +during the sync() operation, the file object may not exist any more, only
+> +the inode is known.
+> +
+> +To sum up: this "lazy" approach leads to massive changes, incurs overhead in
+> +the block device case, and requires complicated design decisions.
+> +
+> +3. Immediate update
+> +
+> +OK, still reading? There's a better way.
+> +
+> +In a fashion analogous to what happens at write(2), react to the fact
+> +that the page gets dirtied by updating the file times immediately.
+> +Thereby any page writeback happens when the write reference has already
+> +been accounted for from the view point of file times.
+
+Probably s/view point/viewpoint/.
+
+> +
+> +The only problem which remains is to force refreshing file times at the write
+> +reference following a call to msync() with MS_ASYNC. As mentioned above, all
+> +that is needed here is to force a pagefault.
+> +
+> +The vma_wrprotect() routine introduced in this patch series is called
+> +from sys_msync() in the MS_ASYNC case. The former routine is essentially
+> +a version of existing page_mkclean_one() function from mm/rmap.c. Unlike
+> +the latter function, the vma_wrprotect() does not touch the dirty bit.
+> -- 
+
+Thanks for the design document.
 ---
-From: Ian Abbott <abbotti@mev.co.uk>
-
-If the fakephp driver is used to emulate removal of a PCI device by
-writing text string "0" to the "power" sysfs attribute file, this causes
-its parent directory and its contents (including the "power" file) to be
-deleted before the write operation returns.  Unfortunately, it ends up
-in a deadlock waiting for itself to complete.
-
-The deadlock is as follows: sysfs_write_file calls flush_write_buffer
-which calls sysfs_get_active_two before calling power_write_file in
-pci_hotplug_core.c via the sysfs store operation. The power_write_file
-function calls disable_slot in fakephp.c via the slot operation.  The
-disable_slot function calls remove_slot which calls pci_hp_deregister
-(back in pci_hotplug_core.c) which calls fs_remove_slot which calls
-sysfs_remove_file to remove the "power" file. The sysfs_remove_file
-function calls sysfs_hash_and_remove which calls sysfs_addrm_finish
-which calls sysfs_deactivate. The sysfs_deactivate function sees that
-something has an active reference on the sysfs_dirent (from the
-previous call to sysfs_get_active_two back up the call stack somewhere)
-so waits for the active reference to go away, which is of course
-impossible.
-
-The problem has been present since 2.6.21.
-
-This patch breaks the deadlock by queuing work queue items on a single-
-threaded work queue to remove a slot from sysfs, and to rescan the PCI
-buses.  There is also some protection against disabling a slot that is
-already being removed.
-
-Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
----
-
---- linux-2.6.24/drivers/pci/hotplug/fakephp.c.orig	2008-01-24 22:58:37.000000000 +0000
-+++ linux-2.6.24/drivers/pci/hotplug/fakephp.c	2008-01-25 15:58:21.000000000 +0000
-@@ -39,6 +39,7 @@
- #include <linux/init.h>
- #include <linux/string.h>
- #include <linux/slab.h>
-+#include <linux/workqueue.h>
- #include "../pci.h"
-
- #if !defined(MODULE)
-@@ -63,10 +64,16 @@ struct dummy_slot {
- 	struct list_head node;
- 	struct hotplug_slot *slot;
- 	struct pci_dev *dev;
-+	struct work_struct remove_work;
-+	unsigned long removed;
- };
-
- static int debug;
- static LIST_HEAD(slot_list);
-+static struct workqueue_struct *dummyphp_wq;
-+
-+static void pci_rescan_worker(struct work_struct *work);
-+static DECLARE_WORK(pci_rescan_work, pci_rescan_worker);
-
- static int enable_slot (struct hotplug_slot *slot);
- static int disable_slot (struct hotplug_slot *slot);
-@@ -109,7 +116,7 @@ static int add_slot(struct pci_dev *dev)
- 	slot->name = &dev->dev.bus_id[0];
- 	dbg("slot->name = %s\n", slot->name);
-
--	dslot = kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
-+	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
- 	if (!dslot)
- 		goto error_info;
-
-@@ -164,6 +171,14 @@ static void remove_slot(struct dummy_slo
- 		err("Problem unregistering a slot %s\n", dslot->slot->name);
- }
-
-+/* called from the single-threaded workqueue handler to remove a slot */
-+static void remove_slot_worker(struct work_struct *work)
-+{
-+	struct dummy_slot *dslot =
-+		container_of(work, struct dummy_slot, remove_work);
-+	remove_slot(dslot);
-+}
-+
- /**
-  * pci_rescan_slot - Rescan slot
-  * @temp: Device template. Should be set: bus and devfn.
-@@ -267,11 +282,17 @@ static inline void pci_rescan(void) {
- 	pci_rescan_buses(&pci_root_buses);
- }
-
-+/* called from the single-threaded workqueue handler to rescan all pci buses */
-+static void pci_rescan_worker(struct work_struct *work)
-+{
-+	pci_rescan();
-+}
-
- static int enable_slot(struct hotplug_slot *hotplug_slot)
- {
- 	/* mis-use enable_slot for rescanning of the pci bus */
--	pci_rescan();
-+	cancel_work_sync(&pci_rescan_work);
-+	queue_work(dummyphp_wq, &pci_rescan_work);
- 	return -ENODEV;
- }
-
-@@ -306,6 +327,10 @@ static int disable_slot(struct hotplug_s
- 		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
- 		return -ENODEV;
- 	}
-+	if (test_and_set_bit(0, &dslot->removed)) {
-+		dbg("Slot already scheduled for removal\n");
-+		return -ENODEV;
-+	}
- 	/* search for subfunctions and disable them first */
- 	if (!(dslot->dev->devfn & 7)) {
- 		for (func = 1; func < 8; func++) {
-@@ -328,8 +353,9 @@ static int disable_slot(struct hotplug_s
- 	/* remove the device from the pci core */
- 	pci_remove_bus_device(dslot->dev);
-
--	/* blow away this sysfs entry and other parts. */
--	remove_slot(dslot);
-+	/* queue work item to blow away this sysfs entry and other parts. */
-+	INIT_WORK(&dslot->remove_work, remove_slot_worker);
-+	queue_work(dummyphp_wq, &dslot->remove_work);
-
- 	return 0;
- }
-@@ -340,6 +366,7 @@ static void cleanup_slots (void)
- 	struct list_head *next;
- 	struct dummy_slot *dslot;
-
-+	destroy_workqueue(dummyphp_wq);
- 	list_for_each_safe (tmp, next, &slot_list) {
- 		dslot = list_entry (tmp, struct dummy_slot, node);
- 		remove_slot(dslot);
-@@ -351,6 +378,10 @@ static int __init dummyphp_init(void)
- {
- 	info(DRIVER_DESC "\n");
-
-+	dummyphp_wq = create_singlethread_workqueue(MY_NAME);
-+	if (!dummyphp_wq)
-+		return -ENOMEM;
-+
- 	return pci_scan_buses();
- }
-
-
--- 
--=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
--=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
+~Randy
