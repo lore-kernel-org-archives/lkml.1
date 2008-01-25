@@ -1,66 +1,267 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbYAYTcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbYAYTeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758038AbYAYTcW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 14:32:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYAYTcP
+	id S1758789AbYAYTeE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 14:34:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYAYTdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 14:32:15 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:1387 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752886AbYAYTcO (ORCPT
+	Fri, 25 Jan 2008 14:33:55 -0500
+Received: from mail.suse.de ([195.135.220.2]:45647 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752699AbYAYTdy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 14:32:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=D+IjrnIEGCzV/LEYqqYWaoONfJXTwtUQkrV2P1wH1/s+x/oubCzhf/LjBcn91zd41qRmzgBsjVwget1k46YJP0I38aciNhapMmn3Xvl5ZMMeqq7Tse/Khfo4GJN3m9bZzU7Ugns+QPiay3krWMGuJs44ofbLOmeMkMWC7e1zICM=
-Message-ID: <86802c440801251132s463f5aceif33dbe46b6ff77a2@mail.gmail.com>
-Date: Fri, 25 Jan 2008 11:32:13 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: [PATCH] x86: trim ram need to check if mtrr is there v3
-Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <479A3823.7000009@goop.org>
+	Fri, 25 Jan 2008 14:33:54 -0500
+From: Frank Seidel <fseidel@suse.de>
+Organization: SuSE Linux Products GmbH
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 012/196 ver2] nozomi driver
+Date: Fri, 25 Jan 2008 20:33:50 +0100
+User-Agent: KMail/1.9.5
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+References: <20080125071127.GA4860@kroah.com> <200801251344.24109.fseidel@suse.de> <20080125185527.GB23475@suse.de>
+In-Reply-To: <20080125185527.GB23475@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <47993F1A.5070408@goop.org> <200801241947.55223.yinghai.lu@sun.com>
-	 <4799930B.40006@goop.org> <200801250042.53074.yinghai.lu@sun.com>
-	 <20080125110935.GA20026@elte.hu> <479A30A3.7050305@goop.org>
-	 <20080125185923.GA2518@elte.hu> <479A3222.30008@goop.org>
-	 <20080125190418.GA7817@elte.hu> <479A3823.7000009@goop.org>
+Message-Id: <200801252033.50923.fseidel@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 25, 2008 11:27 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> Ingo Molnar wrote:
-> > * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> >
-> >
-> >> I was referring to:
-> >>
-> >> commit 6a4544a9c8b54b82893044cb53695502cc386f00
-> >> Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
-> >> Date:   Fri Jan 25 00:15:29 2008 +0100
-> >>
-> >>    x86_32: trim memory by updating e820 v3
-> >>
-> >> but you've answered the question...
-> >>
-> >
-> > yeah, i guess what i've pushed out just now is v3++. Does it work for
-> > you?
-> >
->
-> Yes, it does.  And for the record:
->
-> [root@qemu ~]# cat /proc/mtrr
-> [root@qemu ~]#
+On Friday 25 January 2008 19:55, Greg KH wrote:
+> Frank, can you send me a patch against Linus's current git tree that had
+> the last version of this driver included in it?
+> 
+> That way I can actually apply the changes :)
 
-so the boot msg say:
-WARNING: strange, CPU MTRRs all blank?
+Sure :-) This one is rebased on the current state in git.
 
-YH
+Thanks,
+Frank
+---
+ drivers/char/nozomi.c |  122 ++++++++++++++------------------------------------
+ 1 file changed, 36 insertions(+), 86 deletions(-)
+
+--- a/drivers/char/nozomi.c
++++ b/drivers/char/nozomi.c
+@@ -2,7 +2,7 @@
+  * nozomi.c  -- HSDPA driver Broadband Wireless Data Card - Globe Trotter
+  *
+  * Written by: Ulf Jakobsson,
+- *             Jan �erfeldt,
++ *             Jan Åkerfeldt,
+  *             Stefan Thomasson,
+  *
+  * Maintained by: Paul Hardwick (p.hardwick@option.com)
+@@ -38,60 +38,6 @@
+  * --------------------------------------------------------------------------
+  */
+ 
+-/*
+- * CHANGELOG
+- * Version 2.1d
+- * 11-November-2007 Jiri Slaby, Frank Seidel
+- * - Big rework of multicard support by Jiri
+- * - Major cleanups (semaphore to mutex, endianess, no major reservation)
+- * - Optimizations
+- *
+- * Version 2.1c
+- * 30-October-2007 Frank Seidel
+- * - Completed multicard support
+- * - Minor cleanups
+- *
+- * Version 2.1b
+- * 07-August-2007 Frank Seidel
+- * - Minor cleanups
+- * - theoretical multicard support
+- *
+- * Version 2.1
+- * 03-July-2006 Paul Hardwick
+- *
+- * - Stability Improvements. Incorporated spinlock wraps patch.
+- * - Updated for newer 2.6.14+ kernels (tty_buffer_request_room)
+- * - using __devexit macro for tty
+- *
+- *
+- * Version 2.0
+- * 08-feb-2006 15:34:10:Ulf
+- *
+- * -Fixed issue when not waking up line disipine layer, could probably result
+- *  in better uplink performance for 2.4.
+- *
+- * -Fixed issue with big endian during initalization, now proper toggle flags
+- *  are handled between preloader and maincode.
+- *
+- * -Fixed flow control issue.
+- *
+- * -Added support for setting DTR.
+- *
+- * -For 2.4 kernels, removing temporary buffer that's not needed.
+- *
+- * -Reading CTS only for modem port (only port that supports it).
+- *
+- * -Return 0 in write_room instead of netative value, it's not handled in
+- *  upper layer.
+- *
+- * --------------------------------------------------------------------------
+- * Version 1.0
+- *
+- * First version of driver, only tested with card of type F32_2.
+- * Works fine with 2.4 and 2.6 kernels.
+- * Driver also support big endian architecture.
+- */
+-
+ /* Enable this to have a lot of debug printouts */
+ #define DEBUG
+ 
+@@ -143,8 +89,9 @@ do {								\
+ /* Do we need this settable at runtime? */
+ static int debug = NOZOMI_DEBUG_LEVEL;
+ 
+-#define D(lvl, args...)  do {if (lvl & debug) NFO(KERN_DEBUG, ##args); } \
+-				while (0)
++#define D(lvl, args...)  do \
++			{if (lvl & debug) NFO(KERN_DEBUG, ##args); } \
++			while (0)
+ #define D_(lvl, args...) D(lvl, ##args)
+ 
+ /* These printouts are always printed */
+@@ -273,13 +220,13 @@ enum port_type {
+ /* Big endian */
+ 
+ struct toggles {
+-	unsigned enabled:5;	/*
++	unsigned int enabled:5;	/*
+ 				 * Toggle fields are valid if enabled is 0,
+ 				 * else A-channels must always be used.
+ 				 */
+-	unsigned diag_dl:1;
+-	unsigned mdm_dl:1;
+-	unsigned mdm_ul:1;
++	unsigned int diag_dl:1;
++	unsigned int mdm_dl:1;
++	unsigned int mdm_ul:1;
+ } __attribute__ ((packed));
+ 
+ /* Configuration table to read at startup of card */
+@@ -320,19 +267,19 @@ struct config_table {
+ /* This stores all control downlink flags */
+ struct ctrl_dl {
+ 	u8 port;
+-	unsigned reserved:4;
+-	unsigned CTS:1;
+-	unsigned RI:1;
+-	unsigned DCD:1;
+-	unsigned DSR:1;
++	unsigned int reserved:4;
++	unsigned int CTS:1;
++	unsigned int RI:1;
++	unsigned int DCD:1;
++	unsigned int DSR:1;
+ } __attribute__ ((packed));
+ 
+ /* This stores all control uplink flags */
+ struct ctrl_ul {
+ 	u8 port;
+-	unsigned reserved:6;
+-	unsigned RTS:1;
+-	unsigned DTR:1;
++	unsigned int reserved:6;
++	unsigned int RTS:1;
++	unsigned int DTR:1;
+ } __attribute__ ((packed));
+ 
+ #else
+@@ -340,10 +287,10 @@ struct ctrl_ul {
+ 
+ /* This represents the toggle information */
+ struct toggles {
+-	unsigned mdm_ul:1;
+-	unsigned mdm_dl:1;
+-	unsigned diag_dl:1;
+-	unsigned enabled:5;	/*
++	unsigned int mdm_ul:1;
++	unsigned int mdm_dl:1;
++	unsigned int diag_dl:1;
++	unsigned int enabled:5;	/*
+ 				 * Toggle fields are valid if enabled is 0,
+ 				 * else A-channels must always be used.
+ 				 */
+@@ -379,19 +326,19 @@ struct config_table {
+ 
+ /* This stores all control downlink flags */
+ struct ctrl_dl {
+-	unsigned DSR:1;
+-	unsigned DCD:1;
+-	unsigned RI:1;
+-	unsigned CTS:1;
+-	unsigned reserverd:4;
++	unsigned int DSR:1;
++	unsigned int DCD:1;
++	unsigned int RI:1;
++	unsigned int CTS:1;
++	unsigned int reserverd:4;
+ 	u8 port;
+ } __attribute__ ((packed));
+ 
+ /* This stores all control uplink flags */
+ struct ctrl_ul {
+-	unsigned DTR:1;
+-	unsigned RTS:1;
+-	unsigned reserved:6;
++	unsigned int DTR:1;
++	unsigned int RTS:1;
++	unsigned int reserved:6;
+ 	u8 port;
+ } __attribute__ ((packed));
+ #endif
+@@ -694,7 +641,7 @@ static void dump_table(const struct nozo
+ 	   dc->config_table.ul_ctrl_len);
+ }
+ #else
+-static __inline__ void dump_table(const struct nozomi *dc) { }
++static inline void dump_table(const struct nozomi *dc) { }
+ #endif
+ 
+ /*
+@@ -1102,7 +1049,7 @@ static int send_flow_control(struct nozo
+ }
+ 
+ /*
+- * Handle donlink data, ports that are handled are modem and diagnostics
++ * Handle downlink data, ports that are handled are modem and diagnostics
+  * Return 1 - ok
+  * Return 0 - toggle fields are out of sync
+  */
+@@ -1363,7 +1310,7 @@ static ssize_t card_type_show(struct dev
+ 
+ 	return sprintf(buf, "%d\n", dc->card_type);
+ }
+-static DEVICE_ATTR(card_type, 0444, card_type_show, NULL);
++static DEVICE_ATTR(card_type, S_IRUGO, card_type_show, NULL);
+ 
+ static ssize_t open_ttys_show(struct device *dev, struct device_attribute *attr,
+ 			  char *buf)
+@@ -1372,7 +1319,7 @@ static ssize_t open_ttys_show(struct dev
+ 
+ 	return sprintf(buf, "%u\n", dc->open_ttys);
+ }
+-static DEVICE_ATTR(open_ttys, 0444, open_ttys_show, NULL);
++static DEVICE_ATTR(open_ttys, S_IRUGO, open_ttys_show, NULL);
+ 
+ static void make_sysfs_files(struct nozomi *dc)
+ {
+@@ -1882,7 +1829,10 @@ static void ntty_throttle(struct tty_str
+ /* just to discard single character writes */
+ static void ntty_put_char(struct tty_struct *tty, unsigned char c)
+ {
+-	/* FIXME !!! */
++	/*
++	 * card does not react correct when we write single chars
++	 * to the card, so we discard them
++	 */
+ 	DBG2("PUT CHAR Function: %c", c);
+ }
+ 
