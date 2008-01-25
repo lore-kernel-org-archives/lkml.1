@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbYAYPyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbYAYP41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757410AbYAYPyg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 10:54:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbYAYPy3
+	id S1758117AbYAYP41 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 10:56:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYAYP4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 10:54:29 -0500
-Received: from gw.goop.org ([64.81.55.164]:34877 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753158AbYAYPy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 10:54:28 -0500
-Message-ID: <479A0632.9090205@goop.org>
-Date: Fri, 25 Jan 2008 07:54:26 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH UPDATE] x86: ignore spurious faults
-References: <4797D64D.1060105@goop.org> <1201133916.16972.124.camel@brick> <4797DBA0.5020909@goop.org> <20080125153032.GE11846@elte.hu>
-In-Reply-To: <20080125153032.GE11846@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Jan 2008 10:56:18 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:37219 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753490AbYAYP4R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 10:56:17 -0500
+To: jack@suse.cz
+CC: miklos@szeredi.hu, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       gorcunov@gmail.com
+In-reply-to: <20080125153044.GF28856@atrey.karlin.mff.cuni.cz> (message from
+	Jan Kara on Fri, 25 Jan 2008 16:30:44 +0100)
+Subject: Re: [patch 25/26] mount options: fix udf
+References: <20080124193341.166753833@szeredi.hu> <20080124193456.220272889@szeredi.hu> <20080125153044.GF28856@atrey.karlin.mff.cuni.cz>
+Message-Id: <E1JIQub-0002Bd-CW@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 25 Jan 2008 16:56:13 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> thanks, applied.
->
-> it would be nice to expose this ability of the architecture to the core 
-> Linux kernel mprotect code as well, and let it skip on a TLB flush when 
-> doing a RO->RW transition.
+>   Please use just 'int' for 'remount' option. We are slowly trying to
+> get rid of these strange things in UDF code so adding new ones isn't
+> desirable.
 
-The usermode fault handler already effectively does this; this patch 
-just does it for kernel mode as well.  I don't know if mprotect takes 
-advantage of this.
+What's wrong with bool?
 
->  It could speed up valgrind and the other 
-> mprotect() users i guess? [and UML too perhaps]
->   
+I'm not advocating mass replacements, but all new code _should_ use
+it, because it's a very useful and good type.
 
-Not valgrind (it doesn't rely on mmap protections), but electric fence 
-perhaps.
+We are just not very much used to it yet, but don't tell me it's
+confusing to see a type like this ;)
 
-    J
-
+Miklos
