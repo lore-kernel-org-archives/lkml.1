@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYAYKDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbYAYKHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbYAYKDU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 05:03:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbYAYKDF
+	id S1758593AbYAYKHA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 05:07:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbYAYKGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 05:03:05 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45280 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752484AbYAYKDD (ORCPT
+	Fri, 25 Jan 2008 05:06:53 -0500
+Received: from ro-out-1112.google.com ([72.14.202.182]:39326 "EHLO
+	ro-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753106AbYAYKGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 05:03:03 -0500
-To: ezk@cs.sunysb.edu
-CC: miklos@szeredi.hu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sfrench@us.ibm.com, lachlan@sgi.com, jsipek@cs.sunysb.edu,
-       rmk@arm.linux.org.uk, zippel@linux-m68k.org, dhowells@redhat.com,
-       raven@themaw.net, rathamahata@php4.ru, kkeil@suse.de, hpa@zytor.com,
-       tytso@mit.edu, hirofumi@mail.parknet.co.jp, jdike@addtoit.com,
-       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com,
-       shaggy@austin.ibm.com, vandrove@vc.cvut.cz, Trond.Myklebust@netapp.com,
-       jeffm@suse.com, paulus@samba.org, hugh@veritas.com, gorcunov@gmail.com,
-       gregkh@suse.de
-In-reply-to: <200801250024.m0P0OmXX011168@agora.fsl.cs.sunysb.edu> (message
-	from Erez Zadok on Thu, 24 Jan 2008 19:24:48 -0500)
-Subject: Re: [patch 01/26] mount options: add documentation
-References: <200801250024.m0P0OmXX011168@agora.fsl.cs.sunysb.edu>
-Message-Id: <E1JILOa-0001Ru-MN@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 25 Jan 2008 11:02:48 +0100
+	Fri, 25 Jan 2008 05:06:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=nNChWcB9vIFXu7KzBfi3ZpmSfoKCq+Z3zbXYxzubEkzkhqfOTvntdDBPDApOhusJeYpXjHgsSGGsVfyN0J70GHvWmw0XkKBMGR4bu8p4P1ZsLhFOgcyY3xpInekzMIhnetSygaXz0CnkAlekxEiYveWvicPjZ4o89gDkMgwwR58=
+Date: Fri, 25 Jan 2008 18:04:52 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       mingo@redhat.com
+Subject: Re: Incorrect filename comments in arch/x86/boot
+Message-ID: <20080125100452.GH4726@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20080122193915.GA3926@elf.ucw.cz> <47964FFC.9040601@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47964FFC.9040601@zytor.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Where did you check for the existence of a ->show_options method for
-> unionfs?  Unionfs does implement ->show_options and supports all of the
-> mount/remount options.  See:
-> 
-> <http://git.kernel.org/?p=linux/kernel/git/ezk/unionfs.git;a=blob;f=fs/unionfs/super.c;h=986c980261a5b171147d66ac05bf08423e2fd6b6;hb=HEAD#l963>
-> 
-> The unionfs ->remount code supports branch-management options which can
-> add/del/change a branch, but we don't show those directly in ->show_options;
-> it makes more sense to show the final (and thus most current) branch
-> configuration.
-> 
-> Could you update your records please?
+On Tue, Jan 22, 2008 at 12:20:12PM -0800, H. Peter Anvin wrote:
+>Pavel Machek wrote:
+>>Hi!
+>>
+>>Not sure if this is worth fixing, or if I should just delete those
+>>comments...? (Or does someone want to do that? ;-). 
+>>									Pavel
+>
+>I'll take care of it.
+>
 
-Sure.  Sorry about that, I did actually look at unionfs, and it was
-just an administration error and bad memory (in my head).
+Hmm, arch/i386/boot/ is an empty dir. Why not remove it?
+Only used to put bzImage? Why not choose another dir?
+Maybe arch/x86/boot/, I think. ;)
 
-> BTW, I should be able to use your save_mount_options().
 
-It is probably better not to use save_mount_options().  Especially,
-since unionfs implemets a remount, that changes the tree only
-partially AFAICS.
-
-Miklos
