@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbYAYIPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765228AbYAYIQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754141AbYAYIPt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:15:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763894AbYAYIAj
+	id S1765228AbYAYIQI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:16:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757512AbYAYIAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:00:39 -0500
-Received: from mail.suse.de ([195.135.220.2]:59429 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 03:00:41 -0500
+Received: from mx1.suse.de ([195.135.220.2]:59433 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763893AbYAYH7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:59:47 -0500
+	id S1764065AbYAYH7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:59:48 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Denis Cheng <crquan@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 181/196] Driver core: use LIST_HEAD instead of call to INIT_LIST_HEAD in __init
-Date: Thu, 24 Jan 2008 23:33:30 -0800
-Message-Id: <1201246425-5058-102-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jacob Shin <jacob.shin@amd.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 127/196] Kobject: change arch/x86/kernel/cpu/mcheck/mce_amd_64.c to use kobject_init_and_add
+Date: Thu, 24 Jan 2008 23:32:36 -0800
+Message-Id: <1201246425-5058-48-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -22,64 +23,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Denis Cheng <crquan@gmail.com>
+Stop using kobject_register, as this way we can control the sending of
+the uevent properly, after everything is properly initialized.
 
-LIST_HEAD has been widely used, so switch to this simpler method.
-
-Signed-off-by: Denis Cheng <crquan@gmail.com>
+Cc: Jacob Shin <jacob.shin@amd.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/attribute_container.c |    9 +--------
- drivers/base/base.h                |    1 -
- drivers/base/init.c                |    1 -
- 3 files changed, 1 insertions(+), 10 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/base/attribute_container.c b/drivers/base/attribute_container.c
-index 7370d7c..d4dfb97 100644
---- a/drivers/base/attribute_container.c
-+++ b/drivers/base/attribute_container.c
-@@ -61,7 +61,7 @@ attribute_container_classdev_to_container(struct class_device *classdev)
- }
- EXPORT_SYMBOL_GPL(attribute_container_classdev_to_container);
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c b/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+index 2d65311..ef15f35 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+@@ -432,10 +432,9 @@ static __cpuinit int allocate_threshold_blocks(unsigned int cpu,
+ 	else
+ 		per_cpu(threshold_banks, cpu)[bank]->blocks = b;
  
--static struct list_head attribute_container_list;
-+static LIST_HEAD(attribute_container_list);
+-	kobject_set_name(&b->kobj, "misc%i", block);
+-	b->kobj.parent = per_cpu(threshold_banks, cpu)[bank]->kobj;
+-	b->kobj.ktype = &threshold_ktype;
+-	err = kobject_register(&b->kobj);
++	err = kobject_init_and_add(&b->kobj, &threshold_ktype,
++				   per_cpu(threshold_banks, cpu)[bank]->kobj,
++				   "misc%i", block);
+ 	if (err)
+ 		goto out_free;
+ recurse:
+@@ -451,6 +450,8 @@ recurse:
+ 	if (err)
+ 		goto out_free;
  
- static DEFINE_MUTEX(attribute_container_mutex);
++	kobject_uevent(&b->kobj, KOBJ_ADD);
++
+ 	return err;
  
-@@ -429,10 +429,3 @@ attribute_container_find_class_device(struct attribute_container *cont,
- 	return cdev;
- }
- EXPORT_SYMBOL_GPL(attribute_container_find_class_device);
--
--int __init
--attribute_container_init(void)
--{
--	INIT_LIST_HEAD(&attribute_container_list);
--	return 0;
--}
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index 3b0f395..a74ceda 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -49,7 +49,6 @@ static inline int hypervisor_init(void) { return 0; }
- extern int platform_bus_init(void);
- extern int system_bus_init(void);
- extern int cpu_dev_init(void);
--extern int attribute_container_init(void);
- 
- extern int bus_add_device(struct device * dev);
- extern void bus_attach_device(struct device * dev);
-diff --git a/drivers/base/init.c b/drivers/base/init.c
-index 3713815..1da88a1 100644
---- a/drivers/base/init.c
-+++ b/drivers/base/init.c
-@@ -36,5 +36,4 @@ void __init driver_init(void)
- 	system_bus_init();
- 	cpu_dev_init();
- 	memory_dev_init();
--	attribute_container_init();
- }
+ out_free:
 -- 
 1.5.3.8
 
