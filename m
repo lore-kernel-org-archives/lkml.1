@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbYAYR1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbYAYRcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756930AbYAYR1s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 12:27:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYAYR1k
+	id S1757275AbYAYRcJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 12:32:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYAYRb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 12:27:40 -0500
-Received: from ik-out-1112.google.com ([66.249.90.183]:22437 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753446AbYAYR1j (ORCPT
+	Fri, 25 Jan 2008 12:31:56 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:62055 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753823AbYAYRbz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 12:27:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Uf86KdOS2I7PFvCwYTB7MIV3DHILlp/Smc5dFBVcl1HZ3uVf8RoZ/AQ1wCT18iSLG85MWaZsFSMg8r3WvVo3Zp22FBzDnTrz+F5krJ/xTNVjYy1wUVItqkRn3DGLumEnN2/5saO9hpS/uFnj6UyWvJGu7MgKrX8TYICugQhW6U4=
-Message-ID: <3d8471ca0801250927r67d0a27es77f4176f89e7d8f7@mail.gmail.com>
-Date: Fri, 25 Jan 2008 18:27:37 +0100
-From: "Guillaume Chazarain" <guichaz@yahoo.fr>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: Dropping some patches from sched-devel
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080125165837.GA19377@elte.hu>
+	Fri, 25 Jan 2008 12:31:55 -0500
+Date: Fri, 25 Jan 2008 18:31:44 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Introduce softpanic
+In-Reply-To: <p73ejc67xvb.fsf@bingen.suse.de>
+Message-ID: <alpine.LSU.0.999.0801251706200.2201@be1.lrz>
+References: <alpine.LSU.0.999.0801251551060.21522@be1.lrz>
+ <p73ejc67xvb.fsf@bingen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3d8471ca0801250838h2d1f21f2n95c70bc26e28d310@mail.gmail.com>
-	 <20080125165837.GA19377@elte.hu>
-X-Google-Sender-Auth: ca25212462aa0491
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX18jJIG1DOUShllTz7qtv66CmjjHNB0bIa7eRfE
+ HbdrIpg3r8L/81Utt8iL9CIrDEPqJxbR+SDZuFV7rX4dPnWsOQ
+ QIXydqwCT9aE3KjKvax4g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 25, 2008 5:58 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> sure, done.
+On Fri, 25 Jan 2008, Andi Kleen wrote:
+> Bodo Eggert <7eggert@gmx.de> writes:
 
-Thanks.
+> > Enabling this option changes a hard panic on boot errors to a
+> > soft panic, which does not stop the system completely.
+> > You can still scroll the screen and read the messages.
+> 
+> I don't think it's a good idea to keep the network running in the
+> soft panic. A lot of people have set ups that use ping was a watchdog
+> and with nfsroot/ip=dhcp ping does work quite well before
+> mounting root and then the watchdog might not pick up the 
+> soft panic.
 
-> what method are you using of determining quality?
+> Using a polled keyboard driver after panic seems to be the better
+> option to me, but if you want softpanic you should probably
+> at least add a suitable panic notifier to the network stack 
+> to shut it all down.
 
-I was talking about code quality: adding a dependency on jiffies does
-not seems like a good idea. But also, about the clock quality, I was
-focusing on getting rid of underflows and overflows so relaxed the
-checks. But I realized all these underflows are definitely needed. I
-mean, the conversion from TSC to sched_clock always rounds to lower,
-so overtime it lags a bit.
+I have no idea on how to do it. If somebody has a big red arrow pointing to 
+a HOWTO, I can give it a try.
 
-> Could you perhaps try
-> to automate it? (even better would be some self-test within the kernel
-> that detects badness)
-
-I find the overflow/underflow/warps checks you added in the first
-place to be sufficent. Not sure we want to add more tests to
-differentiate between normal and abnormal drifts.
-
-Thanks for your prompt reply.
-
+OTOH, I think the panic timeout should do the job nicely.
 -- 
-Guillaume
+If you talk about race, it does not make you a racist. If you see distinctions
+between the genders, it does not make you a sexist. If you think critically
+about a denomination, it does not make you anti-religion. If you accept but
+don't celebrate homosexuality, it does not make you a homophobe.Charlton Heston
