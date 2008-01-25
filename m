@@ -1,74 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYAYFQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbYAYFTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbYAYFQT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 00:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYAYFQI
+	id S1754647AbYAYFTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 00:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbYAYFTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 00:16:08 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:55907 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751216AbYAYFQH (ORCPT
+	Fri, 25 Jan 2008 00:19:06 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:55686 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751700AbYAYFTF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 00:16:07 -0500
-X-Sasl-enc: D2FUM/YSN8ZujdyAkPzduJ4vZG7+cDmBXnH2Dpssv2XK 1201238165
-Subject: Re: [patch 06/26] mount options: fix autofs4
-From: Ian Kent <raven@themaw.net>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080124193423.239049229@szeredi.hu>
-References: <20080124193341.166753833@szeredi.hu>
-	 <20080124193423.239049229@szeredi.hu>
-Content-Type: text/plain
-Date: Fri, 25 Jan 2008 14:13:04 +0900
-Message-Id: <1201237984.3040.62.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Fri, 25 Jan 2008 00:19:05 -0500
+Message-ID: <47997130.6010202@ak.jp.nec.com>
+Date: Fri, 25 Jan 2008 14:18:40 +0900
+From: Kohei KaiGai <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: morgan@kernel.org
+CC: akpm@osdl.org, serue@us.ibm.com, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: [PATCH 3/3] exporting capability code/name pairs (try 2nd)
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We can apply this patch to libcap.
 
-On Thu, 2008-01-24 at 20:33 +0100, Miklos Szeredi wrote:
-> plain text document attachment (autofs4_opts.patch)
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> Add uid= and gid= options to /proc/mounts for autofs4 filesystems.
+This patch enables setcap command to print the list
+of capabilities running kernel supported, if the kernel
+exports capability code/name pairs.
+It is useful to confirm the name of capability when setting.
 
-Apologies, I did say I would do this but have been quite busy.
+Thanks,
+----
+Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
 
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Acked-by Ian Kent <raven@themaw.net>
+diff --git a/progs/setcap.c b/progs/setcap.c
+index dc13c06..1b9ed45 100644
+--- a/progs/setcap.c
++++ b/progs/setcap.c
+@@ -4,6 +4,7 @@
+  * This sets the capabilities of a given file.
+  */
 
-I haven't tested this yet but it is fairly straight forward.
-I will check it out as soon as I get back to some work that I'm doing on
-autofs4 (next few days).
++#include <dirent.h>
+ #include <errno.h>
+ #include <stdio.h>
+ #include <string.h>
+@@ -13,10 +14,34 @@
 
-> ---
-> 
-> Index: linux/fs/autofs4/inode.c
-> ===================================================================
-> --- linux.orig/fs/autofs4/inode.c	2008-01-22 15:52:42.000000000 +0100
-> +++ linux/fs/autofs4/inode.c	2008-01-22 23:36:02.000000000 +0100
-> @@ -188,11 +188,16 @@ out_kill_sb:
->  static int autofs4_show_options(struct seq_file *m, struct vfsmount *mnt)
->  {
->  	struct autofs_sb_info *sbi = autofs4_sbi(mnt->mnt_sb);
-> +	struct inode *root_inode = mnt->mnt_sb->s_root->d_inode;
->  
->  	if (!sbi)
->  		return 0;
->  
->  	seq_printf(m, ",fd=%d", sbi->pipefd);
-> +	if (root_inode->i_uid != 0)
-> +		seq_printf(m, ",uid=%u", root_inode->i_uid);
-> +	if (root_inode->i_gid != 0)
-> +		seq_printf(m, ",gid=%u", root_inode->i_gid);
->  	seq_printf(m, ",pgrp=%d", sbi->oz_pgrp);
->  	seq_printf(m, ",timeout=%lu", sbi->exp_timeout/HZ);
->  	seq_printf(m, ",minproto=%d", sbi->min_proto);
-> 
-> --
+ static void usage(void)
+ {
++    DIR *dirp;
++
+     fprintf(stderr,
+ 	    "usage: setcap [-q] (-r|-|<caps>) <filename> "
+ 	    "[ ... (-r|-|<capsN>) <filenameN> ]\n"
+ 	);
++
++    dirp = opendir("/sys/kernel/capability");
++    if (dirp) {
++	struct dirent *dent;
++	int len, width = 99999;
++
++	fprintf(stderr,
++		"\nsupported capabilities:");
++	while ((dent = readdir(dirp)) != NULL) {
++	    if (!!strncmp("cap_", dent->d_name, 4))
++		continue;
++	    len = strlen(dent->d_name);
++	    if (width + len > 72) {
++		fprintf(stderr, "\n\t");
++		width = 8;
++	    }
++	    fprintf(stderr, "%s ", dent->d_name);
++	    width += len;
++	}
++	fputc('\n', stderr);
++	closedir(dirp);
++    }
+     exit(1);
+ }
 
+
+-- 
+OSS Platform Development Division, NEC
+KaiGai Kohei <kaigai@ak.jp.nec.com>
