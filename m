@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763850AbYAYH6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763877AbYAYH6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763850AbYAYH6Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761605AbYAYHhH
+	id S1763877AbYAYH6i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:58:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761290AbYAYHhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:37:07 -0500
-Received: from cantor.suse.de ([195.135.220.2]:55459 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 02:37:10 -0500
+Received: from mx1.suse.de ([195.135.220.2]:55471 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759957AbYAYHhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:37:05 -0500
+	id S1761868AbYAYHhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:37:08 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Benedikt Spranger <b.spranger@linutronix.de>,
-       "Hans J. Koch" <hjk@linutronix.de>
-Subject: [PATCH 107/196] UIO: fix kobject usage
-Date: Thu, 24 Jan 2008 23:32:16 -0800
-Message-Id: <1201246425-5058-28-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 108/196] Kobject: change net/bridge to use kobject_create_and_add
+Date: Thu, 24 Jan 2008 23:32:17 -0800
+Message-Id: <1201246425-5058-29-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -25,206 +24,92 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The uio kobject code is "wierd".  This patch should hopefully fix it up
-to be sane and not leak memory anymore.
+The kobject in the bridge code is only used for registering with sysfs,
+not for any lifespan rules.  This patch changes it to be only a pointer
+and use the simpler api for this kind of thing.
 
-
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Benedikt Spranger <b.spranger@linutronix.de>
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/uio/uio.c          |   91 +++++++++++++++++++++++---------------------
- include/linux/uio_driver.h |    6 ++-
- 2 files changed, 52 insertions(+), 45 deletions(-)
+ net/bridge/br_if.c       |    2 +-
+ net/bridge/br_private.h  |    2 +-
+ net/bridge/br_sysfs_br.c |   14 ++++----------
+ net/bridge/br_sysfs_if.c |    2 +-
+ 4 files changed, 7 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-index 606aae7..acc387d 100644
---- a/drivers/uio/uio.c
-+++ b/drivers/uio/uio.c
-@@ -34,7 +34,7 @@ struct uio_device {
- 	wait_queue_head_t	wait;
- 	int			vma_count;
- 	struct uio_info		*info;
--	struct kset 		map_attr_kset;
-+	struct kobject		*map_dir;
+diff --git a/net/bridge/br_if.c b/net/bridge/br_if.c
+index 935784f..dadec94 100644
+--- a/net/bridge/br_if.c
++++ b/net/bridge/br_if.c
+@@ -133,7 +133,7 @@ static void del_nbp(struct net_bridge_port *p)
+ 	struct net_bridge *br = p->br;
+ 	struct net_device *dev = p->dev;
+ 
+-	sysfs_remove_link(&br->ifobj, dev->name);
++	sysfs_remove_link(br->ifobj, dev->name);
+ 
+ 	dev_set_promiscuity(dev, -1);
+ 
+diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
+index f666f7b..c11b554 100644
+--- a/net/bridge/br_private.h
++++ b/net/bridge/br_private.h
+@@ -124,7 +124,7 @@ struct net_bridge
+ 	struct timer_list		tcn_timer;
+ 	struct timer_list		topology_change_timer;
+ 	struct timer_list		gc_timer;
+-	struct kobject			ifobj;
++	struct kobject			*ifobj;
  };
  
- static int uio_major;
-@@ -51,47 +51,48 @@ static struct uio_class {
-  * attributes
-  */
+ extern struct notifier_block br_device_notifier;
+diff --git a/net/bridge/br_sysfs_br.c b/net/bridge/br_sysfs_br.c
+index 3312e8f..4e7f91f 100644
+--- a/net/bridge/br_sysfs_br.c
++++ b/net/bridge/br_sysfs_br.c
+@@ -426,16 +426,10 @@ int br_sysfs_addbr(struct net_device *dev)
+ 		goto out2;
+ 	}
  
--static struct attribute attr_addr = {
--	.name  = "addr",
--	.mode  = S_IRUGO,
-+struct uio_map {
-+	struct kobject kobj;
-+	struct uio_mem *mem;
- };
-+#define to_map(map) container_of(map, struct uio_map, kobj)
- 
--static struct attribute attr_size = {
--	.name  = "size",
--	.mode  = S_IRUGO,
--};
- 
--static struct attribute* map_attrs[] = {
--	&attr_addr, &attr_size, NULL
--};
 -
--static ssize_t map_attr_show(struct kobject *kobj, struct attribute *attr,
-+static ssize_t map_attr_show(struct kobject *kobj, struct kobj_attribute *attr,
- 			     char *buf)
- {
--	struct uio_mem *mem = container_of(kobj, struct uio_mem, kobj);
-+	struct uio_map *map = to_map(kobj);
-+	struct uio_mem *mem = map->mem;
- 
--	if (strncmp(attr->name,"addr",4) == 0)
-+	if (strncmp(attr->attr.name, "addr", 4) == 0)
- 		return sprintf(buf, "0x%lx\n", mem->addr);
- 
--	if (strncmp(attr->name,"size",4) == 0)
-+	if (strncmp(attr->attr.name, "size", 4) == 0)
- 		return sprintf(buf, "0x%lx\n", mem->size);
- 
- 	return -ENODEV;
- }
- 
--static void map_attr_release(struct kobject *kobj)
--{
--	/* TODO ??? */
--}
-+static struct kobj_attribute attr_attribute =
-+	__ATTR(addr, S_IRUGO, map_attr_show, NULL);
-+static struct kobj_attribute size_attribute =
-+	__ATTR(size, S_IRUGO, map_attr_show, NULL);
- 
--static struct sysfs_ops map_attr_ops = {
--	.show  = map_attr_show,
-+static struct attribute *attrs[] = {
-+	&attr_attribute.attr,
-+	&size_attribute.attr,
-+	NULL,	/* need to NULL terminate the list of attributes */
- };
- 
-+static void map_release(struct kobject *kobj)
-+{
-+	struct uio_map *map = to_map(kobj);
-+	kfree(map);
-+}
-+
- static struct kobj_type map_attr_type = {
--	.release	= map_attr_release,
--	.sysfs_ops	= &map_attr_ops,
--	.default_attrs	= map_attrs,
-+	.release	= map_release,
-+	.default_attrs	= attrs,
- };
- 
- static ssize_t show_name(struct device *dev,
-@@ -148,6 +149,7 @@ static int uio_dev_add_attributes(struct uio_device *idev)
- 	int mi;
- 	int map_found = 0;
- 	struct uio_mem *mem;
-+	struct uio_map *map;
- 
- 	ret = sysfs_create_group(&idev->dev->kobj, &uio_attr_grp);
- 	if (ret)
-@@ -159,31 +161,34 @@ static int uio_dev_add_attributes(struct uio_device *idev)
- 			break;
- 		if (!map_found) {
- 			map_found = 1;
--			kobject_set_name(&idev->map_attr_kset.kobj,"maps");
--			idev->map_attr_kset.kobj.ktype = &map_attr_type;
--			idev->map_attr_kset.kobj.parent = &idev->dev->kobj;
--			ret = kset_register(&idev->map_attr_kset);
--			if (ret)
--				goto err_remove_group;
-+			idev->map_dir = kobject_create_and_add("maps",
-+							&idev->dev->kobj);
-+			if (!idev->map_dir)
-+				goto err;
- 		}
--		kobject_init(&mem->kobj);
--		kobject_set_name(&mem->kobj,"map%d",mi);
--		mem->kobj.parent = &idev->map_attr_kset.kobj;
--		mem->kobj.kset = &idev->map_attr_kset;
--		ret = kobject_add(&mem->kobj);
-+		map = kzalloc(sizeof(*map), GFP_KERNEL);
-+		if (!map)
-+			goto err;
-+		kobject_init_ng(&map->kobj, &map_attr_type);
-+		map->mem = mem;
-+		mem->map = map;
-+		ret = kobject_add_ng(&map->kobj, idev->map_dir, "map%d", mi);
-+		if (ret)
-+			goto err;
-+		ret = kobject_uevent(&map->kobj, KOBJ_ADD);
- 		if (ret)
--			goto err_remove_maps;
-+			goto err;
+-	kobject_set_name(&br->ifobj, SYSFS_BRIDGE_PORT_SUBDIR);
+-	br->ifobj.ktype = NULL;
+-	br->ifobj.kset = NULL;
+-	br->ifobj.parent = brobj;
+-
+-	err = kobject_register(&br->ifobj);
+-	if (err) {
++	br->ifobj = kobject_create_and_add(SYSFS_BRIDGE_PORT_SUBDIR, brobj);
++	if (!br->ifobj) {
+ 		pr_info("%s: can't add kobject (directory) %s/%s\n",
+-			__FUNCTION__, dev->name, kobject_name(&br->ifobj));
++			__FUNCTION__, dev->name, SYSFS_BRIDGE_PORT_SUBDIR);
+ 		goto out3;
  	}
- 
  	return 0;
+@@ -453,7 +447,7 @@ void br_sysfs_delbr(struct net_device *dev)
+ 	struct kobject *kobj = &dev->dev.kobj;
+ 	struct net_bridge *br = netdev_priv(dev);
  
--err_remove_maps:
-+err:
- 	for (mi--; mi>=0; mi--) {
- 		mem = &idev->info->mem[mi];
--		kobject_unregister(&mem->kobj);
-+		map = mem->map;
-+		kobject_unregister(&map->kobj);
- 	}
--	kset_unregister(&idev->map_attr_kset); /* Needed ? */
--err_remove_group:
-+	kobject_unregister(idev->map_dir);
- 	sysfs_remove_group(&idev->dev->kobj, &uio_attr_grp);
- err_group:
- 	dev_err(idev->dev, "error creating sysfs files (%d)\n", ret);
-@@ -198,9 +203,9 @@ static void uio_dev_del_attributes(struct uio_device *idev)
- 		mem = &idev->info->mem[mi];
- 		if (mem->size == 0)
- 			break;
--		kobject_unregister(&mem->kobj);
-+		kobject_unregister(&mem->map->kobj);
- 	}
--	kset_unregister(&idev->map_attr_kset);
-+	kobject_unregister(idev->map_dir);
- 	sysfs_remove_group(&idev->dev->kobj, &uio_attr_grp);
+-	kobject_unregister(&br->ifobj);
++	kobject_unregister(br->ifobj);
+ 	sysfs_remove_bin_file(kobj, &bridge_forward);
+ 	sysfs_remove_group(kobj, &bridge_group);
  }
+diff --git a/net/bridge/br_sysfs_if.c b/net/bridge/br_sysfs_if.c
+index 79db51f..02b2d50 100644
+--- a/net/bridge/br_sysfs_if.c
++++ b/net/bridge/br_sysfs_if.c
+@@ -229,7 +229,7 @@ int br_sysfs_addif(struct net_bridge_port *p)
+ 			goto out2;
+ 	}
  
-diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
-index 44c28e9..973386d 100644
---- a/include/linux/uio_driver.h
-+++ b/include/linux/uio_driver.h
-@@ -18,20 +18,22 @@
- #include <linux/fs.h>
- #include <linux/interrupt.h>
- 
-+struct uio_map;
-+
- /**
-  * struct uio_mem - description of a UIO memory region
-- * @kobj:		kobject for this mapping
-  * @addr:		address of the device's memory
-  * @size:		size of IO
-  * @memtype:		type of memory addr points to
-  * @internal_addr:	ioremap-ped version of addr, for driver internal use
-+ * @map:		for use by the UIO core only.
-  */
- struct uio_mem {
--	struct kobject		kobj;
- 	unsigned long		addr;
- 	unsigned long		size;
- 	int			memtype;
- 	void __iomem		*internal_addr;
-+	struct uio_map		*map;
- };
- 
- #define MAX_UIO_MAPS 	5
+-	err= sysfs_create_link(&br->ifobj, &p->kobj, p->dev->name);
++	err = sysfs_create_link(br->ifobj, &p->kobj, p->dev->name);
+ out2:
+ 	return err;
+ }
 -- 
 1.5.3.8
 
