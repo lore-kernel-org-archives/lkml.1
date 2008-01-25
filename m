@@ -1,97 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933213AbYAYItg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765651AbYAYIuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933213AbYAYItg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:49:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932998AbYAYIqA
+	id S1765651AbYAYIuP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932865AbYAYIrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:46:00 -0500
-Received: from l1ms.rz.uni-kiel.de ([134.245.11.86]:7576 "EHLO
-	l1ms.rz.uni-kiel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933068AbYAYIp5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 03:45:57 -0500
-X-Greylist: delayed 2178 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Jan 2008 03:45:57 EST
-To: linux-kernel@vger.kernel.org
-Subject: parport_ieee1284_epp_read_addr patch
-From: Stephan Boettcher <boettcher@physik.uni-kiel.de>
-Date: Fri, 25 Jan 2008 09:09:33 +0100
-Message-ID: <s6n3asmqqbm.fsf@blaulicht.switch.brux>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Fri, 25 Jan 2008 03:47:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59107 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933190AbYAYIq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 03:46:58 -0500
+Date: Fri, 25 Jan 2008 09:46:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Huang, Ying" <ying.huang@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] x86: fix NX bit handling in change_page_attr
+Message-ID: <20080125084633.GA23708@elte.hu>
+References: <1201240493.15972.43.camel@caritas-dev.intel.com> <47999089.5080609@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47999089.5080609@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Tim,
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Please consider the included patch to fix a 1-bit bug in the software
-emulation of parport epp addr read mode.
+> Huang, Ying wrote:
 
-I am not subscribed to the LKML.
+>> This patch fixes a bug of change_page_attr/change_page_attr_addr on 
+>> Intel i386/x86_64 CPUs.  After changing page attribute to be 
+>> executable with these functions, the page remains un-executable on 
+>> Intel i386/x86_64 CPU.  Because on Intel i386/x86_64 CPU, only if the 
+>> "NX" bits of all three level page tables are cleared (PAE is 
+>> enabled), the corresponding page is executable (refer to section 
+>> 4.13.2 of Intel 64 and IA-32 Architectures Software Developer's 
+>> Manual).  So, the bug is fixed through clearing the "NX" bit of PMD 
+>> when splitting the huge PMD.
 
-Thanks
-Stephan
+oops, nice detail!
 
+>> Signed-off-by: Huang Ying <ying.huang@intel.com>
+>>
+>> ---
+>>  arch/x86/mm/pageattr.c |    1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> --- a/arch/x86/mm/pageattr.c
+>> +++ b/arch/x86/mm/pageattr.c
+>> @@ -124,6 +124,7 @@ static int split_large_page(pte_t *kpte,
+>>  	/*
+>>  	 * Install the new, split up pagetable:
+>>  	 */
+>> +	pgprot_val(ref_prot) &= ~_PAGE_NX;
+>>   
+>
+> I don't think its a good idea to treat pgprot_val() as an lvalue - it 
+> precludes it from being turned into an inline function.  I know there 
+> are numerous other places which do, but we should avoid making it 
+> worse.
 
---- linux-2.6.24-rc6/drivers/parport/ieee1284_ops.c~	2007-10-09 22:31:38.000000000 +0200
-+++ linux-2.6.24-rc6/drivers/parport/ieee1284_ops.c	2008-01-24 22:15:05.000000000 +0100
-@@ -888,7 +888,7 @@
- 
- 		/* Event 59: set nSelectIn (nAStrb) high */
- 		parport_frob_control (port, PARPORT_CONTROL_SELECT,
--				      PARPORT_CONTROL_SELECT);
-+				      0);
- 
- 		/* Event 60: wait for Busy to go low */
- 		if (parport_poll_peripheral (port, PARPORT_STATUS_BUSY, 
+applied it with the following cleanup from Thomas:
 
-Background:  
+ static int split_large_page(pte_t *kpte, unsigned long address)
+ {
+-       pgprot_t ref_prot = pte_pgprot(pte_clrhuge(*kpte));
++       pgprot_t ref_prot;
+...
++       ref_prot = pte_pgprot(pte_mkexec(pte_clrhuge(*kpte)));
 
-We bought cheep notebooks to control our custom data acquisition
-system, which requires EPP mode (read/write, data/addr).  The bios
-does not offer EPP mode, and indeed hardware EPP mode appears not to
-work, although the parport driver tries to use it.  EPPSWE mode does
-work for data r/w and addr write, but addr read requires this
-patch. 
+i.e. it now goes through all the proper accessors.
 
-(stephan)rshgse3: lspci
-
-00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 945GT Express Memory Controller Hub (rev 03)
-00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS/940GML Express Integrated Graphics Controller (rev 03)
-00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/940GML Express Integrated Graphics Controller (rev 03)
-00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 02)
-00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 1 (rev 02)
-00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 2 (rev 02)
-00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 3 (rev 02)
-00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #1 (rev 02)
-00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #2 (rev 02)
-00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #3 (rev 02)
-00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #4 (rev 02)
-00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 02)
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2)
-00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface Bridge (rev 02)
-00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE Controller (rev 02)
-00:1f.2 SATA controller: Intel Corporation 82801GBM/GHM (ICH7 Family) Serial ATA Storage Controller AHCI (rev 02)
-00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 02)
-02:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8055 PCI-E Gigabit Ethernet Controller (rev 12)
-05:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG Network Connection (rev 02)
-08:03.0 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev b3)
-08:03.1 FireWire (IEEE 1394): Ricoh Co Ltd R5C552 IEEE 1394 Controller (rev 08)
-08:03.2 Generic system peripheral [0805]: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 17)
-
-(stephan)rshgse3: grep . /proc/sys/dev/parport/parport0/*
-
-/proc/sys/dev/parport/parport0/base-addr:888    1912
-/proc/sys/dev/parport/parport0/dma:-1
-/proc/sys/dev/parport/parport0/irq:7
-/proc/sys/dev/parport/parport0/modes:PCSPP,TRISTATE,EPP
-/proc/sys/dev/parport/parport0/spintime:500
-
--- 
-Stephan Böttcher                     FAX: +49-431-85660
-Extraterrestrische Physik            Tel: +49-431-880-2508
-I.f.Exp.u.Angew.Physik               mailto:boettcher@physik.uni-kiel.de
-Leibnizstr. 11, 24118 Kiel, Germany
+	Ingo
