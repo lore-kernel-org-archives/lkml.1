@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932116AbYAYIWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932105AbYAYIXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932116AbYAYIWw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764087AbYAYIA7
+	id S932105AbYAYIXY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758880AbYAYIBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:00:59 -0500
-Received: from ns2.suse.de ([195.135.220.15]:53684 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 03:01:00 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53682 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758880AbYAYH7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:59:52 -0500
+	id S1764085AbYAYH7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:59:51 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 195/196] Kobject: fix coding style issues in kobject c files
-Date: Thu, 24 Jan 2008 23:33:44 -0800
-Message-Id: <1201246425-5058-116-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 152/196] Driver core: clean up debugging messages
+Date: Thu, 24 Jan 2008 23:33:01 -0800
+Message-Id: <1201246425-5058-73-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -22,347 +22,221 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clean up the kobject.c and kobject_uevent.c files to follow the
-proper coding style rules.
+The driver core debugging messages are a mess.  This provides a unified
+message that makes them actually useful.
 
+The format for new kobject debug messages should be:
+	driver/bus/class: 'OBJECT_NAME': FUNCTION_NAME: message.\n
+
+Note, the class code is not changed in this patch due to pending patches
+in my queue that this would conflict with.  A later patch will clean
+them up.
+
+Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- lib/kobject.c        |  139 +++++++++++++++++++++++---------------------------
- lib/kobject_uevent.c |    7 +--
- 2 files changed, 67 insertions(+), 79 deletions(-)
+ drivers/base/bus.c  |   14 +++++++-------
+ drivers/base/core.c |   23 +++++++++++++----------
+ drivers/base/dd.c   |   16 ++++++++--------
+ 3 files changed, 28 insertions(+), 25 deletions(-)
 
-diff --git a/lib/kobject.c b/lib/kobject.c
-index 8dc3245..1d63ead 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -18,58 +18,57 @@
- #include <linux/stat.h>
- #include <linux/slab.h>
- 
--/**
-- *	populate_dir - populate directory with attributes.
-- *	@kobj:	object we're working on.
-- *
-- *	Most subsystems have a set of default attributes that 
-- *	are associated with an object that registers with them.
-- *	This is a helper called during object registration that 
-- *	loops through the default attributes of the subsystem 
-- *	and creates attributes files for them in sysfs.
-+/*
-+ * populate_dir - populate directory with attributes.
-+ * @kobj: object we're working on.
-  *
-+ * Most subsystems have a set of default attributes that are associated
-+ * with an object that registers with them.  This is a helper called during
-+ * object registration that loops through the default attributes of the
-+ * subsystem and creates attributes files for them in sysfs.
-  */
--
--static int populate_dir(struct kobject * kobj)
-+static int populate_dir(struct kobject *kobj)
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index aa0c986..937fc10 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -80,7 +80,7 @@ static void driver_release(struct kobject *kobj)
  {
--	struct kobj_type * t = get_ktype(kobj);
--	struct attribute * attr;
-+	struct kobj_type *t = get_ktype(kobj);
-+	struct attribute *attr;
+ 	struct driver_private *drv_priv = to_driver(kobj);
+ 
+-	pr_debug("%s: freeing %s\n", __FUNCTION__, kobject_name(kobj));
++	pr_debug("driver: '%s': %s\n", kobject_name(kobj), __FUNCTION__);
+ 	kfree(drv_priv);
+ }
+ 
+@@ -446,7 +446,7 @@ int bus_add_device(struct device * dev)
  	int error = 0;
- 	int i;
--	
-+
- 	if (t && t->default_attrs) {
- 		for (i = 0; (attr = t->default_attrs[i]) != NULL; i++) {
--			if ((error = sysfs_create_file(kobj,attr)))
-+			error = sysfs_create_file(kobj, attr);
-+			if (error)
- 				break;
+ 
+ 	if (bus) {
+-		pr_debug("bus %s: add device %s\n", bus->name, dev->bus_id);
++		pr_debug("bus: '%s': add device %s\n", bus->name, dev->bus_id);
+ 		error = device_add_attrs(bus, dev);
+ 		if (error)
+ 			goto out_put;
+@@ -519,7 +519,7 @@ void bus_remove_device(struct device * dev)
+ 			dev->is_registered = 0;
+ 			klist_del(&dev->knode_bus);
  		}
+-		pr_debug("bus %s: remove device %s\n", dev->bus->name, dev->bus_id);
++		pr_debug("bus: '%s': remove device %s\n", dev->bus->name, dev->bus_id);
+ 		device_release_driver(dev);
+ 		bus_put(dev->bus);
  	}
- 	return error;
- }
+@@ -637,7 +637,7 @@ int bus_add_driver(struct device_driver *drv)
+ 	if (!bus)
+ 		return -EINVAL;
  
--static int create_dir(struct kobject * kobj)
-+static int create_dir(struct kobject *kobj)
- {
- 	int error = 0;
- 	if (kobject_name(kobj)) {
- 		error = sysfs_create_dir(kobj);
- 		if (!error) {
--			if ((error = populate_dir(kobj)))
-+			error = populate_dir(kobj);
-+			if (error)
- 				sysfs_remove_dir(kobj);
- 		}
- 	}
- 	return error;
- }
+-	pr_debug("bus %s: add driver %s\n", bus->name, drv->name);
++	pr_debug("bus: '%s': add driver %s\n", bus->name, drv->name);
  
--static inline struct kobject * to_kobj(struct list_head * entry)
-+static inline struct kobject *to_kobj(struct list_head *entry)
- {
--	return container_of(entry,struct kobject,entry);
-+	return container_of(entry, struct kobject, entry);
- }
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+ 	if (!priv)
+@@ -707,7 +707,7 @@ void bus_remove_driver(struct device_driver * drv)
+ 	driver_remove_attrs(drv->bus, drv);
+ 	driver_remove_file(drv, &driver_attr_uevent);
+ 	klist_remove(&drv->p->knode_bus);
+-	pr_debug("bus %s: remove driver %s\n", drv->bus->name, drv->name);
++	pr_debug("bus: '%s': remove driver %s\n", drv->bus->name, drv->name);
+ 	driver_detach(drv);
+ 	module_remove_driver(drv);
+ 	kobject_unregister(&drv->p->kobj);
+@@ -907,7 +907,7 @@ int bus_register(struct bus_type * bus)
+ 	if (retval)
+ 		goto bus_attrs_fail;
  
- static int get_kobj_path_length(struct kobject *kobj)
- {
- 	int length = 1;
--	struct kobject * parent = kobj;
-+	struct kobject *parent = kobj;
- 
--	/* walk up the ancestors until we hit the one pointing to the 
-+	/* walk up the ancestors until we hit the one pointing to the
- 	 * root.
- 	 * Add 1 to strlen for leading '/' of each level.
- 	 */
-@@ -84,19 +83,19 @@ static int get_kobj_path_length(struct kobject *kobj)
- 
- static void fill_kobj_path(struct kobject *kobj, char *path, int length)
- {
--	struct kobject * parent;
-+	struct kobject *parent;
- 
- 	--length;
- 	for (parent = kobj; parent; parent = parent->parent) {
- 		int cur = strlen(kobject_name(parent));
- 		/* back up enough to print this name with '/' */
- 		length -= cur;
--		strncpy (path + length, kobject_name(parent), cur);
-+		strncpy(path + length, kobject_name(parent), cur);
- 		*(path + --length) = '/';
- 	}
- 
- 	pr_debug("kobject: '%s' (%p): %s: path = '%s'\n", kobject_name(kobj),
--		 kobj, __FUNCTION__,path);
-+		 kobj, __FUNCTION__, path);
- }
- 
- /**
-@@ -148,7 +147,7 @@ static void kobj_kset_leave(struct kobject *kobj)
- 	kset_put(kobj->kset);
- }
- 
--static void kobject_init_internal(struct kobject * kobj)
-+static void kobject_init_internal(struct kobject *kobj)
- {
- 	if (!kobj)
- 		return;
-@@ -160,7 +159,7 @@ static void kobject_init_internal(struct kobject * kobj)
- static int kobject_add_internal(struct kobject *kobj)
- {
- 	int error = 0;
--	struct kobject * parent;
-+	struct kobject *parent;
- 
- 	if (!kobj)
- 		return -ENOENT;
-@@ -185,7 +184,7 @@ static int kobject_add_internal(struct kobject *kobj)
- 	pr_debug("kobject: '%s' (%p): %s: parent: '%s', set: '%s'\n",
- 		 kobject_name(kobj), kobj, __FUNCTION__,
- 		 parent ? kobject_name(parent) : "<NULL>",
--		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>" );
-+		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>");
- 
- 	error = create_dir(kobj);
- 	if (error) {
-@@ -399,12 +398,11 @@ int kobject_init_and_add(struct kobject *kobj, struct kobj_type *ktype,
- EXPORT_SYMBOL_GPL(kobject_init_and_add);
- 
- /**
-- *	kobject_rename - change the name of an object
-- *	@kobj:	object in question.
-- *	@new_name: object's new name
-+ * kobject_rename - change the name of an object
-+ * @kobj: object in question.
-+ * @new_name: object's new name
-  */
--
--int kobject_rename(struct kobject * kobj, const char *new_name)
-+int kobject_rename(struct kobject *kobj, const char *new_name)
- {
- 	int error = 0;
- 	const char *devpath = NULL;
-@@ -461,11 +459,10 @@ out:
- }
- 
- /**
-- *	kobject_move - move object to another parent
-- *	@kobj:	object in question.
-- *	@new_parent: object's new parent (can be NULL)
-+ * kobject_move - move object to another parent
-+ * @kobj: object in question.
-+ * @new_parent: object's new parent (can be NULL)
-  */
--
- int kobject_move(struct kobject *kobj, struct kobject *new_parent)
- {
- 	int error;
-@@ -513,11 +510,10 @@ out:
- }
- 
- /**
-- *	kobject_del - unlink kobject from hierarchy.
-- * 	@kobj:	object.
-+ * kobject_del - unlink kobject from hierarchy.
-+ * @kobj: object.
-  */
--
--void kobject_del(struct kobject * kobj)
-+void kobject_del(struct kobject *kobj)
- {
- 	if (!kobj)
- 		return;
-@@ -530,11 +526,10 @@ void kobject_del(struct kobject * kobj)
- }
- 
- /**
-- *	kobject_get - increment refcount for object.
-- *	@kobj:	object.
-+ * kobject_get - increment refcount for object.
-+ * @kobj: object.
-  */
--
--struct kobject * kobject_get(struct kobject * kobj)
-+struct kobject *kobject_get(struct kobject *kobj)
- {
- 	if (kobj)
- 		kref_get(&kobj->kref);
-@@ -591,12 +586,12 @@ static void kobject_release(struct kref *kref)
- }
- 
- /**
-- *	kobject_put - decrement refcount for object.
-- *	@kobj:	object.
-+ * kobject_put - decrement refcount for object.
-+ * @kobj: object.
-  *
-- *	Decrement the refcount, and if 0, call kobject_cleanup().
-+ * Decrement the refcount, and if 0, call kobject_cleanup().
-  */
--void kobject_put(struct kobject * kobj)
-+void kobject_put(struct kobject *kobj)
- {
- 	if (kobj)
- 		kref_put(&kobj->kref, kobject_release);
-@@ -670,11 +665,10 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
- EXPORT_SYMBOL_GPL(kobject_create_and_add);
- 
- /**
-- *	kset_init - initialize a kset for use
-- *	@k:	kset 
-+ * kset_init - initialize a kset for use
-+ * @k: kset
-  */
--
--void kset_init(struct kset * k)
-+void kset_init(struct kset *k)
- {
- 	kobject_init_internal(&k->kobj);
- 	INIT_LIST_HEAD(&k->list);
-@@ -712,11 +706,10 @@ struct sysfs_ops kobj_sysfs_ops = {
- };
- 
- /**
-- *	kset_register - initialize and add a kset.
-- *	@k:	kset.
-+ * kset_register - initialize and add a kset.
-+ * @k: kset.
-  */
--
--int kset_register(struct kset * k)
-+int kset_register(struct kset *k)
- {
- 	int err;
- 
-@@ -731,39 +724,35 @@ int kset_register(struct kset * k)
+-	pr_debug("bus type '%s' registered\n", bus->name);
++	pr_debug("bus: '%s': registered\n", bus->name);
  	return 0;
- }
  
--
- /**
-- *	kset_unregister - remove a kset.
-- *	@k:	kset.
-+ * kset_unregister - remove a kset.
-+ * @k: kset.
+ bus_attrs_fail:
+@@ -934,7 +934,7 @@ out:
   */
--
--void kset_unregister(struct kset * k)
-+void kset_unregister(struct kset *k)
+ void bus_unregister(struct bus_type * bus)
  {
- 	if (!k)
- 		return;
- 	kobject_put(&k->kobj);
- }
- 
--
- /**
-- *	kset_find_obj - search for object in kset.
-- *	@kset:	kset we're looking in.
-- *	@name:	object's name.
-+ * kset_find_obj - search for object in kset.
-+ * @kset: kset we're looking in.
-+ * @name: object's name.
-  *
-- *	Lock kset via @kset->subsys, and iterate over @kset->list,
-- *	looking for a matching kobject. If matching object is found
-- *	take a reference and return the object.
-+ * Lock kset via @kset->subsys, and iterate over @kset->list,
-+ * looking for a matching kobject. If matching object is found
-+ * take a reference and return the object.
-  */
--
--struct kobject * kset_find_obj(struct kset * kset, const char * name)
-+struct kobject *kset_find_obj(struct kset *kset, const char *name)
- {
--	struct list_head * entry;
--	struct kobject * ret = NULL;
-+	struct list_head *entry;
-+	struct kobject *ret = NULL;
- 
- 	spin_lock(&kset->list_lock);
--	list_for_each(entry,&kset->list) {
--		struct kobject * k = to_kobj(entry);
--		if (kobject_name(k) && !strcmp(kobject_name(k),name)) {
-+	list_for_each(entry, &kset->list) {
-+		struct kobject *k = to_kobj(entry);
-+		if (kobject_name(k) && !strcmp(kobject_name(k), name)) {
- 			ret = kobject_get(k);
- 			break;
- 		}
-diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
-index b021e67..5a402e2 100644
---- a/lib/kobject_uevent.c
-+++ b/lib/kobject_uevent.c
-@@ -238,11 +238,12 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
- 		retval = add_uevent_var(env, "HOME=/");
+-	pr_debug("bus %s: unregistering\n", bus->name);
++	pr_debug("bus: '%s': unregistering\n", bus->name);
+ 	bus_remove_attrs(bus);
+ 	remove_probe_files(bus);
+ 	kset_unregister(bus->p->drivers_kset);
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 414a480..22fdf32 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -193,15 +193,16 @@ static int dev_uevent(struct kset *kset, struct kobject *kobj,
+ 	if (dev->bus && dev->bus->uevent) {
+ 		retval = dev->bus->uevent(dev, env);
  		if (retval)
- 			goto exit;
--		retval = add_uevent_var(env, "PATH=/sbin:/bin:/usr/sbin:/usr/bin");
-+		retval = add_uevent_var(env,
-+					"PATH=/sbin:/bin:/usr/sbin:/usr/bin");
- 		if (retval)
- 			goto exit;
- 
--		call_usermodehelper (argv[0], argv, env->envp, UMH_WAIT_EXEC);
-+		call_usermodehelper(argv[0], argv, env->envp, UMH_WAIT_EXEC);
+-			pr_debug ("%s: bus uevent() returned %d\n",
+-				  __FUNCTION__, retval);
++			pr_debug("device: '%s': %s: bus uevent() returned %d\n",
++				 dev->bus_id, __FUNCTION__, retval);
  	}
  
- exit:
-@@ -250,7 +251,6 @@ exit:
- 	kfree(env);
- 	return retval;
- }
--
- EXPORT_SYMBOL_GPL(kobject_uevent_env);
+ 	/* have the class specific function add its stuff */
+ 	if (dev->class && dev->class->dev_uevent) {
+ 		retval = dev->class->dev_uevent(dev, env);
+ 		if (retval)
+-			pr_debug("%s: class uevent() returned %d\n",
++			pr_debug("device: '%s': %s: class uevent() "
++				 "returned %d\n", dev->bus_id,
+ 				 __FUNCTION__, retval);
+ 	}
  
- /**
-@@ -266,7 +266,6 @@ int kobject_uevent(struct kobject *kobj, enum kobject_action action)
+@@ -209,7 +210,8 @@ static int dev_uevent(struct kset *kset, struct kobject *kobj,
+ 	if (dev->type && dev->type->uevent) {
+ 		retval = dev->type->uevent(dev, env);
+ 		if (retval)
+-			pr_debug("%s: dev_type uevent() returned %d\n",
++			pr_debug("device: '%s': %s: dev_type uevent() "
++				 "returned %d\n", dev->bus_id,
+ 				 __FUNCTION__, retval);
+ 	}
+ 
+@@ -751,7 +753,7 @@ int device_add(struct device *dev)
+ 		goto Error;
+ 	}
+ 
+-	pr_debug("DEV: registering device: ID = '%s'\n", dev->bus_id);
++	pr_debug("device: '%s': %s\n", dev->bus_id, __FUNCTION__);
+ 
+ 	parent = get_device(dev->parent);
+ 	error = setup_parent(dev, parent);
+@@ -1020,7 +1022,7 @@ void device_del(struct device * dev)
+  */
+ void device_unregister(struct device * dev)
  {
- 	return kobject_uevent_env(kobj, action, NULL);
+-	pr_debug("DEV: Unregistering device. ID = '%s'\n", dev->bus_id);
++	pr_debug("device: '%s': %s\n", dev->bus_id, __FUNCTION__);
+ 	device_del(dev);
+ 	put_device(dev);
  }
--
- EXPORT_SYMBOL_GPL(kobject_uevent);
+@@ -1116,7 +1118,7 @@ EXPORT_SYMBOL_GPL(device_remove_file);
  
- /**
+ static void device_create_release(struct device *dev)
+ {
+-	pr_debug("%s called for %s\n", __FUNCTION__, dev->bus_id);
++	pr_debug("device: '%s': %s\n", dev->bus_id, __FUNCTION__);
+ 	kfree(dev);
+ }
+ 
+@@ -1259,7 +1261,8 @@ int device_rename(struct device *dev, char *new_name)
+ 	if (!dev)
+ 		return -EINVAL;
+ 
+-	pr_debug("DEVICE: renaming '%s' to '%s'\n", dev->bus_id, new_name);
++	pr_debug("device: '%s': %s: renaming to '%s'\n", dev->bus_id,
++		 __FUNCTION__, new_name);
+ 
+ #ifdef CONFIG_SYSFS_DEPRECATED
+ 	if ((dev->class) && (dev->parent))
+@@ -1378,8 +1381,8 @@ int device_move(struct device *dev, struct device *new_parent)
+ 		put_device(new_parent);
+ 		goto out;
+ 	}
+-	pr_debug("DEVICE: moving '%s' to '%s'\n", dev->bus_id,
+-		 new_parent ? new_parent->bus_id : "<NULL>");
++	pr_debug("device: '%s': %s: moving to '%s'\n", dev->bus_id,
++		 __FUNCTION__, new_parent ? new_parent->bus_id : "<NULL>");
+ 	error = kobject_move(&dev->kobj, new_parent_kobj);
+ 	if (error) {
+ 		put_device(new_parent);
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 87a348c..5492264 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -34,8 +34,8 @@ static void driver_bound(struct device *dev)
+ 		return;
+ 	}
+ 
+-	pr_debug("bound device '%s' to driver '%s'\n",
+-		 dev->bus_id, dev->driver->name);
++	pr_debug("driver: '%s': %s: bound to device '%s'\n", dev->bus_id,
++		 __FUNCTION__, dev->driver->name);
+ 
+ 	if (dev->bus)
+ 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+@@ -102,8 +102,8 @@ static int really_probe(struct device *dev, struct device_driver *drv)
+ 	int ret = 0;
+ 
+ 	atomic_inc(&probe_count);
+-	pr_debug("%s: Probing driver %s with device %s\n",
+-		 drv->bus->name, drv->name, dev->bus_id);
++	pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
++		 drv->bus->name, __FUNCTION__, drv->name, dev->bus_id);
+ 	WARN_ON(!list_empty(&dev->devres_head));
+ 
+ 	dev->driver = drv;
+@@ -125,8 +125,8 @@ static int really_probe(struct device *dev, struct device_driver *drv)
+ 
+ 	driver_bound(dev);
+ 	ret = 1;
+-	pr_debug("%s: Bound Device %s to Driver %s\n",
+-		 drv->bus->name, dev->bus_id, drv->name);
++	pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
++		 drv->bus->name, __FUNCTION__, dev->bus_id, drv->name);
+ 	goto done;
+ 
+ probe_failed:
+@@ -192,8 +192,8 @@ int driver_probe_device(struct device_driver * drv, struct device * dev)
+ 	if (drv->bus->match && !drv->bus->match(dev, drv))
+ 		goto done;
+ 
+-	pr_debug("%s: Matched Device %s with Driver %s\n",
+-		 drv->bus->name, dev->bus_id, drv->name);
++	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
++		 drv->bus->name, __FUNCTION__, dev->bus_id, drv->name);
+ 
+ 	ret = really_probe(dev, drv);
+ 
 -- 
 1.5.3.8
 
