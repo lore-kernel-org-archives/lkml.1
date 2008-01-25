@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbYAYSJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbYAYSNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759967AbYAYSJK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 13:09:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759110AbYAYSIo
+	id S1759311AbYAYSNq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 13:13:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbYAYSNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 13:08:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39437 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759854AbYAYSIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 13:08:43 -0500
-Date: Fri, 25 Jan 2008 19:08:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH UPDATE] x86: ignore spurious faults
-Message-ID: <20080125180828.GB10993@elte.hu>
-References: <4797D64D.1060105@goop.org> <1201133916.16972.124.camel@brick> <4797DBA0.5020909@goop.org> <20080125153032.GE11846@elte.hu> <479A0632.9090205@goop.org>
+	Fri, 25 Jan 2008 13:13:36 -0500
+Received: from az33egw01.freescale.net ([192.88.158.102]:49438 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752909AbYAYSNf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 13:13:35 -0500
+Message-ID: <479A26C0.7010704@freescale.com>
+Date: Fri, 25 Jan 2008 12:13:20 -0600
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <479A0632.9090205@goop.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Aggrwal Poonam <Poonam.Aggrwal@freescale.com>
+CC: Gala Kumar <kumar.gala@freescale.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       rubini@vision.unipv.it, linuxppc-dev@ozlabs.org,
+       Barkowski Michael <Michael.Barkowski@freescale.com>,
+       Cutler Richard <Rich.Cutler@freescale.com>,
+       Tabi Timur <timur@freescale.com>,
+       Kalra Ashish <ashish.kalra@freescale.com>
+Subject: Re: [PATCH UCC TDM 3/3 ] Modified Documentation to explain dtsentries
+ for TDM driver
+References: <FBA61160C48B8D438F3323FEFB4EF2C279AFF5@zin33exm24.fsl.freescale.net>
+In-Reply-To: <FBA61160C48B8D438F3323FEFB4EF2C279AFF5@zin33exm24.fsl.freescale.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Aggrwal Poonam wrote:
+> The device tree already has a brg-frequency  property in qe node which
+> is the value of BRGCLK. 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Yes, I'm saying it belongs as brg/clock-frequency. :-)
+CPM1/2 already do this.
 
-> Ingo Molnar wrote:
->> thanks, applied.
->>
->> it would be nice to expose this ability of the architecture to the core 
->> Linux kernel mprotect code as well, and let it skip on a TLB flush when 
->> doing a RO->RW transition.
->
-> The usermode fault handler already effectively does this; this patch 
-> just does it for kernel mode as well.  I don't know if mprotect takes 
-> advantage of this.
-
-spurious faults happen all the time on SMP, in the native kernel.
-
-And what i mean is that Linux mprotect currently does not take advantage 
-of x86's ability to just change the ptes, because there's no structured 
-way to tell mm/mprotect.c that "it's safe to skip the TLB flush here". 
-
-The flush happens in mm/mprotect.c's change_protection() function:
-
-        flush_tlb_range(vma, start, end);
-
-and that is unnecessary when we increase the protection rights, such as 
-in a RO->RW change. (all that is needed is an smp_wmb() instead, to make 
-sure all the pte modifications are visible when the syscall returns.)
-
-and it's a really rare case these days that you can find an area where 
-Linux does not make use of a hardware MMU feature - so we should fix 
-this ;-)
-
-	Ingo
+-Scott
