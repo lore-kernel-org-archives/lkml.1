@@ -1,102 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbYAYJnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYAYJsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760836AbYAYJnv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 04:43:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756563AbYAYJnl
+	id S1759481AbYAYJsr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 04:48:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYAYJsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 04:43:41 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:50591 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754697AbYAYJnk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 04:43:40 -0500
-To: Trond.Myklebust@netapp.com
-CC: miklos@szeredi.hu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <1201208010.7054.17.camel@heimdal.trondhjem.org> (message from
-	Trond Myklebust on Thu, 24 Jan 2008 15:53:30 -0500)
-Subject: Re: [patch 21/26] mount options: partially fix nfs
-References: <20080124193341.166753833@szeredi.hu>
-	 <20080124193449.550058933@szeredi.hu> <1201208010.7054.17.camel@heimdal.trondhjem.org>
-Message-Id: <E1JIL5y-0001O4-C6@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 25 Jan 2008 10:43:34 +0100
+	Fri, 25 Jan 2008 04:48:38 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47412 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751896AbYAYJsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 04:48:37 -0500
+Date: Fri, 25 Jan 2008 10:48:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/6] x86: fix some bugs about EFI runtime code mapping
+Message-ID: <20080125094824.GH23708@elte.hu>
+References: <1201240501.15972.46.camel@caritas-dev.intel.com> <20080125091655.GD23708@elte.hu> <1201253177.15972.57.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201253177.15972.57.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 2008-01-24 at 20:34 +0100, Miklos Szeredi wrote:
-> > plain text document attachment (nfs_opts.patch)
-> > From: Miklos Szeredi <mszeredi@suse.cz>
+
+* Huang, Ying <ying.huang@intel.com> wrote:
+
+> On Fri, 2008-01-25 at 10:16 +0100, Ingo Molnar wrote:
+> > * Huang, Ying <ying.huang@intel.com> wrote:
 > > 
-> > Add posix, bsize=, namelen= options to /proc/mounts for nfs
-> > filesystems.
+> > > This patch fixes some bugs of making EFI runtime code executable.
+> > > 
+> > > - Use change_page_attr in i386 too. Because the runtime code may be
+> > >   mapped not through ioremap.
+> > > 
+> > > - If there is no _PAGE_NX in __supported_pte_mask, the change_page_attr
+> > >   is not called.
+> > > 
+> > > - Make efi_ioremap map pages as PAGE_KERNEL_EXEC, because EFI runtime
+> > >   code may be mapped through efi_ioremap.
 > > 
-> > Document several other options that are still missing.
+> > thanks, applied.
 > > 
-> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> > ---
+> > note that here:
 > > 
-> > Index: linux/fs/nfs/super.c
-> > ===================================================================
-> > --- linux.orig/fs/nfs/super.c	2008-01-19 11:56:34.000000000 +0100
-> > +++ linux/fs/nfs/super.c	2008-01-21 20:41:30.000000000 +0100
-> > @@ -449,6 +449,7 @@ static void nfs_show_mount_options(struc
-> >  	} nfs_info[] = {
-> >  		{ NFS_MOUNT_SOFT, ",soft", ",hard" },
-> >  		{ NFS_MOUNT_INTR, ",intr", ",nointr" },
-> > +		{ NFS_MOUNT_POSIX, ",posix", "" },
-> >  		{ NFS_MOUNT_NOCTO, ",nocto", "" },
-> >  		{ NFS_MOUNT_NOAC, ",noac", "" },
-> >  		{ NFS_MOUNT_NONLM, ",nolock", "" },
-> > @@ -459,10 +460,17 @@ static void nfs_show_mount_options(struc
-> >  	};
-> >  	const struct proc_nfs_info *nfs_infop;
-> >  	struct nfs_client *clp = nfss->nfs_client;
-> > +	unsigned int default_namelen =
-> > +		clp->rpc_ops->version == 4 ? NFS4_MAXNAMLEN :
-> > +		clp->rpc_ops->version == 3 ? NFS3_MAXNAMLEN : NFS2_MAXNAMLEN;
-> >  	seq_printf(m, ",vers=%d", clp->rpc_ops->version);
-> >  	seq_printf(m, ",rsize=%d", nfss->rsize);
-> >  	seq_printf(m, ",wsize=%d", nfss->wsize);
-> > +	if (nfss->bsize != 0)
-> > +		seq_printf(m, ",bsize=%d", nfss->bsize);
-> > +	if (nfss->namelen != default_namelen)
-> > +		seq_printf(m, ",namelen=%d", nfss->namelen);
+> > > -		set_fixmap_nocache(FIX_EFI_IO_MAP_FIRST_PAGE - pages_mapped,
+> > > -				   offset);
+> > > +		__set_fixmap(FIX_EFI_IO_MAP_FIRST_PAGE - pages_mapped,
+> > > +			     offset, PAGE_KERNEL_EXEC);
+> > 
+> > you've changed it from nocache-noexec to cached-exec. I suspect 
+> > that's what we want - except if an early EFI area can be 
+> > non-prefetchable device memory. Can that ever happen? Would you like 
+> > to have PAGE_KERNEL_NOCACHE_EXEC perhaps? I implemented that 
+> > yesterday but did not commit it yet. (see the patch below)
 > 
-> You really just want to look at the value of nfss->namelen. It should
-> always be set.
+> Yes. EFI area can be non-prefetchable device memory. I should use 
+> PAGE_KERNEL_NOCACHE_EXEC.
 
-OK, I usually add the condition for (value != default_value) to avoid
-unnecessary clutter.  But sure, there's no problem with showing the
-option unconditionally.
+ok, i fixed that in the patch and reordered the PAGE_KERNEL_NOCACHE_EXEC 
+patch to come before yours.
 
+> A question about this:
 > 
-> >  	if (nfss->acregmin != 3*HZ || showdefaults)
-> >  		seq_printf(m, ",acregmin=%d", nfss->acregmin/HZ);
-> >  	if (nfss->acregmax != 60*HZ || showdefaults)
-> > @@ -482,6 +490,18 @@ static void nfs_show_mount_options(struc
-> >  	seq_printf(m, ",timeo=%lu", 10U * nfss->client->cl_timeout->to_initval / HZ);
-> >  	seq_printf(m, ",retrans=%u", nfss->client->cl_timeout->to_retries);
-> >  	seq_printf(m, ",sec=%s", nfs_pseudoflavour_to_name(nfss->client->cl_auth->au_flavor));
-> > +
-> > +	/*
-> > +	 * Missing options:
-> > +	 * port=
-> > +	 * mountport=
-> > +	 * mountvers=
-> > +	 * mountproto=
-> > +	 * addr=
-> > +	 * clientaddr=
-> > +	 * mounthost=
-> > +	 * mountaddr=
-> > +	 */
-> 
-> The new text mount interface actually does allow us to store these
-> values if we really do need to. That should be a separate patch,
-> however.
+> The MTRR on x86 should have set the memory area as un-cachable. Why do 
+> we bother to set it in page table?
 
-OK.
+you are right in that there is no immediate correctness reason for it. 
+The reason is to eventually get away from any MTRR dependencies. If some 
+other OS uses PATs and the BIOS sets up the wrong MTRR, then the other 
+OS might still having a working EFI, while Linux might crash and burn. 
 
-Thanks,
-Miklos
+So we try to get both the MTRRs and the pagetable attributes match the 
+purpose of the area in question. If _both_ levels of attributes agree it 
+cannot hurt, but if one of them is wrong, the other one still saves the 
+day.
+
+that's why we changed all ioremaps to default to cache-disabled (PCD) in 
+latest x86.git as well. For years the x86 architecture set the ioremap 
+pagetable entries to cacheable by default and only the MTRRs (and the 
+BIOS writers) saved us from trouble. Now we try to be a bit more 
+defensive and avoid "BIOS bug causes only Linux to crash and burn while 
+other OSs work fine" type of scenarios.
+
+	Ingo
