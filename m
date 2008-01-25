@@ -1,88 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbYAYNu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbYAYN6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbYAYNu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 08:50:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755118AbYAYNuS
+	id S1758183AbYAYN6s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 08:58:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbYAYN6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 08:50:18 -0500
-Received: from wr-out-0506.google.com ([64.233.184.230]:64319 "EHLO
+	Fri, 25 Jan 2008 08:58:37 -0500
+Received: from wr-out-0506.google.com ([64.233.184.235]:7703 "EHLO
 	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754831AbYAYNuQ (ORCPT
+	with ESMTP id S1754973AbYAYN6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 08:50:16 -0500
+	Fri, 25 Jan 2008 08:58:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jOXovptbVL3Fx68JcibUsDzwy6I2qTYmk+ZOTfWfgQ90UDccf3h+7IgykMV/F+cFjGdMkD06ze64Tc7iWYoG9G9l5IAGLIv4wupwhC7iILlReJ8ir2UF3xf032mG0UAocqnZJfCWWzOaxXeESeZtKE2IvldRBUArgjQwXSSl3fY=
-Message-ID: <851fc09e0801250550v4e70fb37lbe95a8716ef7d6fa@mail.gmail.com>
-Date: Fri, 25 Jan 2008 21:50:14 +0800
+        b=K3Qv+aqdrJmOSSeOXYcDh3i4uUSd95VowUKoCC6s0IH5qxum+j2NhKzNNjHOg77sxQLfId1cI6mXBDTzbpdVOX1FEFKbaKBQt35lsYck1jvzx2fMwnqWzLrrCWyTEdMGLKgd0mUknV5E97alnMUr57DcYwNX/0tbr8+xes8cQdU=
+Message-ID: <851fc09e0801250558g2d7f50akf1b7ad1f58bcf970@mail.gmail.com>
+Date: Fri, 25 Jan 2008 21:58:34 +0800
 From: "huang ying" <huang.ying.caritas@gmail.com>
 To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: ioremap_nocache fix
+Subject: Re: [PATCH 6/6] x86: fixes some bugs about EFI memory map handling
 Cc: "Huang, Ying" <ying.huang@intel.com>, "Ingo Molnar" <mingo@redhat.com>,
        "H. Peter Anvin" <hpa@zytor.com>,
        "Thomas Gleixner" <tglx@linutronix.de>, "Andi Kleen" <ak@suse.de>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20080125102738.GQ23708@elte.hu>
+In-Reply-To: <20080125095016.GI23708@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1201238561.15972.17.camel@caritas-dev.intel.com>
-	 <20080125102738.GQ23708@elte.hu>
+References: <1201240507.15972.48.camel@caritas-dev.intel.com>
+	 <20080125093131.GG23708@elte.hu>
+	 <1201254015.15972.66.camel@caritas-dev.intel.com>
+	 <20080125095016.GI23708@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 25, 2008 6:27 PM, Ingo Molnar <mingo@elte.hu> wrote:
+On Jan 25, 2008 5:50 PM, Ingo Molnar <mingo@elte.hu> wrote:
 >
 > * Huang, Ying <ying.huang@intel.com> wrote:
 >
-> > This patch fixes a bug of ioremap_nocache. ioremap_nocache() will call
-> > __ioremap() with flags != 0 to do the real work, which will call
-> > change_page_attr_addr() if phys_addr + size - 1 < (end_pfn_map <<
-> > PAGE_SHIFT). But some pages between 0 ~ end_pfn_map << PAGE_SHIFT are
-> > not mapped by identity map, this will make change_page_attr_addr
-> > failed.
->
-> very interesting! Is this in response to a bug you've triggered?
->
-> i believe the scenario you outlne could trigger on 64-bit boxen, if they
-> try to ioremap an area not covered by the direct ptes:
-
-Yes. The efifb driver try to ioremap 0x40000000 on my 64-bit box and
-it failed because 0x40000000 < (end_pfn_map << PAGE_SHIFT) and it is
-not covered by direct ptes.
-
-> > @@ -41,8 +41,15 @@ ioremap_change_attr(unsigned long phys_a
-> >       if (phys_addr + size - 1 < (end_pfn_map << PAGE_SHIFT)) {
-> >               unsigned long npages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
-> >               unsigned long vaddr = (unsigned long) __va(phys_addr);
-> > +             int level;
+> > On Fri, 2008-01-25 at 10:31 +0100, Ingo Molnar wrote:
+> > > * Huang, Ying <ying.huang@intel.com> wrote:
+> > >
+> > > > This patch fixes some bugs of EFI memory handing code.
+> > > >
+> > > > - On x86_64, it is possible that EFI memory map can not be mapped via
+> > > >   identity map, so efi_map_memmap is removed, just use early_ioremap.
+> > > >
+> > > > - On i386, the EFI memory map mapping take effect cross paging_init,
+> > > >   so it is not necessary to use efi_map_memmap.
+> > > >
+> > > > - EFI memory map is unmapped in efi_enter_virtual_mode to avoid
+> > > >   early_ioremap leak.
+> > >
+> > > thanks, applied.
+> > >
+> > > btw., it would be nice to consolidate this some more. Why is there a
+> > > separate efi_ioremap(), which is mapped to ioremap() on 32-bit, and
+> > > which is mapped to a fixmap based special mapper on 64-bit?
+> > >
+> > > To me it appears this wants to be ioremap() on both 64-bit and
+> > > 32-bit, and we could remove efi_ioremap() altogether. Hm?
 > >
-> >               /*
-> > +              * If there is no identity map for this address,
-> > +              * change_page_attr_addr is unnecessary
-> > +              */
-> > +             if (!lookup_address(vaddr, &level))
-> > +                     return err;
-> > +             /*
+> > To support kexec, I want to map the EFI memory area on same virtual
+> > address on different boot of different version of kernel. Then, the
+> > EFI runtime service will always get the same execution environment.
+> > This is because a weakness of EFI runtime service, it can not reset
+> > its execution environment, except reboot.
 >
-> and we'd incorrectly fail the ioremap() with -EINVAL, and return a hard
-> error to the driver - and causing broken boxes, right?
+> so this basically means that on 32-bit kexec wont work right - i.e. only
+> 64-bit has been enhanced this way? What am i missing?
 
-Yes.
+Strictly, I should say on 32-bit, EFI runtime service won't work in
+kexeced kernel. That is, on EFI 32 platform, it is possible that:
 
-> Thomas has unified most of ioremap*.c as well, and we'll make sure this
-> fix survives the unification. The 64-bit code limped along before by
-> accident, because the (pre-cleanup) 64-bit __change_page_attr() code
-> incorrectly returned 0 for invalid ranges:
->
->         kpte = lookup_address(address);
->         if (!kpte) return 0;
->
-> which masked the bug you fixed now. 32-bit always returned -EINVAL on
-> invalid ranges.
+- Boot kernel A with EFI runtime service
+- kexec kernel B without EFI runtime service (such as with noefi in
+kernel command line)
+
+I suspect this method can be used on 32-bit platform. Because the
+fixmap area on 32-bit is more limited than 64-bit. And because
+identity map area on 32-bit is too limited, it is possible that all
+EFI runtime code, data, IO areas need to be mapped via  fixmap.
 
 Best Regards,
 Huang Ying
