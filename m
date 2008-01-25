@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757992AbYAYHnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762033AbYAYHnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757992AbYAYHnc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759623AbYAYHTV
+	id S1762033AbYAYHnt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759379AbYAYHTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:19:21 -0500
-Received: from ns.suse.de ([195.135.220.2]:53023 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 02:19:25 -0500
+Received: from mx2.suse.de ([195.135.220.15]:47722 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759620AbYAYHTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:19:19 -0500
+	id S1758781AbYAYHTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:19:23 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
        Matt Domsch <Matt_Domsch@dell.com>,
        Matt Tolentino <matthew.e.tolentino@intel.com>
-Subject: [PATCH 080/196] kset: convert efivars to use kset_create for the efi subsystem.
-Date: Thu, 24 Jan 2008 23:10:18 -0800
-Message-Id: <1201245134-4876-80-git-send-email-gregkh@suse.de>
+Subject: [PATCH 081/196] kset: convert efivars to use kset_create for the vars sub-subsystem.
+Date: Thu, 24 Jan 2008 23:10:19 -0800
+Message-Id: <1201245134-4876-81-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -31,70 +31,81 @@ Cc: Matt Domsch <Matt_Domsch@dell.com>
 Cc: Matt Tolentino <matthew.e.tolentino@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/firmware/efivars.c |   19 +++++++++----------
- 1 files changed, 9 insertions(+), 10 deletions(-)
+ drivers/firmware/efivars.c |   22 ++++++++++------------
+ 1 files changed, 10 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/firmware/efivars.c b/drivers/firmware/efivars.c
-index ebc3853..018ca1c 100644
+index 018ca1c..e17cd81 100644
 --- a/drivers/firmware/efivars.c
 +++ b/drivers/firmware/efivars.c
-@@ -573,7 +573,7 @@ static struct attribute_group efi_subsys_attr_group = {
+@@ -572,7 +572,7 @@ static struct attribute_group efi_subsys_attr_group = {
+ };
  
  
- static decl_subsys(vars, NULL);
--static decl_subsys(efi, NULL);
-+static struct kset *efi_kset;
+-static decl_subsys(vars, NULL);
++static struct kset *vars_kset;
+ static struct kset *efi_kset;
  
  /*
-  * efivar_create_sysfs_entry()
-@@ -668,15 +668,14 @@ efivars_init(void)
- 	/*
- 	 * For now we'll register the efi subsys within this driver
- 	 */
--
--	error = firmware_register(&efi_subsys);
--
--	if (error) {
--		printk(KERN_ERR "efivars: Firmware registration failed with error %d.\n", error);
-+	efi_kset = kset_create_and_add("efi", NULL, &firmware_kset->kobj);
-+	if (!efi_kset) {
-+		printk(KERN_ERR "efivars: Firmware registration failed.\n");
-+		error = -ENOMEM;
+@@ -618,7 +618,7 @@ efivar_create_sysfs_entry(unsigned long variable_name_size,
+ 	efi_guid_unparse(vendor_guid, short_name + strlen(short_name));
+ 
+ 	kobject_set_name(&new_efivar->kobj, "%s", short_name);
+-	new_efivar->kobj.kset = &vars_subsys;
++	new_efivar->kobj.kset = vars_kset;
+ 	new_efivar->kobj.ktype = &efivar_ktype;
+ 	i = kobject_register(&new_efivar->kobj);
+ 	if (i) {
+@@ -675,12 +675,10 @@ efivars_init(void)
  		goto out_free;
  	}
  
--	vars_subsys.kobj.kset = &efi_subsys;
-+	vars_subsys.kobj.kset = efi_kset;
- 
- 	error = subsystem_register(&vars_subsys);
- 
-@@ -728,7 +727,7 @@ efivars_init(void)
- 			" due to error %d\n", error);
- 
- 	/* Don't forget the systab entry */
--	error = sysfs_create_group(&efi_subsys.kobj, &efi_subsys_attr_group);
-+	error = sysfs_create_group(&efi_kset->kobj, &efi_subsys_attr_group);
- 	if (error)
- 		printk(KERN_ERR "efivars: Sysfs attribute export failed with error %d.\n", error);
- 	else
-@@ -737,7 +736,7 @@ efivars_init(void)
- 	subsystem_unregister(&vars_subsys);
- 
- out_firmware_unregister:
--	firmware_unregister(&efi_subsys);
-+	kset_unregister(efi_kset);
- 
- out_free:
- 	kfree(variable_name);
-@@ -758,7 +757,7 @@ efivars_exit(void)
+-	vars_subsys.kobj.kset = efi_kset;
+-
+-	error = subsystem_register(&vars_subsys);
+-
+-	if (error) {
+-		printk(KERN_ERR "efivars: Subsystem registration failed with error %d.\n", error);
++	vars_kset = kset_create_and_add("vars", NULL, &efi_kset->kobj);
++	if (!vars_kset) {
++		printk(KERN_ERR "efivars: Subsystem registration failed.\n");
++		error = -ENOMEM;
+ 		goto out_firmware_unregister;
  	}
  
- 	subsystem_unregister(&vars_subsys);
--	firmware_unregister(&efi_subsys);
-+	kset_unregister(efi_kset);
+@@ -715,12 +713,12 @@ efivars_init(void)
+ 	 * Now add attributes to allow creation of new vars
+ 	 * and deletion of existing ones...
+ 	 */
+-	error = sysfs_create_bin_file(&vars_subsys.kobj,
++	error = sysfs_create_bin_file(&vars_kset->kobj,
+ 				      &var_subsys_attr_new_var);
+ 	if (error)
+ 		printk(KERN_ERR "efivars: unable to create new_var sysfs file"
+ 			" due to error %d\n", error);
+-	error = sysfs_create_bin_file(&vars_subsys.kobj,
++	error = sysfs_create_bin_file(&vars_kset->kobj,
+ 				      &var_subsys_attr_del_var);
+ 	if (error)
+ 		printk(KERN_ERR "efivars: unable to create del_var sysfs file"
+@@ -733,7 +731,7 @@ efivars_init(void)
+ 	else
+ 		goto out_free;
+ 
+-	subsystem_unregister(&vars_subsys);
++	kset_unregister(vars_kset);
+ 
+ out_firmware_unregister:
+ 	kset_unregister(efi_kset);
+@@ -756,7 +754,7 @@ efivars_exit(void)
+ 		efivar_unregister(entry);
+ 	}
+ 
+-	subsystem_unregister(&vars_subsys);
++	kset_unregister(vars_kset);
+ 	kset_unregister(efi_kset);
  }
  
- module_init(efivars_init);
 -- 
 1.5.3.8
 
