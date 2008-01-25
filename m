@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761080AbYAYISX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765538AbYAYISl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761080AbYAYISX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:18:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763220AbYAYIAs
+	id S1765538AbYAYISl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:18:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764047AbYAYIAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:00:48 -0500
-Received: from mx1.suse.de ([195.135.220.2]:59446 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 03:00:49 -0500
+Received: from ns.suse.de ([195.135.220.2]:59453 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761188AbYAYH7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:59:50 -0500
+	id S1764078AbYAYH7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:59:51 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Alan Stern <stern@rowland.harvard.edu>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 157/196] Kobject: drop child->parent ref at unregistration
-Date: Thu, 24 Jan 2008 23:33:06 -0800
-Message-Id: <1201246425-5058-78-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 136/196] Kobject: convert net/bridge/br_if.c to use kobject_init/add_ng()
+Date: Thu, 24 Jan 2008 23:32:45 -0800
+Message-Id: <1201246425-5058-57-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -23,78 +24,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Stern <stern@rowland.harvard.edu>
+This converts the code to use the new kobject functions, cleaning up the
+logic in doing so.
 
-This patch (as1015) reverts changes that were made to the driver core
-about four years ago.  The intent back then was to avoid certain kinds
-of invalid memory accesses by leaving kernel objects allocated as long
-as any of their children were still allocated.  The original and
-correct approach was to wait only as long as any children were still
-_registered_; that's what this patch reinstates.
-
-This fixes a problem in the SCSI core made visible by the class_device
-to regular device conversion: A reference loop (scsi_device holds
-reference to request_queue, which is the child of a gendisk, which is
-the child of the scsi_device) prevents the data structures from being
-released, even though they are deregistered okay.
-
-It's possible that this change will cause a few bugs to surface,
-things that have been hidden for several years.  They can be fixed
-easily enough by having the child device take an explicit reference to
-the parent whenever needed.
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- lib/kobject.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ net/bridge/br_if.c |   10 +++-------
+ 1 files changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/lib/kobject.c b/lib/kobject.c
-index 1015f74..493e991 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -149,12 +149,16 @@ void kobject_init(struct kobject * kobj)
+diff --git a/net/bridge/br_if.c b/net/bridge/br_if.c
+index dadec94..298e0f4 100644
+--- a/net/bridge/br_if.c
++++ b/net/bridge/br_if.c
+@@ -258,12 +258,6 @@ static struct net_bridge_port *new_nbp(struct net_bridge *br,
+ 	p->state = BR_STATE_DISABLED;
+ 	br_stp_port_timer_init(p);
  
- static void unlink(struct kobject * kobj)
- {
-+	struct kobject *parent = kobj->parent;
-+
- 	if (kobj->kset) {
- 		spin_lock(&kobj->kset->list_lock);
- 		list_del_init(&kobj->entry);
- 		spin_unlock(&kobj->kset->list_lock);
- 	}
-+	kobj->parent = NULL;
- 	kobject_put(kobj);
-+	kobject_put(parent);
+-	kobject_init(&p->kobj);
+-	kobject_set_name(&p->kobj, SYSFS_BRIDGE_PORT_ATTR);
+-	p->kobj.ktype = &brport_ktype;
+-	p->kobj.parent = &(dev->dev.kobj);
+-	p->kobj.kset = NULL;
+-
+ 	return p;
  }
  
- /**
-@@ -208,7 +212,6 @@ int kobject_add(struct kobject * kobj)
- 	if (error) {
- 		/* unlink does the kobject_put() for us */
- 		unlink(kobj);
--		kobject_put(parent);
+@@ -379,7 +373,8 @@ int br_add_if(struct net_bridge *br, struct net_device *dev)
+ 	if (IS_ERR(p))
+ 		return PTR_ERR(p);
  
- 		/* be noisy on error issues */
- 		if (error == -EEXIST)
-@@ -590,7 +593,6 @@ static void kobject_cleanup(struct kobject *kobj)
- {
- 	struct kobj_type * t = get_ktype(kobj);
- 	struct kset * s = kobj->kset;
--	struct kobject * parent = kobj->parent;
- 	const char *name = kobj->k_name;
+-	err = kobject_add(&p->kobj);
++	err = kobject_init_and_add(&p->kobj, &brport_ktype, &(dev->dev.kobj),
++				   SYSFS_BRIDGE_PORT_ATTR);
+ 	if (err)
+ 		goto err0;
  
- 	pr_debug("kobject: '%s' (%p): %s\n",
-@@ -604,7 +606,6 @@ static void kobject_cleanup(struct kobject *kobj)
- 	}
- 	if (s)
- 		kset_put(s);
--	kobject_put(parent);
- }
- 
- static void kobject_release(struct kref *kref)
+@@ -416,6 +411,7 @@ err2:
+ 	br_fdb_delete_by_port(br, p, 1);
+ err1:
+ 	kobject_del(&p->kobj);
++	return err;
+ err0:
+ 	kobject_put(&p->kobj);
+ 	return err;
 -- 
 1.5.3.8
 
