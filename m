@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbYAYKl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYAYKoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbYAYKl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 05:41:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYAYKlT
+	id S1754016AbYAYKoB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 05:44:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYAYKnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 05:41:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43830 "EHLO mx3.mail.elte.hu"
+	Fri, 25 Jan 2008 05:43:53 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:52496 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751512AbYAYKlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 05:41:18 -0500
-Date: Fri, 25 Jan 2008 11:41:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Minoru Usui <usui@mxm.nes.nec.co.jp>
-Cc: linux-kernel@vger.kernel.org, magnus.damm@gmail.com
-Subject: Re: [PATCH] Fix NUMA emulation for x86_64
-Message-ID: <20080125104107.GS23708@elte.hu>
-References: <20080125.171613.41631926.usui@mxm.nes.nec.co.jp>
+	id S1751722AbYAYKnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 05:43:52 -0500
+Date: Fri, 25 Jan 2008 12:42:17 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>,
+       Heikki Orsila <shdl@zakalwe.fi>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, trivial@kernel.org
+Subject: Re: [PATCH 5/9] bfs: move function prototype to the proper header
+	file
+Message-ID: <20080125104217.GA6700@does.not.exist>
+References: <1201213928-18183-1-git-send-email-dmitri.vorobiev@gmail.com> <1201213928-18183-6-git-send-email-dmitri.vorobiev@gmail.com> <20080124225031.GC12172@zakalwe.fi> <47991B7C.6000208@gmail.com> <Pine.LNX.4.61.0801242318560.8513@ginsburg.homenet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080125.171613.41631926.usui@mxm.nes.nec.co.jp>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.61.0801242318560.8513@ginsburg.homenet>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Minoru Usui <usui@mxm.nes.nec.co.jp> wrote:
-
-> I found a small bug of NUMA emulation code for x86_64. 
-> (CONFIG_NUMA_EMU) If machine is non-NUMA, find_node_by_addr() should 
-> return NUMA_NO_NODE, but current implementation code returns existent 
-> maximum NUMA node number + 1. This is not existent NUMA node number.
+On Thu, Jan 24, 2008 at 11:22:21PM +0000, Tigran Aivazian wrote:
+> On Fri, 25 Jan 2008, Dmitri Vorobiev wrote:
 >
-> However, this behaviour does not affect NUMA emulation fortunately, 
-> because acpi_fake_nodes() that is caller of find_node_by_addr() gets 
-> pxm (proximity domain) by node_to_pxm() from non-existent NUMA node 
-> number that was returned by find_node_by_addr(). node_to_pxm() returns 
-> PXM_INVAL that means illegal or non-existent NUMA node number.
+>> Heikki Orsila пишет:
+>>>> +extern void dump_imap(const char *, struct super_block *);
+>>>> +
+>>>
+>>> Functions should not be externed, remove extern keyword.
+>>>
+>>
+>> Care to explain why?
+>
+> because dump_imap() is just a BFS' internal helper (for debugging 
+> purposes only btw) to dump the inode map via printk. Why should it be 
+> moved into the header, i.e. where one expects to see things potentially 
+> visible by the rest of the kernel?
+>...
 
-thanks, i have applied your fix to x86.git.
+fs/bfs/bfs.h is not visible to the rest of the kernel, it's the right 
+place for bfs-internal code.
 
-It seems this does not need to be backported to v2.6.24.1 because 
-node_to_pxm() masked the bad effects of this bug, right?
+Whether there's an "extern" written is just a syntax thing with zero 
+semantical implications. We tend to not write the "extern" in the 
+kernel, but that's nothing cast in stone.
 
-	Ingo
+But prototypes really belong into header files - bugs in this area are 
+rare, but when they occur they can cause nasty hard-to-debug bugs
+(e.g. depending on the calling convention on the architecture calling 
+the function can turn your stack into garbage), and with the prototypes 
+in header files gcc can do type checks.
+
+> Kind regards
+> Tigran
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
