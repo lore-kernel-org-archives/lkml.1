@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbYAYQBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759318AbYAYQBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758933AbYAYQBX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 11:01:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbYAYQBM
+	id S1759318AbYAYQBh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 11:01:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758260AbYAYQBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 11:01:12 -0500
-Received: from gate.crashing.org ([63.228.1.57]:34416 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754081AbYAYQBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 11:01:10 -0500
-Date: Fri, 25 Jan 2008 09:56:12 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@blarg.am.freescale.net
-To: Jochen Friedrich <jochen@scram.de>
-cc: Vitaly Bordug <vitb@kernel.crashing.org>,
-       "Garzik, Jeff" <jgarzik@pobox.com>,
-       Scott Wood <scottwood@freescale.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH for-2.6.25] [POWERPC] Rename commproc to cpm1 and
- cpm2_common.c to cpm2.c
-In-Reply-To: <4799F2CE.309@scram.de>
-Message-ID: <Pine.LNX.4.64.0801250955580.16736@blarg.am.freescale.net>
-References: <4799F2CE.309@scram.de>
+	Fri, 25 Jan 2008 11:01:17 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57052 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757327AbYAYQBR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 11:01:17 -0500
+Date: Fri, 25 Jan 2008 17:01:15 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Jon Masters <jcm@redhat.com>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, Valdis.Kletnieks@vt.edu,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Linux Kernel Markers Support for Proprierary Modules
+In-Reply-To: <1201275090.25284.281.camel@perihelion>
+Message-ID: <Pine.LNX.4.64.0801251700070.15243@fbirervta.pbzchgretzou.qr>
+References: <1201029235.18144.62.camel@perihelion>  <y0modbdnt4e.fsf@ton.toronto.redhat.com>
+ <20080123031005.GA16766@Krystal>  <1201061860.25284.28.camel@perihelion>
+ <20080123131442.GA6562@redhat.com>  <20080123144811.GA12296@Krystal>
+ <27267.1201152358@turing-police.cc.vt.edu>  <1201155569.25284.88.camel@perihelion>
+ <20080124124703.GB32559@Krystal>  <Pine.LNX.4.64.0801250840340.12676@fbirervta.pbzchgretzou.qr>
+ <1201275090.25284.281.camel@perihelion>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jan 2008, Jochen Friedrich wrote:
 
-> Rename commproc.[ch] to cpm1.[ch] to be more consistent with cpm2. Also
-> rename cpm2_common.c to cpm2.c as suggested by Scott Wood. Adjust the
-> includes accordingly.
+On Jan 25 2008 10:31, Jon Masters wrote:
+>On Fri, 2008-01-25 at 08:56 +0100, Jan Engelhardt wrote:
 >
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> ---
->  arch/powerpc/platforms/8xx/ep88xc.c           |    1 +
->  arch/powerpc/platforms/8xx/mpc86xads_setup.c  |    2 +-
->  arch/powerpc/platforms/8xx/mpc885ads_setup.c  |    2 +-
->  arch/powerpc/sysdev/Makefile                  |    4 ++--
->  arch/powerpc/sysdev/{commproc.c => cpm1.c}    |    4 ++--
->  arch/powerpc/sysdev/{cpm2_common.c => cpm2.c} |    3 +--
->  arch/powerpc/sysdev/micropatch.c              |    2 +-
->  arch/ppc/8260_io/enet.c                       |    2 +-
->  arch/ppc/8xx_io/commproc.c                    |    2 +-
->  arch/ppc/8xx_io/enet.c                        |    6 +++---
->  arch/ppc/8xx_io/fec.c                         |    2 +-
->  arch/ppc/8xx_io/micropatch.c                  |    2 +-
->  arch/ppc/boot/simple/iic.c                    |    2 +-
->  arch/ppc/boot/simple/m8xx_tty.c               |    2 +-
->  arch/ppc/kernel/ppc_ksyms.c                   |    2 +-
->  arch/ppc/platforms/mpc866ads_setup.c          |    2 +-
->  arch/ppc/platforms/mpc885ads_setup.c          |    2 +-
->  arch/ppc/syslib/mpc8xx_devices.c              |    2 +-
->  arch/ppc/xmon/start_8xx.c                     |    2 +-
->  drivers/net/fec_8xx/fec_8xx-netta.c           |    2 +-
->  drivers/net/fec_8xx/fec_main.c                |    2 +-
->  drivers/net/fec_8xx/fec_mii.c                 |    2 +-
->  drivers/net/fs_enet/fs_enet.h                 |    2 +-
->  drivers/net/fs_enet/mac-fec.c                 |    2 +-
->  drivers/net/fs_enet/mac-scc.c                 |    2 +-
->  drivers/serial/cpm_uart/cpm_uart_cpm1.h       |    2 +-
->  include/asm-powerpc/{commproc.h => cpm1.h}    |    8 ++++----
->  include/asm-ppc/{commproc.h => cpm1.h}        |    8 ++++----
->  28 files changed, 38 insertions(+), 38 deletions(-)
->  rename arch/powerpc/sysdev/{commproc.c => cpm1.c} (99%)
->  rename arch/powerpc/sysdev/{cpm2_common.c => cpm2.c} (99%)
->  rename include/asm-powerpc/{commproc.h => cpm1.h} (99%)
->  rename include/asm-ppc/{commproc.h => cpm1.h} (99%)
+>> So what is needed is an Oops with an explaining message
+>> if (kernel_tainted) "blame that proprietary module first",
+>> and make sure the user sees that oops even if in X.
 >
+>The former is actually trivially doable with the module->taints bits. We
+>could have the equivalent of a neon flashing "blame this module" sign.
+>
+>I also agree, we should stop force loading. Incompatible struct module,
+>etc. are really bad things to have mapped into a running kernel.
 
-applied.
-
-- k
+Forceloading should be reserved for developers who know
+when a symversion change is safe (which is rare in itself,
+but still).
