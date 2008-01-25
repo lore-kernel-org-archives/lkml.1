@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbYAYVfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760272AbYAYViL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760042AbYAYVfb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 16:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbYAYVfY
+	id S1760272AbYAYViL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 16:38:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbYAYVh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 16:35:24 -0500
-Received: from wx-out-0506.google.com ([66.249.82.229]:24036 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754756AbYAYVfX (ORCPT
+	Fri, 25 Jan 2008 16:37:59 -0500
+Received: from wr-out-0506.google.com ([64.233.184.233]:50600 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754497AbYAYVh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 16:35:23 -0500
-Message-ID: <479A561B.8070009@codemonkey.ws>
-Date: Fri, 25 Jan 2008 15:35:23 -0600
+	Fri, 25 Jan 2008 16:37:58 -0500
+Message-ID: <479A56B2.7010306@codemonkey.ws>
+Date: Fri, 25 Jan 2008 15:37:54 -0600
 From: Anthony Liguori <anthony@codemonkey.ws>
 User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
 To: Joerg Roedel <joerg.roedel@amd.com>
 CC: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 3/8] SVM: add module parameter to disable
- Nested Paging
-References: <1201294393-22613-1-git-send-email-joerg.roedel@amd.com> <1201294393-22613-4-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1201294393-22613-4-git-send-email-joerg.roedel@amd.com>
+Subject: Re: [kvm-devel] [PATCH 4/8] X86: export information about NPT to
+ generic x86 code
+References: <1201294393-22613-1-git-send-email-joerg.roedel@amd.com> <1201294393-22613-5-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1201294393-22613-5-git-send-email-joerg.roedel@amd.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,48 +29,90 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Joerg Roedel wrote:
-> To disable the use of the Nested Paging feature even if it is available in
-> hardware this patch adds a module parameter. Nested Paging can be disabled by
-> passing npt=off to the kvm_amd module.
+> The generic x86 code has to know if the specific implementation uses Nested
+> Paging. In the generic code Nested Paging is called Hardware Assisted Paging
+> (HAP) to avoid confusion with (future) HAP implementations of other vendors.
+> This patch exports the availability of HAP to the generic x86 code.
 >
 > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 > ---
->  arch/x86/kvm/svm.c |    8 ++++++++
->  1 files changed, 8 insertions(+), 0 deletions(-)
+>  arch/x86/kvm/svm.c         |    7 +++++++
+>  arch/x86/kvm/vmx.c         |    7 +++++++
+>  include/asm-x86/kvm_host.h |    2 ++
+>  3 files changed, 16 insertions(+), 0 deletions(-)
 >
 > diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-> index 49bb57a..2e718ff 100644
+> index 2e718ff..d0bfdd8 100644
 > --- a/arch/x86/kvm/svm.c
 > +++ b/arch/x86/kvm/svm.c
-> @@ -48,6 +48,9 @@ MODULE_LICENSE("GPL");
->  #define SVM_DEATURE_SVML (1 << 2)
+> @@ -1678,6 +1678,11 @@ static bool svm_cpu_has_accelerated_tpr(void)
+>  	return false;
+>  }
 >  
->  static bool npt_enabled = false;
-> +static char *npt = "on";
+> +static bool svm_hap_enabled(void)
+> +{
+> +	return npt_enabled;
+> +}
 > +
-> +module_param(npt, charp, S_IRUGO);
 >   
 
-This would probably be better as an integer.  Then we don't have to do 
-nasty things like implicitly cast a literal to a char *.
+To help with bisecting, you should probably return false here until the 
+patch that actually implements NPT support.  Otherwise, the 7th patch in 
+this series breaks KVM for SVM.
 
 Regards,
 
 Anthony Liguori
 
->  static void kvm_reput_irq(struct vcpu_svm *svm);
+>  static struct kvm_x86_ops svm_x86_ops = {
+>  	.cpu_has_kvm_support = has_svm,
+>  	.disabled_by_bios = is_disabled,
+> @@ -1734,6 +1739,8 @@ static struct kvm_x86_ops svm_x86_ops = {
+>  	.inject_pending_vectors = do_interrupt_requests,
 >  
-> @@ -415,6 +418,11 @@ static __init int svm_hardware_setup(void)
->  	if (!svm_has(SVM_FEATURE_NPT))
->  		npt_enabled = false;
->  
-> +	if (npt_enabled && strncmp(npt, "off", 3) == 0) {
-> +		printk(KERN_INFO "kvm: Nested Paging disabled\n");
-> +		npt_enabled = false;
-> +	}
+>  	.set_tss_addr = svm_set_tss_addr,
 > +
->  	if (npt_enabled)
->  		printk(KERN_INFO "kvm: Nested Paging enabled\n");
+> +	.hap_enabled = svm_hap_enabled,
+>  };
 >  
+>  static int __init svm_init(void)
+> diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+> index 00a00e4..8feb775 100644
+> --- a/arch/x86/kvm/vmx.c
+> +++ b/arch/x86/kvm/vmx.c
+> @@ -2631,6 +2631,11 @@ static void __init vmx_check_processor_compat(void *rtn)
+>  	}
+>  }
+>  
+> +static bool vmx_hap_enabled(void)
+> +{
+> +	return false;
+> +}
+> +
+>  static struct kvm_x86_ops vmx_x86_ops = {
+>  	.cpu_has_kvm_support = cpu_has_kvm_support,
+>  	.disabled_by_bios = vmx_disabled_by_bios,
+> @@ -2688,6 +2693,8 @@ static struct kvm_x86_ops vmx_x86_ops = {
+>  	.inject_pending_vectors = do_interrupt_requests,
+>  
+>  	.set_tss_addr = vmx_set_tss_addr,
+> +
+> +	.hap_enabled = vmx_hap_enabled,
+>  };
+>  
+>  static int __init vmx_init(void)
+> diff --git a/include/asm-x86/kvm_host.h b/include/asm-x86/kvm_host.h
+> index 67ae307..45a9d05 100644
+> --- a/include/asm-x86/kvm_host.h
+> +++ b/include/asm-x86/kvm_host.h
+> @@ -392,6 +392,8 @@ struct kvm_x86_ops {
+>  				       struct kvm_run *run);
+>  
+>  	int (*set_tss_addr)(struct kvm *kvm, unsigned int addr);
+> +
+> +	bool (*hap_enabled)(void);
+>  };
+>  
+>  extern struct kvm_x86_ops *kvm_x86_ops;
 >   
 
