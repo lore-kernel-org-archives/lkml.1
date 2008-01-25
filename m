@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbYAYIeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932667AbYAYIep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762186AbYAYIeL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760679AbYAYIBf
+	id S932667AbYAYIep (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762535AbYAYIBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:01:35 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53758 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 03:01:37 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53754 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763884AbYAYIAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 03:00:08 -0500
+	id S1763888AbYAYIAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 03:00:07 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 151/196] Driver core: move the static kobject out of struct driver
-Date: Thu, 24 Jan 2008 23:33:00 -0800
-Message-Id: <1201246425-5058-72-git-send-email-gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 155/196] Driver core: fix class glue dir cleanup logic
+Date: Thu, 24 Jan 2008 23:33:04 -0800
+Message-Id: <1201246425-5058-76-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -22,530 +23,345 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the kobject, and a few other driver-core-only fields
-out of struct driver and into the driver core only.  Now drivers can be
-safely create on the stack or statically (like they currently are.)
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-Cc: Kay Sievers <kay.sievers@vrfy.org>
+We should remove the glue directory between the class and the bus
+device _after_ we sent out the 'remove' event for the device, otherwise
+the parent relationship is no longer valid, and composing the path
+with deleted sysfs entries will not work.
+
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/base.h     |    8 +++++
- drivers/base/bus.c      |   71 +++++++++++++++++++++++++---------------------
- drivers/base/dd.c       |   24 ++++++++--------
- drivers/base/driver.c   |   40 +++++++++++++++++---------
- drivers/base/module.c   |   12 ++++----
- drivers/base/platform.c |    2 +-
- include/linux/device.h  |   16 ++++------
- 7 files changed, 99 insertions(+), 74 deletions(-)
+ drivers/base/core.c |  206 +++++++++++++++++++++++----------------------------
+ 1 files changed, 94 insertions(+), 112 deletions(-)
 
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index 0547236..3b0f395 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -27,6 +27,14 @@ struct bus_type_private {
- 	struct bus_type *bus;
- };
- 
-+struct driver_private {
-+	struct kobject kobj;
-+	struct klist klist_devices;
-+	struct klist_node knode_bus;
-+	struct module_kobject *mkobj;
-+	struct device_driver *driver;
-+};
-+#define to_driver(obj) container_of(obj, struct driver_private, kobj)
- 
- /* initialisation functions */
- extern int devices_init(void);
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 04d3850..aa0c986 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -3,6 +3,8 @@
-  *
-  * Copyright (c) 2002-3 Patrick Mochel
-  * Copyright (c) 2002-3 Open Source Development Labs
-+ * Copyright (c) 2007 Greg Kroah-Hartman <gregkh@suse.de>
-+ * Copyright (c) 2007 Novell Inc.
-  *
-  * This file is released under the GPLv2
-  *
-@@ -24,7 +26,6 @@
-  */
- 
- #define to_drv_attr(_attr) container_of(_attr, struct driver_attribute, attr)
--#define to_driver(obj) container_of(obj, struct device_driver, kobj)
- 
- 
- static int __must_check bus_rescan_devices_helper(struct device *dev,
-@@ -49,11 +50,11 @@ static ssize_t
- drv_attr_show(struct kobject * kobj, struct attribute * attr, char * buf)
- {
- 	struct driver_attribute * drv_attr = to_drv_attr(attr);
--	struct device_driver * drv = to_driver(kobj);
-+	struct driver_private *drv_priv = to_driver(kobj);
- 	ssize_t ret = -EIO;
- 
- 	if (drv_attr->show)
--		ret = drv_attr->show(drv, buf);
-+		ret = drv_attr->show(drv_priv->driver, buf);
- 	return ret;
- }
- 
-@@ -62,11 +63,11 @@ drv_attr_store(struct kobject * kobj, struct attribute * attr,
- 	       const char * buf, size_t count)
- {
- 	struct driver_attribute * drv_attr = to_drv_attr(attr);
--	struct device_driver * drv = to_driver(kobj);
-+	struct driver_private *drv_priv = to_driver(kobj);
- 	ssize_t ret = -EIO;
- 
- 	if (drv_attr->store)
--		ret = drv_attr->store(drv, buf, count);
-+		ret = drv_attr->store(drv_priv->driver, buf, count);
- 	return ret;
- }
- 
-@@ -75,22 +76,12 @@ static struct sysfs_ops driver_sysfs_ops = {
- 	.store	= drv_attr_store,
- };
- 
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 22fdf32..13cae18 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -18,7 +18,7 @@
+ #include <linux/string.h>
+ #include <linux/kdev_t.h>
+ #include <linux/notifier.h>
 -
--static void driver_release(struct kobject * kobj)
-+static void driver_release(struct kobject *kobj)
++#include <linux/genhd.h>
+ #include <asm/semaphore.h>
+ 
+ #include "base.h"
+@@ -538,22 +538,20 @@ void device_initialize(struct device *dev)
+ }
+ 
+ #ifdef CONFIG_SYSFS_DEPRECATED
+-static struct kobject * get_device_parent(struct device *dev,
+-					  struct device *parent)
++static struct kobject *get_device_parent(struct device *dev,
++					 struct device *parent)
  {
 -	/*
--	 * Yes this is an empty release function, it is this way because struct
--	 * device is always a static object, not a dynamic one.  Yes, this is
--	 * not nice and bad, but remember, drivers are code, reference counted
--	 * by the module count, not a device, which is really data.  And yes,
--	 * in the future I do want to have all drivers be created dynamically,
--	 * and am working toward that goal, but it will take a bit longer...
--	 *
--	 * But do not let this example give _anyone_ the idea that they can
--	 * create a release function without any code in it at all, to do that
--	 * is almost always wrong.  If you have any questions about this,
--	 * please send an email to <greg@kroah.com>
+-	 * Set the parent to the class, not the parent device
+-	 * for topmost devices in class hierarchy.
+-	 * This keeps sysfs from having a symlink to make old
+-	 * udevs happy
 -	 */
-+	struct driver_private *drv_priv = to_driver(kobj);
++	/* class devices without a parent live in /sys/class/<classname>/ */
+ 	if (dev->class && (!parent || parent->class != dev->class))
+ 		return &dev->class->subsys.kobj;
++	/* all other devices keep their parent */
+ 	else if (parent)
+ 		return &parent->kobj;
+ 
+ 	return NULL;
+ }
 +
-+	pr_debug("%s: freeing %s\n", __FUNCTION__, kobject_name(kobj));
-+	kfree(drv_priv);
++static inline void cleanup_device_parent(struct device *dev) {}
+ #else
+ static struct kobject *virtual_device_parent(struct device *dev)
+ {
+@@ -566,8 +564,8 @@ static struct kobject *virtual_device_parent(struct device *dev)
+ 	return virtual_dir;
  }
  
- static struct kobj_type driver_ktype = {
-@@ -350,7 +341,13 @@ struct device * bus_find_device(struct bus_type *bus,
- static struct device_driver * next_driver(struct klist_iter * i)
+-static struct kobject * get_device_parent(struct device *dev,
+-					  struct device *parent)
++static struct kobject *get_device_parent(struct device *dev,
++					 struct device *parent)
  {
- 	struct klist_node * n = klist_next(i);
--	return n ? container_of(n, struct device_driver, knode_bus) : NULL;
-+	struct driver_private *drv_priv;
+ 	int retval;
+ 
+@@ -618,6 +616,34 @@ static struct kobject * get_device_parent(struct device *dev,
+ 		return &parent->kobj;
+ 	return NULL;
+ }
 +
-+	if (n) {
-+		drv_priv = container_of(n, struct driver_private, knode_bus);
-+		return drv_priv->driver;
++static void cleanup_device_parent(struct device *dev)
++{
++	struct device *d;
++	int other = 0;
++
++	if (!dev->class)
++		return;
++
++	/* see if we live in a parent class directory */
++	if (dev->kobj.parent->kset != &dev->class->class_dirs)
++		return;
++
++	/* if we are the last child of our class, delete the directory */
++	down(&dev->class->sem);
++	list_for_each_entry(d, &dev->class->devices, node) {
++		if (d == dev)
++			continue;
++		if (d->kobj.parent == dev->kobj.parent) {
++			other = 1;
++			break;
++		}
 +	}
-+	return NULL;
++	if (!other)
++		kobject_del(dev->kobj.parent);
++	kobject_put(dev->kobj.parent);
++	up(&dev->class->sem);
++}
+ #endif
+ 
+ static int setup_parent(struct device *dev, struct device *parent)
+@@ -637,65 +663,74 @@ static int device_add_class_symlinks(struct device *dev)
+ 
+ 	if (!dev->class)
+ 		return 0;
++
+ 	error = sysfs_create_link(&dev->kobj, &dev->class->subsys.kobj,
+ 				  "subsystem");
+ 	if (error)
+ 		goto out;
+-	/*
+-	 * If this is not a "fake" compatible device, then create the
+-	 * symlink from the class to the device.
+-	 */
++
++#ifdef CONFIG_SYSFS_DEPRECATED
++	/* stacked class devices need a symlink in the class directory */
+ 	if (dev->kobj.parent != &dev->class->subsys.kobj) {
+ 		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
+ 					  dev->bus_id);
+ 		if (error)
+ 			goto out_subsys;
+ 	}
++
+ 	if (dev->parent) {
+-#ifdef CONFIG_SYSFS_DEPRECATED
+-		{
+-			struct device *parent = dev->parent;
+-			char *class_name;
+-
+-			/*
+-			 * In old sysfs stacked class devices had 'device'
+-			 * link pointing to real device instead of parent
+-			 */
+-			while (parent->class && !parent->bus && parent->parent)
+-				parent = parent->parent;
+-
+-			error = sysfs_create_link(&dev->kobj,
+-						  &parent->kobj,
+-						  "device");
+-			if (error)
+-				goto out_busid;
++		struct device *parent = dev->parent;
++		char *class_name;
+ 
+-			class_name = make_class_name(dev->class->name,
+-							&dev->kobj);
+-			if (class_name)
+-				error = sysfs_create_link(&dev->parent->kobj,
+-							&dev->kobj, class_name);
+-			kfree(class_name);
+-			if (error)
+-				goto out_device;
+-		}
+-#else
+-		error = sysfs_create_link(&dev->kobj, &dev->parent->kobj,
++		/*
++		 * stacked class devices have the 'device' link
++		 * pointing to the bus device instead of the parent
++		 */
++		while (parent->class && !parent->bus && parent->parent)
++			parent = parent->parent;
++
++		error = sysfs_create_link(&dev->kobj,
++					  &parent->kobj,
+ 					  "device");
+ 		if (error)
+ 			goto out_busid;
+-#endif
++
++		class_name = make_class_name(dev->class->name,
++						&dev->kobj);
++		if (class_name)
++			error = sysfs_create_link(&dev->parent->kobj,
++						&dev->kobj, class_name);
++		kfree(class_name);
++		if (error)
++			goto out_device;
+ 	}
+ 	return 0;
+ 
+-#ifdef CONFIG_SYSFS_DEPRECATED
+ out_device:
+ 	if (dev->parent)
+ 		sysfs_remove_link(&dev->kobj, "device");
+-#endif
+ out_busid:
+ 	if (dev->kobj.parent != &dev->class->subsys.kobj)
+ 		sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
++#else
++	/* link in the class directory pointing to the device */
++	error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
++				  dev->bus_id);
++	if (error)
++		goto out_subsys;
++
++	if (dev->parent) {
++		error = sysfs_create_link(&dev->kobj, &dev->parent->kobj,
++					  "device");
++		if (error)
++			goto out_busid;
++	}
++	return 0;
++
++out_busid:
++	sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
++#endif
++
+ out_subsys:
+ 	sysfs_remove_link(&dev->kobj, "subsystem");
+ out:
+@@ -706,8 +741,9 @@ static void device_remove_class_symlinks(struct device *dev)
+ {
+ 	if (!dev->class)
+ 		return;
+-	if (dev->parent) {
++
+ #ifdef CONFIG_SYSFS_DEPRECATED
++	if (dev->parent) {
+ 		char *class_name;
+ 
+ 		class_name = make_class_name(dev->class->name, &dev->kobj);
+@@ -715,11 +751,18 @@ static void device_remove_class_symlinks(struct device *dev)
+ 			sysfs_remove_link(&dev->parent->kobj, class_name);
+ 			kfree(class_name);
+ 		}
+-#endif
+ 		sysfs_remove_link(&dev->kobj, "device");
+ 	}
++
+ 	if (dev->kobj.parent != &dev->class->subsys.kobj)
+ 		sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
++#else
++	if (dev->parent)
++		sysfs_remove_link(&dev->kobj, "device");
++
++	sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
++#endif
++
+ 	sysfs_remove_link(&dev->kobj, "subsystem");
+ }
+ 
+@@ -830,26 +873,6 @@ int device_add(struct device *dev)
+  SymlinkError:
+ 	if (MAJOR(dev->devt))
+ 		device_remove_file(dev, &devt_attr);
+-
+-	if (dev->class) {
+-		sysfs_remove_link(&dev->kobj, "subsystem");
+-		/* If this is not a "fake" compatible device, remove the
+-		 * symlink from the class to the device. */
+-		if (dev->kobj.parent != &dev->class->subsys.kobj)
+-			sysfs_remove_link(&dev->class->subsys.kobj,
+-					  dev->bus_id);
+-		if (parent) {
+-#ifdef CONFIG_SYSFS_DEPRECATED
+-			char *class_name = make_class_name(dev->class->name,
+-							   &dev->kobj);
+-			if (class_name)
+-				sysfs_remove_link(&dev->parent->kobj,
+-						  class_name);
+-			kfree(class_name);
+-#endif
+-			sysfs_remove_link(&dev->kobj, "device");
+-		}
+-	}
+  ueventattrError:
+ 	device_remove_file(dev, &uevent_attr);
+  attrError:
+@@ -932,23 +955,7 @@ void device_del(struct device * dev)
+ 	if (MAJOR(dev->devt))
+ 		device_remove_file(dev, &devt_attr);
+ 	if (dev->class) {
+-		sysfs_remove_link(&dev->kobj, "subsystem");
+-		/* If this is not a "fake" compatible device, remove the
+-		 * symlink from the class to the device. */
+-		if (dev->kobj.parent != &dev->class->subsys.kobj)
+-			sysfs_remove_link(&dev->class->subsys.kobj,
+-					  dev->bus_id);
+-		if (parent) {
+-#ifdef CONFIG_SYSFS_DEPRECATED
+-			char *class_name = make_class_name(dev->class->name,
+-							   &dev->kobj);
+-			if (class_name)
+-				sysfs_remove_link(&dev->parent->kobj,
+-						  class_name);
+-			kfree(class_name);
+-#endif
+-			sysfs_remove_link(&dev->kobj, "device");
+-		}
++		device_remove_class_symlinks(dev);
+ 
+ 		down(&dev->class->sem);
+ 		/* notify any interfaces that the device is now gone */
+@@ -958,31 +965,6 @@ void device_del(struct device * dev)
+ 		/* remove the device from the class list */
+ 		list_del_init(&dev->node);
+ 		up(&dev->class->sem);
+-
+-		/* If we live in a parent class-directory, unreference it */
+-		if (dev->kobj.parent->kset == &dev->class->class_dirs) {
+-			struct device *d;
+-			int other = 0;
+-
+-			/*
+-			 * if we are the last child of our class, delete
+-			 * our class-directory at this parent
+-			 */
+-			down(&dev->class->sem);
+-			list_for_each_entry(d, &dev->class->devices, node) {
+-				if (d == dev)
+-					continue;
+-				if (d->kobj.parent == dev->kobj.parent) {
+-					other = 1;
+-					break;
+-				}
+-			}
+-			if (!other)
+-				kobject_del(dev->kobj.parent);
+-
+-			kobject_put(dev->kobj.parent);
+-			up(&dev->class->sem);
+-		}
+ 	}
+ 	device_remove_file(dev, &uevent_attr);
+ 	device_remove_attrs(dev);
+@@ -1004,9 +986,9 @@ void device_del(struct device * dev)
+ 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 					     BUS_NOTIFY_DEL_DEVICE, dev);
+ 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
++	cleanup_device_parent(dev);
+ 	kobject_del(&dev->kobj);
+-	if (parent)
+-		put_device(parent);
++	put_device(parent);
  }
  
  /**
-@@ -384,7 +381,7 @@ int bus_for_each_drv(struct bus_type * bus, struct device_driver * start,
- 		return -EINVAL;
- 
- 	klist_iter_init_node(&bus->p->klist_drivers, &i,
--			     start ? &start->knode_bus : NULL);
-+			     start ? &start->p->knode_bus : NULL);
- 	while ((drv = next_driver(&i)) && !error)
- 		error = fn(drv, data);
- 	klist_iter_exit(&i);
-@@ -620,7 +617,7 @@ static ssize_t driver_uevent_store(struct device_driver *drv,
- 	enum kobject_action action;
- 
- 	if (kobject_action_type(buf, count, &action) == 0)
--		kobject_uevent(&drv->kobj, action);
-+		kobject_uevent(&drv->p->kobj, action);
- 	return count;
- }
- static DRIVER_ATTR(uevent, S_IWUSR, NULL, driver_uevent_store);
-@@ -632,19 +629,29 @@ static DRIVER_ATTR(uevent, S_IWUSR, NULL, driver_uevent_store);
-  */
- int bus_add_driver(struct device_driver *drv)
- {
--	struct bus_type * bus = bus_get(drv->bus);
-+	struct bus_type *bus;
-+	struct driver_private *priv;
- 	int error = 0;
- 
-+	bus = bus_get(drv->bus);
- 	if (!bus)
- 		return -EINVAL;
- 
- 	pr_debug("bus %s: add driver %s\n", bus->name, drv->name);
--	error = kobject_set_name(&drv->kobj, "%s", drv->name);
-+
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	error = kobject_set_name(&priv->kobj, "%s", drv->name);
- 	if (error)
- 		goto out_put_bus;
--	drv->kobj.kset = bus->p->drivers_kset;
--	drv->kobj.ktype = &driver_ktype;
--	error = kobject_register(&drv->kobj);
-+	priv->kobj.kset = bus->p->drivers_kset;
-+	priv->kobj.ktype = &driver_ktype;
-+	klist_init(&priv->klist_devices, NULL, NULL);
-+	priv->driver = drv;
-+	drv->p = priv;
-+	error = kobject_register(&priv->kobj);
- 	if (error)
- 		goto out_put_bus;
- 
-@@ -653,7 +660,7 @@ int bus_add_driver(struct device_driver *drv)
- 		if (error)
- 			goto out_unregister;
- 	}
--	klist_add_tail(&drv->knode_bus, &bus->p->klist_drivers);
-+	klist_add_tail(&priv->knode_bus, &bus->p->klist_drivers);
- 	module_add_driver(drv->owner, drv);
- 
- 	error = driver_create_file(drv, &driver_attr_uevent);
-@@ -676,7 +683,7 @@ int bus_add_driver(struct device_driver *drv)
- 
- 	return error;
- out_unregister:
--	kobject_unregister(&drv->kobj);
-+	kobject_unregister(&priv->kobj);
- out_put_bus:
- 	bus_put(bus);
- 	return error;
-@@ -699,11 +706,11 @@ void bus_remove_driver(struct device_driver * drv)
- 	remove_bind_files(drv);
- 	driver_remove_attrs(drv->bus, drv);
- 	driver_remove_file(drv, &driver_attr_uevent);
--	klist_remove(&drv->knode_bus);
-+	klist_remove(&drv->p->knode_bus);
- 	pr_debug("bus %s: remove driver %s\n", drv->bus->name, drv->name);
- 	driver_detach(drv);
- 	module_remove_driver(drv);
--	kobject_unregister(&drv->kobj);
-+	kobject_unregister(&drv->p->kobj);
- 	bus_put(drv->bus);
- }
- 
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 7bf0e67..87a348c 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -11,6 +11,8 @@
-  *
-  *	Copyright (c) 2002-5 Patrick Mochel
-  *	Copyright (c) 2002-3 Open Source Development Labs
-+ *	Copyright (c) 2007 Greg Kroah-Hartman <gregkh@suse.de>
-+ *	Copyright (c) 2007 Novell Inc.
-  *
-  *	This file is released under the GPLv2
-  */
-@@ -23,8 +25,6 @@
- #include "base.h"
- #include "power/power.h"
- 
--#define to_drv(node) container_of(node, struct device_driver, kobj.entry)
--
- 
- static void driver_bound(struct device *dev)
- {
-@@ -41,20 +41,20 @@ static void driver_bound(struct device *dev)
- 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
- 					     BUS_NOTIFY_BOUND_DRIVER, dev);
- 
--	klist_add_tail(&dev->knode_driver, &dev->driver->klist_devices);
-+	klist_add_tail(&dev->knode_driver, &dev->driver->p->klist_devices);
- }
- 
- static int driver_sysfs_add(struct device *dev)
- {
- 	int ret;
- 
--	ret = sysfs_create_link(&dev->driver->kobj, &dev->kobj,
-+	ret = sysfs_create_link(&dev->driver->p->kobj, &dev->kobj,
- 			  kobject_name(&dev->kobj));
- 	if (ret == 0) {
--		ret = sysfs_create_link(&dev->kobj, &dev->driver->kobj,
-+		ret = sysfs_create_link(&dev->kobj, &dev->driver->p->kobj,
- 					"driver");
- 		if (ret)
--			sysfs_remove_link(&dev->driver->kobj,
-+			sysfs_remove_link(&dev->driver->p->kobj,
- 					kobject_name(&dev->kobj));
- 	}
- 	return ret;
-@@ -65,7 +65,7 @@ static void driver_sysfs_remove(struct device *dev)
- 	struct device_driver *drv = dev->driver;
- 
- 	if (drv) {
--		sysfs_remove_link(&drv->kobj, kobject_name(&dev->kobj));
-+		sysfs_remove_link(&drv->p->kobj, kobject_name(&dev->kobj));
- 		sysfs_remove_link(&dev->kobj, "driver");
- 	}
- }
-@@ -339,15 +339,15 @@ void driver_detach(struct device_driver * drv)
- 	struct device * dev;
- 
- 	for (;;) {
--		spin_lock(&drv->klist_devices.k_lock);
--		if (list_empty(&drv->klist_devices.k_list)) {
--			spin_unlock(&drv->klist_devices.k_lock);
-+		spin_lock(&drv->p->klist_devices.k_lock);
-+		if (list_empty(&drv->p->klist_devices.k_list)) {
-+			spin_unlock(&drv->p->klist_devices.k_lock);
- 			break;
- 		}
--		dev = list_entry(drv->klist_devices.k_list.prev,
-+		dev = list_entry(drv->p->klist_devices.k_list.prev,
- 				struct device, knode_driver.n_node);
- 		get_device(dev);
--		spin_unlock(&drv->klist_devices.k_lock);
-+		spin_unlock(&drv->p->klist_devices.k_lock);
- 
- 		if (dev->parent)	/* Needed for USB */
- 			down(&dev->parent->sem);
-diff --git a/drivers/base/driver.c b/drivers/base/driver.c
-index 633ae1d..5aacff2 100644
---- a/drivers/base/driver.c
-+++ b/drivers/base/driver.c
-@@ -3,6 +3,8 @@
-  *
-  * Copyright (c) 2002-3 Patrick Mochel
-  * Copyright (c) 2002-3 Open Source Development Labs
-+ * Copyright (c) 2007 Greg Kroah-Hartman <gregkh@suse.de>
-+ * Copyright (c) 2007 Novell Inc.
-  *
-  * This file is released under the GPLv2
-  *
-@@ -15,7 +17,6 @@
- #include "base.h"
- 
- #define to_dev(node) container_of(node, struct device, driver_list)
--#define to_drv(obj) container_of(obj, struct device_driver, kobj)
- 
- 
- static struct device * next_device(struct klist_iter * i)
-@@ -44,7 +45,7 @@ int driver_for_each_device(struct device_driver * drv, struct device * start,
- 	if (!drv)
- 		return -EINVAL;
- 
--	klist_iter_init_node(&drv->klist_devices, &i,
-+	klist_iter_init_node(&drv->p->klist_devices, &i,
- 			     start ? &start->knode_driver : NULL);
- 	while ((dev = next_device(&i)) && !error)
- 		error = fn(dev, data);
-@@ -80,7 +81,7 @@ struct device * driver_find_device(struct device_driver *drv,
- 	if (!drv)
- 		return NULL;
- 
--	klist_iter_init_node(&drv->klist_devices, &i,
-+	klist_iter_init_node(&drv->p->klist_devices, &i,
- 			     (start ? &start->knode_driver : NULL));
- 	while ((dev = next_device(&i)))
- 		if (match(dev, data) && get_device(dev))
-@@ -100,7 +101,7 @@ int driver_create_file(struct device_driver * drv, struct driver_attribute * att
- {
- 	int error;
- 	if (get_driver(drv)) {
--		error = sysfs_create_file(&drv->kobj, &attr->attr);
-+		error = sysfs_create_file(&drv->p->kobj, &attr->attr);
- 		put_driver(drv);
- 	} else
- 		error = -EINVAL;
-@@ -117,7 +118,7 @@ int driver_create_file(struct device_driver * drv, struct driver_attribute * att
- void driver_remove_file(struct device_driver * drv, struct driver_attribute * attr)
- {
- 	if (get_driver(drv)) {
--		sysfs_remove_file(&drv->kobj, &attr->attr);
-+		sysfs_remove_file(&drv->p->kobj, &attr->attr);
- 		put_driver(drv);
- 	}
- }
-@@ -143,7 +144,7 @@ int driver_add_kobj(struct device_driver *drv, struct kobject *kobj,
- 	if (!name)
- 		return -ENOMEM;
- 
--	return kobject_add_ng(kobj, &drv->kobj, "%s", name);
-+	return kobject_add_ng(kobj, &drv->p->kobj, "%s", name);
- }
- EXPORT_SYMBOL_GPL(driver_add_kobj);
- 
-@@ -153,7 +154,15 @@ EXPORT_SYMBOL_GPL(driver_add_kobj);
-  */
- struct device_driver * get_driver(struct device_driver * drv)
- {
--	return drv ? to_drv(kobject_get(&drv->kobj)) : NULL;
-+	if (drv) {
-+		struct driver_private *priv;
-+		struct kobject *kobj;
-+
-+		kobj = kobject_get(&drv->p->kobj);
-+		priv = to_driver(kobj);
-+		return priv->driver;
-+	}
-+	return NULL;
- }
- 
- 
-@@ -163,7 +172,7 @@ struct device_driver * get_driver(struct device_driver * drv)
-  */
- void put_driver(struct device_driver * drv)
- {
--	kobject_put(&drv->kobj);
-+	kobject_put(&drv->p->kobj);
- }
- 
- static int driver_add_groups(struct device_driver *drv,
-@@ -174,10 +183,10 @@ static int driver_add_groups(struct device_driver *drv,
- 
- 	if (groups) {
- 		for (i = 0; groups[i]; i++) {
--			error = sysfs_create_group(&drv->kobj, groups[i]);
-+			error = sysfs_create_group(&drv->p->kobj, groups[i]);
- 			if (error) {
- 				while (--i >= 0)
--					sysfs_remove_group(&drv->kobj,
-+					sysfs_remove_group(&drv->p->kobj,
- 							   groups[i]);
- 				break;
- 			}
-@@ -193,7 +202,7 @@ static void driver_remove_groups(struct device_driver *drv,
- 
- 	if (groups)
- 		for (i = 0; groups[i]; i++)
--			sysfs_remove_group(&drv->kobj, groups[i]);
-+			sysfs_remove_group(&drv->p->kobj, groups[i]);
- }
- 
- 
-@@ -214,7 +223,6 @@ int driver_register(struct device_driver * drv)
- 	    (drv->bus->shutdown && drv->shutdown)) {
- 		printk(KERN_WARNING "Driver '%s' needs updating - please use bus_type methods\n", drv->name);
- 	}
--	klist_init(&drv->klist_devices, NULL, NULL);
- 	ret = bus_add_driver(drv);
- 	if (ret)
- 		return ret;
-@@ -250,8 +258,12 @@ void driver_unregister(struct device_driver * drv)
- struct device_driver *driver_find(const char *name, struct bus_type *bus)
- {
- 	struct kobject *k = kset_find_obj(bus->p->drivers_kset, name);
--	if (k)
--		return to_drv(k);
-+	struct driver_private *priv;
-+
-+	if (k) {
-+		priv = to_driver(k);
-+		return priv->driver;
-+	}
- 	return NULL;
- }
- 
-diff --git a/drivers/base/module.c b/drivers/base/module.c
-index cad07be..103be9c 100644
---- a/drivers/base/module.c
-+++ b/drivers/base/module.c
-@@ -50,7 +50,7 @@ void module_add_driver(struct module *mod, struct device_driver *drv)
- 		if (mkobj) {
- 			mk = container_of(mkobj, struct module_kobject, kobj);
- 			/* remember our module structure */
--			drv->mkobj = mk;
-+			drv->p->mkobj = mk;
- 			/* kset_find_obj took a reference */
- 			kobject_put(mkobj);
- 		}
-@@ -60,11 +60,11 @@ void module_add_driver(struct module *mod, struct device_driver *drv)
- 		return;
- 
- 	/* Don't check return codes; these calls are idempotent */
--	no_warn = sysfs_create_link(&drv->kobj, &mk->kobj, "module");
-+	no_warn = sysfs_create_link(&drv->p->kobj, &mk->kobj, "module");
- 	driver_name = make_driver_name(drv);
- 	if (driver_name) {
- 		module_create_drivers_dir(mk);
--		no_warn = sysfs_create_link(mk->drivers_dir, &drv->kobj,
-+		no_warn = sysfs_create_link(mk->drivers_dir, &drv->p->kobj,
- 					    driver_name);
- 		kfree(driver_name);
- 	}
-@@ -78,12 +78,12 @@ void module_remove_driver(struct device_driver *drv)
- 	if (!drv)
- 		return;
- 
--	sysfs_remove_link(&drv->kobj, "module");
-+	sysfs_remove_link(&drv->p->kobj, "module");
- 
- 	if (drv->owner)
- 		mk = &drv->owner->mkobj;
--	else if (drv->mkobj)
--		mk = drv->mkobj;
-+	else if (drv->p->mkobj)
-+		mk = drv->p->mkobj;
- 	if (mk && mk->drivers_dir) {
- 		driver_name = make_driver_name(drv);
- 		if (driver_name) {
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index d56a05f..bdd59e8 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -499,7 +499,7 @@ int __init_or_module platform_driver_probe(struct platform_driver *drv,
- 	 */
- 	spin_lock(&platform_bus_type.p->klist_drivers.k_lock);
- 	drv->probe = NULL;
--	if (code == 0 && list_empty(&drv->driver.klist_devices.k_list))
-+	if (code == 0 && list_empty(&drv->driver.p->klist_devices.k_list))
- 		retval = -ENODEV;
- 	drv->driver.probe = platform_drv_probe_fail;
- 	spin_unlock(&platform_bus_type.p->klist_drivers.k_lock);
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 721ee31..92ba3a8 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -32,6 +32,7 @@
- 
- struct device;
- struct device_driver;
-+struct driver_private;
- struct class;
- struct class_device;
- struct bus_type;
-@@ -113,16 +114,11 @@ extern struct kset *bus_get_kset(struct bus_type *bus);
- extern struct klist *bus_get_device_klist(struct bus_type *bus);
- 
- struct device_driver {
--	const char		* name;
--	struct bus_type		* bus;
--
--	struct kobject		kobj;
--	struct klist		klist_devices;
--	struct klist_node	knode_bus;
-+	const char		*name;
-+	struct bus_type		*bus;
- 
--	struct module		* owner;
--	const char 		* mod_name;	/* used for built-in modules */
--	struct module_kobject	* mkobj;
-+	struct module		*owner;
-+	const char 		*mod_name;	/* used for built-in modules */
- 
- 	int	(*probe)	(struct device * dev);
- 	int	(*remove)	(struct device * dev);
-@@ -130,6 +126,8 @@ struct device_driver {
- 	int	(*suspend)	(struct device * dev, pm_message_t state);
- 	int	(*resume)	(struct device * dev);
- 	struct attribute_group **groups;
-+
-+	struct driver_private *p;
- };
- 
- 
 -- 
 1.5.3.8
 
