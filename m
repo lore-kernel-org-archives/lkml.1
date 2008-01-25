@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbYAYAux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756373AbYAYAvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756084AbYAYAux (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 19:50:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbYAYAtM
+	id S1756373AbYAYAvQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 19:51:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYAYAtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 19:49:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45211 "EHLO ogre.sisk.pl"
+	Thu, 24 Jan 2008 19:49:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45222 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752002AbYAYAtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 19:49:05 -0500
+	id S1752041AbYAYAtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 19:49:06 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mm 1/5] PM: Export device_pm_schedule_removal
-Date: Fri, 25 Jan 2008 01:30:25 +0100
+Subject: [PATCH -mm 4/5] Leds: Add possibility to remove leds classdevs during suspend/resume
+Date: Fri, 25 Jan 2008 01:36:29 +0100
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: Michael Buesch <mb@bu3sch.de>,
        pm list <linux-pm@lists.linux-foundation.org>,
@@ -20,7 +20,7 @@ Cc: Michael Buesch <mb@bu3sch.de>,
        LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
        bcm43xx-dev@lists.berlios.de,
        Alessandro Rubini <rubini@vision.unipv.it>,
-       Richard Purdie <rpurdie@rpsys.net>, Greg KH <greg@kroah.com>
+       Richard Purdie <rpurdie@rpsys.net>
 References: <200801250127.21966.rjw@sisk.pl>
 In-Reply-To: <200801250127.21966.rjw@sisk.pl>
 MIME-Version: 1.0
@@ -28,68 +28,81 @@ Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801250130.26591.rjw@sisk.pl>
+Message-Id: <200801250136.30292.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Move the declaration of device_pm_schedule_removal() to device.h
-and make it exported, as it will be used directly by some drivers
-for unregistering device objects during suspend/resume cycles in a
-safe way.
+Make it possible to unregister a led classdev object in a safe way
+during a suspend/resume cycle.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/main.c  |    1 +
- drivers/base/power/power.h |    1 -
- include/linux/device.h     |    6 ++++++
- 3 files changed, 7 insertions(+), 1 deletion(-)
+ drivers/leds/led-class.c |   13 +++++++++----
+ include/linux/leds.h     |   10 +++++++++-
+ 2 files changed, 18 insertions(+), 5 deletions(-)
 
-Index: linux-2.6.24-rc8-mm1/drivers/base/power/main.c
+Index: linux-2.6.24-rc8-mm1/drivers/leds/led-class.c
 ===================================================================
---- linux-2.6.24-rc8-mm1.orig/drivers/base/power/main.c
-+++ linux-2.6.24-rc8-mm1/drivers/base/power/main.c
-@@ -129,6 +129,7 @@ void device_pm_schedule_removal(struct d
- 	list_move_tail(&dev->power.entry, &dpm_destroy);
- 	mutex_unlock(&dpm_list_mtx);
- }
-+EXPORT_SYMBOL_GPL(device_pm_schedule_removal);
+--- linux-2.6.24-rc8-mm1.orig/drivers/leds/led-class.c
++++ linux-2.6.24-rc8-mm1/drivers/leds/led-class.c
+@@ -137,12 +137,14 @@ err_out:
+ EXPORT_SYMBOL_GPL(led_classdev_register);
  
  /**
-  *	pm_sleep_lock - mutual exclusion for registration and suspend
-Index: linux-2.6.24-rc8-mm1/include/linux/device.h
-===================================================================
---- linux-2.6.24-rc8-mm1.orig/include/linux/device.h
-+++ linux-2.6.24-rc8-mm1/include/linux/device.h
-@@ -532,11 +532,17 @@ extern struct device *device_create(stru
- extern void device_destroy(struct class *cls, dev_t devt);
- #ifdef CONFIG_PM_SLEEP
- extern void destroy_suspended_device(struct class *cls, dev_t devt);
-+extern void device_pm_schedule_removal(struct device *);
- #else /* !CONFIG_PM_SLEEP */
- static inline void destroy_suspended_device(struct class *cls, dev_t devt)
+- * led_classdev_unregister - unregisters a object of led_properties class.
++ * __led_classdev_unregister - unregisters a object of led_properties class.
+  * @led_cdev: the led device to unregister
++ * @suspended: indicates whether system-wide suspend or resume is in progress
+  *
+  * Unregisters a previously registered via led_classdev_register object.
+  */
+-void led_classdev_unregister(struct led_classdev *led_cdev)
++void __led_classdev_unregister(struct led_classdev *led_cdev,
++				      bool suspended)
  {
- 	device_destroy(cls, devt);
+ 	device_remove_file(led_cdev->dev, &dev_attr_brightness);
+ #ifdef CONFIG_LEDS_TRIGGERS
+@@ -153,13 +155,16 @@ void led_classdev_unregister(struct led_
+ 	up_write(&led_cdev->trigger_lock);
+ #endif
+ 
+-	device_unregister(led_cdev->dev);
++	if (suspended)
++		device_pm_schedule_removal(led_cdev->dev);
++	else
++		device_unregister(led_cdev->dev);
+ 
+ 	down_write(&leds_list_lock);
+ 	list_del(&led_cdev->node);
+ 	up_write(&leds_list_lock);
  }
-+
-+static inline void device_pm_schedule_removal(struct device *dev)
-+{
-+	device_unregister(dev);
-+}
- #endif /* !CONFIG_PM_SLEEP */
+-EXPORT_SYMBOL_GPL(led_classdev_unregister);
++EXPORT_SYMBOL_GPL(__led_classdev_unregister);
  
- /*
-Index: linux-2.6.24-rc8-mm1/drivers/base/power/power.h
+ static int __init leds_init(void)
+ {
+Index: linux-2.6.24-rc8-mm1/include/linux/leds.h
 ===================================================================
---- linux-2.6.24-rc8-mm1.orig/drivers/base/power/power.h
-+++ linux-2.6.24-rc8-mm1/drivers/base/power/power.h
-@@ -13,7 +13,6 @@ static inline struct device *to_device(s
+--- linux-2.6.24-rc8-mm1.orig/include/linux/leds.h
++++ linux-2.6.24-rc8-mm1/include/linux/leds.h
+@@ -59,7 +59,15 @@ struct led_classdev {
  
- extern void device_pm_add(struct device *);
- extern void device_pm_remove(struct device *);
--extern void device_pm_schedule_removal(struct device *);
- extern int pm_sleep_lock(void);
- extern void pm_sleep_unlock(void);
+ extern int led_classdev_register(struct device *parent,
+ 				 struct led_classdev *led_cdev);
+-extern void led_classdev_unregister(struct led_classdev *led_cdev);
++extern void __led_classdev_unregister(struct led_classdev *led_cdev, bool sus);
++static inline void led_classdev_unregister(struct led_classdev *lcd)
++{
++	__led_classdev_unregister(lcd, false);
++}
++static inline void led_classdev_unregister_suspended(struct led_classdev *lcd)
++{
++	__led_classdev_unregister(lcd, true);
++}
+ extern void led_classdev_suspend(struct led_classdev *led_cdev);
+ extern void led_classdev_resume(struct led_classdev *led_cdev);
  
+
