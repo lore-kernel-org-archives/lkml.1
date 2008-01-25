@@ -1,57 +1,267 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757767AbYAYUMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759403AbYAYUNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757767AbYAYUMu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 15:12:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYAYUMn
+	id S1759403AbYAYUNg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 15:13:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYAYUN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 15:12:43 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:39620 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753276AbYAYUMm (ORCPT
+	Fri, 25 Jan 2008 15:13:29 -0500
+Received: from ns.suse.de ([195.135.220.2]:52622 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753502AbYAYUN2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 15:12:42 -0500
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH 1/2] IB/ehca: Update sma_attr also in case of disruptive config change
-Date: Fri, 25 Jan 2008 21:12:39 +0100
-User-Agent: KMail/1.9.1
-Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-References: <200801252111.11915.fenkes@de.ibm.com>
-In-Reply-To: <200801252111.11915.fenkes@de.ibm.com>
+	Fri, 25 Jan 2008 15:13:28 -0500
+From: Frank Seidel <fseidel@suse.de>
+Organization: SuSE Linux Products GmbH
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 012/196 ver2] nozomi driver
+User-Agent: KMail/1.9.5
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+References: <20080125071127.GA4860@kroah.com> <200801251344.24109.fseidel@suse.de> <20080125185527.GB23475@suse.de>
+In-Reply-To: <20080125185527.GB23475@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801252112.39557.fenkes@de.ibm.com>
+Date: Fri, 25 Jan 2008 21:13:24 +0100
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200801252113.25108.fseidel@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+From: Frank Seidel <fseidel@suse.de>
+
+Minor cleanups and removal of in-file changelog:
+
+- Correction of misspellings and wrong encoded Name
+- changed 'unsigned' to 'unsigned int' for better readability
+- use of generic devicefile access macro
+- fixed/added explanatory comment to ntty_put_char
+
+Signed-off-by: Frank Seidel <fseidel@suse.de>
 ---
- drivers/infiniband/hw/ehca/ehca_irq.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/char/nozomi.c |  122 ++++++++++++++------------------------------------
+ 1 file changed, 36 insertions(+), 86 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
-index 863b34f..b5ca94c 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -403,6 +403,8 @@ static void parse_ec(struct ehca_shca *shca, u64 eqe)
- 			sport->port_state = IB_PORT_ACTIVE;
- 			dispatch_port_event(shca, port, IB_EVENT_PORT_ACTIVE,
- 					    "is active");
-+			ehca_query_sma_attr(shca, port,
-+					    &sport->saved_attr);
- 		} else
- 			notify_port_conf_change(shca, port);
- 		break;
--- 
-1.5.2
-
-
+--- a/drivers/char/nozomi.c
++++ b/drivers/char/nozomi.c
+@@ -2,7 +2,7 @@
+  * nozomi.c  -- HSDPA driver Broadband Wireless Data Card - Globe Trotter
+  *
+  * Written by: Ulf Jakobsson,
+- *             Jan �erfeldt,
++ *             Jan Åkerfeldt,
+  *             Stefan Thomasson,
+  *
+  * Maintained by: Paul Hardwick (p.hardwick@option.com)
+@@ -38,60 +38,6 @@
+  * --------------------------------------------------------------------------
+  */
+ 
+-/*
+- * CHANGELOG
+- * Version 2.1d
+- * 11-November-2007 Jiri Slaby, Frank Seidel
+- * - Big rework of multicard support by Jiri
+- * - Major cleanups (semaphore to mutex, endianess, no major reservation)
+- * - Optimizations
+- *
+- * Version 2.1c
+- * 30-October-2007 Frank Seidel
+- * - Completed multicard support
+- * - Minor cleanups
+- *
+- * Version 2.1b
+- * 07-August-2007 Frank Seidel
+- * - Minor cleanups
+- * - theoretical multicard support
+- *
+- * Version 2.1
+- * 03-July-2006 Paul Hardwick
+- *
+- * - Stability Improvements. Incorporated spinlock wraps patch.
+- * - Updated for newer 2.6.14+ kernels (tty_buffer_request_room)
+- * - using __devexit macro for tty
+- *
+- *
+- * Version 2.0
+- * 08-feb-2006 15:34:10:Ulf
+- *
+- * -Fixed issue when not waking up line disipine layer, could probably result
+- *  in better uplink performance for 2.4.
+- *
+- * -Fixed issue with big endian during initalization, now proper toggle flags
+- *  are handled between preloader and maincode.
+- *
+- * -Fixed flow control issue.
+- *
+- * -Added support for setting DTR.
+- *
+- * -For 2.4 kernels, removing temporary buffer that's not needed.
+- *
+- * -Reading CTS only for modem port (only port that supports it).
+- *
+- * -Return 0 in write_room instead of netative value, it's not handled in
+- *  upper layer.
+- *
+- * --------------------------------------------------------------------------
+- * Version 1.0
+- *
+- * First version of driver, only tested with card of type F32_2.
+- * Works fine with 2.4 and 2.6 kernels.
+- * Driver also support big endian architecture.
+- */
+-
+ /* Enable this to have a lot of debug printouts */
+ #define DEBUG
+ 
+@@ -143,8 +89,9 @@ do {								\
+ /* Do we need this settable at runtime? */
+ static int debug = NOZOMI_DEBUG_LEVEL;
+ 
+-#define D(lvl, args...)  do {if (lvl & debug) NFO(KERN_DEBUG, ##args); } \
+-				while (0)
++#define D(lvl, args...)  do \
++			{if (lvl & debug) NFO(KERN_DEBUG, ##args); } \
++			while (0)
+ #define D_(lvl, args...) D(lvl, ##args)
+ 
+ /* These printouts are always printed */
+@@ -273,13 +220,13 @@ enum port_type {
+ /* Big endian */
+ 
+ struct toggles {
+-	unsigned enabled:5;	/*
++	unsigned int enabled:5;	/*
+ 				 * Toggle fields are valid if enabled is 0,
+ 				 * else A-channels must always be used.
+ 				 */
+-	unsigned diag_dl:1;
+-	unsigned mdm_dl:1;
+-	unsigned mdm_ul:1;
++	unsigned int diag_dl:1;
++	unsigned int mdm_dl:1;
++	unsigned int mdm_ul:1;
+ } __attribute__ ((packed));
+ 
+ /* Configuration table to read at startup of card */
+@@ -320,19 +267,19 @@ struct config_table {
+ /* This stores all control downlink flags */
+ struct ctrl_dl {
+ 	u8 port;
+-	unsigned reserved:4;
+-	unsigned CTS:1;
+-	unsigned RI:1;
+-	unsigned DCD:1;
+-	unsigned DSR:1;
++	unsigned int reserved:4;
++	unsigned int CTS:1;
++	unsigned int RI:1;
++	unsigned int DCD:1;
++	unsigned int DSR:1;
+ } __attribute__ ((packed));
+ 
+ /* This stores all control uplink flags */
+ struct ctrl_ul {
+ 	u8 port;
+-	unsigned reserved:6;
+-	unsigned RTS:1;
+-	unsigned DTR:1;
++	unsigned int reserved:6;
++	unsigned int RTS:1;
++	unsigned int DTR:1;
+ } __attribute__ ((packed));
+ 
+ #else
+@@ -340,10 +287,10 @@ struct ctrl_ul {
+ 
+ /* This represents the toggle information */
+ struct toggles {
+-	unsigned mdm_ul:1;
+-	unsigned mdm_dl:1;
+-	unsigned diag_dl:1;
+-	unsigned enabled:5;	/*
++	unsigned int mdm_ul:1;
++	unsigned int mdm_dl:1;
++	unsigned int diag_dl:1;
++	unsigned int enabled:5;	/*
+ 				 * Toggle fields are valid if enabled is 0,
+ 				 * else A-channels must always be used.
+ 				 */
+@@ -379,19 +326,19 @@ struct config_table {
+ 
+ /* This stores all control downlink flags */
+ struct ctrl_dl {
+-	unsigned DSR:1;
+-	unsigned DCD:1;
+-	unsigned RI:1;
+-	unsigned CTS:1;
+-	unsigned reserverd:4;
++	unsigned int DSR:1;
++	unsigned int DCD:1;
++	unsigned int RI:1;
++	unsigned int CTS:1;
++	unsigned int reserverd:4;
+ 	u8 port;
+ } __attribute__ ((packed));
+ 
+ /* This stores all control uplink flags */
+ struct ctrl_ul {
+-	unsigned DTR:1;
+-	unsigned RTS:1;
+-	unsigned reserved:6;
++	unsigned int DTR:1;
++	unsigned int RTS:1;
++	unsigned int reserved:6;
+ 	u8 port;
+ } __attribute__ ((packed));
+ #endif
+@@ -694,7 +641,7 @@ static void dump_table(const struct nozo
+ 	   dc->config_table.ul_ctrl_len);
+ }
+ #else
+-static __inline__ void dump_table(const struct nozomi *dc) { }
++static inline void dump_table(const struct nozomi *dc) { }
+ #endif
+ 
+ /*
+@@ -1102,7 +1049,7 @@ static int send_flow_control(struct nozo
+ }
+ 
+ /*
+- * Handle donlink data, ports that are handled are modem and diagnostics
++ * Handle downlink data, ports that are handled are modem and diagnostics
+  * Return 1 - ok
+  * Return 0 - toggle fields are out of sync
+  */
+@@ -1363,7 +1310,7 @@ static ssize_t card_type_show(struct dev
+ 
+ 	return sprintf(buf, "%d\n", dc->card_type);
+ }
+-static DEVICE_ATTR(card_type, 0444, card_type_show, NULL);
++static DEVICE_ATTR(card_type, S_IRUGO, card_type_show, NULL);
+ 
+ static ssize_t open_ttys_show(struct device *dev, struct device_attribute *attr,
+ 			  char *buf)
+@@ -1372,7 +1319,7 @@ static ssize_t open_ttys_show(struct dev
+ 
+ 	return sprintf(buf, "%u\n", dc->open_ttys);
+ }
+-static DEVICE_ATTR(open_ttys, 0444, open_ttys_show, NULL);
++static DEVICE_ATTR(open_ttys, S_IRUGO, open_ttys_show, NULL);
+ 
+ static void make_sysfs_files(struct nozomi *dc)
+ {
+@@ -1882,7 +1829,10 @@ static void ntty_throttle(struct tty_str
+ /* just to discard single character writes */
+ static void ntty_put_char(struct tty_struct *tty, unsigned char c)
+ {
+-	/* FIXME !!! */
++	/*
++	 * card does not react correct when we write single chars
++	 * to the card, so we discard them
++	 */
+ 	DBG2("PUT CHAR Function: %c", c);
+ }
+ 
