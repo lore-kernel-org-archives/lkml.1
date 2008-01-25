@@ -1,97 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbYAYTgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbYAYTjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758787AbYAYTgJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 14:36:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbYAYTf7
+	id S1757366AbYAYTjn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 14:39:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYAYTjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 14:35:59 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42346 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752699AbYAYTf6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 14:35:58 -0500
-Date: Fri, 25 Jan 2008 13:35:55 -0600
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Andrea Arcangeli <andrea@qumranet.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 1/4] mmu_notifier: Core code
-Message-ID: <20080125193554.GP26420@sgi.com>
-References: <20080125055606.102986685@sgi.com> <20080125055801.212744875@sgi.com> <20080125183934.GO26420@sgi.com> <Pine.LNX.4.64.0801251041040.672@schroedinger.engr.sgi.com> <20080125185646.GQ3058@sgi.com> <Pine.LNX.4.64.0801251058170.3198@schroedinger.engr.sgi.com>
+	Fri, 25 Jan 2008 14:39:36 -0500
+Received: from gw.goop.org ([64.81.55.164]:41165 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752549AbYAYTjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 14:39:35 -0500
+Message-ID: <479A3AF5.2040701@goop.org>
+Date: Fri, 25 Jan 2008 11:39:33 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801251058170.3198@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: trim ram need to check if mtrr is there v3
+References: <47993F1A.5070408@goop.org> <200801241947.55223.yinghai.lu@sun.com>	 <4799930B.40006@goop.org> <200801250042.53074.yinghai.lu@sun.com>	 <20080125110935.GA20026@elte.hu> <479A30A3.7050305@goop.org>	 <20080125185923.GA2518@elte.hu> <479A3222.30008@goop.org>	 <20080125190418.GA7817@elte.hu> <479A3823.7000009@goop.org> <86802c440801251132s463f5aceif33dbe46b6ff77a2@mail.gmail.com>
+In-Reply-To: <86802c440801251132s463f5aceif33dbe46b6ff77a2@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 11:03:07AM -0800, Christoph Lameter wrote:
-> > > > Shouldn't this really be protected by the down_write(mmap_sem)?  Maybe:
-> > > 
-> > > Ok. We could switch this to mmap_sem protection for the mm_struct but the 
-> > > rmap notifier is not associated with an mm_struct. So we would need to 
-> > > keep it there. Since we already have a spinlock: Just use it for both to 
-> > > avoid further complications.
-> > 
-> > But now you are putting a global lock in where it is inappropriate.
-> 
-> The lock is only used during register and unregister. Very low level 
-> usage.
+Yinghai Lu wrote:
+> On Jan 25, 2008 11:27 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>   
+>> Ingo Molnar wrote:
+>>     
+>>> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>>>
+>>>
+>>>       
+>>>> I was referring to:
+>>>>
+>>>> commit 6a4544a9c8b54b82893044cb53695502cc386f00
+>>>> Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
+>>>> Date:   Fri Jan 25 00:15:29 2008 +0100
+>>>>
+>>>>    x86_32: trim memory by updating e820 v3
+>>>>
+>>>> but you've answered the question...
+>>>>
+>>>>         
+>>> yeah, i guess what i've pushed out just now is v3++. Does it work for
+>>> you?
+>>>
+>>>       
+>> Yes, it does.  And for the record:
+>>
+>> [root@qemu ~]# cat /proc/mtrr
+>> [root@qemu ~]#
+>>     
+>
+> so the boot msg say:
+> WARNING: strange, CPU MTRRs all blank?
+>   
 
-Seems to me that is the same argument used for lock_kernel.  I am saying
-we have a perfectly reasonable way to seperate the protections down to
-their smallest.  For the things hanging off the mm, mmap_sem, for the
-other list, a list specific lock.
+Yes.
 
-Keep in mind that on a 2048p SSI MPI job starting up, we have 2048 ranks
-doing this at the same time 6 times withing their address range.  That
-seems like a lock which could get hot fairly quickly.  It may be for a
-short period during startup and shutdown, but it is there.
+WARNING: strange, CPU MTRRs all blank?
+------------[ cut here ]------------
+WARNING: at /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/cpu/mtrr/main.c:710 mtrr_trim_uncached_memory+0xf8/0x17b()
+Modules linked in:
+Pid: 0, comm: swapper Not tainted 2.6.24 #1938
+ [<c012804c>] warn_on_slowpath+0x41/0x51
+ [<c01285d4>] ? __call_console_drivers+0x4e/0x5a
+ [<c03c3e85>] ? _spin_unlock_irqrestore+0xf/0x2f
+ [<c03c3e91>] ? _spin_unlock_irqrestore+0x1b/0x2f
+ [<c012880c>] ? release_console_sem+0x1a0/0x1a8
+ [<c0128c1f>] ? vprintk+0x294/0x2ee
+ [<c0128c2b>] ? vprintk+0x2a0/0x2ee
+ [<c04e811b>] ? __alloc_bootmem_core+0x100/0x27a
+ [<c0128c8e>] ? printk+0x15/0x17
+ [<c0128c8e>] ? printk+0x15/0x17
+ [<c04de51e>] mtrr_trim_uncached_memory+0xf8/0x17b
+ [<c04de7ae>] ? mtrr_bp_init+0x20d/0x215
+ [<c04dc79b>] setup_arch+0x283/0x3c2
+ [<c0128c8e>] ? printk+0x15/0x17
+ [<c04d6689>] start_kernel+0x60/0x311
+ =======================
 
-
-> 
-> > > > XPMEM, would also benefit from a call early.  We could make all the
-> > > > segments as being torn down and start the recalls.  We already have
-> > > > this code in and working (have since it was first written 6 years ago).
-> > > > In this case, all segments are torn down with a single message to each
-> > > > of the importing partitions.  In contrast, the teardown code which would
-> > > > happen now would be one set of messages for each vma.
-> > > 
-> > > So we need an additional global teardown call? Then we'd need to switch 
-> > > off the vma based invalidate_range()?
-> > 
-> > No, EXACTLY what I originally was asking for, either move this call site
-> > up, introduce an additional mmu_notifier op, or place this one in two
-> > locations with a flag indicating which call is being made.
-> 
-> Add a new invalidate_all() call? Then on exit we do
-> 
-> 1. invalidate_all()
-
-That will be fine as long as we can unregister the ops notifier and free
-the structure.  Otherwise, we end up being called needlessly.
-
-> 
-> 2. invalidate_range() for each vma
-> 
-> 3. release()
-> 
-> We cannot simply move the call up because there will be future range 
-> callbacks on vma invalidation.
-
-I am not sure what this means.  Right now, if you were to notify XPMEM
-the process is exiting, we would take care of all the recalling of pages
-exported by this process, clearing those pages cache lines from cache,
-and raising memory protections.  I would assume that moving the callout
-earlier would expect the same of every driver.
+	J
 
 
-Thanks,
-Robin
