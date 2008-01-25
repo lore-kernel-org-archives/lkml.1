@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbYAYKOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbYAYKPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbYAYKOo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 05:14:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYAYKOe
+	id S1758555AbYAYKPi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 05:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYAYKPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 05:14:34 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55822 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751518AbYAYKOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 05:14:33 -0500
-Date: Fri, 25 Jan 2008 11:14:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] x86: Remove nx_enabled from fault.c
-Message-ID: <20080125101418.GP23708@elte.hu>
-References: <1201236068.12822.7.camel@brick>
+	Fri, 25 Jan 2008 05:15:30 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:34396 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751726AbYAYKP3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 05:15:29 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm 5/5] b43: Avoid unregistering device objects during suspend
+Date: Fri, 25 Jan 2008 11:13:30 +0100
+User-Agent: KMail/1.9.6
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, bcm43xx-dev@lists.berlios.de,
+       Alessandro Rubini <rubini@vision.unipv.it>,
+       Richard Purdie <rpurdie@rpsys.net>
+References: <200801250127.21966.rjw@sisk.pl> <200801250137.34275.rjw@sisk.pl> <20080125074746.GC4134@ucw.cz>
+In-Reply-To: <20080125074746.GC4134@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1201236068.12822.7.camel@brick>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200801251113.31325.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 25 January 2008 08:47:46 Pavel Machek wrote:
+> On Fri 2008-01-25 01:37:33, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Modify the b43 driver to avoid deadlocking suspend and resume,
+> > which happens as a result of attempting to unregister device objects
+> > locked by the PM core during suspend/resume cycles.  Also, make it
+> > use a suspend-safe method of unregistering device object in the
+> > resume error path.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > Acked-by: Michael Buesch <mb@bu3sch.de>
+> 
+> Maybe we should have global suspend_in_progress (or maybe system_state
+> == suspending?) and automatically switch to schedule_removal() while
+> it is set?
+> 
 
-* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+That would be great, from my perspective :)
 
-> On !PAE 32-bit, _PAGE_NX will be 0, making is_prefetch always return 
-> early.  The test is sufficient on PAE as __supported_pte_mask is 
-> updated in the same places as nx_enabled in init_32.c which also takes 
-> disable_nx into account.
-
-> @@ -92,18 +92,13 @@ static int is_prefetch(struct pt_regs *regs, unsigned long addr,
->  	unsigned char *max_instr;
->  
->  #ifdef CONFIG_X86_32
-> -# ifdef CONFIG_X86_PAE
-> -	/* If it was a exec fault on NX page, ignore */
-> -	if (nx_enabled && (error_code & PF_INSTR))
-> +	if (!(__supported_pte_mask & _PAGE_NX))
->  		return 0;
-> -# else
-> -	return 0;
-> -# endif
-> -#else /* CONFIG_X86_64 */
-> +#endif
-> +
-
-thanks, applied this portion of the patch.
-
-> @@ -468,7 +463,7 @@ static int vmalloc_fault(unsigned long address)
->  	pmd_t *pmd, *pmd_ref;
->  	pte_t *pte, *pte_ref;
->  
-> -	if (address >= VMALLOC_START && address < VMALLOC_END)
-> +	if (!(address >= VMALLOC_START && address < VMALLOC_END))
->  		return -1;
-
-hm, what's this?
-
-	Ingo
+-- 
+Greetings Michael.
