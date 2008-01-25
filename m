@@ -1,98 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbYAYA1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbYAYAbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754777AbYAYA1W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 19:27:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYAYA1L
+	id S1753063AbYAYAbe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 19:31:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYAYAbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 19:27:11 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:53458 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751312AbYAYA1J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 19:27:09 -0500
-Date: Thu, 24 Jan 2008 19:24:48 -0500
-Message-Id: <200801250024.m0P0OmXX011168@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Steve French <sfrench@us.ibm.com>,
-       Lachlan McIlroy <lachlan@sgi.com>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       David Howells <dhowells@redhat.com>, Ian Kent <raven@themaw.net>,
-       "Sergey S. Kostyliov" <rathamahata@php4.ru>,
-       Karsten Keil <kkeil@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Jeff Dike <jdike@addtoit.com>,
-       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
-       William Irwin <wli@holomorphy.com>,
-       Dave Kleikamp <shaggy@austin.ibm.com>,
-       Petr Vandrovec <vandrove@vc.cvut.cz>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Jeff Mahoney <jeffm@suse.com>, Paul Mackerras <paulus@samba.org>,
-       Hugh Dickins <hugh@veritas.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [patch 01/26] mount options: add documentation 
-In-reply-to: Your message of "Thu, 24 Jan 2008 20:33:42 +0100."
-             <20080124193416.379218079@szeredi.hu> 
-X-MailKey: Erez_Zadok
+	Thu, 24 Jan 2008 19:31:25 -0500
+Received: from gw.goop.org ([64.81.55.164]:52520 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751605AbYAYAbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 19:31:24 -0500
+Message-ID: <47992DD9.8060604@goop.org>
+Date: Thu, 24 Jan 2008 16:31:21 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       =?UTF-8?B?TWlrYSBQZW50dGlsw6Q=?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+ format.
+References: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>	 <47939363.8040603@kolumbus.fi>	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>	 <479510CE.7010706@zytor.com>	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>	 <479551FD.5040801@zytor.com>	 <1201023401.5643.52.camel@localhost.localdomain>	 <479634A9.1090908@zytor.com>	 <1201031325.15491.66.camel@cthulhu.hellion.org.uk>	 <47964B7B.9000905@zytor.com>  <20080122203611.GA12892@elte.hu>	 <1201121530.30671.15.camel@cthulhu.hellion.org.uk>	 <4797E487.8010108@goop.org> <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <47990BDC.4070008@zytor.com> <479912B0.2080506@goop.org> <479913BA.8000506@zytor.com> <47991809.9060903@goop.org> <47991A6C.8060007@zytor.com> <479921F5.9020902@goop.org> <479922D0.3010708@zytor.com> <4799248F.9080404@goop.org> <47992710.2060108@zytor.com> <47992948.60308@goop.org> <47992A3B.7000607@zytor.com>
+In-Reply-To: <47992A3B.7000607@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080124193416.379218079@szeredi.hu>, Miklos Szeredi writes:
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> This series addresses the problem of showing mount options in
-> /proc/mounts.
-> 
-> Several filesystems which use mount options, have not implemented a
-> .show_options superblock operation.  Several others have implemented
-> this callback, but have not kept it fully up to date with the parsed
-> options.
-[...]
+H. Peter Anvin wrote:
+> No, if Xen wasn't an issue there wouldn't be anything to do for the 
+> PAE case at all (since the PGD is trivial.)
+>
+> Copying PMDs is more or less an analogous case of the !PAE case, once 
+> the allocation is already done.  The allocation should be trivial 
+> though, since this would be a one-time thing.
 
-> The following filesystems still need fixing: CIFS, NFS, XFS, Unionfs,
-> Reiser4.  For CIFS, NFS and XFS I wasn't able to understand how some
-> of the options are used.  The last two are not yet in mainline, so I
-> leave fixing those to their respective maintainers out of pure
-> laziness.
-> 
-> Table displaying status of all in-kernel filesystems:
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> legend:
-> 
->   none - fs has options, but doesn't define ->show_options()
->   some - fs defines ->show_options(), but some only options are shown
->   most - fs defines ->show_options(), and shows most of them
->   good - fs shows all options
->   noopt - fs does not have options
->   patch - a patch will be posted
-[...]
+I think we're in vehement agreement here.  In either case, its just a 
+matter of something like:
 
-> in -mm:
-> 
-> reiser4     some
-> unionfs     none
+    memcpy(pgd, &pgd[USER_PTRS_PER_PGD], sizeof(pgd_t) * KERNEL_PTRS_PER_PGD);
+      
 
-Hi Miklos,
+which would work for both PAE and non-PAE.
 
-Where did you check for the existence of a ->show_options method for
-unionfs?  Unionfs does implement ->show_options and supports all of the
-mount/remount options.  See:
+>> It would be easy enough to add some code on xen side to look for pmd 
+>> aliases when using/pinning a pagetable, and allocate'n'copy a new pmd 
+>> page as needed.  That way the core code can ignore the issue.
+>
+> As much as I'd rather see Xen fixing this than having it continue to 
+> impact the kernel, I presume it will take some time to flush the 
+> broken hypervisors out? 
 
-<http://git.kernel.org/?p=linux/kernel/git/ezk/unionfs.git;a=blob;f=fs/unionfs/super.c;h=986c980261a5b171147d66ac05bf08423e2fd6b6;hb=HEAD#l963>
+Sorry, I was unclear.  I meant in the purely Xen-specific parts of the 
+kernel (arch/x86/xen).  It wouldn't require a hypervisor change.
 
-The unionfs ->remount code supports branch-management options which can
-add/del/change a branch, but we don't show those directly in ->show_options;
-it makes more sense to show the final (and thus most current) branch
-configuration.
-
-Could you update your records please?
-
-BTW, I should be able to use your save_mount_options().
-
-Cheers,
-Erez.
+    J
