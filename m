@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbYAYQg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbYAYQiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756502AbYAYQg3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 11:36:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYAYQgV
+	id S1756212AbYAYQiv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 11:38:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYAYQip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 11:36:21 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:56930 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753058AbYAYQgV (ORCPT
+	Fri, 25 Jan 2008 11:38:45 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:63239 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752900AbYAYQio (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 11:36:21 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <479A0FD7.5050003@s5r6.in-berlin.de>
-Date: Fri, 25 Jan 2008 17:35:35 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
+	Fri, 25 Jan 2008 11:38:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=TnTo41jPJskFjEznKRjzbAYdZIvrKW5btgiKjSdaY8B0ekHY7VT5HhLS713TieRqGEv0NODlHsviWgaGp/MXJCngyfmsO+P51FQavUN9kK+8U9eEmR8ZpJoIUSq2ahbhFYgwAhIecHi6MPIPX7P9zDda4WHJywTAy0tHhOo/rLs=
+Message-ID: <3d8471ca0801250838h2d1f21f2n95c70bc26e28d310@mail.gmail.com>
+Date: Fri, 25 Jan 2008 17:38:42 +0100
+From: "Guillaume Chazarain" <guichaz@yahoo.fr>
+To: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Dropping some patches from sched-devel
 MIME-Version: 1.0
-To: Jarod Wilson <jwilson@redhat.com>
-CC: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] firewire: enforce access order between generation
- and node ID
-References: <tkrat.66a8b3070e07d80f@s5r6.in-berlin.de>	<200711011453.35268.nickpiggin@yahoo.com.au>	<4729A1BF.8010800@s5r6.in-berlin.de>	<tkrat.288da3bd61ecfb20@s5r6.in-berlin.de>	<tkrat.f1b275fda9e67a3c@s5r6.in-berlin.de> <4798B793.8080909@redhat.com>
-In-Reply-To: <4798B793.8080909@redhat.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 90b874a0214efe24
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm going to commit it with a whitespace adjustment and a comment typo
-fixed.  Jarod, thanks for the rigorous testing;  Nick, thanks for
-helping in making this a solid improvement over the initial submission.
+Hi Ingo,
+
+Can I talk you into dropping these patches of mine from sched-devel
+(or not send them to Linus):
+
+da0f9440cdcb1edd5424de91f326de83de3fe5f9 sched: make sure jiffies is
+up to date before calling __update_rq_clock()
+6eb300ad38fef6db4efe177067a65aaa771596da sched: fix rq->clock
+overflows detection with CONFIG_NO_HZ
+
+They are not of good enough quality, and I'm working on a better approach.
+
+Thanks.
+
 -- 
-Stefan Richter
--=====-==--- ---= ==--=
-http://arcgraph.de/sr/
+Guillaume
