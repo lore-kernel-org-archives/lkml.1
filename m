@@ -1,111 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762871AbYAYHqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762839AbYAYHqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762871AbYAYHqG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:46:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761348AbYAYHbx
+	id S1762839AbYAYHqe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:46:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761410AbYAYHc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:31:53 -0500
-Received: from ns.suse.de ([195.135.220.2]:54772 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 02:32:28 -0500
+Received: from gw.goop.org ([64.81.55.164]:59091 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761341AbYAYHbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:31:51 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Matt Domsch <Matt_Domsch@dell.com>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>
-Subject: [PATCH 081/196] kset: convert efivars to use kset_create for the vars sub-subsystem.
-Date: Thu, 24 Jan 2008 23:28:26 -0800
-Message-Id: <1201246221-5034-2-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <20080125071127.GA4860@kroah.com>
-References: <20080125071127.GA4860@kroah.com>
+	id S1761401AbYAYHc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:32:27 -0500
+Message-ID: <47999089.5080609@goop.org>
+Date: Thu, 24 Jan 2008 23:32:25 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "Huang, Ying" <ying.huang@intel.com>
+CC: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] x86: fix NX bit handling in change_page_attr
+References: <1201240493.15972.43.camel@caritas-dev.intel.com>
+In-Reply-To: <1201240493.15972.43.camel@caritas-dev.intel.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dynamically create the kset instead of declaring it statically.
+Huang, Ying wrote:
+> This patch fixes a bug of change_page_attr/change_page_attr_addr on
+> Intel i386/x86_64 CPUs.  After changing page attribute to be
+> executable with these functions, the page remains un-executable on
+> Intel i386/x86_64 CPU.  Because on Intel i386/x86_64 CPU, only if the
+> "NX" bits of all three level page tables are cleared (PAE is enabled),
+> the corresponding page is executable (refer to section 4.13.2 of Intel
+> 64 and IA-32 Architectures Software Developer's Manual).  So, the bug
+> is fixed through clearing the "NX" bit of PMD when splitting the huge
+> PMD.
+>
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
+>
+> ---
+>  arch/x86/mm/pageattr.c |    1 +
+>  1 file changed, 1 insertion(+)
+>
+> --- a/arch/x86/mm/pageattr.c
+> +++ b/arch/x86/mm/pageattr.c
+> @@ -124,6 +124,7 @@ static int split_large_page(pte_t *kpte,
+>  	/*
+>  	 * Install the new, split up pagetable:
+>  	 */
+> +	pgprot_val(ref_prot) &= ~_PAGE_NX;
+>   
 
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Matt Domsch <Matt_Domsch@dell.com>
-Cc: Matt Tolentino <matthew.e.tolentino@intel.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/firmware/efivars.c |   22 ++++++++++------------
- 1 files changed, 10 insertions(+), 12 deletions(-)
+I don't think its a good idea to treat pgprot_val() as an lvalue - it 
+precludes it from being turned into an inline function.  I know there 
+are numerous other places which do, but we should avoid making it worse.
 
-diff --git a/drivers/firmware/efivars.c b/drivers/firmware/efivars.c
-index 018ca1c..e17cd81 100644
---- a/drivers/firmware/efivars.c
-+++ b/drivers/firmware/efivars.c
-@@ -572,7 +572,7 @@ static struct attribute_group efi_subsys_attr_group = {
- };
- 
- 
--static decl_subsys(vars, NULL);
-+static struct kset *vars_kset;
- static struct kset *efi_kset;
- 
- /*
-@@ -618,7 +618,7 @@ efivar_create_sysfs_entry(unsigned long variable_name_size,
- 	efi_guid_unparse(vendor_guid, short_name + strlen(short_name));
- 
- 	kobject_set_name(&new_efivar->kobj, "%s", short_name);
--	new_efivar->kobj.kset = &vars_subsys;
-+	new_efivar->kobj.kset = vars_kset;
- 	new_efivar->kobj.ktype = &efivar_ktype;
- 	i = kobject_register(&new_efivar->kobj);
- 	if (i) {
-@@ -675,12 +675,10 @@ efivars_init(void)
- 		goto out_free;
- 	}
- 
--	vars_subsys.kobj.kset = efi_kset;
--
--	error = subsystem_register(&vars_subsys);
--
--	if (error) {
--		printk(KERN_ERR "efivars: Subsystem registration failed with error %d.\n", error);
-+	vars_kset = kset_create_and_add("vars", NULL, &efi_kset->kobj);
-+	if (!vars_kset) {
-+		printk(KERN_ERR "efivars: Subsystem registration failed.\n");
-+		error = -ENOMEM;
- 		goto out_firmware_unregister;
- 	}
- 
-@@ -715,12 +713,12 @@ efivars_init(void)
- 	 * Now add attributes to allow creation of new vars
- 	 * and deletion of existing ones...
- 	 */
--	error = sysfs_create_bin_file(&vars_subsys.kobj,
-+	error = sysfs_create_bin_file(&vars_kset->kobj,
- 				      &var_subsys_attr_new_var);
- 	if (error)
- 		printk(KERN_ERR "efivars: unable to create new_var sysfs file"
- 			" due to error %d\n", error);
--	error = sysfs_create_bin_file(&vars_subsys.kobj,
-+	error = sysfs_create_bin_file(&vars_kset->kobj,
- 				      &var_subsys_attr_del_var);
- 	if (error)
- 		printk(KERN_ERR "efivars: unable to create del_var sysfs file"
-@@ -733,7 +731,7 @@ efivars_init(void)
- 	else
- 		goto out_free;
- 
--	subsystem_unregister(&vars_subsys);
-+	kset_unregister(vars_kset);
- 
- out_firmware_unregister:
- 	kset_unregister(efi_kset);
-@@ -756,7 +754,7 @@ efivars_exit(void)
- 		efivar_unregister(entry);
- 	}
- 
--	subsystem_unregister(&vars_subsys);
-+	kset_unregister(vars_kset);
- 	kset_unregister(efi_kset);
- }
- 
--- 
-1.5.3.8
-
+    J
