@@ -1,106 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933048AbYAYImX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933098AbYAYImr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933048AbYAYImX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:42:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761160AbYAYICH
+	id S933098AbYAYImr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:42:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764440AbYAYIDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:02:07 -0500
-Received: from miranda.se.axis.com ([193.13.178.8]:48254 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763763AbYAYICF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 03:02:05 -0500
-From: "Mikael Starvik" <mikael.starvik@axis.com>
-To: "'Greg Kroah-Hartman'" <gregkh@suse.de>, <linux-kernel@vger.kernel.org>
-Cc: "Mikael Starvik" <mikael.starvik@axis.com>,
-       "'Kay Sievers'" <kay.sievers@vrfy.org>
-Subject: RE: [PATCH 128/196] Kobject: the cris iop_fw_load.c code is broken
-Date: Fri, 25 Jan 2008 09:01:56 +0100
-Message-ID: <BFECAF9E178F144FAEF2BF4CE739C66804C403BB@exmail1.se.axis.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+	Fri, 25 Jan 2008 03:03:54 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:41356 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761068AbYAYIDx (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 03:03:53 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jon Masters <jcm@redhat.com>
+Subject: Re: [PATCH] Linux Kernel Markers Support for Proprierary Modules
+In-Reply-To: Your message of "Fri, 25 Jan 2008 08:56:09 +0100."
+             <Pine.LNX.4.64.0801250840340.12676@fbirervta.pbzchgretzou.qr>
+From: Valdis.Kletnieks@vt.edu
+References: <1201029235.18144.62.camel@perihelion> <y0modbdnt4e.fsf@ton.toronto.redhat.com> <20080123031005.GA16766@Krystal> <1201061860.25284.28.camel@perihelion> <20080123131442.GA6562@redhat.com> <20080123144811.GA12296@Krystal> <27267.1201152358@turing-police.cc.vt.edu> <1201155569.25284.88.camel@perihelion> <20080124124703.GB32559@Krystal>
+            <Pine.LNX.4.64.0801250840340.12676@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1201248183_2846P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook, Build 10.0.6626
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
-In-Reply-To: <BFECAF9E178F144FAEF2BF4CE739C6680595315C@exmail1.se.axis.com>
-Importance: Normal
+Date: Fri, 25 Jan 2008 03:03:03 -0500
+Message-ID: <15663.1201248183@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, we are currently in the process of cleaning this up for all our device
-drivers.
-Thanks!
+--==_Exmh_1201248183_2846P
+Content-Type: text/plain; charset=us-ascii
 
------Original Message-----
-From: Greg Kroah-Hartman [mailto:gregkh@suse.de] 
-Sent: Friday, January 25, 2008 8:33 AM
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman; Mikael Starvik; Kay Sievers
-Subject: [PATCH 128/196] Kobject: the cris iop_fw_load.c code is broken
+On Fri, 25 Jan 2008 08:56:09 +0100, Jan Engelhardt said:
+> So what is needed is an Oops with an explaining message
+> if (kernel_tainted) "blame that proprietary module first",
+> and make sure the user sees that oops even if in X.
+
+The person who solves the "even if in X" problem will probably be nominated
+for sainthood by the Linux community.  "It just hung with flashing LED's" is
+just too common an event....
 
 
-This code is really really really broken.  So much so that it's almost
-impossible to fix with a simple patch, so just comment out the offending
-registration with the kobject core, and mark the driver as broken.
+--==_Exmh_1201248183_2846P
+Content-Type: application/pgp-signature
 
-The problem is that the code is trying to register a "raw" struct
-device, which is not allowed.  struct device is only for use within the
-driver model.  This is being done to try to use the firmware layer which
-wants a struct device.  To properly fix this, use something easy, like a
-platform device, which is a struct device and can be used for this kind
-of thing.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- arch/cris/arch-v32/drivers/iop_fw_load.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+iD8DBQFHmZe3cC3lWbTT17ARApK2AKDOKz5S19PFIhhQDpUNXkeLKPlRWACbBtTI
+K8f08QWNf0DnlJHBNwfVXsw=
+=Kw3l
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/cris/arch-v32/drivers/iop_fw_load.c
-b/arch/cris/arch-v32/drivers/iop_fw_load.c
-index 11f9895..f4bdc1d 100644
---- a/arch/cris/arch-v32/drivers/iop_fw_load.c
-+++ b/arch/cris/arch-v32/drivers/iop_fw_load.c
-@@ -20,6 +20,9 @@
- 
- #define IOP_TIMEOUT 100
- 
-+#error "This driver is broken with regard to its driver core usage."
-+#error "Please contact <greg@kroah.com> for details on how to fix it
-properly."
-+
- static struct device iop_spu_device[2] = {
- 	{ .bus_id =     "iop-spu0", },
- 	{ .bus_id =     "iop-spu1", },
-@@ -192,6 +195,13 @@ int iop_start_mpu(unsigned int start_addr)
- 
- static int __init iop_fw_load_init(void)
- {
-+#if 0
-+	/*
-+	 * static struct devices can not be added directly to sysfs by
-ignoring
-+	 * the driver model infrastructure.  To fix this properly, please
-use
-+	 * the platform_bus to register these devices to be able to properly
-+	 * use the firmware infrastructure.
-+	 */
- 	device_initialize(&iop_spu_device[0]);
- 	kobject_set_name(&iop_spu_device[0].kobj, "iop-spu0");
- 	kobject_add(&iop_spu_device[0].kobj);
-@@ -201,6 +211,7 @@ static int __init iop_fw_load_init(void)
- 	device_initialize(&iop_mpu_device);
- 	kobject_set_name(&iop_mpu_device.kobj, "iop-mpu");
- 	kobject_add(&iop_mpu_device.kobj);
-+#endif
- 	return 0;
- }
- 
--- 
-1.5.3.8
-
+--==_Exmh_1201248183_2846P--
