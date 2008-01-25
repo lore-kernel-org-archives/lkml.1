@@ -1,206 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbYAYPbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbYAYPcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755185AbYAYPbP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 10:31:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbYAYPar
+	id S1757436AbYAYPcU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 10:32:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYAYPcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 10:30:47 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:45724 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753907AbYAYPap (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 10:30:45 -0500
-Date: Fri, 25 Jan 2008 16:30:44 +0100
-From: Jan Kara <jack@suse.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [patch 25/26] mount options: fix udf
-Message-ID: <20080125153044.GF28856@atrey.karlin.mff.cuni.cz>
-References: <20080124193341.166753833@szeredi.hu> <20080124193456.220272889@szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080124193456.220272889@szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 25 Jan 2008 10:32:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39620 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753542AbYAYPcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 10:32:03 -0500
+Subject: Re: [PATCH] Linux Kernel Markers Support for Proprierary Modules
+From: Jon Masters <jcm@redhat.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, Valdis.Kletnieks@vt.edu,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0801250840340.12676@fbirervta.pbzchgretzou.qr>
+References: <1201029235.18144.62.camel@perihelion>
+	 <y0modbdnt4e.fsf@ton.toronto.redhat.com> <20080123031005.GA16766@Krystal>
+	 <1201061860.25284.28.camel@perihelion> <20080123131442.GA6562@redhat.com>
+	 <20080123144811.GA12296@Krystal> <27267.1201152358@turing-police.cc.vt.edu>
+	 <1201155569.25284.88.camel@perihelion> <20080124124703.GB32559@Krystal>
+	 <Pine.LNX.4.64.0801250840340.12676@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain
+Organization: Red Hat, Inc.
+Date: Fri, 25 Jan 2008 10:31:30 -0500
+Message-Id: <1201275090.25284.281.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> Add a .show_options super operation to udf.
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> ---
-> 
-> Index: linux/fs/udf/super.c
-> ===================================================================
-> --- linux.orig/fs/udf/super.c	2008-01-24 13:48:37.000000000 +0100
-> +++ linux/fs/udf/super.c	2008-01-24 15:58:21.000000000 +0100
-> @@ -53,6 +53,8 @@
->  #include <linux/vfs.h>
->  #include <linux/vmalloc.h>
->  #include <linux/errno.h>
-> +#include <linux/mount.h>
-> +#include <linux/seq_file.h>
->  #include <asm/byteorder.h>
->  
->  #include <linux/udf_fs.h>
-> @@ -71,6 +73,8 @@
->  #define VDS_POS_TERMINATING_DESC	6
->  #define VDS_POS_LENGTH			7
->  
-> +#define UDF_DEFAULT_BLOCKSIZE 2048
-> +
->  static char error_buf[1024];
->  
->  /* These are the "meat" - everything else is stuffing */
-> @@ -95,6 +99,7 @@ static void udf_open_lvid(struct super_b
->  static void udf_close_lvid(struct super_block *);
->  static unsigned int udf_count_free(struct super_block *);
->  static int udf_statfs(struct dentry *, struct kstatfs *);
-> +static int udf_show_options(struct seq_file *, struct vfsmount *);
->  
->  struct logicalVolIntegrityDescImpUse *udf_sb_lvidiu(struct udf_sb_info *sbi)
->  {
-> @@ -181,6 +186,7 @@ static const struct super_operations udf
->  	.write_super	= udf_write_super,
->  	.statfs		= udf_statfs,
->  	.remount_fs	= udf_remount_fs,
-> +	.show_options	= udf_show_options,
->  };
->  
->  struct udf_options {
-> @@ -247,6 +253,56 @@ static int udf_sb_alloc_partition_maps(s
->  	return 0;
->  }
->  
-> +static int udf_show_options(struct seq_file *seq, struct vfsmount *mnt)
-> +{
-> +	struct super_block *sb = mnt->mnt_sb;
-> +	struct udf_sb_info *sbi = UDF_SB(sb);
-> +
-> +	if (!UDF_QUERY_FLAG(sb, UDF_FLAG_STRICT))
-> +		seq_puts(seq, ",nostrict");
-> +	if (sb->s_blocksize != UDF_DEFAULT_BLOCKSIZE)
-> +		seq_printf(seq, ",bs=%lu", sb->s_blocksize);
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_UNHIDE))
-> +		seq_puts(seq, ",unhide");
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_UNDELETE))
-> +		seq_puts(seq, ",undelete");
-> +	if (!UDF_QUERY_FLAG(sb, UDF_FLAG_USE_AD_IN_ICB))
-> +		seq_puts(seq, ",noadinicb");
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_USE_SHORT_AD))
-> +		seq_puts(seq, ",shortad");
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_UID_FORGET))
-> +		seq_puts(seq, ",uid=forget");
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_UID_IGNORE))
-> +		seq_puts(seq, ",uid=ignore");
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_GID_FORGET))
-> +		seq_puts(seq, ",gid=forget");
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_GID_IGNORE))
-> +		seq_puts(seq, ",gid=ignore");
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_UID_SET))
-> +		seq_printf(seq, ",uid=%u", sbi->s_uid);
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_GID_SET))
-> +		seq_printf(seq, ",gid=%u", sbi->s_gid);
-> +	if (sbi->s_umask != 0)
-> +		seq_printf(seq, ",umask=%o", sbi->s_umask);
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_SESSION_SET))
-> +		seq_printf(seq, ",session=%u", sbi->s_session);
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_LASTBLOCK_SET))
-> +		seq_printf(seq, ",lastblock=%u", sbi->s_last_block);
-> +	/* is this correct? */
-> +	if (sbi->s_anchor[2] != 0)
-> +		seq_printf(seq, ",anchor=%u", sbi->s_anchor[2]);
-> +	/*
-> +	 * volume, partition, fileset and rootdir seem to be ignored
-> +	 * currently
-> +	 */
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_UTF8))
-> +		seq_puts(seq, ",utf8");
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_NLS_MAP) && sbi->s_nls_map)
-> +		seq_printf(seq, ",iocharset=%s", sbi->s_nls_map->charset);
-> +
-> +	return 0;
-> +}
-> +
->  /*
->   * udf_parse_options
->   *
-> @@ -339,13 +395,14 @@ static match_table_t tokens = {
->  	{Opt_err,	NULL}
->  };
->  
-> -static int udf_parse_options(char *options, struct udf_options *uopt)
-> +static int udf_parse_options(char *options, struct udf_options *uopt,
-> +			     bool remount)
->  {
-  Please use just 'int' for 'remount' option. We are slowly trying to
-get rid of these strange things in UDF code so adding new ones isn't
-desirable.
+On Fri, 2008-01-25 at 08:56 +0100, Jan Engelhardt wrote:
 
->  	char *p;
->  	int option;
->  
->  	uopt->novrs = 0;
-> -	uopt->blocksize = 2048;
-> +	uopt->blocksize = UDF_DEFAULT_BLOCKSIZE;
->  	uopt->partition = 0xFFFF;
->  	uopt->session = 0xFFFFFFFF;
->  	uopt->lastblock = 0;
-> @@ -415,11 +472,15 @@ static int udf_parse_options(char *optio
->  			if (match_int(args, &option))
->  				return 0;
->  			uopt->session = option;
-> +			if (!remount)
-> +				uopt->flags |= (1 << UDF_FLAG_SESSION_SET);
->  			break;
->  		case Opt_lastblock:
->  			if (match_int(args, &option))
->  				return 0;
->  			uopt->lastblock = option;
-> +			if (!remount)
-> +				uopt->flags |= (1 << UDF_FLAG_LASTBLOCK_SET);
->  			break;
->  		case Opt_anchor:
->  			if (match_int(args, &option))
-> @@ -497,7 +558,7 @@ static int udf_remount_fs(struct super_b
->  	uopt.gid   = sbi->s_gid;
->  	uopt.umask = sbi->s_umask;
->  
-> -	if (!udf_parse_options(options, &uopt))
-> +	if (!udf_parse_options(options, &uopt, true))
->  		return -EINVAL;
->  
->  	sbi->s_flags = uopt.flags;
-> @@ -1679,7 +1740,7 @@ static int udf_fill_super(struct super_b
->  
->  	mutex_init(&sbi->s_alloc_mutex);
->  
-> -	if (!udf_parse_options((char *)options, &uopt))
-> +	if (!udf_parse_options((char *)options, &uopt, false))
->  		goto error_out;
->  
->  	if (uopt.flags & (1 << UDF_FLAG_UTF8) &&
-> Index: linux/fs/udf/udf_sb.h
-> ===================================================================
-> --- linux.orig/fs/udf/udf_sb.h	2008-01-24 13:48:37.000000000 +0100
-> +++ linux/fs/udf/udf_sb.h	2008-01-24 13:51:08.000000000 +0100
-> @@ -26,6 +26,8 @@
->  #define UDF_FLAG_GID_IGNORE     14
->  #define UDF_FLAG_UID_SET	15
->  #define UDF_FLAG_GID_SET	16
-> +#define UDF_FLAG_SESSION_SET	17
-> +#define UDF_FLAG_LASTBLOCK_SET	18
->  
->  #define UDF_PART_FLAG_UNALLOC_BITMAP	0x0001
->  #define UDF_PART_FLAG_UNALLOC_TABLE	0x0002
-  Otherwise (apart from comments I wrote in the other email) the patch
-is fine.
+> So what is needed is an Oops with an explaining message
+> if (kernel_tainted) "blame that proprietary module first",
+> and make sure the user sees that oops even if in X.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+The former is actually trivially doable with the module->taints bits. We
+could have the equivalent of a neon flashing "blame this module" sign.
+
+I also agree, we should stop force loading. Incompatible struct module,
+etc. are really bad things to have mapped into a running kernel.
+
+Jon.
+
+
