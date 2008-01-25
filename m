@@ -1,214 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbYAYQkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbYAYQnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbYAYQkZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 11:40:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbYAYQkL
+	id S1756351AbYAYQnd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 11:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbYAYQnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 11:40:11 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:24250 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753562AbYAYQkJ (ORCPT
+	Fri, 25 Jan 2008 11:43:14 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:52956 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753600AbYAYQnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 11:40:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=I4dPyofcBoomdeuWN8xPVsAq+eajJ0qgmKAYv5SqxJSl81tf6N2DhgpX8XpxHyQlhppE/xVkCmnnCy1FsfA5Eidwqscrd9Une5C4V56+REZsQwR2Yv4SSKztSav+aalutcZvZJxUOf3TBwf9CI67CWp09E4auGqaFoyntvtfods=
-Message-ID: <4df4ef0c0801250840u6a1c2822p8428cf6490c46b22@mail.gmail.com>
-Date: Fri, 25 Jan 2008 19:40:08 +0300
-From: "Anton Salikhmetov" <salikhmetov@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [PATCH -v8 4/4] The design document for memory-mapped file times update
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
-       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
-In-Reply-To: <20080125082710.09f321c1.randy.dunlap@oracle.com>
+	Fri, 25 Jan 2008 11:43:12 -0500
+Date: Fri, 25 Jan 2008 11:42:29 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Takashi Sato <t-sato@yk.jp.nec.com>, linux-ext4@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] ext3 freeze feature
+Message-ID: <20080125164229.GD17907@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Eric Sandeen <sandeen@redhat.com>,
+	Takashi Sato <t-sato@yk.jp.nec.com>, linux-ext4@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru> <20080125133329.GB8184@mit.edu> <479A0F91.2030206@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <12010440803930-git-send-email-salikhmetov@gmail.com>
-	 <1201044083554-git-send-email-salikhmetov@gmail.com>
-	 <20080125082710.09f321c1.randy.dunlap@oracle.com>
+In-Reply-To: <479A0F91.2030206@redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/25, Randy Dunlap <randy.dunlap@oracle.com>:
-> On Wed, 23 Jan 2008 02:21:20 +0300 Anton Salikhmetov wrote:
->
-> > Add a document, which describes how the POSIX requirements on updating
-> > memory-mapped file times are addressed in Linux.
->
-> Hi Anton,
->
-> Just a few small comments below...
->
-> > Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
-> > ---
-> >  Documentation/vm/00-INDEX  |    2 +
-> >  Documentation/vm/msync.txt |  117 ++++++++++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 119 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/Documentation/vm/00-INDEX b/Documentation/vm/00-INDEX
-> > index 2131b00..2726c8d 100644
-> > --- a/Documentation/vm/00-INDEX
-> > +++ b/Documentation/vm/00-INDEX
-> > @@ -6,6 +6,8 @@ hugetlbpage.txt
-> >       - a brief summary of hugetlbpage support in the Linux kernel.
-> >  locking
-> >       - info on how locking and synchronization is done in the Linux vm code.
-> > +msync.txt
-> > +     - the design document for memory-mapped file times update
-> >  numa
-> >       - information about NUMA specific code in the Linux vm.
-> >  numa_memory_policy.txt
-> > diff --git a/Documentation/vm/msync.txt b/Documentation/vm/msync.txt
-> > new file mode 100644
-> > index 0000000..571a766
-> > --- /dev/null
-> > +++ b/Documentation/vm/msync.txt
-> > @@ -0,0 +1,117 @@
-> > +
-> > +     The msync() system call and memory-mapped file times
-> > +
-> > +     Copyright (C) 2008 Anton Salikhmetov
-> > +
-> > +The POSIX standard requires that any write reference to memory-mapped file
-> > +data should result in updating the ctime and mtime for that file. Moreover,
-> > +the standard mandates that updated file times should become visible to the
-> > +world no later than at the next call to msync().
-> > +
-> > +Failure to meet this requirement creates difficulties for certain classes
-> > +of important applications. For instance, database backup systems fail to
-> > +pick up the files modified via the mmap() interface. Also, this is a
-> > +security hole, which allows forging file data in such a manner that proving
-> > +the fact that file data was modified is not possible.
-> > +
-> > +Briefly put, this requirement can be stated as follows:
-> > +
-> > +     once the file data has changed, the operating system
-> > +     should acknowledge this fact by updating file metadata.
-> > +
-> > +This document describes how this POSIX requirement is addressed in Linux.
-> > +
-> > +1. Requirements
-> > +
-> > +1.1) the POSIX standard requires updating ctime and mtime not later
-> > +than at the call to msync() with MS_SYNC or MS_ASYNC flags;
-> > +
-> > +1.2) in existing POSIX implementations, ctime and mtime
-> > +get updated not later than at the call to fsync();
-> > +
-> > +1.3) in existing POSIX implementation, ctime and mtime
-> > +get updated not later than at the call to sync(), the "auto-update" feature;
-> > +
-> > +1.4) the customers require and the common sense suggests that
-> > +ctime and mtime should be updated not later than at the call to munmap()
-> > +or exit(), the latter function implying an implicit call to munmap();
-> > +
-> > +1.5) the (1.1) item should be satisfied if the file is a block device
-> > +special file;
-> > +
-> > +1.6) the (1.1) item should be satisfied for files residing on
-> > +memory-backed filesystems such as tmpfs, too.
-> > +
-> > +The following operating systems were used as the reference platforms
-> > +and are referred to as the "existing implementations" above:
-> > +HP-UX B.11.31 and FreeBSD 6.2-RELEASE.
-> > +
-> > +2. Lazy update
-> > +
-> > +Many attempts before the current version implemented the "lazy update" approach
-> > +to satisfying the requirements given above. Within the latter approach, ctime
-> > +and mtime get updated at last moment allowable.
-> > +
-> > +Since we don't update the file times immediately, some Flag has to be
-> > +used. When up, this Flag means that the file data was modified and
-> > +the file times need to be updated as soon as possible.
->
-> I would s/up/set/ above and below.
->
-> > +Any existing "dirty" flag which, when up, mean that a page has been written to,
->
-> s/mean/means/
->
-> > +is not suitable for this purpose. Indeed, msync() called with MS_ASYNC
-> > +would have to reset this "dirty" flag after updating ctime and mtime.
-> > +The sys_msync() function itself is basically a no-op in the MS_ASYNC case.
-> > +Thereby, the synchronization routines relying upon this "dirty" flag
-> > +would lose data. Therefore, a new Flag has to be introduced.
-> > +
-> > +The (1.5) item coupled with (1.3) requirement leads to hard work with
-> > +the block device inodes. Specifically, during writeback it is impossible to
-> > +tell which block device file was originally mapped. Therefore, we need to
-> > +traverse the list of "active" devices associated with the block device inode.
-> > +This would lead to updating file times for block device files, which were not
-> > +taking part in the data transfer.
-> > +
-> > +Also all versions prior to version 6 failed to correctly process ctime and
-> > +mtime for files on the memory-backed filesystems such as tmpfs. So the (1.6)
-> > +requirement was not satisfied.
-> > +
-> > +If a write reference has occurred between two consecutive calls to msync()
-> > +with MS_ASYNC, the second call to the latter function should take into
-> > +account the last write reference. The last write reference can not be caught
->
-> s/can not/cannot/
->
-> > +if no pagefault occurs. Hence a pagefault needs to be forced. This can be done
-> > +using two different approaches. The first one is to synchronize data even when
-> > +msync() was called with MS_ASYNC. This is not acceptable because the current
-> > +design of the sys_msync() routine forbids starting I/O for the MS_ASYNC case.
-> > +The second approach is to write protect the page for triggering a pagefault
->
-> s/write protect/write-protect/
->
-> > +at the next write reference. Note that the dirty flag for the page should not
-> > +be cleared thereby.
-> > +
-> > +In the "lazy update" approach, the requirements (1.1), (1.2), (1.3), and (1.4)
-> > +taken together result in adding code at least to the following kernel routines:
-> > +sys_msync(), do_fsync(), some routine in the unmap() call path, some routine
-> > +in the sync() call path.
-> > +
-> > +Finally, a file_update_time()-like function would have to be created for
-> > +processing the inode objects, not file objects. This is due to the fact that
-> > +during the sync() operation, the file object may not exist any more, only
-> > +the inode is known.
-> > +
-> > +To sum up: this "lazy" approach leads to massive changes, incurs overhead in
-> > +the block device case, and requires complicated design decisions.
-> > +
-> > +3. Immediate update
-> > +
-> > +OK, still reading? There's a better way.
-> > +
-> > +In a fashion analogous to what happens at write(2), react to the fact
-> > +that the page gets dirtied by updating the file times immediately.
-> > +Thereby any page writeback happens when the write reference has already
-> > +been accounted for from the view point of file times.
->
-> Probably s/view point/viewpoint/.
->
-> > +
-> > +The only problem which remains is to force refreshing file times at the write
-> > +reference following a call to msync() with MS_ASYNC. As mentioned above, all
-> > +that is needed here is to force a pagefault.
-> > +
-> > +The vma_wrprotect() routine introduced in this patch series is called
-> > +from sys_msync() in the MS_ASYNC case. The former routine is essentially
-> > +a version of existing page_mkclean_one() function from mm/rmap.c. Unlike
-> > +the latter function, the vma_wrprotect() does not touch the dirty bit.
-> > --
->
-> Thanks for the design document.
+On Fri, Jan 25, 2008 at 10:34:25AM -0600, Eric Sandeen wrote:
+> > But it was this concern which is why ext3 never exported freeze
+> > functionality to userspace, even though other commercial filesystems
+> > do support this.  It wasn't that it wasn't considered, but the concern
+> > about whether or not it was sufficiently safe to make available.
+> 
+> What's the safety concern; that the admin will forget to unfreeze?
 
-Thank you for your feedback. I'll take your suggestions into account.
+That the admin would manage to deadlock him/herself and wedge up the
+whole system...
 
-> ---
-> ~Randy
->
+> I'm also not sure I see the point of the timeout in the original patch;
+> either you are done snapshotting and ready to unfreeze, or you're not;
+> 1, or 2, or 3 seconds doesn't really matter.  When you're done, you're
+> done, and you can only unfreeze then.  Shouldn't this be done
+> programmatically, and not with some pre-determined timeout?
+
+This is only a guess, but I suspect it was a fail-safe in case the
+admin did manage to deadlock him/herself.  
+
+I would think a better approach would be to make the filesystem
+unfreeze if the file descriptor that was used to freeze the filesystem
+is closed, and then have explicit deadlock detection that kills the
+process doing the freeze, at which point the filesystem unlocks and
+the system can recover.
+
+					- Ted
