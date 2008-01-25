@@ -1,20 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbYAYILp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764943AbYAYIMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760930AbYAYILp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:11:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764114AbYAYIAS
+	id S1764943AbYAYIMO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:12:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761414AbYAYIAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:00:18 -0500
-Received: from cantor.suse.de ([195.135.220.2]:59405 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 03:00:20 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53638 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764060AbYAYH7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763983AbYAYH7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Jan 2008 02:59:44 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 169/196] Kobject: auto-cleanup on final unref
-Date: Thu, 24 Jan 2008 23:33:18 -0800
-Message-Id: <1201246425-5058-90-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Roland Dreier <rdreier@cisco.com>,
+       "Bryan O'Sullivan" <bryan.osullivan@qlogic.com>,
+       Arthur Jones <arthur.jones@qlogic.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: [PATCH 148/196] Infiniband: make ipath driver use default driver groups.
+Date: Thu, 24 Jan 2008 23:32:57 -0800
+Message-Id: <1201246425-5058-69-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -22,417 +25,199 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+Make the ipath driver use the new driver functions so that it does not
+touch the sysfs portion of the driver structure.
 
-We save the current state in the object itself, so we can do proper
-cleanup when the last reference is dropped.
+We also remove the redundant symlink from the device back to the driver,
+as it is already in the sysfs tree.  Any userspace tools should be using
+the standard symlink, not some driver specific one.
 
-If the initial reference is dropped, the object will be removed from
-sysfs if needed, if an "add" event was sent, "remove" will be send, and
-the allocated resources are released.
-
-This allows us to clean up some driver core usage as well as allowing us
-to do other such changes to the rest of the kernel.
-
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Roland Dreier <rdreier@cisco.com>
+Cc: Bryan O'Sullivan <bryan.osullivan@qlogic.com>
+Cc: Arthur Jones <arthur.jones@qlogic.com>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c     |   32 ++-------
- include/linux/kobject.h |    5 ++
- lib/kobject.c           |  170 ++++++++++++++++++++++++++--------------------
- lib/kobject_uevent.c    |   11 +++
- 4 files changed, 119 insertions(+), 99 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_main.c     |   13 +++++++----
+ drivers/infiniband/hw/ipath/ipath_driver.c |   17 +++------------
+ drivers/infiniband/hw/ipath/ipath_kernel.h |    3 +-
+ drivers/infiniband/hw/ipath/ipath_sysfs.c  |   30 ++++-----------------------
+ 4 files changed, 18 insertions(+), 45 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 675a719..d5d542d 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -576,8 +576,8 @@ static struct kobject *get_device_parent(struct device *dev,
- 
- 		/*
- 		 * If we have no parent, we live in "virtual".
--		 * Class-devices with a bus-device as parent, live
--		 * in a class-directory to prevent namespace collisions.
-+		 * Class-devices with a non class-device as parent, live
-+		 * in a "glue" directory to prevent namespace collisions.
- 		 */
- 		if (parent == NULL)
- 			parent_kobj = virtual_device_parent(dev);
-@@ -607,8 +607,7 @@ static struct kobject *get_device_parent(struct device *dev,
- 			kobject_put(k);
- 			return NULL;
- 		}
--		/* Do not emit a uevent, as it's not needed for this
--		 * "class glue" directory. */
-+		/* do not emit an uevent for this simple "glue" directory */
- 		return k;
- 	}
- 
-@@ -619,30 +618,13 @@ static struct kobject *get_device_parent(struct device *dev,
- 
- static void cleanup_device_parent(struct device *dev)
- {
--	struct device *d;
--	int other = 0;
-+	struct kobject *glue_dir = dev->kobj.parent;
- 
--	if (!dev->class)
--		return;
--
--	/* see if we live in a parent class directory */
--	if (dev->kobj.parent->kset != &dev->class->class_dirs)
-+	/* see if we live in a "glue" directory */
-+	if (!dev->class || glue_dir->kset != &dev->class->class_dirs)
- 		return;
- 
--	/* if we are the last child of our class, delete the directory */
--	down(&dev->class->sem);
--	list_for_each_entry(d, &dev->class->devices, node) {
--		if (d == dev)
--			continue;
--		if (d->kobj.parent == dev->kobj.parent) {
--			other = 1;
--			break;
--		}
--	}
--	if (!other)
--		kobject_del(dev->kobj.parent);
--	kobject_put(dev->kobj.parent);
--	up(&dev->class->sem);
-+	kobject_put(glue_dir);
- }
- #endif
- 
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index 63967da..be03ce8 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -68,6 +68,11 @@ struct kobject {
- 	struct kset		* kset;
- 	struct kobj_type	* ktype;
- 	struct sysfs_dirent	* sd;
-+	unsigned int state_initialized:1;
-+	unsigned int state_name_set:1;
-+	unsigned int state_in_sysfs:1;
-+	unsigned int state_add_uevent_sent:1;
-+	unsigned int state_remove_uevent_sent:1;
+diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+index 6a56d86..c9e32b4 100644
+--- a/drivers/infiniband/hw/ehca/ehca_main.c
++++ b/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -590,6 +590,11 @@ static struct attribute_group ehca_drv_attr_grp = {
+ 	.attrs = ehca_drv_attrs
  };
  
- extern int kobject_set_name(struct kobject *, const char *, ...)
-diff --git a/lib/kobject.c b/lib/kobject.c
-index c321f19..4fce5ca 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -124,85 +124,74 @@ char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
- }
- EXPORT_SYMBOL_GPL(kobject_get_path);
- 
--static void kobject_init_internal(struct kobject * kobj)
-+/* add the kobject to its kset's list */
-+static void kobj_kset_join(struct kobject *kobj)
- {
--	if (!kobj)
-+	if (!kobj->kset)
- 		return;
--	kref_init(&kobj->kref);
--	INIT_LIST_HEAD(&kobj->entry);
++static struct attribute_group *ehca_drv_attr_groups[] = {
++	&ehca_drv_attr_grp,
++	NULL,
++};
 +
-+	kset_get(kobj->kset);
-+	spin_lock(&kobj->kset->list_lock);
-+	list_add_tail(&kobj->entry, &kobj->kset->list);
-+	spin_unlock(&kobj->kset->list_lock);
- }
+ #define EHCA_RESOURCE_ATTR(name)                                           \
+ static ssize_t  ehca_show_##name(struct device *dev,                       \
+ 				 struct device_attribute *attr,            \
+@@ -899,6 +904,9 @@ static struct of_platform_driver ehca_driver = {
+ 	.match_table = ehca_device_table,
+ 	.probe       = ehca_probe,
+ 	.remove      = ehca_remove,
++	.driver	     = {
++		.groups = ehca_drv_attr_groups,
++	},
+ };
  
-+/* remove the kobject from its kset's list */
-+static void kobj_kset_leave(struct kobject *kobj)
-+{
-+	if (!kobj->kset)
-+		return;
+ void ehca_poll_eqs(unsigned long data)
+@@ -957,10 +965,6 @@ int __init ehca_module_init(void)
+ 		goto module_init2;
+ 	}
  
--/**
-- *	unlink - remove kobject from kset list.
-- *	@kobj:	kobject.
-- *
-- *	Remove the kobject from the kset list and decrement
-- *	its parent's refcount.
-- *	This is separated out, so we can use it in both 
-- *	kobject_del() and kobject_add_internal() on error.
-- */
-+	spin_lock(&kobj->kset->list_lock);
-+	list_del_init(&kobj->entry);
-+	spin_unlock(&kobj->kset->list_lock);
-+	kset_put(kobj->kset);
-+}
- 
--static void unlink(struct kobject * kobj)
-+static void kobject_init_internal(struct kobject * kobj)
- {
--	struct kobject *parent = kobj->parent;
+-	ret = sysfs_create_group(&ehca_driver.driver.kobj, &ehca_drv_attr_grp);
+-	if (ret) /* only complain; we can live without attributes */
+-		ehca_gen_err("Cannot create driver attributes  ret=%d", ret);
 -
--	if (kobj->kset) {
--		spin_lock(&kobj->kset->list_lock);
--		list_del_init(&kobj->entry);
--		spin_unlock(&kobj->kset->list_lock);
+ 	if (ehca_poll_all_eqs != 1) {
+ 		ehca_gen_err("WARNING!!!");
+ 		ehca_gen_err("It is possible to lose interrupts.");
+@@ -986,7 +990,6 @@ void __exit ehca_module_exit(void)
+ 	if (ehca_poll_all_eqs == 1)
+ 		del_timer_sync(&poll_eqs_timer);
+ 
+-	sysfs_remove_group(&ehca_driver.driver.kobj, &ehca_drv_attr_grp);
+ 	ibmebus_unregister_driver(&ehca_driver);
+ 
+ 	ehca_destroy_slab_caches();
+diff --git a/drivers/infiniband/hw/ipath/ipath_driver.c b/drivers/infiniband/hw/ipath/ipath_driver.c
+index 1f152de..fc35598 100644
+--- a/drivers/infiniband/hw/ipath/ipath_driver.c
++++ b/drivers/infiniband/hw/ipath/ipath_driver.c
+@@ -121,6 +121,9 @@ static struct pci_driver ipath_driver = {
+ 	.probe = ipath_init_one,
+ 	.remove = __devexit_p(ipath_remove_one),
+ 	.id_table = ipath_pci_tbl,
++	.driver = {
++		.groups = ipath_driver_attr_groups,
++	},
+ };
+ 
+ static void ipath_check_status(struct work_struct *work)
+@@ -2217,25 +2220,15 @@ static int __init infinipath_init(void)
+ 		goto bail_unit;
+ 	}
+ 
+-	ret = ipath_driver_create_group(&ipath_driver.driver);
+-	if (ret < 0) {
+-		printk(KERN_ERR IPATH_DRV_NAME ": Unable to create driver "
+-		       "sysfs entries: error %d\n", -ret);
+-		goto bail_pci;
 -	}
--	kobj->parent = NULL;
--	kobject_put(kobj);
--	kobject_put(parent);
-+	if (!kobj)
-+		return;
-+	kref_init(&kobj->kref);
-+	INIT_LIST_HEAD(&kobj->entry);
- }
- 
-+
- static int kobject_add_internal(struct kobject *kobj)
- {
- 	int error = 0;
- 	struct kobject * parent;
- 
--	if (!(kobj = kobject_get(kobj)))
-+	if (!kobj)
- 		return -ENOENT;
--	if (!kobj->k_name)
--		kobject_set_name(kobj, "NO_NAME");
--	if (!*kobj->k_name) {
--		pr_debug("kobject (%p) attempted to be registered with no "
-+
-+	if (!kobj->k_name || !kobj->k_name[0]) {
-+		pr_debug("kobject: (%p): attempted to be registered with empty "
- 			 "name!\n", kobj);
- 		WARN_ON(1);
--		kobject_put(kobj);
- 		return -EINVAL;
- 	}
--	parent = kobject_get(kobj->parent);
- 
--	pr_debug("kobject: '%s' (%p): %s: parent: '%s', set: '%s'\n",
--		 kobject_name(kobj), kobj, __FUNCTION__,
--		 parent ? kobject_name(parent) : "<NULL>",
--		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>" );
-+	parent = kobject_get(kobj->parent);
- 
-+	/* join kset if set, use it as parent if we do not already have one */
- 	if (kobj->kset) {
--		kobj->kset = kset_get(kobj->kset);
 -
--		if (!parent) {
-+		if (!parent)
- 			parent = kobject_get(&kobj->kset->kobj);
--			/*
--			 * If the kset is our parent, get a second
--			 * reference, we drop both the kset and the
--			 * parent ref on cleanup
--			 */
--			kobject_get(parent);
--		}
+ 	ret = ipath_init_ipathfs();
+ 	if (ret < 0) {
+ 		printk(KERN_ERR IPATH_DRV_NAME ": Unable to create "
+ 		       "ipathfs: error %d\n", -ret);
+-		goto bail_group;
++		goto bail_pci;
+ 	}
+ 
+ 	goto bail;
+ 
+-bail_group:
+-	ipath_driver_remove_group(&ipath_driver.driver);
 -
--		spin_lock(&kobj->kset->list_lock);
--		list_add_tail(&kobj->entry, &kobj->kset->list);
--		spin_unlock(&kobj->kset->list_lock);
-+		kobj_kset_join(kobj);
- 		kobj->parent = parent;
- 	}
+ bail_pci:
+ 	pci_unregister_driver(&ipath_driver);
  
-+	pr_debug("kobject: '%s' (%p): %s: parent: '%s', set: '%s'\n",
-+		 kobject_name(kobj), kobj, __FUNCTION__,
-+		 parent ? kobject_name(parent) : "<NULL>",
-+		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>" );
-+
- 	error = create_dir(kobj);
- 	if (error) {
--		/* unlink does the kobject_put() for us */
--		unlink(kobj);
-+		kobj_kset_leave(kobj);
-+		kobject_put(parent);
-+		kobj->parent = NULL;
- 
- 		/* be noisy on error issues */
- 		if (error == -EEXIST)
-@@ -214,7 +203,8 @@ static int kobject_add_internal(struct kobject *kobj)
- 			printk(KERN_ERR "%s failed for %s (%d)\n",
- 			       __FUNCTION__, kobject_name(kobj), error);
- 		dump_stack();
--	}
-+	} else
-+		kobj->state_in_sysfs = 1;
- 
- 	return error;
- }
-@@ -238,11 +228,13 @@ static int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
- 	if (!name)
- 		return -ENOMEM;
- 
-+
- 	/* Free the old name, if necessary. */
- 	kfree(kobj->k_name);
- 
- 	/* Now, set the new name */
- 	kobj->k_name = name;
-+	kobj->state_name_set = 1;
- 
- 	return 0;
- }
-@@ -293,20 +285,25 @@ void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
- 		err_str = "must have a ktype to be initialized properly!\n";
- 		goto error;
- 	}
--	if (atomic_read(&kobj->kref.refcount)) {
-+	if (kobj->state_initialized) {
- 		/* do not error out as sometimes we can recover */
--		printk(KERN_ERR "kobject: reference count is already set, "
--		       "something is seriously wrong.\n");
-+		printk(KERN_ERR "kobject (%p): tried to init an initialized "
-+		       "object, something is seriously wrong.\n", kobj);
- 		dump_stack();
- 	}
- 
- 	kref_init(&kobj->kref);
- 	INIT_LIST_HEAD(&kobj->entry);
- 	kobj->ktype = ktype;
-+	kobj->state_name_set = 0;
-+	kobj->state_in_sysfs = 0;
-+	kobj->state_add_uevent_sent = 0;
-+	kobj->state_remove_uevent_sent = 0;
-+	kobj->state_initialized = 1;
- 	return;
- 
- error:
--	printk(KERN_ERR "kobject: %s\n", err_str);
-+	printk(KERN_ERR "kobject (%p): %s\n", kobj, err_str);
- 	dump_stack();
- }
- EXPORT_SYMBOL(kobject_init);
-@@ -345,17 +342,10 @@ static int kobject_add_varg(struct kobject *kobj, struct kobject *parent,
-  *
-  * If this function returns an error, kobject_put() must be called to
-  * properly clean up the memory associated with the object.
-- *
-- * If the function is successful, the only way to properly clean up the
-- * memory is with a call to kobject_del(), in which case, a call to
-- * kobject_put() is not necessary (kobject_del() does the final
-- * kobject_put() to call the release function in the ktype's release
-- * pointer.)
-- *
-  * Under no instance should the kobject that is passed to this function
-  * be directly freed with a call to kfree(), that can leak memory.
-  *
-- * Note, no uevent will be created with this call, the caller should set
-+ * Note, no "add" uevent will be created with this call, the caller should set
-  * up all of the necessary sysfs files for the object and then call
-  * kobject_uevent() with the UEVENT_ADD parameter to ensure that
-  * userspace is properly notified of this kobject's creation.
-@@ -369,6 +359,13 @@ int kobject_add(struct kobject *kobj, struct kobject *parent,
- 	if (!kobj)
- 		return -EINVAL;
- 
-+	if (!kobj->state_initialized) {
-+		printk(KERN_ERR "kobject '%s' (%p): tried to add an "
-+		       "uninitialized object, something is seriously wrong.\n",
-+		       kobject_name(kobj), kobj);
-+		dump_stack();
-+		return -EINVAL;
-+	}
- 	va_start(args, fmt);
- 	retval = kobject_add_varg(kobj, parent, fmt, args);
- 	va_end(args);
-@@ -527,8 +524,12 @@ void kobject_del(struct kobject * kobj)
+@@ -2250,8 +2243,6 @@ static void __exit infinipath_cleanup(void)
  {
- 	if (!kobj)
- 		return;
+ 	ipath_exit_ipathfs();
+ 
+-	ipath_driver_remove_group(&ipath_driver.driver);
+-
+ 	ipath_cdbg(VERBOSE, "Unregistering pci driver\n");
+ 	pci_unregister_driver(&ipath_driver);
+ 
+diff --git a/drivers/infiniband/hw/ipath/ipath_kernel.h b/drivers/infiniband/hw/ipath/ipath_kernel.h
+index 8786dd7..bb1dc07 100644
+--- a/drivers/infiniband/hw/ipath/ipath_kernel.h
++++ b/drivers/infiniband/hw/ipath/ipath_kernel.h
+@@ -938,8 +938,7 @@ struct device_driver;
+ 
+ extern const char ib_ipath_version[];
+ 
+-int ipath_driver_create_group(struct device_driver *);
+-void ipath_driver_remove_group(struct device_driver *);
++extern struct attribute_group *ipath_driver_attr_groups[];
+ 
+ int ipath_device_create_group(struct device *, struct ipath_devdata *);
+ void ipath_device_remove_group(struct device *, struct ipath_devdata *);
+diff --git a/drivers/infiniband/hw/ipath/ipath_sysfs.c b/drivers/infiniband/hw/ipath/ipath_sysfs.c
+index e1ad7cf..aa27ca9 100644
+--- a/drivers/infiniband/hw/ipath/ipath_sysfs.c
++++ b/drivers/infiniband/hw/ipath/ipath_sysfs.c
+@@ -683,6 +683,11 @@ static struct attribute_group driver_attr_group = {
+ 	.attrs = driver_attributes
+ };
+ 
++struct attribute_group *ipath_driver_attr_groups[] = {
++	&driver_attr_group,
++	NULL,
++};
 +
- 	sysfs_remove_dir(kobj);
--	unlink(kobj);
-+	kobj->state_in_sysfs = 0;
-+	kobj_kset_leave(kobj);
-+	kobject_put(kobj->parent);
-+	kobj->parent = NULL;
+ static DEVICE_ATTR(guid, S_IWUSR | S_IRUGO, show_guid, store_guid);
+ static DEVICE_ATTR(lmc, S_IWUSR | S_IRUGO, show_lmc, store_lmc);
+ static DEVICE_ATTR(lid, S_IWUSR | S_IRUGO, show_lid, store_lid);
+@@ -753,24 +758,9 @@ int ipath_expose_reset(struct device *dev)
+ 	return ret;
  }
  
- /**
-@@ -565,21 +566,43 @@ struct kobject * kobject_get(struct kobject * kobj)
-  */
- static void kobject_cleanup(struct kobject *kobj)
+-int ipath_driver_create_group(struct device_driver *drv)
+-{
+-	int ret;
+-
+-	ret = sysfs_create_group(&drv->kobj, &driver_attr_group);
+-
+-	return ret;
+-}
+-
+-void ipath_driver_remove_group(struct device_driver *drv)
+-{
+-	sysfs_remove_group(&drv->kobj, &driver_attr_group);
+-}
+-
+ int ipath_device_create_group(struct device *dev, struct ipath_devdata *dd)
  {
--	struct kobj_type * t = get_ktype(kobj);
--	struct kset * s = kobj->kset;
-+	struct kobj_type *t = get_ktype(kobj);
- 	const char *name = kobj->k_name;
-+	int name_set = kobj->state_name_set;
+ 	int ret;
+-	char unit[5];
  
- 	pr_debug("kobject: '%s' (%p): %s\n",
- 		 kobject_name(kobj), kobj, __FUNCTION__);
-+
-+	if (t && !t->release)
-+		pr_debug("kobject: '%s' (%p): does not have a release() "
-+			 "function, it is broken and must be fixed.\n",
-+			 kobject_name(kobj), kobj);
-+
-+	/* send "remove" if the caller did not do it but sent "add" */
-+	if (kobj->state_add_uevent_sent && !kobj->state_remove_uevent_sent) {
-+		pr_debug("kobject: '%s' (%p): auto cleanup 'remove' event\n",
-+			 kobject_name(kobj), kobj);
-+		kobject_uevent(kobj, KOBJ_REMOVE);
-+	}
-+
-+	/* remove from sysfs if the caller did not do it */
-+	if (kobj->state_in_sysfs) {
-+		pr_debug("kobject: '%s' (%p): auto cleanup kobject_del\n",
-+			 kobject_name(kobj), kobj);
-+		kobject_del(kobj);
-+	}
-+
- 	if (t && t->release) {
-+		pr_debug("kobject: '%s' (%p): calling ktype release\n",
-+			 kobject_name(kobj), kobj);
- 		t->release(kobj);
--		/* If we have a release function, we can guess that this was
--		 * not a statically allocated kobject, so we should be safe to
--		 * free the name */
-+	}
-+
-+	/* free name if we allocated it */
-+	if (name_set && name) {
-+		pr_debug("kobject: '%s': free name\n", name);
- 		kfree(name);
- 	}
--	if (s)
--		kset_put(s);
- }
+ 	ret = sysfs_create_group(&dev->kobj, &dev_attr_group);
+ 	if (ret)
+@@ -780,11 +770,6 @@ int ipath_device_create_group(struct device *dev, struct ipath_devdata *dd)
+ 	if (ret)
+ 		goto bail_attrs;
  
- static void kobject_release(struct kref *kref)
-@@ -601,8 +624,7 @@ void kobject_put(struct kobject * kobj)
+-	snprintf(unit, sizeof(unit), "%02d", dd->ipath_unit);
+-	ret = sysfs_create_link(&dev->driver->kobj, &dev->kobj, unit);
+-	if (ret == 0)
+-		goto bail;
+-
+ 	sysfs_remove_group(&dev->kobj, &dev_counter_attr_group);
+ bail_attrs:
+ 	sysfs_remove_group(&dev->kobj, &dev_attr_group);
+@@ -794,11 +779,6 @@ bail:
  
- static void dynamic_kobj_release(struct kobject *kobj)
+ void ipath_device_remove_group(struct device *dev, struct ipath_devdata *dd)
  {
--	pr_debug("kobject: '%s' (%p): %s\n",
--		 kobject_name(kobj), kobj, __FUNCTION__);
-+	pr_debug("kobject: (%p): %s\n", kobj, __FUNCTION__);
- 	kfree(kobj);
- }
+-	char unit[5];
+-
+-	snprintf(unit, sizeof(unit), "%02d", dd->ipath_unit);
+-	sysfs_remove_link(&dev->driver->kobj, unit);
+-
+ 	sysfs_remove_group(&dev->kobj, &dev_counter_attr_group);
+ 	sysfs_remove_group(&dev->kobj, &dev_attr_group);
  
-diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
-index 51dc4d2..b021e67 100644
---- a/lib/kobject_uevent.c
-+++ b/lib/kobject_uevent.c
-@@ -180,6 +180,17 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
- 		}
- 	}
- 
-+	/*
-+	 * Mark "add" and "remove" events in the object to ensure proper
-+	 * events to userspace during automatic cleanup. If the object did
-+	 * send an "add" event, "remove" will automatically generated by
-+	 * the core, if not already done by the caller.
-+	 */
-+	if (action == KOBJ_ADD)
-+		kobj->state_add_uevent_sent = 1;
-+	else if (action == KOBJ_REMOVE)
-+		kobj->state_remove_uevent_sent = 1;
-+
- 	/* we will send an event, so request a new sequence number */
- 	spin_lock(&sequence_lock);
- 	seq = ++uevent_seqnum;
 -- 
 1.5.3.8
 
