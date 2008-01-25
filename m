@@ -1,95 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759010AbYAYIs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933213AbYAYItg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759010AbYAYIs7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:48:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765741AbYAYIja
+	id S933213AbYAYItg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:49:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932998AbYAYIqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:39:30 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:15342 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762204AbYAYIj1 (ORCPT
+	Fri, 25 Jan 2008 03:46:00 -0500
+Received: from l1ms.rz.uni-kiel.de ([134.245.11.86]:7576 "EHLO
+	l1ms.rz.uni-kiel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933068AbYAYIp5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 03:39:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Bvo45wcgAGfc/ztsF5wC0ev1S4vBIIbubE53uVnaGHDepDS7VsBvhKcBy+Jb6W6O3xw6CX6buiS2+PnG49pxd7BJDHhItC1vwS3joA4PL8TggRv68k+NbKj/WdWldDg/MytIbLUUCqpIeBrIb7nMD9xzYPMzF16zR+hr/UJaio4=
-Message-ID: <86802c440801250039m3db374em458b1f15c8a71ad5@mail.gmail.com>
-Date: Fri, 25 Jan 2008 00:39:25 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: [PATCH] x86: trim ram need to check if mtrr is there v2
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440801250013p1a35b126l30fb7479b110e97d@mail.gmail.com>
+	Fri, 25 Jan 2008 03:45:57 -0500
+X-Greylist: delayed 2178 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Jan 2008 03:45:57 EST
+To: linux-kernel@vger.kernel.org
+Subject: parport_ieee1284_epp_read_addr patch
+From: Stephan Boettcher <boettcher@physik.uni-kiel.de>
+Date: Fri, 25 Jan 2008 09:09:33 +0100
+Message-ID: <s6n3asmqqbm.fsf@blaulicht.switch.brux>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47993F1A.5070408@goop.org> <4799400C.1060102@zytor.com>
-	 <200801241947.55223.yinghai.lu@sun.com> <4799930B.40006@goop.org>
-	 <86802c440801250013p1a35b126l30fb7479b110e97d@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 25, 2008 12:13 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
-> On Jan 24, 2008 11:43 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> >
-> > Yinghai Lu wrote:
-> > > [PATCH] x86: trim ram need to check if mtrr is there v2
-> > >
-> > >
-> > >>> Jeremy Fitzhardinge wrote:
-> > >>> When booting a current x86.git kernel under kvm, I get this:
-> > >>>
-> > >>> (qemu) Linux version 2.6.24-rc8 (jeremy@ezr) (gcc version 4.1.2 20070925
-> > >>> (Red Hat 4.1.2-33)) #1928 SMP PREEMPT Thu Jan 24 17:09:04 PST 2008
-> > >>> early_ioremap_init()
-> > >>> BIOS-provided physical RAM map:
-> > >>> BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-> > >>> BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-> > >>> BIOS-e820: 00000000000e8000 - 0000000000100000 (reserved)
-> > >>> BIOS-e820: 0000000000100000 - 000000001fff0000 (usable)
-> > >>> BIOS-e820: 000000001fff0000 - 0000000020000000 (ACPI data)
-> > >>> BIOS-e820: 00000000fffc0000 - 0000000100000000 (reserved)
-> > >>> console [earlyser0] enabled
-> > >>> 0MB HIGHMEM available.
-> > >>> 511MB LOWMEM available.
-> > >>> Scan SMP from c0000000 for 1024 bytes.
-> > >>> Scan SMP from c009fc00 for 1024 bytes.
-> > >>> Scan SMP from c00f0000 for 65536 bytes.
-> > >>> Scan SMP from c009fc00 for 1024 bytes.
-> > >>> ***************
-> > >>> **** WARNING: likely BIOS bug
-> > >>> **** MTRRs don't cover all of memory, trimmed 131056 pages
-> > >>> ***************
-> > >>>
-> > >> H. Peter Anvin wrote:
-> > >> Looks like the code doesn't check that the CPU *has* MTRRs...
-> > >>
-> > >
-> > > so check it mtrr is there, also check if mem less 4G and is AMD as early
-> > >
-> >
-> > Thanks, this gets me to usermode under kvm.
->
-> i think the is 0xffffffff to 0xffffffffUL make the difference.
->
-> the cpu mode in KVM/qemu may cpu_has_mtrr, but doesn't really have
-> return mtrr msr with correct value.
->
-> is_cpu(INTEL) already make sure we have mtrr_if got assigned and cpu_has_mtrr.
->
-> may need to fix qemu instead...
->
-> Can you try post /proc/mtrr for your guest in kvm/qemu?
 
-jeremy,
+Tim,
 
-can you try v3 patch?
+Please consider the included patch to fix a 1-bit bug in the software
+emulation of parport epp addr read mode.
+
+I am not subscribed to the LKML.
 
 Thanks
+Stephan
 
-YH
+
+--- linux-2.6.24-rc6/drivers/parport/ieee1284_ops.c~	2007-10-09 22:31:38.000000000 +0200
++++ linux-2.6.24-rc6/drivers/parport/ieee1284_ops.c	2008-01-24 22:15:05.000000000 +0100
+@@ -888,7 +888,7 @@
+ 
+ 		/* Event 59: set nSelectIn (nAStrb) high */
+ 		parport_frob_control (port, PARPORT_CONTROL_SELECT,
+-				      PARPORT_CONTROL_SELECT);
++				      0);
+ 
+ 		/* Event 60: wait for Busy to go low */
+ 		if (parport_poll_peripheral (port, PARPORT_STATUS_BUSY, 
+
+Background:  
+
+We bought cheep notebooks to control our custom data acquisition
+system, which requires EPP mode (read/write, data/addr).  The bios
+does not offer EPP mode, and indeed hardware EPP mode appears not to
+work, although the parport driver tries to use it.  EPPSWE mode does
+work for data r/w and addr write, but addr read requires this
+patch. 
+
+(stephan)rshgse3: lspci
+
+00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 945GT Express Memory Controller Hub (rev 03)
+00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS/940GML Express Integrated Graphics Controller (rev 03)
+00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/940GML Express Integrated Graphics Controller (rev 03)
+00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 02)
+00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 1 (rev 02)
+00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 2 (rev 02)
+00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 3 (rev 02)
+00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #1 (rev 02)
+00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #2 (rev 02)
+00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #3 (rev 02)
+00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #4 (rev 02)
+00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 02)
+00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2)
+00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface Bridge (rev 02)
+00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE Controller (rev 02)
+00:1f.2 SATA controller: Intel Corporation 82801GBM/GHM (ICH7 Family) Serial ATA Storage Controller AHCI (rev 02)
+00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 02)
+02:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8055 PCI-E Gigabit Ethernet Controller (rev 12)
+05:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG Network Connection (rev 02)
+08:03.0 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev b3)
+08:03.1 FireWire (IEEE 1394): Ricoh Co Ltd R5C552 IEEE 1394 Controller (rev 08)
+08:03.2 Generic system peripheral [0805]: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 17)
+
+(stephan)rshgse3: grep . /proc/sys/dev/parport/parport0/*
+
+/proc/sys/dev/parport/parport0/base-addr:888    1912
+/proc/sys/dev/parport/parport0/dma:-1
+/proc/sys/dev/parport/parport0/irq:7
+/proc/sys/dev/parport/parport0/modes:PCSPP,TRISTATE,EPP
+/proc/sys/dev/parport/parport0/spintime:500
+
+-- 
+Stephan Böttcher                     FAX: +49-431-85660
+Extraterrestrische Physik            Tel: +49-431-880-2508
+I.f.Exp.u.Angew.Physik               mailto:boettcher@physik.uni-kiel.de
+Leibnizstr. 11, 24118 Kiel, Germany
