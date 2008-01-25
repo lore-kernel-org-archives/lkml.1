@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbYAYRR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758509AbYAYRRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758099AbYAYRR2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 12:17:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbYAYRRE
+	id S1758509AbYAYRRl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 12:17:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756834AbYAYRRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 25 Jan 2008 12:17:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47599 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756341AbYAYRRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Jan 2008 12:17:04 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:58240 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756193AbYAYRRC (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 12:17:02 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Introduce softpanic
-In-Reply-To: Your message of "Fri, 25 Jan 2008 16:26:45 +0100."
-             <Pine.LNX.4.64.0801251624480.5521@twin.jikos.cz>
-From: Valdis.Kletnieks@vt.edu
-References: <alpine.LSU.0.999.0801251551060.21522@be1.lrz>
-            <Pine.LNX.4.64.0801251624480.5521@twin.jikos.cz>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1201281417_2846P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 4/4 update] firewire: fw-core: react on bus resets while the config ROM is being fetched
+Date: Fri, 25 Jan 2008 12:16:35 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <tkrat.66a8b3070e07d80f@s5r6.in-berlin.de> <4798E664.2040405@redhat.com> <tkrat.34be174a07a7f85e@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.34be174a07a7f85e@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Fri, 25 Jan 2008 12:16:57 -0500
-Message-ID: <10536.1201281417@turing-police.cc.vt.edu>
+Content-Disposition: inline
+Message-Id: <200801251216.35291.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1201281417_2846P
-Content-Type: text/plain; charset=us-ascii
+On Friday 25 January 2008 11:53:49 am Stefan Richter wrote:
+> read_rom() obtained a fresh new fw_device.generation for each read
+> transaction.  Hence it was able to continue reading in the middle of the
+> ROM even if a bus reset happened.  However the device may have modified
+> the ROM during the reset.  We would end up with a corrupt fetched ROM
+> image then.
+>
+> Although all of this is quite unlikely, it is not impossible.
+> Therefore we now restart reading the ROM if the bus generation changed.
+>
+> Note, the memory barrier in read_rom() is still necessary according to
+> tests by Jarod Wilson, despite of the ->generation access being moved up
+> in the call chain.
+>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
+>
+> First posted on 2007-11-01.  Update:  Barrier stays.
 
-On Fri, 25 Jan 2008 16:26:45 +0100, Jiri Kosina said:
-> On Fri, 25 Jan 2008, Bodo Eggert wrote:
-> 
-> > Enabling this option changes a hard panic on boot errors to a
-> > soft panic, which does not stop the system completely.
-> > You can still scroll the screen and read the messages.
-> 
-> Hi Bodo,
-> 
-> if you are willing to put some effort into the ability to scroll the 
-> console after panic, it might be worthwile to look making the keyboard 
-> driver work even after panic (i.e. poll the keyboard, rather than relying 
-> on interrupts).
-> 
-> That has significantly smaller potential of breaking because the system is 
-> expected to be dead after panic (watchdogs, broken data structures in 
-> memory, etc).
+This is essentially what I've been beating on locally, and I've yet to hit 
+another config rom read failure with it.
 
-I think Bodo is trying to address one specific (but quite common) corner
-case, where we currently panic() only because there's nothing else that
-makes sense - if we can't find the root fs, we're hosed.  But (barring *other*
-oops/etc issues), we're still up and running, our data structures are intact,
-and there's no real reason we can't use such kernel services as we want (such
-as the screen scroller) to help the sysadmin figure out what he misconfigured.
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
 
-If we were trying to do a *general case* handler for post-panic, yes, we'd
-want to do the polled keyboard and all that....
 
---==_Exmh_1201281417_2846P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHmhmJcC3lWbTT17ARAkC0AKDa7OsrAhl93XZMEAlVRG5S3n5k1QCgpguh
-cPYwmBRyvzooqrxr6VOKGWE=
-=svX7
------END PGP SIGNATURE-----
-
---==_Exmh_1201281417_2846P--
+-- 
+Jarod Wilson
+jwilson@redhat.com
