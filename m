@@ -1,139 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933247AbYAYIrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761791AbYAYIsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933247AbYAYIrn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:47:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763077AbYAYIe0
+	id S1761791AbYAYIsN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:48:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762564AbYAYIg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:34:26 -0500
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:30752 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758307AbYAYIeW (ORCPT
+	Fri, 25 Jan 2008 03:36:26 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:62509 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932705AbYAYIgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 03:34:22 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=JbA48iZDRDMJLnIvEKCbLdQeR9VcLJEc9U9yuNWErpQ0EsoNld7kdJIcweqrF0SrabtOWhqScowLLlRdo85acZKgWnOqGi64/56qJFhxbzLSn5iK99Aqayx7pULynsL/YqqygXYxm2yQzIRJiT1oCcrv0DBUf0msaEBMm1Bbsss=  ;
-X-YMail-OSG: HSNvi6oVM1lW8Epo3jRpiraexkz9Ij7wXXP.S2kowHEBxyuWpwy2e2LelvRVCd_KuZmpf9wBuQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH RESEND] Minimal fix for private_list handling races
-Date: Fri, 25 Jan 2008 19:34:07 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20080122171025.GB4485@duck.suse.cz> <200801240205.17005.nickpiggin@yahoo.com.au> <20080123154818.GD10144@duck.suse.cz>
-In-Reply-To: <20080123154818.GD10144@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801251934.08160.nickpiggin@yahoo.com.au>
+	Fri, 25 Jan 2008 03:36:21 -0500
+Date: Fri, 25 Jan 2008 00:42:52 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86: trim ram need to check if mtrr is there v3
+In-reply-to: <4799930B.40006@goop.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200801250042.53074.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <47993F1A.5070408@goop.org> <200801241947.55223.yinghai.lu@sun.com>
+ <4799930B.40006@goop.org>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 January 2008 02:48, Jan Kara wrote:
-> On Thu 24-01-08 02:05:16, Nick Piggin wrote:
-> > On Thursday 24 January 2008 00:30, Jan Kara wrote:
-> > > On Wed 23-01-08 12:00:02, Nick Piggin wrote:
-> > > > On Wednesday 23 January 2008 04:10, Jan Kara wrote:
-> > > > >   Hi,
-> > > > >
-> > > > >   as I got no answer for a week, I'm resending this fix for races
-> > > > > in private_list handling. Andrew, do you like them more than the
-> > > > > previous version?
-> > > >
-> > > > FWIW, I reviewed this, and it looks OK although I think some comments
-> > > > would be in order.
-> > >
-> > >   Thanks.
-> > >
-> > > > What would be really nice is to avoid the use of b_assoc_buffers
-> > > > completely in this function like I've attempted (untested). I don't
-> > > > know if you'd actually call that an improvement...?
-> > >
-> > >   I thought about this solution as well. But main issue I had with this
-> > > solution is that currently, you nicely submit all the metadata buffers
-> > > at once, so that block layer can sort them and write them in nice
-> > > order. With the array you submit buffers by 16 (or any other fixed
-> > > amount) and in mostly random order... So IMHO fsync would become
-> > > measurably slower.
-> >
-> > Oh, I don't know the filesystems very well... which ones would
-> > attach a large number of metadata buffers to the inode?
->
->   This logic is actually used only by a few filesystems - ext2 and UDF are
-> probably the most common ones. For example for ext2, the indirect blocks
-> are on the list if the file is freshly written, so that is roughly around
-> 1MB of metadata per 1GB of data (for 4KB blocks, with 1KB blocks it is 4MB
-> per 1GB). Because seeks are expensive, you could really end up with the
-> write being 16 times slower when you do it in 16 passes instead of one...
+[PATCH] x86: trim ram need to check if mtrr is there v3
 
-Yeah, that's fair enough I suppose. I wasn't thinking you'd have a
-huge newly dirtied file, but it could happen. I don't want to cause
-regressions.
+> >Jeremy Fitzhardinge wrote:
+> > When booting a current x86.git kernel under kvm, I get this:
+> > 
+> > (qemu) Linux version 2.6.24-rc8 (jeremy@ezr) (gcc version 4.1.2 20070925 
+> > (Red Hat 4.1.2-33)) #1928 SMP PREEMPT Thu Jan 24 17:09:04 PST 2008
+> > early_ioremap_init()
+> > BIOS-provided physical RAM map:
+> > BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+> > BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+> > BIOS-e820: 00000000000e8000 - 0000000000100000 (reserved)
+> > BIOS-e820: 0000000000100000 - 000000001fff0000 (usable)
+> > BIOS-e820: 000000001fff0000 - 0000000020000000 (ACPI data)
+> > BIOS-e820: 00000000fffc0000 - 0000000100000000 (reserved)
+> > console [earlyser0] enabled
+> > 0MB HIGHMEM available.
+> > 511MB LOWMEM available.
+> > Scan SMP from c0000000 for 1024 bytes.
+> > Scan SMP from c009fc00 for 1024 bytes.
+> > Scan SMP from c00f0000 for 65536 bytes.
+> > Scan SMP from c009fc00 for 1024 bytes.
+> > ***************
+> > **** WARNING: likely BIOS bug
+> > **** MTRRs don't cover all of memory, trimmed 131056 pages
+> > ***************
+> 
+> H. Peter Anvin wrote:
+> Looks like the code doesn't check that the CPU *has* MTRRs...
 
+so more strict check if mtrr is there really.
+bail out if mtrr all blank when qemu cpu model is used
 
-> > With that in mind, doesn't your first patch suffer from a race due to
-> > exactly this unlocked list_empty check when you are removing clean
-> > buffers from the queue?
-> >
-> >                              if (!buffer_dirty(bh) && !buffer_locked(bh))
-> > mark_buffer_dirty()
-> > if (list_empty(&bh->b_assoc_buffers))
-> >      /* add */
-> >                                  __remove_assoc_queue(bh);
-> >
-> > Which results in the buffer being dirty but not on the ->private_list,
-> > doesn't it?
->
->   Hmm, I'm not sure about which patch you speak. Logic with removing clean
-> buffers has been in the first version (but there mark_buffer_dirty_inode()
-> was written differently).
+and check if is AMD as early
+also remove 4G less check, according to hpa.
 
-Ah, yes I see I missed that. I like that a lot better.
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-
-> In the current version, we readd buffer to 
-> private_list if it is found dirty in the second while loop of
-> fsync_buffers() and that should be enough.
-
-Sure, I think there is still a data race though, but if there is one
-it's already been there for a long time and nobody cares too much about
-those anyway.
-
-
-> > But let's see... there must be a memory ordering problem here in existing
-> > code anyway, because I don't see any barriers. Between b_assoc_buffers
-> > and b_state (via buffer_dirty); fsync_buffers_list vs
-> > mark_buffer_dirty_inode, right?
->
->   I'm not sure. What exactly to you mean? BTW: spin_lock is a memory
-> barrier, isn't it?
-
-In existing code:
-
-mark_buffer_dirty_inode():              fsync_buffers_list():
- test_set_buffer_dirty(bh);              list_del_init(&bh->b_assoc_buffers);
- if (list_empty(&bh->b_assoc_buffers))   if (buffer_dirty(bh)) {
-     ...                                   list_add(&bh->b_assoc_buffers, );
-
-These two code sequences can run concurrently because only fsync_buffers_list
-takes the lock.
-
-So fsync_buffers_list can speculatively load bh->b_state before
-its stores to clear b_assoc_buffers propagate to the CPU running
-mark_buffer_dirty_inode.
-
-So if there is a !dirty buffer on the list, then fsync_buffers_list will
-remove it from the list, but mark_buffer_dirty_inode won't see it has been
-removed from the list and won't re-add it. I think.
-
-This is actually even possible to hit on x86 because they reorder loads
-past stores. It needs a smp_mb() before if (buffer_dirty(bh) {}.
-
-Actually I very much dislike testing list entries locklessly, because they
-are not trivially atomic operations like single stores... which is another
-reason why I like your first patch.
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+@@ -642,13 +642,10 @@ early_param("disable_mtrr_trim", disable
+ #define Tom2Enabled (1U << 21)
+ #define Tom2ForceMemTypeWB (1U << 22)
+ 
+-static __init int amd_special_default_mtrr(unsigned long end_pfn)
++static __init int amd_special_default_mtrr(void)
+ {
+ 	u32 l, h;
+ 
+-	/* Doesn't apply to memory < 4GB */
+-	if (end_pfn <= (0xffffffff >> PAGE_SHIFT))
+-		return 0;
+ 	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
+ 		return 0;
+ 	if (boot_cpu_data.x86 < 0xf || boot_cpu_data.x86 > 0x11)
+@@ -686,9 +683,14 @@ int __init mtrr_trim_uncached_memory(uns
+ 	 * Make sure we only trim uncachable memory on machines that
+ 	 * support the Intel MTRR architecture:
+ 	 */
++	if (!is_cpu(INTEL) || disable_mtrr_trim)
++		return 0;
+ 	rdmsr(MTRRdefType_MSR, def, dummy);
+ 	def &= 0xff;
+-	if (!is_cpu(INTEL) || disable_mtrr_trim || def != MTRR_TYPE_UNCACHABLE)
++	if (def != MTRR_TYPE_UNCACHABLE)
++		return 0;
++
++	if (amd_special_default_mtrr())
+ 		return 0;
+ 
+ 	/* Find highest cached pfn */
+@@ -702,8 +704,14 @@ int __init mtrr_trim_uncached_memory(uns
+ 			highest_addr = base + size;
+ 	}
+ 
+-	if (amd_special_default_mtrr(end_pfn))
++	/* kvm/qemu doesn't have mtrr set right, don't trim them all */
++	if (!highest_addr) {
++		printk(KERN_WARNING "***************\n");
++		printk(KERN_WARNING "**** WARNING: likely strange cpu\n");
++		printk(KERN_WARNING "**** MTRRs all blank, cpu in qemu?\n");
++		printk(KERN_WARNING "***************\n");
+ 		return 0;
++	}
+ 
+ 	if ((highest_addr >> PAGE_SHIFT) < end_pfn) {
+ 		printk(KERN_WARNING "***************\n");
