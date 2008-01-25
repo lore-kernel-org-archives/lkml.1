@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762692AbYAYIpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933124AbYAYIqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762692AbYAYIpt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:45:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763689AbYAYIQZ
+	id S933124AbYAYIqS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765863AbYAYIZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:16:25 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:62264 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760162AbYAYIQU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 03:16:20 -0500
-Date: Fri, 25 Jan 2008 17:16:13 +0900 (JST)
-Message-Id: <20080125.171613.41631926.usui@mxm.nes.nec.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: magnus.damm@gmail.com
-Subject: [PATCH] Fix NUMA emulation for x86_64
-From: Minoru Usui <usui@mxm.nes.nec.co.jp>
-X-fingerprint: 588C 0511 30A4 1BE0 551B  7210 8433 0B28 D5CC 723D
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 25 Jan 2008 03:25:30 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:54409 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765782AbYAYIZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 03:25:28 -0500
+Message-ID: <47999CF2.9070805@garzik.org>
+Date: Fri, 25 Jan 2008 03:25:22 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Greg Kroah-Hartman <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Mike Halcrow <mhalcrow@us.ibm.com>,
+       Phillip Hellewell <phillip@hellewell.homeip.net>
+Subject: Re: [PATCH 076/196] ecryptfs: remove version_str file from sysfs
+References: <20080125071127.GA4860@kroah.com> <1201245134-4876-76-git-send-email-gregkh@suse.de>
+In-Reply-To: <1201245134-4876-76-git-send-email-gregkh@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I found a small bug of NUMA emulation code for x86_64. (CONFIG_NUMA_EMU)
-If machine is non-NUMA, find_node_by_addr() should return
-NUMA_NO_NODE, but current implementation code returns existent maximum
-NUMA node number + 1. 
-This is not existent NUMA node number.
+Greg Kroah-Hartman wrote:
+> This file violates the one-value-per-file sysfs rule.
+> 
+> If you all want it added back, please do something like a per-feature
+> file to show what is present and what isn't.
+> 
+> Cc: Kay Sievers <kay.sievers@vrfy.org>
+> Cc: Mike Halcrow <mhalcrow@us.ibm.com>
+> Cc: Phillip Hellewell <phillip@hellewell.homeip.net>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  fs/ecryptfs/main.c |   43 -------------------------------------------
+>  1 files changed, 0 insertions(+), 43 deletions(-)
 
-However, this behaviour does not affect NUMA emulation fortunately, because
-acpi_fake_nodes() that is caller of find_node_by_addr() gets pxm
-(proximity domain) by node_to_pxm() from non-existent NUMA node number
-that was returned by find_node_by_addr().
-node_to_pxm() returns PXM_INVAL that means illegal or non-existent
-NUMA node number.
+It's not really good policy to rip out ABIs found in release kernels 
+like this, even if the motivation is sound.
 
-Signed-off-by: Minoru Usui <usui@mxm.nes.nec.co.jp>
----
-diff -ruNp linux-2.6.24-rc8/arch/x86/mm/srat_64.c dst/arch/x86/mm/srat_64.c 
---- linux-2.6.24-rc8/arch/x86/mm/srat_64.c      2008-01-16 14:22:15.000000000 +0900
-+++ dst/arch/x86/mm/srat_64.c   2008-01-17 19:07:41.000000000 +0900
-@@ -457,7 +457,7 @@ static int __init find_node_by_addr(unsi
-                        break;
-                }
-        }
--       return i;
-+       return ret;
- }
- 
- /*
+IMO "don't break ABIs" rule is far more important than a 
+one-value-per-file sysfs rule.
+
+	Jeff
+
+
+
