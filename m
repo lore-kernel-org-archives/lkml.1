@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759662AbYAYJad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761122AbYAYJcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759662AbYAYJad (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 04:30:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbYAYJaH
+	id S1761122AbYAYJcD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 04:32:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbYAYJbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 04:30:07 -0500
-Received: from mga02.intel.com ([134.134.136.20]:40677 "EHLO mga02.intel.com"
+	Fri, 25 Jan 2008 04:31:52 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39910 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756944AbYAYJaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 04:30:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,249,1199692800"; 
-   d="scan'208";a="329797882"
-Subject: Re: [PATCH 4/6] x86: fix some bugs about EFI runtime code mapping
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080125091923.GE23708@elte.hu>
-References: <1201240501.15972.46.camel@caritas-dev.intel.com>
-	 <4799914C.5060709@goop.org>  <20080125091923.GE23708@elte.hu>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 25 Jan 2008 17:30:37 +0800
-Message-Id: <1201253437.15972.60.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 25 Jan 2008 09:29:54.0785 (UTC) FILETIME=[D80EDD10:01C85F34]
+	id S1752468AbYAYJbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 04:31:51 -0500
+Date: Fri, 25 Jan 2008 10:31:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] x86: fixes some bugs about EFI memory map handling
+Message-ID: <20080125093131.GG23708@elte.hu>
+References: <1201240507.15972.48.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201240507.15972.48.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-01-25 at 10:19 +0100, Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+* Huang, Ying <ying.huang@intel.com> wrote:
+
+> This patch fixes some bugs of EFI memory handing code.
 > 
-> >>  +#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-> >> +static void __init runtime_code_page_mkexec(void)
-> >> +{
-> >> +	efi_memory_desc_t *md;
-> >> +	unsigned long end;
-> >> +	void *p;
-> >> +
-> >> +	if (!(__supported_pte_mask & _PAGE_NX))
-> >> +		return;
-> >>   
-> >
-> > On 32-bit non-PAE, _PAGE_NX == 0, so this if() statement should be 
-> > sufficient to disable the whole function at compile time without 
-> > needing the outer #if defined wrapper.
+> - On x86_64, it is possible that EFI memory map can not be mapped via
+>   identity map, so efi_map_memmap is removed, just use early_ioremap.
 > 
-> good point. The patch fixes bugs and the consolidation it does is very 
-> nice so i've applied it already, but we could indeed further consolidate 
-> it and make it a nice #ifdef-less function. Could one of you send an 
-> add-on patch for this?
+> - On i386, the EFI memory map mapping take effect cross paging_init,
+>   so it is not necessary to use efi_map_memmap.
+> 
+> - EFI memory map is unmapped in efi_enter_virtual_mode to avoid
+>   early_ioremap leak.
 
-I will do it. But I have some other thing to do now, so I will send it
-on next Monday.
+thanks, applied.
 
-Best Regards,
-Huang Ying
+btw., it would be nice to consolidate this some more. Why is there a 
+separate efi_ioremap(), which is mapped to ioremap() on 32-bit, and 
+which is mapped to a fixmap based special mapper on 64-bit?
 
+To me it appears this wants to be ioremap() on both 64-bit and 32-bit, 
+and we could remove efi_ioremap() altogether. Hm?
+
+	Ingo
