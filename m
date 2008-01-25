@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbYAYWZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbYAYW0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469AbYAYWZY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 17:25:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbYAYWZM
+	id S1758743AbYAYW0J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 17:26:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbYAYWZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 17:25:12 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:48563 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 17:25:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48162 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752579AbYAYWZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 17:25:11 -0500
-Date: Fri, 25 Jan 2008 14:23:41 -0800
-From: Greg KH <gregkh@suse.de>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org,
-       "Bryan O'Sullivan" <bryan.osullivan@qlogic.com>,
-       Arthur Jones <arthur.jones@qlogic.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: [PATCH 148/196] Infiniband: make ipath driver use default
-	driver groups.
-Message-ID: <20080125222341.GC15172@suse.de>
-References: <20080125071127.GA4860@kroah.com> <1201246425-5058-69-git-send-email-gregkh@suse.de> <adabq79lgkb.fsf@cisco.com> <ada7ihxlfnh.fsf@cisco.com>
+	id S1754352AbYAYWZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 17:25:56 -0500
+Date: Fri, 25 Jan 2008 23:25:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 183/196] driver core: fix build with SYSFS=n
+Message-ID: <20080125222530.GA23769@elte.hu>
+References: <20080125071127.GA4860@kroah.com> <1201246425-5058-104-git-send-email-gregkh@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ada7ihxlfnh.fsf@cisco.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1201246425-5058-104-git-send-email-gregkh@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 02:11:14PM -0800, Roland Dreier wrote:
-> So I think it is coming from the following code in ipath_sysfs.c:
-> 
-> 	int ipath_device_create_group(struct device *dev, struct ipath_devdata *dd)
-> 	{
-> 		int ret;
-> 	
-> 		ret = sysfs_create_group(&dev->kobj, &dev_attr_group);
-> 		if (ret)
-> 			goto bail;
-> 	
-> 		ret = sysfs_create_group(&dev->kobj, &dev_counter_attr_group);
-> 		if (ret)
-> 			goto bail_attrs;
-> 	
-> 		sysfs_remove_group(&dev->kobj, &dev_counter_attr_group);
-> 	bail_attrs:
-> 		sysfs_remove_group(&dev->kobj, &dev_attr_group);
-> 	bail:
-> 		return ret;
-> 	}
-> 
-> note that the success path falls through into the error path and
-> removes the groups it just created, which means that on initialization
-> the groups are already removed, so we hit the BUG on the second try to
-> remove the groups on module exit.
-> 
-> And I think this chunk of your patch:
-> 
-> 	-	snprintf(unit, sizeof(unit), "%02d", dd->ipath_unit);
-> 	-	ret = sysfs_create_link(&dev->driver->kobj, &dev->kobj, unit);
-> 	-	if (ret == 0)
-> 	-		goto bail;
-> 	-
-> 
-> was what broke it.  (Note the "if (ret == 0) then skip error
-> unwinding" code that got deleted by mistake -- not surprising given
-> how hard to read that construction is)
-> 
-> My bad for not testing -mm better.  I'll queue this up to fix it:
 
-Thanks for the fix, and sorry for causing that, it was a complex error
-path :)
+* Greg Kroah-Hartman <gregkh@suse.de> wrote:
 
-Although a BUG() for when we try to remove a file that is no longer
-there seems pretty harsh, I think I'll change that to a WARN_ON() so
-that people just know to fix up their code, not kill the kernel
-entirely.
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> When SYSFS=n and MODULES=y, build ends with:
+> 
+> linux-2.6.24-rc6-mm1/drivers/base/module.c: In function 'module_add_driver':
+> linux-2.6.24-rc6-mm1/drivers/base/module.c:49: error: 'module_kset' undeclared (first use in this function)
+> make[3]: *** [drivers/base/module.o] Error 1
 
-thanks,
+_PLEASE_ fold such fixes into the patch that introduces the build bugs, 
+prior sending your git trees upstream! (just like Andrew does it with 
+all patches that come via -mm)
 
-greg k-h
+Changes like this (and it now leaked into Linus' tree as well) kill 
+bisectability.
+
+Thanks.
+
+	Ingo
