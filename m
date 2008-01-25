@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbYAYHTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbYAYHTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757978AbYAYHTA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757057AbYAYHOy
+	id S1759626AbYAYHTb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:19:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758158AbYAYHO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:14:54 -0500
-Received: from mx2.suse.de ([195.135.220.15]:47455 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 02:14:58 -0500
+Received: from ns2.suse.de ([195.135.220.15]:47460 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756941AbYAYHOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:14:51 -0500
+	id S1758137AbYAYHO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:14:57 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Kay Sievers <kay.sievers@vrfy.org>,
+Cc: Tony Jones <tonyj@suse.de>, Jens Axboe <axboe@kernel.dk>,
+       Sam Hopkins <sah@coraid.com>, Kay Sievers <kay.sievers@vrfy.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 016/196] kref: add kref_set()
-Date: Thu, 24 Jan 2008 23:09:14 -0800
-Message-Id: <1201245134-4876-16-git-send-email-gregkh@suse.de>
+Subject: [PATCH 017/196] aoechr: Convert from class_device to device
+Date: Thu, 24 Jan 2008 23:09:15 -0800
+Message-Id: <1201245134-4876-17-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -23,69 +24,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+From: Tony Jones <tonyj@suse.de>
 
-This adds kref_set() to the kref api for future use by people who really
-know what they are doing with krefs...
-
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Signed-off-by: Tony Jones <tonyj@suse.de>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Sam Hopkins <sah@coraid.com>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/kref.h |    1 +
- lib/kref.c           |   15 +++++++++++++--
- 2 files changed, 14 insertions(+), 2 deletions(-)
+ drivers/block/aoe/aoechr.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/kref.h b/include/linux/kref.h
-index 6fee353..5d18563 100644
---- a/include/linux/kref.h
-+++ b/include/linux/kref.h
-@@ -24,6 +24,7 @@ struct kref {
- 	atomic_t refcount;
- };
+diff --git a/drivers/block/aoe/aoechr.c b/drivers/block/aoe/aoechr.c
+index 39e563e..d5480e3 100644
+--- a/drivers/block/aoe/aoechr.c
++++ b/drivers/block/aoe/aoechr.c
+@@ -259,9 +259,8 @@ aoechr_init(void)
+ 		return PTR_ERR(aoe_class);
+ 	}
+ 	for (i = 0; i < ARRAY_SIZE(chardevs); ++i)
+-		class_device_create(aoe_class, NULL,
+-					MKDEV(AOE_MAJOR, chardevs[i].minor),
+-					NULL, chardevs[i].name);
++		device_create(aoe_class, NULL,
++			      MKDEV(AOE_MAJOR, chardevs[i].minor), chardevs[i].name);
  
-+void kref_set(struct kref *kref, int num);
- void kref_init(struct kref *kref);
- void kref_get(struct kref *kref);
- int kref_put(struct kref *kref, void (*release) (struct kref *kref));
-diff --git a/lib/kref.c b/lib/kref.c
-index a6dc3ec..9ecd6e8 100644
---- a/lib/kref.c
-+++ b/lib/kref.c
-@@ -15,13 +15,23 @@
- #include <linux/module.h>
- 
- /**
-+ * kref_set - initialize object and set refcount to requested number.
-+ * @kref: object in question.
-+ * @num: initial reference counter
-+ */
-+void kref_set(struct kref *kref, int num)
-+{
-+	atomic_set(&kref->refcount, num);
-+	smp_mb();
-+}
-+
-+/**
-  * kref_init - initialize object.
-  * @kref: object in question.
-  */
- void kref_init(struct kref *kref)
- {
--	atomic_set(&kref->refcount,1);
--	smp_mb();
-+	kref_set(kref, 1);
- }
- 
- /**
-@@ -61,6 +71,7 @@ int kref_put(struct kref *kref, void (*release)(struct kref *kref))
  	return 0;
  }
+@@ -272,7 +271,7 @@ aoechr_exit(void)
+ 	int i;
  
-+EXPORT_SYMBOL(kref_set);
- EXPORT_SYMBOL(kref_init);
- EXPORT_SYMBOL(kref_get);
- EXPORT_SYMBOL(kref_put);
+ 	for (i = 0; i < ARRAY_SIZE(chardevs); ++i)
+-		class_device_destroy(aoe_class, MKDEV(AOE_MAJOR, chardevs[i].minor));
++		device_destroy(aoe_class, MKDEV(AOE_MAJOR, chardevs[i].minor));
+ 	class_destroy(aoe_class);
+ 	unregister_chrdev(AOE_MAJOR, "aoechr");
+ }
 -- 
 1.5.3.8
 
