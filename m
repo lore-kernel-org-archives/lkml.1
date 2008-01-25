@@ -1,92 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbYAYNaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757208AbYAYNdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756103AbYAYNaj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 08:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbYAYNa3
+	id S1757208AbYAYNdq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 08:33:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbYAYNdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 08:30:29 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58799 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753860AbYAYNa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 08:30:28 -0500
-Date: Fri, 25 Jan 2008 14:30:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@novell.com>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [x86.git] new CPA implementation
-Message-ID: <20080125133015.GA29040@elte.hu>
-References: <20080125002401.GA31745@elte.hu> <200801250901.48422.ak@novell.com>
+	Fri, 25 Jan 2008 08:33:35 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:46338 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754160AbYAYNde (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 08:33:34 -0500
+Date: Fri, 25 Jan 2008 08:33:29 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Takashi Sato <t-sato@yk.jp.nec.com>, linux-ext4@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] ext3 freeze feature
+Message-ID: <20080125133329.GB8184@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Takashi Sato <t-sato@yk.jp.nec.com>, linux-ext4@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801250901.48422.ak@novell.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080125121851.GA3361@dmon-lap.sw.ru>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 25, 2008 at 03:18:51PM +0300, Dmitri Monakhov wrote:
+> First of all Linux already have at least one open-source(dm-snap),
+> and several commercial snapshot solutions. 
 
-* Andi Kleen <ak@novell.com> wrote:
+Yes, but it requires that the filesystem be stored under LVM.  Unlike
+what EVMS v1 allowed us to do, we can't currently take a snapshot of a
+bare block device.  This patch could potentially be useful for systems
+which aren't using LVM, however....
 
-> > - the new implementation is much more scalable, because it is 
-> > lockless
-> >   in the fastpath
-> 
-> What fast path?  This should not really be called that often, 
-> especially not when DEBUG_PAGEALLOC has its own simple implementation.
+> You have to realize what delay between 1-3 stages have to be minimal.
+> for example dm-snap perform it only for explicit journal flushing.
+> From my experience if delay is more than 4-5 seconds whole system becomes
+> unstable.
 
-that's a point you are still missing badly in all these discussions 
-about unification and sound design practices: code reuse and a clean, 
-layered design. PAGEALLOC now uses change_page_attr() again and that 
-approach is working really well.
+That's the problem.  You can't afford to freeze for very long.
 
-You made PAGEALLOC use a special-purpose remapping function but that 
-would make c_p_a() unrobust indirectly - simply because it would be used 
-much less.
+What you *could* do is to start putting processes to sleep if they
+attempt to write to the frozen filesystem, and then detect the
+deadlock case where the process holding the file descriptor used to
+freeze the filesystem gets frozen because it attempted to write to the
+filesystem --- at which point it gets some kind of signal (which
+defaults to killing the process), and the filesystem is unfrozen and
+as part of the unfreeze you wake up all of the processes that were put
+to sleep for touching the frozen filesystem.
 
-So i've removed that change and have fixed c_p_a() instead to both be 
-fast and scalable enough for PAGEALLOC and to be robust enough for 
-PAGEALLOC. Both sides of the equation (PAGEALLOC and c_p_a()) benefit 
-from that.
+The other approach would be to say, "oh well, the freeze ioctl is
+inherently dangerous, and root is allowed to himself in the foot, so
+who cares".  :-)
 
-> Anyways the most important general optimization imho (which you 
- > unfortunately dropped) was to get rid of the WBINVDs which unlike 
-> everything else cpa does are _really_ costly.
+But it was this concern which is why ext3 never exported freeze
+functionality to userspace, even though other commercial filesystems
+do support this.  It wasn't that it wasn't considered, but the concern
+about whether or not it was sufficiently safe to make available.
 
-it wasnt "dropped" - your wbinvd->clflush feature was never submitted in 
-a clean fashion. The "great CPA" patchset you submitted to lkml 3 weeks 
-ago was a badly interwined tangle of features and fixes, which just 
-added ontop of the existing set of bad practices and design. We asked 
-you to restructure, we even added your patchset to x86.git to encourage 
-you to do it (and you wrote the whole code to begin with), but you did 
-not clean it up and you generally were not showing interest in such 
-efforts. We finally got sick of your stance and i rewrote the code with 
-Thomas.
+And I do agree that we probably should just implement this in
+filesystem independent way, in which case all of the filesystems that
+support this already have super_operations functions
+write_super_lockfs() and unlockfs().
 
-The current CPA patchset in x86.git does it the right way around: 
-_first_ it got rid of the sources of unrobustness, consolidated and 
-cleaned up the structure and design of the codebase, and now we can 
-layer features ontop of it. (once we can trust the new codebase)
+So if this is done using a new system call, there should be no
+filesystem-specific changes needed, and all filesystems which support
+those super_operations method functions would be able to provide this
+functionality to the new system call.
 
-> > - the CPA-testsuite now passes without failures on both 32-bit and
-> >   64-bit. (it never fully worked with your CPA series.)
-> 
-> Without reassembly implemented CPA_TEST will always imply running a 
-> lot of the direct memory as 4K pages so it can't be safely enabled on 
-> production kernels anymore. You should probably at least add a warning 
-> or limit the test to only work on a small portion of the direct 
-> mapping now.
+      	      	     	    		      	 - Ted
 
-good point - i have made it dependent on DEBUG_KERNEL now and extended 
-the help text.
-
-	Ingo
+P.S.  Oh yeah, it should be noted that freezing at the filesystem
+layer does *not* guarantee that changes to the block device aren't
+happening via mmap()'ed files.  The LVM needs to freeze writes the
+block device level if it wants to guarantee a completely stable
+snapshot image.  So the proposed patch doens't quite give you those
+guarantees, if that was the intended goal.
