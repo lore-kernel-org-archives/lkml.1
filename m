@@ -1,111 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbYAYSrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759509AbYAYSsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758840AbYAYSrS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 13:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbYAYSrJ
+	id S1759509AbYAYSsc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 13:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbYAYSsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 13:47:09 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:53755 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755753AbYAYSrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 13:47:06 -0500
-Date: Fri, 25 Jan 2008 10:47:04 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Robin Holt <holt@sgi.com>
-cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 1/4] mmu_notifier: Core code
-In-Reply-To: <20080125183934.GO26420@sgi.com>
-Message-ID: <Pine.LNX.4.64.0801251041040.672@schroedinger.engr.sgi.com>
-References: <20080125055606.102986685@sgi.com> <20080125055801.212744875@sgi.com>
- <20080125183934.GO26420@sgi.com>
+	Fri, 25 Jan 2008 13:48:24 -0500
+Received: from spirit.analogic.com ([204.178.40.4]:3762 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755727AbYAYSsY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 13:48:24 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 25 Jan 2008 18:48:20.0636 (UTC) FILETIME=[DB19FDC0:01C85F82]
+Content-class: urn:content-classes:message
+Subject: Re: Q: linux failed to execute /init?
+Date: Fri, 25 Jan 2008 13:48:20 -0500
+Message-ID: <Pine.LNX.4.61.0801251344300.18469@chaos.analogic.com>
+in-reply-to: <a72f6a3c0801250540l73aacf9bvcebf50c23da3943e@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Q: linux failed to execute /init?
+thread-index: AchfgttCrCGgyYM0Saeq7VTwKdaVjw==
+References: <a72f6a3c0801250538m57a91629o59242fad9e7d0265@mail.gmail.com> <a72f6a3c0801250540l73aacf9bvcebf50c23da3943e@mail.gmail.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Jack Harvard" <jack.harvard@googlemail.com>
+Cc: "Linux kernel" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jan 2008, Robin Holt wrote:
 
-> I realize it is a minor nit, but since we put the continuation in column
-> 81 in the next define, can we do the same here and make this more
-> readable?
 
-We need to fix the next define to not use column 81.
-Found a couple of more 80 column infractions. Will be fixed in next 
-release.
+-14 is EFAULT. This means that there was some access
+to memory that was not mapped.
 
-> > +void mmu_notifier_release(struct mm_struct *mm)
-> > +{
-> > +	struct mmu_notifier *mn;
-> > +	struct hlist_node *n;
-> > +
-> > +	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
-> > +		rcu_read_lock();
-> > +		hlist_for_each_entry_rcu(mn, n,
-> > +					  &mm->mmu_notifier.head, hlist) {
-> > +			if (mn->ops->release)
-> > +				mn->ops->release(mn, mm);
-> > +			hlist_del(&mn->hlist);
-> 
-> I think the hlist_del needs to be before the function callout so we can free
-> the structure without a use-after-free issue.
+In the future, check /usr/include/asm/errno.h for exit
+codes. Of course in user-space they are positive with
+-1 being return from the function-call and errno being
+set to this code. In the kernel, they are combined with
+'error' being the negative of the return code.
 
-The list head is in the mm_struct. This will be freed later.
+On Fri, 25 Jan 2008, Jack Harvard wrote:
 
-> > +void mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm)
-> > +{
-> > +	spin_lock(&mmu_notifier_list_lock);
-> 
-> Shouldn't this really be protected by the down_write(mmap_sem)?  Maybe:
+> Hi,
+>
+> I'm trying to boot Linux, but the /init process failed. Here is the
+> info:
+>
+> =FF<6>/init exit code: -14
+> /init exit code: -14
+> <4>Failed to execute /init
+> Failed to execute /init
+> <6>/sbin/init exit code: -14
+>
+> Just wondering what do those different exit codes mean?
+>
+> Thanks, -J
+> --
 
-Ok. We could switch this to mmap_sem protection for the mm_struct but the 
-rmap notifier is not associated with an mm_struct. So we would need to 
-keep it there. Since we already have a spinlock: Just use it for both to 
-avoid further complications.
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
-> > +	spin_lock(&mmu_notifier_list_lock);
-> > +	hlist_del(&mn->hlist);
-> 
-> hlist_del_rcu?  Ditto on the lock.
 
-Peter already mentioned that and I have posted patches that address this 
-issue.
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
-> > @@ -2043,6 +2044,7 @@ void exit_mmap(struct mm_struct *mm)
-> >  	vm_unacct_memory(nr_accounted);
-> >  	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, 0);
-> >  	tlb_finish_mmu(tlb, 0, end);
-> > +	mmu_notifier_release(mm);
-> 
-> Can we consider moving this notifier or introducing an additional notifier
-> in the release or a flag to this one indicating early/late.
-
-There is only one call right now?
-
-> The GRU that Jack is concerned with would benefit from the early in
-> that it could just invalidate the GRU context and immediately all GRU
-> TLB entries are invalid.  I believe Jack would like to also be able to
-> remove his entry from the mmu_notifier list in an effort to avoid the
-> page and range callouts.
-
-The TLB entries are removed by earlier invalidate_range calls. I would 
-think that no TLBs are left at this point. Its simply a matter of 
-releasing any still allocated resources through this callback.
- 
-> XPMEM, would also benefit from a call early.  We could make all the
-> segments as being torn down and start the recalls.  We already have
-> this code in and working (have since it was first written 6 years ago).
-> In this case, all segments are torn down with a single message to each
-> of the importing partitions.  In contrast, the teardown code which would
-> happen now would be one set of messages for each vma.
-
-So we need an additional global teardown call? Then we'd need to switch 
-off the vma based invalidate_range()?
-
+Thank you.
