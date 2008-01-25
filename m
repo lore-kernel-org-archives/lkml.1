@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbYAYRRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbYAYRR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757503AbYAYRRM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 12:17:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbYAYRQ6
+	id S1758099AbYAYRR2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 12:17:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbYAYRRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 12:16:58 -0500
-Received: from wr-out-0506.google.com ([64.233.184.234]:2091 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754259AbYAYRQ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 12:16:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=I0PcMbudukFDC8JNxvkyqhqZoNmHmey/yxewAiTMQD39ayvGPb0tuthfsyG9hyCQP93VqolIgvsfX6aP4HCiEHIUoxxe4jfbZQhxUxVbyuJ4k0Q+8JhKNjoLQX53YnqefMl2V+gA+KFcG2uO/zYkT3bxJT/OqFl+v+9IGKqSRcw=
-Message-ID: <2c0942db0801250916v6b1f988fre454dd7e33d7985@mail.gmail.com>
-Date: Fri, 25 Jan 2008 09:16:54 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Asbjorn Sannes" <asbjorsa@ifi.uio.no>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: Unpredictable performance
-In-Reply-To: <4799C8E8.9060501@ifi.uio.no>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 25 Jan 2008 12:17:04 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:58240 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756193AbYAYRRC (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 12:17:02 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Introduce softpanic
+In-Reply-To: Your message of "Fri, 25 Jan 2008 16:26:45 +0100."
+             <Pine.LNX.4.64.0801251624480.5521@twin.jikos.cz>
+From: Valdis.Kletnieks@vt.edu
+References: <alpine.LSU.0.999.0801251551060.21522@be1.lrz>
+            <Pine.LNX.4.64.0801251624480.5521@twin.jikos.cz>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1201281417_2846P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4799C8E8.9060501@ifi.uio.no>
-X-Google-Sender-Auth: 8e830b583479ddc4
+Date: Fri, 25 Jan 2008 12:16:57 -0500
+Message-ID: <10536.1201281417@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 25, 2008 3:32 AM, Asbjorn Sannes <asbjorsa@ifi.uio.no> wrote:
-> Hi,
->
-> I am experiencing unpredictable results with the following test
-> without other processes running (exception is udev, I believe):
-> cd /usr/src/test
-> tar -jxf ../linux-2.6.22.12
-> cp ../working-config linux-2.6.22.12/.config
-> cd linux-2.6.22.12
-> make oldconfig
-> time make -j3 > /dev/null # This is what I note down as a "test" result
-> cd /usr/src ; umount /usr/src/test ; mkfs.ext3 /dev/cc/test
-> and then reboot
->
-> The kernel is booted with the parameter mem=81920000
->
-> For 2.6.23.14 the results vary from (real time) 33m30.551s to 45m32.703s
-> (30 runs)
-> For 2.6.23.14 with nop i/o scheduler from 29m8.827s to 55m36.744s (24 runs)
-> For 2.6.22.14 also varied a lot.. but, lost results :(
-> For 2.6.20.21 only vary from 34m32.054s to 38m1.928s (10 runs)
->
-> Any idea of what can cause this? I have tried to make the runs as equal
-> as possible, rebooting between each run.. i/o scheduler is cfq as default.
->
-> sys and user time only varies a couple of seconds.. and the order of
-> when it is "fast" and when it is "slow" is completly random, but it
-> seems that the results are mostly concentrated around the mean.
+--==_Exmh_1201281417_2846P
+Content-Type: text/plain; charset=us-ascii
 
-First off, not all tests are good tests. In particular, small timing
-differences can get magnified horrendously by heading into swap.
+On Fri, 25 Jan 2008 16:26:45 +0100, Jiri Kosina said:
+> On Fri, 25 Jan 2008, Bodo Eggert wrote:
+> 
+> > Enabling this option changes a hard panic on boot errors to a
+> > soft panic, which does not stop the system completely.
+> > You can still scroll the screen and read the messages.
+> 
+> Hi Bodo,
+> 
+> if you are willing to put some effort into the ability to scroll the 
+> console after panic, it might be worthwile to look making the keyboard 
+> driver work even after panic (i.e. poll the keyboard, rather than relying 
+> on interrupts).
+> 
+> That has significantly smaller potential of breaking because the system is 
+> expected to be dead after panic (watchdogs, broken data structures in 
+> memory, etc).
 
-That said, do you have the means and standard deviations of those
-runs? That's a good way to tell whether the tests are converging or
-not, and whether your results are telling you anything.
+I think Bodo is trying to address one specific (but quite common) corner
+case, where we currently panic() only because there's nothing else that
+makes sense - if we can't find the root fs, we're hosed.  But (barring *other*
+oops/etc issues), we're still up and running, our data structures are intact,
+and there's no real reason we can't use such kernel services as we want (such
+as the screen scroller) to help the sysadmin figure out what he misconfigured.
 
-Also as you're on a uniprocessor system, make -j2 is probably going to
-be faster than make -j3. Perhaps immaterial to whatever you're trying
-to test, but there you go.
+If we were trying to do a *general case* handler for post-panic, yes, we'd
+want to do the polled keyboard and all that....
+
+--==_Exmh_1201281417_2846P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHmhmJcC3lWbTT17ARAkC0AKDa7OsrAhl93XZMEAlVRG5S3n5k1QCgpguh
+cPYwmBRyvzooqrxr6VOKGWE=
+=svX7
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1201281417_2846P--
