@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbYAYHOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757664AbYAYHPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756814AbYAYHOr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbYAYHN6
+	id S1757664AbYAYHPJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:15:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbYAYHOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:13:58 -0500
-Received: from mail.suse.de ([195.135.220.2]:52380 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 02:14:05 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47425 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757462AbYAYHN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:13:56 -0500
+	id S1757539AbYAYHOC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:14:02 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Li Yang <leo@zh-kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 005/196] Chinese: add translation of SubmittingDrivers
-Date: Thu, 24 Jan 2008 23:09:03 -0800
-Message-Id: <1201245134-4876-5-git-send-email-gregkh@suse.de>
+Cc: Dave Young <hidave.darkstar@gmail.com>, Li Yang <leo@zh-kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 006/196] Chinese: add translation of oops-tracing.txt
+Date: Thu, 24 Jan 2008 23:09:04 -0800
+Message-Id: <1201245134-4876-6-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -22,22 +23,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Li Yang <leo@zh-kernel.org>
+From: Dave Young <hidave.darkstar@gmail.com>
 
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 Signed-off-by: Li Yang <leo@zh-kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/zh_CN/SubmittingDrivers |  168 +++++++++++++++++++++++++++++++++
- 1 files changed, 168 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/zh_CN/SubmittingDrivers
+ Documentation/zh_CN/oops-tracing.txt |  212 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 212 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/zh_CN/oops-tracing.txt
 
-diff --git a/Documentation/zh_CN/SubmittingDrivers b/Documentation/zh_CN/SubmittingDrivers
+diff --git a/Documentation/zh_CN/oops-tracing.txt b/Documentation/zh_CN/oops-tracing.txt
 new file mode 100644
-index 0000000..5f4815c
+index 0000000..9312608
 --- /dev/null
-+++ b/Documentation/zh_CN/SubmittingDrivers
-@@ -0,0 +1,168 @@
-+﻿Chinese translated version of Documentation/SubmittingDrivers
++++ b/Documentation/zh_CN/oops-tracing.txt
+@@ -0,0 +1,212 @@
++Chinese translated version of Documentation/oops-tracing.txt
 +
 +If you have any comment or update to the content, please contact the
 +original document maintainer directly.  However, if you have a problem
@@ -45,166 +47,210 @@ index 0000000..5f4815c
 +help.  Contact the Chinese maintainer if this translation is outdated
 +or if there is a problem with the translation.
 +
-+Chinese maintainer: Li Yang <leo@zh-kernel.org>
++Chinese maintainer: Dave Young <hidave.darkstar@gmail.com>
 +---------------------------------------------------------------------
-+Documentation/SubmittingDrivers 的中文翻译
++Documentation/oops-tracing.txt 的中文翻译
 +
 +如果想评论或更新本文的内容，请直接联系原文档的维护者。如果你使用英文
 +交流有困难的话，也可以向中文版维护者求助。如果本翻译更新不及时或者翻
 +译存在问题，请联系中文版维护者。
 +
-+中文版维护者： 李阳  Li Yang <leo@zh-kernel.org>
-+中文版翻译者： 李阳  Li Yang <leo@zh-kernel.org>
-+中文版校译者： 陈琦 Maggie Chen <chenqi@beyondsoft.com>
++中文版维护者： 杨瑞 Dave Young <hidave.darkstar@gmail.com>
++中文版翻译者： 杨瑞 Dave Young <hidave.darkstar@gmail.com>
++中文版校译者： 李阳 Li Yang <leo@zh-kernel.org>
 +               王聪 Wang Cong <xiyou.wangcong@gmail.com>
-+               张巍 Zhang Wei <Wei.Zhang@freescale.com>
 +
 +以下为正文
 +---------------------------------------------------------------------
 +
-+如何向 Linux 内核提交驱动程序
-+-----------------------------
++注意： ksymoops 在2.6中是没有用的。 请以原有格式使用Oops(来自dmesg，等等)。
++忽略任何这样那样关于“解码Oops”或者“通过ksymoops运行”的文档。 如果你贴出运行过
++ksymoops的来自2.6的Oops，人们只会让你重贴一次。
 +
-+这篇文档将会解释如何向不同的内核源码树提交设备驱动程序。请注意，如果你感
-+兴趣的是显卡驱动程序，你也许应该访问 XFree86 项目(http://www.xfree86.org/)
-+和／或 X.org 项目 (http://x.org)。
++快速总结
++-------------
 +
-+另请参阅 Documentation/SubmittingPatches 文档。
++发现Oops并发送给看似相关的内核领域的维护者。别太担心对不上号。如果你不确定就发给
++和你所做的事情相关的代码的负责人。 如果可重现试着描述怎样重构。 那甚至比oops更有
++价值。
 +
++如果你对于发送给谁一无所知， 发给linux-kernel@vger.kernel.org。感谢你帮助Linux
++尽可能地稳定。
 +
-+分配设备号
-+----------
++Oops在哪里?
++----------------------
 +
-+块设备和字符设备的主设备号与从设备号是由 Linux 命名编号分配权威 LANANA（
-+现在是 Torben Mathiasen）负责分配。申请的网址是 http://www.lanana.org/。
-+即使不准备提交到主流内核的设备驱动也需要在这里分配设备号。有关详细信息，
-+请参阅 Documentation/devices.txt。
++通常Oops文本由klogd从内核缓冲区里读取并传给syslogd，由syslogd写到syslog文件中，
++典型地是/var/log/messages(依赖于/etc/syslog.conf)。有时klogd崩溃了,这种情况下你
++能够运行dmesg > file来从内核缓冲区中读取数据并保存下来。 否则你可以
++cat /proc/kmsg > file， 然而你必须介入中止传输， kmsg是一个“永不结束的文件”。如
++果机器崩溃坏到你不能输入命令或者磁盘不可用那么你有三种选择:-
 +
-+如果你使用的不是已经分配的设备号，那么当你提交设备驱动的时候，它将会被强
-+制分配一个新的设备号，即便这个设备号和你之前发给客户的截然不同。
++（1） 手抄屏幕上的文本待机器重启后再输入计算机。 麻烦但如果没有针对崩溃的准备，
++这是仅有的选择。 另外，你可以用数码相机把屏幕拍下来-不太好，但比没有强。 如果信
++息滚动到了终端的上面，你会发现以高分辩率启动（比如，vga=791）会让你读到更多的文
++本。（注意：这需要vesafb，所以对‘早期’的oops没有帮助）
 +
-+设备驱动的提交对象
-+------------------
++（2）用串口终端启动（请参看Documentation/serial-console.txt），运行一个null
++modem到另一台机器并用你喜欢的通讯工具获取输出。Minicom工作地很好。
 +
-+Linux 2.0:
-+	此内核源码树不接受新的驱动程序。
++（3）使用Kdump（请参看Documentation/kdump/kdump.txt），
++使用在Documentation/kdump/gdbmacros.txt中定义的dmesg gdb宏，从旧的内存中提取内核
++环形缓冲区。
 +
-+Linux 2.2:
-+	此内核源码树不接受新的驱动程序。
++完整信息
++----------------
 +
-+Linux 2.4:
-+	如果所属的代码领域在内核的 MAINTAINERS 文件中列有一个总维护者，
-+	那么请将驱动程序提交给他。如果此维护者没有回应或者你找不到恰当的
-+	维护者，那么请联系 Willy Tarreau <w@1wt.eu>。
++注意：以下来自于Linus的邮件适用于2.4内核。 我因为历史原因保留了它，并且因为其中
++一些信息仍然适用。 特别注意的是，请忽略任何ksymoops的引用。
 +
-+Linux 2.6:
-+	除了遵循和 2.4 版内核同样的规则外，你还需要在 linux-kernel 邮件
-+	列表上跟踪最新的 API 变化。向 Linux 2.6 内核提交驱动的顶级联系人
-+	是 Andrew Morton <akpm@osdl.org>。
++From: Linus Torvalds <torvalds@osdl.org>
 +
-+决定设备驱动能否被接受的条件
-+----------------------------
++怎样跟踪Oops.. [原发到linux-kernel的一封邮件]
 +
-+许可：		代码必须使用 GNU 通用公开许可证 (GPL) 提交给 Linux，但是
-+		我们并不要求 GPL 是唯一的许可。你或许会希望同时使用多种
-+		许可证发布，如果希望驱动程序可以被其他开源社区（比如BSD）
-+		使用。请参考 include/linux/module.h 文件中所列出的可被
-+		接受共存的许可。
++主要的窍门是有五年和这些烦人的oops消息打交道的经验;-)
 +
-+版权：		版权所有者必须同意使用 GPL 许可。最好提交者和版权所有者
-+		是相同个人或实体。否则，必需列出授权使用 GPL 的版权所有
-+		人或实体，以备验证之需。
++实际上，你有办法使它更简单。我有两个不同的方法：
 +
-+接口：		如果你的驱动程序使用现成的接口并且和其他同类的驱动程序行
-+		为相似，而不是去发明无谓的新接口，那么它将会更容易被接受。
-+		如果你需要一个 Linux 和 NT 的通用驱动接口，那么请在用
-+		户空间实现它。
++	gdb /usr/src/linux/vmlinux
++	gdb> disassemble <offending_function>
 +
-+代码：		请使用 Documentation/CodingStyle 中所描述的 Linux 代码风
-+		格。如果你的某些代码段（例如那些与 Windows 驱动程序包共
-+		享的代码段）需要使用其他格式，而你却只希望维护一份代码，
-+		那么请将它们很好地区分出来，并且注明原因。
++那是发现问题的简单办法，至少如果bug报告做的好的情况下（象这个一样-运行ksymoops
++得到oops发生的函数及函数内的偏移）。
 +
-+可移植性：	请注意，指针并不永远是 32 位的，不是所有的计算机都使用小
-+		尾模式 (little endian) 存储数据，不是所有的人都拥有浮点
-+		单元，不要随便在你的驱动程序里嵌入 x86 汇编指令。只能在
-+		x86 上运行的驱动程序一般是不受欢迎的。虽然你可能只有 x86
-+		硬件，很难测试驱动程序在其他平台上是否可用，但是确保代码
-+		可以被轻松地移植却是很简单的。
++哦，如果报告发生的内核以相同的编译器和相似的配置编译它会有帮助的。
 +
-+清晰度：	做到所有人都能修补这个驱动程序将会很有好处，因为这样你将
-+		会直接收到修复的补丁而不是 bug 报告。如果你提交一个试图
-+		隐藏硬件工作机理的驱动程序，那么它将会被扔进废纸篓。
++另一件要做的事是反汇编bug报告的“Code”部分：ksymoops也会用正确的工具来做这件事，
++但如果没有那些工具你可以写一个傻程序：
 +
-+电源管理：	因为 Linux 正在被很多移动设备和桌面系统使用，所以你的驱
-+		动程序也很有可能被使用在这些设备上。它应该支持最基本的电
-+		源管理，即在需要的情况下实现系统级休眠和唤醒要用到的
-+		.suspend 和 .resume 函数。你应该检查你的驱动程序是否能正
-+		确地处理休眠与唤醒，如果实在无法确认，请至少把 .suspend
-+		函数定义成返回 -ENOSYS（功能未实现）错误。你还应该尝试确
-+		保你的驱动在什么都不干的情况下将耗电降到最低。要获得驱动
-+		程序测试的指导，请参阅
-+		Documentation/power/drivers-testing.txt。有关驱动程序电
-+		源管理问题相对全面的概述，请参阅
-+		Documentation/power/devices.txt。
++	char str[] = "\xXX\xXX\xXX...";
++	main(){}
 +
-+管理：		如果一个驱动程序的作者还在进行有效的维护，那么通常除了那
-+		些明显正确且不需要任何检查的补丁以外，其他所有的补丁都会
-+		被转发给作者。如果你希望成为驱动程序的联系人和更新者，最
-+		好在代码注释中写明并且在 MAINTAINERS 文件中加入这个驱动
-+		程序的条目。
++并用gcc -g编译它然后执行“disassemble str”（XX部分是由Oops报告的值-你可以仅剪切
++粘贴并用“\x”替换空格-我就是这么做的，因为我懒得写程序自动做这一切）。
 +
-+不影响设备驱动能否被接受的条件
-+------------------------------
++另外，你可以用scripts/decodecode这个shell脚本。它的使用方法是：
++decodecode < oops.txt
 +
-+供应商：	由硬件供应商来维护驱动程序通常是一件好事。不过，如果源码
-+		树里已经有其他人提供了可稳定工作的驱动程序，那么请不要期
-+		望“我是供应商”会成为内核改用你的驱动程序的理由。理想的情
-+		况是：供应商与现有驱动程序的作者合作，构建一个统一完美的
-+		驱动程序。
++“Code”之后的十六进制字节可能（在某些架构上）有一些当前指令之前的指令字节以及
++当前和之后的指令字节
 +
-+作者：		驱动程序是由大的 Linux 公司研发还是由你个人编写，并不影
-+		响其是否能被内核接受。没有人对内核源码树享有特权。只要你
-+		充分了解内核社区，你就会发现这一点。
++Code: f9 0f 8d f9 00 00 00 8d 42 0c e8 dd 26 11 c7 a1 60 ea 2b f9 8b 50 08 a1
++64 ea 2b f9 8d 34 82 8b 1e 85 db 74 6d 8b 15 60 ea 2b f9 <8b> 43 04 39 42 54
++7e 04 40 89 42 54 8b 43 04 3b 05 00 f6 52 c0
++
++最后，如果你想知道代码来自哪里，你可以：
++
++	cd /usr/src/linux
++	make fs/buffer.s 	# 或任何产生BUG的文件
++
++然后你会比gdb反汇编更清楚的知道发生了什么。
++
++现在，问题是把你所拥有的所有数据结合起来：C源码（关于它应该怎样的一般知识），
++汇编代码及其反汇编得到的代码（另外还有从“oops”消息得到的寄存器状态-对了解毁坏的
++指针有用，而且当你有了汇编代码你也能拿其它的寄存器和任何它们对应的C表达式做匹配
++）。
++
++实际上，你仅需看看哪里不匹配（这个例子是“Code”反汇编和编译器生成的代码不匹配）。
++然后你须要找出为什么不匹配。通常很简单-你看到代码使用了空指针然后你看代码想知道
++空指针是怎么出现的，还有检查它是否合法..
++
++现在，如果明白这是一项耗时的工作而且需要一丁点儿的专心，没错。这就是我为什么大多
++只是忽略那些没有符号表信息的崩溃报告的原因：简单的说太难查找了（我有一些
++程序用于在内核代码段中搜索特定的模式，而且有时我也已经能找出那些崩溃的地方，但是
++仅仅是找出正确的序列也确实需要相当扎实的内核知识）
++
++_有时_会发生这种情况，我仅看到崩溃中的反汇编代码序列， 然后我马上就明白问题出在
++哪里。这时我才意识到自己干这个工作已经太长时间了;-)
++
++		Linus
 +
 +
-+资源列表
-+--------
++---------------------------------------------------------------------------
++关于Oops跟踪的注解：
 +
-+Linux 内核主源码树：
-+	ftp.??.kernel.org:/pub/linux/kernel/...
-+	?? == 你的国家代码，例如 "cn"、"us"、"uk"、"fr" 等等
++为了帮助Linus和其它内核开发者，klogd纳入了大量的支持来处理保护错误。为了拥有对
++地址解析的完整支持至少应该使用1.3-pl3的sysklogd包。
 +
-+Linux 内核邮件列表：
-+	linux-kernel@vger.kernel.org
-+	[可通过向majordomo@vger.kernel.org发邮件来订阅]
++当保护错误发生时，klogd守护进程自动把内核日志信息中的重要地址翻译成它们相应的符
++号。
 +
-+Linux 设备驱动程序，第三版（探讨 2.6.10 版内核）：
-+	http://lwn.net/Kernel/LDD3/ （免费版）
++klogd执行两种类型的地址解析。首先是静态翻译其次是动态翻译。静态翻译和ksymoops
++一样使用System.map文件。为了做静态翻译klogd守护进程必须在初始化时能找到system
++map文件。关于klogd怎样搜索map文件请参看klogd手册页。
 +
-+LWN.net:
-+	每周内核开发活动摘要 - http://lwn.net/
-+	2.6 版中 API 的变更：
-+		http://lwn.net/Articles/2.6-kernel-api/
-+	将旧版内核的驱动程序移植到 2.6 版：
-+		http://lwn.net/Articles/driver-porting/
++动态地址翻译在使用内核可装载模块时很重要。 因为内核模块的内存是从内核动态内存池
++里分配的，所以不管是模块开始位置还是模块中函数和符号的位置都不是固定的。
 +
-+KernelTrap：
-+	Linux 内核的最新动态以及开发者访谈
-+	http://kerneltrap.org/
++内核支持允许程序决定装载哪些模块和它们在内存中位置的系统调用。使用这些系统调用
++klogd守护进程生成一张符号表用于调试发生在可装载模块中的保护错误。
 +
-+内核新手(KernelNewbies):
-+	为新的内核开发者提供文档和帮助
-+	http://kernelnewbies.org/
++至少klogd会提供产生保护错误的模块名。还可有额外的符号信息供可装载模块开发者选择
++以从模块中输出符号信息。
 +
-+Linux USB项目：
-+	http://www.linux-usb.org/
++因为内核模块环境可能是动态的，所以必须有一种机制当模块环境发生改变时来通知klogd
++守护进程。 有一些可用的命令行选项允许klogd向当前执行中的守护进程发送信号，告知符
++号信息应该被刷新了。 更多信息请参看klogd手册页。
 +
-+写内核驱动的“不要”（Arjan van de Ven著）:
-+	http://www.fenrus.org/how-to-not-write-a-device-driver-paper.pdf
++sysklogd发布时包含一个补丁修改了modules-2.0.0包，无论何时一个模块装载或者卸载都
++会自动向klogd发送信号。打上这个补丁提供了必要的对调试发生于内核可装载模块的保护
++错误的无缝支持。
 +
-+内核清洁工 (Kernel Janitor):
-+	http://janitor.kernelnewbies.org/
++以下是被klogd处理过的发生在可装载模块中的一个保护错误例子：
++---------------------------------------------------------------------------
++Aug 29 09:51:01 blizard kernel: Unable to handle kernel paging request at virtual address f15e97cc
++Aug 29 09:51:01 blizard kernel: current->tss.cr3 = 0062d000, %cr3 = 0062d000
++Aug 29 09:51:01 blizard kernel: *pde = 00000000
++Aug 29 09:51:01 blizard kernel: Oops: 0002
++Aug 29 09:51:01 blizard kernel: CPU:    0
++Aug 29 09:51:01 blizard kernel: EIP:    0010:[oops:_oops+16/3868]
++Aug 29 09:51:01 blizard kernel: EFLAGS: 00010212
++Aug 29 09:51:01 blizard kernel: eax: 315e97cc   ebx: 003a6f80   ecx: 001be77b   edx: 00237c0c
++Aug 29 09:51:01 blizard kernel: esi: 00000000   edi: bffffdb3   ebp: 00589f90   esp: 00589f8c
++Aug 29 09:51:01 blizard kernel: ds: 0018   es: 0018   fs: 002b   gs: 002b   ss: 0018
++Aug 29 09:51:01 blizard kernel: Process oops_test (pid: 3374, process nr: 21, stackpage=00589000)
++Aug 29 09:51:01 blizard kernel: Stack: 315e97cc 00589f98 0100b0b4 bffffed4 0012e38e 00240c64 003a6f80 00000001
++Aug 29 09:51:01 blizard kernel:        00000000 00237810 bfffff00 0010a7fa 00000003 00000001 00000000 bfffff00
++Aug 29 09:51:01 blizard kernel:        bffffdb3 bffffed4 ffffffda 0000002b 0007002b 0000002b 0000002b 00000036
++Aug 29 09:51:01 blizard kernel: Call Trace: [oops:_oops_ioctl+48/80] [_sys_ioctl+254/272] [_system_call+82/128]
++Aug 29 09:51:01 blizard kernel: Code: c7 00 05 00 00 00 eb 08 90 90 90 90 90 90 90 90 89 ec 5d c3
++---------------------------------------------------------------------------
++
++Dr. G.W. Wettstein           Oncology Research Div. Computing Facility
++Roger Maris Cancer Center    INTERNET: greg@wind.rmcc.com
++820 4th St. N.
++Fargo, ND  58122
++Phone: 701-234-7556
++
++
++---------------------------------------------------------------------------
++受污染的内核
++
++一些oops报告在程序记数器之后包含字符串'Tainted: '。这表明内核已经被一些东西给污
++染了。 该字符串之后紧跟着一系列的位置敏感的字符，每个代表一个特定的污染值。
++
++  1：'G'如果所有装载的模块都有GPL或相容的许可证，'P'如果装载了任何的专有模块。
++没有模块MODULE_LICENSE或者带有insmod认为是与GPL不相容的的MODULE_LICENSE的模块被
++认定是专有的。
++
++  2：'F'如果有任何通过“insmod -f”被强制装载的模块，' '如果所有模块都被正常装载。
++
++  3：'S'如果oops发生在SMP内核中，运行于没有证明安全运行多处理器的硬件。 当前这种
++情况仅限于几种不支持SMP的速龙处理器。
++
++  4：'R'如果模块通过“insmod -f”被强制装载，' '如果所有模块都被正常装载。
++
++  5：'M'如果任何处理器报告了机器检查异常，' '如果没有发生机器检查异常。
++
++  6：'B'如果页释放函数发现了一个错误的页引用或者一些非预期的页标志。
++
++  7：'U'如果用户或者用户应用程序特别请求设置污染标志，否则' '。
++
++  8：'D'如果内核刚刚死掉，比如有OOPS或者BUG。
++
++使用'Tainted: '字符串的主要原因是要告诉内核调试者，这是否是一个干净的内核亦或发
++生了任何的不正常的事。污染是永久的：即使出错的模块已经被卸载了，污染值仍然存在，
++以表明内核不再值得信任。
 -- 
 1.5.3.8
 
