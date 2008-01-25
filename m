@@ -1,63 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760629AbYAYVGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbYAYVGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760629AbYAYVGS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 16:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbYAYVF7
+	id S1760775AbYAYVGj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 16:06:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbYAYVGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 16:05:59 -0500
-Received: from mail.gmx.net ([213.165.64.20]:44988 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757749AbYAYVF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 16:05:58 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+szdJwo1esRfaR4Tituys5Ut6pEio8aLU0yIGfTD
-	ArxNoJyBt4W94G
-Date: Fri, 25 Jan 2008 22:05:57 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] driver: tcm825x - fix logical typo error
-In-Reply-To: <20080125202720.GD7233@cvg>
-Message-ID: <Pine.LNX.4.64.0801252159140.9538@axis700.grange>
-References: <20080125202720.GD7233@cvg>
+	Fri, 25 Jan 2008 16:06:25 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:34960 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760682AbYAYVGX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 16:06:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ay7DlnDyofEmM4tSgLUPV50NeUMmk0QMGFKzRDktm1djqwhdy4o67yllzaKv+T5jERWvqyecTakOO5HCH9G3oga57c8mqzalsyXv8mxfA2OpMNuoZ7LxkIM3Por6l1hYFj+dIdi5uMUgqBdUibk7jtNrqKN3JSZ9pK/BT3HIuk0=
+Message-ID: <64bb37e0801251306w21c7876du36de19340ce54a0f@mail.gmail.com>
+Date: Fri, 25 Jan 2008 22:06:20 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: 2.6.24-rc6-mm1
+Cc: tomof@acm.org, akpm@linux-foundation.org, jarkao2@gmail.com,
+       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
+       neilb@suse.de, bfields@fieldses.org, netdev@vger.kernel.org,
+       tom@opengridcomputing.com
+In-Reply-To: <20080107151639P.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <64bb37e0801060335k4afb3134u9c6fadb57d525dc5@mail.gmail.com>
+	 <20080106223650E.tomof@acm.org>
+	 <64bb37e0801061203l503f29f0hd922a1347f8169ac@mail.gmail.com>
+	 <20080107151639P.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jan 2008, Cyrill Gorcunov wrote:
+Sorry for the *really* late answer, but I did not have any time to do
+linux things the last weeks. :-(
 
-> This patch does fix potential NULL pointer dereference
-> due to logical typo error.
-> 
-> The issue is pointed out by
-> Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-> 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> ---
-> 
-> Index: linux-2.6.git/drivers/media/video/tcm825x.c
-> ===================================================================
-> --- linux-2.6.git.orig/drivers/media/video/tcm825x.c	2008-01-23 19:01:47.000000000 +0300
-> +++ linux-2.6.git/drivers/media/video/tcm825x.c	2008-01-25 23:13:15.000000000 +0300
-> @@ -851,7 +851,7 @@ static int tcm825x_probe(struct i2c_clie
->  	sensor->platform_data = client->dev.platform_data;
->  
->  	if (sensor->platform_data == NULL
-> -	    && !sensor->platform_data->is_okay())
-> +	    || !sensor->platform_data->is_okay())
->  		return -ENODEV;
->  
->  	sensor->v4l2_int_device = &tcm825x_int_device;
+On Jan 7, 2008 7:16 AM, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> On Sun, 6 Jan 2008 21:03:42 +0100
+> "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+> > On Jan 6, 2008 2:33 PM, FUJITA Tomonori <tomof@acm.org> wrote:
+> > > On Sun, 6 Jan 2008 12:35:35 +0100
+> > > "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+> > > > On Jan 6, 2008 12:23 PM, FUJITA Tomonori <tomof@acm.org> wrote:
+> > > > And double using something does fit with the errors I'm seeing...
+> > > >
+> > > > > Can you try the patch to revert my IOMMU changes?
+> > > > >
+> > > > > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12694.html
 
-Now that it missed 2.6.24, you probably want to send it to -stable too. 
-Even though the patch is trivial, it might be a good idea to cc: v4l2 
-maintainer and / or driver author.
+-> This is the revert-patch I'm talking about later
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+> > > > Testing for this bug is a little bit slow, as I'm compiling ~100
+> > > > packages trying to trigger it.
+> > > > If my current testrun with the patch from
+> > > > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12702.html
+> > > > crashes, I will revert the hole IOMMU changes with above patch and try again.
+> > >
+> > > Thanks for testing,
+> >
+> > OK, I'm still testing this, but after 95 completed packages I'm rather
+> > certain that reverting the IOMMU changes with this patch fixes my
+> > problem.
+> > I didn't have time to look more into this, so I can't offer any
+> > concrete ideas where the bug is.
+
+Until my last mail from 7. Jan this was true, that I was not able to
+crash 2.6.24-rc6-mm1 with above patch.
+But after testing 2.6.24-rc7 with only the IOMMU changes applied it
+did crash once again.
+
+After looking at the patch that seems rather expected as it only
+touches powerpc code.
+(I only looked at its diffstat after testing it, so I was not aware of
+that fact during testing)
+
+> > If you send more patches, I'm willing to test them, but it might take
+> > some more time during the next week.
+>
+> Can you try 2.6.24-rc7 + the IOMMU changes?
+>
+> The patches are available at:
+>
+> http://www.kernel.org/pub/linux/kernel/people/tomo/iommu/
+>
+> Or if you prefer the git tree:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git iommu-sg-fixes
+>
+>
+>
+> I've looked at the changes to GART but they are straightforward and
+> don't look wrong...
+
+The resulting 2.6.24-rc7 kernel worked for me. I compiled 146 packages
+without a crash.
+
+Today I finally had some time for debugging again and tried the new
+2.6.24-rc8-mm1.
+The crash is still there, I will report that crash in current thread.
+
+Torsten
