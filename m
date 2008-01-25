@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761629AbYAYVzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761612AbYAYV4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761629AbYAYVzu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 16:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759027AbYAYVwa
+	id S1761612AbYAYV4O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 16:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760928AbYAYVwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 16:52:30 -0500
-Received: from 42.sub-75-208-60.myvzw.com ([75.208.60.42]:37925 "EHLO
+	Fri, 25 Jan 2008 16:52:31 -0500
+Received: from 42.sub-75-208-60.myvzw.com ([75.208.60.42]:37926 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760012AbYAYVw2 (ORCPT
+	with ESMTP id S1758853AbYAYVw3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 16:52:28 -0500
+	Fri, 25 Jan 2008 16:52:29 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 09 of 11] x86: preallocate pmds at pgd creation time
-X-Mercurial-Node: 9e9568e9f481b44f50f72f7beef3554ae271960f
-Message-Id: <9e9568e9f481b44f50f7.1201296198@localhost>
+Subject: [PATCH 11 of 11] x86: defer cr3 reload when doing pud_clear()
+X-Mercurial-Node: c084def0f6afb2b2ef47fd297dd6c833f7c88d36
+Message-Id: <c084def0f6afb2b2ef47.1201296200@localhost>
 In-Reply-To: <patchbomb.1201296189@localhost>
-Date: Fri, 25 Jan 2008 13:23:18 -0800
+Date: Fri, 25 Jan 2008 13:23:20 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
@@ -30,21 +30,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In PAE mode, an update to the pgd requires a cr3 reload to make sure
-the processor notices the changes.  Since this also has the
-side-effect of flushing the tlb, its an expensive operation which we
-want to avoid where possible.
+PAE mode requires that we reload cr3 in order to guarantee that
+changes to the pgd will be noticed by the processor.  This means that
+in principle pud_clear needs to reload cr3 every time.  However,
+because reloading cr3 implies a tlb flush, we want to avoid it where
+possible.
 
-This patch mitigates the cost of installing the initial set of pmds on
-process creation by preallocating them when the pgd is allocated.
-This avoids up to three tlb flushes during exec, as it creates the new
-process address space while the pagetable is in active use.
+pud_clear() is only used in a couple of places:
+ - in free_pmd_range(), when pulling down a range of process address space, and
+ - huge_pmd_unshare()
 
-The pmds will be freed as part of the normal pagetable teardown in
-free_pgtables, which is called in munmap and process exit.  However,
-free_pgtables will only free parts of the pagetable which actually
-contain mappings, so stray pmds may still be attached to the pgd at
-pgd_free time.  We must mop them up to prevent a memory leak.
+In both cases, the calling code will do a a tlb flush anyway, so
+there's no need to do it within pud_clear().
+
+In free_pmd_range(), the pud_clear is immediately followed by
+pmd_free_tlb(); we can hook that to make the mmu_gather do an
+unconditional full flush to make sure cr3 gets reloaded.
+
+In huge_pmd_unshare, it is followed by flush_tlb_range, which always
+results in a full cr3-reload tlb flush.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 Cc: Andi Kleen <ak@suse.de>
@@ -52,99 +56,59 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: H. Peter Anvin <hpa@zytor.com>
 Cc: William Irwin <wli@holomorphy.com>
 ---
- arch/x86/mm/pgtable_32.c |   70 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 70 insertions(+)
+ include/asm-x86/pgalloc_32.h     |    7 +++++++
+ include/asm-x86/pgtable-3level.h |   21 +++++++++++++++------
+ 2 files changed, 22 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
---- a/arch/x86/mm/pgtable_32.c
-+++ b/arch/x86/mm/pgtable_32.c
-@@ -258,17 +258,87 @@ static void pgd_dtor(void *pgd)
- 	spin_unlock_irqrestore(&pgd_lock, flags);
- }
+diff --git a/include/asm-x86/pgalloc_32.h b/include/asm-x86/pgalloc_32.h
+--- a/include/asm-x86/pgalloc_32.h
++++ b/include/asm-x86/pgalloc_32.h
+@@ -74,6 +74,13 @@ static inline void pmd_free(pmd_t *pmd)
  
-+#ifdef CONFIG_X86_PAE
-+/*
-+ * Mop up any pmd pages which may still be attached to the pgd.
-+ * Normally they will be freed by munmap/exit_mmap, but any pmd we
-+ * preallocate which never got a corresponding vma will need to be
-+ * freed manually.
-+ */
-+static void pgd_mop_up_pmds(pgd_t *pgdp)
-+{
-+	int i;
-+
-+	for(i = 0; i < USER_PTRS_PER_PGD; i++) {
-+		pgd_t pgd = pgdp[i];
-+
-+		if (pgd_val(pgd) != 0) {
-+			pmd_t *pmd = (pmd_t *)pgd_page_vaddr(pgd);
-+
-+			pgdp[i] = native_make_pgd(0);
-+
-+			paravirt_release_pd(pgd_val(pgd) >> PAGE_SHIFT);
-+			pmd_free(pmd);
-+		}
-+	}
-+}
-+
-+/*
-+ * In PAE mode, we need to do a cr3 reload (=tlb flush) when
-+ * updating the top-level pagetable entries to guarantee the
-+ * processor notices the update.  Since this is expensive, and
-+ * all 4 top-level entries are used almost immediately in a
-+ * new process's life, we just pre-populate them here.
-+ */
-+static int pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd)
-+{
-+	pud_t *pud;
-+	unsigned long addr;
-+	int i;
-+
-+	pud = pud_offset(pgd, 0);
-+ 	for (addr = i = 0; i < USER_PTRS_PER_PGD; i++, pud++, addr += PUD_SIZE) {
-+		pmd_t *pmd = pmd_alloc_one(mm, addr);
-+
-+		if (!pmd) {
-+			pgd_mop_up_pmds(pgd);
-+			return 0;
-+		}
-+
-+		pud_populate(mm, pud, pmd);
-+	}
-+
-+	return 1;
-+}
-+#else  /* !CONFIG_X86_PAE */
-+/* No need to prepopulate any pagetable entries in non-PAE modes. */
-+static int pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd)
-+{
-+	return 1;
-+}
-+
-+static void pgd_mop_up_pmds(pgd_t *pgd)
-+{
-+}
-+#endif	/* CONFIG_X86_PAE */
-+
- pgd_t *pgd_alloc(struct mm_struct *mm)
+ static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
  {
- 	pgd_t *pgd = quicklist_alloc(0, GFP_KERNEL, pgd_ctor);
- 
- 	mm->pgd = pgd;		/* so that alloc_pd can use it */
- 
-+	if (pgd && !pgd_prepopulate_pmd(mm, pgd)) {
-+		quicklist_free(0, pgd_dtor, pgd);
-+		pgd = NULL;
-+	}
++	/* This is called just after the pmd has been detached from
++	   the pgd, which requires a full tlb flush to be recognized
++	   by the CPU.  Rather than incurring multiple tlb flushes
++	   while the address space is being pulled down, make the tlb
++	   gathering machinery do a full flush when we're done. */
++	tlb->fullmm = 1;
 +
- 	return pgd;
+ 	paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
+ 	tlb_remove_page(tlb, virt_to_page(pmd));
+ }
+diff --git a/include/asm-x86/pgtable-3level.h b/include/asm-x86/pgtable-3level.h
+--- a/include/asm-x86/pgtable-3level.h
++++ b/include/asm-x86/pgtable-3level.h
+@@ -96,14 +96,23 @@ static inline void pud_clear(pud_t *pudp
+ 	set_pud(pudp, __pud(0));
+ 
+ 	/*
+-	 * Pentium-II erratum A13: in PAE mode we explicitly have to flush
+-	 * the TLB via cr3 if the top-level pgd is changed...
++	 * In principle we need to do a cr3 reload here to make sure
++	 * the processor recognizes the changed pgd.  In practice, all
++	 * the places where pud_clear() gets called are followed by
++	 * full tlb flushes anyway, so we can defer the cost here.
+ 	 *
+-	 * XXX I don't think we need to worry about this here, since
+-	 * when clearing the pud, the calling code needs to flush the
+-	 * tlb anyway.  But do it now for safety's sake. - jsgf
++	 * Specifically:
++	 *
++	 * mm/memory.c:free_pmd_range() - immediately after the
++	 * pud_clear() it does a pmd_free_tlb().  We change the
++	 * mmu_gather structure to do a full tlb flush (which has the
++	 * effect of reloading cr3) when the pagetable free is
++	 * complete.
++	 *
++	 * arch/x86/mm/hugetlbpage.c:huge_pmd_unshare() - the call to
++	 * this is followed by a flush_tlb_range, which on x86 does a
++	 * full tlb flush.
+ 	 */
+-	write_cr3(read_cr3());
  }
  
- void pgd_free(pgd_t *pgd)
- {
-+	pgd_mop_up_pmds(pgd);
- 	quicklist_free(0, pgd_dtor, pgd);
- }
- 
+ #define pud_page(pud) \
 
 
