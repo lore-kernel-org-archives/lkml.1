@@ -1,63 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbYAYSjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbYAYSj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757995AbYAYSjl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 13:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755011AbYAYSje
+	id S1759426AbYAYSj4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 13:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbYAYSjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 13:39:34 -0500
-Received: from gw.goop.org ([64.81.55.164]:38349 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754635AbYAYSjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 13:39:33 -0500
-Message-ID: <479A2CE0.6060206@goop.org>
-Date: Fri, 25 Jan 2008 10:39:28 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 25 Jan 2008 13:39:37 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:57907 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755962AbYAYSjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 13:39:36 -0500
+Date: Fri, 25 Jan 2008 12:39:34 -0600
+From: Robin Holt <holt@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 1/4] mmu_notifier: Core code
+Message-ID: <20080125183934.GO26420@sgi.com>
+References: <20080125055606.102986685@sgi.com> <20080125055801.212744875@sgi.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH UPDATE] x86: ignore spurious faults
-References: <4797D64D.1060105@goop.org> <1201133916.16972.124.camel@brick> <4797DBA0.5020909@goop.org> <20080125153032.GE11846@elte.hu> <479A0632.9090205@goop.org> <20080125180828.GB10993@elte.hu>
-In-Reply-To: <20080125180828.GB10993@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080125055801.212744875@sgi.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> spurious faults happen all the time on SMP, in the native kernel.
->
-> And what i mean is that Linux mprotect currently does not take advantage 
-> of x86's ability to just change the ptes, because there's no structured 
-> way to tell mm/mprotect.c that "it's safe to skip the TLB flush here". 
->
-> The flush happens in mm/mprotect.c's change_protection() function:
->
->         flush_tlb_range(vma, start, end);
->
-> and that is unnecessary when we increase the protection rights, such as 
-> in a RO->RW change. (all that is needed is an smp_wmb() instead, to make 
-> sure all the pte modifications are visible when the syscall returns.)
->
-> and it's a really rare case these days that you can find an area where 
-> Linux does not make use of a hardware MMU feature - so we should fix 
-> this ;-)
+> +#define mmu_notifier(function, mm, args...)				\
+...
+> +				if (__mn->ops->function)		\
+> +					__mn->ops->function(__mn,	\
+> +							    mm,		\
+> +							    args);	\
 
-Well, I guess this isn't really specific to x86; we could always 
-legitimately not do a tlb flush after increasing permissions and leave 
-the fault handler to clean up the mess where needed.  But I don't think 
-that's necessarily much of a win; it's cheaper to just do the tlb flush 
-rather than take a spurious fault, unless the faults are very rare.  If 
-someone is doing an mprotect on a piece of memory (esp to make it 
-writable), my guess is that they're going to touch that memory in the 
-very near future.
+					__mn->ops->function(__mn, mm, args);	\
+I realize it is a minor nit, but since we put the continuation in column
+81 in the next define, can we do the same here and make this more
+readable?
 
-The big win for this patch is avoiding cross-cpu tlb invalidation when 
-changing kernel mappings.  mprotect doesn't attempt to do that anyway, 
-and so can incur spurious faults on other CPUs.
+> +			rcu_read_unlock();				\
+...
+> +#define mmu_rmap_notifier(function, args...)					\
+> +	do {									\
+> +		struct mmu_rmap_notifier *__mrn;				\
+> +		struct hlist_node *__n;						\
+> +										\
 
-    J
+
+
+> +void mmu_notifier_release(struct mm_struct *mm)
+> +{
+> +	struct mmu_notifier *mn;
+> +	struct hlist_node *n;
+> +
+> +	if (unlikely(!hlist_empty(&mm->mmu_notifier.head))) {
+> +		rcu_read_lock();
+> +		hlist_for_each_entry_rcu(mn, n,
+> +					  &mm->mmu_notifier.head, hlist) {
+> +			if (mn->ops->release)
+> +				mn->ops->release(mn, mm);
+> +			hlist_del(&mn->hlist);
+
+I think the hlist_del needs to be before the function callout so we can free
+the structure without a use-after-free issue.
+
+		hlist_for_each_entry_rcu(mn, n,
+					  &mm->mmu_notifier.head, hlist) {
+			hlist_del_rcu(&mn->hlist);
+			if (mn->ops->release)
+				mn->ops->release(mn, mm);
+
+
+
+> +static DEFINE_SPINLOCK(mmu_notifier_list_lock);
+
+Remove
+
+> +
+> +void mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm)
+> +{
+> +	spin_lock(&mmu_notifier_list_lock);
+
+Shouldn't this really be protected by the down_write(mmap_sem)?  Maybe:
+	BUG_ON(!rwsem_is_write_locked(&mm->mmap_sem));
+
+> +	hlist_add_head(&mn->hlist, &mm->mmu_notifier.head);
+	hlist_add_head_rcu(&mn->hlist, &mm->mmu_notifier.head);
+
+> +	spin_unlock(&mmu_notifier_list_lock);
+> +}
+> +EXPORT_SYMBOL_GPL(mmu_notifier_register);
+> +
+> +void mmu_notifier_unregister(struct mmu_notifier *mn, struct mm_struct *mm)
+> +{
+> +	spin_lock(&mmu_notifier_list_lock);
+> +	hlist_del(&mn->hlist);
+
+hlist_del_rcu?  Ditto on the lock.
+
+> +	spin_unlock(&mmu_notifier_list_lock);
+> +}
+> +EXPORT_SYMBOL_GPL(mmu_notifier_unregister);
+> +
+> +HLIST_HEAD(mmu_rmap_notifier_list);
+
+static DEFINE_SPINLOCK(mmu_rmap_notifier_list_lock);
+
+> +
+> +void mmu_rmap_notifier_register(struct mmu_rmap_notifier *mrn)
+> +{
+> +	spin_lock(&mmu_notifier_list_lock);
+> +	hlist_add_head_rcu(&mrn->hlist, &mmu_rmap_notifier_list);
+> +	spin_unlock(&mmu_notifier_list_lock);
+
+	spin_lock(&mmu_rmap_notifier_list_lock);
+	hlist_add_head_rcu(&mrn->hlist, &mmu_rmap_notifier_list);
+	spin_unlock(&mmu_rmap_notifier_list_lock);
+
+> +}
+> +EXPORT_SYMBOL(mmu_rmap_notifier_register);
+> +
+> +void mmu_rmap_notifier_unregister(struct mmu_rmap_notifier *mrn)
+> +{
+> +	spin_lock(&mmu_notifier_list_lock);
+> +	hlist_del_rcu(&mrn->hlist);
+> +	spin_unlock(&mmu_notifier_list_lock);
+
+	spin_lock(&mmu_rmap_notifier_list_lock);
+	hlist_del_rcu(&mrn->hlist);
+	spin_unlock(&mmu_rmap_notifier_list_lock);
+
+
+> @@ -2043,6 +2044,7 @@ void exit_mmap(struct mm_struct *mm)
+>  	vm_unacct_memory(nr_accounted);
+>  	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, 0);
+>  	tlb_finish_mmu(tlb, 0, end);
+> +	mmu_notifier_release(mm);
+
+Can we consider moving this notifier or introducing an additional notifier
+in the release or a flag to this one indicating early/late.
+
+The GRU that Jack is concerned with would benefit from the early in
+that it could just invalidate the GRU context and immediately all GRU
+TLB entries are invalid.  I believe Jack would like to also be able to
+remove his entry from the mmu_notifier list in an effort to avoid the
+page and range callouts.
+
+XPMEM, would also benefit from a call early.  We could make all the
+segments as being torn down and start the recalls.  We already have
+this code in and working (have since it was first written 6 years ago).
+In this case, all segments are torn down with a single message to each
+of the importing partitions.  In contrast, the teardown code which would
+happen now would be one set of messages for each vma.
+
+Thanks,
+Robin
