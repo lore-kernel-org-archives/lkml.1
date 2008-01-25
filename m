@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbYAYF6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbYAYF6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbYAYF6c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 00:58:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbYAYF6G
+	id S1756641AbYAYF6q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 00:58:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbYAYF6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 00:58:06 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44088 "EHLO
+	Fri, 25 Jan 2008 00:58:08 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44089 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753053AbYAYF6E (ORCPT
+	with ESMTP id S1753357AbYAYF6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Jan 2008 00:58:04 -0500
-Message-Id: <20080125055801.441867600@sgi.com>
+Message-Id: <20080125055801.674007010@sgi.com>
 References: <20080125055606.102986685@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jan 2008 21:56:08 -0800
+Date: Thu, 24 Jan 2008 21:56:09 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: Andrea Arcangeli <andrea@qumranet.com>
 Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
@@ -23,151 +23,77 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: [patch 2/4] mmu_notifier: Callbacks to invalidate address ranges
-Content-Disposition: inline; filename=mmu_invalidate_range_callbacks
+Subject: [patch 3/4] mmu_notifier: invalidate_page callbacks for subsystems with rmap
+Content-Disposition: inline; filename=mmu_invalidate_page_rmap_callbacks
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The invalidation of address ranges in a mm_struct needs to be
-performed when pages are removed or permissions etc change.
+Callbacks to remove individual pages if the subsystem has an
+rmap capability. The pagelock is held but no spinlocks are held.
+The refcount of the page is elevated so that dropping the refcount
+in the subsystem will not directly free the page.
 
-invalidate_range() is generally called with mmap_sem held but
-no spinlocks are active.
+The callbacks occur after the Linux rmaps have been walked.
 
-Exceptions:
+Robin: We do not hold the page lock in __xip_unmap().
+I guess we do not need to increase the refcount there since the
+page is static and cannot go away?
 
-We hold i_mmap_lock in __unmap_hugepage_range and
-sometimes in zap_page_range. Should we pass a parameter to indicate
-the different lock situation?
-
-Comments state that mmap_sem must be held for
-remap_pfn_range() but various drivers do not seem to do this?
-
-Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
-Signed-off-by: Robin Holt <holt@sgi.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
----
- mm/fremap.c  |    2 ++
- mm/hugetlb.c |    2 ++
- mm/memory.c  |    9 +++++++--
- mm/mmap.c    |    1 +
- 4 files changed, 12 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/mm/fremap.c
+Index: linux-2.6/mm/filemap_xip.c
 ===================================================================
---- linux-2.6.orig/mm/fremap.c	2008-01-24 20:59:17.000000000 -0800
-+++ linux-2.6/mm/fremap.c	2008-01-24 21:01:17.000000000 -0800
-@@ -15,6 +15,7 @@
- #include <linux/rmap.h>
+--- linux-2.6.orig/mm/filemap_xip.c	2008-01-24 19:47:28.000000000 -0800
++++ linux-2.6/mm/filemap_xip.c	2008-01-24 20:30:31.000000000 -0800
+@@ -13,6 +13,7 @@
  #include <linux/module.h>
- #include <linux/syscalls.h>
+ #include <linux/uio.h>
+ #include <linux/rmap.h>
++#include <linux/mmu_notifier.h>
+ #include <linux/sched.h>
+ #include <asm/tlbflush.h>
+ 
+@@ -183,6 +184,9 @@ __xip_unmap (struct address_space * mapp
+ 	if (!page)
+ 		return;
+ 
++	if (PageExternalRmap(page))
++		mmu_rmap_notifier(invalidate_page, page);
++
+ 	spin_lock(&mapping->i_mmap_lock);
+ 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
+ 		mm = vma->vm_mm;
+Index: linux-2.6/mm/rmap.c
+===================================================================
+--- linux-2.6.orig/mm/rmap.c	2008-01-24 19:47:28.000000000 -0800
++++ linux-2.6/mm/rmap.c	2008-01-24 20:30:31.000000000 -0800
+@@ -49,6 +49,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/module.h>
+ #include <linux/kallsyms.h>
 +#include <linux/mmu_notifier.h>
  
- #include <asm/mmu_context.h>
- #include <asm/cacheflush.h>
-@@ -211,6 +212,7 @@ asmlinkage long sys_remap_file_pages(uns
- 		spin_unlock(&mapping->i_mmap_lock);
- 	}
+ #include <asm/tlbflush.h>
  
-+	mmu_notifier(invalidate_range, mm, start, start + size);
- 	err = populate_range(mm, vma, start, size, pgoff);
- 	if (!err && !(flags & MAP_NONBLOCK)) {
- 		if (unlikely(has_write_lock)) {
-Index: linux-2.6/mm/hugetlb.c
-===================================================================
---- linux-2.6.orig/mm/hugetlb.c	2008-01-24 20:59:17.000000000 -0800
-+++ linux-2.6/mm/hugetlb.c	2008-01-24 21:01:17.000000000 -0800
-@@ -14,6 +14,7 @@
- #include <linux/mempolicy.h>
- #include <linux/cpuset.h>
- #include <linux/mutex.h>
-+#include <linux/mmu_notifier.h>
+@@ -473,6 +474,8 @@ int page_mkclean(struct page *page)
+ 		struct address_space *mapping = page_mapping(page);
+ 		if (mapping) {
+ 			ret = page_mkclean_file(mapping, page);
++			if (unlikely(PageExternalRmap(page)))
++				mmu_rmap_notifier(invalidate_page, page);
+ 			if (page_test_dirty(page)) {
+ 				page_clear_dirty(page);
+ 				ret = 1;
+@@ -971,6 +974,9 @@ int try_to_unmap(struct page *page, int 
+ 	else
+ 		ret = try_to_unmap_file(page, migration);
  
- #include <asm/page.h>
- #include <asm/pgtable.h>
-@@ -763,6 +764,7 @@ void __unmap_hugepage_range(struct vm_ar
- 	}
- 	spin_unlock(&mm->page_table_lock);
- 	flush_tlb_range(vma, start, end);
-+	mmu_notifier(invalidate_range, mm, start, end);
- 	list_for_each_entry_safe(page, tmp, &page_list, lru) {
- 		list_del(&page->lru);
- 		put_page(page);
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2008-01-24 20:59:17.000000000 -0800
-+++ linux-2.6/mm/memory.c	2008-01-24 21:01:17.000000000 -0800
-@@ -50,6 +50,7 @@
- #include <linux/delayacct.h>
- #include <linux/init.h>
- #include <linux/writeback.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/uaccess.h>
-@@ -891,6 +892,7 @@ unsigned long zap_page_range(struct vm_a
- 	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
- 	if (tlb)
- 		tlb_finish_mmu(tlb, address, end);
-+	mmu_notifier(invalidate_range, mm, address, end);
- 	return end;
- }
- 
-@@ -1319,7 +1321,7 @@ int remap_pfn_range(struct vm_area_struc
- {
- 	pgd_t *pgd;
- 	unsigned long next;
--	unsigned long end = addr + PAGE_ALIGN(size);
-+	unsigned long start = addr, end = addr + PAGE_ALIGN(size);
- 	struct mm_struct *mm = vma->vm_mm;
- 	int err;
- 
-@@ -1360,6 +1362,7 @@ int remap_pfn_range(struct vm_area_struc
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
-+	mmu_notifier(invalidate_range, mm, start, end);
- 	return err;
- }
- EXPORT_SYMBOL(remap_pfn_range);
-@@ -1443,7 +1446,7 @@ int apply_to_page_range(struct mm_struct
- {
- 	pgd_t *pgd;
- 	unsigned long next;
--	unsigned long end = addr + size;
-+	unsigned long start = addr, end = addr + size;
- 	int err;
- 
- 	BUG_ON(addr >= end);
-@@ -1454,6 +1457,7 @@ int apply_to_page_range(struct mm_struct
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
-+	mmu_notifier(invalidate_range, mm, start, end);
- 	return err;
- }
- EXPORT_SYMBOL_GPL(apply_to_page_range);
-@@ -1634,6 +1638,7 @@ gotten:
- 	/*
- 	 * Re-check the pte - we dropped the lock
- 	 */
-+	mmu_notifier(invalidate_range, mm, address, address + PAGE_SIZE - 1);
- 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
- 	if (likely(pte_same(*page_table, orig_pte))) {
- 		if (old_page) {
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c	2008-01-24 20:59:19.000000000 -0800
-+++ linux-2.6/mm/mmap.c	2008-01-24 21:01:17.000000000 -0800
-@@ -1748,6 +1748,7 @@ static void unmap_region(struct mm_struc
- 	free_pgtables(&tlb, vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
- 				 next? next->vm_start: 0);
- 	tlb_finish_mmu(tlb, start, end);
-+	mmu_notifier(invalidate_range, mm, start, end);
- }
- 
- /*
++	if (unlikely(PageExternalRmap(page)))
++		mmu_rmap_notifier(invalidate_page, page);
++
+ 	if (!page_mapped(page))
+ 		ret = SWAP_SUCCESS;
+ 	return ret;
 
 -- 
