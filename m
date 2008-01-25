@@ -1,62 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbYAYQfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbYAYQg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbYAYQfI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 11:35:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYAYQez
+	id S1756502AbYAYQg3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 11:36:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYAYQgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 11:34:55 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:41226 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753405AbYAYQex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 11:34:53 -0500
-Message-ID: <479A0F91.2030206@redhat.com>
-Date: Fri, 25 Jan 2008 10:34:25 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 25 Jan 2008 11:36:21 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56930 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753058AbYAYQgV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 11:36:21 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <479A0FD7.5050003@s5r6.in-berlin.de>
+Date: Fri, 25 Jan 2008 17:35:35 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Takashi Sato <t-sato@yk.jp.nec.com>,
-       linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] ext3 freeze feature
-References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru> <20080125133329.GB8184@mit.edu>
-In-Reply-To: <20080125133329.GB8184@mit.edu>
-Content-Type: text/plain; charset=us-ascii
+To: Jarod Wilson <jwilson@redhat.com>
+CC: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] firewire: enforce access order between generation
+ and node ID
+References: <tkrat.66a8b3070e07d80f@s5r6.in-berlin.de>	<200711011453.35268.nickpiggin@yahoo.com.au>	<4729A1BF.8010800@s5r6.in-berlin.de>	<tkrat.288da3bd61ecfb20@s5r6.in-berlin.de>	<tkrat.f1b275fda9e67a3c@s5r6.in-berlin.de> <4798B793.8080909@redhat.com>
+In-Reply-To: <4798B793.8080909@redhat.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> The other approach would be to say, "oh well, the freeze ioctl is
-> inherently dangerous, and root is allowed to himself in the foot, so
-> who cares".  :-)
-
-I tend to agree.  Either you need your fs frozen, or not, and if you do,
-be prepared for the consequences.
-
-> But it was this concern which is why ext3 never exported freeze
-> functionality to userspace, even though other commercial filesystems
-> do support this.  It wasn't that it wasn't considered, but the concern
-> about whether or not it was sufficiently safe to make available.
-
-What's the safety concern; that the admin will forget to unfreeze?
-
-> And I do agree that we probably should just implement this in
-> filesystem independent way, in which case all of the filesystems that
-> support this already have super_operations functions
-> write_super_lockfs() and unlockfs().
-
-That's what I was thinking; can't the path to freeze_bdev just be
-elevated out of dm-ioctl.c to fs/ioctl.c and exposed, such that any
-filesystem which implements .write_super_lockfs can be frozen?  This is
-essentially what the xfs_freeze userspace does via
-xfs_ioctl/XFS_IOC_FREEZE - which, AFAIK, isn't used much now that the
-lvm hooks are in place.
-
-I'm also not sure I see the point of the timeout in the original patch;
-either you are done snapshotting and ready to unfreeze, or you're not;
-1, or 2, or 3 seconds doesn't really matter.  When you're done, you're
-done, and you can only unfreeze then.  Shouldn't this be done
-programmatically, and not with some pre-determined timeout?
-
--Eric
+I'm going to commit it with a whitespace adjustment and a comment typo
+fixed.  Jarod, thanks for the rigorous testing;  Nick, thanks for
+helping in making this a solid improvement over the initial submission.
+-- 
+Stefan Richter
+-=====-==--- ---= ==--=
+http://arcgraph.de/sr/
