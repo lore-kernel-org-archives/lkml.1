@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYAYQFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYAYQHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbYAYQFb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 11:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbYAYQFK
+	id S1755607AbYAYQHh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 11:07:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYAYQH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 11:05:10 -0500
-Received: from mail0.scram.de ([78.47.204.202]:54276 "EHLO mail0.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754401AbYAYQFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 11:05:07 -0500
-X-Spam-Score: -2.359
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- *  2.7 TVD_SUBJ_WIPE_DEBT TVD_SUBJ_WIPE_DEBT
- *  1.1 SORTED_RECIPS Recipient list is sorted by address
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- * -1.7 AWL AWL: From: address is in the auto white-list
-Message-ID: <479A087F.5010305@scram.de>
-Date: Fri, 25 Jan 2008 17:04:15 +0100
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Fri, 25 Jan 2008 11:07:29 -0500
+Received: from styx.suse.cz ([82.119.242.94]:57242 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751508AbYAYQH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 11:07:27 -0500
+Date: Fri, 25 Jan 2008 17:07:26 +0100
+From: Jan Kara <jack@suse.cz>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: gorcunov@gmail.com, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 25/26] mount options: fix udf
+Message-ID: <20080125160726.GB1767@duck.suse.cz>
+References: <20080124193341.166753833@szeredi.hu> <20080124193456.220272889@szeredi.hu> <20080124202034.GC6724@cvg> <E1JIKsD-0001Kf-Bz@pomaz-ex.szeredi.hu> <20080125152702.GD28856@atrey.karlin.mff.cuni.cz> <E1JIQop-0002AW-TW@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: galak@kernel.crashing.org, geert@linux-m68k.org, gerg@uclinux.org,
-       jgarzik@pobox.com, linux-kernel@vger.kernel.org,
-       linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, scottwood@freescale.com,
-       vitb@kernel.crashing.org
-Subject: Re: [PATCH] [NET]: Remove PowerPC code from fec.c
-References: <4799F349.9090102@scram.de> <E1JIQpQ-0006Xj-RR@faramir.fjphome.nl>
-In-Reply-To: <E1JIQpQ-0006Xj-RR@faramir.fjphome.nl>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1JIQop-0002AW-TW@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frans,
-
-> Jochen Friedrich wrote:
->> +++ b/drivers/net/fec.c
->> @@ -23,6 +23,9 @@
->>   *
->>   * Bug fixes and cleanup by Philippe De Muyter (phdm@macqel.be)
->>   * Copyright (c) 2004-2006 Macq Electronique SA.
->> + *
->> + * This driver is now only used on ColdFire processors. Remove conditional
->> + * Powerpc code. 
->>   */
+On Fri 25-01-08 16:50:15, Miklos Szeredi wrote:
+> > > > | +	/* is this correct? */
+> > > > | +	if (sbi->s_anchor[2] != 0)
+> > > > | +		seq_printf(seq, ",anchor=%u", sbi->s_anchor[2]);
+> > > > 
+> > > > you know, I would prefer to use form UDF_SB_ANCHOR(sb)[2]
+> > > > in sake of style unification but we should wait for Jan's
+> > > > decision (i'm not the expert in this area ;)
+> > > 
+> > > I think UDF_SB_ANCHOR macro was removed by some patch in -mm.
+> >   Yes, it's going to be removed so don't use it. Actually, basing this
+> > patch on top of -mm is a good idea because there are quite some changes
+> > in Andrew's queue.
+> > 
+> > > I'm more interested if the second element of the s_anchor array really
+> > > does always have the value of the 'anchor=N' mount option.  I haven't
+> > > been able to verify that fully.  Do you have some insight into that?
+> >   As Cyrill wrote, it could be zeroed out in case there is no anchor in
+> > the specified block. So I guess you have to store the passed value
+> > somewhere else..
 > 
-> This comment makes sense for a changelog, but IMO it makes no sense at all
-> to add it to the file.
+> But in that case, would the value of the anchor= option matter?
+  No, it would not.
 
-I just added it to clarify this code is now only used on m68knommu (Coldfire).
-The comments on top are mailny about MPC860T CPUs (PowerPC), however the driver is no
-longer used for these CPUs.
+> This is actually a somewhat philosophical question about what the
+> mount options in /proc/mounts mean:
+> 
+>  1) Options _given_ by the user for the mount
+>  2) Options which are _effective_ for the mount
+> 
+> If we take interpretation 2) and there was no anchor (whatever that
+> means), then the anchor=N option wasn't effective, and not giving it
+> would have had the same effect.
+> 
+> This could be confusing to the user, though...
+  Hmm, given that options are modified by remount for some filesystems,
+it's probably the best to display the effective state. So your code should
+display the right thing as it is.
 
-Maybe the wording should be changed to:
-
-This driver is now only used on ColdFire (m68knommu) processors. Conditional
-PowerPC code has been removed.
-
-Thanks,
-Jochen
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
