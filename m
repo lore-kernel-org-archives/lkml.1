@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbYAYWM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757166AbYAYWPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757545AbYAYWM3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 17:12:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbYAYWMF
+	id S1757166AbYAYWPK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 17:15:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYAYWO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 17:12:05 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:28208 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754672AbYAYWMD (ORCPT
+	Fri, 25 Jan 2008 17:14:58 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:44260 "EHLO
+	outbound5-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753954AbYAYWO4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 17:12:03 -0500
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org,
-       "Bryan O'Sullivan" <bryan.osullivan@qlogic.com>,
-       Arthur Jones <arthur.jones@qlogic.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: [PATCH 148/196] Infiniband: make ipath driver use default driver groups.
-X-Message-Flag: Warning: May contain useful information
-References: <20080125071127.GA4860@kroah.com>
-	<1201246425-5058-69-git-send-email-gregkh@suse.de>
-	<adabq79lgkb.fsf@cisco.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 25 Jan 2008 14:11:14 -0800
-In-Reply-To: <adabq79lgkb.fsf@cisco.com> (Roland Dreier's message of "Fri, 25 Jan 2008 13:51:32 -0800")
-Message-ID: <ada7ihxlfnh.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Fri, 25 Jan 2008 17:14:56 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
+Date: Fri, 25 Jan 2008 23:10:29 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Anthony Liguori" <anthony@codemonkey.ws>
+cc: "Avi Kivity" <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [PATCH 3/8] SVM: add module parameter to
+ disable Nested Paging
+Message-ID: <20080125221029.GA23111@amd.com>
+References: <1201294393-22613-1-git-send-email-joerg.roedel@amd.com>
+ <1201294393-22613-4-git-send-email-joerg.roedel@amd.com>
+ <479A561B.8070009@codemonkey.ws>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Jan 2008 22:11:16.0984 (UTC) FILETIME=[34C53F80:01C85F9F]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+In-Reply-To: <479A561B.8070009@codemonkey.ws>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 25 Jan 2008 22:10:29.0783 (UTC)
+ FILETIME=[18A2F270:01C85F9F]
+X-WSS-ID: 6B8481FC2IW8836763-02-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So I think it is coming from the following code in ipath_sysfs.c:
+On Fri, Jan 25, 2008 at 03:35:23PM -0600, Anthony Liguori wrote:
+> Joerg Roedel wrote:
+> >To disable the use of the Nested Paging feature even if it is available in
+> >hardware this patch adds a module parameter. Nested Paging can be disabled by
+> >passing npt=off to the kvm_amd module.
+> >
+> >Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> >---
+> > arch/x86/kvm/svm.c |    8 ++++++++
+> > 1 files changed, 8 insertions(+), 0 deletions(-)
+> >
+> >diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+> >index 49bb57a..2e718ff 100644
+> >--- a/arch/x86/kvm/svm.c
+> >+++ b/arch/x86/kvm/svm.c
+> >@@ -48,6 +48,9 @@ MODULE_LICENSE("GPL");
+> > #define SVM_DEATURE_SVML (1 << 2)
+> >  static bool npt_enabled = false;
+> >+static char *npt = "on";
+> >+
+> >+module_param(npt, charp, S_IRUGO);
+> >  
+> 
+> This would probably be better as an integer.  Then we don't have to do nasty things like 
+> implicitly cast a literal to a char *.
 
-	int ipath_device_create_group(struct device *dev, struct ipath_devdata *dd)
-	{
-		int ret;
-	
-		ret = sysfs_create_group(&dev->kobj, &dev_attr_group);
-		if (ret)
-			goto bail;
-	
-		ret = sysfs_create_group(&dev->kobj, &dev_counter_attr_group);
-		if (ret)
-			goto bail_attrs;
-	
-		sysfs_remove_group(&dev->kobj, &dev_counter_attr_group);
-	bail_attrs:
-		sysfs_remove_group(&dev->kobj, &dev_attr_group);
-	bail:
-		return ret;
-	}
+Hmm, I used int for that first but typing npt=off seemed more
+userfriendly to me than npt=0. So I used char* for it.
 
-note that the success path falls through into the error path and
-removes the groups it just created, which means that on initialization
-the groups are already removed, so we hit the BUG on the second try to
-remove the groups on module exit.
+Joerg
 
-And I think this chunk of your patch:
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-	-	snprintf(unit, sizeof(unit), "%02d", dd->ipath_unit);
-	-	ret = sysfs_create_link(&dev->driver->kobj, &dev->kobj, unit);
-	-	if (ret == 0)
-	-		goto bail;
-	-
 
-was what broke it.  (Note the "if (ret == 0) then skip error
-unwinding" code that got deleted by mistake -- not surprising given
-how hard to read that construction is)
-
-My bad for not testing -mm better.  I'll queue this up to fix it:
-
-diff --git a/drivers/infiniband/hw/ipath/ipath_sysfs.c b/drivers/infiniband/hw/ipath/ipath_sysfs.c
-index aa27ca9..e2a6534 100644
---- a/drivers/infiniband/hw/ipath/ipath_sysfs.c
-+++ b/drivers/infiniband/hw/ipath/ipath_sysfs.c
-@@ -770,7 +770,8 @@ int ipath_device_create_group(struct device *dev, struct ipath_devdata *dd)
- 	if (ret)
- 		goto bail_attrs;
- 
--	sysfs_remove_group(&dev->kobj, &dev_counter_attr_group);
-+	return 0;
-+
- bail_attrs:
- 	sysfs_remove_group(&dev->kobj, &dev_attr_group);
- bail:
