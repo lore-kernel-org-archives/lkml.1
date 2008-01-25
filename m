@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764446AbYAYILZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbYAYILp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764446AbYAYILZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:11:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763768AbYAYIAQ
+	id S1760930AbYAYILp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:11:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764114AbYAYIAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:00:16 -0500
-Received: from mx2.suse.de ([195.135.220.15]:53639 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 03:00:18 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59405 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764042AbYAYH7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1764060AbYAYH7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Jan 2008 02:59:44 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 179/196] kobject: add sample code for how to use kobjects in a simple manner.
-Date: Thu, 24 Jan 2008 23:33:28 -0800
-Message-Id: <1201246425-5058-100-git-send-email-gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 169/196] Kobject: auto-cleanup on final unref
+Date: Thu, 24 Jan 2008 23:33:18 -0800
+Message-Id: <1201246425-5058-90-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -22,198 +22,417 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a simple kobject module, showing how to use kobj_attributes in
-basic and more complex ways.
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-Cc: Kay Sievers <kay.sievers@vrfy.org>
+We save the current state in the object itself, so we can do proper
+cleanup when the last reference is dropped.
+
+If the initial reference is dropped, the object will be removed from
+sysfs if needed, if an "add" event was sent, "remove" will be send, and
+the allocated resources are released.
+
+This allows us to clean up some driver core usage as well as allowing us
+to do other such changes to the rest of the kernel.
+
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- samples/Kconfig                   |   10 +++
- samples/Makefile                  |    2 +-
- samples/kobject/Makefile          |    1 +
- samples/kobject/kobject-example.c |  137 +++++++++++++++++++++++++++++++++++++
- 4 files changed, 149 insertions(+), 1 deletions(-)
- create mode 100644 samples/kobject/Makefile
- create mode 100644 samples/kobject/kobject-example.c
+ drivers/base/core.c     |   32 ++-------
+ include/linux/kobject.h |    5 ++
+ lib/kobject.c           |  170 ++++++++++++++++++++++++++--------------------
+ lib/kobject_uevent.c    |   11 +++
+ 4 files changed, 119 insertions(+), 99 deletions(-)
 
-diff --git a/samples/Kconfig b/samples/Kconfig
-index 57bb223..74d97cc 100644
---- a/samples/Kconfig
-+++ b/samples/Kconfig
-@@ -13,4 +13,14 @@ config SAMPLE_MARKERS
- 	help
- 	  This build markers example modules.
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 675a719..d5d542d 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -576,8 +576,8 @@ static struct kobject *get_device_parent(struct device *dev,
  
-+config SAMPLE_KOBJECT
-+	tristate "Build kobject examples"
-+	help
-+	  This config option will allow you to build a number of
-+	  different kobject sample modules showing how to use kobjects,
-+	  ksets, and ktypes properly.
-+
-+	  If in doubt, say "N" here.
-+
- endif # SAMPLES
-+
-diff --git a/samples/Makefile b/samples/Makefile
-index 5a4f0b6..8652d0f 100644
---- a/samples/Makefile
-+++ b/samples/Makefile
-@@ -1,3 +1,3 @@
- # Makefile for Linux samples code
+ 		/*
+ 		 * If we have no parent, we live in "virtual".
+-		 * Class-devices with a bus-device as parent, live
+-		 * in a class-directory to prevent namespace collisions.
++		 * Class-devices with a non class-device as parent, live
++		 * in a "glue" directory to prevent namespace collisions.
+ 		 */
+ 		if (parent == NULL)
+ 			parent_kobj = virtual_device_parent(dev);
+@@ -607,8 +607,7 @@ static struct kobject *get_device_parent(struct device *dev,
+ 			kobject_put(k);
+ 			return NULL;
+ 		}
+-		/* Do not emit a uevent, as it's not needed for this
+-		 * "class glue" directory. */
++		/* do not emit an uevent for this simple "glue" directory */
+ 		return k;
+ 	}
  
--obj-$(CONFIG_SAMPLES)	+= markers/
-+obj-$(CONFIG_SAMPLES)	+= markers/ kobject/
-diff --git a/samples/kobject/Makefile b/samples/kobject/Makefile
-new file mode 100644
-index 0000000..cce16e9
---- /dev/null
-+++ b/samples/kobject/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_SAMPLE_KOBJECT) += kobject-example.o
-diff --git a/samples/kobject/kobject-example.c b/samples/kobject/kobject-example.c
-new file mode 100644
-index 0000000..08d0d3f
---- /dev/null
-+++ b/samples/kobject/kobject-example.c
-@@ -0,0 +1,137 @@
-+/*
-+ * Sample kobject implementation
-+ *
-+ * Copyright (C) 2004-2007 Greg Kroah-Hartman <greg@kroah.com>
-+ * Copyright (C) 2007 Novell Inc.
-+ *
-+ * Released under the GPL version 2 only.
-+ *
-+ */
-+#include <linux/kobject.h>
-+#include <linux/string.h>
-+#include <linux/sysfs.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
+@@ -619,30 +618,13 @@ static struct kobject *get_device_parent(struct device *dev,
+ 
+ static void cleanup_device_parent(struct device *dev)
+ {
+-	struct device *d;
+-	int other = 0;
++	struct kobject *glue_dir = dev->kobj.parent;
+ 
+-	if (!dev->class)
+-		return;
+-
+-	/* see if we live in a parent class directory */
+-	if (dev->kobj.parent->kset != &dev->class->class_dirs)
++	/* see if we live in a "glue" directory */
++	if (!dev->class || glue_dir->kset != &dev->class->class_dirs)
+ 		return;
+ 
+-	/* if we are the last child of our class, delete the directory */
+-	down(&dev->class->sem);
+-	list_for_each_entry(d, &dev->class->devices, node) {
+-		if (d == dev)
+-			continue;
+-		if (d->kobj.parent == dev->kobj.parent) {
+-			other = 1;
+-			break;
+-		}
+-	}
+-	if (!other)
+-		kobject_del(dev->kobj.parent);
+-	kobject_put(dev->kobj.parent);
+-	up(&dev->class->sem);
++	kobject_put(glue_dir);
+ }
+ #endif
+ 
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index 63967da..be03ce8 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -68,6 +68,11 @@ struct kobject {
+ 	struct kset		* kset;
+ 	struct kobj_type	* ktype;
+ 	struct sysfs_dirent	* sd;
++	unsigned int state_initialized:1;
++	unsigned int state_name_set:1;
++	unsigned int state_in_sysfs:1;
++	unsigned int state_add_uevent_sent:1;
++	unsigned int state_remove_uevent_sent:1;
+ };
+ 
+ extern int kobject_set_name(struct kobject *, const char *, ...)
+diff --git a/lib/kobject.c b/lib/kobject.c
+index c321f19..4fce5ca 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -124,85 +124,74 @@ char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
+ }
+ EXPORT_SYMBOL_GPL(kobject_get_path);
+ 
+-static void kobject_init_internal(struct kobject * kobj)
++/* add the kobject to its kset's list */
++static void kobj_kset_join(struct kobject *kobj)
+ {
+-	if (!kobj)
++	if (!kobj->kset)
+ 		return;
+-	kref_init(&kobj->kref);
+-	INIT_LIST_HEAD(&kobj->entry);
 +
-+/*
-+ * This module shows how to create a simple subdirectory in sysfs called
-+ * /sys/kernel/kobject-example  In that directory, 3 files are created:
-+ * "foo", "baz", and "bar".  If an integer is written to these files, it can be
-+ * later read out of it.
-+ */
-+
-+static int foo;
-+static int baz;
-+static int bar;
-+
-+/*
-+ * The "foo" file where a static variable is read from and written to.
-+ */
-+static ssize_t foo_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			char *buf)
++	kset_get(kobj->kset);
++	spin_lock(&kobj->kset->list_lock);
++	list_add_tail(&kobj->entry, &kobj->kset->list);
++	spin_unlock(&kobj->kset->list_lock);
+ }
+ 
++/* remove the kobject from its kset's list */
++static void kobj_kset_leave(struct kobject *kobj)
 +{
-+	return sprintf(buf, "%d\n", foo);
++	if (!kobj->kset)
++		return;
+ 
+-/**
+- *	unlink - remove kobject from kset list.
+- *	@kobj:	kobject.
+- *
+- *	Remove the kobject from the kset list and decrement
+- *	its parent's refcount.
+- *	This is separated out, so we can use it in both 
+- *	kobject_del() and kobject_add_internal() on error.
+- */
++	spin_lock(&kobj->kset->list_lock);
++	list_del_init(&kobj->entry);
++	spin_unlock(&kobj->kset->list_lock);
++	kset_put(kobj->kset);
 +}
+ 
+-static void unlink(struct kobject * kobj)
++static void kobject_init_internal(struct kobject * kobj)
+ {
+-	struct kobject *parent = kobj->parent;
+-
+-	if (kobj->kset) {
+-		spin_lock(&kobj->kset->list_lock);
+-		list_del_init(&kobj->entry);
+-		spin_unlock(&kobj->kset->list_lock);
+-	}
+-	kobj->parent = NULL;
+-	kobject_put(kobj);
+-	kobject_put(parent);
++	if (!kobj)
++		return;
++	kref_init(&kobj->kref);
++	INIT_LIST_HEAD(&kobj->entry);
+ }
+ 
 +
-+static ssize_t foo_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			 const char *buf, size_t count)
-+{
-+	sscanf(buf, "%du", &foo);
-+	return count;
-+}
+ static int kobject_add_internal(struct kobject *kobj)
+ {
+ 	int error = 0;
+ 	struct kobject * parent;
+ 
+-	if (!(kobj = kobject_get(kobj)))
++	if (!kobj)
+ 		return -ENOENT;
+-	if (!kobj->k_name)
+-		kobject_set_name(kobj, "NO_NAME");
+-	if (!*kobj->k_name) {
+-		pr_debug("kobject (%p) attempted to be registered with no "
 +
-+static struct kobj_attribute foo_attribute =
-+	__ATTR(foo, 0666, foo_show, foo_store);
++	if (!kobj->k_name || !kobj->k_name[0]) {
++		pr_debug("kobject: (%p): attempted to be registered with empty "
+ 			 "name!\n", kobj);
+ 		WARN_ON(1);
+-		kobject_put(kobj);
+ 		return -EINVAL;
+ 	}
+-	parent = kobject_get(kobj->parent);
+ 
+-	pr_debug("kobject: '%s' (%p): %s: parent: '%s', set: '%s'\n",
+-		 kobject_name(kobj), kobj, __FUNCTION__,
+-		 parent ? kobject_name(parent) : "<NULL>",
+-		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>" );
++	parent = kobject_get(kobj->parent);
+ 
++	/* join kset if set, use it as parent if we do not already have one */
+ 	if (kobj->kset) {
+-		kobj->kset = kset_get(kobj->kset);
+-
+-		if (!parent) {
++		if (!parent)
+ 			parent = kobject_get(&kobj->kset->kobj);
+-			/*
+-			 * If the kset is our parent, get a second
+-			 * reference, we drop both the kset and the
+-			 * parent ref on cleanup
+-			 */
+-			kobject_get(parent);
+-		}
+-
+-		spin_lock(&kobj->kset->list_lock);
+-		list_add_tail(&kobj->entry, &kobj->kset->list);
+-		spin_unlock(&kobj->kset->list_lock);
++		kobj_kset_join(kobj);
+ 		kobj->parent = parent;
+ 	}
+ 
++	pr_debug("kobject: '%s' (%p): %s: parent: '%s', set: '%s'\n",
++		 kobject_name(kobj), kobj, __FUNCTION__,
++		 parent ? kobject_name(parent) : "<NULL>",
++		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>" );
 +
-+/*
-+ * More complex function where we determine which varible is being accessed by
-+ * looking at the attribute for the "baz" and "bar" files.
-+ */
-+static ssize_t b_show(struct kobject *kobj, struct kobj_attribute *attr,
-+		      char *buf)
-+{
-+	int var;
+ 	error = create_dir(kobj);
+ 	if (error) {
+-		/* unlink does the kobject_put() for us */
+-		unlink(kobj);
++		kobj_kset_leave(kobj);
++		kobject_put(parent);
++		kobj->parent = NULL;
+ 
+ 		/* be noisy on error issues */
+ 		if (error == -EEXIST)
+@@ -214,7 +203,8 @@ static int kobject_add_internal(struct kobject *kobj)
+ 			printk(KERN_ERR "%s failed for %s (%d)\n",
+ 			       __FUNCTION__, kobject_name(kobj), error);
+ 		dump_stack();
+-	}
++	} else
++		kobj->state_in_sysfs = 1;
+ 
+ 	return error;
+ }
+@@ -238,11 +228,13 @@ static int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+ 	if (!name)
+ 		return -ENOMEM;
+ 
 +
-+	if (strcmp(attr->attr.name, "baz") == 0)
-+		var = baz;
-+	else
-+		var = bar;
-+	return sprintf(buf, "%d\n", var);
-+}
+ 	/* Free the old name, if necessary. */
+ 	kfree(kobj->k_name);
+ 
+ 	/* Now, set the new name */
+ 	kobj->k_name = name;
++	kobj->state_name_set = 1;
+ 
+ 	return 0;
+ }
+@@ -293,20 +285,25 @@ void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
+ 		err_str = "must have a ktype to be initialized properly!\n";
+ 		goto error;
+ 	}
+-	if (atomic_read(&kobj->kref.refcount)) {
++	if (kobj->state_initialized) {
+ 		/* do not error out as sometimes we can recover */
+-		printk(KERN_ERR "kobject: reference count is already set, "
+-		       "something is seriously wrong.\n");
++		printk(KERN_ERR "kobject (%p): tried to init an initialized "
++		       "object, something is seriously wrong.\n", kobj);
+ 		dump_stack();
+ 	}
+ 
+ 	kref_init(&kobj->kref);
+ 	INIT_LIST_HEAD(&kobj->entry);
+ 	kobj->ktype = ktype;
++	kobj->state_name_set = 0;
++	kobj->state_in_sysfs = 0;
++	kobj->state_add_uevent_sent = 0;
++	kobj->state_remove_uevent_sent = 0;
++	kobj->state_initialized = 1;
+ 	return;
+ 
+ error:
+-	printk(KERN_ERR "kobject: %s\n", err_str);
++	printk(KERN_ERR "kobject (%p): %s\n", kobj, err_str);
+ 	dump_stack();
+ }
+ EXPORT_SYMBOL(kobject_init);
+@@ -345,17 +342,10 @@ static int kobject_add_varg(struct kobject *kobj, struct kobject *parent,
+  *
+  * If this function returns an error, kobject_put() must be called to
+  * properly clean up the memory associated with the object.
+- *
+- * If the function is successful, the only way to properly clean up the
+- * memory is with a call to kobject_del(), in which case, a call to
+- * kobject_put() is not necessary (kobject_del() does the final
+- * kobject_put() to call the release function in the ktype's release
+- * pointer.)
+- *
+  * Under no instance should the kobject that is passed to this function
+  * be directly freed with a call to kfree(), that can leak memory.
+  *
+- * Note, no uevent will be created with this call, the caller should set
++ * Note, no "add" uevent will be created with this call, the caller should set
+  * up all of the necessary sysfs files for the object and then call
+  * kobject_uevent() with the UEVENT_ADD parameter to ensure that
+  * userspace is properly notified of this kobject's creation.
+@@ -369,6 +359,13 @@ int kobject_add(struct kobject *kobj, struct kobject *parent,
+ 	if (!kobj)
+ 		return -EINVAL;
+ 
++	if (!kobj->state_initialized) {
++		printk(KERN_ERR "kobject '%s' (%p): tried to add an "
++		       "uninitialized object, something is seriously wrong.\n",
++		       kobject_name(kobj), kobj);
++		dump_stack();
++		return -EINVAL;
++	}
+ 	va_start(args, fmt);
+ 	retval = kobject_add_varg(kobj, parent, fmt, args);
+ 	va_end(args);
+@@ -527,8 +524,12 @@ void kobject_del(struct kobject * kobj)
+ {
+ 	if (!kobj)
+ 		return;
 +
-+static ssize_t b_store(struct kobject *kobj, struct kobj_attribute *attr,
-+		       const char *buf, size_t count)
-+{
-+	int var;
+ 	sysfs_remove_dir(kobj);
+-	unlink(kobj);
++	kobj->state_in_sysfs = 0;
++	kobj_kset_leave(kobj);
++	kobject_put(kobj->parent);
++	kobj->parent = NULL;
+ }
+ 
+ /**
+@@ -565,21 +566,43 @@ struct kobject * kobject_get(struct kobject * kobj)
+  */
+ static void kobject_cleanup(struct kobject *kobj)
+ {
+-	struct kobj_type * t = get_ktype(kobj);
+-	struct kset * s = kobj->kset;
++	struct kobj_type *t = get_ktype(kobj);
+ 	const char *name = kobj->k_name;
++	int name_set = kobj->state_name_set;
+ 
+ 	pr_debug("kobject: '%s' (%p): %s\n",
+ 		 kobject_name(kobj), kobj, __FUNCTION__);
 +
-+	sscanf(buf, "%du", &var);
-+	if (strcmp(attr->attr.name, "baz") == 0)
-+		baz = var;
-+	else
-+		bar = var;
-+	return count;
-+}
++	if (t && !t->release)
++		pr_debug("kobject: '%s' (%p): does not have a release() "
++			 "function, it is broken and must be fixed.\n",
++			 kobject_name(kobj), kobj);
 +
-+static struct kobj_attribute baz_attribute =
-+	__ATTR(baz, 0666, b_show, b_store);
-+static struct kobj_attribute bar_attribute =
-+	__ATTR(bar, 0666, b_show, b_store);
++	/* send "remove" if the caller did not do it but sent "add" */
++	if (kobj->state_add_uevent_sent && !kobj->state_remove_uevent_sent) {
++		pr_debug("kobject: '%s' (%p): auto cleanup 'remove' event\n",
++			 kobject_name(kobj), kobj);
++		kobject_uevent(kobj, KOBJ_REMOVE);
++	}
 +
++	/* remove from sysfs if the caller did not do it */
++	if (kobj->state_in_sysfs) {
++		pr_debug("kobject: '%s' (%p): auto cleanup kobject_del\n",
++			 kobject_name(kobj), kobj);
++		kobject_del(kobj);
++	}
 +
-+/*
-+ * Create a group of attributes so that we can create and destory them all
-+ * at once.
-+ */
-+static struct attribute *attrs[] = {
-+	&foo_attribute.attr,
-+	&baz_attribute.attr,
-+	&bar_attribute.attr,
-+	NULL,	/* need to NULL terminate the list of attributes */
-+};
+ 	if (t && t->release) {
++		pr_debug("kobject: '%s' (%p): calling ktype release\n",
++			 kobject_name(kobj), kobj);
+ 		t->release(kobj);
+-		/* If we have a release function, we can guess that this was
+-		 * not a statically allocated kobject, so we should be safe to
+-		 * free the name */
++	}
 +
-+/*
-+ * An unnamed attribute group will put all of the attributes directly in
-+ * the kobject directory.  If we specify a name, a subdirectory will be
-+ * created for the attributes with the directory being the name of the
-+ * attribute group.
-+ */
-+static struct attribute_group attr_group = {
-+	.attrs = attrs,
-+};
-+
-+static struct kobject *example_kobj;
-+
-+static int example_init(void)
-+{
-+	int retval;
-+
++	/* free name if we allocated it */
++	if (name_set && name) {
++		pr_debug("kobject: '%s': free name\n", name);
+ 		kfree(name);
+ 	}
+-	if (s)
+-		kset_put(s);
+ }
+ 
+ static void kobject_release(struct kref *kref)
+@@ -601,8 +624,7 @@ void kobject_put(struct kobject * kobj)
+ 
+ static void dynamic_kobj_release(struct kobject *kobj)
+ {
+-	pr_debug("kobject: '%s' (%p): %s\n",
+-		 kobject_name(kobj), kobj, __FUNCTION__);
++	pr_debug("kobject: (%p): %s\n", kobj, __FUNCTION__);
+ 	kfree(kobj);
+ }
+ 
+diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+index 51dc4d2..b021e67 100644
+--- a/lib/kobject_uevent.c
++++ b/lib/kobject_uevent.c
+@@ -180,6 +180,17 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+ 		}
+ 	}
+ 
 +	/*
-+	 * Create a simple kobject with the name of "kobject_example",
-+	 * located under /sys/kernel/
-+	 *
-+	 * As this is a simple directory, no uevent will be sent to
-+	 * userspace.  That is why this function should not be used for
-+	 * any type of dynamic kobjects, where the name and number are
-+	 * not known ahead of time.
++	 * Mark "add" and "remove" events in the object to ensure proper
++	 * events to userspace during automatic cleanup. If the object did
++	 * send an "add" event, "remove" will automatically generated by
++	 * the core, if not already done by the caller.
 +	 */
-+	example_kobj = kobject_create_and_add("kobject_example", kernel_kobj);
-+	if (!example_kobj)
-+		return -ENOMEM;
++	if (action == KOBJ_ADD)
++		kobj->state_add_uevent_sent = 1;
++	else if (action == KOBJ_REMOVE)
++		kobj->state_remove_uevent_sent = 1;
 +
-+	/* Create the files associated with this kobject */
-+	retval = sysfs_create_group(example_kobj, &attr_group);
-+	if (retval)
-+		kobject_put(example_kobj);
-+
-+	return retval;
-+}
-+
-+static void example_exit(void)
-+{
-+	kobject_put(example_kobj);
-+}
-+
-+module_init(example_init);
-+module_exit(example_exit);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Greg Kroah-Hartman <greg@kroah.com>");
+ 	/* we will send an event, so request a new sequence number */
+ 	spin_lock(&sequence_lock);
+ 	seq = ++uevent_seqnum;
 -- 
 1.5.3.8
 
