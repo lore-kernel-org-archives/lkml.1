@@ -1,122 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbYAYMpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbYAYNHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbYAYMpb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 07:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755736AbYAYMoi
+	id S1756877AbYAYNHs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 08:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbYAYNHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 07:44:38 -0500
-Received: from ns2.suse.de ([195.135.220.15]:51076 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755204AbYAYMoe convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 07:44:34 -0500
-From: Frank Seidel <fseidel@suse.de>
-Organization: SUSE LINUX Products GmbH
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: [PATCH 012/196] nozomi driver
-Date: Fri, 25 Jan 2008 13:44:29 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-References: <20080125071127.GA4860@kroah.com> <1201245134-4876-12-git-send-email-gregkh@suse.de> <Pine.LNX.4.64.0801250910230.12676@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0801250910230.12676@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200801251344.30427.fseidel@suse.de>
+	Fri, 25 Jan 2008 08:07:38 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:63732 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753388AbYAYNHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 08:07:37 -0500
+Date: Fri, 25 Jan 2008 14:07:14 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, kernel@avr32linux.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [GIT PULL] AVR32 update
+Message-ID: <20080125140714.161cedb6@dhcp-252-066.norway.atmel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Linus,
 
-thanks for your feedback.
+Please pull from the for-linus branch of
 
-On Freitag 25 Januar 2008 09:31:25, you (Jan Engelhardt) wrote:
-> On Jan 24 2008 23:09, Greg Kroah-Hartman wrote:
-> >+/*
-> >+ * nozomi.c  -- HSDPA driver Broadband Wireless Data Card - Globe Trotter
-> >+ *
-> >+ * Written by: Ulf Jakobsson,
-> >+ *             Jan �erfeldt,
->                      ^
-> Neither in ISO-8859-1 nor UTF-8 this position contains something meaningful.
-> Mind to update to UTF-8?
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git for-linus
 
-fixed
+to receive the following changes.
 
-> >+/*
-> >+ * CHANGELOG
-> 
-> Changelogs go into git, not files, at least that is what was mentioned
-> time and again.
+Mathieu, this includes the patch that adds the instrumentation menu to
+avr32, bringing it in line with most other architectures at the moment.
+Please update your patch so that it also updates the avr32 Kconfig when
+removing it.
 
-i removed them
+David Brownell (1):
+      [AVR32] extint: change set_irq_type() handling
 
-> >+#ifdef __BIG_ENDIAN
-> >+/* Big endian */
-> >+
-> >+struct toggles {
-> >+	unsigned enabled:5;	/*
-> >+				 * Toggle fields are valid if enabled is 0,
-> >+				 * else A-channels must always be used.
-> >+				 */
-> >+	unsigned diag_dl:1;
-> >+	unsigned mdm_dl:1;
-> >+	unsigned mdm_ul:1;
-> >+} __attribute__ ((packed));
-> 
-> Probably just me, unsigned int is a good bit more explicit.
-> The driver may also use a combined struct with
-> BIG_ENDIAN_BITFIELD/LITTLE_ENDIAN_BIGFIELD (see e.g. linux/ip.h).
+Haavard Skinnemoen (16):
+      [AVR32] Drop GFP_COMP for DMA memory allocations
+      [AVR32] Remove redundant try_to_freeze() call from do_signal()
+      ptrace: Call arch_ptrace_attach() when request=PTRACE_TRACEME
+      [AVR32] Enable debugging only when needed
+      [AVR32] Include instrumentation menu
+      [AVR32] Oprofile support
+      [AVR32] Provide more CPU information in /proc/cpuinfo and dmesg
+      [AVR32] Add support for AT32AP7001 and AT32AP7002
+      [AVR32] ATSTK1000: Move gpio-leds setup to setup.c
+      [AVR32] Clean up external DAC setup code
+      [AVR32] Add support for ATSTK1003 and ATSTK1004
+      [AVR32] Kconfig: Choose daughterboard instead of CPU
+      [AVR32] ATSTK1002: Update defconfig
+      [AVR32] ATNGW100: Update defconfig
+      [AVR32] NMI debugging
+      [AVR32] extint: Set initial irq type to low level
 
-Here i agree with Stefan, especially as this also would only
-make a difference for one (struct config_table) of those four structs
-and there it would vastly decrease readability.
+Hans-Christian Egtvedt (1):
+      Disable VGA text console for AVR32 architecture
 
-> >+/*    Global variables */
-> >+static struct pci_device_id nozomi_pci_tbl[] = {
-> >+	{PCI_DEVICE(VENDOR1, DEVICE1)},
-> >+	{},
-> >+};
-> 
-> The macros are only used once, could just as well substitute them
-> by their real values.
+Jan Engelhardt (1):
+      [AVR32] constify function pointer tables
 
-Yes, but on the other hand now all those driver specific numbers
-are grouped together in the beginning of nozomi.c and it also
-could happen there once will appear other cards or models of it
-that this nozomi driver could handle.
-
-> >+/*
-> >+ * Handle donlink data, ports that are handled are modem and diagnostics
->             ^
-> downlink
-
-corrected
-
-> >+static DEVICE_ATTR(card_type, 0444, card_type_show, NULL);
-> 
-> While 0444 is probably never going to change its meaning, S_IRUGO comes 
-> into mind.
-
-changed it to S_IRUGO
-
-> >+/* just to discard single character writes */
-> >+static void ntty_put_char(struct tty_struct *tty, unsigned char c)
-> >+{
-> >+	/* FIXME !!! */
-> >+	DBG2("PUT CHAR Function: %c", c);
-> >+}
-
-Its just a misleading comment, but i changed it.
-
-Besides that i also removed an error and a warning the current
-checkpatch.pl now showed up ("trailing statments should be on next
-line" and a "inline preferred over __inline-__").
-
-Thanks,
-Frank
+ Documentation/kernel-parameters.txt                |    5 +
+ arch/avr32/Kconfig                                 |   47 +-
+ arch/avr32/Kconfig.debug                           |   10 -
+ arch/avr32/Makefile                                |    3 +-
+ arch/avr32/boards/atngw100/setup.c                 |    2 +-
+ arch/avr32/boards/atstk1000/Kconfig                |   58 +-
+ arch/avr32/boards/atstk1000/Makefile               |    2 +
+ arch/avr32/boards/atstk1000/atstk1000.h            |    2 +
+ arch/avr32/boards/atstk1000/atstk1002.c            |  106 +--
+ arch/avr32/boards/atstk1000/atstk1003.c            |  162 ++++
+ arch/avr32/boards/atstk1000/atstk1004.c            |  147 +++
+ arch/avr32/boards/atstk1000/setup.c                |   64 ++
+ arch/avr32/configs/atngw100_defconfig              |  418 +++++---
+ arch/avr32/configs/atstk1002_defconfig             |  637 ++++++++++---
+ arch/avr32/configs/atstk1003_defconfig             | 1015 ++++++++++++++++++++
+ arch/avr32/configs/atstk1004_defconfig             |  621 ++++++++++++
+ arch/avr32/kernel/Makefile                         |    3 +-
+ arch/avr32/kernel/cpu.c                            |   96 ++-
+ arch/avr32/kernel/irq.c                            |   11 +
+ arch/avr32/kernel/kprobes.c                        |    5 +-
+ arch/avr32/kernel/nmi_debug.c                      |   82 ++
+ arch/avr32/kernel/ocd.c                            |  163 ++++
+ arch/avr32/kernel/process.c                        |    5 +-
+ arch/avr32/kernel/ptrace.c                         |    5 +-
+ arch/avr32/kernel/signal.c                         |    7 -
+ arch/avr32/kernel/traps.c                          |   21 +-
+ arch/avr32/mach-at32ap/Kconfig                     |   12 +-
+ arch/avr32/mach-at32ap/Makefile                    |    4 +-
+ .../mach-at32ap/{at32ap7000.c => at32ap700x.c}     |   15 +-
+ arch/avr32/mach-at32ap/extint.c                    |   59 +-
+ arch/avr32/mm/dma-coherent.c                       |    7 +
+ arch/avr32/mm/tlb.c                                |    2 +-
+ arch/avr32/oprofile/Makefile                       |    8 +
+ arch/avr32/oprofile/op_model_avr32.c               |  235 +++++
+ drivers/video/console/Kconfig                      |    2 +-
+ drivers/watchdog/Kconfig                           |    2 +-
+ .../arch-at32ap/{at32ap7000.h => at32ap700x.h}     |    6 +-
+ include/asm-avr32/arch-at32ap/cpu.h                |    2 +-
+ include/asm-avr32/arch-at32ap/io.h                 |    4 +-
+ include/asm-avr32/irq.h                            |    5 +
+ include/asm-avr32/kdebug.h                         |    1 +
+ include/asm-avr32/ocd.h                            |    5 +
+ include/asm-avr32/processor.h                      |   14 +
+ include/asm-avr32/ptrace.h                         |   13 +-
+ include/asm-avr32/thread_info.h                    |    1 +
+ kernel/ptrace.c                                    |    2 +
+ 46 files changed, 3579 insertions(+), 517 deletions(-)
+ create mode 100644 arch/avr32/boards/atstk1000/atstk1003.c
+ create mode 100644 arch/avr32/boards/atstk1000/atstk1004.c
+ create mode 100644 arch/avr32/configs/atstk1003_defconfig
+ create mode 100644 arch/avr32/configs/atstk1004_defconfig
+ create mode 100644 arch/avr32/kernel/nmi_debug.c
+ create mode 100644 arch/avr32/kernel/ocd.c
+ rename arch/avr32/mach-at32ap/{at32ap7000.c => at32ap700x.c} (98%)
+ create mode 100644 arch/avr32/oprofile/Makefile
+ create mode 100644 arch/avr32/oprofile/op_model_avr32.c
+ rename include/asm-avr32/arch-at32ap/{at32ap7000.h => at32ap700x.h} (89%)
