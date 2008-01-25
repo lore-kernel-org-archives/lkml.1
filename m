@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761396AbYAYHc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbYAYHcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761396AbYAYHc0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:32:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758140AbYAYHRT
+	id S1755816AbYAYHcm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:32:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758756AbYAYHRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:17:19 -0500
-Received: from mx1.suse.de ([195.135.220.2]:52744 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 02:17:24 -0500
+Received: from ns1.suse.de ([195.135.220.2]:52756 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759165AbYAYHRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:17:17 -0500
+	id S1758724AbYAYHRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:17:22 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 051/196] kobject: convert configfs to use kobject_create
-Date: Thu, 24 Jan 2008 23:09:49 -0800
-Message-Id: <1201245134-4876-51-git-send-email-gregkh@suse.de>
+       Mike Halcrow <mhalcrow@us.ibm.com>,
+       Phillip Hellewell <phillip@hellewell.homeip.net>
+Subject: [PATCH 052/196] kset: convert ecryptfs to use kset_create
+Date: Thu, 24 Jan 2008 23:09:50 -0800
+Message-Id: <1201245134-4876-52-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -23,68 +24,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We don't need a kset here, a simple kobject will do just fine, so
-dynamically create the kobject and use it.
+Dynamically create the kset instead of declaring it statically.
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
+Cc: Mike Halcrow <mhalcrow@us.ibm.com>
+Cc: Phillip Hellewell <phillip@hellewell.homeip.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/configfs/mount.c |   13 ++++++-------
- 1 files changed, 6 insertions(+), 7 deletions(-)
+ fs/ecryptfs/main.c |   19 +++++++++----------
+ 1 files changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/fs/configfs/mount.c b/fs/configfs/mount.c
-index 374ddbd..1330046 100644
---- a/fs/configfs/mount.c
-+++ b/fs/configfs/mount.c
-@@ -128,7 +128,7 @@ void configfs_release_fs(void)
+diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
+index fe2f44f..4750d82 100644
+--- a/fs/ecryptfs/main.c
++++ b/fs/ecryptfs/main.c
+@@ -734,7 +734,7 @@ static int ecryptfs_init_kmem_caches(void)
+ 	return 0;
  }
  
+-static decl_subsys(ecryptfs, NULL);
++static struct kset *ecryptfs_kset;
  
--static decl_subsys(config, NULL);
-+static struct kobject *config_kobj;
- 
- static int __init configfs_init(void)
+ static ssize_t version_show(struct kset *kset, char *buff)
  {
-@@ -140,9 +140,8 @@ static int __init configfs_init(void)
- 	if (!configfs_dir_cachep)
- 		goto out;
+@@ -798,18 +798,17 @@ static int do_sysfs_registration(void)
+ {
+ 	int rc;
  
--	config_subsys.kobj.kset = &kernel_subsys;
--	err = subsystem_register(&config_subsys);
--	if (err) {
-+	config_kobj = kobject_create_and_add("config", &kernel_subsys.kobj);
-+	if (!config_kobj) {
- 		kmem_cache_destroy(configfs_dir_cachep);
- 		configfs_dir_cachep = NULL;
+-	ecryptfs_subsys.kobj.kset = &fs_subsys;
+-	rc = subsystem_register(&ecryptfs_subsys);
+-	if (rc) {
+-		printk(KERN_ERR
+-		       "Unable to register ecryptfs sysfs subsystem\n");
++	ecryptfs_kset = kset_create_and_add("ecryptfs", NULL, &fs_subsys.kobj);
++	if (!ecryptfs_kset) {
++		printk(KERN_ERR "Unable to create ecryptfs kset\n");
++		rc = -ENOMEM;
  		goto out;
-@@ -151,7 +150,7 @@ static int __init configfs_init(void)
- 	err = register_filesystem(&configfs_fs_type);
- 	if (err) {
- 		printk(KERN_ERR "configfs: Unable to register filesystem!\n");
--		subsystem_unregister(&config_subsys);
-+		kobject_unregister(config_kobj);
- 		kmem_cache_destroy(configfs_dir_cachep);
- 		configfs_dir_cachep = NULL;
- 		goto out;
-@@ -160,7 +159,7 @@ static int __init configfs_init(void)
- 	err = configfs_inode_init();
- 	if (err) {
- 		unregister_filesystem(&configfs_fs_type);
--		subsystem_unregister(&config_subsys);
-+		kobject_unregister(config_kobj);
- 		kmem_cache_destroy(configfs_dir_cachep);
- 		configfs_dir_cachep = NULL;
  	}
-@@ -171,7 +170,7 @@ out:
- static void __exit configfs_exit(void)
+-	rc = sysfs_create_group(&ecryptfs_subsys.kobj, &attr_group);
++	rc = sysfs_create_group(&ecryptfs_kset->kobj, &attr_group);
+ 	if (rc) {
+ 		printk(KERN_ERR
+ 		       "Unable to create ecryptfs version attributes\n");
+-		subsystem_unregister(&ecryptfs_subsys);
++		kset_unregister(ecryptfs_kset);
+ 	}
+ out:
+ 	return rc;
+@@ -817,8 +816,8 @@ out:
+ 
+ static void do_sysfs_unregistration(void)
  {
- 	unregister_filesystem(&configfs_fs_type);
--	subsystem_unregister(&config_subsys);
-+	kobject_unregister(config_kobj);
- 	kmem_cache_destroy(configfs_dir_cachep);
- 	configfs_dir_cachep = NULL;
- 	configfs_inode_exit();
+-	sysfs_remove_group(&ecryptfs_subsys.kobj, &attr_group);
+-	subsystem_unregister(&ecryptfs_subsys);
++	sysfs_remove_group(&ecryptfs_kset->kobj, &attr_group);
++	kset_unregister(ecryptfs_kset);
+ }
+ 
+ static int __init ecryptfs_init(void)
 -- 
 1.5.3.8
 
