@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbYAYQnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYAYQtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756351AbYAYQnd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 11:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbYAYQnO
+	id S1756887AbYAYQtq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 11:49:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbYAYQth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 11:43:14 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:52956 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753600AbYAYQnM (ORCPT
+	Fri, 25 Jan 2008 11:49:37 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:33879 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754169AbYAYQtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 11:43:12 -0500
-Date: Fri, 25 Jan 2008 11:42:29 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Takashi Sato <t-sato@yk.jp.nec.com>, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] ext3 freeze feature
-Message-ID: <20080125164229.GD17907@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Sandeen <sandeen@redhat.com>,
-	Takashi Sato <t-sato@yk.jp.nec.com>, linux-ext4@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru> <20080125133329.GB8184@mit.edu> <479A0F91.2030206@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <479A0F91.2030206@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Fri, 25 Jan 2008 11:49:36 -0500
+Subject: Re: INITIO scsi driver fails to work properly
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Filippos Papadopoulos <psybases@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, cebbert@redhat.com, bharrosh@panasas.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <9f00bd9d0801220950r49de29abl8fbb2495a65c9a10@mail.gmail.com>
+References: <1200070903.3286.28.camel@localhost.localdomain>
+	 <9f00bd9d0801130428s5e4c034apf21052b918470f99@mail.gmail.com>
+	 <1200410166.9273.4.camel@localhost.localdomain>
+	 <20080116145916A.fujita.tomonori@lab.ntt.co.jp>
+	 <1200495471.3136.1.camel@localhost.localdomain>
+	 <20080121222037.3d8b46a1@lxorguk.ukuu.org.uk>
+	 <9f00bd9d0801220950r49de29abl8fbb2495a65c9a10@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 25 Jan 2008 10:49:32 -0600
+Message-Id: <1201279772.3119.38.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 10:34:25AM -0600, Eric Sandeen wrote:
-> > But it was this concern which is why ext3 never exported freeze
-> > functionality to userspace, even though other commercial filesystems
-> > do support this.  It wasn't that it wasn't considered, but the concern
-> > about whether or not it was sufficiently safe to make available.
-> 
-> What's the safety concern; that the admin will forget to unfreeze?
 
-That the admin would manage to deadlock him/herself and wedge up the
-whole system...
+On Tue, 2008-01-22 at 19:50 +0200, Filippos Papadopoulos wrote:
+> I get the following:
+> SAH
+> SSH
+> SCB Q
+> SCB EXEC
+> SCB EXEC DONE
 
-> I'm also not sure I see the point of the timeout in the original patch;
-> either you are done snapshotting and ready to unfreeze, or you're not;
-> 1, or 2, or 3 seconds doesn't really matter.  When you're done, you're
-> done, and you can only unfreeze then.  Shouldn't this be done
-> programmatically, and not with some pre-determined timeout?
+Actually, I suspect your issues should be fixed by this patch:
 
-This is only a guess, but I suspect it was a fail-safe in case the
-admin did manage to deadlock him/herself.  
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e2d435ea4084022ab88efa74214accb45b1f9e92
 
-I would think a better approach would be to make the filesystem
-unfreeze if the file descriptor that was used to freeze the filesystem
-is closed, and then have explicit deadlock detection that kills the
-process doing the freeze, at which point the filesystem unlocks and
-the system can recover.
+Could you download 2.6.24 and try it out to see if they are?
 
-					- Ted
+Thanks,
+
+James
+
+
