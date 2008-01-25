@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbYAYWgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbYAYWke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758731AbYAYWgX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 17:36:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYAYWgM
+	id S1757850AbYAYWke (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 17:40:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYAYWk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 17:36:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44594 "EHLO mx2.mail.elte.hu"
+	Fri, 25 Jan 2008 17:40:27 -0500
+Received: from ns2.suse.de ([195.135.220.15]:50647 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752308AbYAYWgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 17:36:11 -0500
-Date: Fri, 25 Jan 2008 23:35:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <gregkh@suse.de>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: threshold_init_device/kobject_uevent_env oops
-Message-ID: <20080125223556.GB24708@elte.hu>
-References: <86802c440801251305u21517078y12ff68ef3015aaae@mail.gmail.com> <20080125221548.GA15172@suse.de>
+	id S1753580AbYAYWk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 17:40:26 -0500
+Date: Fri, 25 Jan 2008 14:38:58 -0800
+From: Greg KH <gregkh@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 183/196] driver core: fix build with SYSFS=n
+Message-ID: <20080125223858.GA15723@suse.de>
+References: <20080125071127.GA4860@kroah.com> <1201246425-5058-104-git-send-email-gregkh@suse.de> <20080125222530.GA23769@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080125221548.GA15172@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080125222530.GA23769@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Greg KH <gregkh@suse.de> wrote:
-
-> On Fri, Jan 25, 2008 at 01:05:40PM -0800, Yinghai Lu wrote:
-> > current linus tree + x86.git
+On Fri, Jan 25, 2008 at 11:25:30PM +0100, Ingo Molnar wrote:
+> 
+> * Greg Kroah-Hartman <gregkh@suse.de> wrote:
+> 
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
 > > 
-> > got
+> > When SYSFS=n and MODULES=y, build ends with:
 > > 
-> > Calling initcall 0xffffffff80b93d98: threshold_init_device+0x0/0x3f()
-> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000040
-> > IP: [<ffffffff80458e20>] kobject_uevent_env+0x2a/0x3d9
+> > linux-2.6.24-rc6-mm1/drivers/base/module.c: In function 'module_add_driver':
+> > linux-2.6.24-rc6-mm1/drivers/base/module.c:49: error: 'module_kset' undeclared (first use in this function)
+> > make[3]: *** [drivers/base/module.o] Error 1
 > 
-> Does this happen on just Linus's tree?
-> 
-> Can you send me a .config file for this?
-> 
-> What is threshold_init()?  Is it something new in the x86.git tree?
+> _PLEASE_ fold such fixes into the patch that introduces the build bugs, 
+> prior sending your git trees upstream! (just like Andrew does it with 
+> all patches that come via -mm)
 
-no. A quick grep shows that it is in a file that _your_ changes in 
-Linus' latest have touched:
+For most of these issues I do merge them together.
 
-  arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+However, for some odd kernel configurations, like this one, I didn't, my
+appologies.  I'll try to be more careful in the future.
 
-via:
+> Changes like this (and it now leaked into Linus' tree as well) kill 
+> bisectability.
 
- Author: Greg Kroah-Hartman <gregkh@suse.de>
- Date:   Thu Dec 20 08:13:05 2007 -0800
+The odds that a "normal" person has sysfs turned off and modules
+enabled, trying to bisect things, is pretty slim :)
 
-     Kobject: convert arch/* from kobject_unregister() to kobject_put()
+thanks,
 
- Author: Greg Kroah-Hartman <gregkh@suse.de>
- Date:   Wed Dec 19 09:23:20 2007 -0800
-
-     Kobject: change arch/x86/kernel/cpu/mcheck/mce_amd_64.c to use kobject_init_ 
-
- commit a521cf209c6e7042f85b2c5b16da3ffa8004fb7b
- Author: Greg Kroah-Hartman <gregkh@suse.de>
- Date:   Wed Dec 19 09:23:20 2007 -0800
-
-     Kobject: change arch/x86/kernel/cpu/mcheck/mce_amd_64.c to use kobject_creat
-
-x86.git changed nothing to cause a crash in kobject_uevent_env(), and 
-nothing has changed anything near this code anyway.
-
-We havent had a runtime (non-boot related) crash in x86.git for quite 
-some time. It's rock solid and dependable, and the only significant 
-change today were your upstream kobject commits.
-
-	Ingo
+greg k-h
