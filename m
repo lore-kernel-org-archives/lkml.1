@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbYAYHWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760229AbYAYHWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759981AbYAYHWe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:22:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758391AbYAYHPa
+	id S1760229AbYAYHWw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:22:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758413AbYAYHPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:15:30 -0500
-Received: from mx1.suse.de ([195.135.220.2]:52524 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 02:15:33 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47487 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758360AbYAYHP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:15:28 -0500
+	id S1758401AbYAYHPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:15:32 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Tony Jones <tonyj@suse.de>, Tim Waugh <tim@cyberelk.net>,
-       Jens Axboe <axboe@kernel.dk>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 025/196] paride: Convert from class_device to device for block/paride
-Date: Thu, 24 Jan 2008 23:09:23 -0800
-Message-Id: <1201245134-4876-25-git-send-email-gregkh@suse.de>
+Cc: Tony Jones <tonyj@suse.de>, Peter Osterlund <petero2@telia.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 026/196] pktcdvd: Convert from class_device to device for block/pktcdvd
+Date: Thu, 24 Jan 2008 23:09:24 -0800
+Message-Id: <1201245134-4876-26-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -30,69 +29,65 @@ struct class_device is going away, this converts the code to use struct
 device instead.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
-Cc: Tim Waugh <tim@cyberelk.net>
-Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Peter Osterlund <petero2@telia.com>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/block/paride/pg.c |    6 +++---
- drivers/block/paride/pt.c |   12 ++++++------
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/block/pktcdvd.c |   16 +++++++---------
+ include/linux/pktcdvd.h |    2 +-
+ 2 files changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/block/paride/pg.c b/drivers/block/paride/pg.c
-index d89e7d3..ab86e23 100644
---- a/drivers/block/paride/pg.c
-+++ b/drivers/block/paride/pg.c
-@@ -676,8 +676,8 @@ static int __init pg_init(void)
- 	for (unit = 0; unit < PG_UNITS; unit++) {
- 		struct pg *dev = &devices[unit];
- 		if (dev->present)
--			class_device_create(pg_class, NULL, MKDEV(major, unit),
--					NULL, "pg%u", unit);
-+			device_create(pg_class, NULL, MKDEV(major, unit),
-+				      "pg%u", unit);
+diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+index 3535ef8..17da699 100644
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -301,18 +301,16 @@ static struct kobj_type kobj_pkt_type_wqueue = {
+ static void pkt_sysfs_dev_new(struct pktcdvd_device *pd)
+ {
+ 	if (class_pktcdvd) {
+-		pd->clsdev = class_device_create(class_pktcdvd,
+-					NULL, pd->pkt_dev,
+-					NULL, "%s", pd->name);
+-		if (IS_ERR(pd->clsdev))
+-			pd->clsdev = NULL;
++		pd->dev = device_create(class_pktcdvd, NULL, pd->pkt_dev, "%s", pd->name);
++		if (IS_ERR(pd->dev))
++			pd->dev = NULL;
  	}
- 	err = 0;
- 	goto out;
-@@ -695,7 +695,7 @@ static void __exit pg_exit(void)
- 	for (unit = 0; unit < PG_UNITS; unit++) {
- 		struct pg *dev = &devices[unit];
- 		if (dev->present)
--			class_device_destroy(pg_class, MKDEV(major, unit));
-+			device_destroy(pg_class, MKDEV(major, unit));
+-	if (pd->clsdev) {
++	if (pd->dev) {
+ 		pd->kobj_stat = pkt_kobj_create(pd, "stat",
+-					&pd->clsdev->kobj,
++					&pd->dev->kobj,
+ 					&kobj_pkt_type_stat);
+ 		pd->kobj_wqueue = pkt_kobj_create(pd, "write_queue",
+-					&pd->clsdev->kobj,
++					&pd->dev->kobj,
+ 					&kobj_pkt_type_wqueue);
  	}
- 	class_destroy(pg_class);
- 	unregister_chrdev(major, name);
-diff --git a/drivers/block/paride/pt.c b/drivers/block/paride/pt.c
-index b91accf..76096ca 100644
---- a/drivers/block/paride/pt.c
-+++ b/drivers/block/paride/pt.c
-@@ -972,10 +972,10 @@ static int __init pt_init(void)
+ }
+@@ -322,7 +320,7 @@ static void pkt_sysfs_dev_remove(struct pktcdvd_device *pd)
+ 	pkt_kobj_remove(pd->kobj_stat);
+ 	pkt_kobj_remove(pd->kobj_wqueue);
+ 	if (class_pktcdvd)
+-		class_device_destroy(class_pktcdvd, pd->pkt_dev);
++		device_destroy(class_pktcdvd, pd->pkt_dev);
+ }
  
- 	for (unit = 0; unit < PT_UNITS; unit++)
- 		if (pt[unit].present) {
--			class_device_create(pt_class, NULL, MKDEV(major, unit),
--					NULL, "pt%d", unit);
--			class_device_create(pt_class, NULL, MKDEV(major, unit + 128),
--					NULL, "pt%dn", unit);
-+			device_create(pt_class, NULL, MKDEV(major, unit),
-+				      "pt%d", unit);
-+			device_create(pt_class, NULL, MKDEV(major, unit + 128),
-+				      "pt%dn", unit);
- 		}
- 	goto out;
  
-@@ -990,8 +990,8 @@ static void __exit pt_exit(void)
- 	int unit;
- 	for (unit = 0; unit < PT_UNITS; unit++)
- 		if (pt[unit].present) {
--			class_device_destroy(pt_class, MKDEV(major, unit));
--			class_device_destroy(pt_class, MKDEV(major, unit + 128));
-+			device_destroy(pt_class, MKDEV(major, unit));
-+			device_destroy(pt_class, MKDEV(major, unit + 128));
- 		}
- 	class_destroy(pt_class);
- 	unregister_chrdev(major, name);
+diff --git a/include/linux/pktcdvd.h b/include/linux/pktcdvd.h
+index 5ea4f05..04b4d73 100644
+--- a/include/linux/pktcdvd.h
++++ b/include/linux/pktcdvd.h
+@@ -290,7 +290,7 @@ struct pktcdvd_device
+ 	int			write_congestion_off;
+ 	int			write_congestion_on;
+ 
+-	struct class_device	*clsdev;	/* sysfs pktcdvd[0-7] class dev */
++	struct device		*dev;		/* sysfs pktcdvd[0-7] dev */
+ 	struct pktcdvd_kobj	*kobj_stat;	/* sysfs pktcdvd[0-7]/stat/     */
+ 	struct pktcdvd_kobj	*kobj_wqueue;	/* sysfs pktcdvd[0-7]/write_queue/ */
+ 
 -- 
 1.5.3.8
 
