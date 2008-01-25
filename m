@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbYAYWRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbYAYWRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757374AbYAYWRZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 17:17:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbYAYWRS
+	id S1758468AbYAYWRr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 17:17:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754140AbYAYWRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 17:17:18 -0500
-Received: from ns.suse.de ([195.135.220.2]:46631 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754010AbYAYWRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 17:17:17 -0500
-Date: Fri, 25 Jan 2008 14:15:48 -0800
-From: Greg KH <gregkh@suse.de>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: threshold_init_device/kobject_uevent_env oops
-Message-ID: <20080125221548.GA15172@suse.de>
-References: <86802c440801251305u21517078y12ff68ef3015aaae@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440801251305u21517078y12ff68ef3015aaae@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 25 Jan 2008 17:17:35 -0500
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:55828 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754914AbYAYWRd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 17:17:33 -0500
+Subject: 2.6.24-rt1
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Date: Fri, 25 Jan 2008 17:17:13 -0500
+Message-Id: <1201299433.318.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 01:05:40PM -0800, Yinghai Lu wrote:
-> current linus tree + x86.git
-> 
-> got
-> 
-> Calling initcall 0xffffffff80b93d98: threshold_init_device+0x0/0x3f()
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000040
-> IP: [<ffffffff80458e20>] kobject_uevent_env+0x2a/0x3d9
+We are pleased to announce the 2.6.24-rt1 tree, which can be
+downloaded from the location:
 
-Does this happen on just Linus's tree?
+  http://rt.et.redhat.com/download/
 
-Can you send me a .config file for this?
+Information on the RT patch can be found at:
 
-What is threshold_init()?  Is it something new in the x86.git tree?
+  http://rt.wiki.kernel.org/index.php/Main_Page
 
-thanks,
+Changes since 2.6.24-rc8-rt1
 
-greg k-h
+  - ported to 2.6.24
+
+
+to build a 2.6.24-rt1 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.24.tar.bz2
+  http://rt.et.redhat.com/download/patch-2.6.24-rt1.bz2
+
+
+And like always, my RT version of Matt Mackall's ketchup will get this
+for you nicely:
+
+  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+
+
+The broken out patches are also available.
+
+
+*** NOTICE ***
+
+This still has the old version of the latency tracer. I'll try to
+release a -rt2 soon that has the new version. This way we can see what
+kind of regressions the new version might give.
+
+-- Steve
+
+
+
