@@ -1,79 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbYAYCVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbYAYC0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755278AbYAYCVn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 21:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbYAYCVf
+	id S1755792AbYAYC0c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 21:26:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYAYC0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 21:21:35 -0500
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36857 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752017AbYAYCVe (ORCPT
+	Thu, 24 Jan 2008 21:26:23 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:43052 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752159AbYAYC0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 21:21:34 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Mika =?iso-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native format.
-References: <1201121530.30671.15.camel@cthulhu.hellion.org.uk>
-	<4797E487.8010108@goop.org>
-	<1201167544.30671.64.camel@cthulhu.hellion.org.uk>
-	<47990BDC.4070008@zytor.com> <479912B0.2080506@goop.org>
-	<479913BA.8000506@zytor.com> <47991809.9060903@goop.org>
-	<47991A6C.8060007@zytor.com> <479921F5.9020902@goop.org>
-	<4799247C.6090008@zytor.com> <20080125002054.GA2059@elf.ucw.cz>
-	<47992D0E.2070700@zytor.com>
-Date: Thu, 24 Jan 2008 19:16:26 -0700
-In-Reply-To: <47992D0E.2070700@zytor.com> (H. Peter Anvin's message of "Thu,
-	24 Jan 2008 16:27:58 -0800")
-Message-ID: <m1hch2ir9h.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 Jan 2008 21:26:23 -0500
+Date: Thu, 24 Jan 2008 18:32:55 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: x86.git: mtrr trimming removes all memory under kvm
+In-reply-to: <4799400C.1060102@zytor.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200801241832.55910.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <47993F1A.5070408@goop.org> <4799400C.1060102@zytor.com>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+On Thursday 24 January 2008 05:49:00 pm H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+> > When booting a current x86.git kernel under kvm, I get this:
+> > 
+> > (qemu) Linux version 2.6.24-rc8 (jeremy@ezr) (gcc version 4.1.2 20070925 
+> > (Red Hat 4.1.2-33)) #1928 SMP PREEMPT Thu Jan 24 17:09:04 PST 2008
+> > early_ioremap_init()
+> > BIOS-provided physical RAM map:
+> > BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+> > BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+> > BIOS-e820: 00000000000e8000 - 0000000000100000 (reserved)
+> > BIOS-e820: 0000000000100000 - 000000001fff0000 (usable)
+> > BIOS-e820: 000000001fff0000 - 0000000020000000 (ACPI data)
+> > BIOS-e820: 00000000fffc0000 - 0000000100000000 (reserved)
+> > console [earlyser0] enabled
+> > 0MB HIGHMEM available.
+> > 511MB LOWMEM available.
+> > Scan SMP from c0000000 for 1024 bytes.
+> > Scan SMP from c009fc00 for 1024 bytes.
+> > Scan SMP from c00f0000 for 65536 bytes.
+> > Scan SMP from c009fc00 for 1024 bytes.
+> > ***************
+> > **** WARNING: likely BIOS bug
+> > **** MTRRs don't cover all of memory, trimmed 131056 pages
+> > ***************
+> 
+> Looks like the code doesn't check that the CPU *has* MTRRs...
 
-> Pavel Machek wrote:
->>>>
->>> I just looked at the ACPI suspend code, and it looks like it hacks its own
->>> identity map at runtime.  Pavel, am I reading that code right?
->>
->> Yes, I think so, I believe we do it on both 32 and 64 bit now.
->>
->
-> So the background to this... we need an identity map to trampoline at early
-> boot, obviously, but we'd like it to not stick around more than necessary.  We
-> have zap_low_mappings() now but it's not really sufficient.
->
-> Secondary SMP processors need these mappings during trampolining -- 
-> presumably including CPU hotplug -- and I'm suspecting it might simply make
-> sense to use a separate set of page tables (with both the identity and the
-> kernel map) for trampolining and just keep them around.  That way they would be
-> usable for ACPI as well.
+please try this
 
-We already do this on the 64bit side.  We reuse the kernel and the
-identity parts from the core kernel page tables but it is actually
-a distinct page table.  
+[PATCH] x86: trim RAM need to check if mtrr is there
 
-x86_64 has not had the identity mappings mapped in any of the
-normal page tables since the relocatable kernel support was merged
-a while ago.
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-Only on the 32bit side does this still remain an issue.  I don't know
-if what we can do optimization wise there.  Emulating the 64bit code
-and having a dedicated top level pgd (as part of the trampoline)
-and then a mapping into it the kernel identity mapping and the kernel
-mapping (which are the same on 32bit) should work fairly easily.  
-
-It is just a handful of pgd entries, and then in the actual kernel
-entry code we reload %cr3 with the appropriate kernel page table
-and we should be fine.  No need for an explicit zap there at all.
-
-Eric
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index a1551d0..a0b6f55 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -646,9 +646,6 @@ static __init int amd_special_default_mtrr(unsigned long end_pfn)
+ {
+ 	u32 l, h;
+ 
+-	/* Doesn't apply to memory < 4GB */
+-	if (end_pfn <= (0xffffffff >> PAGE_SHIFT))
+-		return 0;
+ 	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
+ 		return 0;
+ 	if (boot_cpu_data.x86 < 0xf || boot_cpu_data.x86 > 0x11)
+@@ -682,6 +679,12 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
+ 	mtrr_type type;
+ 	u64 trim_start, trim_size;
+ 
++	/* Doesn't apply to memory < 4GB */
++	if (end_pfn <= (0xffffffffUL >> PAGE_SHIFT))
++		return 0;
++
++	if (!cpu_has_mtrr)
++		return 0;
+ 	/*
+ 	 * Make sure we only trim uncachable memory on machines that
+ 	 * support the Intel MTRR architecture:
