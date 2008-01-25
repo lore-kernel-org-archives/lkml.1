@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759870AbYAYTCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760174AbYAYTCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759870AbYAYTCN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 14:02:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbYAYTB6
+	id S1760174AbYAYTCr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 14:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758463AbYAYTCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 14:01:58 -0500
-Received: from gw.goop.org ([64.81.55.164]:44759 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756099AbYAYTB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 14:01:57 -0500
-Message-ID: <479A3222.30008@goop.org>
-Date: Fri, 25 Jan 2008 11:01:54 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <Yinghai.Lu@Sun.COM>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Fri, 25 Jan 2008 14:02:37 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:34897 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759446AbYAYTCg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 14:02:36 -0500
+Date: Fri, 25 Jan 2008 11:19:02 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
 Subject: Re: [PATCH] x86: trim ram need to check if mtrr is there v3
-References: <47993F1A.5070408@goop.org> <200801241947.55223.yinghai.lu@sun.com> <4799930B.40006@goop.org> <200801250042.53074.yinghai.lu@sun.com> <20080125110935.GA20026@elte.hu> <479A30A3.7050305@goop.org> <20080125185923.GA2518@elte.hu>
-In-Reply-To: <20080125185923.GA2518@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-reply-to: <479A30A3.7050305@goop.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200801251119.02565.yinghai.lu@sun.com>
+Organization: SUN
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <47993F1A.5070408@goop.org> <20080125110935.GA20026@elte.hu>
+ <479A30A3.7050305@goop.org>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->>> thanks, applied. Shouldnt we put in an exception for when there is 
->>> MTRR support, but they dont cover anything. Still emit a warning - 
->>> but booting up real slow is still better than losing all of RAM and 
->>> crashing
->>>       
->> The problem is re-occuring for me with current x86.git.  Looks like v2 
->> did the trick, and v3 is broken...
->>     
->
-> which git head is that? I'm pushing out the queue with v3 included this 
-> very minute, so i doubt you can have tested that already! :-)
->   
+On Friday 25 January 2008 10:55:31 am Jeremy Fitzhardinge wrote:
+> Ingo Molnar wrote:
+> > * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> >
+> >   
+> >> [PATCH] x86: trim ram need to check if mtrr is there v3
+> >>     
+> >
+> >   
+> >>> H. Peter Anvin wrote:
+> >>> Looks like the code doesn't check that the CPU *has* MTRRs...
+> >>>       
+> >> so more strict check if mtrr is there really.
+> >> bail out if mtrr all blank when qemu cpu model is used
+> >>
+> >> and check if is AMD as early
+> >> also remove 4G less check, according to hpa.
+> >>     
+> >
+> > thanks, applied. Shouldnt we put in an exception for when there is MTRR 
+> > support, but they dont cover anything. Still emit a warning - but 
+> > booting up real slow is still better than losing all of RAM and crashing 
+> >   
+> 
+> The problem is re-occuring for me with current x86.git.  Looks like v2 
+> did the trick, and v3 is broken...
 
-I was referring to:
+so the ram size less 4g is way out for your case.
 
-commit 6a4544a9c8b54b82893044cb53695502cc386f00
-Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Date:   Fri Jan 25 00:15:29 2008 +0100
+again, can you post /proc/mtrrs with v2 patch?
 
-    x86_32: trim memory by updating e820 v3
+Thanks
 
-
-but you've answered the question...
-
-    J
+YH
