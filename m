@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760119AbYAYHXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbYAYHX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760119AbYAYHXj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758534AbYAYHPm
+	id S1759622AbYAYHX5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758566AbYAYHPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:15:42 -0500
-Received: from ns.suse.de ([195.135.220.2]:52545 "EHLO mx1.suse.de"
+	Fri, 25 Jan 2008 02:15:46 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47499 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758504AbYAYHPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:15:40 -0500
+	id S1758551AbYAYHPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:15:45 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Tony Jones <tonyj@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 028/196] cosa: Convert from class_device to device for cosa sync driver
-Date: Thu, 24 Jan 2008 23:09:26 -0800
-Message-Id: <1201245134-4876-28-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       "Michael A. Halcrow" <mahalcro@us.ibm.com>,
+       "Michael C. Thompson" <mcthomps@us.ibm.com>,
+       Tyler Hicks <tyhicks@ou.edu>
+Subject: [PATCH 029/196] ecryptfs: clean up attribute mess
+Date: Thu, 24 Jan 2008 23:09:27 -0800
+Message-Id: <1201245134-4876-29-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -23,42 +25,156 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tony Jones <tonyj@suse.de>
+It isn't that hard to add simple kset attributes, so don't go through
+all the gyrations of creating your own object type and show and store
+functions.  Just use the functions that are already present.  This makes
+things much simpler.
 
-struct class_device is going away, this converts the code to use struct
-device instead.
+Note, the version_str string violates the "one value per file" rule for
+sysfs.  I suggest changing this now (individual files per type supported
+is one suggested way.)
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
-Cc: Jan "Yenya" Kasprzak <kas@fi.muni.cz>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
+
+Cc: Michael A. Halcrow <mahalcro@us.ibm.com>
+Cc: Michael C. Thompson <mcthomps@us.ibm.com>
+Cc: Tyler Hicks <tyhicks@ou.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/wan/cosa.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ fs/ecryptfs/main.c |   85 +++++++++++-----------------------------------------
+ 1 files changed, 18 insertions(+), 67 deletions(-)
 
-diff --git a/drivers/net/wan/cosa.c b/drivers/net/wan/cosa.c
-index ff37bf4..1d706ea 100644
---- a/drivers/net/wan/cosa.c
-+++ b/drivers/net/wan/cosa.c
-@@ -395,8 +395,7 @@ static int __init cosa_init(void)
- 		goto out_chrdev;
- 	}
- 	for (i=0; i<nr_cards; i++) {
--		class_device_create(cosa_class, NULL, MKDEV(cosa_major, i),
--				NULL, "cosa%d", i);
-+		device_create(cosa_class, NULL, MKDEV(cosa_major, i), "cosa%d", i);
- 	}
- 	err = 0;
- 	goto out;
-@@ -415,7 +414,7 @@ static void __exit cosa_exit(void)
- 	printk(KERN_INFO "Unloading the cosa module\n");
+diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
+index e5580bc..f9f3247 100644
+--- a/fs/ecryptfs/main.c
++++ b/fs/ecryptfs/main.c
+@@ -734,58 +734,14 @@ static int ecryptfs_init_kmem_caches(void)
+ 	return 0;
+ }
  
- 	for (i=0; i<nr_cards; i++)
--		class_device_destroy(cosa_class, MKDEV(cosa_major, i));
-+		device_destroy(cosa_class, MKDEV(cosa_major, i));
- 	class_destroy(cosa_class);
- 	for (cosa=cosa_cards; nr_cards--; cosa++) {
- 		/* Clean up the per-channel data */
+-struct ecryptfs_obj {
+-	char *name;
+-	struct list_head slot_list;
+-	struct kobject kobj;
+-};
+-
+-struct ecryptfs_attribute {
+-	struct attribute attr;
+-	ssize_t(*show) (struct ecryptfs_obj *, char *);
+-	ssize_t(*store) (struct ecryptfs_obj *, const char *, size_t);
+-};
+-
+-static ssize_t
+-ecryptfs_attr_store(struct kobject *kobj,
+-		    struct attribute *attr, const char *buf, size_t len)
+-{
+-	struct ecryptfs_obj *obj = container_of(kobj, struct ecryptfs_obj,
+-						kobj);
+-	struct ecryptfs_attribute *attribute =
+-		container_of(attr, struct ecryptfs_attribute, attr);
+-
+-	return (attribute->store ? attribute->store(obj, buf, len) : 0);
+-}
+-
+-static ssize_t
+-ecryptfs_attr_show(struct kobject *kobj, struct attribute *attr, char *buf)
+-{
+-	struct ecryptfs_obj *obj = container_of(kobj, struct ecryptfs_obj,
+-						kobj);
+-	struct ecryptfs_attribute *attribute =
+-		container_of(attr, struct ecryptfs_attribute, attr);
+-
+-	return (attribute->show ? attribute->show(obj, buf) : 0);
+-}
+-
+-static struct sysfs_ops ecryptfs_sysfs_ops = {
+-	.show = ecryptfs_attr_show,
+-	.store = ecryptfs_attr_store
+-};
++static decl_subsys(ecryptfs, NULL, NULL);
+ 
+-static struct kobj_type ecryptfs_ktype = {
+-	.sysfs_ops = &ecryptfs_sysfs_ops
+-};
+-
+-static decl_subsys(ecryptfs, &ecryptfs_ktype, NULL);
+-
+-static ssize_t version_show(struct ecryptfs_obj *obj, char *buff)
++static ssize_t version_show(struct kset *kset, char *buff)
+ {
+ 	return snprintf(buff, PAGE_SIZE, "%d\n", ECRYPTFS_VERSIONING_MASK);
+ }
+ 
+-static struct ecryptfs_attribute sysfs_attr_version = __ATTR_RO(version);
++static struct subsys_attribute version_attr = __ATTR_RO(version);
+ 
+ static struct ecryptfs_version_str_map_elem {
+ 	u32 flag;
+@@ -799,7 +755,7 @@ static struct ecryptfs_version_str_map_elem {
+ 	{ECRYPTFS_VERSIONING_MULTKEY, "multiple keys per file"}
+ };
+ 
+-static ssize_t version_str_show(struct ecryptfs_obj *obj, char *buff)
++static ssize_t version_str_show(struct kset *kset, char *buff)
+ {
+ 	int i;
+ 	int remaining = PAGE_SIZE;
+@@ -826,7 +782,17 @@ out:
+ 	return total_written;
+ }
+ 
+-static struct ecryptfs_attribute sysfs_attr_version_str = __ATTR_RO(version_str);
++static struct subsys_attribute version_attr_str = __ATTR_RO(version_str);
++
++static struct attribute *attributes[] = {
++	&version_attr.attr,
++	&version_attr_str.attr,
++	NULL,
++};
++
++static struct attribute_group attr_group = {
++	.attrs = attributes,
++};
+ 
+ static int do_sysfs_registration(void)
+ {
+@@ -838,23 +804,11 @@ static int do_sysfs_registration(void)
+ 		       "Unable to register ecryptfs sysfs subsystem\n");
+ 		goto out;
+ 	}
+-	rc = sysfs_create_file(&ecryptfs_subsys.kobj,
+-			       &sysfs_attr_version.attr);
++	rc = sysfs_create_group(&ecryptfs_subsys.kobj, &attr_group);
+ 	if (rc) {
+ 		printk(KERN_ERR
+-		       "Unable to create ecryptfs version attribute\n");
++		       "Unable to create ecryptfs version attributes\n");
+ 		subsystem_unregister(&ecryptfs_subsys);
+-		goto out;
+-	}
+-	rc = sysfs_create_file(&ecryptfs_subsys.kobj,
+-			       &sysfs_attr_version_str.attr);
+-	if (rc) {
+-		printk(KERN_ERR
+-		       "Unable to create ecryptfs version_str attribute\n");
+-		sysfs_remove_file(&ecryptfs_subsys.kobj,
+-				  &sysfs_attr_version.attr);
+-		subsystem_unregister(&ecryptfs_subsys);
+-		goto out;
+ 	}
+ out:
+ 	return rc;
+@@ -862,10 +816,7 @@ out:
+ 
+ static void do_sysfs_unregistration(void)
+ {
+-	sysfs_remove_file(&ecryptfs_subsys.kobj,
+-			  &sysfs_attr_version.attr);
+-	sysfs_remove_file(&ecryptfs_subsys.kobj,
+-			  &sysfs_attr_version_str.attr);
++	sysfs_remove_group(&ecryptfs_subsys.kobj, &attr_group);
+ 	subsystem_unregister(&ecryptfs_subsys);
+ }
+ 
 -- 
 1.5.3.8
 
