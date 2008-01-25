@@ -1,226 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbYAYFTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbYAYFTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752916AbYAYFTc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 00:19:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbYAYFTJ
+	id S1753462AbYAYFTs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 00:19:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbYAYFTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 00:19:09 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:55696 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751808AbYAYFTF (ORCPT
+	Fri, 25 Jan 2008 00:19:36 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57482 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752724AbYAYFTd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 00:19:05 -0500
-Message-ID: <47997125.4060006@ak.jp.nec.com>
-Date: Fri, 25 Jan 2008 14:18:29 +0900
+	Fri, 25 Jan 2008 00:19:33 -0500
+Message-ID: <47997122.3070504@ak.jp.nec.com>
+Date: Fri, 25 Jan 2008 14:18:26 +0900
 From: Kohei KaiGai <kaigai@ak.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: morgan@kernel.org
-CC: akpm@osdl.org, serue@us.ibm.com, jmorris@namei.org,
+To: akpm@osdl.org
+CC: morgan@kernel.org, serue@us.ibm.com, jmorris@namei.org,
        linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: [PATCH 2/3] exporting capability code/name pairs (try 2nd)
+Subject: [PATCH 1/3] exporting capability code/name pairs (try 2nd)
 Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can apply this patch to libcap.
-It enables to obtain the list of capabilities running kernel
-supported dynamically, from /sys/kernel/capability.
+We can apply this patch to kernel-2.6.24.
+It enables to export code/name pairs of capabilities
+at /sys/kernel/capability/, as follows:
 
-When we use libcap with this patch on the previous kernel,
-it apply static list of capabilities instead.
+--------
+[root@saba ~]# ls /sys/kernel/capability/
+cap_audit_control    cap_kill              cap_setgid      cap_sys_ptrace
+cap_audit_write      cap_lease             cap_setpcap     cap_sys_rawio
+cap_chown            cap_linux_immutable   cap_setuid      cap_sys_resource
+cap_dac_override     cap_mknod             cap_sys_admin   cap_sys_time
+cap_dac_read_search  cap_net_admin         cap_sys_boot    cap_sys_tty_config
+cap_fowner           cap_net_bind_service  cap_sys_chroot  index
+cap_fsetid           cap_net_broadcast     cap_sys_module  version
+cap_ipc_lock         cap_net_raw           cap_sys_nice
+cap_ipc_owner        cap_setfcap           cap_sys_pacct
+[root@saba ~]# cat /sys/kernel/capability/cap_setfcap
+31
+[root@saba ~]# cat /sys/kernel/capability/version
+0x19980330
+[root@saba ~]#
+--------
 
+In the previous version of kernel, we have no way to obtain
+what capabilities are supported in this running kernel.
+
+The libcap is a library to provide fundamental facilities
+to handle capabilities. It has to be rebuilt when new
+capabilities are added, because it statically holds the
+list of all capabilities generated from kernel header
+automatically on its build environment.
+
+This patch enables libcap to obtain these infomation dynamically,
+and improves userspace portability.
+
+Please consider to apply these patches.
 Thanks,
 ----
 Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
 
-diff --git a/libcap/_makenames.c b/libcap/_makenames.c
-index 212f0b4..c57e940 100644
---- a/libcap/_makenames.c
-+++ b/libcap/_makenames.c
-@@ -43,7 +43,7 @@ int main(void)
- 	   "#define __CAP_BITS   %d\n"
- 	   "\n"
- 	   "#ifdef LIBCAP_PLEASE_INCLUDE_ARRAY\n"
--	   "  char const *_cap_names[__CAP_BITS] = {\n", maxcaps);
-+	   "  static const char *_cap_names_fallback[__CAP_BITS] = {\n", maxcaps);
+ kernel/Makefile       |    9 ++++++++
+ kernel/capability.c   |   36 +++++++++++++++++++++++++++++++++++
+ scripts/mkcapnames.sh |   50 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 95 insertions(+), 0 deletions(-)
 
-     for (i=0; i<maxcaps; ++i) {
- 	if (pointers[i])
-diff --git a/libcap/cap_flag.c b/libcap/cap_flag.c
-index e521fcd..f490b29 100644
---- a/libcap/cap_flag.c
-+++ b/libcap/cap_flag.c
-@@ -21,7 +21,7 @@ int cap_get_flag(cap_t cap_d, cap_value_t value, cap_flag_t set,
-      * Is it a known capability?
-      */
-
--    if (raised && good_cap_t(cap_d) && value >= 0 && value < __CAP_BITS
-+    if (raised && good_cap_t(cap_d) && value >= 0 && value < _cap_names_num
- 	&& set >= 0 && set < NUMBER_OF_CAP_SETS) {
- 	*raised = isset_cap(cap_d,value,set) ? CAP_SET:CAP_CLEAR;
- 	return 0;
-@@ -45,12 +45,12 @@ int cap_set_flag(cap_t cap_d, cap_flag_t set,
-      * Is it a known capability?
-      */
-
--    if (good_cap_t(cap_d) && no_values > 0 && no_values <= __CAP_BITS
-+    if (good_cap_t(cap_d) && no_values > 0 && no_values <= _cap_names_num
- 	&& (set >= 0) && (set < NUMBER_OF_CAP_SETS)
- 	&& (raise == CAP_SET || raise == CAP_CLEAR) ) {
- 	int i;
- 	for (i=0; i<no_values; ++i) {
--	    if (array_values[i] < 0 || array_values[i] >= __CAP_BITS) {
-+	    if (array_values[i] < 0 || array_values[i] >= _cap_names_num) {
- 		_cap_debug("weird capability (%d) - skipped", array_values[i]);
- 	    } else {
- 		int value = array_values[i];
-diff --git a/libcap/cap_text.c b/libcap/cap_text.c
-index 06f61d9..7337bca 100644
---- a/libcap/cap_text.c
-+++ b/libcap/cap_text.c
-@@ -8,9 +8,11 @@
-
- #define LIBCAP_PLEASE_INCLUDE_ARRAY
- #include "libcap.h"
-+#include "cap_names.h"
-
- #include <ctype.h>
- #include <stdio.h>
-+#include <dirent.h>
-
- /* Maximum output text length (16 per cap) */
- #define CAP_TEXT_SIZE    (16*__CAP_BITS)
-@@ -19,6 +21,10 @@
- #define LIBCAP_INH   02
- #define LIBCAP_PER   04
-
-+/* array of capability names initialized at _init() */
-+int _cap_names_num = __CAP_BITS;
-+char **_cap_names = _cap_names_fallback;
+diff --git a/kernel/Makefile b/kernel/Makefile
+index dfa9695..29cd3ac 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -80,3 +80,12 @@ quiet_cmd_ikconfiggz = IKCFG   $@
+ targets += config_data.h
+ $(obj)/config_data.h: $(obj)/config_data.gz FORCE
+ 	$(call if_changed,ikconfiggz)
 +
- /*
-  * Parse a textual representation of capabilities, returning an internal
-  * representation.
-@@ -71,14 +77,14 @@ static int lookupname(char const **strp)
-     str.constp = *strp;
-     if (isdigit(*str.constp)) {
- 	unsigned long n = strtoul(str.constp, &str.p, 0);
--	if (n >= __CAP_BITS)
-+	if (n >= _cap_names_num)
- 	    return -1;
- 	*strp = str.constp;
- 	return n;
-     } else {
- 	char const *s;
- 	int n;
--	for (n = __CAP_BITS; n--; )
-+	for (n = _cap_names_num; n--; )
- 	    if (_cap_names[n] && (s = namcmp(str.constp, _cap_names[n]))) {
- 		*strp = s;
- 		return n;
-@@ -270,7 +276,7 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
-     _cap_debugcap("i = ", *caps, CAP_INHERITABLE);
-     _cap_debugcap("p = ", *caps, CAP_PERMITTED);
-
--    for (n = __CAP_BITS; n--; )
-+    for (n = _cap_names_num; n--; )
- 	histo[getstateflags(caps, n)]++;
-
-     for (m=t=7; t--; )
-@@ -286,7 +292,7 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
-     for (t = 8; t--; )
- 	if (t != m && histo[t]) {
- 	    *p++ = ' ';
--	    for (n = 0; n != __CAP_BITS; n++)
-+	    for (n = 0; n != _cap_names_num; n++)
- 		if (getstateflags(caps, n) == t) {
- 		    if (_cap_names[n])
- 			p += sprintf(p, "%s,", _cap_names[n]);
-@@ -323,3 +329,66 @@ char *cap_to_text(cap_t caps, ssize_t *length_p)
-
-     return (_libcap_strdup(buf));
++# cap_names.h contains the code/name pair of capabilities.
++# It is generated using include/linux/capability.h automatically.
++$(obj)/capability.o: $(obj)/cap_names.h
++quiet_cmd_cap_names  = CAPS    $@
++      cmd_cap_names  = /bin/sh $(src)/../scripts/mkcapnames.sh > $@
++targets += cap_names.h
++$(obj)/cap_names.h: $(src)/../scripts/mkcapnames.sh $(src)/../include/linux/capability.h FORCE
++	$(call if_changed,cap_names)
+diff --git a/kernel/capability.c b/kernel/capability.c
+index efbd9cd..14b4f4b 100644
+--- a/kernel/capability.c
++++ b/kernel/capability.c
+@@ -245,3 +245,39 @@ int capable(int cap)
+ 	return __capable(current, cap);
  }
+ EXPORT_SYMBOL(capable);
 +
-+#define SYSFS_CAP_BASE	"/sys/kernel/capability"
-+void __cap_names_init(void);
-+void __attribute__ ((constructor)) __cap_names_init(void)
++/*
++ * Export the list of capabilities on /sys/kernel/capability
++ */
++#define SYSFS_CAPABILITY_ENTRY(_name, _fmt, ...)			\
++	static ssize_t _name##_show(struct kset *kset, char *buffer)	\
++	{								\
++		return scnprintf(buffer, PAGE_SIZE, _fmt, __VA_ARGS__);	\
++	}								\
++	static struct subsys_attribute _name##_attr = __ATTR_RO(_name)
++
++/*
++ * capability_attrs[] is generated automatically by scripts/mkcapnames.sh
++ * This script parses include/linux/capability.h
++ */
++#include "cap_names.h"
++
++static struct attribute_group capability_attr_group = {
++	.name = "capability",
++	.attrs = capability_attrs,
++};
++
++static int __init capability_export_names(void)
 +{
-+    DIR *dirp;
-+    FILE *filp;
-+    struct dirent *dent;
-+    char pathname[256];
-+    char **local_cap_names;
-+    unsigned int i, code, local_cap_names_num;
++	int rc;
 +
-+    /* compute size of array */
-+    filp = fopen(SYSFS_CAP_BASE "/index", "rb");
-+    if (!filp)
-+	return;
-+    if (fscanf(filp, "%u", &local_cap_names_num) != 1) {
-+	fclose(filp);
-+	return;
-+    }
-+    fclose(filp);
-+
-+    local_cap_names_num++;
-+    local_cap_names = malloc(sizeof(char *) * local_cap_names_num);
-+    if (!local_cap_names)
-+	return;
-+    memset(local_cap_names, 0, sizeof(char *) * local_cap_names_num);
-+
-+    /* scan /sys/kernel/capability */
-+    dirp = opendir(SYSFS_CAP_BASE);
-+    if (!dirp)
-+	goto error1;
-+
-+    while (!!(dent = readdir(dirp))) {
-+	if (!!strncmp("cap_", dent->d_name, 4))
-+	    continue;
-+
-+	snprintf(pathname, sizeof(pathname), SYSFS_CAP_BASE "/%s", dent->d_name);
-+	filp = fopen(pathname, "rb");
-+	if (!filp)
-+	    goto error2;
-+	if (fscanf(filp, "%u", &code) != 1 || code >= local_cap_names_num) {
-+	    fclose(filp);
-+	    goto error2;
++	rc = sysfs_create_group(&kernel_subsys.kobj,
++				&capability_attr_group);
++	if (rc) {
++		printk(KERN_ERR "Unable to export capabilities\n");
++		return rc;
 +	}
-+	fclose(filp);
 +
-+	local_cap_names[code] = strdup(dent->d_name);
-+	if (!local_cap_names[code])
-+	    goto error2;
-+    }
-+    _cap_names = local_cap_names;
-+    _cap_names_num = local_cap_names_num;
-+
-+  error2:
-+    for (i=0; i < local_cap_names_num; i++)
-+	free(local_cap_names[i]);
-+    closedir(dirp);
-+  error1:
-+    free(local_cap_names);
-+
-+    return;
++	return 0;
 +}
-diff --git a/libcap/libcap.h b/libcap/libcap.h
-index 0e4a167..b5a5deb 100644
---- a/libcap/libcap.h
-+++ b/libcap/libcap.h
-@@ -22,8 +22,8 @@
- #define __u32   unsigned int
- #endif /* __u32 */
++__initcall(capability_export_names);
+diff --git a/scripts/mkcapnames.sh b/scripts/mkcapnames.sh
+index e69de29..262478e 100644
+--- a/scripts/mkcapnames.sh
++++ b/scripts/mkcapnames.sh
+@@ -0,0 +1,50 @@
++#!/bin/sh
++
++#
++# generate a cap_names.h file from include/linux/capability.h
++#
++
++BASEDIR=`dirname $0`
++
++echo '#ifndef CAP_NAMES_H'
++echo '#define CAP_NAMES_H'
++echo
++echo '/*'
++echo ' * Do NOT edit this file directly.'
++echo ' * This file is generated from include/linux/capability.h automatically'
++echo ' */'
++echo
++echo '#ifndef SYSFS_CAPABILITY_ENTRY'
++echo '#error cap_names.h should be included from kernel/capability.c'
++echo '#else'
++
++echo 'SYSFS_CAPABILITY_ENTRY(version, "0x%08x\n", _LINUX_CAPABILITY_VERSION);'
++
++cat ${BASEDIR}/../include/linux/capability.h	\
++    | egrep '^#define CAP_[A-Z_]+[ 	]+[0-9]+$'	\
++    | awk 'BEGIN {
++            max_code = -1;
++        }
++        {
++            if ($3 > max_code)
++                max_code = $3;
++            printf("SYSFS_CAPABILITY_ENTRY(%s, \"%%u\\n\", %s);\n", tolower($2), $2);
++        }
++        END {
++            printf("SYSFS_CAPABILITY_ENTRY(index, \"%%u\\n\", %u);\n", max_code);
++        }'
++
++echo
++echo 'static struct attribute *capability_attrs[] = {'
++echo '        &version_attr.attr,'
++echo '        &index_attr.attr,'
++
++cat ${BASEDIR}/../include/linux/capability.h    \
++    | egrep '^#define CAP_[A-Z_]+[ 	]+[0-9]+$'   \
++    | awk '{ printf ("        &%s_attr.attr,\n", tolower($2)); }'
++
++echo '        NULL,'
++echo '};'
++
++echo '#endif	/* SYSFS_CAPABILITY_ENTRY */'
++echo '#endif	/* CAP_NAMES_H */'
 
--/* include the names for the caps and a definition of __CAP_BITS */
--#include "cap_names.h"
-+extern char **_cap_names;
-+extern int _cap_names_num;
-
- /*
-  * Do we match the local kernel?
 
 -- 
 OSS Platform Development Division, NEC
