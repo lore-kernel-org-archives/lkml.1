@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759947AbYAYUYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760139AbYAYUYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759947AbYAYUYM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 15:24:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYAYUXv
+	id S1760139AbYAYUYe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 15:24:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759713AbYAYUYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 15:23:51 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:47941 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753366AbYAYUXu (ORCPT
+	Fri, 25 Jan 2008 15:24:03 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:61457 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759563AbYAYUX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 15:23:50 -0500
-Date: Thu, 24 Jan 2008 23:41:31 -0700
+	Fri, 25 Jan 2008 15:23:59 -0500
+Date: Fri, 25 Jan 2008 04:09:42 -0700
 From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [patch 12/26] mount options: fix ext4
-In-reply-to: <20080124193432.492168716@szeredi.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Theodore Ts'o" <tytso@MIT.EDU>
-Mail-followup-to: Miklos Szeredi <miklos@szeredi.hu>,
- akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
- linux-kernel@vger.kernel.org, Theodore Ts'o <tytso@MIT.EDU>
-Message-id: <20080125064131.GR18433@webber.adilger.int>
+Subject: Re: [RFC] Parallelize IO for e2fsck
+In-reply-to: <1201220742.7557.10.camel@localhost>
+To: Zan Lynx <zlynx@acm.org>
+Cc: Theodore Tso <tytso@MIT.EDU>, Adrian Bunk <bunk@kernel.org>,
+       Bodo Eggert <7eggert@gmx.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Valdis.Kletnieks@vt.edu, David Chinner <dgc@sgi.com>,
+       Valerie Henson <val@vahconsulting.com>, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ric Wheeler <ric@emc.com>
+Mail-followup-to: Zan Lynx <zlynx@acm.org>, Theodore Tso <tytso@MIT.EDU>,
+ Adrian Bunk <bunk@kernel.org>, Bodo Eggert <7eggert@gmx.de>,
+ Alan Cox <alan@lxorguk.ukuu.org.uk>, Valdis.Kletnieks@vt.edu,
+ David Chinner <dgc@sgi.com>, Valerie Henson <val@vahconsulting.com>,
+ linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Ric Wheeler <ric@emc.com>
+Message-id: <20080125110942.GX18433@webber.adilger.int>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Content-disposition: inline
 X-GPG-Key: 1024D/0D35BED6
 X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <20080124193341.166753833@szeredi.hu>
- <20080124193432.492168716@szeredi.hu>
+References: <9Mo9w-7Ws-23@gated-at.bofh.it> <9OdWm-7uN-25@gated-at.bofh.it>
+ <9Oi9A-5EJ-3@gated-at.bofh.it> <9OiMg-6IC-1@gated-at.bofh.it>
+ <9OlqL-2xG-3@gated-at.bofh.it> <9Orda-3ub-45@gated-at.bofh.it>
+ <E1JI5vz-0001GG-Vs@be1.7eggert.dyndns.org>
+ <20080124230809.GA29120@does.not.exist> <20080124234037.GJ15858@mit.edu>
+ <1201220742.7557.10.camel@localhost>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 24, 2008  20:33 +0100, Miklos Szeredi wrote:
-> Add stripe= option to /proc/mounts for ext4 filesystems.
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+On Jan 24, 2008  17:25 -0700, Zan Lynx wrote:
+> Have y'all been following the /dev/mem_notify patches?
+> http://article.gmane.org/gmane.linux.kernel/628653
 
-Acked-by: Andreas Dilger <adilger@sun.com>
-
-> Index: linux/fs/ext4/super.c
-> ===================================================================
-> --- linux.orig/fs/ext4/super.c	2008-01-23 12:57:07.000000000 +0100
-> +++ linux/fs/ext4/super.c	2008-01-23 21:43:51.000000000 +0100
-> @@ -742,7 +742,8 @@ static int ext4_show_options(struct seq_
->  		seq_puts(seq, ",nomballoc");
->  	if (!test_opt(sb, DELALLOC))
->  		seq_puts(seq, ",nodelalloc");
-> -
-> +	if (sbi->s_stripe)
-> +		seq_printf(seq, ",stripe=%lu", sbi->s_stripe);
->  
->  	/*
->  	 * journal mode get enabled in different ways
+Having the notification be via poll() is a very restrictive processing
+model.  Having the notification be via a signal means that any kind of
+process (and not just those that are event loop driven) can register
+a callback at some arbitrary point in the code and be notified.  I
+don't object to the poll() interface, but it would be good to have a
+signal mechanism also.
 
 Cheers, Andreas
 --
