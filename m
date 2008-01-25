@@ -1,160 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760017AbYAYUmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759180AbYAYUqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760017AbYAYUmB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 15:42:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbYAYUly
+	id S1759180AbYAYUqq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 15:46:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYAYUqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 15:41:54 -0500
-Received: from smtp-105-friday.nerim.net ([62.4.16.105]:64748 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753636AbYAYUlx (ORCPT
+	Fri, 25 Jan 2008 15:46:36 -0500
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:48461
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbYAYUqf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 15:41:53 -0500
-Date: Fri, 25 Jan 2008 21:41:49 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Hans de Goede <j.w.r.degoede@hhs.nl>,
-       Lennart Poettering <mzxreary@0pointer.de>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH] dmi: Let drivers walk the DMI table
-Message-ID: <20080125214149.57a6e954@hyperion.delvare>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 25 Jan 2008 15:46:35 -0500
+Date: Fri, 25 Jan 2008 13:57:50 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Andreas Dilger <adilger@sun.com>
+cc: Al Boldi <a1426z@gawab.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
+In-Reply-To: <20080125064739.GS18433@webber.adilger.int>
+Message-ID: <alpine.DEB.1.00.0801251357010.6858@asgard.lang.hm>
+References: <200801242336.00340.a1426z@gawab.com> <20080125064739.GS18433@webber.adilger.int>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let drivers walk the DMI table for their own needs. Some drivers need
-data stored in OEM-specific DMI records for proper operation.
+On Thu, 24 Jan 2008, Andreas Dilger wrote:
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
-Updated to apply cleanly on top of 2.6.24.
+> On Jan 24, 2008  23:36 +0300, Al Boldi wrote:
+>> data=ordered mode has proven reliable over the years, and it does this by
+>> ordering filedata flushes before metadata flushes.  But this sometimes
+>> causes contention in the order of a 10x slowdown for certain apps, either
+>> due to the misuse of fsync or due to inherent behaviour like db's, as well
+>> as inherent starvation issues exposed by the data=ordered mode.
+>>
+>> data=writeback mode alleviates data=order mode slowdowns, but only works
+>> per-mount and is too dangerous to run as a default mode.
+>>
+>> This RFC proposes to introduce a tunable which allows to disable fsync and
+>> changes ordered into writeback writeout on a per-process basis like this:
+>>
+>>       echo 1 > /proc/`pidof process`/softsync
+>
+> If fsync performance is an issue for you, run the filesystem in data=journal
+> mode, put the journal on a separate disk and make it big enough that you
+> don't block on it to flush the data to the filesystem (but not so big that
+> it is consuming all of your RAM).
 
- drivers/firmware/dmi_scan.c |   61 +++++++++++++++++++++++++++++++++----------
- include/linux/dmi.h         |    3 ++
- 2 files changed, 50 insertions(+), 14 deletions(-)
+my understanding is that the journal is limited to 128M or so. This 
+prevents you from making it big enough to avoid all problems.
 
---- linux-2.6.24-rc5.orig/drivers/firmware/dmi_scan.c	2007-12-12 12:36:34.000000000 +0100
-+++ linux-2.6.24-rc5/drivers/firmware/dmi_scan.c	2007-12-18 14:27:28.000000000 +0100
-@@ -36,18 +36,12 @@ static char * __init dmi_string(const st
-  *	We have to be cautious here. We have seen BIOSes with DMI pointers
-  *	pointing to completely the wrong place for example
-  */
--static int __init dmi_table(u32 base, int len, int num,
--			    void (*decode)(const struct dmi_header *))
-+static void dmi_table(u8 *buf, int len, int num,
-+		      void (*decode)(const struct dmi_header *))
- {
--	u8 *buf, *data;
-+	u8 *data = buf;
- 	int i = 0;
- 
--	buf = dmi_ioremap(base, len);
--	if (buf == NULL)
--		return -1;
--
--	data = buf;
--
- 	/*
- 	 *	Stop when we see all the items the table claimed to have
- 	 *	OR we run off the end of the table (also happens)
-@@ -68,7 +62,23 @@ static int __init dmi_table(u32 base, in
- 		data += 2;
- 		i++;
- 	}
--	dmi_iounmap(buf, len);
-+}
-+
-+static u32 dmi_base;
-+static u16 dmi_len;
-+static u16 dmi_num;
-+
-+static int __init dmi_walk_early(void (*decode)(const struct dmi_header *))
-+{
-+	u8 *buf;
-+
-+	buf = dmi_ioremap(dmi_base, dmi_len);
-+	if (buf == NULL)
-+		return -1;
-+
-+	dmi_table(buf, dmi_len, dmi_num, decode);
-+
-+	dmi_iounmap(buf, dmi_len);
- 	return 0;
- }
- 
-@@ -273,9 +283,9 @@ static int __init dmi_present(const char
- 
- 	memcpy_fromio(buf, p, 15);
- 	if ((memcmp(buf, "_DMI_", 5) == 0) && dmi_checksum(buf)) {
--		u16 num = (buf[13] << 8) | buf[12];
--		u16 len = (buf[7] << 8) | buf[6];
--		u32 base = (buf[11] << 24) | (buf[10] << 16) |
-+		dmi_num = (buf[13] << 8) | buf[12];
-+		dmi_len = (buf[7] << 8) | buf[6];
-+		dmi_base = (buf[11] << 24) | (buf[10] << 16) |
- 			(buf[9] << 8) | buf[8];
- 
- 		/*
-@@ -287,7 +297,7 @@ static int __init dmi_present(const char
- 			       buf[14] >> 4, buf[14] & 0xF);
- 		else
- 			printk(KERN_INFO "DMI present.\n");
--		if (dmi_table(base,len, num, dmi_decode) == 0)
-+		if (dmi_walk_early(dmi_decode) == 0)
- 			return 0;
- 	}
- 	return 1;
-@@ -470,3 +480,26 @@ int dmi_get_year(int field)
- 	return year;
- }
- 
-+/**
-+ *	dmi_walk - Walk the DMI table and get called back for every record
-+ *	@decode: Callback function
-+ *
-+ *	Returns -1 when the DMI table can't be reached, 0 on success.
-+ */
-+int dmi_walk(void (*decode)(const struct dmi_header *))
-+{
-+	u8 *buf;
-+
-+	if (!dmi_available)
-+		return -1;
-+
-+	buf = ioremap(dmi_base, dmi_len);
-+	if (buf == NULL)
-+		return -1;
-+
-+	dmi_table(buf, dmi_len, dmi_num, decode);
-+
-+	iounmap(buf);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(dmi_walk);
---- linux-2.6.24-rc5.orig/include/linux/dmi.h	2007-12-12 12:36:34.000000000 +0100
-+++ linux-2.6.24-rc5/include/linux/dmi.h	2007-12-18 14:27:28.000000000 +0100
-@@ -78,6 +78,7 @@ extern const struct dmi_device * dmi_fin
- extern void dmi_scan_machine(void);
- extern int dmi_get_year(int field);
- extern int dmi_name_in_vendors(const char *str);
-+extern int dmi_walk(void (*decode)(const struct dmi_header *));
- 
- #else
- 
-@@ -87,6 +88,8 @@ static inline const struct dmi_device * 
- 	const struct dmi_device *from) { return NULL; }
- static inline int dmi_get_year(int year) { return 0; }
- static inline int dmi_name_in_vendors(const char *s) { return 0; }
-+static inline int dmi_walk(void (*decode)(const struct dmi_header *))
-+	{ return -1; }
- 
- #endif
- 
+David Lang
 
-
--- 
-Jean Delvare
+> That keeps your data guarantees without hurting performance.
+>
+> Cheers, Andreas
+> --
+> Andreas Dilger
+> Sr. Staff Engineer, Lustre Group
+> Sun Microsystems of Canada, Inc.
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
