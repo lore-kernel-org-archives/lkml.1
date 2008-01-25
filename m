@@ -1,58 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbYAYAcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbYAYAgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754068AbYAYAcX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 19:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYAYAcO
+	id S1753010AbYAYAgS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 19:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbYAYAgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 19:32:14 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60254 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbYAYAcN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 19:32:13 -0500
-Message-ID: <47992D0E.2070700@zytor.com>
-Date: Thu, 24 Jan 2008 16:27:58 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?Mika_Penttil=E4?= <mika.penttila@kolumbus.fi>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
- format.
-References: <1201121530.30671.15.camel@cthulhu.hellion.org.uk> <4797E487.8010108@goop.org> <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <47990BDC.4070008@zytor.com> <479912B0.2080506@goop.org> <479913BA.8000506@zytor.com> <47991809.9060903@goop.org> <47991A6C.8060007@zytor.com> <479921F5.9020902@goop.org> <4799247C.6090008@zytor.com> <20080125002054.GA2059@elf.ucw.cz>
-In-Reply-To: <20080125002054.GA2059@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 24 Jan 2008 19:36:04 -0500
+Received: from threatwall.zlynx.org ([199.45.143.218]:32838 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751697AbYAYAgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 19:36:03 -0500
+Subject: Re: [RFC] Parallelize IO for e2fsck
+From: Zan Lynx <zlynx@acm.org>
+To: Theodore Tso <tytso@MIT.EDU>
+Cc: Adrian Bunk <bunk@kernel.org>, Bodo Eggert <7eggert@gmx.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andreas Dilger <adilger@sun.com>,
+       Valdis.Kletnieks@vt.edu, David Chinner <dgc@sgi.com>,
+       Valerie Henson <val@vahconsulting.com>, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andreas Dilger <adilger@clusterfs.com>, Ric Wheeler <ric@emc.com>
+In-Reply-To: <20080124234037.GJ15858@mit.edu>
+References: <9Mo9w-7Ws-25@gated-at.bofh.it> <9Mo9w-7Ws-23@gated-at.bofh.it>
+	 <9OdWm-7uN-25@gated-at.bofh.it> <9Oi9A-5EJ-3@gated-at.bofh.it>
+	 <9OiMg-6IC-1@gated-at.bofh.it> <9OlqL-2xG-3@gated-at.bofh.it>
+	 <9Orda-3ub-45@gated-at.bofh.it> <E1JI5vz-0001GG-Vs@be1.7eggert.dyndns.org>
+	 <20080124230809.GA29120@does.not.exist>  <20080124234037.GJ15858@mit.edu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WUdmbAZBiuRp34QY66ro"
+Date: Thu, 24 Jan 2008 17:25:42 -0700
+Message-Id: <1201220742.7557.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+X-Envelope-From: zlynx@acm.org
+X-Spam-Id: 20080124/1JICO7-00024V-K5-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
->>>
->> I just looked at the ACPI suspend code, and it looks like it hacks its own 
->> identity map at runtime.  Pavel, am I reading that code right?
-> 
-> Yes, I think so, I believe we do it on both 32 and 64 bit now.
-> 
 
-So the background to this... we need an identity map to trampoline at 
-early boot, obviously, but we'd like it to not stick around more than 
-necessary.  We have zap_low_mappings() now but it's not really sufficient.
+--=-WUdmbAZBiuRp34QY66ro
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Secondary SMP processors need these mappings during trampolining -- 
-presumably including CPU hotplug -- and I'm suspecting it might simply 
-make sense to use a separate set of page tables (with both the identity 
-and the kernel map) for trampolining and just keep them around.  That 
-way they would be usable for ACPI as well.
 
-> (It is early here. And I almost got the .c wakeup code to work... it
-> already sets the mode).
+On Thu, 2008-01-24 at 18:40 -0500, Theodore Tso wrote:
+> On Fri, Jan 25, 2008 at 01:08:09AM +0200, Adrian Bunk wrote:
+> > In practice, there is a small number of programs that are both the
+> > common memory hogs and should be able to reduce their memory consumptio=
+n
+> > by 10% or 20% without big problems when requested (e.g. Java VMs,
+> > Firefox and databases come into my mind).
+>=20
+> I agree, it's only a few processes where this makes sense.  But for
+> those that do, it would be useful if they could register with the
+> kernel that would like to know, (just before the system starts
+> ejecting cached data, just before swapping, etc.) and at what
+> frequency.  And presumably, if the kernel notices that a process is
+> responding to such requests with memory actually getting released back
+> to the system, that process could get "rewarded" by having the OOM
+> killer less likely to target that particular thread.
 
-Sweet!
+Have y'all been following the /dev/mem_notify patches?
+http://article.gmane.org/gmane.linux.kernel/628653
 
-	-hpa
+--=20
+Zan Lynx <zlynx@acm.org>
+
+--=-WUdmbAZBiuRp34QY66ro
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHmSyGG8fHaOLTWwgRApaiAJ0bgnU4rjpNsYpx1JtF9NNA2cfNFQCgk9Tc
+k4QqM4HKpAqCNcCXkUJi8mg=
+=4s28
+-----END PGP SIGNATURE-----
+
+--=-WUdmbAZBiuRp34QY66ro--
+
