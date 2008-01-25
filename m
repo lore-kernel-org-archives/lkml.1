@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760129AbYAYUTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYAYUXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760129AbYAYUTk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 15:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbYAYUTa
+	id S1757537AbYAYUXl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 15:23:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbYAYUXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 15:19:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50765 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758753AbYAYUT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 15:19:29 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Wim Van Sebroeck <wim@iguana.be>
-Subject: Re: DMI: create dmi_get_slot()
-Date: Fri, 25 Jan 2008 15:19:09 -0500
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <20080125201357.GA3234@infomag.infomag.iguana.be>
-In-Reply-To: <20080125201357.GA3234@infomag.infomag.iguana.be>
+	Fri, 25 Jan 2008 15:23:34 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44271 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751578AbYAYUXd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 15:23:33 -0500
+Date: Fri, 25 Jan 2008 12:23:25 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] driver core patches against 2.6.24
+In-Reply-To: <20080125194219.GA4596@suse.de>
+Message-ID: <alpine.LFD.1.00.0801251221210.2979@hp.linux-foundation.org>
+References: <20080125071127.GA4860@kroah.com> <alpine.LFD.1.00.0801251035150.2979@hp.linux-foundation.org> <20080125194219.GA4596@suse.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801251519.09818.lenb@kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 January 2008 15:13, Wim Van Sebroeck wrote:
-> Hi Len,
-> 
-> I saw you added the dmi_get_slot function recently.
-> If I look in drivers/firmware/dmi_scan.c however I now see:
-> 
-> ...
-> 
-> /**
->  *	dmi_get_system_info - return DMI data value
->  *	@field: data index (see enum dmi_field)
->  *
->  *	Returns one DMI data value, can be used to perform
->  *	complex DMI data checks.
->  */
-> const char *dmi_get_system_info(int field)
-> {
-> 	return dmi_ident[field];
-> }
-> EXPORT_SYMBOL(dmi_get_system_info);
-> 
-> ...
-> 
-> /**
->  *	dmi_get_slot - return dmi_ident[slot]
->  *	@slot:	index into dmi_ident[]
->  */
-> char *dmi_get_slot(int slot)
-> {
-> 	return(dmi_ident[slot]);
-> }
-> 
-> Didn't we duplicate code here?
 
-Yep, thanks for noticing, i'll delete the duplicate.
 
--Len
+On Fri, 25 Jan 2008, Greg KH wrote:
+
+> On Fri, Jan 25, 2008 at 10:44:59AM -0800, Linus Torvalds wrote:
+> > 
+> >  - from the purely broken ones:
+> > 
+> > 	ehci_hcd: no version for "struct_module" found: kernel tainted.
+> 
+> Ok, in looking at the code, this should also be showing up for you on a
+> "clean" 2.6.24 release, I didn't change anything in this code path.
+
+Ok, I just never noticed, because without any warnings or oopses, it 
+didn't much matter...
+
+> Linus, does the patch below (built tested only) fix the above call trace
+> noise for you?  It shouldn't change the taint flag, that's a different
+> issue it seems.
+
+Sadly, I'm now in the process of shutting down all my machines to prepare 
+for "the flight from hell(tm)", so I won't have time to check this right 
+now.
+
+		Linus
