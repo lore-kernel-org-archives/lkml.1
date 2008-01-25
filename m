@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759700AbYAYW26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbYAYW3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759700AbYAYW26 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 17:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbYAYW2u
+	id S1760185AbYAYW3z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 17:29:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbYAYW3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 17:28:50 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48540 "EHLO mx3.mail.elte.hu"
+	Fri, 25 Jan 2008 17:29:46 -0500
+Received: from 1wt.eu ([62.212.114.60]:1612 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752447AbYAYW2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 17:28:49 -0500
-Date: Fri, 25 Jan 2008 23:28:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] [KGDB] core code cleanups
-Message-ID: <20080125222836.GA24708@elte.hu>
-References: <479A5C35.6040605@windriver.com>
-MIME-Version: 1.0
+	id S1752648AbYAYW3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 17:29:45 -0500
+Date: Fri, 25 Jan 2008 22:56:39 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: David Newall <davidn@davidnewall.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Patches for linux-2.4
+Message-ID: <20080125215638.GK8953@1wt.eu>
+References: <479A36D3.5010608@davidnewall.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <479A5C35.6040605@windriver.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0097]
+In-Reply-To: <479A36D3.5010608@davidnewall.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi David,
 
-* Jason Wessel <jason.wessel@windriver.com> wrote:
+On Sat, Jan 26, 2008 at 05:51:55AM +1030, David Newall wrote:
+> What's the process for submitting patches for a linux-2.4 driver?  I'm
+> sure this is a FAQ, but I can't find the answer.
 
-> This patch is against the x86-git which included the kgdb core.
-> 
-> Per review request from the x86-git maintainers, the kgdb-core has had 
-> the kgdb_handle_exception() separated into individual functions.  This 
-> patch does nothing other than re-organize the code.  There are no 
-> functional kgdb changes.
-> 
-> kgdb_handle_exception now calls gdb_serial_stub() to handle the 
-> debugger communications.  The gdb_serial_stub() has call out to sub 
-> handlers for all the major gdb serial packet types.
+Simply post them to the list with subjects beginning with "[PATCH] 2.4: "
+so that we notice them. Please CC me because I can easily miss them as
+they now represent about 1/2000 of the mails here!
 
-thanks Jason, i have applied your cleanups to x86.git.
+Also, you should ensure that your patches are really relevant to the
+usage people have of 2.4 nowadays. If you fix bugs, that's fine. If
+you want to contribute new drivers/features, you should first check
+that they are correctly working in 2.6 so that people do not get
+trapped when they migrate from 2.4 to 2.6, and you should also ensure
+that those patches are not only posted for your own convenience ;-)
 
-	Ingo
+With all that in mind, please do post your patches, I'm open for
+reviewing and discussing them.
+
+Thanks,
+Willy
+
