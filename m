@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbYAYP1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYAYPay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757998AbYAYP1V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 10:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbYAYP1H
+	id S1756061AbYAYPay (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 10:30:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYAYPao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 10:27:07 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:37033 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756255AbYAYP1D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 10:27:03 -0500
-Date: Fri, 25 Jan 2008 16:27:02 +0100
-From: Jan Kara <jack@suse.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: gorcunov@gmail.com, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jack@suse.cz
-Subject: Re: [patch 25/26] mount options: fix udf
-Message-ID: <20080125152702.GD28856@atrey.karlin.mff.cuni.cz>
-References: <20080124193341.166753833@szeredi.hu> <20080124193456.220272889@szeredi.hu> <20080124202034.GC6724@cvg> <E1JIKsD-0001Kf-Bz@pomaz-ex.szeredi.hu>
+	Fri, 25 Jan 2008 10:30:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41156 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751101AbYAYPan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 10:30:43 -0500
+Date: Fri, 25 Jan 2008 16:30:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH UPDATE] x86: ignore spurious faults
+Message-ID: <20080125153032.GE11846@elte.hu>
+References: <4797D64D.1060105@goop.org> <1201133916.16972.124.camel@brick> <4797DBA0.5020909@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1JIKsD-0001Kf-Bz@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4797DBA0.5020909@goop.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > | +	/* is this correct? */
-> > | +	if (sbi->s_anchor[2] != 0)
-> > | +		seq_printf(seq, ",anchor=%u", sbi->s_anchor[2]);
-> > 
-> > you know, I would prefer to use form UDF_SB_ANCHOR(sb)[2]
-> > in sake of style unification but we should wait for Jan's
-> > decision (i'm not the expert in this area ;)
-> 
-> I think UDF_SB_ANCHOR macro was removed by some patch in -mm.
-  Yes, it's going to be removed so don't use it. Actually, basing this
-patch on top of -mm is a good idea because there are quite some changes
-in Andrew's queue.
 
-> I'm more interested if the second element of the s_anchor array really
-> does always have the value of the 'anchor=N' mount option.  I haven't
-> been able to verify that fully.  Do you have some insight into that?
-  As Cyrill wrote, it could be zeroed out in case there is no anchor in
-the specified block. So I guess you have to store the passed value
-somewhere else..
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+> When changing a kernel page from RO->RW, it's OK to leave stale TLB 
+> entries around, since doing a global flush is expensive and they pose 
+> no security problem.  They can, however, generate a spurious fault, 
+> which we should catch and simply return from (which will have the 
+> side-effect of reloading the TLB to the current PTE).
+>
+> This can occur when running under Xen, because it frequently changes 
+> kernel pages from RW->RO->RW to implement Xen's pagetable semantics. 
+> It could also occur when using CONFIG_DEBUG_PAGEALLOC, since it avoids 
+> doing a global TLB flush after changing page permissions.
+
+thanks, applied.
+
+it would be nice to expose this ability of the architecture to the core 
+Linux kernel mprotect code as well, and let it skip on a TLB flush when 
+doing a RO->RW transition. It could speed up valgrind and the other 
+mprotect() users i guess? [and UML too perhaps]
+
+	Ingo
