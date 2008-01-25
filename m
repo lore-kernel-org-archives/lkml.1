@@ -1,47 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYAYAMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbYAYAR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753250AbYAYAMK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 19:12:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYAYAL4
+	id S1752524AbYAYAR6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 19:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYAYARu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 19:11:56 -0500
-Received: from gw.goop.org ([64.81.55.164]:59378 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750714AbYAYAL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 19:11:56 -0500
-Message-ID: <47992948.60308@goop.org>
-Date: Thu, 24 Jan 2008 16:11:52 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 24 Jan 2008 19:17:50 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35418 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751216AbYAYARt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 19:17:49 -0500
+Message-ID: <47992AA8.6040804@sgi.com>
+Date: Thu, 24 Jan 2008 16:17:44 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?B?TWlrYSBQZW50dGlsw6Q=?= <mika.penttila@kolumbus.fi>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
- format.
-References: <1200758937-22386-2-git-send-email-ijc@hellion.org.uk>	 <47939363.8040603@kolumbus.fi>	 <1200950633.15491.21.camel@cthulhu.hellion.org.uk>	 <479510CE.7010706@zytor.com>	 <1200951996.15491.28.camel@cthulhu.hellion.org.uk>	 <479551FD.5040801@zytor.com>	 <1201023401.5643.52.camel@localhost.localdomain>	 <479634A9.1090908@zytor.com>	 <1201031325.15491.66.camel@cthulhu.hellion.org.uk>	 <47964B7B.9000905@zytor.com>  <20080122203611.GA12892@elte.hu>	 <1201121530.30671.15.camel@cthulhu.hellion.org.uk>	 <4797E487.8010108@goop.org> <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <47990BDC.4070008@zytor.com> <479912B0.2080506@goop.org> <479913BA.8000506@zytor.com> <47991809.9060903@goop.org> <47991A6C.8060007@zytor.com> <479921F5.9020902@goop.org> <479922D0.3010708@zytor.com> <4799248F.9080404@goop.org> <47992710.2060108@zytor.com>
-In-Reply-To: <47992710.2060108@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, jeremy@goop.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] percpu: Optimize percpu accesses
+References: <20080123044924.508382000@sgi.com> <20080124224613.GA24855@elte.hu>
+In-Reply-To: <20080124224613.GA24855@elte.hu>
+Content-Type: multipart/mixed;
+ boundary="------------030401050506050503060209"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Yeah, I'm aware of this particular piece of Xen braindamage, and 
-> although I had some very unkind words to say about it, it mirrors what 
-> we have to do for the !PAE case anyway, so it can be sort of glossed 
-> over.
+This is a multi-part message in MIME format.
+--------------030401050506050503060209
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Sort of.  If Xen weren't an issue, then both cases are a matter of 
-copying a set of entries from one place in the pgd to another.
+Ingo Molnar wrote:
+> * travis@sgi.com <travis@sgi.com> wrote:
+> 
+>> This patchset provides the following:
+>>
+>>   * Generic: Percpu infrastructure to rebase the per cpu area to zero
+>>
+>>     This provides for the capability of accessing the percpu variables
+>>     using a local register instead of having to go through a table
+>>     on node 0 to find the cpu-specific offsets.  It also would allow
+>>     atomic operations on percpu variables to reduce required locking.
+>>
+>>   * x86_64: Fold pda into per cpu area
+>>
+>>     Declare the pda as a per cpu variable. This will move the pda
+>>     area to an address accessible by the x86_64 per cpu macros.
+>>     Subtraction of __per_cpu_start will make the offset based from
+>>     the beginning of the per cpu area.  Since %gs is pointing to the
+>>     pda, it will then also point to the per cpu variables and can be
+>>     accessed thusly:
+>>
+>> 	%gs:[&per_cpu_xxxx - __per_cpu_start]
+>>
+>>   * x86_64: Rebase per cpu variables to zero
+>>
+>>     Take advantage of the zero-based per cpu area provided above. Then 
+>>     we can directly use the x86_32 percpu operations. x86_32 offsets 
+>>     %fs by __per_cpu_start. x86_64 has %gs pointing directly to the 
+>>     pda and the per cpu area thereby allowing access to the pda with 
+>>     the x86_64 pda operations and access to the per cpu variables 
+>>     using x86_32 percpu operations.
+> 
+> tried it on x86.git and 1/3 did not build and 2/3 causes a boot hang 
+> with the attached .config.
+> 
+> 	Ingo
+> 
 
-It would be easy enough to add some code on xen side to look for pmd 
-aliases when using/pinning a pagetable, and allocate'n'copy a new pmd 
-page as needed.  That way the core code can ignore the issue.
+The build error was fixed with the note I sent to you yesterday with a
+"fixup" patch for changes in -mm but not in x86.git (attached).
 
-    J
+I'll try out your config next.
+
+Thanks,
+Mike
+
+
+
+--------------030401050506050503060209
+Content-Type: text/plain;
+ name="zero-based-x86.git-fix"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="zero-based-x86.git-fix"
+
+Subject: x86: fixes conflict between -mm and x86.git
+
+Ingo - you can apply this to x86.git after the other zero-based
+changes to fix a build problem.
+
+Thanks,
+Mike
+
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ kernel/module.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -341,9 +341,6 @@ static inline unsigned int block_size(in
+ 	return val;
+ }
+ 
+-/* Created by linker magic */
+-extern char __per_cpu_start[], __per_cpu_end[];
+-
+ static void *percpu_modalloc(unsigned long size, unsigned long align,
+ 			     const char *name)
+ {
+
+--------------030401050506050503060209--
