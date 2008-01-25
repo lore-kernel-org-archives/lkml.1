@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbYAYF6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbYAYF7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756641AbYAYF6q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 00:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbYAYF6I
+	id S1757436AbYAYF7I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 00:59:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbYAYF6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 00:58:08 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44089 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753357AbYAYF6E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 00:58:09 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:38998 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753223AbYAYF6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Jan 2008 00:58:04 -0500
-Message-Id: <20080125055801.674007010@sgi.com>
+Message-Id: <20080125055801.902905186@sgi.com>
 References: <20080125055606.102986685@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 24 Jan 2008 21:56:09 -0800
+Date: Thu, 24 Jan 2008 21:56:10 -0800
 From: Christoph Lameter <clameter@sgi.com>
 To: Andrea Arcangeli <andrea@qumranet.com>
 Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
@@ -23,77 +22,135 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: [patch 3/4] mmu_notifier: invalidate_page callbacks for subsystems with rmap
-Content-Disposition: inline; filename=mmu_invalidate_page_rmap_callbacks
+Subject: [patch 4/4] MMU notifier: invalidate_page callbacks using Linux rmaps
+Content-Disposition: inline; filename=mmu_invalidate_page_callbacks
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Callbacks to remove individual pages if the subsystem has an
-rmap capability. The pagelock is held but no spinlocks are held.
-The refcount of the page is elevated so that dropping the refcount
-in the subsystem will not directly free the page.
-
-The callbacks occur after the Linux rmaps have been walked.
-
-Robin: We do not hold the page lock in __xip_unmap().
-I guess we do not need to increase the refcount there since the
-page is static and cannot go away?
+These notifiers here use the Linux rmaps to perform the callbacks.
+In order to walk the rmaps locks must be held. Callbacks can therefore
+only operate in an atomic context.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-Index: linux-2.6/mm/filemap_xip.c
+---
+ mm/filemap_xip.c |    1 +
+ mm/fremap.c      |    1 +
+ mm/memory.c      |    1 +
+ mm/mremap.c      |    2 ++
+ mm/rmap.c        |   12 +++++++++++-
+ 5 files changed, 16 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/mm/mremap.c
 ===================================================================
---- linux-2.6.orig/mm/filemap_xip.c	2008-01-24 19:47:28.000000000 -0800
-+++ linux-2.6/mm/filemap_xip.c	2008-01-24 20:30:31.000000000 -0800
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/uio.h>
- #include <linux/rmap.h>
+--- linux-2.6.orig/mm/mremap.c	2008-01-24 21:35:25.000000000 -0800
++++ linux-2.6/mm/mremap.c	2008-01-24 21:39:34.000000000 -0800
+@@ -18,6 +18,7 @@
+ #include <linux/highmem.h>
+ #include <linux/security.h>
+ #include <linux/syscalls.h>
 +#include <linux/mmu_notifier.h>
- #include <linux/sched.h>
- #include <asm/tlbflush.h>
  
-@@ -183,6 +184,9 @@ __xip_unmap (struct address_space * mapp
- 	if (!page)
- 		return;
- 
-+	if (PageExternalRmap(page))
-+		mmu_rmap_notifier(invalidate_page, page);
-+
- 	spin_lock(&mapping->i_mmap_lock);
- 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
- 		mm = vma->vm_mm;
+ #include <asm/uaccess.h>
+ #include <asm/cacheflush.h>
+@@ -105,6 +106,7 @@ static void move_ptes(struct vm_area_str
+ 		if (pte_none(*old_pte))
+ 			continue;
+ 		pte = ptep_clear_flush(vma, old_addr, old_pte);
++		mmu_notifier(invalidate_page, mm, old_addr);
+ 		pte = move_pte(pte, new_vma->vm_page_prot, old_addr, new_addr);
+ 		set_pte_at(mm, new_addr, new_pte, pte);
+ 	}
 Index: linux-2.6/mm/rmap.c
 ===================================================================
---- linux-2.6.orig/mm/rmap.c	2008-01-24 19:47:28.000000000 -0800
-+++ linux-2.6/mm/rmap.c	2008-01-24 20:30:31.000000000 -0800
-@@ -49,6 +49,7 @@
- #include <linux/rcupdate.h>
- #include <linux/module.h>
- #include <linux/kallsyms.h>
-+#include <linux/mmu_notifier.h>
+--- linux-2.6.orig/mm/rmap.c	2008-01-24 21:39:33.000000000 -0800
++++ linux-2.6/mm/rmap.c	2008-01-24 21:39:34.000000000 -0800
+@@ -288,6 +288,9 @@ static int page_referenced_one(struct pa
+ 	if (ptep_clear_flush_young(vma, address, pte))
+ 		referenced++;
  
- #include <asm/tlbflush.h>
- 
-@@ -473,6 +474,8 @@ int page_mkclean(struct page *page)
- 		struct address_space *mapping = page_mapping(page);
- 		if (mapping) {
- 			ret = page_mkclean_file(mapping, page);
-+			if (unlikely(PageExternalRmap(page)))
-+				mmu_rmap_notifier(invalidate_page, page);
- 			if (page_test_dirty(page)) {
- 				page_clear_dirty(page);
- 				ret = 1;
-@@ -971,6 +974,9 @@ int try_to_unmap(struct page *page, int 
- 	else
- 		ret = try_to_unmap_file(page, migration);
- 
-+	if (unlikely(PageExternalRmap(page)))
-+		mmu_rmap_notifier(invalidate_page, page);
++	if (mmu_notifier_age_page(mm, address))
++		referenced++;
 +
- 	if (!page_mapped(page))
- 		ret = SWAP_SUCCESS;
- 	return ret;
+ 	/* Pretend the page is referenced if the task has the
+ 	   swap token and is in the middle of a page fault. */
+ 	if (mm != current->mm && has_swap_token(mm) &&
+@@ -435,6 +438,7 @@ static int page_mkclean_one(struct page 
+ 
+ 		flush_cache_page(vma, address, pte_pfn(*pte));
+ 		entry = ptep_clear_flush(vma, address, pte);
++		mmu_notifier(invalidate_page, mm, address);
+ 		entry = pte_wrprotect(entry);
+ 		entry = pte_mkclean(entry);
+ 		set_pte_at(mm, address, pte, entry);
+@@ -680,7 +684,8 @@ static int try_to_unmap_one(struct page 
+ 	 * skipped over this mm) then we should reactivate it.
+ 	 */
+ 	if (!migration && ((vma->vm_flags & VM_LOCKED) ||
+-			(ptep_clear_flush_young(vma, address, pte)))) {
++			(ptep_clear_flush_young(vma, address, pte) ||
++				mmu_notifier_age_page(mm, address)))) {
+ 		ret = SWAP_FAIL;
+ 		goto out_unmap;
+ 	}
+@@ -688,6 +693,7 @@ static int try_to_unmap_one(struct page 
+ 	/* Nuke the page table entry. */
+ 	flush_cache_page(vma, address, page_to_pfn(page));
+ 	pteval = ptep_clear_flush(vma, address, pte);
++	mmu_notifier(invalidate_page, mm, address);
+ 
+ 	/* Move the dirty bit to the physical page now the pte is gone. */
+ 	if (pte_dirty(pteval))
+@@ -815,9 +821,13 @@ static void try_to_unmap_cluster(unsigne
+ 		if (ptep_clear_flush_young(vma, address, pte))
+ 			continue;
+ 
++		if (mmu_notifier_age_page(mm, address))
++			continue;
++
+ 		/* Nuke the page table entry. */
+ 		flush_cache_page(vma, address, pte_pfn(*pte));
+ 		pteval = ptep_clear_flush(vma, address, pte);
++		mmu_notifier(invalidate_page, mm, address);
+ 
+ 		/* If nonlinear, store the file page offset in the pte. */
+ 		if (page->index != linear_page_index(vma, address))
+Index: linux-2.6/mm/filemap_xip.c
+===================================================================
+--- linux-2.6.orig/mm/filemap_xip.c	2008-01-24 21:39:33.000000000 -0800
++++ linux-2.6/mm/filemap_xip.c	2008-01-24 21:39:34.000000000 -0800
+@@ -198,6 +198,7 @@ __xip_unmap (struct address_space * mapp
+ 			/* Nuke the page table entry. */
+ 			flush_cache_page(vma, address, pte_pfn(*pte));
+ 			pteval = ptep_clear_flush(vma, address, pte);
++			mmu_notifier(invalidate_page, mm, address);
+ 			page_remove_rmap(page, vma);
+ 			dec_mm_counter(mm, file_rss);
+ 			BUG_ON(pte_dirty(pteval));
+Index: linux-2.6/mm/fremap.c
+===================================================================
+--- linux-2.6.orig/mm/fremap.c	2008-01-24 21:39:31.000000000 -0800
++++ linux-2.6/mm/fremap.c	2008-01-24 21:39:34.000000000 -0800
+@@ -31,6 +31,7 @@ static void zap_pte(struct mm_struct *mm
+ 
+ 		flush_cache_page(vma, addr, pte_pfn(pte));
+ 		pte = ptep_clear_flush(vma, addr, ptep);
++		mmu_notifier(invalidate_page, mm, addr);
+ 		page = vm_normal_page(vma, addr, pte);
+ 		if (page) {
+ 			if (pte_dirty(pte))
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c	2008-01-24 21:39:31.000000000 -0800
++++ linux-2.6/mm/memory.c	2008-01-24 21:39:34.000000000 -0800
+@@ -1659,6 +1659,7 @@ gotten:
+ 		 * thread doing COW.
+ 		 */
+ 		ptep_clear_flush(vma, address, page_table);
++		mmu_notifier(invalidate_page, mm, address);
+ 		set_pte_at(mm, address, page_table, entry);
+ 		update_mmu_cache(vma, address, entry);
+ 		lru_cache_add_active(new_page);
 
 -- 
