@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763190AbYAYIbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761521AbYAYIcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763190AbYAYIbr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:31:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764123AbYAYIBY
+	id S1761521AbYAYIcQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:32:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760805AbYAYIBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:01:24 -0500
-Received: from ns2.suse.de ([195.135.220.15]:53734 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 03:01:25 -0500
+Received: from mx2.suse.de ([195.135.220.15]:53736 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759500AbYAYIAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760361AbYAYIAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Jan 2008 03:00:05 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 150/196] Driver core: move the driver specific module code into the driver core
-Date: Thu, 24 Jan 2008 23:32:59 -0800
-Message-Id: <1201246425-5058-71-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 180/196] kobject: add sample code for how to use ksets/ktypes/kobjects
+Date: Thu, 24 Jan 2008 23:33:29 -0800
+Message-Id: <1201246425-5058-101-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -22,279 +22,308 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The module driver specific code should belong in the driver core, not in
-the kernel/ directory.  So move this code.  This is done in preparation
-for some struct device_driver rework that should be confined to the
-driver core code only.
+This is a more complex example showing how to create a kset and a ktype
+and some default attributes for a group of kobjects.
 
-This also lets us keep from exporting these functions, as no external
-code should ever be calling it.
-
-Thanks to Andrew Morton for the !CONFIG_MODULES fix.
-
+Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/Makefile  |    1 +
- drivers/base/base.h    |    9 +++++
- drivers/base/module.c  |   94 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/module.h |   15 --------
- kernel/module.c        |   87 --------------------------------------------
- 5 files changed, 104 insertions(+), 102 deletions(-)
- create mode 100644 drivers/base/module.c
+ samples/kobject/Makefile       |    2 +-
+ samples/kobject/kset-example.c |  278 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 279 insertions(+), 1 deletions(-)
+ create mode 100644 samples/kobject/kset-example.c
 
-diff --git a/drivers/base/Makefile b/drivers/base/Makefile
-index b39ea3f..ff26968 100644
---- a/drivers/base/Makefile
-+++ b/drivers/base/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_FW_LOADER)	+= firmware_class.o
- obj-$(CONFIG_NUMA)	+= node.o
- obj-$(CONFIG_MEMORY_HOTPLUG_SPARSE) += memory.o
- obj-$(CONFIG_SMP)	+= topology.o
-+obj-$(CONFIG_MODULES)	+= module.o
- obj-$(CONFIG_SYS_HYPERVISOR) += hypervisor.o
- 
- ifeq ($(CONFIG_DEBUG_DRIVER),y)
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index ca6d273..0547236 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -73,3 +73,12 @@ extern char *make_class_name(const char *name, struct kobject *kobj);
- extern int devres_release_all(struct device *dev);
- 
- extern struct kset *devices_kset;
-+
-+#ifdef CONFIG_MODULES
-+extern void module_add_driver(struct module *mod, struct device_driver *drv);
-+extern void module_remove_driver(struct device_driver *drv);
-+#else
-+static inline void module_add_driver(struct module *mod,
-+				     struct device_driver *drv) { }
-+static inline void module_remove_driver(struct device_driver *drv) { }
-+#endif
-diff --git a/drivers/base/module.c b/drivers/base/module.c
+diff --git a/samples/kobject/Makefile b/samples/kobject/Makefile
+index cce16e9..4a19420 100644
+--- a/samples/kobject/Makefile
++++ b/samples/kobject/Makefile
+@@ -1 +1 @@
+-obj-$(CONFIG_SAMPLE_KOBJECT) += kobject-example.o
++obj-$(CONFIG_SAMPLE_KOBJECT) += kobject-example.o kset-example.o
+diff --git a/samples/kobject/kset-example.c b/samples/kobject/kset-example.c
 new file mode 100644
-index 0000000..cad07be
+index 0000000..b0a1b4f
 --- /dev/null
-+++ b/drivers/base/module.c
-@@ -0,0 +1,94 @@
++++ b/samples/kobject/kset-example.c
+@@ -0,0 +1,278 @@
 +/*
-+ * module.c - module sysfs fun for drivers
++ * Sample kset and ktype implementation
 + *
-+ * This file is released under the GPLv2
++ * Copyright (C) 2004-2007 Greg Kroah-Hartman <greg@kroah.com>
++ * Copyright (C) 2007 Novell Inc.
++ *
++ * Released under the GPL version 2 only.
 + *
 + */
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/errno.h>
++#include <linux/kobject.h>
 +#include <linux/string.h>
-+#include "base.h"
++#include <linux/sysfs.h>
++#include <linux/module.h>
++#include <linux/init.h>
 +
-+static char *make_driver_name(struct device_driver *drv)
++/*
++ * This module shows how to create a kset in sysfs called
++ * /sys/kernel/kset-example
++ * Then tree kobjects are created and assigned to this kset, "foo", "baz",
++ * and "bar".  In those kobjects, attributes of the same name are also
++ * created and if an integer is written to these files, it can be later
++ * read out of it.
++ */
++
++
++/*
++ * This is our "object" that we will create a few of and register them with
++ * sysfs.
++ */
++struct foo_obj {
++	struct kobject kobj;
++	int foo;
++	int baz;
++	int bar;
++};
++#define to_foo_obj(x) container_of(x, struct foo_obj, kobj)
++
++/* a custom attribute that works just for a struct foo_obj. */
++struct foo_attribute {
++	struct attribute attr;
++	ssize_t (*show)(struct foo_obj *foo, struct foo_attribute *attr, char *buf);
++	ssize_t (*store)(struct foo_obj *foo, struct foo_attribute *attr, const char *buf, size_t count);
++};
++#define to_foo_attr(x) container_of(x, struct foo_attribute, attr)
++
++/*
++ * The default show function that must be passed to sysfs.  This will be
++ * called by sysfs for whenever a show function is called by the user on a
++ * sysfs file associated with the kobjects we have registered.  We need to
++ * transpose back from a "default" kobject to our custom struct foo_obj and
++ * then call the show function for that specific object.
++ */
++static ssize_t foo_attr_show(struct kobject *kobj,
++			     struct attribute *attr,
++			     char *buf)
 +{
-+	char *driver_name;
++	struct foo_attribute *attribute;
++	struct foo_obj *foo;
 +
-+	driver_name = kmalloc(strlen(drv->name) + strlen(drv->bus->name) + 2,
-+			      GFP_KERNEL);
-+	if (!driver_name)
++	attribute = to_foo_attr(attr);
++	foo = to_foo_obj(kobj);
++
++	if (!attribute->show)
++		return -EIO;
++
++	return attribute->show(foo, attribute, buf);
++}
++
++/*
++ * Just like the default show function above, but this one is for when the
++ * sysfs "store" is requested (when a value is written to a file.)
++ */
++static ssize_t foo_attr_store(struct kobject *kobj,
++			      struct attribute *attr,
++			      const char *buf, size_t len)
++{
++	struct foo_attribute *attribute;
++	struct foo_obj *foo;
++
++	attribute = to_foo_attr(attr);
++	foo = to_foo_obj(kobj);
++
++	if (!attribute->store)
++		return -EIO;
++
++	return attribute->store(foo, attribute, buf, len);
++}
++
++/* Our custom sysfs_ops that we will associate with our ktype later on */
++static struct sysfs_ops foo_sysfs_ops = {
++	.show = foo_attr_show,
++	.store = foo_attr_store,
++};
++
++/*
++ * The release function for our object.  This is REQUIRED by the kernel to
++ * have.  We free the memory held in our object here.
++ *
++ * NEVER try to get away with just a "blank" release function to try to be
++ * smarter than the kernel.  Turns out, no one ever is...
++ */
++static void foo_release(struct kobject *kobj)
++{
++	struct foo_obj *foo;
++
++	foo = to_foo_obj(kobj);
++	kfree(foo);
++}
++
++/*
++ * The "foo" file where the .foo variable is read from and written to.
++ */
++static ssize_t foo_show(struct foo_obj *foo_obj, struct foo_attribute *attr,
++			char *buf)
++{
++	return sprintf(buf, "%d\n", foo_obj->foo);
++}
++
++static ssize_t foo_store(struct foo_obj *foo_obj, struct foo_attribute *attr,
++			 const char *buf, size_t count)
++{
++	sscanf(buf, "%du", &foo_obj->foo);
++	return count;
++}
++
++static struct foo_attribute foo_attribute =
++	__ATTR(foo, 0666, foo_show, foo_store);
++
++/*
++ * More complex function where we determine which varible is being accessed by
++ * looking at the attribute for the "baz" and "bar" files.
++ */
++static ssize_t b_show(struct foo_obj *foo_obj, struct foo_attribute *attr,
++		      char *buf)
++{
++	int var;
++
++	if (strcmp(attr->attr.name, "baz") == 0)
++		var = foo_obj->baz;
++	else
++		var = foo_obj->bar;
++	return sprintf(buf, "%d\n", var);
++}
++
++static ssize_t b_store(struct foo_obj *foo_obj, struct foo_attribute *attr,
++		       const char *buf, size_t count)
++{
++	int var;
++
++	sscanf(buf, "%du", &var);
++	if (strcmp(attr->attr.name, "baz") == 0)
++		foo_obj->baz = var;
++	else
++		foo_obj->bar = var;
++	return count;
++}
++
++static struct foo_attribute baz_attribute =
++	__ATTR(baz, 0666, b_show, b_store);
++static struct foo_attribute bar_attribute =
++	__ATTR(bar, 0666, b_show, b_store);
++
++/*
++ * Create a group of attributes so that we can create and destory them all
++ * at once.
++ */
++static struct attribute *foo_default_attrs[] = {
++	&foo_attribute.attr,
++	&baz_attribute.attr,
++	&bar_attribute.attr,
++	NULL,	/* need to NULL terminate the list of attributes */
++};
++
++/*
++ * Our own ktype for our kobjects.  Here we specify our sysfs ops, the
++ * release function, and the set of default attributes we want created
++ * whenever a kobject of this type is registered with the kernel.
++ */
++static struct kobj_type foo_ktype = {
++	.sysfs_ops = &foo_sysfs_ops,
++	.release = foo_release,
++	.default_attrs = foo_default_attrs,
++};
++
++static struct kset *example_kset;
++static struct foo_obj *foo_obj;
++static struct foo_obj *bar_obj;
++static struct foo_obj *baz_obj;
++
++static struct foo_obj *create_foo_obj(const char *name)
++{
++	struct foo_obj *foo;
++	int retval;
++
++	/* allocate the memory for the whole object */
++	foo = kzalloc(sizeof(*foo), GFP_KERNEL);
++	if (!foo)
 +		return NULL;
 +
-+	sprintf(driver_name, "%s:%s", drv->bus->name, drv->name);
-+	return driver_name;
-+}
++	/*
++	 * As we have a kset for this kobject, we need to set it before calling
++	 * the kobject core.
++	 */
++	foo->kobj.kset = example_kset;
 +
-+static void module_create_drivers_dir(struct module_kobject *mk)
-+{
-+	if (!mk || mk->drivers_dir)
-+		return;
-+
-+	mk->drivers_dir = kobject_create_and_add("drivers", &mk->kobj);
-+}
-+
-+void module_add_driver(struct module *mod, struct device_driver *drv)
-+{
-+	char *driver_name;
-+	int no_warn;
-+	struct module_kobject *mk = NULL;
-+
-+	if (!drv)
-+		return;
-+
-+	if (mod)
-+		mk = &mod->mkobj;
-+	else if (drv->mod_name) {
-+		struct kobject *mkobj;
-+
-+		/* Lookup built-in module entry in /sys/modules */
-+		mkobj = kset_find_obj(module_kset, drv->mod_name);
-+		if (mkobj) {
-+			mk = container_of(mkobj, struct module_kobject, kobj);
-+			/* remember our module structure */
-+			drv->mkobj = mk;
-+			/* kset_find_obj took a reference */
-+			kobject_put(mkobj);
-+		}
++	/*
++	 * Initialize and add the kobject to the kernel.  All the default files
++	 * will be created here.  As we have already specified a kset for this
++	 * kobject, we don't have to set a parent for the kobject, the kobject
++	 * will be placed beneath that kset automatically.
++	 */
++	retval = kobject_init_and_add(&foo->kobj, &foo_ktype, NULL, "%s", name);
++	if (retval) {
++		kfree(foo);
++		return NULL;
 +	}
 +
-+	if (!mk)
-+		return;
++	/*
++	 * We are always responsible for sending the uevent that the kobject
++	 * was added to the system.
++	 */
++	kobject_uevent(&foo->kobj, KOBJ_ADD);
 +
-+	/* Don't check return codes; these calls are idempotent */
-+	no_warn = sysfs_create_link(&drv->kobj, &mk->kobj, "module");
-+	driver_name = make_driver_name(drv);
-+	if (driver_name) {
-+		module_create_drivers_dir(mk);
-+		no_warn = sysfs_create_link(mk->drivers_dir, &drv->kobj,
-+					    driver_name);
-+		kfree(driver_name);
-+	}
++	return foo;
 +}
 +
-+void module_remove_driver(struct device_driver *drv)
++static void destroy_foo_obj(struct foo_obj *foo)
 +{
-+	struct module_kobject *mk = NULL;
-+	char *driver_name;
-+
-+	if (!drv)
-+		return;
-+
-+	sysfs_remove_link(&drv->kobj, "module");
-+
-+	if (drv->owner)
-+		mk = &drv->owner->mkobj;
-+	else if (drv->mkobj)
-+		mk = drv->mkobj;
-+	if (mk && mk->drivers_dir) {
-+		driver_name = make_driver_name(drv);
-+		if (driver_name) {
-+			sysfs_remove_link(mk->drivers_dir, driver_name);
-+			kfree(driver_name);
-+		}
-+	}
++	kobject_put(&foo->kobj);
 +}
-diff --git a/include/linux/module.h b/include/linux/module.h
-index fbe930b..c97bdb7 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -609,21 +609,6 @@ static inline void module_remove_modinfo_attrs(struct module *mod)
- 
- #endif /* CONFIG_SYSFS */
- 
--#if defined(CONFIG_SYSFS) && defined(CONFIG_MODULES)
--
--void module_add_driver(struct module *mod, struct device_driver *drv);
--void module_remove_driver(struct device_driver *drv);
--
--#else /* not both CONFIG_SYSFS && CONFIG_MODULES */
--
--static inline void module_add_driver(struct module *mod, struct device_driver *drv)
--{ }
--
--static inline void module_remove_driver(struct device_driver *drv)
--{ }
--
--#endif
--
- #define symbol_request(x) try_then_request_module(symbol_get(x), "symbol:" #x)
- 
- /* BELOW HERE ALL THESE ARE OBSOLETE AND WILL VANISH */
-diff --git a/kernel/module.c b/kernel/module.c
-index d03fcd9..dc4d3f5 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2501,93 +2501,6 @@ void print_modules(void)
- 	printk("\n");
- }
- 
--#ifdef CONFIG_SYSFS
--static char *make_driver_name(struct device_driver *drv)
--{
--	char *driver_name;
--
--	driver_name = kmalloc(strlen(drv->name) + strlen(drv->bus->name) + 2,
--			      GFP_KERNEL);
--	if (!driver_name)
--		return NULL;
--
--	sprintf(driver_name, "%s:%s", drv->bus->name, drv->name);
--	return driver_name;
--}
--
--static void module_create_drivers_dir(struct module_kobject *mk)
--{
--	if (!mk || mk->drivers_dir)
--		return;
--
--	mk->drivers_dir = kobject_create_and_add("drivers", &mk->kobj);
--}
--
--void module_add_driver(struct module *mod, struct device_driver *drv)
--{
--	char *driver_name;
--	int no_warn;
--	struct module_kobject *mk = NULL;
--
--	if (!drv)
--		return;
--
--	if (mod)
--		mk = &mod->mkobj;
--	else if (drv->mod_name) {
--		struct kobject *mkobj;
--
--		/* Lookup built-in module entry in /sys/modules */
--		mkobj = kset_find_obj(module_kset, drv->mod_name);
--		if (mkobj) {
--			mk = container_of(mkobj, struct module_kobject, kobj);
--			/* remember our module structure */
--			drv->mkobj = mk;
--			/* kset_find_obj took a reference */
--			kobject_put(mkobj);
--		}
--	}
--
--	if (!mk)
--		return;
--
--	/* Don't check return codes; these calls are idempotent */
--	no_warn = sysfs_create_link(&drv->kobj, &mk->kobj, "module");
--	driver_name = make_driver_name(drv);
--	if (driver_name) {
--		module_create_drivers_dir(mk);
--		no_warn = sysfs_create_link(mk->drivers_dir, &drv->kobj,
--					    driver_name);
--		kfree(driver_name);
--	}
--}
--EXPORT_SYMBOL(module_add_driver);
--
--void module_remove_driver(struct device_driver *drv)
--{
--	struct module_kobject *mk = NULL;
--	char *driver_name;
--
--	if (!drv)
--		return;
--
--	sysfs_remove_link(&drv->kobj, "module");
--
--	if (drv->owner)
--		mk = &drv->owner->mkobj;
--	else if (drv->mkobj)
--		mk = drv->mkobj;
--	if (mk && mk->drivers_dir) {
--		driver_name = make_driver_name(drv);
--		if (driver_name) {
--			sysfs_remove_link(mk->drivers_dir, driver_name);
--			kfree(driver_name);
--		}
--	}
--}
--EXPORT_SYMBOL(module_remove_driver);
--#endif
--
- #ifdef CONFIG_MODVERSIONS
- /* Generate the signature for struct module here, too, for modversions. */
- void struct_module(struct module *mod) { return; }
++
++static int example_init(void)
++{
++	/*
++	 * Create a kset with the name of "kset_example",
++	 * located under /sys/kernel/
++	 */
++	example_kset = kset_create_and_add("kset_example", NULL, kernel_kobj);
++	if (!example_kset)
++		return -ENOMEM;
++
++	/*
++	 * Create three objects and register them with our kset
++	 */
++	foo_obj = create_foo_obj("foo");
++	if (!foo_obj)
++		goto foo_error;
++
++	bar_obj = create_foo_obj("bar");
++	if (!bar_obj)
++		goto bar_error;
++
++	baz_obj = create_foo_obj("baz");
++	if (!baz_obj)
++		goto baz_error;
++
++	return 0;
++
++baz_error:
++	destroy_foo_obj(bar_obj);
++bar_error:
++	destroy_foo_obj(foo_obj);
++foo_error:
++	return -EINVAL;
++}
++
++static void example_exit(void)
++{
++	destroy_foo_obj(baz_obj);
++	destroy_foo_obj(bar_obj);
++	destroy_foo_obj(foo_obj);
++	kset_unregister(example_kset);
++}
++
++module_init(example_init);
++module_exit(example_exit);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Greg Kroah-Hartman <greg@kroah.com>");
 -- 
 1.5.3.8
 
