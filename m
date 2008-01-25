@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbYAYW3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757739AbYAYWeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760185AbYAYW3z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 17:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbYAYW3q
+	id S1757739AbYAYWeM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 17:34:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYAYWd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 17:29:46 -0500
-Received: from 1wt.eu ([62.212.114.60]:1612 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752648AbYAYW3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 17:29:45 -0500
-Date: Fri, 25 Jan 2008 22:56:39 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: David Newall <davidn@davidnewall.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Patches for linux-2.4
-Message-ID: <20080125215638.GK8953@1wt.eu>
-References: <479A36D3.5010608@davidnewall.com>
+	Fri, 25 Jan 2008 17:33:58 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36814 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751820AbYAYWd5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 17:33:57 -0500
+Date: Fri, 25 Jan 2008 14:33:24 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 183/196] driver core: fix build with SYSFS=n
+Message-Id: <20080125143324.5ef53876.akpm@linux-foundation.org>
+In-Reply-To: <20080125222530.GA23769@elte.hu>
+References: <20080125071127.GA4860@kroah.com>
+	<1201246425-5058-104-git-send-email-gregkh@suse.de>
+	<20080125222530.GA23769@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <479A36D3.5010608@davidnewall.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+> On Fri, 25 Jan 2008 23:25:30 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> * Greg Kroah-Hartman <gregkh@suse.de> wrote:
+> 
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > When SYSFS=n and MODULES=y, build ends with:
+> > 
+> > linux-2.6.24-rc6-mm1/drivers/base/module.c: In function 'module_add_driver':
+> > linux-2.6.24-rc6-mm1/drivers/base/module.c:49: error: 'module_kset' undeclared (first use in this function)
+> > make[3]: *** [drivers/base/module.o] Error 1
+> 
+> _PLEASE_ fold such fixes into the patch that introduces the build bugs, 
+> prior sending your git trees upstream! (just like Andrew does it with 
+> all patches that come via -mm)
+> 
+> Changes like this (and it now leaked into Linus' tree as well) kill 
+> bisectability.
+> 
 
-On Sat, Jan 26, 2008 at 05:51:55AM +1030, David Newall wrote:
-> What's the process for submitting patches for a linux-2.4 driver?  I'm
-> sure this is a FAQ, but I can't find the answer.
-
-Simply post them to the list with subjects beginning with "[PATCH] 2.4: "
-so that we notice them. Please CC me because I can easily miss them as
-they now represent about 1/2000 of the mails here!
-
-Also, you should ensure that your patches are really relevant to the
-usage people have of 2.4 nowadays. If you fix bugs, that's fine. If
-you want to contribute new drivers/features, you should first check
-that they are correctly working in 2.6 so that people do not get
-trapped when they migrate from 2.4 to 2.6, and you should also ensure
-that those patches are not only posted for your own convenience ;-)
-
-With all that in mind, please do post your patches, I'm open for
-reviewing and discussing them.
-
-Thanks,
-Willy
-
+Absolutely - this is important.  After several hours mucking about I just
+gave up trying to bisect a 2.6.24-rc1 regression due to hitting 100% build
+errors and runtime oopses during the bisection.  Mainly from networking in
+that case.
