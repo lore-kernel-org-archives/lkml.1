@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759576AbYAYHZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760443AbYAYH0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759576AbYAYHZr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757518AbYAYHQJ
+	id S1760443AbYAYH0L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbYAYHQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:16:09 -0500
-Received: from mx2.suse.de ([195.135.220.15]:47526 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 02:16:14 -0500
+Received: from mail.suse.de ([195.135.220.2]:52608 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757656AbYAYHQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:16:07 -0500
+	id S1757657AbYAYHQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:16:11 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Anton Blanchard <anton@au.ibm.com>,
        Paul Mackerras <paulus@au.ibm.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        "Ryan S. Arnold" <rsa@us.ibm.com>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 034/196] kobject: convert hvc_console to use kref, not kobject
-Date: Thu, 24 Jan 2008 23:09:32 -0800
-Message-Id: <1201245134-4876-34-git-send-email-gregkh@suse.de>
+Subject: [PATCH 035/196] kobject: convert hvcs to use kref, not kobject
+Date: Thu, 24 Jan 2008 23:09:33 -0800
+Message-Id: <1201245134-4876-35-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -25,9 +25,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hvc_console is using a kobject only for reference counting, nothing
-else.  So switch it to use a kref instead, which is all that is needed,
-and is much smaller.
+hvcs is using a kobject only for reference counting, nothing else.  So
+switch it to use a kref instead, which is all that is needed, and is
+much smaller.
 
 Cc: Anton Blanchard <anton@au.ibm.com>
 Cc: Paul Mackerras <paulus@au.ibm.com>
@@ -36,247 +36,281 @@ Cc: Ryan S. Arnold <rsa@us.ibm.com>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/char/hvc_console.c |   80 ++++++++++++++++++--------------------------
- 1 files changed, 33 insertions(+), 47 deletions(-)
+ drivers/char/hvcs.c |   78 ++++++++++++++++----------------------------------
+ 1 files changed, 25 insertions(+), 53 deletions(-)
 
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index 8252f86..480fae2 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -27,7 +27,7 @@
+diff --git a/drivers/char/hvcs.c b/drivers/char/hvcs.c
+index 69d8866..fd75590 100644
+--- a/drivers/char/hvcs.c
++++ b/drivers/char/hvcs.c
+@@ -57,11 +57,7 @@
+  * rescanning partner information upon a user's request.
+  *
+  * Each vty-server, prior to being exposed to this driver is reference counted
+- * using the 2.6 Linux kernel kobject construct.  This kobject is also used by
+- * the vio bus to provide a vio device sysfs entry that this driver attaches
+- * device specific attributes to, including partner information.  The vio bus
+- * framework also provides a sysfs entry for each vio driver.  The hvcs driver
+- * provides driver attributes in this entry.
++ * using the 2.6 Linux kernel kref construct.
+  *
+  * For direction on installation and usage of this driver please reference
+  * Documentation/powerpc/hvcs.txt.
+@@ -71,7 +67,7 @@
  #include <linux/init.h>
- #include <linux/kbd_kern.h>
+ #include <linux/interrupt.h>
  #include <linux/kernel.h>
 -#include <linux/kobject.h>
 +#include <linux/kref.h>
  #include <linux/kthread.h>
  #include <linux/list.h>
- #include <linux/module.h>
-@@ -89,7 +89,7 @@ struct hvc_struct {
- 	int irq_requested;
- 	int irq;
- 	struct list_head next;
--	struct kobject kobj; /* ref count & hvc_struct lifetime */
-+	struct kref kref; /* ref count & hvc_struct lifetime */
- };
+ #include <linux/major.h>
+@@ -293,12 +289,12 @@ struct hvcs_struct {
+ 	int chars_in_buffer;
  
- /* dynamic list of hvc_struct instances */
-@@ -110,7 +110,7 @@ static int last_hvc = -1;
- 
- /*
-  * Do not call this function with either the hvc_structs_lock or the hvc_struct
-- * lock held.  If successful, this function increments the kobject reference
-+ * lock held.  If successful, this function increments the kref reference
-  * count against the target hvc_struct so it should be released when finished.
-  */
- static struct hvc_struct *hvc_get_by_index(int index)
-@@ -123,7 +123,7 @@ static struct hvc_struct *hvc_get_by_index(int index)
- 	list_for_each_entry(hp, &hvc_structs, next) {
- 		spin_lock_irqsave(&hp->lock, flags);
- 		if (hp->index == index) {
--			kobject_get(&hp->kobj);
-+			kref_get(&hp->kref);
- 			spin_unlock_irqrestore(&hp->lock, flags);
- 			spin_unlock(&hvc_structs_lock);
- 			return hp;
-@@ -242,6 +242,23 @@ static int __init hvc_console_init(void)
- }
- console_initcall(hvc_console_init);
- 
-+/* callback when the kboject ref count reaches zero. */
-+static void destroy_hvc_struct(struct kref *kref)
-+{
-+	struct hvc_struct *hp = container_of(kref, struct hvc_struct, kref);
-+	unsigned long flags;
-+
-+	spin_lock(&hvc_structs_lock);
-+
-+	spin_lock_irqsave(&hp->lock, flags);
-+	list_del(&(hp->next));
-+	spin_unlock_irqrestore(&hp->lock, flags);
-+
-+	spin_unlock(&hvc_structs_lock);
-+
-+	kfree(hp);
-+}
-+
- /*
-  * hvc_instantiate() is an early console discovery method which locates
-  * consoles * prior to the vio subsystem discovering them.  Hotplugged
-@@ -261,7 +278,7 @@ int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops)
- 	/* make sure no no tty has been registered in this index */
- 	hp = hvc_get_by_index(index);
- 	if (hp) {
--		kobject_put(&hp->kobj);
-+		kref_put(&hp->kref, destroy_hvc_struct);
- 		return -1;
- 	}
- 
-@@ -318,9 +335,8 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	unsigned long flags;
- 	int irq = 0;
- 	int rc = 0;
--	struct kobject *kobjp;
- 
--	/* Auto increments kobject reference if found. */
-+	/* Auto increments kref reference if found. */
- 	if (!(hp = hvc_get_by_index(tty->index)))
- 		return -ENODEV;
- 
-@@ -341,8 +357,6 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	if (irq)
- 		hp->irq_requested = 1;
- 
--	kobjp = &hp->kobj;
--
- 	spin_unlock_irqrestore(&hp->lock, flags);
- 	/* check error, fallback to non-irq */
- 	if (irq)
-@@ -352,7 +366,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 	 * If the request_irq() fails and we return an error.  The tty layer
- 	 * will call hvc_close() after a failed open but we don't want to clean
- 	 * up there so we'll clean up here and clear out the previously set
--	 * tty fields and return the kobject reference.
-+	 * tty fields and return the kref reference.
- 	 */
- 	if (rc) {
- 		spin_lock_irqsave(&hp->lock, flags);
-@@ -360,7 +374,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- 		hp->irq_requested = 0;
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 		tty->driver_data = NULL;
--		kobject_put(kobjp);
-+		kref_put(&hp->kref, destroy_hvc_struct);
- 		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
- 	}
- 	/* Force wakeup of the polling thread */
-@@ -372,7 +386,6 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
- static void hvc_close(struct tty_struct *tty, struct file * filp)
- {
- 	struct hvc_struct *hp;
--	struct kobject *kobjp;
- 	int irq = 0;
- 	unsigned long flags;
- 
-@@ -382,7 +395,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
  	/*
- 	 * No driver_data means that this close was issued after a failed
- 	 * hvc_open by the tty layer's release_dev() function and we can just
--	 * exit cleanly because the kobject reference wasn't made.
-+	 * exit cleanly because the kref reference wasn't made.
+-	 * Any variable below the kobject is valid before a tty is connected and
++	 * Any variable below the kref is valid before a tty is connected and
+ 	 * stays valid after the tty is disconnected.  These shouldn't be
+ 	 * whacked until the koject refcount reaches zero though some entries
+ 	 * may be changed via sysfs initiatives.
  	 */
- 	if (!tty->driver_data)
- 		return;
-@@ -390,7 +403,6 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 	hp = tty->driver_data;
- 	spin_lock_irqsave(&hp->lock, flags);
- 
--	kobjp = &hp->kobj;
- 	if (--hp->count == 0) {
- 		if (hp->irq_requested)
- 			irq = hp->irq;
-@@ -417,7 +429,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 		spin_unlock_irqrestore(&hp->lock, flags);
- 	}
- 
--	kobject_put(kobjp);
-+	kref_put(&hp->kref, destroy_hvc_struct);
- }
- 
- static void hvc_hangup(struct tty_struct *tty)
-@@ -426,7 +438,6 @@ static void hvc_hangup(struct tty_struct *tty)
- 	unsigned long flags;
- 	int irq = 0;
- 	int temp_open_count;
--	struct kobject *kobjp;
- 
- 	if (!hp)
- 		return;
-@@ -443,7 +454,6 @@ static void hvc_hangup(struct tty_struct *tty)
- 		return;
- 	}
- 
--	kobjp = &hp->kobj;
- 	temp_open_count = hp->count;
- 	hp->count = 0;
- 	hp->n_outbuf = 0;
-@@ -457,7 +467,7 @@ static void hvc_hangup(struct tty_struct *tty)
- 		free_irq(irq, hp);
- 	while(temp_open_count) {
- 		--temp_open_count;
--		kobject_put(kobjp);
-+		kref_put(&hp->kref, destroy_hvc_struct);
- 	}
- }
- 
-@@ -729,27 +739,6 @@ static const struct tty_operations hvc_ops = {
- 	.chars_in_buffer = hvc_chars_in_buffer,
+-	struct kobject kobj; /* ref count & hvcs_struct lifetime */
++	struct kref kref; /* ref count & hvcs_struct lifetime */
+ 	int connected; /* is the vty-server currently connected to a vty? */
+ 	uint32_t p_unit_address; /* partner unit address */
+ 	uint32_t p_partition_ID; /* partner partition ID */
+@@ -307,8 +303,8 @@ struct hvcs_struct {
+ 	struct vio_dev *vdev;
  };
  
--/* callback when the kboject ref count reaches zero. */
--static void destroy_hvc_struct(struct kobject *kobj)
--{
--	struct hvc_struct *hp = container_of(kobj, struct hvc_struct, kobj);
--	unsigned long flags;
--
--	spin_lock(&hvc_structs_lock);
--
--	spin_lock_irqsave(&hp->lock, flags);
--	list_del(&(hp->next));
--	spin_unlock_irqrestore(&hp->lock, flags);
--
--	spin_unlock(&hvc_structs_lock);
--
--	kfree(hp);
--}
--
--static struct kobj_type hvc_kobj_type = {
--	.release = destroy_hvc_struct,
+-/* Required to back map a kobject to its containing object */
+-#define from_kobj(kobj) container_of(kobj, struct hvcs_struct, kobj)
++/* Required to back map a kref to its containing object */
++#define from_kref(k) container_of(k, struct hvcs_struct, kref)
+ 
+ static struct list_head hvcs_structs = LIST_HEAD_INIT(hvcs_structs);
+ static DEFINE_SPINLOCK(hvcs_structs_lock);
+@@ -334,7 +330,6 @@ static void hvcs_partner_free(struct hvcs_struct *hvcsd);
+ static int hvcs_enable_device(struct hvcs_struct *hvcsd,
+ 		uint32_t unit_address, unsigned int irq, struct vio_dev *dev);
+ 
+-static void destroy_hvcs_struct(struct kobject *kobj);
+ static int hvcs_open(struct tty_struct *tty, struct file *filp);
+ static void hvcs_close(struct tty_struct *tty, struct file *filp);
+ static void hvcs_hangup(struct tty_struct * tty);
+@@ -703,10 +698,10 @@ static void hvcs_return_index(int index)
+ 		hvcs_index_list[index] = -1;
+ }
+ 
+-/* callback when the kboject ref count reaches zero */
+-static void destroy_hvcs_struct(struct kobject *kobj)
++/* callback when the kref ref count reaches zero */
++static void destroy_hvcs_struct(struct kref *kref)
+ {
+-	struct hvcs_struct *hvcsd = from_kobj(kobj);
++	struct hvcs_struct *hvcsd = from_kref(kref);
+ 	struct vio_dev *vdev;
+ 	unsigned long flags;
+ 
+@@ -743,10 +738,6 @@ static void destroy_hvcs_struct(struct kobject *kobj)
+ 	kfree(hvcsd);
+ }
+ 
+-static struct kobj_type hvcs_kobj_type = {
+-	.release = destroy_hvcs_struct,
 -};
 -
- struct hvc_struct __devinit *hvc_alloc(uint32_t vtermno, int irq,
- 					struct hv_ops *ops, int outbuf_size)
+ static int hvcs_get_index(void)
  {
-@@ -776,8 +765,7 @@ struct hvc_struct __devinit *hvc_alloc(uint32_t vtermno, int irq,
- 	hp->outbuf_size = outbuf_size;
- 	hp->outbuf = &((char *)hp)[ALIGN(sizeof(*hp), sizeof(long))];
+ 	int i;
+@@ -791,9 +782,7 @@ static int __devinit hvcs_probe(
  
--	kobject_init(&hp->kobj);
--	hp->kobj.ktype = &hvc_kobj_type;
-+	kref_init(&hp->kref);
+ 	spin_lock_init(&hvcsd->lock);
+ 	/* Automatically incs the refcount the first time */
+-	kobject_init(&hvcsd->kobj);
+-	/* Set up the callback for terminating the hvcs_struct's life */
+-	hvcsd->kobj.ktype = &hvcs_kobj_type;
++	kref_init(&hvcsd->kref);
  
- 	spin_lock_init(&hp->lock);
- 	spin_lock(&hvc_structs_lock);
-@@ -806,12 +794,10 @@ struct hvc_struct __devinit *hvc_alloc(uint32_t vtermno, int irq,
- int __devexit hvc_remove(struct hvc_struct *hp)
+ 	hvcsd->vdev = dev;
+ 	dev->dev.driver_data = hvcsd;
+@@ -844,7 +833,6 @@ static int __devexit hvcs_remove(struct vio_dev *dev)
  {
+ 	struct hvcs_struct *hvcsd = dev->dev.driver_data;
  	unsigned long flags;
 -	struct kobject *kobjp;
  	struct tty_struct *tty;
  
- 	spin_lock_irqsave(&hp->lock, flags);
- 	tty = hp->tty;
--	kobjp = &hp->kobj;
+ 	if (!hvcsd)
+@@ -856,15 +844,13 @@ static int __devexit hvcs_remove(struct vio_dev *dev)
  
- 	if (hp->index < MAX_NR_HVC_CONSOLES)
- 		vtermnos[hp->index] = -1;
-@@ -821,12 +807,12 @@ int __devexit hvc_remove(struct hvc_struct *hp)
- 	spin_unlock_irqrestore(&hp->lock, flags);
+ 	tty = hvcsd->tty;
+ 
+-	kobjp = &hvcsd->kobj;
+-
+ 	spin_unlock_irqrestore(&hvcsd->lock, flags);
  
  	/*
--	 * We 'put' the instance that was grabbed when the kobject instance
--	 * was initialized using kobject_init().  Let the last holder of this
--	 * kobject cause it to be removed, which will probably be the tty_hangup
-+	 * We 'put' the instance that was grabbed when the kref instance
-+	 * was initialized using kref_init().  Let the last holder of this
-+	 * kref cause it to be removed, which will probably be the tty_hangup
- 	 * below.
+ 	 * Let the last holder of this object cause it to be removed, which
+ 	 * would probably be tty_hangup below.
  	 */
--	kobject_put(kobjp);
-+	kref_put(&hp->kref, destroy_hvc_struct);
+-	kobject_put (kobjp);
++	kref_put(&hvcsd->kref, destroy_hvcs_struct);
  
  	/*
- 	 * This function call will auto chain call hvc_hangup.  The tty should
+ 	 * The hangup is a scheduled function which will auto chain call
+@@ -1086,7 +1072,7 @@ static int hvcs_enable_device(struct hvcs_struct *hvcsd, uint32_t unit_address,
+ }
+ 
+ /*
+- * This always increments the kobject ref count if the call is successful.
++ * This always increments the kref ref count if the call is successful.
+  * Please remember to dec when you are done with the instance.
+  *
+  * NOTICE: Do NOT hold either the hvcs_struct.lock or hvcs_structs_lock when
+@@ -1103,7 +1089,7 @@ static struct hvcs_struct *hvcs_get_by_index(int index)
+ 		list_for_each_entry(hvcsd, &hvcs_structs, next) {
+ 			spin_lock_irqsave(&hvcsd->lock, flags);
+ 			if (hvcsd->index == index) {
+-				kobject_get(&hvcsd->kobj);
++				kref_get(&hvcsd->kref);
+ 				spin_unlock_irqrestore(&hvcsd->lock, flags);
+ 				spin_unlock(&hvcs_structs_lock);
+ 				return hvcsd;
+@@ -1129,14 +1115,13 @@ static int hvcs_open(struct tty_struct *tty, struct file *filp)
+ 	unsigned int irq;
+ 	struct vio_dev *vdev;
+ 	unsigned long unit_address;
+-	struct kobject *kobjp;
+ 
+ 	if (tty->driver_data)
+ 		goto fast_open;
+ 
+ 	/*
+ 	 * Is there a vty-server that shares the same index?
+-	 * This function increments the kobject index.
++	 * This function increments the kref index.
+ 	 */
+ 	if (!(hvcsd = hvcs_get_by_index(tty->index))) {
+ 		printk(KERN_WARNING "HVCS: open failed, no device associated"
+@@ -1181,7 +1166,7 @@ static int hvcs_open(struct tty_struct *tty, struct file *filp)
+ 	 * and will grab the spinlock and free the connection if it fails.
+ 	 */
+ 	if (((rc = hvcs_enable_device(hvcsd, unit_address, irq, vdev)))) {
+-		kobject_put(&hvcsd->kobj);
++		kref_put(&hvcsd->kref, destroy_hvcs_struct);
+ 		printk(KERN_WARNING "HVCS: enable device failed.\n");
+ 		return rc;
+ 	}
+@@ -1192,17 +1177,11 @@ fast_open:
+ 	hvcsd = tty->driver_data;
+ 
+ 	spin_lock_irqsave(&hvcsd->lock, flags);
+-	if (!kobject_get(&hvcsd->kobj)) {
+-		spin_unlock_irqrestore(&hvcsd->lock, flags);
+-		printk(KERN_ERR "HVCS: Kobject of open"
+-			" hvcs doesn't exist.\n");
+-		return -EFAULT; /* Is this the right return value? */
+-	}
+-
++	kref_get(&hvcsd->kref);
+ 	hvcsd->open_count++;
+-
+ 	hvcsd->todo_mask |= HVCS_SCHED_READ;
+ 	spin_unlock_irqrestore(&hvcsd->lock, flags);
++
+ open_success:
+ 	hvcs_kick();
+ 
+@@ -1212,9 +1191,8 @@ open_success:
+ 	return 0;
+ 
+ error_release:
+-	kobjp = &hvcsd->kobj;
+ 	spin_unlock_irqrestore(&hvcsd->lock, flags);
+-	kobject_put(&hvcsd->kobj);
++	kref_put(&hvcsd->kref, destroy_hvcs_struct);
+ 
+ 	printk(KERN_WARNING "HVCS: partner connect failed.\n");
+ 	return retval;
+@@ -1224,7 +1202,6 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
+ {
+ 	struct hvcs_struct *hvcsd;
+ 	unsigned long flags;
+-	struct kobject *kobjp;
+ 	int irq = NO_IRQ;
+ 
+ 	/*
+@@ -1245,7 +1222,6 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
+ 	hvcsd = tty->driver_data;
+ 
+ 	spin_lock_irqsave(&hvcsd->lock, flags);
+-	kobjp = &hvcsd->kobj;
+ 	if (--hvcsd->open_count == 0) {
+ 
+ 		vio_disable_interrupts(hvcsd->vdev);
+@@ -1270,7 +1246,7 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
+ 		tty->driver_data = NULL;
+ 
+ 		free_irq(irq, hvcsd);
+-		kobject_put(kobjp);
++		kref_put(&hvcsd->kref, destroy_hvcs_struct);
+ 		return;
+ 	} else if (hvcsd->open_count < 0) {
+ 		printk(KERN_ERR "HVCS: vty-server@%X open_count: %d"
+@@ -1279,7 +1255,7 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
+ 	}
+ 
+ 	spin_unlock_irqrestore(&hvcsd->lock, flags);
+-	kobject_put(kobjp);
++	kref_put(&hvcsd->kref, destroy_hvcs_struct);
+ }
+ 
+ static void hvcs_hangup(struct tty_struct * tty)
+@@ -1287,21 +1263,17 @@ static void hvcs_hangup(struct tty_struct * tty)
+ 	struct hvcs_struct *hvcsd = tty->driver_data;
+ 	unsigned long flags;
+ 	int temp_open_count;
+-	struct kobject *kobjp;
+ 	int irq = NO_IRQ;
+ 
+ 	spin_lock_irqsave(&hvcsd->lock, flags);
+-	/* Preserve this so that we know how many kobject refs to put */
++	/* Preserve this so that we know how many kref refs to put */
+ 	temp_open_count = hvcsd->open_count;
+ 
+ 	/*
+-	 * Don't kobject put inside the spinlock because the destruction
++	 * Don't kref put inside the spinlock because the destruction
+ 	 * callback may use the spinlock and it may get called before the
+-	 * spinlock has been released.  Get a pointer to the kobject and
+-	 * kobject_put on that after releasing the spinlock.
++	 * spinlock has been released.
+ 	 */
+-	kobjp = &hvcsd->kobj;
+-
+ 	vio_disable_interrupts(hvcsd->vdev);
+ 
+ 	hvcsd->todo_mask = 0;
+@@ -1324,7 +1296,7 @@ static void hvcs_hangup(struct tty_struct * tty)
+ 	free_irq(irq, hvcsd);
+ 
+ 	/*
+-	 * We need to kobject_put() for every open_count we have since the
++	 * We need to kref_put() for every open_count we have since the
+ 	 * tty_hangup() function doesn't invoke a close per open connection on a
+ 	 * non-console device.
+ 	 */
+@@ -1335,7 +1307,7 @@ static void hvcs_hangup(struct tty_struct * tty)
+ 		 * NOTE:  If this hangup was signaled from user space then the
+ 		 * final put will never happen.
+ 		 */
+-		kobject_put(kobjp);
++		kref_put(&hvcsd->kref, destroy_hvcs_struct);
+ 	}
+ }
+ 
 -- 
 1.5.3.8
 
