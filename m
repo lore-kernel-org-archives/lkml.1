@@ -1,98 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbYAYLmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbYAYLn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbYAYLmt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 06:42:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYAYLmj
+	id S1754802AbYAYLn5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 06:43:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYAYLnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 06:42:39 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:43895
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752631AbYAYLmi (ORCPT
+	Fri, 25 Jan 2008 06:43:49 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57767 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752789AbYAYLnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 06:42:38 -0500
-Date: Fri, 25 Jan 2008 12:42:29 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 0/4] [RFC] MMU Notifiers V1
-Message-ID: <20080125114229.GA7454@v2.random>
-References: <20080125055606.102986685@sgi.com>
+	Fri, 25 Jan 2008 06:43:47 -0500
+Message-ID: <4799CAE0.7010400@ak.jp.nec.com>
+Date: Fri, 25 Jan 2008 20:41:20 +0900
+From: Kohei KaiGai <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080125055606.102986685@sgi.com>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+CC: akpm@osdl.org, serue@us.ibm.com, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 1/3] exporting capability code/name pairs (try 2nd)
+References: <47997122.3070504@ak.jp.nec.com> <479990A1.3050103@kernel.org>
+In-Reply-To: <479990A1.3050103@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 09:56:06PM -0800, Christoph Lameter wrote:
-> Andrea's mmu_notifier #4 -> RFC V1
+Andrew,
+
+Thanks for your comments.
+
+Andrew G. Morgan wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> - Merge subsystem rmap based with Linux rmap based approach
-> - Move Linux rmap based notifiers out of macro
-> - Try to account for what locks are held while the notifiers are
->   called.
-> - Develop a patch sequence that separates out the different types of
->   hooks so that it is easier to review their use.
-> - Avoid adding #include to linux/mm_types.h
-> - Integrate RCU logic suggested by Peter.
+> KaiGai,
+> 
+> While this is cute :-), I guess I'm still not all that convinced that
+> this is needed.
+> 
+> libcap already had some (admittedly not quite working) support for
+> numeric values of capabilities not currently defined (which I believe is
+> now fixed in top of trunk):
+> 
+> # ./setcap 35=i ./setcap
+> # ./getcap ./setcap
+> ./setcap = 35+i
+> 
+> Although, I obviously can't argue that this is as readable as your
+> approach, it does seem unlikely that the rate of addition of new
+> capabilities will be all that great, and you can recompile everything
+> capability related in user-space on a live system without a reboot.
 
-I'm glad you're converging on something a bit saner and much much
-closer to my code, plus perfectly usable by KVM optimal rmap design
-too. It would have preferred if you would have sent me patches like
-Peter did for review and merging etc... that would have made review
-especially easier. Anyway I'm used to that on lkml so it's ok, I just
-need this patch to be included in mainline, everything else is
-irrelevant to me.
+cap_set_flag() and cap_from_text() checks whether required capability
+code is in between 0 and __CAP_BITS, or not.
+I don't think it works correctly. Is it necessary to obtain this bound
+dynamically?
 
-On a technical merit this still partially makes me sick and I think
-it's the last issue to debate.
+ > Further, if anyone ever wants to translate the capabilities into another
+ > language, it seems like user-space is a much better place for that than
+ > in the kernel.
 
-@@ -971,6 +974,9 @@ int try_to_unmap(struct page *page, int 
-        else
-                ret = try_to_unmap_file(page, migration);
+Are you intend to translate "cap_net_admin" into native language
+representation, for example?
+I want to see how Chinese represents it :), but I think it is different
+issue with kernel dose not expose its suporing capabilities.
 
-+       if (unlikely(PageExternalRmap(page)))
-+               mmu_rmap_notifier(invalidate_page, page);
-+
-        if (!page_mapped(page))
-                ret = SWAP_SUCCESS;
-        return ret;
+> This patch also requires that /sys be mounted. How does that work for
+> code operating early in the boot process or in a chroot environment
+> (where an incapable uid=0 account being able to read/write /sys & /proc
+> files can do more than a little damage)?
 
-I find the above hard to accept, because the moment you work with
-physical pages and not "mm+address" I think you couldn't possibly care
-if page_mapped is true or false, and I think the above notifier should
-be called _outside_ try_to_unmap. Infact I'd call
-mmu_rmap_notifier(invalidate_page, page); only if page_unmapped is
-false and the linux pte is gone already (practically just before the
-page_count == 2 check and after try_to_unmap).
+When this patch cannot access /sys, it does not provide dynamically
+collected code/name pairs, and it works with statically constructed
+table as current libcap doing.
 
-I also think it's still worth to debate the rmap based on virtual or
-physical index. By supporting both secondary-rmap designs at the same
-time you seem to agree current KVM lightweight rmap implementation is
-a superior design at least for KVM. But by insisting on your rmap
-based on physical for your usage, you're implicitly telling us that is
-a superior design for you. But we know very little of why you can't
-exactly build rmap on virtual like KVM does! (especially now that you
-implicitly admitted KVM rmap design is superior at least for KVM it'd
-be interesting to know why you can't do the same exactly) You said
-something on that, but I certainly don't have a clear picture of why
-it can't work or why it would be less efficient.
+The patched libcap never switch to the dynamic table without successes
+in all steps of initialization. Thus, there is no major regression on
+this facilitiy.
 
-Like you said by PM I'd also like comments from Hugh, Nick and others
-about this issue.
+> None of this touches on the fact that most utility applications that
+> will support capabilities "the right way"(TM), will need the #define's
+> at compile time for each of the capabilities they require (so they can
+> pepper critical regions with cap_set_flag()/cap_set_proc() code.
+> 
+> When I mentioned this last time, you said you felt this feature was more
+> aimed at admin applications like {get,set,pam_}cap. This is fine, but
+> none of these admin applications 'use' capabilities, they just make them
+> available/visible for other utility applications to use - which gets us
+> back to my point; the utility apps can't use them (properly) without
+> having compiled-in support to use them appropriately, which requires the
+> #define's at compile time or an appropriate vintage of sys/capability.h
+> which comes with an appropriately modern version of libcap.  So,
+> practically speaking all the capabilities the applications on a system
+> should need should be present in the libcap on the system.
 
-Nevertheless I'm very glad we already fully converged on the
-set_page_dirty, invalidate-page after ptep_clear_flush/young,
-etc... and furthermore that you only made very minor modification to
-my code to add a pair of hooks for the page-based rmap notifiers on
-top of my patch. So from a functionality POV this is 100% workable
-already from KVM side!
+Hmm, you are correct. Indeed, applications using capabilities have to
+be built with the new libcap which provides fresh sys/capabilitity.h.
+It is like a chicken and egg argument.
 
-Thanks!
+However, all applications are always built on its running environment,
+like RPM packages. These can be delivered as pre-built packages.
+
+> All that being said, the friendliness factor of this is somewhat
+> undeniable, and so I can see why folk might want it in the kernel
+> anyway. If so, would it possible to move this code into
+> security/capability.c and not in the main kernel per-se - protected with
+> a configuration option? If it does appear in the kernel, we'll obviously
+> add your libcap changes too. If it doesn't, then perhaps we can meet
+> your needs with a slight modification to your libcap patch to read the
+> capabilities from an optional /etc/XXX file - and make text visibility
+> of 'late breaking' capabilities something that the admin can tweak as
+> needed?
+
+I think optional configuration file is not a good idea.
+It can make unneeded confusion.
+
+If necessary, I'll move this features into security/capability.c and
+add a Kconfig option to select it.
+
+Thanks,
+-- 
+OSS Platform Development Division, NEC
+KaiGai Kohei <kaigai@ak.jp.nec.com>
