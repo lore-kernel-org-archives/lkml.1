@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYAYQcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbYAYQfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbYAYQcT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 11:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbYAYQcD
+	id S1756065AbYAYQfI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 11:35:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYAYQez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 11:32:03 -0500
-Received: from hpsmtp-eml11.kpnxchange.com ([213.75.38.111]:3984 "EHLO
-	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752785AbYAYQcB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 11:32:01 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] [NET]: Remove PowerPC code from fec.c
-Date: Fri, 25 Jan 2008 17:31:54 +0100
-User-Agent: KMail/1.9.7
-Cc: galak@kernel.crashing.org, geert@linux-m68k.org, gerg@uclinux.org,
-       jgarzik@pobox.com, linux-kernel@vger.kernel.org,
-       linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, scottwood@freescale.com,
-       vitb@kernel.crashing.org
-References: <4799F349.9090102@scram.de> <E1JIQpQ-0006Xj-RR@faramir.fjphome.nl> <479A087F.5010305@scram.de>
-In-Reply-To: <479A087F.5010305@scram.de>
+	Fri, 25 Jan 2008 11:34:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:41226 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753405AbYAYQex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 11:34:53 -0500
+Message-ID: <479A0F91.2030206@redhat.com>
+Date: Fri, 25 Jan 2008 10:34:25 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Theodore Tso <tytso@mit.edu>, Takashi Sato <t-sato@yk.jp.nec.com>,
+       linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] ext3 freeze feature
+References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru> <20080125133329.GB8184@mit.edu>
+In-Reply-To: <20080125133329.GB8184@mit.edu>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801251731.56378.elendil@planet.nl>
-X-OriginalArrivalTime: 25 Jan 2008 16:31:56.0717 (UTC) FILETIME=[CD1B0DD0:01C85F6F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 January 2008, Jochen Friedrich wrote:
-> > Jochen Friedrich wrote:
-> >> +++ b/drivers/net/fec.c
-> >> @@ -23,6 +23,9 @@
-> >>   *
-> >>   * Bug fixes and cleanup by Philippe De Muyter (phdm@macqel.be)
-> >>   * Copyright (c) 2004-2006 Macq Electronique SA.
-> >> + *
-> >> + * This driver is now only used on ColdFire processors. Remove conditional
-> >> + * Powerpc code. 
-> >>   */
-> >
-> > This comment makes sense for a changelog, but IMO it makes no sense at
-> > all to add it to the file.
->
-> I just added it to clarify this code is now only used on m68knommu
-> (Coldfire). The comments on top are mailny about MPC860T CPUs (PowerPC),
-> however the driver is no longer used for these CPUs.
->
-> Maybe the wording should be changed to:
->
-> This driver is now only used on ColdFire (m68knommu) processors.
-> Conditional PowerPC code has been removed.
+Theodore Tso wrote:
+> The other approach would be to say, "oh well, the freeze ioctl is
+> inherently dangerous, and root is allowed to himself in the foot, so
+> who cares".  :-)
 
-Yes, that certainly makes more sense, although IMHO the second sentence is
-still somewhat redundant. (My problem was mainly with the second sentence.
-I should have made that more clear, sorry.)
+I tend to agree.  Either you need your fs frozen, or not, and if you do,
+be prepared for the consequences.
+
+> But it was this concern which is why ext3 never exported freeze
+> functionality to userspace, even though other commercial filesystems
+> do support this.  It wasn't that it wasn't considered, but the concern
+> about whether or not it was sufficiently safe to make available.
+
+What's the safety concern; that the admin will forget to unfreeze?
+
+> And I do agree that we probably should just implement this in
+> filesystem independent way, in which case all of the filesystems that
+> support this already have super_operations functions
+> write_super_lockfs() and unlockfs().
+
+That's what I was thinking; can't the path to freeze_bdev just be
+elevated out of dm-ioctl.c to fs/ioctl.c and exposed, such that any
+filesystem which implements .write_super_lockfs can be frozen?  This is
+essentially what the xfs_freeze userspace does via
+xfs_ioctl/XFS_IOC_FREEZE - which, AFAIK, isn't used much now that the
+lvm hooks are in place.
+
+I'm also not sure I see the point of the timeout in the original patch;
+either you are done snapshotting and ready to unfreeze, or you're not;
+1, or 2, or 3 seconds doesn't really matter.  When you're done, you're
+done, and you can only unfreeze then.  Shouldn't this be done
+programmatically, and not with some pre-determined timeout?
+
+-Eric
