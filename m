@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbYAYAYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbYAYA0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753474AbYAYAYV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 19:24:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYAYAYO
+	id S1753615AbYAYA0R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 19:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYAYA0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 19:24:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53003 "EHLO mx2.mail.elte.hu"
+	Thu, 24 Jan 2008 19:26:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56697 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751498AbYAYAYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 19:24:13 -0500
-Date: Fri, 25 Jan 2008 01:24:01 +0100
+	id S1750714AbYAYA0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 19:26:03 -0500
+Date: Fri, 25 Jan 2008 01:25:43 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@suse.de>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [x86.git] new CPA implementation
-Message-ID: <20080125002401.GA31745@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, jeremy@goop.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] percpu: Optimize percpu accesses
+Message-ID: <20080125002543.GA931@elte.hu>
+References: <20080123044924.508382000@sgi.com> <20080124224613.GA24855@elte.hu> <47992AA8.6040804@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <47992AA8.6040804@sgi.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -33,56 +36,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andi Kleen <ak@suse.de> wrote:
+* Mike Travis <travis@sgi.com> wrote:
 
-> > please unify the files first, we dont want to let pageattr_32.c and 
-> > pageattr_64.c diverge even more. Once we get these files unified we 
-> > layer more features ontop of it.
+> > tried it on x86.git and 1/3 did not build and 2/3 causes a boot hang 
+> > with the attached .config.
 > 
-> They work significantly differently in a few important areas (e.g. 
-> particularly regarding NX handling and the kernel mapping) Off the top 
-> of my head I don't know of a clean way to unify them. 32bit and 64bit 
-> kernel mappings differ in many significant ways. Maybe it's possible, 
-> but it's certainly not something I would want to tackle short term in 
-> a hurry. [...]
+> The build error was fixed with the note I sent to you yesterday with a 
+> "fixup" patch for changes in -mm but not in x86.git (attached).
 
-FYI, we've unified and streamlined them in latest x86.git. There's now a 
-single arch/x86/mm/pagattr.c implementation of the c_p_a() APIs that is 
-used by both the 32-bit and by the 64-bit x86 kernel.
-
-It's a significantly cleaner and simpler c_p_a() implementation, and 
-it's also structured in a way to make it easy for gbpages (and clflush) 
-to be added as well.
-
-One of the big simplifications was to remove largepage reassembly. (We 
-could perhaps still add that back in the future, if someone shows the 
-performance benefits and real-life significance of it. But the 
-refcounting was nasty and error-prone and was buggy even with your 
-latest CPA patches.)
-
-other features:
-
-- the new implementation is much more scalable, because it is lockless 
-  in the fastpath - while previous c_p_a() implementations used a global 
-  spinlock / or the global init_task.mmap_sem semaphore.
-
-- new 64-bit CONFIG_DEBUG_PAGEALLOC support has been implemented and 
-  has been tested to work fine.
-
-- PAGEALLOC does not require PSE to be cleared from the CPU anymore. 
-  (The pagetables will still be broken up into 4K ptes during bootup, 
-   but that happens as part of the regular c_p_a() sequence. (and thus 
-   we get more testing of the largepage-splitup code)
-
-- the CPA-testsuite now passes without failures on both 32-bit and 
-  64-bit. (it never fully worked with your CPA series.)
-
-> The kernel mappings between 32bit and 64bit are quite different. [...]
-
-10 lines of code (out of 300 lines of pageattr.c) handles that 
-difference.
-
-the new code is still being tested, but it's looking pretty good so far. 
-(Note: certain bits within the new cpa series are not backmerged yet.)
+no, that build error was in patch #2, and your later patch made it 
+possible for me to bisect down to that point. #1 failed differently. 
+(and not in module.c - dont remember the details - let me know if you 
+cannot reproduce - the hang in #2 was the more significant bug.) The 
+hang gave no messages on the earlyprintk serial console.
 
 	Ingo
