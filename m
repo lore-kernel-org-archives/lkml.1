@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756813AbYAYMA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757534AbYAYMA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756813AbYAYMA0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 07:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYAYMAQ
+	id S1757534AbYAYMA4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 07:00:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYAYMAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 07:00:16 -0500
-Received: from kunder-beta.interhost.no ([80.239.54.124]:60686 "EHLO
-	kunder-beta.interhost.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574AbYAYMAP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 07:00:15 -0500
-X-Greylist: delayed 1673 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Jan 2008 07:00:14 EST
-Message-ID: <4799C8E8.9060501@ifi.uio.no>
-Date: Fri, 25 Jan 2008 12:32:56 +0100
-From: Asbjorn Sannes <asbjorsa@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071217)
+	Fri, 25 Jan 2008 07:00:48 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48175 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753998AbYAYMAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 07:00:46 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: Linux 2.6.24
+Date: Fri, 25 Jan 2008 12:58:08 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Giacomo A. Catenazzi" <cate@cateee.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.1.00.0801241506500.15329@hp.linux-foundation.org> <4799A773.2030702@cateee.net> <22000.1201255093@turing-police.cc.vt.edu>
+In-Reply-To: <22000.1201255093@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Unpredictable performance
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801251258.08707.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Friday, 25 of January 2008, Valdis.Kletnieks@vt.edu wrote:
+> On Fri, 25 Jan 2008 10:10:11 +0100, "Giacomo A. Catenazzi" said:
+> 
+> > As a tester I would like:
+> > - slow merges, so that developer could rebase and test
+> >    (compile test) the interaction of the new code.
+> 
+> An amazing amount of stuff gets caught when it's tested in Andrew Morton's -mm
+> tree.  You think -rc1's are bad now, consider that much of what will be
+> 25-rc1 already got tried as 24-rc6-mm1 and 24-rc8-mm1.  Without those, the
+> -rc1 releases would be truly horrific.. ;)
+> 
+> > - you will introduce a new step on git management:
+> >    Every changeset is compile-tested before going out to the world.
+> >    I think this can be done automatically, and I think that one or
+> >    two configurations are enough to find most of the problems.
+> 
+> It's true that a compile on x86 and a compile on PowerPC
 
-I am experiencing unpredictable results with the following test
-without other processes running (exception is udev, I believe):
-cd /usr/src/test
-tar -jxf ../linux-2.6.22.12
-cp ../working-config linux-2.6.22.12/.config
-cd linux-2.6.22.12
-make oldconfig
-time make -j3 > /dev/null # This is what I note down as a "test" result
-cd /usr/src ; umount /usr/src/test ; mkfs.ext3 /dev/cc/test
-and then reboot
+Please add IA-64 and ARM at the very least.
 
-The kernel is booted with the parameter mem=81920000
+> should flush out 
+> most of the truly stupid mistakes, but those are usually found and fixed
+> literally within hours.  Anyhow, the proper time for test compiles is *before*
+> it goes into the git trees at all - it should have been tested before it
+> gets sent to a maintainer for inclusion.
 
-For 2.6.23.14 the results vary from (real time) 33m30.551s to 45m32.703s
-(30 runs)
-For 2.6.23.14 with nop i/o scheduler from 29m8.827s to 55m36.744s (24 runs)
-For 2.6.22.14 also varied a lot.. but, lost results :(
-For 2.6.20.21 only vary from 34m32.054s to 38m1.928s (10 runs)
+That's correct, but I'm not sure how to enforce it.
 
-Any idea of what can cause this? I have tried to make the runs as equal
-as possible, rebooting between each run.. i/o scheduler is cfq as default.
+> Plus, there's a *lot* of issues that "one or two configurations" won't
+> find - we continually find build issues that literally depend on 3 or 4
+> different CONFIG_* settings, and only misbehave for one specific combination.
+> And all the things that compile clean but explode at runtime.
 
-sys and user time only varies a couple of seconds.. and the order of
-when it is "fast" and when it is "slow" is completly random, but it
-seems that the results are mostly concentrated around the mean.
+Absolutely.
 
---
-Asbjørn Sannes
+I whish there would be more time for testing things during merge windows.
 
+Greetings,
+Rafael
