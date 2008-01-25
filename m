@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763691AbYAYIC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764399AbYAYIDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763691AbYAYIC7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:02:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760363AbYAYH7F
+	id S1764399AbYAYIDm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760555AbYAYH7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:59:05 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47045 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763827AbYAYH67 (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:58:59 -0500
-Date: Fri, 25 Jan 2008 18:56:53 +1100
-From: David Chinner <dgc@sgi.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steve French <sfrench@us.ibm.com>, Lachlan McIlroy <lachlan@sgi.com>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       David Howells <dhowells@redhat.com>, Ian Kent <raven@themaw.net>,
-       "Sergey S. Kostyliov" <rathamahata@php4.ru>,
-       Karsten Keil <kkeil@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Jeff Dike <jdike@addtoit.com>,
-       Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
-       William Irwin <wli@holomorphy.com>,
-       Dave Kleikamp <shaggy@austin.ibm.com>,
-       Petr Vandrovec <vandrove@vc.cvut.cz>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Jeff Mahoney <jeffm@suse.com>, Paul Mackerras <paulus@samba.org>,
-       Hugh Dickins <hugh@veritas.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
+	Fri, 25 Jan 2008 02:59:42 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59323 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764042AbYAYH7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:59:40 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       David Woodhouse <dwmw2@infradead.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [patch 01/26] mount options: add documentation
-Message-ID: <20080125075653.GS155259@sgi.com>
-References: <20080124193416.379218079@szeredi.hu> <200801250024.m0P0OmXX011168@agora.fsl.cs.sunysb.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801250024.m0P0OmXX011168@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.4.2.1i
+Subject: [PATCH 154/196] Driver core: fix race in __device_release_driver
+Date: Thu, 24 Jan 2008 23:33:03 -0800
+Message-Id: <1201246425-5058-75-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.3.8
+In-Reply-To: <20080125071127.GA4860@kroah.com>
+References: <20080125071127.GA4860@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Alan Stern <stern@rowland.harvard.edu>
 
-> In message <20080124193416.379218079@szeredi.hu>, Miklos Szeredi writes:
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > This series addresses the problem of showing mount options in
-> > /proc/mounts.
-[...]
-> > The following filesystems still need fixing: CIFS, NFS, XFS, Unionfs,
-> > Reiser4.  For CIFS, NFS and XFS I wasn't able to understand how some
-> > of the options are used.  The last two are not yet in mainline, so I
-> > leave fixing those to their respective maintainers out of pure
-> > laziness.
+This patch (as1013) was suggested by David Woodhouse; it fixes a race
+in the driver core.  If a device is unregistered at the same time as
+its driver is unloaded, the driver's code pages may be unmapped while
+the remove method is still running.  The calls to get_driver() and
+put_driver() were intended to prevent this, but they don't work if the
+driver's module count has already dropped to 0.
 
-XFS has already been updated. The fix is in the XFs git tree that
-Andrew picks up for -mm releases and will be merged in the 2.6.25-rc1
-window. Commit is here:
+Instead, the patch keeps the device on the driver's list until after
+the remove method has returned.  This forces the necessary
+synchronization to occur.
 
-http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs/xfs-2.6.git;a=commit;h=8c33fb6ca99aa17373bd3d5a507ac0eaefb7abb4
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/base/dd.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-Cheers,
-
-Dave.
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 5492264..b0726eb 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -289,11 +289,10 @@ static void __device_release_driver(struct device * dev)
+ {
+ 	struct device_driver * drv;
+ 
+-	drv = get_driver(dev->driver);
++	drv = dev->driver;
+ 	if (drv) {
+ 		driver_sysfs_remove(dev);
+ 		sysfs_remove_link(&dev->kobj, "driver");
+-		klist_remove(&dev->knode_driver);
+ 
+ 		if (dev->bus)
+ 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+@@ -306,7 +305,7 @@ static void __device_release_driver(struct device * dev)
+ 			drv->remove(dev);
+ 		devres_release_all(dev);
+ 		dev->driver = NULL;
+-		put_driver(drv);
++		klist_remove(&dev->knode_driver);
+ 	}
+ }
+ 
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+1.5.3.8
+
