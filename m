@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760139AbYAYUYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYAYUYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760139AbYAYUYe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 15:24:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759713AbYAYUYD
+	id S1754109AbYAYUYw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 15:24:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759752AbYAYUYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 15:24:03 -0500
+	Fri, 25 Jan 2008 15:24:06 -0500
 Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:61457 "EHLO
 	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759563AbYAYUX7 (ORCPT
+	with ESMTP id S1759615AbYAYUX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Jan 2008 15:23:59 -0500
-Date: Fri, 25 Jan 2008 04:09:42 -0700
+Date: Thu, 24 Jan 2008 23:47:39 -0700
 From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [RFC] Parallelize IO for e2fsck
-In-reply-to: <1201220742.7557.10.camel@localhost>
-To: Zan Lynx <zlynx@acm.org>
-Cc: Theodore Tso <tytso@MIT.EDU>, Adrian Bunk <bunk@kernel.org>,
-       Bodo Eggert <7eggert@gmx.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Valdis.Kletnieks@vt.edu, David Chinner <dgc@sgi.com>,
-       Valerie Henson <val@vahconsulting.com>, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ric Wheeler <ric@emc.com>
-Mail-followup-to: Zan Lynx <zlynx@acm.org>, Theodore Tso <tytso@MIT.EDU>,
- Adrian Bunk <bunk@kernel.org>, Bodo Eggert <7eggert@gmx.de>,
- Alan Cox <alan@lxorguk.ukuu.org.uk>, Valdis.Kletnieks@vt.edu,
- David Chinner <dgc@sgi.com>, Valerie Henson <val@vahconsulting.com>,
- linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
- linux-kernel@vger.kernel.org, Ric Wheeler <ric@emc.com>
-Message-id: <20080125110942.GX18433@webber.adilger.int>
+Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
+In-reply-to: <200801242336.00340.a1426z@gawab.com>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Mail-followup-to: Al Boldi <a1426z@gawab.com>, linux-fsdevel@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Message-id: <20080125064739.GS18433@webber.adilger.int>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Content-disposition: inline
 X-GPG-Key: 1024D/0D35BED6
 X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <9Mo9w-7Ws-23@gated-at.bofh.it> <9OdWm-7uN-25@gated-at.bofh.it>
- <9Oi9A-5EJ-3@gated-at.bofh.it> <9OiMg-6IC-1@gated-at.bofh.it>
- <9OlqL-2xG-3@gated-at.bofh.it> <9Orda-3ub-45@gated-at.bofh.it>
- <E1JI5vz-0001GG-Vs@be1.7eggert.dyndns.org>
- <20080124230809.GA29120@does.not.exist> <20080124234037.GJ15858@mit.edu>
- <1201220742.7557.10.camel@localhost>
+References: <200801242336.00340.a1426z@gawab.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 24, 2008  17:25 -0700, Zan Lynx wrote:
-> Have y'all been following the /dev/mem_notify patches?
-> http://article.gmane.org/gmane.linux.kernel/628653
+On Jan 24, 2008  23:36 +0300, Al Boldi wrote:
+> data=ordered mode has proven reliable over the years, and it does this by 
+> ordering filedata flushes before metadata flushes.  But this sometimes 
+> causes contention in the order of a 10x slowdown for certain apps, either 
+> due to the misuse of fsync or due to inherent behaviour like db's, as well 
+> as inherent starvation issues exposed by the data=ordered mode.
+> 
+> data=writeback mode alleviates data=order mode slowdowns, but only works 
+> per-mount and is too dangerous to run as a default mode.
+> 
+> This RFC proposes to introduce a tunable which allows to disable fsync and 
+> changes ordered into writeback writeout on a per-process basis like this:
+> 
+>       echo 1 > /proc/`pidof process`/softsync
 
-Having the notification be via poll() is a very restrictive processing
-model.  Having the notification be via a signal means that any kind of
-process (and not just those that are event loop driven) can register
-a callback at some arbitrary point in the code and be notified.  I
-don't object to the poll() interface, but it would be good to have a
-signal mechanism also.
+If fsync performance is an issue for you, run the filesystem in data=journal
+mode, put the journal on a separate disk and make it big enough that you
+don't block on it to flush the data to the filesystem (but not so big that
+it is consuming all of your RAM).
+
+That keeps your data guarantees without hurting performance.
 
 Cheers, Andreas
 --
