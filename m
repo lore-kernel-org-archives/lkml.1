@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbYAYIWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932116AbYAYIWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758195AbYAYIWf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:22:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764062AbYAYIA6
+	id S932116AbYAYIWw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:22:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764087AbYAYIA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:00:58 -0500
-Received: from ns2.suse.de ([195.135.220.15]:53685 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 03:00:59 -0500
+Received: from ns2.suse.de ([195.135.220.15]:53684 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761223AbYAYH7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:59:53 -0500
+	id S1758880AbYAYH7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:59:52 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 175/196] Kobject: remove kobject_unregister() as no one uses it anymore
-Date: Thu, 24 Jan 2008 23:33:24 -0800
-Message-Id: <1201246425-5058-96-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 195/196] Kobject: fix coding style issues in kobject c files
+Date: Thu, 24 Jan 2008 23:33:44 -0800
+Message-Id: <1201246425-5058-116-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -22,64 +22,347 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are no in-kernel users of kobject_unregister() so it should be
-removed.
+Clean up the kobject.c and kobject_uevent.c files to follow the
+proper coding style rules.
 
-Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/kobject.h |    2 --
- lib/kobject.c           |   17 -----------------
- 2 files changed, 0 insertions(+), 19 deletions(-)
+ lib/kobject.c        |  139 +++++++++++++++++++++++---------------------------
+ lib/kobject_uevent.c |    7 +--
+ 2 files changed, 67 insertions(+), 79 deletions(-)
 
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index be03ce8..504ac0e 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -101,8 +101,6 @@ extern struct kobject * __must_check kobject_create_and_add(const char *name,
- extern int __must_check kobject_rename(struct kobject *, const char *new_name);
- extern int __must_check kobject_move(struct kobject *, struct kobject *);
- 
--extern void kobject_unregister(struct kobject *);
--
- extern struct kobject * kobject_get(struct kobject *);
- extern void kobject_put(struct kobject *);
- 
 diff --git a/lib/kobject.c b/lib/kobject.c
-index 462946e..a077373 100644
+index 8dc3245..1d63ead 100644
 --- a/lib/kobject.c
 +++ b/lib/kobject.c
-@@ -533,22 +533,6 @@ void kobject_del(struct kobject * kobj)
+@@ -18,58 +18,57 @@
+ #include <linux/stat.h>
+ #include <linux/slab.h>
+ 
+-/**
+- *	populate_dir - populate directory with attributes.
+- *	@kobj:	object we're working on.
+- *
+- *	Most subsystems have a set of default attributes that 
+- *	are associated with an object that registers with them.
+- *	This is a helper called during object registration that 
+- *	loops through the default attributes of the subsystem 
+- *	and creates attributes files for them in sysfs.
++/*
++ * populate_dir - populate directory with attributes.
++ * @kobj: object we're working on.
+  *
++ * Most subsystems have a set of default attributes that are associated
++ * with an object that registers with them.  This is a helper called during
++ * object registration that loops through the default attributes of the
++ * subsystem and creates attributes files for them in sysfs.
+  */
+-
+-static int populate_dir(struct kobject * kobj)
++static int populate_dir(struct kobject *kobj)
+ {
+-	struct kobj_type * t = get_ktype(kobj);
+-	struct attribute * attr;
++	struct kobj_type *t = get_ktype(kobj);
++	struct attribute *attr;
+ 	int error = 0;
+ 	int i;
+-	
++
+ 	if (t && t->default_attrs) {
+ 		for (i = 0; (attr = t->default_attrs[i]) != NULL; i++) {
+-			if ((error = sysfs_create_file(kobj,attr)))
++			error = sysfs_create_file(kobj, attr);
++			if (error)
+ 				break;
+ 		}
+ 	}
+ 	return error;
+ }
+ 
+-static int create_dir(struct kobject * kobj)
++static int create_dir(struct kobject *kobj)
+ {
+ 	int error = 0;
+ 	if (kobject_name(kobj)) {
+ 		error = sysfs_create_dir(kobj);
+ 		if (!error) {
+-			if ((error = populate_dir(kobj)))
++			error = populate_dir(kobj);
++			if (error)
+ 				sysfs_remove_dir(kobj);
+ 		}
+ 	}
+ 	return error;
+ }
+ 
+-static inline struct kobject * to_kobj(struct list_head * entry)
++static inline struct kobject *to_kobj(struct list_head *entry)
+ {
+-	return container_of(entry,struct kobject,entry);
++	return container_of(entry, struct kobject, entry);
+ }
+ 
+ static int get_kobj_path_length(struct kobject *kobj)
+ {
+ 	int length = 1;
+-	struct kobject * parent = kobj;
++	struct kobject *parent = kobj;
+ 
+-	/* walk up the ancestors until we hit the one pointing to the 
++	/* walk up the ancestors until we hit the one pointing to the
+ 	 * root.
+ 	 * Add 1 to strlen for leading '/' of each level.
+ 	 */
+@@ -84,19 +83,19 @@ static int get_kobj_path_length(struct kobject *kobj)
+ 
+ static void fill_kobj_path(struct kobject *kobj, char *path, int length)
+ {
+-	struct kobject * parent;
++	struct kobject *parent;
+ 
+ 	--length;
+ 	for (parent = kobj; parent; parent = parent->parent) {
+ 		int cur = strlen(kobject_name(parent));
+ 		/* back up enough to print this name with '/' */
+ 		length -= cur;
+-		strncpy (path + length, kobject_name(parent), cur);
++		strncpy(path + length, kobject_name(parent), cur);
+ 		*(path + --length) = '/';
+ 	}
+ 
+ 	pr_debug("kobject: '%s' (%p): %s: path = '%s'\n", kobject_name(kobj),
+-		 kobj, __FUNCTION__,path);
++		 kobj, __FUNCTION__, path);
  }
  
  /**
-- *	kobject_unregister - remove object from hierarchy and decrement refcount.
-- *	@kobj:	object going away.
-- */
--
--void kobject_unregister(struct kobject * kobj)
--{
--	if (!kobj)
--		return;
--	pr_debug("kobject: '%s' (%p): %s\n",
--		 kobject_name(kobj), kobj, __FUNCTION__);
--	kobject_uevent(kobj, KOBJ_REMOVE);
--	kobject_del(kobj);
--	kobject_put(kobj);
--}
--
--/**
-  *	kobject_get - increment refcount for object.
-  *	@kobj:	object.
-  */
-@@ -877,7 +861,6 @@ struct kset *kset_create_and_add(const char *name,
+@@ -148,7 +147,7 @@ static void kobj_kset_leave(struct kobject *kobj)
+ 	kset_put(kobj->kset);
  }
- EXPORT_SYMBOL_GPL(kset_create_and_add);
  
--EXPORT_SYMBOL(kobject_unregister);
- EXPORT_SYMBOL(kobject_get);
- EXPORT_SYMBOL(kobject_put);
- EXPORT_SYMBOL(kobject_del);
+-static void kobject_init_internal(struct kobject * kobj)
++static void kobject_init_internal(struct kobject *kobj)
+ {
+ 	if (!kobj)
+ 		return;
+@@ -160,7 +159,7 @@ static void kobject_init_internal(struct kobject * kobj)
+ static int kobject_add_internal(struct kobject *kobj)
+ {
+ 	int error = 0;
+-	struct kobject * parent;
++	struct kobject *parent;
+ 
+ 	if (!kobj)
+ 		return -ENOENT;
+@@ -185,7 +184,7 @@ static int kobject_add_internal(struct kobject *kobj)
+ 	pr_debug("kobject: '%s' (%p): %s: parent: '%s', set: '%s'\n",
+ 		 kobject_name(kobj), kobj, __FUNCTION__,
+ 		 parent ? kobject_name(parent) : "<NULL>",
+-		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>" );
++		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>");
+ 
+ 	error = create_dir(kobj);
+ 	if (error) {
+@@ -399,12 +398,11 @@ int kobject_init_and_add(struct kobject *kobj, struct kobj_type *ktype,
+ EXPORT_SYMBOL_GPL(kobject_init_and_add);
+ 
+ /**
+- *	kobject_rename - change the name of an object
+- *	@kobj:	object in question.
+- *	@new_name: object's new name
++ * kobject_rename - change the name of an object
++ * @kobj: object in question.
++ * @new_name: object's new name
+  */
+-
+-int kobject_rename(struct kobject * kobj, const char *new_name)
++int kobject_rename(struct kobject *kobj, const char *new_name)
+ {
+ 	int error = 0;
+ 	const char *devpath = NULL;
+@@ -461,11 +459,10 @@ out:
+ }
+ 
+ /**
+- *	kobject_move - move object to another parent
+- *	@kobj:	object in question.
+- *	@new_parent: object's new parent (can be NULL)
++ * kobject_move - move object to another parent
++ * @kobj: object in question.
++ * @new_parent: object's new parent (can be NULL)
+  */
+-
+ int kobject_move(struct kobject *kobj, struct kobject *new_parent)
+ {
+ 	int error;
+@@ -513,11 +510,10 @@ out:
+ }
+ 
+ /**
+- *	kobject_del - unlink kobject from hierarchy.
+- * 	@kobj:	object.
++ * kobject_del - unlink kobject from hierarchy.
++ * @kobj: object.
+  */
+-
+-void kobject_del(struct kobject * kobj)
++void kobject_del(struct kobject *kobj)
+ {
+ 	if (!kobj)
+ 		return;
+@@ -530,11 +526,10 @@ void kobject_del(struct kobject * kobj)
+ }
+ 
+ /**
+- *	kobject_get - increment refcount for object.
+- *	@kobj:	object.
++ * kobject_get - increment refcount for object.
++ * @kobj: object.
+  */
+-
+-struct kobject * kobject_get(struct kobject * kobj)
++struct kobject *kobject_get(struct kobject *kobj)
+ {
+ 	if (kobj)
+ 		kref_get(&kobj->kref);
+@@ -591,12 +586,12 @@ static void kobject_release(struct kref *kref)
+ }
+ 
+ /**
+- *	kobject_put - decrement refcount for object.
+- *	@kobj:	object.
++ * kobject_put - decrement refcount for object.
++ * @kobj: object.
+  *
+- *	Decrement the refcount, and if 0, call kobject_cleanup().
++ * Decrement the refcount, and if 0, call kobject_cleanup().
+  */
+-void kobject_put(struct kobject * kobj)
++void kobject_put(struct kobject *kobj)
+ {
+ 	if (kobj)
+ 		kref_put(&kobj->kref, kobject_release);
+@@ -670,11 +665,10 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
+ EXPORT_SYMBOL_GPL(kobject_create_and_add);
+ 
+ /**
+- *	kset_init - initialize a kset for use
+- *	@k:	kset 
++ * kset_init - initialize a kset for use
++ * @k: kset
+  */
+-
+-void kset_init(struct kset * k)
++void kset_init(struct kset *k)
+ {
+ 	kobject_init_internal(&k->kobj);
+ 	INIT_LIST_HEAD(&k->list);
+@@ -712,11 +706,10 @@ struct sysfs_ops kobj_sysfs_ops = {
+ };
+ 
+ /**
+- *	kset_register - initialize and add a kset.
+- *	@k:	kset.
++ * kset_register - initialize and add a kset.
++ * @k: kset.
+  */
+-
+-int kset_register(struct kset * k)
++int kset_register(struct kset *k)
+ {
+ 	int err;
+ 
+@@ -731,39 +724,35 @@ int kset_register(struct kset * k)
+ 	return 0;
+ }
+ 
+-
+ /**
+- *	kset_unregister - remove a kset.
+- *	@k:	kset.
++ * kset_unregister - remove a kset.
++ * @k: kset.
+  */
+-
+-void kset_unregister(struct kset * k)
++void kset_unregister(struct kset *k)
+ {
+ 	if (!k)
+ 		return;
+ 	kobject_put(&k->kobj);
+ }
+ 
+-
+ /**
+- *	kset_find_obj - search for object in kset.
+- *	@kset:	kset we're looking in.
+- *	@name:	object's name.
++ * kset_find_obj - search for object in kset.
++ * @kset: kset we're looking in.
++ * @name: object's name.
+  *
+- *	Lock kset via @kset->subsys, and iterate over @kset->list,
+- *	looking for a matching kobject. If matching object is found
+- *	take a reference and return the object.
++ * Lock kset via @kset->subsys, and iterate over @kset->list,
++ * looking for a matching kobject. If matching object is found
++ * take a reference and return the object.
+  */
+-
+-struct kobject * kset_find_obj(struct kset * kset, const char * name)
++struct kobject *kset_find_obj(struct kset *kset, const char *name)
+ {
+-	struct list_head * entry;
+-	struct kobject * ret = NULL;
++	struct list_head *entry;
++	struct kobject *ret = NULL;
+ 
+ 	spin_lock(&kset->list_lock);
+-	list_for_each(entry,&kset->list) {
+-		struct kobject * k = to_kobj(entry);
+-		if (kobject_name(k) && !strcmp(kobject_name(k),name)) {
++	list_for_each(entry, &kset->list) {
++		struct kobject *k = to_kobj(entry);
++		if (kobject_name(k) && !strcmp(kobject_name(k), name)) {
+ 			ret = kobject_get(k);
+ 			break;
+ 		}
+diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+index b021e67..5a402e2 100644
+--- a/lib/kobject_uevent.c
++++ b/lib/kobject_uevent.c
+@@ -238,11 +238,12 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+ 		retval = add_uevent_var(env, "HOME=/");
+ 		if (retval)
+ 			goto exit;
+-		retval = add_uevent_var(env, "PATH=/sbin:/bin:/usr/sbin:/usr/bin");
++		retval = add_uevent_var(env,
++					"PATH=/sbin:/bin:/usr/sbin:/usr/bin");
+ 		if (retval)
+ 			goto exit;
+ 
+-		call_usermodehelper (argv[0], argv, env->envp, UMH_WAIT_EXEC);
++		call_usermodehelper(argv[0], argv, env->envp, UMH_WAIT_EXEC);
+ 	}
+ 
+ exit:
+@@ -250,7 +251,6 @@ exit:
+ 	kfree(env);
+ 	return retval;
+ }
+-
+ EXPORT_SYMBOL_GPL(kobject_uevent_env);
+ 
+ /**
+@@ -266,7 +266,6 @@ int kobject_uevent(struct kobject *kobj, enum kobject_action action)
+ {
+ 	return kobject_uevent_env(kobj, action, NULL);
+ }
+-
+ EXPORT_SYMBOL_GPL(kobject_uevent);
+ 
+ /**
 -- 
 1.5.3.8
 
