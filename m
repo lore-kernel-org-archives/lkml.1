@@ -1,90 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbYAYKTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbYAYKUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760198AbYAYKTD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 05:19:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbYAYKSv
+	id S1760282AbYAYKUL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 05:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYAYKT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 05:18:51 -0500
-Received: from mx2.suse.de ([195.135.220.15]:45470 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 05:19:58 -0500
+Received: from ns2.suse.de ([195.135.220.15]:45673 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752996AbYAYKSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 05:18:50 -0500
-Date: Fri, 25 Jan 2008 11:18:48 +0100
-From: Karsten Keil <kkeil@suse.de>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Karsten Keil <kkeil@suse.de>
-Subject: Re: [patch 09/26] mount options: fix capifs
-Message-ID: <20080125101848.GA7812@pingi.kke.suse.de>
-Mail-Followup-To: Miklos Szeredi <miklos@szeredi.hu>,
-	akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Karsten Keil <kkeil@suse.de>
-References: <20080124193341.166753833@szeredi.hu> <20080124193427.808900246@szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753259AbYAYKT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 05:19:57 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+Subject: Re: [PATCH UPDATE] x86: ignore spurious faults
+Date: Fri, 25 Jan 2008 11:19:52 +0100
+User-Agent: KMail/1.9.6
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Jan Beulich <jbeulich@novell.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Matt Mackall <mpm@selenic.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <C3BF59DD.1B68F%Keir.Fraser@cl.cam.ac.uk>
+In-Reply-To: <C3BF59DD.1B68F%Keir.Fraser@cl.cam.ac.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080124193427.808900246@szeredi.hu>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.53-0.16-smp x86_64
-User-Agent: Mutt/1.5.9i
+Message-Id: <200801251119.52798.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 08:33:50PM +0100, Miklos Szeredi wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> Add a .show_options super operation to capifs.
-> 
-> Use generic_show_options() and save the complete option string in
-> capifs_remount().
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Acked-by: Karsten Keil <kkeil@suse.de>
-> ---
-> 
-> Index: linux/drivers/isdn/capi/capifs.c
-> ===================================================================
-> --- linux.orig/drivers/isdn/capi/capifs.c	2007-10-09 22:31:38.000000000 +0200
-> +++ linux/drivers/isdn/capi/capifs.c	2008-01-24 11:37:42.000000000 +0100
-> @@ -52,6 +52,7 @@ static int capifs_remount(struct super_b
->  	gid_t gid = 0;
->  	umode_t mode = 0600;
->  	char *this_char;
-> +	char *new_opt = kstrdup(data, GFP_KERNEL);
->  
->  	this_char = NULL;
->  	while ((this_char = strsep(&data, ",")) != NULL) {
-> @@ -72,11 +73,16 @@ static int capifs_remount(struct super_b
->  			return -EINVAL;
->  		}
->  	}
-> +
-> +	kfree(s->s_options);
-> +	s->s_options = new_opt;
-> +
->  	config.setuid  = setuid;
->  	config.setgid  = setgid;
->  	config.uid     = uid;
->  	config.gid     = gid;
->  	config.mode    = mode;
-> +
->  	return 0;
->  }
->  
-> @@ -84,6 +90,7 @@ static struct super_operations capifs_so
->  {
->  	.statfs		= simple_statfs,
->  	.remount_fs	= capifs_remount,
-> +	.show_options	= generic_show_options,
->  };
->  
->  
-> 
-> --
 
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+> Whether this a problem in light of Xen spurious faults depends on whether
+> NMI handlers touch dynamically-allocated data.
+
+How do you define dynamically-allocated data?
+
+-Andi
