@@ -1,86 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765651AbYAYIuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760694AbYAYIxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765651AbYAYIuP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:50:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932865AbYAYIrA
+	id S1760694AbYAYIxq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbYAYIxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:47:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59107 "EHLO mx2.mail.elte.hu"
+	Fri, 25 Jan 2008 03:53:38 -0500
+Received: from gate.crashing.org ([63.228.1.57]:46049 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933190AbYAYIq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 03:46:58 -0500
-Date: Fri, 25 Jan 2008 09:46:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Huang, Ying" <ying.huang@intel.com>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] x86: fix NX bit handling in change_page_attr
-Message-ID: <20080125084633.GA23708@elte.hu>
-References: <1201240493.15972.43.camel@caritas-dev.intel.com> <47999089.5080609@goop.org>
+	id S1752956AbYAYIxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 03:53:37 -0500
+Date: Fri, 25 Jan 2008 02:50:20 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: Jochen Friedrich <jochen@scram.de>
+cc: Vitaly Bordug <vitb@kernel.crashing.org>,
+       Scott Wood <scottwood@freescale.com>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCHv3 0/7] [POWERPC] 8xx cleanups
+In-Reply-To: <4798AB95.8040405@scram.de>
+Message-ID: <Pine.LNX.4.64.0801250249170.11624@blarg.am.freescale.net>
+References: <4798AB95.8040405@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47999089.5080609@goop.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 Jan 2008, Jochen Friedrich wrote:
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> Huang, Ying wrote:
-
->> This patch fixes a bug of change_page_attr/change_page_attr_addr on 
->> Intel i386/x86_64 CPUs.  After changing page attribute to be 
->> executable with these functions, the page remains un-executable on 
->> Intel i386/x86_64 CPU.  Because on Intel i386/x86_64 CPU, only if the 
->> "NX" bits of all three level page tables are cleared (PAE is 
->> enabled), the corresponding page is executable (refer to section 
->> 4.13.2 of Intel 64 and IA-32 Architectures Software Developer's 
->> Manual).  So, the bug is fixed through clearing the "NX" bit of PMD 
->> when splitting the huge PMD.
-
-oops, nice detail!
-
->> Signed-off-by: Huang Ying <ying.huang@intel.com>
->>
->> ---
->>  arch/x86/mm/pageattr.c |    1 +
->>  1 file changed, 1 insertion(+)
->>
->> --- a/arch/x86/mm/pageattr.c
->> +++ b/arch/x86/mm/pageattr.c
->> @@ -124,6 +124,7 @@ static int split_large_page(pte_t *kpte,
->>  	/*
->>  	 * Install the new, split up pagetable:
->>  	 */
->> +	pgprot_val(ref_prot) &= ~_PAGE_NX;
->>   
+> Hi,
 >
-> I don't think its a good idea to treat pgprot_val() as an lvalue - it 
-> precludes it from being turned into an inline function.  I know there 
-> are numerous other places which do, but we should avoid making it 
-> worse.
+> this is a series against paulus for-2.6.25 tree to clean up various 8xx
+> related stuff.
+> The series can be pulled from git://git.bocc.de/dbox2.git cleanup.
+> Old patches 2+4 have been merged into Patch 2. Patch 4 has been modified to
+> move the
+> prototypes into a new platforms/8xx/mpc8xx.h. Patch 5 leaves the PCMCIA bits
+> in
+> asm-powerpc/mpc8xx.h as this driver needs to be fixed first (unfortunately, i
+> don't
+> have an 8xx board with PCMCIA). I would suggest removing asm-powerpc/mpc8xx.h
+> after
+> ARCH=ppc is gone to avoid adding #ifdefs to all shared drivers.
+>
+> I also modified an option in Thunderbird so i hope whitespaces are OK now :-/
+>
+> [POWERPC] Remove unused m8xx_cpm_hostalloc/free/dump()
+> [POWERPC] Rename m8xx_pic_init to mpc8xx_pics_init
+> [POWERPC] Remove unneeded and misspelled prototype m8xx_calibrate_decr
+> [POWERPC] Remove sysdev/commproc.h
+> [POWERPC] Get rid of conditional includes of board specific setup
 
-applied it with the following cleanup from Thomas:
+I've applied the above patches.
 
- static int split_large_page(pte_t *kpte, unsigned long address)
- {
--       pgprot_t ref_prot = pte_pgprot(pte_clrhuge(*kpte));
-+       pgprot_t ref_prot;
-...
-+       ref_prot = pte_pgprot(pte_mkexec(pte_clrhuge(*kpte)));
+> [POWERPC] Rename commproc to cpm1 and cpm2_common.c to cpm2.c
 
-i.e. it now goes through all the proper accessors.
+I'm a bit concerned this patch is touching too many files.. or ones that
+it never should have.
 
-	Ingo
+> [POWERPC] Move definition of buffer descriptor to cpm.h
+
+I'm assmuing this patch depends on the previous one.
+
+- k
