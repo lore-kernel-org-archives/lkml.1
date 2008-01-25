@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760118AbYAYJWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760946AbYAYJYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760118AbYAYJWy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 04:22:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbYAYJWh
+	id S1760946AbYAYJYr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 04:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYAYJYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 04:22:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53423 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754206AbYAYJWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 04:22:36 -0500
-Date: Fri, 25 Jan 2008 10:22:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] x86: use reboot_type on EFI 32
-Message-ID: <20080125092221.GF23708@elte.hu>
-References: <1201240504.15972.47.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201240504.15972.47.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 25 Jan 2008 04:24:24 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:32893 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754296AbYAYJYW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 04:24:22 -0500
+To: hpa@zytor.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <4798EB07.50002@zytor.com> (hpa@zytor.com)
+Subject: Re: [patch 10/26] mount options: fix devpts
+References: <20080124193341.166753833@szeredi.hu> <20080124193429.480166399@szeredi.hu> <4798EB07.50002@zytor.com>
+Message-Id: <E1JIKn4-0001Jb-Vo@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 25 Jan 2008 10:24:02 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > Also add minor fix: when parsing the "mode" option, mask with
+> > S_IALLUGO instead of ~S_IFMT, which could leave unsed bits in the
+> > mask.
+> 
+> umode_t is 16 bits, so it doesn't.  The change is still good, of course.
 
-* Huang, Ying <ying.huang@intel.com> wrote:
+We still use 16 bit types?  Strange ;)
 
-> This patch makes reboot_type of BOOT_EFI is used on i386 too. Because 
-> correpsonding reboot code of i386 and x86_64 is merged.
+> 
+> > +	if (config.mode != DEVPTS_DEFAULT_MODE)
+> > +		seq_printf(seq, ",mode=%03o", config.mode);
+> 
+> I would rather this be unconditional, than that it be conditional on 
+> something other than the user having specified it in the first place.
 
-> -#ifdef CONFIG_X86_64
->  	/* Setup for EFI runtime service */
->  	reboot_type = BOOT_EFI;
->  
-> -#endif
+Yeah, it's a matter of taste.  I'll update the patch.
 
-thanks, applied.
+Actually, a lot of filesystems share the options 'uid=X', 'gid=X',
+'mode=X' (or 'umask=X').  This could be handled by the VFS, saving
+some code, and making things more consistent.  One day maybe...
 
-	Ingo
+Thanks,
+Miklos
