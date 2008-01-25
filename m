@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761813AbYAYXOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbYAYXOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761813AbYAYXOM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 18:14:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761650AbYAYXM5
+	id S1756587AbYAYXOt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 18:14:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757693AbYAYXNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 18:12:57 -0500
-Received: from 8bytes.org ([88.198.83.132]:50563 "EHLO 8bytes.org"
+	Fri, 25 Jan 2008 18:13:13 -0500
+Received: from ns2.suse.de ([195.135.220.15]:53642 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761638AbYAYXMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 18:12:54 -0500
-X-Greylist: delayed 1515 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 Jan 2008 18:12:53 EST
-Date: Fri, 25 Jan 2008 23:47:37 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: Re: [kvm-devel] [PATCH][RFC] SVM: Add Support for Nested Paging in AMD Fam16 CPUs
-Message-ID: <20080125224737.GA21476@8bytes.org>
-References: <1201294393-22613-1-git-send-email-joerg.roedel@amd.com> <479A5589.7030201@codemonkey.ws>
+	id S1761456AbYAYXNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 18:13:10 -0500
+Date: Fri, 25 Jan 2008 15:11:29 -0800
+From: Greg KH <gregkh@suse.de>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: compile error in current git
+Message-ID: <20080125231129.GD25074@suse.de>
+References: <479A4867.9040302@goop.org> <20080125221731.GB15172@suse.de> <20080125150002.09cdacb8.rdunlap@xenotime.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <479A5589.7030201@codemonkey.ws>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080125150002.09cdacb8.rdunlap@xenotime.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 03:32:57PM -0600, Anthony Liguori wrote:
+On Fri, Jan 25, 2008 at 03:00:02PM -0800, Randy Dunlap wrote:
+> On Fri, 25 Jan 2008 14:17:31 -0800 Greg KH wrote:
+> 
+> > On Fri, Jan 25, 2008 at 12:36:55PM -0800, Jeremy Fitzhardinge wrote:
+> > > When compiling current git with CONFIG_BLOCK disabled, I'm seeing this 
+> > > compile error:
+> > >
+> > >  CC      drivers/base/core.o
+> > > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c: In function 
+> > > ???device_add_class_symlinks???:
+> > > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c:655: error: 
+> > > ???part_type??? undeclared (first use in this function)
+> > > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c:655: error: (Each 
+> > > undeclared identifier is reported only once
+> > > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c:655: error: for each 
+> > > function it appears in.)
+> > > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c: In function 
+> > > ???device_remove_class_symlinks???:
+> > > /home/jeremy/hg/xen/paravirt/linux/drivers/base/core.c:728: error: 
+> > > ???part_type??? undeclared (first use in this function)
+> > > make[4]: *** [drivers/base/core.o] Error 1
+> > 
+> > Hm, I thought we fixed the CONFIG_BLOCK disabled issues with Randy's
+> > older patch.  Randy, wasn't this already addressed somehow?
+> 
+> My earlier email fixed one problem but noted that there were
+> still some other issues.
 
-> A quick sniff test and things look pretty good.  I was able to start 
-> running the install CDs for 32-bit and 64-bit Ubuntu, 32-bit OpenSuSE, 
-> 64-bit Fedora, and 32-bit Win2k8.  I'll do a more thorough run of 
-> kvm-test on Monday when I have a better connection to my machine.
+Ah, sorry, I missed that "note" :(
 
-Great. We will do more tests too next week. Life migration is completly
-untested for now. SMP guests worked also fine with this patches.
+thanks,
 
-> Nice work!
-
-Thanks :-)
-
-Joerg
+greg 'time to get that make randconfig system up and working' k-h
