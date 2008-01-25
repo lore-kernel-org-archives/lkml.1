@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbYAYRcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbYAYRfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbYAYRcJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 12:32:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYAYRb4
+	id S1756071AbYAYRfh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 12:35:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbYAYRf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 12:31:56 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:62055 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753823AbYAYRbz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 12:31:55 -0500
-Date: Fri, 25 Jan 2008 18:31:44 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Bodo Eggert <7eggert@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Introduce softpanic
-In-Reply-To: <p73ejc67xvb.fsf@bingen.suse.de>
-Message-ID: <alpine.LSU.0.999.0801251706200.2201@be1.lrz>
-References: <alpine.LSU.0.999.0801251551060.21522@be1.lrz>
- <p73ejc67xvb.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX18jJIG1DOUShllTz7qtv66CmjjHNB0bIa7eRfE
- HbdrIpg3r8L/81Utt8iL9CIrDEPqJxbR+SDZuFV7rX4dPnWsOQ
- QIXydqwCT9aE3KjKvax4g==
+	Fri, 25 Jan 2008 12:35:28 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:37519 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753687AbYAYRf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 12:35:27 -0500
+Subject: Re: [patch 12/26] mount options: fix ext4
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Theodore Ts'o" <tytso@MIT.EDU>
+In-Reply-To: <20080124193432.492168716@szeredi.hu>
+References: <20080124193341.166753833@szeredi.hu>
+	 <20080124193432.492168716@szeredi.hu>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 25 Jan 2008 09:35:02 -0800
+Message-Id: <1201282502.4068.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Jan 2008, Andi Kleen wrote:
-> Bodo Eggert <7eggert@gmx.de> writes:
-
-> > Enabling this option changes a hard panic on boot errors to a
-> > soft panic, which does not stop the system completely.
-> > You can still scroll the screen and read the messages.
+On Thu, 2008-01-24 at 20:33 +0100, Miklos Szeredi wrote:
+> plain text document attachment (ext4_opts.patch)
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> I don't think it's a good idea to keep the network running in the
-> soft panic. A lot of people have set ups that use ping was a watchdog
-> and with nfsroot/ip=dhcp ping does work quite well before
-> mounting root and then the watchdog might not pick up the 
-> soft panic.
+> Add stripe= option to /proc/mounts for ext4 filesystems.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> ---
+> 
+> Index: linux/fs/ext4/super.c
+> ===================================================================
+> --- linux.orig/fs/ext4/super.c	2008-01-23 12:57:07.000000000 +0100
+> +++ linux/fs/ext4/super.c	2008-01-23 21:43:51.000000000 +0100
+> @@ -742,7 +742,8 @@ static int ext4_show_options(struct seq_
+>  		seq_puts(seq, ",nomballoc");
+>  	if (!test_opt(sb, DELALLOC))
+>  		seq_puts(seq, ",nodelalloc");
+> -
+> +	if (sbi->s_stripe)
+> +		seq_printf(seq, ",stripe=%lu", sbi->s_stripe);
+> 
+>  	/*
+>  	 * journal mode get enabled in different ways
+> 
 
-> Using a polled keyboard driver after panic seems to be the better
-> option to me, but if you want softpanic you should probably
-> at least add a suitable panic notifier to the network stack 
-> to shut it all down.
+Added to ext4 patch queue. Thanks!
+http://repo.or.cz/w/ext4-patch-queue.git
 
-I have no idea on how to do it. If somebody has a big red arrow pointing to 
-a HOWTO, I can give it a try.
+Mingming
 
-OTOH, I think the panic timeout should do the job nicely.
--- 
-If you talk about race, it does not make you a racist. If you see distinctions
-between the genders, it does not make you a sexist. If you think critically
-about a denomination, it does not make you anti-religion. If you accept but
-don't celebrate homosexuality, it does not make you a homophobe.Charlton Heston
+
