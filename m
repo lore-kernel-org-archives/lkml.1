@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYAYUYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759403AbYAYU1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754109AbYAYUYw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 15:24:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759752AbYAYUYG
+	id S1759403AbYAYU1t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 15:27:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbYAYU1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 15:24:06 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:61457 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759615AbYAYUX7 (ORCPT
+	Fri, 25 Jan 2008 15:27:41 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:14030 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753780AbYAYU1k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 15:23:59 -0500
-Date: Thu, 24 Jan 2008 23:47:39 -0700
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
-In-reply-to: <200801242336.00340.a1426z@gawab.com>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Mail-followup-to: Al Boldi <a1426z@gawab.com>, linux-fsdevel@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Message-id: <20080125064739.GS18433@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <200801242336.00340.a1426z@gawab.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 25 Jan 2008 15:27:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=bgxE5FnsvSdhntXjBNQ6MMzeXAN6SZExqThqLQeeDN1Ig8fs2+eKrp6mTZVkUz1/v9BJrLg/dHuuJUKrgNl2uOHZVDV1xieJjnA/YuVTCZHgQkKbYPUZqjiVMcOIyou9+hOid/2iOv9EbiM2CN1n83wBmPSojVSHNJsUXmImBKA=
+Date: Fri, 25 Jan 2008 23:27:20 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] driver: tcm825x - fix logical typo error
+Message-ID: <20080125202720.GD7233@cvg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 24, 2008  23:36 +0300, Al Boldi wrote:
-> data=ordered mode has proven reliable over the years, and it does this by 
-> ordering filedata flushes before metadata flushes.  But this sometimes 
-> causes contention in the order of a 10x slowdown for certain apps, either 
-> due to the misuse of fsync or due to inherent behaviour like db's, as well 
-> as inherent starvation issues exposed by the data=ordered mode.
-> 
-> data=writeback mode alleviates data=order mode slowdowns, but only works 
-> per-mount and is too dangerous to run as a default mode.
-> 
-> This RFC proposes to introduce a tunable which allows to disable fsync and 
-> changes ordered into writeback writeout on a per-process basis like this:
-> 
->       echo 1 > /proc/`pidof process`/softsync
+This patch does fix potential NULL pointer dereference
+due to logical typo error.
 
-If fsync performance is an issue for you, run the filesystem in data=journal
-mode, put the journal on a separate disk and make it big enough that you
-don't block on it to flush the data to the filesystem (but not so big that
-it is consuming all of your RAM).
+The issue is pointed out by
+Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 
-That keeps your data guarantees without hurting performance.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+Index: linux-2.6.git/drivers/media/video/tcm825x.c
+===================================================================
+--- linux-2.6.git.orig/drivers/media/video/tcm825x.c	2008-01-23 19:01:47.000000000 +0300
++++ linux-2.6.git/drivers/media/video/tcm825x.c	2008-01-25 23:13:15.000000000 +0300
+@@ -851,7 +851,7 @@ static int tcm825x_probe(struct i2c_clie
+ 	sensor->platform_data = client->dev.platform_data;
+ 
+ 	if (sensor->platform_data == NULL
+-	    && !sensor->platform_data->is_okay())
++	    || !sensor->platform_data->is_okay())
+ 		return -ENODEV;
+ 
+ 	sensor->v4l2_int_device = &tcm825x_int_device;
+
+-- 
 
