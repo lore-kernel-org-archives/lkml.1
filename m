@@ -1,76 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760820AbYAYWwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760428AbYAYWzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760820AbYAYWwt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 17:52:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbYAYWwf
+	id S1760428AbYAYWzL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 17:55:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbYAYWy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 17:52:35 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44306 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760658AbYAYWwe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 17:52:34 -0500
-Date: Fri, 25 Jan 2008 14:52:12 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
-Subject: [patch 3/3] x86: deprecate change_page_attr() for drivers
-Message-ID: <20080125145212.5ad8fbec@laptopd505.fenrus.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 25 Jan 2008 17:54:58 -0500
+Received: from gw.goop.org ([64.81.55.164]:46425 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753105AbYAYWy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 17:54:57 -0500
+Message-ID: <479A68B8.4050705@goop.org>
+Date: Fri, 25 Jan 2008 14:54:48 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Jan Beulich <jbeulich@novell.com>,
+       Eduardo Pereira Habkost <ehabkost@redhat.com>,
+       Ian Campbell <ijc@hellion.org.uk>, William Irwin <wli@holomorphy.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+Subject: Re: [PATCH 11 of 11] x86: defer cr3 reload when doing pud_clear()
+References: <c084def0f6afb2b2ef47.1201296200@localhost> <479A5689.80505@zytor.com>
+In-Reply-To: <479A5689.80505@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: x86: deprecate change_page_attr()
-From: Arjan van de Ven <arjan@linux.intel.com>
+H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+>> PAE mode requires that we reload cr3 in order to guarantee that
+>> changes to the pgd will be noticed by the processor.  This means that
+>> in principle pud_clear needs to reload cr3 every time.  However,
+>> because reloading cr3 implies a tlb flush, we want to avoid it where
+>> possible.
+>
+> It only matters (for a processor which supports PGE) if we actually 
+> use the namespace in between.
 
-With the introduction of the new API, no driver or non-archcore code needs
-to use c-p-a anymore, so this patch also deprecates the EXPORT_SYMBOL of CPA
-(it's a horrible API after all).
+Yes.  And I don't think there are instances of one place in the kernel 
+removing pmd and then replacing it in short order.  It either means 
+you're doing a large munmap, or the pagetable is being destroyed (and 
+therefore isn't currently in cr3 anyway).
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+>> In huge_pmd_unshare, it is followed by flush_tlb_range, which always
+>> results in a full cr3-reload tlb flush.
+>
+> This one makes me nervous, as it feels like a side effect of 
+> implementation, and not a guarantee by design.
 
----
- arch/x86/mm/pageattr.c       |    2 +-
- include/asm-x86/cacheflush.h |    3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+Yes.  Obviously any user of pud_clear must do some kind of tlb flush 
+before they can expect the effect of their change to be visible.  We 
+just need to make sure that its the right kind of tlb flush that 
+satisfies the processor's requirements for updating the pgd.  If someone 
+went and changed x86's flush_tlb_range to use invlpg then there'd be a 
+problem.
 
-Index: linux.trees.git/arch/x86/mm/pageattr.c
-===================================================================
---- linux.trees.git.orig/arch/x86/mm/pageattr.c
-+++ linux.trees.git/arch/x86/mm/pageattr.c
-@@ -288,7 +288,7 @@ int change_page_attr(struct page *page, 
- 
- 	return change_page_attr_addr(addr, numpages, prot);
- }
--EXPORT_SYMBOL(change_page_attr);
-+EXPORT_UNUSED_SYMBOL(change_page_attr); /* to be removed in 2.6.27 */
- 
- /**
-  * change_page_attr_set - Change page table attributes in the linear mapping.
-Index: linux.trees.git/include/asm-x86/cacheflush.h
-===================================================================
---- linux.trees.git.orig/include/asm-x86/cacheflush.h
-+++ linux.trees.git/include/asm-x86/cacheflush.h
-@@ -25,7 +25,8 @@
- 	memcpy(dst, src, len)
- 
- void global_flush_tlb(void);
--int change_page_attr(struct page *page, int numpages, pgprot_t prot);
-+int __deprecated_for_modules change_page_attr(struct page *page, int numpages,
-+								pgprot_t prot);
- int change_page_attr_addr(unsigned long addr, int numpages, pgprot_t prot);
- 
- int set_pages_uc(struct page *page, int numpages);
+I considered hacks like adding a percpu flag saying "the next tlb flush 
+of any kind must be a cr3-reloading tlb flush", but that seems a 
+little... ugly.
 
+Hm.  Changing PGE in cr4 is documented as flushing the tlb, but is it 
+enough to get new pmds recognized?  (yes: see below)
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Where is the requirement to reload cr3 after a pgd update documented 
+anyway?  The comment in the source refers to "Pentium-II erratum A13", 
+which I think is wrong. The Pentium II specification update document 
+#243337-049, Jul 2002, lists A13 as "MCE Due to L2 Parity Error Gives L1 
+MCACOD.LL"; the only mention of PAE in that document is a bad 
+interaction with PAT in some steppings.
+
+The only possibly relevant comment I can find in vol3a is:
+
+    Older IA-32 processors that implement the PAE mechanism use uncached
+    accesses when loading page-directory-pointer table entries. This
+    behavior is
+    model specific and not architectural. More recent IA-32 processors may
+    cache page-directory-pointer table entries.
+
+(I'm not sure if "cache" here is the data cache or the TLB.)
+
+Ah, here it is, in "Pentium® Pro Processor Specification Update", 
+January 1999, document 242689-035:
+
+    8.         TLB Flush Necessary After PDPE Change
+    As described in Section 3.7, “Translation Lookaside Buffers (TLBs),”
+    in the Pentium® Pro Family Developer's Manual, Volume 3: Operating
+    System Writer’s Manual, the operating system is required to
+    invalidate the corresponding entry in the TLB after any change to a
+    page-directory or page-table entry. However, if the physical address
+    extension (PAE) feature is enabled to use 36-bit addressing, a new
+    table is added to the paging hierarchy, called the page directory
+    pointer table (as per Section 3.8, “Physical Address Extension”). If
+    an entry is changed in this table (to point to another page
+    directory), the TLBs must then be flushed by writing to CR3.
+
+Alright, here's the definitive document: TLBs, Paging-Structure Caches, and
+Their Invalidation 
+(http://www.intel.com/design/processor/applnots/317080.pdf), in which 
+section 8.1 confirms that you need to either reload cr3 or one of the 
+other control registers which triggers a cache flush:
+
+    The processor does not maintain a PDP cache as described in Section
+    4. The processor always caches information from the four
+    page-directory-pointer-table entries. These  entries are not cached
+    at the time of address translation. Instead, they are always  cached
+    as part of the execution of the following instructions:
+
+        * A MOV to CR3 that occurs with IA32_EFER.LMA = 0 and CR4.PAE = 1.
+        * A MOV to CR4 that results in CR4.PAE = 1, that occurs with
+          IA32_EFER.LMA = 0 and CR0.PG = 1, and that modifies at least
+          one of CR4.PAE, CR4.PGE, and CR4.PSE.
+        * A MOV to CR0 that modifies CR0.PG and that occurs with
+          IA32_EFER.LMA = 0 and CR4.PAE = 1.
+
+I'll put together a patch with a pointer to the proper documentation...
+
+    J
