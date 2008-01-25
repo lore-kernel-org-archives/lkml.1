@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbYAYWw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760820AbYAYWwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760598AbYAYWw2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 17:52:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbYAYWwI
+	id S1760820AbYAYWwt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 17:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbYAYWwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 17:52:08 -0500
-Received: from ns1.suse.de ([195.135.220.2]:51894 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759040AbYAYWwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 17:52:05 -0500
-Date: Fri, 25 Jan 2008 14:50:36 -0800
-From: Greg KH <gregkh@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: threshold_init_device/kobject_uevent_env oops
-Message-ID: <20080125225036.GB6323@suse.de>
-References: <86802c440801251305u21517078y12ff68ef3015aaae@mail.gmail.com> <20080125221548.GA15172@suse.de> <20080125223556.GB24708@elte.hu> <20080125224711.GA6323@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080125224711.GA6323@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 25 Jan 2008 17:52:35 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44306 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760658AbYAYWwe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 17:52:34 -0500
+Date: Fri, 25 Jan 2008 14:52:12 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
+Subject: [patch 3/3] x86: deprecate change_page_attr() for drivers
+Message-ID: <20080125145212.5ad8fbec@laptopd505.fenrus.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 02:47:11PM -0800, Greg KH wrote:
-> On Fri, Jan 25, 2008 at 11:35:56PM +0100, Ingo Molnar wrote:
-> > 
-> > * Greg KH <gregkh@suse.de> wrote:
-> > 
-> > > On Fri, Jan 25, 2008 at 01:05:40PM -0800, Yinghai Lu wrote:
-> > > > current linus tree + x86.git
-> > > > 
-> > > > got
-> > > > 
-> > > > Calling initcall 0xffffffff80b93d98: threshold_init_device+0x0/0x3f()
-> > > > BUG: unable to handle kernel NULL pointer dereference at 0000000000000040
-> > > > IP: [<ffffffff80458e20>] kobject_uevent_env+0x2a/0x3d9
-> > > 
-> > > Does this happen on just Linus's tree?
-> > > 
-> > > Can you send me a .config file for this?
-> > > 
-> > > What is threshold_init()?  Is it something new in the x86.git tree?
-> > 
-> > no. A quick grep shows that it is in a file that _your_ changes in 
-> > Linus' latest have touched:
-> > 
-> >   arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-> 
-> Ok, those are pretty much just search/and/replace type changes, but I
-> have been running x86-64 boxes with these changes in place.
+Subject: x86: deprecate change_page_attr()
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-Oh wait, I do see a change.  We are now (finally) emitting a kobject
-uevent for these devices, which somehow the code can't handle properly.
+With the introduction of the new API, no driver or non-archcore code needs
+to use c-p-a anymore, so this patch also deprecates the EXPORT_SYMBOL of CPA
+(it's a horrible API after all).
 
-Let me go poke this some more, unfortunatly I don't have any AMD 64
-boxes here anymore, only Intel based processors, so I can't run this
-module...
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-thanks,
+---
+ arch/x86/mm/pageattr.c       |    2 +-
+ include/asm-x86/cacheflush.h |    3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-greg k-h
+Index: linux.trees.git/arch/x86/mm/pageattr.c
+===================================================================
+--- linux.trees.git.orig/arch/x86/mm/pageattr.c
++++ linux.trees.git/arch/x86/mm/pageattr.c
+@@ -288,7 +288,7 @@ int change_page_attr(struct page *page, 
+ 
+ 	return change_page_attr_addr(addr, numpages, prot);
+ }
+-EXPORT_SYMBOL(change_page_attr);
++EXPORT_UNUSED_SYMBOL(change_page_attr); /* to be removed in 2.6.27 */
+ 
+ /**
+  * change_page_attr_set - Change page table attributes in the linear mapping.
+Index: linux.trees.git/include/asm-x86/cacheflush.h
+===================================================================
+--- linux.trees.git.orig/include/asm-x86/cacheflush.h
++++ linux.trees.git/include/asm-x86/cacheflush.h
+@@ -25,7 +25,8 @@
+ 	memcpy(dst, src, len)
+ 
+ void global_flush_tlb(void);
+-int change_page_attr(struct page *page, int numpages, pgprot_t prot);
++int __deprecated_for_modules change_page_attr(struct page *page, int numpages,
++								pgprot_t prot);
+ int change_page_attr_addr(unsigned long addr, int numpages, pgprot_t prot);
+ 
+ int set_pages_uc(struct page *page, int numpages);
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
