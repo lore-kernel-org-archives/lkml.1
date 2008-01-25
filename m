@@ -1,124 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760714AbYAYHZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759576AbYAYHZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760714AbYAYHZZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 02:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbYAYHQE
+	id S1759576AbYAYHZr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 02:25:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757518AbYAYHQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 02:16:04 -0500
-Received: from ns2.suse.de ([195.135.220.15]:47518 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 02:16:09 -0500
+Received: from mx2.suse.de ([195.135.220.15]:47526 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757463AbYAYHQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:16:01 -0500
+	id S1757656AbYAYHQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:16:07 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       =?utf-8?q?Max=20Asb=C3=B6ck?= <amax@us.ibm.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 033/196] kobject: convert ibmasm to use kref, not kobject
-Date: Thu, 24 Jan 2008 23:09:31 -0800
-Message-Id: <1201245134-4876-33-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Anton Blanchard <anton@au.ibm.com>,
+       Paul Mackerras <paulus@au.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Ryan S. Arnold" <rsa@us.ibm.com>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 034/196] kobject: convert hvc_console to use kref, not kobject
+Date: Thu, 24 Jan 2008 23:09:32 -0800
+Message-Id: <1201245134-4876-34-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The IBM asm driver is using a kobject only for reference counting,
-nothing else.  So switch it to use a kref instead, which is all that is
-needed, and is much smaller.
+hvc_console is using a kobject only for reference counting, nothing
+else.  So switch it to use a kref instead, which is all that is needed,
+and is much smaller.
 
-Cc: Max Asböck <amax@us.ibm.com>
+Cc: Anton Blanchard <anton@au.ibm.com>
+Cc: Paul Mackerras <paulus@au.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Ryan S. Arnold <rsa@us.ibm.com>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/misc/ibmasm/command.c |   12 +++---------
- drivers/misc/ibmasm/ibmasm.h  |   10 ++++++----
- 2 files changed, 9 insertions(+), 13 deletions(-)
+ drivers/char/hvc_console.c |   80 ++++++++++++++++++--------------------------
+ 1 files changed, 33 insertions(+), 47 deletions(-)
 
-diff --git a/drivers/misc/ibmasm/command.c b/drivers/misc/ibmasm/command.c
-index 6497872..1a0e797 100644
---- a/drivers/misc/ibmasm/command.c
-+++ b/drivers/misc/ibmasm/command.c
-@@ -26,11 +26,6 @@
- #include "lowlevel.h"
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 8252f86..480fae2 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -27,7 +27,7 @@
+ #include <linux/init.h>
+ #include <linux/kbd_kern.h>
+ #include <linux/kernel.h>
+-#include <linux/kobject.h>
++#include <linux/kref.h>
+ #include <linux/kthread.h>
+ #include <linux/list.h>
+ #include <linux/module.h>
+@@ -89,7 +89,7 @@ struct hvc_struct {
+ 	int irq_requested;
+ 	int irq;
+ 	struct list_head next;
+-	struct kobject kobj; /* ref count & hvc_struct lifetime */
++	struct kref kref; /* ref count & hvc_struct lifetime */
+ };
  
- static void exec_next_command(struct service_processor *sp);
--static void free_command(struct kobject *kobj);
--
--static struct kobj_type ibmasm_cmd_kobj_type = {
--	.release = free_command,
--};
+ /* dynamic list of hvc_struct instances */
+@@ -110,7 +110,7 @@ static int last_hvc = -1;
  
- static atomic_t command_count = ATOMIC_INIT(0);
+ /*
+  * Do not call this function with either the hvc_structs_lock or the hvc_struct
+- * lock held.  If successful, this function increments the kobject reference
++ * lock held.  If successful, this function increments the kref reference
+  * count against the target hvc_struct so it should be released when finished.
+  */
+ static struct hvc_struct *hvc_get_by_index(int index)
+@@ -123,7 +123,7 @@ static struct hvc_struct *hvc_get_by_index(int index)
+ 	list_for_each_entry(hp, &hvc_structs, next) {
+ 		spin_lock_irqsave(&hp->lock, flags);
+ 		if (hp->index == index) {
+-			kobject_get(&hp->kobj);
++			kref_get(&hp->kref);
+ 			spin_unlock_irqrestore(&hp->lock, flags);
+ 			spin_unlock(&hvc_structs_lock);
+ 			return hp;
+@@ -242,6 +242,23 @@ static int __init hvc_console_init(void)
+ }
+ console_initcall(hvc_console_init);
  
-@@ -53,8 +48,7 @@ struct command *ibmasm_new_command(struct service_processor *sp, size_t buffer_s
++/* callback when the kboject ref count reaches zero. */
++static void destroy_hvc_struct(struct kref *kref)
++{
++	struct hvc_struct *hp = container_of(kref, struct hvc_struct, kref);
++	unsigned long flags;
++
++	spin_lock(&hvc_structs_lock);
++
++	spin_lock_irqsave(&hp->lock, flags);
++	list_del(&(hp->next));
++	spin_unlock_irqrestore(&hp->lock, flags);
++
++	spin_unlock(&hvc_structs_lock);
++
++	kfree(hp);
++}
++
+ /*
+  * hvc_instantiate() is an early console discovery method which locates
+  * consoles * prior to the vio subsystem discovering them.  Hotplugged
+@@ -261,7 +278,7 @@ int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops)
+ 	/* make sure no no tty has been registered in this index */
+ 	hp = hvc_get_by_index(index);
+ 	if (hp) {
+-		kobject_put(&hp->kobj);
++		kref_put(&hp->kref, destroy_hvc_struct);
+ 		return -1;
  	}
- 	cmd->buffer_size = buffer_size;
  
--	kobject_init(&cmd->kobj);
--	cmd->kobj.ktype = &ibmasm_cmd_kobj_type;
-+	kref_init(&cmd->kref);
- 	cmd->lock = &sp->lock;
+@@ -318,9 +335,8 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 	unsigned long flags;
+ 	int irq = 0;
+ 	int rc = 0;
+-	struct kobject *kobjp;
  
- 	cmd->status = IBMASM_CMD_PENDING;
-@@ -67,9 +61,9 @@ struct command *ibmasm_new_command(struct service_processor *sp, size_t buffer_s
- 	return cmd;
+-	/* Auto increments kobject reference if found. */
++	/* Auto increments kref reference if found. */
+ 	if (!(hp = hvc_get_by_index(tty->index)))
+ 		return -ENODEV;
+ 
+@@ -341,8 +357,6 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 	if (irq)
+ 		hp->irq_requested = 1;
+ 
+-	kobjp = &hp->kobj;
+-
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 	/* check error, fallback to non-irq */
+ 	if (irq)
+@@ -352,7 +366,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 	 * If the request_irq() fails and we return an error.  The tty layer
+ 	 * will call hvc_close() after a failed open but we don't want to clean
+ 	 * up there so we'll clean up here and clear out the previously set
+-	 * tty fields and return the kobject reference.
++	 * tty fields and return the kref reference.
+ 	 */
+ 	if (rc) {
+ 		spin_lock_irqsave(&hp->lock, flags);
+@@ -360,7 +374,7 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 		hp->irq_requested = 0;
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 		tty->driver_data = NULL;
+-		kobject_put(kobjp);
++		kref_put(&hp->kref, destroy_hvc_struct);
+ 		printk(KERN_ERR "hvc_open: request_irq failed with rc %d.\n", rc);
+ 	}
+ 	/* Force wakeup of the polling thread */
+@@ -372,7 +386,6 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ {
+ 	struct hvc_struct *hp;
+-	struct kobject *kobjp;
+ 	int irq = 0;
+ 	unsigned long flags;
+ 
+@@ -382,7 +395,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 	/*
+ 	 * No driver_data means that this close was issued after a failed
+ 	 * hvc_open by the tty layer's release_dev() function and we can just
+-	 * exit cleanly because the kobject reference wasn't made.
++	 * exit cleanly because the kref reference wasn't made.
+ 	 */
+ 	if (!tty->driver_data)
+ 		return;
+@@ -390,7 +403,6 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 	hp = tty->driver_data;
+ 	spin_lock_irqsave(&hp->lock, flags);
+ 
+-	kobjp = &hp->kobj;
+ 	if (--hp->count == 0) {
+ 		if (hp->irq_requested)
+ 			irq = hp->irq;
+@@ -417,7 +429,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 	}
+ 
+-	kobject_put(kobjp);
++	kref_put(&hp->kref, destroy_hvc_struct);
  }
  
--static void free_command(struct kobject *kobj)
-+void ibmasm_free_command(struct kref *kref)
- {
--	struct command *cmd = to_command(kobj);
-+	struct command *cmd = to_command(kref);
+ static void hvc_hangup(struct tty_struct *tty)
+@@ -426,7 +438,6 @@ static void hvc_hangup(struct tty_struct *tty)
+ 	unsigned long flags;
+ 	int irq = 0;
+ 	int temp_open_count;
+-	struct kobject *kobjp;
  
- 	list_del(&cmd->queue_node);
- 	atomic_dec(&command_count);
-diff --git a/drivers/misc/ibmasm/ibmasm.h b/drivers/misc/ibmasm/ibmasm.h
-index de860bc..4d8a4e2 100644
---- a/drivers/misc/ibmasm/ibmasm.h
-+++ b/drivers/misc/ibmasm/ibmasm.h
-@@ -31,6 +31,7 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/interrupt.h>
-+#include <linux/kref.h>
- #include <linux/device.h>
- #include <linux/input.h>
+ 	if (!hp)
+ 		return;
+@@ -443,7 +454,6 @@ static void hvc_hangup(struct tty_struct *tty)
+ 		return;
+ 	}
  
-@@ -92,24 +93,25 @@ struct command {
- 	unsigned char		*buffer;
- 	size_t			buffer_size;
- 	int			status;
--	struct kobject		kobj;
-+	struct kref		kref;
- 	spinlock_t		*lock;
+-	kobjp = &hp->kobj;
+ 	temp_open_count = hp->count;
+ 	hp->count = 0;
+ 	hp->n_outbuf = 0;
+@@ -457,7 +467,7 @@ static void hvc_hangup(struct tty_struct *tty)
+ 		free_irq(irq, hp);
+ 	while(temp_open_count) {
+ 		--temp_open_count;
+-		kobject_put(kobjp);
++		kref_put(&hp->kref, destroy_hvc_struct);
+ 	}
+ }
+ 
+@@ -729,27 +739,6 @@ static const struct tty_operations hvc_ops = {
+ 	.chars_in_buffer = hvc_chars_in_buffer,
  };
--#define to_command(c) container_of(c, struct command, kobj)
-+#define to_command(c) container_of(c, struct command, kref)
  
-+void ibmasm_free_command(struct kref *kref);
- static inline void command_put(struct command *cmd)
+-/* callback when the kboject ref count reaches zero. */
+-static void destroy_hvc_struct(struct kobject *kobj)
+-{
+-	struct hvc_struct *hp = container_of(kobj, struct hvc_struct, kobj);
+-	unsigned long flags;
+-
+-	spin_lock(&hvc_structs_lock);
+-
+-	spin_lock_irqsave(&hp->lock, flags);
+-	list_del(&(hp->next));
+-	spin_unlock_irqrestore(&hp->lock, flags);
+-
+-	spin_unlock(&hvc_structs_lock);
+-
+-	kfree(hp);
+-}
+-
+-static struct kobj_type hvc_kobj_type = {
+-	.release = destroy_hvc_struct,
+-};
+-
+ struct hvc_struct __devinit *hvc_alloc(uint32_t vtermno, int irq,
+ 					struct hv_ops *ops, int outbuf_size)
+ {
+@@ -776,8 +765,7 @@ struct hvc_struct __devinit *hvc_alloc(uint32_t vtermno, int irq,
+ 	hp->outbuf_size = outbuf_size;
+ 	hp->outbuf = &((char *)hp)[ALIGN(sizeof(*hp), sizeof(long))];
+ 
+-	kobject_init(&hp->kobj);
+-	hp->kobj.ktype = &hvc_kobj_type;
++	kref_init(&hp->kref);
+ 
+ 	spin_lock_init(&hp->lock);
+ 	spin_lock(&hvc_structs_lock);
+@@ -806,12 +794,10 @@ struct hvc_struct __devinit *hvc_alloc(uint32_t vtermno, int irq,
+ int __devexit hvc_remove(struct hvc_struct *hp)
  {
  	unsigned long flags;
- 	spinlock_t *lock = cmd->lock;
+-	struct kobject *kobjp;
+ 	struct tty_struct *tty;
  
- 	spin_lock_irqsave(lock, flags);
--	kobject_put(&cmd->kobj);
-+	kref_put(&cmd->kref, ibmasm_free_command);
- 	spin_unlock_irqrestore(lock, flags);
- }
+ 	spin_lock_irqsave(&hp->lock, flags);
+ 	tty = hp->tty;
+-	kobjp = &hp->kobj;
  
- static inline void command_get(struct command *cmd)
- {
--	kobject_get(&cmd->kobj);
-+	kref_get(&cmd->kref);
- }
+ 	if (hp->index < MAX_NR_HVC_CONSOLES)
+ 		vtermnos[hp->index] = -1;
+@@ -821,12 +807,12 @@ int __devexit hvc_remove(struct hvc_struct *hp)
+ 	spin_unlock_irqrestore(&hp->lock, flags);
  
+ 	/*
+-	 * We 'put' the instance that was grabbed when the kobject instance
+-	 * was initialized using kobject_init().  Let the last holder of this
+-	 * kobject cause it to be removed, which will probably be the tty_hangup
++	 * We 'put' the instance that was grabbed when the kref instance
++	 * was initialized using kref_init().  Let the last holder of this
++	 * kref cause it to be removed, which will probably be the tty_hangup
+ 	 * below.
+ 	 */
+-	kobject_put(kobjp);
++	kref_put(&hp->kref, destroy_hvc_struct);
  
+ 	/*
+ 	 * This function call will auto chain call hvc_hangup.  The tty should
 -- 
 1.5.3.8
 
