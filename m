@@ -1,84 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754440AbYAYDeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbYAYDgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754440AbYAYDeW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 22:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYAYDeM
+	id S1754781AbYAYDgR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 22:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYAYDgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 22:34:12 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39125 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752159AbYAYDeK (ORCPT
+	Thu, 24 Jan 2008 22:36:05 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:6870 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752159AbYAYDgC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 22:34:10 -0500
-Date: Fri, 25 Jan 2008 12:33:14 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: =?ISO-2022-JP?B?IkRhbmllbCBTcBskQmlPGyhCZyI=?= 
-	<daniel.spang@gmail.com>
-Subject: Re: [RFC][PATCH 3/8] mem_notify v5: introduce /dev/mem_notify new device (the core of this patch series)
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, "Marcelo Tosatti" <marcelo@kvack.org>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <cfd9edbf0801240419t669c9d9cl4cf0f821599fc7ad@mail.gmail.com>
-References: <20080124132014.1769.KOSAKI.MOTOHIRO@jp.fujitsu.com> <cfd9edbf0801240419t669c9d9cl4cf0f821599fc7ad@mail.gmail.com>
-Message-Id: <20080125121032.1AAE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 24 Jan 2008 22:36:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Rl7i1rhszXmP1uN21rvxgeXC4Z7XOcWtfTNN+NZeH2i783BsGZude/B0cpZyiGOgqctWv9I9aaGnFKp9Nv5Aat6KxCxv7fwlNU8QvYvMqKuBdS8WJFlpyLqH9tX1EGFn1O7bOwpIolgx1RH70JMT7netSin2a0nNJbm1jVnnPVE=
+Message-ID: <4799591B.5090905@gmail.com>
+Date: Fri, 25 Jan 2008 12:35:55 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
+To: Shane Huang <Shane.Huang@amd.com>
+CC: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: [patch] PCI: modify SB700 SATA MSI quirk
+References: <5CAB7B5D6F8AB84AA868A46B47A507055D8C1D@sshaexmb1.amd.com> <B90463BC30D2E446BA423D888DC85E501BF78E@sshaexmb1.amd.com> <B90463BC30D2E446BA423D888DC85E501BF796@sshaexmb1.amd.com> <B90463BC30D2E446BA423D888DC85E501BF8F0@sshaexmb1.amd.com>
+In-Reply-To: <B90463BC30D2E446BA423D888DC85E501BF8F0@sshaexmb1.amd.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel
-
-> > +#define PROC_WAKEUP_GUARD  (10*HZ)
-> [...]
-> > +       timeout = info->last_proc_notify + PROC_WAKEUP_GUARD;
+Shane Huang wrote:
+> I did some modification to this patch and send it again, Please check
+> it.
+> The quirk to 0x4395 has been removed because 0x4395 only belongs to
+> SB800.
 > 
-> If only one or a few processes are using the system I think 10 seconds
-> is a little long time to wait before they get the notification again.
-> Can we decrease this value? Or make it configurable under /proc? Or
-> make it lower with fewer users? Something like:
+>> SB700 SATA MSI bug will be fixed in SB700 revision A21 at 
+>> hardware level,
+>> but the SB700 revision older than A21 will also be found in 
+>> the market.
+>> This patch modify the original quirk commit
+>> bc38b411fe696fad32b261f492cb4afbf1835256 instead of withdrawing it.
 
-Oh, that is very interesting issue.
-tank you good point out.
+You need to merge the above two messages into one patch description.
 
-after deep thinking, I understand my current implementation is fully stupid.
-current, worst case is below.
+>> Signed-off-by: Shane Huang <shane.huang@amd.com>
 
-  1. low end
-     - many process of used only a bit memory(sh, cp etc..) exist.
-     - 1 memory eater process exist(may be, it is fat browser)
-       and it watching /dev/mem_notify.
+After S-O-B, you can put --- and between it and the patch body, you can
+say things which you wanna mention but don't think should be included in
+commit message.
 
-  2. high end
-     - many process of used only a bit memory(sh, cp etc..) exist.
-     - 1 memory eater process exist(may be, it is DB)
-       and it watching /dev/mem_notify.
+> +static void __devinit quirk_msi_intx_disable_ati_bug(struct pci_dev
+> *dev)
+> +{
+> +	struct pci_dev *p;
+> +	u8 rev = 0;
+> +
+> +	/* SB700 MSI issue will be fixed at HW level from revision A21,
+> +	 * we need check PCI REVISION ID of SMBus controller to get
+> SB700
+> +	 * revision.
+> +	 */
+> +	p = pci_get_device(PCI_VENDOR_ID_ATI,
+> PCI_DEVICE_ID_ATI_SBX00_SMBUS,
+> +			   NULL);
+> +	if (p) {
+> +		pci_read_config_byte(p, PCI_CLASS_REVISION, &rev);
 
-the point is "only 1 process watch /dev/mem_notify", but not a few processor.
-I fix it with pleasure. 
+Please drop unnecessary braces and you can you p->revision.
 
+> +	}
+> +	if ((rev < 0x3B) && (rev >= 0x30)) {
+> +		dev->dev_flags |= PCI_DEV_FLAGS_MSI_INTX_DISABLE_BUG;
+> +	}
 
-> timeout = info->last_proc_notify + min(mem_notify_users, PROC_WAKEUP_GUARD);
+Hmm... So, if there's no SMBUS device the quirk applies.  Is this
+intended?  If that can't happen, just do if (!p) return;
 
-I like this formula.
-the rest problem is decide to default value when only 1 process watch /dev/mem_notify.
+Also, pci_get_device() requires matching pci_dev_put().
 
-What do you think it?
-and if my low end worst case situation doesn't match yours, 
-Could you please explain your usage more?
+> +}
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
+>  			PCI_DEVICE_ID_TIGON3_5780,
+>  			quirk_msi_intx_disable_bug);
+> @@ -1729,17 +1747,15 @@
+>  			quirk_msi_intx_disable_bug);
+>  
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x4390,
+> -			quirk_msi_intx_disable_bug);
+> +			quirk_msi_intx_disable_ati_bug);
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x4391,
+> -			quirk_msi_intx_disable_bug);
+> +			quirk_msi_intx_disable_ati_bug);
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x4392,
+> -			quirk_msi_intx_disable_bug);
+> +			quirk_msi_intx_disable_ati_bug);
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x4393,
+> -			quirk_msi_intx_disable_bug);
+> +			quirk_msi_intx_disable_ati_bug);
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x4394,
+> -			quirk_msi_intx_disable_bug);
+> -DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x4395,
+> -			quirk_msi_intx_disable_bug);
+> +			quirk_msi_intx_disable_ati_bug);
 
+You tested this, right?
 
-BTW: 
-end up, We will add /proc configuration the future.
-but I think it is too early.
-sometimes configrable parameter prevent the discussion of nicer default value.
-Instead, I hope the default value changed by adjust your usage.
-
-
-- kosaki
-
-
+-- 
+tejun
