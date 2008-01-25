@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbYAYBIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbYAYBNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753971AbYAYBIc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 Jan 2008 20:08:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYAYBIW
+	id S1753297AbYAYBNf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 Jan 2008 20:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYAYBN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 Jan 2008 20:08:22 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42296 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751498AbYAYBIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 Jan 2008 20:08:21 -0500
-Message-ID: <47993673.7040408@redhat.com>
-Date: Thu, 24 Jan 2008 20:08:03 -0500
-From: Chris Snook <csnook@redhat.com>
+	Thu, 24 Jan 2008 20:13:27 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60417 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751498AbYAYBN1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 Jan 2008 20:13:27 -0500
+Message-ID: <479936A0.2000604@zytor.com>
+Date: Thu, 24 Jan 2008 17:08:48 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Jay Cliburn <jacliburn@bellsouth.net>
-CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       atl1-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: Re: [PATCH 09/26] atl1: refactor tx processing
-References: <1199152804-3889-1-git-send-email-jacliburn@bellsouth.net>	<1199152804-3889-10-git-send-email-jacliburn@bellsouth.net>	<4795BE39.6000505@garzik.org>	<20080122183109.5ab80802@osprey.hogchain.net> <20080124190024.1b81238e@osprey.hogchain.net>
-In-Reply-To: <20080124190024.1b81238e@osprey.hogchain.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Pavel Machek <pavel@ucw.cz>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ian Campbell <ijc@hellion.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-1?Q?Mika_Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+ format.
+References: <1201121530.30671.15.camel@cthulhu.hellion.org.uk> <20080125002054.GA2059@elf.ucw.cz> <47992D0E.2070700@zytor.com> <200801250146.11004.rjw@sisk.pl>
+In-Reply-To: <200801250146.11004.rjw@sisk.pl>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Cliburn wrote:
-> On Tue, 22 Jan 2008 18:31:09 -0600
-> Jay Cliburn <jacliburn@bellsouth.net> wrote:
+Rafael J. Wysocki wrote:
+> On Friday, 25 of January 2008, H. Peter Anvin wrote:
+>> Pavel Machek wrote:
+>>>> I just looked at the ACPI suspend code, and it looks like it hacks its own 
+>>>> identity map at runtime.  Pavel, am I reading that code right?
+>>> Yes, I think so, I believe we do it on both 32 and 64 bit now.
 > 
->> On Tue, 22 Jan 2008 04:58:17 -0500
->> Jeff Garzik <jeff@garzik.org> wrote:
->>
-> [...]
->>> for such a huge patch, this description is very tiny.  [describe]
->>> what is refactored, and why.
+> For clarity, are you referring to the code in arch/x86/kernel/acpi ?
 > 
-> Is this one any better?
 
-This satisfies me.
+Yes.
 
-Acked-by: Chris Snook <csnook@redhat.com>
-
-> From df475e2eea401f9dc18ca23dab538b99fb9e710c Mon Sep 17 00:00:00 2001
-> From: Jay Cliburn <jacliburn@bellsouth.net>
-> Date: Wed, 23 Jan 2008 21:36:36 -0600
-> Subject: [PATCH] atl1: simplify tx packet descriptor
-> 
-> The transmit packet descriptor consists of four 32-bit words, with word 3
-> upper bits overloaded depending upon the condition of its bits 3 and 4.
-> The driver currently duplicates all word 2 and some word 3 register bit
-> definitions unnecessarily and also uses a set of nested structures in its
-> definition of the TPD without good cause. This patch adds a lengthy
-> comment describing the TPD, eliminates duplicate TPD bit definitions,
-> and simplifies the TPD structure itself. It also expands the TSO check
-> to correctly handle custom checksum versus TSO processing using the revised
-> TPD definitions. Finally, shorten some variable names in the transmit
-> processing path to reduce line lengths, rename some variables to better
-> describe their purpose (e.g., nseg versus m), and add a comment or two
-> to better describe what the code is doing.
-> 
-> Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
+	-hpa
