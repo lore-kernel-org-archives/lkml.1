@@ -1,106 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbYAYVGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbYAYVMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760775AbYAYVGj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 16:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbYAYVGZ
+	id S1759741AbYAYVMN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 16:12:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbYAYVMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 16:06:25 -0500
-Received: from py-out-1112.google.com ([64.233.166.180]:34960 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760682AbYAYVGX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 16:06:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ay7DlnDyofEmM4tSgLUPV50NeUMmk0QMGFKzRDktm1djqwhdy4o67yllzaKv+T5jERWvqyecTakOO5HCH9G3oga57c8mqzalsyXv8mxfA2OpMNuoZ7LxkIM3Por6l1hYFj+dIdi5uMUgqBdUibk7jtNrqKN3JSZ9pK/BT3HIuk0=
-Message-ID: <64bb37e0801251306w21c7876du36de19340ce54a0f@mail.gmail.com>
-Date: Fri, 25 Jan 2008 22:06:20 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: 2.6.24-rc6-mm1
-Cc: tomof@acm.org, akpm@linux-foundation.org, jarkao2@gmail.com,
-       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
-       neilb@suse.de, bfields@fieldses.org, netdev@vger.kernel.org,
-       tom@opengridcomputing.com
-In-Reply-To: <20080107151639P.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 Jan 2008 16:12:01 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42778 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751530AbYAYVMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 16:12:00 -0500
+Subject: Re: [GIT PATCH] driver core patches against 2.6.24
+From: Jon Masters <jcm@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.00.0801251035150.2979@hp.linux-foundation.org>
+References: <20080125071127.GA4860@kroah.com>
+	 <alpine.LFD.1.00.0801251035150.2979@hp.linux-foundation.org>
+Content-Type: text/plain
+Organization: Red Hat, Inc.
+Date: Fri, 25 Jan 2008 16:11:50 -0500
+Message-Id: <1201295510.32422.69.camel@perihelion>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 (2.12.2-2.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <64bb37e0801060335k4afb3134u9c6fadb57d525dc5@mail.gmail.com>
-	 <20080106223650E.tomof@acm.org>
-	 <64bb37e0801061203l503f29f0hd922a1347f8169ac@mail.gmail.com>
-	 <20080107151639P.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the *really* late answer, but I did not have any time to do
-linux things the last weeks. :-(
+On Fri, 2008-01-25 at 10:44 -0800, Linus Torvalds wrote:
 
-On Jan 7, 2008 7:16 AM, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> On Sun, 6 Jan 2008 21:03:42 +0100
-> "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-> > On Jan 6, 2008 2:33 PM, FUJITA Tomonori <tomof@acm.org> wrote:
-> > > On Sun, 6 Jan 2008 12:35:35 +0100
-> > > "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-> > > > On Jan 6, 2008 12:23 PM, FUJITA Tomonori <tomof@acm.org> wrote:
-> > > > And double using something does fit with the errors I'm seeing...
-> > > >
-> > > > > Can you try the patch to revert my IOMMU changes?
-> > > > >
-> > > > > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12694.html
+> and the problem seems to be that it does all these checks even for modules 
+> that will never be loaded, because I use my own kernel, but with the 
+> default Fedora initrd (which is trying to load modules for stuff that I 
+> already have built in).
 
--> This is the revert-patch I'm talking about later
+Thanks Linus. I'll pass this on to the mkinitrd maintainer. We'll try to
+get this sorted out for you :)
 
-> > > > Testing for this bug is a little bit slow, as I'm compiling ~100
-> > > > packages trying to trigger it.
-> > > > If my current testrun with the patch from
-> > > > http://www.mail-archive.com/linux-scsi@vger.kernel.org/msg12702.html
-> > > > crashes, I will revert the hole IOMMU changes with above patch and try again.
-> > >
-> > > Thanks for testing,
-> >
-> > OK, I'm still testing this, but after 95 completed packages I'm rather
-> > certain that reverting the IOMMU changes with this patch fixes my
-> > problem.
-> > I didn't have time to look more into this, so I can't offer any
-> > concrete ideas where the bug is.
+Jon.
 
-Until my last mail from 7. Jan this was true, that I was not able to
-crash 2.6.24-rc6-mm1 with above patch.
-But after testing 2.6.24-rc7 with only the IOMMU changes applied it
-did crash once again.
 
-After looking at the patch that seems rather expected as it only
-touches powerpc code.
-(I only looked at its diffstat after testing it, so I was not aware of
-that fact during testing)
-
-> > If you send more patches, I'm willing to test them, but it might take
-> > some more time during the next week.
->
-> Can you try 2.6.24-rc7 + the IOMMU changes?
->
-> The patches are available at:
->
-> http://www.kernel.org/pub/linux/kernel/people/tomo/iommu/
->
-> Or if you prefer the git tree:
->
-> git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git iommu-sg-fixes
->
->
->
-> I've looked at the changes to GART but they are straightforward and
-> don't look wrong...
-
-The resulting 2.6.24-rc7 kernel worked for me. I compiled 146 packages
-without a crash.
-
-Today I finally had some time for debugging again and tried the new
-2.6.24-rc8-mm1.
-The crash is still there, I will report that crash in current thread.
-
-Torsten
