@@ -1,126 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbYAYLn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbYAYLrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802AbYAYLn5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 06:43:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYAYLnt
+	id S1756426AbYAYLrw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 06:47:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYAYLro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 06:43:49 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57767 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752789AbYAYLnr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 06:43:47 -0500
-Message-ID: <4799CAE0.7010400@ak.jp.nec.com>
-Date: Fri, 25 Jan 2008 20:41:20 +0900
-From: Kohei KaiGai <kaigai@ak.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 25 Jan 2008 06:47:44 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:47928 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752865AbYAYLrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 06:47:43 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michael Buesch <mb@bu3sch.de>
+Subject: Re: [PATCH -mm 5/5] b43: Avoid unregistering device objects during suspend
+Date: Fri, 25 Jan 2008 12:45:14 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, bcm43xx-dev@lists.berlios.de,
+       Alessandro Rubini <rubini@vision.unipv.it>,
+       Richard Purdie <rpurdie@rpsys.net>
+References: <200801250127.21966.rjw@sisk.pl> <20080125074746.GC4134@ucw.cz> <200801251113.31325.mb@bu3sch.de>
+In-Reply-To: <200801251113.31325.mb@bu3sch.de>
 MIME-Version: 1.0
-To: "Andrew G. Morgan" <morgan@kernel.org>
-CC: akpm@osdl.org, serue@us.ibm.com, jmorris@namei.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 1/3] exporting capability code/name pairs (try 2nd)
-References: <47997122.3070504@ak.jp.nec.com> <479990A1.3050103@kernel.org>
-In-Reply-To: <479990A1.3050103@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801251245.16170.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
-
-Thanks for your comments.
-
-Andrew G. Morgan wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+On Friday, 25 of January 2008, Michael Buesch wrote:
+> On Friday 25 January 2008 08:47:46 Pavel Machek wrote:
+> > On Fri 2008-01-25 01:37:33, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Modify the b43 driver to avoid deadlocking suspend and resume,
+> > > which happens as a result of attempting to unregister device objects
+> > > locked by the PM core during suspend/resume cycles.  Also, make it
+> > > use a suspend-safe method of unregistering device object in the
+> > > resume error path.
+> > > 
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > Acked-by: Michael Buesch <mb@bu3sch.de>
+> > 
+> > Maybe we should have global suspend_in_progress (or maybe system_state
+> > == suspending?) and automatically switch to schedule_removal() while
+> > it is set?
+> > 
 > 
-> KaiGai,
-> 
-> While this is cute :-), I guess I'm still not all that convinced that
-> this is needed.
-> 
-> libcap already had some (admittedly not quite working) support for
-> numeric values of capabilities not currently defined (which I believe is
-> now fixed in top of trunk):
-> 
-> # ./setcap 35=i ./setcap
-> # ./getcap ./setcap
-> ./setcap = 35+i
-> 
-> Although, I obviously can't argue that this is as readable as your
-> approach, it does seem unlikely that the rate of addition of new
-> capabilities will be all that great, and you can recompile everything
-> capability related in user-space on a live system without a reboot.
+> That would be great, from my perspective :)
 
-cap_set_flag() and cap_from_text() checks whether required capability
-code is in between 0 and __CAP_BITS, or not.
-I don't think it works correctly. Is it necessary to obtain this bound
-dynamically?
-
- > Further, if anyone ever wants to translate the capabilities into another
- > language, it seems like user-space is a much better place for that than
- > in the kernel.
-
-Are you intend to translate "cap_net_admin" into native language
-representation, for example?
-I want to see how Chinese represents it :), but I think it is different
-issue with kernel dose not expose its suporing capabilities.
-
-> This patch also requires that /sys be mounted. How does that work for
-> code operating early in the boot process or in a chroot environment
-> (where an incapable uid=0 account being able to read/write /sys & /proc
-> files can do more than a little damage)?
-
-When this patch cannot access /sys, it does not provide dynamically
-collected code/name pairs, and it works with statically constructed
-table as current libcap doing.
-
-The patched libcap never switch to the dynamic table without successes
-in all steps of initialization. Thus, there is no major regression on
-this facilitiy.
-
-> None of this touches on the fact that most utility applications that
-> will support capabilities "the right way"(TM), will need the #define's
-> at compile time for each of the capabilities they require (so they can
-> pepper critical regions with cap_set_flag()/cap_set_proc() code.
-> 
-> When I mentioned this last time, you said you felt this feature was more
-> aimed at admin applications like {get,set,pam_}cap. This is fine, but
-> none of these admin applications 'use' capabilities, they just make them
-> available/visible for other utility applications to use - which gets us
-> back to my point; the utility apps can't use them (properly) without
-> having compiled-in support to use them appropriately, which requires the
-> #define's at compile time or an appropriate vintage of sys/capability.h
-> which comes with an appropriately modern version of libcap.  So,
-> practically speaking all the capabilities the applications on a system
-> should need should be present in the libcap on the system.
-
-Hmm, you are correct. Indeed, applications using capabilities have to
-be built with the new libcap which provides fresh sys/capabilitity.h.
-It is like a chicken and egg argument.
-
-However, all applications are always built on its running environment,
-like RPM packages. These can be delivered as pre-built packages.
-
-> All that being said, the friendliness factor of this is somewhat
-> undeniable, and so I can see why folk might want it in the kernel
-> anyway. If so, would it possible to move this code into
-> security/capability.c and not in the main kernel per-se - protected with
-> a configuration option? If it does appear in the kernel, we'll obviously
-> add your libcap changes too. If it doesn't, then perhaps we can meet
-> your needs with a slight modification to your libcap patch to read the
-> capabilities from an optional /etc/XXX file - and make text visibility
-> of 'late breaking' capabilities something that the admin can tweak as
-> needed?
-
-I think optional configuration file is not a good idea.
-It can make unneeded confusion.
-
-If necessary, I'll move this features into security/capability.c and
-add a Kconfig option to select it.
+Let's see how many drivers are going to need that.  If there's more than a
+couple, it will certainly make sense to have a global variable like this.
 
 Thanks,
--- 
-OSS Platform Development Division, NEC
-KaiGai Kohei <kaigai@ak.jp.nec.com>
+Rafael
