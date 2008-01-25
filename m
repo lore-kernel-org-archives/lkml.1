@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbYAYXJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759491AbYAYXL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759627AbYAYXJz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 18:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756495AbYAYXJi
+	id S1759491AbYAYXL7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 18:11:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758321AbYAYXLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 18:09:38 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53217 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759057AbYAYXJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 18:09:33 -0500
-Date: Fri, 25 Jan 2008 15:08:02 -0800
-From: Greg KH <gregkh@suse.de>
-To: Ingo Molnar <mingo@elte.hu>, jacob.shin@amd.com
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: threshold_init_device/kobject_uevent_env oops
-Message-ID: <20080125230802.GA25074@suse.de>
-References: <86802c440801251305u21517078y12ff68ef3015aaae@mail.gmail.com> <20080125221548.GA15172@suse.de> <20080125223556.GB24708@elte.hu>
+	Fri, 25 Jan 2008 18:11:40 -0500
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:45285 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757965AbYAYXLi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 18:11:38 -0500
+Date: Sat, 26 Jan 2008 00:11:33 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Michael Holzheu <holzheu@de.ibm.com>,
+       Volker Sameske <sameske@de.ibm.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: [PATCH 085/196] kset: convert s390 ipl.c to use kset_create
+Message-ID: <20080125231017.GA20351@osiris.ibm.com>
+References: <20080125071127.GA4860@kroah.com> <1201246425-5058-6-git-send-email-gregkh@suse.de> <20080125122052.GA9080@osiris.ibm.com> <20080125174858.GB4242@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080125223556.GB24708@elte.hu>
+In-Reply-To: <20080125174858.GB4242@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 11:35:56PM +0100, Ingo Molnar wrote:
-> 
-> * Greg KH <gregkh@suse.de> wrote:
-> 
-> > On Fri, Jan 25, 2008 at 01:05:40PM -0800, Yinghai Lu wrote:
-> > > current linus tree + x86.git
-> > > 
-> > > got
-> > > 
-> > > Calling initcall 0xffffffff80b93d98: threshold_init_device+0x0/0x3f()
-> > > BUG: unable to handle kernel NULL pointer dereference at 0000000000000040
-> > > IP: [<ffffffff80458e20>] kobject_uevent_env+0x2a/0x3d9
+On Fri, Jan 25, 2008 at 09:48:58AM -0800, Greg KH wrote:
+> On Fri, Jan 25, 2008 at 01:20:53PM +0100, Heiko Carstens wrote:
+> > On Thu, Jan 24, 2008 at 11:31:54PM -0800, Greg Kroah-Hartman wrote:
+> > > Dynamically create the kset instead of declaring it statically.
+> > > This makes the kobject attributes now work properly that I broke in the
+> > > previous patch.
 > > 
-> > Does this happen on just Linus's tree?
-> > 
-> > Can you send me a .config file for this?
-> > 
-> > What is threshold_init()?  Is it something new in the x86.git tree?
+> > Could you please merge this and the previous patch before it goes
+> > upstream? Having an intermediate state where things are broken
+> > will cause pain and additional work in case of bisecting.
 > 
-> no. A quick grep shows that it is in a file that _your_ changes in 
-> Linus' latest have touched:
-> 
->   arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+> It will not cause a build error (see the previous patch for details.)
+> The sysfs files will not properly show the correct data, that is all.
+>
+> The odds that you will hit this in a 'git bisect' is VERY low, and the
+> previous patch states that the files are now broken, so there should not
+> be any confusion regarding any user that might run across this.
 
-In looking at this code some more, I'm a bit confused.  We have an array
-of kobjects in per_cpu(threshold_banks, cpu)[bank]->kobj
-
-Now the kobject in the struct threshold_bank structure is a "static"
-one, one that should govern the lifecycle of the object, yet there is no
-release function for it at all.  I don't see a way for it to ever be
-properly torn down.
-
-But it's the bank kobjects that are dynamic.  They look to be created
-properly, and the life cycle is correct because they are initialized by
-the kobject core now correctly.  But which order are things initialized
-by the cpu code?
-
-Ideally the banks are created before the blocks, but by the error
-message that we have here, I'm not so sure about this.  Can anyone
-confirm this order is always correct?
-
-Can someone send me the sysfs 'tree' output of what these kobjects are
-supposed to be looking like?
-
-Also, can someone enable CONFIG_KOBJECT_DEBUG and send me the output of
-the startup of this code?  That should help explain what order things
-are happening it.
-
-Actually the debug output with this oops would be great, it should show
-the offending logic pretty well.
-
-thanks,
-
-greg k-h
+The odds are very low, as long as not more patch sets come up which
+introduce intermediate broken kernels.
+What exactly is the advantage of breaking the kernel with patch 1 and
+then fix it again with patch 2 instead of doing the straight forward
+conversions all with one patch?
