@@ -1,23 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762609AbYAYIN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765285AbYAYINt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762609AbYAYIN0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763990AbYAYIA0
+	id S1765285AbYAYINt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:13:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757816AbYAYIA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:00:26 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53645 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 03:00:28 -0500
+Received: from mail.suse.de ([195.135.220.2]:59403 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763982AbYAYH7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:59:45 -0500
+	id S1762636AbYAYH7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:59:43 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kyle McMartin <kyle@parisc-linux.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 123/196] Kobject: change drivers/parisc/pdc_stable.c to use kobject_init_and_add
-Date: Thu, 24 Jan 2008 23:32:32 -0800
-Message-Id: <1201246425-5058-44-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 165/196] Kobject: remove kobject_init() as no one uses it anymore
+Date: Thu, 24 Jan 2008 23:33:14 -0800
+Message-Id: <1201246425-5058-86-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -25,48 +22,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stop using kobject_register, as this way we can control the sending of
-the uevent properly, after everything is properly initialized.
+The old kobject_init() function is on longer in use, so let us remove it
+from the public scope (kset mess in the kobject.c file still uses it,
+but that can be cleaned up later very simply.)
 
-Cc: Kyle McMartin <kyle@parisc-linux.org>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Grant Grundler <grundler@parisc-linux.org>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/parisc/pdc_stable.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ include/linux/kobject.h |    1 -
+ lib/kobject.c           |   11 +++--------
+ 2 files changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/parisc/pdc_stable.c b/drivers/parisc/pdc_stable.c
-index 880b10b..87bc6b7 100644
---- a/drivers/parisc/pdc_stable.c
-+++ b/drivers/parisc/pdc_stable.c
-@@ -991,13 +991,12 @@ pdcs_register_pathentries(void)
- 		if (err < 0)
- 			continue;
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index 84c5afd..53458b6 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -78,7 +78,6 @@ static inline const char * kobject_name(const struct kobject * kobj)
+ 	return kobj->k_name;
+ }
  
--		if ((err = kobject_set_name(&entry->kobj, "%s", entry->name)))
--			return err;
- 		entry->kobj.kset = paths_kset;
--		entry->kobj.ktype = &ktype_pdcspath;
--		if ((err = kobject_register(&entry->kobj)))
-+		err = kobject_init_and_add(&entry->kobj, &ktype_pdcspath, NULL,
-+					   "%s", entry->name);
-+		if (err)
- 			return err;
--		
-+
- 		/* kobject is now registered */
- 		write_lock(&entry->rw_lock);
- 		entry->ready = 2;
-@@ -1009,6 +1008,7 @@ pdcs_register_pathentries(void)
- 		}
+-extern void kobject_init(struct kobject *);
+ extern void kobject_init_ng(struct kobject *kobj, struct kobj_type *ktype);
+ extern int __must_check kobject_add(struct kobject *kobj,
+ 				    struct kobject *parent,
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 359e114..10d977b 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -124,11 +124,7 @@ char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
+ }
+ EXPORT_SYMBOL_GPL(kobject_get_path);
  
- 		write_unlock(&entry->rw_lock);
-+		kobject_uevent(&entry->kobj, KOBJ_ADD);
- 	}
- 	
- 	return 0;
+-/**
+- *	kobject_init - initialize object.
+- *	@kobj:	object in question.
+- */
+-void kobject_init(struct kobject * kobj)
++static void kobject_init_internal(struct kobject * kobj)
+ {
+ 	if (!kobj)
+ 		return;
+@@ -232,7 +228,7 @@ int kobject_register(struct kobject * kobj)
+ {
+ 	int error = -EINVAL;
+ 	if (kobj) {
+-		kobject_init(kobj);
++		kobject_init_internal(kobj);
+ 		error = kobject_add(kobj);
+ 		if (!error)
+ 			kobject_uevent(kobj, KOBJ_ADD);
+@@ -695,7 +691,7 @@ EXPORT_SYMBOL_GPL(kobject_create_and_add);
+ 
+ void kset_init(struct kset * k)
+ {
+-	kobject_init(&k->kobj);
++	kobject_init_internal(&k->kobj);
+ 	INIT_LIST_HEAD(&k->list);
+ 	spin_lock_init(&k->list_lock);
+ }
+@@ -887,7 +883,6 @@ struct kset *kset_create_and_add(const char *name,
+ }
+ EXPORT_SYMBOL_GPL(kset_create_and_add);
+ 
+-EXPORT_SYMBOL(kobject_init);
+ EXPORT_SYMBOL(kobject_register);
+ EXPORT_SYMBOL(kobject_unregister);
+ EXPORT_SYMBOL(kobject_get);
 -- 
 1.5.3.8
 
