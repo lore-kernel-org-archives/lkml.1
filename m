@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbYAYFNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYAYFQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668AbYAYFNG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 00:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbYAYFMz
+	id S1754142AbYAYFQT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 00:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYAYFQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 00:12:55 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:56761 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750954AbYAYFMy (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 00:12:54 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: David Newall <davidn@davidnewall.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>, akpm@osdl.org,
+	Fri, 25 Jan 2008 00:16:08 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:55907 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751216AbYAYFQH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 00:16:07 -0500
+X-Sasl-enc: D2FUM/YSN8ZujdyAkPzduJ4vZG7+cDmBXnH2Dpssv2XK 1201238165
+Subject: Re: [patch 06/26] mount options: fix autofs4
+From: Ian Kent <raven@themaw.net>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for mm] Remove iBCS support
-In-Reply-To: Your message of "Fri, 25 Jan 2008 12:44:05 +1030."
-             <479945ED.7040007@davidnewall.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20080120055544.GB19861@one.firstfloor.org> <4792E8E2.1090307@davidnewall.com> <20080120072922.GA21047@one.firstfloor.org> <4793F775.6090403@davidnewall.com> <20080122111205.GA25090@elte.hu> <4796081A.7060505@davidnewall.com> <20080122160114.GB23277@does.not.exist> <4798C511.8070305@davidnewall.com> <20080124172414.GD4476@does.not.exist> <4798D10C.6090109@davidnewall.com> <20080124181442.GE4476@does.not.exist>
-            <479945ED.7040007@davidnewall.com>
+In-Reply-To: <20080124193423.239049229@szeredi.hu>
+References: <20080124193341.166753833@szeredi.hu>
+	 <20080124193423.239049229@szeredi.hu>
+Content-Type: text/plain
+Date: Fri, 25 Jan 2008 14:13:04 +0900
+Message-Id: <1201237984.3040.62.camel@raven.themaw.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1201237935_2846P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
-Date: Fri, 25 Jan 2008 00:12:16 -0500
-Message-ID: <2927.1201237936@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1201237935_2846P
-Content-Type: text/plain; charset=us-ascii
 
-On Fri, 25 Jan 2008 12:44:05 +1030, David Newall said:
+On Thu, 2008-01-24 at 20:33 +0100, Miklos Szeredi wrote:
+> plain text document attachment (autofs4_opts.patch)
+> From: Miklos Szeredi <mszeredi@suse.cz>
+> 
+> Add uid= and gid= options to /proc/mounts for autofs4 filesystems.
 
-> The benefit is not zero.  Repeating myself: While the code is there, it
-> encourages either removal or repair.  If the option to remove is taken
-> off the table then it will eventually be repaired.
+Apologies, I did say I would do this but have been quite busy.
 
-Well, if the 2.4 version hasn't been ported by 2.6.24, maybe we'll check
-back in *another* 4 years when we're up to 2.6.48.  There's a limit to
-how much "eventually" we should drag along.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Acked-by Ian Kent <raven@themaw.net>
 
-We (especially Adrian) remove stuff from the kernel *all the time* with the
-notation "If anybody wants to get this hook back, it's easy enough to re-add it
-when an actual user shows up".  I don't see why iBCS should be treated any
-differently.
+I haven't tested this yet but it is fairly straight forward.
+I will check it out as soon as I get back to some work that I'm doing on
+autofs4 (next few days).
 
+> ---
+> 
+> Index: linux/fs/autofs4/inode.c
+> ===================================================================
+> --- linux.orig/fs/autofs4/inode.c	2008-01-22 15:52:42.000000000 +0100
+> +++ linux/fs/autofs4/inode.c	2008-01-22 23:36:02.000000000 +0100
+> @@ -188,11 +188,16 @@ out_kill_sb:
+>  static int autofs4_show_options(struct seq_file *m, struct vfsmount *mnt)
+>  {
+>  	struct autofs_sb_info *sbi = autofs4_sbi(mnt->mnt_sb);
+> +	struct inode *root_inode = mnt->mnt_sb->s_root->d_inode;
+>  
+>  	if (!sbi)
+>  		return 0;
+>  
+>  	seq_printf(m, ",fd=%d", sbi->pipefd);
+> +	if (root_inode->i_uid != 0)
+> +		seq_printf(m, ",uid=%u", root_inode->i_uid);
+> +	if (root_inode->i_gid != 0)
+> +		seq_printf(m, ",gid=%u", root_inode->i_gid);
+>  	seq_printf(m, ",pgrp=%d", sbi->oz_pgrp);
+>  	seq_printf(m, ",timeout=%lu", sbi->exp_timeout/HZ);
+>  	seq_printf(m, ",minproto=%d", sbi->min_proto);
+> 
+> --
 
---==_Exmh_1201237935_2846P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHmW+vcC3lWbTT17ARAt7SAJ4s49QOaywig9F8Y/Du1nR3nKZGUgCdFwpt
-GCl+AUFcvCQ5poimM8PJvWg=
-=2C/z
------END PGP SIGNATURE-----
-
---==_Exmh_1201237935_2846P--
