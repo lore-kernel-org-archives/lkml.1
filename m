@@ -1,210 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbYAYQ3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYAYQcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbYAYQ3a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 11:29:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYAYQ3W
+	id S1755868AbYAYQcT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 11:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbYAYQcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 11:29:22 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:61494 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752482AbYAYQ3V (ORCPT
+	Fri, 25 Jan 2008 11:32:03 -0500
+Received: from hpsmtp-eml11.kpnxchange.com ([213.75.38.111]:3984 "EHLO
+	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752785AbYAYQcB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 11:29:21 -0500
-Date: Fri, 25 Jan 2008 08:27:10 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Anton Salikhmetov <salikhmetov@gmail.com>
-Cc: linux-mm@kvack.org, jakob@unthought.net, linux-kernel@vger.kernel.org,
-       valdis.kletnieks@vt.edu, riel@redhat.com, ksm@42.dk,
-       staubach@redhat.com, jesper.juhl@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, protasnb@gmail.com, miklos@szeredi.hu,
-       r.e.wolff@bitwizard.nl, hidave.darkstar@gmail.com, hch@infradead.org
-Subject: Re: [PATCH -v8 4/4] The design document for memory-mapped file
- times update
-Message-Id: <20080125082710.09f321c1.randy.dunlap@oracle.com>
-In-Reply-To: <1201044083554-git-send-email-salikhmetov@gmail.com>
-References: <12010440803930-git-send-email-salikhmetov@gmail.com>
-	<1201044083554-git-send-email-salikhmetov@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 25 Jan 2008 11:32:01 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH] [NET]: Remove PowerPC code from fec.c
+Date: Fri, 25 Jan 2008 17:31:54 +0100
+User-Agent: KMail/1.9.7
+Cc: galak@kernel.crashing.org, geert@linux-m68k.org, gerg@uclinux.org,
+       jgarzik@pobox.com, linux-kernel@vger.kernel.org,
+       linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, scottwood@freescale.com,
+       vitb@kernel.crashing.org
+References: <4799F349.9090102@scram.de> <E1JIQpQ-0006Xj-RR@faramir.fjphome.nl> <479A087F.5010305@scram.de>
+In-Reply-To: <479A087F.5010305@scram.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200801251731.56378.elendil@planet.nl>
+X-OriginalArrivalTime: 25 Jan 2008 16:31:56.0717 (UTC) FILETIME=[CD1B0DD0:01C85F6F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 Jan 2008 02:21:20 +0300 Anton Salikhmetov wrote:
+On Friday 25 January 2008, Jochen Friedrich wrote:
+> > Jochen Friedrich wrote:
+> >> +++ b/drivers/net/fec.c
+> >> @@ -23,6 +23,9 @@
+> >>   *
+> >>   * Bug fixes and cleanup by Philippe De Muyter (phdm@macqel.be)
+> >>   * Copyright (c) 2004-2006 Macq Electronique SA.
+> >> + *
+> >> + * This driver is now only used on ColdFire processors. Remove conditional
+> >> + * Powerpc code. 
+> >>   */
+> >
+> > This comment makes sense for a changelog, but IMO it makes no sense at
+> > all to add it to the file.
+>
+> I just added it to clarify this code is now only used on m68knommu
+> (Coldfire). The comments on top are mailny about MPC860T CPUs (PowerPC),
+> however the driver is no longer used for these CPUs.
+>
+> Maybe the wording should be changed to:
+>
+> This driver is now only used on ColdFire (m68knommu) processors.
+> Conditional PowerPC code has been removed.
 
-> Add a document, which describes how the POSIX requirements on updating
-> memory-mapped file times are addressed in Linux.
-
-Hi Anton,
-
-Just a few small comments below...
-
-> Signed-off-by: Anton Salikhmetov <salikhmetov@gmail.com>
-> ---
->  Documentation/vm/00-INDEX  |    2 +
->  Documentation/vm/msync.txt |  117 ++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 119 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/vm/00-INDEX b/Documentation/vm/00-INDEX
-> index 2131b00..2726c8d 100644
-> --- a/Documentation/vm/00-INDEX
-> +++ b/Documentation/vm/00-INDEX
-> @@ -6,6 +6,8 @@ hugetlbpage.txt
->  	- a brief summary of hugetlbpage support in the Linux kernel.
->  locking
->  	- info on how locking and synchronization is done in the Linux vm code.
-> +msync.txt
-> +	- the design document for memory-mapped file times update
->  numa
->  	- information about NUMA specific code in the Linux vm.
->  numa_memory_policy.txt
-> diff --git a/Documentation/vm/msync.txt b/Documentation/vm/msync.txt
-> new file mode 100644
-> index 0000000..571a766
-> --- /dev/null
-> +++ b/Documentation/vm/msync.txt
-> @@ -0,0 +1,117 @@
-> +
-> +	The msync() system call and memory-mapped file times
-> +
-> +	Copyright (C) 2008 Anton Salikhmetov
-> +
-> +The POSIX standard requires that any write reference to memory-mapped file
-> +data should result in updating the ctime and mtime for that file. Moreover,
-> +the standard mandates that updated file times should become visible to the
-> +world no later than at the next call to msync().
-> +
-> +Failure to meet this requirement creates difficulties for certain classes
-> +of important applications. For instance, database backup systems fail to
-> +pick up the files modified via the mmap() interface. Also, this is a
-> +security hole, which allows forging file data in such a manner that proving
-> +the fact that file data was modified is not possible.
-> +
-> +Briefly put, this requirement can be stated as follows:
-> +
-> +	once the file data has changed, the operating system
-> +	should acknowledge this fact by updating file metadata.
-> +
-> +This document describes how this POSIX requirement is addressed in Linux.
-> +
-> +1. Requirements
-> +
-> +1.1) the POSIX standard requires updating ctime and mtime not later
-> +than at the call to msync() with MS_SYNC or MS_ASYNC flags;
-> +
-> +1.2) in existing POSIX implementations, ctime and mtime
-> +get updated not later than at the call to fsync();
-> +
-> +1.3) in existing POSIX implementation, ctime and mtime
-> +get updated not later than at the call to sync(), the "auto-update" feature;
-> +
-> +1.4) the customers require and the common sense suggests that
-> +ctime and mtime should be updated not later than at the call to munmap()
-> +or exit(), the latter function implying an implicit call to munmap();
-> +
-> +1.5) the (1.1) item should be satisfied if the file is a block device
-> +special file;
-> +
-> +1.6) the (1.1) item should be satisfied for files residing on
-> +memory-backed filesystems such as tmpfs, too.
-> +
-> +The following operating systems were used as the reference platforms
-> +and are referred to as the "existing implementations" above:
-> +HP-UX B.11.31 and FreeBSD 6.2-RELEASE.
-> +
-> +2. Lazy update
-> +
-> +Many attempts before the current version implemented the "lazy update" approach
-> +to satisfying the requirements given above. Within the latter approach, ctime
-> +and mtime get updated at last moment allowable.
-> +
-> +Since we don't update the file times immediately, some Flag has to be
-> +used. When up, this Flag means that the file data was modified and
-> +the file times need to be updated as soon as possible.
-
-I would s/up/set/ above and below.
-
-> +Any existing "dirty" flag which, when up, mean that a page has been written to,
-
-s/mean/means/
-
-> +is not suitable for this purpose. Indeed, msync() called with MS_ASYNC
-> +would have to reset this "dirty" flag after updating ctime and mtime.
-> +The sys_msync() function itself is basically a no-op in the MS_ASYNC case.
-> +Thereby, the synchronization routines relying upon this "dirty" flag
-> +would lose data. Therefore, a new Flag has to be introduced.
-> +
-> +The (1.5) item coupled with (1.3) requirement leads to hard work with
-> +the block device inodes. Specifically, during writeback it is impossible to
-> +tell which block device file was originally mapped. Therefore, we need to
-> +traverse the list of "active" devices associated with the block device inode.
-> +This would lead to updating file times for block device files, which were not
-> +taking part in the data transfer.
-> +
-> +Also all versions prior to version 6 failed to correctly process ctime and
-> +mtime for files on the memory-backed filesystems such as tmpfs. So the (1.6)
-> +requirement was not satisfied.
-> +
-> +If a write reference has occurred between two consecutive calls to msync()
-> +with MS_ASYNC, the second call to the latter function should take into
-> +account the last write reference. The last write reference can not be caught
-
-s/can not/cannot/
-
-> +if no pagefault occurs. Hence a pagefault needs to be forced. This can be done
-> +using two different approaches. The first one is to synchronize data even when
-> +msync() was called with MS_ASYNC. This is not acceptable because the current
-> +design of the sys_msync() routine forbids starting I/O for the MS_ASYNC case.
-> +The second approach is to write protect the page for triggering a pagefault
-
-s/write protect/write-protect/
-
-> +at the next write reference. Note that the dirty flag for the page should not
-> +be cleared thereby.
-> +
-> +In the "lazy update" approach, the requirements (1.1), (1.2), (1.3), and (1.4)
-> +taken together result in adding code at least to the following kernel routines:
-> +sys_msync(), do_fsync(), some routine in the unmap() call path, some routine
-> +in the sync() call path.
-> +
-> +Finally, a file_update_time()-like function would have to be created for
-> +processing the inode objects, not file objects. This is due to the fact that
-> +during the sync() operation, the file object may not exist any more, only
-> +the inode is known.
-> +
-> +To sum up: this "lazy" approach leads to massive changes, incurs overhead in
-> +the block device case, and requires complicated design decisions.
-> +
-> +3. Immediate update
-> +
-> +OK, still reading? There's a better way.
-> +
-> +In a fashion analogous to what happens at write(2), react to the fact
-> +that the page gets dirtied by updating the file times immediately.
-> +Thereby any page writeback happens when the write reference has already
-> +been accounted for from the view point of file times.
-
-Probably s/view point/viewpoint/.
-
-> +
-> +The only problem which remains is to force refreshing file times at the write
-> +reference following a call to msync() with MS_ASYNC. As mentioned above, all
-> +that is needed here is to force a pagefault.
-> +
-> +The vma_wrprotect() routine introduced in this patch series is called
-> +from sys_msync() in the MS_ASYNC case. The former routine is essentially
-> +a version of existing page_mkclean_one() function from mm/rmap.c. Unlike
-> +the latter function, the vma_wrprotect() does not touch the dirty bit.
-> -- 
-
-Thanks for the design document.
----
-~Randy
+Yes, that certainly makes more sense, although IMHO the second sentence is
+still somewhat redundant. (My problem was mainly with the second sentence.
+I should have made that more clear, sorry.)
