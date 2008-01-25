@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759492AbYAYIhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932882AbYAYIhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759492AbYAYIhP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:37:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764157AbYAYIBo
+	id S932882AbYAYIhs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764160AbYAYIBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:01:44 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53696 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 03:01:45 -0500
+Received: from mx1.suse.de ([195.135.220.2]:59452 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764090AbYAYH7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 02:59:54 -0500
+	id S1764075AbYAYH7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 02:59:50 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 145/196] driver core: Introduce default attribute groups.
-Date: Thu, 24 Jan 2008 23:32:54 -0800
-Message-Id: <1201246425-5058-66-git-send-email-gregkh@suse.de>
+Subject: [PATCH 183/196] driver core: fix build with SYSFS=n
+Date: Thu, 24 Jan 2008 23:33:32 -0800
+Message-Id: <1201246425-5058-104-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -23,103 +23,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-This is lot like default attributes for devices (and indeed,
-a lot of the code is lifted from there).
+When SYSFS=n and MODULES=y, build ends with:
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+linux-2.6.24-rc6-mm1/drivers/base/module.c: In function 'module_add_driver':
+linux-2.6.24-rc6-mm1/drivers/base/module.c:49: error: 'module_kset' undeclared (first use in this function)
+make[3]: *** [drivers/base/module.o] Error 1
+
+Below is one possible fix.
+Build-tested with all 4 config combinations of SYSFS & MODULES.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/driver.c  |   42 +++++++++++++++++++++++++++++++++++++++++-
- include/linux/device.h |    1 +
- 2 files changed, 42 insertions(+), 1 deletions(-)
+ drivers/base/Makefile |    2 ++
+ drivers/base/base.h   |    2 +-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/base/driver.c b/drivers/base/driver.c
-index f94be40..e3b5840 100644
---- a/drivers/base/driver.c
-+++ b/drivers/base/driver.c
-@@ -142,6 +142,37 @@ void put_driver(struct device_driver * drv)
- 	kobject_put(&drv->kobj);
- }
+diff --git a/drivers/base/Makefile b/drivers/base/Makefile
+index ff26968..63e09c0 100644
+--- a/drivers/base/Makefile
++++ b/drivers/base/Makefile
+@@ -11,7 +11,9 @@ obj-$(CONFIG_FW_LOADER)	+= firmware_class.o
+ obj-$(CONFIG_NUMA)	+= node.o
+ obj-$(CONFIG_MEMORY_HOTPLUG_SPARSE) += memory.o
+ obj-$(CONFIG_SMP)	+= topology.o
++ifeq ($(CONFIG_SYSFS),y)
+ obj-$(CONFIG_MODULES)	+= module.o
++endif
+ obj-$(CONFIG_SYS_HYPERVISOR) += hypervisor.o
  
-+static int driver_add_groups(struct device_driver *drv,
-+			     struct attribute_group **groups)
-+{
-+	int error = 0;
-+	int i;
-+
-+	if (groups) {
-+		for (i = 0; groups[i]; i++) {
-+			error = sysfs_create_group(&drv->kobj, groups[i]);
-+			if (error) {
-+				while (--i >= 0)
-+					sysfs_remove_group(&drv->kobj,
-+							   groups[i]);
-+				break;
-+			}
-+		}
-+	}
-+	return error;
-+}
-+
-+static void driver_remove_groups(struct device_driver *drv,
-+				 struct attribute_group **groups)
-+{
-+	int i;
-+
-+	if (groups)
-+		for (i = 0; groups[i]; i++)
-+			sysfs_remove_group(&drv->kobj, groups[i]);
-+}
-+
-+
- /**
-  *	driver_register - register driver with bus
-  *	@drv:	driver to register
-@@ -152,13 +183,21 @@ void put_driver(struct device_driver * drv)
-  */
- int driver_register(struct device_driver * drv)
- {
-+	int ret;
-+
- 	if ((drv->bus->probe && drv->probe) ||
- 	    (drv->bus->remove && drv->remove) ||
- 	    (drv->bus->shutdown && drv->shutdown)) {
- 		printk(KERN_WARNING "Driver '%s' needs updating - please use bus_type methods\n", drv->name);
- 	}
- 	klist_init(&drv->klist_devices, NULL, NULL);
--	return bus_add_driver(drv);
-+	ret = bus_add_driver(drv);
-+	if (ret)
-+		return ret;
-+	ret = driver_add_groups(drv, drv->groups);
-+	if (ret)
-+		bus_remove_driver(drv);
-+	return ret;
- }
+ ifeq ($(CONFIG_DEBUG_DRIVER),y)
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index a74ceda..f7ad65a 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -81,7 +81,7 @@ extern int devres_release_all(struct device *dev);
  
- /**
-@@ -170,6 +209,7 @@ int driver_register(struct device_driver * drv)
+ extern struct kset *devices_kset;
  
- void driver_unregister(struct device_driver * drv)
- {
-+	driver_remove_groups(drv, drv->groups);
- 	bus_remove_driver(drv);
- }
- 
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 3f24bf4..d974dda 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -129,6 +129,7 @@ struct device_driver {
- 	void	(*shutdown)	(struct device * dev);
- 	int	(*suspend)	(struct device * dev, pm_message_t state);
- 	int	(*resume)	(struct device * dev);
-+	struct attribute_group **groups;
- };
- 
- 
+-#ifdef CONFIG_MODULES
++#if defined(CONFIG_MODULES) && defined(CONFIG_SYSFS)
+ extern void module_add_driver(struct module *mod, struct device_driver *drv);
+ extern void module_remove_driver(struct device_driver *drv);
+ #else
 -- 
 1.5.3.8
 
