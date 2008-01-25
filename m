@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbYAYIdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932576AbYAYIdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756043AbYAYIdD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 03:33:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760636AbYAYIBb
+	id S932576AbYAYIdk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 03:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764131AbYAYIBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 03:01:31 -0500
-Received: from mx2.suse.de ([195.135.220.15]:53728 "EHLO mx2.suse.de"
+	Fri, 25 Jan 2008 03:01:33 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:53735 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763855AbYAYIAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 03:00:04 -0500
+	id S1760679AbYAYIAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 03:00:06 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 158/196] Driver core: convert block from raw kobjects to core devices
-Date: Thu, 24 Jan 2008 23:33:07 -0800
-Message-Id: <1201246425-5058-79-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 178/196] kobject: update the kobject/kset documentation
+Date: Thu, 24 Jan 2008 23:33:27 -0800
+Message-Id: <1201246425-5058-99-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080125071127.GA4860@kroah.com>
 References: <20080125071127.GA4860@kroah.com>
@@ -22,1820 +22,411 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+This provides a much-needed kobject and kset documentation update.
 
-This moves the block devices to /sys/class/block. It will create a
-flat list of all block devices, with the disks and partitions in one
-directory. For compatibility /sys/block is created and contains symlinks
-to the disks.
+Thanks to Kay Sievers, Alan Stern, Jonathan Corbet, Randy Dunlap, Jan
+Engelhardt, and others for reviewing and providing help with this
+document.
 
-  /sys/class/block
-  |-- sda -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda
-  |-- sda1 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda1
-  |-- sda10 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda10
-  |-- sda5 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda5
-  |-- sda6 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda6
-  |-- sda7 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda7
-  |-- sda8 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda8
-  |-- sda9 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda9
-  `-- sr0 -> ../../devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0
-
-  /sys/block/
-  |-- sda -> ../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda
-  `-- sr0 -> ../devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0
-
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- block/genhd.c              |  416 +++++++++++++++++++-------------------------
- block/ll_rw_blk.c          |    4 +-
- drivers/base/class.c       |    7 +
- drivers/base/core.c        |   20 ++-
- drivers/block/aoe/aoeblk.c |   51 +++---
- drivers/block/nbd.c        |   15 +-
- drivers/ide/ide-probe.c    |    2 +-
- drivers/md/dm.c            |    4 +-
- drivers/md/md.c            |    8 +-
- fs/block_dev.c             |    8 +-
- fs/partitions/check.c      |  315 +++++++++++----------------------
- include/linux/genhd.h      |   37 +++--
- init/do_mounts.c           |  108 +-----------
- 13 files changed, 385 insertions(+), 610 deletions(-)
+ Documentation/kobject.txt |  386 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 386 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/kobject.txt
 
-diff --git a/block/genhd.c b/block/genhd.c
-index 69aa738..5e4ab4b 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -17,9 +17,10 @@
- #include <linux/buffer_head.h>
- #include <linux/mutex.h>
- 
--struct kset *block_kset;
--static struct kset_uevent_ops block_uevent_ops;
--static DEFINE_MUTEX(block_subsys_lock);
-+static DEFINE_MUTEX(block_class_lock);
-+#ifndef CONFIG_SYSFS_DEPRECATED
-+struct kobject *block_depr;
-+#endif
- 
- /*
-  * Can be deleted altogether. Later.
-@@ -38,19 +39,17 @@ static inline int major_to_index(int major)
- }
- 
- #ifdef CONFIG_PROC_FS
--
- void blkdev_show(struct seq_file *f, off_t offset)
- {
- 	struct blk_major_name *dp;
- 
- 	if (offset < BLKDEV_MAJOR_HASH_SIZE) {
--		mutex_lock(&block_subsys_lock);
-+		mutex_lock(&block_class_lock);
- 		for (dp = major_names[offset]; dp; dp = dp->next)
- 			seq_printf(f, "%3d %s\n", dp->major, dp->name);
--		mutex_unlock(&block_subsys_lock);
-+		mutex_unlock(&block_class_lock);
- 	}
- }
--
- #endif /* CONFIG_PROC_FS */
- 
- int register_blkdev(unsigned int major, const char *name)
-@@ -58,7 +57,7 @@ int register_blkdev(unsigned int major, const char *name)
- 	struct blk_major_name **n, *p;
- 	int index, ret = 0;
- 
--	mutex_lock(&block_subsys_lock);
-+	mutex_lock(&block_class_lock);
- 
- 	/* temporary */
- 	if (major == 0) {
-@@ -103,7 +102,7 @@ int register_blkdev(unsigned int major, const char *name)
- 		kfree(p);
- 	}
- out:
--	mutex_unlock(&block_subsys_lock);
-+	mutex_unlock(&block_class_lock);
- 	return ret;
- }
- 
-@@ -115,7 +114,7 @@ void unregister_blkdev(unsigned int major, const char *name)
- 	struct blk_major_name *p = NULL;
- 	int index = major_to_index(major);
- 
--	mutex_lock(&block_subsys_lock);
-+	mutex_lock(&block_class_lock);
- 	for (n = &major_names[index]; *n; n = &(*n)->next)
- 		if ((*n)->major == major)
- 			break;
-@@ -125,7 +124,7 @@ void unregister_blkdev(unsigned int major, const char *name)
- 		p = *n;
- 		*n = p->next;
- 	}
--	mutex_unlock(&block_subsys_lock);
-+	mutex_unlock(&block_class_lock);
- 	kfree(p);
- }
- 
-@@ -138,29 +137,30 @@ static struct kobj_map *bdev_map;
-  * range must be nonzero
-  * The hash chain is sorted on range, so that subranges can override.
-  */
--void blk_register_region(dev_t dev, unsigned long range, struct module *module,
-+void blk_register_region(dev_t devt, unsigned long range, struct module *module,
- 			 struct kobject *(*probe)(dev_t, int *, void *),
- 			 int (*lock)(dev_t, void *), void *data)
- {
--	kobj_map(bdev_map, dev, range, module, probe, lock, data);
-+	kobj_map(bdev_map, devt, range, module, probe, lock, data);
- }
- 
- EXPORT_SYMBOL(blk_register_region);
- 
--void blk_unregister_region(dev_t dev, unsigned long range)
-+void blk_unregister_region(dev_t devt, unsigned long range)
- {
--	kobj_unmap(bdev_map, dev, range);
-+	kobj_unmap(bdev_map, devt, range);
- }
- 
- EXPORT_SYMBOL(blk_unregister_region);
- 
--static struct kobject *exact_match(dev_t dev, int *part, void *data)
-+static struct kobject *exact_match(dev_t devt, int *part, void *data)
- {
- 	struct gendisk *p = data;
--	return &p->kobj;
+diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
+new file mode 100644
+index 0000000..bf3256e
+--- /dev/null
++++ b/Documentation/kobject.txt
+@@ -0,0 +1,386 @@
++Everything you never wanted to know about kobjects, ksets, and ktypes
 +
-+	return &p->dev.kobj;
- }
- 
--static int exact_lock(dev_t dev, void *data)
-+static int exact_lock(dev_t devt, void *data)
- {
- 	struct gendisk *p = data;
- 
-@@ -195,8 +195,6 @@ void unlink_gendisk(struct gendisk *disk)
- 			      disk->minors);
- }
- 
--#define to_disk(obj) container_of(obj,struct gendisk,kobj)
--
- /**
-  * get_gendisk - get partitioning information for a given device
-  * @dev: device to get partitioning information for
-@@ -204,10 +202,12 @@ void unlink_gendisk(struct gendisk *disk)
-  * This function gets the structure containing partitioning
-  * information for the given device @dev.
-  */
--struct gendisk *get_gendisk(dev_t dev, int *part)
-+struct gendisk *get_gendisk(dev_t devt, int *part)
- {
--	struct kobject *kobj = kobj_lookup(bdev_map, dev, part);
--	return  kobj ? to_disk(kobj) : NULL;
-+	struct kobject *kobj = kobj_lookup(bdev_map, devt, part);
-+	struct device *dev = kobj_to_dev(kobj);
++Greg Kroah-Hartman <gregkh@suse.de>
 +
-+	return  kobj ? dev_to_disk(dev) : NULL;
- }
- 
- /*
-@@ -217,13 +217,17 @@ struct gendisk *get_gendisk(dev_t dev, int *part)
-  */
- void __init printk_all_partitions(void)
- {
--	int n;
-+	struct device *dev;
- 	struct gendisk *sgp;
-+	char buf[BDEVNAME_SIZE];
-+	int n;
- 
--	mutex_lock(&block_subsys_lock);
-+	mutex_lock(&block_class_lock);
- 	/* For each block device... */
--	list_for_each_entry(sgp, &block_kset->list, kobj.entry) {
--		char buf[BDEVNAME_SIZE];
-+	list_for_each_entry(dev, &block_class.devices, node) {
-+		if (dev->type != &disk_type)
-+			continue;
-+		sgp = dev_to_disk(dev);
- 		/*
- 		 * Don't show empty devices or things that have been surpressed
- 		 */
-@@ -256,38 +260,46 @@ void __init printk_all_partitions(void)
- 				sgp->major, n + 1 + sgp->first_minor,
- 				(unsigned long long)sgp->part[n]->nr_sects >> 1,
- 				disk_name(sgp, n + 1, buf));
--		} /* partition subloop */
--	} /* Block device loop */
-+		}
-+	}
- 
--	mutex_unlock(&block_subsys_lock);
--	return;
-+	mutex_unlock(&block_class_lock);
- }
- 
- #ifdef CONFIG_PROC_FS
- /* iterator */
- static void *part_start(struct seq_file *part, loff_t *pos)
- {
--	struct list_head *p;
--	loff_t l = *pos;
-+	loff_t k = *pos;
-+	struct device *dev;
- 
--	mutex_lock(&block_subsys_lock);
--	list_for_each(p, &block_kset->list)
--		if (!l--)
--			return list_entry(p, struct gendisk, kobj.entry);
-+	mutex_lock(&block_class_lock);
-+	list_for_each_entry(dev, &block_class.devices, node) {
-+		if (dev->type != &disk_type)
-+			continue;
-+		if (!k--)
-+			return dev_to_disk(dev);
-+	}
- 	return NULL;
- }
- 
- static void *part_next(struct seq_file *part, void *v, loff_t *pos)
- {
--	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
-+	struct gendisk *gp = v;
-+	struct device *dev;
- 	++*pos;
--	return p==&block_kset->list ? NULL :
--		list_entry(p, struct gendisk, kobj.entry);
-+	list_for_each_entry(dev, &gp->dev.node, node) {
-+		if (&dev->node == &block_class.devices)
-+			return NULL;
-+		if (dev->type == &disk_type)
-+			return dev_to_disk(dev);
-+	}
-+	return NULL;
- }
- 
- static void part_stop(struct seq_file *part, void *v)
- {
--	mutex_unlock(&block_subsys_lock);
-+	mutex_unlock(&block_class_lock);
- }
- 
- static int show_partition(struct seq_file *part, void *v)
-@@ -296,7 +308,7 @@ static int show_partition(struct seq_file *part, void *v)
- 	int n;
- 	char buf[BDEVNAME_SIZE];
- 
--	if (&sgp->kobj.entry == block_kset->list.next)
-+	if (&sgp->dev.node == block_class.devices.next)
- 		seq_puts(part, "major minor  #blocks  name\n\n");
- 
- 	/* Don't show non-partitionable removeable devices or empty devices */
-@@ -326,109 +338,81 @@ static int show_partition(struct seq_file *part, void *v)
- }
- 
- struct seq_operations partitions_op = {
--	.start =part_start,
--	.next =	part_next,
--	.stop =	part_stop,
--	.show =	show_partition
-+	.start	= part_start,
-+	.next	= part_next,
-+	.stop	= part_stop,
-+	.show	= show_partition
- };
- #endif
- 
- 
- extern int blk_dev_init(void);
- 
--static struct kobject *base_probe(dev_t dev, int *part, void *data)
-+static struct kobject *base_probe(dev_t devt, int *part, void *data)
- {
--	if (request_module("block-major-%d-%d", MAJOR(dev), MINOR(dev)) > 0)
-+	if (request_module("block-major-%d-%d", MAJOR(devt), MINOR(devt)) > 0)
- 		/* Make old-style 2.4 aliases work */
--		request_module("block-major-%d", MAJOR(dev));
-+		request_module("block-major-%d", MAJOR(devt));
- 	return NULL;
- }
- 
- static int __init genhd_device_init(void)
- {
--	bdev_map = kobj_map_init(base_probe, &block_subsys_lock);
-+	class_register(&block_class);
-+	bdev_map = kobj_map_init(base_probe, &block_class_lock);
- 	blk_dev_init();
--	block_kset = kset_create_and_add("block", &block_uevent_ops, NULL);
--	if (!block_kset) {
--		printk(KERN_WARNING "%s: kset_create error\n", __FUNCTION__);
--		return -ENOMEM;
--	}
++Based on an original article by Jon Corbet for lwn.net written October 1,
++2003 and located at http://lwn.net/Articles/51437/
 +
-+#ifndef CONFIG_SYSFS_DEPRECATED
-+	/* create top-level block dir */
-+	block_depr = kobject_create_and_add("block", NULL);
-+#endif
- 	return 0;
- }
- 
- subsys_initcall(genhd_device_init);
- 
--
--
--/*
-- * kobject & sysfs bindings for block devices
-- */
--static ssize_t disk_attr_show(struct kobject *kobj, struct attribute *attr,
--			      char *page)
-+static ssize_t disk_range_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
- {
--	struct gendisk *disk = to_disk(kobj);
--	struct disk_attribute *disk_attr =
--		container_of(attr,struct disk_attribute,attr);
--	ssize_t ret = -EIO;
-+	struct gendisk *disk = dev_to_disk(dev);
- 
--	if (disk_attr->show)
--		ret = disk_attr->show(disk,page);
--	return ret;
-+	return sprintf(buf, "%d\n", disk->minors);
- }
- 
--static ssize_t disk_attr_store(struct kobject * kobj, struct attribute * attr,
--			       const char *page, size_t count)
-+static ssize_t disk_removable_show(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
- {
--	struct gendisk *disk = to_disk(kobj);
--	struct disk_attribute *disk_attr =
--		container_of(attr,struct disk_attribute,attr);
--	ssize_t ret = 0;
-+	struct gendisk *disk = dev_to_disk(dev);
- 
--	if (disk_attr->store)
--		ret = disk_attr->store(disk, page, count);
--	return ret;
-+	return sprintf(buf, "%d\n",
-+		       (disk->flags & GENHD_FL_REMOVABLE ? 1 : 0));
- }
- 
--static struct sysfs_ops disk_sysfs_ops = {
--	.show	= &disk_attr_show,
--	.store	= &disk_attr_store,
--};
--
--static ssize_t disk_uevent_store(struct gendisk * disk,
--				 const char *buf, size_t count)
-+static ssize_t disk_size_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
- {
--	kobject_uevent(&disk->kobj, KOBJ_ADD);
--	return count;
--}
--static ssize_t disk_dev_read(struct gendisk * disk, char *page)
--{
--	dev_t base = MKDEV(disk->major, disk->first_minor); 
--	return print_dev_t(page, base);
--}
--static ssize_t disk_range_read(struct gendisk * disk, char *page)
--{
--	return sprintf(page, "%d\n", disk->minors);
--}
--static ssize_t disk_removable_read(struct gendisk * disk, char *page)
--{
--	return sprintf(page, "%d\n",
--		       (disk->flags & GENHD_FL_REMOVABLE ? 1 : 0));
-+	struct gendisk *disk = dev_to_disk(dev);
- 
-+	return sprintf(buf, "%llu\n", (unsigned long long)get_capacity(disk));
- }
--static ssize_t disk_size_read(struct gendisk * disk, char *page)
--{
--	return sprintf(page, "%llu\n", (unsigned long long)get_capacity(disk));
--}
--static ssize_t disk_capability_read(struct gendisk *disk, char *page)
++Last updated December 19, 2007
 +
-+static ssize_t disk_capability_show(struct device *dev,
-+				    struct device_attribute *attr, char *buf)
- {
--	return sprintf(page, "%x\n", disk->flags);
-+	struct gendisk *disk = dev_to_disk(dev);
 +
-+	return sprintf(buf, "%x\n", disk->flags);
- }
--static ssize_t disk_stats_read(struct gendisk * disk, char *page)
++Part of the difficulty in understanding the driver model - and the kobject
++abstraction upon which it is built - is that there is no obvious starting
++place. Dealing with kobjects requires understanding a few different types,
++all of which make reference to each other. In an attempt to make things
++easier, we'll take a multi-pass approach, starting with vague terms and
++adding detail as we go. To that end, here are some quick definitions of
++some terms we will be working with.
 +
-+static ssize_t disk_stat_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
- {
-+	struct gendisk *disk = dev_to_disk(dev);
++ - A kobject is an object of type struct kobject.  Kobjects have a name
++   and a reference count.  A kobject also has a parent pointer (allowing
++   objects to be arranged into hierarchies), a specific type, and,
++   usually, a representation in the sysfs virtual filesystem.
 +
- 	preempt_disable();
- 	disk_round_stats(disk);
- 	preempt_enable();
--	return sprintf(page,
-+	return sprintf(buf,
- 		"%8lu %8lu %8llu %8u "
- 		"%8lu %8lu %8llu %8u "
- 		"%8u %8u %8u"
-@@ -445,40 +429,21 @@ static ssize_t disk_stats_read(struct gendisk * disk, char *page)
- 		jiffies_to_msecs(disk_stat_read(disk, io_ticks)),
- 		jiffies_to_msecs(disk_stat_read(disk, time_in_queue)));
- }
--static struct disk_attribute disk_attr_uevent = {
--	.attr = {.name = "uevent", .mode = S_IWUSR },
--	.store	= disk_uevent_store
--};
--static struct disk_attribute disk_attr_dev = {
--	.attr = {.name = "dev", .mode = S_IRUGO },
--	.show	= disk_dev_read
--};
--static struct disk_attribute disk_attr_range = {
--	.attr = {.name = "range", .mode = S_IRUGO },
--	.show	= disk_range_read
--};
--static struct disk_attribute disk_attr_removable = {
--	.attr = {.name = "removable", .mode = S_IRUGO },
--	.show	= disk_removable_read
--};
--static struct disk_attribute disk_attr_size = {
--	.attr = {.name = "size", .mode = S_IRUGO },
--	.show	= disk_size_read
--};
--static struct disk_attribute disk_attr_capability = {
--	.attr = {.name = "capability", .mode = S_IRUGO },
--	.show	= disk_capability_read
--};
--static struct disk_attribute disk_attr_stat = {
--	.attr = {.name = "stat", .mode = S_IRUGO },
--	.show	= disk_stats_read
--};
- 
- #ifdef CONFIG_FAIL_MAKE_REQUEST
-+static ssize_t disk_fail_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
-+{
-+	struct gendisk *disk = dev_to_disk(dev);
++   Kobjects are generally not interesting on their own; instead, they are
++   usually embedded within some other structure which contains the stuff
++   the code is really interested in.
 +
-+	return sprintf(buf, "%d\n", disk->flags & GENHD_FL_FAIL ? 1 : 0);
-+}
- 
--static ssize_t disk_fail_store(struct gendisk * disk,
-+static ssize_t disk_fail_store(struct device *dev,
-+			       struct device_attribute *attr,
- 			       const char *buf, size_t count)
- {
-+	struct gendisk *disk = dev_to_disk(dev);
- 	int i;
- 
- 	if (count > 0 && sscanf(buf, "%d", &i) > 0) {
-@@ -490,134 +455,100 @@ static ssize_t disk_fail_store(struct gendisk * disk,
- 
- 	return count;
- }
--static ssize_t disk_fail_read(struct gendisk * disk, char *page)
--{
--	return sprintf(page, "%d\n", disk->flags & GENHD_FL_FAIL ? 1 : 0);
--}
--static struct disk_attribute disk_attr_fail = {
--	.attr = {.name = "make-it-fail", .mode = S_IRUGO | S_IWUSR },
--	.store	= disk_fail_store,
--	.show	= disk_fail_read
--};
- 
- #endif
- 
--static struct attribute * default_attrs[] = {
--	&disk_attr_uevent.attr,
--	&disk_attr_dev.attr,
--	&disk_attr_range.attr,
--	&disk_attr_removable.attr,
--	&disk_attr_size.attr,
--	&disk_attr_stat.attr,
--	&disk_attr_capability.attr,
-+static DEVICE_ATTR(range, S_IRUGO, disk_range_show, NULL);
-+static DEVICE_ATTR(removable, S_IRUGO, disk_removable_show, NULL);
-+static DEVICE_ATTR(size, S_IRUGO, disk_size_show, NULL);
-+static DEVICE_ATTR(capability, S_IRUGO, disk_capability_show, NULL);
-+static DEVICE_ATTR(stat, S_IRUGO, disk_stat_show, NULL);
- #ifdef CONFIG_FAIL_MAKE_REQUEST
--	&disk_attr_fail.attr,
-+static struct device_attribute dev_attr_fail =
-+	__ATTR(make-it-fail, S_IRUGO|S_IWUSR, disk_fail_show, disk_fail_store);
- #endif
--	NULL,
++   No structure should EVER have more than one kobject embedded within it.
++   If it does, the reference counting for the object is sure to be messed
++   up and incorrect, and your code will be buggy.  So do not do this.
 +
-+static struct attribute *disk_attrs[] = {
-+	&dev_attr_range.attr,
-+	&dev_attr_removable.attr,
-+	&dev_attr_size.attr,
-+	&dev_attr_capability.attr,
-+	&dev_attr_stat.attr,
-+#ifdef CONFIG_FAIL_MAKE_REQUEST
-+	&dev_attr_fail.attr,
-+#endif
-+	NULL
++ - A ktype is the type of object that embeds a kobject.  Every structure
++   that embeds a kobject needs a corresponding ktype.  The ktype controls
++   what happens to the kobject when it is created and destroyed.
++
++ - A kset is a group of kobjects.  These kobjects can be of the same ktype
++   or belong to different ktypes.  The kset is the basic container type for
++   collections of kobjects. Ksets contain their own kobjects, but you can
++   safely ignore that implementation detail as the kset core code handles
++   this kobject automatically.
++
++   When you see a sysfs directory full of other directories, generally each
++   of those directories corresponds to a kobject in the same kset.
++
++We'll look at how to create and manipulate all of these types. A bottom-up
++approach will be taken, so we'll go back to kobjects.
++
++
++Embedding kobjects
++
++It is rare for kernel code to create a standalone kobject, with one major
++exception explained below.  Instead, kobjects are used to control access to
++a larger, domain-specific object.  To this end, kobjects will be found
++embedded in other structures.  If you are used to thinking of things in
++object-oriented terms, kobjects can be seen as a top-level, abstract class
++from which other classes are derived.  A kobject implements a set of
++capabilities which are not particularly useful by themselves, but which are
++nice to have in other objects.  The C language does not allow for the
++direct expression of inheritance, so other techniques - such as structure
++embedding - must be used.
++
++So, for example, the UIO code has a structure that defines the memory
++region associated with a uio device:
++
++struct uio_mem {
++	struct kobject kobj;
++	unsigned long addr;
++	unsigned long size;
++	int memtype;
++	void __iomem *internal_addr;
 +};
 +
-+static struct attribute_group disk_attr_group = {
-+	.attrs = disk_attrs,
++If you have a struct uio_mem structure, finding its embedded kobject is
++just a matter of using the kobj member.  Code that works with kobjects will
++often have the opposite problem, however: given a struct kobject pointer,
++what is the pointer to the containing structure?  You must avoid tricks
++(such as assuming that the kobject is at the beginning of the structure)
++and, instead, use the container_of() macro, found in <linux/kernel.h>:
++
++	container_of(pointer, type, member)
++
++where pointer is the pointer to the embedded kobject, type is the type of
++the containing structure, and member is the name of the structure field to
++which pointer points.  The return value from container_of() is a pointer to
++the given type. So, for example, a pointer "kp" to a struct kobject
++embedded within a struct uio_mem could be converted to a pointer to the
++containing uio_mem structure with:
++
++    struct uio_mem *u_mem = container_of(kp, struct uio_mem, kobj);
++
++Programmers often define a simple macro for "back-casting" kobject pointers
++to the containing type.
++
++
++Initialization of kobjects
++
++Code which creates a kobject must, of course, initialize that object. Some
++of the internal fields are setup with a (mandatory) call to kobject_init():
++
++    void kobject_init(struct kobject *kobj, struct kobj_type *ktype);
++
++The ktype is required for a kobject to be created properly, as every kobject
++must have an associated kobj_type.  After calling kobject_init(), to
++register the kobject with sysfs, the function kobject_add() must be called:
++
++    int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, ...);
++
++This sets up the parent of the kobject and the name for the kobject
++properly.  If the kobject is to be associated with a specific kset,
++kobj->kset must be assigned before calling kobject_add().  If a kset is
++associated with a kobject, then the parent for the kobject can be set to
++NULL in the call to kobject_add() and then the kobject's parent will be the
++kset itself.
++
++As the name of the kobject is set when it is added to the kernel, the name
++of the kobject should never be manipulated directly.  If you must change
++the name of the kobject, call kobject_rename():
++
++    int kobject_rename(struct kobject *kobj, const char *new_name);
++
++There is a function called kobject_set_name() but that is legacy cruft and
++is being removed.  If your code needs to call this function, it is
++incorrect and needs to be fixed.
++
++To properly access the name of the kobject, use the function
++kobject_name():
++
++    const char *kobject_name(const struct kobject * kobj);
++
++There is a helper function to both initialize and add the kobject to the
++kernel at the same time, called supprisingly enough kobject_init_and_add():
++
++    int kobject_init_and_add(struct kobject *kobj, struct kobj_type *ktype,
++                             struct kobject *parent, const char *fmt, ...);
++
++The arguments are the same as the individual kobject_init() and
++kobject_add() functions described above.
++
++
++Uevents
++
++After a kobject has been registered with the kobject core, you need to
++announce to the world that it has been created.  This can be done with a
++call to kobject_uevent():
++
++    int kobject_uevent(struct kobject *kobj, enum kobject_action action);
++
++Use the KOBJ_ADD action for when the kobject is first added to the kernel.
++This should be done only after any attributes or children of the kobject
++have been initialized properly, as userspace will instantly start to look
++for them when this call happens.
++
++When the kobject is removed from the kernel (details on how to do that is
++below), the uevent for KOBJ_REMOVE will be automatically created by the
++kobject core, so the caller does not have to worry about doing that by
++hand.
++
++
++Reference counts
++
++One of the key functions of a kobject is to serve as a reference counter
++for the object in which it is embedded. As long as references to the object
++exist, the object (and the code which supports it) must continue to exist.
++The low-level functions for manipulating a kobject's reference counts are:
++
++    struct kobject *kobject_get(struct kobject *kobj);
++    void kobject_put(struct kobject *kobj);
++
++A successful call to kobject_get() will increment the kobject's reference
++counter and return the pointer to the kobject.
++
++When a reference is released, the call to kobject_put() will decrement the
++reference count and, possibly, free the object. Note that kobject_init()
++sets the reference count to one, so the code which sets up the kobject will
++need to do a kobject_put() eventually to release that reference.
++
++Because kobjects are dynamic, they must not be declared statically or on
++the stack, but instead, always allocated dynamically.  Future versions of
++the kernel will contain a run-time check for kobjects that are created
++statically and will warn the developer of this improper usage.
++
++If all that you want to use a kobject for is to provide a reference counter
++for your structure, please use the struct kref instead; a kobject would be
++overkill.  For more information on how to use struct kref, please see the
++file Documentation/kref.txt in the Linux kernel source tree.
++
++
++Creating "simple" kobjects
++
++Sometimes all that a developer wants is a way to create a simple directory
++in the sysfs hierarchy, and not have to mess with the whole complication of
++ksets, show and store functions, and other details.  This is the one
++exception where a single kobject should be created.  To create such an
++entry, use the function:
++
++    struct kobject *kobject_create_and_add(char *name, struct kobject *parent);
++
++This function will create a kobject and place it in sysfs in the location
++underneath the specified parent kobject.  To create simple attributes
++associated with this kobject, use:
++
++    int sysfs_create_file(struct kobject *kobj, struct attribute *attr);
++or
++    int sysfs_create_group(struct kobject *kobj, struct attribute_group *grp);
++
++Both types of attributes used here, with a kobject that has been created
++with the kobject_create_and_add(), can be of type kobj_attribute, so no
++special custom attribute is needed to be created.
++
++See the example module, samples/kobject/kobject-example.c for an
++implementation of a simple kobject and attributes.
++
++
++
++ktypes and release methods
++
++One important thing still missing from the discussion is what happens to a
++kobject when its reference count reaches zero. The code which created the
++kobject generally does not know when that will happen; if it did, there
++would be little point in using a kobject in the first place. Even
++predictable object lifecycles become more complicated when sysfs is brought
++in as other portions of the kernel can get a reference on any kobject that
++is registered in the system.
++
++The end result is that a structure protected by a kobject cannot be freed
++before its reference count goes to zero. The reference count is not under
++the direct control of the code which created the kobject. So that code must
++be notified asynchronously whenever the last reference to one of its
++kobjects goes away.
++
++Once you registered your kobject via kobject_add(), you must never use
++kfree() to free it directly. The only safe way is to use kobject_put(). It
++is good practice to always use kobject_put() after kobject_init() to avoid
++errors creeping in.
++
++This notification is done through a kobject's release() method. Usually
++such a method has a form like:
++
++    void my_object_release(struct kobject *kobj)
++    {
++    	    struct my_object *mine = container_of(kobj, struct my_object, kobj);
++
++	    /* Perform any additional cleanup on this object, then... */
++	    kfree(mine);
++    }
++
++One important point cannot be overstated: every kobject must have a
++release() method, and the kobject must persist (in a consistent state)
++until that method is called. If these constraints are not met, the code is
++flawed.  Note that the kernel will warn you if you forget to provide a
++release() method.  Do not try to get rid of this warning by providing an
++"empty" release function; you will be mocked mercilessly by the kobject
++maintainer if you attempt this.
++
++Note, the name of the kobject is available in the release function, but it
++must NOT be changed within this callback.  Otherwise there will be a memory
++leak in the kobject core, which makes people unhappy.
++
++Interestingly, the release() method is not stored in the kobject itself;
++instead, it is associated with the ktype. So let us introduce struct
++kobj_type:
++
++    struct kobj_type {
++	    void (*release)(struct kobject *);
++	    struct sysfs_ops	*sysfs_ops;
++	    struct attribute	**default_attrs;
++    };
++
++This structure is used to describe a particular type of kobject (or, more
++correctly, of containing object). Every kobject needs to have an associated
++kobj_type structure; a pointer to that structure must be specified when you
++call kobject_init() or kobject_init_and_add().
++
++The release field in struct kobj_type is, of course, a pointer to the
++release() method for this type of kobject. The other two fields (sysfs_ops
++and default_attrs) control how objects of this type are represented in
++sysfs; they are beyond the scope of this document.
++
++The default_attrs pointer is a list of default attributes that will be
++automatically created for any kobject that is registered with this ktype.
++
++
++ksets
++
++A kset is merely a collection of kobjects that want to be associated with
++each other.  There is no restriction that they be of the same ktype, but be
++very careful if they are not.
++
++A kset serves these functions:
++
++ - It serves as a bag containing a group of objects. A kset can be used by
++   the kernel to track "all block devices" or "all PCI device drivers."
++
++ - A kset is also a subdirectory in sysfs, where the associated kobjects
++   with the kset can show up.  Every kset contains a kobject which can be
++   set up to be the parent of other kobjects; the top-level directories of
++   the sysfs hierarchy are constructed in this way.
++
++ - Ksets can support the "hotplugging" of kobjects and influence how
++   uevent events are reported to user space.
++
++In object-oriented terms, "kset" is the top-level container class; ksets
++contain their own kobject, but that kobject is managed by the kset code and
++should not be manipulated by any other user.
++
++A kset keeps its children in a standard kernel linked list.  Kobjects point
++back to their containing kset via their kset field. In almost all cases,
++the kobjects belonging to a ket have that kset (or, strictly, its embedded
++kobject) in their parent.
++
++As a kset contains a kobject within it, it should always be dynamically
++created and never declared statically or on the stack.  To create a new
++kset use:
++  struct kset *kset_create_and_add(const char *name,
++				   struct kset_uevent_ops *u,
++				   struct kobject *parent);
++
++When you are finished with the kset, call:
++  void kset_unregister(struct kset *kset);
++to destroy it.
++
++An example of using a kset can be seen in the
++samples/kobject/kset-example.c file in the kernel tree.
++
++If a kset wishes to control the uevent operations of the kobjects
++associated with it, it can use the struct kset_uevent_ops to handle it:
++
++struct kset_uevent_ops {
++        int (*filter)(struct kset *kset, struct kobject *kobj);
++        const char *(*name)(struct kset *kset, struct kobject *kobj);
++        int (*uevent)(struct kset *kset, struct kobject *kobj,
++                      struct kobj_uevent_env *env);
 +};
 +
-+static struct attribute_group *disk_attr_groups[] = {
-+	&disk_attr_group,
-+	NULL
- };
- 
--static void disk_release(struct kobject * kobj)
-+static void disk_release(struct device *dev)
- {
--	struct gendisk *disk = to_disk(kobj);
-+	struct gendisk *disk = dev_to_disk(dev);
 +
- 	kfree(disk->random);
- 	kfree(disk->part);
- 	free_disk_stats(disk);
- 	kfree(disk);
- }
--
--static struct kobj_type ktype_block = {
--	.release	= disk_release,
--	.sysfs_ops	= &disk_sysfs_ops,
--	.default_attrs	= default_attrs,
-+struct class block_class = {
-+	.name		= "block",
- };
- 
--extern struct kobj_type ktype_part;
--
--static int block_uevent_filter(struct kset *kset, struct kobject *kobj)
--{
--	struct kobj_type *ktype = get_ktype(kobj);
--
--	return ((ktype == &ktype_block) || (ktype == &ktype_part));
--}
--
--static int block_uevent(struct kset *kset, struct kobject *kobj,
--			struct kobj_uevent_env *env)
--{
--	struct kobj_type *ktype = get_ktype(kobj);
--	struct device *physdev;
--	struct gendisk *disk;
--	struct hd_struct *part;
--
--	if (ktype == &ktype_block) {
--		disk = container_of(kobj, struct gendisk, kobj);
--		add_uevent_var(env, "MINOR=%u", disk->first_minor);
--	} else if (ktype == &ktype_part) {
--		disk = container_of(kobj->parent, struct gendisk, kobj);
--		part = container_of(kobj, struct hd_struct, kobj);
--		add_uevent_var(env, "MINOR=%u",
--			       disk->first_minor + part->partno);
--	} else
--		return 0;
--
--	add_uevent_var(env, "MAJOR=%u", disk->major);
--
--	/* add physical device, backing this device  */
--	physdev = disk->driverfs_dev;
--	if (physdev) {
--		char *path = kobject_get_path(&physdev->kobj, GFP_KERNEL);
--
--		add_uevent_var(env, "PHYSDEVPATH=%s", path);
--		kfree(path);
--
--		if (physdev->bus)
--			add_uevent_var(env, "PHYSDEVBUS=%s", physdev->bus->name);
--
--		if (physdev->driver)
--			add_uevent_var(env, physdev->driver->name);
--	}
--
--	return 0;
--}
--
--static struct kset_uevent_ops block_uevent_ops = {
--	.filter		= block_uevent_filter,
--	.uevent		= block_uevent,
-+struct device_type disk_type = {
-+	.name		= "disk",
-+	.groups		= disk_attr_groups,
-+	.release	= disk_release,
- };
- 
- /*
-  * aggregate disk stat collector.  Uses the same stats that the sysfs
-  * entries do, above, but makes them available through one seq_file.
-- * Watching a few disks may be efficient through sysfs, but watching
-- * all of them will be more efficient through this interface.
-  *
-  * The output looks suspiciously like /proc/partitions with a bunch of
-  * extra fields.
-  */
- 
--/* iterator */
- static void *diskstats_start(struct seq_file *part, loff_t *pos)
- {
- 	loff_t k = *pos;
--	struct list_head *p;
-+	struct device *dev;
- 
--	mutex_lock(&block_subsys_lock);
--	list_for_each(p, &block_kset->list)
-+	mutex_lock(&block_class_lock);
-+	list_for_each_entry(dev, &block_class.devices, node) {
-+		if (dev->type != &disk_type)
-+			continue;
- 		if (!k--)
--			return list_entry(p, struct gendisk, kobj.entry);
-+			return dev_to_disk(dev);
-+	}
- 	return NULL;
- }
- 
- static void *diskstats_next(struct seq_file *part, void *v, loff_t *pos)
- {
--	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
-+	struct gendisk *gp = v;
-+	struct device *dev;
++The filter function allows a kset to prevent a uevent from being emitted to
++userspace for a specific kobject.  If the function returns 0, the uevent
++will not be emitted.
 +
- 	++*pos;
--	return p==&block_kset->list ? NULL :
--		list_entry(p, struct gendisk, kobj.entry);
-+	list_for_each_entry(dev, &gp->dev.node, node) {
-+		if (&dev->node == &block_class.devices)
-+			return NULL;
-+		if (dev->type == &disk_type)
-+			return dev_to_disk(dev);
-+	}
-+	return NULL;
- }
- 
- static void diskstats_stop(struct seq_file *part, void *v)
- {
--	mutex_unlock(&block_subsys_lock);
-+	mutex_unlock(&block_class_lock);
- }
- 
- static int diskstats_show(struct seq_file *s, void *v)
-@@ -627,7 +558,7 @@ static int diskstats_show(struct seq_file *s, void *v)
- 	int n = 0;
- 
- 	/*
--	if (&sgp->kobj.entry == block_kset->list.next)
-+	if (&gp->dev.kobj.entry == block_class.devices.next)
- 		seq_puts(s,	"major minor name"
- 				"     rio rmerge rsect ruse wio wmerge "
- 				"wsect wuse running use aveq"
-@@ -681,7 +612,7 @@ static void media_change_notify_thread(struct work_struct *work)
- 	 * set enviroment vars to indicate which event this is for
- 	 * so that user space will know to go check the media status.
- 	 */
--	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
-+	kobject_uevent_env(&gd->dev.kobj, KOBJ_CHANGE, envp);
- 	put_device(gd->driverfs_dev);
- }
- 
-@@ -692,6 +623,25 @@ void genhd_media_change_notify(struct gendisk *disk)
- }
- EXPORT_SYMBOL_GPL(genhd_media_change_notify);
- 
-+dev_t blk_lookup_devt(const char *name)
-+{
-+	struct device *dev;
-+	dev_t devt = MKDEV(0, 0);
++The name function will be called to override the default name of the kset
++that the uevent sends to userspace.  By default, the name will be the same
++as the kset itself, but this function, if present, can override that name.
 +
-+	mutex_lock(&block_class_lock);
-+	list_for_each_entry(dev, &block_class.devices, node) {
-+		if (strcmp(dev->bus_id, name) == 0) {
-+			devt = dev->devt;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&block_class_lock);
++The uevent function will be called when the uevent is about to be sent to
++userspace to allow more environment variables to be added to the uevent.
 +
-+	return devt;
-+}
++One might ask how, exactly, a kobject is added to a kset, given that no
++functions which perform that function have been presented.  The answer is
++that this task is handled by kobject_add().  When a kobject is passed to
++kobject_add(), its kset member should point to the kset to which the
++kobject will belong.  kobject_add() will handle the rest.
 +
-+EXPORT_SYMBOL(blk_lookup_devt);
++If the kobject belonging to a kset has no parent kobject set, it will be
++added to the kset's directory.  Not all members of a kset do necessarily
++live in the kset directory.  If an explicit parent kobject is assigned
++before the kobject is added, the kobject is registered with the kset, but
++added below the parent kobject.
 +
- struct gendisk *alloc_disk(int minors)
- {
- 	return alloc_disk_node(minors, -1);
-@@ -719,10 +669,10 @@ struct gendisk *alloc_disk_node(int minors, int node_id)
- 			}
- 		}
- 		disk->minors = minors;
--		disk->kobj.kset = block_kset;
--		disk->kobj.ktype = &ktype_block;
--		kobject_init(&disk->kobj);
- 		rand_initialize_disk(disk);
-+		disk->dev.class = &block_class;
-+		disk->dev.type = &disk_type;
-+		device_initialize(&disk->dev);
- 		INIT_WORK(&disk->async_notify,
- 			media_change_notify_thread);
- 	}
-@@ -742,7 +692,7 @@ struct kobject *get_disk(struct gendisk *disk)
- 	owner = disk->fops->owner;
- 	if (owner && !try_module_get(owner))
- 		return NULL;
--	kobj = kobject_get(&disk->kobj);
-+	kobj = kobject_get(&disk->dev.kobj);
- 	if (kobj == NULL) {
- 		module_put(owner);
- 		return NULL;
-@@ -756,7 +706,7 @@ EXPORT_SYMBOL(get_disk);
- void put_disk(struct gendisk *disk)
- {
- 	if (disk)
--		kobject_put(&disk->kobj);
-+		kobject_put(&disk->dev.kobj);
- }
- 
- EXPORT_SYMBOL(put_disk);
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 8b91994..3887b2a 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -4182,7 +4182,7 @@ int blk_register_queue(struct gendisk *disk)
- 	if (!q || !q->request_fn)
- 		return -ENXIO;
- 
--	q->kobj.parent = kobject_get(&disk->kobj);
-+	q->kobj.parent = kobject_get(&disk->dev.kobj);
- 
- 	ret = kobject_add(&q->kobj);
- 	if (ret < 0)
-@@ -4209,6 +4209,6 @@ void blk_unregister_queue(struct gendisk *disk)
- 
- 		kobject_uevent(&q->kobj, KOBJ_REMOVE);
- 		kobject_del(&q->kobj);
--		kobject_put(&disk->kobj);
-+		kobject_put(&disk->dev.kobj);
- 	}
- }
-diff --git a/drivers/base/class.c b/drivers/base/class.c
-index ba6745b..624b331 100644
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -17,6 +17,7 @@
- #include <linux/kdev_t.h>
- #include <linux/err.h>
- #include <linux/slab.h>
-+#include <linux/genhd.h>
- #include "base.h"
- 
- #define to_class_attr(_attr) container_of(_attr, struct class_attribute, attr)
-@@ -149,7 +150,13 @@ int class_register(struct class * cls)
- 	if (error)
- 		return error;
- 
-+#ifdef CONFIG_SYSFS_DEPRECATED
-+	/* let the block class directory show up in the root of sysfs */
-+	if (cls != &block_class)
-+		cls->subsys.kobj.kset = class_kset;
-+#else
- 	cls->subsys.kobj.kset = class_kset;
-+#endif
- 	cls->subsys.kobj.ktype = &class_ktype;
- 
- 	error = kset_register(&cls->subsys);
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 13cae18..06e8738 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -671,14 +671,15 @@ static int device_add_class_symlinks(struct device *dev)
- 
- #ifdef CONFIG_SYSFS_DEPRECATED
- 	/* stacked class devices need a symlink in the class directory */
--	if (dev->kobj.parent != &dev->class->subsys.kobj) {
-+	if (dev->kobj.parent != &dev->class->subsys.kobj &&
-+	    dev->type != &part_type) {
- 		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
- 					  dev->bus_id);
- 		if (error)
- 			goto out_subsys;
- 	}
- 
--	if (dev->parent) {
-+	if (dev->parent && dev->type != &part_type) {
- 		struct device *parent = dev->parent;
- 		char *class_name;
- 
-@@ -707,10 +708,11 @@ static int device_add_class_symlinks(struct device *dev)
- 	return 0;
- 
- out_device:
--	if (dev->parent)
-+	if (dev->parent && dev->type != &part_type)
- 		sysfs_remove_link(&dev->kobj, "device");
- out_busid:
--	if (dev->kobj.parent != &dev->class->subsys.kobj)
-+	if (dev->kobj.parent != &dev->class->subsys.kobj &&
-+	    dev->type != &part_type)
- 		sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
- #else
- 	/* link in the class directory pointing to the device */
-@@ -719,7 +721,7 @@ out_busid:
- 	if (error)
- 		goto out_subsys;
- 
--	if (dev->parent) {
-+	if (dev->parent && dev->type != &part_type) {
- 		error = sysfs_create_link(&dev->kobj, &dev->parent->kobj,
- 					  "device");
- 		if (error)
-@@ -743,7 +745,7 @@ static void device_remove_class_symlinks(struct device *dev)
- 		return;
- 
- #ifdef CONFIG_SYSFS_DEPRECATED
--	if (dev->parent) {
-+	if (dev->parent && dev->type != &part_type) {
- 		char *class_name;
- 
- 		class_name = make_class_name(dev->class->name, &dev->kobj);
-@@ -754,10 +756,11 @@ static void device_remove_class_symlinks(struct device *dev)
- 		sysfs_remove_link(&dev->kobj, "device");
- 	}
- 
--	if (dev->kobj.parent != &dev->class->subsys.kobj)
-+	if (dev->kobj.parent != &dev->class->subsys.kobj &&
-+	    dev->type != &part_type)
- 		sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
- #else
--	if (dev->parent)
-+	if (dev->parent && dev->type != &part_type)
- 		sysfs_remove_link(&dev->kobj, "device");
- 
- 	sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
-@@ -925,6 +928,7 @@ struct device * get_device(struct device * dev)
-  */
- void put_device(struct device * dev)
- {
-+	/* might_sleep(); */
- 	if (dev)
- 		kobject_put(&dev->kobj);
- }
-diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
-index ad00b3d..826d123 100644
---- a/drivers/block/aoe/aoeblk.c
-+++ b/drivers/block/aoe/aoeblk.c
-@@ -15,8 +15,10 @@
- 
- static struct kmem_cache *buf_pool_cache;
- 
--static ssize_t aoedisk_show_state(struct gendisk * disk, char *page)
-+static ssize_t aoedisk_show_state(struct device *dev,
-+				  struct device_attribute *attr, char *page)
- {
-+	struct gendisk *disk = dev_to_disk(dev);
- 	struct aoedev *d = disk->private_data;
- 
- 	return snprintf(page, PAGE_SIZE,
-@@ -26,50 +28,47 @@ static ssize_t aoedisk_show_state(struct gendisk * disk, char *page)
- 			(d->nopen && !(d->flags & DEVFL_UP)) ? ",closewait" : "");
- 	/* I'd rather see nopen exported so we can ditch closewait */
- }
--static ssize_t aoedisk_show_mac(struct gendisk * disk, char *page)
-+static ssize_t aoedisk_show_mac(struct device *dev,
-+				struct device_attribute *attr, char *page)
- {
-+	struct gendisk *disk = dev_to_disk(dev);
- 	struct aoedev *d = disk->private_data;
- 
- 	return snprintf(page, PAGE_SIZE, "%012llx\n",
- 			(unsigned long long)mac_addr(d->addr));
- }
--static ssize_t aoedisk_show_netif(struct gendisk * disk, char *page)
-+static ssize_t aoedisk_show_netif(struct device *dev,
-+				  struct device_attribute *attr, char *page)
- {
-+	struct gendisk *disk = dev_to_disk(dev);
- 	struct aoedev *d = disk->private_data;
- 
- 	return snprintf(page, PAGE_SIZE, "%s\n", d->ifp->name);
- }
- /* firmware version */
--static ssize_t aoedisk_show_fwver(struct gendisk * disk, char *page)
-+static ssize_t aoedisk_show_fwver(struct device *dev,
-+				  struct device_attribute *attr, char *page)
- {
-+	struct gendisk *disk = dev_to_disk(dev);
- 	struct aoedev *d = disk->private_data;
- 
- 	return snprintf(page, PAGE_SIZE, "0x%04x\n", (unsigned int) d->fw_ver);
- }
- 
--static struct disk_attribute disk_attr_state = {
--	.attr = {.name = "state", .mode = S_IRUGO },
--	.show = aoedisk_show_state
--};
--static struct disk_attribute disk_attr_mac = {
--	.attr = {.name = "mac", .mode = S_IRUGO },
--	.show = aoedisk_show_mac
--};
--static struct disk_attribute disk_attr_netif = {
--	.attr = {.name = "netif", .mode = S_IRUGO },
--	.show = aoedisk_show_netif
--};
--static struct disk_attribute disk_attr_fwver = {
--	.attr = {.name = "firmware-version", .mode = S_IRUGO },
--	.show = aoedisk_show_fwver
-+static DEVICE_ATTR(state, S_IRUGO, aoedisk_show_state, NULL);
-+static DEVICE_ATTR(mac, S_IRUGO, aoedisk_show_mac, NULL);
-+static DEVICE_ATTR(netif, S_IRUGO, aoedisk_show_netif, NULL);
-+static struct device_attribute dev_attr_firmware_version = {
-+	.attr = { .name = "firmware-version", .mode = S_IRUGO, .owner = THIS_MODULE },
-+	.show = aoedisk_show_fwver,
- };
- 
- static struct attribute *aoe_attrs[] = {
--	&disk_attr_state.attr,
--	&disk_attr_mac.attr,
--	&disk_attr_netif.attr,
--	&disk_attr_fwver.attr,
--	NULL
-+	&dev_attr_state.attr,
-+	&dev_attr_mac.attr,
-+	&dev_attr_netif.attr,
-+	&dev_attr_firmware_version.attr,
-+	NULL,
- };
- 
- static const struct attribute_group attr_group = {
-@@ -79,12 +78,12 @@ static const struct attribute_group attr_group = {
- static int
- aoedisk_add_sysfs(struct aoedev *d)
- {
--	return sysfs_create_group(&d->gd->kobj, &attr_group);
-+	return sysfs_create_group(&d->gd->dev.kobj, &attr_group);
- }
- void
- aoedisk_rm_sysfs(struct aoedev *d)
- {
--	sysfs_remove_group(&d->gd->kobj, &attr_group);
-+	sysfs_remove_group(&d->gd->dev.kobj, &attr_group);
- }
- 
- static int
-diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index b4c0888..ba9b17e 100644
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -375,14 +375,17 @@ harderror:
- 	return NULL;
- }
- 
--static ssize_t pid_show(struct gendisk *disk, char *page)
-+static ssize_t pid_show(struct device *dev,
-+			struct device_attribute *attr, char *buf)
- {
--	return sprintf(page, "%ld\n",
-+	struct gendisk *disk = dev_to_disk(dev);
 +
-+	return sprintf(buf, "%ld\n",
- 		(long) ((struct nbd_device *)disk->private_data)->pid);
- }
- 
--static struct disk_attribute pid_attr = {
--	.attr = { .name = "pid", .mode = S_IRUGO },
-+static struct device_attribute pid_attr = {
-+	.attr = { .name = "pid", .mode = S_IRUGO, .owner = THIS_MODULE },
- 	.show = pid_show,
- };
- 
-@@ -394,7 +397,7 @@ static int nbd_do_it(struct nbd_device *lo)
- 	BUG_ON(lo->magic != LO_MAGIC);
- 
- 	lo->pid = current->pid;
--	ret = sysfs_create_file(&lo->disk->kobj, &pid_attr.attr);
-+	ret = sysfs_create_file(&lo->disk->dev.kobj, &pid_attr.attr);
- 	if (ret) {
- 		printk(KERN_ERR "nbd: sysfs_create_file failed!");
- 		return ret;
-@@ -403,7 +406,7 @@ static int nbd_do_it(struct nbd_device *lo)
- 	while ((req = nbd_read_stat(lo)) != NULL)
- 		nbd_end_request(req);
- 
--	sysfs_remove_file(&lo->disk->kobj, &pid_attr.attr);
-+	sysfs_remove_file(&lo->disk->dev.kobj, &pid_attr.attr);
- 	return 0;
- }
- 
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index 2994523..0cb3d2b 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1173,7 +1173,7 @@ static struct kobject *exact_match(dev_t dev, int *part, void *data)
- {
- 	struct gendisk *p = data;
- 	*part &= (1 << PARTN_BITS) - 1;
--	return &p->kobj;
-+	return &p->dev.kobj;
- }
- 
- static int exact_lock(dev_t dev, void *data)
-diff --git a/drivers/md/dm.c b/drivers/md/dm.c
-index 88c0fd6..f2d24eb 100644
---- a/drivers/md/dm.c
-+++ b/drivers/md/dm.c
-@@ -1109,7 +1109,7 @@ static void event_callback(void *context)
- 	list_splice_init(&md->uevent_list, &uevents);
- 	spin_unlock_irqrestore(&md->uevent_lock, flags);
- 
--	dm_send_uevents(&uevents, &md->disk->kobj);
-+	dm_send_uevents(&uevents, &md->disk->dev.kobj);
- 
- 	atomic_inc(&md->event_nr);
- 	wake_up(&md->eventq);
-@@ -1530,7 +1530,7 @@ out:
-  *---------------------------------------------------------------*/
- void dm_kobject_uevent(struct mapped_device *md)
- {
--	kobject_uevent(&md->disk->kobj, KOBJ_CHANGE);
-+	kobject_uevent(&md->disk->dev.kobj, KOBJ_CHANGE);
- }
- 
- uint32_t dm_next_uevent_seq(struct mapped_device *md)
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index c503086..f79efb3 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -1396,9 +1396,9 @@ static int bind_rdev_to_array(mdk_rdev_t * rdev, mddev_t * mddev)
- 		goto fail;
- 
- 	if (rdev->bdev->bd_part)
--		ko = &rdev->bdev->bd_part->kobj;
-+		ko = &rdev->bdev->bd_part->dev.kobj;
- 	else
--		ko = &rdev->bdev->bd_disk->kobj;
-+		ko = &rdev->bdev->bd_disk->dev.kobj;
- 	if ((err = sysfs_create_link(&rdev->kobj, ko, "block"))) {
- 		kobject_del(&rdev->kobj);
- 		goto fail;
-@@ -3083,7 +3083,7 @@ static struct kobject *md_probe(dev_t dev, int *part, void *data)
- 	add_disk(disk);
- 	mddev->gendisk = disk;
- 	mutex_unlock(&disks_mutex);
--	error = kobject_init_and_add(&mddev->kobj, &md_ktype, &disk->kobj,
-+	error = kobject_init_and_add(&mddev->kobj, &md_ktype, &disk->dev.kobj,
- 				     "%s", "md");
- 	if (error)
- 		printk(KERN_WARNING "md: cannot register %s/md - name in use\n",
-@@ -3361,7 +3361,7 @@ static int do_md_run(mddev_t * mddev)
- 
- 	mddev->changed = 1;
- 	md_new_event(mddev);
--	kobject_uevent(&mddev->gendisk->kobj, KOBJ_CHANGE);
-+	kobject_uevent(&mddev->gendisk->dev.kobj, KOBJ_CHANGE);
- 	return 0;
- }
- 
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 993f78c..e48a630 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -738,9 +738,9 @@ EXPORT_SYMBOL(bd_release);
- static struct kobject *bdev_get_kobj(struct block_device *bdev)
- {
- 	if (bdev->bd_contains != bdev)
--		return kobject_get(&bdev->bd_part->kobj);
-+		return kobject_get(&bdev->bd_part->dev.kobj);
- 	else
--		return kobject_get(&bdev->bd_disk->kobj);
-+		return kobject_get(&bdev->bd_disk->dev.kobj);
- }
- 
- static struct kobject *bdev_get_holder(struct block_device *bdev)
-@@ -1176,7 +1176,7 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
- 				ret = -ENXIO;
- 				goto out_first;
- 			}
--			kobject_get(&p->kobj);
-+			kobject_get(&p->dev.kobj);
- 			bdev->bd_part = p;
- 			bd_set_size(bdev, (loff_t) p->nr_sects << 9);
- 		}
-@@ -1299,7 +1299,7 @@ static int __blkdev_put(struct block_device *bdev, int for_part)
- 		module_put(owner);
- 
- 		if (bdev->bd_contains != bdev) {
--			kobject_put(&bdev->bd_part->kobj);
-+			kobject_put(&bdev->bd_part->dev.kobj);
- 			bdev->bd_part = NULL;
- 		}
- 		bdev->bd_disk = NULL;
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 9184215..97f3f5f 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -195,96 +195,45 @@ check_partition(struct gendisk *hd, struct block_device *bdev)
- 	return ERR_PTR(res);
- }
- 
--/*
-- * sysfs bindings for partitions
-- */
--
--struct part_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct hd_struct *,char *);
--	ssize_t (*store)(struct hd_struct *,const char *, size_t);
--};
--
--static ssize_t 
--part_attr_show(struct kobject * kobj, struct attribute * attr, char * page)
-+static ssize_t part_start_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
- {
--	struct hd_struct * p = container_of(kobj,struct hd_struct,kobj);
--	struct part_attribute * part_attr = container_of(attr,struct part_attribute,attr);
--	ssize_t ret = 0;
--	if (part_attr->show)
--		ret = part_attr->show(p, page);
--	return ret;
--}
--static ssize_t
--part_attr_store(struct kobject * kobj, struct attribute * attr,
--		const char *page, size_t count)
--{
--	struct hd_struct * p = container_of(kobj,struct hd_struct,kobj);
--	struct part_attribute * part_attr = container_of(attr,struct part_attribute,attr);
--	ssize_t ret = 0;
-+	struct hd_struct *p = dev_to_part(dev);
- 
--	if (part_attr->store)
--		ret = part_attr->store(p, page, count);
--	return ret;
-+	return sprintf(buf, "%llu\n",(unsigned long long)p->start_sect);
- }
- 
--static struct sysfs_ops part_sysfs_ops = {
--	.show	=	part_attr_show,
--	.store	=	part_attr_store,
--};
--
--static ssize_t part_uevent_store(struct hd_struct * p,
--				 const char *page, size_t count)
-+static ssize_t part_size_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
- {
--	kobject_uevent(&p->kobj, KOBJ_ADD);
--	return count;
-+	struct hd_struct *p = dev_to_part(dev);
-+	return sprintf(buf, "%llu\n",(unsigned long long)p->nr_sects);
- }
--static ssize_t part_dev_read(struct hd_struct * p, char *page)
--{
--	struct gendisk *disk = container_of(p->kobj.parent,struct gendisk,kobj);
--	dev_t dev = MKDEV(disk->major, disk->first_minor + p->partno); 
--	return print_dev_t(page, dev);
--}
--static ssize_t part_start_read(struct hd_struct * p, char *page)
--{
--	return sprintf(page, "%llu\n",(unsigned long long)p->start_sect);
--}
--static ssize_t part_size_read(struct hd_struct * p, char *page)
--{
--	return sprintf(page, "%llu\n",(unsigned long long)p->nr_sects);
--}
--static ssize_t part_stat_read(struct hd_struct * p, char *page)
++Kobject removal
 +
-+static ssize_t part_stat_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
- {
--	return sprintf(page, "%8u %8llu %8u %8llu\n",
-+	struct hd_struct *p = dev_to_part(dev);
++After a kobject has been registered with the kobject core successfully, it
++must be cleaned up when the code is finished with it.  To do that, call
++kobject_put().  By doing this, the kobject core will automatically clean up
++all of the memory allocated by this kobject.  If a KOBJ_ADD uevent has been
++sent for the object, a corresponding KOBJ_REMOVE uevent will be sent, and
++any other sysfs housekeeping will be handled for the caller properly.
 +
-+	return sprintf(buf, "%8u %8llu %8u %8llu\n",
- 		       p->ios[0], (unsigned long long)p->sectors[0],
- 		       p->ios[1], (unsigned long long)p->sectors[1]);
- }
--static struct part_attribute part_attr_uevent = {
--	.attr = {.name = "uevent", .mode = S_IWUSR },
--	.store	= part_uevent_store
--};
--static struct part_attribute part_attr_dev = {
--	.attr = {.name = "dev", .mode = S_IRUGO },
--	.show	= part_dev_read
--};
--static struct part_attribute part_attr_start = {
--	.attr = {.name = "start", .mode = S_IRUGO },
--	.show	= part_start_read
--};
--static struct part_attribute part_attr_size = {
--	.attr = {.name = "size", .mode = S_IRUGO },
--	.show	= part_size_read
--};
--static struct part_attribute part_attr_stat = {
--	.attr = {.name = "stat", .mode = S_IRUGO },
--	.show	= part_stat_read
--};
- 
- #ifdef CONFIG_FAIL_MAKE_REQUEST
-+static ssize_t part_fail_show(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
-+{
-+	struct hd_struct *p = dev_to_part(dev);
- 
--static ssize_t part_fail_store(struct hd_struct * p,
-+	return sprintf(buf, "%d\n", p->make_it_fail);
-+}
++If you need to do a two-stage delete of the kobject (say you are not
++allowed to sleep when you need to destroy the object), then call
++kobject_del() which will unregister the kobject from sysfs.  This makes the
++kobject "invisible", but it is not cleaned up, and the reference count of
++the object is still the same.  At a later time call kobject_put() to finish
++the cleanup of the memory associated with the kobject.
 +
-+static ssize_t part_fail_store(struct device *dev,
-+			       struct device_attribute *attr,
- 			       const char *buf, size_t count)
- {
-+	struct hd_struct *p = dev_to_part(dev);
- 	int i;
- 
- 	if (count > 0 && sscanf(buf, "%d", &i) > 0)
-@@ -292,49 +241,52 @@ static ssize_t part_fail_store(struct hd_struct * p,
- 
- 	return count;
- }
--static ssize_t part_fail_read(struct hd_struct * p, char *page)
--{
--	return sprintf(page, "%d\n", p->make_it_fail);
--}
--static struct part_attribute part_attr_fail = {
--	.attr = {.name = "make-it-fail", .mode = S_IRUGO | S_IWUSR },
--	.store	= part_fail_store,
--	.show	= part_fail_read
--};
-+#endif
- 
-+static DEVICE_ATTR(start, S_IRUGO, part_start_show, NULL);
-+static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
-+static DEVICE_ATTR(stat, S_IRUGO, part_stat_show, NULL);
-+#ifdef CONFIG_FAIL_MAKE_REQUEST
-+static struct device_attribute dev_attr_fail =
-+	__ATTR(make-it-fail, S_IRUGO|S_IWUSR, part_fail_show, part_fail_store);
- #endif
- 
--static struct attribute * default_attrs[] = {
--	&part_attr_uevent.attr,
--	&part_attr_dev.attr,
--	&part_attr_start.attr,
--	&part_attr_size.attr,
--	&part_attr_stat.attr,
-+static struct attribute *part_attrs[] = {
-+	&dev_attr_start.attr,
-+	&dev_attr_size.attr,
-+	&dev_attr_stat.attr,
- #ifdef CONFIG_FAIL_MAKE_REQUEST
--	&part_attr_fail.attr,
-+	&dev_attr_fail.attr,
- #endif
--	NULL,
-+	NULL
- };
- 
--extern struct kset *block_kset;
-+static struct attribute_group part_attr_group = {
-+	.attrs = part_attrs,
-+};
- 
--static void part_release(struct kobject *kobj)
-+static struct attribute_group *part_attr_groups[] = {
-+	&part_attr_group,
-+	NULL
-+};
++kobject_del() can be used to drop the reference to the parent object, if
++circular references are constructed.  It is valid in some cases, that a
++parent objects references a child.  Circular references _must_ be broken
++with an explicit call to kobject_del(), so that a release functions will be
++called, and the objects in the former circle release each other.
 +
-+static void part_release(struct device *dev)
- {
--	struct hd_struct * p = container_of(kobj,struct hd_struct,kobj);
-+	struct hd_struct *p = dev_to_part(dev);
- 	kfree(p);
- }
- 
--struct kobj_type ktype_part = {
-+struct device_type part_type = {
-+	.name		= "partition",
-+	.groups		= part_attr_groups,
- 	.release	= part_release,
--	.default_attrs	= default_attrs,
--	.sysfs_ops	= &part_sysfs_ops,
- };
- 
- static inline void partition_sysfs_add_subdir(struct hd_struct *p)
- {
- 	struct kobject *k;
- 
--	k = kobject_get(&p->kobj);
-+	k = kobject_get(&p->dev.kobj);
- 	p->holder_dir = kobject_create_and_add("holders", k);
- 	kobject_put(k);
- }
-@@ -343,7 +295,7 @@ static inline void disk_sysfs_add_subdirs(struct gendisk *disk)
- {
- 	struct kobject *k;
- 
--	k = kobject_get(&disk->kobj);
-+	k = kobject_get(&disk->dev.kobj);
- 	disk->holder_dir = kobject_create_and_add("holders", k);
- 	disk->slave_dir = kobject_create_and_add("slaves", k);
- 	kobject_put(k);
-@@ -352,6 +304,7 @@ static inline void disk_sysfs_add_subdirs(struct gendisk *disk)
- void delete_partition(struct gendisk *disk, int part)
- {
- 	struct hd_struct *p = disk->part[part-1];
 +
- 	if (!p)
- 		return;
- 	if (!p->nr_sects)
-@@ -361,113 +314,55 @@ void delete_partition(struct gendisk *disk, int part)
- 	p->nr_sects = 0;
- 	p->ios[0] = p->ios[1] = 0;
- 	p->sectors[0] = p->sectors[1] = 0;
--	sysfs_remove_link(&p->kobj, "subsystem");
- 	kobject_unregister(p->holder_dir);
--	kobject_uevent(&p->kobj, KOBJ_REMOVE);
--	kobject_del(&p->kobj);
--	kobject_put(&p->kobj);
-+	device_del(&p->dev);
-+	put_device(&p->dev);
- }
- 
- void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
- {
- 	struct hd_struct *p;
-+	int err;
- 
- 	p = kzalloc(sizeof(*p), GFP_KERNEL);
- 	if (!p)
- 		return;
--	
++Example code to copy from
 +
- 	p->start_sect = start;
- 	p->nr_sects = len;
- 	p->partno = part;
- 	p->policy = disk->policy;
- 
--	if (isdigit(disk->kobj.k_name[strlen(disk->kobj.k_name)-1]))
--		kobject_set_name(&p->kobj, "%sp%d",
--				 kobject_name(&disk->kobj), part);
-+	if (isdigit(disk->dev.bus_id[strlen(disk->dev.bus_id)-1]))
-+		snprintf(p->dev.bus_id, BUS_ID_SIZE,
-+		"%sp%d", disk->dev.bus_id, part);
- 	else
--		kobject_set_name(&p->kobj, "%s%d",
--				 kobject_name(&disk->kobj),part);
--	p->kobj.parent = &disk->kobj;
--	p->kobj.ktype = &ktype_part;
--	kobject_init(&p->kobj);
--	kobject_add(&p->kobj);
--	if (!disk->part_uevent_suppress)
--		kobject_uevent(&p->kobj, KOBJ_ADD);
--	sysfs_create_link(&p->kobj, &block_kset->kobj, "subsystem");
-+		snprintf(p->dev.bus_id, BUS_ID_SIZE,
-+			 "%s%d", disk->dev.bus_id, part);
-+
-+	device_initialize(&p->dev);
-+	p->dev.devt = MKDEV(disk->major, disk->first_minor + part);
-+	p->dev.class = &block_class;
-+	p->dev.type = &part_type;
-+	p->dev.parent = &disk->dev;
-+	disk->part[part-1] = p;
-+
-+	/* delay uevent until 'holders' subdir is created */
-+	p->dev.uevent_suppress = 1;
-+	device_add(&p->dev);
-+	partition_sysfs_add_subdir(p);
-+	p->dev.uevent_suppress = 0;
- 	if (flags & ADDPART_FLAG_WHOLEDISK) {
- 		static struct attribute addpartattr = {
- 			.name = "whole_disk",
- 			.mode = S_IRUSR | S_IRGRP | S_IROTH,
- 		};
--
--		sysfs_create_file(&p->kobj, &addpartattr);
-+		err = sysfs_create_file(&p->dev.kobj, &addpartattr);
- 	}
--	partition_sysfs_add_subdir(p);
--	disk->part[part-1] = p;
--}
- 
--static char *make_block_name(struct gendisk *disk)
--{
--	char *name;
--	static char *block_str = "block:";
--	int size;
--	char *s;
--
--	size = strlen(block_str) + strlen(disk->disk_name) + 1;
--	name = kmalloc(size, GFP_KERNEL);
--	if (!name)
--		return NULL;
--	strcpy(name, block_str);
--	strcat(name, disk->disk_name);
--	/* ewww... some of these buggers have / in name... */
--	s = strchr(name, '/');
--	if (s)
--		*s = '!';
--	return name;
--}
--
--static int disk_sysfs_symlinks(struct gendisk *disk)
--{
--	struct device *target = get_device(disk->driverfs_dev);
--	int err;
--	char *disk_name = NULL;
--
--	if (target) {
--		disk_name = make_block_name(disk);
--		if (!disk_name) {
--			err = -ENOMEM;
--			goto err_out;
--		}
--
--		err = sysfs_create_link(&disk->kobj, &target->kobj, "device");
--		if (err)
--			goto err_out_disk_name;
--
--		err = sysfs_create_link(&target->kobj, &disk->kobj, disk_name);
--		if (err)
--			goto err_out_dev_link;
--	}
--
--	err = sysfs_create_link(&disk->kobj, &block_kset->kobj,
--				"subsystem");
--	if (err)
--		goto err_out_disk_name_lnk;
--
--	kfree(disk_name);
--
--	return 0;
--
--err_out_disk_name_lnk:
--	if (target) {
--		sysfs_remove_link(&target->kobj, disk_name);
--err_out_dev_link:
--		sysfs_remove_link(&disk->kobj, "device");
--err_out_disk_name:
--		kfree(disk_name);
--err_out:
--		put_device(target);
--	}
--	return err;
-+	/* suppress uevent if the disk supresses it */
-+	if (!disk->dev.uevent_suppress)
-+		kobject_uevent(&p->dev.kobj, KOBJ_ADD);
- }
- 
- /* Not exported, helper to add_disk(). */
-@@ -479,19 +374,29 @@ void register_disk(struct gendisk *disk)
- 	struct hd_struct *p;
- 	int err;
- 
--	kobject_set_name(&disk->kobj, "%s", disk->disk_name);
--	/* ewww... some of these buggers have / in name... */
--	s = strchr(disk->kobj.k_name, '/');
-+	disk->dev.parent = disk->driverfs_dev;
-+	disk->dev.devt = MKDEV(disk->major, disk->first_minor);
-+
-+	strlcpy(disk->dev.bus_id, disk->disk_name, KOBJ_NAME_LEN);
-+	/* ewww... some of these buggers have / in the name... */
-+	s = strchr(disk->dev.bus_id, '/');
- 	if (s)
- 		*s = '!';
--	if ((err = kobject_add(&disk->kobj)))
-+
-+	/* delay uevents, until we scanned partition table */
-+	disk->dev.uevent_suppress = 1;
-+
-+	if (device_add(&disk->dev))
- 		return;
--	err = disk_sysfs_symlinks(disk);
-+#ifndef CONFIG_SYSFS_DEPRECATED
-+	err = sysfs_create_link(block_depr, &disk->dev.kobj,
-+				kobject_name(&disk->dev.kobj));
- 	if (err) {
--		kobject_del(&disk->kobj);
-+		device_del(&disk->dev);
- 		return;
- 	}
-- 	disk_sysfs_add_subdirs(disk);
-+#endif
-+	disk_sysfs_add_subdirs(disk);
- 
- 	/* No minors to use for partitions */
- 	if (disk->minors == 1)
-@@ -505,25 +410,23 @@ void register_disk(struct gendisk *disk)
- 	if (!bdev)
- 		goto exit;
- 
--	/* scan partition table, but suppress uevents */
- 	bdev->bd_invalidated = 1;
--	disk->part_uevent_suppress = 1;
- 	err = blkdev_get(bdev, FMODE_READ, 0);
--	disk->part_uevent_suppress = 0;
- 	if (err < 0)
- 		goto exit;
- 	blkdev_put(bdev);
- 
- exit:
--	/* announce disk after possible partitions are already created */
--	kobject_uevent(&disk->kobj, KOBJ_ADD);
-+	/* announce disk after possible partitions are created */
-+	disk->dev.uevent_suppress = 0;
-+	kobject_uevent(&disk->dev.kobj, KOBJ_ADD);
- 
- 	/* announce possible partitions */
- 	for (i = 1; i < disk->minors; i++) {
- 		p = disk->part[i-1];
- 		if (!p || !p->nr_sects)
- 			continue;
--		kobject_uevent(&p->kobj, KOBJ_ADD);
-+		kobject_uevent(&p->dev.kobj, KOBJ_ADD);
- 	}
- }
- 
-@@ -602,19 +505,11 @@ void del_gendisk(struct gendisk *disk)
- 	disk_stat_set_all(disk, 0);
- 	disk->stamp = 0;
- 
--	kobject_uevent(&disk->kobj, KOBJ_REMOVE);
- 	kobject_unregister(disk->holder_dir);
- 	kobject_unregister(disk->slave_dir);
--	if (disk->driverfs_dev) {
--		char *disk_name = make_block_name(disk);
--		sysfs_remove_link(&disk->kobj, "device");
--		if (disk_name) {
--			sysfs_remove_link(&disk->driverfs_dev->kobj, disk_name);
--			kfree(disk_name);
--		}
--		put_device(disk->driverfs_dev);
--		disk->driverfs_dev = NULL;
--	}
--	sysfs_remove_link(&disk->kobj, "subsystem");
--	kobject_del(&disk->kobj);
-+	disk->driverfs_dev = NULL;
-+#ifndef CONFIG_SYSFS_DEPRECATED
-+	sysfs_remove_link(block_depr, disk->dev.bus_id);
-+#endif
-+	device_del(&disk->dev);
- }
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index a47b802..1dbea0a 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -10,9 +10,19 @@
-  */
- 
- #include <linux/types.h>
-+#include <linux/kdev_t.h>
- 
- #ifdef CONFIG_BLOCK
- 
-+#define kobj_to_dev(k) container_of(k, struct device, kobj)
-+#define dev_to_disk(device) container_of(device, struct gendisk, dev)
-+#define dev_to_part(device) container_of(device, struct hd_struct, dev)
-+
-+extern struct device_type disk_type;
-+extern struct device_type part_type;
-+extern struct kobject *block_depr;
-+extern struct class block_class;
-+
- enum {
- /* These three have identical behaviour; use the second one if DOS FDISK gets
-    confused about extended/logical partitions starting past cylinder 1023. */
-@@ -84,7 +94,7 @@ struct partition {
- struct hd_struct {
- 	sector_t start_sect;
- 	sector_t nr_sects;
--	struct kobject kobj;
-+	struct device dev;
- 	struct kobject *holder_dir;
- 	unsigned ios[2], sectors[2];	/* READs and WRITEs */
- 	int policy, partno;
-@@ -117,15 +127,14 @@ struct gendisk {
-                                          * disks that can't be partitioned. */
- 	char disk_name[32];		/* name of major driver */
- 	struct hd_struct **part;	/* [indexed by minor] */
--	int part_uevent_suppress;
- 	struct block_device_operations *fops;
- 	struct request_queue *queue;
- 	void *private_data;
- 	sector_t capacity;
- 
- 	int flags;
--	struct device *driverfs_dev;
--	struct kobject kobj;
-+	struct device *driverfs_dev;  // FIXME: remove
-+	struct device dev;
- 	struct kobject *holder_dir;
- 	struct kobject *slave_dir;
- 
-@@ -143,13 +152,6 @@ struct gendisk {
- 	struct work_struct async_notify;
- };
- 
--/* Structure for sysfs attributes on block devices */
--struct disk_attribute {
--	struct attribute attr;
--	ssize_t (*show)(struct gendisk *, char *);
--	ssize_t (*store)(struct gendisk *, const char *, size_t);
--};
--
- /* 
-  * Macros to operate on percpu disk statistics:
-  *
-@@ -411,7 +413,8 @@ struct unixware_disklabel {
- #define ADDPART_FLAG_RAID	1
- #define ADDPART_FLAG_WHOLEDISK	2
- 
--char *disk_name (struct gendisk *hd, int part, char *buf);
-+extern dev_t blk_lookup_devt(const char *name);
-+extern char *disk_name (struct gendisk *hd, int part, char *buf);
- 
- extern int rescan_partitions(struct gendisk *disk, struct block_device *bdev);
- extern void add_partition(struct gendisk *, int, sector_t, sector_t, int);
-@@ -423,12 +426,12 @@ extern struct gendisk *alloc_disk(int minors);
- extern struct kobject *get_disk(struct gendisk *disk);
- extern void put_disk(struct gendisk *disk);
- extern void genhd_media_change_notify(struct gendisk *disk);
--extern void blk_register_region(dev_t dev, unsigned long range,
-+extern void blk_register_region(dev_t devt, unsigned long range,
- 			struct module *module,
- 			struct kobject *(*probe)(dev_t, int *, void *),
- 			int (*lock)(dev_t, void *),
- 			void *data);
--extern void blk_unregister_region(dev_t dev, unsigned long range);
-+extern void blk_unregister_region(dev_t devt, unsigned long range);
- 
- static inline struct block_device *bdget_disk(struct gendisk *disk, int index)
- {
-@@ -441,6 +444,12 @@ static inline struct block_device *bdget_disk(struct gendisk *disk, int index)
- 
- static inline void printk_all_partitions(void) { }
- 
-+static inline dev_t blk_lookup_devt(const char *name)
-+{
-+	dev_t devt = MKDEV(0, 0);
-+	return devt;
-+}
-+
- #endif /* CONFIG_BLOCK */
- 
- #endif
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 4efa1e5..2ae5b84 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -55,69 +55,6 @@ static int __init readwrite(char *str)
- __setup("ro", readonly);
- __setup("rw", readwrite);
- 
--static dev_t try_name(char *name, int part)
--{
--	char path[64];
--	char buf[32];
--	int range;
--	dev_t res;
--	char *s;
--	int len;
--	int fd;
--	unsigned int maj, min;
--
--	/* read device number from .../dev */
--
--	sprintf(path, "/sys/block/%s/dev", name);
--	fd = sys_open(path, 0, 0);
--	if (fd < 0)
--		goto fail;
--	len = sys_read(fd, buf, 32);
--	sys_close(fd);
--	if (len <= 0 || len == 32 || buf[len - 1] != '\n')
--		goto fail;
--	buf[len - 1] = '\0';
--	if (sscanf(buf, "%u:%u", &maj, &min) == 2) {
--		/*
--		 * Try the %u:%u format -- see print_dev_t()
--		 */
--		res = MKDEV(maj, min);
--		if (maj != MAJOR(res) || min != MINOR(res))
--			goto fail;
--	} else {
--		/*
--		 * Nope.  Try old-style "0321"
--		 */
--		res = new_decode_dev(simple_strtoul(buf, &s, 16));
--		if (*s)
--			goto fail;
--	}
--
--	/* if it's there and we are not looking for a partition - that's it */
--	if (!part)
--		return res;
--
--	/* otherwise read range from .../range */
--	sprintf(path, "/sys/block/%s/range", name);
--	fd = sys_open(path, 0, 0);
--	if (fd < 0)
--		goto fail;
--	len = sys_read(fd, buf, 32);
--	sys_close(fd);
--	if (len <= 0 || len == 32 || buf[len - 1] != '\n')
--		goto fail;
--	buf[len - 1] = '\0';
--	range = simple_strtoul(buf, &s, 10);
--	if (*s)
--		goto fail;
--
--	/* if partition is within range - we got it */
--	if (part < range)
--		return res + part;
--fail:
--	return 0;
--}
--
- /*
-  *	Convert a name into device number.  We accept the following variants:
-  *
-@@ -129,12 +66,10 @@ fail:
-  *	5) /dev/<disk_name>p<decimal> - same as the above, that form is
-  *	   used when disk name of partitioned disk ends on a digit.
-  *
-- *	If name doesn't have fall into the categories above, we return 0.
-- *	Sysfs is used to check if something is a disk name - it has
-- *	all known disks under bus/block/devices.  If the disk name
-- *	contains slashes, name of sysfs node has them replaced with
-- *	bangs.  try_name() does the actual checks, assuming that sysfs
-- *	is mounted on rootfs /sys.
-+ *	If name doesn't have fall into the categories above, we return (0,0).
-+ *	block_class is used to check if something is a disk name. If the disk
-+ *	name contains slashes, the device name has them replaced with
-+ *	bangs.
-  */
- 
- dev_t name_to_dev_t(char *name)
-@@ -142,13 +77,6 @@ dev_t name_to_dev_t(char *name)
- 	char s[32];
- 	char *p;
- 	dev_t res = 0;
--	int part;
--
--#ifdef CONFIG_SYSFS
--	int mkdir_err = sys_mkdir("/sys", 0700);
--	if (sys_mount("sysfs", "/sys", "sysfs", 0, NULL) < 0)
--		goto out;
--#endif
- 
- 	if (strncmp(name, "/dev/", 5) != 0) {
- 		unsigned maj, min;
-@@ -164,6 +92,7 @@ dev_t name_to_dev_t(char *name)
- 		}
- 		goto done;
- 	}
-+
- 	name += 5;
- 	res = Root_NFS;
- 	if (strcmp(name, "nfs") == 0)
-@@ -178,35 +107,14 @@ dev_t name_to_dev_t(char *name)
- 	for (p = s; *p; p++)
- 		if (*p == '/')
- 			*p = '!';
--	res = try_name(s, 0);
-+	res = blk_lookup_devt(s);
- 	if (res)
- 		goto done;
- 
--	while (p > s && isdigit(p[-1]))
--		p--;
--	if (p == s || !*p || *p == '0')
--		goto fail;
--	part = simple_strtoul(p, NULL, 10);
--	*p = '\0';
--	res = try_name(s, part);
--	if (res)
--		goto done;
--
--	if (p < s + 2 || !isdigit(p[-2]) || p[-1] != 'p')
--		goto fail;
--	p[-1] = '\0';
--	res = try_name(s, part);
-+fail:
-+	return 0;
- done:
--#ifdef CONFIG_SYSFS
--	sys_umount("/sys", 0);
--out:
--	if (!mkdir_err)
--		sys_rmdir("/sys");
--#endif
- 	return res;
--fail:
--	res = 0;
--	goto done;
- }
- 
- static int __init root_dev_setup(char *line)
++For a more complete example of using ksets and kobjects properly, see the
++sample/kobject/kset-example.c code.
 -- 
 1.5.3.8
 
