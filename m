@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbYAZKRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYAZKSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbYAZKRp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 05:17:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYAZKRf
+	id S1756816AbYAZKSd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 05:18:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbYAZKSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 05:17:35 -0500
-Received: from qb-out-0506.google.com ([72.14.204.227]:52964 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751410AbYAZKRe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 05:17:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=XX5+3P+dXrTmXESxiLHpv6lK/IKXjPU3ep1AeFjk00BM4h1bDstD08MPlMiTQzm5kRvcaar+J0a/uWerqeDYQIqZMbOEaszA40Im8wfAmIPatKjJWQpY43nPNXnC71CBCDHv1ivd6WJR1djegpXNEooNujl2G3IMxdKMVCmz70E=
-Date: Sat, 26 Jan 2008 18:15:23 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [Patch] Shut up warnings from files under drivers/
-Message-ID: <20080126101522.GC20935@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20080126093007.GB20935@hacking> <20080126095723.GA22285@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+	Sat, 26 Jan 2008 05:18:25 -0500
+Received: from main.gmane.org ([80.91.229.2]:57828 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753106AbYAZKSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 05:18:24 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH 1/6] Core driver for WM97xx touchscreens
+Date: Sat, 26 Jan 2008 10:18:16 +0000 (UTC)
+Message-ID: <fnf1d8$n6i$1@ger.gmane.org>
+References: <20080121152402.GA7518@rakim.wolfsonmicro.main>
+	<1200929100-17224-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<fnf084$ju9$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080126095723.GA22285@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: ppp78-37-18-87.pppoe.avangarddsl.ru
+User-Agent: Pan/0.132 (Waxed in Black)
+Cc: linux-input@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 26, 2008 at 10:57:23AM +0100, Sam Ravnborg wrote:
->Hi WANG.
->On Sat, Jan 26, 2008 at 05:30:07PM +0800, WANG Cong wrote:
->> 
->> Fix two kind of defined-but-not-used warnings.
->> 
->> One is due to defination of MODULE_DEVICE_TABLE, the
->> other is due to __devexit_p. The solution is just to
->> add proper directives to protect those usages.
->
->Please include the actual warnings that you fix.
->
+Hi,
 
-Sure.
+Please apply this patch. BTW: Could you please also add me to the "CC" list
+of this patch serie?
 
-Such as this one:
+>From 1e61dd8a8c8346f925f09cae34275c9754bf2be1 Mon Sep 17 00:00:00 2001
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Date: Sat, 26 Jan 2008 13:04:29 +0300
+Subject: [PATCH] Fix wm97xx_resume
 
-drivers/char/applicom.c:68: warning: ‘applicom_pci_tbl’ defined but not used
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+---
+ drivers/input/touchscreen/wm97xx-core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Others are similar.
+diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
+index 06030a8..27a0a99 100644
+--- a/drivers/input/touchscreen/wm97xx-core.c
++++ b/drivers/input/touchscreen/wm97xx-core.c
+@@ -639,7 +639,7 @@ static int wm97xx_remove(struct device *dev)
+ }
+ 
+ #ifdef CONFIG_PM
+-int wm97xx_resume(struct device *dev)
++static int wm97xx_resume(struct device *dev)
+ {
+ 	struct wm97xx *wm = dev_get_drvdata(dev);
+ 
+@@ -647,7 +647,7 @@ int wm97xx_resume(struct device *dev)
+ 	if (wm->id == WM9713_ID2) {
+ 		wm97xx_reg_write(wm, AC97_WM9713_DIG1, wm->dig[0]);
+ 		wm97xx_reg_write(wm, 0x5a, wm->misc);
+-		if (wm->ts_use_count) {
++		if (wm->input_dev->users) {
+ 			u16 reg;
+ 			reg = wm97xx_reg_read(wm, AC97_EXTENDED_MID) & 0x7fff;
+ 			wm97xx_reg_write(wm, AC97_EXTENDED_MID, reg);
+-- 
+1.5.3.8
+
+
+
+-- 
+With best wishes
+Dmitry
+
 
