@@ -1,114 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYAZUpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbYAZUps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756101AbYAZUpg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 15:45:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbYAZUp2
+	id S1756792AbYAZUps (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 15:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbYAZUpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 15:45:28 -0500
-Received: from verein.lst.de ([213.95.11.210]:47824 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753010AbYAZUp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 15:45:27 -0500
-Date: Sat, 26 Jan 2008 21:45:14 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] kill do_generic_mapping_read
-Message-ID: <20080126204514.GA10581@lst.de>
-Mime-Version: 1.0
+	Sat, 26 Jan 2008 15:45:32 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56468 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754410AbYAZUpb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 15:45:31 -0500
+Date: Sat, 26 Jan 2008 12:44:02 -0800
+From: Greg KH <greg@kroah.com>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh <linux-sh@vger.kernel.org>
+Subject: Re: kobject oops with maple bus
+Message-ID: <20080126204402.GA30867@kroah.com>
+References: <1201377200.6672.10.camel@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+In-Reply-To: <1201377200.6672.10.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-do_generic_mapping_read was used by gfs2 for internals reads, but this
-use of the interface was rather suboptimal (as was the whole interface)
-and has been replaced by an internal helper now.  This patch kills
-do_generic_mapping_read and surrounding damage in preparation of additional
-cleanups for the buffered read path.
+On Sat, Jan 26, 2008 at 07:53:20PM +0000, Adrian McMenamin wrote:
+> Greg,
+> 
+> Just updated my git to the latest sources and get these (seemingly non-fatal) oops with the Dreamcast maple bus. I'll investigate further, but they may mean something to out out of the box.
+> 
+> Adrian
+> 
+> 
+> 
+> 
+> dreamy:~# [    0.000000] Linux version 2.6.24-gf0ea9c3d-dirty (adrian@bossclass) (gcc version 3.4.6) #328 PREEMPT Sat Jan 26 19:45:30 GMT 2008
+> [    0.000000] console [sercon0] enabled
+> [    0.000000] Booting machvec: Sega Dreamcast
+> [    0.000000] Node 0: start_pfn = 0xc000, low = 0xd000
+> [    0.000000] Zone PFN ranges:
+> [    0.000000]   Normal      49152 ->    53248
+> [    0.000000] Movable zone start PFN for each node
+> [    0.000000] early_node_map[1] active PFN ranges
+> [    0.000000]     0:    49152 ->    53248
+> [    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 4064
+> [    0.000000] Kernel command line: root=/dev/nfs rw nfsroot=192.168.61.50:/home/adrian/debdist ip=dhcp earlyprintk=serial video=pvr2fb:640x480-32@60 consol7
+> [    0.000000] PID hash table entries: 64 (order: 6, 256 bytes)
+> [    0.000000] Using tmu for system timer
+> [    0.000000] Using 12.469 MHz high precision timer.
+> [    0.000000] Console: colour dummy device 80x25
+> [    0.000000] Dentry cache hash table entries: 2048 (order: 1, 8192 bytes)
+> [    0.000000] Inode-cache hash table entries: 1024 (order: 0, 4096 bytes)
+> [    0.000000] Memory: 13468k/16384k available (1918k kernel code, 645k data, 96k init)
+> [    0.000000] PVR=040205c1 CVR=00000000 PRR=00000000
+> [    0.000000] I-cache : n_ways=1 n_sets=256 way_incr=8192
+> [    0.000000] I-cache : entry_mask=0x00001fe0 alias_mask=0x00001000 n_aliases=2
+> [    0.000000] D-cache : n_ways=1 n_sets=512 way_incr=16384
+> [    0.000000] D-cache : entry_mask=0x00003fe0 alias_mask=0x00003000 n_aliases=4
+> [    0.000000] SLUB: Genslabs=9, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
+> [    0.000000] Mount-cache hash table entries: 512
+> [    0.000000] CPU: SH7750
+> [    0.000000] net_namespace: 64 bytes
+> [    0.000000] NET: Registered protocol family 16
+> [    0.000000] Maple bus at (0, 0): Connected function 0x0
+> [    0.000000] No maple driver found for this device
+> [    0.000000] Maple bus at (1, 0): Connected function 0x0
+> [    0.000000] No maple driver found for this device
+> [    0.000000] Maple bus at (2, 0): Connected function 0x0
+> [    0.000000] No maple driver found for this device
+> [    0.000000] Maple bus at (3, 0): Connected function 0x0
+> [    0.000000] No maple driver found for this device
+> [    0.000000] Maple bus core now registered.
+> [    0.000000] DMA: Registering DMA API.
+> [    0.000000] DMA: Registering sh_dmac handler (4 channels).
+> [    0.000000] Maple bus at (0, 0): Connected function 0x1
+> [    0.000000] No maple driver found for this device
+> [    0.000000] kobject (8cc2d360): tried to init an initialized object, something is seriously wrong.
 
+The problem is here.  You have possibly already initialized this object,
+or called 'kobject_get' on it before registering it with the driver
+core.  This is a new sanity check that has been in the -mm tree for
+years :)
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+So I think something needs to be fixed in the code.  Do you want me to
+take a look at it?
 
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-01-26 20:56:55.000000000 +0100
-+++ linux-2.6/include/linux/fs.h	2008-01-26 20:57:12.000000000 +0100
-@@ -1803,9 +1803,6 @@ extern ssize_t generic_file_buffered_wri
- 		unsigned long, loff_t, loff_t *, size_t, ssize_t);
- extern ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos);
- extern ssize_t do_sync_write(struct file *filp, const char __user *buf, size_t len, loff_t *ppos);
--extern void do_generic_mapping_read(struct address_space *mapping,
--				    struct file_ra_state *, struct file *,
--				    loff_t *, read_descriptor_t *, read_actor_t);
- extern int generic_segment_checks(const struct iovec *iov,
- 		unsigned long *nr_segs, size_t *count, int access_flags);
- 
-@@ -1843,18 +1840,6 @@ static inline int xip_truncate_page(stru
- }
- #endif
- 
--static inline void do_generic_file_read(struct file * filp, loff_t *ppos,
--					read_descriptor_t * desc,
--					read_actor_t actor)
--{
--	do_generic_mapping_read(filp->f_mapping,
--				&filp->f_ra,
--				filp,
--				ppos,
--				desc,
--				actor);
--}
--
- #ifdef CONFIG_BLOCK
- ssize_t __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
- 	struct block_device *bdev, const struct iovec *iov, loff_t offset,
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c	2008-01-26 20:56:55.000000000 +0100
-+++ linux-2.6/mm/filemap.c	2008-01-26 20:57:12.000000000 +0100
-@@ -852,9 +852,7 @@ static void shrink_readahead_size_eio(st
- }
- 
- /**
-- * do_generic_mapping_read - generic file read routine
-- * @mapping:	address_space to be read
-- * @ra:		file's readahead state
-+ * do_generic_file_read - generic file read routine
-  * @filp:	the file to read
-  * @ppos:	current file position
-  * @desc:	read_descriptor
-@@ -865,18 +863,13 @@ static void shrink_readahead_size_eio(st
-  *
-  * This is really ugly. But the goto's actually try to clarify some
-  * of the logic when it comes to error handling etc.
-- *
-- * Note the struct file* is only passed for the use of readpage.
-- * It may be NULL.
-  */
--void do_generic_mapping_read(struct address_space *mapping,
--			     struct file_ra_state *ra,
--			     struct file *filp,
--			     loff_t *ppos,
--			     read_descriptor_t *desc,
--			     read_actor_t actor)
-+static void do_generic_file_read(struct file *filp, loff_t *ppos,
-+		read_descriptor_t *desc, read_actor_t actor)
- {
-+	struct address_space *mapping = filp->f_mapping;
- 	struct inode *inode = mapping->host;
-+	struct file_ra_state *ra = &filp->f_ra;
- 	pgoff_t index;
- 	pgoff_t last_index;
- 	pgoff_t prev_index;
-@@ -1065,7 +1058,6 @@ out:
- 	if (filp)
- 		file_accessed(filp);
- }
--EXPORT_SYMBOL(do_generic_mapping_read);
- 
- int file_read_actor(read_descriptor_t *desc, struct page *page,
- 			unsigned long offset, unsigned long size)
+thanks,
+
+greg k-h
