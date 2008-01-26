@@ -1,77 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbYAZRYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754886AbYAZR3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755274AbYAZRYY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 12:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbYAZRYP
+	id S1754886AbYAZR3E (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 12:29:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbYAZR2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 12:24:15 -0500
-Received: from lixom.net ([66.141.50.11]:44340 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752901AbYAZRYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 12:24:12 -0500
-Date: Sat, 26 Jan 2008 11:36:12 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Greg KH <gregkh@suse.de>
-Cc: linuxppc-dev@ozlabs.org, Kay Sievers <kay.sievers@vrfy.org>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 063/196] kset: convert /sys/devices to use kset_create
-Message-ID: <20080126173612.GB29143@lixom.net>
-References: <20080125071127.GA4860@kroah.com> <1201245134-4876-63-git-send-email-gregkh@suse.de> <20080126034055.GA28786@lixom.net> <20080126052454.GA27403@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080126052454.GA27403@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 26 Jan 2008 12:28:52 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4359 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750932AbYAZR2w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 12:28:52 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Torokhov <dtor@mail.ru>
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Sat, 26 Jan 2008 17:28:36 +0000
+Message-Id: <1201368516-3513-6-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.3.8
+In-Reply-To: <1201368516-3513-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <20080126151820.GA13899@sirena.org.uk>
+ <1201368516-3513-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1201368516-3513-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1201368516-3513-3-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1201368516-3513-4-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1201368516-3513-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-SA-Exim-Connect-IP: 82.32.140.119
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: [PATCH 6/6] Build system and MAINTAINERS entry for WM97xx touchscreen drivers
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 09:24:54PM -0800, Greg KH wrote:
-> On Fri, Jan 25, 2008 at 09:40:55PM -0600, Olof Johansson wrote:
-> > On Thu, Jan 24, 2008 at 11:10:01PM -0800, Greg Kroah-Hartman wrote:
-> > > Dynamically create the kset instead of declaring it statically.  We also
-> > > rename devices_subsys to devices_kset to catch all users of the
-> > > variable.
-> > 
-> > Guess what, you broke powerpc again!
-> 
-> I did this ON PURPOSE!!!
-> 
-> The linux-kernel archives hold the details, and I was told by the PPC64
-> IBM people that they would fix this properly for 2.6.25, and not to hold
-> back on my changes.  This has been known for many months now.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Signed-off-by: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+---
+ MAINTAINERS                        |   10 +++++++
+ drivers/input/touchscreen/Kconfig  |   52 ++++++++++++++++++++++++++++++++++++
+ drivers/input/touchscreen/Makefile |    7 +++++
+ 3 files changed, 69 insertions(+), 0 deletions(-)
 
-Yeah, my bad. :( I thought this was new, but it was just not exposed by
-my scripts because of the EHEA build errors (they were actual compile
-errors, while this was a link error, so it never go this far). That's
-why I didn't see it in -rc8-mm1 and thought it was new.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 2340cfb..f02851c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4204,6 +4204,16 @@ L:	linux-wireless@vger.kernel.org
+ W:	http://oops.ghostprotocols.net:81/blog
+ S:	Maintained
+ 
++WM97XX TOUCHSCREEN DRIVERS
++P:	Mark Brown
++M:	broonie@opensource.wolfsonmicro.com
++P:	Liam Girdwood
++M:	liam.girdwood@wolfsonmicro.com
++L:	linux-input@vger.kernel.org
++T:	git git://opensource.wolfsonmicro.com/linux-2.6-touch
++W:	http://opensource.wolfsonmicro.com/node/7
++S:	Supported
++
+ X.25 NETWORK LAYER
+ P:	Henner Eisen
+ M:	eis@baty.hanse.de
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index 90e8e92..0be05a2 100644
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -158,6 +158,58 @@ config TOUCHSCREEN_TOUCHRIGHT
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called touchright.
+ 
++config TOUCHSCREEN_WM97XX
++	tristate "Support for WM97xx AC97 touchscreen controllers"
++	depends on AC97_BUS
++
++config TOUCHSCREEN_WM9705
++	bool "WM9705 Touchscreen interface support"
++	depends on TOUCHSCREEN_WM97XX
++	help
++	  Say Y here if you have a Wolfson Microelectronics WM9705 touchscreen
++	  controller connected to your system.
++
++	  If unsure, say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called wm9705.
++
++config TOUCHSCREEN_WM9712
++	bool "WM9712 Touchscreen interface support"
++	depends on TOUCHSCREEN_WM97XX
++	help
++	  Say Y here if you have a Wolfson Microelectronics WM9712 touchscreen
++	  controller connected to your system.
++
++	  If unsure, say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called wm9712.
++
++config TOUCHSCREEN_WM9713
++	bool "WM9713 Touchscreen interface support"
++	depends on TOUCHSCREEN_WM97XX
++	help
++	  Say Y here if you have a Wolfson Microelectronics WM9713 touchscreen
++	  controller connected to your system.
++
++	  If unsure, say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called wm9713.
++
++config TOUCHSCREEN_WM97XX_MAINSTONE
++	tristate "WM97xx Mainstone accelerated touch"
++	depends on TOUCHSCREEN_WM97XX && ARCH_PXA
++	help
++	  Say Y here for support for streaming mode with WM97xx touchscreens
++	  on Mainstone systems.
++
++	  If unsure, say N
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called mainstone-wm97xx
++
+ config TOUCHSCREEN_TOUCHWIN
+ 	tristate "Touchwin serial touchscreen"
+ 	select SERIO
+diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
+index 35d4097..d38156e 100644
+--- a/drivers/input/touchscreen/Makefile
++++ b/drivers/input/touchscreen/Makefile
+@@ -4,6 +4,8 @@
+ 
+ # Each configuration option enables a list of files.
+ 
++wm97xx-ts-y := wm97xx-core.o
++
+ obj-$(CONFIG_TOUCHSCREEN_ADS7846)	+= ads7846.o
+ obj-$(CONFIG_TOUCHSCREEN_BITSY)		+= h3600_ts_input.o
+ obj-$(CONFIG_TOUCHSCREEN_CORGI)		+= corgi_ts.o
+@@ -19,3 +21,8 @@ obj-$(CONFIG_TOUCHSCREEN_PENMOUNT)	+= penmount.o
+ obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
+ obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
+ obj-$(CONFIG_TOUCHSCREEN_UCB1400)	+= ucb1400_ts.o
++obj-$(CONFIG_TOUCHSCREEN_WM97XX)	+= wm97xx-ts.o
++obj-$(CONFIG_TOUCHSCREEN_WM97XX_MAINSTONE)	+= mainstone-wm97xx.o
++wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9705)  += wm9705.o
++wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9712)  += wm9712.o
++wm97xx-ts-$(CONFIG_TOUCHSCREEN_WM9713)  += wm9713.o
+-- 
+1.5.3.8
 
-> > -extern struct kset devices_subsys; /* needed for vio_find_name() */
-> > +extern struct kset *devices_kset; /* needed for vio_find_name() */
-> 
-> No, this just papers over the real problem here.  For some reason, the
-> vio code thinks it is acceptable to walk the whole device tree and match
-> by a name and just assume that they got the correct device.  You call
-> this "enterprise grade"?  :)
->
-> You need to just put your device on a real bus, and then just walk the
-> bus.  That's the ONLY way you can guarantee the proper name will return
-> what you want, and you get the pointer that you really think you are
-> getting.
-
-Hmm, they are already on a bus. Odd, must be done like this for legacy
-reasons.
-
-[...]
-
-> So no, I'm going to leave the build broken for this code, because that
-> is what it really is.
-> 
-> Please fix it correctly.
-
-Alright, I'll leave that to people who care about vio and can test the
-proper fix. After a quick glance it looks like it should be easy to use
-bus_find_device() for it instead.
-
-
--Olof
