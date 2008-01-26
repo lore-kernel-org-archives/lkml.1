@@ -1,105 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYAZWCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbYAZWIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbYAZWCV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 17:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbYAZWCN
+	id S1756719AbYAZWIH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 17:08:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbYAZWHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 17:02:13 -0500
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:6560 "EHLO
-	mk-filter-3-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754447AbYAZWCM (ORCPT
+	Sat, 26 Jan 2008 17:07:54 -0500
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:40179 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754447AbYAZWHx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 17:02:12 -0500
-X-Trace: 675251418/mk-filter-3.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.80.29
-X-SBRS: None
-X-RemoteIP: 81.1.80.29
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAKc8m0dRAVAd/2dsb2JhbACBWKo+
-Subject: Re: kobject oops with maple bus
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Greg KH <greg@kroah.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh <linux-sh@vger.kernel.org>
-In-Reply-To: <20080126204402.GA30867@kroah.com>
-References: <1201377200.6672.10.camel@localhost.localdomain>
-	 <20080126204402.GA30867@kroah.com>
-Content-Type: text/plain
-Date: Sat, 26 Jan 2008 22:01:48 +0000
-Message-Id: <1201384908.6672.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Jan 2008 17:07:53 -0500
+Date: Sat, 26 Jan 2008 16:07:30 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: linux-scsi@vger.kernel.org
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org
+Subject: [PATCH] sym53c8xx: fix bad memset argument in sym_set_cam_result_error
+Message-ID: <20080126220730.GN14201@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On a big powerpc box I got the following oops with 2.6.24-git2:
 
-On Sat, 2008-01-26 at 12:44 -0800, Greg KH wrote:
-> On Sat, Jan 26, 2008 at 07:53:20PM +0000, Adrian McMenamin wrote:
-> > Greg,
-> > 
-> > Just updated my git to the latest sources and get these (seemingly non-fatal) oops with the Dreamcast maple bus. I'll investigate further, but they may mean something to out out of the box.
-> > 
-> > Adrian
-> > 
-> > 
-> > 
-> > 
-> > dreamy:~# [    0.000000] Linux version 2.6.24-gf0ea9c3d-dirty (adrian@bossclass) (gcc version 3.4.6) #328 PREEMPT Sat Jan 26 19:45:30 GMT 2008
-> > [    0.000000] console [sercon0] enabled
-> > [    0.000000] Booting machvec: Sega Dreamcast
-> > [    0.000000] Node 0: start_pfn = 0xc000, low = 0xd000
-> > [    0.000000] Zone PFN ranges:
-> > [    0.000000]   Normal      49152 ->    53248
-> > [    0.000000] Movable zone start PFN for each node
-> > [    0.000000] early_node_map[1] active PFN ranges
-> > [    0.000000]     0:    49152 ->    53248
-> > [    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 4064
-> > [    0.000000] Kernel command line: root=/dev/nfs rw nfsroot=192.168.61.50:/home/adrian/debdist ip=dhcp earlyprintk=serial video=pvr2fb:640x480-32@60 consol7
-> > [    0.000000] PID hash table entries: 64 (order: 6, 256 bytes)
-> > [    0.000000] Using tmu for system timer
-> > [    0.000000] Using 12.469 MHz high precision timer.
-> > [    0.000000] Console: colour dummy device 80x25
-> > [    0.000000] Dentry cache hash table entries: 2048 (order: 1, 8192 bytes)
-> > [    0.000000] Inode-cache hash table entries: 1024 (order: 0, 4096 bytes)
-> > [    0.000000] Memory: 13468k/16384k available (1918k kernel code, 645k data, 96k init)
-> > [    0.000000] PVR=040205c1 CVR=00000000 PRR=00000000
-> > [    0.000000] I-cache : n_ways=1 n_sets=256 way_incr=8192
-> > [    0.000000] I-cache : entry_mask=0x00001fe0 alias_mask=0x00001000 n_aliases=2
-> > [    0.000000] D-cache : n_ways=1 n_sets=512 way_incr=16384
-> > [    0.000000] D-cache : entry_mask=0x00003fe0 alias_mask=0x00003000 n_aliases=4
-> > [    0.000000] SLUB: Genslabs=9, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
-> > [    0.000000] Mount-cache hash table entries: 512
-> > [    0.000000] CPU: SH7750
-> > [    0.000000] net_namespace: 64 bytes
-> > [    0.000000] NET: Registered protocol family 16
-> > [    0.000000] Maple bus at (0, 0): Connected function 0x0
-> > [    0.000000] No maple driver found for this device
-> > [    0.000000] Maple bus at (1, 0): Connected function 0x0
-> > [    0.000000] No maple driver found for this device
-> > [    0.000000] Maple bus at (2, 0): Connected function 0x0
-> > [    0.000000] No maple driver found for this device
-> > [    0.000000] Maple bus at (3, 0): Connected function 0x0
-> > [    0.000000] No maple driver found for this device
-> > [    0.000000] Maple bus core now registered.
-> > [    0.000000] DMA: Registering DMA API.
-> > [    0.000000] DMA: Registering sh_dmac handler (4 channels).
-> > [    0.000000] Maple bus at (0, 0): Connected function 0x1
-> > [    0.000000] No maple driver found for this device
-> > [    0.000000] kobject (8cc2d360): tried to init an initialized object, something is seriously wrong.
-> 
-> The problem is here.  You have possibly already initialized this object,
-> or called 'kobject_get' on it before registering it with the driver
-> core.  This is a new sanity check that has been in the -mm tree for
-> years :)
-> 
-> So I think something needs to be fixed in the code.  Do you want me to
-> take a look at it?
-> 
+sym0: <1010-66> rev 0x1 at pci 0000:d0:01.0 irq 215
+sym0: No NVRAM, ID 7, Fast-80, LVD, parity checking
+sym0: SCSI BUS has been reset.
+scsi0 : sym-2.2.3
+ target0:0:8: FAST-40 WIDE SCSI 80.0 MB/s ST (25 ns, offset 31)
+scsi 0:0:8:0: Direct-Access     IBM      ST318305LC       C509 PQ: 0
+ANSI: 3
+ target0:0:8: tagged command queuing enabled, command queue depth 16.
+ target0:0:8: Beginning Domain Validation
+ target0:0:8: asynchronous
+ target0:0:8: wide asynchronous
+ target0:0:8: FAST-80 WIDE SCSI 160.0 MB/s DT (12.5 ns, offset 31)
+ target0:0:8: FAST-80 WIDE SCSI 160.0 MB/s DT (12.5 ns, offset 31)
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc000000000038460
+cpu 0x25: Vector: 300 (Data Access) at [c00000000f567840]
+    pc: c000000000038460: .memcpy+0x60/0x280
+    lr: d000000000050280: .sym_set_cam_result_error+0xfc/0x1e0 [sym53c8xx]
+    sp: c00000000f567ac0
+   msr: 8000000000009032
+   dar: 0
+ dsisr: 42000000
+  current = 0xc000006d1e0af0a0
+  paca    = 0xc0000000004afc00
+    pid   = 0, comm = swapper
+enter ? for help
+[link register   ] d000000000050280
+.sym_set_cam_result_error+0xfc/0x1e0 [sym53c8xx]
+[c00000000f567ac0] c00000000f567b80 (unreliable)
+[c00000000f567b80] d0000000000552b8 .sym_complete_error+0x12c/0x1bc [sym53c8xx]
+[c00000000f567c20] d0000000000561a4 .sym_int_sir+0xaa4/0x1718 [sym53c8xx]
+[c00000000f567d00] d000000000057e8c .sym_interrupt+0x4e4/0x6ec [sym53c8xx]
+[c00000000f567dc0] d00000000004fdf4 .sym53c8xx_intr+0x6c/0xdc [sym53c8xx]
+[c00000000f567e50] c0000000000a83e0 .handle_IRQ_event+0x7c/0xec
+[c00000000f567ef0] c0000000000aa344 .handle_fasteoi_irq+0x130/0x1f0
+[c00000000f567f90] c00000000002a538 .call_handle_irq+0x1c/0x2c
+[c000004d5e0b3a90] c00000000000c320 .do_IRQ+0x108/0x1d0
+[c000004d5e0b3b20] c000000000004790 hardware_interrupt_entry+0x18/0x1c
 
-I think it is probably registering the "dummy" driver a second or
-further time. Does that make sense? By all means have a look, but I'll
-have a go - I'm sure you have better things to do than mess about with
-Dreamcast code :)
+The memset() in sym_set_cam_result_error() would appear to be trashing
+the scsi_cmnd struct instead of clearing sense_buffer.
+
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ drivers/scsi/sym53c8xx_2/sym_glue.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
+index 21e926d..e939f38 100644
+--- a/drivers/scsi/sym53c8xx_2/sym_glue.c
++++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
+@@ -207,7 +207,7 @@ void sym_set_cam_result_error(struct sym_hcb *np, struct sym_ccb *cp, int resid)
+ 			/*
+ 			 *  Bounce back the sense data to user.
+ 			 */
+-			memset(&cmd->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
++			memset(cmd->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
+ 			memcpy(cmd->sense_buffer, cp->sns_bbuf,
+ 			       min(SCSI_SENSE_BUFFERSIZE, SYM_SNS_BBUF_LEN));
+ #if 0
+-- 
+1.5.3.7.1112.g9758e
 
