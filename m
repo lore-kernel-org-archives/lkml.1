@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbYAZGIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYAZGP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300AbYAZGIS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 01:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbYAZGII
+	id S1755351AbYAZGP7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 01:15:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbYAZGPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 01:08:08 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47051 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752335AbYAZGIH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 01:08:07 -0500
-Message-ID: <479ACD43.6060003@zytor.com>
-Date: Fri, 25 Jan 2008 22:03:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>,
-       LKML <linux-kernel@vger.kernel.org>, Jan Beulich <jbeulich@novell.com>,
-       Eduardo Pereira Habkost <ehabkost@redhat.com>,
-       Ian Campbell <ijc@hellion.org.uk>, William Irwin <wli@holomorphy.com>,
+	Sat, 26 Jan 2008 01:15:49 -0500
+Received: from mail.suse.de ([195.135.220.2]:35496 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750716AbYAZGPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 01:15:49 -0500
+Date: Fri, 25 Jan 2008 22:14:19 -0800
+From: Greg KH <gregkh@suse.de>
+To: Yinghai Lu <yhlu.kernel@gmail.com>, jacob.shin@amd.com
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 11 of 11] x86: defer cr3 reload when doing pud_clear()
-References: <C3C0235A.12D8E%Keir.Fraser@cl.cam.ac.uk> <479A7463.7070801@goop.org> <20080126001128.GB24559@elte.hu> <200801260657.04398.ak@suse.de>
-In-Reply-To: <200801260657.04398.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: threshold_init_device/kobject_uevent_env oops
+Message-ID: <20080126061419.GA27012@suse.de>
+References: <86802c440801251305u21517078y12ff68ef3015aaae@mail.gmail.com> <20080125221548.GA15172@suse.de> <20080125223556.GB24708@elte.hu> <20080125224711.GA6323@suse.de> <20080125225036.GB6323@suse.de> <86802c440801252204g61e05a23s10ca56c000a6635d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440801252204g61e05a23s10ca56c000a6635d@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+On Fri, Jan 25, 2008 at 10:04:19PM -0800, Yinghai Lu wrote:
+> On Jan 25, 2008 2:50 PM, Greg KH <gregkh@suse.de> wrote:
+> > On Fri, Jan 25, 2008 at 02:47:11PM -0800, Greg KH wrote:
+> > > On Fri, Jan 25, 2008 at 11:35:56PM +0100, Ingo Molnar wrote:
+> > > >
+> > > > * Greg KH <gregkh@suse.de> wrote:
+> > > >
+> > > > > On Fri, Jan 25, 2008 at 01:05:40PM -0800, Yinghai Lu wrote:
+> > > > > > current linus tree + x86.git
+> > > > > >
+> > > > > > got
+> > > > > >
+> > > > > > Calling initcall 0xffffffff80b93d98: threshold_init_device+0x0/0x3f()
+> > > > > > BUG: unable to handle kernel NULL pointer dereference at 0000000000000040
+> > > > > > IP: [<ffffffff80458e20>] kobject_uevent_env+0x2a/0x3d9
+> > > > >
+> > > > > Does this happen on just Linus's tree?
+> > > > >
+> > > > > Can you send me a .config file for this?
+> > > > >
+> > > > > What is threshold_init()?  Is it something new in the x86.git tree?
+> > > >
+> > > > no. A quick grep shows that it is in a file that _your_ changes in
+> > > > Linus' latest have touched:
+> > > >
+> > > >   arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+> > >
+> > > Ok, those are pretty much just search/and/replace type changes, but I
+> > > have been running x86-64 boxes with these changes in place.
+> >
+> > Oh wait, I do see a change.  We are now (finally) emitting a kobject
+> > uevent for these devices, which somehow the code can't handle properly.
+> >
+> > Let me go poke this some more, unfortunatly I don't have any AMD 64
+> > boxes here anymore, only Intel based processors, so I can't run this
+> > module...
 > 
->> so INVLPG makes sense for pagetable fault realated single-address 
->> flushes, but they rarely make sense for range flushes. (and that's how 
->> Linux uses it)
+> it only happens with AMD Quad Core CPU or Fam 10h.
 > 
-> I think it would be an interesting experiment to switch flush_tlb_range()
-> over to INVLPG if the length is below some threshold and see if there 
-> are visible effects in macro benchmarks. The main problem
-> would be to determine the right threshold -- would likely be CPU dependent.
-> 
+> works well with AMD opteron Rev E, and Rev F.
 
-It would be an interesting experiment.  Odds are pretty good that the 
-cutover is roughly linear in the TLB size.
+So this only dies on a multi-core system?  Or does 2 processor boxes
+work, but not 4?
 
-	-hpa
+> So you may need have access to new system with quad core cpu.
+
+Ugh, that's not good.
+
+The kobjects here are really not making much sense.
+
+Jacob, any hints on exactly what you were trying to do with these
+kobjects?  What's the end goal here, and why didn't you just use a
+struct device instead?
+
+The mce_amd_64.c file is the only thing in the tree using this userspace
+API, can you please document it in Documentation/ABI so that others can
+understand what it is used for, what files are expected, and what values
+in the files are?
+
+thanks,
+
+greg k-h
