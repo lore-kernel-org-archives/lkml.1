@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbYAZOje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbYAZOqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbYAZOje (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 09:39:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbYAZOjZ
+	id S1754321AbYAZOqT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 09:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbYAZOqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 09:39:25 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:9059 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbYAZOjY (ORCPT
+	Sat, 26 Jan 2008 09:46:04 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:52529 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbYAZOqC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 09:39:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=nG1V1S/qP89O9TLM6Xe4xpELhDD8nEgw3v3IKmUdc9YPpZ22T+xiFxuQCK2yjQgkTRMNx5oxhts2m6oBhbnoNnLgJwv8OnnkcZ6Blwta5SRcQYmEBtcg2I8DJR8oHvo30KXZh58m47bhimYMfCZS70id10gIcYBhtsK8mMg140U=
-Message-ID: <f284c33d0801260639j6d41537qebee033ed7b46aa8@mail.gmail.com>
-Date: Sat, 26 Jan 2008 21:39:20 +0700
-From: "Mulyadi Santosa" <mulyadi.santosa@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Documentation: updating the explanation of "profile=" param
+	Sat, 26 Jan 2008 09:46:02 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <479B4795.2040202@s5r6.in-berlin.de>
+Date: Sat, 26 Jan 2008 15:45:41 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
 MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: mingo@elte.hu, cate@cateee.net, rjw@sisk.pl, Valdis.Kletnieks@vt.edu,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: using LKML for subsystem development
+References: <479A75D4.6070607@s5r6.in-berlin.de>	<479A8203.40804@s5r6.in-berlin.de>	<20080126112820.GA10563@elte.hu> <20080126.060705.53192768.davem@davemloft.net>
+In-Reply-To: <20080126.060705.53192768.davem@davemloft.net>
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mulyadi Santosa
+David Miller wrote:
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Sat, 26 Jan 2008 12:28:20 +0100
+> 
+>> Filter on all mails from David S. Miller if you are interested in 
+>> networking topics. You'll have a really good grasp of what's going on in 
+>> that area, without having to invest too much time.
+> 
+> That's a very poor filter, I don't write much code lately in the
+> networking.
+> 
+> I only provide theoretical direction in a few specific areas I care
+> about.
+> 
+> As Ingo already knows, I think this "put everything on lkml" argument
+> is bogus.
 
-Fixing "profile" kernel parameter:
-- adding "kvm" parameter description
-- a bit more verbose explanation of "schedule"/"sleep" param
-- explicitly tells that CPU profiling is the default mode
-  if none is mentioned.
+If people started filtering by stefanr to follow IEEE 1394 subsystem
+development, I would have to stop drawing myself into SCSI/ Kconfig menu
+layout/ coding style related discussions and meta discussions such as
+this.  Which might actually be a good move anyway.  :-)
 
-Done against vanilla 2.6.23.13
+> And about bisectability, every time I apply a networking patch I do at
+> the very least a "allmodconfig" build with just that new patch added,
+> for every patch.  Often I do more extensive build testing.
+> 
+> And when I rebase the tree, I rerun this check after each
+> patch gets re-applied to a new base tree.
+> 
+> In fact I'm working on such issues as I fly over the Australia
+> for LCA08 :-)
+> 
+> So this isn't an issue that posting to lkml is going to help.
 
-PS: I am not subscribed to linux-kernel@vger, so please kindly Cc:
-your reply to my e-mail address.
-
-Signed-off-by: Mulyadi Santosa <mulyadi.santosa@gmail.com>
----
-
- Documentation/kernel-parameters.txt |   19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
-
-
---- linux-2.6.23.13/Documentation/kernel-parameters.txt.bak	2008-01-10
-00:18:17.000000000 +0700
-+++ linux-2.6.23.13/Documentation/kernel-parameters.txt	2008-01-25
-22:49:37.000000000 +0700
-@@ -1391,12 +1391,19 @@ and is between 256 and 4096 characters.
- 			Format: <bool>  (1/Y/y=enable, 0/N/n=disable)
-
- 	profile=	[KNL] Enable kernel profiling via /proc/profile
--			Format: [schedule,]<number>
--			Param: "schedule" - profile schedule points.
--			Param: <number> - step/bucket size as a power of 2 for
--				statistical time based profiling.
--			Param: "sleep" - profile D-state sleeping (millisecs)
--
-+			Format: [schedule/sleep/kvm,]<number>
-+			First param is one of these (they can't be combined!):
-+			Param: "schedule" - profile schedule() call.
-+			Param: "sleep" - profile where a task sleeps (millisecs).
-+			Param: "kvm" - profile KVM exit call.
-+
-+			If first param is omitted then cpu profiling mode
-+			is effectively applied. In this mode, profiling is
-+			done in tick handler.
-+
-+			Second param: <number> - step/bucket size as a power
-+			of 2 for statistical time based profiling.
-+	
- 	processor.max_cstate=	[HW,ACPI]
- 			Limit processor to maximum C-state
- 			max_cstate=9 overrides any DMI blacklist limit.
+Well, bisectability issues apparently occur primarily in the merge
+result after merges of cross-subsystem changes.  So, things like the new
+pre-merge tree which James Bottomley set up might actually help with
+this issue.
+-- 
+Stefan Richter
+-=====-==--- ---= ==-=-
+http://arcgraph.de/sr/
