@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbYAZJKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753066AbYAZJLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbYAZJKu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 04:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbYAZJKO
+	id S1753066AbYAZJLx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 04:11:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbYAZJLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 04:10:14 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40378 "EHLO amd.ucw.cz"
+	Sat, 26 Jan 2008 04:11:37 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40404 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753527AbYAZJKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 04:10:08 -0500
-Date: Sat, 26 Jan 2008 10:10:15 +0100
+	id S1752969AbYAZJLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 04:11:35 -0500
+Date: Sat, 26 Jan 2008 10:11:47 +0100
 From: Pavel Machek <pavel@ucw.cz>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
@@ -25,98 +25,48 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 01/23 -v6] printk - dont wakeup klogd with interrupts
-	disabled
-Message-ID: <20080126091015.GA1794@elf.ucw.cz>
-References: <20080126042152.526086719@goodmis.org> <20080126042801.280369398@goodmis.org>
+Subject: Re: [PATCH 23/23 -v6] Critical latency timings histogram
+Message-ID: <20080126091147.GB1794@elf.ucw.cz>
+References: <20080126042152.526086719@goodmis.org> <20080126042804.824377395@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080126042801.280369398@goodmis.org>
+In-Reply-To: <20080126042804.824377395@goodmis.org>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-01-25 23:21:53, Steven Rostedt wrote:
-> [ This patch is added to the series since the wakeup timings trace
->   may lockup without it. ]
-> 
-> I thought that one could place a printk anywhere without worrying.
-> But it seems that it is not wise to place a printk where the runqueue
-> lock is held.
-> 
-> I just spent two hours debugging why some of my code was locking up,
-> to find that the lockup was caused by some debugging printk's that
-> I had in the scheduler.  The printk's were only in rare paths so
-> they shouldn't be too much of a problem, but after I hit the printk
-> the system locked up.
-> 
-> Thinking that it was locking up on my code I went looking down the
-> wrong path. I finally found (after examining an NMI dump) that
-> the lockup happened because printk was trying to wakeup the klogd
-> daemon, which caused a deadlock when the try_to_wakeup code tries
-> to grab the runqueue lock.
-> 
-> This patch adds a runqueue_is_locked interface in sched.c for other
-> files to see if the current runqueue lock is held. This is used
-> in printk to determine whether it is safe or not to wakeup the klogd.
-> 
-> And with this patch, my code ran fine ;-)
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  include/linux/sched.h |    2 ++
->  kernel/printk.c       |   14 ++++++++++----
->  kernel/sched.c        |   18 ++++++++++++++++++
->  3 files changed, 30 insertions(+), 4 deletions(-)
-> 
-> Index: linux-mcount.git/kernel/printk.c
-> ===================================================================
-> --- linux-mcount.git.orig/kernel/printk.c	2008-01-25 21:46:50.000000000 -0500
-> +++ linux-mcount.git/kernel/printk.c	2008-01-25 21:46:55.000000000 -0500
-> @@ -590,9 +590,11 @@ static int have_callable_console(void)
->   * @fmt: format string
->   *
->   * This is printk().  It can be called from any context.  We want it to work.
-> - * Be aware of the fact that if oops_in_progress is not set, we might try to
-> - * wake klogd up which could deadlock on runqueue lock if printk() is called
-> - * from scheduler code.
-> + *
-> + * Note: if printk() is called with the runqueue lock held, it will not wake
-> + * up the klogd. This is to avoid a deadlock from calling printk() in schedule
-> + * with the runqueue lock held and having the wake_up grab the runqueue lock
-> + * as well.
->   *
->   * We try to grab the console_sem.  If we succeed, it's easy - we log the output and
->   * call the console drivers.  If we fail to get the semaphore we place the output
-> @@ -1003,7 +1005,11 @@ void release_console_sem(void)
->  	console_locked = 0;
->  	up(&console_sem);
->  	spin_unlock_irqrestore(&logbuf_lock, flags);
-> -	if (wake_klogd)
-> +	/*
-> +	 * If we try to wake up klogd while printing with the runqueue lock
-> +	 * held, this will deadlock.
-> +	 */
-> +	if (wake_klogd && !runqueue_is_locked())
->  		wake_up_klogd();
->  }
 
-I guess you are going to kill me... but 
+> +static void *l_start(struct seq_file *m, loff_t *pos)
+> +{
+> +	loff_t *index_ptr = kmalloc(sizeof(loff_t), GFP_KERNEL);
+> +	loff_t index = *pos;
+> +	struct hist_data *my_hist = m->private;
+> +
+> +	if (!index_ptr)
+> +		return NULL;
+> +
+> +	if (index == 0) {
+> +		atomic_dec(&my_hist->hist_mode);
+> +		seq_printf(m, "#Minimum latency: %lu microseconds.\n"
+> +			   "#Average latency: %lu microseconds.\n"
+> +			   "#Maximum latency: %lu microseconds.\n"
+> +			   "#Total samples: %llu\n"
+> +			   "#There are %llu samples greater or equal"
+> +			   " than %d microseconds\n"
+> +			   "#usecs\t%16s\n"
+> +			   , my_hist->min_lat
+> +			   , my_hist->avg_lat
+> +			   , my_hist->max_lat
+> +			   , my_hist->total_samples
+> +			   , my_hist->beyond_hist_bound_samples
+> +			   , MAX_ENTRY_NUM, "samples");
+> +	}
 
-CPU0					CPU1
-if (!runqueue_is_locked()) {
-					locks runqueue
-	wake_up_klogd
-
-...and we are dead. What is needed here is
-"wake_up_klogd_if_you_can()" or something, that does trylock (atomic).
-
-...but even this version is better than status quo, I'd say.
-
-								Pavel
+Ok, so you are adding new userland interface; I guess you should also
+document it in Documentation/?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
