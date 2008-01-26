@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbYAZB5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbYAZCHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758099AbYAZB5d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 20:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbYAZB5Y
+	id S1760009AbYAZCHs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 21:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759273AbYAZCHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 20:57:24 -0500
-Received: from mga02.intel.com ([134.134.136.20]:10932 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755459AbYAZB5W convert rfc822-to-8bit (ORCPT
+	Fri, 25 Jan 2008 21:07:18 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:62578 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759209AbYAZCHO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 20:57:22 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,253,1199692800"; 
-   d="scan'208";a="255208807"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [kvm-devel] [PATCH][RFC] SVM: Add Support for Nested Paging in AMD Fam16 CPUs
-Date: Fri, 25 Jan 2008 17:57:21 -0800
-Message-ID: <2D848F959C03D945A84E9EDE7F7BFE42740228@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <1201294393-22613-1-git-send-email-joerg.roedel@amd.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [kvm-devel] [PATCH][RFC] SVM: Add Support for Nested Paging in AMD Fam16 CPUs
-Thread-Index: AchflM3LdROw71pwSJeL47zQim9gogAKOf8A
-References: <1201294393-22613-1-git-send-email-joerg.roedel@amd.com>
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: "Joerg Roedel" <joerg.roedel@amd.com>, "Avi Kivity" <avi@qumranet.com>,
-       <kvm-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 26 Jan 2008 01:57:21.0985 (UTC) FILETIME=[CA242310:01C85FBE]
+	Fri, 25 Jan 2008 21:07:14 -0500
+Date: Fri, 25 Jan 2008 18:13:47 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_64: change aper valid checking sequence
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-id: <200801251813.48961.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> Hi,
-> 
-> here is the first release of patches for KVM to support the Nested
-Paging
-> (NPT) feature of AMD QuadCore CPUs for comments and public testing.
-This
-> feature improves the guest performance significantly. I measured an
-> improvement of around 17% using kernbench in my first tests.
-> 
-> This patch series is basically tested with Linux guests (32 bit legacy
-> paging, 32 bit PAE paging and 64 bit Long Mode). Also tested with
-Windows
-> Vista 32 bit and 64 bit. All these guests ran successfully with these
-> patches. The patch series only enables NPT for 64 bit Linux hosts at
-the
-> moment. 
-> 
-> Please give these patches a good and deep testing. I hope we have this
-> patchset ready for merging soon.
+[PATCH] x86_64: change aper valid checking sequence
 
-Good. We also ported the EPT patch for Xen to KVM, which we submitted
-last year. We've been cleaning up the patch with Avi. We are working on
-live migration support now, and we'll submit the patch once it's done.
-So please stay tuned.
+old sequence:
+size ==> >4G  ==> point to RAM
+changed to
+>4G ==> point to RAM ==> size
 
-> 
-> Joerg
-> 
+some bios even leave aper to unclear, so check size at last.
+to avoid reporting that like
 
-Jun
----
-Intel Open Source Technology Center
+Node 0: Aperture @ 4a42000000 size 32 MB
+Aperture too small (32 MB)
+
+with patch will get
+
+Node 0: Aperture @ 4a42000000 size 32 MB
+Aperture beyond 4G. Ignoring.
+
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+index 0b837bb..608152a 100644
+--- a/arch/x86/kernel/aperture_64.c
++++ b/arch/x86/kernel/aperture_64.c
+@@ -85,10 +85,6 @@ static int __init aperture_valid(u64 aper_base, u32 aper_size)
+ 	if (!aper_base)
+ 		return 0;
+ 
+-	if (aper_size < 64*1024*1024) {
+-		printk(KERN_ERR "Aperture too small (%d MB)\n", aper_size>>20);
+-		return 0;
+-	}
+ 	if (aper_base + aper_size > 0x100000000UL) {
+ 		printk(KERN_ERR "Aperture beyond 4GB. Ignoring.\n");
+ 		return 0;
+@@ -97,6 +93,10 @@ static int __init aperture_valid(u64 aper_base, u32 aper_size)
+ 		printk(KERN_ERR "Aperture pointing to e820 RAM. Ignoring.\n");
+ 		return 0;
+ 	}
++	if (aper_size < 64*1024*1024) {
++		printk(KERN_ERR "Aperture too small (%d MB)\n", aper_size>>20);
++		return 0;
++	}
+ 
+ 	return 1;
+ }
