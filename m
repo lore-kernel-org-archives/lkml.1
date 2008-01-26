@@ -1,99 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbYAZInM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbYAZIpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754511AbYAZInM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 03:43:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYAZInA
+	id S1755186AbYAZIpv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 03:45:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYAZIpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 03:43:00 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:45608 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751869AbYAZIm7 (ORCPT
+	Sat, 26 Jan 2008 03:45:42 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57083 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbYAZIpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 03:42:59 -0500
-Date: Sat, 26 Jan 2008 14:12:47 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH 36/49] ext4: Add EXT4_IOC_MIGRATE ioctl
-Message-ID: <20080126084247.GA6778@skywalker>
-References: <1200970948-17903-31-git-send-email-tytso@mit.edu> <1200970948-17903-32-git-send-email-tytso@mit.edu> <1200970948-17903-33-git-send-email-tytso@mit.edu> <1200970948-17903-34-git-send-email-tytso@mit.edu> <1200970948-17903-35-git-send-email-tytso@mit.edu> <1200970948-17903-36-git-send-email-tytso@mit.edu> <1200970948-17903-37-git-send-email-tytso@mit.edu> <20080123140716.e6f5d14f.akpm@linux-foundation.org> <20080124055532.GC7902@skywalker> <20080126041500.GA28889@mit.edu>
-MIME-Version: 1.0
+	Sat, 26 Jan 2008 03:45:40 -0500
+Date: Sat, 26 Jan 2008 08:45:32 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       hch@infradead.org, viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mhalcrow@us.ibm.com
+Subject: Re: [UNIONFS] 00/29 Unionfs and related patches pre-merge review (v2)
+Message-ID: <20080126084532.GG27894@ZenIV.linux.org.uk>
+References: <20080117060017.GC27894@ZenIV.linux.org.uk> <200801260508.m0Q58UpV031448@agora.fsl.cs.sunysb.edu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080126041500.GA28889@mit.edu>
-User-Agent: Mutt/1.5.17 (2007-12-11)
+In-Reply-To: <200801260508.m0Q58UpV031448@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 11:15:00PM -0500, Theodore Tso wrote:
-> On Thu, Jan 24, 2008 at 11:25:32AM +0530, Aneesh Kumar K.V wrote:
-> > +static int free_ext_idx(handle_t *handle, struct inode *inode,
-> > +					struct ext4_extent_idx *ix)
-> > +{
-> > +	int i, retval = 0;
-> > +	ext4_fsblk_t block;
-> > +	struct buffer_head *bh;
-> > +	struct ext4_extent_header *eh;
-> > +
-> > +	block = idx_pblock(ix);
-> > +	bh = sb_bread(inode->i_sb, block);
-> > +	if (!bh)
-> > +		return -EIO;
-> > +
-> > +	eh = (struct ext4_extent_header *)bh->b_data;
-> > +	if (eh->eh_depth == 0) {
-> > +		brelse(bh);
-> > +		ext4_free_blocks(handle, inode, block, 1);
-> > +	} else {
-> > +		ix = EXT_FIRST_INDEX(eh);
-> > +		for (i = 0; i < le16_to_cpu(eh->eh_entries); i++, ix++) {
-> > +			retval = free_ext_idx(handle, inode, ix);
-> > +			if (retval)
-> > +				return retval;
-> > +		}
-> > +	}
-> > +	return retval;
-> > +}
+On Sat, Jan 26, 2008 at 12:08:30AM -0500, Erez Zadok wrote:
+
+> > 	* lock_parent(): who said that you won't get dentry moved
+> > before managing to grab i_mutex on parent?  While we are at it,
+> > who said that you won't get dentry moved between fetching d_parent
+> > and doing dget()?  In that case parent could've been _freed_ before
+> > you get to dget().
 > 
-> Aneesh, looks like if eh->eh_depth is != 0, bh gets leaked.  This is
-> how I plan to fix it up:
+> OK, so looks like I should use dget_parent() in my lock_parent(), as I've
+> done elsewhere.  I'll also take a look at all instances in which I get
+> dentry->d_parent and see if a d_lock is needed there.
+ 
+dget_parent() doesn't deal with the problem of rename() done directly
+in that layer while you'd been waiting for i_mutex.
+
+> > +       lock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
+> > +       err = vfs_rename(lower_old_dir_dentry->d_inode, lower_old_dentry,
+> > +                        lower_new_dir_dentry->d_inode, lower_new_dentry);
+> > +       unlock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
+> > 
+> > Uh-huh...  To start with, what guarantees that your lower_old_dentry
+> > is still a child of your lower_old_dir_dentry?
 > 
-> +static int free_ext_idx(handle_t *handle, struct inode *inode,
-> +					struct ext4_extent_idx *ix)
-> +{
-> +	int i, retval = 0;
-> +	ext4_fsblk_t block;
-> +	struct buffer_head *bh;
-> +	struct ext4_extent_header *eh;
-> +
-> +	block = idx_pblock(ix);
-> +	bh = sb_bread(inode->i_sb, block);
-> +	if (!bh)
-> +		return -EIO;
-> +
-> +	eh = (struct ext4_extent_header *)bh->b_data;
-> +	if (eh->eh_depth == 0)
-> +		ext4_free_blocks(handle, inode, block, 1);
-> +	else {
-> +		ix = EXT_FIRST_INDEX(eh);
-> +		for (i = 0; i < le16_to_cpu(eh->eh_entries); i++, ix++) {
-> +			retval = free_ext_idx(handle, inode, ix);
-> +			if (retval)
-> +				break;
-> +		}
-> +	}
-> +	put_bh(bh);
+> We dget/dget_parent the old/new dentry and parents a few lines above
+> (actually, it looked like I forgot to dget(lower_new_dentry) -- fixed).
 
+And?  Having a reference to dentry does not prevent it being moved
+elsewhere by direct rename(2) in that layer.  It will exist, that
+much is guaranteed by grabbing a reference.  However, there is no
+warranties whatsoever that by the time you get i_mutex on what had
+once been its parent, it will still remain the parent of our dentry.
 
-We need to mark the index block as free.
- via ext4_free_blocks(handle, inode, block, 1);
+> BTW, my sense of the relationship b/t upper and lower objects and their
+> validity in a stackable f/s, is that it's similar to the relationship b/t
+> the NFS client and server -- the client can't be sure that a file on the
+> server doesn't change b/t ->revalidate and ->op (hence nfs's reliance on dir
+> mtime checks).
 
-I remember making this change. May be it was related to dind/tind
-blocks. 
+You are thinking about non-interesting case.  _Files_ are not much
+of a problem.  Directory tree is.  The real problems with all unionfs and
+stacking implementations I've seen so far, all way back to Heidemann et.al.
+start when topology of the underlying layer changes.  If you have clear
+semantics for unionfs behaviour in presence of such things, by all means,
+publish it - as far as I know *nobody* had done that; not even on the
+"what should we see when..." level, nevermind the implementation.
+ 
+> Perhaps this general topic is a good one to discuss at more length at LSF?
+> Suggestions are welcome.
 
+It would; I honestly do not know if the problem is solvable with the
+(lack of) constraints you apparently want.  Again, the real PITA begins
+when you start dealing with pieces of underlying trees getting moved
+around, changing parents, etc.  Cross-directory rename() certainly rates
+very high on the list of "WTF had they been smoking in UCB?" misfeatures,
+but it's there and it has to be dealt with.
 
--aneesh
-
-
+BTW, and that's a completely unrelated story, I'd rather see whiteouts
+done directly by filesystems involved - it would simplify the life big
+way.  How about adding a dir->i_op->whiteout(dir, dentry) and seeing if
+your variant could be turned into such a method to be used by really
+piss-poor filesystems?  All UFS-related ones (including ext*) can trivially
+support whiteouts without any PITA; adding them to tmpfs is also not a big
+deal and anything that caches inode type in directory entries should be
+easy to extend in the same way as ext*/ufs...
