@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbYAZQnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757170AbYAZQoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbYAZQnX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 11:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbYAZQnR
+	id S1757170AbYAZQoR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 11:44:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYAZQoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 11:43:17 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58139 "EHLO
+	Sat, 26 Jan 2008 11:44:03 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58196 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752452AbYAZQnQ (ORCPT
+	with ESMTP id S1752532AbYAZQoB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 11:43:16 -0500
+	Sat, 26 Jan 2008 11:44:01 -0500
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 26 Jan 2008 17:42:45 +0100 (CET)
+Date: Sat, 26 Jan 2008 17:43:23 +0100 (CET)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 1/3] firewire: fw-sbp2: unsigned int vs. unsigned
+Subject: [PATCH 2/3] firewire: fw-sbp2: fix logout before login retry
 To: linux1394-devel@lists.sourceforge.net
 cc: Jarod Wilson <jwilson@redhat.com>,
        =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
        linux-kernel@vger.kernel.org
 In-Reply-To: <tkrat.1198d1dd6ae8d623@s5r6.in-berlin.de>
-Message-ID: <tkrat.ba2cdaa770a41cd5@s5r6.in-berlin.de>
+Message-ID: <tkrat.9c497ea379f28950@s5r6.in-berlin.de>
 References: <tkrat.1198d1dd6ae8d623@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=us-ascii
@@ -28,75 +28,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Standardize on "unsigned int" style.
-Sort some struct members thematically.
+This fixes a "can't recognize device" kind of bug.
+
+If the SCSI INQUIRY failed and hence __scsi_add_device failed due to a
+bus reset, we tried a logout and then waited for the already scheduled
+login work to happen.  So far so good, but the generation used for the
+logout was outdated, hence the logout never reached the target.  The
+target might therefore deny the subsequent relogin attempt, which would
+also leave the target inaccessible.
+
+Therefore fetch a fresh device->generation for the logout.  Use memory
+barriers to prevent our plan being foiled by compiler or hardware
+optimizations.
 
 Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
-Depends on Jarod's latest fw-sbp2 patch which I didn't even push to
-linux1394-2.6.git yet.
-
- drivers/firewire/fw-sbp2.c |   14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ drivers/firewire/fw-sbp2.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
 Index: linux/drivers/firewire/fw-sbp2.c
 ===================================================================
 --- linux.orig/drivers/firewire/fw-sbp2.c
 +++ linux/drivers/firewire/fw-sbp2.c
-@@ -141,15 +141,13 @@ struct sbp2_logical_unit {
- struct sbp2_target {
- 	struct kref kref;
- 	struct fw_unit *unit;
-+	struct list_head lu_list;
- 
- 	u64 management_agent_address;
- 	int directory_id;
- 	int node_id;
- 	int address_high;
--
--	unsigned workarounds;
--	struct list_head lu_list;
--
-+	unsigned int workarounds;
- 	unsigned int mgt_orb_timeout;
- };
- 
-@@ -160,7 +158,7 @@ struct sbp2_target {
-  */
- #define SBP2_MIN_LOGIN_ORB_TIMEOUT	5000U	/* Timeout in ms */
- #define SBP2_MAX_LOGIN_ORB_TIMEOUT	40000U	/* Timeout in ms */
--#define SBP2_ORB_TIMEOUT		2000	/* Timeout in ms */
-+#define SBP2_ORB_TIMEOUT		2000U	/* Timeout in ms */
- #define SBP2_ORB_NULL			0x80000000
- #define SBP2_MAX_SG_ELEMENT_LENGTH	0xf000
- 
-@@ -297,7 +295,7 @@ struct sbp2_command_orb {
- static const struct {
- 	u32 firmware_revision;
- 	u32 model;
--	unsigned workarounds;
-+	unsigned int workarounds;
- } sbp2_workarounds_table[] = {
- 	/* DViCO Momobay CX-1 with TSB42AA9 bridge */ {
- 		.firmware_revision	= 0x002800,
-@@ -836,7 +834,7 @@ static void sbp2_init_workarounds(struct
- 				  u32 firmware_revision)
- {
- 	int i;
--	unsigned w = sbp2_param_workarounds;
-+	unsigned int w = sbp2_param_workarounds;
- 
- 	if (w)
- 		fw_notify("Please notify linux1394-devel@lists.sourceforge.net "
-@@ -1197,7 +1195,7 @@ static int sbp2_scsi_queuecommand(struct
- 	struct sbp2_logical_unit *lu = cmd->device->hostdata;
- 	struct fw_device *device = fw_device(lu->tgt->unit->device.parent);
- 	struct sbp2_command_orb *orb;
--	unsigned max_payload;
-+	unsigned int max_payload;
- 	int retval = SCSI_MLQUEUE_HOST_BUSY;
- 
- 	/*
+@@ -716,7 +716,11 @@ static void sbp2_login(struct work_struc
+ 	sdev = __scsi_add_device(shost, 0, 0,
+ 				 scsilun_to_int(&eight_bytes_lun), lu);
+ 	if (IS_ERR(sdev)) {
+-		sbp2_send_management_orb(lu, node_id, generation,
++		smp_rmb(); /* generation may have changed */
++		generation = device->generation;
++		smp_rmb(); /* node_id must not be older than generation */
++
++		sbp2_send_management_orb(lu, device->node_id, generation,
+ 				SBP2_LOGOUT_REQUEST, lu->login_id, NULL);
+ 		/*
+ 		 * Set this back to sbp2_login so we fall back and
 
 -- 
 Stefan Richter
