@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbYAZNbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbYAZNjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756361AbYAZNbn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 08:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYAZNbg
+	id S1755628AbYAZNjT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 08:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYAZNjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 08:31:36 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48906 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753010AbYAZNbf (ORCPT
+	Sat, 26 Jan 2008 08:39:07 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:58326 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753304AbYAZNjF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 08:31:35 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <479B3615.9000903@s5r6.in-berlin.de>
-Date: Sat, 26 Jan 2008 14:31:01 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
+	Sat, 26 Jan 2008 08:39:05 -0500
+From: Stefan Roese <sr@denx.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
+Date: Sat, 26 Jan 2008 14:37:33 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org
+References: <4797C1AD.3040307@tiscali.nl> <20080123191704.2d74073a@zod.rchland.ibm.com>
+In-Reply-To: <20080123191704.2d74073a@zod.rchland.ibm.com>
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Ingo Molnar <mingo@elte.hu>, "Giacomo A. Catenazzi" <cate@cateee.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: using LKML for subsystem development
-References: <alpine.LFD.1.00.0801241506500.15329@hp.linux-foundation.org> <4799A773.2030702@cateee.net> <22000.1201255093@turing-police.cc.vt.edu> <200801251258.08707.rjw@sisk.pl> <4799D770.2070203@cateee.net> <479A75D4.6070607@s5r6.in-berlin.de>            <479A8203.40804@s5r6.in-berlin.de> <8125.1201318113@turing-police.cc.vt.edu>
-In-Reply-To: <8125.1201318113@turing-police.cc.vt.edu>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801261437.34338.sr@denx.de>
+X-Provags-ID: V01U2FsdGVkX18VUcR/5DvnCBlohA5A2prb/Yb+oQPwE0Hutos
+ BkQo8iRhUv/YChA2jCmDum8MiTSwhcH/jpP85nKPSpgSSf1m2P
+ 7SCn7utAarHXHa/yyLvddZYXn6O2Dtw
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Sat, 26 Jan 2008 01:42:43 +0100, Stefan Richter said:
-> 
->> Even if you only look at the Subject: and number of postings in a
->> thread, how to judge whether there is a stability risk for the next -rc
->> in the making, without experience or personal interest in the domain?
-> 
-> My general rule of thumb is "if my laptop has one of those on it, I look
-> at it more, even if I don't have the foggiest idea how it works".  Of
-> course, this only works for threads with semi-sane Subject: headers....
+On Thursday 24 January 2008, Josh Boyer wrote:
+> On Wed, 23 Jan 2008 23:37:33 +0100
+>
+> Roel Kluin <12o3l@tiscali.nl> wrote:
+> > logical/bitand typo
+> >
+> > Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> > ---
+> > diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+> > index ebf9e21..dcfb459 100644
+> > --- a/arch/powerpc/boot/4xx.c
+> > +++ b/arch/powerpc/boot/4xx.c
+> > @@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
+> >  	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
+> >  	cs = 0;
+> >  	while (val) {
+> > -		if (val && 0x1)
+> > +		if (val & 0x1)
+> >  			cs++;
+> >  		val = val >> 1;
+> >  	}
+>
+> Hm, good catch.
+>
+> Stefan, have you had problems with this code at all?
 
-Does your laptop have for example chained sg lists?  :-)
-Or are BIDI(rectional SCSI commands) relevant to you?  (Not at all,
-except if the eventual merge of the SCSI bidi will break something.)
--- 
-Stefan Richter
--=====-==--- ---= ==-=-
-http://arcgraph.de/sr/
+I'm not using the bootwrapper on a 4xx with Denali core.
+
+Best regards,
+Stefan
