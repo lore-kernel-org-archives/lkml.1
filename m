@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbYAZEbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752910AbYAZEb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760054AbYAZEbl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 23:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbYAZE2d
+	id S1752910AbYAZEb7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 23:31:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYAZE2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 23:28:33 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:37715 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753130AbYAZE2V (ORCPT
+	Fri, 25 Jan 2008 23:28:34 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:55610 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753127AbYAZE2V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Jan 2008 23:28:21 -0500
-Message-Id: <20080126042803.366556431@goodmis.org>
+Message-Id: <20080126042801.453635886@goodmis.org>
 References: <20080126042152.526086719@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 25 Jan 2008 23:22:06 -0500
+Date: Fri, 25 Jan 2008 23:21:54 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,355 +29,432 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>, Pavel Machek <pavel@ucw.cz>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 14/23 -v6] Add tracing of context switches
-Content-Disposition: inline; filename=trace-add-cmdline-switch.patch
+Subject: [PATCH 02/23 -v6] Add basic support for gcc profiler instrumentation
+Content-Disposition: inline; filename=mcount-add-basic-support-for-gcc-profiler-instrum.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds context switch tracing, of the format of:
+If CONFIG_MCOUNT is selected and /proc/sys/kernel/mcount_enabled is set to a
+non-zero value the mcount routine will be called everytime we enter a kernel
+function that is not marked with the "notrace" attribute.
 
-                 _------=> CPU#            
-                / _-----=> irqs-off        
-               | / _----=> need-resched    
-               || / _---=> hardirq/softirq 
-               ||| / _--=> preempt-depth   
-               |||| /                      
-               |||||     delay             
-   cmd     pid ||||| time  |   caller      
-      \   /    |||||   \   |   /           
- swapper-0     1d..3  137us+:  0:140:R --> 2912:120
-    sshd-2912  1d..3  216us+:  2912:120:S --> 0:140
- swapper-0     1d..3  261us+:  0:140:R --> 2912:120
-    bash-2920  0d..3  267us+:  2920:120:S --> 0:140
-    sshd-2912  1d..3  330us!:  2912:120:S --> 0:140
- swapper-0     1d..3 2389us+:  0:140:R --> 2847:120
-yum-upda-2847  1d..3 2411us!:  2847:120:S --> 0:140
- swapper-0     0d..3 11089us+:  0:140:R --> 3139:120
-gdm-bina-3139  0d..3 11113us!:  3139:120:S --> 0:140
- swapper-0     1d..3 102328us+:  0:140:R --> 2847:120
-yum-upda-2847  1d..3 102348us!:  2847:120:S --> 0:140
+The mcount routine will then call a registered function if a function
+happens to be registered.
 
+[This code has been highly hacked by Steven Rostedt, so don't
+ blame Arnaldo for all of this ;-) ]
 
- "sched_switch" is added to /debugfs/tracing/available_tracers
+Update:
+  It is now possible to register more than one mcount function.
+  If only one mcount function is registered, that will be the
+  function that mcount calls directly. If more than one function
+  is registered, then mcount will call a function that will loop
+  through the functions to call.
 
+Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- lib/tracing/Kconfig              |    9 ++
- lib/tracing/Makefile             |    1 
- lib/tracing/trace_sched_switch.c |  134 +++++++++++++++++++++++++++++++++++++++
- lib/tracing/tracer.c             |   43 ++++++++++++
- lib/tracing/tracer.h             |   19 +++++
- 5 files changed, 205 insertions(+), 1 deletion(-)
+ Makefile                   |    3 
+ arch/x86/Kconfig           |    1 
+ arch/x86/kernel/entry_32.S |   25 +++++++
+ arch/x86/kernel/entry_64.S |   36 +++++++++++
+ include/linux/linkage.h    |    2 
+ include/linux/mcount.h     |   38 ++++++++++++
+ kernel/sysctl.c            |   11 +++
+ lib/Kconfig.debug          |    1 
+ lib/Makefile               |    2 
+ lib/tracing/Kconfig        |   10 +++
+ lib/tracing/Makefile       |    3 
+ lib/tracing/mcount.c       |  141 +++++++++++++++++++++++++++++++++++++++++++++
+ 12 files changed, 273 insertions(+)
 
-Index: linux-mcount.git/lib/tracing/Kconfig
+Index: linux-mcount.git/Makefile
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-25 21:47:17.000000000 -0500
-+++ linux-mcount.git/lib/tracing/Kconfig	2008-01-25 21:47:23.000000000 -0500
-@@ -23,3 +23,12 @@ config FUNCTION_TRACER
- 	  insert a call to an architecture specific __mcount routine,
- 	  that the debugging mechanism using this facility will hook by
- 	  providing a set of inline routines.
-+
-+config CONTEXT_SWITCH_TRACER
-+	bool "Trace process context switches"
-+	depends on DEBUG_KERNEL
-+	select TRACING
-+	help
-+	  This tracer hooks into the context switch and records
-+	  all switching of tasks.
-+
-Index: linux-mcount.git/lib/tracing/Makefile
+--- linux-mcount.git.orig/Makefile	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/Makefile	2008-01-25 21:47:00.000000000 -0500
+@@ -509,6 +509,9 @@ endif
+ 
+ include $(srctree)/arch/$(SRCARCH)/Makefile
+ 
++ifdef CONFIG_MCOUNT
++KBUILD_CFLAGS	+= -pg
++endif
+ ifdef CONFIG_FRAME_POINTER
+ KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+ else
+Index: linux-mcount.git/arch/x86/Kconfig
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/Makefile	2008-01-25 21:47:17.000000000 -0500
-+++ linux-mcount.git/lib/tracing/Makefile	2008-01-25 21:47:23.000000000 -0500
-@@ -1,6 +1,7 @@
- obj-$(CONFIG_MCOUNT) += libmcount.o
+--- linux-mcount.git.orig/arch/x86/Kconfig	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/arch/x86/Kconfig	2008-01-25 21:47:00.000000000 -0500
+@@ -19,6 +19,7 @@ config X86_64
+ config X86
+ 	bool
+ 	default y
++	select HAVE_MCOUNT
  
- obj-$(CONFIG_TRACING) += tracer.o
-+obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
- obj-$(CONFIG_FUNCTION_TRACER) += trace_function.o
+ config GENERIC_TIME
+ 	bool
+Index: linux-mcount.git/arch/x86/kernel/entry_32.S
+===================================================================
+--- linux-mcount.git.orig/arch/x86/kernel/entry_32.S	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/entry_32.S	2008-01-25 21:47:00.000000000 -0500
+@@ -75,6 +75,31 @@ DF_MASK		= 0x00000400 
+ NT_MASK		= 0x00004000
+ VM_MASK		= 0x00020000
  
- libmcount-y := mcount.o
-Index: linux-mcount.git/lib/tracing/trace_sched_switch.c
++#ifdef CONFIG_MCOUNT
++.globl mcount
++mcount:
++	/* unlikely(mcount_enabled) */
++	cmpl $0, mcount_enabled
++	jnz trace
++	ret
++
++trace:
++	/* taken from glibc */
++	pushl %eax
++	pushl %ecx
++	pushl %edx
++	movl 0xc(%esp), %edx
++	movl 0x4(%ebp), %eax
++
++	call   *mcount_trace_function
++
++	popl %edx
++	popl %ecx
++	popl %eax
++
++	ret
++#endif
++
+ #ifdef CONFIG_PREEMPT
+ #define preempt_stop(clobbers)	DISABLE_INTERRUPTS(clobbers); TRACE_IRQS_OFF
+ #else
+Index: linux-mcount.git/arch/x86/kernel/entry_64.S
+===================================================================
+--- linux-mcount.git.orig/arch/x86/kernel/entry_64.S	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/entry_64.S	2008-01-25 21:47:00.000000000 -0500
+@@ -53,6 +53,42 @@
+ 
+ 	.code64
+ 
++#ifdef CONFIG_MCOUNT
++
++ENTRY(mcount)
++	/* unlikely(mcount_enabled) */
++	cmpl $0, mcount_enabled
++	jnz trace
++	retq
++
++trace:
++	/* taken from glibc */
++	subq $0x38, %rsp
++	movq %rax, (%rsp)
++	movq %rcx, 8(%rsp)
++	movq %rdx, 16(%rsp)
++	movq %rsi, 24(%rsp)
++	movq %rdi, 32(%rsp)
++	movq %r8, 40(%rsp)
++	movq %r9, 48(%rsp)
++
++	movq 0x38(%rsp), %rsi
++	movq 8(%rbp), %rdi
++
++	call   *mcount_trace_function
++
++	movq 48(%rsp), %r9
++	movq 40(%rsp), %r8
++	movq 32(%rsp), %rdi
++	movq 24(%rsp), %rsi
++	movq 16(%rsp), %rdx
++	movq 8(%rsp), %rcx
++	movq (%rsp), %rax
++	addq $0x38, %rsp
++
++	retq
++#endif
++
+ #ifndef CONFIG_PREEMPT
+ #define retint_kernel retint_restore_args
+ #endif	
+Index: linux-mcount.git/include/linux/linkage.h
+===================================================================
+--- linux-mcount.git.orig/include/linux/linkage.h	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/include/linux/linkage.h	2008-01-25 21:47:00.000000000 -0500
+@@ -3,6 +3,8 @@
+ 
+ #include <asm/linkage.h>
+ 
++#define notrace __attribute__((no_instrument_function))
++
+ #ifdef __cplusplus
+ #define CPP_ASMLINKAGE extern "C"
+ #else
+Index: linux-mcount.git/include/linux/mcount.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-mcount.git/lib/tracing/trace_sched_switch.c	2008-01-25 21:47:23.000000000 -0500
-@@ -0,0 +1,134 @@
++++ linux-mcount.git/include/linux/mcount.h	2008-01-25 21:47:00.000000000 -0500
+@@ -0,0 +1,38 @@
++#ifndef _LINUX_MCOUNT_H
++#define _LINUX_MCOUNT_H
++
++#ifdef CONFIG_MCOUNT
++extern int mcount_enabled;
++
++#include <linux/linkage.h>
++
++#define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
++#define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
++#define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
++
++typedef void (*mcount_func_t)(unsigned long ip, unsigned long parent_ip);
++
++struct mcount_ops {
++	mcount_func_t func;
++	struct mcount_ops *next;
++};
++
 +/*
-+ * trace context switch
-+ *
-+ * Copyright (C) 2007 Steven Rostedt <srostedt@redhat.com>
-+ *
++ * The mcount_ops must be a static and should also
++ * be read_mostly.  These functions do modify read_mostly variables
++ * so use them sparely. Never free an mcount_op or modify the
++ * next pointer after it has been registered. Even after unregistering
++ * it, the next pointer may still be used internally.
 + */
++int register_mcount_function(struct mcount_ops *ops);
++int unregister_mcount_function(struct mcount_ops *ops);
++void clear_mcount_function(void);
++
++extern void mcount(void);
++
++#else /* !CONFIG_MCOUNT */
++# define register_mcount_function(ops) do { } while (0)
++# define unregister_mcount_function(ops) do { } while (0)
++# define clear_mcount_function(ops) do { } while (0)
++#endif /* CONFIG_MCOUNT */
++#endif /* _LINUX_MCOUNT_H */
+Index: linux-mcount.git/kernel/sysctl.c
+===================================================================
+--- linux-mcount.git.orig/kernel/sysctl.c	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/kernel/sysctl.c	2008-01-25 21:47:00.000000000 -0500
+@@ -46,6 +46,7 @@
+ #include <linux/nfs_fs.h>
+ #include <linux/acpi.h>
+ #include <linux/reboot.h>
++#include <linux/mcount.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -514,6 +515,16 @@ static struct ctl_table kern_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+ 	},
++#ifdef CONFIG_MCOUNT
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "mcount_enabled",
++		.data		= &mcount_enabled,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
++#endif
+ #ifdef CONFIG_KMOD
+ 	{
+ 		.ctl_name	= KERN_MODPROBE,
+Index: linux-mcount.git/lib/Kconfig.debug
+===================================================================
+--- linux-mcount.git.orig/lib/Kconfig.debug	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/lib/Kconfig.debug	2008-01-25 21:47:00.000000000 -0500
+@@ -530,5 +530,6 @@ config LATENCYTOP
+ 	  Enable this option if you want to use the LatencyTOP tool
+ 	  to find out which userspace is blocking on what kernel operations.
+ 
++source lib/tracing/Kconfig
+ 
+ source "samples/Kconfig"
+Index: linux-mcount.git/lib/Makefile
+===================================================================
+--- linux-mcount.git.orig/lib/Makefile	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/lib/Makefile	2008-01-25 21:47:00.000000000 -0500
+@@ -66,6 +66,8 @@ obj-$(CONFIG_AUDIT_GENERIC) += audit.o
+ obj-$(CONFIG_SWIOTLB) += swiotlb.o
+ obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
+ 
++obj-$(CONFIG_MCOUNT) += tracing/
++
+ lib-$(CONFIG_GENERIC_BUG) += bug.o
+ 
+ hostprogs-y	:= gen_crc32table
+Index: linux-mcount.git/lib/tracing/Kconfig
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-mcount.git/lib/tracing/Kconfig	2008-01-25 21:47:00.000000000 -0500
+@@ -0,0 +1,10 @@
++
++# Archs that enable MCOUNT should select HAVE_MCOUNT
++config HAVE_MCOUNT
++       bool
++
++# MCOUNT itself is useless, or will just be added overhead.
++# It needs something to register a function with it.
++config MCOUNT
++	bool
++	select FRAME_POINTER
+Index: linux-mcount.git/lib/tracing/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-mcount.git/lib/tracing/Makefile	2008-01-25 21:47:00.000000000 -0500
+@@ -0,0 +1,3 @@
++obj-$(CONFIG_MCOUNT) += libmcount.o
++
++libmcount-y := mcount.o
+Index: linux-mcount.git/lib/tracing/mcount.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-mcount.git/lib/tracing/mcount.c	2008-01-25 21:47:00.000000000 -0500
+@@ -0,0 +1,141 @@
++/*
++ * Infrastructure for profiling code inserted by 'gcc -pg'.
++ *
++ * Copyright (C) 2007-2008 Steven Rostedt <srostedt@redhat.com>
++ *
++ * Originally ported from the -rt patch by:
++ *   Copyright (C) 2007 Arnaldo Carvalho de Melo <acme@redhat.com>
++ *
++ * Based on code in the latency_tracer, that is:
++ *
++ *  Copyright (C) 2004-2006 Ingo Molnar
++ *  Copyright (C) 2004 William Lee Irwin III
++ */
++
 +#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/debugfs.h>
-+#include <linux/kallsyms.h>
-+#include <linux/uaccess.h>
-+#include <linux/marker.h>
 +#include <linux/mcount.h>
 +
-+#include "tracer.h"
-+
-+static struct tracing_trace *tracer_trace;
-+static int trace_enabled __read_mostly;
-+
-+static notrace void sched_switch_callback(const struct marker *mdata,
-+					  void *private_data,
-+					  const char *format, ...)
++/*
++ * Since we have nothing protecting between the test of
++ * mcount_trace_function and the call to it, we can't
++ * set it to NULL without risking a race that will have
++ * the kernel call the NULL pointer. Instead, we just
++ * set the function pointer to a dummy function.
++ */
++notrace void dummy_mcount_tracer(unsigned long ip,
++				 unsigned long parent_ip)
 +{
-+	struct tracing_trace **p = mdata->private;
-+	struct tracing_trace *tr = *p;
-+	struct tracing_trace_cpu *data;
-+	struct task_struct *prev;
-+	struct task_struct *next;
-+	unsigned long flags;
-+	va_list ap;
-+	int cpu;
-+
-+	if (likely(!trace_enabled))
-+		return;
-+
-+	va_start(ap, format);
-+	prev = va_arg(ap, typeof(prev));
-+	next = va_arg(ap, typeof(next));
-+	va_end(ap);
-+
-+	raw_local_irq_save(flags);
-+	cpu = raw_smp_processor_id();
-+	data = tr->data[cpu];
-+	atomic_inc(&data->disabled);
-+
-+	if (likely(atomic_read(&data->disabled) == 1))
-+		tracing_sched_switch_trace(tr, data, prev, next, flags);
-+
-+	atomic_dec(&data->disabled);
-+	raw_local_irq_restore(flags);
++	/* do nothing */
 +}
 +
-+static notrace void sched_switch_reset(struct tracing_trace *tr)
++static DEFINE_SPINLOCK(mcount_func_lock);
++static struct mcount_ops mcount_list_end __read_mostly =
 +{
-+	int cpu;
-+
-+	tr->time_start = now();
-+
-+	for_each_online_cpu(cpu)
-+		tracing_reset(tr->data[cpu]);
-+}
-+
-+static notrace void start_sched_trace(struct tracing_trace *tr)
-+{
-+	sched_switch_reset(tr);
-+	trace_enabled = 1;
-+}
-+
-+static notrace void stop_sched_trace(struct tracing_trace *tr)
-+{
-+	trace_enabled = 0;
-+}
-+
-+static notrace void sched_switch_trace_init(struct tracing_trace *tr)
-+{
-+	tracer_trace = tr;
-+
-+	if (tr->ctrl)
-+		start_sched_trace(tr);
-+}
-+
-+static notrace void sched_switch_trace_reset(struct tracing_trace *tr)
-+{
-+	if (tr->ctrl)
-+		stop_sched_trace(tr);
-+}
-+
-+static void sched_switch_trace_ctrl_update(struct tracing_trace *tr)
-+{
-+	/* When starting a new trace, reset the buffers */
-+	if (tr->ctrl)
-+		start_sched_trace(tr);
-+	else
-+		stop_sched_trace(tr);
-+}
-+
-+static struct trace_types_struct sched_switch_trace __read_mostly =
-+{
-+	.name = "sched_switch",
-+	.init = sched_switch_trace_init,
-+	.reset = sched_switch_trace_reset,
-+	.ctrl_update = sched_switch_trace_ctrl_update,
++	.func = dummy_mcount_tracer,
 +};
 +
++static struct mcount_ops *mcount_list __read_mostly = &mcount_list_end;
++mcount_func_t mcount_trace_function __read_mostly = dummy_mcount_tracer;
++int mcount_enabled __read_mostly;
 +
-+__init static int init_sched_switch_trace(void)
++/* mcount is defined per arch in assembly */
++EXPORT_SYMBOL_GPL(mcount);
++
++notrace void mcount_list_func(unsigned long ip, unsigned long parent_ip)
 +{
-+	int ret;
++	struct mcount_ops *op = mcount_list;
 +
-+	ret = register_trace(&sched_switch_trace);
-+	if (ret)
-+		return ret;
++	while (op != &mcount_list_end) {
++		op->func(ip, parent_ip);
++		op = op->next;
++	};
++}
 +
-+	ret = marker_probe_register("kernel_sched_schedule",
-+				    "prev %p next %p",
-+				    sched_switch_callback,
-+				    &tracer_trace);
-+	if (ret) {
-+		pr_info("sched trace: Couldn't add marker"
-+			" probe to switch_to\n");
++/**
++ * register_mcount_function - register a function for profiling
++ * @ops - ops structure that holds the function for profiling.
++ *
++ * Register a function to be called by all functions in the
++ * kernel.
++ *
++ * Note: @ops->func and all the functions it calls must be labeled
++ *       with "notrace", otherwise it will go into a
++ *       recursive loop.
++ */
++int register_mcount_function(struct mcount_ops *ops)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&mcount_func_lock, flags);
++	ops->next = mcount_list;
++	/* must have next seen before we update the list pointer */
++	smp_wmb();
++	mcount_list = ops;
++	/*
++	 * For one func, simply call it directly.
++	 * For more than one func, call the chain.
++	 */
++	if (ops->next == &mcount_list_end)
++		mcount_trace_function = ops->func;
++	else
++		mcount_trace_function = mcount_list_func;
++	spin_unlock_irqrestore(&mcount_func_lock, flags);
++
++	return 0;
++}
++
++/**
++ * unregister_mcount_function - unresgister a function for profiling.
++ * @ops - ops structure that holds the function to unregister
++ *
++ * Unregister a function that was added to be called by mcount profiling.
++ */
++int unregister_mcount_function(struct mcount_ops *ops)
++{
++	unsigned long flags;
++	struct mcount_ops **p;
++	int ret = 0;
++
++	spin_lock_irqsave(&mcount_func_lock, flags);
++
++	/*
++	 * If we are the only function, then the mcount pointer is
++	 * pointing directly to that function.
++	 */
++	if (mcount_list == ops && ops->next == &mcount_list_end) {
++		mcount_trace_function = dummy_mcount_tracer;
++		mcount_list = &mcount_list_end;
 +		goto out;
 +	}
 +
-+	ret = marker_arm("kernel_sched_schedule");
-+	if (ret) {
-+		pr_info("sched trace: Couldn't arm probe switch_to\n");
++	for (p = &mcount_list; *p != &mcount_list_end; p = &(*p)->next)
++		if (*p == ops)
++			break;
++
++	if (*p != ops) {
++		ret = -1;
 +		goto out;
 +	}
++
++	*p = (*p)->next;
++
++	/* If we only have one func left, then call that directly */
++	if (mcount_list->next == &mcount_list_end)
++		mcount_trace_function = mcount_list->func;
 +
 + out:
-+	return ret;
++	spin_unlock_irqrestore(&mcount_func_lock, flags);
++
++	return 0;
 +}
 +
-+device_initcall(init_sched_switch_trace);
-Index: linux-mcount.git/lib/tracing/tracer.c
-===================================================================
---- linux-mcount.git.orig/lib/tracing/tracer.c	2008-01-25 21:47:17.000000000 -0500
-+++ linux-mcount.git/lib/tracing/tracer.c	2008-01-25 21:47:23.000000000 -0500
-@@ -52,6 +52,7 @@ enum trace_type {
- 	__TRACE_FIRST_TYPE = 0,
- 
- 	TRACE_FN,
-+	TRACE_CTX,
- 
- 	__TRACE_LAST_TYPE
- };
-@@ -227,6 +228,24 @@ notrace void tracing_function_trace(stru
- 	entry->fn.parent_ip = parent_ip;
- }
- 
-+notrace void tracing_sched_switch_trace(struct tracing_trace *tr,
-+					struct tracing_trace_cpu *data,
-+					struct task_struct *prev,
-+					struct task_struct *next,
-+					unsigned long flags)
++/**
++ * clear_mcount_function - reset the mcount function
++ *
++ * This NULLs the mcount function and in essence stops
++ * tracing.  There may be lag
++ */
++void clear_mcount_function(void)
 +{
-+	struct tracing_entry *entry;
-+
-+	entry = tracing_get_trace_entry(tr, data);
-+	tracing_generic_entry_update(entry, flags);
-+	entry->type		= TRACE_CTX;
-+	entry->ctx.prev_pid	= prev->pid;
-+	entry->ctx.prev_prio	= prev->prio;
-+	entry->ctx.prev_state	= prev->state;
-+	entry->ctx.next_pid	= next->pid;
-+	entry->ctx.next_prio	= next->prio;
++	mcount_trace_function = dummy_mcount_tracer;
 +}
-+
- enum trace_iterator {
- 	TRACE_ITER_SYM_ONLY	= 1,
- 	TRACE_ITER_VERBOSE	= 2,
-@@ -545,6 +564,8 @@ lat_print_timestamp(struct seq_file *m, 
- 		seq_puts(m, " : ");
- }
- 
-+static const char state_to_char[] = TASK_STATE_TO_CHAR_STR;
-+
- static void notrace
- print_lat_fmt(struct seq_file *m, struct tracing_iterator *iter,
- 	      unsigned int trace_idx, int cpu)
-@@ -555,6 +576,7 @@ print_lat_fmt(struct seq_file *m, struct
- 	unsigned long rel_usecs;
- 	int sym_only = !!(trace_flags & TRACE_ITER_SYM_ONLY);
- 	int verbose = !!(trace_flags & TRACE_ITER_VERBOSE);
-+	int S;
- 
- 	if (!next_entry)
- 		next_entry = entry;
-@@ -581,6 +603,16 @@ print_lat_fmt(struct seq_file *m, struct
- 		seq_print_ip_sym(m, entry->fn.parent_ip, sym_only);
- 		seq_puts(m, ")\n");
- 		break;
-+	case TRACE_CTX:
-+		S = entry->ctx.prev_state < sizeof(state_to_char) ?
-+			state_to_char[entry->ctx.prev_state] : 'X';
-+		seq_printf(m, " %d:%d:%c --> %d:%d\n",
-+			   entry->ctx.prev_pid,
-+			   entry->ctx.prev_prio,
-+			   S,
-+			   entry->ctx.next_pid,
-+			   entry->ctx.next_prio);
-+		break;
- 	}
- }
- 
-@@ -592,6 +624,7 @@ static void notrace print_trace_fmt(stru
- 	unsigned long secs;
- 	int sym_only = !!(trace_flags & TRACE_ITER_SYM_ONLY);
- 	unsigned long long t;
-+	int S;
- 
- 	t = cycles_to_usecs(entry->t);
- 	usec_rem = do_div(t, 1000000ULL);
-@@ -610,6 +643,16 @@ static void notrace print_trace_fmt(stru
- 					 sym_only);
- 		}
- 		break;
-+	case TRACE_CTX:
-+		S = entry->ctx.prev_state < sizeof(state_to_char) ?
-+			state_to_char[entry->ctx.prev_state] : 'X';
-+		seq_printf(m, " %d:%d:%c ==> %d:%d\n",
-+			   entry->ctx.prev_pid,
-+			   entry->ctx.prev_prio,
-+			   S,
-+			   entry->ctx.next_pid,
-+			   entry->ctx.next_prio);
-+		break;
- 	}
- 	seq_printf(m, "\n");
- }
-Index: linux-mcount.git/lib/tracing/tracer.h
-===================================================================
---- linux-mcount.git.orig/lib/tracing/tracer.h	2008-01-25 21:47:17.000000000 -0500
-+++ linux-mcount.git/lib/tracing/tracer.h	2008-01-25 21:47:23.000000000 -0500
-@@ -10,6 +10,14 @@ struct tracing_function {
- 	unsigned long parent_ip;
- };
- 
-+struct tracing_sched_switch {
-+	unsigned int prev_pid;
-+	unsigned char prev_prio;
-+	unsigned char prev_state;
-+	unsigned int next_pid;
-+	unsigned char next_prio;
-+};
-+
- struct tracing_entry {
- 	char type;
- 	char cpu;  /* who will want to trace more than 256 CPUS? */
-@@ -18,7 +26,10 @@ struct tracing_entry {
- 	int pid;
- 	cycle_t t;
- 	char comm[TASK_COMM_LEN];
--	struct tracing_function fn;
-+	union {
-+		struct tracing_function fn;
-+		struct tracing_sched_switch ctx;
-+	};
- };
- 
- struct tracing_trace_cpu {
-@@ -82,6 +93,12 @@ void tracing_function_trace(struct traci
- 			    unsigned long ip,
- 			    unsigned long parent_ip,
- 			    unsigned long flags);
-+void tracing_sched_switch_trace(struct tracing_trace *tr,
-+				struct tracing_trace_cpu *data,
-+				struct task_struct *prev,
-+				struct task_struct *next,
-+				unsigned long flags);
-+
- 
- void tracing_start_function_trace(void);
- void tracing_stop_function_trace(void);
 
 -- 
