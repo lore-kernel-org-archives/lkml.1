@@ -1,55 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbYAZNPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbYAZNXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755117AbYAZNPm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 08:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYAZNPe
+	id S1754972AbYAZNXP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 08:23:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYAZNW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 08:15:34 -0500
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:47465 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752886AbYAZNPe (ORCPT
+	Sat, 26 Jan 2008 08:22:58 -0500
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:52761 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752792AbYAZNW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 08:15:34 -0500
-X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Jan 2008 08:15:33 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAFK+mkd5LXfi/2dsb2JhbAAIkXObHQ
-X-IronPort-AV: E=Sophos;i="4.25,254,1199626200"; 
-   d="scan'208";a="29503631"
-Message-ID: <479B313F.7050406@solinnov.com.au>
-Date: Sat, 26 Jan 2008 23:40:23 +1030
-From: Sanka Piyaratna <sanka@solinnov.com.au>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sat, 26 Jan 2008 08:22:56 -0500
+Date: Sat, 26 Jan 2008 08:21:24 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Bryan Henderson <hbryan@us.ibm.com>
+Cc: Bodo Eggert <7eggert@gmx.de>, Andreas Dilger <adilger@sun.com>,
+       Andreas Dilger <adilger@clusterfs.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
+       David Chinner <dgc@sgi.com>, linux-ext4@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ric Wheeler <ric@emc.com>, Valerie Henson <val@vahconsulting.com>,
+       Valdis.Kletnieks@vt.edu
+Subject: Re: [RFC] Parallelize IO for e2fsck
+Message-ID: <20080126132124.GA8348@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Bryan Henderson <hbryan@us.ibm.com>, Bodo Eggert <7eggert@gmx.de>,
+	Andreas Dilger <adilger@sun.com>,
+	Andreas Dilger <adilger@clusterfs.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
+	David Chinner <dgc@sgi.com>, linux-ext4@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ric Wheeler <ric@emc.com>, Valerie Henson <val@vahconsulting.com>,
+	Valdis.Kletnieks@vt.edu
+References: <alpine.LSU.0.999.0801252338460.26260@be1.lrz> <OF9B297CB7.4B613CFE-ON882573DC.00092EE4-882573DC.000A9B77@us.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Custom PCIe Device Driver 
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <OF9B297CB7.4B613CFE-ON882573DC.00092EE4-882573DC.000A9B77@us.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Everyone,
+On Fri, Jan 25, 2008 at 05:55:51PM -0800, Bryan Henderson wrote:
+> I was surprised to see AIX do late allocation by default, because IBM's 
+> traditional style is bulletproof systems.  A system where a process can be 
+> killed at unpredictable times because of resource demands of unrelated 
+> processes doesn't really fit that style.
+> 
+> It's really a fairly unusual application that benefits from late 
+> allocation: one that creates a lot more virtual memory than it ever 
+> touches.  For example, a sparse array.  Or am I missing something?
 
-I am currently developing a custom PCIe device and the Linux kernel 
-driver for this. I am able to use the device as a character device with 
-PIO and now I am working on getting the DMA to work. I have implemented 
-2 BARs (BAR0 - mem and BAR5 - mem) in the PCIe device. I have 
-implemented the DMA in my custom device firmware to transfer a block of 
-memory via the PCIe bus and now trying to get this to work with the 
-device driver.
+I guess it depends on how far you try to do "bulletproof".  OSF/1 used
+to use "bulletproof" as its default --- and I had to turn it off on
+tsx-11.mit.edu (the first North American ftp server for Linux :-),
+because the difference was something like 50 ftp daemons versus over
+500 on the same server.  It reserved VM space for the text segement of
+every single process, since at least in theory, it's possible for
+every single text page to get modified using ptrace if (for example) a
+debugger were to set a break point on every single page of every
+single text segement of every single ftp daemon.
 
-As I understand it, I can get hold of the PCI bus to become the bus 
-master and then initiate the DMA transfer from my device. However, I 
-don't understand how I can specify within my kernel driver how to 
-specify which BAR to use.
+You can also see potential problems for Java programs.  Suppose you
+had some gigantic Java Application (say, Lotus Notes, or Websphere
+Application Server) which is taking up many, many, MANY gigabytes of
+VM space.  Now suppose the Java application needs to fork and exec
+some trivial helper program.  For that tiny instant, between the fork
+and exec, the VM requirements in "bulletproof" mode would double,
+since while 99.9999% of the time programs will immediately discard the
+VM upon the exec, there is always the possibility that the child
+process will touch every single data page, forcing a copy on write,
+and never do the exec.
 
-Does this mean when I initiate a transfer from the hardware, the memory 
-get transferred into the location allocated by by  pci_map_single() 
-function regardless of which BAR the memory comes from? or do I need to 
-specify the BAR using a mask?
+There are of course different levels of "bulletproof" between the
+extremes of "totally bulletproof" and "late binding" from an
+algorithmic standpoint.  For example, you could ignore the needed
+pages caused by ptrace(); more challenging would be to how to handle
+the fork/exec semantics, although there could be kludges such as
+strongly encouraging applications to use an old-fashed BSD-style
+vfork() to guarantee that the child couldn't double VM requirements
+between the vfork() and exec().  I certainly can't say for sure what
+the AIX designers had in mind, and why they didn't choose one of the
+more intermediate design choices.  
 
-Would some one be able to point me to an example code please?
+However, it is fair to say that "100% bulletproof" can require
+reserving far more VM resources than you might first expect.  Even a
+company which is highly incented to sell large amounts of hardware,
+such as Digital, might not have wanted their OS to be only able to
+support an embarassingly small number of simultaneous ftpd
+connections.  I know this for sure because the OSF/1 documentation,
+when discussing their VM tuning knobs, specifically talked about the
+scenario that I ran into with tsx-11.mit.edu.
 
-Thanks and Regards,
+Regards,
 
-Sanka
+						- Ted
