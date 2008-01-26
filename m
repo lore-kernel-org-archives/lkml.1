@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbYAZTzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbYAZT4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755436AbYAZTzg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 14:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYAZTz3
+	id S1755972AbYAZT4V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 14:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbYAZT4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 14:55:29 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:12741 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752139AbYAZTz2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 14:55:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dluha0sareXvhq09K2vVLvv74c2/HgdgfQXRGZZPeIFheJhQKtT7VsKE2/30O7iv0ax9VNj/+cq3YCepZV0Ow5Yv60EHEORsF62IjUbR4GD31Bwxxi7uUtCgZh5PR7BRtvNTk0saonCR9TXWbXCi5Rz+71L70J7ri3Pip+gjwN0=
-Message-ID: <8b67d60801261155m36e05f9dx359787b332cb814@mail.gmail.com>
-Date: Sat, 26 Jan 2008 19:55:27 +0000
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
-Subject: Re: kobject oops with maple bus
-Cc: "Greg KH" <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-sh <linux-sh@vger.kernel.org>
-In-Reply-To: <1201377200.6672.10.camel@localhost.localdomain>
+	Sat, 26 Jan 2008 14:56:06 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:54402 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753118AbYAZT4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 14:56:04 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1201377200.6672.10.camel@localhost.localdomain>
+Message-ID: <18331.36943.555996.210681@harpo.it.uu.se>
+Date: Sat, 26 Jan 2008 20:55:59 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, matthew@wil.cx,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 2.6.24] sym53c8xx_2 modpost section mismatch fix
+In-Reply-To: <20080126181205.GA25319@uranus.ravnborg.org>
+References: <200801261803.m0QI3Fen025895@harpo.it.uu.se>
+	<20080126181205.GA25319@uranus.ravnborg.org>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26/01/2008, Adrian McMenamin <adrian@newgolddream.dyndns.info> wrote:
-> Greg,
->
-> Just updated my git to the latest sources and get these (seemingly non-fatal) oops with the Dreamcast maple bus. I'll investigate further, but they may mean something to out out of the box.
->
-> Adrian
->
->
->
->
-> dreamy:~# [    0.000000] Linux version 2.6.24-gf0ea9c3d-dirty (adrian@bossclass) (gcc version 3.4.6) #328 PREEMPT Sat Jan 26 19:45:30 GMT 2008
-> [    0.000000] console [sercon0] enabled
-> [    0.000000] Booting machvec: Sega Dreamcast
-> [    0.000000] Node 0: start_pfn = 0xc000, low = 0xd000
-> [    0.000000] Zone PFN ranges:
-> [    0.000000]   Normal      49152 ->    53248
-> [    0.000000] Movable zone start PFN for each node
-> [    0.000000] early_node_map[1] active PFN ranges
+Sam Ravnborg writes:
+ > On Sat, Jan 26, 2008 at 07:03:15PM +0100, Mikael Pettersson wrote:
+ > > Building 2.6.24 with
+ > > 
+ > > # CONFIG_HOTPLUG is not set
+ > > CONFIG_SCSI_SYM53C8XX_2=y
+ > > 
+ > > results in the following during modpost:
+ > > 
+ > > WARNING: vmlinux.o(.text+0x14b36c): Section mismatch: reference to .exit.text:sym2_remove (between 'sym2_io_error_detected' and 'sym_set_cam_result_error')
+ > > 
+ > > because sym2_io_error_detected() calls sym2_remove(), which is marked __devexit.
+ > > 
+ > > Fixed by removing the __devexit from sym2_remove().
+ > > 
+ > > Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+ > > ---
+ > > Resend. Previously reported against 2.6.24-rc6 on 2007-12-15.
+ > 
+ > Fixed in upstream kernel by
+ > commit: 864473bbbbcbe99e95a57ad496894768cd77a567
 
-
-Oh, and I've just noticed everythung appears to be timed to 0 too. Very odd.
+Great, thanks.
