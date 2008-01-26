@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYAZKSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbYAZKU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756816AbYAZKSd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 05:18:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbYAZKSZ
+	id S1757014AbYAZKU5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 05:20:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbYAZKUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 05:18:25 -0500
-Received: from main.gmane.org ([80.91.229.2]:57828 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106AbYAZKSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 05:18:24 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 1/6] Core driver for WM97xx touchscreens
-Date: Sat, 26 Jan 2008 10:18:16 +0000 (UTC)
-Message-ID: <fnf1d8$n6i$1@ger.gmane.org>
-References: <20080121152402.GA7518@rakim.wolfsonmicro.main>
-	<1200929100-17224-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<fnf084$ju9$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: ppp78-37-18-87.pppoe.avangarddsl.ru
-User-Agent: Pan/0.132 (Waxed in Black)
-Cc: linux-input@vger.kernel.org
+	Sat, 26 Jan 2008 05:20:49 -0500
+Received: from qb-out-0506.google.com ([72.14.204.235]:58763 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753545AbYAZKUs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 05:20:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=jAyhIJl+7tr+ZQMMaHNU4+NetXiSLn2Lm1w2fmCtl8vDey+S6ph3thnAPNR6vRs02pCiIpAXhyYwlVQ2gs+gxTVyHiDUQsvOgl56aZVs5nukHJJwgOFenElnC6KAQk11GuzYLZ4n0+cz6/70NOdt6I74BY7xivtai+wczMFXcAE=
+Date: Sat, 26 Jan 2008 18:18:36 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [Patch] Shut up warnings from files under drivers/
+Message-ID: <20080126101835.GD20935@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20080126093007.GB20935@hacking> <479B03AE.3090600@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <479B03AE.3090600@garzik.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Jan 26, 2008 at 04:55:58AM -0500, Jeff Garzik wrote:
+>WANG Cong wrote:
+>>diff --git a/drivers/video/kyro/fbdev.c b/drivers/video/kyro/fbdev.c
+>>index acb9370..437ebd0 100644
+>>--- a/drivers/video/kyro/fbdev.c
+>>+++ b/drivers/video/kyro/fbdev.c
+>>@@ -90,7 +90,9 @@ static int nomtrr __devinitdata = 0;
+>> 
+>> /* PCI driver prototypes */
+>> static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id 
+>> *ent);
+>>+#if defined(MODULE) || defined(CONFIG_HOTPLUG)
+>> static void kyrofb_remove(struct pci_dev *pdev);
+>>+#endif
+>> 
+>> static struct fb_videomode kyro_modedb[] __devinitdata = {
+>> 	{
+>>@@ -754,6 +756,7 @@ out_unmap:
+>> 	return -EINVAL;
+>> }
+>> 
+>>+#if defined(MODULE) || defined(CONFIG_HOTPLUG)
+>> static void __devexit kyrofb_remove(struct pci_dev *pdev)
+>> {
+>> 	struct fb_info *info = pci_get_drvdata(pdev);
+>>@@ -783,6 +786,7 @@ static void __devexit kyrofb_remove(struct pci_dev 
+>>*pdev)
+>> 	pci_set_drvdata(pdev, NULL);
+>> 	framebuffer_release(info);
+>> }
+>>+#endif
+>
+>
+>Quite strange -- due to __devexit_p() and the __devexit marker, ifdefs 
+>should not be needed.
+>
+>I would look into why that isn't working as designed in these cases...
+>
 
-Please apply this patch. BTW: Could you please also add me to the "CC" list
-of this patch serie?
+For example, the defination of __devexit_p:
 
->From 1e61dd8a8c8346f925f09cae34275c9754bf2be1 Mon Sep 17 00:00:00 2001
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Date: Sat, 26 Jan 2008 13:04:29 +0300
-Subject: [PATCH] Fix wm97xx_resume
+#if defined(MODULE) || defined(CONFIG_HOTPLUG)
+#define __devexit_p(x) x
+#else
+#define __devexit_p(x) NULL
+#endif
 
-Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
----
- drivers/input/touchscreen/wm97xx-core.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
-index 06030a8..27a0a99 100644
---- a/drivers/input/touchscreen/wm97xx-core.c
-+++ b/drivers/input/touchscreen/wm97xx-core.c
-@@ -639,7 +639,7 @@ static int wm97xx_remove(struct device *dev)
- }
- 
- #ifdef CONFIG_PM
--int wm97xx_resume(struct device *dev)
-+static int wm97xx_resume(struct device *dev)
- {
- 	struct wm97xx *wm = dev_get_drvdata(dev);
- 
-@@ -647,7 +647,7 @@ int wm97xx_resume(struct device *dev)
- 	if (wm->id == WM9713_ID2) {
- 		wm97xx_reg_write(wm, AC97_WM9713_DIG1, wm->dig[0]);
- 		wm97xx_reg_write(wm, 0x5a, wm->misc);
--		if (wm->ts_use_count) {
-+		if (wm->input_dev->users) {
- 			u16 reg;
- 			reg = wm97xx_reg_read(wm, AC97_EXTENDED_MID) & 0x7fff;
- 			wm97xx_reg_write(wm, AC97_EXTENDED_MID, reg);
--- 
-1.5.3.8
-
-
-
--- 
-With best wishes
-Dmitry
-
+If !(defined(MODULE) || defined(CONFIG_HOTPLUG)), __devexit_p
+is just a NULL pointer, thus 'x' may be unused although defined.
 
