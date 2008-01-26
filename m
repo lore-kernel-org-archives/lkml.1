@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753066AbYAZJLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYAZJRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753066AbYAZJLx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 04:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbYAZJLh
+	id S1755495AbYAZJRM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 04:17:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYAZJQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 04:11:37 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40404 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752969AbYAZJLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 04:11:35 -0500
-Date: Sat, 26 Jan 2008 10:11:47 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 23/23 -v6] Critical latency timings histogram
-Message-ID: <20080126091147.GB1794@elf.ucw.cz>
-References: <20080126042152.526086719@goodmis.org> <20080126042804.824377395@goodmis.org>
+	Sat, 26 Jan 2008 04:16:59 -0500
+Received: from po-out-1718.google.com ([72.14.252.156]:10423 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752967AbYAZJQ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 04:16:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=x9+Z8OPtMMmTAl6TZJIqOQDi6UFCrV+82M1azmhAaX9QjjKM7FY7AB1pDw30xztGdYXQnBeBQV3NKHpPan9huHMrCpsEqaCelAxs/pDlzMrHX6peZ5poWR19em3hsI3EQ/6Q5BB9160P67Jf2Cv0KDixiI8iL/SFvNOArJ1MVZQ=
+Date: Sat, 26 Jan 2008 17:14:45 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Greg KH <gregkh@suse.de>, Randy Dunlap <rdunlap@xenotime.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [Patch] drivers/base/core.c: fix a compile error
+Message-ID: <20080126091445.GA20935@hacking>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <479A4867.9040302@goop.org> <20080125221731.GB15172@suse.de> <20080125150002.09cdacb8.rdunlap@xenotime.net> <20080125231129.GD25074@suse.de> <479A6F9D.8040402@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080126042804.824377395@goodmis.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <479A6F9D.8040402@goop.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 25, 2008 at 03:24:13PM -0800, Jeremy Fitzhardinge wrote:
+>Greg KH wrote:
+>>Ah, sorry, I missed that "note" :(
+>>
+>>thanks,
+>>
+>>greg 'time to get that make randconfig system up and working' k-h
+>>  
+>
+>Here's a config that fails.
+>
 
-> +static void *l_start(struct seq_file *m, loff_t *pos)
-> +{
-> +	loff_t *index_ptr = kmalloc(sizeof(loff_t), GFP_KERNEL);
-> +	loff_t index = *pos;
-> +	struct hist_data *my_hist = m->private;
-> +
-> +	if (!index_ptr)
-> +		return NULL;
-> +
-> +	if (index == 0) {
-> +		atomic_dec(&my_hist->hist_mode);
-> +		seq_printf(m, "#Minimum latency: %lu microseconds.\n"
-> +			   "#Average latency: %lu microseconds.\n"
-> +			   "#Maximum latency: %lu microseconds.\n"
-> +			   "#Total samples: %llu\n"
-> +			   "#There are %llu samples greater or equal"
-> +			   " than %d microseconds\n"
-> +			   "#usecs\t%16s\n"
-> +			   , my_hist->min_lat
-> +			   , my_hist->avg_lat
-> +			   , my_hist->max_lat
-> +			   , my_hist->total_samples
-> +			   , my_hist->beyond_hist_bound_samples
-> +			   , MAX_ENTRY_NUM, "samples");
-> +	}
+Here's one possible fix. Please review.
 
-Ok, so you are adding new userland interface; I guess you should also
-document it in Documentation/?
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+---
+
+Index: linux-2.6/include/linux/genhd.h
+===================================================================
+--- linux-2.6.orig/include/linux/genhd.h
++++ linux-2.6/include/linux/genhd.h
+@@ -12,6 +12,8 @@
+ #include <linux/types.h>
+ #include <linux/kdev_t.h>
+ 
++extern struct device_type part_type;
++
+ #ifdef CONFIG_BLOCK
+ 
+ #define kobj_to_dev(k) container_of(k, struct device, kobj)
+@@ -19,7 +21,6 @@
+ #define dev_to_part(device) container_of(device, struct hd_struct, dev)
+ 
+ extern struct device_type disk_type;
+-extern struct device_type part_type;
+ extern struct kobject *block_depr;
+ extern struct class block_class;
+ 
