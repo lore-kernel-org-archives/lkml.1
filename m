@@ -1,110 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbYAZVpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756500AbYAZV7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756490AbYAZVpf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 16:45:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYAZVpZ
+	id S1756500AbYAZV7n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 16:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbYAZV7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 16:45:25 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:45459 "EHLO pasmtpA.tele.dk"
+	Sat, 26 Jan 2008 16:59:34 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:40515 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753644AbYAZVpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 16:45:25 -0500
-Date: Sat, 26 Jan 2008 22:45:34 +0100
+	id S1754395AbYAZV7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 16:59:34 -0500
+Date: Sat, 26 Jan 2008 22:59:17 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Cc: Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org
-Subject: Re: (ondemand) CPU governor  regression between 2.6.23 and 2.6.24
-Message-ID: <20080126214534.GA26651@uranus.ravnborg.org>
-References: <479B69D2.5050603@wpkg.org> <200801262238.19222.toralf.foerster@gmx.de>
+To: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 0/8] x86: fix section mismatch warnings
+Message-ID: <20080126215917.GB26651@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200801262238.19222.toralf.foerster@gmx.de>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added Ingo + Peter.
+The following serie of 8 patches contains:
+
+x86: fix Section mismatch warning in srat_64.c
+=> straightforward - please apply
+
+x86: fix Section mismatch warning in mcheck/mce_64.c
+=> I took some assumptions on use of notifier.
+   See comments and please review before applying
+
+x86: fix Section mismatch warning in mcheck/mce_amd_64.c
+=> Same comments as for previous patch
+
+x86: fix Section mismatch warning in topology.c
+=> Straightforward - please apply.
+   I made EXPORT of arch_register_cpu independent on config in this patch
+   as I do not see why we want to do otherwise.
+
+x86: fix Section mismatch warning in process_*.c
+=> Strightforward - please apply
+
+x86: fix Section mismatch warning in acpi/boot.c
+=> Strightforward - please apply
+
+x86: fix Section mismatch warning in early-quirks.c
+=> Strightforward - please apply
+
+x86: fix Section mismatch warning in setup_64.c
+=> Strightforward - please apply
+
+
+All warnigns were generated with a 64 bit defconfig with
+latest kbuild.git patches applied.
+You should not expect to see identical warnings neither
+the same amount of them.
+
+There are a few warnings left but they await any feedback
+on the __ref annotation before I address these.
+And they will likely depens on having kbuild.git
+applied.
+
+So the remaining warnings in arch/x86/ will not
+be addressed until both kbuild.git and x86.git has been merged.
+
+Patches follows unnumbered as they are independent.
 
 	Sam
-
-On Sat, Jan 26, 2008 at 10:38:15PM +0100, Toralf Förster wrote:
-> It seems to be rather a scheduler issue than a governor issue b/c
-> the issue went away after unsetting CONFIG_FAIR_GROUP_SCHED.
-> 
-> If I unselect CONFIG_FAIR_GROUP_SCHED then the %CPU value raises 80%
-> - which forces the ondemand governor do speed up the CPU frequency:
-> 
-> 
->   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
->  7137 tfoerste  20   0  1796  488  428 R 95.5  0.0   0:01.40 factor
->  7083 dnetc     39  19   664  348  264 R  2.1  0.0   3:08.33 dnetc
->  4033 root      20   0 97252 9420 4008 R  0.7  0.9   0:09.43 X
->  
-> 
-> Am Samstag, 26. Januar 2008 schrieben Sie:
-> > Toralf Förster wrote:
-> > 
-> > > I use a 1-liner for a simple performance check : "time factor 819734028463158891"
-> > > Here is the result for the new (Gentoo) kernel 2.6.24:
-> > > 
-> > > With the  ondemand governor of the  I get:
-> > > 
-> > > tfoerste@n22 ~/tmp $ time factor 819734028463158891
-> > > 819734028463158891: 3 273244676154386297
-> > > 
-> > > real    0m32.997s
-> > > user    0m15.732s
-> > > sys     0m0.014s
-> > > 
-> > > With the ondemand governor the CPU runs at 600 MHz,
-> > > whereas with the performance governor I get :
-> > > 
-> > > tfoerste@n22 ~/tmp $ time factor 819734028463158891
-> > > 819734028463158891: 3 273244676154386297
-> > > 
-> > > real    0m10.893s
-> > > user    0m5.444s
-> > > sys     0m0.000s
-> > > 
-> > > (~5.5 sec as I expected) b/c the CPU is set to 1.7 GHz.
-> > > 
-> > > The ondeman governor of previous kernel versions however automatically increased
-> > > the CPU speed from 600 MHz to 1.7 GHz.
-> > > 
-> > > My system is a ThinkPad T41, I'll attach the .config 
-> > 
-> > During the test, run top, and watch your CPU usage. Does it go above 80% 
-> > (the default for 
-> > /sys/devices/system/cpu/cpu0/cpufreq/ondemand/up_threshold).
-> > 
-> > ondemand CPUfreq governor has a few tunables, described in 
-> > Documentation/cpu-freq. One of them is up_threshold:
-> > 
-> > up_threshold: defines what the average CPU usaged between the samplings
-> > of 'sampling_rate' needs to be for the kernel to make a decision on
-> > whether it should increase the frequency. For example when it is set
-> > to its default value of '80' it means that between the checking
-> > intervals the CPU needs to be on average more than 80% in use to then
-> > decide that the CPU frequency needs to be increased.
-> > 
-> > What CPUFreq processor driver are you using?
-> > 
-> > 
-> > I had a similar problem with CPUfreq and dm-crypt (slow reads), see 
-> > (more setup problem than something kernel-related):
-> > 
-> > http://blog.wpkg.org/2008/01/22/cpufreq-and-dm-crypt-performance-problems/
-> > 
-> > 
-> 
-> -- 
-> MfG/Sincerely
-> 
-> Toralf Förster
-> pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
-
-
