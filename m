@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbYAZMCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbYAZMFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbYAZMCA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 07:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYAZMBw
+	id S1755264AbYAZMFP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 07:05:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbYAZMFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 07:01:52 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:43591 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751720AbYAZMBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 07:01:51 -0500
-Date: Sat, 26 Jan 2008 06:01:50 -0600
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Andrea Arcangeli <andrea@qumranet.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 1/4] mmu_notifier: Core code
-Message-ID: <20080126120149.GS3058@sgi.com>
-References: <20080125055606.102986685@sgi.com> <20080125055801.212744875@sgi.com> <20080125183934.GO26420@sgi.com> <Pine.LNX.4.64.0801251041040.672@schroedinger.engr.sgi.com> <20080125185646.GQ3058@sgi.com> <Pine.LNX.4.64.0801251058170.3198@schroedinger.engr.sgi.com> <20080125193554.GP26420@sgi.com> <Pine.LNX.4.64.0801251315350.19523@schroedinger.engr.sgi.com>
+	Sat, 26 Jan 2008 07:05:03 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:46381 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751720AbYAZMFB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 07:05:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OG3aN4DwomyKgMQhO2aO66P/ws4PL4hkaKTCHDgck7nrbX1hOCoZkIu4PMLF0pAAdQXLWuIvj17MVWv5rZraa9CxxV3ffbpFJsxww1ZVsZmcLnnU6NAfL8XcW2IpnCo3dG2RCVce5xNw4IfmRiMnm9Q3xiceOW4F0g2xWQItIjc=
+Message-ID: <bc64b4640801260405g47852340pb17f38e96f2f2f24@mail.gmail.com>
+Date: Sat, 26 Jan 2008 15:05:00 +0300
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Dmitry Baryshkov" <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH 1/6] Core driver for WM97xx touchscreens
+In-Reply-To: <20080126114740.GA7598@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801251315350.19523@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <20080121152402.GA7518@rakim.wolfsonmicro.main>
+	 <1200929100-17224-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	 <fnf084$ju9$1@ger.gmane.org> <fnf1d8$n6i$1@ger.gmane.org>
+	 <20080126114740.GA7598@sirena.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  void mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm)
->  {
-> -	spin_lock(&mmu_notifier_list_lock);
-> -	hlist_add_head(&mn->hlist, &mm->mmu_notifier.head);
-> -	spin_unlock(&mmu_notifier_list_lock);
-> +	down_write(&mm->mmap_sem);
-> +	__mmu_notifier_register(mn, mm);
-> +	up_write(&mm->mmap_sem);
->  }
->  EXPORT_SYMBOL_GPL(mmu_notifier_register);
+2008/1/26, Mark Brown <broonie@opensource.wolfsonmicro.com>:
+> On Sat, Jan 26, 2008 at 10:18:16AM +0000, Dmitry Baryshkov wrote:
+>
+> > Please apply this patch.
+>
+> Done, thanks.
+>
+> >                          BTW: Could you please also add me to the "CC" list
+> > of this patch serie?
+>
+> Sure.
+>
 
-But what if the caller is already holding the mmap_sem?  Why force the
-acquire into this function?  Since we are dealing with a semaphore/mutex,
-it is reasonable that other structures are protected by this, more work
-will be done, and therefore put the weight of acquiring the sema in the
-control of the caller where they can decide if more needs to be completed.
+Thanks!
 
-That was why I originally suggested creating a new rwsem_is_write_locked()
-function and basing a BUG_ON upon that.
 
-Thanks,
-Robin
+-- 
+With best wishes
+Dmitry
