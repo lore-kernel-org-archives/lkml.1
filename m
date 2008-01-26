@@ -1,367 +1,408 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbYAZRaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbYAZRmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758060AbYAZRaq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 12:30:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756078AbYAZR3O
+	id S1755869AbYAZRmT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 12:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbYAZRmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 12:29:14 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4396 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755715AbYAZR3K (ORCPT
+	Sat, 26 Jan 2008 12:42:09 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:23253 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752901AbYAZRmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 12:29:10 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dtor@mail.ru>
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
-       Mike Arthur <mike.arthur@wolfsonmicro.com>,
-       Stanley Cai <stanley.cai@intel.com>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Marc Kleine-Budde <mkl@pengutronix.de>, Ian Molton <spyro@f2s.com>,
-       Vince Sanders <vince@kyllikki.org>, Andrew Zabolotny <zap@homelink.ru>
-Date: Sat, 26 Jan 2008 17:28:35 +0000
-Message-Id: <1201368516-3513-5-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <1201368516-3513-4-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <20080126151820.GA13899@sirena.org.uk>
- <1201368516-3513-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1201368516-3513-2-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1201368516-3513-3-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1201368516-3513-4-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-SA-Exim-Connect-IP: 82.32.140.119
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: [PATCH 5/6] Driver for WM97xx touchscreens in streaming mode on Mainstone
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Sat, 26 Jan 2008 12:42:08 -0500
+Date: Sat, 26 Jan 2008 09:36:57 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: monstr@monstr.eu
+Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au,
+       sam@ravnborg.org
+Subject: Re: [PATCH 01/52] [microblaze] Kconfig patches
+Message-Id: <20080126093657.f628b0ef.randy.dunlap@oracle.com>
+In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
+References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
-Signed-off-by: Graeme Gregory <gg@opensource.wolfsonmicro.com>
-Signed-off-by: Mike Arthur <mike.arthur@wolfsonmicro.com>
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: Stanley Cai <stanley.cai@intel.com>
-Cc: Rodolfo Giometti <giometti@enneenne.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Marc Kleine-Budde <mkl@pengutronix.de>
-Cc: Ian Molton <spyro@f2s.com>
-Cc: Vince Sanders <vince@kyllikki.org>
-Cc: Andrew Zabolotny <zap@homelink.ru>
+On Thu, 24 Jan 2008 16:05:18 +0100 monstr@monstr.eu wrote:
+
+> From: Michal Simek <monstr@monstr.eu>
+> 
+> 
+> Signed-off-by: Michal Simek <monstr@monstr.eu>
+> ---
+>  arch/microblaze/Kconfig                       |  160 +++++++++++++++++++++++++
+>  arch/microblaze/Kconfig.debug                 |   22 ++++
+>  arch/microblaze/platform/Kconfig.platform     |   46 +++++++
+>  arch/microblaze/platform/generic/Kconfig.auto |   45 +++++++
+>  4 files changed, 273 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/microblaze/Kconfig
+>  create mode 100644 arch/microblaze/Kconfig.debug
+>  create mode 100644 arch/microblaze/platform/Kconfig.platform
+>  create mode 100644 arch/microblaze/platform/generic/Kconfig.auto
+> 
+> diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+> new file mode 100644
+> index 0000000..6dbc069
+> --- /dev/null
+> +++ b/arch/microblaze/Kconfig
+> @@ -0,0 +1,160 @@
+> +# For a description of the syntax of this configuration file,
+> +# see Documentation/kbuild/config-language.txt.
+
+It's                          kconfig-language.txt.
+
+> +
+> +mainmenu "Linux/Microblaze Kernel Configuration"
+> +
+> +config MICROBLAZE
+> +	bool
+> +	default y
+
+The one-line form:
+	def_bool y
+is preferred, just to be more concise, use less screen real estate...
+Above and many times below.
+
+> +config MMU
+> +	bool
+> +	default n
+> +
+> +config SWAP
+> +	bool
+> +	default n
+> +
+> +config RWSEM_GENERIC_SPINLOCK
+> +	bool
+> +	default y
+> +
+> +config RWSEM_XCHGADD_ALGORITHM
+> +	bool
+> +
+> +
+> +config ARCH_HAS_ILOG2_U32
+> +	bool
+> +	default n
+> +
+> +config ARCH_HAS_ILOG2_U64
+> +	bool
+> +	default n
+> +
+> +config GENERIC_FIND_NEXT_BIT
+> +	bool
+> +	default y
+> +
+> +config GENERIC_HWEIGHT
+> +	bool
+> +	default y
+> +
+> +config GENERIC_HARDIRQS
+> +	bool
+> +	default y
+> +
+> +config GENERIC_IRQ_PROBE
+> +	bool
+> +	default y
+> +
+> +config GENERIC_CALIBRATE_DELAY
+> +	bool
+> +	default y
+> +
+> +config PCI
+> +	bool
+> +	default n
+> +
+> +config UID16
+> +	bool
+> +	default y
+> +
+> +config DEFCONFIG_LIST
+> +	string
+> +	default "arch/$ARCH/defconfig"
+> +
+> +source "init/Kconfig"
+> +
+> +source "arch/microblaze/platform/Kconfig.platform"
+> +
+> +menu "Processor type and features"
+> +config PREEMPT
+> +	bool "Preemptible Kernel"
+> +	help
+> +	  This option reduces the latency of the kernel when reacting to
+> +	  real-time or interactive events by allowing a low priority process to
+> +	  be preempted even if it is in kernel mode executing a system call.
+> +	  This allows applications to run more reliably even when the system is
+> +	  under load.
+> +
+> +	  Say Y here if you are building a kernel for a desktop, embedded
+> +	  or real-time system.  Say N if you are unsure.
+> +
+> +config PREEMPT_TIMES
+> +	bool "Collect preemption latency times"
+> +	depends on PREEMPT
+> +	help
+> +	  Allow collection for preemption latency times.
+> +
+> +config XILINX_UNCACHED_SHADOW
+> +    bool "Are you using uncached shadow for RAM ?"
+> +    depends on MICROBLAZE
+> +    default y
+> +    help
+> +      This is needed to be able to allocate uncachable memory regions.
+
+We don't seem to spell uncacheable consistently.
+
+Kernel source tree:
+	uncachable - 27 times
+	uncacheable - 53 times
+google:
+	uncachable - 11,900 hits
+	uncacheable - 26,700 hits
+
+so I would use "uncacheable".
+
+
+> +      The feature requires the design to define the RAM memory controller window
+> +      to be twice as large as the actual physical memory.
+> +
+> +config LARGE_ALLOCS
+> +       bool "Allow allocating large blocks (> 1MB) of memory"
+> +       help
+> +            Allow the slab memory allocator to keep chains for very large
+> +            memory sizes - upto 32MB. You may need this if your system has
+
+s/upto/up to/
+
+> +            a lot of RAM, and you need to able to allocate very large
+> +            contiguous chunks. If unsure, say N.
+
+Please indent config symbol help text as indicated in
+Documentation/CodingStyle:  one tab + 2 spaces for each line of help text.
+(Please check all help text.)
+
+> +comment "Boot options"
+> +
+> +config CMDLINE
+> +	string "Default kernel command string"
+> +	default ""
+> +	help
+> +	  On some architectures there is currently no way for the boot loader
+> +	  to pass arguments to the kernel. For these architectures, you should
+> +	  supply some command-line options at build time by entering them 
+> +	  here. 
+> +
+> +config CMDLINE_FORCE
+> +	bool "Force default kernel command string"
+> +	help
+> +	  Set this to have arguments from the default kernel command string 
+> +	  override those passed by the boot loader
+
+End with period (".").
+
+> +
+> +config OF
+> +	bool
+> +	default y
+> +	help
+> +	  Set this to turn on OF
+
+End with period.  Is this Open Firmware?
+
+> +config OF_DEVICE
+> +	bool
+> +	default y
+> +	help
+> +	  Set this to turn on OF
+
+Ditto.
+
+> +endmenu
+> +
+> +config APM_EMULATION
+> +	bool
+> +
+> +source "mm/Kconfig"
+> +
+> +menu "Exectuable file formats"
+> +
+> +source "fs/Kconfig.binfmt"
+> +
+> +endmenu
+> +
+> +source "net/Kconfig"
+> +
+> +source "drivers/Kconfig"
+> +
+> +source "fs/Kconfig"
+> +
+> +source "arch/microblaze/Kconfig.debug"
+> +
+> +source "security/Kconfig"
+> +
+> +source "crypto/Kconfig"
+> +
+> +source "lib/Kconfig"
+> diff --git a/arch/microblaze/Kconfig.debug b/arch/microblaze/Kconfig.debug
+> new file mode 100644
+> index 0000000..1ccdd84
+> --- /dev/null
+> +++ b/arch/microblaze/Kconfig.debug
+> @@ -0,0 +1,22 @@
+> +menu "Kernel hacking"
+> +
+> +source "lib/Kconfig.debug"
+> +
+> +config EARLY_PRINTK
+> +	bool "EARLY_PRINTK"
+> +	default y
+> +
+> +config EARLY_PRINTK_UARTLITE_ADDRESS
+> +	hex "Physical address where UART Lite for early printk is mapped"
+> +	depends on EARLY_PRINTK
+> +	default "0x40600000"
+> +	help
+> +	  Please enter physcal address where your uart lite is mapped
+
+End with period.  s/physcal/physical/
+
+> +
+> +config DEBUG_BOOTMEM
+> +	depends on DEBUG_KERNEL
+> +	bool "Debug BOOTMEM initialization"
+> +
+> +endmenu
+> +
+> +
+> diff --git a/arch/microblaze/platform/Kconfig.platform b/arch/microblaze/platform/Kconfig.platform
+> new file mode 100644
+> index 0000000..7b8eecb
+> --- /dev/null
+> +++ b/arch/microblaze/platform/Kconfig.platform
+> @@ -0,0 +1,46 @@
+> +#
+> +# platform selection Kconfig menu for MicroBlaze targets
+> +#
+> +menu "Platform options"
+> +choice
+> +	prompt "Platform"
+> +	default PLATFORM_MICROBLAZE_AUTO
+> +	help
+> +	  Choose which hardware board/platform you are targeting
+
+End with period.
+
+> +
+> +config PLATFORM_GENERIC
+> +	bool "Generic" 
+> +	help 
+> +	  Choose this option for the Generic platform 
+
+end with period.
+
+> +endchoice
+> +
+> +# This is stil a bit broken - disabling for now JW 20070504
+
+s/stil/still/
+
+> +config ALLOW_EDIT_AUTO
+> +	bool "Permit Display/edit of Kconfig.auto platform settings"
+> +	default n
+> +	help
+> +	  Allows the editing of auto-generated platform settings from 
+> +	  the Kconfig.auto file.  Obviously this does not change the 
+> +	  underlying hardware, so be very careful if you go editing 
+> +	  these settings.
+> +	
+> +	  Also, if you enable this, and edit various Kconfig.auto 
+> +	  settings, YOUR CHANGES WILL BE LOST if you then disable it 
+> +	  again. You have been warned!
+> +	
+> +	  If unsure, say no
+
+End with period.
+
+> +# Ok, the platform is chosen.  Source the kconfig.auto to get all of the 
+> +# system settings.
+> +# If user selected CONFIG_EDIT_AUTO, these will be rendered in gory detail
+> +# and be able to be edited
+> +comment "Automatic platform settings from Kconfig.auto"
+> +	depends on ALLOW_EDIT_AUTO
+> +
+> +if PLATFORM_GENERIC=y
+> +    source "arch/microblaze/platform/generic/Kconfig.auto"
+> +endif
+> +
+> +endmenu
+> +
+> diff --git a/arch/microblaze/platform/generic/Kconfig.auto b/arch/microblaze/platform/generic/Kconfig.auto
+> new file mode 100644
+> index 0000000..751369b
+> --- /dev/null
+> +++ b/arch/microblaze/platform/generic/Kconfig.auto
+> @@ -0,0 +1,45 @@
+> +#
+> +# Platform Kconfig menu for Microblaze generic board
+> +#
+> +
+> +config KERNEL_BASE_ADDR
+> +	hex "Physical address where Linux Kernel is"
+> +	default "0x44000000"
+> +	help
+> +	  BASE Address for kernel
+> +
+> +config XILINX_ERAM_SIZE
+> +       hex "Size address of XILINX_RAM" if ALLOW_EDIT_AUTO && XILINX_UNCACHED_SHADOW
+
+What is a "Size address"?
+
+> +       default 0x02000000
+> +
+> +comment "Definitions for MICROBLAZE0"
+> +      depends on ALLOW_EDIT_AUTO
+> +
+> +config XILINX_MICROBLAZE0_FAMILY
+> +       string "Targetted FPGA family" if ALLOW_EDIT_AUTO
+> +       default spartan3e
+> +
+> +config XILINX_MICROBLAZE0_HW_VER
+> +       string "Core version number" if ALLOW_EDIT_AUTO
+> +       default 5.00.c
+> +
+> +config XILINX_MICROBLAZE0_USE_MSR_INSTR
+> +       int "USE_MSR_INSTR" if ALLOW_EDIT_AUTO
+> +       default 1
+> +
+> +config XILINX_MICROBLAZE0_USE_BARREL
+> +       int "USE_BARREL range (0:1)" if ALLOW_EDIT_AUTO
+> +       default 1
+
+These (above & below) look like booleans.  If you really need a
+range, config symbols can be specified as ranges.  See
+Documentation/kbuild/kconfig-language.txt.
+
+> +config XILINX_MICROBLAZE0_USE_DIV
+> +       int "USE_DIV range (0:1)" if ALLOW_EDIT_AUTO
+> +       default 1
+> +
+> +config XILINX_MICROBLAZE0_USE_HW_MUL
+> +       int "USE_HW_MUL range (0:1)" if ALLOW_EDIT_AUTO
+> +       default 1
+> +
+> +config XILINX_MICROBLAZE0_USE_FPU
+> +       int "USE_FPU range (0:1)" if ALLOW_EDIT_AUTO
+> +       default 0
+> +
+> -- 
+
 ---
- drivers/input/touchscreen/mainstone-wm97xx.c |  298 ++++++++++++++++++++++++++
- 1 files changed, 298 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/touchscreen/mainstone-wm97xx.c
-
-diff --git a/drivers/input/touchscreen/mainstone-wm97xx.c b/drivers/input/touchscreen/mainstone-wm97xx.c
-new file mode 100644
-index 0000000..8e1c35d
---- /dev/null
-+++ b/drivers/input/touchscreen/mainstone-wm97xx.c
-@@ -0,0 +1,298 @@
-+/*
-+ * mainstone-wm97xx.c  --  Mainstone Continuous Touch screen driver for
-+ *                         Wolfson WM97xx AC97 Codecs.
-+ *
-+ * Copyright 2004, 2007 Wolfson Microelectronics PLC.
-+ * Author: Liam Girdwood
-+ *         liam.girdwood@wolfsonmicro.com or linux@wolfsonmicro.com
-+ * Parts Copyright : Ian Molton <spyro@f2s.com>
-+ *                   Andrew Zabolotny <zap@homelink.ru>
-+ *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
-+ *
-+ * Notes:
-+ *     This is a wm97xx extended touch driver to capture touch
-+ *     data in a continuous manner on the Intel XScale archictecture
-+ *
-+ *  Features:
-+ *       - codecs supported:- WM9705, WM9712, WM9713
-+ *       - processors supported:- Intel XScale PXA25x, PXA26x, PXA27x
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/version.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/delay.h>
-+#include <linux/irq.h>
-+#include <linux/interrupt.h>
-+#include <linux/wm97xx.h>
-+#include <linux/io.h>
-+#include <asm/arch/pxa-regs.h>
-+
-+#define VERSION		"0.13"
-+
-+struct continuous {
-+	u16 id;    /* codec id */
-+	u8 code;   /* continuous code */
-+	u8 reads;  /* number of coord reads per read cycle */
-+	u32 speed; /* number of coords per second */
-+};
-+
-+#define WM_READS(sp) ((sp / HZ) + 1)
-+
-+static const struct continuous cinfo[] = {
-+	{WM9705_ID2, 0, WM_READS(94), 94},
-+	{WM9705_ID2, 1, WM_READS(188), 188},
-+	{WM9705_ID2, 2, WM_READS(375), 375},
-+	{WM9705_ID2, 3, WM_READS(750), 750},
-+	{WM9712_ID2, 0, WM_READS(94), 94},
-+	{WM9712_ID2, 1, WM_READS(188), 188},
-+	{WM9712_ID2, 2, WM_READS(375), 375},
-+	{WM9712_ID2, 3, WM_READS(750), 750},
-+	{WM9713_ID2, 0, WM_READS(94), 94},
-+	{WM9713_ID2, 1, WM_READS(120), 120},
-+	{WM9713_ID2, 2, WM_READS(154), 154},
-+	{WM9713_ID2, 3, WM_READS(188), 188},
-+};
-+
-+/* continuous speed index */
-+static int sp_idx;
-+static u16 last, tries;
-+
-+/*
-+ * Pen sampling frequency (Hz) in continuous mode.
-+ */
-+static int cont_rate = 200;
-+module_param(cont_rate, int, 0);
-+MODULE_PARM_DESC(cont_rate, "Sampling rate in continuous mode (Hz)");
-+
-+/*
-+ * Pen down detection.
-+ *
-+ * This driver can either poll or use an interrupt to indicate a pen down
-+ * event. If the irq request fails then it will fall back to polling mode.
-+ */
-+static int pen_int;
-+module_param(pen_int, int, 0);
-+MODULE_PARM_DESC(pen_int, "Pen down detection (1 = interrupt, 0 = polling)");
-+
-+/*
-+ * Pressure readback.
-+ *
-+ * Set to 1 to read back pen down pressure
-+ */
-+static int pressure;
-+module_param(pressure, int, 0);
-+MODULE_PARM_DESC(pressure, "Pressure readback (1 = pressure, 0 = no pressure)");
-+
-+/*
-+ * AC97 touch data slot.
-+ *
-+ * Touch screen readback data ac97 slot
-+ */
-+static int ac97_touch_slot = 5;
-+module_param(ac97_touch_slot, int, 0);
-+MODULE_PARM_DESC(ac97_touch_slot, "Touch screen data slot AC97 number");
-+
-+
-+/* flush AC97 slot 5 FIFO on pxa machines */
-+#ifdef CONFIG_PXA27x
-+static void wm97xx_acc_pen_up(struct wm97xx *wm)
-+{
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	schedule_timeout(1);
-+
-+	while (MISR & (1 << 2))
-+		MODR;
-+}
-+#else
-+static void wm97xx_acc_pen_up(struct wm97xx *wm)
-+{
-+	int count = 16;
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	schedule_timeout(1);
-+
-+	while (count < 16) {
-+		MODR;
-+		count--;
-+	}
-+}
-+#endif
-+
-+static int wm97xx_acc_pen_down(struct wm97xx *wm)
-+{
-+	u16 x, y, p = 0x100 | WM97XX_ADCSEL_PRES;
-+	int reads = 0;
-+
-+	/* data is never immediately available after pen down irq */
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	schedule_timeout(1);
-+
-+	if (tries > 5) {
-+		tries = 0;
-+		return RC_PENUP;
-+	}
-+
-+	x = MODR;
-+	if (x == last) {
-+		tries++;
-+		return RC_AGAIN;
-+	}
-+	last = x;
-+	do {
-+		if (reads)
-+			x = MODR;
-+		y = MODR;
-+		if (pressure)
-+			p = MODR;
-+
-+		/* are samples valid */
-+		if ((x & 0x7000) != WM97XX_ADCSEL_X ||
-+			(y & 0x7000) != WM97XX_ADCSEL_Y ||
-+			(p & 0x7000) != WM97XX_ADCSEL_PRES)
-+			goto up;
-+
-+		/* coordinate is good */
-+		tries = 0;
-+		input_report_abs(wm->input_dev, ABS_X, x & 0xfff);
-+		input_report_abs(wm->input_dev, ABS_Y, y & 0xfff);
-+		input_report_abs(wm->input_dev, ABS_PRESSURE, p & 0xfff);
-+		input_sync(wm->input_dev);
-+		reads++;
-+	} while (reads < cinfo[sp_idx].reads);
-+up:
-+	return RC_PENDOWN | RC_AGAIN;
-+}
-+
-+static int wm97xx_acc_startup(struct wm97xx *wm)
-+{
-+	int idx = 0;
-+
-+	/* check we have a codec */
-+	if (wm->ac97 == NULL)
-+		return -ENODEV;
-+
-+	/* Go you big red fire engine */
-+	for (idx = 0; idx < ARRAY_SIZE(cinfo); idx++) {
-+		if (wm->id != cinfo[idx].id)
-+			continue;
-+		sp_idx = idx;
-+		if (cont_rate <= cinfo[idx].speed)
-+			break;
-+	}
-+	wm->acc_rate = cinfo[sp_idx].code;
-+	wm->acc_slot = ac97_touch_slot;
-+	dev_info(wm->dev,
-+		 "mainstone accelerated touchscreen driver, %d samples/sec\n",
-+		 cinfo[sp_idx].speed);
-+
-+	/* codec specific irq config */
-+	if (pen_int) {
-+		switch (wm->id) {
-+		case WM9705_ID2:
-+			wm->pen_irq = IRQ_GPIO(4);
-+			set_irq_type(IRQ_GPIO(4), IRQT_BOTHEDGE);
-+			break;
-+		case WM9712_ID2:
-+		case WM9713_ID2:
-+			/* enable pen down interrupt */
-+			/* use PEN_DOWN GPIO 13 to assert IRQ on GPIO line 2 */
-+			wm->pen_irq = MAINSTONE_AC97_IRQ;
-+			wm97xx_config_gpio(wm, WM97XX_GPIO_13, WM97XX_GPIO_IN,
-+					   WM97XX_GPIO_POL_HIGH,
-+					   WM97XX_GPIO_STICKY,
-+					   WM97XX_GPIO_WAKE);
-+			wm97xx_config_gpio(wm, WM97XX_GPIO_2, WM97XX_GPIO_OUT,
-+					   WM97XX_GPIO_POL_HIGH,
-+					   WM97XX_GPIO_NOTSTICKY,
-+					   WM97XX_GPIO_NOWAKE);
-+			break;
-+		default:
-+			dev_err(wm->dev,
-+				"pen down irq not supported on this device\n");
-+			pen_int = 0;
-+			break;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static void wm97xx_acc_shutdown(struct wm97xx *wm)
-+{
-+	/* codec specific deconfig */
-+	if (pen_int) {
-+		switch (wm->id & 0xffff) {
-+		case WM9705_ID2:
-+			wm->pen_irq = 0;
-+			break;
-+		case WM9712_ID2:
-+		case WM9713_ID2:
-+			/* disable interrupt */
-+			wm->pen_irq = 0;
-+			break;
-+		}
-+	}
-+}
-+
-+static void wm97xx_irq_enable(struct wm97xx *wm, int enable)
-+{
-+	if (enable)
-+		enable_irq(wm->pen_irq);
-+	else
-+		disable_irq(wm->pen_irq);
-+}
-+
-+static struct wm97xx_mach_ops mainstone_mach_ops = {
-+	.acc_enabled = 1,
-+	.acc_pen_up = wm97xx_acc_pen_up,
-+	.acc_pen_down = wm97xx_acc_pen_down,
-+	.acc_startup = wm97xx_acc_startup,
-+	.acc_shutdown = wm97xx_acc_shutdown,
-+	.irq_enable = wm97xx_irq_enable,
-+};
-+
-+static int mainstone_wm97xx_probe(struct platform_device *pdev)
-+{
-+	struct wm97xx *wm = platform_get_drvdata(pdev);
-+	return wm97xx_register_mach_ops(wm, &mainstone_mach_ops);
-+}
-+
-+static int mainstone_wm97xx_remove(struct platform_device *pdev)
-+{
-+	struct wm97xx *wm = platform_get_drvdata(pdev);
-+	wm97xx_unregister_mach_ops(wm);
-+	return 0;
-+}
-+
-+static struct platform_driver mainstone_wm97xx_driver = {
-+	.probe = mainstone_wm97xx_probe,
-+	.remove = mainstone_wm97xx_remove,
-+	.driver = {
-+		.name = "wm97xx-touch",
-+	},
-+};
-+
-+static int __init mainstone_wm97xx_init(void)
-+{
-+	return platform_driver_register(&mainstone_wm97xx_driver);
-+}
-+
-+static void __exit mainstone_wm97xx_exit(void)
-+{
-+	platform_driver_unregister(&mainstone_wm97xx_driver);
-+}
-+
-+module_init(mainstone_wm97xx_init);
-+module_exit(mainstone_wm97xx_exit);
-+
-+/* Module information */
-+MODULE_AUTHOR("Liam Girdwood <liam.girdwood@wolfsonmicro.com>");
-+MODULE_DESCRIPTION("wm97xx continuous touch driver for mainstone");
-+MODULE_LICENSE("GPL");
--- 
-1.5.3.8
-
+~Randy
