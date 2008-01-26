@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbYAZADR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYAZAFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557AbYAZADR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 19:03:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbYAZADF
+	id S1756161AbYAZAFz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 19:05:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYAZAFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 19:03:05 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:54685 "EHLO
-	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752446AbYAZADE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 19:03:04 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
-Date: Fri, 25 Jan 2008 17:00:52 -0700
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-To: "Hasan Rashid" <hasan@digitalpath.net>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: CS5536 mfgpt timer setup register hangs board
-Message-ID: <20080126000052.GA29843@cosmic.amd.com>
-References: <1788.65.164.104.9.1201305044.squirrel@webmail.digitalpath.net>
+	Fri, 25 Jan 2008 19:05:46 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49706 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752594AbYAZAFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 19:05:45 -0500
+Date: Sat, 26 Jan 2008 01:05:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] driver core patches against 2.6.24
+Message-ID: <20080126000526.GA24559@elte.hu>
+References: <20080125071127.GA4860@kroah.com> <alpine.LFD.1.00.0801251035150.2979@hp.linux-foundation.org> <20080125185213.GA23475@suse.de> <alpine.LFD.1.00.0801251108480.2979@hp.linux-foundation.org> <479A3ED3.6020808@goop.org> <1201296027.32422.80.camel@perihelion> <alpine.LFD.1.00.0801251347010.5056@hp.linux-foundation.org> <479A5B72.6080701@goop.org> <1201299979.27573.11.camel@lappy>
 MIME-Version: 1.0
-In-Reply-To: <1788.65.164.104.9.1201305044.squirrel@webmail.digitalpath.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 25 Jan 2008 23:59:01.0518 (UTC)
- FILETIME=[41EEDAE0:01C85FAE]
-X-WSS-ID: 6B84A84F2IW8844668-01-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1201299979.27573.11.camel@lappy>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25/01/08 15:50 -0800, Hasan Rashid wrote:
-> 
-> Hi,
-> 
-> I have been working on a watchdog timer using the mfgpt on AMD Geode
-> CS5536. I initialize the setup register MFGPT0_SETUP (0x6206) with hex
-> value 0x306 (1100000110b). However, after this first initialization if I
-> ever read/write to the register it hangs the system.
-> 
-> I have been through all the documentation, tried several different methods
-> but all the efforts, frustratingly, to no avail.
-> 
-> Does anyone have any idea as to why would this be? TIA!
 
-It looks like you are using TinyBIOS.  Make sure that if you are using v0.99
-that you do *not* enable the MFGPT workaround.  If you are using an older 
-version, then you will need this patch:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-http://lkml.org/lkml/2008/1/23/372
+> My wish is that distros would just boot without requiring an initrd. I 
+> know how to make them for redhat and debian based distros, but the 
+> fact that you can't (easily) cross-build them makes it a very tedious 
+> construct.
 
-And enable mfgptfix on the command line.  There seems to be a problem with
-the MFGPT "workaround" that causes hangs exactly like you are seeing.
+all it takes for me on Fedora is to boot a modular distro kernel once, 
+then copy the /dev to the real (persistent) /dev:
 
-Jordan
+   mkdir /tmp2
+   mount /dev/sda1 /tmp2
+   cp -a /dev/* /tmp2/dev/
 
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
+and from that point on a bzImage/vmlinuz can boot up on Fedora without 
+any problems (as long as it has the right drivers built in), and the 
+initrd line can be removed from grub.conf.
 
-
+	Ingo
