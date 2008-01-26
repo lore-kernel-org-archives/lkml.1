@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760512AbYAZEdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbYAZEdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760512AbYAZEdT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 23:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbYAZE2i
+	id S1760640AbYAZEdk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 23:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbYAZE2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 23:28:38 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:36237 "EHLO
+	Fri, 25 Jan 2008 23:28:40 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:36238 "EHLO
 	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753344AbYAZE2W (ORCPT
+	with ESMTP id S1753352AbYAZE2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Jan 2008 23:28:22 -0500
-Message-Id: <20080126042802.072086932@goodmis.org>
+Message-Id: <20080126042801.918071687@goodmis.org>
 References: <20080126042152.526086719@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 25 Jan 2008 23:21:58 -0500
+Date: Fri, 25 Jan 2008 23:21:57 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,74 +29,131 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>, Pavel Machek <pavel@ucw.cz>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 06/23 -v6] add notrace annotations for NMI routines
-Content-Disposition: inline; filename=mcount-nmi-notrace-annotations.patch
+Subject: [PATCH 05/23 -v6] add notrace annotations to vsyscall.
+Content-Disposition: inline; filename=mcount-add-x86-vdso-notrace-annotations.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This annotates NMI functions with notrace. Some tracers may be able
-to live with this, but some cannot. So we turn off NMI tracing.
+Add the notrace annotations to some of the vsyscall functions.
 
-One solution might be to make a notrace_nmi which would only turn
-off NMI tracing if a trace utility needed it off.
-
-Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
 ---
- arch/x86/kernel/nmi_32.c   |    2 +-
- arch/x86/kernel/nmi_64.c   |    2 +-
- arch/x86/kernel/traps_32.c |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ arch/x86/kernel/vsyscall_64.c  |    3 ++-
+ arch/x86/vdso/vclock_gettime.c |   15 ++++++++-------
+ arch/x86/vdso/vgetcpu.c        |    3 ++-
+ include/asm-x86/vsyscall.h     |    3 ++-
+ 4 files changed, 14 insertions(+), 10 deletions(-)
 
-Index: linux-mcount.git/arch/x86/kernel/nmi_32.c
+Index: linux-mcount.git/arch/x86/kernel/vsyscall_64.c
 ===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/nmi_32.c	2008-01-25 21:46:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/nmi_32.c	2008-01-25 21:47:08.000000000 -0500
-@@ -318,7 +318,7 @@ EXPORT_SYMBOL(touch_nmi_watchdog);
+--- linux-mcount.git.orig/arch/x86/kernel/vsyscall_64.c	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/arch/x86/kernel/vsyscall_64.c	2008-01-25 21:47:06.000000000 -0500
+@@ -42,7 +42,8 @@
+ #include <asm/topology.h>
+ #include <asm/vgtod.h>
  
- extern void die_nmi(struct pt_regs *, const char *msg);
+-#define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
++#define __vsyscall(nr) \
++		__attribute__ ((unused, __section__(".vsyscall_" #nr))) notrace
+ #define __syscall_clobber "r11","rcx","memory"
+ #define __pa_vsymbol(x)			\
+ 	({unsigned long v;  		\
+Index: linux-mcount.git/arch/x86/vdso/vclock_gettime.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/vdso/vclock_gettime.c	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/arch/x86/vdso/vclock_gettime.c	2008-01-25 21:47:06.000000000 -0500
+@@ -24,7 +24,7 @@
  
--__kprobes int nmi_watchdog_tick(struct pt_regs * regs, unsigned reason)
-+notrace __kprobes int nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
+ #define gtod vdso_vsyscall_gtod_data
+ 
+-static long vdso_fallback_gettime(long clock, struct timespec *ts)
++notrace static long vdso_fallback_gettime(long clock, struct timespec *ts)
  {
- 
- 	/*
-Index: linux-mcount.git/arch/x86/kernel/nmi_64.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/nmi_64.c	2008-01-25 21:46:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/nmi_64.c	2008-01-25 21:47:08.000000000 -0500
-@@ -314,7 +314,7 @@ void touch_nmi_watchdog(void)
-  	touch_softlockup_watchdog();
+ 	long ret;
+ 	asm("syscall" : "=a" (ret) :
+@@ -32,7 +32,7 @@ static long vdso_fallback_gettime(long c
+ 	return ret;
  }
  
--int __kprobes nmi_watchdog_tick(struct pt_regs * regs, unsigned reason)
-+notrace __kprobes int nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
+-static inline long vgetns(void)
++notrace static inline long vgetns(void)
  {
- 	int sum;
- 	int touched = 0;
-Index: linux-mcount.git/arch/x86/kernel/traps_32.c
-===================================================================
---- linux-mcount.git.orig/arch/x86/kernel/traps_32.c	2008-01-25 21:46:50.000000000 -0500
-+++ linux-mcount.git/arch/x86/kernel/traps_32.c	2008-01-25 21:47:08.000000000 -0500
-@@ -723,7 +723,7 @@ void __kprobes die_nmi(struct pt_regs *r
- 	do_exit(SIGSEGV);
+ 	long v;
+ 	cycles_t (*vread)(void);
+@@ -41,7 +41,7 @@ static inline long vgetns(void)
+ 	return (v * gtod->clock.mult) >> gtod->clock.shift;
  }
  
--static __kprobes void default_do_nmi(struct pt_regs * regs)
-+static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
+-static noinline int do_realtime(struct timespec *ts)
++notrace static noinline int do_realtime(struct timespec *ts)
  {
- 	unsigned char reason = 0;
+ 	unsigned long seq, ns;
+ 	do {
+@@ -55,7 +55,8 @@ static noinline int do_realtime(struct t
+ }
  
-@@ -763,7 +763,7 @@ static __kprobes void default_do_nmi(str
- 
- static int ignore_nmis;
- 
--fastcall __kprobes void do_nmi(struct pt_regs * regs, long error_code)
-+notrace fastcall __kprobes void do_nmi(struct pt_regs *regs, long error_code)
+ /* Copy of the version in kernel/time.c which we cannot directly access */
+-static void vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
++notrace static void
++vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
  {
- 	int cpu;
+ 	while (nsec >= NSEC_PER_SEC) {
+ 		nsec -= NSEC_PER_SEC;
+@@ -69,7 +70,7 @@ static void vset_normalized_timespec(str
+ 	ts->tv_nsec = nsec;
+ }
  
+-static noinline int do_monotonic(struct timespec *ts)
++notrace static noinline int do_monotonic(struct timespec *ts)
+ {
+ 	unsigned long seq, ns, secs;
+ 	do {
+@@ -83,7 +84,7 @@ static noinline int do_monotonic(struct 
+ 	return 0;
+ }
+ 
+-int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
++notrace int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
+ {
+ 	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
+ 		switch (clock) {
+@@ -97,7 +98,7 @@ int __vdso_clock_gettime(clockid_t clock
+ int clock_gettime(clockid_t, struct timespec *)
+ 	__attribute__((weak, alias("__vdso_clock_gettime")));
+ 
+-int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
++notrace int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
+ {
+ 	long ret;
+ 	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
+Index: linux-mcount.git/arch/x86/vdso/vgetcpu.c
+===================================================================
+--- linux-mcount.git.orig/arch/x86/vdso/vgetcpu.c	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/arch/x86/vdso/vgetcpu.c	2008-01-25 21:47:06.000000000 -0500
+@@ -13,7 +13,8 @@
+ #include <asm/vgtod.h>
+ #include "vextern.h"
+ 
+-long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
++notrace long
++__vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *unused)
+ {
+ 	unsigned int dummy, p;
+ 
+Index: linux-mcount.git/include/asm-x86/vsyscall.h
+===================================================================
+--- linux-mcount.git.orig/include/asm-x86/vsyscall.h	2008-01-25 21:46:50.000000000 -0500
++++ linux-mcount.git/include/asm-x86/vsyscall.h	2008-01-25 21:47:06.000000000 -0500
+@@ -24,7 +24,8 @@ enum vsyscall_num {
+ 	((unused, __section__ (".vsyscall_gtod_data"),aligned(16)))
+ #define __section_vsyscall_clock __attribute__ \
+ 	((unused, __section__ (".vsyscall_clock"),aligned(16)))
+-#define __vsyscall_fn __attribute__ ((unused,__section__(".vsyscall_fn")))
++#define __vsyscall_fn \
++	__attribute__ ((unused, __section__(".vsyscall_fn"))) notrace
+ 
+ #define VGETCPU_RDTSCP	1
+ #define VGETCPU_LSL	2
 
 -- 
