@@ -1,91 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbYAZAP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYAZAPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbYAZAP1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 19:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYAZAPK
+	id S1753918AbYAZAPo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 19:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbYAZAPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 19:15:10 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43297 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753495AbYAZAPJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 19:15:09 -0500
-Message-ID: <479A7A88.6010505@zytor.com>
-Date: Fri, 25 Jan 2008 16:10:48 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 25 Jan 2008 19:15:14 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:50920 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753918AbYAZAPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 19:15:11 -0500
+Date: Fri, 25 Jan 2008 19:15:10 -0500
+To: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org
+Cc: linux-kernel@vger.kernel.org
+Subject: nfs server patches not in 2.6.25
+Message-ID: <20080126001510.GH25141@fieldses.org>
+References: <20080125231521.GG25141@fieldses.org>
 MIME-Version: 1.0
-To: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Jan Beulich <jbeulich@novell.com>,
-       Eduardo Pereira Habkost <ehabkost@redhat.com>,
-       Ian Campbell <ijc@hellion.org.uk>, William Irwin <wli@holomorphy.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 11 of 11] x86: defer cr3 reload when doing pud_clear()
-References: <C3C0235A.12D8E%Keir.Fraser@cl.cam.ac.uk>
-In-Reply-To: <C3C0235A.12D8E%Keir.Fraser@cl.cam.ac.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080125231521.GG25141@fieldses.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keir Fraser wrote:
-> On 25/1/08 22:54, "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
-> 
->> The only possibly relevant comment I can find in vol3a is:
->>
->>     Older IA-32 processors that implement the PAE mechanism use uncached
->>     accesses when loading page-directory-pointer table entries. This
->>     behavior is
->>     model specific and not architectural. More recent IA-32 processors may
->>     cache page-directory-pointer table entries.
-> 
-> Go read the Intel application note "TLBs, Paging-Structure Caches, and Their
-> Invalidation" at http://www.intel.com/design/processor/applnots/317080.pdf
-> 
-> Section 8.1 explains about the PDPTR cache in 32-bit PAE mode, which can
-> only be refreshed by appropriate tickling of CR0, CR3 or CR4.
-> 
-> It is also important to note that *any* valid page directory entry at *any*
-> level in the page-table hierarchy can become cached at *any* time. Basically
-> TLB lookup is performed as a longest-prefix match on the linear address to
-> skip as many levels in a page-table walk as possible (where a walk is
-> needed, because there is no full-length match on the linear address). So, if
-> you modify a directory entry from present to not-present, or change the page
-> directory that a valid pde points to, you probably need to flush the pde
-> caching structure. One piece of good news is that all pde caches are flushed
-> by any arbitrary INVLPG.
-> 
+Just some idea what we might be working on for 2.6.26, besides continued
+bug-fixing and cleanup:
 
-Actually, it's trickier than that.  The PDPTR, just like the segments, 
-aren't a real cache, and aren't invalidated by INVLPG.  This means you 
-can't go from less permissive to more permissive, which is normally 
-permitted in the x86.  The PDPTR should really be thought of as an 
-extended cr3 with four entries (this is also how it would be typically 
-implemented in hardware) rather than as a part of the paging structure 
-per se.
+Work that we already have patches for and that I expect to be included
+in whole or in 2.6.26:
 
-We do NOT want to frob %cr4 unless we actually need to clear all the 
-global pages.
+	- ipv6: Aurélien Charbon's patch to add ipv6 support to the
+	  server's export interface is ready.  I'm not clear what else
+	  remains for full ipv6 support.
+	- failover and migration: Wendy Cheng's patches appear to be in
+	  good shape, so I expect them or something with equivalent
+	  functionality to be in 2.6.26.
+	- gss callbacks: We have patches to add support for rpcsec_gss
+	  on NFSv4's callback channel (allowing us to support
+	  delegations on kerberos mounts), but they've been put on hold
+	  pending improvements to the client's gssd upcall.  I hope to
+	  get back to that work in the next few weeks.
 
-The stuff in chapter 10 sounds like they're flagging for a revised 
-INVLPG instruction or mode which would fit some of the extremely serious 
-defects in INVLPG that was introduced by haphazard semantics from the P5 
-and early P6 days.
+Also in progress:
 
-In general, we should assume that INVLPG only flushes the hierarchy 
-above it, and not rely on side effects.  In particular, we should only 
-assume INVLPG invalidates the hierarchy immediately above it, not on any 
-side effects.  That's basically sane design anyway.
+	- spkm3 and future gss mechanisms may generate context
+	  initiation rpc's that are very large.  Olga Kornievskaia and I
+	  have been working on fixing the server gssd interfaces to
+	  permit this.
 
-Now, all of this reminds me of something somewhat messy: if we share the 
-kernel page tables for trampoline page tables, as discussed elsewhere, 
-we HAVE to do a complete, all-tlb-including-global-pages flush after 
-use, since the kernel pages are global and otherwise will stick around. 
-  Unlike the permissions pages, there aren't G enable bits on the higher 
-levels, but only for the PTEs themselves.
+	- There are some mismatches between the semantics required for
+	  nfsv4 delegations and what Linux's lease subsystem provides
+	  us.  David Richter and I have done a little work on this.  We
+	  need to start submitting it.
 
-	-hpa
+Three items I identified previously as issues I'd like fixed before we
+removed the dependency of CONFIG_NFSD_V4 on CONFIG_EXPERIMENTAL:
 
+	http://linux-nfs.org/pipermail/nfsv4/2006-December/005497.html
+
+	- export paths consistent between v2/v3/v4:  We have some code
+	  that fixes this entirely in userspace.  That approach doesn't
+	  provide stable filehandles in the NFSv4 pseudofilesystem, and
+	  there seems to be a general sentiment that it's overly
+	  complicated.  It has the one advantage that we don't have to
+	  commit to it, since it uses only existing kernel interfaces.
+	  So I think we're probably going to apply that to nfs-utils as
+	  a stopgap measure and start work on fixing this in the kernel
+	  at the same time....
+
+	- reboot recovery: there have been complaints about the
+	  server-side nfsv4 reboot recovery code for a while, we've had
+	  code that tries to fix it for a while, and it just hasn't
+	  happened.  I'm hoping we can finally get this ready for
+	  2.6.26.
+
+	- export security: this was finished in 2.6.23; we now support
+	  export options like sec=krb5:krb5i:krb5p, which have a few
+	  advantages over the special gss/krb5 client names.  This could
+	  be better documented, though.
+
+I've probably left a lot out.  Let me know of ongoing projects and
+todo's that I've forgotten....
+
+--b.
