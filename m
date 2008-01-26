@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbYAZNIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbYAZNPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbYAZNIS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 08:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYAZNIG
+	id S1755117AbYAZNPm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 08:15:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYAZNPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 08:08:06 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:62459 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752783AbYAZNIF (ORCPT
+	Sat, 26 Jan 2008 08:15:34 -0500
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:47465 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752886AbYAZNPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 08:08:05 -0500
-Date: Sat, 26 Jan 2008 08:07:49 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
-       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 01/23 -v6] printk - dont wakeup klogd with interrupts
- disabled
-In-Reply-To: <1201341126.27573.20.camel@lappy>
-Message-ID: <Pine.LNX.4.58.0801260804230.16244@gandalf.stny.rr.com>
-References: <20080126042152.526086719@goodmis.org>  <20080126042801.280369398@goodmis.org>
-  <20080126091015.GA1794@elf.ucw.cz> <1201341126.27573.20.camel@lappy>
+	Sat, 26 Jan 2008 08:15:34 -0500
+X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Jan 2008 08:15:33 EST
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAFK+mkd5LXfi/2dsb2JhbAAIkXObHQ
+X-IronPort-AV: E=Sophos;i="4.25,254,1199626200"; 
+   d="scan'208";a="29503631"
+Message-ID: <479B313F.7050406@solinnov.com.au>
+Date: Sat, 26 Jan 2008 23:40:23 +1030
+From: Sanka Piyaratna <sanka@solinnov.com.au>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: Custom PCIe Device Driver 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Everyone,
 
-On Sat, 26 Jan 2008, Peter Zijlstra wrote:
-> >
-> > I guess you are going to kill me... but
-> >
-> > CPU0					CPU1
-> > if (!runqueue_is_locked()) {
-> > 					locks runqueue
-> > 	wake_up_klogd
-> >
-> > ....and we are dead. What is needed here is
-> > "wake_up_klogd_if_you_can()" or something, that does trylock (atomic).
-> >
-> > ....but even this version is better than status quo, I'd say.
->
-> Well, if cpu1 holds the lock, and cpu0 wants it, there should only be
-> contention, I'm not seeing how this would deadlock.
->
-> The deadlock problem was when cpu0 was already holding the rq->lock and
-> wants to take it again.
+I am currently developing a custom PCIe device and the Linux kernel 
+driver for this. I am able to use the device as a character device with 
+PIO and now I am working on getting the DMA to work. I have implemented 
+2 BARs (BAR0 - mem and BAR5 - mem) in the PCIe device. I have 
+implemented the DMA in my custom device firmware to transfer a block of 
+memory via the PCIe bus and now trying to get this to work with the 
+device driver.
 
-Correct. The only race that this patch has is that there's a slight chance
-you wont wake up the klogd when you could.
+As I understand it, I can get hold of the PCI bus to become the bus 
+master and then initiate the DMA transfer from my device. However, I 
+don't understand how I can specify within my kernel driver how to 
+specify which BAR to use.
 
-  CPU0 						CPU1
+Does this mean when I initiate a transfer from the hardware, the memory 
+get transferred into the location allocated by by  pci_map_single() 
+function regardless of which BAR the memory comes from? or do I need to 
+specify the BAR using a mask?
 
-					locks_runqueue(cpu0)
+Would some one be able to point me to an example code please?
 
-  if (!runqueue_is_locked())
-     [fails and klogd not woken]
+Thanks and Regards,
 
-
-But this is rare and pretty harmless. But it can be trivally fixed and
-should be. But I'll rename the API to
-
-   current_has_runqueue_lock()
-
-This way we know exactly why it returns what it returns.
-
--- Steve
-
+Sanka
