@@ -1,82 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbYAZRMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbYAZRSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755711AbYAZRMB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 12:12:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbYAZRLy
+	id S1755466AbYAZRSU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 12:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYAZRSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 12:11:54 -0500
-Received: from mail.syneticon.net ([213.239.212.131]:47939 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342AbYAZRLx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 12:11:53 -0500
-Message-ID: <479B69D2.5050603@wpkg.org>
-Date: Sat, 26 Jan 2008 18:11:46 +0100
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Sat, 26 Jan 2008 12:18:10 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:34315 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752841AbYAZRSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 12:18:09 -0500
+Date: Sat, 26 Jan 2008 17:18:03 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: mingo@elte.hu, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       apw@shadowen.org, kosaki.motohiro@gmail.com
+Subject: Re: [PATCH 0/2] Relax restrictions on setting CONFIG_NUMA on x86
+Message-ID: <20080126171803.GA29252@csn.ul.ie>
+References: <20080118153529.12646.5260.sendpatchset@skynet.skynet.ie> <20080121093702.8FC2.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080123105810.F295.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080123102332.GB21455@csn.ul.ie> <2f11576a0801260610m29f4e7ecle9828d8bbaa462cd@mail.gmail.com>
 MIME-Version: 1.0
-To: toralf.foerster@gmx.de
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: (ondemand) CPU governor  regression between 2.6.23 and 2.6.24
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <2f11576a0801260610m29f4e7ecle9828d8bbaa462cd@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Toralf Förster wrote:
-
-> I use a 1-liner for a simple performance check : "time factor 819734028463158891"
-> Here is the result for the new (Gentoo) kernel 2.6.24:
+On (26/01/08 23:10), KOSAKI Motohiro didst pronounce:
+> Hi Mel
 > 
-> With the  ondemand governor of the  I get:
 > 
-> tfoerste@n22 ~/tmp $ time factor 819734028463158891
-> 819734028463158891: 3 273244676154386297
+> >To rule it out, can you also try with the patch below applied please? It
+> >should only make a difference on sparsemem so if discontigmem is still
+> >crashing, there is likely another problem. Assuming it crashes, please
+> >post the full dmesg output with loglevel=8 on the command line. Thanks
 > 
-> real    0m32.997s
-> user    0m15.732s
-> sys     0m0.014s
+> I buy reverse serial cable today.
+> and I test again.
 > 
-> With the ondemand governor the CPU runs at 600 MHz,
-> whereas with the performance governor I get :
-> 
-> tfoerste@n22 ~/tmp $ time factor 819734028463158891
-> 819734028463158891: 3 273244676154386297
-> 
-> real    0m10.893s
-> user    0m5.444s
-> sys     0m0.000s
-> 
-> (~5.5 sec as I expected) b/c the CPU is set to 1.7 GHz.
-> 
-> The ondeman governor of previous kernel versions however automatically increased
-> the CPU speed from 600 MHz to 1.7 GHz.
-> 
-> My system is a ThinkPad T41, I'll attach the .config 
 
-During the test, run top, and watch your CPU usage. Does it go above 80% 
-(the default for 
-/sys/devices/system/cpu/cpu0/cpufreq/ondemand/up_threshold).
+Great
 
-ondemand CPUfreq governor has a few tunables, described in 
-Documentation/cpu-freq. One of them is up_threshold:
+> my patch stack is
+>   2.6.24-rc7 +
+>   http://lkml.org/lkml/2007/8/24/220 +
 
-up_threshold: defines what the average CPU usaged between the samplings
-of 'sampling_rate' needs to be for the kernel to make a decision on
-whether it should increase the frequency. For example when it is set
-to its default value of '80' it means that between the checking
-intervals the CPU needs to be on average more than 80% in use to then
-decide that the CPU frequency needs to be increased.
+Can you replace this patch with the patch below instead and try again
+please? This is the patch that is actually in git-x86. Out of
+curiousity, have you tried the latest mm branch from git-x86?
 
-What CPUFreq processor driver are you using?
-
-
-I had a similar problem with CPUfreq and dm-crypt (slow reads), see 
-(more setup problem than something kernel-related):
-
-http://blog.wpkg.org/2008/01/22/cpufreq-and-dm-crypt-performance-problems/
-
+commit c824d2f33bf41e806cc975e659a711ba14927b62
+diff --git a/arch/x86/mm/discontig_32.c b/arch/x86/mm/discontig_32.c
+index 88a7499..9f1d02c 100644
+--- a/arch/x86/mm/discontig_32.c
++++ b/arch/x86/mm/discontig_32.c
+@@ -268,6 +268,7 @@ unsigned long __init setup_memory(void)
+ {
+ 	int nid;
+ 	unsigned long system_start_pfn, system_max_low_pfn;
++	unsigned long wasted_pages;
+ 
+ 	/*
+ 	 * When mapping a NUMA machine we allocate the node_mem_map arrays
+@@ -292,7 +293,14 @@ unsigned long __init setup_memory(void)
+ 		kva_start_pfn = PFN_DOWN(initrd_start - PAGE_OFFSET)
+ 			- kva_pages;
+ #endif
+-	kva_start_pfn -= kva_start_pfn & (PTRS_PER_PTE-1);
++
++	/*
++	 * We waste pages past at the end of the KVA for no good reason other
++	 * than how it is located. This is bad.
++	 */
++	wasted_pages = kva_start_pfn & (PTRS_PER_PTE-1);
++	kva_start_pfn -= wasted_pages;
++	kva_pages += wasted_pages;
+ 
+ 	system_max_low_pfn = max_low_pfn = find_max_low_pfn();
+ 	printk("kva_start_pfn ~ %ld find_max_low_pfn() ~ %ld\n",
+@@ -345,7 +353,8 @@ unsigned long __init setup_memory(void)
+ 
+ void __init numa_kva_reserve(void)
+ {
+-	reserve_bootmem(PFN_PHYS(kva_start_pfn),PFN_PHYS(kva_pages));
++	if (kva_pages)
++		reserve_bootmem(PFN_PHYS(kva_start_pfn), PFN_PHYS(kva_pages));
+ }
+ 
+ void __init zone_sizes_init(void)
 
 -- 
-Tomasz Chmielewski
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
