@@ -1,50 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbYAZTLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbYAZTRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbYAZTLP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 14:11:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYAZTLD
+	id S1754621AbYAZTRT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 14:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYAZTRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 14:11:03 -0500
-Received: from verein.lst.de ([213.95.11.210]:45564 "EHLO verein.lst.de"
+	Sat, 26 Jan 2008 14:17:09 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51346 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbYAZTLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 14:11:00 -0500
-Date: Sat, 26 Jan 2008 20:10:41 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [RFC] ext3 freeze feature
-Message-ID: <20080126191041.GA5233@lst.de>
-References: <20080125195938t-sato@mail.jp.nec.com> <84144f020801250317pbdafc4fnd47cc8a297194e86@mail.gmail.com> <001c01c85f4f$bfd128f0$41a8400a@bsd.tnes.nec.co.jp>
+	id S1751846AbYAZTRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 14:17:08 -0500
+Date: Sat, 26 Jan 2008 20:17:17 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [Patch] Shut up warnings from files under drivers/
+Message-ID: <20080126191717.GA25701@uranus.ravnborg.org>
+References: <20080126093007.GB20935@hacking> <479B03AE.3090600@garzik.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <001c01c85f4f$bfd128f0$41a8400a@bsd.tnes.nec.co.jp>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+In-Reply-To: <479B03AE.3090600@garzik.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 09:42:30PM +0900, Takashi Sato wrote:
-> Hi,
+On Sat, Jan 26, 2008 at 04:55:58AM -0500, Jeff Garzik wrote:
+> WANG Cong wrote:
+> >diff --git a/drivers/video/kyro/fbdev.c b/drivers/video/kyro/fbdev.c
+> >index acb9370..437ebd0 100644
+> >--- a/drivers/video/kyro/fbdev.c
+> >+++ b/drivers/video/kyro/fbdev.c
+> >@@ -90,7 +90,9 @@ static int nomtrr __devinitdata = 0;
+> > 
+> > /* PCI driver prototypes */
+> > static int kyrofb_probe(struct pci_dev *pdev, const struct pci_device_id 
+> > *ent);
+> >+#if defined(MODULE) || defined(CONFIG_HOTPLUG)
+> > static void kyrofb_remove(struct pci_dev *pdev);
+> >+#endif
+> > 
+> > static struct fb_videomode kyro_modedb[] __devinitdata = {
+> > 	{
+> >@@ -754,6 +756,7 @@ out_unmap:
+> > 	return -EINVAL;
+> > }
+> > 
+> >+#if defined(MODULE) || defined(CONFIG_HOTPLUG)
+> > static void __devexit kyrofb_remove(struct pci_dev *pdev)
+> > {
+> > 	struct fb_info *info = pci_get_drvdata(pdev);
+> >@@ -783,6 +786,7 @@ static void __devexit kyrofb_remove(struct pci_dev 
+> >*pdev)
+> > 	pci_set_drvdata(pdev, NULL);
+> > 	framebuffer_release(info);
+> > }
+> >+#endif
 > 
-> >I am also wondering whether we should have system call(s) for these:
-> >
-> >On Jan 25, 2008 12:59 PM, Takashi Sato <t-sato@yk.jp.nec.com> wrote:
-> >>+       case EXT3_IOC_FREEZE: {
-> >
-> >>+       case EXT3_IOC_THAW: {
-> >
-> >And just convert XFS to use them too?
 > 
-> I think it is reasonable to implement it as the generic system call, as you 
-> said.
-> Does XFS folks think so?
+> Quite strange -- due to __devexit_p() and the __devexit marker, ifdefs 
+> should not be needed.
+> 
+> I would look into why that isn't working as designed in these cases...
 
-Given that XFS has implemented the ioctls for such a long time it might
-make more sense to simply move the ioctl implementation to fs/ioctl.c
-so it applies to all filesystem.  No need to add a new syscall when the
-equivalent-functionality ioctls have to be supported forever anyway.
+I checked up on the synclink.c warning.
+We have the following code:
+
+static void synclink_remove_one (struct pci_dev *dev);
+
+...
+
+static struct pci_driver synclink_pci_driver = {
+        .remove         = __devexit_p(synclink_remove_one),
+};
+
+...
+
+static void __devexit synclink_remove_one (struct pci_dev *dev)
+{
+}
+
+And I double checked the preprocessed source to check
+that we applied the __attribute__((__used__)) to the function.
+
+Investigating a bit more I realized that gcc looses the
+__used__ attribution due to the prototype.
+So there are two correct fixes:
+a) move the function up so we do not need the forward
+   declaration
+b) add a __devexit to the forward decalration too.
+
+I strongly prefer the first version and this is the
+correct fix for these cases.
+
+Do we have a gcc bug here - I did not see a definitive answer in gcc docs?
+
+	Sam
