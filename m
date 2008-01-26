@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbYAZMFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYAZMcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755264AbYAZMFP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 07:05:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbYAZMFD
+	id S1754566AbYAZMcq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 07:32:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYAZMcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 07:05:03 -0500
-Received: from py-out-1112.google.com ([64.233.166.182]:46381 "EHLO
+	Sat, 26 Jan 2008 07:32:36 -0500
+Received: from py-out-1112.google.com ([64.233.166.177]:10479 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751720AbYAZMFB (ORCPT
+	with ESMTP id S1752683AbYAZMce (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 07:05:01 -0500
+	Sat, 26 Jan 2008 07:32:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OG3aN4DwomyKgMQhO2aO66P/ws4PL4hkaKTCHDgck7nrbX1hOCoZkIu4PMLF0pAAdQXLWuIvj17MVWv5rZraa9CxxV3ffbpFJsxww1ZVsZmcLnnU6NAfL8XcW2IpnCo3dG2RCVce5xNw4IfmRiMnm9Q3xiceOW4F0g2xWQItIjc=
-Message-ID: <bc64b4640801260405g47852340pb17f38e96f2f2f24@mail.gmail.com>
-Date: Sat, 26 Jan 2008 15:05:00 +0300
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Dmitry Baryshkov" <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH 1/6] Core driver for WM97xx touchscreens
-In-Reply-To: <20080126114740.GA7598@sirena.org.uk>
+        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=RIku51eQYM6Il6N9iMRYepSZnXHKA53B79QtjxPcLOoWzfu6vNjpzPJQtvm4yLyQabsugRVl3hnKeqtB0aJKZxrvvPsafYhsPPDkVwIGIwcuRoooSkFBBRDpeRSYquNi5OcPvH7rglDBJBXABRUnaS07f9mjSNyJUQVg+ML6Vyg=
+Message-ID: <2f11576a0801260432y4405d817p6ef4005d06189654@mail.gmail.com>
+Date: Sat, 26 Jan 2008 21:32:32 +0900
+From: "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
+To: "Theodore Tso" <tytso@mit.edu>, "Adrian Bunk" <bunk@kernel.org>,
+       "Bodo Eggert" <7eggert@gmx.de>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Andreas Dilger" <adilger@sun.com>, Valdis.Kletnieks@vt.edu,
+       "David Chinner" <dgc@sgi.com>, "Valerie Henson" <val@vahconsulting.com>,
+       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Andreas Dilger" <adilger@clusterfs.com>,
+       "Ric Wheeler" <ric@emc.com>
+Subject: Re: [RFC] Parallelize IO for e2fsck
+In-Reply-To: <20080124234037.GJ15858@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080121152402.GA7518@rakim.wolfsonmicro.main>
-	 <1200929100-17224-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <fnf084$ju9$1@ger.gmane.org> <fnf1d8$n6i$1@ger.gmane.org>
-	 <20080126114740.GA7598@sirena.org.uk>
+References: <9Mo9w-7Ws-25@gated-at.bofh.it> <9Mo9w-7Ws-23@gated-at.bofh.it>
+	 <9OdWm-7uN-25@gated-at.bofh.it> <9Oi9A-5EJ-3@gated-at.bofh.it>
+	 <9OiMg-6IC-1@gated-at.bofh.it> <9OlqL-2xG-3@gated-at.bofh.it>
+	 <9Orda-3ub-45@gated-at.bofh.it>
+	 <E1JI5vz-0001GG-Vs@be1.7eggert.dyndns.org>
+	 <20080124230809.GA29120@does.not.exist>
+	 <20080124234037.GJ15858@mit.edu>
+X-Google-Sender-Auth: d5adcb8f240d854a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/1/26, Mark Brown <broonie@opensource.wolfsonmicro.com>:
-> On Sat, Jan 26, 2008 at 10:18:16AM +0000, Dmitry Baryshkov wrote:
+> > And from a performance point of view letting applications voluntarily
+> > free some memory is better even than starting to swap.
 >
-> > Please apply this patch.
->
-> Done, thanks.
->
-> >                          BTW: Could you please also add me to the "CC" list
-> > of this patch serie?
->
-> Sure.
->
+> Absolutely.
 
-Thanks!
+the mem_notify patch can realize "just before starting swapping" notification :)
 
-
--- 
-With best wishes
-Dmitry
+to be honest, I don't know fs guys requirement.
+if lacking feature of fs guys needed, I implement it with presure if
+you tell me it.
