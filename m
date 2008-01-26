@@ -1,63 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbYAZIWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbYAZInM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588AbYAZIWE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 03:22:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYAZIVy
+	id S1754511AbYAZInM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 03:43:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYAZInA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 03:21:54 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:34197 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752569AbYAZIVw (ORCPT
+	Sat, 26 Jan 2008 03:43:00 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:45608 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbYAZIm7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 03:21:52 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=z1qhWqpATTwVGoYhKf+n9HnDCZ/AQOcoGwRRotIc2KUGLrQcR1z1y3MbOFB7eleDUBWj93qITCGds8bVzo/A4CTfCYFFfesiMSIFUuMppV9U53siDuG8V95fafBCn0Kro8LvPpaR0VqDYUPFYnUa+O/7ltnkeDDV5QH2zF/CfWI=  ;
-X-YMail-OSG: HdE.jbkVM1m1n8pM1Am8j8X64Tp5GU3AZm4StDU5k6wwshqUrIiGl8.JRRlngWxz75AjlL6W2Q--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: romlinux@gmail.com
-Subject: Re: [PATCH] Moving spinlock to struct usb_hcd
-Date: Sat, 26 Jan 2008 00:21:50 -0800
-User-Agent: KMail/1.9.6
-Cc: greg@kroah.com, stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <1201329041.5807.20.camel@maxwell>
-In-Reply-To: <1201329041.5807.20.camel@maxwell>
+	Sat, 26 Jan 2008 03:42:59 -0500
+Date: Sat, 26 Jan 2008 14:12:47 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH 36/49] ext4: Add EXT4_IOC_MIGRATE ioctl
+Message-ID: <20080126084247.GA6778@skywalker>
+References: <1200970948-17903-31-git-send-email-tytso@mit.edu> <1200970948-17903-32-git-send-email-tytso@mit.edu> <1200970948-17903-33-git-send-email-tytso@mit.edu> <1200970948-17903-34-git-send-email-tytso@mit.edu> <1200970948-17903-35-git-send-email-tytso@mit.edu> <1200970948-17903-36-git-send-email-tytso@mit.edu> <1200970948-17903-37-git-send-email-tytso@mit.edu> <20080123140716.e6f5d14f.akpm@linux-foundation.org> <20080124055532.GC7902@skywalker> <20080126041500.GA28889@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801260021.50786.david-b@pacbell.net>
+In-Reply-To: <20080126041500.GA28889@mit.edu>
+User-Agent: Mutt/1.5.17 (2007-12-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 January 2008, Romit Dasgupta wrote:
-> This should help
-> reduce contention to usb during high load where i/o is happening  to
-> multiple hcds.
+On Fri, Jan 25, 2008 at 11:15:00PM -0500, Theodore Tso wrote:
+> On Thu, Jan 24, 2008 at 11:25:32AM +0530, Aneesh Kumar K.V wrote:
+> > +static int free_ext_idx(handle_t *handle, struct inode *inode,
+> > +					struct ext4_extent_idx *ix)
+> > +{
+> > +	int i, retval = 0;
+> > +	ext4_fsblk_t block;
+> > +	struct buffer_head *bh;
+> > +	struct ext4_extent_header *eh;
+> > +
+> > +	block = idx_pblock(ix);
+> > +	bh = sb_bread(inode->i_sb, block);
+> > +	if (!bh)
+> > +		return -EIO;
+> > +
+> > +	eh = (struct ext4_extent_header *)bh->b_data;
+> > +	if (eh->eh_depth == 0) {
+> > +		brelse(bh);
+> > +		ext4_free_blocks(handle, inode, block, 1);
+> > +	} else {
+> > +		ix = EXT_FIRST_INDEX(eh);
+> > +		for (i = 0; i < le16_to_cpu(eh->eh_entries); i++, ix++) {
+> > +			retval = free_ext_idx(handle, inode, ix);
+> > +			if (retval)
+> > +				return retval;
+> > +		}
+> > +	}
+> > +	return retval;
+> > +}
+> 
+> Aneesh, looks like if eh->eh_depth is != 0, bh gets leaked.  This is
+> how I plan to fix it up:
+> 
+> +static int free_ext_idx(handle_t *handle, struct inode *inode,
+> +					struct ext4_extent_idx *ix)
+> +{
+> +	int i, retval = 0;
+> +	ext4_fsblk_t block;
+> +	struct buffer_head *bh;
+> +	struct ext4_extent_header *eh;
+> +
+> +	block = idx_pblock(ix);
+> +	bh = sb_bread(inode->i_sb, block);
+> +	if (!bh)
+> +		return -EIO;
+> +
+> +	eh = (struct ext4_extent_header *)bh->b_data;
+> +	if (eh->eh_depth == 0)
+> +		ext4_free_blocks(handle, inode, block, 1);
+> +	else {
+> +		ix = EXT_FIRST_INDEX(eh);
+> +		for (i = 0; i < le16_to_cpu(eh->eh_entries); i++, ix++) {
+> +			retval = free_ext_idx(handle, inode, ix);
+> +			if (retval)
+> +				break;
+> +		}
+> +	}
+> +	put_bh(bh);
 
-Looking at how this lock is used, contention doesn't look likely
-to be an issue.  It's never held for long ...
 
-> @@ -1106,9 +1103,9 @@ EXPORT_SYMBOL_GPL(usb_hcd_check_unlink_urb);
->  void usb_hcd_unlink_urb_from_ep(struct usb_hcd *hcd, struct urb *urb)
->  {
->         /* clear all state linking urb to this dev (and hcd) */
-> -       spin_lock(&hcd_urb_list_lock);
-> +       spin_lock(&hcd->hcd_urb_list_lock);
->         list_del_init(&urb->urb_list);
-> -       spin_unlock(&hcd_urb_list_lock);
-> +       spin_unlock(&hcd->hcd_urb_list_lock);
->  }
->  EXPORT_SYMBOL_GPL(usb_hcd_unlink_urb_from_ep);
->  
+We need to mark the index block as free.
+ via ext4_free_blocks(handle, inode, block, 1);
 
-Do you have any proof that contention is an actual problem?
-Because otherwise I see no benefit to such a change.
+I remember making this change. May be it was related to dind/tind
+blocks. 
 
-- Dave
- 
+
+-aneesh
+
+
