@@ -1,858 +1,553 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757029AbYAZAuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbYAZAvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757029AbYAZAuv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 19:50:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYAZAul
+	id S1759393AbYAZAvX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 19:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbYAZAvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 19:50:41 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:33039 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754059AbYAZAuj (ORCPT
+	Fri, 25 Jan 2008 19:51:04 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:45958 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758340AbYAZAu4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 19:50:39 -0500
-Message-ID: <479A83DE.8020002@davidnewall.com>
-Date: Sat, 26 Jan 2008 11:20:38 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Willy Tarreau <w@1wt.eu>
-Subject: [PATCH] 2.4: Back-port of pl2303.c from 2.6.23.14
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 Jan 2008 19:50:56 -0500
+Subject: [GIT PATCH] SCSI updates for 2.6.24 (part 1)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 25 Jan 2008 18:50:49 -0600
+Message-Id: <1201308650.3119.92.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I experienced major major data loss on a PL-2303 USB-serial converter
-under 2.4.36, which I remedied by back-porting the pl2303.c from the
-latest 2.6 kernel tree.
+We have a difficult merge this time; the SCSI tree is split between
+components that can go now and pieces that are waiting on other trees.
+Part 1 is the components that can go now ... you'll be getting part 2
+towards the end of the merge window.
 
----
+There's misc driver updates, the accessor conversions (peparation for
+large scatterlists) and tons of other misc updates.
 
-diff -u linux-2.4.36/drivers/usb/serial/pl2303.c.orig linux-2.4.36/drivers/usb/serial/pl2303.c
---- pl2303.c.orig	2008-01-01 22:36:40.000000000 +1030
-+++ pl2303.c	2008-01-26 05:32:00.000000000 +1030
-@@ -1,17 +1,20 @@
- /*
-  * Prolific PL2303 USB to serial adaptor driver
-  *
-- * Copyright (C) 2001-2003 Greg Kroah-Hartman (greg@kroah.com)
-+ * Copyright (C) 2001-2007 Greg Kroah-Hartman (greg@kroah.com)
-  * Copyright (C) 2003 IBM Corp.
-  *
-  * Original driver for 2.2.x by anonymous
-  *
-- *	This program is free software; you can redistribute it and/or modify
-- *	it under the terms of the GNU General Public License as published by
-- *	the Free Software Foundation; either version 2 of the License, or
-- *	(at your option) any later version.
-+ *	This program is free software; you can redistribute it and/or
-+ *	modify it under the terms of the GNU General Public License version
-+ *	2 as published by the Free Software Foundation.
-  *
-  * See Documentation/usb/usb-serial.txt for more information on using this driver
-+ * 2007_Jan_25 dn
-+ *	Back-port pl2303.c from linux-2.6.23.14 - corrects major loss of
-+ *	transmitted data, plus minor loss during close. davidn@davidnewall.com.
-+ *
-  * 2003_Apr_24 gkh
-  *	Added line error reporting support.  Hopefully it is correct...
-  *
-@@ -33,6 +36,9 @@
-  * 
-  */
- 
-+/* TODO first char sent is lost on second open of device.  anecdotal evidence
-+ * TODO suggests this might be on all even opens of device. dn. */
-+
- #include <linux/config.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
-@@ -59,31 +65,60 @@
- /*
-  * Version Information
-  */
--#define DRIVER_VERSION "v0.10.1"	/* Takes from 2.6's */
- #define DRIVER_DESC "Prolific PL2303 USB to serial adaptor driver"
- 
-+#define PL2303_CLOSING_WAIT	(30*HZ)
- 
-+#define PL2303_BUF_SIZE		1024
-+#define PL2303_TMP_BUF_SIZE	1024
-+
-+struct pl2303_buf {
-+	unsigned int	buf_size;
-+	char		*buf_buf;
-+	char		*buf_get;
-+	char		*buf_put;
-+};
- 
- static struct usb_device_id id_table [] = {
- 	{ USB_DEVICE(PL2303_VENDOR_ID, PL2303_PRODUCT_ID) },
- 	{ USB_DEVICE(PL2303_VENDOR_ID, PL2303_PRODUCT_ID_RSAQ2) },
-+	{ USB_DEVICE(PL2303_VENDOR_ID, PL2303_PRODUCT_ID_DCU11) },
-+	{ USB_DEVICE(PL2303_VENDOR_ID, PL2303_PRODUCT_ID_RSAQ3) },
-+	{ USB_DEVICE(PL2303_VENDOR_ID, PL2303_PRODUCT_ID_PHAROS) },
- 	{ USB_DEVICE(IODATA_VENDOR_ID, IODATA_PRODUCT_ID) },
- 	{ USB_DEVICE(ATEN_VENDOR_ID, ATEN_PRODUCT_ID) },
- 	{ USB_DEVICE(ATEN_VENDOR_ID2, ATEN_PRODUCT_ID) },
- 	{ USB_DEVICE(ELCOM_VENDOR_ID, ELCOM_PRODUCT_ID) },
-+	{ USB_DEVICE(ELCOM_VENDOR_ID, ELCOM_PRODUCT_ID_UCSGT) },
- 	{ USB_DEVICE(ITEGNO_VENDOR_ID, ITEGNO_PRODUCT_ID) },
-+	{ USB_DEVICE(ITEGNO_VENDOR_ID, ITEGNO_PRODUCT_ID_2080) },
- 	{ USB_DEVICE(MA620_VENDOR_ID, MA620_PRODUCT_ID) },
- 	{ USB_DEVICE(RATOC_VENDOR_ID, RATOC_PRODUCT_ID) },
- 	{ USB_DEVICE(TRIPP_VENDOR_ID, TRIPP_PRODUCT_ID) },
- 	{ USB_DEVICE(RADIOSHACK_VENDOR_ID, RADIOSHACK_PRODUCT_ID) },
- 	{ USB_DEVICE(DCU10_VENDOR_ID, DCU10_PRODUCT_ID) },
- 	{ USB_DEVICE(SITECOM_VENDOR_ID, SITECOM_PRODUCT_ID) },
-+	{ USB_DEVICE(ALCATEL_VENDOR_ID, ALCATEL_PRODUCT_ID) },
-+	{ USB_DEVICE(SAMSUNG_VENDOR_ID, SAMSUNG_PRODUCT_ID) },
-+	{ USB_DEVICE(SIEMENS_VENDOR_ID, SIEMENS_PRODUCT_ID_SX1) },
-+	{ USB_DEVICE(SIEMENS_VENDOR_ID, SIEMENS_PRODUCT_ID_X65) },
-+	{ USB_DEVICE(SIEMENS_VENDOR_ID, SIEMENS_PRODUCT_ID_X75) },
-+	{ USB_DEVICE(SYNTECH_VENDOR_ID, SYNTECH_PRODUCT_ID) },
-+	{ USB_DEVICE(NOKIA_CA42_VENDOR_ID, NOKIA_CA42_PRODUCT_ID) },
-+	{ USB_DEVICE(CA_42_CA42_VENDOR_ID, CA_42_CA42_PRODUCT_ID) },
-+	{ USB_DEVICE(SAGEM_VENDOR_ID, SAGEM_PRODUCT_ID) },
-+	{ USB_DEVICE(LEADTEK_VENDOR_ID, LEADTEK_9531_PRODUCT_ID) },
-+	{ USB_DEVICE(SPEEDDRAGON_VENDOR_ID, SPEEDDRAGON_PRODUCT_ID) },
-+	{ USB_DEVICE(DATAPILOT_U2_VENDOR_ID, DATAPILOT_U2_PRODUCT_ID) },
-+	{ USB_DEVICE(BELKIN_VENDOR_ID, BELKIN_PRODUCT_ID) },
-+	{ USB_DEVICE(ALCOR_VENDOR_ID, ALCOR_PRODUCT_ID) },
-+	{ USB_DEVICE(HUAWEI_VENDOR_ID, HUAWEI_PRODUCT_ID) },
-+	{ USB_DEVICE(WS002IN_VENDOR_ID, WS002IN_PRODUCT_ID) },
- 	{ }					/* Terminating entry */
- };
- 
- MODULE_DEVICE_TABLE (usb, id_table);
- 
--
- #define SET_LINE_REQUEST_TYPE		0x21
- #define SET_LINE_REQUEST		0x20
- 
-@@ -164,6 +199,8 @@
- 
- struct pl2303_private {
- 	spinlock_t lock;
-+	struct pl2303_buf *buf;
-+	int write_urb_in_use;
- 	wait_queue_head_t delta_msr_wait;
- 	u8 line_control;
- 	u8 line_status;
-@@ -171,6 +208,175 @@
- 	enum pl2303_type type;
- };
- 
-+/*
-+ * pl2303_buf_alloc
-+ *
-+ * Allocate a circular buffer and all associated memory.
-+ */
-+static struct pl2303_buf *pl2303_buf_alloc(unsigned int size)
-+{
-+	struct pl2303_buf *pb;
-+
-+	if (size == 0)
-+		return NULL;
-+
-+	pb = kmalloc(sizeof(struct pl2303_buf), GFP_KERNEL);
-+	if (pb == NULL)
-+		return NULL;
-+
-+	pb->buf_buf = kmalloc(size, GFP_KERNEL);
-+	if (pb->buf_buf == NULL) {
-+		kfree(pb);
-+		return NULL;
-+	}
-+
-+	pb->buf_size = size;
-+	pb->buf_get = pb->buf_put = pb->buf_buf;
-+
-+	return pb;
-+}
-+
-+/*
-+ * pl2303_buf_free
-+ *
-+ * Free the buffer and all associated memory.
-+ */
-+static void pl2303_buf_free(struct pl2303_buf *pb)
-+{
-+	if (pb) {
-+		kfree(pb->buf_buf);
-+		kfree(pb);
-+	}
-+}
-+
-+/*
-+ * pl2303_buf_clear
-+ *
-+ * Clear out all data in the circular buffer.
-+ */
-+static void pl2303_buf_clear(struct pl2303_buf *pb)
-+{
-+	if (pb != NULL)
-+		pb->buf_get = pb->buf_put;
-+		/* equivalent to a get of all data available */
-+}
-+
-+/*
-+ * pl2303_buf_data_avail
-+ *
-+ * Return the number of bytes of data available in the circular
-+ * buffer.
-+ */
-+static unsigned int pl2303_buf_data_avail(struct pl2303_buf *pb)
-+{
-+	if (pb == NULL)
-+		return 0;
-+
-+	return ((pb->buf_size + pb->buf_put - pb->buf_get) % pb->buf_size);
-+}
-+
-+/*
-+ * pl2303_buf_space_avail
-+ *
-+ * Return the number of bytes of space available in the circular
-+ * buffer.
-+ */
-+static unsigned int pl2303_buf_space_avail(struct pl2303_buf *pb)
-+{
-+	if (pb == NULL)
-+		return 0;
-+
-+	return ((pb->buf_size + pb->buf_get - pb->buf_put - 1) % pb->buf_size);
-+}
-+
-+static int copy_in(char *dest, int from_user, const char *source, unsigned count)
-+{
-+	if (!from_user)
-+		memcpy (dest, source, count);
-+	else if (copy_from_user (dest, source, count))
-+		return -EFAULT;
-+	return count;
-+}
-+
-+/*
-+ * pl2303_buf_put
-+ *
-+ * Copy data data from a user buffer and put it into the circular buffer.
-+ * Restrict to the amount of space available.
-+ *
-+ * Return the number of bytes copied.
-+ */
-+static unsigned int pl2303_buf_put(struct pl2303_buf *pb, int from_user, const char *buf, unsigned int count)
-+{
-+	unsigned int len;
-+
-+	if (pb == NULL)
-+		return 0;
-+
-+	len  = pl2303_buf_space_avail(pb);
-+	if (count > len)
-+		count = len;
-+
-+	if (count == 0)
-+		return 0;
-+
-+	len = pb->buf_buf + pb->buf_size - pb->buf_put;
-+	if (count > len) {
-+		if (copy_in(pb->buf_put, from_user, buf, len) < 0)
-+			return -EFAULT;
-+ 		if (copy_in(pb->buf_buf, from_user, buf+len, count - len) < 0)
-+			return -EFAULT;
-+		pb->buf_put = pb->buf_buf + count - len;
-+	} else {
-+		if (copy_in(pb->buf_put, from_user, buf, count) < 0)
-+			return -EFAULT;
-+		if (count < len)
-+			pb->buf_put += count;
-+		else /* count == len */
-+			pb->buf_put = pb->buf_buf;
-+	}
-+
-+	return count;
-+}
-+
-+/*
-+ * pl2303_buf_get
-+ *
-+ * Get data from the circular buffer and copy to the given buffer.
-+ * Restrict to the amount of data available.
-+ *
-+ * Return the number of bytes copied.
-+ */
-+static unsigned int pl2303_buf_get(struct pl2303_buf *pb, char *buf,
-+				   unsigned int count)
-+{
-+	unsigned int len;
-+
-+	if (pb == NULL)
-+		return 0;
-+
-+	len = pl2303_buf_data_avail(pb);
-+	if (count > len)
-+		count = len;
-+
-+	if (count == 0)
-+		return 0;
-+
-+	len = pb->buf_buf + pb->buf_size - pb->buf_get;
-+	if (count > len) {
-+		memcpy(buf, pb->buf_get, len);
-+		memcpy(buf+len, pb->buf_buf, count - len);
-+		pb->buf_get = pb->buf_buf + count - len;
-+	} else {
-+		memcpy(buf, pb->buf_get, count);
-+		if (count < len)
-+			pb->buf_get += count;
-+		else /* count == len */
-+			pb->buf_get = pb->buf_buf;
-+	}
-+
-+	return count;
-+}
- 
- static int pl2303_startup (struct usb_serial *serial)
- {
-@@ -191,14 +397,28 @@
- 	for (i = 0; i < serial->num_ports; ++i) {
- 		priv = kmalloc (sizeof (struct pl2303_private), GFP_KERNEL);
- 		if (!priv)
--			return -ENOMEM;
-+			goto cleanup;
- 		memset (priv, 0x00, sizeof (struct pl2303_private));
- 		spin_lock_init(&priv->lock);
-+		priv->buf = pl2303_buf_alloc(PL2303_BUF_SIZE);
-+		if (priv->buf == NULL) {
-+			kfree(priv);
-+			goto cleanup;
-+		}
- 		init_waitqueue_head(&priv->delta_msr_wait);
- 		usb_set_serial_port_data(&serial->port[i], priv);
- 		priv->type = type;
- 	}
- 	return 0;
-+
-+cleanup:
-+	for (--i; i>=0; --i) {
-+		priv = usb_get_serial_port_data(&serial->port[i]);
-+		pl2303_buf_free(priv->buf);
-+		kfree(priv);
-+		usb_set_serial_port_data(&serial->port[i], NULL);
-+	}
-+	return -ENOMEM;
- }
- 
- static int set_control_lines (struct usb_device *dev, u8 value)
-@@ -212,42 +432,65 @@
- 	return retval;
- }
- 
--static int pl2303_write (struct usb_serial_port *port, int from_user,  const unsigned char *buf, int count)
-+static void pl2303_send(struct usb_serial_port *port)
- {
--	int result;
-+	int count, result;
-+	struct pl2303_private *priv = usb_get_serial_port_data(port);
-+	unsigned long flags;
- 
--	dbg("%s - port %d, %d bytes", __FUNCTION__, port->number, count);
-+	dbg("%s - port %d", __FUNCTION__, port->number);
- 
--	if (!count)
--		return count;
-+	spin_lock_irqsave(&priv->lock, flags);
- 
--	if (port->write_urb->status == -EINPROGRESS) {
--		dbg("%s - already writing", __FUNCTION__);
--		return 0;
-+	if (priv->write_urb_in_use) {
-+		spin_unlock_irqrestore(&priv->lock, flags);
-+		return;
- 	}
- 
--	count = (count > port->bulk_out_size) ? port->bulk_out_size : count;
--	if (from_user) {
--		if (copy_from_user (port->write_urb->transfer_buffer, buf, count))
--			return -EFAULT;
--	} else {
--		memcpy (port->write_urb->transfer_buffer, buf, count);
-+	count = pl2303_buf_get(priv->buf, port->write_urb->transfer_buffer,
-+			       port->bulk_out_size);
-+
-+	if (count == 0) {
-+		spin_unlock_irqrestore(&priv->lock, flags);
-+		return;
- 	}
- 	
-+	priv->write_urb_in_use = 1;
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
- 	usb_serial_debug_data (__FILE__, __FUNCTION__, count, port->write_urb->transfer_buffer);
- 
- 	port->write_urb->transfer_buffer_length = count;
- 	port->write_urb->dev = port->serial->dev;
- 	result = usb_submit_urb (port->write_urb);
--	if (result)
-+	if (result) {
- 		err("%s - failed submitting write urb, error %d", __FUNCTION__, result);
--	else
--		result = count;
-+		priv->write_urb_in_use = 0;
-+		// TODO: reschedule pl2303_send
-+	}
- 
--	return result;
-+	wake_up_interruptible(&port->tty->write_wait);	/* this, at very least, wakes up pl2303_close */
- }
-+ 
-+static int pl2303_write (struct usb_serial_port *port, int from_user, const unsigned char *buf, int count)
-+{
-+	struct pl2303_private *priv = usb_get_serial_port_data(port);
-+	unsigned long flags;
- 
-+	dbg("%s - port %d, %d bytes", __FUNCTION__, port->number, count);
-+
-+	if (!count)
-+		return count;
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+	count = pl2303_buf_put(priv->buf, from_user, buf, count);
-+	spin_unlock_irqrestore(&priv->lock, flags);
- 
-+	pl2303_send(port);
-+
-+	return count;
-+}
- 
- static void pl2303_set_termios (struct usb_serial_port *port, struct termios *old_termios)
- {
-@@ -278,6 +521,7 @@
- 
- 	cflag = port->tty->termios->c_cflag;
- 	/* check that they really want us to change something */
-+	/* important to do this as even a null change can corrupt data in transit */
- 	if (old_termios) {
- 		if ((cflag == old_termios->c_cflag) &&
- 		    (RELEVANT_IFLAG(port->tty->termios->c_iflag) == RELEVANT_IFLAG(old_termios->c_iflag))) {
-@@ -299,7 +543,6 @@
- 	dbg ("0xa1:0x21:0:0  %d - %x %x %x %x %x %x %x", i,
- 	     buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6]);
- 
--
- 	if (cflag & CSIZE) {
- 		switch (cflag & CSIZE) {
- 			case CS5:	buf[6] = 5;	break;
-@@ -311,28 +554,7 @@
- 		dbg("%s - data bits = %d", __FUNCTION__, buf[6]);
- 	}
- 
--	baud = 0;
--	switch (cflag & CBAUD) {
--		case B0:	baud = 0;	break;
--		case B75:	baud = 75;	break;
--		case B150:	baud = 150;	break;
--		case B300:	baud = 300;	break;
--		case B600:	baud = 600;	break;
--		case B1200:	baud = 1200;	break;
--		case B1800:	baud = 1800;	break;
--		case B2400:	baud = 2400;	break;
--		case B4800:	baud = 4800;	break;
--		case B9600:	baud = 9600;	break;
--		case B19200:	baud = 19200;	break;
--		case B38400:	baud = 38400;	break;
--		case B57600:	baud = 57600;	break;
--		case B115200:	baud = 115200;	break;
--		case B230400:	baud = 230400;	break;
--		case B460800:	baud = 460800;	break;
--		default:
--			err ("pl2303 driver does not support the baudrate requested (fix it)");
--			break;
--	}
-+	baud = tty_get_baud_rate(port->tty);
- 	dbg("%s - baud = %d", __FUNCTION__, baud);
- 	if (baud) {
- 		buf[0] = baud & 0xff;
-@@ -410,6 +632,13 @@
- 				    VENDOR_WRITE_REQUEST_TYPE,
- 				    0x0, index, NULL, 0, 100);
- 		dbg ("0x40:0x1:0x0:0x%x  %d", index, i);
-+	} else {
-+		i = usb_control_msg(serial->dev,
-+				    usb_sndctrlpipe(serial->dev, 0),
-+				    VENDOR_WRITE_REQUEST,
-+				    VENDOR_WRITE_REQUEST_TYPE,
-+				    0x0, 0x0, NULL, 0, 100);
-+		dbg ("0x40:0x1:0x0:0x0  %d", i);
- 	}
- 
- 	kfree (buf);
-@@ -420,8 +649,8 @@
- {
- 	struct termios tmp_termios;
- 	struct usb_serial *serial = port->serial;
-+	struct pl2303_private *priv = usb_get_serial_port_data(port);
- 	unsigned char *buf;
--	struct pl2303_private *priv = port->private;
- 	int result;
- 
- 	if (port_paranoia_check (port, __FUNCTION__))
-@@ -429,8 +658,10 @@
- 		
- 	dbg("%s -  port %d", __FUNCTION__, port->number);
- 
--	usb_clear_halt(serial->dev, port->write_urb->pipe);
--	usb_clear_halt(serial->dev, port->read_urb->pipe);
-+	if (priv->type != HX) {
-+		usb_clear_halt(serial->dev, port->write_urb->pipe);
-+		usb_clear_halt(serial->dev, port->read_urb->pipe);
-+	}
- 
- 	buf = kmalloc(10, GFP_KERNEL);
- 	if (buf==NULL)
-@@ -500,10 +731,12 @@
- static void pl2303_close (struct usb_serial_port *port, struct file *filp)
- {
- 	struct usb_serial *serial;
--	struct pl2303_private *priv;
-+	struct pl2303_private *priv = usb_get_serial_port_data(port);
- 	unsigned long flags;
- 	unsigned int c_cflag;
- 	int result;
-+	long timeout;
-+	wait_queue_t wait;
- 
- 	if (port_paranoia_check (port, __FUNCTION__))
- 		return;
-@@ -513,6 +746,43 @@
- 	
- 	dbg("%s - port %d", __FUNCTION__, port->number);
- 
-+	/* wait for data to drain from the buffer */
-+	spin_lock_irqsave(&priv->lock, flags);
-+	timeout = PL2303_CLOSING_WAIT;
-+	init_waitqueue_entry(&wait, current);
-+	add_wait_queue(&port->tty->write_wait, &wait);
-+	for (;;) {
-+		dbg("%s - buf_data_avail %d",
-+		    __FUNCTION__, pl2303_buf_data_avail(priv->buf));
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		if (pl2303_buf_data_avail(priv->buf) == 0 ||
-+		    timeout == 0 || signal_pending(current))
-+			break;
-+		spin_unlock_irqrestore(&priv->lock, flags);
-+		timeout = schedule_timeout(timeout);
-+		spin_lock_irqsave(&priv->lock, flags);
-+	}
-+	set_current_state(TASK_RUNNING);
-+	remove_wait_queue(&port->tty->write_wait, &wait);
-+	/* clear out any remaining data in the buffer */
-+	pl2303_buf_clear(priv->buf);
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	/* wait for characters to drain from the device */
-+	/* (this is long enough for the entire 256 byte */
-+	/* pl2303 hardware buffer to drain with no flow */
-+	/* control for data rates of 1200 bps or more, */
-+	/* for lower rates we should really know how much */
-+	/* data is in the buffer to compute a delay */
-+	/* that is not unnecessarily long) */
-+	int bps = tty_get_baud_rate(port->tty);
-+	if (bps > 1200)
-+		timeout = max((HZ*2560)/bps,HZ/10);
-+	else
-+		timeout = 2*HZ;
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	schedule_timeout(timeout);
-+
- 	if (serial->dev) {
- 		if (port->tty) {
- 			c_cflag = port->tty->termios->c_cflag;
-@@ -700,34 +970,68 @@
- 		dbg("%s - error sending break = %d", __FUNCTION__, result);
- }
- 
--
- static void pl2303_shutdown (struct usb_serial *serial)
- {
- 	int i;
-+	struct pl2303_private *priv;
- 
- 	dbg("%s", __FUNCTION__);
- 
- 	for (i = 0; i < serial->num_ports; ++i) {
--		kfree (usb_get_serial_port_data(&serial->port[i]));
--		usb_set_serial_port_data(&serial->port[i], NULL);
--	}		
-+		priv = usb_get_serial_port_data(&serial->port[i]);
-+		if (priv) {
-+			pl2303_buf_free(priv->buf);
-+			kfree(priv);
-+			usb_set_serial_port_data(&serial->port[i], NULL);
-+		}
-+	}
- }
- 
-+static void pl2303_update_line_status(struct usb_serial_port *port,
-+				      unsigned char *data,
-+				      unsigned int actual_length)
-+{
-+	struct pl2303_private *priv = usb_get_serial_port_data(port);
-+	unsigned long flags;
-+	u8 status_idx = UART_STATE;
-+	u8 length = UART_STATE + 1;
-+	u16 idv, idp;
-+
-+	idv = le16_to_cpu(port->serial->dev->descriptor.idVendor);
-+	idp = le16_to_cpu(port->serial->dev->descriptor.idProduct);
-+
-+
-+	if (idv == SIEMENS_VENDOR_ID) {
-+		if (idp == SIEMENS_PRODUCT_ID_X65 ||
-+		    idp == SIEMENS_PRODUCT_ID_SX1 ||
-+		    idp == SIEMENS_PRODUCT_ID_X75) {
-+
-+			length = 1;
-+			status_idx = 0;
-+		}
-+	}
-+
-+	if (actual_length < length)
-+		return;
-+
-+        /* Save off the uart status for others to look at */
-+	spin_lock_irqsave(&priv->lock, flags);
-+	priv->line_status = data[status_idx];
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+	wake_up_interruptible(&priv->delta_msr_wait);
-+}
- 
- static void pl2303_read_int_callback (struct urb *urb)
- {
- 	struct usb_serial_port *port = (struct usb_serial_port *) urb->context;
--	struct usb_serial *serial = get_usb_serial (port, __FUNCTION__);
--	struct pl2303_private *priv = usb_get_serial_port_data(port);
- 	unsigned char *data = urb->transfer_buffer;
--	unsigned long flags;
--	u8 uart_state;
-+	int status = urb->status;
- 
- 	dbg("%s (%d)", __FUNCTION__, port->number);
- 
- 	/* ints auto restart... */
- 
--	switch (urb->status) {
-+	switch (status) {
- 	case 0:
- 		/* success */
- 		break;
-@@ -735,34 +1039,26 @@
- 	case -ENOENT:
- 	case -ESHUTDOWN:
- 		/* this urb is terminated, clean up */
--		dbg("%s - urb shutting down with status: %d", __FUNCTION__, urb->status);
-+		dbg("%s - urb shutting down with status: %d", __FUNCTION__, status);
- 		return;
- 	default:
--		dbg("%s - nonzero urb status received: %d", __FUNCTION__, urb->status);
--		return;
--	}
--
--	if (!serial) {
--		return;
-+		dbg("%s - nonzero urb status received: %d", __FUNCTION__, status);
-+		goto exit;
- 	}
- 
- 	usb_serial_debug_data (__FILE__, __FUNCTION__, urb->actual_length, urb->transfer_buffer);
- 
--	if (urb->actual_length < UART_STATE)
--		return;
--
--	/* Save off the uart status for others to look at */
--	uart_state = data[UART_STATE];
--	spin_lock_irqsave(&priv->lock, flags);
--	uart_state |= (priv->line_status & UART_STATE_TRANSIENT_MASK);
--	priv->line_status = uart_state;
--	spin_unlock_irqrestore(&priv->lock, flags);
--	wake_up_interruptible (&priv->delta_msr_wait);
-+	pl2303_update_line_status(port, data, urb->actual_length);
- 
-+exit:
-+	status = usb_submit_urb(urb);
-+	if (status)
-+		err("%s - usb_submit_urb failed with result %d\n", __FUNCTION__, status);
-+	else
-+		dbg("%s - usb_submit_urb succeeded.  peaches.", __FUNCTION__);
- 	return;
- }
- 
--
- static void pl2303_read_bulk_callback (struct urb *urb)
- {
- 	struct usb_serial_port *port = (struct usb_serial_port *) urb->context;
-@@ -773,12 +1069,10 @@
- 	unsigned long flags;
- 	int i;
- 	int result;
--	u8 status;
-+	int status = urb->status;
-+	u8 line_status;
- 	char tty_flag;
- 
--	if (port_paranoia_check (port, __FUNCTION__))
--		return;
--
- 	dbg("%s - port %d", __FUNCTION__, port->number);
- 
- 	if (!serial) {
-@@ -786,17 +1080,16 @@
- 		return;
- 	}
- 
--	if (urb->status) {
--		dbg("%s - urb->status = %d", __FUNCTION__, urb->status);
-+	if (status) {
-+		dbg("%s - status = %d", __FUNCTION__, status);
- 		if (!port->open_count) {
- 			dbg("%s - port is closed, exiting.", __FUNCTION__);
- 			return;
- 		}
--		if (urb->status == -EPROTO) {
-+		if (status == -EPROTO) {
- 			/* PL2303 mysteriously fails with -EPROTO reschedule the read */
- 			dbg("%s - caught -EPROTO, resubmitting the urb", __FUNCTION__);
--			urb->status = 0;
--			urb->dev = serial->dev;
-+			urb->dev = port->serial->dev;
- 			result = usb_submit_urb(urb);
- 			if (result)
- 				err("%s - failed resubmitting read urb, error %d", __FUNCTION__, result);
-@@ -812,25 +1105,25 @@
- 	tty_flag = TTY_NORMAL;
- 
- 	spin_lock_irqsave(&priv->lock, flags);
--	status = priv->line_status;
-+	line_status = priv->line_status;
- 	priv->line_status &= ~UART_STATE_TRANSIENT_MASK;
- 	spin_unlock_irqrestore(&priv->lock, flags);
--	wake_up_interruptible (&priv->delta_msr_wait); //AF from 2.6
-+	wake_up_interruptible (&priv->delta_msr_wait);
- 
- 	/* break takes precedence over parity, */
- 	/* which takes precedence over framing errors */
--	if (status & UART_BREAK_ERROR )
-+	if (line_status & UART_BREAK_ERROR )
- 		tty_flag = TTY_BREAK;
--	else if (status & UART_PARITY_ERROR)
-+	else if (line_status & UART_PARITY_ERROR)
- 		tty_flag = TTY_PARITY;
--	else if (status & UART_FRAME_ERROR)
-+	else if (line_status & UART_FRAME_ERROR)
- 		tty_flag = TTY_FRAME;
- 	dbg("%s - tty_flag = %d", __FUNCTION__, tty_flag);
- 
- 	tty = port->tty;
- 	if (tty && urb->actual_length) {
- 		/* overrun is special, not associated with a char */
--		if (status & UART_OVERRUN_ERROR)
-+		if (line_status & UART_OVERRUN_ERROR)
- 			tty_insert_flip_char(tty, 0, TTY_OVERRUN);
- 
- 		for (i = 0; i < urb->actual_length; ++i) {
-@@ -844,7 +1137,7 @@
- 
- 	/* Schedule the next read _if_ we are still open */
- 	if (port->open_count) {
--		urb->dev = serial->dev;
-+		urb->dev = port->serial->dev;
- 		result = usb_submit_urb(urb);
- 		if (result)
- 			err("%s - failed resubmitting read urb, error %d", __FUNCTION__, result);
-@@ -853,38 +1146,50 @@
- 	return;
- }
- 
--
--
- static void pl2303_write_bulk_callback (struct urb *urb)
- {
- 	struct usb_serial_port *port = (struct usb_serial_port *) urb->context;
-+	struct pl2303_private *priv = usb_get_serial_port_data(port);
- 	int result;
-+	int status = urb->status;
- 
- 	if (port_paranoia_check (port, __FUNCTION__))
- 		return;
- 	
- 	dbg("%s - port %d", __FUNCTION__, port->number);
- 	
--	if (urb->status) {
-+	switch (status) {
-+	case 0:
-+		/* success */
-+		break;
-+	case -ECONNRESET:
-+	case -ENOENT:
-+	case -ESHUTDOWN:
-+		/* this urb is terminated, clean up */
-+		dbg("%s - urb shutting down with status: %d", __FUNCTION__,
-+		    status);
-+		priv->write_urb_in_use = 0;
-+		return;
-+	default:
- 		/* error in the urb, so we have to resubmit it */
- 		if (serial_paranoia_check (port->serial, __FUNCTION__)) {
- 			return;
- 		}
- 		dbg("%s - Overflow in write", __FUNCTION__);
--		dbg("%s - nonzero write bulk status received: %d", __FUNCTION__, urb->status);
-+		dbg("%s - nonzero write bulk status received: %d", __FUNCTION__, status);
- 		port->write_urb->transfer_buffer_length = 1;
- 		port->write_urb->dev = port->serial->dev;
- 		result = usb_submit_urb (port->write_urb);
- 		if (result)
- 			err("%s - failed resubmitting write urb, error %d", __FUNCTION__, result);
--
--		return;
-+		else
-+			return;
- 	}
- 
--	queue_task(&port->tqueue, &tq_immediate);
--	mark_bh(IMMEDIATE_BH);
-+	priv->write_urb_in_use = 0;
- 
--	return;
-+	/* send any buffered data */
-+	pl2303_send(port);
- }
- 
- 
-@@ -894,19 +1199,17 @@
- 	retval = usb_serial_register(&pl2303_device);
- 	if (retval)
- 		goto failed_usb_serial_register;
--	info(DRIVER_DESC " " DRIVER_VERSION);
-+	info(DRIVER_DESC);
- 	return 0;
- failed_usb_serial_register:
- 	return retval;
- }
- 
--
- static void __exit pl2303_exit (void)
- {
- 	usb_serial_deregister (&pl2303_device);
- }
- 
--
- module_init(pl2303_init);
- module_exit(pl2303_exit);
- 
+There are also some sysfs changes (with Greg's ack) because of the way
+the dependencies thread through SCSI.
+
+The patch is available here:
+
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+
+The short changelog is:
+
+Adrian Bunk (4):
+      qla2xxx: Code cleanups.
+      megaraid: add __devexit annotation
+      lpfc: minor cleanups
+      53c7xx: fix removal fallout
+
+Alan Cox (1):
+      aacraid: fix security weakness
+
+Andi Kleen (1):
+      sg: Only print SCSI data direction warning once for a command
+
+Andrew Morton (1):
+      sgiwd93: export sgiwd93_reset()
+
+Andrew Vasquez (13):
+      qla2xxx: Update version number to 8.02.00-k7.
+      qla2xxx: Correct late-memset() of EFT buffer.
+      qla2xxx: Add Fibre Channel Event (FCE) tracing support.
+      qla2xxx: Trace-Control naming cleanups.
+      qla2xxx: Don't schedule the DPC routine to perform an issue-lip request.
+      qla2xxx: Restrict MSI/MSI-X enablement on select ISP2432-type HBAs.
+      qla2xxx: Wait for FLASH write-protection to complete after a write.
+      qla2xxx: Fix for 32-bit platforms with 64-bit resources.
+      qla2xxx: Retrieve additional HBA port statistics from recent ISPs.
+      qla2xxx: Consolidate duplicate sense-data handling codes.
+      qla2xxx: Update version number to 8.02.00-k6.
+      qla2xxx: Correct NPIV support for recent ISPs.
+      qla2xxx: Don't explicitly read mbx registers while processing a system-err
+
+Boaz Harrosh (26):
+      libiscsi,iser: patch for AHS support
+      iscsi_tcp, libiscsi: initial AHS Support
+      iscsi: Prettify resid handling and some extra checks
+      imm: convert to accessors and !use_sg cleanup
+      ppa: convert to accessors and !use_sg cleanup
+      NCR5380 family: convert to accessors & !use_sg cleanup
+      wd7000: proper fix for boards without sg support
+      atp870u: convert to accessors and !use_sg cleanup
+      scsi_debug: convert to use the data buffer accessors
+      isd200: use one-element sg list in issuing commands
+      usb: transport - convert to accessors and !use_sg code path removal
+      usb: shuttle_usbat - convert to accessors and !use_sg code path removal
+      usb: freecom & sddr09 - convert to accessors and !use_sg cleanup
+      usb: protocol - convert to accessors and !use_sg code path removal
+      seagate: Remove driver
+      psi240i: remove driver
+      in2000: convert to accessors and !use_sg cleanup
+      qlogicpti: convert to accessors and !use_sg cleanup
+      wd33c93: convert to accessors and !use_sg cleanup
+      fd_mcs: convert to accessors and !use_sg cleanup
+      aha1542: convert to accessors and !use_sg cleanup
+      a3000: convert to accessors and !use_sg cleanup
+      a2091: convert to accessors and !use_sg cleanup
+      eata_pio: convert to accessors and !use_sg cleanup
+      nsp_cs: convert to data accessors and !use_sg cleanup
+      aha152x: Use scsi_eh API for REQUEST_SENSE invocation
+
+Brian King (1):
+      ibmvscsi: Set default command timeout
+
+Christof Schmitt (11):
+      zfcp: Hold queue lock when checking port/unit handle for task management c
+      zfcp: Hold queue lock when checking port/unit handle for FCP command
+      zfcp: Hold queue lock when checking port handle for ELS command
+      zfcp: Hold queue lock when checking port/unit handle for abort command
+      zfcp: Fix evaluation of port handles in abort handler
+      zfcp: Reduce flood on hba trace
+      zfcp: Fix deadlock when adding invalid LUN
+      zfcp: Remove SCSI devices when removing complete adapter
+      zfcp: Specify waiting times in ERP in seconds
+      zfcp: Use also port and adapter to identify unit in messages.
+      zfcp: Remove unnecessary eh_bus_reset_handler callback
+
+Christoph Hellwig (1):
+      aacraid: don't assign cpu_to_le32(int) to u8
+
+Darrick J. Wong (2):
+      libsas: Fix various sparse complaints
+      libsas: Convert sas_proto users to sas_protocol
+
+Denis Cheng (1):
+      ipr: use LIST_HEAD instead of LIST_HEAD_INIT
+
+Erez Zilber (1):
+      IB/iSER: add logical unit reset support
+
+FUJITA Tomonori (13):
+      ch: remove forward declarations
+      ch: fix device minor number management bug
+      ch: handle class_device_create failure properly
+      use dynamically allocated sense buffer
+      sg: handle class_device_create failure properly
+      sg: set class_data after success
+      replace sizeof sense_buffer with SCSI_SENSE_BUFFERSIZE
+      aic7xxx_old, eata_pio, ips, libsas: don't zero out sense_buffer in queueco
+      libsas: fix sense_buffer overrun
+      fix scsi_setup_command_freelist failure path race
+      mpt fusion: make mptsas_smp_handler update resid
+      iscsi_tcp: update the website URL
+      tgt: convert to use the data buffer accessors
+
+Frederik Deweerdt (1):
+      ultrastor: clean up inline asm warnings
+
+Gilbert Wu (1):
+      aic94xx: update BIOS image from user space.
+
+Hans de Goede (2):
+      usbstorage: use last_sector_bug flag universally
+      sd: add fix for devices with last sector access problems
+
+Heiko Carstens (1):
+      zfcp: fix use after free bug.
+
+HighPoint Linux Team (1):
+      hptiop: add more adapter models and other fixes
+
+James Bottomley (19):
+      libsas: abstract STP task status into a function
+      don't use __GFP_DMA for sense buffers if not required
+      scsi.h: add macro for enclosure bit of inquiry data
+      fix pcmcia compile problem
+      scsi_transport_spi: convert to attribute groups
+      sysfs: add filter function to groups
+      add missing transport configure points for target and host
+      attribute_container: update to use the group interface
+      sysfs: fix the sysfs_add_file_to_group interfaces
+      libata: fix corruption induced by relaxed DMA alignment in SCSI
+      relax scsi dma alignment
+      block: Introduce new blk_queue_update_dma_alignment interface
+      sr: update to follow tray status correctly
+      libsas: don't use made up error codes
+      libsas, bsg: pass errors through correctly
+      libsas: don't treat underrun as an error on SMP tasks
+      libsas: add host SMP processing
+      sd,sr: add early detection of medium not present
+      DocBook scsi_midlayer.tmpl->scsi.tmpl
+
+James Smart (18):
+      lpfc 8.2.4 : Update lpfc driver version to 8.2.4
+      lpfc 8.2.4 : Rework misplaced reference taking on node structure
+      lpfc 8.2.4 : Enhance debugfs use
+      lpfc 8.2.4 : Fix Unsolicited Data items
+      lpfc 8.2.4 : Add additional sysfs and module parameters
+      lpfc 8.2.4 : Miscellaneous Fixes
+      lpfc 8.2.4 : Add parameters to enable and disable heartbeat and hba resets
+      lpfc 8.2.4 : Correct abort handler logic
+      lpfc 8.2.4 : Miscellaneous Discovery/ELS Fixes
+      lpfc 8.2.3 : Change version number to 8.2.3
+      lpfc 8.2.3 : Temperature handling fix
+      lpfc 8.2.3 : Internal loopback fixes
+      lpfc 8.2.3 : Miscellaneous Small Fixes - part 2
+      lpfc 8.2.3 : FC Discovery Fixes
+      lpfc 8.2.3 : Miscellaneous Small Fixes - part 1
+      lpfc 8.2.3 : Remove flawed MBX_STOP_IOCB logic
+      lpfc 8.2.3 : NPIV bug fixes
+      lpfc 8.2.3 : Added support for ASICs that report temperature
+
+Jeff Garzik (7):
+      gdth: kill unneeded 'irq' argument
+      sym53c416: kill pointless irq handler loop and test
+      NCR5380: minor irq handler cleanups
+      ips: handle scsi_add_host() failure, and other err cleanups
+      ips: PCI API cleanups
+      ips: trim trailing whitespace
+      ips: remove ips_ha members that duplicate struct pci_dev members
+
+Kai Makisara (1):
+      st: convert to unlocked_ioctl
+
+Kay Sievers (1):
+      sr,sd: send media state change modification events
+
+Krzysztof Helt (1):
+      sym53c8xx: fixes two bugs related to chip reset
+
+Marcus Barrow (1):
+      qla2xxx: Use completion routines.
+
+Mathieu Segaud (1):
+      ch: Convert to use unlocked_ioctl
+
+Matthias Kaehlcke (1):
+      megaraid_sas: Convert aen_mutex to the mutex API
+
+Mike Christie (16):
+      iscsi class: bump version
+      iscsi_tcp: fix setting of r2t
+      iscsi_tcp: hold lock during data rsp processing
+      iscsi_tcp: enable sg chaining
+      libiscsi, iscsi class: set tmf to a safe default and export in sysfs
+      iscsi_tcp: drop session when itt does not match any command
+      libiscsi: Drop host lock in queuecommand
+      libiscsi: clear conn->ctask when task is completed early
+      libiscsi: Do not fail commands immediately during logout
+      libiscsi: fix nop handling
+      libiscsi: fix shutdown
+      libiscsi: grab eh_mutex during host reset
+      iscsi class: Use our own workq instead of common system one.
+      libiscsi: do not block session during logout
+      libiscsi, iscsi_tcp: add device support
+      add DID_REQUEUE string to scsi_show_result host table
+
+Olaf Kirch (4):
+      iscsi_tcp: stop leaking r2t_info's when the incoming R2T is bad
+      iscsi: convert xmit path to iscsi chunks
+      libiscsi, iscsi_tcp: iscsi pool cleanup
+      iscsi_tcp: rewrite recv path
+
+Prakash, Sathya (1):
+      mpt fusion: Fix for module unload problem in flash less controller environ
+
+Randy Dunlap (8):
+      NCR5380: fix section mismatch
+      megaraid: fix section mismatch
+      aic94xx: fix section mismatches
+      sym2: fix section mismatch warning
+      tgt: fix build when dprintk is defined
+      docbook and kernel-doc updates
+      kernel-doc: use correct function name
+      boot options: correct option name and tell where to find docs for it
+
+Rob Landley (1):
+      Add Documentation and integrate into docbook build
+
+Robert Jennings (1):
+      ibmvscsi: requeue while CRQ closed
+
+Roel Kluin (1):
+      atari_NCR5380, sun3_NCR5380: operator precedence fix
+
+Rusty Russell (1):
+      BUG_ON() impossible condition in sg list counting
+
+Salyzyn, Mark (18):
+      aacraid: fib context lock for management ioctls
+      aacraid: add Voodoo Lite class of cards.
+      aacraid: add new driver features flags
+      aacraid: remove pigs in space
+      dpt_i2o: use constant instead of bare value
+      aacraid: replace '<?:' with min_t()
+      aacraid: SMC vendor identification
+      aacraid: respond to enclosure service events
+      aacraid: add call to flush_kernel_dcache_page
+      aacraid: improve queue balancing
+      aacraid: OS panic after Adapter panic (hardening).
+      aacraid: fix multiple definition of automatic variable warning.
+      aacraid: fix big endian issues
+      aacraid: variable redefinition hides earlier warning
+      aacraid: add sysfs report of RAID level
+      aacraid: add parameter to control FUA and SYNCHRONIZE_CACHE policy
+      aacraid: fix driver failure with Dell PowerEdge Expandable RAID Controller
+      aacraid: forced reset override
+
+Seokmann Ju (2):
+      qla2xxx: Issue correct MBC_INITIALIZE_FIRMWARE command.
+      qla2xxx: Add a filter to compare port_name against the physical on vport c
+
+Shyam Sundar (1):
+      qla2xxx: Properly handle Vport state-change-notifications.
+
+Swen Schillig (1):
+      zfcp: update MAINTAINERS
+
+Tejun Heo (1):
+      make pcmcia directory use obj-y|m instead of subdir-y|m
+
+Tomohiro Kusumi (1):
+      lpfc 8.2.4 : Make lpfc legacy I/O port free
+
+Tony Battersby (3):
+      sg: fix /proc/scsi/sg/devices when no SCSI devices
+      move single_lun flag from scsi_device to scsi_target
+      3w-9xxx: fix abysmal write performance on some motherboards
+
+Vegard Nossum (1):
+      aic7xxx: fix firmware build
+
+bo yang (6):
+      megaraid_sas: Update version and changelog
+      megaraid_sas: support for poll_mode_io (reduced interrupt)
+      megaraid_sas: call cmd completion from reset
+      megaraid_sas: use unsigned long for sense_buff ptr
+      megaraid_sas: check max_sgl reported by FW for setting max_sectors_per_req
+      megaraid_sas: add hibernation support
+
+vignesh babu (1):
+      libiscsi: use is_power_of_2
+
+
+And the diffstat:
+
+ Documentation/DocBook/Makefile               |    2 
+ Documentation/DocBook/scsi.tmpl              |  409 +++++
+ Documentation/dontdiff                       |    2 
+ Documentation/kernel-parameters.txt          |    8 
+ Documentation/m68k/kernel-options.txt        |   60 
+ Documentation/scsi/00-INDEX                  |    2 
+ Documentation/scsi/ChangeLog.megaraid_sas    |  159 ++
+ Documentation/scsi/aacraid.txt               |    4 
+ Documentation/scsi/hptiop.txt                |   30 
+ Documentation/scsi/ncr53c7xx.txt             |   40 
+ MAINTAINERS                                  |    6 
+ block/bsg.c                                  |   14 
+ block/ll_rw_blk.c                            |   24 
+ drivers/ata/libata-scsi.c                    |   11 
+ drivers/base/attribute_container.c           |   14 
+ drivers/firewire/fw-sbp2.c                   |    6 
+ drivers/ieee1394/sbp2.c                      |    6 
+ drivers/infiniband/ulp/iser/iscsi_iser.c     |   15 
+ drivers/infiniband/ulp/iser/iser_initiator.c |    4 
+ drivers/message/fusion/mptbase.c             |   94 -
+ drivers/message/fusion/mptbase.h             |    2 
+ drivers/message/fusion/mptsas.c              |    2 
+ drivers/message/fusion/mptscsih.c            |    2 
+ drivers/message/i2o/i2o_scsi.c               |    2 
+ drivers/s390/scsi/zfcp_aux.c                 |    2 
+ drivers/s390/scsi/zfcp_ccw.c                 |    3 
+ drivers/s390/scsi/zfcp_dbf.c                 |    6 
+ drivers/s390/scsi/zfcp_def.h                 |   22 
+ drivers/s390/scsi/zfcp_erp.c                 |   14 
+ drivers/s390/scsi/zfcp_fsf.c                 |   70 
+ drivers/s390/scsi/zfcp_scsi.c                |   24 
+ drivers/scsi/.gitignore                      |    2 
+ drivers/scsi/3w-9xxx.c                       |    1 
+ drivers/scsi/53c700.c                        |   11 
+ drivers/scsi/BusLogic.c                      |    2 
+ drivers/scsi/Kconfig                         |   32 
+ drivers/scsi/Makefile                        |    5 
+ drivers/scsi/NCR5380.c                       |   23 
+ drivers/scsi/a2091.c                         |   36 
+ drivers/scsi/a3000.c                         |   15 
+ drivers/scsi/aacraid/aachba.c                |  400 ++---
+ drivers/scsi/aacraid/aacraid.h               |  335 ++--
+ drivers/scsi/aacraid/commctrl.c              |  112 -
+ drivers/scsi/aacraid/comminit.c              |    4 
+ drivers/scsi/aacraid/commsup.c               |  394 +++--
+ drivers/scsi/aacraid/dpcsup.c                |   10 
+ drivers/scsi/aacraid/linit.c                 |  242 ++-
+ drivers/scsi/aacraid/rx.c                    |    6 
+ drivers/scsi/advansys.c                      |   14 
+ drivers/scsi/aha152x.c                       |   38 
+ drivers/scsi/aha1542.c                       |   49 
+ drivers/scsi/aha1740.c                       |    2 
+ drivers/scsi/aic7xxx/Makefile                |   45 
+ drivers/scsi/aic7xxx/aic79xx_osm.c           |    6 
+ drivers/scsi/aic7xxx/aic7xxx_osm.c           |    6 
+ drivers/scsi/aic7xxx_old.c                   |   11 
+ drivers/scsi/aic94xx/aic94xx_dev.c           |    6 
+ drivers/scsi/aic94xx/aic94xx_dump.c          |    4 
+ drivers/scsi/aic94xx/aic94xx_hwi.c           |    2 
+ drivers/scsi/aic94xx/aic94xx_hwi.h           |    3 
+ drivers/scsi/aic94xx/aic94xx_init.c          |  190 ++
+ drivers/scsi/aic94xx/aic94xx_scb.c           |    6 
+ drivers/scsi/aic94xx/aic94xx_sds.c           |  389 +++++
+ drivers/scsi/aic94xx/aic94xx_sds.h           |  121 +
+ drivers/scsi/aic94xx/aic94xx_task.c          |   50 
+ drivers/scsi/aic94xx/aic94xx_tmf.c           |   12 
+ drivers/scsi/arcmsr/arcmsr_hba.c             |    6 
+ drivers/scsi/atari_NCR5380.c                 |   24 
+ drivers/scsi/atp870u.c                       |  102 -
+ drivers/scsi/ch.c                            |  215 +-
+ drivers/scsi/constants.c                     |    3 
+ drivers/scsi/dc395x.c                        |   16 
+ drivers/scsi/dpt_i2o.c                       |    5 
+ drivers/scsi/eata.c                          |    4 
+ drivers/scsi/eata_pio.c                      |   13 
+ drivers/scsi/fd_mcs.c                        |   36 
+ drivers/scsi/gdth.c                          |   22 
+ drivers/scsi/hosts.c                         |    4 
+ drivers/scsi/hptiop.c                        |  593 ++++++-
+ drivers/scsi/hptiop.h                        |  124 +
+ drivers/scsi/ibmvscsi/ibmvscsi.c             |  155 +-
+ drivers/scsi/ibmvscsi/ibmvstgt.c             |    2 
+ drivers/scsi/imm.c                           |   13 
+ drivers/scsi/in2000.c                        |   10 
+ drivers/scsi/ipr.c                           |    2 
+ drivers/scsi/ips.c                           |  326 ++--
+ drivers/scsi/ips.h                           |   32 
+ drivers/scsi/iscsi_tcp.c                     | 2075 +++++++++++----------------
+ drivers/scsi/iscsi_tcp.h                     |  134 -
+ drivers/scsi/libiscsi.c                      | 1091 +++++++++-----
+ drivers/scsi/libsas/Kconfig                  |    9 
+ drivers/scsi/libsas/Makefile                 |    4 
+ drivers/scsi/libsas/sas_ata.c                |    2 
+ drivers/scsi/libsas/sas_discover.c           |    2 
+ drivers/scsi/libsas/sas_expander.c           |   35 
+ drivers/scsi/libsas/sas_host_smp.c           |  274 +++
+ drivers/scsi/libsas/sas_internal.h           |   16 
+ drivers/scsi/libsas/sas_scsi_host.c          |    9 
+ drivers/scsi/libsas/sas_task.c               |   36 
+ drivers/scsi/libsrp.c                        |   23 
+ drivers/scsi/lpfc/lpfc.h                     |   53 
+ drivers/scsi/lpfc/lpfc_attr.c                |  217 ++
+ drivers/scsi/lpfc/lpfc_crtn.h                |   33 
+ drivers/scsi/lpfc/lpfc_ct.c                  |  304 ++-
+ drivers/scsi/lpfc/lpfc_debugfs.c             |  157 +-
+ drivers/scsi/lpfc/lpfc_disc.h                |    2 
+ drivers/scsi/lpfc/lpfc_els.c                 |  623 +++++---
+ drivers/scsi/lpfc/lpfc_hbadisc.c             |  372 +++-
+ drivers/scsi/lpfc/lpfc_hw.h                  |  112 +
+ drivers/scsi/lpfc/lpfc_init.c                |  429 ++++-
+ drivers/scsi/lpfc/lpfc_logmsg.h              |    1 
+ drivers/scsi/lpfc/lpfc_mbox.c                |   32 
+ drivers/scsi/lpfc/lpfc_mem.c                 |    1 
+ drivers/scsi/lpfc/lpfc_nportdisc.c           |  160 +-
+ drivers/scsi/lpfc/lpfc_scsi.c                |   54 
+ drivers/scsi/lpfc/lpfc_scsi.h                |    1 
+ drivers/scsi/lpfc/lpfc_sli.c                 |  534 ++++--
+ drivers/scsi/lpfc/lpfc_sli.h                 |   12 
+ drivers/scsi/lpfc/lpfc_version.h             |    6 
+ drivers/scsi/lpfc/lpfc_vport.c               |   93 -
+ drivers/scsi/lpfc/lpfc_vport.h               |    2 
+ drivers/scsi/megaraid.c                      |    2 
+ drivers/scsi/megaraid/megaraid_mbox.c        |    6 
+ drivers/scsi/megaraid/megaraid_sas.c         |  572 +++++--
+ drivers/scsi/megaraid/megaraid_sas.h         |   18 
+ drivers/scsi/ncr53c8xx.c                     |    3 
+ drivers/scsi/pcmcia/Kconfig                  |    3 
+ drivers/scsi/pcmcia/nsp_cs.c                 |   54 
+ drivers/scsi/ppa.c                           |   12 
+ drivers/scsi/psi240i.c                       |  689 --------
+ drivers/scsi/psi240i.h                       |  315 ----
+ drivers/scsi/psi_chip.h                      |  195 --
+ drivers/scsi/qla1280.c                       |    4 
+ drivers/scsi/qla2xxx/Makefile                |    2 
+ drivers/scsi/qla2xxx/qla_attr.c              |   54 
+ drivers/scsi/qla2xxx/qla_dbg.c               |   37 
+ drivers/scsi/qla2xxx/qla_dbg.h               |   19 
+ drivers/scsi/qla2xxx/qla_def.h               |   52 
+ drivers/scsi/qla2xxx/qla_dfs.c               |  175 ++
+ drivers/scsi/qla2xxx/qla_fw.h                |   30 
+ drivers/scsi/qla2xxx/qla_gbl.h               |   51 
+ drivers/scsi/qla2xxx/qla_init.c              |   97 -
+ drivers/scsi/qla2xxx/qla_isr.c               |  120 -
+ drivers/scsi/qla2xxx/qla_mbx.c               |  430 +----
+ drivers/scsi/qla2xxx/qla_mid.c               |   46 
+ drivers/scsi/qla2xxx/qla_os.c                |   80 -
+ drivers/scsi/qla2xxx/qla_sup.c               |   18 
+ drivers/scsi/qla2xxx/qla_version.h           |    2 
+ drivers/scsi/qla4xxx/ql4_init.c              |    4 
+ drivers/scsi/qla4xxx/ql4_isr.c               |   11 
+ drivers/scsi/qla4xxx/ql4_os.c                |    7 
+ drivers/scsi/qlogicpti.c                     |   31 
+ drivers/scsi/scsi.c                          |  282 ++-
+ drivers/scsi/scsi_debug.c                    |   37 
+ drivers/scsi/scsi_devinfo.c                  |   34 
+ drivers/scsi/scsi_error.c                    |  131 -
+ drivers/scsi/scsi_ioctl.c                    |   26 
+ drivers/scsi/scsi_lib.c                      |  117 -
+ drivers/scsi/scsi_netlink.c                  |   19 
+ drivers/scsi/scsi_proc.c                     |  110 +
+ drivers/scsi/scsi_scan.c                     |   36 
+ drivers/scsi/scsi_sysfs.c                    |    1 
+ drivers/scsi/scsi_tgt_if.c                   |    2 
+ drivers/scsi/scsi_tgt_lib.c                  |   30 
+ drivers/scsi/scsi_transport_fc.c             |  102 -
+ drivers/scsi/scsi_transport_iscsi.c          |  330 ++--
+ drivers/scsi/scsi_transport_sas.c            |   41 
+ drivers/scsi/scsi_transport_spi.c            |  258 ++-
+ drivers/scsi/scsi_transport_srp.c            |   13 
+ drivers/scsi/scsicam.c                       |   35 
+ drivers/scsi/sd.c                            |   44 
+ drivers/scsi/seagate.c                       | 1667 ---------------------
+ drivers/scsi/sg.c                            |   24 
+ drivers/scsi/sgiwd93.c                       |    1 
+ drivers/scsi/sr.c                            |   35 
+ drivers/scsi/sr.h                            |    4 
+ drivers/scsi/sr_ioctl.c                      |   48 
+ drivers/scsi/st.c                            |    9 
+ drivers/scsi/sun3_NCR5380.c                  |   24 
+ drivers/scsi/sym53c416.c                     |   16 
+ drivers/scsi/sym53c8xx_2/sym_glue.c          |   22 
+ drivers/scsi/tmscsim.c                       |    6 
+ drivers/scsi/u14-34f.c                       |    4 
+ drivers/scsi/ultrastor.c                     |   15 
+ drivers/scsi/wd33c93.c                       |   10 
+ drivers/scsi/wd7000.c                        |   12 
+ drivers/usb/storage/freecom.c                |   14 
+ drivers/usb/storage/isd200.c                 |   66 
+ drivers/usb/storage/protocol.c               |  126 -
+ drivers/usb/storage/scsiglue.c               |   24 
+ drivers/usb/storage/sddr09.c                 |    9 
+ drivers/usb/storage/shuttle_usbat.c          |   68 
+ drivers/usb/storage/transport.c              |   45 
+ drivers/usb/storage/transport.h              |    2 
+ fs/sysfs/file.c                              |   11 
+ fs/sysfs/group.c                             |   26 
+ include/linux/attribute_container.h          |    1 
+ include/linux/blkdev.h                       |    1 
+ include/linux/sysfs.h                        |    2 
+ include/scsi/iscsi_if.h                      |   20 
+ include/scsi/iscsi_proto.h                   |   14 
+ include/scsi/libiscsi.h                      |   82 -
+ include/scsi/libsas.h                        |   28 
+ include/scsi/sas.h                           |   13 
+ include/scsi/scsi_cmnd.h                     |    2 
+ include/scsi/scsi_device.h                   |   13 
+ include/scsi/scsi_transport_iscsi.h          |   10 
+ include/scsi/scsi_transport_sas.h            |   16 
+ include/scsi/sd.h                            |    1 
+ kernel/params.c                              |    2 
+ 210 files changed, 10519 insertions(+), 9019 deletions(-)
+
+James
 
 
