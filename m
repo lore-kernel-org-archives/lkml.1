@@ -1,113 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbYAZPCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbYAZPSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207AbYAZPCh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 10:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbYAZPCa
+	id S1753789AbYAZPSo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 10:18:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbYAZPSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 10:02:30 -0500
-Received: from 206-47-31-89.wifiinternet.cz ([89.31.47.206]:1086 "EHLO
-	monstr.monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750727AbYAZPC3 (ORCPT
+	Sat, 26 Jan 2008 10:18:35 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1715 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104AbYAZPSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 10:02:29 -0500
-From: monstr@monstr.eu
-To: monstr@monstr.eu
-Cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
-       john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH 33/52] [microblaze] bug headers files
-Date: Thu, 24 Jan 2008 16:03:08 +0100
-Message-Id: <105791d33ea12564c70be0dd3fafef386f8e1b55.1201107832.git.monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.4.rc4.14.g6fc74
-In-Reply-To: <37627293f081fa40f21234944ddb878d5e711740.1201107832.git.monstr@monstr.eu>
-References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
- <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
- <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
- <873c2bf1f67696aa11014886470f6ba46f04e8d2.1201107832.git.monstr@monstr.eu>
- <516d173b1789ea533431e8f5ad05751c6a353c88.1201107832.git.monstr@monstr.eu>
- <068508828aac6298b4cc65b0cd7b2737a61c466c.1201107832.git.monstr@monstr.eu>
- <010fc233f82a8f7a591c9f8315ae03f9951139aa.1201107832.git.monstr@monstr.eu>
- <68faaf69ea03196d4a56a263707355e7e7eb5c6a.1201107832.git.monstr@monstr.eu>
- <4b7d90fc1b9bcb3c0b1b308c6460390f7bdf3824.1201107832.git.monstr@monstr.eu>
- <eb28582e845efb4f2f26054630895f26fa69866e.1201107832.git.monstr@monstr.eu>
- <64e6e541db30cc4f1ee5cd85da4bdea6024f75b8.1201107832.git.monstr@monstr.eu>
- <90badb264d0e4ec49fdaa76842a5e5f259681299.1201107832.git.monstr@monstr.eu>
- <a013a2b7044186c64d55cdafc8c9b29bc73a7fc5.1201107832.git.monstr@monstr.eu>
- <60642f04ebcf9f76da50a1d40191755f258edcc5.1201107832.git.monstr@monstr.eu>
- <240998be1af3774635995fd19248f8b3a9e8a702.1201107832.git.monstr@monstr.eu>
- <3bcb9581bc512fdd0a124ac8322af9e2a8adc975.1201107832.git.monstr@monstr.eu>
- <db7f441df21cfe296a44744747b28f379e75fd49.1201107832.git.monstr@monstr.eu>
- <e6309af7cc6550ef5b399fc0902f1926f9e52e58.1201107832.git.monstr@monstr.eu>
- <2d11eef3abada1f41658a532a483c6121ded8054.1201107832.git.monstr@monstr.eu>
- <48db19662b808ab6f5455dd7f2116e6544c50e95.1201107832.git.monstr@monstr.eu>
- <7b0cfa6ae11749e20c941d0a4f03577141e022f8.1201107832.git.monstr@monstr.eu>
- <2f3db7ba4fe41cb9888adabf0e4e052d4da5c37c.1201107832.git.monstr@monstr.eu>
- <d67010417928d04766e6dd74820b12c249d61814.1201107832.git.monstr@monstr.eu>
- <37627293f081fa40f21234944ddb878d5e711740.1201107832.git.monstr@monstr.eu>
-In-Reply-To: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
-References: <8051f6df628e1ff896ec7d580b613da50f718fb4.1201107832.git.monstr@monstr.eu>
+	Sat, 26 Jan 2008 10:18:34 -0500
+Date: Sat, 26 Jan 2008 15:18:20 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Torokhov <dtor@mail.ru>, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Marc Kleine-Budde <mkl@pengutronix.de>, Ian Molton <spyro@f2s.com>,
+       Vincent Sanders <vince@kyllikki.org>,
+       Andrew Zabolotny <zap@homelink.ru>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>
+Message-ID: <20080126151820.GA13899@sirena.org.uk>
+Mail-Followup-To: Dmitry Torokhov <dtor@mail.ru>,
+	linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+	Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+	Rodolfo Giometti <giometti@enneenne.com>,
+	Russell King <rmk@arm.linux.org.uk>,
+	Marc Kleine-Budde <mkl@pengutronix.de>, Ian Molton <spyro@f2s.com>,
+	Vincent Sanders <vince@kyllikki.org>,
+	Andrew Zabolotny <zap@homelink.ru>,
+	Dmitry Baryshkov <dbaryshkov@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Cookie: Someone is speaking well of you.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: 82.32.140.119
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: [UPDATED v4] WM97xx touchscreen drivers
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+This patch series adds support for the touchscreen controllers provided
+by Wolfson Microelectronics WM97xx series chips in both polled and
+streaming modes.
 
-
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- include/asm-microblaze/bug.h  |   17 +++++++++++++++++
- include/asm-microblaze/bugs.h |   19 +++++++++++++++++++
- 2 files changed, 36 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-microblaze/bug.h
- create mode 100644 include/asm-microblaze/bugs.h
-
-diff --git a/include/asm-microblaze/bug.h b/include/asm-microblaze/bug.h
-new file mode 100644
-index 0000000..5e23942
---- /dev/null
-+++ b/include/asm-microblaze/bug.h
-@@ -0,0 +1,17 @@
-+/*
-+ * include/asm-microblaze/bug.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_BUG_H
-+#define _ASM_BUG_H
-+
-+#include <linux/kernel.h>
-+#include <asm-generic/bug.h>
-+
-+#endif /* _ASM_BUG_H */
-diff --git a/include/asm-microblaze/bugs.h b/include/asm-microblaze/bugs.h
-new file mode 100644
-index 0000000..558d27b
---- /dev/null
-+++ b/include/asm-microblaze/bugs.h
-@@ -0,0 +1,19 @@
-+/*
-+ * include/asm-microblaze/bugs.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_BUGS_H
-+#define _ASM_BUGS_H
-+
-+static inline void check_bugs(void)
-+{
-+	/* nothing to do */
-+}
-+
-+#endif /* _ASM_BUGS_H */
--- 
-1.5.4.rc4.14.g6fc74
-
+Changes since last submission:
+ - Fix from Dmitry Baryshkov for build with CONFIG_PM.
+ - Add the web site to the MAINTAINERS entry.
