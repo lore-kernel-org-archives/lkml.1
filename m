@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbYAZWIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757110AbYAZWLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbYAZWIH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 17:08:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbYAZWHy
+	id S1757110AbYAZWLx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 17:11:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbYAZWLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 17:07:54 -0500
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:40179 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754447AbYAZWHx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 17:07:53 -0500
-Date: Sat, 26 Jan 2008 16:07:30 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: linux-scsi@vger.kernel.org
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org
-Subject: [PATCH] sym53c8xx: fix bad memset argument in sym_set_cam_result_error
-Message-ID: <20080126220730.GN14201@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 26 Jan 2008 17:11:43 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:41234 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754396AbYAZWLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 17:11:42 -0500
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH] x86: fix section mismatch warning in mcheck/mce_64.c
+Date: Sat, 26 Jan 2008 23:11:47 +0100
+Message-Id: <1201385513-26885-2-git-send-email-sam@ravnborg.org>
+X-Mailer: git-send-email 1.5.3.5.628.ga1309
+In-Reply-To: <20080126215917.GB26651@uranus.ravnborg.org>
+References: <20080126215917.GB26651@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On a big powerpc box I got the following oops with 2.6.24-git2:
+Fix following warning:
+WARNING: arch/x86/kernel/cpu/mcheck/built-in.o(.text+0x752): Section mismatch: reference to .cpuinit.text:mce_create_device in 'mce_cpu_callback'
 
-sym0: <1010-66> rev 0x1 at pci 0000:d0:01.0 irq 215
-sym0: No NVRAM, ID 7, Fast-80, LVD, parity checking
-sym0: SCSI BUS has been reset.
-scsi0 : sym-2.2.3
- target0:0:8: FAST-40 WIDE SCSI 80.0 MB/s ST (25 ns, offset 31)
-scsi 0:0:8:0: Direct-Access     IBM      ST318305LC       C509 PQ: 0
-ANSI: 3
- target0:0:8: tagged command queuing enabled, command queue depth 16.
- target0:0:8: Beginning Domain Validation
- target0:0:8: asynchronous
- target0:0:8: wide asynchronous
- target0:0:8: FAST-80 WIDE SCSI 160.0 MB/s DT (12.5 ns, offset 31)
- target0:0:8: FAST-80 WIDE SCSI 160.0 MB/s DT (12.5 ns, offset 31)
-Unable to handle kernel paging request for data at address 0x00000000
-Faulting instruction address: 0xc000000000038460
-cpu 0x25: Vector: 300 (Data Access) at [c00000000f567840]
-    pc: c000000000038460: .memcpy+0x60/0x280
-    lr: d000000000050280: .sym_set_cam_result_error+0xfc/0x1e0 [sym53c8xx]
-    sp: c00000000f567ac0
-   msr: 8000000000009032
-   dar: 0
- dsisr: 42000000
-  current = 0xc000006d1e0af0a0
-  paca    = 0xc0000000004afc00
-    pid   = 0, comm = swapper
-enter ? for help
-[link register   ] d000000000050280
-.sym_set_cam_result_error+0xfc/0x1e0 [sym53c8xx]
-[c00000000f567ac0] c00000000f567b80 (unreliable)
-[c00000000f567b80] d0000000000552b8 .sym_complete_error+0x12c/0x1bc [sym53c8xx]
-[c00000000f567c20] d0000000000561a4 .sym_int_sir+0xaa4/0x1718 [sym53c8xx]
-[c00000000f567d00] d000000000057e8c .sym_interrupt+0x4e4/0x6ec [sym53c8xx]
-[c00000000f567dc0] d00000000004fdf4 .sym53c8xx_intr+0x6c/0xdc [sym53c8xx]
-[c00000000f567e50] c0000000000a83e0 .handle_IRQ_event+0x7c/0xec
-[c00000000f567ef0] c0000000000aa344 .handle_fasteoi_irq+0x130/0x1f0
-[c00000000f567f90] c00000000002a538 .call_handle_irq+0x1c/0x2c
-[c000004d5e0b3a90] c00000000000c320 .do_IRQ+0x108/0x1d0
-[c000004d5e0b3b20] c000000000004790 hardware_interrupt_entry+0x18/0x1c
+mce_cpu_callback() is only used by mce_cpu_notofier.
+The notifier is only used for hotplugable cpu's as it is
+registered using register_hotcpu_notifier(),
 
-The memset() in sym_set_cam_result_error() would appear to be trashing
-the scsi_cmnd struct instead of clearing sense_buffer.
+Annotate them both __cpuinit to fix the warning.
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- drivers/scsi/sym53c8xx_2/sym_glue.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce_64.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
-index 21e926d..e939f38 100644
---- a/drivers/scsi/sym53c8xx_2/sym_glue.c
-+++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
-@@ -207,7 +207,7 @@ void sym_set_cam_result_error(struct sym_hcb *np, struct sym_ccb *cp, int resid)
- 			/*
- 			 *  Bounce back the sense data to user.
- 			 */
--			memset(&cmd->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
-+			memset(cmd->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
- 			memcpy(cmd->sense_buffer, cp->sns_bbuf,
- 			       min(SCSI_SENSE_BUFFERSIZE, SYM_SNS_BBUF_LEN));
- #if 0
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
+index 98b23d5..9a699ed 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
+@@ -854,8 +854,8 @@ static void mce_remove_device(unsigned int cpu)
+ }
+ 
+ /* Get notified when a cpu comes on/off. Be hotplug friendly. */
+-static int
+-mce_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
++static int __cpuinit mce_cpu_callback(struct notifier_block *nfb,
++				      unsigned long action, void *hcpu)
+ {
+ 	unsigned int cpu = (unsigned long)hcpu;
+ 
+@@ -872,7 +872,7 @@ mce_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 	return NOTIFY_OK;
+ }
+ 
+-static struct notifier_block mce_cpu_notifier = {
++static struct notifier_block mce_cpu_notifier __cpuinitdata = {
+ 	.notifier_call = mce_cpu_callback,
+ };
+ 
 -- 
-1.5.3.7.1112.g9758e
+1.5.4.rc3.14.g44397
 
