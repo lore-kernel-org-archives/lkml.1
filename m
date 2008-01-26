@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbYAZFSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbYAZF0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328AbYAZFSB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 00:18:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbYAZFRw
+	id S1754367AbYAZF0P (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 00:26:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbYAZFZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 00:17:52 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57258 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750970AbYAZFRv (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 00:17:51 -0500
-Date: Sat, 26 Jan 2008 16:17:24 +1100
-From: David Chinner <dgc@sgi.com>
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [RFC] ext3 freeze feature
-Message-ID: <20080126051724.GM155407@sgi.com>
-References: <20080125195938t-sato@mail.jp.nec.com> <84144f020801250317pbdafc4fnd47cc8a297194e86@mail.gmail.com> <001c01c85f4f$bfd128f0$41a8400a@bsd.tnes.nec.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <001c01c85f4f$bfd128f0$41a8400a@bsd.tnes.nec.co.jp>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 26 Jan 2008 00:25:58 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:36089 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751129AbYAZFZ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 00:25:57 -0500
+Date: Sat, 26 Jan 2008 00:25:27 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 06/20 -v5] add notrace annotations for NMI routines
+In-Reply-To: <20080123213139.GB2282@Krystal>
+Message-ID: <Pine.LNX.4.58.0801260024270.11589@gandalf.stny.rr.com>
+References: <20080123160236.969334052@goodmis.org> <20080123160442.063076557@goodmis.org>
+ <20080123213139.GB2282@Krystal>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 09:42:30PM +0900, Takashi Sato wrote:
-> >I am also wondering whether we should have system call(s) for these:
+
+On Wed, 23 Jan 2008, Mathieu Desnoyers wrote:
+
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > This annotates NMI functions with notrace. Some tracers may be able
+> > to live with this, but some cannot. So we turn off NMI tracing.
 > >
-> >On Jan 25, 2008 12:59 PM, Takashi Sato <t-sato@yk.jp.nec.com> wrote:
-> >>+       case EXT3_IOC_FREEZE: {
+> > One solution might be to make a notrace_nmi which would only turn
+> > off NMI tracing if a trace utility needed it off.
 > >
-> >>+       case EXT3_IOC_THAW: {
-> >
-> >And just convert XFS to use them too?
-> 
-> I think it is reasonable to implement it as the generic system call, as you
-> said.  Does XFS folks think so?
+> Is this still needed with the atomic clocksource read ?
+>
 
-Sure.
+Before you ask again, I've still included this in -v6, simply because I
+didn't get a chance to test it without this patch. I'll try to remember to
+do that on Monday.
 
-Note that we can't immediately remove the XFS ioctls otherwise
-we'd break userspace utilities that use them....
+-- Steve
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
