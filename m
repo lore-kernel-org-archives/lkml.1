@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYAZU6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbYAZVRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbYAZU6m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 15:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYAZU6f
+	id S1755693AbYAZVRz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 16:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbYAZVRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 15:58:35 -0500
-Received: from ns.gsystems.sk ([62.176.172.50]:36535 "EHLO www.gsystems.sk"
+	Sat, 26 Jan 2008 16:17:45 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:50117 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753484AbYAZU6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 15:58:34 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: jgarzik@pobox.com
-Subject: Compex FreedomLine 32 PnP-PCI2 broken with de2104x
-Date: Sat, 26 Jan 2008 21:58:10 +0100
+	id S1753143AbYAZVRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 16:17:45 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch] drop linux/ufs_fs.h from userspace export
+Date: Sat, 26 Jan 2008 16:17:42 -0500
 User-Agent: KMail/1.9.7
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200801260409.53276.vapier@gentoo.org> <20080126202322.GC28444@infradead.org>
+In-Reply-To: <20080126202322.GC28444@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: multipart/signed;
+  boundary="nextPart1450574.eI8xtYOWK6";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801262158.12016.linux@rainbow-software.org>
+Message-Id: <200801261617.43454.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-I was having problems with these FreedomLine cards with Linux before but 
-tested it thoroughly today. This card uses DEC 21041 chip and has TP and BNC 
-connectors:
+--nextPart1450574.eI8xtYOWK6
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-00:12.0 Ethernet controller [0200]: Digital Equipment Corporation DECchip 
-21041 [Tulip Pass 3] [1011:0014] (rev 21)
+On Saturday 26 January 2008, Christoph Hellwig wrote:
+> On Sat, Jan 26, 2008 at 04:09:52AM -0500, Mike Frysinger wrote:
+> > Per previous discussions about cleaning up ufs_fs.h, people just want
+> > this straight up dropped from userspace export.  The only remaining
+> > consumer (silo) has been fixed a while ago to not rely on this header.
+>
+> Thanks!  Care to move it to fs/ufs/ while you're at it?
 
+sure, i'll send a patch to apply after this one
+-mike
 
-de2104x driver was loaded automatically by udev and card seemed to work. Until 
-I disconnected the TP cable and putting it back after a while. The driver 
-then switched to (non-existing) AUI port and remained there. I tried to set 
-media to TP using ethtool - and the whole kernel crashed because of 
-        BUG_ON(de_is_running(de));
-in de_set_media(). Seems that the driver is unable to stop the DMA in 
-de_stop_rxtx().
+--nextPart1450574.eI8xtYOWK6
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-I commented out AUI detection in the driver - this time it switched to BNC 
-after unplugging the cable and remained there. I also attempted to reset the 
-chip when de_stop_rxtx failed but failed to do it.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
 
-Then I found that there's de4x5 driver which supports the same cards as 
-de2104x (and some other too) - and this one works fine! I can plug and unplug 
-the cable and even change between TP and BNC ports just by unplugging one and 
-plugging the other cable in. Unfortunately, this driver is blacklisted by 
-default - at least in Slackware and Debian.
+iQIVAwUAR5ujd0FjO5/oN/WBAQL9BhAAyMwLGYjkybfn9hDur/oYgjgKOk4NeH4G
+GmtauvZlMLE+JaDcBMvNPBMLl1nKDrXhM7KI0tykplnBtIQM5HmCRgMiKuPUAvUL
+v/Cjkr2eJDnzpqhNJ53WpWuaKn4VR/odq3JHfZ5blGTHyu93BM/0oq/+7v7d4bDk
+rlknp7qcA2A9W8WT0CBLXuBD6k4N1EWhIGKUeZJzwVd3fr3AhhMHJ9NB3+/pPdTe
+n8iTXdwT5hGT/eupejex+7pUuvn+jRsYwtaHB74KguIVLVVjC3xYaQoVJQPznhMe
+daubV60lOwEmG035hUqkPaqqOtPXaCym1q4Bf6U9/1lvvaMrqYgU7iybpmHiI4o5
+E0jMbkcPlhFwPHoCIeSiIV8CqPEPACTj+96Gad4WfgtpbhkKg8t8aH9uXzHH70i8
+HrTVIn02snXKS3UkBDNV1H9pKLss/NYW8NxSuxs0PQd/HqVjwhaxjR0qvTQEZxoO
+0skDUvpEo2IC9wjwdBLrUwF8s3F0F4jJsEYusMIzjhco89DrxBI1r9EjFpOhGZRc
+6s6TFh0qTT1gosm7gO5Q1zygSzdOS7Y79HxBKsOZrEFcsDL9+B/c6alnXLibMYjK
+pYZim9HwtBxji9JkbMZHZQ7lQfPDlxLrbr0MtJ7O/ae51kk/viMPH51Ct6PR/hlE
+sIX2m1NsAjo=
+=v8WS
+-----END PGP SIGNATURE-----
 
-The question is: why does de2104x exist? Does it work better with some 
-hardware?
-
-BTW. Found that the problem exist at least since 2003:
-http://oss.sgi.com/archives/netdev/2003-08/msg00951.html
-
--- 
-Ondrej Zary
+--nextPart1450574.eI8xtYOWK6--
