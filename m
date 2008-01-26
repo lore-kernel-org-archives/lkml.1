@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbYAZD3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbYAZD3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755662AbYAZD3R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 22:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYAZD3B
+	id S1756711AbYAZD3b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 22:29:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYAZD3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 25 Jan 2008 22:29:03 -0500
+Received: from lixom.net ([66.141.50.11]:57602 "EHLO mail.lixom.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751557AbYAZD3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Jan 2008 22:29:01 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:45803 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751431AbYAZD3A (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 22:29:00 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Ingo Molnar <mingo@elte.hu>, "Giacomo A. Catenazzi" <cate@cateee.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: using LKML for subsystem development (was Re: Linux 2.6.24)
-In-Reply-To: Your message of "Sat, 26 Jan 2008 01:42:43 +0100."
-             <479A8203.40804@s5r6.in-berlin.de>
-From: Valdis.Kletnieks@vt.edu
-References: <alpine.LFD.1.00.0801241506500.15329@hp.linux-foundation.org> <4799A773.2030702@cateee.net> <22000.1201255093@turing-police.cc.vt.edu> <200801251258.08707.rjw@sisk.pl> <4799D770.2070203@cateee.net> <479A75D4.6070607@s5r6.in-berlin.de>
-            <479A8203.40804@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1201318113_2846P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 25 Jan 2008 22:28:33 -0500
-Message-ID: <8125.1201318113@turing-police.cc.vt.edu>
+Date: Fri, 25 Jan 2008 21:40:55 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 063/196] kset: convert /sys/devices to use kset_create
+Message-ID: <20080126034055.GA28786@lixom.net>
+References: <20080125071127.GA4860@kroah.com> <1201245134-4876-63-git-send-email-gregkh@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1201245134-4876-63-git-send-email-gregkh@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1201318113_2846P
-Content-Type: text/plain; charset=us-ascii
+On Thu, Jan 24, 2008 at 11:10:01PM -0800, Greg Kroah-Hartman wrote:
+> Dynamically create the kset instead of declaring it statically.  We also
+> rename devices_subsys to devices_kset to catch all users of the
+> variable.
 
-On Sat, 26 Jan 2008 01:42:43 +0100, Stefan Richter said:
+Guess what, you broke powerpc again!
 
-> Even if you only look at the Subject: and number of postings in a
-> thread, how to judge whether there is a stability risk for the next -rc
-> in the making, without experience or personal interest in the domain?
+olof@quad:~/work/linux/k.org $ git grep devices_subsys
+arch/powerpc/kernel/vio.c:extern struct kset devices_subsys; /* needed for vio_find_name() */
+arch/powerpc/kernel/vio.c:      found = kset_find_obj(&devices_subsys, kobj_name);
 
-My general rule of thumb is "if my laptop has one of those on it, I look
-at it more, even if I don't have the foggiest idea how it works".  Of
-course, this only works for threads with semi-sane Subject: headers....
+Obviously causes build failues, even of ppc64_defconfig.
 
---==_Exmh_1201318113_2846P
-Content-Type: application/pgp-signature
+(I can unfortunately not boot test, since I lack hardware that uses vio)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFHmqjhcC3lWbTT17ARAjRUAKCLclXpiWosqAuMUmlLJ4o98P150gCgycJH
-EMktRNOqC+v3yuvL9BiS8/A=
-=vWOj
------END PGP SIGNATURE-----
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
---==_Exmh_1201318113_2846P--
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index 19a5656..ee752ab 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -37,7 +37,7 @@
+ #include <asm/iseries/hv_call_xm.h>
+ #include <asm/iseries/iommu.h>
+ 
+-extern struct kset devices_subsys; /* needed for vio_find_name() */
++extern struct kset *devices_kset; /* needed for vio_find_name() */
+ 
+ static struct bus_type vio_bus_type;
+ 
+@@ -369,7 +369,7 @@ static struct vio_dev *vio_find_name(const char *kobj_name)
+ {
+ 	struct kobject *found;
+ 
+-	found = kset_find_obj(&devices_subsys, kobj_name);
++	found = kset_find_obj(devices_kset, kobj_name);
+ 	if (!found)
+ 		return NULL;
+ 
