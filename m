@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYAZXow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbYAZXtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbYAZXow (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 18:44:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYAZXoo
+	id S1755223AbYAZXtR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 18:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbYAZXtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 18:44:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55574 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752948AbYAZXoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 18:44:44 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: [linux-pm] Q: x86 suspend/hibernation code consolidation
-Date: Sun, 27 Jan 2008 00:42:38 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-References: <200801260132.09529.rjw@sisk.pl> <200801252147.27254.lenb@kernel.org>
-In-Reply-To: <200801252147.27254.lenb@kernel.org>
+	Sat, 26 Jan 2008 18:49:05 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:49809 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752948AbYAZXtC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 18:49:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=MGctZj97e7HIMOQvv3yR3RWC68X82tVASF1LYEn0LUFYQakiNnUpRVmJk1pB7X41jtC2yvI8+nVI5cRNm2jKH8k093/YkFUYB6pnsUX+X+6dVIUZsWKdJBxT2N28T34e1CWxLbJ1aEURk+qEI3l3FmqhZzDWOd73YpRptGCWufg=
+Message-ID: <479BC6E5.5000409@gmail.com>
+Date: Sun, 27 Jan 2008 02:48:53 +0300
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+CC: trivial@kernel.org, linux-fsdevel@vger.kernel.org, apw@shadowen.org,
+       rdunlap@xenotime.net, jschopp@austin.ibm.com,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 8/9] bfs: remove multiple assignments
+References: <1201296027-6900-1-git-send-email-dmitri.vorobiev@gmail.com> <1201296027-6900-9-git-send-email-dmitri.vorobiev@gmail.com> <Pine.LNX.4.61.0801261833270.1966@ginsburg.homenet>
+In-Reply-To: <Pine.LNX.4.61.0801261833270.1966@ginsburg.homenet>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801270042.38930.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 26 of January 2008, Len Brown wrote:
-> On Friday 25 January 2008 19:32, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > I'd like to move the 64-bit suspend/hibernation files from arch/x86/kernel to
-> > arch/x86/power, modify the names of the 32-bit files already in
-> > arch/x86/power and update the Makefiles accordingly, but there are some changes
-> > queued for merging that touch the files in question.
-> > 
-> > When is the right time for making changes like that?
-> > 
-> > Rafael
+Tigran Aivazian wrote:
+> On Sat, 26 Jan 2008, Dmitri Vorobiev wrote:
+>> -    inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
+>> +    inode->i_mtime = CURRENT_TIME_SEC;
+>> +    inode->i_atime = CURRENT_TIME_SEC;
+>> +    inode->i_ctime = CURRENT_TIME_SEC;
 > 
-> In Cambridge, when we discussed cleanups that touch a lot of files
-> but have no functional change -- somebody suggested that right
-> after rc1 closes is a good time.  The reasoning was that they
-> would not conflict with the functional changes in rc1.
+> multiple assignments like "x = y = z = value;" can potentially
+> (depending on the compiler and arch) be faster than "x = value; y =
+> value; z=value;"
 > 
-> However, I recall Linus saying something about "Andrew is special"
-> WRT permission to push cleanups after the rc1 window; so I don't
-> know what the final ruling was -- if there was such a ruling.
+> I am surprized that this script complains about them as it is a
+> perfectly valid thing to do in C.
 
-Well, I don't think there was a ruling, but perhaps sneaking it into -mm
-after -rc1 would do the trick. ;-)
+I think it seems wise to ask the maintainers of checkpatch.pl to
+comment on that. I'm Cc:ing them now.
 
-Rafael
+Thanks,
+
+Dmitri
+
