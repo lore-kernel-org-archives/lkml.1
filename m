@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYAZWyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYAZXjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbYAZWyh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 17:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbYAZWya
+	id S1754848AbYAZXjf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 18:39:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbYAZXj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 17:54:30 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:44597 "EHLO pasmtpB.tele.dk"
+	Sat, 26 Jan 2008 18:39:26 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55552 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750944AbYAZWy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 17:54:29 -0500
-Date: Sat, 26 Jan 2008 23:54:39 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Subject: [PATCH] [SPARC/SPARC64] fix usage of .section .sched.text in assembler code
-Message-ID: <20080126225439.GB27215@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752948AbYAZXjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 18:39:25 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Q: x86 suspend/hibernation code consolidation
+Date: Sun, 27 Jan 2008 00:36:39 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200801260132.09529.rjw@sisk.pl> <20080126094239.GA4096@ucw.cz>
+In-Reply-To: <20080126094239.GA4096@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200801270036.41249.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ld will generate an unique named section when assembler do not
-use "ax" but gcc does. Add the misisng annotation.
+On Saturday, 26 of January 2008, Pavel Machek wrote:
+> Hi!
+> 
+> > I'd like to move the 64-bit suspend/hibernation files from arch/x86/kernel to
+> > arch/x86/power, modify the names of the 32-bit files already in
+> > arch/x86/power and update the Makefiles accordingly, but there are some changes
+> > queued for merging that touch the files in question.
+> 
+> I have similar patch producing hibernation_*.S, I can send it as a
+> base.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@redhat.com>
----
- arch/sparc/lib/rwsem.S   |    2 +-
- arch/sparc64/lib/rwsem.S |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Well, it probably will have to be rebased anyway.  That's the problem: what to
+base it on to avoid conflicts.
 
-diff --git a/arch/sparc/lib/rwsem.S b/arch/sparc/lib/rwsem.S
-index 2065774..f406b1f 100644
---- a/arch/sparc/lib/rwsem.S
-+++ b/arch/sparc/lib/rwsem.S
-@@ -7,7 +7,7 @@
- #include <asm/ptrace.h>
- #include <asm/psr.h>
- 
--	.section .sched.text
-+	.section .sched.text, "ax"
- 	.align	4
- 
- 	.globl		___down_read
-diff --git a/arch/sparc64/lib/rwsem.S b/arch/sparc64/lib/rwsem.S
-index 75f0e6b..1a4cc56 100644
---- a/arch/sparc64/lib/rwsem.S
-+++ b/arch/sparc64/lib/rwsem.S
-@@ -6,7 +6,7 @@
- 
- #include <asm/rwsem-const.h>
- 
--	.section	.sched.text
-+	.section	.sched.text, "ax"
- 
- 	.globl		__down_read
- __down_read:
--- 
-1.5.4.rc3.14.g44397
+> Moving it soon  would be nice :-).
 
+Yes, but I'm afraid not earlier than after the ACPI suspend tree is merged.
+
+> As I'm in process of rewriting arch/x86/kernel/acpi/ , I'd prefer that
+> not to be moved from under me.
+
+I'm not going to touch that now. :-)
+
+Greetings,
+Rafael
