@@ -1,45 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbYAZLr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbYAZLye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754264AbYAZLr6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 06:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbYAZLrv
+	id S1753724AbYAZLye (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 06:54:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbYAZLyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 06:47:51 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2913 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751720AbYAZLrt (ORCPT
+	Sat, 26 Jan 2008 06:54:25 -0500
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:24457 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750776AbYAZLyY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 06:47:49 -0500
-Date: Sat, 26 Jan 2008 11:47:41 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Message-ID: <20080126114740.GA7598@sirena.org.uk>
-Mail-Followup-To: Dmitry Baryshkov <dbaryshkov@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-References: <20080121152402.GA7518@rakim.wolfsonmicro.main> <1200929100-17224-1-git-send-email-broonie@opensource.wolfsonmicro.com> <fnf084$ju9$1@ger.gmane.org> <fnf1d8$n6i$1@ger.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fnf1d8$n6i$1@ger.gmane.org>
-X-Cookie: No guts, no glory.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: 82.32.140.119
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [PATCH 1/6] Core driver for WM97xx touchscreens
+	Sat, 26 Jan 2008 06:54:24 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: linux-kernel@vger.kernel.org
+Cc: Ian Campbell <ijc@hellion.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Date: Sat, 26 Jan 2008 11:54:05 +0000
+Message-Id: <ff184a8ea93f18a787bb9bd0c860036219b83ee0.1201348185.git.ijc@hellion.org.uk>
+X-Mailer: git-send-email 1.5.3.8
+X-SA-Exim-Connect-IP: 192.168.1.223
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: [PATCH 1/9] x86: Unify whitespace and comments in arch/x86/boot/compressed/vmlinux_??.lds
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 26, 2008 at 10:18:16AM +0000, Dmitry Baryshkov wrote:
+size reports no change in arch/x86/boot/compressed/vmlinux.
 
-> Please apply this patch.
+Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/boot/compressed/vmlinux_32.lds |    6 +++---
+ arch/x86/boot/compressed/vmlinux_64.lds |    4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-Done, thanks.
+diff --git a/arch/x86/boot/compressed/vmlinux_32.lds b/arch/x86/boot/compressed/vmlinux_32.lds
+index cc4854f..d98ab69 100644
+--- a/arch/x86/boot/compressed/vmlinux_32.lds
++++ b/arch/x86/boot/compressed/vmlinux_32.lds
+@@ -3,10 +3,10 @@ OUTPUT_ARCH(i386)
+ ENTRY(startup_32)
+ SECTIONS
+ {
+-        /* Be careful parts of head.S assume startup_32 is at
+-         * address 0.
++	/* Be careful parts of head_32.S assume startup_32 is at
++	 * address 0.
+ 	 */
+-	. =  0 	;
++	. = 0;
+ 	.text.head : {
+ 		_head = . ;
+ 		*(.text.head)
+diff --git a/arch/x86/boot/compressed/vmlinux_64.lds b/arch/x86/boot/compressed/vmlinux_64.lds
+index 94c13e5..8d63b3a 100644
+--- a/arch/x86/boot/compressed/vmlinux_64.lds
++++ b/arch/x86/boot/compressed/vmlinux_64.lds
+@@ -3,8 +3,8 @@ OUTPUT_ARCH(i386:x86-64)
+ ENTRY(startup_64)
+ SECTIONS
+ {
+-	/* Be careful parts of head.S assume startup_32 is at
+- 	 * address 0.
++	/* Be careful parts of head_64.S assume startup_64 is at
++	 * address 0.
+ 	 */
+ 	. = 0;
+ 	.text :	{
+-- 
+1.5.3.8
 
->                          BTW: Could you please also add me to the "CC" list
-> of this patch serie?
-
-Sure.
