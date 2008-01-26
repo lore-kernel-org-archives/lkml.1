@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYAZMcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754331AbYAZNBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566AbYAZMcq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 07:32:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYAZMcg
+	id S1754331AbYAZNBP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 08:01:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYAZNA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 07:32:36 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:10479 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752683AbYAZMce (ORCPT
+	Sat, 26 Jan 2008 08:00:59 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:63039 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267AbYAZNA6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 07:32:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=RIku51eQYM6Il6N9iMRYepSZnXHKA53B79QtjxPcLOoWzfu6vNjpzPJQtvm4yLyQabsugRVl3hnKeqtB0aJKZxrvvPsafYhsPPDkVwIGIwcuRoooSkFBBRDpeRSYquNi5OcPvH7rglDBJBXABRUnaS07f9mjSNyJUQVg+ML6Vyg=
-Message-ID: <2f11576a0801260432y4405d817p6ef4005d06189654@mail.gmail.com>
-Date: Sat, 26 Jan 2008 21:32:32 +0900
-From: "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
-To: "Theodore Tso" <tytso@mit.edu>, "Adrian Bunk" <bunk@kernel.org>,
-       "Bodo Eggert" <7eggert@gmx.de>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Andreas Dilger" <adilger@sun.com>, Valdis.Kletnieks@vt.edu,
-       "David Chinner" <dgc@sgi.com>, "Valerie Henson" <val@vahconsulting.com>,
-       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Andreas Dilger" <adilger@clusterfs.com>,
-       "Ric Wheeler" <ric@emc.com>
-Subject: Re: [RFC] Parallelize IO for e2fsck
-In-Reply-To: <20080124234037.GJ15858@mit.edu>
+	Sat, 26 Jan 2008 08:00:58 -0500
+Date: Sat, 26 Jan 2008 08:00:40 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Pavel Machek <pavel@ucw.cz>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Tim Bird <tim.bird@am.sony.com>,
+       Sam Ravnborg <sam@ravnborg.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 23/23 -v6] Critical latency timings histogram
+In-Reply-To: <20080126091147.GB1794@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.58.0801260758060.16244@gandalf.stny.rr.com>
+References: <20080126042152.526086719@goodmis.org> <20080126042804.824377395@goodmis.org>
+ <20080126091147.GB1794@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9Mo9w-7Ws-25@gated-at.bofh.it> <9Mo9w-7Ws-23@gated-at.bofh.it>
-	 <9OdWm-7uN-25@gated-at.bofh.it> <9Oi9A-5EJ-3@gated-at.bofh.it>
-	 <9OiMg-6IC-1@gated-at.bofh.it> <9OlqL-2xG-3@gated-at.bofh.it>
-	 <9Orda-3ub-45@gated-at.bofh.it>
-	 <E1JI5vz-0001GG-Vs@be1.7eggert.dyndns.org>
-	 <20080124230809.GA29120@does.not.exist>
-	 <20080124234037.GJ15858@mit.edu>
-X-Google-Sender-Auth: d5adcb8f240d854a
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > And from a performance point of view letting applications voluntarily
-> > free some memory is better even than starting to swap.
+
+On Sat, 26 Jan 2008, Pavel Machek wrote:
 >
-> Absolutely.
+> Ok, so you are adding new userland interface; I guess you should also
+> document it in Documentation/?
 
-the mem_notify patch can realize "just before starting swapping" notification :)
+I was waiting for someone to ask ;-)
 
-to be honest, I don't know fs guys requirement.
-if lacking feature of fs guys needed, I implement it with presure if
-you tell me it.
+Yes, I'm getting a document ready for the Documentation directory. I was
+just making sure the interface was fine befor publishing the doc.
+
+Actually, the patches themselves have been showing the API in the
+prologue, and that's what I'll be using for the doc. All is done except
+for the new histograms. The format for those was taken directly from the
+-rt patch, and I still need to document them, but I've been hesitent,
+because I want to clean up the histogram code a bit more.
+
+-- Steve
+
