@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYAZAFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYAZAMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756161AbYAZAFz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 19:05:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYAZAFq
+	id S1755451AbYAZAMI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 19:12:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbYAZAL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 19:05:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49706 "EHLO mx3.mail.elte.hu"
+	Fri, 25 Jan 2008 19:11:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50215 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752594AbYAZAFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 19:05:45 -0500
-Date: Sat, 26 Jan 2008 01:05:26 +0100
+	id S1751699AbYAZAL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 19:11:56 -0500
+Date: Sat, 26 Jan 2008 01:11:28 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jon Masters <jonathan@jonmasters.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] driver core patches against 2.6.24
-Message-ID: <20080126000526.GA24559@elte.hu>
-References: <20080125071127.GA4860@kroah.com> <alpine.LFD.1.00.0801251035150.2979@hp.linux-foundation.org> <20080125185213.GA23475@suse.de> <alpine.LFD.1.00.0801251108480.2979@hp.linux-foundation.org> <479A3ED3.6020808@goop.org> <1201296027.32422.80.camel@perihelion> <alpine.LFD.1.00.0801251347010.5056@hp.linux-foundation.org> <479A5B72.6080701@goop.org> <1201299979.27573.11.camel@lappy>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Jan Beulich <jbeulich@novell.com>,
+       Eduardo Pereira Habkost <ehabkost@redhat.com>,
+       Ian Campbell <ijc@hellion.org.uk>, William Irwin <wli@holomorphy.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 11 of 11] x86: defer cr3 reload when doing pud_clear()
+Message-ID: <20080126001128.GB24559@elte.hu>
+References: <C3C0235A.12D8E%Keir.Fraser@cl.cam.ac.uk> <479A7463.7070801@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1201299979.27573.11.camel@lappy>
+In-Reply-To: <479A7463.7070801@goop.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,22 +39,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> My wish is that distros would just boot without requiring an initrd. I 
-> know how to make them for redhat and debian based distros, but the 
-> fact that you can't (easily) cross-build them makes it a very tedious 
-> construct.
+> Is there any guide about the tradeoff of when to use invlpg vs 
+> flushing the whole tlb?  1 page?  10?  90% of the tlb?
 
-all it takes for me on Fedora is to boot a modular distro kernel once, 
-then copy the /dev to the real (persistent) /dev:
+i made measurements some time ago and INVLPG was quite uniformly slow on 
+all important CPU types - on the order of 100+ cycles. It's probably 
+microcode. With a cr3 flush being on the order of 200-300 cycles (plus 
+any add-on TLB miss costs - but those are amortized quite well as long 
+as the pagetables are well cached - which they usually are on today's 
+2MB-ish L2 caches), the high cost of INVLPG rarely makes it worthwile 
+for anything more than a few pages.
 
-   mkdir /tmp2
-   mount /dev/sda1 /tmp2
-   cp -a /dev/* /tmp2/dev/
-
-and from that point on a bzImage/vmlinuz can boot up on Fedora without 
-any problems (as long as it has the right drivers built in), and the 
-initrd line can be removed from grub.conf.
+so INVLPG makes sense for pagetable fault realated single-address 
+flushes, but they rarely make sense for range flushes. (and that's how 
+Linux uses it)
 
 	Ingo
