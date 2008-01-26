@@ -1,90 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbYAZA4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758772AbYAZA6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757957AbYAZA4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 19:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbYAZA4G
+	id S1758772AbYAZA6B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 19:58:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbYAZA5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 19:56:06 -0500
-Received: from threatwall.zlynx.org ([199.45.143.218]:33127 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752484AbYAZA4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 Jan 2008 19:56:04 -0500
-Subject: Re: [RFC] Parallelize IO for e2fsck
-From: Zan Lynx <zlynx@acm.org>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Theodore Tso <tytso@MIT.EDU>, Adrian Bunk <bunk@kernel.org>,
-       Bodo Eggert <7eggert@gmx.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Valdis.Kletnieks@vt.edu, David Chinner <dgc@sgi.com>,
-       Valerie Henson <val@vahconsulting.com>, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ric Wheeler <ric@emc.com>
-In-Reply-To: <20080125110942.GX18433@webber.adilger.int>
-References: <9Mo9w-7Ws-23@gated-at.bofh.it> <9OdWm-7uN-25@gated-at.bofh.it>
-	 <9Oi9A-5EJ-3@gated-at.bofh.it> <9OiMg-6IC-1@gated-at.bofh.it>
-	 <9OlqL-2xG-3@gated-at.bofh.it> <9Orda-3ub-45@gated-at.bofh.it>
-	 <E1JI5vz-0001GG-Vs@be1.7eggert.dyndns.org>
-	 <20080124230809.GA29120@does.not.exist> <20080124234037.GJ15858@mit.edu>
-	 <1201220742.7557.10.camel@localhost>
-	 <20080125110942.GX18433@webber.adilger.int>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8OvqBAtkr4HvXMMKWXpO"
-Date: Fri, 25 Jan 2008 17:55:12 -0700
-Message-Id: <1201308912.7784.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20080125/1JIZKC-0004KE-TT-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
+	Fri, 25 Jan 2008 19:57:52 -0500
+Received: from gw.goop.org ([64.81.55.164]:50764 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751726AbYAZA5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 Jan 2008 19:57:51 -0500
+Message-ID: <479A858B.6070102@goop.org>
+Date: Fri, 25 Jan 2008 16:57:47 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Jan Beulich <jbeulich@novell.com>,
+       Eduardo Pereira Habkost <ehabkost@redhat.com>,
+       Ian Campbell <ijc@hellion.org.uk>, William Irwin <wli@holomorphy.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 11 of 11] x86: defer cr3 reload when doing pud_clear()
+References: <C3C0235A.12D8E%Keir.Fraser@cl.cam.ac.uk> <479A7A88.6010505@zytor.com>
+In-Reply-To: <479A7A88.6010505@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+> Keir Fraser wrote:
+>> On 25/1/08 22:54, "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
+>>
+>>> The only possibly relevant comment I can find in vol3a is:
+>>>
+>>>     Older IA-32 processors that implement the PAE mechanism use 
+>>> uncached
+>>>     accesses when loading page-directory-pointer table entries. This
+>>>     behavior is
+>>>     model specific and not architectural. More recent IA-32 
+>>> processors may
+>>>     cache page-directory-pointer table entries.
+>>
+>> Go read the Intel application note "TLBs, Paging-Structure Caches, 
+>> and Their
+>> Invalidation" at 
+>> http://www.intel.com/design/processor/applnots/317080.pdf
+>>
+>> Section 8.1 explains about the PDPTR cache in 32-bit PAE mode, which can
+>> only be refreshed by appropriate tickling of CR0, CR3 or CR4.
+>>
+>> It is also important to note that *any* valid page directory entry at 
+>> *any*
+>> level in the page-table hierarchy can become cached at *any* time. 
+>> Basically
+>> TLB lookup is performed as a longest-prefix match on the linear 
+>> address to
+>> skip as many levels in a page-table walk as possible (where a walk is
+>> needed, because there is no full-length match on the linear address). 
+>> So, if
+>> you modify a directory entry from present to not-present, or change 
+>> the page
+>> directory that a valid pde points to, you probably need to flush the pde
+>> caching structure. One piece of good news is that all pde caches are 
+>> flushed
+>> by any arbitrary INVLPG.
+>>
+>
+> Actually, it's trickier than that.  The PDPTR, just like the segments, 
+> aren't a real cache, and aren't invalidated by INVLPG.  This means you 
+> can't go from less permissive to more permissive, which is normally 
+> permitted in the x86.  The PDPTR should really be thought of as an 
+> extended cr3 with four entries (this is also how it would be typically 
+> implemented in hardware) rather than as a part of the paging structure 
+> per se.
 
---=-8OvqBAtkr4HvXMMKWXpO
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yeah, that's basically what 8.1 says.  PAE doesn't follow the normal TLB 
+rules for the top level, though they reserve the right to make it behave 
+properly (as it would if you graft a PAE pagetable into a full 64-bit 
+pagetable).
 
 
-On Fri, 2008-01-25 at 04:09 -0700, Andreas Dilger wrote:
-> On Jan 24, 2008  17:25 -0700, Zan Lynx wrote:
-> > Have y'all been following the /dev/mem_notify patches?
-> > http://article.gmane.org/gmane.linux.kernel/628653
->=20
-> Having the notification be via poll() is a very restrictive processing
-> model.  Having the notification be via a signal means that any kind of
-> process (and not just those that are event loop driven) can register
-> a callback at some arbitrary point in the code and be notified.  I
-> don't object to the poll() interface, but it would be good to have a
-> signal mechanism also.
+> Now, all of this reminds me of something somewhat messy: if we share 
+> the kernel page tables for trampoline page tables, as discussed 
+> elsewhere, we HAVE to do a complete, all-tlb-including-global-pages 
+> flush after use, since the kernel pages are global and otherwise will 
+> stick around.  Unlike the permissions pages, there aren't G enable 
+> bits on the higher levels, but only for the PTEs themselves.
 
-The commentary on the mem_notify threads claimed that the signal is
-easily provided by setting up the file handle for SIGIO.
+That wouldn't happen to often though, would it.  The identity mapping is 
+only interested in a 1:1 view on RAM, and that's not going to change at 
+all?  Does the TLB cache PAT attributes?  Do you need to do a global 
+flush after changing a PTE's PAT bits to make sure that all that PTE's 
+mappings have a consistent view on memory?
 
-Yeah.  Here it is...copied from email written by KOSAKI Motohiro:
-
-implement FASYNC capability to /dev/mem_notify.
-
-<usage example>
-        fd =3D open("/dev/mem_notify", O_RDONLY);
-
-        fcntl(fd, F_SETOWN, getpid());
-
-        flags =3D fcntl(fd, F_GETFL);
-        fcntl(fd, F_SETFL, flags|FASYNC);  /* when low memory, receive SIGI=
-O */
-</usage example>
---=20
-Zan Lynx <zlynx@acm.org>
-
---=-8OvqBAtkr4HvXMMKWXpO
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBHmoTwG8fHaOLTWwgRAqrUAJ9BqPjzdrwVehS2K6X740ZhufJk1wCfVj8U
-jWxnklmPauoBzUVuXxKKUjE=
-=YOk3
------END PGP SIGNATURE-----
-
---=-8OvqBAtkr4HvXMMKWXpO--
-
+    J
