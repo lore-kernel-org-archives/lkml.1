@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYAZKol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbYAZKp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbYAZKol (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 05:44:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYAZKoe
+	id S1757477AbYAZKp2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 05:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbYAZKpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 05:44:34 -0500
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:33876 "EHLO 2ka.mipt.ru"
+	Sat, 26 Jan 2008 05:45:16 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:38853 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751671AbYAZKod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 05:44:33 -0500
-Date: Sat, 26 Jan 2008 13:43:43 +0300
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: [build bug] ./drivers/crypto/hifn_795x.c
-Message-ID: <20080126104342.GB26275@2ka.mipt.ru>
-References: <20080125222150.GA22401@elte.hu> <20080125224545.GA1757@gondor.apana.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754617AbYAZKpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 05:45:14 -0500
+Date: Sat, 26 Jan 2008 12:45:14 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild@vger.kernel.org
+Subject: Re: The latest linus tree can't build
+Message-ID: <20080126104514.GA18170@does.not.exist>
+References: <20080126103845.GF20935@hacking>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080125224545.GA1757@gondor.apana.org.au>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080126103845.GF20935@hacking>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Sat, Jan 26, 2008 at 06:38:45PM +0800, WANG Cong wrote:
+> 
+> Hi, Sam!
+> 
+> When I built the latest linus tree, I got this error:
+> 
+> ...
+>   CC      sound/oss/msnd.o
+> make[2]: *** No rule to make target `/etc/sound/msndperm.bin', needed by `sound/oss/msndperm.c'.  Stop.
+> make[1]: *** [sound/oss] Error 2
+> make: *** [sound] Error 2
+> 
+> My .config is just the one I sent to you in another thread.
+>...
 
-On Sat, Jan 26, 2008 at 09:45:45AM +1100, Herbert Xu (herbert@gondor.apana.org.au) wrote:
-> On Fri, Jan 25, 2008 at 11:21:50PM +0100, Ingo Molnar wrote:
-> > 
-> > randconfig testing found this (post-v2.6.24) build bug:
-> > 
-> >  drivers/built-in.o: In function `hifn_unregister_rng':
-> >  hifn_795x.c:(.text+0x17bbd9): undefined reference to `hwrng_unregister'
-> >  drivers/built-in.o: In function `hifn_probe':
-> >  hifn_795x.c:(.text+0x17df70): undefined reference to `hwrng_register'
-> > 
-> > config attached.
-> 
-> Thanks for the report.  This is casued by
-> 
-> > CONFIG_HW_RANDOM=m
-> > CONFIG_CRYPTO_DEV_HIFN_795X=y
-> 
-> I'll fix it with the following patch.
+It's expected that CONFIG_STANDALONE=n allows configurations that won't 
+compile.
 
-Thanks for fixing that up, if people who do not like select will
-complain, we can make hifn rng depend on hw_random.
+> Regards.
+
+cu
+Adrian
 
 -- 
-	Evgeniy Polyakov
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
