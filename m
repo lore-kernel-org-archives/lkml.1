@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761241AbYAZEf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761545AbYAZEfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761241AbYAZEf1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 Jan 2008 23:35:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbYAZE2v
+	id S1761545AbYAZEfu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 Jan 2008 23:35:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYAZE2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 Jan 2008 23:28:51 -0500
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:36240 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753420AbYAZE2X (ORCPT
+	Fri, 25 Jan 2008 23:28:52 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:44192 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753423AbYAZE2X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 Jan 2008 23:28:23 -0500
-Message-Id: <20080126042803.530190873@goodmis.org>
+Message-Id: <20080126042803.686515731@goodmis.org>
 References: <20080126042152.526086719@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 25 Jan 2008 23:22:07 -0500
+Date: Fri, 25 Jan 2008 23:22:08 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
@@ -29,296 +29,193 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, John Stultz <johnstul@us.ibm.com>,
        Arjan van de Ven <arjan@infradead.org>, Pavel Machek <pavel@ucw.cz>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 15/23 -v6] Generic command line storage
-Content-Disposition: inline; filename=trace-generic-cmdline.patch
+Subject: [PATCH 16/23 -v6] trace generic call to schedule switch
+Content-Disposition: inline; filename=trace-sched-hooks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Saving the comm of tasks for each trace is very expensive.
-This patch includes in the context switch hook, a way to
-store the last 100 command lines of tasks. This table is
-examined when a trace is to be printed.
-
-Note: The comm may be destroyed if other traces are performed.
-Later (TBD) patches may simply store this information in the trace
-itself.
+This patch adds hooks into the schedule switch tracing to
+allow other latency traces to hook into the schedule switches.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- lib/tracing/Kconfig              |    1 
- lib/tracing/trace_function.c     |    2 
- lib/tracing/trace_sched_switch.c |    7 ++
- lib/tracing/tracer.c             |  104 +++++++++++++++++++++++++++++++++++++--
- lib/tracing/tracer.h             |    6 +-
- 5 files changed, 114 insertions(+), 6 deletions(-)
+ lib/tracing/trace_sched_switch.c |  123 +++++++++++++++++++++++++++++++++------
+ lib/tracing/tracer.h             |   14 ++++
+ 2 files changed, 119 insertions(+), 18 deletions(-)
 
-Index: linux-mcount.git/lib/tracing/Kconfig
+Index: linux-mcount.git/lib/tracing/tracer.h
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/Kconfig	2008-01-25 21:47:23.000000000 -0500
-+++ linux-mcount.git/lib/tracing/Kconfig	2008-01-25 21:47:25.000000000 -0500
-@@ -18,6 +18,7 @@ config FUNCTION_TRACER
- 	depends on DEBUG_KERNEL && HAVE_MCOUNT
- 	select MCOUNT
- 	select TRACING
-+	select CONTEXT_SWITCH_TRACER
- 	help
- 	  Use profiler instrumentation, adding -pg to CFLAGS. This will
- 	  insert a call to an architecture specific __mcount routine,
-Index: linux-mcount.git/lib/tracing/trace_function.c
-===================================================================
---- linux-mcount.git.orig/lib/tracing/trace_function.c	2008-01-25 21:47:17.000000000 -0500
-+++ linux-mcount.git/lib/tracing/trace_function.c	2008-01-25 21:47:25.000000000 -0500
-@@ -28,11 +28,13 @@ static notrace void function_reset(struc
- static notrace void start_function_trace(struct tracing_trace *tr)
- {
- 	function_reset(tr);
-+	atomic_inc(&trace_record_cmdline);
- 	tracing_start_function_trace();
+--- linux-mcount.git.orig/lib/tracing/tracer.h	2008-01-25 21:47:25.000000000 -0500
++++ linux-mcount.git/lib/tracing/tracer.h	2008-01-25 21:47:27.000000000 -0500
+@@ -112,4 +112,18 @@ static inline notrace cycle_t now(void)
+ 	return get_monotonic_cycles();
  }
  
- static notrace void stop_function_trace(struct tracing_trace *tr)
- {
-+	atomic_dec(&trace_record_cmdline);
- 	tracing_stop_function_trace();
- }
- 
++#ifdef CONFIG_CONTEXT_SWITCH_TRACER
++typedef void (*tracer_switch_func_t)(void *private,
++				     struct task_struct *prev,
++				     struct task_struct *next);
++struct tracer_switch_ops {
++	tracer_switch_func_t func;
++	void *private;
++	struct tracer_switch_ops *next;
++};
++
++extern int register_tracer_switch(struct tracer_switch_ops *ops);
++extern int unregister_tracer_switch(struct tracer_switch_ops *ops);
++#endif /* CONFIG_CONTEXT_SWITCH_TRACER */
++
+ #endif /* _LINUX_MCOUNT_TRACER_H */
 Index: linux-mcount.git/lib/tracing/trace_sched_switch.c
 ===================================================================
---- linux-mcount.git.orig/lib/tracing/trace_sched_switch.c	2008-01-25 21:47:23.000000000 -0500
-+++ linux-mcount.git/lib/tracing/trace_sched_switch.c	2008-01-25 21:47:25.000000000 -0500
-@@ -30,6 +30,11 @@ static notrace void sched_switch_callbac
- 	va_list ap;
+--- linux-mcount.git.orig/lib/tracing/trace_sched_switch.c	2008-01-25 21:47:25.000000000 -0500
++++ linux-mcount.git/lib/tracing/trace_sched_switch.c	2008-01-25 21:47:27.000000000 -0500
+@@ -16,33 +16,21 @@
+ 
+ static struct tracing_trace *tracer_trace;
+ static int trace_enabled __read_mostly;
++static DEFINE_SPINLOCK(sched_switch_func_lock);
+ 
+-static notrace void sched_switch_callback(const struct marker *mdata,
+-					  void *private_data,
+-					  const char *format, ...)
++static void notrace sched_switch_func(void *private,
++				      struct task_struct *prev,
++				      struct task_struct *next)
+ {
+-	struct tracing_trace **p = mdata->private;
+-	struct tracing_trace *tr = *p;
++	struct tracing_trace **ptr = private;
++	struct tracing_trace *tr = *ptr;
+ 	struct tracing_trace_cpu *data;
+-	struct task_struct *prev;
+-	struct task_struct *next;
+ 	unsigned long flags;
+-	va_list ap;
  	int cpu;
  
+-	if (likely(!atomic_read(&trace_record_cmdline)))
+-		return;
+-
+-	tracing_record_cmdline(current);
+-
+ 	if (likely(!trace_enabled))
+ 		return;
+ 
+-	va_start(ap, format);
+-	prev = va_arg(ap, typeof(prev));
+-	next = va_arg(ap, typeof(next));
+-	va_end(ap);
+-
+ 	raw_local_irq_save(flags);
+ 	cpu = raw_smp_processor_id();
+ 	data = tr->data[cpu];
+@@ -55,6 +43,105 @@ static notrace void sched_switch_callbac
+ 	raw_local_irq_restore(flags);
+ }
+ 
++static struct tracer_switch_ops sched_switch_ops __read_mostly =
++{
++	.func = sched_switch_func,
++	.private = &tracer_trace,
++};
++
++static tracer_switch_func_t tracer_switch_func __read_mostly =
++	sched_switch_func;
++
++static struct tracer_switch_ops *tracer_switch_func_ops __read_mostly =
++	&sched_switch_ops;
++
++static void notrace sched_switch_func_loop(void *private,
++					   struct task_struct *prev,
++					   struct task_struct *next)
++{
++	struct tracer_switch_ops *ops = tracer_switch_func_ops;
++
++	for (; ops != NULL; ops = ops->next)
++		ops->func(ops->private, prev, next);
++}
++
++notrace int register_tracer_switch(struct tracer_switch_ops *ops)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&sched_switch_func_lock, flags);
++	ops->next = tracer_switch_func_ops;
++	smp_wmb();
++	tracer_switch_func_ops = ops;
++
++	if (ops->next == &sched_switch_ops)
++		tracer_switch_func = sched_switch_func_loop;
++
++	spin_unlock_irqrestore(&sched_switch_func_lock, flags);
++
++	return 0;
++}
++
++notrace int unregister_tracer_switch(struct tracer_switch_ops *ops)
++{
++	unsigned long flags;
++	struct tracer_switch_ops **p = &tracer_switch_func_ops;
++	int ret;
++
++	spin_lock_irqsave(&sched_switch_func_lock, flags);
++
++	/*
++	 * If the sched_switch is the only one left, then
++	 *  only call that function.
++	 */
++	if (*p == ops && ops->next == &sched_switch_ops) {
++		tracer_switch_func = sched_switch_func;
++		tracer_switch_func_ops = &sched_switch_ops;
++		goto out;
++	}
++
++	for (; *p != &sched_switch_ops; p = &(*p)->next)
++		if (*p == ops)
++			break;
++
++	if (*p != ops) {
++		ret = -1;
++		goto out;
++	}
++
++	*p = (*p)->next;
++
++ out:
++	spin_unlock_irqrestore(&sched_switch_func_lock, flags);
++
++	return 0;
++}
++
++static notrace void sched_switch_callback(const struct marker *mdata,
++					  void *private_data,
++					  const char *format, ...)
++{
++	struct task_struct *prev;
++	struct task_struct *next;
++	va_list ap;
++
 +	if (likely(!atomic_read(&trace_record_cmdline)))
 +		return;
 +
 +	tracing_record_cmdline(current);
 +
- 	if (likely(!trace_enabled))
- 		return;
- 
-@@ -62,6 +67,7 @@ static notrace void sched_switch_reset(s
- 
- static notrace void start_sched_trace(struct tracing_trace *tr)
- {
-+	atomic_inc(&trace_record_cmdline);
- 	sched_switch_reset(tr);
- 	trace_enabled = 1;
- }
-@@ -69,6 +75,7 @@ static notrace void start_sched_trace(st
- static notrace void stop_sched_trace(struct tracing_trace *tr)
- {
- 	trace_enabled = 0;
-+	atomic_dec(&trace_record_cmdline);
- }
- 
- static notrace void sched_switch_trace_init(struct tracing_trace *tr)
-Index: linux-mcount.git/lib/tracing/tracer.c
-===================================================================
---- linux-mcount.git.orig/lib/tracing/tracer.c	2008-01-25 21:47:23.000000000 -0500
-+++ linux-mcount.git/lib/tracing/tracer.c	2008-01-25 21:47:25.000000000 -0500
-@@ -169,6 +169,88 @@ void tracing_stop_function_trace(void)
- 	unregister_mcount_function(&trace_ops);
- }
- 
-+#define SAVED_CMDLINES 128
-+static unsigned map_pid_to_cmdline[PID_MAX_DEFAULT+1];
-+static unsigned map_cmdline_to_pid[SAVED_CMDLINES];
-+static char saved_cmdlines[SAVED_CMDLINES][TASK_COMM_LEN];
-+static int cmdline_idx;
-+static DEFINE_SPINLOCK(trace_cmdline_lock);
-+atomic_t trace_record_cmdline;
-+atomic_t trace_record_cmdline_disabled;
-+
-+static void trace_init_cmdlines(void)
-+{
-+	memset(&map_pid_to_cmdline, -1, sizeof(map_pid_to_cmdline));
-+	memset(&map_cmdline_to_pid, -1, sizeof(map_cmdline_to_pid));
-+	cmdline_idx = 0;
-+}
-+
-+notrace void trace_stop_cmdline_recording(void);
-+
-+static void notrace trace_save_cmdline(struct task_struct *tsk)
-+{
-+	unsigned map;
-+	unsigned idx;
-+
-+	if (!tsk->pid || unlikely(tsk->pid > PID_MAX_DEFAULT))
-+		return;
++	va_start(ap, format);
++	prev = va_arg(ap, typeof(prev));
++	next = va_arg(ap, typeof(next));
++	va_end(ap);
 +
 +	/*
-+	 * It's not the end of the world if we don't get
-+	 * the lock, but we also don't want to spin
-+	 * nor do we want to disable interrupts,
-+	 * so if we miss here, then better luck next time.
++	 * If tracer_switch_func only points to the local
++	 * switch func, it still needs the ptr passed to it.
 +	 */
-+	if (!spin_trylock(&trace_cmdline_lock))
-+		return;
-+
-+	idx = map_pid_to_cmdline[tsk->pid];
-+	if (idx >= SAVED_CMDLINES) {
-+		idx = (cmdline_idx + 1) % SAVED_CMDLINES;
-+
-+		map = map_cmdline_to_pid[idx];
-+		if (map <= PID_MAX_DEFAULT)
-+			map_pid_to_cmdline[map] = (unsigned)-1;
-+
-+		map_pid_to_cmdline[tsk->pid] = idx;
-+
-+		cmdline_idx = idx;
-+	}
-+
-+	memcpy(&saved_cmdlines[idx], tsk->comm, TASK_COMM_LEN);
-+
-+	spin_unlock(&trace_cmdline_lock);
++	tracer_switch_func(mdata->private, prev, next);
 +}
 +
-+static notrace char *trace_find_cmdline(int pid)
-+{
-+	char *cmdline = "<...>";
-+	unsigned map;
-+
-+	if (!pid)
-+		return "<idle>";
-+
-+	if (pid > PID_MAX_DEFAULT)
-+		goto out;
-+
-+	map = map_pid_to_cmdline[pid];
-+	if (map >= SAVED_CMDLINES)
-+		goto out;
-+
-+	cmdline = saved_cmdlines[map];
-+
-+ out:
-+	return cmdline;
-+}
-+
-+void tracing_record_cmdline(struct task_struct *tsk)
-+{
-+	if (atomic_read(&trace_record_cmdline_disabled))
-+		return;
-+
-+	trace_save_cmdline(tsk);
-+}
-+
- static inline notrace struct tracing_entry *
- tracing_get_trace_entry(struct tracing_trace *tr,
- 			struct tracing_trace_cpu *data)
-@@ -210,7 +292,6 @@ tracing_generic_entry_update(struct trac
- 		((pc & HARDIRQ_MASK) ? TRACE_FLAG_HARDIRQ : 0) |
- 		((pc & SOFTIRQ_MASK) ? TRACE_FLAG_SOFTIRQ : 0) |
- 		(need_resched() ? TRACE_FLAG_NEED_RESCHED : 0);
--	memcpy(entry->comm, tsk->comm, TASK_COMM_LEN);
- }
- 
- notrace void tracing_function_trace(struct tracing_trace *tr,
-@@ -366,6 +447,8 @@ static void *s_start(struct seq_file *m,
- 	if (!current_trace || current_trace != iter->trace)
- 		return NULL;
- 
-+	atomic_inc(&trace_record_cmdline_disabled);
-+
- 	/* let the tracer grab locks here if needed */
- 	if (current_trace->start)
- 		current_trace->start(iter);
-@@ -393,6 +476,8 @@ static void s_stop(struct seq_file *m, v
+ static notrace void sched_switch_reset(struct tracing_trace *tr)
  {
- 	struct tracing_iterator *iter = m->private;
- 
-+	atomic_dec(&trace_record_cmdline_disabled);
-+
- 	/* let the tracer release locks here if needed */
- 	if (current_trace && current_trace == iter->trace && iter->trace->stop)
- 		iter->trace->stop(iter);
-@@ -521,8 +606,11 @@ static void notrace
- lat_print_generic(struct seq_file *m, struct tracing_entry *entry, int cpu)
- {
- 	int hardirq, softirq;
-+	char *comm;
-+
-+	comm = trace_find_cmdline(entry->pid);
- 
--	seq_printf(m, "%8.8s-%-5d ", entry->comm, entry->pid);
-+	seq_printf(m, "%8.8s-%-5d ", comm, entry->pid);
- 	seq_printf(m, "%d", cpu);
- 	seq_printf(m, "%c%c",
- 		   (entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' : '.',
-@@ -584,9 +672,12 @@ print_lat_fmt(struct seq_file *m, struct
- 	abs_usecs = cycles_to_usecs(entry->t - iter->tr->time_start);
- 
- 	if (verbose) {
-+		char *comm;
-+
-+		comm = trace_find_cmdline(entry->pid);
- 		seq_printf(m, "%16s %5d %d %d %08x %08x [%08lx]"
- 			   " %ld.%03ldms (+%ld.%03ldms): ",
--			   entry->comm,
-+			   comm,
- 			   entry->pid, cpu, entry->flags,
- 			   entry->preempt_count, trace_idx,
- 			   cycles_to_usecs(entry->t),
-@@ -624,15 +715,18 @@ static void notrace print_trace_fmt(stru
- 	unsigned long secs;
- 	int sym_only = !!(trace_flags & TRACE_ITER_SYM_ONLY);
- 	unsigned long long t;
-+	char *comm;
- 	int S;
- 
-+	comm = trace_find_cmdline(iter->ent->pid);
-+
- 	t = cycles_to_usecs(entry->t);
- 	usec_rem = do_div(t, 1000000ULL);
- 	secs = (unsigned long)t;
- 
- 	seq_printf(m, "[%5lu.%06lu] ", secs, usec_rem);
- 	seq_printf(m, "CPU %d: ", iter->cpu);
--	seq_printf(m, "%s:%d ", entry->comm,
-+	seq_printf(m, "%s:%d ", comm,
- 		   entry->pid);
- 	switch (entry->type) {
- 	case TRACE_FN:
-@@ -1176,6 +1270,8 @@ __init static int tracer_alloc_buffers(v
- 
- 	tracer_init_debugfs();
- 
-+	trace_init_cmdlines();
-+
- 	return 0;
- 
-  free_buffers:
-Index: linux-mcount.git/lib/tracing/tracer.h
-===================================================================
---- linux-mcount.git.orig/lib/tracing/tracer.h	2008-01-25 21:47:23.000000000 -0500
-+++ linux-mcount.git/lib/tracing/tracer.h	2008-01-25 21:47:25.000000000 -0500
-@@ -25,7 +25,6 @@ struct tracing_entry {
- 	char preempt_count; /* assumes PREEMPT_MASK is 8 bits or less */
- 	int pid;
- 	cycle_t t;
--	char comm[TASK_COMM_LEN];
- 	union {
- 		struct tracing_function fn;
- 		struct tracing_sched_switch ctx;
-@@ -98,13 +97,16 @@ void tracing_sched_switch_trace(struct t
- 				struct task_struct *prev,
- 				struct task_struct *next,
- 				unsigned long flags);
--
-+void tracing_record_cmdline(struct task_struct *tsk);
- 
- void tracing_start_function_trace(void);
- void tracing_stop_function_trace(void);
- int register_trace(struct trace_types_struct *type);
- void unregister_trace(struct trace_types_struct *type);
- 
-+extern atomic_t trace_record_cmdline;
-+extern atomic_t trace_record_cmdline_disabled;
-+
- static inline notrace cycle_t now(void)
- {
- 	return get_monotonic_cycles();
+ 	int cpu;
 
 -- 
