@@ -1,92 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbYA0VwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbYA0V4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757216AbYA0VwW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 16:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYA0VwJ
+	id S1758244AbYA0V4v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 16:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbYA0V4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 16:52:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:62849 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753650AbYA0VwH (ORCPT
+	Sun, 27 Jan 2008 16:56:43 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:5492 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbYA0V4m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 16:52:07 -0500
+	Sun, 27 Jan 2008 16:56:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
-        b=lgxSOUoXOX7KaFcRyI91VQbywrw/nqUOD5gOYfOJAK4ivQxBPtFQ/0ttVQc9sKwViZH9OBiyKFskETLF6PrYtMFLrbG72OKbmhXieZ5HveXV7sJLzWsnyENDTEpYAGYL1eqOU/Y3jsGNL2fxSAOJhKXXuHgPAcPY7zSqMB72jD0=
-Date: Sun, 27 Jan 2008 22:51:55 +0100 (CET)
-From: Esben Nielsen <nielsen.esben@googlemail.com>
-X-X-Sender: simlo@frodo.shire
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: Valdis.Kletnieks@vt.edu, caglar@pardus.org.tr,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.24-rc7-rt2
-In-Reply-To: <Pine.LNX.4.58.0801210738140.13659@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.64.0801272230270.8920@frodo.shire>
-References: <1200336080.318.8.camel@localhost.localdomain>
- <200801150237.44029.caglar@pardus.org.tr> <24149.1200455417@turing-police.cc.vt.edu>
-            <Pine.LNX.4.58.0801152302580.10869@gandalf.stny.rr.com>
- <31516.1200464589@turing-police.cc.vt.edu> <Pine.LNX.4.58.0801160904200.9544@gandalf.stny.rr.com>
- <Pine.LNX.4.58.0801161112140.15998@gandalf.stny.rr.com>
- <Pine.LNX.4.64.0801211223210.11032@frodo.shire>
- <Pine.LNX.4.58.0801210738140.13659@gandalf.stny.rr.com>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FKz6YMcrM85ilSw3+eBzu29vr7WkSpXNH6CdHh1Hp3+RQPUdrznE/A6qx5HxWRDeoPTR6JZwP/LHEyttFzD08DelIy35D2YA1n/nsyrn5zZDekHSj2YRoL2nMHrYKWPtULtng3zbEL4K7XqcBflkPsFYG2eXqGMzhB68ckhxsLY=
+Message-ID: <19f34abd0801271356v4567f6dfie966ccefd7454c72@mail.gmail.com>
+Date: Sun, 27 Jan 2008 22:56:41 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: lib/idr.c: initialize struct idr_layer
+Cc: "Jim Houston" <jim.houston@ccur.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Tejun Heo" <htejun@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <84144f020801271335v4f2491a2n18b12de2ef245499@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0801271207j377fba5bg92cedceedbdd228@mail.gmail.com>
+	 <84144f020801271300g316b87bgea6beb265b5c62d3@mail.gmail.com>
+	 <19f34abd0801271317o4b17dc28l3c93d4d28e3e2e73@mail.gmail.com>
+	 <Pine.LNX.4.64.0801272319570.540@sbz-30.cs.Helsinki.FI>
+	 <19f34abd0801271330j596cd9fbqbd3691548dff26@mail.gmail.com>
+	 <84144f020801271335v4f2491a2n18b12de2ef245499@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 27, 2008 10:35 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > I think there's a pretty big chance I'm wrong (or misunderstanding
+> > something) here, so I'll just ask:
+> > setup_object() from mm/slub.c is what calls the ctor. Shouldn't this
+> > be called from slab_alloc() as well? (I'm marking the data
+> > "uninitialized" there before returning the object.) Otherwise you
+> > might get back an object that is initialized with the previous owner's
+> > data. Or is this intentional?
+>
+> It's intentional. The caller of kmem_cache_free() is expected to put
+> the object in such a state that it can be recycled immediately when
+> kmem_cache_alloc() for that cache is called. You can find the design
+> rationale for that in Bonwick's original paper on slab:
+> http://citeseer.ist.psu.edu/bonwick94slab.html
 
-On Mon, 21 Jan 2008, Steven Rostedt wrote:
+Ow. I guess this is the end of the thread, then :-) My fault. Thanks!
 
->
-> On Mon, 21 Jan 2008, Esben Nielsen wrote:
->>
->> Please, tell what in the license forbids me to make a global replacement
->> EXPORT_SYMBOL_GPL -> EXPORT_SYMBOL and distribute the result?
->
-> If you want to distribute that code, the authors of that said code
-> may be able to challenge you in saying that you are enabling a means to
-> circumvent a way around the license, and hold you liable. Remember, all it
-> takes is one country with the laws that will grant this complaint.
->
->>
->> For me, on the other hand, it is against the spirit of free software to
->> actively make a block for people to do what ever they want with the code
->> when they are only doing it to themselves. That includes loading non-GPL
->> software into the kernel. The only thing they  are not allowed to do is to
->> distribute it and in that way "hurt" other people.
->
-> Honestly, I don't care which export it is. The thing is that I derived
-> that code from someone else. I did not look up the original author of the
-> code to find out which export they would like it to be. I may be able to
-> argue that since it was under a LGPL and not a GPL license, I may very
-> well be able to export it that way.
->
-> I'm taking the safe way out. By exporting it as EXPORT_SYMBOL_GPL, I am
-> safe either way. By exporting it as EXPORT_SYMBOL without first hearing
-> from the original author (and getting that in writing), or hearing it from
-> a lawyer, I may be putting myself at risk.
->
-> Feel free to creating a version of this code and
-> s/EXPORT_SYMBOL_GPL/EXPORT_SYMBOL/ and distribute it. I wont come after
-> you for that, but at least I know those that would, will go after you and
-> not me.
->
-> Call me a chicken, I don't care, but I'm just not going to put myself nor
-> my company I work for, at risk over this issue.
->
-
-First off, sorry for sounding so harsh and sorry for taking this 
-discussion onto you. It is quite off-topic in this context. It was just 
-a rant about the misconception that adding/removing _GPL to 
-EXPORT_SYMBOL can make non-GPL modules more or less legal. Is is a 
-_political_ issue, not a legal one.
-
-Esben
-
-> -- Steve
->
+Vegard
