@@ -1,88 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759747AbYA0Mko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760201AbYA0MlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759747AbYA0Mko (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 07:40:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757822AbYA0Mfy
+	id S1760201AbYA0MlA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 07:41:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbYA0MhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 07:35:54 -0500
-Received: from yergi.telenet-ops.be ([195.130.132.36]:54283 "EHLO
-	yergi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757754AbYA0Mfw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 07:35:52 -0500
-Message-Id: <20080127123400.390155907@mail.of.borg>
-References: <20080127123216.897698766@mail.of.borg>
-User-Agent: quilt/0.46-1
-Date: Sun, 27 Jan 2008 13:32:30 +0100
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stanislav Brabec <sbrabec@suse.cz>
-Subject: [patch 14/14] mac68k: remove dead MAC_ADBKEYCODES
-Content-Disposition: inline; filename=mac68k-remove-dead-MAC_ADBKEYCODES.diff
+	Sun, 27 Jan 2008 07:37:16 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33090 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757891AbYA0MhP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 07:37:15 -0500
+Date: Sun, 27 Jan 2008 13:37:02 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: X fails to start with latest Linus git
+Message-ID: <20080127123702.GB21282@elte.hu>
+References: <479BCE03.6070603@gmail.com> <479BD1D1.8020503@gmail.com> <20080127062703.GA23444@elte.hu> <20080127083129.c14452ca.kjwinchester@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080127083129.c14452ca.kjwinchester@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stanislav Brabec <sbrabec@suse.cz>
 
-It seems, that current kernel source code contains no traces of
-MAC_ADBKEYCODES and no reference to keyboard_sends_linux_keycodes any
-more.
+* Kevin Winchester <kjwinchester@gmail.com> wrote:
 
-Attached patch removes them from configuration files.
+> Sure, the result of the script is at
+> 
+> http://personal.nbnet.nb.ca/kwin/cfs-debug-info-2008.01.27-08.13.28
 
-Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- arch/m68k/Kconfig               |   14 --------------
- arch/m68k/configs/mac_defconfig |    1 -
- 2 files changed, 15 deletions(-)
+it seems you've got hpet active by default:
 
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -582,20 +582,6 @@ config MAC_HID
- 	depends on INPUT_ADBHID
- 	default y
- 
--config MAC_ADBKEYCODES
--	bool "Support for ADB raw keycodes"
--	depends on INPUT_ADBHID
--	help
--	  This provides support for sending raw ADB keycodes to console
--	  devices.  This is the default up to 2.4.0, but in future this may be
--	  phased out in favor of generic Linux keycodes.  If you say Y here,
--	  you can dynamically switch via the
--	  /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes
--	  sysctl and with the "keyboard_sends_linux_keycodes=" kernel
--	  argument.
--
--	  If unsure, say Y here.
--
- config ADB_KEYBOARD
- 	bool "Support for ADB keyboard (old driver)"
- 	depends on MAC && !INPUT_ADBHID
---- a/arch/m68k/configs/mac_defconfig
-+++ b/arch/m68k/configs/mac_defconfig
-@@ -678,7 +678,6 @@ CONFIG_LOGO_MAC_CLUT224=y
- #
- CONFIG_MAC_SCC=y
- CONFIG_MAC_HID=y
--CONFIG_MAC_ADBKEYCODES=y
- CONFIG_SERIAL_CONSOLE=y
- 
- #
+ /sys/devices/system/clocksource/clocksource0/current_clocksource:
+ hpet
+ /sys/devices/system/clocksource/clocksource0/available_clocksource:
+ hpet acpi_pm pit jiffies tsc
 
--- 
-Gr{oetje,eeting}s,
+do you get a similar lockup if you use acpi_pm? You can do that either 
+by disabling the HPET options in your .config, or by doing this prior 
+starting up X:
 
-						Geert
+  echo acpi_pm > /sys/devices/system/clocksource/clocksource0/current_clocksource
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+	Ingo
