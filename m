@@ -1,216 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbYA0Mg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758350AbYA0Mhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758831AbYA0Mg6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 07:36:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYA0MfI
+	id S1758350AbYA0Mhj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 07:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYA0MfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 07:35:08 -0500
-Received: from ananke.telenet-ops.be ([195.130.137.78]:54778 "EHLO
-	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753098AbYA0Me6 (ORCPT
+	Sun, 27 Jan 2008 07:35:11 -0500
+Received: from edna.telenet-ops.be ([195.130.132.58]:60764 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753250AbYA0Me6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 27 Jan 2008 07:34:58 -0500
-Message-Id: <20080127123357.112674863@mail.of.borg>
+Message-Id: <20080127123357.908726834@mail.of.borg>
 References: <20080127123216.897698766@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 27 Jan 2008 13:32:21 +0100
+Date: Sun, 27 Jan 2008 13:32:23 +0100
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
        Adrian Bunk <bunk@kernel.org>
-Subject: [patch 05/14] nubus: kill drivers/nubus/nubus_syms.c
-Content-Disposition: inline; filename=nubus-kill-drivers-nubus-nubus_syms-c.diff
+Subject: [patch 07/14] m68k: kill arch/m68k/hp300/ksyms.c
+Content-Disposition: inline; filename=m68k-kill-arch-m68k-hp300-ksyms-c.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Adrian Bunk <bunk@kernel.org>
 
-nubus: kill drivers/nubus/nubus_syms.c
+m68k: kill arch/m68k/hp300/ksyms.c
 
-EXPORT_SYMBOL's belong to the actual code.
+It was empty.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/nubus/Makefile     |    1 -
- drivers/nubus/nubus.c      |   13 +++++++++++++
- drivers/nubus/nubus_syms.c |   28 ----------------------------
- drivers/nubus/proc.c       |    4 ++++
- 4 files changed, 17 insertions(+), 29 deletions(-)
+ arch/m68k/hp300/Makefile |    2 +-
+ arch/m68k/hp300/ksyms.c  |    9 ---------
+ 2 files changed, 1 insertion(+), 10 deletions(-)
 
---- a/drivers/nubus/Makefile
-+++ b/drivers/nubus/Makefile
-@@ -4,5 +4,4 @@
+--- a/arch/m68k/hp300/Makefile
++++ b/arch/m68k/hp300/Makefile
+@@ -2,4 +2,4 @@
+ # Makefile for Linux arch/m68k/hp300 source directory
+ #
  
- obj-y   := nubus.o
- 
--obj-$(CONFIG_MODULES) += nubus_syms.o 
- obj-$(CONFIG_PROC_FS) += proc.o
---- a/drivers/nubus/nubus.c
-+++ b/drivers/nubus/nubus.c
-@@ -14,6 +14,7 @@
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/delay.h>
-+#include <linux/module.h>
- #include <asm/setup.h>
- #include <asm/system.h>
- #include <asm/page.h>
-@@ -186,6 +187,7 @@ void nubus_get_rsrc_mem(void *dest, cons
- 		len--;
- 	}
- }
-+EXPORT_SYMBOL(nubus_get_rsrc_mem);
- 
- void nubus_get_rsrc_str(void *dest, const struct nubus_dirent* dirent,
- 			int len)
-@@ -200,6 +202,7 @@ void nubus_get_rsrc_str(void *dest, cons
- 		len--;
- 	}
- }
-+EXPORT_SYMBOL(nubus_get_rsrc_str);
- 
- int nubus_get_root_dir(const struct nubus_board* board,
- 		       struct nubus_dir* dir)
-@@ -209,6 +212,7 @@ int nubus_get_root_dir(const struct nubu
- 	dir->mask = board->lanes;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_get_root_dir);
- 
- /* This is a slyly renamed version of the above */
- int nubus_get_func_dir(const struct nubus_dev* dev,
-@@ -219,6 +223,7 @@ int nubus_get_func_dir(const struct nubu
- 	dir->mask = dev->board->lanes;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_get_func_dir);
- 
- int nubus_get_board_dir(const struct nubus_board* board,
- 			struct nubus_dir* dir)
-@@ -237,6 +242,7 @@ int nubus_get_board_dir(const struct nub
- 		return -1;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_get_board_dir);
- 
- int nubus_get_subdir(const struct nubus_dirent *ent,
- 		     struct nubus_dir *dir)
-@@ -246,6 +252,7 @@ int nubus_get_subdir(const struct nubus_
- 	dir->mask = ent->mask;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_get_subdir);
- 
- int nubus_readdir(struct nubus_dir *nd, struct nubus_dirent *ent)
- {
-@@ -274,12 +281,14 @@ int nubus_readdir(struct nubus_dir *nd, 
- 	ent->mask  = nd->mask;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_readdir);
- 
- int nubus_rewinddir(struct nubus_dir* dir)
- {
- 	dir->ptr = dir->base;
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_rewinddir);
- 
- /* Driver interface functions, more or less like in pci.c */
- 
-@@ -303,6 +312,7 @@ nubus_find_device(unsigned short categor
- 	}
- 	return NULL;
- }
-+EXPORT_SYMBOL(nubus_find_device);
- 
- struct nubus_dev*
- nubus_find_type(unsigned short category,
-@@ -320,6 +330,7 @@ nubus_find_type(unsigned short category,
- 	}
- 	return NULL;
- }
-+EXPORT_SYMBOL(nubus_find_type);
- 
- struct nubus_dev*
- nubus_find_slot(unsigned int slot,
-@@ -335,6 +346,7 @@ nubus_find_slot(unsigned int slot,
- 	}
- 	return NULL;
- }
-+EXPORT_SYMBOL(nubus_find_slot);
- 
- int
- nubus_find_rsrc(struct nubus_dir* dir, unsigned char rsrc_type,
-@@ -346,6 +358,7 @@ nubus_find_rsrc(struct nubus_dir* dir, u
- 	}	
- 	return -1;
- }
-+EXPORT_SYMBOL(nubus_find_rsrc);
- 
- /* Initialization functions - decide which slots contain stuff worth
-    looking at, and print out lots and lots of information from the
---- a/drivers/nubus/nubus_syms.c
+-obj-y		:= ksyms.o config.o time.o reboot.o
++obj-y		:= config.o time.o reboot.o
+--- a/arch/m68k/hp300/ksyms.c
 +++ /dev/null
-@@ -1,28 +0,0 @@
--/* Exported symbols for NuBus services
--
--   (c) 1999 David Huggins-Daines <dhd@debian.org> */
+@@ -1,9 +0,0 @@
+-/*
+- *  linux/arch/m68k/hp300/ksyms.c
+- *
+- *  Copyright (C) 1998 Philip Blundell <philb@gnu.org>
+- *
+- *  This file contains the HP300-specific kernel symbols.  None yet. :-)
+- */
 -
 -#include <linux/module.h>
--#include <linux/types.h>
--#include <linux/nubus.h>
--
--#ifdef CONFIG_PROC_FS
--EXPORT_SYMBOL(nubus_proc_attach_device);
--EXPORT_SYMBOL(nubus_proc_detach_device);
--#endif
--
--MODULE_LICENSE("GPL");
--
--EXPORT_SYMBOL(nubus_find_device);
--EXPORT_SYMBOL(nubus_find_type);
--EXPORT_SYMBOL(nubus_find_slot);
--EXPORT_SYMBOL(nubus_get_root_dir);
--EXPORT_SYMBOL(nubus_get_board_dir);
--EXPORT_SYMBOL(nubus_get_func_dir);
--EXPORT_SYMBOL(nubus_readdir);
--EXPORT_SYMBOL(nubus_find_rsrc);
--EXPORT_SYMBOL(nubus_rewinddir);
--EXPORT_SYMBOL(nubus_get_subdir);
--EXPORT_SYMBOL(nubus_get_rsrc_mem);
--EXPORT_SYMBOL(nubus_get_rsrc_str);
--
---- a/drivers/nubus/proc.c
-+++ b/drivers/nubus/proc.c
-@@ -22,6 +22,8 @@
- #include <linux/nubus.h>
- #include <linux/proc_fs.h>
- #include <linux/init.h>
-+#include <linux/module.h>
-+
- #include <asm/uaccess.h>
- #include <asm/byteorder.h>
- 
-@@ -140,6 +142,7 @@ int nubus_proc_attach_device(struct nubu
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_proc_attach_device);
- 
- /* FIXME: this is certainly broken! */
- int nubus_proc_detach_device(struct nubus_dev *dev)
-@@ -154,6 +157,7 @@ int nubus_proc_detach_device(struct nubu
- 	}
- 	return 0;
- }
-+EXPORT_SYMBOL(nubus_proc_detach_device);
- 
- void __init proc_bus_nubus_add_devices(void)
- {
 
 -- 
 Gr{oetje,eeting}s,
