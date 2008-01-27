@@ -1,120 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbYA0Oyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbYA0PGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbYA0Oyf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 09:54:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbYA0OyZ
+	id S1755851AbYA0PGe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 10:06:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYA0PGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 09:54:25 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:21861 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753296AbYA0OyY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 09:54:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=qQpO/MpmqzgepwQSe799jF1V6ONG1tVeGKXkq2qKB+TLcMrKR7SqjtT6TCSYiYBTnR3a4MmAO201bcECekvaf79zMpyB7aqj/E/Pf1T0zjdl8CuAOypfKSwS472gCewfWvgsce8j6PpexPP50e4+BkFEHc6GEO4DnJKcCyqkHrc=
-Date: Sun, 27 Jan 2008 15:53:45 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Matt Mackall <mpm@selenic.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>
-Subject: "inconsistent lock state" (netconsole/net related)
-Message-ID: <20080127145314.GA6223@joi>
+	Sun, 27 Jan 2008 10:06:25 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54822 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752272AbYA0PGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 10:06:24 -0500
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX1/w2RoeJZnwaWXYE1hRSYTu70WKctWrzip7EWOFxi
+	Kh0j9SUgYdyczL
+From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: (ondemand) CPU governor  regression between 2.6.23 and 2.6.24
+Date: Sun, 27 Jan 2008 16:06:17 +0100
+User-Agent: KMail/1.9.7
+Cc: Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com
+References: <479B69D2.5050603@wpkg.org> <200801261946.54518.toralf.foerster@gmx.de> <20080127144610.GA25632@linux.vnet.ibm.com>
+In-Reply-To: <20080127144610.GA25632@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: multipart/signed;
+  boundary="nextPart1243458.xAqy6tcq7q";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200801271606.19862.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+--nextPart1243458.xAqy6tcq7q
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-My box is locking up on start of X.org so I enabled netconsole
-and at every boot I'm getting:
+Am Sonntag, 27. Januar 2008 schrieb Srivatsa Vaddagiri:
+> On Sat, Jan 26, 2008 at 07:46:51PM +0100, Toralf F=F6rster wrote:
+> >=20
+> > The problem is the same as described here : http://lkml.org/lkml/2007/1=
+0/21/85
+> > If I run dnetc even with lowest prority than the CPU stays at 600 MHz r=
+egardless
+> > of any other load (eg. rsyncing, svn update, compiling, ...)
+> >=20
+> > Stopping the dnetc process immediately speeds up the CPU up to 1.7 GHz.
+> >=20
+> >=20
+> > Am Samstag, 26. Januar 2008 schrieben Sie:
+> > > During the test, run top, and watch your CPU usage. Does it go above =
+80%=20
+> > > (the default for=20
+> > > /sys/devices/system/cpu/cpu0/cpufreq/ondemand/up_threshold).
+> >=20
+> > No, instead I get :
+> >=20
+> >  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> >  7294 dnetc     39  19   664  348  264 R 49.5  0.0   0:48.68 dnetc
+> >  7310 tfoerste  20   0  1796  492  428 R 48.5  0.0   0:07.19 factor
+> >  7050 root      20   0 96736 8872 3972 S  0.7  0.9   0:02.99 X
+>=20
+> Hi Toralf,
+> 	Can you list the o/p you see for overall cpu usage? You should
+> see something like below right at the top of the o/p:
+>=20
+> top - 20:03:59 up 12 days, 21:39, 18 users,  load average: 0.22, 0.20, 0.=
+25
+> Tasks: 200 total,   5 running, 193 sleeping,   0 stopped,   2 zombie
+> Cpu(s):  2.6% us,  1.3% sy,  0.0% ni, 96.0% id,  0.0% wa,  0.0% hi, 0.0% =
+si,  0.0% st
+>=20
+> The third line (giving overall cpu usage stats) is what is interesting he=
+re.
+> If you have more than one cpu, you can get cpu usage stats for each cpu
+> in top by pressing 1. Can you provide this information with and w/o=20
+> CONFIG_FAIR_GROUP_SCHED?
 
-ne2k-pci.c:v1.03 9/22/2003 D. Becker/P. Gortmaker
-ACPI: PCI Interrupt 0000:00:0c.0[A] -> GSI 17 (level, low) -> IRQ 17
-eth0: Compex RL2000 found at 0xb000, IRQ 17, 00:80:48:de:5e:89.
-netconsole: local port 12345
-netconsole: local IP 10.0.0.2
-netconsole: interface eth0
-netconsole: remote port 8888
-netconsole: remote IP 10.0.0.1
-netconsole: remote ethernet address 00:06:5b:6a:a5:74
-netconsole: device eth0 not up yet, forcing it
-netconsole: carrier detect appears untrustworthy, waiting 4 seconds
-Switched to high resolution mode on CPU 0
-console [netcon0] enabled
+This is what I get if I set CONFIG_FAIR_GROUP_SCHED to "y"
 
-=================================
-[ INFO: inconsistent lock state ]
-2.6.24 #83
----------------------------------
-inconsistent {in-softirq-W} -> {softirq-on-W} usage.
-swapper/1 [HC0[0]:SC0[0]:HE1:SE1] takes:
- (_xmit_ETHER){-+..}, at: [<ffffffff8049b890>] netpoll_send_skb+0x110/0x190
-{in-softirq-W} state was registered at:
-  [<ffffffffffffffff>] 0xffffffffffffffff
-irq event stamp: 527623
-hardirqs last  enabled at (527623): [<ffffffff805250a5>] _spin_unlock_irqrestore+0x65/0x80
-hardirqs last disabled at (527622): [<ffffffff80524c9d>] _spin_lock_irqsave+0x1d/0x60
-softirqs last  enabled at (527618): [<ffffffff8023afb3>] __do_softirq+0xb3/0xd0
-softirqs last disabled at (527609): [<ffffffff8020c6cc>] call_softirq+0x1c/0x30
+top - 16:00:59 up 2 min,  1 user,  load average: 2.56, 1.60, 0.65
+Tasks:  84 total,   3 running,  81 sleeping,   0 stopped,   0 zombie
+Cpu(s): 49.7%us,  0.3%sy, 49.7%ni,  0.0%id,  0.0%wa,  0.3%hi,  0.0%si,  0.0=
+%st
+Mem:   1036180k total,   322876k used,   713304k free,    13164k buffers
+Swap:   997880k total,        0k used,   997880k free,   149208k cached
 
-other info that might help us debug this:
-1 lock held by swapper/1:
- #0:  (target_list_lock){--..}, at: [<ffffffff80426c20>] write_msg+0x40/0xe0
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+ 6070 dnetc     39  19   664  348  264 R 49.7  0.0   1:09.71 dnetc
+ 6676 tfoerste  20   0  1796  488  428 R 49.3  0.0   0:02.72 factor
 
-stack backtrace:
-Pid: 1, comm: swapper Not tainted 2.6.24 #83
+Stopping dnetc gives:
 
-Call Trace:
- [<ffffffff80257129>] print_usage_bug+0x189/0x190
- [<ffffffff80258001>] mark_lock+0x4d1/0x660
- [<ffffffff80258ff1>] __lock_acquire+0x701/0x10f0
- [<ffffffff805250b5>] _spin_unlock_irqrestore+0x75/0x80
- [<ffffffff8049b890>] netpoll_send_skb+0x110/0x190
- [<ffffffff80259a72>] lock_acquire+0x92/0xc0
- [<ffffffff8049b890>] netpoll_send_skb+0x110/0x190
- [<ffffffff80524de0>] _spin_trylock+0x40/0x80
- [<ffffffff8049b890>] netpoll_send_skb+0x110/0x190
- [<ffffffff8049c79a>] netpoll_send_udp+0x22a/0x2a0
- [<ffffffff80426c82>] write_msg+0xa2/0xe0
- [<ffffffff8023539e>] __call_console_drivers+0x4e/0x70
- [<ffffffff80235414>] _call_console_drivers+0x54/0x90
- [<ffffffff80235757>] release_console_sem+0x117/0x260
- [<ffffffff8023630d>] register_console+0x15d/0x2f0
- [<ffffffff80702045>] init_netconsole+0x205/0x220
- [<ffffffff806e3659>] kernel_init+0xc9/0x2b0
- [<ffffffff8052439d>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff802583a9>] trace_hardirqs_on+0xd9/0x180
- [<ffffffff8020c358>] child_rip+0xa/0x12
- [<ffffffff8020bf13>] restore_args+0x0/0x30
- [<ffffffff80235699>] release_console_sem+0x59/0x260
- [<ffffffff806e3590>] kernel_init+0x0/0x2b0
- [<ffffffff8020c34e>] child_rip+0x0/0x12
+top - 16:02:36 up 4 min,  1 user,  load average: 2.50, 1.87, 0.83
+Tasks:  89 total,   3 running,  86 sleeping,   0 stopped,   0 zombie
+Cpu(s): 99.3%us,  0.7%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0=
+%st
+Mem:   1036180k total,   378760k used,   657420k free,    14736k buffers
+Swap:   997880k total,        0k used,   997880k free,   180868k cached
 
-netconsole: network logging started
-Driver 'sd' needs updating - please use bus_type methods
-Driver 'sr' needs updating - please use bus_type methods
-sata_via 0000:00:0f.0: version 2.3
-ACPI: PCI Interrupt 0000:00:0f.0[B] -> GSI 20 (level, low) -> IRQ 20
-sata_via 0000:00:0f.0: routed to hard irq line 10
-scsi0 : sata_via
-scsi1 : sata_via
-ata1: SATA max UDMA/133 cmd 0xd000 ctl 0xc800 bmdma 0xb800 irq 20
-ata2: SATA max UDMA/133 cmd 0xc400 ctl 0xc000 bmdma 0xb808 irq 20
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: ATA-6: WDC WD1600JD-00HBB0, 08.02D08, max UDMA/133
-ata1.00: 312581808 sectors, multi 16: LBA48
-(...)
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+ 6766 tfoerste  20   0  1796  488  428 R 84.9  0.0   0:05.41 factor
 
-I'm on latest git (326e96b92306b7af24a3608ec01156cba17a3fc1: printk: revert ktime_get() timestamps).
-If you want more informations just ask.
 
-Now I'm going to bisect lockup because netconsole didn't help...
+> If I am not mistaken, cpu ondemand gov goes by the cpu idle time stats,
+> which should not be affected by FAIR_GROUP_SCHED. I will lookaround for
+> other possible causes.
 
-Marcin Slusarz
+As I stated our in http://lkml.org/lkml/2008/1/26/207 the issue is solved
+after unselecting FAIR_GROUP_SCHED.=20
+
+BTW my answer to an email of Mike Galbraith was Cced to the lkml here :
+http://lkml.org/lkml/2008/1/27/116
+
+=2D-=20
+MfG/Sincerely
+
+Toralf F=F6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+
+--nextPart1243458.xAqy6tcq7q
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHnJ3rhyrlCH22naMRAhWcAJ9IHYEU5Wy+LEnJjkJirh9Tnhp9JQCfaPSp
+nj/Kw0TowDcW6nl0EM1wIfE=
+=Sm2j
+-----END PGP SIGNATURE-----
+
+--nextPart1243458.xAqy6tcq7q--
