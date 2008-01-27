@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbYA0Fb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbYA0GAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753862AbYA0Fb4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 00:31:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbYA0Fbr
+	id S1753384AbYA0GAb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 01:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbYA0GAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 00:31:47 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37712 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbYA0Fbq (ORCPT
+	Sun, 27 Jan 2008 01:00:21 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39067 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750792AbYA0GAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 00:31:46 -0500
-Date: Sat, 26 Jan 2008 21:36:06 -0800
-From: Greg KH <greg@kroah.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       sfr@canb.auug.org.au
-Subject: Re: [PATCH] Fix powerpc vio_find_name to not use devices_subsys
-Message-ID: <20080127053606.GA24306@kroah.com>
-References: <18331.54314.379281.960297@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18331.54314.379281.960297@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 27 Jan 2008 01:00:20 -0500
+Date: Sat, 26 Jan 2008 22:00:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Wang Nan" <wn.at.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Can any one tell me why cond_resched in do_select?
+Message-Id: <20080126220006.21bf443c.akpm@linux-foundation.org>
+In-Reply-To: <14344f930801231101w3906aeaey88034e0fa8fa3f36@mail.gmail.com>
+References: <14344f930801231101w3906aeaey88034e0fa8fa3f36@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 27, 2008 at 11:45:30AM +1100, Paul Mackerras wrote:
-> This fixes vio_find_name() in arch/powerpc/kernel/vio.c, which is
-> currently broken because it tries to use devices_subsys.  That is bad
-> for two reasons: (1) it's doing (or trying to do) a scan of all
-> devices when it should only be scanning those on the vio bus, and
-> (2) devices_subsys was an internal symbol of the device system code
-> which was never meant for external use and has now gone away, and
-> thus the kernel fails to compile on pSeries.
-> 
-> The new version uses bus_find_device() on the vio bus (vio_bus_type).
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
-> Greg, do you want to send this to Linus or will I do that?  Or do you
-> have a better version? :)
+> On Thu, 24 Jan 2008 03:01:53 +0800 "Wang Nan" <wn.at.lkml@gmail.com> wrote:
+> Hi, everyone.
+> I have a question regarding to select system call's code. In
+> do_select() function, after check each fd in the set, do_select() call
+> cond_resched(). That line, according to my view, is to reduce the
+> system freeze time when do the busy querying. But before the call,
+> when entering into the big loop, do_select call
+> set_current_state(TASK_INTERRUPTIBLE). Then, if the reschedule really
+> taken up, the current process will not return unless it catch a
+> signal, or one of already registered fd send an event.
+> I've tried in UML. If I replace the cond_resched() into schedule(),
+> when sys_select() called, the process halt just like I've said.
+> I don't think there is a bug because this code exist so long time and
+> no really bad thing happened. I just want to know that, since no
+> schedule() allowed here, can we delete the useless line?
 
-I'll send it to him, with a minor change (I'm going to make this a core
-function, as others also use the same functionality, no need for
-everyone to re-invent the wheel all the time.
+It does look a bit odd.  IIRC, cond_resched() is special, in that if it is
+called in state TASK_INTERRUPTIBLE it will _not_ return in state
+TASK_RUNNING after having called schedule().
 
-I also have some other patches to send him to fix up the fall-out of
-these driver core changes :)
+Search for PREEMPT_ACTIVE in kernel/sched.c.  See if you can work out what
+this code:
 
-thanks,
 
-greg k-h
+	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+		if (unlikely((prev->state & TASK_INTERRUPTIBLE) &&
+				unlikely(signal_pending(prev)))) {
+			prev->state = TASK_RUNNING;
+		} else {
+			deactivate_task(rq, prev, 1);
+		}
+		switch_count = &prev->nvcsw;
+	}
+
+is doing, then send a patch which adds the missing comment :)
