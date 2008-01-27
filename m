@@ -1,100 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757011AbYA0SNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbYA0SOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757011AbYA0SNk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 13:13:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYA0SNd
+	id S1758133AbYA0SOp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 13:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbYA0SOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 13:13:33 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:60717 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbYA0SNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 13:13:32 -0500
-Date: Sun, 27 Jan 2008 20:13:54 +0200
-From: Adrian Bunk <adrian.bunk@movial.fi>
+	Sun, 27 Jan 2008 13:14:37 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:44705 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753048AbYA0SOg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 13:14:36 -0500
+X-Greylist: delayed 2277 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Jan 2008 13:14:35 EST
+Date: Sun, 27 Jan 2008 18:39:23 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
 To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.60
-Message-ID: <20080127181354.GE2558@does.not.exist>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>
+Message-ID: <20080127173923.GT11364@enneenne.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: LinuxPPS patch
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Security fixes since 2.6.16.59:
-- CVE-2007-6063: isdn: avoid copying overly-long strings
-- CVE-2007-6151: I4L: fix isdn_ioctl memory overrun vulnerability
-- CVE-2007-6206: vfs: coredumping fix
+Hello,
 
+here my patch for PPS support against kernel 2.6.24:
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
+   http://ftp.enneenne.com/pub/misc/linuxpps/patches/ntp-pps-2.6.24.diff
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+The code has been tested by some guys intered in PPS stuff and it
+seems ok. :)
 
-RSS feed of the git tree:
-http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+Please report your suggestions in order to get kernel inclusion.
 
+Thanks in advance,
 
-Changes since 2.6.16.59:
+Rodolfo
 
-Adrian Bunk (3):
-      drivers/scsi/BusLogic.c: #ifdef MODULE BusLogic_pci_tbl[]
-      Linux 2.6.16.60-rc1
-      Linux 2.6.16.60
+-- 
 
-Al Viro (3):
-      [CASSINI]: Fix endianness bug.
-      [NET]: Introduce types for checksums.
-      [NET]: Generic checksum annotations and cleanups.
-
-Ben Collins (1):
-      [BusLogic] Add pci dev table for auto module loading.
-
-Chas Williams (1):
-      [ATM]: [nicstar] delay irq setup until card is configured
-
-David S. Miller (1):
-      [CASSINI]: Set skb->truesize properly on receive packets.
-
-Eric Dumazet (1):
-      [IPV4] ROUTE: ip_rt_dump() is unecessary slow
-
-Herbert Xu (1):
-      [ATM]: Check IP header validity in mpc_send_packet
-
-Ingo Molnar (1):
-      vfs: coredumping fix (CVE-2007-6206)
-
-Jeff Moyer (1):
-      raw: don't allow the creation of a raw device with minor number 0
-
-Karsten Keil (2):
-      isdn: avoid copying overly-long strings (CVE-2007-6063)
-      I4L: fix isdn_ioctl memory overrun vulnerability (CVE-2007-6151)
-
-Trond Myklebust (2):
-      NFS: writes should not clobber utimes() calls
-      NFS: call nfs_wb_all() only on regular files
-
-
- Makefile                       |    2 
- drivers/atm/nicstar.c          |   19 +++-----
- drivers/char/raw.c             |    2 
- drivers/isdn/i4l/isdn_common.c |    5 +-
- drivers/isdn/i4l/isdn_net.c    |    8 +--
- drivers/net/cassini.c          |    9 ++-
- drivers/net/cassini.h          |   18 +++----
- drivers/scsi/BusLogic.c        |   13 +++++
- fs/exec.c                      |    6 ++
- fs/nfs/dir.c                   |    3 -
- fs/nfs/inode.c                 |    4 -
- include/linux/types.h          |    2 
- include/net/checksum.h         |   42 ++++++++++--------
- include/net/ip6_checksum.h     |   76 ++++++++++++++++-----------------
- net/atm/mpc.c                  |    7 +++
- net/ipv4/route.c               |    8 +--
- 16 files changed, 133 insertions(+), 91 deletions(-)
-
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
