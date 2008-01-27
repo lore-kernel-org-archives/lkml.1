@@ -1,46 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760175AbYA0XGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbYA0XIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760175AbYA0XGT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 18:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbYA0XGE
+	id S1760205AbYA0XIY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 18:08:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757527AbYA0XIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 18:06:04 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:35503 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753528AbYA0XGA (ORCPT
+	Sun, 27 Jan 2008 18:08:16 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:60296 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756203AbYA0XIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 18:06:00 -0500
-Subject: Re: [PATCH] [10/18] BKL-removal: Implement a compat_ioctl handler
-	for JFS
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, akpm@osdl.org
-In-Reply-To: <20080127021716.BE0B714D2E@wotan.suse.de>
-References: <20080127317.043953000@suse.de>
-	 <20080127021716.BE0B714D2E@wotan.suse.de>
-Content-Type: text/plain
-Date: Sun, 27 Jan 2008 17:05:41 -0600
-Message-Id: <1201475141.11997.37.camel@norville.austin.ibm.com>
+	Sun, 27 Jan 2008 18:08:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=frGwWaeTLM/roG4FNM5kj10IJ8HqhS1sbzXQQVvM5nZxnOkfwR88FpObEN4UYajXKqNA8yyrXuAn1NBsZQmx/DoK6WthNPdLPK4gftq/WI+RWc1JoBiFmj5sx7ZCnANDbInsXYGzDJ1BNd1dbSCS4IxtwkI1xFpwV3uJIa4xF0w=
+Date: Sun, 27 Jan 2008 19:08:10 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: X fails to start with latest Linus git
+Message-Id: <20080127190810.93f4c9ee.kjwinchester@gmail.com>
+In-Reply-To: <20080127123514.GA21282@elte.hu>
+References: <479BCE03.6070603@gmail.com>
+	<479BD1D1.8020503@gmail.com>
+	<20080127062703.GA23444@elte.hu>
+	<20080127083129.c14452ca.kjwinchester@gmail.com>
+	<20080127123514.GA21282@elte.hu>
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-01-27 at 03:17 +0100, Andi Kleen wrote:
-> The ioctls were already compatible except for the actual values so this
-> was fairly easy to do.
-> 
-> Cc: shaggy@austin.ibm.com
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
+On Sun, 27 Jan 2008 13:35:14 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Added to the jfs git tree.
+> 
+> * Kevin Winchester <kjwinchester@gmail.com> wrote:
+> 
+> > although it is not complete.  For some reason (xubuntu, probably) dash 
+> > is my default shell and it does not like the for loop at line 69 of 
+> > that script:
+> > 
+> > for ((i=0; i<5; i++)); do
+> >  echo "-- sched_debug #$i: --"       >> $FILE
+> >  date                                >> $FILE
+> >  cat /proc/sched_debug               >> $FILE 2>/dev/null
+> >  sleep 1
+> > done
+> > 
+> > Not being a shell scripter, I have no idea how to port that to dash.
+> 
+> oops, stick this to the top of the script:
+> 
+>   #!/bin/bash
+> 
+> as that loop is a bashism. (I've updated the script on my site as well.)
+> 
+> 	Ingo
 
-Thanks,
-Shaggy
+Here is the updated script run without the missing info:
+
+
+http://personal.nbnet.nb.ca/kwin/cfs-debug-info-2008.01.27-19.04.50
+
+
 -- 
-David Kleikamp
-IBM Linux Technology Center
-
+Kevin Winchester <kjwinchester@gmail.com>
