@@ -1,62 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbYA0Mg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbYA0Mgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758200AbYA0Mg0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 07:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbYA0MfD
+	id S1757328AbYA0Mgm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 07:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbYA0MfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 07:35:03 -0500
-Received: from ananke.telenet-ops.be ([195.130.137.78]:54770 "EHLO
-	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752916AbYA0Me5 (ORCPT
+	Sun, 27 Jan 2008 07:35:05 -0500
+Received: from agave.telenet-ops.be ([195.130.137.77]:43699 "EHLO
+	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752965AbYA0Me6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 07:34:57 -0500
-Message-Id: <20080127123356.403328763@mail.of.borg>
+	Sun, 27 Jan 2008 07:34:58 -0500
+X-Greylist: delayed 2221 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Jan 2008 07:34:58 EST
+Message-Id: <20080127123356.846686553@mail.of.borg>
 References: <20080127123216.897698766@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 27 Jan 2008 13:32:19 +0100
+Date: Sun, 27 Jan 2008 13:32:20 +0100
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alejandro Martinez Ruiz <alex@flawedcode.org>
-Subject: [patch 03/14] dio: ARRAY_SIZE() cleanup
-Content-Disposition: inline; filename=dio-ARRAY_SIZE-cleanup.diff
+       Roel Kluin <12o3l@tiscali.nl>
+Subject: [patch 04/14] m68k: Balance ioremap and iounmap in m68k/atari/hades-pci.c
+Content-Disposition: inline; filename=atari-hades-pci-balance-iomap-and-iounmap.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alejandro Martinez Ruiz <alex@flawedcode.org>
+From: Roel Kluin <12o3l@tiscali.nl>
 
-dio: ARRAY_SIZE() cleanup
+m68k: Balance ioremap and iounmap in m68k/atari/hades-pci.c
 
-[Geert: eliminate NUMNAMES, as suggested by Richard Knutsson ]
-
-Signed-off-by: Alejandro Martinez Ruiz <alex@flawedcode.org>
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/dio/dio.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ arch/m68k/atari/hades-pci.c |   56 +++++++++++++++++++++-----------------------
+ 1 file changed, 27 insertions(+), 29 deletions(-)
 
---- a/drivers/dio/dio.c
-+++ b/drivers/dio/dio.c
-@@ -88,8 +88,6 @@ static struct dioname names[] = 
- #undef DIONAME
- #undef DIOFBNAME
+--- a/arch/m68k/atari/hades-pci.c
++++ b/arch/m68k/atari/hades-pci.c
+@@ -376,8 +376,8 @@ struct pci_bus_info * __init init_hades_
+ 	 */
  
--#define NUMNAMES (sizeof(names) / sizeof(struct dioname))
+ 	bus = kzalloc(sizeof(struct pci_bus_info), GFP_KERNEL);
+-	if (!bus)
+-		return NULL;
++	if (unlikely(!bus))
++		goto iounmap_base_virt;
+ 
+ 	/*
+ 	 * Claim resources. The m68k has no separate I/O space, both
+@@ -385,43 +385,25 @@ struct pci_bus_info * __init init_hades_
+ 	 * the I/O resources are requested in memory space as well.
+ 	 */
+ 
+-	if (request_resource(&iomem_resource, &config_space) != 0)
+-	{
+-		kfree(bus);
+-		return NULL;
+-	}
 -
- static const char *unknowndioname 
-         = "unknown DIO board -- please email <linux-m68k@lists.linux-m68k.org>!";
+-	if (request_resource(&iomem_resource, &io_space) != 0)
+-	{
+-		release_resource(&config_space);
+-		kfree(bus);
+-		return NULL;
+-	}
++	if (unlikely(request_resource(&iomem_resource, &config_space) != 0))
++		goto free_bus;
++
++	if (unlikely(request_resource(&iomem_resource, &io_space) != 0))
++		goto release_config_space;
  
-@@ -97,7 +95,7 @@ static const char *dio_getname(int id)
- {
-         /* return pointer to a constant string describing the board with given ID */
- 	unsigned int i;
--        for (i = 0; i < NUMNAMES; i++)
-+        for (i = 0; i < ARRAY_SIZE(names); i++)
-                 if (names[i].id == id) 
-                         return names[i].name;
+ 	bus->mem_space.start = HADES_MEM_BASE;
+ 	bus->mem_space.end = HADES_MEM_BASE + HADES_MEM_SIZE - 1;
+ 	bus->mem_space.name = pci_mem_name;
+ #if 1
+-	if (request_resource(&iomem_resource, &bus->mem_space) != 0)
+-	{
+-		release_resource(&io_space);
+-		release_resource(&config_space);
+-		kfree(bus);
+-		return NULL;
+-	}
++	if (unlikely(request_resource(&iomem_resource, &bus->mem_space) != 0))
++		goto release_io_space;
+ #endif
+ 	bus->io_space.start = pci_io_base_virt;
+ 	bus->io_space.end = pci_io_base_virt + HADES_VIRT_IO_SIZE - 1;
+ 	bus->io_space.name = pci_io_name;
+ #if 1
+-	if (request_resource(&ioport_resource, &bus->io_space) != 0)
+-	{
+-		release_resource(&bus->mem_space);
+-		release_resource(&io_space);
+-		release_resource(&config_space);
+-		kfree(bus);
+-		return NULL;
+-	}
++	if (unlikely(request_resource(&ioport_resource, &bus->io_space) != 0))
++		goto release_bus_mem_space;
+ #endif
+ 	/*
+ 	 * Set hardware dependent functions.
+@@ -438,5 +420,21 @@ struct pci_bus_info * __init init_hades_
+ 	tt_mfp.active_edge &= ~0x27;
  
+ 	return bus;
++
++release_bus_mem_space:
++	release_resource(&bus->mem_space);
++release_io_space:
++	release_resource(&io_space);
++release_config_space:
++	release_resource(&config_space);
++free_bus:
++	kfree(bus);
++iounmap_base_virt:
++	iounmap((void *)pci_io_base_virt);
++
++	for (i = 0; i < N_SLOTS; i++)
++		iounmap((void *)pci_conf_base_virt[i]);
++
++	return NULL;
+ }
+ #endif
 
 -- 
 Gr{oetje,eeting}s,
