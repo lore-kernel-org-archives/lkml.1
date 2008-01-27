@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbYA0Jzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759986AbYA0J4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759532AbYA0Jzs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 04:55:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756982AbYA0Jtj
+	id S1759986AbYA0J4J (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 04:56:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757084AbYA0Jtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 04:49:39 -0500
-Received: from [212.23.103.76] ([212.23.103.76]:59033 "EHLO gollum.tnic"
+	Sun, 27 Jan 2008 04:49:42 -0500
+Received: from [212.23.103.76] ([212.23.103.76]:58941 "EHLO gollum.tnic"
 	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756648AbYA0Jt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 04:49:27 -0500
+	id S1756655AbYA0Jt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 04:49:28 -0500
 From: Borislav Petkov <petkovbb@gmail.com>
 To: <bzolnier@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Borislav Petkov <bbpetkov@yahoo.de>
-Subject: [PATCH 29/32] ide-tape: remove mtio.h related comments
-Date: Sun, 27 Jan 2008 10:48:17 +0100
-Message-Id: <1201427300-3954-24-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 25/32] ide-tape: simplify code branching in the interrupt handler
+Date: Sun, 27 Jan 2008 10:48:13 +0100
+Message-Id: <1201427300-3954-20-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email debian.1.5.3.7.1-dirty
 In-Reply-To: <1201427300-3954-1-git-send-email-petkovbb@gmail.com>
 References: <1201427300-3954-1-git-send-email-petkovbb@gmail.com>
@@ -25,132 +25,114 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Borislav Petkov <bbpetkov@yahoo.de>
 
-Those are already in mtio.h.
+... by adding a new typedef function pointer idetape_io_buf in order to call
+the proper buffer i/o handler depending on the data direction.
 
 Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
 ---
- drivers/ide/ide-tape.c |   96 +++++++----------------------------------------
- 1 files changed, 15 insertions(+), 81 deletions(-)
+ drivers/ide/ide-tape.c |   54 +++++++++++++++++++++++++----------------------
+ 1 files changed, 29 insertions(+), 25 deletions(-)
 
 diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index d4c4255..cfb26d9 100644
+index eab552e..041edcd 100644
 --- a/drivers/ide/ide-tape.c
 +++ b/drivers/ide/ide-tape.c
-@@ -3028,69 +3028,20 @@ static int idetape_write_filemark (ide_drive_t *drive)
+@@ -1090,18 +1090,22 @@ static void idetape_postpone_request (ide_drive_t *drive)
  }
  
  /*
-- *	idetape_mtioctop is called from idetape_chrdev_ioctl when
-- *	the general mtio MTIOCTOP ioctl is requested.
-+ * Called from idetape_chrdev_ioctl when the general mtio MTIOCTOP ioctl is
-+ * requested.
-  *
-- *	We currently support the following mtio.h operations:
-+ * Note: MTBSF and MTBSFM are not supported when the tape doesn't support
-+ * spacing over filemarks in the reverse direction. In this case, MTFSFM is also
-+ * usually not supported (it is supported in the rare case in which we crossed
-+ * the filemark during our read-ahead pipelined operation mode).
-  *
-- *	MTFSF	-	Space over mt_count filemarks in the positive direction.
-- *			The tape is positioned after the last spaced filemark.
-+ * The following commands are currently not supported:
-  *
-- *	MTFSFM	-	Same as MTFSF, but the tape is positioned before the
-- *			last filemark.
+- *	idetape_pc_intr is the usual interrupt handler which will be called
+- *	during a packet command. We will transfer some of the data (as
+- *	requested by the drive) and will re-point interrupt handler to us.
+- *	When data transfer is finished, we will act according to the
+- *	algorithm described before idetape_issue_packet_command.
 - *
-- *	MTBSF	-	Steps background over mt_count filemarks, tape is
-- *			positioned before the last filemark.
-- *
-- *	MTBSFM	-	Like MTBSF, only tape is positioned after the last filemark.
-- *
-- *	Note:
-- *
-- *		MTBSF and MTBSFM are not supported when the tape doesn't
-- *		support spacing over filemarks in the reverse direction.
-- *		In this case, MTFSFM is also usually not supported (it is
-- *		supported in the rare case in which we crossed the filemark
-- *		during our read-ahead pipelined operation mode).
-- *		
-- *	MTWEOF	-	Writes mt_count filemarks. Tape is positioned after
-- *			the last written filemark.
-- *
-- *	MTREW	-	Rewinds tape.
-- *
-- *	MTLOAD	-	Loads the tape.
-- *
-- *	MTOFFL	-	Puts the tape drive "Offline": Rewinds the tape and
-- *	MTUNLOAD	prevents further access until the media is replaced.
-- *
-- *	MTNOP	-	Flushes tape buffers.
-- *
-- *	MTRETEN	-	Retension media. This typically consists of one end
-- *			to end pass on the media.
-- *
-- *	MTEOM	-	Moves to the end of recorded data.
-- *
-- *	MTERASE	-	Erases tape.
-- *
-- *	MTSETBLK - 	Sets the user block size to mt_count bytes. If
-- *			mt_count is 0, we will attempt to autodetect
-- *			the block size.
-- *
-- *	MTSEEK	-	Positions the tape in a specific block number, where
-- *			each block is assumed to contain which user_block_size
-- *			bytes.
-- *
-- *	MTSETPART - 	Switches to another tape partition.
-- *
-- *	MTLOCK - 	Locks the tape door.
-- *
-- *	MTUNLOCK - 	Unlocks the tape door.
-- *
-- *	The following commands are currently not supported:
-- *
-- *	MTFSS, MTBSS, MTWSM, MTSETDENSITY,
-- *	MTSETDRVBUFFER, MT_ST_BOOLEANS, MT_ST_WRITE_THRESHOLD.
-+ * MTFSS, MTBSS, MTWSM, MTSETDENSITY, MTSETDRVBUFFER, MT_ST_BOOLEANS,
-+ * MT_ST_WRITE_THRESHOLD.
++ * This is the usual interrupt handler which will be called during a packet
++ * command. We will transfer some of the data (as requested by the drive) and
++ * will re-point interrupt handler to us. When data transfer is finished, we
++ * will act according to the algorithm described before
++ * idetape_issue_packet_command.
   */
--static int idetape_mtioctop (ide_drive_t *drive,short mt_op,int mt_count)
-+static int idetape_mtioctop(ide_drive_t *drive, short mt_op, int mt_count)
+-static ide_startstop_t idetape_pc_intr (ide_drive_t *drive)
++
++typedef void idetape_io_buf(ide_drive_t *, idetape_pc_t *, uint);
++
++static ide_startstop_t idetape_pc_intr(ide_drive_t *drive)
  {
+ 	ide_hwif_t *hwif = drive->hwif;
  	idetape_tape_t *tape = drive->driver_data;
- 	idetape_pc_t pc;
-@@ -3203,29 +3154,12 @@ static int idetape_mtioctop (ide_drive_t *drive,short mt_op,int mt_count)
- }
+ 	idetape_pc_t *pc = tape->pc;
++	xfer_func_t *xferfunc;
++	idetape_io_buf *iobuf;
+ 	unsigned int temp;
+ #if SIMULATE_ERRORS
+ 	static int error_sim_count = 0;
+@@ -1171,7 +1175,8 @@ static ide_startstop_t idetape_pc_intr (ide_drive_t *drive)
+ 			debug_log(DBG_ERR, "%s: I/O error\n", tape->name);
  
- /*
-- *	Our character device ioctls.
-- *
-- *	General mtio.h magnetic io commands are supported here, and not in
-- *	the corresponding block interface.
-- *
-- *	The following ioctls are supported:
-- *
-- *	MTIOCTOP -	Refer to idetape_mtioctop for detailed description.
-- *
-- *	MTIOCGET - 	The mt_dsreg field in the returned mtget structure
-- *			will be set to (user block size in bytes <<
-- *			MT_ST_BLKSIZE_SHIFT) & MT_ST_BLKSIZE_MASK.
-- *
-- *			The mt_blkno is set to the current user block number.
-- *			The other mtget fields are not supported.
-- *
-- *	MTIOCPOS -	The current tape "block position" is returned. We
-- *			assume that each block contains user_block_size
-- *			bytes.
-- *
-- *	Our own ide-tape ioctls are supported on both interfaces.
-+ * Our character device ioctls. General mtio.h magnetic io commands are
-+ * supported here, and not in the corresponding block interface. Our own
-+ * ide-tape ioctls are supported on both interfaces.
-  */
--static int idetape_chrdev_ioctl (struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
-+static int idetape_chrdev_ioctl(struct inode *inode, struct file *file,
-+		uint cmd, ulong arg)
- {
- 	struct ide_tape_obj *tape = ide_tape_f(file);
- 	ide_drive_t *drive = tape->drive;
+ 			if (pc->c[0] == REQUEST_SENSE) {
+-				printk(KERN_ERR "ide-tape: I/O error in request sense command\n");
++				printk(KERN_ERR "ide-tape: I/O error in request"
++						" sense command\n");
+ 				return ide_do_reset(drive);
+ 			}
+ 			debug_log(DBG_ERR, "[cmd %x]: check condition\n",
+@@ -1210,7 +1215,7 @@ static ide_startstop_t idetape_pc_intr (ide_drive_t *drive)
+ 	ireason = hwif->INB(IDE_IREASON_REG);
+ 
+ 	if (ireason & CD) {
+-		printk(KERN_ERR "ide-tape: CoD != 0 in idetape_pc_intr\n");
++		printk(KERN_ERR "ide-tape: CoD != 0 in %s\n", __func__);
+ 		return ide_do_reset(drive);
+ 	}
+ 	if (((ireason & IO) == IO) == test_bit(PC_WRITING, &pc->flags)) {
+@@ -1226,31 +1231,30 @@ static ide_startstop_t idetape_pc_intr (ide_drive_t *drive)
+ 		temp = pc->xferred + bcount;
+ 		if (temp > pc->rq_xfer) {
+ 			if (temp > pc->buf_size) {
+-				printk(KERN_ERR "ide-tape: The tape wants to send us more data than expected - discarding data\n");
++				printk(KERN_ERR "ide-tape: The tape wants to "
++						"send us more data than "
++						"expected - discarding data\n");
+ 				idetape_discard_data(drive, bcount);
+-				ide_set_handler(drive, &idetape_pc_intr, IDETAPE_WAIT_CMD, NULL);
++				ide_set_handler(drive, &idetape_pc_intr,
++						IDETAPE_WAIT_CMD, NULL);
+ 				return ide_started;
+ 			}
+ 			debug_log(DBG_SENSE, "The tape wants to send us more "
+ 				"data than expected - allowing transfer\n");
+ 
+ 		}
+-	}
+-	if (test_bit(PC_WRITING, &pc->flags)) {
+-		if (pc->bh != NULL)
+-			idetape_output_buffers(drive, pc, bcount);
+-		else
+-			/* Write the current buffer */
+-			hwif->atapi_output_bytes(drive, pc->cur_pos,
+-						 bcount);
++		iobuf = &idetape_input_buffers;
++		xferfunc = hwif->atapi_input_bytes;
+ 	} else {
+-		if (pc->bh != NULL)
+-			idetape_input_buffers(drive, pc, bcount);
+-		else
+-			/* Read the current buffer */
+-			hwif->atapi_input_bytes(drive, pc->cur_pos,
+-						bcount);
++		iobuf = &idetape_output_buffers;
++		xferfunc = hwif->atapi_output_bytes;
+ 	}
++
++	if (pc->bh)
++		iobuf(drive, pc, bcount);
++	else
++		xferfunc(drive, pc->cur_pos, bcount);
++
+ 	/* Update the current position */
+ 	pc->xferred += bcount;
+ 	pc->cur_pos += bcount;
 -- 
 1.5.3.7
 
