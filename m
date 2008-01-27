@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758705AbYA0Tm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbYA0TnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758705AbYA0Tm7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 14:42:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbYA0Tmu
+	id S1759913AbYA0TnU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 14:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757571AbYA0Tmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 14:42:50 -0500
-Received: from ns2.suse.de ([195.135.220.15]:57013 "EHLO mx2.suse.de"
+	Sun, 27 Jan 2008 14:42:55 -0500
+Received: from mail.suse.de ([195.135.220.2]:41254 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753504AbYA0Tmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 14:42:49 -0500
-Date: Sun, 27 Jan 2008 11:40:53 -0800
+	id S1757130AbYA0Tmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 14:42:54 -0500
+Date: Sun, 27 Jan 2008 11:41:16 -0800
 From: Greg KH <gregkh@suse.de>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch] drivers/base/core.c: fix a compile error
-Message-ID: <20080127194053.GA17136@suse.de>
-References: <479A4867.9040302@goop.org> <20080125221731.GB15172@suse.de> <20080125150002.09cdacb8.rdunlap@xenotime.net> <20080125231129.GD25074@suse.de> <479A6F9D.8040402@goop.org> <20080126091445.GA20935@hacking>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 158/196] Driver core: convert block from raw kobjects
+Message-ID: <20080127194116.GB17136@suse.de>
+References: <20080125232317.GA7131@mailshack.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080126091445.GA20935@hacking>
+In-Reply-To: <20080125232317.GA7131@mailshack.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 26, 2008 at 05:14:45PM +0800, WANG Cong wrote:
-> On Fri, Jan 25, 2008 at 03:24:13PM -0800, Jeremy Fitzhardinge wrote:
-> >Greg KH wrote:
-> >>Ah, sorry, I missed that "note" :(
-> >>
-> >>thanks,
-> >>
-> >>greg 'time to get that make randconfig system up and working' k-h
-> >>  
-> >
-> >Here's a config that fails.
-> >
+On Sat, Jan 26, 2008 at 12:23:18AM +0100, Alexander van Heukelum wrote:
+> Fix build with CONFIG_BLOCK off.
 > 
-> Here's one possible fix. Please review.
+> Building git-2d94dfc with CONFIG_BLOCK turned off gives me:
 > 
-> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> drivers/base/core.c: In function 'device_add_class_symlinks':
+> drivers/base/core.c:704: error: 'part_type' undeclared (first use in this function)
+> drivers/base/core.c:704: error: (Each undeclared identifier is reported only once
+> drivers/base/core.c:704: error: for each function it appears in.)
+> drivers/base/core.c: In function 'device_remove_class_symlinks':
+> drivers/base/core.c:743: error: 'part_type' undeclared (first use in this function)
 > 
-> ---
+> git-blame points to Kay Sievers.
 > 
-> Index: linux-2.6/include/linux/genhd.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/genhd.h
-> +++ linux-2.6/include/linux/genhd.h
-> @@ -12,6 +12,8 @@
->  #include <linux/types.h>
->  #include <linux/kdev_t.h>
+> The problem is obvious. I think te solution is too ;).
+> 
+> Tested with a silly configuration that contains just enough wits to boot
+> and get to the prompt of klibc-dash on the built-in initramfs using:
+>    qemu -m 8 -cpu pentium -serial stdio -cdrom arch/x86/boot/image.iso
+> 
+> Compile-tested i386-defconfig.
+> 
+> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+> 
+> Oh, and the compile-problem still exists in git-99f1c97. The git-tree is
+> changing faster than I can test the patch and write an e-mail :-/.
+> 
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index edf3bbe..3751843 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -75,6 +75,15 @@ static ssize_t dev_attr_store(struct kobject *kobj, struct attribute *attr,
+>  	return ret;
+>  }
 >  
-> +extern struct device_type part_type;
-> +
->  #ifdef CONFIG_BLOCK
->  
->  #define kobj_to_dev(k) container_of(k, struct device, kobj)
-> @@ -19,7 +21,6 @@
->  #define dev_to_part(device) container_of(device, struct hd_struct, dev)
->  
->  extern struct device_type disk_type;
-> -extern struct device_type part_type;
->  extern struct kobject *block_depr;
->  extern struct class block_class;
+> +static int dev_needs_link(struct device *dev)
+> +{
+> +#ifdef CONFIG_BLOCK
+> +	return dev->type != &part_type;
+> +#else
+> +	return 1;
+> +#endif
+> +}
 
-No, that will fix the build error, but die when linking :(
-
-I'll work on a real fix for this now...
+Ick.  Close, but still messy, let me try to do something cleaner here...
 
 thanks,
 
