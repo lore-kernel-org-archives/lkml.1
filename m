@@ -1,86 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757101AbYA0Nbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbYA0Ne5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757101AbYA0Nbl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 08:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbYA0Nbe
+	id S1756684AbYA0Ne5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 08:34:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbYA0Neu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 08:31:34 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:31119 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752719AbYA0Nbd (ORCPT
+	Sun, 27 Jan 2008 08:34:50 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:8249 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752563AbYA0Net (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 08:31:33 -0500
+	Sun, 27 Jan 2008 08:34:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=JEmbNM094UP16E1gQH7lFbCKEmoYQWKHnp3XN4/XlQmjgGCyTdSzPuytl7CamtMKjBWhg1vGV911hD5LL3JeKl52m89JKpHNBJBw+WXuYNG0eRlPfiqNfiNk6/aNNwysmZCemS4xd9x4bSM6hdhlue0cZGPZ6dMJrLJuBXQWYwM=
-Message-ID: <479C8795.1080709@gmail.com>
-Date: Sun, 27 Jan 2008 19:01:01 +0530
-From: Abhishek Sagar <sagar.abhishek@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: LKML <linux-kernel@vger.kernel.org>, jkenisto@us.ibm.com,
-       ananth@in.ibm.com, Masami Hiramatsu <mhiramat@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/3] x86: Macrofy resuable code
-References: <479C4A42.1020602@gmail.com> <20080127092344.GB18116@uranus.ravnborg.org>
-In-Reply-To: <20080127092344.GB18116@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
+        h=message-id:from:to:content-type:content-transfer-encoding:mime-version:subject:date:x-mailer;
+        b=BU+MP330STlPgFdTcK46F4b9PQX7umUsK+o7W10VOz/EnQr38FjqEJnsprBxWybxOt5OfsRZRdqYgqXghX1pNG/k3fFzfDTmyMZJoGuobhyO1th2ugUq6T0Uv8RmChXg6DolDL5i00rxIcN2GCK89MnQTDEKslrqVCbfGyp/cCU=
+Message-Id: <65607513-6FAC-4E9C-AB31-E86ECFF98EC2@gmail.com>
+From: Rachel Greenham <rachel.greenham@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: netatalk slow after system upgrade (possibly kernel problem?)
+Date: Sun, 27 Jan 2008 13:34:44 +0000
+X-Mailer: Apple Mail (2.915)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
+(this thread came up in searching about the problem myself, so joined  
+to post this, hence the 'broken' threading, I expect:)
 
-> Small static functions are preferred over macros.
-> Any particular reason to use a macro here?
-> 
-> 	Sam
+Andrew Morton asked:
 
-These macros have very limited(two) instantiations. But here's an alternative patch inlined.
+> It would be interesting if this could be repeated on bare hardware,  
+> so we
+> can eliminate the possibility that it is some weird interaction with  
+> vmware.
 
-Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
----
+I can confirm this; I'm seeing exactly these symptoms where the linux  
+box running netatalk is running natively, not in VMWare. VMWare server  
+is *installed* but only running in the sense that the vmnet interfaces  
+are active.
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index a99e764..b7c2d20 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -159,6 +159,16 @@ struct kretprobe_blackpoint kretprobe_blacklist[] = {
- };
- const int kretprobe_blacklist_size = ARRAY_SIZE(kretprobe_blacklist);
- 
-+static inline unsigned long kprobe_bkpt_addr(struct pt_regs *regs)
-+{
-+	return (instruction_pointer(regs) - sizeof(kprobe_opcode_t));
-+}
-+
-+static inline int is_jprobe_bkpt(u8 *ptr)
-+{
-+	return (ptr > (u8 *)jprobe_return) && (ptr < (u8 *)jprobe_return_end);
-+}
-+
- /* Insert a jump instruction at address 'from', which jumps to address 'to'.*/
- static void __kprobes set_jmp_op(void *from, void *to)
- {
-@@ -519,7 +529,7 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 	struct kprobe *p;
- 	struct kprobe_ctlblk *kcb;
- 
--	addr = (kprobe_opcode_t *)(regs->ip - sizeof(kprobe_opcode_t));
-+	addr = (kprobe_opcode_t *)kprobe_bkpt_addr(regs);
- 	if (*addr != BREAKPOINT_INSTRUCTION) {
- 		/*
- 		 * The breakpoint instruction was removed right
-@@ -1032,8 +1042,7 @@ int __kprobes longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
- 	u8 *addr = (u8 *) (regs->ip - 1);
- 	struct jprobe *jp = container_of(p, struct jprobe, kp);
- 
--	if ((addr > (u8 *) jprobe_return) &&
--	    (addr < (u8 *) jprobe_return_end)) {
-+	if (is_jprobe_bkpt(addr)) {
- 		if (stack_addr(regs) != kcb->jprobe_saved_sp) {
- 			struct pt_regs *saved_regs = &kcb->jprobe_saved_regs;
- 			printk(KERN_ERR
+Which begs an obvious test... There's no change when I kill the vmware  
+networking (and all other) services. It still reckons it's going to  
+take 24 minutes to transfer a file a little under a gigabyte.
+
+Although, in fact, this thread does present a likely temporary  
+workaround; to install a linux with an older kernel into vmware and  
+use that to serve my content. :-D
+
+That Linux system is Ubuntu Gutsy all up to date on amd64.
+
+rachel@mab:~$ uname -a
+Linux mab.local 2.6.22-14-generic #1 SMP Tue Dec 18 05:28:27 UTC 2007  
+x86_64 GNU/Linux
+
+netatalk 2.0.3-6ubuntu1 (built with ssl)
+
+I'm getting between 500KB/s and 1MB/s on copies from that machine to a  
+couple of macs on the local (gigabit) LAN. (They're both Intel macs  
+running Leopard all up to date.)
+
+Conversely I'm getting between 20MB/s and 40MB/s on copies from the  
+macs to the netatalk server. (The variance is between the macs; one of  
+them seems to be copying about twice as fast as the other probably due  
+to issues of their own, but both clearly show that reading from  
+netatalk is heavily crippled.
+
+NB: I also posted this as a bug on ubuntu launchpad here:
+
+https://bugs.launchpad.net/ubuntu/+source/netatalk/+bug/186327
+
+But I noticed your precise question and thought I'd answer it. Don't  
+know how useful I can be in here but I can certainly respond to  
+requests for further info.
+
+-- 
+Rachel
+
