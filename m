@@ -1,79 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758436AbYA0MiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbYA0Mih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758436AbYA0MiT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 07:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbYA0MfQ
+	id S1759369AbYA0Mih (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 07:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbYA0MfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 07:35:16 -0500
-Received: from edna.telenet-ops.be ([195.130.132.58]:60772 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753565AbYA0MfA (ORCPT
+	Sun, 27 Jan 2008 07:35:18 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:59370 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753633AbYA0MfA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 27 Jan 2008 07:35:00 -0500
-Message-Id: <20080127123359.028281205@mail.of.borg>
+Message-Id: <20080127123358.760418284@mail.of.borg>
 References: <20080127123216.897698766@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 27 Jan 2008 13:32:26 +0100
+Date: Sun, 27 Jan 2008 13:32:25 +0100
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
        Adrian Bunk <bunk@kernel.org>
-Subject: [patch 10/14] m68k: kill arch/m68k/mvme16x/mvme16x_ksyms.c
-Content-Disposition: inline; filename=m68k-kill-arch-m68k-mvme16x-mvme16x_ksyms-c.diff
+Subject: [patch 09/14] m68k: kill arch/m68k/atari/atari_ksyms.c
+Content-Disposition: inline; filename=m68k-kill-arch-m68k-atari-atari_ksyms-c.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Adrian Bunk <bunk@kernel.org>
 
-m68k: kill arch/m68k/mvme16x/mvme16x_ksyms.c
+m68k: kill arch/m68k/atari/atari_ksyms.c
 
 EXPORT_SYMBOL's belong to the actual code.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/mvme16x/Makefile        |    2 +-
- arch/m68k/mvme16x/config.c        |    2 ++
- arch/m68k/mvme16x/mvme16x_ksyms.c |    6 ------
- 3 files changed, 3 insertions(+), 7 deletions(-)
+ arch/m68k/atari/Makefile      |    2 +-
+ arch/m68k/atari/ataints.c     |    3 +++
+ arch/m68k/atari/atari_ksyms.c |   35 -----------------------------------
+ arch/m68k/atari/atasound.c    |    2 ++
+ arch/m68k/atari/config.c      |   11 +++++++++++
+ arch/m68k/atari/debug.c       |    6 ++++++
+ arch/m68k/atari/stdma.c       |    5 +++++
+ arch/m68k/atari/stram.c       |    3 +++
+ 8 files changed, 31 insertions(+), 36 deletions(-)
 
---- a/arch/m68k/mvme16x/Makefile
-+++ b/arch/m68k/mvme16x/Makefile
-@@ -2,4 +2,4 @@
- # Makefile for Linux arch/m68k/mvme16x source directory
+--- a/arch/m68k/atari/Makefile
++++ b/arch/m68k/atari/Makefile
+@@ -3,7 +3,7 @@
  #
  
--obj-y		:= config.o rtc.o mvme16x_ksyms.o
-+obj-y		:= config.o rtc.o
---- a/arch/m68k/mvme16x/config.c
-+++ b/arch/m68k/mvme16x/config.c
-@@ -25,6 +25,7 @@
- #include <linux/genhd.h>
- #include <linux/rtc.h>
- #include <linux/interrupt.h>
+ obj-y		:= config.o time.o debug.o ataints.o stdma.o \
+-			atasound.o stram.o atari_ksyms.o
++			atasound.o stram.o
+ 
+ ifeq ($(CONFIG_PCI),y)
+ obj-$(CONFIG_HADES)	+= hades-pci.o
+--- a/arch/m68k/atari/ataints.c
++++ b/arch/m68k/atari/ataints.c
+@@ -40,6 +40,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/init.h>
+ #include <linux/seq_file.h>
++#include <linux/module.h>
+ 
+ #include <asm/system.h>
+ #include <asm/traps.h>
+@@ -446,6 +447,7 @@ unsigned long atari_register_vme_int(voi
+ 	free_vme_vec_bitmap |= 1 << i;
+ 	return VME_SOURCE_BASE + i;
+ }
++EXPORT_SYMBOL(atari_register_vme_int);
+ 
+ 
+ void atari_unregister_vme_int(unsigned long irq)
+@@ -455,5 +457,6 @@ void atari_unregister_vme_int(unsigned l
+ 		free_vme_vec_bitmap &= ~(1 << irq);
+ 	}
+ }
++EXPORT_SYMBOL(atari_unregister_vme_int);
+ 
+ 
+--- a/arch/m68k/atari/atari_ksyms.c
++++ /dev/null
+@@ -1,35 +0,0 @@
+-#include <linux/module.h>
+-
+-#include <asm/ptrace.h>
+-#include <asm/traps.h>
+-#include <asm/atarihw.h>
+-#include <asm/atariints.h>
+-#include <asm/atarikb.h>
+-#include <asm/atari_joystick.h>
+-#include <asm/atari_stdma.h>
+-#include <asm/atari_stram.h>
+-
+-extern void atari_microwire_cmd( int cmd );
+-extern int atari_MFP_init_done;
+-extern int atari_SCC_init_done;
+-extern int atari_SCC_reset_done;
+-
+-EXPORT_SYMBOL(atari_mch_cookie);
+-EXPORT_SYMBOL(atari_mch_type);
+-EXPORT_SYMBOL(atari_hw_present);
+-EXPORT_SYMBOL(atari_switches);
+-EXPORT_SYMBOL(atari_dont_touch_floppy_select);
+-EXPORT_SYMBOL(atari_register_vme_int);
+-EXPORT_SYMBOL(atari_unregister_vme_int);
+-EXPORT_SYMBOL(stdma_lock);
+-EXPORT_SYMBOL(stdma_release);
+-EXPORT_SYMBOL(stdma_others_waiting);
+-EXPORT_SYMBOL(stdma_islocked);
+-EXPORT_SYMBOL(atari_stram_alloc);
+-EXPORT_SYMBOL(atari_stram_free);
+-
+-EXPORT_SYMBOL(atari_MFP_init_done);
+-EXPORT_SYMBOL(atari_SCC_init_done);
+-EXPORT_SYMBOL(atari_SCC_reset_done);
+-
+-EXPORT_SYMBOL(atari_microwire_cmd);
+--- a/arch/m68k/atari/atasound.c
++++ b/arch/m68k/atari/atasound.c
+@@ -22,6 +22,7 @@
+ #include <linux/fcntl.h>
+ #include <linux/errno.h>
+ #include <linux/mm.h>
++#include <linux/module.h>
+ 
+ #include <asm/atarihw.h>
+ #include <asm/system.h>
+@@ -43,6 +44,7 @@ void atari_microwire_cmd (int cmd)
+ 	while( tt_microwire.mask != 0x7ff)
+ 		;
+ }
++EXPORT_SYMBOL(atari_microwire_cmd);
+ 
+ 
+ /* PSG base frequency */
+--- a/arch/m68k/atari/config.c
++++ b/arch/m68k/atari/config.c
+@@ -31,6 +31,7 @@
+ #include <linux/delay.h>
+ #include <linux/ioport.h>
+ #include <linux/vt_kern.h>
 +#include <linux/module.h>
  
  #include <asm/bootinfo.h>
- #include <asm/system.h>
-@@ -58,6 +59,7 @@ static irq_handler_t tick_handler;
+ #include <asm/setup.h>
+@@ -43,10 +44,20 @@
+ #include <asm/io.h>
+ 
+ u_long atari_mch_cookie;
++EXPORT_SYMBOL(atari_mch_cookie);
++
+ u_long atari_mch_type;
++EXPORT_SYMBOL(atari_mch_type);
++
+ struct atari_hw_present atari_hw_present;
++EXPORT_SYMBOL(atari_hw_present);
++
+ u_long atari_switches;
++EXPORT_SYMBOL(atari_switches);
++
+ int atari_dont_touch_floppy_select;
++EXPORT_SYMBOL(atari_dont_touch_floppy_select);
++
+ int atari_rtc_year_offset;
+ 
+ /* local function prototypes */
+--- a/arch/m68k/atari/debug.c
++++ b/arch/m68k/atari/debug.c
+@@ -15,17 +15,23 @@
+ #include <linux/console.h>
+ #include <linux/init.h>
+ #include <linux/delay.h>
++#include <linux/module.h>
+ 
+ #include <asm/atarihw.h>
+ #include <asm/atariints.h>
+ 
+ /* Flag that Modem1 port is already initialized and used */
+ int atari_MFP_init_done;
++EXPORT_SYMBOL(atari_MFP_init_done);
++
+ /* Flag that Modem1 port is already initialized and used */
+ int atari_SCC_init_done;
++EXPORT_SYMBOL(atari_SCC_init_done);
++
+ /* Can be set somewhere, if a SCC master reset has already be done and should
+  * not be repeated; used by kgdb */
+ int atari_SCC_reset_done;
++EXPORT_SYMBOL(atari_SCC_reset_done);
+ 
+ static struct console atari_console_driver = {
+ 	.name	= "debug",
+--- a/arch/m68k/atari/stdma.c
++++ b/arch/m68k/atari/stdma.c
+@@ -35,6 +35,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/wait.h>
++#include <linux/module.h>
+ 
+ #include <asm/atari_stdma.h>
+ #include <asm/atariints.h>
+@@ -91,6 +92,7 @@ void stdma_lock(irq_handler_t handler, v
+ 	stdma_isr_data = data;
+ 	local_irq_restore(flags);
+ }
++EXPORT_SYMBOL(stdma_lock);
  
  
- unsigned short mvme16x_config;
-+EXPORT_SYMBOL(mvme16x_config);
+ /*
+@@ -117,6 +119,7 @@ void stdma_release(void)
+ 
+ 	local_irq_restore(flags);
+ }
++EXPORT_SYMBOL(stdma_release);
  
  
- int mvme16x_parse_bootinfo(const struct bi_record *bi)
---- a/arch/m68k/mvme16x/mvme16x_ksyms.c
-+++ /dev/null
-@@ -1,6 +0,0 @@
--#include <linux/module.h>
--#include <linux/types.h>
--#include <asm/ptrace.h>
--#include <asm/mvme16xhw.h>
--
--EXPORT_SYMBOL(mvme16x_config);
+ /*
+@@ -134,6 +137,7 @@ int stdma_others_waiting(void)
+ {
+ 	return waitqueue_active(&stdma_wait);
+ }
++EXPORT_SYMBOL(stdma_others_waiting);
+ 
+ 
+ /*
+@@ -155,6 +159,7 @@ int stdma_islocked(void)
+ {
+ 	return stdma_locked;
+ }
++EXPORT_SYMBOL(stdma_islocked);
+ 
+ 
+ /*
+--- a/arch/m68k/atari/stram.c
++++ b/arch/m68k/atari/stram.c
+@@ -20,6 +20,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/mount.h>
+ #include <linux/blkdev.h>
++#include <linux/module.h>
+ 
+ #include <asm/setup.h>
+ #include <asm/machdep.h>
+@@ -208,6 +209,7 @@ void *atari_stram_alloc(long size, const
+ 	}
+ 	return( addr );
+ }
++EXPORT_SYMBOL(atari_stram_alloc);
+ 
+ void atari_stram_free( void *addr )
+ 
+@@ -237,6 +239,7 @@ void atari_stram_free( void *addr )
+ 	printk( KERN_ERR "atari_stram_free: cannot free block at %p "
+ 			"(called from %p)\n", addr, __builtin_return_address(0) );
+ }
++EXPORT_SYMBOL(atari_stram_free);
+ 
+ 
+ /* ------------------------------------------------------------------------ */
 
 -- 
 Gr{oetje,eeting}s,
