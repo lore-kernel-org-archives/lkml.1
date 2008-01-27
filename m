@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759582AbYA0WBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYA0WF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759582AbYA0WBe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 17:01:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbYA0WBP
+	id S1759430AbYA0WF1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 17:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbYA0WFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 17:01:15 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58282 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757929AbYA0WBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 17:01:14 -0500
-Date: Sun, 27 Jan 2008 23:01:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] X86: coding style fixes to arch/x86/math-errors.c
-Message-ID: <20080127220104.GA3503@elte.hu>
-References: <20080127223451.79718183@paolo-desktop> <479CFB62.1010808@gmail.com> <4d8e3fd30801271351p44818f64p27ca4ae897efbb81@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4d8e3fd30801271351p44818f64p27ca4ae897efbb81@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 27 Jan 2008 17:05:15 -0500
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:14018 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752543AbYA0WFN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 17:05:13 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <86802c440801261659s1102f38cr16858d350929b0e1@mail.gmail.com>
+References: <ff184a8ea93f18a787bb9bd0c860036219b83ee0.1201348185.git.ijc@hellion.org.uk>
+	 <d4158549e6497ee261ed220d9cbc8ca8fced8ba7.1201348185.git.ijc@hellion.org.uk>
+	 <86802c440801261659s1102f38cr16858d350929b0e1@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-HemCLhWhS8Sq5A4IF7BP"
+Date: Sun, 27 Jan 2008 22:04:59 +0000
+Message-Id: <1201471499.18241.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+X-SA-Exim-Connect-IP: 192.168.1.5
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH 3/9] x86_64: Switch to .data.compressed in
+	arch/x86/boot/compressed/vmlinux_64.scr
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+--=-HemCLhWhS8Sq5A4IF7BP
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> On Jan 27, 2008 10:45 PM, Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
-> > > -  math_abort(FPU_info,SIGILL);
-> > > +  math_abort(FPU_info , SIGILL);
-> >
-> > Looks like you're trading bad for worse here.
-> 
-> Should I make it read like math_abort(FPU_info, SIGILL); ?
 
-yeah, that's the correct one.
+On Sat, 2008-01-26 at 16:59 -0800, Yinghai Lu wrote:
 
-> > While you're at it, please think about adding proper KERN_ facility to these printk() calls.
-> 
-> Yes, basically all the warnings are about missing KERN_. Do you want 
-> me to add KERN_ERR to all the above printk?
+> can you make 32 bit use .text.compressed instead ?
 
-Do that in a separate patch though, as it changes strings. (and hence 
-the checking for 'did the object md5 change' misfires)
+Any reason to prefer .text? It is data at this stage after all.
 
-	Ingo
+Ian.
+
+--=20
+Ian Campbell
+
+Justice always prevails ... three times out of seven!
+		-- Michael J. Wagner
+
+--=-HemCLhWhS8Sq5A4IF7BP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHnQALM0+0qS9rzVkRAiRBAJ91YtO3bSVSTQKS7fP6YbIWVNktNACeMmbe
+B3o4C28xkuf1r+OL5RQ8S2I=
+=2Lrt
+-----END PGP SIGNATURE-----
+
+--=-HemCLhWhS8Sq5A4IF7BP--
+
