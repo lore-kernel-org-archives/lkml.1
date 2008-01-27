@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbYA0JKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbYA0JKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756945AbYA0JKF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 04:10:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbYA0JJm
+	id S1754308AbYA0JKe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 04:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbYA0JJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 04:09:42 -0500
+	Sun, 27 Jan 2008 04:09:54 -0500
 Received: from rv-out-0910.google.com ([209.85.198.190]:35168 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755905AbYA0JJi (ORCPT
+	with ESMTP id S1756782AbYA0JJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 04:09:38 -0500
+	Sun, 27 Jan 2008 04:09:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=HTS6HNJPOdWIKLfpH8EwIWgqTgkMPCAYlAlaLBqewV6NmrHVvTUaJhFy2u9/OrQfXpKEo+H6PqBOv8tXnZ47+tM85Lg9NCVO0BzLMneuoMT98PLjc9a+DkW3sWuQnsmvXzaN24+6wHD2QGSYaX6NXJQwwqewJzsAX3oEGUHOfzQ=
-Message-ID: <479C4A36.1030300@gmail.com>
-Date: Sun, 27 Jan 2008 14:39:10 +0530
+        b=R1lqdW8hu0a88zlj/LSouLzHhNCHSD0ZE4tEEbSySVTexqxTMl0KmUKUhdkxBFH8gzMBVrLUswqMuNGSz5ZJgm5ZWJT3d/0sr15XBHvbDZ21fLfXIdG81NzgcS1J1K3JJv0XT0v9fgY2yUSi+pvjcttWaghbeb4nYeQD6nmReTw=
+Message-ID: <479C4A42.1020602@gmail.com>
+Date: Sun, 27 Jan 2008 14:39:22 +0530
 From: Abhishek Sagar <sagar.abhishek@gmail.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
 To: LKML <linux-kernel@vger.kernel.org>
 CC: jkenisto@us.ibm.com, ananth@in.ibm.com,
        Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 1/3] x86: Move in_kprobes_functions to linux/kprobes.h
+Subject: [PATCH 2/3] x86: Macrofy resuable code
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Moving in_kprobes_functions to linux/kprobes.h to share it with arch/x86/kerne/kprobes.c.
+Encapsulate reusable code .
 
 Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
 ---
 
-diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index 6168c0a..2762145 100644
---- a/include/linux/kprobes.h
-+++ b/include/linux/kprobes.h
-@@ -39,6 +39,7 @@
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index a99e764..45f2949 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -74,6 +74,13 @@ DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+ #define stack_addr(regs) ((unsigned long *)&regs->sp)
+ #endif
  
- #ifdef CONFIG_KPROBES
- #include <asm/kprobes.h>
-+#include <asm-generic/sections.h>
- 
- /* kprobe_status settings */
- #define KPROBE_HIT_ACTIVE	0x00000001
-@@ -182,6 +183,14 @@ static inline void kretprobe_assert(struct kretprobe_instance *ri,
- 	}
- }
- 
-+static inline int in_kprobes_functions(unsigned long addr)
-+{
-+	if (addr >= (unsigned long)__kprobes_text_start &&
-+	    addr < (unsigned long)__kprobes_text_end)
-+		return -EINVAL;
-+	return 0;
-+}
++#define kprobe_bkpt_addr(regs) \
++	((unsigned long)(regs->ip - sizeof(kprobe_opcode_t)))
 +
- #ifdef CONFIG_KPROBES_SANITY_TEST
- extern int init_test_probes(void);
- #else
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index d0493ea..0b74dfb 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -490,14 +490,6 @@ static int __kprobes register_aggr_kprobe(struct kprobe *old_p,
- 	return ret;
- }
++#define is_jprobe_bkpt(ptr) \
++	((ptr > (u8 *)jprobe_return) && (ptr < (u8 *)jprobe_return_end))
++
++
+ #define W(row, b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, ba, bb, bc, bd, be, bf)\
+ 	(((b0##UL << 0x0)|(b1##UL << 0x1)|(b2##UL << 0x2)|(b3##UL << 0x3) |   \
+ 	  (b4##UL << 0x4)|(b5##UL << 0x5)|(b6##UL << 0x6)|(b7##UL << 0x7) |   \
+@@ -519,7 +526,7 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
+ 	struct kprobe *p;
+ 	struct kprobe_ctlblk *kcb;
  
--static int __kprobes in_kprobes_functions(unsigned long addr)
--{
--	if (addr >= (unsigned long)__kprobes_text_start &&
--	    addr < (unsigned long)__kprobes_text_end)
--		return -EINVAL;
--	return 0;
--}
--
- static int __kprobes __register_kprobe(struct kprobe *p,
- 	unsigned long called_from)
- {
-
+-	addr = (kprobe_opcode_t *)(regs->ip - sizeof(kprobe_opcode_t));
++	addr = (kprobe_opcode_t *)kprobe_bkpt_addr(regs);
+ 	if (*addr != BREAKPOINT_INSTRUCTION) {
+ 		/*
+ 		 * The breakpoint instruction was removed right
+@@ -1032,8 +1039,7 @@ int __kprobes longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
+ 	u8 *addr = (u8 *) (regs->ip - 1);
+ 	struct jprobe *jp = container_of(p, struct jprobe, kp);
+ 
+-	if ((addr > (u8 *) jprobe_return) &&
+-	    (addr < (u8 *) jprobe_return_end)) {
++	if (is_jprobe_bkpt(addr)) {
+ 		if (stack_addr(regs) != kcb->jprobe_saved_sp) {
+ 			struct pt_regs *saved_regs = &kcb->jprobe_saved_regs;
+ 			printk(KERN_ERR
