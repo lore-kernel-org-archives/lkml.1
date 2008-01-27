@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbYA0KYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYA0Kmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755844AbYA0KYr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 05:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbYA0KYh
+	id S1755905AbYA0Kmx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 05:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYA0Kmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 05:24:37 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:46772
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750869AbYA0KYg (ORCPT
+	Sun, 27 Jan 2008 05:42:44 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:34871 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751115AbYA0Kmo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 05:24:36 -0500
-Message-ID: <479C5BE3.6060803@qumranet.com>
-Date: Sun, 27 Jan 2008 12:24:35 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 27 Jan 2008 05:42:44 -0500
+Date: Sun, 27 Jan 2008 11:42:42 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Kevin Winchester <kjwinchester@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: X fails to start with latest Linus git
+In-Reply-To: <20080127062703.GA23444@elte.hu>
+Message-ID: <Pine.LNX.4.64.0801271142070.15243@fbirervta.pbzchgretzou.qr>
+References: <479BCE03.6070603@gmail.com> <479BD1D1.8020503@gmail.com>
+ <20080127062703.GA23444@elte.hu>
 MIME-Version: 1.0
-To: Joerg Roedel <joro@8bytes.org>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH 8/8] SVM: add support for Nested Paging
-References: <1201294393-22613-1-git-send-email-joerg.roedel@amd.com> <1201294393-22613-9-git-send-email-joerg.roedel@amd.com> <479C464E.2060009@qumranet.com> <20080127094147.GA32677@8bytes.org> <479C540A.8020003@qumranet.com> <20080127100517.GC32677@8bytes.org>
-In-Reply-To: <20080127100517.GC32677@8bytes.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
->> On the other hand, we want to trap cr0 so the guest can't control the 
->> cache disable bits.  Also cr4.pce and cr4.mce.
->>     
+
+On Jan 27 2008 07:27, Ingo Molnar wrote:
+>* Kevin Winchester <kjwinchester@gmail.com> wrote:
 >
-> Is it a problem when the guest disables caching? It disables it only in
-> its own context because it has its own copy of cr0. 
+>> The machine boots normally, but without that revert, X locks up.  Does 
+>> that make sense to anyone?
+>
+>could you send your full bootlog? Also please send me the output of:
+>
+> http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+>
+>and please send me your .config as well.
+>
+>somehow this new ktime_get() done within printk() will lock up your box 
+>- that's weird. We can undo this commit easily, but it would be nice to 
+>figure out what's going on.
 
-Some Intel processors have a mode where cache coherency is no longer 
-preserved, and we need to prevent that.  However from my reading of the 
-AMD manuals, cache coherency is preserved even with caching disabled, so 
-no real issue with disabling the cache.
-
-
-> Cr4.pce can be
-> accessible for the guests because there is no way for them to access the
-> performance counter MSRs. 
-
-Yes.  This was a red herring, cr0.pce only affects userspace rdpmc.
-
--- 
-error compiling committee.c: too many arguments to function
-
+Maybe it's not valid to call ktime_get() within interrupt context?
