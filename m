@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759520AbYA0WIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759765AbYA0WKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759520AbYA0WIb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 17:08:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbYA0WIY
+	id S1759765AbYA0WKA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 17:10:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbYA0WJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 17:08:24 -0500
-Received: from jilau1.colorado.edu ([128.138.140.5]:53348 "EHLO
-	jilau1.Colorado.EDU" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751777AbYA0WIX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 17:08:23 -0500
-X-Greylist: delayed 1429 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Jan 2008 17:08:23 EST
-Date: Sun, 27 Jan 2008 14:44:00 -0700
-From: "Benjamin K. Stuhl" <benjamin.stuhl@colorado.edu>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux-Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: "sched: add vslice" causes horrible interactivity under load
-Message-ID: <20080127144400.78e0aec5@colorado.edu>
-Organization: JILA / University of Colorado at Boulder Department of Physics
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/FPYEhchw9LhN7b1K8dxD9Mg";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Sun, 27 Jan 2008 17:09:53 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39408 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751777AbYA0WJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 17:09:52 -0500
+Message-ID: <479D00EC.20600@redhat.com>
+Date: Sun, 27 Jan 2008 17:08:44 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Abhishek Sagar <sagar.abhishek@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, jkenisto@us.ibm.com,
+       ananth@in.ibm.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] x86: WARN_ON breakpoints from .kprobes.text section
+References: <479C4A4F.10604@gmail.com> <479C94F6.2070502@redhat.com> <863e9df20801270733n4b82b595u8421fb07c18acaa6@mail.gmail.com>
+In-Reply-To: <863e9df20801270733n4b82b595u8421fb07c18acaa6@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/FPYEhchw9LhN7b1K8dxD9Mg
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi Abhishek,
 
-Hi,
-  I recently upgraded from 2.6.23.x to 2.6.24 and found that whereas
-with 2.6.23.x I could have multiple "make -j3" compilation runs going
-in the background with no real problems (on a dual-core Core 2), with
-2.6.24 I get multiple-second lags when trying to switch tasks in KDE.=20
-I did a git bisect starting from 9b73e76f3cf63379dcf45fcd4f112f5812418d0a
-in Linus's 2.6.25 tree in the hope that the recent scheduler merge might=20
-have fixed the problem, but no such luck. Instead, git bisect points its
-all-knowing finger at=20
+Abhishek Sagar wrote:
+> On 1/27/08, Masami Hiramatsu <mhiramat@redhat.com> wrote:
+>> Sorry, I can not understand what issue these patches can solve.
+>> The breakpoint which is inserted by external debugger will be checked by
+>> kprobe_handler() and be passed to other exception_notify_handlers.
+>> In that case, we don't need to warn it.
+>> I think current code is enough simple.
+> 
+> kprobe_handler has a blanket check for all non-kprobe breakpoints.
+> They're all left to the kernel to handle. This is fine. Although
+> external debuggers are free to plant breakpoints anywhere, they should
+> be discouraged from doing so inside .kprobes.text region. Placing them
+> there may lead to recursive page-fault/trap handling. It's a defensive
+> check. I hope I've been able to clarify.
 
-commit 67e9fb2a39a1d454218d50383094940982be138f
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Mon Oct 15 17:00:10 2007 +0200
+Thank you for explanation, I hope I can understand it.
+Even if it causes a trap recursively, it could be checked (and ignored) by
+longjump_break_handler(), and passed to the debugger correctly.
+Please consider that someone expands jprobe(jprobe2) which uses
+jprobe_return2() instead of jprobe_return(), how would you handle it?
+Current kprobes provides an opportunity to those external probe frameworks
+for checking it by themselves.
 
-    sched: add vslice
+By the way, external kernel debugger knows how kprobes (and exception notifier)
+works, so I think it can fetch his exception before kprobes does (by tweaking
+notifier chain, etc).
+(I hope all external kernel debuggers take care of it. :-))
 
-    add vslice: the load-dependent "virtual slice" a task should
-    run ideally, so that the observed latency stays within the
-    sched_latency window.
+Thank you again,
 
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> Thanks,
+> Abhishek Sagar
 
-A straight-forward git revert crashes at boot, so I don't have a patch to o=
-ffer. :-/
-(Please keep me CC'ed, since I'm not subscribed to LKML.)
+-- 
+Masami Hiramatsu
 
-Thanks for your help,
--- BKS
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
---Sig_/FPYEhchw9LhN7b1K8dxD9Mg
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+e-mail: mhiramat@redhat.com
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQFHnPssFpoVNd4CUAIRAh+FAJsHg6hguOJHAyin3GNhpkRZf+37TQCgkyPF
-yajE+6p7VdtH7IR5s2xbWUI=
-=T1/U
------END PGP SIGNATURE-----
-
---Sig_/FPYEhchw9LhN7b1K8dxD9Mg--
