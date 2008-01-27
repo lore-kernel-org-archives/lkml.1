@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbYA0Vce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbYA0Vcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755369AbYA0Vce (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 16:32:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbYA0VcI
+	id S1759362AbYA0Vcu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 16:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755497AbYA0Vck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 16:32:08 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58976 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754726AbYA0VcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 16:32:05 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [Regression] 2.6.24-git3: Major annoyance during suspend/hibernation on x86-64 (bisected)
-Date: Sun, 27 Jan 2008 22:29:48 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Steven Rostedt <srostedt@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Sun, 27 Jan 2008 16:32:40 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:33318 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755238AbYA0Vcj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 16:32:39 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 27 Jan 2008 22:32:22 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 2.6.24-git3] ieee1394: sbp2: relax SCSI DMA alignment
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.6b01fb9bb536c584@s5r6.in-berlin.de>
+Message-ID: <tkrat.ed569c841e283500@s5r6.in-berlin.de>
+References: <479B80A3.5070207@s5r6.in-berlin.de>
+ <1201373642.4387.0.camel@localhost.localdomain>
+ <tkrat.6b01fb9bb536c584@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801272229.48955.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-2.6.24-git3 adds a 5 - 10 sec delay to the suspend and hibernation code paths
-(probably related to the disabling of nonboot CPUs), which is !@#$%^&*()
-annoying.
+Not run-time tested yet.
 
-It's 100% reproducible on my HP nx6325 and bisection idendified the following
-commit as the first bad one:
+ drivers/ieee1394/sbp2.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-commit 764a9d6fe4b52995c8aba277e3634385699354f4
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Fri Jan 25 21:08:04 2008 +0100
+Index: linux-2.6.24-git3/drivers/ieee1394/sbp2.c
+===================================================================
+--- linux-2.6.24-git3.orig/drivers/ieee1394/sbp2.c
++++ linux-2.6.24-git3/drivers/ieee1394/sbp2.c
+@@ -1966,11 +1966,8 @@ static int sbp2scsi_slave_alloc(struct s
+ 	lu->sdev = sdev;
+ 	sdev->allow_restart = 1;
+ 
+-	/*
+-	 * Update the dma alignment (minimum alignment requirements for
+-	 * start and end of DMA transfers) to be a sector
+-	 */
+-	blk_queue_update_dma_alignment(sdev->request_queue, 511);
++	/* SBP-2 requires quadlet alignment of the data buffers. */
++	blk_queue_update_dma_alignment(sdev->request_queue, 4 - 1);
+ 
+ 	if (lu->workarounds & SBP2_WORKAROUND_INQUIRY_36)
+ 		sdev->inquiry_len = 36;
 
-    sched: track highest prio task queued
+-- 
+Stefan Richter
+-=====-==--- ---= ==-==
+http://arcgraph.de/sr/
 
-Greetings,
-Rafael
