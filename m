@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYA0MnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYA0Mpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757450AbYA0MnK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 07:43:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbYA0Mm4
+	id S1758263AbYA0Mpz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 07:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYA0Mps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 07:42:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34089 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753770AbYA0Mmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 07:42:55 -0500
-Date: Sun, 27 Jan 2008 13:42:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: X fails to start with latest Linus git
-Message-ID: <20080127124244.GA24999@elte.hu>
-References: <479BCE03.6070603@gmail.com> <479BD1D1.8020503@gmail.com> <20080127062703.GA23444@elte.hu> <20080127083129.c14452ca.kjwinchester@gmail.com> <20080127123702.GB21282@elte.hu> <20080127124120.GA23377@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080127124120.GA23377@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 27 Jan 2008 07:45:48 -0500
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:43853 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752266AbYA0Mpr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 07:45:47 -0500
+X-Greylist: delayed 1491 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Jan 2008 07:45:47 EST
+Date: Sun, 27 Jan 2008 13:25:10 +0100
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: make the best-fit section of
+ fb_find_mode return the closest matching mode
+Message-Id: <20080127132510.b00017cb.krzysztof.h1@poczta.fm>
+In-Reply-To: <20080127113115.GA17722@spock.one.pl>
+References: <20080127113115.GA17722@spock.one.pl>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-EMID: f4e2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 27 Jan 2008 12:31:16 +0100
+Michal Januszewski <spock@gentoo.org> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> hm, perhaps it's due to the xtime lock dependency:
+> From: Michal Januszewski <spock@gentoo.org>
 > 
->         do {
->                 seq = read_seqbegin(&xtime_lock);
->                 getnstimeofday(ts);
->                 tomono = wall_to_monotonic;
+> Currently, if a perfect match in terms of resolution is not found,
+> fb_find_mode() only looks for a best-fit mode among modes with a
+> higher resolution than the one requested.  Thus, if the user
+> requests a resolution higher than the largest supported one, they
+> are dropped to the default mode (usually a low resolution one).
 > 
->         } while (read_seqretry(&xtime_lock, seq));
+
+> Change this behaviour so that the true closest match in terms
+> of the city-block metric is returned.
 > 
-> perhaps your system somehow generates a printk from within an 
-> xtime_lock locked section?
 
-i _bet_ it's these printks that cause your lockup:
+This may be not ideal solution in case there exist both lower and
+higher matches. If given resolution is closer (even by few pixels)
+to lower one, your method will choose the lower one.
+It may be incorrect for e.g. picture viewer (the higher resolution
+shows the whole picture with margins, the smaller one shows
+rescaled or cut picture).
 
- [   10.313437] Marking TSC unstable due to: cpufreq changes.
- [   10.313437] Time: hpet clocksource has been installed.
- [   10.424431] Clocksource tsc unstable (delta = -121609771 ns)
+IMHO, the choice of higher resolution (if possible) should be
+preferred. It is also closer to the old solution.
 
-as these are done with the xtime lock held.
+Kind regards,
+Krzysztof
 
-	Ingo
+
+----------------------------------------------------------------------
+Nadchodzi galaktyczna wojna!
+Sprawdz >> http://link.interia.pl/f1ce0
+
