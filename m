@@ -1,74 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759765AbYA0WKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbYA0WKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759765AbYA0WKA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 17:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbYA0WJx
+	id S1759967AbYA0WKf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 17:10:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbYA0WKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 17:09:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39408 "EHLO mx1.redhat.com"
+	Sun, 27 Jan 2008 17:10:25 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:52608 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777AbYA0WJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 17:09:52 -0500
-Message-ID: <479D00EC.20600@redhat.com>
-Date: Sun, 27 Jan 2008 17:08:44 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1753000AbYA0WKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 17:10:24 -0500
+Date: Sun, 27 Jan 2008 17:10:17 -0500
+To: Simon Holm =?utf-8?Q?Th=C3=B8gersen?= <odie@cs.aau.dk>
+Cc: Tom Tucker <tom@opengridcomputing.com>, linux-nfs@vger.kernel.org,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>
+Subject: Re: nfs server patches for 2.6.25
+Message-ID: <20080127221017.GC597@fieldses.org>
+References: <20080125231521.GG25141@fieldses.org> <1201466543.5006.21.camel@odie.local>
 MIME-Version: 1.0
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, jkenisto@us.ibm.com,
-       ananth@in.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] x86: WARN_ON breakpoints from .kprobes.text section
-References: <479C4A4F.10604@gmail.com> <479C94F6.2070502@redhat.com> <863e9df20801270733n4b82b595u8421fb07c18acaa6@mail.gmail.com>
-In-Reply-To: <863e9df20801270733n4b82b595u8421fb07c18acaa6@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1201466543.5006.21.camel@odie.local>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Abhishek,
-
-Abhishek Sagar wrote:
-> On 1/27/08, Masami Hiramatsu <mhiramat@redhat.com> wrote:
->> Sorry, I can not understand what issue these patches can solve.
->> The breakpoint which is inserted by external debugger will be checked by
->> kprobe_handler() and be passed to other exception_notify_handlers.
->> In that case, we don't need to warn it.
->> I think current code is enough simple.
+On Sun, Jan 27, 2008 at 09:42:23PM +0100, Simon Holm Thøgersen wrote:
 > 
-> kprobe_handler has a blanket check for all non-kprobe breakpoints.
-> They're all left to the kernel to handle. This is fine. Although
-> external debuggers are free to plant breakpoints anywhere, they should
-> be discouraged from doing so inside .kprobes.text region. Placing them
-> there may lead to recursive page-fault/trap handling. It's a defensive
-> check. I hope I've been able to clarify.
+> fre, 25 01 2008 kl. 18:15 -0500, skrev J. Bruce Fields: 
+> > Below is a summary of the nfs server patches which I expect to submit
+> > (any day now) for 2.6.25; please let me know if you notice anything
+> > wrong or missing.  I'll follow up to linux-nfs@vger.kernel.org with the
+> > full list of patches.
+> 
+> There are at least two patches that don't compile and break
+> bisectability. The errors should be obvious, just checkout and make
+> 6f310df and 23b4e2e (patch no. 29 and 65 from the posting of the patch
+> set on linux-nfs).
 
-Thank you for explanation, I hope I can understand it.
-Even if it causes a trap recursively, it could be checked (and ignored) by
-longjump_break_handler(), and passed to the debugger correctly.
-Please consider that someone expands jprobe(jprobe2) which uses
-jprobe_return2() instead of jprobe_return(), how would you handle it?
-Current kprobes provides an opportunity to those external probe frameworks
-for checking it by themselves.
-
-By the way, external kernel debugger knows how kprobes (and exception notifier)
-works, so I think it can fetch his exception before kprobes does (by tweaking
-notifier chain, etc).
-(I hope all external kernel debuggers take care of it. :-))
-
-Thank you again,
+Whoops, thanks for finding both of those.
 
 > 
-> Thanks,
-> Abhishek Sagar
+> [...] 
+> > J. Bruce Fields (34):
+> >       nfsd4: kill unnecessary same_name() in setclientid_confirm
+> diff --git a/fs/nfsd/nfs4state.c b/fs/nfsd/nfs4state.c
+> index 508b256..d026c24 100644
+> --- a/fs/nfsd/nfs4state.c
+> +++ b/fs/nfsd/nfs4state.c
+> @@ -858,8 +857,7 @@ nfsd4_setclientid_confirm(struct svc_rqst *rqstp,
+>                 }
+>         } else if ((conf && !unconf) ||
+>             ((conf && unconf) && 
+> -            (!same_verf(&conf->cl_verifier, &unconf->cl_verifier) ||
+> -             !same_name(conf->cl_recdir, unconf->cl_recdir)))) {
+> +            !same_verf(&conf->cl_verifier, &unconf->cl_verifier)) {
+> missing ending parenthesis ---------------------------------------^
 
--- 
-Masami Hiramatsu
+Yep; fixed.
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+> 
+> 
+> [...] 
+> > Tom Tucker (47):
+> >       svc: Make close transport independent
+> diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+> index f86538e..6dffdda 100644
+> --- a/net/sunrpc/svcsock.c
+> +++ b/net/sunrpc/svcsock.c
+> @@ -1912,66 +1911,63 @@ static void svc_sock_free(struct svc_xprt *xprt)
+>  }
+>  
+>  /*
+> - * Remove a dead socket
+> + * Remove a dead transport
+>   */
+> -static void
+> -svc_delete_socket(struct svc_sock *svsk)
+> +static void svc_delete_xprt(struct svc_xprt *xprt)
+>  {
+> -       struct svc_serv *serv;
+> -       struct sock     *sk;
+> -
+> -       dprintk("svc: svc_delete_socket(%p)\n", svsk);
+> -
+> -       serv = svsk->sk_xprt.xpt_server;
+> -       sk = svsk->sk_sk;
+> +       struct svc_serv *serv = xprt->xpt_server;
+>  
+> -       svsk->sk_xprt.xpt_ops->xpo_detach(&svsk->sk_xprt);
+> +       dprintk("svc: svc_delete_xprt(%p)\n", xprt);
+> +       xprt->xpt_ops->xpo_detach(xprt);
+>  
+>         spin_lock_bh(&serv->sv_lock);
+> -
+> -       if (!test_and_set_bit(XPT_DETACHED, &svsk->sk_xprt.xpt_flags))
+> -               list_del_init(&svsk->sk_list);
+> +       if (!test_and_set_bit(XPT_DETACHED, &xprt->xpt_flags))
+> +               list_del_init(&xprt->xpt_list);
+>         /*
+> -        * We used to delete the svc_sock from whichever list
+> -        * it's sk_ready node was on, but we don't actually
+> +        * We used to delete the transport from whichever list
+> +        * it's sk_xprt.xpt_ready node was on, but we don't actually
+>          * need to.  This is because the only time we're called
+>          * while still attached to a queue, the queue itself
+>          * is about to be destroyed (in svc_destroy).
+>          */
+> -       if (!test_and_set_bit(XPT_DEAD, &svsk->sk_xprt.xpt_flags)) {
+> -               BUG_ON(atomic_read(&svsk->sk_xprt.xpt_ref.refcount) <
+> 2);
+> -               if (test_bit(XPT_TEMP, &svsk->sk_xprt.xpt_flags))
+> +       if (!test_and_set_bit(XPT_DEAD, &xprt->xpt_flags)) {
+> +               BUG_ON(atomic_read(&xprt->xpt_ref.refcount) < 2);
+> +               if (test_bit(XPT_TEMP, &xprt->xpt_flags))
+>                         serv->sv_tmpcnt--;
+>                 svc_xprt_put(&svsk->sk_xprt);
+> should have been
+>                 svc_xprt_put(&xprt);
 
-e-mail: mhiramat@redhat.com
+Actually looks like it should be svc_xprt_put(xprt); fixed.
 
+> There might be more errors in the next 15 patches or so; I didn't test
+> them with this error corrected.
+
+OK.  I've got a machine running
+
+	for c in $(git rev-list origin..linux-nfs/nfs-server-stable^); do
+		git checkout $c
+		make -s -j4
+	done
+
+now just to make sure....  Thanks again!
+
+--b.
