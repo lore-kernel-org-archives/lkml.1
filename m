@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYA0GCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752090AbYA0GC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYA0GCA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 01:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbYA0GBU
+	id S1752090AbYA0GC2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 01:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbYA0GBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 01:01:20 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38068 "EHLO
+	Sun, 27 Jan 2008 01:01:21 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37515 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754047AbYA0GBT (ORCPT
+	by vger.kernel.org with ESMTP id S1754154AbYA0GBU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 01:01:19 -0500
-Date: Sat, 26 Jan 2008 22:01:01 -0800
+	Sun, 27 Jan 2008 01:01:20 -0500
+Date: Sat, 26 Jan 2008 22:01:06 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ian Abbott <abbotti@mev.co.uk>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, gregkh@suse.de,
-       kristen.c.accardi@intel.com
-Subject: Re: [PATCH(v3) 2.6.24] Fix fakephp deadlock
-Message-Id: <20080126220101.9e767f41.akpm@linux-foundation.org>
-In-Reply-To: <479A0D1C.8080401@mev.co.uk>
-References: <479A0D1C.8080401@mev.co.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: jason.wessel@windriver.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, hpa@zytor.com
+Subject: Re: [PATCH] [KGDB] core code cleanups
+Message-Id: <20080126220106.4c1c2d5b.akpm@linux-foundation.org>
+In-Reply-To: <20080125222836.GA24708@elte.hu>
+References: <479A5C35.6040605@windriver.com>
+	<20080125222836.GA24708@elte.hu>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,42 +28,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 25 Jan 2008 16:23:56 +0000 Ian Abbott <abbotti@mev.co.uk> wrote:
-> From: Ian Abbott <abbotti@mev.co.uk>
+> On Fri, 25 Jan 2008 23:28:36 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> If the fakephp driver is used to emulate removal of a PCI device by
-> writing text string "0" to the "power" sysfs attribute file, this causes
-> its parent directory and its contents (including the "power" file) to be
-> deleted before the write operation returns.  Unfortunately, it ends up
-> in a deadlock waiting for itself to complete.
-
-Thansk for working on this, but....
-
-> The deadlock is as follows: sysfs_write_file calls flush_write_buffer
-> which calls sysfs_get_active_two before calling power_write_file in
-> pci_hotplug_core.c via the sysfs store operation. The power_write_file
-> function calls disable_slot in fakephp.c via the slot operation.  The
-> disable_slot function calls remove_slot which calls pci_hp_deregister
-> (back in pci_hotplug_core.c) which calls fs_remove_slot which calls
-> sysfs_remove_file to remove the "power" file. The sysfs_remove_file
-> function calls sysfs_hash_and_remove which calls sysfs_addrm_finish
-> which calls sysfs_deactivate. The sysfs_deactivate function sees that
-> something has an active reference on the sysfs_dirent (from the
-> previous call to sysfs_get_active_two back up the call stack somewhere)
-> so waits for the active reference to go away, which is of course
-
-     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  <- this always wrong
-> impossible.
+> * Jason Wessel <jason.wessel@windriver.com> wrote:
 > 
-> The problem has been present since 2.6.21.
+> > This patch is against the x86-git which included the kgdb core.
+> > 
+> > Per review request from the x86-git maintainers, the kgdb-core has had 
+> > the kgdb_handle_exception() separated into individual functions.  This 
+> > patch does nothing other than re-organize the code.  There are no 
+> > functional kgdb changes.
+> > 
+> > kgdb_handle_exception now calls gdb_serial_stub() to handle the 
+> > debugger communications.  The gdb_serial_stub() has call out to sub 
+> > handlers for all the major gdb serial packet types.
 > 
-> This patch breaks the deadlock by queuing work queue items on a single-
-> threaded work queue to remove a slot from sysfs, and to rescan the PCI
-> buses.  There is also some protection against disabling a slot that is
-> already being removed.
+> thanks Jason, i have applied your cleanups to x86.git.
+> 
 
-Adding a deferred-work like this just because we can't get the locking and
-refcounting correct is a really sad hack.
+I don't recall having actually seen the kgdb patches recently.  Have they
+had a suitable level of review?
 
-Can we get the locking and refcounting right please?  Start by making that
-wait-for-refcount-to-go-away go away.
+In particular, as the plan is to migrate all kgdb-enabled architectures
+onto the generic kgdb core (yes?), have the owners of the eligible
+architectures actually taken a look at what we'll be asking of them?
