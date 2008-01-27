@@ -1,31 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbYA0V74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759582AbYA0WBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759287AbYA0V74 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 16:59:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbYA0V7i
+	id S1759582AbYA0WBe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 17:01:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbYA0WBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 16:59:38 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49270 "EHLO mx3.mail.elte.hu"
+	Sun, 27 Jan 2008 17:01:15 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58282 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756021AbYA0V7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 16:59:36 -0500
-Date: Sun, 27 Jan 2008 22:59:04 +0100
+	id S1757929AbYA0WBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 17:01:14 -0500
+Date: Sun, 27 Jan 2008 23:01:04 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Steven Rostedt <srostedt@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [Regression] 2.6.24-git3: Major annoyance during
-	suspend/hibernation on x86-64 (bisected)
-Message-ID: <20080127215904.GB2686@elte.hu>
-References: <200801272229.48955.rjw@sisk.pl>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] X86: coding style fixes to arch/x86/math-errors.c
+Message-ID: <20080127220104.GA3503@elte.hu>
+References: <20080127223451.79718183@paolo-desktop> <479CFB62.1010808@gmail.com> <4d8e3fd30801271351p44818f64p27ca4ae897efbb81@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200801272229.48955.rjw@sisk.pl>
+In-Reply-To: <4d8e3fd30801271351p44818f64p27ca4ae897efbb81@mail.gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,40 +35,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
 
-> Hi,
+> On Jan 27, 2008 10:45 PM, Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
+> > > -  math_abort(FPU_info,SIGILL);
+> > > +  math_abort(FPU_info , SIGILL);
+> >
+> > Looks like you're trading bad for worse here.
 > 
-> 2.6.24-git3 adds a 5 - 10 sec delay to the suspend and hibernation 
-> code paths (probably related to the disabling of nonboot CPUs), which 
-> is !@#$%^&*() annoying.
+> Should I make it read like math_abort(FPU_info, SIGILL); ?
+
+yeah, that's the correct one.
+
+> > While you're at it, please think about adding proper KERN_ facility to these printk() calls.
 > 
-> It's 100% reproducible on my HP nx6325 and bisection idendified the 
-> following commit as the first bad one:
-> 
-> commit 764a9d6fe4b52995c8aba277e3634385699354f4
-> Author: Steven Rostedt <srostedt@redhat.com>
-> Date:   Fri Jan 25 21:08:04 2008 +0100
-> 
->     sched: track highest prio task queued
+> Yes, basically all the warnings are about missing KERN_. Do you want 
+> me to add KERN_ERR to all the above printk?
 
-hm, this patch is a NOP, so it's weird that it has an effect.
-
-Do you have serial logging enabled perhaps? If the following WARN_ON() 
-triggers:
-
-+               WARN_ON(p->prio < rq->rt.highest_prio);
-
-then perhaps that can cause a 5-10 seconds delay. (that's how much time 
-it takes to printk a warning on the slowest serial settings)
-
-but if you use suspend, then any such printks would be preserved in the 
-dmesg, right? If the WARN_ON() triggers, and if you remove it, do things 
-get faster?
-
-this does have the feel of being scheduling related, but are you 
-absolutely sure about the precise identity of the patch? It's not the 
-next patch or the preceding patch by any chance? (which would also be 
-scheduler patches)
+Do that in a separate patch though, as it changes strings. (and hence 
+the checking for 'did the object md5 change' misfires)
 
 	Ingo
