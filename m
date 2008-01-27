@@ -1,32 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760342AbYA0XKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760412AbYA0XMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760342AbYA0XKp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 18:10:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757763AbYA0XKh
+	id S1760412AbYA0XMu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 18:12:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbYA0XMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 18:10:37 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:62052 "EHLO
+	Sun, 27 Jan 2008 18:12:42 -0500
+Received: from py-out-1112.google.com ([64.233.166.178]:2303 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758081AbYA0XKg (ORCPT
+	with ESMTP id S1754732AbYA0XMl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 18:10:36 -0500
+	Sun, 27 Jan 2008 18:12:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=NMrrtSwQvsxFCXJ5JMv9eW66sNJAcNOiv3ZUiH9osXd/kvBn11ixxh2ILShZejCE3xEuaNxBQ/ow2b4SNFAUXSJFji2qm4phAdgahuFmvy+m2vvnbQJZ2wgtTVbz5PqydvsO2rdjU2E+Jdw4e15LSxINiOdm6GFhHyJRxYXBjpk=
-Date: Sun, 27 Jan 2008 19:10:33 -0400
+        b=lEPO54hvcUTglpne0PEOI1FyuhFnHlujS8GeRAN8JH4czu72SCZ0UYqSC3AfDzVnv7MIo2XBREsHNIznZHUHFaz2oAPqiaH0+jB0UZhuwCDS9hA0q713sPaStRSOrkCFFrEzUruMWgyQ7eBrchfiibG0HnYB20eVYvfRb7rS7i4=
+Date: Sun, 27 Jan 2008 19:12:38 -0400
 From: Kevin Winchester <kjwinchester@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       John Stultz <johnstul@us.ibm.com>
 Subject: Re: X fails to start with latest Linus git
-Message-Id: <20080127191033.b883c595.kjwinchester@gmail.com>
-In-Reply-To: <20080127123702.GB21282@elte.hu>
+Message-Id: <20080127191238.92d95770.kjwinchester@gmail.com>
+In-Reply-To: <20080127124244.GA24999@elte.hu>
 References: <479BCE03.6070603@gmail.com>
 	<479BD1D1.8020503@gmail.com>
 	<20080127062703.GA23444@elte.hu>
 	<20080127083129.c14452ca.kjwinchester@gmail.com>
 	<20080127123702.GB21282@elte.hu>
+	<20080127124120.GA23377@elte.hu>
+	<20080127124244.GA24999@elte.hu>
 X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -35,34 +38,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Jan 2008 13:37:02 +0100
+On Sun, 27 Jan 2008 13:42:44 +0100
 Ingo Molnar <mingo@elte.hu> wrote:
 
 > 
-> * Kevin Winchester <kjwinchester@gmail.com> wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> > Sure, the result of the script is at
+> > hm, perhaps it's due to the xtime lock dependency:
 > > 
-> > http://personal.nbnet.nb.ca/kwin/cfs-debug-info-2008.01.27-08.13.28
+> >         do {
+> >                 seq = read_seqbegin(&xtime_lock);
+> >                 getnstimeofday(ts);
+> >                 tomono = wall_to_monotonic;
+> > 
+> >         } while (read_seqretry(&xtime_lock, seq));
+> > 
+> > perhaps your system somehow generates a printk from within an 
+> > xtime_lock locked section?
 > 
-> it seems you've got hpet active by default:
+> i _bet_ it's these printks that cause your lockup:
 > 
->  /sys/devices/system/clocksource/clocksource0/current_clocksource:
->  hpet
->  /sys/devices/system/clocksource/clocksource0/available_clocksource:
->  hpet acpi_pm pit jiffies tsc
+>  [   10.313437] Marking TSC unstable due to: cpufreq changes.
+>  [   10.313437] Time: hpet clocksource has been installed.
+>  [   10.424431] Clocksource tsc unstable (delta = -121609771 ns)
 > 
-> do you get a similar lockup if you use acpi_pm? You can do that either 
-> by disabling the HPET options in your .config, or by doing this prior 
-> starting up X:
-> 
->   echo acpi_pm > /sys/devices/system/clocksource/clocksource0/current_clocksource
+> as these are done with the xtime lock held.
 > 
 
-Since X was being autostarted when the computer booted, I just removed
-"hpet=force" from my command line instead.  The result was that the
-lockup happened earlier, so that it was before X was being started.  So
-I guess X is not the culprit.
+Ok, I'll try disabling cpufreq to see if that prevents the lockup.  If
+that is the problem, what is the fix?  Just to keep the path reverted?
 
 -- 
 Kevin Winchester <kjwinchester@gmail.com>
