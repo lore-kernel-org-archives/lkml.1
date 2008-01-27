@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754370AbYA0OdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbYA0Okx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754370AbYA0OdT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 09:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757598AbYA0OdE
+	id S1756203AbYA0Okx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 09:40:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYA0Okn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 09:33:04 -0500
-Received: from smtp1.betherenow.co.uk ([87.194.0.68]:52112 "EHLO
-	smtp1.bethere.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753755AbYA0OdD (ORCPT
+	Sun, 27 Jan 2008 09:40:43 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:52450 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753330AbYA0Okm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 09:33:03 -0500
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alistair John Strachan <alistair@devzero.co.uk>
-Subject: [PATCH] Force enable HPET on (some?) ICH9 boards
-Date: Sun, 27 Jan 2008 14:32:59 +0000
-Message-Id: <1201444379-4223-1-git-send-email-alistair@devzero.co.uk>
-X-Mailer: git-send-email 1.5.3.8
+	Sun, 27 Jan 2008 09:40:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=gAgnYeDe7ldI+5gxViRn5gQyw6swGjX/etsPUfkKFXKUYevMmd2xCPG7CHeKdGqgd5gXkM0WjRVRS/bg41KmCx89BMkhALeaz+7QurhPw+RjSdBPt2kMLmy7xcf/htZ6N7Bqyn/dODg5Ud5pKm9WHuvtyOGe9BIZ3sJ3rJLU3CY=
+Message-ID: <3aa654a40801270640s59cfdcc4lfa3fb487e0d9b799@mail.gmail.com>
+Date: Sun, 27 Jan 2008 06:40:40 -0800
+From: "Avuton Olrich" <avuton@gmail.com>
+To: "Zhao Yakui" <yakui.zhao@intel.com>
+Subject: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0 sound card
+Cc: "Li Shaohua" <shaohua.li@intel.com>,
+       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
+       "Thomas Renninger" <trenn@suse.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux-Kernel," <linux-kernel@vger.kernel.org>,
+       Alsa-Devel <alsa-devel@alsa-project.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some consumer ICH9 boards (such as the Abit IP35 Pro) do not provide a BIOS
-option for enabling the HPET. The same ICH workaround used for 6,7,8 can be
-applied to 9. Here I enable the only PCI id that was visible on my system.
+With v2.6.24 my second ALSA sound device stopped working.
 
-I have confirmed the HPETs work both from userspace and as a clocksource for
-the running kernel (2.6.24 here) after applying this patch.
+After bisection it says this was the offending commit.
 
-Force enabled HPET at base address 0xfed00000
-hpet clockevent registered
-hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0, 0
-hpet0: 4 64-bit timers, 14318180 Hz
+a7839e960675b549f06209d18283d5cee2ce9261 is first bad commit
+commit a7839e960675b549f06209d18283d5cee2ce9261
+Author: Zhao Yakui <yakui.zhao@intel.com>
+Date:   Wed Nov 28 16:21:21 2007 -0800
 
-Signed-off-by: Alistair John Strachan <alistair@devzero.co.uk>
+    PNP: increase the maximum number of resources
 
----
- arch/x86/kernel/quirks.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+    On some systems the number of resources(IO,MEM) returnedy by PNP device is
+    greater than the PNP constant, for example motherboard devices.  It brings
+    that some resources can't be reserved and resource confilicts.  This will
+    cause PCI resources are assigned wrongly in some systems, and cause hang.
+    This is a regression since we deleted ACPI motherboard driver and use PNP
+    system driver.
 
-diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
-index fab30e1..150ba29 100644
---- a/arch/x86/kernel/quirks.c
-+++ b/arch/x86/kernel/quirks.c
-@@ -162,6 +162,8 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH7_31,
- 			 ich_force_enable_hpet);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH8_1,
- 			 ich_force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_7,
-+			 ich_force_enable_hpet);
- 
- 
- static struct pci_dev *cached_dev;
+    [akpm@linux-foundation.org: fix text and coding-style a bit]
+    Signed-off-by: Li Shaohua <shaohua.li@intel.com>
+    Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+    Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+    Cc: Thomas Renninger <trenn@suse.de>
+    Cc: <stable@kernel.org>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
+The audio device is 00:1b.0 (see my lspci -vvv output), the other
+audio device works fine.
+
+http://avuton.googlepages.com/v2.6-before (dmesg revision before)
+http://avuton.googlepages.com/v2.6-after (dmesg broken revision)
+http://avuton.googlepages.com/lspci-vvv
+http://avuton.googlepages.com/config (from the broken revision)
+http://avuton.googlepages.com/iomem
+http://avuton.googlepages.com/ioports
 -- 
-Cheers,
-Alistair.
-
-137/1 Warrender Park Road, Edinburgh, UK.
+avuton
+--
+ Anyone who quotes me in their sig is an idiot. -- Rusty Russell.
