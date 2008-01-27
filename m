@@ -1,132 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbYA0N2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbYA0N3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755768AbYA0N2u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 08:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYA0N2l
+	id S1757251AbYA0N3o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 08:29:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbYA0N3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 08:28:41 -0500
-Received: from nelson.telenet-ops.be ([195.130.133.66]:38251 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313AbYA0N2j (ORCPT
+	Sun, 27 Jan 2008 08:29:35 -0500
+Received: from agave.telenet-ops.be ([195.130.137.77]:50467 "EHLO
+	agave.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753633AbYA0N3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 08:28:39 -0500
-X-Greylist: delayed 3221 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Jan 2008 08:28:39 EST
-Date: Sun, 27 Jan 2008 14:28:35 +0100 (CET)
+	Sun, 27 Jan 2008 08:29:34 -0500
+X-Greylist: delayed 3275 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Jan 2008 08:29:34 EST
+Date: Sun, 27 Jan 2008 14:29:31 +0100 (CET)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>
 cc: Linux/m68k <linux-m68k@vger.kernel.org>,
        Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Atari floppy: Rename disk_type to atari_disk_type 
-Message-ID: <Pine.LNX.4.64.0801271426590.8108@anakin>
+Subject: [PATCH] Atari Falcon IDE: Add missing hwif variable
+Message-ID: <Pine.LNX.4.64.0801271428390.9257@anakin>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Atari floppy: Rename disk_type to atari_disk_type
+Atari Falcon IDE: Add missing hwif variable
 
-Commit edfaa7c36574f1bf09c65ad602412db9da5f96bf
+Commit cbb010c180294a5242a7681555c28737d9dd26ab
 
-    Driver core: convert block from raw kobjects to core devices
+    ide: drop 'initializing' argument from ide_register_hw()
+
+    * Rename init_hwif_data() to ide_init_port_data() and export it.
     
-    This moves the block devices to /sys/class/block. It will create a
-    flat list of all block devices, with the disks and partitions in one
-    directory. For compatibility /sys/block is created and contains symlinks
-    to the disks.
-
-introduced a global disk_type variable in <linux/genhd.h>, causing the
-following compile error on Atari:
-
-    drivers/block/ataflop.c:93: error: conflicting types for 'disk_type'
-    include/linux/genhd.h:21: error: previous declaration of 'disk_type' was here
-
-Rename the local disk_type variable in drivers/block/ataflop.c to
-atari_disk_type, to avoid the conflict.
+    * For all users of ide_register_hw() with 'initializing' argument set
+      hwif->present and hwif->hold are always zero so convert these host
+      drivers to use ide_find_port()+ide_init_port_data()+ide_init_port_hw()
+      instead (also no need for init_hwif_default() call since the setup
+      done by it gets over-ridden by ide_init_port_hw() call).
+    
+    * Drop 'initializing' argument from ide_register_hw().
+    
+introduced the usage of a hwif variable, but forgot to declare the actual
+variable.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 ---
- drivers/block/ataflop.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/ide/legacy/falconide.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/block/ataflop.c
-+++ b/drivers/block/ataflop.c
-@@ -90,7 +90,7 @@ static struct atari_disk_type {
- 	unsigned	blocks;		/* total number of blocks */
- 	unsigned	fdc_speed;	/* fdc_speed setting */
- 	unsigned 	stretch;	/* track doubling ? */
--} disk_type[] = {
-+} atari_disk_type[] = {
- 	{ "d360",  9, 720, 0, 0},	/*  0: 360kB diskette */
- 	{ "D360",  9, 720, 0, 1},	/*  1: 360kb in 720k or 1.2MB drive */
- 	{ "D720",  9,1440, 0, 0},	/*  2: 720kb in 720k or 1.2MB drive */
-@@ -658,7 +658,7 @@ static int do_format(int drive, int type
- 			return -EINVAL;
- 		}
- 		type = minor2disktype[type].index;
--		UDT = &disk_type[type];
-+		UDT = &atari_disk_type[type];
- 	}
+--- a/drivers/ide/legacy/falconide.c
++++ b/drivers/ide/legacy/falconide.c
+@@ -66,6 +66,7 @@ static int __init falconide_init(void)
+ {
+     if (MACH_IS_ATARI && ATARIHW_PRESENT(IDE)) {
+ 	hw_regs_t hw;
++	ide_hwif_t *hwif;
  
- 	if (!UDT || desc->track >= UDT->blocks/UDT->spt/2 || desc->head >= 2) {
-@@ -1064,7 +1064,7 @@ static void fd_rwsec_done1(int status)
- 	       searched for a non-existent sector! */
- 	    !(read_track && FDC_READ(FDCREG_SECTOR) > SUDT->spt)) {
- 		if (Probing) {
--			if (SUDT > disk_type) {
-+			if (SUDT > atari_disk_type) {
- 			    if (SUDT[-1].blocks > ReqBlock) {
- 				/* try another disk type */
- 				SUDT--;
-@@ -1082,7 +1082,7 @@ static void fd_rwsec_done1(int status)
- 		} else {	
- /* record not found, but not probing. Maybe stretch wrong ? Restart probing */
- 			if (SUD.autoprobe) {
--				SUDT = disk_type + StartDiskType[DriveType];
-+				SUDT = atari_disk_type + StartDiskType[DriveType];
- 				set_capacity(unit[SelectedDrive].disk,
- 							SUDT->blocks);
- 				Probing = 1;
-@@ -1421,7 +1421,7 @@ repeat:
- 	if (type == 0) {
- 		if (!UDT) {
- 			Probing = 1;
--			UDT = disk_type + StartDiskType[DriveType];
-+			UDT = atari_disk_type + StartDiskType[DriveType];
- 			set_capacity(floppy->disk, UDT->blocks);
- 			UD.autoprobe = 1;
- 		}
-@@ -1439,7 +1439,7 @@ repeat:
- 			goto repeat;
- 		}
- 		type = minor2disktype[type].index;
--		UDT = &disk_type[type];
-+		UDT = &atari_disk_type[type];
- 		set_capacity(floppy->disk, UDT->blocks);
- 		UD.autoprobe = 0;
- 	}
-@@ -1505,7 +1505,7 @@ static int fd_ioctl(struct inode *inode,
- 			if (minor2disktype[type].drive_types > DriveType)
- 				return -ENODEV;
- 			type = minor2disktype[type].index;
--			dtp = &disk_type[type];
-+			dtp = &atari_disk_type[type];
- 			if (UD.flags & FTD_MSG)
- 			    printk (KERN_ERR "floppy%d: found dtp %p name %s!\n",
- 			        drive, dtp, dtp->name);
-@@ -1576,7 +1576,7 @@ static int fd_ioctl(struct inode *inode,
- 				continue;
- 			}
- 			setidx = minor2disktype[settype].index;
--			dtp = &disk_type[setidx];
-+			dtp = &atari_disk_type[setidx];
+ 	printk(KERN_INFO "ide: Falcon IDE controller\n");
  
- 			/* found matching entry ?? */
- 			if (   dtp->blocks  == setprm.size 
 
 Gr{oetje,eeting}s,
 
