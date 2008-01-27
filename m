@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbYA0HNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbYA0HSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbYA0HNG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 02:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbYA0HMy
+	id S1755111AbYA0HSz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 02:18:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbYA0HSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 02:12:54 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60758 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750792AbYA0HMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 02:12:53 -0500
-Date: Sun, 27 Jan 2008 08:12:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kevin Winchester <kjwinchester@gmail.com>
-Subject: [git pull] printk fix (was: Re: X fails to start with latest Linus
-	git)
-Message-ID: <20080127071240.GA31946@elte.hu>
-References: <479BCE03.6070603@gmail.com>
+	Sun, 27 Jan 2008 02:18:45 -0500
+Received: from trider-g7.fabbione.net ([195.22.207.161]:36014 "EHLO
+	trider-g7.fabbione.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540AbYA0HSo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 02:18:44 -0500
+X-Greylist: delayed 1966 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Jan 2008 02:18:44 EST
+Date: Sun, 27 Jan 2008 07:45:54 +0100 (CET)
+From: "Fabio M. Di Nitto" <fabbione@ubuntu.com>
+X-X-Sender: fabbione@trider-g7
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: David Teigland <teigland@redhat.com>, linux-kernel@vger.kernel.org,
+       fabbione@ubuntu.com
+Subject: Re: [PATCH 06/19] dlm: align midcomms message buffer
+In-Reply-To: <20080126220023.4d1256b6.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0801270742180.6826@trider-g7>
+References: <1201193442-8260-7-git-send-email-teigland@redhat.com>
+ <20080126220023.4d1256b6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <479BCE03.6070603@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 26 Jan 2008, Andrew Morton wrote:
 
-Linus,
+>> On Thu, 24 Jan 2008 10:50:29 -0600 David Teigland <teigland@redhat.com> wrote:
+>> From: Fabio M. Di Nitto <fabbione@ubuntu.com>
+>>
+>> gcc does not guarantee that a static buffer is 64bit aligned. This change
+>> allows sparc64 to work.
+>>
+>
+> This buffer is not static: changelog needs fixing: s/static/auto/
 
-please pull the following printk fix:
+thanks
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+>
+>> ---
+>>  fs/dlm/midcomms.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/fs/dlm/midcomms.c b/fs/dlm/midcomms.c
+>> index f8c69dd..da653b5 100644
+>> --- a/fs/dlm/midcomms.c
+>> +++ b/fs/dlm/midcomms.c
+>> @@ -58,7 +58,7 @@ static void copy_from_cb(void *dst, const void *base, unsigned offset,
+>>  int dlm_process_incoming_buffer(int nodeid, const void *base,
+>>  				unsigned offset, unsigned len, unsigned limit)
+>>  {
+>> -	unsigned char __tmp[DLM_INBUF_LEN];
+>> +	unsigned char __tmp[DLM_INBUF_LEN] __attribute__((aligned(64)));
+>>  	struct dlm_header *msg = (struct dlm_header *) __tmp;
+>>  	int ret = 0;
+>>  	int err = 0;
+>
+> Why does DLM require that this thing be 64-bit aligned?
 
-it reverts 19ef9309273d: Kevin Winchester reported a 
-CONFIG_PRINTK_TIME=y related hang during X startup, and biscted it down 
-to this commit.
+i spotted this running on sparc64 and the kernel was both complaning about 
+TSP not being aligned and the data on the other side of the wire were 
+wrong.
 
-	Ingo
+> It all looks rather ugly.  Can't this stuff be implemeted within the C type
+> system somehow?
 
------------------->
-Ingo Molnar (1):
-      printk: revert ktime_get() timestamps
+Yes, i will rework it.
 
- printk.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+Thanks for the feedback.
 
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 423a8c7..3b7c968 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -702,9 +702,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 					loglev_char = default_message_loglevel
- 						+ '0';
- 				}
--				t = 0;
--				if (system_state != SYSTEM_BOOTING)
--					t = ktime_to_ns(ktime_get());
-+				t = cpu_clock(printk_cpu);
- 				nanosec_rem = do_div(t, 1000000000);
- 				tlen = sprintf(tbuf,
- 						"<%c>[%5lu.%06lu] ",
+Fabio
 
+--
+I'm going to make him an offer he can't refuse.
