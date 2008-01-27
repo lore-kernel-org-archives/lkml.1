@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759845AbYA0Mjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbYA0Mjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759845AbYA0Mjg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 07:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYA0MfZ
+	id S1758449AbYA0Mjx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 07:39:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbYA0Mfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 07:35:25 -0500
-Received: from monty.telenet-ops.be ([195.130.132.56]:59386 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753967AbYA0MfB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 07:35:01 -0500
-Message-Id: <20080127123400.050159247@mail.of.borg>
-References: <20080127123216.897698766@mail.of.borg>
-User-Agent: quilt/0.46-1
-Date: Sun, 27 Jan 2008 13:32:29 +0100
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Finn Thain <fthain@telegraphics.com.au>
-Subject: [patch 13/14] mac68k: add nubus card definitions and a typo fix
-Content-Disposition: inline; filename=mac68k-add-nubus-card-definitions-and-a-typo-fix.diff
+	Sun, 27 Jan 2008 07:35:41 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54882 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757448AbYA0Mfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 07:35:39 -0500
+Date: Sun, 27 Jan 2008 13:35:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: X fails to start with latest Linus git
+Message-ID: <20080127123514.GA21282@elte.hu>
+References: <479BCE03.6070603@gmail.com> <479BD1D1.8020503@gmail.com> <20080127062703.GA23444@elte.hu> <20080127083129.c14452ca.kjwinchester@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080127083129.c14452ca.kjwinchester@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0014]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Finn Thain <fthain@telegraphics.com.au>
 
-Add some new card definitions and fix a typo (from Eugen Paiuc).
+* Kevin Winchester <kjwinchester@gmail.com> wrote:
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- include/linux/nubus.h |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+> although it is not complete.  For some reason (xubuntu, probably) dash 
+> is my default shell and it does not like the for loop at line 69 of 
+> that script:
+> 
+> for ((i=0; i<5; i++)); do
+>  echo "-- sched_debug #$i: --"       >> $FILE
+>  date                                >> $FILE
+>  cat /proc/sched_debug               >> $FILE 2>/dev/null
+>  sleep 1
+> done
+> 
+> Not being a shell scripter, I have no idea how to port that to dash.
 
---- a/include/linux/nubus.h
-+++ b/include/linux/nubus.h
-@@ -132,10 +132,12 @@ enum nubus_drhw {
- 	NUBUS_DRHW_RDIUS_DCGX     = 0x027C, /* Radius DirectColor/GX */
- 	NUBUS_DRHW_RDIUS_PC8      = 0x0291, /* Radius PrecisionColor 8 */
- 	NUBUS_DRHW_LAPIS_PCS8     = 0x0292, /* Lapis ProColorServer 8 */
--	NUBUS_DRHW_RASTER_24LXI   = 0x02A0, /* RasterOps 8/24 XLi */
-+	NUBUS_DRHW_RASTER_24XLI   = 0x02A0, /* RasterOps 8/24 XLi */
- 	NUBUS_DRHW_RASTER_PBPGT   = 0x02A5, /* RasterOps PaintBoard Prism GT */
- 	NUBUS_DRHW_EMACH_FSX      = 0x02AE, /* E-Machines Futura SX */
-+	NUBUS_DRHW_RASTER_24XLTV  = 0x02B7, /* RasterOps 24XLTV */
- 	NUBUS_DRHW_SMAC_THUND24   = 0x02CB, /* SuperMac Thunder/24 */
-+	NUBUS_DRHW_SMAC_THUNDLGHT = 0x03D9, /* SuperMac ThunderLight */
- 	NUBUS_DRHW_RDIUS_PC24XP   = 0x0406, /* Radius PrecisionColor 24Xp */
- 	NUBUS_DRHW_RDIUS_PC24X    = 0x040A, /* Radius PrecisionColor 24X */
- 	NUBUS_DRHW_RDIUS_PC8XJ    = 0x040B, /* Radius PrecisionColor 8XJ */
+oops, stick this to the top of the script:
 
--- 
-Gr{oetje,eeting}s,
+  #!/bin/bash
 
-						Geert
+as that loop is a bashism. (I've updated the script on my site as well.)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+	Ingo
