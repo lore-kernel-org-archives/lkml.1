@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYA0Mpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbYA0MvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758263AbYA0Mpz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 07:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYA0Mps
+	id S1757607AbYA0MvX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 07:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbYA0MvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 07:45:48 -0500
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:43853 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752266AbYA0Mpr (ORCPT
+	Sun, 27 Jan 2008 07:51:14 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:47488 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753098AbYA0MvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 07:45:47 -0500
-X-Greylist: delayed 1491 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Jan 2008 07:45:47 EST
-Date: Sun, 27 Jan 2008 13:25:10 +0100
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: make the best-fit section of
- fb_find_mode return the closest matching mode
-Message-Id: <20080127132510.b00017cb.krzysztof.h1@poczta.fm>
-In-Reply-To: <20080127113115.GA17722@spock.one.pl>
-References: <20080127113115.GA17722@spock.one.pl>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: f4e2b138
+	Sun, 27 Jan 2008 07:51:14 -0500
+Date: Sun, 27 Jan 2008 13:51:12 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: monstr@monstr.eu
+cc: linux-kernel@vger.kernel.org, stephen.neuendorffer@xilinx.com,
+       john.williams@petalogix.com, microblaze-uclinux@itee.uq.edu.au
+Subject: Re: [PATCH 12/52] [microblaze] lmb support
+In-Reply-To: <873c2bf1f67696aa11014886470f6ba46f04e8d2.1201107832.git.monstr@monstr.eu>
+Message-ID: <Pine.LNX.4.64.0801271347500.1185@fbirervta.pbzchgretzou.qr>
+References: <1201187014-3979-1-git-send-email-monstr@monstr.eu>
+ <dbff6b883dbcb108db53e5093994c473946e1240.1201107832.git.monstr@monstr.eu>
+ <ac0947adfe718fcb4c0dc5f6f7ab64f8155541fb.1201107832.git.monstr@monstr.eu>
+ <873c2bf1f67696aa11014886470f6ba46f04e8d2.1201107832.git.monstr@monstr.eu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Jan 2008 12:31:16 +0100
-Michal Januszewski <spock@gentoo.org> wrote:
 
-> From: Michal Januszewski <spock@gentoo.org>
-> 
-> Currently, if a perfect match in terms of resolution is not found,
-> fb_find_mode() only looks for a best-fit mode among modes with a
-> higher resolution than the one requested.  Thus, if the user
-> requests a resolution higher than the largest supported one, they
-> are dropped to the default mode (usually a low resolution one).
-> 
+On Jan 24 2008 16:02, monstr@monstr.eu wrote:
+>+
+>+#define DEBUG
+>+
+>+#ifdef DEBUG
+>+#define DBG(fmt...) printk(fmt)
+>+#else
+>+#define DBG(fmt...)
+>+#endif
 
-> Change this behaviour so that the true closest match in terms
-> of the city-block metric is returned.
-> 
-
-This may be not ideal solution in case there exist both lower and
-higher matches. If given resolution is closer (even by few pixels)
-to lower one, your method will choose the lower one.
-It may be incorrect for e.g. picture viewer (the higher resolution
-shows the whole picture with margins, the smaller one shows
-rescaled or cut picture).
-
-IMHO, the choice of higher resolution (if possible) should be
-preferred. It is also closer to the old solution.
-
-Kind regards,
-Krzysztof
+Phew, don't reinvent the wheel - use the existing pr_debug() instead.
 
 
-----------------------------------------------------------------------
-Nadchodzi galaktyczna wojna!
-Sprawdz >> http://link.interia.pl/f1ce0
+>+static unsigned long __init lmb_addrs_overlap(unsigned long base1,
+>+		unsigned long size1, unsigned long base2, unsigned long size2)
+>+{
+>+	return ((base1 < (base2+size2)) && (base2 < (base1+size1)));
+	return base1 < base2 + size2 && base2 < base1 + size1;
+>+}
 
+Operator precedence makes it possible; you could omit a lot of () in the code.
+(Also try checkpatch.pl to get to know of other style 'errors')
