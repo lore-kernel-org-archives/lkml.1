@@ -1,80 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbYA0SIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757011AbYA0SNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757870AbYA0SIS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 13:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbYA0SIG
+	id S1757011AbYA0SNk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 13:13:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYA0SNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 13:08:06 -0500
-Received: from ppp-110-234.adsl.restena.lu ([158.64.110.234]:54950 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750997AbYA0SIE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 13:08:04 -0500
-X-Greylist: delayed 1520 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Jan 2008 13:08:04 EST
-From: Bruno =?iso-8859-1?q?Pr=E9mont?= <bonbons@linux-vserver.org>
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Subject: Troubles waking up from suspend (S3) - how to debug?
-Date: Sun, 27 Jan 2008 18:42:37 +0100
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Sun, 27 Jan 2008 13:13:33 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:60717 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751403AbYA0SNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 13:13:32 -0500
+Date: Sun, 27 Jan 2008 20:13:54 +0200
+From: Adrian Bunk <adrian.bunk@movial.fi>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.60
+Message-ID: <20080127181354.GE2558@does.not.exist>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200801271842.38007.bonbons@linux-vserver.org>
-X-VirusProbe: ClamAV, clean
-X-SpamProbe: GOOD 0.0000021 808e1c41e0a733fb74d881596433c034
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm currently trying out suspend (S3) on a few machines but none of them wakes 
-up completely/properly (I have a few more hosts I'm planning to try suspend 
-on once I can get useful information out of those not waking up properly).
-
-Tested kernels: 2.6.24(-rc8), on one 2.6.23.8
-
-To suspend I enter the following from console:
-  echo -n mem > /sys/power/state
+Security fixes since 2.6.16.59:
+- CVE-2007-6063: isdn: avoid copying overly-long strings
+- CVE-2007-6151: I4L: fix isdn_ioctl memory overrun vulnerability
+- CVE-2007-6206: vfs: coredumping fix
 
 
-Fujitsu-Siemens S7020 laptop (i915GM based):
-  Works fine except backlight that remains asleep and Xorg vesa driver
-  crashing Xorg.
-  It looks like a suspend cycle discards the VideoBIOS shadow copy.
-  Adjusting brightness using hotkeys or acpi-fujitsusiemens does not help
-  waking up the backlight.
-  At best backlight comes back when suspending from Xorg with
-  xf86-video-intel-2.2.x but then mode is distorded. Any attempt to fix this
-  using xrandr or switch to/from console puts backlight asleep.
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
+
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
 
 
-Acer Travelmate 660 laptop (i855GM based):
-  Laptop suspends as expected but hangs while waking up.
+Changes since 2.6.16.59:
+
+Adrian Bunk (3):
+      drivers/scsi/BusLogic.c: #ifdef MODULE BusLogic_pci_tbl[]
+      Linux 2.6.16.60-rc1
+      Linux 2.6.16.60
+
+Al Viro (3):
+      [CASSINI]: Fix endianness bug.
+      [NET]: Introduce types for checksums.
+      [NET]: Generic checksum annotations and cleanups.
+
+Ben Collins (1):
+      [BusLogic] Add pci dev table for auto module loading.
+
+Chas Williams (1):
+      [ATM]: [nicstar] delay irq setup until card is configured
+
+David S. Miller (1):
+      [CASSINI]: Set skb->truesize properly on receive packets.
+
+Eric Dumazet (1):
+      [IPV4] ROUTE: ip_rt_dump() is unecessary slow
+
+Herbert Xu (1):
+      [ATM]: Check IP header validity in mpc_send_packet
+
+Ingo Molnar (1):
+      vfs: coredumping fix (CVE-2007-6206)
+
+Jeff Moyer (1):
+      raw: don't allow the creation of a raw device with minor number 0
+
+Karsten Keil (2):
+      isdn: avoid copying overly-long strings (CVE-2007-6063)
+      I4L: fix isdn_ioctl memory overrun vulnerability (CVE-2007-6151)
+
+Trond Myklebust (2):
+      NFS: writes should not clobber utimes() calls
+      NFS: call nfs_wb_all() only on regular files
 
 
-Desktop with MSI nforce based mainboard with Athlon CPU, onboard graphics and 
-hdd on HighPoint RR1640 PCI card (USB mouse & keyboard):
-  Suspends as expected but hangs while waking up.
-  During wakeup I can ping the computer but userspace does not respond (e.g.
-  no answer when trying to connect via ssh)
-  The display remains off if using vga text console, display comes back with
-  garbadge when using nvidiafb (no Xorg running), USB is powered but triggers
-  no reactions on keyboard/mouse input
-
-
-I tried using netconsole on the desktop computer to capture eventual printks 
-during resume but I got not a line during wakup. (only suspend progress 
-messages before actual suspend)
-
-What can I do to get more information out of those two last machines and find 
-out why they don't wake-up properly?
-
-
-I can provide more details on each of those machines if it can help (lspci, 
-kernel config, peripherials, acpidump)
-
-Regards,
-Bruno
+ Makefile                       |    2 
+ drivers/atm/nicstar.c          |   19 +++-----
+ drivers/char/raw.c             |    2 
+ drivers/isdn/i4l/isdn_common.c |    5 +-
+ drivers/isdn/i4l/isdn_net.c    |    8 +--
+ drivers/net/cassini.c          |    9 ++-
+ drivers/net/cassini.h          |   18 +++----
+ drivers/scsi/BusLogic.c        |   13 +++++
+ fs/exec.c                      |    6 ++
+ fs/nfs/dir.c                   |    3 -
+ fs/nfs/inode.c                 |    4 -
+ include/linux/types.h          |    2 
+ include/net/checksum.h         |   42 ++++++++++--------
+ include/net/ip6_checksum.h     |   76 ++++++++++++++++-----------------
+ net/atm/mpc.c                  |    7 +++
+ net/ipv4/route.c               |    8 +--
+ 16 files changed, 133 insertions(+), 91 deletions(-)
 
