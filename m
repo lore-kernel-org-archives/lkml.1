@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYA0GlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbYA0GnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbYA0GlU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 01:41:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbYA0GlK
+	id S1754565AbYA0GnT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 01:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbYA0GnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 01:41:10 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50237 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750836AbYA0GlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 01:41:09 -0500
-Date: Sun, 27 Jan 2008 07:40:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: akpm@linux-foundation.org, Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Sun, 27 Jan 2008 01:43:13 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50057 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750792AbYA0GnM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 01:43:12 -0500
+Date: Sat, 26 Jan 2008 22:42:28 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@www.l.google.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] define empty unxlate_dev_mem_ptr on AVR32
-Message-ID: <20080127064047.GA29320@elte.hu>
-References: <47972AD2.20801@niasdigital.com>
+Subject: Re: [GIT PATCH] driver core patches against 2.6.24
+In-Reply-To: <200801261550.58337.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.1.00.0801262239550.3222@www.l.google.com>
+References: <20080125071127.GA4860@kroah.com> <alpine.LFD.1.00.0801251035150.2979@hp.linux-foundation.org> <20080125194219.GA4596@suse.de> <200801261550.58337.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47972AD2.20801@niasdigital.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ben Nizette <bn@niasdigital.com> wrote:
 
-> + * We just keep an empty definition of this around (a-la the asm-generic
-> + * implementation) to keep /dev/mem happy
-> + */
-> +#define unxlate_dev_mem_ptr(p, a) {}
+On Sat, 26 Jan 2008, Rusty Russell wrote:
+> 
+> module.c:1832 (in load_module)
+> 
+> 	if (find_module(mod->name)) {
+> 		err = -EEXIST;
+> 		goto free_mod;
+> 	}
+> 
+> That's pretty early, and before this backtrace.
+> 
+> Even for simultaneous loads, there's a mutex which protects from here to the 
+> list insertion.
 
-We havent had the PAT patches in x86.git for some time so there's no 
-unxlate_dev_mem_ptr() introduced. Perhaps this is for older -mm?
+My problem isn't trying to load the same module twice.
 
-	Ingo
+My problem is that the *driver* already exists (because it's compiled in), 
+and has already initialized itself, and has already registered.
+
+Then, initrd tries to load an old module for that driver.
+
+So no simultaneous loading, no two modules, simple two *drivers* with the 
+same module names - but one was compiled in, and the other will fail 
+because it doesn't have the required linkages (ie it will failt the 
+modversions checks).
+
+But even before it fails the modversion checks, it apparently does various 
+ugly things that clash with the built-in driver.
+
+At least that seems to be the case.
+
+		Linus
