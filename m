@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759380AbYA0TjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758705AbYA0Tm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759380AbYA0TjT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 14:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYA0TjI
+	id S1758705AbYA0Tm7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 14:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbYA0Tmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 14:39:08 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:58413 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbYA0TjF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 14:39:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=CSiMbYelAIykQY5xMV/Sus9IkevvQGdOKYGHDSHlr4UaGBSJ9d1FKUjS2BhoAaWbDGqiyir/tCkFO7P6sEHlh9uR3xKJCHfz2GsjJi51jriT1l+4Mv8dTbZc6jfvjuWbuxfbmNFkRE/ObruoxGpgMpSccLQMQlheP/HzJJcveD4=
-Message-ID: <34539a480801271139y7261853bracc65b76bb13c78b@mail.gmail.com>
-Date: Sun, 27 Jan 2008 14:39:03 -0500
-From: "Ronald S. Bultje" <rbultje@ronald.bitfreak.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] drivers/media/video/zoran_card.c: en/decoder loading
-Cc: "Martin Samuelsson" <sam.linux.kernel@gmail.com>
-In-Reply-To: <20080127190129.6a1554ef.sam.linux.kernel@gmail.com>
+	Sun, 27 Jan 2008 14:42:50 -0500
+Received: from ns2.suse.de ([195.135.220.15]:57013 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753504AbYA0Tmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 14:42:49 -0500
+Date: Sun, 27 Jan 2008 11:40:53 -0800
+From: Greg KH <gregkh@suse.de>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch] drivers/base/core.c: fix a compile error
+Message-ID: <20080127194053.GA17136@suse.de>
+References: <479A4867.9040302@goop.org> <20080125221731.GB15172@suse.de> <20080125150002.09cdacb8.rdunlap@xenotime.net> <20080125231129.GD25074@suse.de> <479A6F9D.8040402@goop.org> <20080126091445.GA20935@hacking>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080127190129.6a1554ef.sam.linux.kernel@gmail.com>
-X-Google-Sender-Auth: eec87b410d403915
+In-Reply-To: <20080126091445.GA20935@hacking>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Jan 27, 2008 1:01 PM, Martin Samuelsson <sam.linux.kernel@gmail.com> wrote:
-> This enables the avs6eyes to load the bt866 and ks0127 drivers automatically.
->
-> Signed-off-by: Martin Samuelsson <sam.linux.kernel@gmail.com>
+On Sat, Jan 26, 2008 at 05:14:45PM +0800, WANG Cong wrote:
+> On Fri, Jan 25, 2008 at 03:24:13PM -0800, Jeremy Fitzhardinge wrote:
+> >Greg KH wrote:
+> >>Ah, sorry, I missed that "note" :(
+> >>
+> >>thanks,
+> >>
+> >>greg 'time to get that make randconfig system up and working' k-h
+> >>  
+> >
+> >Here's a config that fails.
+> >
+> 
+> Here's one possible fix. Please review.
+> 
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> 
 > ---
->  zoran_card.c |    6 ++++++
->  1 file changed, 6 insertions(+)
-> --- linux-2.6.24-ori/drivers/media/video/zoran_card.c   2008-01-24 23:58:37.000000000 +0100
-> +++ linux-2.6.24-sam/drivers/media/video/zoran_card.c   2008-01-27 17:16:51.000000000 +0100
-> @@ -366,6 +366,12 @@ i2cid_to_modulename (u16 i2c_id)
->        case I2C_DRIVERID_MSE3000:
->                name = "mse3000";
->                break;*/
-> +       case I2C_DRIVERID_BT866:
-> +               name = "bt866";
-> +               break;
-> +       case I2C_DRIVERID_KS0127:
-> +               name = "ks0127";
-> +               break;
->        default:
->                break;
->        }
+> 
+> Index: linux-2.6/include/linux/genhd.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/genhd.h
+> +++ linux-2.6/include/linux/genhd.h
+> @@ -12,6 +12,8 @@
+>  #include <linux/types.h>
+>  #include <linux/kdev_t.h>
+>  
+> +extern struct device_type part_type;
+> +
+>  #ifdef CONFIG_BLOCK
+>  
+>  #define kobj_to_dev(k) container_of(k, struct device, kobj)
+> @@ -19,7 +21,6 @@
+>  #define dev_to_part(device) container_of(device, struct hd_struct, dev)
+>  
+>  extern struct device_type disk_type;
+> -extern struct device_type part_type;
+>  extern struct kobject *block_depr;
+>  extern struct class block_class;
 
-(For upstream people who will apply the patch in mainstream kernel:)
-ack from maintainer.
+No, that will fix the build error, but die when linking :(
 
-Ronald
+I'll work on a real fix for this now...
 
-(and sorry to Martin for getting this msg twice.)
+thanks,
+
+greg k-h
