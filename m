@@ -1,101 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbYA0SP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbYA0SPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758597AbYA0SP2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 13:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYA0SPQ
+	id S1758934AbYA0SPm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 13:15:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbYA0SPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 13:15:16 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:52784 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbYA0SPO (ORCPT
+	Sun, 27 Jan 2008 13:15:22 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:55196 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754614AbYA0SPU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 13:15:14 -0500
-Message-ID: <479CCA28.90806@web.de>
-Date: Sun, 27 Jan 2008 19:15:04 +0100
-From: Jan Kiszka <jan.kiszka@web.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] KGDB: refactor kconfig menu
-References: <479CA7CE.8040407@web.de> <479CC6E7.4000103@windriver.com>
-In-Reply-To: <479CC6E7.4000103@windriver.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigA51095529970447B9D8C2791"
-X-Provags-ID: V01U2FsdGVkX18lPzmCZBSjypvpzKEmYlXncaYHhm045OMAFE5X
-	W9+NZzFSxILlgoKNzf8FDhye6lXi+aMknJxuuFdTlX9td0m0lf
-	PwG8LsWa8=
+	Sun, 27 Jan 2008 13:15:20 -0500
+Date: Sun, 27 Jan 2008 12:17:17 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0
+ sound card
+In-reply-to: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no>
+To: Avuton Olrich <avuton@gmail.com>
+Cc: Zhao Yakui <yakui.zhao@intel.com>, Li Shaohua <shaohua.li@intel.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Thomas Renninger <trenn@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Linux-Kernel," <linux-kernel@vger.kernel.org>,
+       Alsa-Devel <alsa-devel@alsa-project.org>
+Message-id: <479CCAAD.4080706@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigA51095529970447B9D8C2791
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+Avuton Olrich wrote:
+> With v2.6.24 my second ALSA sound device stopped working.
+> 
+> After bisection it says this was the offending commit.
+> 
+> a7839e960675b549f06209d18283d5cee2ce9261 is first bad commit
+> commit a7839e960675b549f06209d18283d5cee2ce9261
+> Author: Zhao Yakui <yakui.zhao@intel.com>
+> Date:   Wed Nov 28 16:21:21 2007 -0800
+> 
+>     PNP: increase the maximum number of resources
+> 
+>     On some systems the number of resources(IO,MEM) returnedy by PNP device is
+>     greater than the PNP constant, for example motherboard devices.  It brings
+>     that some resources can't be reserved and resource confilicts.  This will
+>     cause PCI resources are assigned wrongly in some systems, and cause hang.
+>     This is a regression since we deleted ACPI motherboard driver and use PNP
+>     system driver.
+> 
+>     [akpm@linux-foundation.org: fix text and coding-style a bit]
+>     Signed-off-by: Li Shaohua <shaohua.li@intel.com>
+>     Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+>     Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+>     Cc: Thomas Renninger <trenn@suse.de>
+>     Cc: <stable@kernel.org>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> 
+> The audio device is 00:1b.0 (see my lspci -vvv output), the other
+> audio device works fine.
+> 
+> http://avuton.googlepages.com/v2.6-before (dmesg revision before)
+> http://avuton.googlepages.com/v2.6-after (dmesg broken revision)
+> http://avuton.googlepages.com/lspci-vvv
+> http://avuton.googlepages.com/config (from the broken revision)
+> http://avuton.googlepages.com/iomem
+> http://avuton.googlepages.com/ioports
 
-Jason Wessel wrote:
-> Jan Kiszka wrote:
->> This is an attempt to improve the so far, well, unfortunate Kconfig me=
-nu
->> organization of KGDB. Most notably, it pushes all sub-entries into the=
-ir
->> own menuconfig, removes the (IMHO) unneeded "Method for KGDB
->> communication" choice, and ensures everything is indented properly. Th=
-is
->> should keep the original semantic while reducing the number of knobs t=
-he
->> user is confronted with.
->>
->>  =20
->=20
-> While it is probably reasonable to put the kgdb options into a sub
-> entry,  you cannot get rid of the "Method for KGDB communication"
-> choice, unless you re-implement it another way.
->=20
-> It is designed to implement the following:
-> 1) You can chose to build 1 and only 1 KGDB I/O module into the kernel
-> 2) Or you select modules only and can you can build as many additional
->     KGDB I/O modules as you like.
-> 3) Additional I/O modules can be built and you can load one at run time=
+Here's why the driver fails to load:
 
->     if you want to use another I/O method vs #1
+[   31.133060] ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 22 (level, 
+low) -> IRQ 22
+[   31.133141] PCI: Unable to reserve mem region #1:4000@febf8000 for 
+device 0000:00:1b.0
+[   31.133197] ACPI: PCI interrupt for device 0000:00:1b.0 disabled
+[   31.133244] HDA Intel: probe of 0000:00:1b.0 failed with error -16
 
-I see no reason why these cases cannot be enforced later on (when there
-are >1 I/O modules) via Kconfig depends-on rules. But maybe I'm
-overseeing something, please correct me.
+The iomem location of the HDA controller conflicts with this reservation 
+by the BIOS:
 
->=20
-> KGDB's Kconfig options are designed to allow you to have alternate ways=
+[   22.906654] system 00:08: iomem range 0xfebfa000-0xfebfac00 has been 
+reserved
 
-> to select static or run time configuration of the I/O connection to the=
+There was a patch floating around to ignore PnPACPI reservations which 
+conflict with PCI BARs, which appears to be what's happening in this 
+case. That patch originally worked for any board, but was later made 
+specific to a certain Supermicro motherboard which had the sata_nv 
+controller MMIO regions marked as reserved, preventing the driver from 
+loading. We may need a more general solution. See:
 
-> KGDB core, IE: over serial, over ethernet, over USB or what ever module=
-
-> you would like to implement.
-
-Well, I'm looking at this from the user perspective now, and as a user I
-don't understand why I shouldn't be able to configure my setup via the
-tristates of the involved I/O drivers (+ some underlying dependencies).
-
-Jan
-
-
---------------enigA51095529970447B9D8C2791
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFHnMowniDOoMHTA+kRAurcAJ9ES9MDSDXazdYfWI6OZ876T80y5wCfSYRU
-4VoHPzZ2IhlKTv2QH6VkdjM=
-=VxC1
------END PGP SIGNATURE-----
-
---------------enigA51095529970447B9D8C2791--
+https://bugzilla.redhat.com/show_bug.cgi?id=313491
