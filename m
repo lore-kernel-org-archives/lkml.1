@@ -1,83 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760076AbYA0Xtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbYA0X5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760076AbYA0Xtb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 18:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYA0XtU
+	id S1759412AbYA0X5v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 18:57:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYA0X5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 18:49:20 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:48188 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752189AbYA0XtT (ORCPT
+	Sun, 27 Jan 2008 18:57:40 -0500
+Received: from hs-out-0708.google.com ([64.233.178.243]:60027 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752211AbYA0X5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 18:49:19 -0500
-Date: Sun, 27 Jan 2008 15:48:53 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
-Subject: Re: preemptible RCU bug (was Re: [git pull] scheduler changes for v2.6.25)
-Message-ID: <20080127234853.GA10148@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080125203740.GA31784@elte.hu> <479B87B9.8080005@s5r6.in-berlin.de> <20080127110559.GB28315@linux.vnet.ibm.com> <20080127122602.GA17293@elte.hu>
+	Sun, 27 Jan 2008 18:57:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ELc/zAWtxC5PyuteDLlppE4qRozFqJWvX1Fq3MyR5EpENBMhM1MnPoLOdbbW7eTyydBxU4OPuL7sazReYqxj66iNod293OJfyUSgxzlKTLdsTRdf5G2YAl0lQT+NULBZJtFS5gAh27Tzo9QRYl1tMz9vVmJmwmTiMYPzarS6GgE=
+Message-ID: <4d8e3fd30801271557i4310bc07ifbdea081001cc592@mail.gmail.com>
+Date: Mon, 28 Jan 2008 00:57:36 +0100
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] X86: coding style fixes to arch/x86/math-errors.c - take 2
+Cc: "Dmitri Vorobiev" <dmitri.vorobiev@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4d8e3fd30801271448ja6a44ferbf86d37c2f3b825@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080127122602.GA17293@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20080127231527.2ea40804@paolo-desktop>
+	 <479D067E.3010100@gmail.com> <20080127224258.GA22018@elte.hu>
+	 <4d8e3fd30801271448ja6a44ferbf86d37c2f3b825@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 27, 2008 at 01:26:02PM +0100, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > > Sorry, no help available for this option yet.
-> > 
-> > Good catch!!!
-> > 
-> > This patch supplies help text for the "RCU implementation type" kernel 
-> > configuration choice.
-> 
-> thanks applied to sched.git. (see the patch below - the config option is 
-> in init/Kconfig in mainline, not in kernel/Kconfig.preempt)
+On Jan 27, 2008 11:48 PM, Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+>
+> On Jan 27, 2008 11:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
+> >
+> > > Looks like it would be better to proceed in the following manner:
+> > >
+> > > 1) remove dead code (no md5 change);
+> > > 2) reformat the lines to use tabs, not spaces (no md5 change);
+> > > 3) address the "else-braces" and "single statement block" errors
+> > >    (no md5 change);
+> > > 4) remove all unnecessary spaces (no md5 change);
+> > > 5) add the KERN_ macros (md5 will change).
+> > > 6) address remaining checkpatch complaints (no md5 change wrt #5
+> > >    above).
+> > >
+> > > Each item above might get into a separate patch.
+> >
+> > agreed, that looks like a sensible splitup for such larger cleanup
+> > patches.
+> >
+> > (also, a debug switch that disabled the FPU on modern CPUs and which
+> > forced math-emu would be nice as well.)
+>
+> OK, I'll do what you both suggested.
 
-Ah missed that -- thank you for retargeting the patch.
+Mmh... I wonder why if I strip the files I get the same md5sum:
+paolo@paolo-desktop:~/linux-2.6/kernel$ strip
+/home/paolo/Desktop/File\ punto\ o/*
+paolo@paolo-desktop:~/linux-2.6/kernel$ md5sum
+/home/paolo/Desktop/File\ punto\ o/*
+2bf404e247edf33cf6fb99c37321cdb9  /home/paolo/Desktop/File punto o/error.o.after
+2bf404e247edf33cf6fb99c37321cdb9  /home/paolo/Desktop/File punto
+o/error.o.before
 
-							Thanx, Paul
+How should I compare the .o file?
+Simply doing a md5sum or should I do a objdump -d before?
+Or a strip?
 
-> 	Ingo
-> 
-> ------------->
-> Subject: RCU: add help text for "RCU implementation type"
-> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> 
-> This patch supplies help text for the "RCU implementation type"
-> kernel configuration choice.
-> 
-> Reported-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
-> 
->  init/Kconfig |    8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> Index: linux/init/Kconfig
-> ===================================================================
-> --- linux.orig/init/Kconfig
-> +++ linux/init/Kconfig
-> @@ -779,6 +779,14 @@ config PREEMPT_NOTIFIERS
->  choice
->  	prompt "RCU implementation type:"
->  	default CLASSIC_RCU
-> +	help
-> +	  This allows you to choose either the classic RCU implementation
-> +	  that is designed for best read-side performance on non-realtime
-> +	  systems, or the preemptible RCU implementation for best latency
-> +	  on realtime systems.  Note that some kernel preemption modes
-> +	  will restrict your choice.
-> +
-> +	  Select the default if you are unsure.
-> 
->  config CLASSIC_RCU
->  	bool "Classic RCU"
+Ciao,
+-- 
+Paolo
+http://paolo.ciarrocchi.googlepages.com/
