@@ -1,47 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYA0CyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYA0DOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbYA0CyE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 21:54:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYA0Cxy
+	id S1754848AbYA0DOZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 22:14:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbYA0DOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 21:53:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:37169 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752673AbYA0Cxw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 21:53:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=RV9LPxLEsngZC7rf0U079SVAzd9JYDG8rUSMCK8VmHkOXvp7gBVIQGtY22sh23tNJy6UnuOs88XZrb9HmhTbN1DVeLBQMFdQL5svDsW+PWj8XoMBJlznA1Mh36LaUof2CVUer2e3z89unRfKmcedwATFqccI3QrfV8q7sVGMyO4=
-Message-ID: <479BF21B.8070104@googlemail.com>
-Date: Sun, 27 Jan 2008 03:53:15 +0100
-From: =?ISO-8859-15?Q?Michael_K=FChn?= <breiteseite1337@googlemail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071214)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: torvalds@linux-foundation.org
-Subject: [PATCH 1/1] 2.6.24, net/bluetooth/hci_sysfs.c, cleaned code remove
- compiler warning
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Jan 2008 22:14:14 -0500
+Received: from ns.suse.de ([195.135.220.2]:58261 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752831AbYA0DOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 Jan 2008 22:14:14 -0500
+Date: Sun, 27 Jan 2008 04:14:10 +0100
+From: Andi Kleen <ak@suse.de>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, akpm@osdl.org
+Subject: [PATCH] BKL-Removal: Convert pipe to use unlocked_ioctl too
+Message-ID: <20080127031409.GA26409@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-the attached Patch will remove a compiler warning in
-net/bluetooth/hci_sysfs.c:
+Here's another patch that was missing in the previous BKL-removal series.
 
---- hci_sysfs.c 2008-01-27 03:48:47.000000000 +0100
-+++ hci_sysfs.c_new     2008-01-27 03:37:19.000000000 +0100
-@@ -332,7 +332,7 @@
-        struct device *dev;
-        struct hci_conn *conn = container_of(work, struct hci_conn, work);
+No BKL needed in pipe_ioctl
 
--       while (dev = device_find_child(&conn->dev, NULL, __match_tty)) {
-+       while ((dev = device_find_child(&conn->dev, NULL, __match_tty))) {
-                device_move(dev, NULL);
-                put_device(dev);
-        }
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/fs/pipe.c
+===================================================================
+--- linux.orig/fs/pipe.c
++++ linux/fs/pipe.c
+@@ -576,9 +576,7 @@ bad_pipe_w(struct file *filp, const char
+ 	return -EBADF;
+ }
+ 
+-static int
+-pipe_ioctl(struct inode *pino, struct file *filp,
+-	   unsigned int cmd, unsigned long arg)
++static long pipe_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ {
+ 	struct inode *inode = filp->f_path.dentry->d_inode;
+ 	struct pipe_inode_info *pipe;
+@@ -785,7 +783,7 @@ const struct file_operations read_fifo_f
+ 	.aio_read	= pipe_read,
+ 	.write		= bad_pipe_w,
+ 	.poll		= pipe_poll,
+-	.ioctl		= pipe_ioctl,
++	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_read_open,
+ 	.release	= pipe_read_release,
+ 	.unlocked_fasync = pipe_read_fasync,
+@@ -797,7 +795,7 @@ const struct file_operations write_fifo_
+ 	.write		= do_sync_write,
+ 	.aio_write	= pipe_write,
+ 	.poll		= pipe_poll,
+-	.ioctl		= pipe_ioctl,
++	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_write_open,
+ 	.release	= pipe_write_release,
+ 	.unlocked_fasync = pipe_write_fasync,
+@@ -810,7 +808,7 @@ const struct file_operations rdwr_fifo_f
+ 	.write		= do_sync_write,
+ 	.aio_write	= pipe_write,
+ 	.poll		= pipe_poll,
+-	.ioctl		= pipe_ioctl,
++	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_rdwr_open,
+ 	.release	= pipe_rdwr_release,
+ 	.unlocked_fasync = pipe_rdwr_fasync,
+@@ -822,7 +820,7 @@ static const struct file_operations read
+ 	.aio_read	= pipe_read,
+ 	.write		= bad_pipe_w,
+ 	.poll		= pipe_poll,
+-	.ioctl		= pipe_ioctl,
++	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_read_open,
+ 	.release	= pipe_read_release,
+ 	.unlocked_fasync = pipe_read_fasync,
+@@ -834,7 +832,7 @@ static const struct file_operations writ
+ 	.write		= do_sync_write,
+ 	.aio_write	= pipe_write,
+ 	.poll		= pipe_poll,
+-	.ioctl		= pipe_ioctl,
++	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_write_open,
+ 	.release	= pipe_write_release,
+ 	.unlocked_fasync = pipe_write_fasync,
+@@ -847,7 +845,7 @@ static const struct file_operations rdwr
+ 	.write		= do_sync_write,
+ 	.aio_write	= pipe_write,
+ 	.poll		= pipe_poll,
+-	.ioctl		= pipe_ioctl,
++	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_rdwr_open,
+ 	.release	= pipe_rdwr_release,
+ 	.unlocked_fasync = pipe_rdwr_fasync,
