@@ -1,61 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbYA0CG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbYA0CK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbYA0CG2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 21:06:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYA0CGT
+	id S1755643AbYA0CK6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 21:10:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbYA0CKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 21:06:19 -0500
-Received: from cavan.codon.org.uk ([78.32.9.130]:52785 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbYA0CGS (ORCPT
+	Sat, 26 Jan 2008 21:10:51 -0500
+Received: from smtp3.Stanford.EDU ([171.67.20.26]:58431 "EHLO
+	smtp3.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753098AbYA0CKu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 21:06:18 -0500
-Date: Sun, 27 Jan 2008 02:06:07 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Message-ID: <20080127020607.GA10173@srcf.ucam.org>
-References: <20071226020325.GA21099@srcf.ucam.org> <200801241644.49114.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801241644.49114.lenb@kernel.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] Rationalise ACPI backlight implementation
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Sat, 26 Jan 2008 21:10:50 -0500
+X-Greylist: delayed 652 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Jan 2008 21:10:50 EST
+Subject: Re: 2.6.24-rt1: timing problems (was [git pull] x86/hrtimer/acpi
+	fixes)
+From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: nando@ccrma.Stanford.EDU, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Len Brown <lenb@kernel.org>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@redhat.com>
+In-Reply-To: <20071208091706.GB20516@elte.hu>
+References: <20071207183633.GC26778@elte.hu>
+	 <1197053386.32023.13.camel@cmn3.stanford.edu>
+	 <20071207185920.GA3006@elte.hu>
+	 <1197055769.32023.22.camel@cmn3.stanford.edu>
+	 <1197056910.32023.25.camel@cmn3.stanford.edu>
+	 <20071207195958.GA12529@elte.hu>
+	 <1197076100.32023.67.camel@cmn3.stanford.edu>
+	 <20071208091706.GB20516@elte.hu>
+Content-Type: text/plain
+Date: Sat, 26 Jan 2008 17:59:53 -0800
+Message-Id: <1201399193.18590.11.camel@cmn3.stanford.edu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 04:44:48PM -0500, Len Brown wrote:
-> On Tuesday 25 December 2007 21:03, Matthew Garrett wrote:
-> > The sysfs backlight class provides no mechanism for querying the 
-> > acceptable brightness for a backlight. The ACPI spec states that values 
-> > are only valid if they are reported as available by the firmware. Since 
-> > we can't provide that information to userspace, instead collapse the 
-> > range to the number of actual values that can be set.
-> > 
-> > Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
+On Sat, 2007-12-08 at 10:17 +0100, Ingo Molnar wrote:
+> * Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU> wrote:
 > 
-> I wish we did this in the first place.
-> But doing it now is an API change -- since
-> with the old way 100 always meant 100% brightness, yes?
+> > On Fri, 2007-12-07 at 20:59 +0100, Ingo Molnar wrote:
+> > > * Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU> wrote:
+> > > 
+> > > > > Nope, it doesn't still getting "delay" and "xrun" messages galore.
+> > > > 
+> > > > Attached: configuration and dmesg output booting with idle=poll, 
+> > > > reconfirmed that that makes the delay and xrun messages go away.
+> > > 
+> > > could you try the rolled up patch of various fixlets, ontop of 
+> > > current -git? (it might even apply to -rc4) It includes some more 
+> > > stuff beyond the ones in the pull request. (still being 
+> > > tested/reviewed)
+> > 
+> > I'll try but it will take me a while to figure git and do a package 
+> > build of it...
+> 
+> if you want to try a vanilla kernel package then pick up the kernel 
+> package from Fedora rawhide - this fixlet should show up there within a 
+> couple of days, Dave Jones is doing a really nice job of keeping up with 
+> latest -git. (and the Fedora kernel has hrtimers and dynticks enabled.)
 
-Yes.
+Hi Ingo... back to testing. 
+History:
 
-> so my concern is that if we change what "10" means, somebody like akpm
-> with an existing script gets grumpy.
+2.6.23.x + rt has not been very usable for audio applications. 
+2.6.24-rt1: same so far. 
 
-I don't buy that argument. Assuming that the values will always result 
-in an identical brightness is making incorrect assumptions about the 
-API. For example, consider the case where a bug means that only half the 
-hardware's available brightness levels are exposed. Fixing that bug 
-would change the meaning of the numbers, but it's not an API change in 
-any real way. Anyone using the backlight class should check the 
-maximum_brightness field before deciding what range of values to use.
+Why: Jack keeps printing "delayed..." messages and has xruns which means
+that somehow the timing is delayed more than what jack would think
+reasonable. As in the case with an old timing bug, the problem
+dissapears when booting the kernel with idle=poll. Other users of Planet
+CCRMA are able to replicate the behavior, which goes away with idle=poll
+or booting the machine with only one core. As a workaround I have been
+packaging 2.6.22.x but now I'm not able to use that as the old rt14
+patch, suitably tweaked results in a non working kernel. 
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+So it looks like, again, timing is getting skewed when the jack process
+jumps between cpus and thus jack sees timing jumps that are just not
+happenning. 
+
+This is with a build based on 2.6.24 using as a base the latest Fedora
+rawhide source package plus 2.6.24-rt1. 
+
+-- Fernando
+
+
