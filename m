@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760429AbYA0XlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760391AbYA0Xle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760429AbYA0XlN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 18:41:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760184AbYA0Xk1
+	id S1760391AbYA0Xle (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 18:41:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760267AbYA0Xka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 18:40:27 -0500
-Received: from ns2.suse.de ([195.135.220.15]:35722 "EHLO mx2.suse.de"
+	Sun, 27 Jan 2008 18:40:30 -0500
+Received: from cantor.suse.de ([195.135.220.2]:51237 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760132AbYA0XkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 18:40:25 -0500
+	id S1760220AbYA0Xk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 18:40:29 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 4/5] Driver core: add bus_find_device_by_name function
-Date: Sun, 27 Jan 2008 15:38:41 -0800
-Message-Id: <1201477122-4541-4-git-send-email-gregkh@suse.de>
+Cc: Paul Mackerras <paulus@samba.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 5/5] PPC: Fix powerpc vio_find_name to not use devices_subsys
+Date: Sun, 27 Jan 2008 15:38:42 -0800
+Message-Id: <1201477122-4541-5-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.3.8
 In-Reply-To: <20080127233751.GA4524@kroah.com>
 References: <20080127233751.GA4524@kroah.com>
@@ -22,113 +22,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The driver core, and some other parts of the kernel just want to find a
-device based on a name for a specific bus.  Give them a simple wrapper
-to prevent them from having to always roll their own.
+From: Paul Mackerras <paulus@samba.org>
 
-This will be used in the PPC patch later in this series.
+This fixes vio_find_name() in arch/powerpc/kernel/vio.c, which is
+currently broken because it tries to use devices_subsys.  That is bad
+for two reasons: (1) it's doing (or trying to do) a scan of all
+devices when it should only be scanning those on the vio bus, and
+(2) devices_subsys was an internal symbol of the device system code
+which was never meant for external use and has now gone away, and
+thus the kernel fails to compile on pSeries.
 
-Cc: Paul Mackerras <paulus@samba.org>
+The new version uses bus_find_device_by_name() on the vio bus
+(vio_bus_type).
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/bus.c     |   41 +++++++++++++++++++++++++++++------------
- include/linux/device.h |    3 +++
- 2 files changed, 32 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/vio.c |   13 ++++---------
+ 1 files changed, 4 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index f484495..055989e 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -163,15 +163,6 @@ static struct kset *bus_kset;
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index 19a5656..f0bad70 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -37,8 +37,6 @@
+ #include <asm/iseries/hv_call_xm.h>
+ #include <asm/iseries/iommu.h>
  
- #ifdef CONFIG_HOTPLUG
- /* Manually detach a device from its associated driver. */
--static int driver_helper(struct device *dev, void *data)
--{
--	const char *name = data;
+-extern struct kset devices_subsys; /* needed for vio_find_name() */
 -
--	if (strcmp(name, dev->bus_id) == 0)
--		return 1;
--	return 0;
--}
--
- static ssize_t driver_unbind(struct device_driver *drv,
- 			     const char *buf, size_t count)
+ static struct bus_type vio_bus_type;
+ 
+ static struct vio_dev vio_bus_device  = { /* fake "parent" device */
+@@ -361,19 +359,16 @@ EXPORT_SYMBOL(vio_get_attribute);
+ #ifdef CONFIG_PPC_PSERIES
+ /* vio_find_name() - internal because only vio.c knows how we formatted the
+  * kobject name
+- * XXX once vio_bus_type.devices is actually used as a kset in
+- * drivers/base/bus.c, this function should be removed in favor of
+- * "device_find(kobj_name, &vio_bus_type)"
+  */
+-static struct vio_dev *vio_find_name(const char *kobj_name)
++static struct vio_dev *vio_find_name(const char *name)
  {
-@@ -179,7 +170,7 @@ static ssize_t driver_unbind(struct device_driver *drv,
- 	struct device *dev;
- 	int err = -ENODEV;
+-	struct kobject *found;
++	struct device *found;
  
--	dev = bus_find_device(bus, NULL, (void *)buf, driver_helper);
-+	dev = bus_find_device_by_name(bus, NULL, buf);
- 	if (dev && dev->driver == drv) {
- 		if (dev->parent)	/* Needed for USB */
- 			down(&dev->parent->sem);
-@@ -206,7 +197,7 @@ static ssize_t driver_bind(struct device_driver *drv,
- 	struct device *dev;
- 	int err = -ENODEV;
+-	found = kset_find_obj(&devices_subsys, kobj_name);
++	found = bus_find_device_by_name(&vio_bus_type, NULL, name);
+ 	if (!found)
+ 		return NULL;
  
--	dev = bus_find_device(bus, NULL, (void *)buf, driver_helper);
-+	dev = bus_find_device_by_name(bus, NULL, buf);
- 	if (dev && dev->driver == NULL) {
- 		if (dev->parent)	/* Needed for USB */
- 			down(&dev->parent->sem);
-@@ -250,7 +241,7 @@ static ssize_t store_drivers_probe(struct bus_type *bus,
- {
- 	struct device *dev;
- 
--	dev = bus_find_device(bus, NULL, (void *)buf, driver_helper);
-+	dev = bus_find_device_by_name(bus, NULL, buf);
- 	if (!dev)
- 		return -ENODEV;
- 	if (bus_rescan_devices_helper(dev, NULL) != 0)
-@@ -338,6 +329,32 @@ struct device *bus_find_device(struct bus_type *bus,
+-	return to_vio_dev(container_of(found, struct device, kobj));
++	return to_vio_dev(found);
  }
- EXPORT_SYMBOL_GPL(bus_find_device);
  
-+static int match_name(struct device *dev, void *data)
-+{
-+	const char *name = data;
-+
-+	if (strcmp(name, dev->bus_id) == 0)
-+		return 1;
-+	return 0;
-+}
-+
-+/**
-+ * bus_find_device_by_name - device iterator for locating a particular device of a specific name
-+ * @bus: bus type
-+ * @start: Device to begin with
-+ * @name: name of the device to match
-+ *
-+ * This is similar to the bus_find_device() function above, but it handles
-+ * searching by a name automatically, no need to write another strcmp matching
-+ * function.
-+ */
-+struct device *bus_find_device_by_name(struct bus_type *bus,
-+				       struct device *start, const char *name)
-+{
-+	return bus_find_device(bus, start, (void *)name, match_name);
-+}
-+EXPORT_SYMBOL_GPL(bus_find_device_by_name);
-+
- static struct device_driver *next_driver(struct klist_iter *i)
- {
- 	struct klist_node *n = klist_next(i);
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 1880208..db375be 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -84,6 +84,9 @@ int bus_for_each_dev(struct bus_type *bus, struct device *start, void *data,
- struct device *bus_find_device(struct bus_type *bus, struct device *start,
- 			       void *data,
- 			       int (*match)(struct device *dev, void *data));
-+struct device *bus_find_device_by_name(struct bus_type *bus,
-+				       struct device *start,
-+				       const char *name);
- 
- int __must_check bus_for_each_drv(struct bus_type *bus,
- 				  struct device_driver *start, void *data,
+ /**
 -- 
 1.5.3.8
 
