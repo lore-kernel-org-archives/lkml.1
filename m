@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYA0BpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbYA0CG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754748AbYA0BpG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 20:45:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbYA0Boz
+	id S1754874AbYA0CG2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 21:06:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYA0CGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 20:44:55 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:42925 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211AbYA0Boy (ORCPT
+	Sat, 26 Jan 2008 21:06:19 -0500
+Received: from cavan.codon.org.uk ([78.32.9.130]:52785 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbYA0CGS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 20:44:54 -0500
-Date: Sat, 26 Jan 2008 19:46:02 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Custom PCIe Device Driver
-In-reply-to: <fa.lEecbnbm5VCSz+Y6rXCe4LJLkqw@ifi.uio.no>
-To: Sanka Piyaratna <sanka@solinnov.com.au>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <479BE25A.3060206@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.lEecbnbm5VCSz+Y6rXCe4LJLkqw@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sat, 26 Jan 2008 21:06:18 -0500
+Date: Sun, 27 Jan 2008 02:06:07 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Message-ID: <20080127020607.GA10173@srcf.ucam.org>
+References: <20071226020325.GA21099@srcf.ucam.org> <200801241644.49114.lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801241644.49114.lenb@kernel.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] Rationalise ACPI backlight implementation
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sanka Piyaratna wrote:
-> Hi Everyone,
+On Thu, Jan 24, 2008 at 04:44:48PM -0500, Len Brown wrote:
+> On Tuesday 25 December 2007 21:03, Matthew Garrett wrote:
+> > The sysfs backlight class provides no mechanism for querying the 
+> > acceptable brightness for a backlight. The ACPI spec states that values 
+> > are only valid if they are reported as available by the firmware. Since 
+> > we can't provide that information to userspace, instead collapse the 
+> > range to the number of actual values that can be set.
+> > 
+> > Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
 > 
-> I am currently developing a custom PCIe device and the Linux kernel 
-> driver for this. I am able to use the device as a character device with 
-> PIO and now I am working on getting the DMA to work. I have implemented 
-> 2 BARs (BAR0 - mem and BAR5 - mem) in the PCIe device. I have 
-> implemented the DMA in my custom device firmware to transfer a block of 
-> memory via the PCIe bus and now trying to get this to work with the 
-> device driver.
-> 
-> As I understand it, I can get hold of the PCI bus to become the bus 
-> master and then initiate the DMA transfer from my device. However, I 
-> don't understand how I can specify within my kernel driver how to 
-> specify which BAR to use.
-> 
-> Does this mean when I initiate a transfer from the hardware, the memory 
-> get transferred into the location allocated by by  pci_map_single() 
-> function regardless of which BAR the memory comes from? or do I need to 
-> specify the BAR using a mask?
-> 
-> Would some one be able to point me to an example code please?
-> 
-> Thanks and Regards,
-> 
-> Sanka
+> I wish we did this in the first place.
+> But doing it now is an API change -- since
+> with the old way 100 always meant 100% brightness, yes?
 
-Your question doesn't seem to make much sense. DMA transfers have 
-nothing to do with BARs at all, they don't come "from" or "to" one.
+Yes.
+
+> so my concern is that if we change what "10" means, somebody like akpm
+> with an existing script gets grumpy.
+
+I don't buy that argument. Assuming that the values will always result 
+in an identical brightness is making incorrect assumptions about the 
+API. For example, consider the case where a bug means that only half the 
+hardware's available brightness levels are exposed. Fixing that bug 
+would change the meaning of the numbers, but it's not an API change in 
+any real way. Anyone using the backlight class should check the 
+maximum_brightness field before deciding what range of values to use.
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Matthew Garrett | mjg59@srcf.ucam.org
