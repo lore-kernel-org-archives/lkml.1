@@ -1,94 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbYA0VPD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYA0VRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717AbYA0VPD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 16:15:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYA0VOx
+	id S1757551AbYA0VRq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 16:17:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbYA0VRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 16:14:53 -0500
-Received: from mail.gmx.net ([213.165.64.20]:58087 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752402AbYA0VOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 16:14:52 -0500
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX1+FEOQ3MTiF1GKX6EtVFCvuo4sQxvhmjgwCPIcxka
-	N08dJfsdgpBG+K
-From: Toralf =?utf-8?q?F=C3=B6rster?= <toralf.foerster@gmx.de>
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: (ondemand) CPU governor  regression between 2.6.23 and 2.6.24
-Date: Sun, 27 Jan 2008 22:14:47 +0100
-User-Agent: KMail/1.9.7
-Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-References: <479B69D2.5050603@wpkg.org> <200801271339.14668.toralf.foerster@gmx.de> <1201460328.5092.95.camel@homer.simson.net>
-In-Reply-To: <1201460328.5092.95.camel@homer.simson.net>
+	Sun, 27 Jan 2008 16:17:38 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:10916 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbYA0VRh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 16:17:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=I4elt9EFSCtWDmJOTwhxpcSTvCXodAMJq3dvcdSefyV1TKsd4LpBRGfbEQa9Wni9CdKbkZJGSn4N33ayReLjbkP3DiZUYTp0b17W+MOrdVbxFDS/kBRKHx+LWGVSdZU3L8edZj5j8pYN4FFIMpYbd2iootKbf9xY4hdxWj4i7QM=
+Message-ID: <19f34abd0801271317o4b17dc28l3c93d4d28e3e2e73@mail.gmail.com>
+Date: Sun, 27 Jan 2008 22:17:36 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: lib/idr.c: initialize struct idr_layer
+Cc: "Jim Houston" <jim.houston@ccur.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Tejun Heo" <htejun@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <84144f020801271300g316b87bgea6beb265b5c62d3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart26706347.LjJtZSgDHu";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200801272214.49928.toralf.foerster@gmx.de>
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
+References: <19f34abd0801271207j377fba5bg92cedceedbdd228@mail.gmail.com>
+	 <84144f020801271300g316b87bgea6beb265b5c62d3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart26706347.LjJtZSgDHu
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Jan 27, 2008 10:00 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Hi Vegard,
+>
+> On Jan 27, 2008 10:07 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > I am testing my kmemcheck patches, and it has come up with a couple of
+> > uses of uninitialized memory in lib/idr.c. These are (the line numbers
+> > may differ slightly):
+>
+> [snip]
+>
+> > @@ -39,12 +39,16 @@ static struct idr_layer *alloc_layer(struct idr *idp)
+> >  {
+> >         struct idr_layer *p;
+> >         unsigned long flags;
+> > +       int i;
+> >
+> >         spin_lock_irqsave(&idp->lock, flags);
+> >         if ((p = idp->id_free)) {
+> >                 idp->id_free = p->ary[0];
+> >                 idp->id_free_cnt--;
+> > -               p->ary[0] = NULL;
+> > +               p->bitmap = 0;
+> > +               for(i = 0; i < ARRAY_SIZE(p->ary); ++i)
+> > +                       p->ary[i] = NULL;
+> > +               p->count = 0;
+>
+> But aren't these zeroed by idr_cache_ctor() already?
 
-At Sunday 27 January 2008 Mike Galbraith wrote :
->=20
-> On Sun, 2008-01-27 at 13:39 +0100, Toralf F=C3=B6rster wrote:
-> > Ough, does this mean that for a multi-user scenario of 2 non-root users=
- "A" and
-> > "B" each running exactly 1 process with nice level 0 and 19 rerspective=
-ly
-> > that both share ~50% of the CPU *and furthermore* that that user "B" do=
-es never
-> > ever have a  chance to be nice to user "A" although his process should =
-really
-> > use only those CPU cycles not eated by any other user ?
->=20
-> Yes.  If you want one task group to receive less cpu cycles, you have to
-> 'nice' that task group by reducing it's share.
+That would make sense. However...
 
-> I think it's better to just disable fair group scheduling if it doesn't
-> suit your needs.  It's not going to be everyone's cup of tea.
+idr_layer_cache is only used for allocations from idr_pre_get().
+idr_pre_get() is only called from ida_pre_get().
 
-Yes, disabling this kernel option is much better for me as a notebook user.
+If this analysis is correct, can this mean that the user has failed to
+call ida_pre_get() before idr_get_new() was called?
 
-BTW t I've one more question related to this topic:
+Though in this case, idr_pre_get() actually *is* called first. Hmm...
+I think there's a pretty big chance that kmemcheck is at fault :-(
 
-Is it correct that within the scenario described above user "A" never gets =
-more
-than 50% of the CPU as soon as user "B" is logged into the system (because =
-of
-the login process itself) ?
-
-> 	-Mike
->=20
-
-
-
-=2D-=20
-MfG/Sincerely
-
-Toralf F=C3=B6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
-
---nextPart26706347.LjJtZSgDHu
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBHnPRJhyrlCH22naMRAkOuAKDBmHxJLNcsTvS0hDqlGqFWx4wV6ACfXwqR
-HD7rwTqd4jkN4e6IDPIilms=
-=joNu
------END PGP SIGNATURE-----
-
---nextPart26706347.LjJtZSgDHu--
+Vegard
