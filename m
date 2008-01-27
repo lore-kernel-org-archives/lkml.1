@@ -1,179 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbYA0VvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbYA0VwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbYA0VvY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 16:51:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYA0VvJ
+	id S1757216AbYA0VwW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 16:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYA0VwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 16:51:09 -0500
-Received: from hs-out-0708.google.com ([64.233.178.240]:40244 "EHLO
-	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758289AbYA0VvD (ORCPT
+	Sun, 27 Jan 2008 16:52:09 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:62849 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753650AbYA0VwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 16:51:03 -0500
+	Sun, 27 Jan 2008 16:52:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jyIaRvWap3dPizWYrrgF2AVZQVDEu1LPph4hQNdpnypiHGn66RiZkbftm8KT7d3YaCVNQvv4uiSEg16GYUirVB72okG/u0y/kNpafpe4CeC/CHHoidJDL8ZbOnhBLHQ/gIFPHn085tKI65MAxlGYgO1hvD63PTRTlp39N8JSxBA=
-Message-ID: <4d8e3fd30801271351p44818f64p27ca4ae897efbb81@mail.gmail.com>
-Date: Sun, 27 Jan 2008 22:51:00 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Dmitri Vorobiev" <dmitri.vorobiev@gmail.com>
-Subject: Re: [PATCH] X86: coding style fixes to arch/x86/math-errors.c
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <479CFB62.1010808@gmail.com>
+        d=googlemail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
+        b=lgxSOUoXOX7KaFcRyI91VQbywrw/nqUOD5gOYfOJAK4ivQxBPtFQ/0ttVQc9sKwViZH9OBiyKFskETLF6PrYtMFLrbG72OKbmhXieZ5HveXV7sJLzWsnyENDTEpYAGYL1eqOU/Y3jsGNL2fxSAOJhKXXuHgPAcPY7zSqMB72jD0=
+Date: Sun, 27 Jan 2008 22:51:55 +0100 (CET)
+From: Esben Nielsen <nielsen.esben@googlemail.com>
+X-X-Sender: simlo@frodo.shire
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Valdis.Kletnieks@vt.edu, caglar@pardus.org.tr,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.24-rc7-rt2
+In-Reply-To: <Pine.LNX.4.58.0801210738140.13659@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.64.0801272230270.8920@frodo.shire>
+References: <1200336080.318.8.camel@localhost.localdomain>
+ <200801150237.44029.caglar@pardus.org.tr> <24149.1200455417@turing-police.cc.vt.edu>
+            <Pine.LNX.4.58.0801152302580.10869@gandalf.stny.rr.com>
+ <31516.1200464589@turing-police.cc.vt.edu> <Pine.LNX.4.58.0801160904200.9544@gandalf.stny.rr.com>
+ <Pine.LNX.4.58.0801161112140.15998@gandalf.stny.rr.com>
+ <Pine.LNX.4.64.0801211223210.11032@frodo.shire>
+ <Pine.LNX.4.58.0801210738140.13659@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080127223451.79718183@paolo-desktop>
-	 <479CFB62.1010808@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 27, 2008 10:45 PM, Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
-> > -  math_abort(FPU_info,SIGILL);
-> > +  math_abort(FPU_info , SIGILL);
->
-> Looks like you're trading bad for worse here.
 
-Should I make it read like math_abort(FPU_info, SIGILL); ?
+On Mon, 21 Jan 2008, Steven Rostedt wrote:
 
 >
-> >  }
-> >
-> >
-> > @@ -88,61 +86,69 @@ void FPU_printall(void)
-> >  {
-> >    int i;
-> >    static const char *tag_desc[] = { "Valid", "Zero", "ERROR", "Empty",
-> > -                              "DeNorm", "Inf", "NaN" };
-> > +                                     "DeNorm", "Inf", "NaN" };
-> >    u_char byte1, FPU_modrm;
-> >    unsigned long address = FPU_ORIG_EIP;
-> >
-> >    RE_ENTRANT_CHECK_OFF;
-> >    /* No need to check access_ok(), we have previously fetched these bytes. */
-> >    printk("At %p:", (void *) address);
-> > -  if ( FPU_CS == __USER_CS )
-> > -    {
-> > +  if (FPU_CS == __USER_CS) {
-> >  #define MAX_PRINTED_BYTES 20
-> > -      for ( i = 0; i < MAX_PRINTED_BYTES; i++ )
-> > -     {
-> > +      for (i = 0; i < MAX_PRINTED_BYTES; i++) {
-> >         FPU_get_user(byte1, (u_char __user *) address);
-> > -       if ( (byte1 & 0xf8) == 0xd8 )
-> > -         {
-> > +       if ((byte1 & 0xf8) == 0xd8) {
-> >             printk(" %02x", byte1);
-> >             break;
-> >           }
-> >         printk(" [%02x]", byte1);
-> >         address++;
-> >       }
-> > -      if ( i == MAX_PRINTED_BYTES )
-> > +      if (i == MAX_PRINTED_BYTES)
-> >       printk(" [more..]\n");
-> > -      else
-> > -     {
-> > +      else {
-> >         FPU_get_user(FPU_modrm, 1 + (u_char __user *) address);
-> > -
-> > +
-> >         if (FPU_modrm >= 0300)
-> > -         printk(" %02x (%02x+%d)\n", FPU_modrm, FPU_modrm & 0xf8, FPU_modrm & 7);
-> > +         printk(" %02x (%02x+%d)\n", FPU_modrm, FPU_modrm & 0xf8,
-> > +                     FPU_modrm & 7);
-> >         else
-> >           printk(" /%d, mod=%d rm=%d\n",
-> >                  (FPU_modrm >> 3) & 7, (FPU_modrm >> 6) & 3, FPU_modrm & 7);
-> >       }
-> >      }
-> >    else
-> > -    {
-> >        printk("%04x\n", FPU_CS);
-> > -    }
-> >
-> >    partial_status = status_word();
-> >
-> >  #ifdef DEBUGGING
-> > -if ( partial_status & SW_Backward )    printk("SW: backward compatibility\n");
-> > -if ( partial_status & SW_C3 )          printk("SW: condition bit 3\n");
-> > -if ( partial_status & SW_C2 )          printk("SW: condition bit 2\n");
-> > -if ( partial_status & SW_C1 )          printk("SW: condition bit 1\n");
-> > -if ( partial_status & SW_C0 )          printk("SW: condition bit 0\n");
-> > -if ( partial_status & SW_Summary )     printk("SW: exception summary\n");
-> > -if ( partial_status & SW_Stack_Fault ) printk("SW: stack fault\n");
-> > -if ( partial_status & SW_Precision )   printk("SW: loss of precision\n");
-> > -if ( partial_status & SW_Underflow )   printk("SW: underflow\n");
-> > -if ( partial_status & SW_Overflow )    printk("SW: overflow\n");
-> > -if ( partial_status & SW_Zero_Div )    printk("SW: divide by zero\n");
-> > -if ( partial_status & SW_Denorm_Op )   printk("SW: denormalized operand\n");
-> > -if ( partial_status & SW_Invalid )     printk("SW: invalid operation\n");
-> > +if (partial_status & SW_Backward)
-> > +  printk("SW: backward compatibility\n");
-> > +if (partial_status & SW_C3)
-> > +  printk("SW: condition bit 3\n");
-> > +if (partial_status & SW_C2)
-> > +  printk("SW: condition bit 2\n");
-> > +if (partial_status & SW_C1)
-> > +  printk("SW: condition bit 1\n");
-> > +if (partial_status & SW_C0)
-> > +  printk("SW: condition bit 0\n");
-> > +if (partial_status & SW_Summary)
-> > +  printk("SW: exception summary\n");
-> > +if (partial_status & SW_Stack_Fault)
-> > +  printk("SW: stack fault\n");
-> > +if (partial_status & SW_Precision)
-> > +  printk("SW: loss of precision\n");
-> > +if (partial_status & SW_Underflow)
-> > +  printk("SW: underflow\n");
-> > +if (partial_status & SW_Overflow)
-> > +  printk("SW: overflow\n");
-> > +if (partial_status & SW_Zero_Div)
-> > +  printk("SW: divide by zero\n");
-> > +if (partial_status & SW_Denorm_Op)
-> > +  printk("SW: denormalized operand\n");
-> > +if (partial_status & SW_Invalid)
-> > +  printk("SW: invalid operation\n");
+> On Mon, 21 Jan 2008, Esben Nielsen wrote:
+>>
+>> Please, tell what in the license forbids me to make a global replacement
+>> EXPORT_SYMBOL_GPL -> EXPORT_SYMBOL and distribute the result?
 >
-> While you're at it, please think about adding proper KERN_ facility to these printk() calls.
-
-Yes, basically all the warnings are about missing KERN_.
-Do you want me to add KERN_ERR  to all the above printk?
-
-> >  #endif /* DEBUGGING */
-> >
-> >    printk(" SW: b=%d st=%ld es=%d sf=%d cc=%d%d%d%d ef=%d%d%d%d%d%d\n",
+> If you want to distribute that code, the authors of that said code
+> may be able to challenge you in saying that you are enabling a means to
+> circumvent a way around the license, and hold you liable. Remember, all it
+> takes is one country with the laws that will grant this complaint.
 >
-> Ditto.
+>>
+>> For me, on the other hand, it is against the spirit of free software to
+>> actively make a block for people to do what ever they want with the code
+>> when they are only doing it to themselves. That includes loading non-GPL
+>> software into the kernel. The only thing they  are not allowed to do is to
+>> distribute it and in that way "hurt" other people.
 >
-> > @@ -155,7 +161,7 @@ if ( partial_status & SW_Invalid )     printk("SW: invalid operation\n");
-> >        partial_status & SW_Precision?1:0, partial_status & SW_Underflow?1:0,
-> >        partial_status & SW_Overflow?1:0, partial_status & SW_Zero_Div?1:0,
-> >        partial_status & SW_Denorm_Op?1:0, partial_status & SW_Invalid?1:0);
-> > -
-> > +
-> >  printk(" CW: ic=%d rc=%ld%ld pc=%ld%ld iem=%d     ef=%d%d%d%d%d%d\n",
+> Honestly, I don't care which export it is. The thing is that I derived
+> that code from someone else. I did not look up the original author of the
+> code to find out which export they would like it to be. I may be able to
+> argue that since it was under a LGPL and not a GPL license, I may very
+> well be able to export it that way.
 >
-> Ditto.
+> I'm taking the safe way out. By exporting it as EXPORT_SYMBOL_GPL, I am
+> safe either way. By exporting it as EXPORT_SYMBOL without first hearing
+> from the original author (and getting that in writing), or hearing it from
+> a lawyer, I may be putting myself at risk.
 >
-[...]
-
-> >  #ifdef __DEBUG__
-> > -  math_abort(FPU_info,SIGFPE);
-> > +  math_abort(FPU_info , SIGFPE);
+> Feel free to creating a version of this code and
+> s/EXPORT_SYMBOL_GPL/EXPORT_SYMBOL/ and distribute it. I wont come after
+> you for that, but at least I know those that would, will go after you and
+> not me.
 >
-> Why do you need this extra space before the comma?
-
-My mistake.
-
-> This file seems to be in need of formatting lines to use tabs instead of spaces.
+> Call me a chicken, I don't care, but I'm just not going to put myself nor
+> my company I work for, at risk over this issue.
 >
 
-Ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+First off, sorry for sounding so harsh and sorry for taking this 
+discussion onto you. It is quite off-topic in this context. It was just 
+a rant about the misconception that adding/removing _GPL to 
+EXPORT_SYMBOL can make non-GPL modules more or less legal. Is is a 
+_political_ issue, not a legal one.
+
+Esben
+
+> -- Steve
+>
