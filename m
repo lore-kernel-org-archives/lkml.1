@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbYA0BMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYA0BpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbYA0BMT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 20:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbYA0BMG
+	id S1754748AbYA0BpG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 20:45:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbYA0Boz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 20:12:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33797 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbYA0BMF (ORCPT
+	Sat, 26 Jan 2008 20:44:55 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:42925 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752211AbYA0Boy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 20:12:05 -0500
-Message-ID: <479BDA39.1060907@zytor.com>
-Date: Sat, 26 Jan 2008 17:11:21 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ian Campbell <ijc@hellion.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH 5/9] x86: Unify strings in arch/x86/boot/compressed/misc_??.c
-References: <ff184a8ea93f18a787bb9bd0c860036219b83ee0.1201348185.git.ijc@hellion.org.uk>	 <25c98f11d5811cdee328b2e6c400a36c875bc9b8.1201348185.git.ijc@hellion.org.uk> <86802c440801261703k22b6a51ft6254690f3b211efb@mail.gmail.com>
-In-Reply-To: <86802c440801261703k22b6a51ft6254690f3b211efb@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 26 Jan 2008 20:44:54 -0500
+Date: Sat, 26 Jan 2008 19:46:02 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Custom PCIe Device Driver
+In-reply-to: <fa.lEecbnbm5VCSz+Y6rXCe4LJLkqw@ifi.uio.no>
+To: Sanka Piyaratna <sanka@solinnov.com.au>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <479BE25A.3060206@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.lEecbnbm5VCSz+Y6rXCe4LJLkqw@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
->>
->> diff --git a/arch/x86/boot/compressed/misc_64.c b/arch/x86/boot/compressed/misc_64.c
->> index 8c1573b..bd822b7 100644
->> --- a/arch/x86/boot/compressed/misc_64.c
->> +++ b/arch/x86/boot/compressed/misc_64.c
->> @@ -372,8 +372,8 @@ asmlinkage void decompress_kernel(void *rmode, unsigned long heap,
->>                 error("Destination address too large");
->>
->>         makecrc();
->> -       putstr(".\nDecompressing Linux...");
->> +       putstr("Uncompressing Linux... ");
->>         gunzip();
->> -       putstr("done.\nBooting the kernel.\n");
->> +       putstr("Ok, booting the kernel.\n");
->>         return;
->>  }
+Sanka Piyaratna wrote:
+> Hi Everyone,
 > 
-> 64 bit old print out seem more clear. again can you change that in misc_32.c
+> I am currently developing a custom PCIe device and the Linux kernel 
+> driver for this. I am able to use the device as a character device with 
+> PIO and now I am working on getting the DMA to work. I have implemented 
+> 2 BARs (BAR0 - mem and BAR5 - mem) in the PCIe device. I have 
+> implemented the DMA in my custom device firmware to transfer a block of 
+> memory via the PCIe bus and now trying to get this to work with the 
+> device driver.
 > 
+> As I understand it, I can get hold of the PCI bus to become the bus 
+> master and then initiate the DMA transfer from my device. However, I 
+> don't understand how I can specify within my kernel driver how to 
+> specify which BAR to use.
+> 
+> Does this mean when I initiate a transfer from the hardware, the memory 
+> get transferred into the location allocated by by  pci_map_single() 
+> function regardless of which BAR the memory comes from? or do I need to 
+> specify the BAR using a mask?
+> 
+> Would some one be able to point me to an example code please?
+> 
+> Thanks and Regards,
+> 
+> Sanka
 
-Yes, except for the odd stray dot.
+Your question doesn't seem to make much sense. DMA transfers have 
+nothing to do with BARs at all, they don't come "from" or "to" one.
 
-	-hpa
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
