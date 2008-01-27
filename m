@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756294AbYA0Kso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbYA0KtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756294AbYA0Kso (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 05:48:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYA0Ksf
+	id S1757173AbYA0KtP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 05:49:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbYA0Ks6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 05:48:35 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:43561 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752849AbYA0Kse (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 05:48:34 -0500
-Date: Sun, 27 Jan 2008 11:48:33 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jon Masters <jcm@redhat.com>
-cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, Valdis.Kletnieks@vt.edu,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Linux Kernel Markers Support for Proprierary Modules
-In-Reply-To: <1201321306.32422.146.camel@perihelion>
-Message-ID: <Pine.LNX.4.64.0801271145060.15243@fbirervta.pbzchgretzou.qr>
-References: <1201029235.18144.62.camel@perihelion> 
- <Pine.LNX.4.64.0801250840340.12676@fbirervta.pbzchgretzou.qr> 
- <1201275090.25284.281.camel@perihelion>  <200801261427.34902.rusty@rustcorp.com.au>
- <1201321306.32422.146.camel@perihelion>
+	Sun, 27 Jan 2008 05:48:58 -0500
+Received: from [212.23.103.76] ([212.23.103.76]:50115 "EHLO gollum.tnic"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752981AbYA0Ks5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 05:48:57 -0500
+Date: Sun, 27 Jan 2008 11:48:24 +0100
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: bzolnier@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 06/32] ide-tape: remove IDETAPE_DEBUG_BUGS
+Message-ID: <20080127104824.GA5391@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, bzolnier@gmail.com,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1201427300-3954-1-git-send-email-petkovbb@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1201427300-3954-1-git-send-email-petkovbb@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Bart,
 
-On Jan 25 2008 23:21, Jon Masters wrote:
->On Sat, 2008-01-26 at 14:27 +1100, Rusty Russell wrote:
->
->> 2) Unconditionally reject modules with a wrong module section size.  Currently 
->> we have no such check, which means without KALLSYMS, anything goes.
->
->I favor the latter, since it's safest.
+sorry for that thread split but i had to resend those remaining patches with
+gmail because yahoo have a restriction on the number of mails one can send per
+day :(
 
-Is it possible to keep allowing the case where {section size is the
-same and only the symversions are different}?
+-- 
+Regards/Gruﬂ,
+    Boris.
