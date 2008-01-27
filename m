@@ -1,95 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbYA0SPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbYA0SP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbYA0SPm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 13:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbYA0SPW
+	id S1759218AbYA0SP6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 13:15:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbYA0SPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 13:15:22 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:55196 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754614AbYA0SPU (ORCPT
+	Sun, 27 Jan 2008 13:15:32 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53917 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758645AbYA0SPa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 13:15:20 -0500
-Date: Sun, 27 Jan 2008 12:17:17 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0
- sound card
-In-reply-to: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no>
-To: Avuton Olrich <avuton@gmail.com>
-Cc: Zhao Yakui <yakui.zhao@intel.com>, Li Shaohua <shaohua.li@intel.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Thomas Renninger <trenn@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Linux-Kernel," <linux-kernel@vger.kernel.org>,
-       Alsa-Devel <alsa-devel@alsa-project.org>
-Message-id: <479CCAAD.4080706@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Sun, 27 Jan 2008 13:15:30 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 27 Jan 2008 19:14:44 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: fw-sbp2: don't retry login or reconnect after
+ unplug
+To: linux1394-devel@lists.sourceforge.net
+cc: Jarod Wilson <jwilson@redhat.com>,
+       =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
+       linux-kernel@vger.kernel.org
+Message-ID: <tkrat.98202457f6ba93dd@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avuton Olrich wrote:
-> With v2.6.24 my second ALSA sound device stopped working.
-> 
-> After bisection it says this was the offending commit.
-> 
-> a7839e960675b549f06209d18283d5cee2ce9261 is first bad commit
-> commit a7839e960675b549f06209d18283d5cee2ce9261
-> Author: Zhao Yakui <yakui.zhao@intel.com>
-> Date:   Wed Nov 28 16:21:21 2007 -0800
-> 
->     PNP: increase the maximum number of resources
-> 
->     On some systems the number of resources(IO,MEM) returnedy by PNP device is
->     greater than the PNP constant, for example motherboard devices.  It brings
->     that some resources can't be reserved and resource confilicts.  This will
->     cause PCI resources are assigned wrongly in some systems, and cause hang.
->     This is a regression since we deleted ACPI motherboard driver and use PNP
->     system driver.
-> 
->     [akpm@linux-foundation.org: fix text and coding-style a bit]
->     Signed-off-by: Li Shaohua <shaohua.li@intel.com>
->     Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
->     Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
->     Cc: Thomas Renninger <trenn@suse.de>
->     Cc: <stable@kernel.org>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> 
-> The audio device is 00:1b.0 (see my lspci -vvv output), the other
-> audio device works fine.
-> 
-> http://avuton.googlepages.com/v2.6-before (dmesg revision before)
-> http://avuton.googlepages.com/v2.6-after (dmesg broken revision)
-> http://avuton.googlepages.com/lspci-vvv
-> http://avuton.googlepages.com/config (from the broken revision)
-> http://avuton.googlepages.com/iomem
-> http://avuton.googlepages.com/ioports
+If a device is being unplugged while fw-sbp2 had a login or reconnect on
+schedule, it would take about half a minute to shut the fw_unit down:
 
-Here's why the driver fails to load:
+Jan 27 18:34:54 stein firewire_sbp2: logged in to fw2.0 LUN 0000 (0 retries)
+<unplug>
+Jan 27 18:34:59 stein firewire_sbp2: sbp2_scsi_abort
+Jan 27 18:34:59 stein scsi 25:0:0:0: Device offlined - not ready after error recovery
+Jan 27 18:35:01 stein firewire_sbp2: orb reply timed out, rcode=0x11
+Jan 27 18:35:06 stein firewire_sbp2: orb reply timed out, rcode=0x11
+Jan 27 18:35:12 stein firewire_sbp2: orb reply timed out, rcode=0x11
+Jan 27 18:35:17 stein firewire_sbp2: orb reply timed out, rcode=0x11
+Jan 27 18:35:22 stein firewire_sbp2: orb reply timed out, rcode=0x11
+Jan 27 18:35:27 stein firewire_sbp2: orb reply timed out, rcode=0x11
+Jan 27 18:35:32 stein firewire_sbp2: orb reply timed out, rcode=0x11
+Jan 27 18:35:32 stein firewire_sbp2: failed to login to fw2.0 LUN 0000
+Jan 27 18:35:32 stein firewire_sbp2: released fw2.0
 
-[   31.133060] ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 22 (level, 
-low) -> IRQ 22
-[   31.133141] PCI: Unable to reserve mem region #1:4000@febf8000 for 
-device 0000:00:1b.0
-[   31.133197] ACPI: PCI interrupt for device 0000:00:1b.0 disabled
-[   31.133244] HDA Intel: probe of 0000:00:1b.0 failed with error -16
+After this patch, typically only a few seconds spent in __scsi_add_device
+remain:
 
-The iomem location of the HDA controller conflicts with this reservation 
-by the BIOS:
+Jan 27 19:05:50 stein firewire_sbp2: logged in to fw2.0 LUN 0000 (0 retries)
+<unplug>
+Jan 27 19:05:56 stein firewire_sbp2: sbp2_scsi_abort
+Jan 27 19:05:56 stein scsi 33:0:0:0: Device offlined - not ready after error recovery
+Jan 27 19:05:56 stein firewire_sbp2: released fw2.0
 
-[   22.906654] system 00:08: iomem range 0xfebfa000-0xfebfac00 has been 
-reserved
+The benefit of this is negligible on simple setups.  But on buses with
+several devices, we should avoid any unnecessary blockade of fw-sbp2's
+workqueue thread.
 
-There was a patch floating around to ignore PnPACPI reservations which 
-conflict with PCI BARs, which appears to be what's happening in this 
-case. That patch originally worked for any board, but was later made 
-specific to a certain Supermicro motherboard which had the sata_nv 
-controller MMIO regions marked as reserved, preventing the driver from 
-loading. We may need a more general solution. See:
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-sbp2.c |   16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
 
-https://bugzilla.redhat.com/show_bug.cgi?id=313491
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -499,6 +499,9 @@ sbp2_send_management_orb(struct sbp2_log
+ 	unsigned int timeout;
+ 	int retval = -ENOMEM;
+ 
++	if (function == SBP2_LOGOUT_REQUEST && fw_device_is_shutdown(device))
++		return 0;
++
+ 	orb = kzalloc(sizeof(*orb), GFP_ATOMIC);
+ 	if (orb == NULL)
+ 		return -ENOMEM;
+@@ -619,16 +622,13 @@ static void sbp2_release_target(struct k
+ 	struct sbp2_logical_unit *lu, *next;
+ 	struct Scsi_Host *shost =
+ 		container_of((void *)tgt, struct Scsi_Host, hostdata[0]);
+-	struct fw_device *device = fw_device(tgt->unit->device.parent);
+ 
+ 	list_for_each_entry_safe(lu, next, &tgt->lu_list, link) {
+ 		if (lu->sdev)
+ 			scsi_remove_device(lu->sdev);
+ 
+-		if (!fw_device_is_shutdown(device))
+-			sbp2_send_management_orb(lu, tgt->node_id,
+-					lu->generation, SBP2_LOGOUT_REQUEST,
+-					lu->login_id, NULL);
++		sbp2_send_management_orb(lu, tgt->node_id, lu->generation,
++				SBP2_LOGOUT_REQUEST, lu->login_id, NULL);
+ 
+ 		fw_core_remove_address_handler(&lu->address_handler);
+ 		list_del(&lu->link);
+@@ -673,6 +673,9 @@ static void sbp2_login(struct work_struc
+ 	struct sbp2_login_response response;
+ 	int generation, node_id, local_node_id;
+ 
++	if (fw_device_is_shutdown(device))
++		goto out;
++
+ 	generation    = device->generation;
+ 	smp_rmb();    /* node_id must not be older than generation */
+ 	node_id       = device->node_id;
+@@ -968,6 +971,9 @@ static void sbp2_reconnect(struct work_s
+ 	struct fw_device *device = fw_device(unit->device.parent);
+ 	int generation, node_id, local_node_id;
+ 
++	if (fw_device_is_shutdown(device))
++		goto out;
++
+ 	generation    = device->generation;
+ 	smp_rmb();    /* node_id must not be older than generation */
+ 	node_id       = device->node_id;
+
+-- 
+Stefan Richter
+-=====-==--- ---= ==-==
+http://arcgraph.de/sr/
+
