@@ -1,83 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760391AbYA0Xle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760076AbYA0Xtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760391AbYA0Xle (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 18:41:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760267AbYA0Xka
+	id S1760076AbYA0Xtb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 18:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYA0XtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 18:40:30 -0500
-Received: from cantor.suse.de ([195.135.220.2]:51237 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760220AbYA0Xk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 18:40:29 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Paul Mackerras <paulus@samba.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 5/5] PPC: Fix powerpc vio_find_name to not use devices_subsys
-Date: Sun, 27 Jan 2008 15:38:42 -0800
-Message-Id: <1201477122-4541-5-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <20080127233751.GA4524@kroah.com>
-References: <20080127233751.GA4524@kroah.com>
+	Sun, 27 Jan 2008 18:49:20 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:48188 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752189AbYA0XtT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 18:49:19 -0500
+Date: Sun, 27 Jan 2008 15:48:53 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
+Subject: Re: preemptible RCU bug (was Re: [git pull] scheduler changes for v2.6.25)
+Message-ID: <20080127234853.GA10148@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080125203740.GA31784@elte.hu> <479B87B9.8080005@s5r6.in-berlin.de> <20080127110559.GB28315@linux.vnet.ibm.com> <20080127122602.GA17293@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080127122602.GA17293@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Mackerras <paulus@samba.org>
+On Sun, Jan 27, 2008 at 01:26:02PM +0100, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > > Sorry, no help available for this option yet.
+> > 
+> > Good catch!!!
+> > 
+> > This patch supplies help text for the "RCU implementation type" kernel 
+> > configuration choice.
+> 
+> thanks applied to sched.git. (see the patch below - the config option is 
+> in init/Kconfig in mainline, not in kernel/Kconfig.preempt)
 
-This fixes vio_find_name() in arch/powerpc/kernel/vio.c, which is
-currently broken because it tries to use devices_subsys.  That is bad
-for two reasons: (1) it's doing (or trying to do) a scan of all
-devices when it should only be scanning those on the vio bus, and
-(2) devices_subsys was an internal symbol of the device system code
-which was never meant for external use and has now gone away, and
-thus the kernel fails to compile on pSeries.
+Ah missed that -- thank you for retargeting the patch.
 
-The new version uses bus_find_device_by_name() on the vio bus
-(vio_bus_type).
+							Thanx, Paul
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- arch/powerpc/kernel/vio.c |   13 ++++---------
- 1 files changed, 4 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index 19a5656..f0bad70 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -37,8 +37,6 @@
- #include <asm/iseries/hv_call_xm.h>
- #include <asm/iseries/iommu.h>
- 
--extern struct kset devices_subsys; /* needed for vio_find_name() */
--
- static struct bus_type vio_bus_type;
- 
- static struct vio_dev vio_bus_device  = { /* fake "parent" device */
-@@ -361,19 +359,16 @@ EXPORT_SYMBOL(vio_get_attribute);
- #ifdef CONFIG_PPC_PSERIES
- /* vio_find_name() - internal because only vio.c knows how we formatted the
-  * kobject name
-- * XXX once vio_bus_type.devices is actually used as a kset in
-- * drivers/base/bus.c, this function should be removed in favor of
-- * "device_find(kobj_name, &vio_bus_type)"
-  */
--static struct vio_dev *vio_find_name(const char *kobj_name)
-+static struct vio_dev *vio_find_name(const char *name)
- {
--	struct kobject *found;
-+	struct device *found;
- 
--	found = kset_find_obj(&devices_subsys, kobj_name);
-+	found = bus_find_device_by_name(&vio_bus_type, NULL, name);
- 	if (!found)
- 		return NULL;
- 
--	return to_vio_dev(container_of(found, struct device, kobj));
-+	return to_vio_dev(found);
- }
- 
- /**
--- 
-1.5.3.8
-
+> 	Ingo
+> 
+> ------------->
+> Subject: RCU: add help text for "RCU implementation type"
+> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> 
+> This patch supplies help text for the "RCU implementation type"
+> kernel configuration choice.
+> 
+> Reported-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+> 
+>  init/Kconfig |    8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> Index: linux/init/Kconfig
+> ===================================================================
+> --- linux.orig/init/Kconfig
+> +++ linux/init/Kconfig
+> @@ -779,6 +779,14 @@ config PREEMPT_NOTIFIERS
+>  choice
+>  	prompt "RCU implementation type:"
+>  	default CLASSIC_RCU
+> +	help
+> +	  This allows you to choose either the classic RCU implementation
+> +	  that is designed for best read-side performance on non-realtime
+> +	  systems, or the preemptible RCU implementation for best latency
+> +	  on realtime systems.  Note that some kernel preemption modes
+> +	  will restrict your choice.
+> +
+> +	  Select the default if you are unsure.
+> 
+>  config CLASSIC_RCU
+>  	bool "Classic RCU"
