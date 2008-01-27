@@ -1,122 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbYA0Afo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYA0ApD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755257AbYA0Afo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 Jan 2008 19:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYA0Afg
+	id S1755500AbYA0ApD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 Jan 2008 19:45:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbYA0Aov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 Jan 2008 19:35:36 -0500
-Received: from simmts12-qfe0.srvr.bell.ca ([206.47.199.141]:39824 "EHLO
-	simmts12-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753019AbYA0Aff (ORCPT
+	Sat, 26 Jan 2008 19:44:51 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:57267 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753393AbYA0Aot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 Jan 2008 19:35:35 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAEZgm0ecIsJH/2dsb2JhbAAIq3w
-Message-ID: <479BD1D1.8020503@gmail.com>
-Date: Sat, 26 Jan 2008 20:35:29 -0400
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: X fails to start with latest Linus git
-References: <479BCE03.6070603@gmail.com>
-In-Reply-To: <479BCE03.6070603@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 26 Jan 2008 19:44:49 -0500
+Subject: Re: [PATCH] sym53c8xx: fix bad memset argument in
+	sym_set_cam_result_error
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: Nathan Lynch <ntl@pobox.com>, linux-scsi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <200801270119.00429.m.kozlowski@tuxland.pl>
+References: <20080126220730.GN14201@localdomain>
+	 <200801270119.00429.m.kozlowski@tuxland.pl>
+Content-Type: text/plain
+Date: Sat, 26 Jan 2008 18:44:33 -0600
+Message-Id: <1201394673.4387.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kevin Winchester wrote:
-> Hi Ingo,
+On Sun, 2008-01-27 at 01:18 +0100, Mariusz Kozlowski wrote:
+> Hello,
 > 
-> Starting X (autostarted with GDM) manages to lock up my system
-> (requiring a hard reset) after the first few tree merges of the window,
-> and bisection shows:
+> > On a big powerpc box I got the following oops with 2.6.24-git2:
+> > 
+> > sym0: <1010-66> rev 0x1 at pci 0000:d0:01.0 irq 215
+> > sym0: No NVRAM, ID 7, Fast-80, LVD, parity checking
+> > sym0: SCSI BUS has been reset.
+> > scsi0 : sym-2.2.3
+> >  target0:0:8: FAST-40 WIDE SCSI 80.0 MB/s ST (25 ns, offset 31)
+> > scsi 0:0:8:0: Direct-Access     IBM      ST318305LC       C509 PQ: 0
+> > ANSI: 3
+> >  target0:0:8: tagged command queuing enabled, command queue depth 16.
+> >  target0:0:8: Beginning Domain Validation
+> >  target0:0:8: asynchronous
+> >  target0:0:8: wide asynchronous
+> >  target0:0:8: FAST-80 WIDE SCSI 160.0 MB/s DT (12.5 ns, offset 31)
+> >  target0:0:8: FAST-80 WIDE SCSI 160.0 MB/s DT (12.5 ns, offset 31)
+> > Unable to handle kernel paging request for data at address 0x00000000
+> > Faulting instruction address: 0xc000000000038460
+> > cpu 0x25: Vector: 300 (Data Access) at [c00000000f567840]
+> >     pc: c000000000038460: .memcpy+0x60/0x280
+> >     lr: d000000000050280: .sym_set_cam_result_error+0xfc/0x1e0 [sym53c8xx]
+> >     sp: c00000000f567ac0
+> >    msr: 8000000000009032
+> >    dar: 0
+> >  dsisr: 42000000
+> >   current = 0xc000006d1e0af0a0
+> >   paca    = 0xc0000000004afc00
+> >     pid   = 0, comm = swapper
+> > enter ? for help
+> > [link register   ] d000000000050280
+> > .sym_set_cam_result_error+0xfc/0x1e0 [sym53c8xx]
+> > [c00000000f567ac0] c00000000f567b80 (unreliable)
+> > [c00000000f567b80] d0000000000552b8 .sym_complete_error+0x12c/0x1bc [sym53c8xx]
+> > [c00000000f567c20] d0000000000561a4 .sym_int_sir+0xaa4/0x1718 [sym53c8xx]
+> > [c00000000f567d00] d000000000057e8c .sym_interrupt+0x4e4/0x6ec [sym53c8xx]
+> > [c00000000f567dc0] d00000000004fdf4 .sym53c8xx_intr+0x6c/0xdc [sym53c8xx]
+> > [c00000000f567e50] c0000000000a83e0 .handle_IRQ_event+0x7c/0xec
+> > [c00000000f567ef0] c0000000000aa344 .handle_fasteoi_irq+0x130/0x1f0
+> > [c00000000f567f90] c00000000002a538 .call_handle_irq+0x1c/0x2c
+> > [c000004d5e0b3a90] c00000000000c320 .do_IRQ+0x108/0x1d0
+> > [c000004d5e0b3b20] c000000000004790 hardware_interrupt_entry+0x18/0x1c
+> > 
+> > The memset() in sym_set_cam_result_error() would appear to be trashing
+> > the scsi_cmnd struct instead of clearing sense_buffer.
+> > 
+> > Signed-off-by: Nathan Lynch <ntl@pobox.com>
+> > ---
+> >  drivers/scsi/sym53c8xx_2/sym_glue.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
+> > index 21e926d..e939f38 100644
+> > --- a/drivers/scsi/sym53c8xx_2/sym_glue.c
+> > +++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
+> > @@ -207,7 +207,7 @@ void sym_set_cam_result_error(struct sym_hcb *np, struct sym_ccb *cp, int resid)
+> >  			/*
+> >  			 *  Bounce back the sense data to user.
+> >  			 */
+> > -			memset(&cmd->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
+> > +			memset(cmd->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
+> >  			memcpy(cmd->sense_buffer, cp->sns_bbuf,
+> >  			       min(SCSI_SENSE_BUFFERSIZE, SYM_SNS_BBUF_LEN));
+> >  #if 0
 > 
-> -----------------
+> I was looking into it and found something interesting. What you see was just exposed by:
 > 
-> 19ef9309273d26cb005cb23e6a370353dca91099 is first bad commit
-> commit 19ef9309273d26cb005cb23e6a370353dca91099
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Fri Jan 25 21:08:34 2008 +0100
+> commit b80ca4f7ee36c26d300c5a8f429e73372d153379
+> Author: FUJITA Tomonori <tomof@acm.org>
+> Date:   Sun Jan 13 15:46:13 2008 +0900
 > 
->     printk: use ktime_get()
+>     [SCSI] replace sizeof sense_buffer with  
+>     
+>     This replaces sizeof sense_buffer with SCSI_SENSE_BUFFERSIZE in
+>     several LLDs. It's a preparation for the future changes to remove
+>     sense_buffer array in scsi_cmnd structure.
+>     
+>     Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+>     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 > 
->     printk timestamps: use ktime_get().
+> But this is not a simple replace sizeof sense_buffer with SCSI_SENSE_BUFFERSIZE
+> It has a side effect. Take a look a this portion of the commit:
 > 
->     Some platforms have a functioning clocksource function only after
->     they are done with early bootup, so delay this until out of
->     SYSTEM_BOOTING state.
+> --- a/drivers/scsi/sym53c8xx_2/sym_glue.c
+> +++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
+> @@ -207,10 +207,9 @@ void sym_set_cam_result_error(struct sym_hcb *np, struct sym_ccb *cp, int resid)
+>                         /*
+>                          *  Bounce back the sense data to user.
+>                          */
+> -                       memset(&cmd->sense_buffer, 0, sizeof(cmd->sense_buffer));
+> +                       memset(&cmd->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
+>                         memcpy(cmd->sense_buffer, cp->sns_bbuf,
+> -                             min(sizeof(cmd->sense_buffer),
+> -                                 (size_t)SYM_SNS_BBUF_LEN));
+> +                              min(SCSI_SENSE_BUFFERSIZE, SYM_SNS_BBUF_LEN));
 > 
->     it's also inherently safe now, as any bugs in this area will be
->     caught by the printk recursion checks.
-> 
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> -----------------
-> 
-> as the first bad commit.  I have no idea why that would cause problems,
-> so it could also be some timing-related problem that just happened to
-> bisect to this patch.
-> 
-> I will try advancing to the head of Linus' tree and then reverting this
-> patch to make sure it fixes the problem, but I figured I'd send this
-> first to see if it is obvious to anyone.
-> 
+> Before the patch:
+> 1) memset sets cmd->sense_buffer pointer value to zero (only 4 bytes which is wrong)
+> 2) memcpy copies min(sizeof(cmd->sense_buffer), (size_t)SYM_SNS_BBUF_LEN)) which
+>    is equal to min(4, 32) so after this only first four bytes were copied from 32 bytes
+>    long cp->sns_bbuf into the sense_buffer
 
-Yes, with this as my "git log" :
+This logic is wrong.  There was a commit
+(de25deb18016f66dcdede165d07654559bb332bc) that changed
+scsi_cmnd.sense_buffer from a char [96] to a char *, which is actually
+what caused this to break.  sizeof(char [96]) is 96 and for some reason
+in C &x->y == &x->y[0] if char y[something].
 
-------------
+> After the patch:
+> 1) memset zeroes 96 bytes of cmd structure starting at offset where sense_buffer in
+>    cmd is and results in an oops which you fixed
+> 2) memcpy copies min(SCSI_SENSE_BUFFERSIZE, SYM_SNS_BBUF_LEN)) is equal to
+>    min(96, 32). cp->sns_bbuf is 32 bytes so I guess that's ok but that's different from
+>    the code before b80ca4f7 which was wrong (copied only 4 bytes) but 'worked'.
+> 
+> Someone more experienced with that code should take a look at the logic of it.
 
-commit 1814180093994543e8fbfd8d91f383081a9bc283
-Author: Kevin Winchester <kevin@alekhine.(none)>
-Date:   Sat Jan 26 20:21:44 2008 -0400
-
-    Revert "printk: use ktime_get()"
-
-    This reverts commit 19ef9309273d26cb005cb23e6a370353dca91099.
-
-commit 9b73e76f3cf63379dcf45fcd4f112f5812418d0a
-Merge: 50d9a12... 23c3e29...
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Fri Jan 25 17:19:08 2008 -0800
-
-    Merge git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6
-
-    * git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6:
-(200 commits)
-      [SCSI] usbstorage: use last_sector_bug flag universally
-      [SCSI] libsas: abstract STP task status into a function
-      [SCSI] ultrastor: clean up inline asm warnings
-      [SCSI] aic7xxx: fix firmware build
-      [SCSI] aacraid: fib context lock for management ioctls
-      [SCSI] ch: remove forward declarations
-      [SCSI] ch: fix device minor number management bug
-      [SCSI] ch: handle class_device_create failure properly
-      [SCSI] NCR5380: fix section mismatch
-      [SCSI] sg: fix /proc/scsi/sg/devices when no SCSI devices
-      [SCSI] IB/iSER: add logical unit reset support
-      [SCSI] don't use __GFP_DMA for sense buffers if not required
-      [SCSI] use dynamically allocated sense buffer
-      [SCSI] scsi.h: add macro for enclosure bit of inquiry data
-      [SCSI] sd: add fix for devices with last sector access problems
-      [SCSI] fix pcmcia compile problem
-      [SCSI] aacraid: add Voodoo Lite class of cards.
-      [SCSI] aacraid: add new driver features flags
-      [SCSI] qla2xxx: Update version number to 8.02.00-k7.
-      [SCSI] qla2xxx: Issue correct MBC_INITIALIZE_FIRMWARE command.
-      ...
-
--------------
-
-The machine boots normally, but without that revert, X locks up.  Does
-that make sense to anyone?
-
--- 
-Kevin Winchester
+James
 
 
