@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYA0I5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbYA0JIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbYA0I5S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 03:57:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbYA0I5L
+	id S1756153AbYA0JIZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 04:08:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbYA0JIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 03:57:11 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:44374
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750869AbYA0I5K (ORCPT
+	Sun, 27 Jan 2008 04:08:12 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:27818 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbYA0JIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 03:57:10 -0500
-Message-ID: <479C4763.1080104@qumranet.com>
-Date: Sun, 27 Jan 2008 10:57:07 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 27 Jan 2008 04:08:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=sqLVcEi9YcXCr9GtmO1LGjftNBxxLGlgc8oNccnbVB/l4kU3QkmsvGuBpOlGvm+exUDB7Cja3e0XEm+LBwy4t5FFhid+CzxAo8wBLhvpgp/+t7hmPjh7xvwL4ZVL6Rc7Bh4AKGA8ZHwZKAK0D4BxDXx75gd0c2+VZONH18zi2FM=
+Message-ID: <479C49F4.8060800@gmail.com>
+Date: Sun, 27 Jan 2008 10:08:04 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [PATCH][RFC] SVM: Add Support for Nested Paging in
- AMD Fam16 CPUs
-References: <1201294393-22613-1-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1201294393-22613-1-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: WANG Cong <xiyou.wangcong@gmail.com>
+CC: Sam Ravnborg <sam@ravnborg.org>, Jeff Garzik <jeff@garzik.org>,
+       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: (Updated) [Patch] Shut up warnings from files under drivers/
+References: <20080126093007.GB20935@hacking> <479B03AE.3090600@garzik.org> <20080126191717.GA25701@uranus.ravnborg.org> <20080127041521.GC2495@hacking>
+In-Reply-To: <20080127041521.GC2495@hacking>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> Hi,                                                                                                                              
->
-> here is the first release of patches for KVM to support the Nested Paging (NPT)
-> feature of AMD QuadCore CPUs for comments and public testing. This feature
-> improves the guest performance significantly. I measured an improvement of
-> around 17% using kernbench in my first tests.
->
-> This patch series is basically tested with Linux guests (32 bit legacy
-> paging, 32 bit PAE paging and 64 bit Long Mode). Also tested with Windows Vista
-> 32 bit and 64 bit. All these guests ran successfully with these patches. The
-> patch series only enables NPT for 64 bit Linux hosts at the moment.
->   
+On 01/27/2008 05:15 AM, WANG Cong wrote:
+> Fix defined-but-not-used warnings from files under drivers/,
+> such as:
+> 
+> drivers/char/applicom.c:68: warning: ‘applicom_pci_tbl’ defined but not used
+> 
+> Compile tests passed.
+> 
+> Cc: Jeff Garzik <jeff@garzik.org>
+> Cc: Greg KH <gregkh@suse.de>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> 
+> ---
+> 
+> diff --git a/drivers/char/applicom.c b/drivers/char/applicom.c
+> index 1f0b752..97171ad 100644
+> --- a/drivers/char/applicom.c
+> +++ b/drivers/char/applicom.c
+> @@ -65,7 +65,7 @@ static char *applicom_pci_devnames[] = {
+>  	"PCI2000PFB"
+>  };
+>  
+> -static struct pci_device_id applicom_pci_tbl[] = {
+> +static struct pci_device_id applicom_pci_tbl[] __used = {
+>  	{ PCI_VENDOR_ID_APPLICOM, PCI_DEVICE_ID_APPLICOM_PCIGENERIC,
+>  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+>  	{ PCI_VENDOR_ID_APPLICOM, PCI_DEVICE_ID_APPLICOM_PCI2000IBS_CAN,
 
-
-Very nice patchset; small, simple, and clean.  Apart from the comments I 
-already posted, I'd like to avoid the term 'hap': I find it 
-non-descriptive, and it reminds me of another hypervisor.  I suggest 
-'tlp' for two-level paging.
-
-Since it re-uses non-npt real-mode paging, live migration and swapping 
-will likely work without further changes.
-
--- 
-error compiling committee.c: too many arguments to function
-
+I have probably a better fix with pci_match_id() referencing this array.
