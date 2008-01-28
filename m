@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbYA1SHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbYA1SHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753294AbYA1SHE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 13:07:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYA1SGy
+	id S1753997AbYA1SHo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 13:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYA1SHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 13:06:54 -0500
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:32875 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751786AbYA1SGw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 13:06:52 -0500
-Message-ID: <479E19C9.7020201@keyaccess.nl>
-Date: Mon, 28 Jan 2008 19:07:05 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 28 Jan 2008 13:07:35 -0500
+Received: from lucidpixels.com ([75.144.35.66]:48359 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751785AbYA1SHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 13:07:34 -0500
+Date: Mon, 28 Jan 2008 13:07:33 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Ingo Molnar <mingo@elte.hu>
+cc: Yinghai Lu <Yinghai.Lu@Sun.COM>, Jesse Barnes <jesse.barnes@intel.com>,
+       Andi Kleen <ak@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86_32: trim memory by updating e820 v2
+In-Reply-To: <20080128150957.GA12205@elte.hu>
+Message-ID: <alpine.DEB.1.00.0801281307090.10823@p34.internal.lan>
+References: <200801192045.17291.yinghai.lu@sun.com> <200801211209.23901.yinghai.lu@sun.com> <alpine.DEB.0.999999.0801211635480.6668@p34.internal.lan> <200801221950.06477.yinghai.lu@sun.com> <alpine.DEB.0.999999.0801251858450.4388@p34.internal.lan>
+ <20080128150957.GA12205@elte.hu>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-To: trenn@suse.de
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jean Delvare <khali@linux-fr.org>, Jaroslav Kysela <perex@perex.cz>
-Subject: Re: [PATCH] Allocate pnp resources dynamically via krealloc	-	working
- version - Addon patch 1
-References: <1200772810.3708.42.camel@queen>	 <84144f020801191623i2ad344a8t1c40969578793d13@mail.gmail.com>	 <1201109917.20940.214.camel@queen.suse.de> <479CD935.3070906@keyaccess.nl>	 <1201530103.20940.413.camel@queen.suse.de> <479DEE10.6060203@keyaccess.nl> <1201536284.20940.424.camel@queen.suse.de>
-In-Reply-To: <1201536284.20940.424.camel@queen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: 1.6 (+)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28-01-08 17:04, Thomas Renninger wrote:
 
-> Can you try these two "on top" patches pls.
 
-Thought I could, but my machine begs to differ...
+On Mon, 28 Jan 2008, Ingo Molnar wrote:
 
-===
-pnp: the driver 'cs4236_isapnp' has been registered
-cs4236_isapnp 01:01.00: driver attached
-cs4236_isapnp 01:01.02: driver attached
-cs4236_isapnp 01:01.03: driver attached
-BUG: unable to handle kernel NULL pointer dereference at virtual address 
-0000000f
-printing eip: c10e5136 *pde = 00000000
-Oops: 0000 [#1] PREEMPT
-Modules linked in: snd_cs4236 snd_opl3_lib snd_hwdep snd_cs4236_lib 
-snd_mpu401_uart snd_rawmidi snd_seq_device snd_cs4231_lib snd_pcm snd_timer 
-snd_page_alloc snd soundcore nfsd lockd nfs_acl sunrpc exportfs
+>
+> * Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+>
+>> Tried it, it worked successfully!
+>>
+>> With stock kernel, previous way I had to use it was mem=8832M and top
+>> showed this:
+>>
+>> top - 18:53:52 up 1 min,  2 users,  load average: 1.03, 0.30, 0.10
+>> Tasks: 169 total,   1 running, 168 sleeping,   0 stopped,   0 zombie
+>> Cpu(s):  6.1%us,  2.6%sy,  4.5%ni, 81.3%id,  5.5%wa,  0.0%hi,  0.0%si,  0.0%st
+>> Mem:   8039464k total,  1288948k used,  6750516k free,     3640k buffers
+>> Swap: 16787768k total,        0k used, 16787768k free,   178528k cached
+>>
+>> With kernel you mentioned and use e820 v3:
+>>
+>> top - 18:48:13 up 3 min,  6 users,  load average: 1.67, 0.68, 0.25
+>> Tasks: 195 total,   2 running, 193 sleeping,   0 stopped,   0 zombie
+>> Cpu(s): 18.5%us,  1.2%sy,  1.6%ni, 74.8%id,  3.9%wa,  0.0%hi,  0.0%si,  0.0%st
+>> Mem:   8037668k total,  1438732k used,  6598936k free,     6844k buffers
+>> Swap: 16787768k total,        0k used, 16787768k free,   273928k cached
+>>
+>> No append mem= required.
+>>
+>> A full dmesg is attached so you can analyze the e820/MTRR mapping.
+>
+> thanks for testing it! The code indeed successfully trimmed your memory
+> map by 64MB:
+>
+> from:
+>
+> [    0.000000]  BIOS-e820: 0000000100000000 - 000000022c000000 (usable)
+>
+> to:
+>
+> [    0.000000]   modified: 0000000100000000 - 0000000228000000 (usable)
+> [    0.000000]   modified: 0000000228000000 - 000000022c000000 (reserved)
+>
+> what happened on your box previously when you booted without any
+> trimming - did it sometimes slow down or something like that?
+>
+> 	Ingo
+>
 
-Pid: 1370, comm: modprobe Not tainted (2.6.24-local #5)
-EIP: 0060:[<c10e5136>] EFLAGS: 00010246 CPU: 0
-EIP is at pnp_assign_port+0x1d/0xd5
-EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: 00000001
-ESI: ef8fe100 EDI: ef8f5800 EBP: 00000000 ESP: ed3b4e08
-  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-Process modprobe (pid: 1370, ti=ed3b4000 task=ed35c000 task.ti=ed3b4000)
-Stack: ed3b4e34 c108ac94 ed3b4e34 ed3c1b10 00000000 efa4e360 c108b88b ef8fe100
-        00000000 ef8f5800 ef82ee40 c10e5360 00000001 ef8f5964 00000000 00000000
-        00000000 00000000 00000000 ef805ea0 ef8f5800 ef863c80 00000001 ed373400
-Call Trace:
-  [<c108ac94>] sysfs_addrm_start+0x36/0x81
-  [<c108b88b>] sysfs_create_link+0xd0/0x111
-  [<c10e5360>] pnp_assign_resources+0x172/0x23a
-  [<c10e548f>] pnp_auto_config_dev+0x67/0xa6
-  [<c10e373a>] pnp_request_card_device+0x9b/0xbe
-  [<c10e54e1>] pnp_activate_dev+0x13/0x3a
-  [<f0a4b559>] snd_cs423x_pnpc_detect+0xe4/0x35f [snd_cs4236]
-  [<c10e330d>] pnp_alloc+0xe/0x25
-  [<c10e3652>] card_probe+0xba/0x107
-  [<c10e3b75>] pnp_register_card_driver+0xa3/0xb3
-  [<f08de02f>] alsa_card_cs423x_init+0x2f/0x4f [snd_cs4236]
-  [<c103258a>] sys_init_module+0x1379/0x149b
-  [<c104773a>] unmap_region+0xe5/0x100
-  [<c1003d62>] syscall_call+0x7/0xb
-  =======================
-Code: ba 01 00 00 00 83 c4 1c 89 d0 5b 5e 5f c3 55 89 cd 57 89 c7 56 89 d6 
-ba 01 00 00 00 53 6b d9 1c 83 ec 1c 89 d8 03 87 64 01 00 00 <f6> 40 0f 40 0f 
-84 a4 00 00 00 8b 00 8b 97 64 01 00 00 0f b6 4e
-EIP: [<c10e5136>] pnp_assign_port+0x1d/0xd5 SS:ESP 0068:ed3b4e08
----[ end trace d756fac577a9260d ]---
+When I boot the box without any trimming it acts like a 286 or 386, takes 
+about 10 minutes to boot (using raptor disks).
 
-Rene.
+Justin.
