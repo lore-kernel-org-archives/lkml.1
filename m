@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbYA1U3E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYA1U3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506AbYA1U3E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 15:29:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbYA1U2y
+	id S1757408AbYA1U3X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 15:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbYA1U3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 15:28:54 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36640 "EHLO ogre.sisk.pl"
+	Mon, 28 Jan 2008 15:29:06 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40588 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751847AbYA1U2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 15:28:54 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native format.
-Date: Mon, 28 Jan 2008 21:26:44 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ian Campbell <ijc@hellion.org.uk>,
-       Mika =?iso-8859-1?q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <200801281625.45165.rjw@sisk.pl> <20080128194017.GA4481@ucw.cz>
-In-Reply-To: <20080128194017.GA4481@ucw.cz>
+	id S1752549AbYA1U3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 15:29:03 -0500
+Date: Mon, 28 Jan 2008 22:29:29 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: ltp-list@lists.sourceforge.net, risrajak@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [LTP] [TEST] : LTP Build failure on 2.6.24 kernel
+Message-ID: <20080128202929.GB8767@does.not.exist>
+References: <1201508081.4029.4.camel@localhost.localdomain> <200801280653.16624.vapier@gentoo.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200801282126.45751.rjw@sisk.pl>
+In-Reply-To: <200801280653.16624.vapier@gentoo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 28 of January 2008, Pavel Machek wrote:
-> Hi!
+On Mon, Jan 28, 2008 at 06:53:15AM -0500, Mike Frysinger wrote:
+> On Monday 28 January 2008, Rishikesh K. Rajak wrote:
+> > Here i am getting failure on the x86_64 machine with new kernel.
+> >
+> > Here is the uname for that machine:
+> >
+> > rishi@:~/ltp-full-20071231# uname -a
+> > Linux rishi.in.ibm.com 2.6.24 #1 SMP PREEMPT Mon Jan 28 06:47:28 UTC
+> > 2008 x86_64 GNU/Linux
 > 
-> > > >  /*
-> > > >   * Swap suspend & friends need this for resume because things like the intel-agp
-> > > >   * driver might have split up a kernel 4MB mapping.
-> > > >   */
-> > > > -char __nosavedata swsusp_pg_dir[PAGE_SIZE]
-> > > > +char swsusp_pg_dir[PAGE_SIZE]
-> > > 
-> > > thanks, applied.
+> i'm guessing you're using ubuntu and thus dash is your /bin/sh ... shouldnt be 
+> a 2.6.24 issue
 > 
-> Sorry, this is subtle and I've overlooked it before.
+> > make[4]: Entering directory
+> > `/root/ltp-full-20071231/testcases/network/tcp_cmds/ftp'
+> > ../../generate.sh
+> > ../../generate.sh: 60: arith: syntax error: "cnt=cnt-1"
 > 
-> (I thought you were only changing ifdef).
-> 
-> Now you memcpy() over pg_dir when that pgdir is in use during swsusp
-> resume.
+> sadly, this is becoming a FAQ.  ubuntu ships a broken /bin/sh (dash) and thus 
+> some LTP scripts fall apart.  i would prefer to not change the scripts as the 
+> message is simple in LTP: fix your shell, dont add hacks to LTP.  otherwise 
+> we slowly back ourselves into this corner with the shell scripts where we try 
+> to support every craptastic shell out there and we're afraid to make any 
+> changes because we dont know what crappy shell is going to drop a brick.  LTP 
+> scripts are written to be POSIX complaint and only POSIX complaint shells 
+> should be provided by /bin/sh.
 
-It is not.  swsusp hasn't been using swsusp_pg_dir for several months.
-Hence, the patch. :-)
+You better fulfil your claim "LTP scripts are written to be POSIX 
+complaint" before complaining about shells being unhappy with your 
+script. E.g. where in IEEE 1003.1-2004 is the "local" you use specified?
 
-> Granted, you memcpy() with same data that already are there, 
-> but it may still do some funny effects.
-> 
-> Hmm, but same argument applies to lower levels of paging in 64-bit and
-> PAE cases, and we still do that memcpy-over-active-pagetables there...
-> :-(.
+Or instead of working on making your script using only the stuff 
+specified in IEEE 1003.1-2004 you could simply replace the #!/bin/sh at 
+the top with a #!/bin/bash and everbody will be happy.
 
-Actually, no.  We only do that with the kernel code mapping which should be
-safe as long as TLBs are not flushed (and they aren't).
+> -mike
 
-Thanks,
-Rafael
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
