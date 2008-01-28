@@ -1,110 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759842AbYA1JMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758920AbYA1JNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759842AbYA1JMd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 04:12:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759490AbYA1JMP
+	id S1758920AbYA1JNh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 04:13:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYA1JN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 04:12:15 -0500
-Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:56743 "EHLO
-	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759381AbYA1JMM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 04:12:12 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jan 2008 04:12:12 EST
-Date: Mon, 28 Jan 2008 01:05:30 -0800 (PST)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Adrian Bunk <bunk@kernel.org>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Hans Verkuil <hverkuil@xs4all.nl>, v4l-dvb-maintainer@linuxtv.org,
-       Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] 2.6.25 regression: VIDEO_DEV=y/m,	I2C=n
- compile error
-In-Reply-To: <20080128084001.GB1001@does.not.exist>
-Message-ID: <Pine.LNX.4.58.0801280053010.15635@shell4.speakeasy.net>
-References: <20080127185216.GB13300@does.not.exist> <20080127223334.696fce6e@gaivota>
- <20080128084001.GB1001@does.not.exist>
+	Mon, 28 Jan 2008 04:13:28 -0500
+Received: from cantor.suse.de ([195.135.220.2]:46525 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752115AbYA1JN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 04:13:26 -0500
+From: Andi Kleen <ak@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Only print kernel debug information for OOMs caused by kernel allocations
+Date: Mon, 28 Jan 2008 10:11:57 +0100
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20080116222421.GA7953@wotan.suse.de> <200801280710.08204.ak@suse.de> <20080128005657.24236df5.akpm@linux-foundation.org>
+In-Reply-To: <20080128005657.24236df5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801281011.57839.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008, Adrian Bunk wrote:
-> On Sun, Jan 27, 2008 at 10:33:34PM -0200, Mauro Carvalho Chehab wrote:
-> > On Sun, 27 Jan 2008 20:52:16 +0200
-> > Adrian Bunk <bunk@kernel.org> wrote:
+On Monday 28 January 2008 09:56, Andrew Morton wrote:
+> On Mon, 28 Jan 2008 07:10:07 +0100 Andi Kleen <ak@suse.de> wrote:
+> > On Monday 28 January 2008 06:52, Andrew Morton wrote:
+> > > On Wed, 16 Jan 2008 23:24:21 +0100 Andi Kleen <ak@suse.de> wrote:
+> > > > I recently suffered an 20+ minutes oom thrash disk to death and
+> > > > computer completely unresponsive situation on my desktop when some
+> > > > user program decided to grab all memory. It eventually recovered, but
+> > > > left lots of ugly and imho misleading messages in the kernel log.
+> > > > here's a minor improvement
 > >
-> > > Commit 8ffbc6559493c64d6194c92d856196fdaeb8a5fb causes the following
-> > > compile error with CONFIG_VIDEO_DEV=y/m, CONFIG_I2C=n:
-> > >
-> > > ERROR: "i2c_attach_client" [drivers/media/video/v4l2-common.ko] undefined!
-
-> > Thanks for getting this regression. Please test the enclosed patch.
+> > As a followup this was with swap over dm crypt. I've recently heard
+> > about other people having trouble with this too so this setup seems to
+> > trigger something bad in the VM.
 >
-> It doesn't enable the code if CONFIG_VIDEO_DEV=m, CONFIG_I2C=m.
+> Where's the backtrace and show_mem() output? :)
+
+I don't have it anymore. You want me to reproduce it? I don't think
+I saw messages from the other people either; just heard complaints.
+
+> > > That information is useful for working out why a userspace allocation
+> > > attempt failed.  If we don't print it, and the application gets killed
+> > > and thus frees a lot of memory, we will just never know why the
+> > > allocation failed.
+> >
+> > But it's basically only either page fault (direct or indirect) or write
+> > et.al. who do these page cache allocations. Do you really think it is
+> > that important to distingush these cases individually? In 95+% of all
+> > cases it should be a standard user page fault which always has the same
+> > backtrace.
 >
-> And what should happen if CONFIG_VIDEO_DEV=y, CONFIG_I2C=m?
->
-> If the latter should offer this code to modules we'll have to put it
-> into an own module.
+> Sure, the backtrace isn't very important.  The show_mem() output is vital.
 
-Adrian beat me to it, but I was going to point out the same thing.  Also
-only the function v4l2_i2c_attach() is a problem.  The other functions,
-like v4l2_chip_match_i2c_client(), which the patch put inside an #ifdef
-don't use any i2c symbols and don't need to be protected.
-v4l2_chip_match_host() could even easily be used by a driver that doesn't
-need I2C.
+I see. So would the patch be acceptable if it only disabled the backtrace? 
 
-Maybe the kernel headers should provide a couple macros for testing
-configs, since people get it wrong over and over again?
+> Plus an additional function call.  On the already-deep page allocation
+> path, I might add.
 
-#define CONFIG_ON(x) (defined(CONFIG_##x) || defined(CONFIG_##x##_MODULE))
-#define CONFIG_AVAIABLE(x) (defined(CONFIG_##x) || (defined(MODULE) && defined(CONFIG_##x##_MODULE)))
+The function call is already there if the kernel has CPUSETs enabled.
+And that is what distribution kernels usually do. And most users
+use distribution kernels or distribution .config.
 
-Would save typing too.
-
-Not sure what to do about VIDEO_DEV=y, I2C=m.  It should be possible except
-for this function.
-
-> > diff -r b0815101889d linux/drivers/media/video/v4l2-common.c
-> > --- a/linux/drivers/media/video/v4l2-common.c	Sun Jan 27 20:39:00 2008
-> > -0200 +++ b/linux/drivers/media/video/v4l2-common.c	Sun Jan 27 22:23:25
-> > 2008 -0200 @@ -1585,6 +1585,7 @@ u32 v4l2_ctrl_next(const u32 * const * c
-> >  	return **ctrl_classes;
-> >  }
-> >
-> > +#ifdef CONFIG_I2C
-> >  int v4l2_chip_match_i2c_client(struct i2c_client *c, u32 match_type, u32
-> > match_chip) {
-> >  	switch (match_type) {
-> > @@ -1596,6 +1597,7 @@ int v4l2_chip_match_i2c_client(struct i2
-> >  		return 0;
-> >  	}
-> >  }
-> > +EXPORT_SYMBOL(v4l2_chip_match_i2c_client);
-> >
-> >  int v4l2_chip_ident_i2c_client(struct i2c_client *c, struct v4l2_chip_ident
-> > *chip, u32 ident, u32 revision)
-> > @@ -1612,6 +1614,7 @@ int v4l2_chip_ident_i2c_client(struct i2
-> >  	}
-> >  	return 0;
-> >  }
-> > +EXPORT_SYMBOL(v4l2_chip_ident_i2c_client);
-> >
-> >  int v4l2_chip_match_host(u32 match_type, u32 match_chip)
-> >  {
-> > @@ -1622,6 +1625,7 @@ int v4l2_chip_match_host(u32 match_type,
-> >  		return 0;
-> >  	}
-> >  }
-> > +EXPORT_SYMBOL(v4l2_chip_match_host);
-> >
-> >  /* ----------------------------------------------------------------- */
-> >
-> > @@ -1656,6 +1660,8 @@ int v4l2_i2c_attach(struct i2c_adapter *
-> >  	}
-> >  	return err != -ENOMEM ? 0 : err;
-> >  }
-> > +EXPORT_SYMBOL(v4l2_i2c_attach);
-> > +#endif
+-Andi
