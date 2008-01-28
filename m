@@ -1,60 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbYA1J0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759795AbYA1J1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbYA1J0X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 04:26:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYA1J0P
+	id S1759795AbYA1J1V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 04:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYA1J1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 04:26:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34006 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754367AbYA1J0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 04:26:14 -0500
-Date: Mon, 28 Jan 2008 10:25:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Kiszka <jan.kiszka@web.de>
-Cc: Jason Wessel <jason.wessel@windriver.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kgdb-bugreport@lists.sourceforge.net
-Subject: Re: [RFC PATCH] KGDB: various refactorings
-Message-ID: <20080128092556.GB4774@elte.hu>
-References: <479CD13D.7070703@web.de> <479CD5BA.80009@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <479CD5BA.80009@web.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.3
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3334]
+	Mon, 28 Jan 2008 04:27:06 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53524 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750776AbYA1J1F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 04:27:05 -0500
+Date: Mon, 28 Jan 2008 01:27:18 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] Only print kernel debug information for OOMs caused by
+ kernel allocations
+Message-Id: <20080128012718.65b7889a.akpm@linux-foundation.org>
+In-Reply-To: <200801281011.57839.ak@suse.de>
+References: <20080116222421.GA7953@wotan.suse.de>
+	<200801280710.08204.ak@suse.de>
+	<20080128005657.24236df5.akpm@linux-foundation.org>
+	<200801281011.57839.ak@suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 28 Jan 2008 10:11:57 +0100 Andi Kleen <ak@suse.de> wrote:
 
-* Jan Kiszka <jan.kiszka@web.de> wrote:
-
-> Sorry, forgot to refresh for this hunk:
+> On Monday 28 January 2008 09:56, Andrew Morton wrote:
+> > On Mon, 28 Jan 2008 07:10:07 +0100 Andi Kleen <ak@suse.de> wrote:
+> > > On Monday 28 January 2008 06:52, Andrew Morton wrote:
+> > > > On Wed, 16 Jan 2008 23:24:21 +0100 Andi Kleen <ak@suse.de> wrote:
+> > > > > I recently suffered an 20+ minutes oom thrash disk to death and
+> > > > > computer completely unresponsive situation on my desktop when some
+> > > > > user program decided to grab all memory. It eventually recovered, but
+> > > > > left lots of ugly and imho misleading messages in the kernel log.
+> > > > > here's a minor improvement
+> > >
+> > > As a followup this was with swap over dm crypt. I've recently heard
+> > > about other people having trouble with this too so this setup seems to
+> > > trigger something bad in the VM.
+> >
+> > Where's the backtrace and show_mem() output? :)
 > 
->  - rename CHECK_EXCEPTION_STACK to EXCEPTION_STACK_READY
+> I don't have it anymore. You want me to reproduce it? I don't think
+> I saw messages from the other people either; just heard complaints.
 
-thanks, applied to x86.git.
+May as well - it doesn't sound like it'll fix itself...
 
-minor nit:
+> > > > That information is useful for working out why a userspace allocation
+> > > > attempt failed.  If we don't print it, and the application gets killed
+> > > > and thus frees a lot of memory, we will just never know why the
+> > > > allocation failed.
+> > >
+> > > But it's basically only either page fault (direct or indirect) or write
+> > > et.al. who do these page cache allocations. Do you really think it is
+> > > that important to distingush these cases individually? In 95+% of all
+> > > cases it should be a standard user page fault which always has the same
+> > > backtrace.
+> >
+> > Sure, the backtrace isn't very important.  The show_mem() output is vital.
+> 
+> I see. So would the patch be acceptable if it only disabled the backtrace? 
 
->  #ifndef CONFIG_X86_32
-> -#define CHECK_EXCEPTION_STACK()
-> ((&__get_cpu_var(init_tss))[0].x86_tss.ist[0])
-> +#define EXCEPTION_STACK_READY()
-> ((&__get_cpu_var(init_tss))[0].x86_tss.ist[0])
+Spose so.  The show_mem() spew is probably larger than the backtrace
+though.
 
-not only was the mail in quoted-printable format, but the above part 
-also had linewrapping damage :-/ Fixed it up manually but please read:
+Are you sure we aren't doing dump_stack()/show_mem() mutiple times for a
+single process?  If we are, that would mena the TIF_MEMDIE thing broke.
 
-  Documentation/email-clients.txt
+It must have been one heck of an oomkilling slaughter.
 
-	Ingo
+> > Plus an additional function call.  On the already-deep page allocation
+> > path, I might add.
+> 
+> The function call is already there if the kernel has CPUSETs enabled.
+
+s/CPUSETS/NUMA/, which makes rather a difference.
+
+> And that is what distribution kernels usually do. And most users
+> use distribution kernels or distribution .config.
+
+
