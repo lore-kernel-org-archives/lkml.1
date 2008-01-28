@@ -1,37 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757693AbYA1B4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbYA1B7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757693AbYA1B4P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 20:56:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbYA1Bz7
+	id S1758449AbYA1B7h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 20:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbYA1B71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 20:55:59 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59731 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751540AbYA1Bz6 (ORCPT
+	Sun, 27 Jan 2008 20:59:27 -0500
+Received: from mail.admingilde.org ([213.95.32.147]:45076 "EHLO
+	mail.admingilde.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752652AbYA1B70 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 20:55:58 -0500
-Message-ID: <479D3606.8020200@zytor.com>
-Date: Sun, 27 Jan 2008 17:55:18 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 27 Jan 2008 20:59:26 -0500
+X-Greylist: delayed 1715 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Jan 2008 20:59:26 EST
+Date: Mon, 28 Jan 2008 02:30:50 +0100
+From: Martin Waitz <tali@admingilde.org>
+To: Gianluca Alberici <gianluca@abinetworks.biz>, linux-kernel@vger.kernel.org
+Cc: Ulrich Drepper <drepper@redhat.com>
+Subject: NFS EINVAL with O_TRUNC
+Message-ID: <20080128013050.GR27354@admingilde.org>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ian Campbell <ijc@hellion.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH 3/9] x86_64: Switch to .data.compressed in arch/x86/boot/compressed/vmlinux_64.scr
-References: <ff184a8ea93f18a787bb9bd0c860036219b83ee0.1201348185.git.ijc@hellion.org.uk>	 <d4158549e6497ee261ed220d9cbc8ca8fced8ba7.1201348185.git.ijc@hellion.org.uk>	 <86802c440801261659s1102f38cr16858d350929b0e1@mail.gmail.com>	 <1201471499.18241.23.camel@localhost.localdomain>	 <86802c440801271538xce702c2l6b0ddbccfcdf9553@mail.gmail.com>	 <479D22CF.6060201@zytor.com> <86802c440801271749h3c479b81rf1a5edda25f1f259@mail.gmail.com>
-In-Reply-To: <86802c440801271749h3c479b81rf1a5edda25f1f259@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="tAdHiH28s3ybHVSb"
+Content-Disposition: inline
+X-PGP-Fingerprint: B21B 5755 9684 5489 7577  001A 8FF1 1AC5 DFE8 0FB2
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> 
-> payload.compressed ?
-> 
 
-We can call it .payload, or just .rodata.compressed.
+--tAdHiH28s3ybHVSb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	-hpa
+hoi :)
+
+I bisected the kernel to find out why cfs stopped working.
+(open with O_TRUNC returning EINVAL when file already exists on an
+cfs file system.)
+First I tried to debug cfs itself, and after reading Gianlucas thread on
+lkml I then looked at the kernel itself.
+
+1c710c896eb461895d3c399e15bb5f20b39c9073 is first bad commit
+commit 1c710c896eb461895d3c399e15bb5f20b39c9073
+Author: Ulrich Drepper <drepper@redhat.com>
+Date:   Tue May 8 00:33:25 2007 -0700
+
+    utimensat implementation
+   =20
+    Implement utimensat(2) which is an extension to futimesat(2) in that it
+   =20
+    a) supports nano-second resolution for the timestamps
+    b) allows to selectively ignore the atime/mtime value
+    c) allows to selectively use the current time for either atime or mtime
+    d) supports changing the atime/mtime of a symlink itself along the lines
+       of the BSD lutimes(3) functions
+    [...]
+
+I don't have any clue how this commit can break cfs, but it definitely does.
+At least it uncovers some bug either in the Linux NFS client or in the
+cvs server code.
+
+So, and now I will happily go to sleep...
+Thanks to everybody who can figure out why above commit breaks stuff...
+
+--=20
+Martin
+
+--tAdHiH28s3ybHVSb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHnTBKj/Eaxd/oD7IRAiouAJ4znCqiUGr4j4ideoR6RMI+UacWJACeNRK3
+Ho2ocIFDWwyYPsyOiuoMhy4=
+=2n1q
+-----END PGP SIGNATURE-----
+
+--tAdHiH28s3ybHVSb--
