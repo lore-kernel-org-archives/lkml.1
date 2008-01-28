@@ -1,72 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761951AbYA1Qpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761978AbYA1QrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761951AbYA1Qpy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 11:45:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760307AbYA1Qp3
+	id S1761978AbYA1QrU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 11:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbYA1QrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 11:45:29 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:5526 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760159AbYA1QpY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 11:45:24 -0500
-Message-ID: <479E065E.5080105@panasas.com>
-Date: Mon, 28 Jan 2008 18:44:14 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 28 Jan 2008 11:47:08 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57808 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753348AbYA1QrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 11:47:06 -0500
+Message-ID: <479E06DE.5050608@redhat.com>
+Date: Mon, 28 Jan 2008 11:46:22 -0500
+From: Steven Rostedt <srostedt@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
-References: <20080125180232.GA4613@kroah.com> <479DB203.2050809@panasas.com> <20080128161305.GB8790@kroah.com>
-In-Reply-To: <20080128161305.GB8790@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Regression] 2.6.24-git3: Major annoyance during suspend/hibernation
+ on x86-64 (bisected)
+References: <200801272229.48955.rjw@sisk.pl> <479D3287.1050604@redhat.com> <200801281231.51545.rjw@sisk.pl> <200801281731.37636.rjw@sisk.pl>
+In-Reply-To: <200801281731.37636.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jan 2008 16:44:16.0404 (UTC) FILETIME=[053B9540:01C861CD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28 2008 at 18:13 +0200, Greg KH <greg@kroah.com> wrote:
-> On Mon, Jan 28, 2008 at 12:44:19PM +0200, Boaz Harrosh wrote:
->> On Fri, Jan 25 2008 at 20:02 +0200, Greg KH <greg@kroah.com> wrote:
->>> FYI, this is a patch that will be sent out in the next round to Linus
->>> for inclusion in 2.6.25.
+Rafael J. Wysocki wrote:
+> On Monday, 28 of January 2008, Rafael J. Wysocki wrote:
+>> On Monday, 28 of January 2008, Steven Rostedt wrote:
+>>> Rafael J. Wysocki wrote:
 >>>
->>> If anyone has any objections about it, please let me know.
->> What about ndiswrapper and its windows binaries
->> are they covered through ndiswrapper by GPL?
->> (Unfortunately I use them, but less and less)
+>>>> No, this isn't the WARN_ON().
+>>>>
+>>>>> this does have the feel of being scheduling related, but are you 
+>>>>> absolutely sure about the precise identity of the patch?
+>>>> Actually, not quite.  That's why I have verified it and found that another
+>>>> patch is really responsible for the issue, namely:
+>>>>
+>>>> commit 82a1fcb90287052aabfa235e7ffc693ea003fe69
+>>>> Author: Ingo Molnar <mingo@elte.hu>
+>>>> Date:   Fri Jan 25 21:08:02 2008 +0100
+>>>>
+>>>>     softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
+>>> Are you getting a bunch of prints from the softlockup detector in dmesg?
+>> No, I don't.  In fact, I don't get _any_ messages from it whatsoever.
+>>
+>>> I wonder if the detector can detect a long timeout caused by suspend and 
+>>> resume and if not is triggering false positives?
+>> I'm not sure, but the code is supposed to be suspend-aware, IIRC.  However,
+>> I'm seeing a similar symptom on poweroff on an SMP x86-64 box, so it may be
+>> more directly related to the CPU hotplug.  I'll try to verify that.
 > 
-> Sorry, but no, they are not going to work, due to the way that
-> ndiswrapper is marked by the kernel module loader.
+> As I expected, the delay is also observable when I do:
 > 
-I was afraid of that, yes.
-
-> Again, you should be getting a kernel warning every time you try to use
-> a USB function today.
+> echo 0 > /sys/devices/system/cpu/cpu1/online
 > 
-sigh, yes I do, but it's better then no networking.
-
-> What USB drivers for wireless devices are not yet supported by Linux
-> becides the Marvell-based ones (which some of us are actively working
-> on...)?
+> (it's variable, between 3 and 30 seconds).  Again, no messages appear in dmesg
+> when this happens.
 > 
-I'm not even sure, its an old vaio pII 512MZ. Still works like a charm
-with Linux. I use a chokoloku usb dangle that I dismantled and assembled
-inside the laptop case. I use the original windows drivers that came with
-it.
+> I suspect I'll be able to reproduce it on another x86-64 SMP machine (I'm going
+> to try that later today).
 
-Last time I checked with 2.6.20 it did not work, but I should now try
-2.6.24 as I know things have advanced a lot. (It works and I'm just lazy)
+Could you download my tracing patches from here:
 
-> thanks,
+ 
+http://people.redhat.com/srostedt/tracing/mcount-tracing-patches-v6.tar.bz2
+
+Apply the above patches and select all but the histogram tracers. Then 
+run this program
+
+   http://people.redhat.com/srostedt/tracing/trace-cmd.c
+
+  ./trace-cmd -f echo 0 > /sys/devices/system/cpu/cpu1/online
+
+then do this (mount debugfs):
+
+   bzip2 -c /debugfs/tracing/latency_trace > /tmp/trace.bz2
+
+and send the result to myself and Ingo.
+
+Thanks,
+
+-- Steve
+
 > 
-> greg k-h
+> Thanks,
+> Rafael
 
-Thank you, I do support what you are doing here. Just the ndiswrapper
-is a special case. But I guess I, as a user, can always use it anyway,
-right? But not the commercial distros. Don't stop the transition on my
-account.
-
-Boaz
