@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYA1U3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759169AbYA1U3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbYA1U3X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 15:29:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbYA1U3G
+	id S1759169AbYA1U3n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 15:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757649AbYA1U31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 15:29:06 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:40588 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752549AbYA1U3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 15:29:03 -0500
-Date: Mon, 28 Jan 2008 22:29:29 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: ltp-list@lists.sourceforge.net, risrajak@in.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [LTP] [TEST] : LTP Build failure on 2.6.24 kernel
-Message-ID: <20080128202929.GB8767@does.not.exist>
-References: <1201508081.4029.4.camel@localhost.localdomain> <200801280653.16624.vapier@gentoo.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200801280653.16624.vapier@gentoo.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 28 Jan 2008 15:29:27 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:54510 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757493AbYA1U3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 15:29:25 -0500
+Message-Id: <20080128202840.974253868@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 28 Jan 2008 12:28:40 -0800
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>
+Cc: Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: [patch 0/6] [RFC] MMU Notifiers V2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 06:53:15AM -0500, Mike Frysinger wrote:
-> On Monday 28 January 2008, Rishikesh K. Rajak wrote:
-> > Here i am getting failure on the x86_64 machine with new kernel.
-> >
-> > Here is the uname for that machine:
-> >
-> > rishi@:~/ltp-full-20071231# uname -a
-> > Linux rishi.in.ibm.com 2.6.24 #1 SMP PREEMPT Mon Jan 28 06:47:28 UTC
-> > 2008 x86_64 GNU/Linux
-> 
-> i'm guessing you're using ubuntu and thus dash is your /bin/sh ... shouldnt be 
-> a 2.6.24 issue
-> 
-> > make[4]: Entering directory
-> > `/root/ltp-full-20071231/testcases/network/tcp_cmds/ftp'
-> > ../../generate.sh
-> > ../../generate.sh: 60: arith: syntax error: "cnt=cnt-1"
-> 
-> sadly, this is becoming a FAQ.  ubuntu ships a broken /bin/sh (dash) and thus 
-> some LTP scripts fall apart.  i would prefer to not change the scripts as the 
-> message is simple in LTP: fix your shell, dont add hacks to LTP.  otherwise 
-> we slowly back ourselves into this corner with the shell scripts where we try 
-> to support every craptastic shell out there and we're afraid to make any 
-> changes because we dont know what crappy shell is going to drop a brick.  LTP 
-> scripts are written to be POSIX complaint and only POSIX complaint shells 
-> should be provided by /bin/sh.
+This is a patchset implementing MMU notifier callbacks based on Andrea's
+earlier work. These are needed if Linux pages are referenced from something
+else than tracked by the rmaps of the kernel.
 
-You better fulfil your claim "LTP scripts are written to be POSIX 
-complaint" before complaining about shells being unhappy with your 
-script. E.g. where in IEEE 1003.1-2004 is the "local" you use specified?
+Issues:
 
-Or instead of working on making your script using only the stuff 
-specified in IEEE 1003.1-2004 you could simply replace the #!/bin/sh at 
-the top with a #!/bin/bash and everbody will be happy.
+- Feedback from uses of the callbacks for KVM, RDMA, XPmem and GRU
 
-> -mike
+- RCU quiescent periods are required on registering and unregistering
+  notifiers to guarantee visibility to other processors.
+  Currently only mmu_notifier_release() does the correct thing.
+  It is up to the user to provide RCU quiescent periods for
+  register/unregister functions if they are called outside of the
+  ->release method.
 
-cu
-Adrian
+
+Andrea's mmu_notifier #4 -> RFC V1
+
+- Merge subsystem rmap based with Linux rmap based approach
+- Move Linux rmap based notifiers out of macro
+- Try to account for what locks are held while the notifiers are
+  called.
+- Develop a patch sequence that separates out the different types of
+  hooks so that we can review their use.
+- Avoid adding include to linux/mm_types.h
+- Integrate RCU logic suggested by Peter.
+
+V1->V2:
+- Improve RCU support
+- Use mmap_sem for mmu_notifier register / unregister
+- Drop invalidate_page from COW, mm/fremap.c and mm/rmap.c since we
+  already have invalidate_range() callbacks there.
+- Clean compile for !MMU_NOTIFIER
+- Isolate filemap_xip strangeness into its own diff
+- Pass a the flag to invalidate_range to indicate if a spinlock
+  is held.
+- Add invalidate_all()
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
