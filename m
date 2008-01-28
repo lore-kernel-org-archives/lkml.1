@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763307AbYA1WQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763369AbYA1WQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763307AbYA1WQf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761291AbYA1WLJ
+	id S1763369AbYA1WQw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:16:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759969AbYA1WLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:11:09 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:48006 "EHLO smtp5.pp.htv.fi"
+	Mon, 28 Jan 2008 17:11:17 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:46485 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760246AbYA1WLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:11:08 -0500
-Date: Tue, 29 Jan 2008 00:11:34 +0200
+	id S1755885AbYA1WLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:11:15 -0500
+Date: Tue, 29 Jan 2008 00:11:41 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: swhiteho@redhat.com
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make gfs2_glock_hold() static
-Message-ID: <20080128221134.GZ8767@does.not.exist>
+To: mark.fasheh@oracle.com, kurt.hackel@oracle.com
+Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] fs/ocfs2/: possible cleanups
+Message-ID: <20080128221141.GA8767@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,40 +23,130 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gfs2_glock_hold() can now become static.
+This patch contains the following cleanups that are now possible:
+- make the following needlessly global functions static:
+  - dlmglue.c:ocfs2_process_blocked_lock()
+  - heartbeat.c:ocfs2_node_map_init()
+- #if 0 the following unused global function plus support functions:
+  - heartbeat.c:ocfs2_node_map_is_only()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- fs/gfs2/glock.c |    2 +-
- fs/gfs2/glock.h |    1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ fs/ocfs2/dlmglue.c   |    4 ++--
+ fs/ocfs2/dlmglue.h   |    2 --
+ fs/ocfs2/heartbeat.c |   26 +++++++++++++-------------
+ fs/ocfs2/heartbeat.h |    5 -----
+ 4 files changed, 15 insertions(+), 22 deletions(-)
 
-f04fbd054a051a564a3138e0e02b7423acf45a06 
-diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index 80e09c5..e18f251 100644
---- a/fs/gfs2/glock.c
-+++ b/fs/gfs2/glock.c
-@@ -197,7 +197,7 @@ static void glock_free(struct gfs2_glock *gl)
-  *
-  */
- 
--void gfs2_glock_hold(struct gfs2_glock *gl)
-+static void gfs2_glock_hold(struct gfs2_glock *gl)
- {
- 	atomic_inc(&gl->gl_ref);
+72b647cdcd7b46c525bebfe915d52955bbb0f4ab 
+diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
+index 3867244..debf8ba 100644
+--- a/fs/ocfs2/dlmglue.c
++++ b/fs/ocfs2/dlmglue.c
+@@ -3192,8 +3192,8 @@ static int ocfs2_dentry_convert_worker(struct ocfs2_lock_res *lockres,
+ 	return UNBLOCK_CONTINUE_POST;
  }
-diff --git a/fs/gfs2/glock.h b/fs/gfs2/glock.h
-index b16f604..0724076 100644
---- a/fs/gfs2/glock.h
-+++ b/fs/gfs2/glock.h
-@@ -77,7 +77,6 @@ static inline int gfs2_glock_is_blocking(struct gfs2_glock *gl)
- int gfs2_glock_get(struct gfs2_sbd *sdp,
- 		   u64 number, const struct gfs2_glock_operations *glops,
- 		   int create, struct gfs2_glock **glp);
--void gfs2_glock_hold(struct gfs2_glock *gl);
- int gfs2_glock_put(struct gfs2_glock *gl);
- void gfs2_holder_init(struct gfs2_glock *gl, unsigned int state, unsigned flags,
- 		      struct gfs2_holder *gh);
+ 
+-void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
+-				struct ocfs2_lock_res *lockres)
++static void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
++				       struct ocfs2_lock_res *lockres)
+ {
+ 	int status;
+ 	struct ocfs2_unblock_ctl ctl = {0, 0,};
+diff --git a/fs/ocfs2/dlmglue.h b/fs/ocfs2/dlmglue.h
+index 5f17243..1caac53 100644
+--- a/fs/ocfs2/dlmglue.h
++++ b/fs/ocfs2/dlmglue.h
+@@ -109,8 +109,6 @@ void ocfs2_simple_drop_lockres(struct ocfs2_super *osb,
+ 			       struct ocfs2_lock_res *lockres);
+ 
+ /* for the downconvert thread */
+-void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
+-				struct ocfs2_lock_res *lockres);
+ void ocfs2_wake_downconvert_thread(struct ocfs2_super *osb);
+ 
+ struct ocfs2_dlm_debug *ocfs2_new_dlm_debug(void);
+diff --git a/fs/ocfs2/heartbeat.c b/fs/ocfs2/heartbeat.c
+index c0efd94..0758daf 100644
+--- a/fs/ocfs2/heartbeat.c
++++ b/fs/ocfs2/heartbeat.c
+@@ -49,10 +49,15 @@ static inline void __ocfs2_node_map_set_bit(struct ocfs2_node_map *map,
+ static inline void __ocfs2_node_map_clear_bit(struct ocfs2_node_map *map,
+ 					      int bit);
+ static inline int __ocfs2_node_map_is_empty(struct ocfs2_node_map *map);
+-static void __ocfs2_node_map_dup(struct ocfs2_node_map *target,
+-				 struct ocfs2_node_map *from);
+-static void __ocfs2_node_map_set(struct ocfs2_node_map *target,
+-				 struct ocfs2_node_map *from);
++
++/* special case -1 for now
++ * TODO: should *really* make sure the calling func never passes -1!!  */
++static void ocfs2_node_map_init(struct ocfs2_node_map *map)
++{
++	map->num_nodes = OCFS2_NODE_MAP_MAX_NODES;
++	memset(map->map, 0, BITS_TO_LONGS(OCFS2_NODE_MAP_MAX_NODES) *
++	       sizeof(unsigned long));
++}
+ 
+ void ocfs2_init_node_maps(struct ocfs2_super *osb)
+ {
+@@ -136,15 +141,6 @@ void ocfs2_stop_heartbeat(struct ocfs2_super *osb)
+ 		mlog_errno(ret);
+ }
+ 
+-/* special case -1 for now
+- * TODO: should *really* make sure the calling func never passes -1!!  */
+-void ocfs2_node_map_init(struct ocfs2_node_map *map)
+-{
+-	map->num_nodes = OCFS2_NODE_MAP_MAX_NODES;
+-	memset(map->map, 0, BITS_TO_LONGS(OCFS2_NODE_MAP_MAX_NODES) *
+-	       sizeof(unsigned long));
+-}
+-
+ static inline void __ocfs2_node_map_set_bit(struct ocfs2_node_map *map,
+ 					    int bit)
+ {
+@@ -216,6 +212,8 @@ int ocfs2_node_map_is_empty(struct ocfs2_super *osb,
+ 	return ret;
+ }
+ 
++#if 0
++
+ static void __ocfs2_node_map_dup(struct ocfs2_node_map *target,
+ 				 struct ocfs2_node_map *from)
+ {
+@@ -254,6 +252,8 @@ static void __ocfs2_node_map_set(struct ocfs2_node_map *target,
+ 		target->map[i] = from->map[i];
+ }
+ 
++#endif  /*  0  */
++
+ /* Returns whether the recovery bit was actually set - it may not be
+  * if a node is still marked as needing recovery */
+ int ocfs2_recovery_map_set(struct ocfs2_super *osb,
+diff --git a/fs/ocfs2/heartbeat.h b/fs/ocfs2/heartbeat.h
+index 5685921..eac63ae 100644
+--- a/fs/ocfs2/heartbeat.h
++++ b/fs/ocfs2/heartbeat.h
+@@ -33,7 +33,6 @@ void ocfs2_stop_heartbeat(struct ocfs2_super *osb);
+ 
+ /* node map functions - used to keep track of mounted and in-recovery
+  * nodes. */
+-void ocfs2_node_map_init(struct ocfs2_node_map *map);
+ int ocfs2_node_map_is_empty(struct ocfs2_super *osb,
+ 			    struct ocfs2_node_map *map);
+ void ocfs2_node_map_set_bit(struct ocfs2_super *osb,
+@@ -57,9 +56,5 @@ int ocfs2_recovery_map_set(struct ocfs2_super *osb,
+ 			   int num);
+ void ocfs2_recovery_map_clear(struct ocfs2_super *osb,
+ 			      int num);
+-/* returns 1 if bit is the only bit set in target, 0 otherwise */
+-int ocfs2_node_map_is_only(struct ocfs2_super *osb,
+-			   struct ocfs2_node_map *target,
+-			   int bit);
+ 
+ #endif /* OCFS2_HEARTBEAT_H */
 
