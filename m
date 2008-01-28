@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760675AbYA1MZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761221AbYA1M0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760675AbYA1MZo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 07:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760820AbYA1MZM
+	id S1761221AbYA1M0Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 07:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbYA1MZ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 07:25:12 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:55257 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760797AbYA1MZK (ORCPT
+	Mon, 28 Jan 2008 07:25:59 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:54673 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755481AbYA1MZ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 07:25:10 -0500
-Date: Mon, 28 Jan 2008 04:25:00 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: davem@davemloft.net, dipankar@in.ibm.com
-Subject: [PATCH] Add list_for_each_rcu to features-removal list
-Message-ID: <20080128122500.GA32723@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 28 Jan 2008 07:25:58 -0500
+Date: Mon, 28 Jan 2008 10:25:20 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Trent Piepho <xyzzy@speakeasy.org>,
+       Hans Verkuil <hverkuil@xs4all.nl>, v4l-dvb-maintainer@linuxtv.org,
+       Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [v4l-dvb-maintainer] 2.6.25 regression: VIDEO_DEV=y/m, I2C=n
+ compile error
+Message-ID: <20080128102520.43fbf526@gaivota>
+In-Reply-To: <20080128102232.4282eef9@gaivota>
+References: <20080127185216.GB13300@does.not.exist>
+	<20080127223334.696fce6e@gaivota>
+	<20080128084001.GB1001@does.not.exist>
+	<Pine.LNX.4.58.0801280053010.15635@shell4.speakeasy.net>
+	<20080128094912.1848eacd@gaivota>
+	<20080128121245.GG1001@does.not.exist>
+	<20080128102232.4282eef9@gaivota>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
-
-The list_for_each_entry_rcu() primitive should be used instead of
-list_for_each_rcu(), as the former is easier to use and provides
-better type safety.  This patch therefore adds list_for_each_rcu()
-to the Documentation/feature-removal-schedule.txt file (for mid-2008)
-and marks its comment header deprecated.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- Documentation/feature-removal-schedule.txt |   10 ++++++++++
- include/linux/list.h                       |    5 ++++-
- 2 files changed, 14 insertions(+), 1 deletion(-)
-
-diff -urpNa -X dontdiff linux-2.6.24/Documentation/feature-removal-schedule.txt linux-2.6.24-dep-lfeRCU/Documentation/feature-removal-schedule.txt
---- linux-2.6.24/Documentation/feature-removal-schedule.txt	2008-01-24 14:58:37.000000000 -0800
-+++ linux-2.6.24-dep-lfeRCU/Documentation/feature-removal-schedule.txt	2008-01-28 04:00:49.000000000 -0800
-@@ -333,3 +333,13 @@ Why:	This driver has been marked obsolet
- Who:	Stephen Hemminger <shemminger@linux-foundation.org>
  
- ---------------------------
-+
-+What:	list_for_each_rcu() primitive
-+When:	July 2008
-+Files:	include/linux/list.h
-+Why:	The list_for_each_entry_rcu() primitive should be used instead,
-+	as it is less error-prone and provides better type safety.
-+Who:	Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-+
-+---------------------------
-+
-diff -urpNa -X dontdiff linux-2.6.24/include/linux/list.h linux-2.6.24-dep-lfeRCU/include/linux/list.h
---- linux-2.6.24/include/linux/list.h	2008-01-24 14:58:37.000000000 -0800
-+++ linux-2.6.24-dep-lfeRCU/include/linux/list.h	2008-01-28 04:06:52.000000000 -0800
-@@ -622,13 +622,16 @@ static inline void list_splice_init_rcu(
- 	     pos = n, n = list_entry(n->member.prev, typeof(*n), member))
- 
- /**
-- * list_for_each_rcu	-	iterate over an rcu-protected list
-+ * list_for_each_rcu - iterate over an rcu-protected list: DEPRECATED
-  * @pos:	the &struct list_head to use as a loop cursor.
-  * @head:	the head for your list.
-  *
-  * This list-traversal primitive may safely run concurrently with
-  * the _rcu list-mutation primitives such as list_add_rcu()
-  * as long as the traversal is guarded by rcu_read_lock().
-+ *
-+ * DEPRECATED: please use list_for_each_entry_rcu() instead: it is
-+ * easier to use and also provides better type safety.
-  */
- #define list_for_each_rcu(pos, head) \
- 	for (pos = (head)->next; \
+> Could you please prepare the changeset for the macro, as suggested by Ian?
+
+In time:
+
+s/as suggested by Ian/considering Jan's arguments/
+
+Cheers,
+Mauro
