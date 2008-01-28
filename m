@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763369AbYA1WQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763123AbYA1WRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763369AbYA1WQw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:16:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759969AbYA1WLR
+	id S1763123AbYA1WRP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760138AbYA1WLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:11:17 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:46485 "EHLO smtp6.pp.htv.fi"
+	Mon, 28 Jan 2008 17:11:22 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48019 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755885AbYA1WLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:11:15 -0500
-Date: Tue, 29 Jan 2008 00:11:41 +0200
+	id S1760106AbYA1WLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:11:20 -0500
+Date: Tue, 29 Jan 2008 00:11:46 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: mark.fasheh@oracle.com, kurt.hackel@oracle.com
-Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fs/ocfs2/: possible cleanups
-Message-ID: <20080128221141.GA8767@does.not.exist>
+To: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make printk_recursion_bug_msg[] static
+Message-ID: <20080128221146.GB8767@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,130 +23,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the following cleanups that are now possible:
-- make the following needlessly global functions static:
-  - dlmglue.c:ocfs2_process_blocked_lock()
-  - heartbeat.c:ocfs2_node_map_init()
-- #if 0 the following unused global function plus support functions:
-  - heartbeat.c:ocfs2_node_map_is_only()
+printk_recursion_bug_msg[] can become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- fs/ocfs2/dlmglue.c   |    4 ++--
- fs/ocfs2/dlmglue.h   |    2 --
- fs/ocfs2/heartbeat.c |   26 +++++++++++++-------------
- fs/ocfs2/heartbeat.h |    5 -----
- 4 files changed, 15 insertions(+), 22 deletions(-)
-
-72b647cdcd7b46c525bebfe915d52955bbb0f4ab 
-diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
-index 3867244..debf8ba 100644
---- a/fs/ocfs2/dlmglue.c
-+++ b/fs/ocfs2/dlmglue.c
-@@ -3192,8 +3192,8 @@ static int ocfs2_dentry_convert_worker(struct ocfs2_lock_res *lockres,
- 	return UNBLOCK_CONTINUE_POST;
- }
+77c15a78b65e014c00b533e4c5eeee98a71853fc 
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 3b7c968..f8e4229 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -623,7 +623,7 @@ asmlinkage int printk(const char *fmt, ...)
+ /* cpu currently holding logbuf_lock */
+ static volatile unsigned int printk_cpu = UINT_MAX;
  
--void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
--				struct ocfs2_lock_res *lockres)
-+static void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
-+				       struct ocfs2_lock_res *lockres)
- {
- 	int status;
- 	struct ocfs2_unblock_ctl ctl = {0, 0,};
-diff --git a/fs/ocfs2/dlmglue.h b/fs/ocfs2/dlmglue.h
-index 5f17243..1caac53 100644
---- a/fs/ocfs2/dlmglue.h
-+++ b/fs/ocfs2/dlmglue.h
-@@ -109,8 +109,6 @@ void ocfs2_simple_drop_lockres(struct ocfs2_super *osb,
- 			       struct ocfs2_lock_res *lockres);
+-const char printk_recursion_bug_msg [] =
++static const char printk_recursion_bug_msg[] =
+ 			KERN_CRIT "BUG: recent printk recursion!\n";
+ static int printk_recursion_bug;
  
- /* for the downconvert thread */
--void ocfs2_process_blocked_lock(struct ocfs2_super *osb,
--				struct ocfs2_lock_res *lockres);
- void ocfs2_wake_downconvert_thread(struct ocfs2_super *osb);
- 
- struct ocfs2_dlm_debug *ocfs2_new_dlm_debug(void);
-diff --git a/fs/ocfs2/heartbeat.c b/fs/ocfs2/heartbeat.c
-index c0efd94..0758daf 100644
---- a/fs/ocfs2/heartbeat.c
-+++ b/fs/ocfs2/heartbeat.c
-@@ -49,10 +49,15 @@ static inline void __ocfs2_node_map_set_bit(struct ocfs2_node_map *map,
- static inline void __ocfs2_node_map_clear_bit(struct ocfs2_node_map *map,
- 					      int bit);
- static inline int __ocfs2_node_map_is_empty(struct ocfs2_node_map *map);
--static void __ocfs2_node_map_dup(struct ocfs2_node_map *target,
--				 struct ocfs2_node_map *from);
--static void __ocfs2_node_map_set(struct ocfs2_node_map *target,
--				 struct ocfs2_node_map *from);
-+
-+/* special case -1 for now
-+ * TODO: should *really* make sure the calling func never passes -1!!  */
-+static void ocfs2_node_map_init(struct ocfs2_node_map *map)
-+{
-+	map->num_nodes = OCFS2_NODE_MAP_MAX_NODES;
-+	memset(map->map, 0, BITS_TO_LONGS(OCFS2_NODE_MAP_MAX_NODES) *
-+	       sizeof(unsigned long));
-+}
- 
- void ocfs2_init_node_maps(struct ocfs2_super *osb)
- {
-@@ -136,15 +141,6 @@ void ocfs2_stop_heartbeat(struct ocfs2_super *osb)
- 		mlog_errno(ret);
- }
- 
--/* special case -1 for now
-- * TODO: should *really* make sure the calling func never passes -1!!  */
--void ocfs2_node_map_init(struct ocfs2_node_map *map)
--{
--	map->num_nodes = OCFS2_NODE_MAP_MAX_NODES;
--	memset(map->map, 0, BITS_TO_LONGS(OCFS2_NODE_MAP_MAX_NODES) *
--	       sizeof(unsigned long));
--}
--
- static inline void __ocfs2_node_map_set_bit(struct ocfs2_node_map *map,
- 					    int bit)
- {
-@@ -216,6 +212,8 @@ int ocfs2_node_map_is_empty(struct ocfs2_super *osb,
- 	return ret;
- }
- 
-+#if 0
-+
- static void __ocfs2_node_map_dup(struct ocfs2_node_map *target,
- 				 struct ocfs2_node_map *from)
- {
-@@ -254,6 +252,8 @@ static void __ocfs2_node_map_set(struct ocfs2_node_map *target,
- 		target->map[i] = from->map[i];
- }
- 
-+#endif  /*  0  */
-+
- /* Returns whether the recovery bit was actually set - it may not be
-  * if a node is still marked as needing recovery */
- int ocfs2_recovery_map_set(struct ocfs2_super *osb,
-diff --git a/fs/ocfs2/heartbeat.h b/fs/ocfs2/heartbeat.h
-index 5685921..eac63ae 100644
---- a/fs/ocfs2/heartbeat.h
-+++ b/fs/ocfs2/heartbeat.h
-@@ -33,7 +33,6 @@ void ocfs2_stop_heartbeat(struct ocfs2_super *osb);
- 
- /* node map functions - used to keep track of mounted and in-recovery
-  * nodes. */
--void ocfs2_node_map_init(struct ocfs2_node_map *map);
- int ocfs2_node_map_is_empty(struct ocfs2_super *osb,
- 			    struct ocfs2_node_map *map);
- void ocfs2_node_map_set_bit(struct ocfs2_super *osb,
-@@ -57,9 +56,5 @@ int ocfs2_recovery_map_set(struct ocfs2_super *osb,
- 			   int num);
- void ocfs2_recovery_map_clear(struct ocfs2_super *osb,
- 			      int num);
--/* returns 1 if bit is the only bit set in target, 0 otherwise */
--int ocfs2_node_map_is_only(struct ocfs2_super *osb,
--			   struct ocfs2_node_map *target,
--			   int bit);
- 
- #endif /* OCFS2_HEARTBEAT_H */
 
