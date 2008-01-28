@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYA1DPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbYA1DP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756613AbYA1DPW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 22:15:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbYA1DPI
+	id S1759082AbYA1DP4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 22:15:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbYA1DPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 22:15:08 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:44410 "EHLO fieldses.org"
+	Sun, 27 Jan 2008 22:15:46 -0500
+Received: from ns2.suse.de ([195.135.220.15]:51918 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbYA1DPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 22:15:07 -0500
-Date: Sun, 27 Jan 2008 22:15:02 -0500
-To: Simon Holm =?utf-8?Q?Th=C3=B8gersen?= <odie@cs.aau.dk>
-Cc: Tom Tucker <tom@opengridcomputing.com>, linux-nfs@vger.kernel.org,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       Neil Brown <neilb@suse.de>
-Subject: Re: nfs server patches for 2.6.25
-Message-ID: <20080128031502.GB22503@fieldses.org>
-References: <20080125231521.GG25141@fieldses.org> <1201466543.5006.21.camel@odie.local> <20080127221017.GC597@fieldses.org>
+	id S1754100AbYA1DPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 22:15:45 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] [0/18] Implement some low hanging BKL removal fruit in fs/*
+Date: Mon, 28 Jan 2008 04:15:38 +0100
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, akpm@osdl.org
+References: <20080127317.043953000@suse.de> <200801281259.15198.nickpiggin@yahoo.com.au>
+In-Reply-To: <200801281259.15198.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080127221017.GC597@fieldses.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Message-Id: <200801280415.38460.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 27, 2008 at 05:10:17PM -0500, bfields wrote:
-> OK.  I've got a machine running
-> 
-> 	for c in $(git rev-list origin..linux-nfs/nfs-server-stable^); do
-> 		git checkout $c
-> 		make -s -j4
-> 	done
-> 
-> now just to make sure....  Thanks again!
 
-Pfft, that should have been:
+> BTW. here is a patch I did a while back for minix. I know it isn't
+> a big deal, but the work is done so I guess I should send it along.
 
-	for c in $(git rev-list --reverse origin..linux-nfs/nfs-server-stable^); do
-		git checkout $c
-		make -s -j4
-	done
+Looks safe, although I'm surprised it actually gets around with such
+little locking in general.
 
-The results are a lot easier to understand if you do the compiles
-in chronological order!
+-Andi
 
-Anyway, that found one more compile failure, now fixed.  Hopefully
-that's the last.  (Probably I did an incomplete job of reordering one of
-the patches the other week....)
 
---b.
+
