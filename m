@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758992AbYA1O4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761237AbYA1O4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758992AbYA1O4e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 09:56:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbYA1O4Y
+	id S1761237AbYA1O4r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 09:56:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYA1O4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 09:56:24 -0500
-Received: from ns2.suse.de ([195.135.220.15]:55088 "EHLO mx2.suse.de"
+	Mon, 28 Jan 2008 09:56:38 -0500
+Received: from mail.acc.umu.se ([130.239.18.156]:43411 "EHLO mail.acc.umu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752799AbYA1O4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 09:56:23 -0500
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
-Subject: Re: [patch 1/3] x86: a new API for drivers/etc to control cache and other page attributes
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080125144937.2709f9ae@laptopd505.fenrus.org>
-Date: Mon, 28 Jan 2008 15:56:21 +0100
-In-Reply-To: <20080125144937.2709f9ae@laptopd505.fenrus.org> (Arjan van de Ven's message of "Fri\, 25 Jan 2008 14\:49\:37 -0800")
-Message-ID: <p733asi80dm.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	id S1753645AbYA1O4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 09:56:37 -0500
+Date: Mon, 28 Jan 2008 15:56:27 +0100
+From: Linus Nilsson <lajnold@acc.umu.se>
+To: jgarzik@pobox.com
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       trivial@kernel.org
+Subject: [PATCH] libata: Change "write_data" to "rw" for some function
+	documentations
+Message-ID: <20080128145627.GA24317@montezuma.acc.umu.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
+From: Linus Nilsson <lajnold@acc.umu.se>
 
-> Right now, if drivers or other code want to change, say, a cache attribute of a
-> page, the only API they have is change_page_attr(). c-p-a is a really bad API
-> for this, because it forces the caller to know *ALL* the attributes he wants
-> for the page, not just the 1 thing he wants to change. So code that wants to
-> set a page uncachable, needs to be aware of the NX status as well etc etc etc.
+The documentation for ata_data_xfer and ata_data_xfer_noirq had the 'rw'
+parameter named 'write_data'.
 
-Please think clearly through the various cases.
+Signed-off-by: Linus Nilsson <lajnold@acc.umu.se>
+---
+ drivers/ata/libata-core.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-NX for areas which can be legitimately non NX (very few) is 100%
-transparently handled in c_p_a() no matter what the caller passes in.
-
-For DEBUG_PAGEALLOC it is similar. While it can make kernel pages
-ro these should be only free pages and what business has anybody changing
-attributes on arbitary free pages? No it is just a bug.
-
-So if you look closely at the various cases there is no legitimate
-reason to ever use anything other than the standard PAGE_KERNEL_*
-defines with change_page_attr()
-
-The only exception I know of is the cpa selftest which can change
-attributes of arbitrary pages, but that one does a lookup_address on
-its own anyways.
-
-You basically solved a non-issue here.
-
--Andi
+--- a/drivers/ata/libata-core.c	2008-01-28 15:47:26.000000000 +0100
++++ b/drivers/ata/libata-core.c	2008-01-28 15:47:27.000000000 +0100
+@@ -4924,7 +4924,7 @@
+  *	@dev: device to target
+  *	@buf: data buffer
+  *	@buflen: buffer length
+- *	@write_data: read/write
++ *	@rw: read/write
+  *
+  *	Transfer data from/to the device data register by PIO.
+  *
+@@ -4970,7 +4970,7 @@
+  *	@dev: device to target
+  *	@buf: data buffer
+  *	@buflen: buffer length
+- *	@write_data: read/write
++ *	@rw: read/write
+  *
+  *	Transfer data from/to the device data register by PIO. Do the
+  *	transfer with interrupts disabled.
