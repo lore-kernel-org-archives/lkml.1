@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761606AbYA1REZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762101AbYA1RGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761606AbYA1REZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 12:04:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbYA1RES
+	id S1762101AbYA1RGn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 12:06:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbYA1RGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 12:04:18 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35804 "EHLO ogre.sisk.pl"
+	Mon, 28 Jan 2008 12:06:36 -0500
+Received: from ns2.suse.de ([195.135.220.15]:52427 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752729AbYA1RER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 12:04:17 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native format.
-Date: Mon, 28 Jan 2008 18:02:00 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ian Campbell <ijc@hellion.org.uk>,
-       Mika Penttil? <mika.penttila@kolumbus.fi>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Len Brown <lenb@kernel.org>
-References: <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <20080128150022.GE27928@elte.hu> <20080128161239.GA28906@elte.hu>
-In-Reply-To: <20080128161239.GA28906@elte.hu>
+	id S1755146AbYA1RGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 12:06:35 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Paul Jackson <pj@sgi.com>
+Subject: Re: [PATCH 4/5] x86: Add config variables for SMP_MAX
+Date: Mon, 28 Jan 2008 18:00:24 +0100
+User-Agent: KMail/1.9.6
+Cc: Mike Travis <travis@sgi.com>, ioe-lkml@rameria.de,
+       akpm@linux-foundation.org, mingo@elte.hu, clameter@sgi.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+References: <20080118183011.354965000@sgi.com> <479108C3.1010800@sgi.com> <20080128104520.e1e6c878.pj@sgi.com>
+In-Reply-To: <20080128104520.e1e6c878.pj@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801281802.01748.rjw@sisk.pl>
+Message-Id: <200801281800.24780.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 28 of January 2008, Ingo Molnar wrote:
+
+> The problem in kernel/sched.c:isolated_cpu_setup() is an array of
+> NR_CPUS integers:
 > 
-> > >   * driver might have split up a kernel 4MB mapping.
-> > >   */
-> > > -char __nosavedata swsusp_pg_dir[PAGE_SIZE]
-> > > +char swsusp_pg_dir[PAGE_SIZE]
+>     static int __init isolated_cpu_setup(char *str)
+>     {
+> 	    int ints[NR_CPUS], i;
 > 
-> hm, random-qa found build breakage with this patch:
+> 	    str = get_options(str, ARRAY_SIZE(ints), ints);
 > 
->  arch/x86/kernel/built-in.o: In function `wakeup_start':
->  : undefined reference to `swsusp_pg_dir'
-> 
-> config attached.
+> Since isolated_cpu_setup() is an __init routine, perhaps we could
+> make that ints[] array static __initdata?
 
-I see.  CONFIG_HIBERNATION && CONFIG_ACPI -> CONFIG_ACPI_SLEEP
-and the Makefile in arch/x86/kernel/acpi/ wants to build wakeup.S, which is
-not necessary.  Hmm.
+That or use alloc_bootmem / free_bootmem
 
-We can do a couple of things:
-(1) make wakeup_$(BITS).o depend on CONFIG_SUSPEND (alone)
-    This will build it if CONFIG_SUSPEND is set, but CONFIG_ACPI is not
-    (still, that's consistent with the change in question).
-(2) make wakeup_$(BITS).o depend on CONFIG_SUSPEND and CONFIG_ACPI
-(3) define CONFIG_ACPI_SUSPEND depending on ACPI and SUSPEND and
-    make wakeup_$(BITS).o as well as swsusp_pg_dir depend on that (most
-    elegant)
-
-Which one do you prefer?
-
-In case you choose (3), please drop the patch and I'll send a new one to Len.
-
-Thanks,
-Rafael
+-Andi
