@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758559AbYA1MZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760949AbYA1MZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758559AbYA1MZK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 07:25:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbYA1MY7
+	id S1760949AbYA1MZa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 07:25:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755584AbYA1MZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 07:24:59 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:37593 "EHLO smtp4.pp.htv.fi"
+	Mon, 28 Jan 2008 07:25:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50788 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755301AbYA1MY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 07:24:58 -0500
-Date: Mon, 28 Jan 2008 14:25:23 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Trent Piepho <xyzzy@speakeasy.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Hans Verkuil <hverkuil@xs4all.nl>, v4l-dvb-maintainer@linuxtv.org,
-       Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] 2.6.25 regression: VIDEO_DEV=y/m, I2C=n
-	compile error
-Message-ID: <20080128122523.GH1001@does.not.exist>
-References: <20080127185216.GB13300@does.not.exist> <20080127223334.696fce6e@gaivota> <20080128084001.GB1001@does.not.exist> <Pine.LNX.4.58.0801280053010.15635@shell4.speakeasy.net> <Pine.LNX.4.64.0801281314450.1185@fbirervta.pbzchgretzou.qr>
+	id S1755309AbYA1MY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 07:24:59 -0500
+Date: Mon, 28 Jan 2008 13:24:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Jacob Shin <jacob.shin@amd.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH 2/5] x86: fix runtime error in
+	arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+Message-ID: <20080128122434.GA24757@elte.hu>
+References: <20080127233751.GA4524@kroah.com> <1201477122-4541-2-git-send-email-gregkh@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801281314450.1185@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1201477122-4541-2-git-send-email-gregkh@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 01:17:10PM +0100, Jan Engelhardt wrote:
+
+* Greg Kroah-Hartman <gregkh@suse.de> wrote:
+
+> This problem is due to the kobject rework recently done in this file.
 > 
-> On Jan 28 2008 01:05, Trent Piepho wrote:
+> The mce_amd_64.c code uses some wierd forward calls to back out of the 
+> recursive way the code creates kobjects.  Because of this, we need to 
+> verify that we have really created a kobject before calling 
+> kobject_uevent().
 > 
-> >Maybe the kernel headers should provide a couple macros for testing
-> >configs, since people get it wrong over and over again?
-> >
-> >#define CONFIG_ON(x) (defined(CONFIG_##x) || defined(CONFIG_##x##_MODULE))
-> >#define CONFIG_AVAIABLE(x) (defined(CONFIG_##x) || (defined(MODULE) && defined(CONFIG_##x##_MODULE)))
->                ^AVAILABLE(x)
-> 
-> What's the difference between these two?
-> 
-> CONFIG_x_MODULE will never be defined if MODULE is not, so defined(MODULE)
-> seems redundant.
->...
+> Many thanks to Yinghai Lu <yhlu.kernel@gmail.com> for reporting the 
+> problem and testing.
 
-It's not redundant - x is the module you want to use something from, and 
-MODULE is defined when the code you are working on gets compiled as a 
-module.
+> -	kobject_uevent(&b->kobj, KOBJ_ADD);
+> +	if (b)
+> +		kobject_uevent(&b->kobj, KOBJ_ADD);
 
-cu
-Adrian
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
--- 
+and please let me insert a minor kobject rant here: i do think it's way 
+too hard to figure out relatively minor-looking kobj bugs like this. It 
+took serious dedication from Yinghai Lu and yourself to nail this down, 
+and we wont always have that much luck in the future.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+CONFIG_DEBUG_KOBJECT is way too feeble and does not actually attempt to 
+catch bugs like this. The effects of the bug were quite serious, and 
+this hasnt been the first time such hard-to-find kobj bugs occured - 
+every one of those incidents was in essence unnecessary.
 
+Couldnt DEBUG_KOBJECT do better than this - just like we have list 
+debugging, PAGEALLOC and all the other debug checks?
+
+	Ingo
