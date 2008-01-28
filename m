@@ -1,66 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbYA1SiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbYA1SpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbYA1SiR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 13:38:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYA1SiH
+	id S1754459AbYA1SpR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 13:45:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbYA1SpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 13:38:07 -0500
-Received: from ithilien.qualcomm.com ([129.46.51.59]:58214 "EHLO
-	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751624AbYA1SiG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 13:38:06 -0500
-Message-ID: <479E20DA.2080403@qualcomm.com>
-Date: Mon, 28 Jan 2008 10:37:14 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 28 Jan 2008 13:45:05 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:46025 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750724AbYA1SpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 13:45:04 -0500
+Date: Mon, 28 Jan 2008 10:44:56 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Robin Holt <holt@sgi.com>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 1/4] mmu_notifier: Core code
+In-Reply-To: <20080126120149.GS3058@sgi.com>
+Message-ID: <Pine.LNX.4.64.0801281044380.14003@schroedinger.engr.sgi.com>
+References: <20080125055606.102986685@sgi.com> <20080125055801.212744875@sgi.com>
+ <20080125183934.GO26420@sgi.com> <Pine.LNX.4.64.0801251041040.672@schroedinger.engr.sgi.com>
+ <20080125185646.GQ3058@sgi.com> <Pine.LNX.4.64.0801251058170.3198@schroedinger.engr.sgi.com>
+ <20080125193554.GP26420@sgi.com> <Pine.LNX.4.64.0801251315350.19523@schroedinger.engr.sgi.com>
+ <20080126120149.GS3058@sgi.com>
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, srostedt@redhat.com, ghaskins@novell.com
-Subject: Re: [CPUISOL] CPU isolation extensions
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>	<1201511305.6149.30.camel@lappy> <20080128085910.7d38e9f5.pj@sgi.com>
-In-Reply-To: <20080128085910.7d38e9f5.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Thanks for the CC, Peter.
-> 
->   Ingo - see question at end of message.
-> 
-> Max wrote:
->> We've had scheduler support for CPU isolation ever since O(1) scheduler went it. 
->> I'd like to extend it further to avoid kernel activity on those CPUs as much as possible.
-> 
-> I recently added the per-cpuset flag 'sched_load_balance' for some
-> other realtime folks, so that they can disable the kernel scheduler
-> load balancing on isolated CPUs.  It essentially allows for dynamic
-> control of which CPUs are isolated by the scheduler, using the cpuset
-> hierarchy, rather than enhancing the 'isolated_cpus' mask.   That
-> 'isolated_cpus' mask remained a minimal kernel boottime parameter.
-> I believe this went to Linus's tree about Oct 2007.
-> 
-> It looks like you have three additional tweaks for realtime in this
-> patch set, with your patches:
-> 
->   [PATCH] [CPUISOL] Do not route IRQs to the CPUs isolated at boot
->   [PATCH] [CPUISOL] Support for workqueue isolation
->   [PATCH] [CPUISOL] Isolated CPUs should be ignored by the "stop machine"
-> 
-> It would be interesting to see a patchset with the above three realtime
-> tweaks, layered on this new cpuset 'sched_load_balance' apparatus, rather
-> than layered on changes to make 'isolated_cpus' more dynamic.  Some of us
-> run realtime and cpuset-intensive loads on the same system, so like to
-> have those two capabilities co-operate with each other.
-I'll definitely take a look. So far it seems that extending cpu_isolated_map
-is more natural way of propagating this notion to the rest of the kernel.
-Since it's very similar to the cpu_online_map concept and it's easy to integrated
-with the code that already uses it. 
-Anyway. I'll take a look at the cpuset flag that you mentioned and report back.
+On Sat, 26 Jan 2008, Robin Holt wrote:
 
-Thanx
-Max
+> But what if the caller is already holding the mmap_sem?  Why force the
+> acquire into this function?  Since we are dealing with a semaphore/mutex,
+
+Then you need to call __register_mmu_notifier.
