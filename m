@@ -1,94 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761978AbYA1QrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761865AbYA1Qt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761978AbYA1QrU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 11:47:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbYA1QrI
+	id S1761865AbYA1Qt0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 11:49:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbYA1QtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 11:47:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57808 "EHLO mx1.redhat.com"
+	Mon, 28 Jan 2008 11:49:18 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57910 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753348AbYA1QrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 11:47:06 -0500
-Message-ID: <479E06DE.5050608@redhat.com>
-Date: Mon, 28 Jan 2008 11:46:22 -0500
-From: Steven Rostedt <srostedt@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	id S1754229AbYA1QtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 11:49:17 -0500
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH update] firewire: fix "kobject_add failed for fw* with -EEXIST"
+Date: Mon, 28 Jan 2008 11:48:53 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux1394-devel@lists.sourceforge.net,
+       Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@redhat.com>,
+       linux-kernel@vger.kernel.org
+References: <tkrat.e1db90404aee1115@s5r6.in-berlin.de> <tkrat.a4603d89e4c2fde1@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.a4603d89e4c2fde1@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [Regression] 2.6.24-git3: Major annoyance during suspend/hibernation
- on x86-64 (bisected)
-References: <200801272229.48955.rjw@sisk.pl> <479D3287.1050604@redhat.com> <200801281231.51545.rjw@sisk.pl> <200801281731.37636.rjw@sisk.pl>
-In-Reply-To: <200801281731.37636.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801281148.54017.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Monday, 28 of January 2008, Rafael J. Wysocki wrote:
->> On Monday, 28 of January 2008, Steven Rostedt wrote:
->>> Rafael J. Wysocki wrote:
->>>
->>>> No, this isn't the WARN_ON().
->>>>
->>>>> this does have the feel of being scheduling related, but are you 
->>>>> absolutely sure about the precise identity of the patch?
->>>> Actually, not quite.  That's why I have verified it and found that another
->>>> patch is really responsible for the issue, namely:
->>>>
->>>> commit 82a1fcb90287052aabfa235e7ffc693ea003fe69
->>>> Author: Ingo Molnar <mingo@elte.hu>
->>>> Date:   Fri Jan 25 21:08:02 2008 +0100
->>>>
->>>>     softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
->>> Are you getting a bunch of prints from the softlockup detector in dmesg?
->> No, I don't.  In fact, I don't get _any_ messages from it whatsoever.
->>
->>> I wonder if the detector can detect a long timeout caused by suspend and 
->>> resume and if not is triggering false positives?
->> I'm not sure, but the code is supposed to be suspend-aware, IIRC.  However,
->> I'm seeing a similar symptom on poweroff on an SMP x86-64 box, so it may be
->> more directly related to the CPU hotplug.  I'll try to verify that.
-> 
-> As I expected, the delay is also observable when I do:
-> 
-> echo 0 > /sys/devices/system/cpu/cpu1/online
-> 
-> (it's variable, between 3 and 30 seconds).  Again, no messages appear in dmesg
-> when this happens.
-> 
-> I suspect I'll be able to reproduce it on another x86-64 SMP machine (I'm going
-> to try that later today).
+On Sunday 27 January 2008 12:20:40 pm Stefan Richter wrote:
+> There is a race between shutdown and creation of devices:  fw-core may
+> attempt to add a device with the same name of an already existing
+> device.  http://bugzilla.kernel.org/show_bug.cgi?id=9828
+>
+> Impact of the bug:  Happens rarely, forces the user to unplug and replug
+> the new device to get it working.
 
-Could you download my tracing patches from here:
+If you're crazy enough to set up a software raid array on two firewire drives 
+that end up contending for the fwX device, its much worse than simply having 
+to unplug and replug though, since all hell breaks loose at the fs level and 
+the array level.
 
- 
-http://people.redhat.com/srostedt/tracing/mcount-tracing-patches-v6.tar.bz2
+We may have another issue there though, as when this happened to me, the md 
+layer apparently never noticed (after ~6 hours) that one of the array members 
+had disappeared -- not sure if that's firewire's fault or md's though... This 
+will presumably avoid this situation entirely, but worth noting that there 
+may still be somewhere we need to better communicate status to an upper 
+layer.
 
-Apply the above patches and select all but the histogram tracers. Then 
-run this program
+> The fix moves deregistration of the minor number and device_unregister()
+> into a common rw_sem protected section.
+>
+> We also move the ref count increment from fw_device_op_open into an
+> rw_sem protected section with the lookup of the device, so that the
+> device pointer can't become invalid between lookup and usage.
+>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-   http://people.redhat.com/srostedt/tracing/trace-cmd.c
+Looks straight-forward enough, and I'll give these a spin shortly and see if I 
+can reproduce the situation I was hitting with my raid array...
 
-  ./trace-cmd -f echo 0 > /sys/devices/system/cpu/cpu1/online
 
-then do this (mount debugfs):
-
-   bzip2 -c /debugfs/tracing/latency_trace > /tmp/trace.bz2
-
-and send the result to myself and Ingo.
-
-Thanks,
-
--- Steve
-
-> 
-> Thanks,
-> Rafael
-
+-- 
+Jarod Wilson
+jwilson@redhat.com
