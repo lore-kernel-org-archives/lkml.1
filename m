@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759199AbYA1Klz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758657AbYA1KpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759199AbYA1Klz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 05:41:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756720AbYA1Kkx
+	id S1758657AbYA1KpA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 05:45:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYA1Kot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 05:40:53 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:63741 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755630AbYA1Kkp (ORCPT
+	Mon, 28 Jan 2008 05:44:49 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:54328 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751922AbYA1Kos (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 05:40:45 -0500
-Message-Id: <20080128103953.326762000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Mon, 28 Jan 2008 11:39:53 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: rth@twiddle.net, rmk@arm.linux.org.uk, bryan.wu@analog.com,
-       dhowells@redhat.com, gerg@uclinux.org, lethal@linux-sh.org,
-       wli@holomorphy.com, davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, torvalds@linux-foundation.org,
-       a.p.zijlstra@chello.nl
-Subject: [RFC][PATCH 0/2] hrtimer breakage
+	Mon, 28 Jan 2008 05:44:48 -0500
+Message-ID: <479DB203.2050809@panasas.com>
+Date: Mon, 28 Jan 2008 12:44:19 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+References: <20080125180232.GA4613@kroah.com>
+In-Reply-To: <20080125180232.GA4613@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Jan 25 2008 at 20:02 +0200, Greg KH <greg@kroah.com> wrote:
+> FYI, this is a patch that will be sent out in the next round to Linus
+> for inclusion in 2.6.25.
+> 
+> If anyone has any objections about it, please let me know.
+> 
+> thanks,
+> 
+> greg k-h
+> 
 
-If you're in the To: field, I broke your arch with (post .24) commit:
-  d3d74453c34f8fd87674a8cf5b8a327c68f22e99
 
-So, to be clear, that broke:
-  alpha, arm, blackfin, frv, m68knommu, sh, sh64 and sparc
+What about ndiswrapper and its windows binaries
+are they covered through ndiswrapper by GPL?
+(Unfortunately I use them, but less and less)
 
-The deadlock resulting was found by Russell:
-
-  IRQ handle 
-    -> timer_tick() - xtime seqlock held for write
-      -> update_process_times() 
-        -> run_local_timers()
-          -> hrtimer_run_queues()
-            -> hrtimer_get_softirq_time() - tries to get a read lock
-
-Now, Thomas assures me the fix is trivial, only do_timer() needs to be
-done under the xtime_lock, and update_process_times() can savely be removed
-from under it.
-
-So that is what the next two patches do, the first patch is by Russell and
-covers most of the arm sub-arch, the second one does the other archs and a
-few arm archs that were missed by rmk.
-
-This patch should probably be folded into one, or at least the arm bits
-from the second moved to the first patch, to avoid more bisect breakage.
-
-If you're all ok I'll polish the patches (maybe one per arch?) and ask for
-merger.
-
-(for obvious reasons I'm unable to actually test any of this)
-
-Peter
-
+Boaz
