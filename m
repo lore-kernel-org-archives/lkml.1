@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbYA1FyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbYA1GEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755938AbYA1FyY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 00:54:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbYA1FyI
+	id S1754053AbYA1GEK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 01:04:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbYA1GDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 00:54:08 -0500
-Received: from pip10.gyao.ne.jp ([61.122.117.248]:33316 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751281AbYA1FyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 00:54:05 -0500
-Date: Mon, 28 Jan 2008 14:53:10 +0900
-From: Paul Mundt <lethal@linux-sh.org>
+	Mon, 28 Jan 2008 01:03:53 -0500
+Received: from ns2.suse.de ([195.135.220.15]:60598 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750802AbYA1GDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 01:03:52 -0500
+From: Andi Kleen <ak@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-sh <linux-sh@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SH/Dreamcast - add support for GD-Rom CDROM drive on SEGA Dreamcast
-Message-ID: <20080128055310.GA7574@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	linux-sh <linux-sh@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <1200007549.6349.16.camel@localhost.localdomain> <1200088609.6213.3.camel@localhost.localdomain> <20080112053630.0ccb290e.akpm@linux-foundation.org> <1200351607.6196.4.camel@localhost.localdomain> <1200352635.6196.8.camel@localhost.localdomain> <1200527877.6243.3.camel@localhost.localdomain> <20080117012743.GD14107@linux-sh.org> <1200609006.6253.1.camel@localhost.localdomain> <20080118005633.GA14945@linux-sh.org> <20080127213323.470d6a3b.akpm@linux-foundation.org>
+Subject: Re: [PATCH] [3/18] BKL-removal: Convert ext3 to use unlocked_ioctl
+Date: Mon, 28 Jan 2008 07:02:15 +0100
+User-Agent: KMail/1.9.1
+Cc: sct@redhat.com, adilger@clusterfs.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+References: <20080127317.043953000@suse.de> <20080127021709.55F0814D2E@wotan.suse.de> <20080127213347.5bf5c324.akpm@linux-foundation.org>
+In-Reply-To: <20080127213347.5bf5c324.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080127213323.470d6a3b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200801280702.15484.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 27, 2008 at 09:33:23PM -0800, Andrew Morton wrote:
-> On Fri, 18 Jan 2008 09:56:33 +0900 Paul Mundt <lethal@linux-sh.org> wrote:
-> 
-> > On Thu, Jan 17, 2008 at 10:30:06PM +0000, Adrian McMenamin wrote:
-> > > From: Adrian McMenamin <adrian@mcmen.demon.co.uk>
-> > > 
-> > > This patch adds support for the GD-Rom drive, SEGA's proprietary
-> > > implementation of an IDE CD Rom for the SEGA Dreamcast. This driver
-> > > implements Sega's Packet Interface (SPI) - at least partially. It will
-> > > also read disks in SEGA's propreitary GD format.
-> > > 
-> > > Unlike previous drivers (which were never in mainline) this uses DMA and
-> > > not PIO to read disks. It is a new driver, not a refactoring of old
-> > > drivers. 
-> > > 
-> > > I hope I've fixed all the white space and other issues now!
-> > > 
-> > > Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
-> > > 
-> > Looks good to me. I'll add it to my queue unless Andrew has any glaring
-> > objections.
-> 
-> Looks like a driver to me, but Jens is mostly-cdrom-maintainer.
+On Monday 28 January 2008 06:33, Andrew Morton wrote:
+> On Sun, 27 Jan 2008 03:17:09 +0100 (CET) Andi Kleen <ak@suse.de> wrote:
+> > I checked ext3_ioctl and it looked largely safe to not be used
+> > without BKL.  So convert it over to unlocked_ioctl.
+> >
+> > The only case where I wasn't quite sure was for the
+> > dynamic fs grow ioctls versus umounting -- I kept the BKL for those.
+>
+> Please cpoy linux-ext4 on ext2/3/4 material.
 
-Indeed, his Acked-by was already collected, so I've added it to my tree.
+Ok I'll resubmit those to tytso/ext4-devel (or perhaps he has already seen 
+them) 
+
+>
+> I skippped a lot of these patches because I just got bored of fixing
+> rejects.  Now is a very optimistic time to be raising patches against
+> mainline.
+
+JFS and CIFS are already taken care of by the maintainers. This leaves
+remote_llseek which touches a couple of file systems. Could you
+perhaps take that one only please? And perhaps Nick's minix 
+patchkit which looks safe to me and is unlikely to cause conflicts.
+
+> > +		/* AK: not sure the BKL is needed, but this might prevent
+> > +		 * races against umount */
+> > +		lock_kernel();
+> >  		err = ext3_group_add(sb, &input);
+> >  		journal_lock_updates(EXT3_SB(sb)->s_journal);
+> >  		journal_flush(EXT3_SB(sb)->s_journal);
+> >  		journal_unlock_updates(EXT3_SB(sb)->s_journal);
+> > +		unlock_kernel();
+>
+> The ext3_ioctl() caller has an open fd against the fs - should be
+> sufficient to keep unmount away?
+
+True. I am still conservative because group_add is a lot of code
+which I didn't fully check. But with the open fd it's likely safe
+to not take the BKL because there is nothing else (except
+readdir?) in ext* that takes it.
+
+> It's all reached the stage of stupid.
+
+I'll resubmit ->fasync_unlocked against -mm.
+
+Also I wanted to recheck the ->f_flags locking. I found one bug in those 
+already and I can extract the bug fix for that one. 
+
+-Andi
