@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbYA1S2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYA1Sdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754679AbYA1S2N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 13:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYA1S17
+	id S1754501AbYA1Sdv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 13:33:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYA1Sdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 13:27:59 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48203 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbYA1S16 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 13:27:58 -0500
-Date: Mon, 28 Jan 2008 10:25:56 -0800
-From: Greg KH <greg@kroah.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       Christoph Raisch <raisch@de.ibm.com>
-Subject: Re: [2.6.24-rc6-mm1]Build failure in drivers/net/ehea/ehea_main.c
-Message-ID: <20080128182556.GA19791@kroah.com>
-References: <20080108163305.GB10026@in.ibm.com> <20080110173418.GA14728@kroah.com> <200801181016.49128.ossthema@de.ibm.com>
+	Mon, 28 Jan 2008 13:33:41 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34482 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752422AbYA1Sdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 13:33:40 -0500
+Message-ID: <479E1FA6.1030708@redhat.com>
+Date: Mon, 28 Jan 2008 13:32:06 -0500
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: tcamuso@redhat.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801181016.49128.ossthema@de.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Grant Grundler <grundler@parisc-linux.org>
+CC: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>,
+       Loic Prylli <loic@myri.com>, Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+References: <20080112002638.GA18710@kroah.com> <20080112144030.GA19279@jurassic.park.msu.ru> <1200208085.6896.134.camel@pasglop> <20080113072415.GB18741@parisc-linux.org> <20080113090108.3224698c@laptopd505.fenrus.org> <20080114225225.GQ18741@parisc-linux.org> <20080114230448.GL9847@does.not.exist> <478CD8A5.5090608@myri.com> <20080115174643.GB28238@kroah.com> <20080115175641.GE18741@parisc-linux.org> <20080119165809.GB11553@colo.lackof.org>
+In-Reply-To: <20080119165809.GB11553@colo.lackof.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 18, 2008 at 10:16:48AM +0100, Jan-Bernd Themann wrote:
-> Hi,
-> 
-> sorry for answering so late, I'm only tracking netdev and ppc mailing list.
-> 
-> On Thursday 10 January 2008 18:34, Greg KH wrote:
-> > > The structure device_driver(in device.h) has a member struct driver_private which
-> > > contains the member kobj (according to drivers/base/base.h).
-> > > But in device.h struct driver_private has been declared localy and 
-> > > neither defined nor included from base.h.
-> > > So my effort to use driver->driver_private->obj also does not work.
-> > > (I am surprised from where do you access the struct device_driver)
-> > 
-> > That is because a driver should not be accessing such a field.
-> > 
-> > And especially not in this manner, why would this driver be creating a
-> > symlink that has already been created by the driver core?  This whole
-> > thing can just be removed with no problems.  Can you try just removing
-> > the ehea_driver_sysfs_add and ehea_driver_sysfs_remove functions to
-> > verify this as I don't have the hardware present to test it out.
-> 
-> The eHEA driver tries to orginize its sys-entries as close as possible to
-> other ethernet drivers. Each eHEA NIC has multiple ports which is not that
-> common in PCI. This means that each port is represented by a subdirectory
-> which has not the "driver" sys-link, only the root directory has.
-> Some tools expect to have this driver link in each port directory.
-> That is the reason why this link is created manually.
-> 
-> Are there any other ways to create this link?
+Greg,
 
-The driver core already creates this link for you.  Don't try to
-duplicate what is already there for you.
+Have you given Grant's suggestion any further consideration?
 
-It should just be a matter of deleting the code, and everything should
-be fine.  See the patch that I just sent.
+I'd like to know how the MMCONFIG issues discussed in this thread are going
+to be handled upstream. I have a patch implemented in RHEL 5.2, but I would
+rather have the upstream patch implemented, whatever it is.
 
-thanks,
 
-greg k-h
+Grant Grundler wrote:
+> On Tue, Jan 15, 2008 at 10:56:41AM -0700, Matthew Wilcox wrote:
+>> On Tue, Jan 15, 2008 at 09:46:43AM -0800, Greg KH wrote:
+>>> But so far, we have a zillion patches floating around, claiming
+>>> different things, some with signed-off-bys and others without, so for
+>>> now, I'll just stick with Arjan's patch in -mm and see if anyone
+>>> complains about those releases...
+>> I complain about Arjan's patch.  For reasons which have been adequately
+>> gone into already in this thread.
+> 
+> Agreed.
+> Greg, I think at least two better alternatives were proposed already.
+> Please review the thread again.
+> 
+> grant
+
