@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbYA1ReU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761569AbYA1RfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761240AbYA1ReU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 12:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYA1ReI
+	id S1761569AbYA1RfW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 12:35:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYA1RfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 12:34:08 -0500
-Received: from styx.suse.cz ([82.119.242.94]:44244 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752120AbYA1ReG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 12:34:06 -0500
-Date: Mon, 28 Jan 2008 18:34:05 +0100
-From: Jan Kara <jack@suse.cz>
-To: Al Boldi <a1426z@gawab.com>
-Cc: Diego Calleja <diegocg@gmail.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>
-Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
-Message-ID: <20080128173405.GH14038@duck.suse.cz>
-References: <200801242336.00340.a1426z@gawab.com> <20080124225026.55fc6c20.diegocg@gmail.com> <200801260827.43284.a1426z@gawab.com>
+	Mon, 28 Jan 2008 12:35:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34727 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753851AbYA1RfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 12:35:08 -0500
+Date: Mon, 28 Jan 2008 18:34:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, jeremy@goop.org
+Subject: Re: git-x86 oopses in acpi_ps_peek_opcode
+Message-ID: <20080128173449.GA22487@elte.hu>
+References: <20080128171907.GA24037@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200801260827.43284.a1426z@gawab.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080128171907.GA24037@basil.nowhere.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 26-01-08 08:27:43, Al Boldi wrote:
-> Diego Calleja wrote:
-> > El Thu, 24 Jan 2008 23:36:00 +0300, Al Boldi <a1426z@gawab.com> escribió:
-> > > Greetings!
-> > >
-> > > data=ordered mode has proven reliable over the years, and it does this
-> > > by ordering filedata flushes before metadata flushes.  But this
-> > > sometimes causes contention in the order of a 10x slowdown for certain
-> > > apps, either due to the misuse of fsync or due to inherent behaviour
-> > > like db's, as well as inherent starvation issues exposed by the
-> > > data=ordered mode.
-> >
-> > There's a related bug in bugzilla:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9546
-> >
-> > The diagnostic from Jan Kara is different though, but I think it may be
-> > the same problem...
-> >
-> > "One process does data-intensive load. Thus in the ordered mode the
-> > transaction is tiny but has tons of data buffers attached. If commit
-> > happens, it takes a long time to sync all the data before the commit
-> > can proceed... In the writeback mode, we don't wait for data buffers, in
-> > the journal mode amount of data to be written is really limited by the
-> > maximum size of a transaction and so we write by much smaller chunks
-> > and better latency is thus ensured."
-> >
-> >
-> > I'm hitting this bug too...it's surprising that there's not many people
-> > reporting more bugs about this, because it's really annoying.
-> >
-> >
-> > There's a patch by Jan Kara (that I'm including here because bugzilla
-> > didn't include it and took me a while to find it) which I don't know if
-> > it's supposed to fix the problem , but it'd be interesting to try:
-> 
-> Thanks a lot, but it doesn't fix it.
-  Hmm, if you're willing to test patches, then you could try a debug patch:
-http://bugzilla.kernel.org/attachment.cgi?id=14574
-  and send me the output. What kind of load do you observe problems with
-and which problems exactly?
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+* Andi Kleen <andi@firstfloor.org> wrote:
+
+> git-x86 tip  5b838c0d9d7269eb4d21532da126b3c90db46c67 with x86-64 defconfig
+> oopses on boot with 
+> 
+> BUG: unable to handle kernel paging request at ffffc20001815000
+> IP: [<ffffffff803773e8>] acpi_ps_peek_opcode+0x4/0x1c
+> PGD 12fc32067 PUD 32fc24067 PMD 32f42c067 PTE 0
+
+ok, this looks like one of the bugs we fixed in the latest x86.git 
+(freshly released a few minutes ago). Could you please check x86.git#mm 
+with this tip:
+
+  commit cc77c9972685ea84908eff2fe13114160de5d9cb
+  Author: Thomas Gleixner <tglx@linutronix.de>
+  Date:   Mon Jan 28 18:18:43 2008 +0100
+
+      x86: cpa: rename global_flush_tlb() to cpa_flush_all()
+
+do you still see that crash?
+
+	Ingo
