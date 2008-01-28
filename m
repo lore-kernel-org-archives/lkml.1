@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764146AbYA1XbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764222AbYA1XcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764146AbYA1XbS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbYA1XbF
+	id S1764222AbYA1XcX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:32:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760940AbYA1XcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:31:05 -0500
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:4118 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbYA1XbE (ORCPT
+	Mon, 28 Jan 2008 18:32:09 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:56478 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758589AbYA1XcG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:31:04 -0500
-Subject: Re: [PATCH 6/7] X86:  include missing KERN_ facility level
-From: Joe Perches <joe@perches.com>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080129000803.69b54c7e@paolo-desktop>
-References: <20080129000803.69b54c7e@paolo-desktop>
-Content-Type: text/plain
-Date: Mon, 28 Jan 2008 15:30:35 -0800
-Message-Id: <1201563036.23527.22.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jan 2008 18:32:06 -0500
+Date: Mon, 28 Jan 2008 15:31:07 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: kurt.hackel@oracle.com, ocfs2-devel@oss.oracle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] fs/ocfs2/: possible cleanups
+Message-ID: <20080128233107.GB23506@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <20080128221141.GA8767@does.not.exist>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080128221141.GA8767@does.not.exist>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-01-29 at 00:08 +0100, Paolo Ciarrocchi wrote:
-> \diff --git a/arch/x86/math-emu/errors.c b/arch/x86/math-emu/errors.c
-> index 6102fe0..569a62e 100644
-> --- a/arch/x86/math-emu/errors.c
-> +++ b/arch/x86/math-emu/errors.c
-> @@ -57,65 +57,65 @@ void FPU_printall(void)
->  
->    RE_ENTRANT_CHECK_OFF;
->    /* No need to check access_ok(), we have previously fetched these bytes. */
-> -  printk("At %p:", (void *) address);
-> +  printk(KERN_ERR "At %p:", (void *) address);
->    if (FPU_CS == __USER_CS) {
->  #define MAX_PRINTED_BYTES 20
->        for (i = 0; i < MAX_PRINTED_BYTES; i++) {
->  	  FPU_get_user(byte1, (u_char __user *) address);
->  	  if ((byte1 & 0xf8) == 0xd8) {
-> -	      printk(" %02x", byte1);
-> +	      printk(KERN_ERR " %02x", byte1);
->  	      break;
->  	    }
-> -	  printk(" [%02x]", byte1);
-> +	  printk(KERN_ERR " [%02x]", byte1);
->  	  address++;
->  	}
-
-KERN_ prefixes are used only at the start of a line.
-You should probably use print_hex_dump.
+On Tue, Jan 29, 2008 at 12:11:41AM +0200, Adrian Bunk wrote:
+> This patch contains the following cleanups that are now possible:
+> - make the following needlessly global functions static:
+>   - dlmglue.c:ocfs2_process_blocked_lock()
+>   - heartbeat.c:ocfs2_node_map_init()
+> - #if 0 the following unused global function plus support functions:
+>   - heartbeat.c:ocfs2_node_map_is_only()
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 
+This all looks good - thanks Adrian.
+	--Mark
+
+--
+Mark Fasheh
+Principal Software Developer, Oracle
+mark.fasheh@oracle.com
