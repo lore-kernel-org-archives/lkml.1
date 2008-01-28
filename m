@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbYA1Wa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbYA1WbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433AbYA1Wa0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYA1WaM
+	id S1760066AbYA1WbT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYA1WbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:30:12 -0500
-Received: from mail.hauppauge.com ([167.206.143.4]:4473 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751684AbYA1WaK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:30:10 -0500
-X-Greylist: delayed 926 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jan 2008 17:30:06 EST
-Message-ID: <479E53B8.6030505@linuxtv.org>
-From: mkrufky@linuxtv.org
-To: bunk@kernel.org
-Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+	Mon, 28 Jan 2008 17:31:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56977 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752468AbYA1WbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:31:08 -0500
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH update] firewire: fix "kobject_add failed for fw* with -EEXIST"
+Date: Mon, 28 Jan 2008 17:30:47 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux1394-devel@lists.sourceforge.net,
+       Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@redhat.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] dvb/frontends/tda18271-common.c: fix off-by-one
-Date: Mon, 28 Jan 2008 17:14:16 -0500
+References: <tkrat.e1db90404aee1115@s5r6.in-berlin.de> <tkrat.a4603d89e4c2fde1@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.a4603d89e4c2fde1@s5r6.in-berlin.de>
 MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2657.72)
-in-reply-to: <20080128221241.GG8767@does.not.exist>
-x-originalarrivaltime: 28 Jan 2008 22:08:28.0397 (UTC) FILETIME=[4F8629D0:01C861FA]
-user-agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Content-Type: text/plain;
-	charset="utf-8"
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801281730.47575.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> This patch fixes an off-by-one error spotted by the Coverity checker.
+On Sunday 27 January 2008 12:20:40 pm Stefan Richter wrote:
+> There is a race between shutdown and creation of devices:  fw-core may
+> attempt to add a device with the same name of an already existing
+> device.  http://bugzilla.kernel.org/show_bug.cgi?id=9828
 >
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->   
-Reviewed-by: Michael Krufky <mkrufky@linuxtv.org>
-
-Thank you, Adrian.
-
-Mauro, please merge this and queue for upstream.
-
-Cheers,
-
-Mike
-
-
-> ---
-> --- linux-2.6/drivers/media/dvb/frontends/tda18271-common.c.old
-2008-01-28 16:27:55.000000000 +0200
-> +++ linux-2.6/drivers/media/dvb/frontends/tda18271-common.c	2008-01-28
-16:28:38.000000000 +0200
-> @@ -166,17 +166,17 @@ int tda18271_read_extended(struct dvb_fr
->  	/* read all registers */
->  	ret = i2c_transfer(priv->i2c_adap, msg, 2);
->  
->  	tda18271_i2c_gate_ctrl(fe, 0);
->  
->  	if (ret != 2)
->  		tda_err("ERROR: i2c_transfer returned: %d\n", ret);
->  
-> -	for (i = 0; i <= TDA18271_NUM_REGS; i++) {
-> +	for (i = 0; i < TDA18271_NUM_REGS; i++) {
->  		/* don't update write-only registers */
->  		if ((i != R_EB9)  &&
->  		    (i != R_EB16) &&
->  		    (i != R_EB17) &&
->  		    (i != R_EB19) &&
->  		    (i != R_EB20))
->  		regs[i] = regdump[i];
->  	}
+> Impact of the bug:  Happens rarely, forces the user to unplug and replug
+> the new device to get it working.
 >
->   
+> The fix moves deregistration of the minor number and device_unregister()
+> into a common rw_sem protected section.
+>
+> We also move the ref count increment from fw_device_op_open into an
+> rw_sem protected section with the lookup of the device, so that the
+> device pointer can't become invalid between lookup and usage.
+>
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
+While I've got remaining issues with firewire mdraid, this does appear fix the 
+problem of devices racing the grab the same fw* device node, and it seems 
+obvious that should indeed be the case from the code changes.
+
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
+
+-- 
+Jarod Wilson
+jwilson@redhat.com
