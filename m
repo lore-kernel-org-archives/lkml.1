@@ -1,87 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbYA1VnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbYA1VqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757529AbYA1VnZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 16:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbYA1VnR
+	id S1756498AbYA1VqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 16:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYA1VqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 16:43:17 -0500
-Received: from numenor.qualcomm.com ([129.46.51.58]:43141 "EHLO
-	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753143AbYA1VnQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 16:43:16 -0500
-Message-ID: <479E4C5E.3010804@qualcomm.com>
-Date: Mon, 28 Jan 2008 13:42:54 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 28 Jan 2008 16:46:17 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:46806 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751836AbYA1VqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 16:46:16 -0500
+Date: Mon, 28 Jan 2008 23:46:42 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: ltp-list@lists.sourceforge.net, risrajak@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [LTP] [TEST] : LTP Build failure on 2.6.24 kernel
+Message-ID: <20080128214642.GD8767@does.not.exist>
+References: <1201508081.4029.4.camel@localhost.localdomain> <200801281543.17816.vapier@gentoo.org> <20080128211046.GC8767@does.not.exist> <200801281621.02758.vapier@gentoo.org>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Steven Rostedt <rostedt@goodmis.org>, Paul Jackson <pj@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [CPUISOL] CPU isolation extensions
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>	 <1201511305.6149.30.camel@lappy> <20080128085910.7d38e9f5.pj@sgi.com>	 <20080128163450.GC12598@goodmis.org> <479E2305.3040408@qualcomm.com>	 <Pine.LNX.4.58.0801281358070.10419@gandalf.stny.rr.com> <1201551730.28547.54.camel@lappy>
-In-Reply-To: <1201551730.28547.54.camel@lappy>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200801281621.02758.vapier@gentoo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2008-01-28 at 14:00 -0500, Steven Rostedt wrote:
->> On Mon, 28 Jan 2008, Max Krasnyanskiy wrote:
->>>>>   [PATCH] [CPUISOL] Support for workqueue isolation
->>>> The thing about workqueues is that they should only be woken on a CPU if
->>>> something on that CPU accessed them. IOW, the workqueue on a CPU handles
->>>> work that was called by something on that CPU. Which means that
->>>> something that high prio task did triggered a workqueue to do some work.
->>>> But this can also be triggered by interrupts, so by keeping interrupts
->>>> off the CPU no workqueue should be activated.
->>> No no no. That's what I though too ;-). The problem is that things like NFS and friends
->>> expect _all_ their workqueue threads to report back when they do certain things like
->>> flushing buffers and stuff. The reason I added this is because my machines were getting
->>> stuck because CPU0 was waiting for CPU1 to run NFS work queue threads even though no IRQs
->>> or other things are running on it.
->> This sounds more like we should fix NFS than add this for all workqueues.
->> Again, we want workqueues to run on the behalf of whatever is running on
->> that CPU, including those tasks that are running on an isolcpu.
+On Mon, Jan 28, 2008 at 04:21:01PM -0500, Mike Frysinger wrote:
+> On Monday 28 January 2008, Adrian Bunk wrote:
+> > On Mon, Jan 28, 2008 at 03:43:16PM -0500, Mike Frysinger wrote:
+> > > On Monday 28 January 2008, Adrian Bunk wrote:
+> > > > On Mon, Jan 28, 2008 at 06:53:15AM -0500, Mike Frysinger wrote:
+> > > > > On Monday 28 January 2008, Rishikesh K. Rajak wrote:
+> > > > > > Here i am getting failure on the x86_64 machine with new kernel.
+> > > > > >
+> > > > > > Here is the uname for that machine:
+> > > > > >
+> > > > > > rishi@:~/ltp-full-20071231# uname -a
+> > > > > > Linux rishi.in.ibm.com 2.6.24 #1 SMP PREEMPT Mon Jan 28 06:47:28
+> > > > > > UTC 2008 x86_64 GNU/Linux
+> > > > >
+> > > > > i'm guessing you're using ubuntu and thus dash is your /bin/sh ...
+> > > > > shouldnt be a 2.6.24 issue
+> > > > >
+> > > > > > make[4]: Entering directory
+> > > > > > `/root/ltp-full-20071231/testcases/network/tcp_cmds/ftp'
+> > > > > > ../../generate.sh
+> > > > > > ../../generate.sh: 60: arith: syntax error: "cnt=cnt-1"
+> > > > >
+> > > > > sadly, this is becoming a FAQ.  ubuntu ships a broken /bin/sh (dash)
+> > > > > and thus some LTP scripts fall apart.  i would prefer to not change
+> > > > > the scripts as the message is simple in LTP: fix your shell, dont add
+> > > > > hacks to LTP.  otherwise we slowly back ourselves into this corner
+> > > > > with the shell scripts where we try to support every craptastic shell
+> > > > > out there and we're afraid to make any changes because we dont know
+> > > > > what crappy shell is going to drop a brick.  LTP scripts are written
+> > > > > to be POSIX complaint and only POSIX complaint shells should be
+> > > > > provided by /bin/sh.
+> > > >
+> > > > You better fulfil your claim "LTP scripts are written to be POSIX
+> > > > complaint" before complaining about shells being unhappy with your
+> > > > script. E.g. where in IEEE 1003.1-2004 is the "local" you use
+> > > > specified?
+> > >
+> > > yes, local is a bsd extension not in POSIX.  it has been implemented by
+> > > every shell so far though.  as soon as someone complains, i'll be more
+> > > than happy to fix it.
+> >
+> > David Korn's ksh93 (e.g. shipped in the Debian "ksh" package) disproves
+> > your claim "it has been implemented by every shell so far".
 > 
-> agreed, by looking at my top output (and not the nfs code) it looks like
-> it just spawns a configurable number of active kernel threads which are
-> not cpu bound by in any way. I think just removing the isolated cpus
-> from their runnable mask should take care of them.
+> sorry, i left out the operative word "relevant".  i dont care what random 
+> shell fails unless people are actually utilizing it as their /bin/sh in any 
+> sort of useful context.  as soon as someone complains for real and not just 
+> to be annoying, i'll address their complaint then.
+>...
 
-Actually NFS was just one example. I cannot remember of a top of my head what else was there
-but there are definitely other users of work queues that expect all the threads to run at
-some point in time.
-Also if you think about it. The patch does _exactly_ what you propose. It removes workqueue 
-threads from isolated CPUs. But instead of doing just for NFS and/or other subsystems 
-separately it just does it in a generic way by simply not starting those threads in first 
-place.
- 
->>>>>   [PATCH] [CPUISOL] Isolated CPUs should be ignored by the "stop machine"
->>>> This I find very dangerous. We are making an assumption that tasks on an
->>>> isolated CPU wont be doing things that stopmachine requires. What stops
->>>> a task on an isolated CPU from calling something into the kernel that
->>>> stop_machine requires to halt?
->>> I agree in general. The thing is though that stop machine just kills any kind of latency
->>> guaranties. Without the patch the machine just hangs waiting for the stop-machine to run
->>> when module is inserted/removed. And running without dynamic module loading is not very
->>> practical on general purpose machines. So I'd rather have an option with a big red warning
->>> than no option at all :).
->> Well, that's something one of the greater powers (Linus, Andrew, Ingo)
->> must decide. ;-)
-> 
-> I'm in favour of better engineered method, that is, we really should try
-> to solve these problems in a proper way. Hacks like this might be fine
-> for custom kernels, but I think we should have a higher standard when it
-> comes to upstream - we all have to live many years with whatever we put
-> in there, we'd better think well about it.
+You started with claiming "LTP scripts are written to be POSIX 
+complaint" and now that I've shown you a not that uncommon IEEE POSIX 
+1003.2 compliant shell that can't cope with your non-POSIX script you 
+suddenly introduce the word "relevant".
 
-100% agree. That's why I said mentioned that this patches is controversial in the first place. 
-Right now those short from rewriting module loading to not use stop machine there is no other 
-option. I'll think some more about it. If you guys have other ideas please drop me a note.
+But when you care only about "relevant" shells you could simply 
+implementing my suggestion of placing a #!/bin/bash at the top of your 
+scripts instead of defining your own POSIX superset that you require 
+from a /bin/sh for allowing a user to execute your script...
 
-Thanx
-Max
+> -mike
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
