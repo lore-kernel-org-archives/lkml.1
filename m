@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbYA1DQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbYA1DTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759454AbYA1DQY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 22:16:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbYA1DQP
+	id S1758865AbYA1DTz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 22:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbYA1DTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 22:16:15 -0500
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:40720 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754002AbYA1DQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 22:16:14 -0500
-Message-ID: <401490185.02675@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Mon, 28 Jan 2008 11:16:06 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Sev Binello <sev@bnl.gov>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Many processes stuck in blk_congestion_wait
-References: <4797BD62.1070608@bnl.gov>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4797BD62.1070608@bnl.gov>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.12-2006-07-14
-Message-Id: <E1JJKTe-0001Ha-Mr@localhost.localdomain>
+	Sun, 27 Jan 2008 22:19:47 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:53266 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752017AbYA1DTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 22:19:47 -0500
+Subject: Re: Problem with ata layer in 2.6.24
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200801272122.21823.gene.heskett@gmail.com>
+References: <200801272122.21823.gene.heskett@gmail.com>
+Content-Type: text/plain
+Date: Mon, 28 Jan 2008 04:19:03 +0100
+Message-Id: <1201490343.2684.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 23, 2008 at 05:19:14PM -0500, Sev Binello wrote:
-> We are experiencing numerous hangs/slow downs on our WS4 U5 nfs client 
-> machines (not seen on WS3).
-> Many processes end up in a D state for long periods of time
-> and are in  blk_congestion_wait().
+On Sun, 2008-01-27 at 21:22 -0500, Gene Heskett wrote:
+> Greeting;
 > 
-> Time in this state can vary,
-> not sure what triggers them to come out, some don't
-> But time in this state can be quite lengthy.
+<snip>
+> None were logged during the time I was running an -rc7 or -rc8.
+> 
+> The previous hits on this resulted in the udma speed being downgraded 
+> till it was actually running in pio just before the freeze that 
+> required the hardware reset button.
+> 
+> I'll reboot to -rc8 right now and resume.  If its the drive, I should see it.
+> If not, then 2.6.24 is where I'll point the finger.
+> 
+> Idea's anyone?
+I believe there is some sort of bug in libata, not just for this kernel
+version.
 
-> Machines are running 2.6.9-55.0.9.ELsmp
+i run a fileserver with .20, and i get these resets a few times a day..
+no freezes though... except when its in progress, then all IO freezes
+and locks up applications using it.. but it passes after ~30sec.
 
-It's a pretty old kernel.  If possible, a kernel upgrade may well fix
-your problem.
+i know that since ubuntu started shipping with libata by default for
+IDE, a large number of people are seeing these intermittant freezes
+aswell(which passes after half a minute or less).
+
+i reported this before, however as far as i know, no reason, and much
+less a fix, has been found.
+
+it would be great to get this solved though.
+
+
+> 
+> -- 
+> Cheers, Gene
+> "There are four boxes to be used in defense of liberty:
+>  soap, ballot, jury, and ammo. Please use in that order."
+> -Ed Howdershelt (Author)
+> Yow!  Am I in Milwaukee?
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
