@@ -1,111 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761700AbYA2Eto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbYA2EuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761700AbYA2Eto (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 23:49:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755495AbYA2Etf
+	id S1762311AbYA2EuT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 23:50:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbYA2EuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 23:49:35 -0500
-Received: from vms173001pub.verizon.net ([206.46.173.1]:53370 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbYA2Ete (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 23:49:34 -0500
-Date: Mon, 28 Jan 2008 23:49:11 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Problem with ata layer in 2.6.24
-In-reply-to: <1201580616.12795.2.camel@localhost>
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Mikael Pettersson <mikpe@it.uu.se>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-Message-id: <200801282349.11696.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200801272122.21823.gene.heskett@gmail.com>
- <200801281135.14555.gene.heskett@gmail.com>
- <1201580616.12795.2.camel@localhost>
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+	Mon, 28 Jan 2008 23:50:05 -0500
+Received: from [212.23.103.107] ([212.23.103.107]:65500 "EHLO gollum.tnic"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755495AbYA2EuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 23:50:01 -0500
+Date: Mon, 28 Jan 2008 06:43:43 +0100
+From: Borislav Petkov <petkovbb@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 0/32] ide-tape redux v1
+Message-ID: <20080128054343.GB3074@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1201423312-2460-1-git-send-email-bbpetkov@yahoo.de> <200801272045.40712.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200801272045.40712.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 January 2008, Kasper Sandberg wrote:
- [...]
->> >We have no way of debugging that module, so please try 2.6.24 without it.
->>
->> Sorry, I can't do this and have a working machine.  The nv driver has
->> suffered bit rot or something since the FC2 days when it COULD run a 19"
->> crt at 1600x1200, and will not drive this 20" wide screen lcd 1680x1050
->> monitor at more than 800x600, which is absolutely butt ugly fuzzy, looking
->> like a jpg compressed to 10%.  The system is not usable on a day to basis
->> without the nvidia driver.
->>
->> Fix the nv driver so it will run this screen at its native resolution and
->> I'll be glad to run it even if it won't run google earth, which I do use
->> from time to time.  Now, if in all the hits you can get from google on
->> this, currently 14,800 just for 'exception Emask', apparently caused by a
->> timeout, if 100% of the complainers are running nvidia drivers also, then
->> I see a legit
->
->I can invalidate this theory...
->i helped a guy on irc debug this problem, and he had ati. I tried having
->him stop using fglrx, and go to r300.. same problem, and same problem
->even with vesa.. :)
->
-No Kasper, you are validating it, that it is not nvidia related, which is what 
-I was also saying.
+Hi Bart,
 
->also, i have this on my fileserver with .20, which doesent even run X,
->or module support in kernel :)
+[...]
 
-That far back?  Although ISTR I saw it happen once only when I was running 
-2.6.18-somethingorother.
+> > the BKL in idetape_write_release() with finer-grained locking etc, probably also
+> > some pipeline improvements, removal of OnStream support, etc. but that'll come
+> > later.
+> 
+> On-Stream support has been long gone but it seems that deprecation
+> warning etc. managed to survive.
+> 
+> w.r.t. to the pipeline-mode: it should be pipelined into /dev/null
+> 
+> rationale:
+> - it is _very_ complex
+> - causes errors to be deferred till the next user-space access
+> - direct I/O using blk_rq_map_user() will offer superior performance
+> 
+> the only question is whether to remove it...
 
->> complaint.  Again, fix the nv driver so it will run my screen & I'll be
->> glad to switch.  I can see the reason, sure, but the machine must be
->> capable of doing its common day to day stuff, while using that driver,
->> like running kde for kmail, and browsers that work.
->>
->> >If the problems persist, please try to capture a complete log from the
->> >failing kernel -- the interesting bits are everything from initial boot
->> >up to and including the first few errors. You may need to increase the
->> >kernel's log buffer size if the log gets truncated
->> > (CONFIG_LOG_BUF_SHIFT).
->>
->> If by log you mean /var/log/messages, I have several megabytes of those.
->> If you mean a live dmesg capture taken right now, its attached. It
->> contains several of these at the bottom.  I long ago made the kernel log
->> buffer bigger, cuz it couldn't even show the start immediately after the
->> boot, and even the dump to syslog was truncated.
->>
->> >There are no pata_amd changes from 2.6.24-rc7 to 2.6.24 final.
->>
->> That is what I was afraid of.  I've done some limited grepping in that
->> branch of the kernel tree, and cannot seem to locate where this EH handler
->> is being invoked from.
->>
->> There is 2 lines of interest in the dmesg:
->>
->> [    0.000000] Nvidia board detected. Ignoring ACPI timer override.
->> [    0.000000] If you got timer trouble try acpi_use_timer_override
->>
->> But I have NDI what it means, kernel argument/xconfig option?
->>
->> I've also done some googling, and it appears this problem is fairly
->> widespread since the switchover to libata was encouraged.  A stock fedora
->> F8 kernel suffers the same freezes and eventually locks up, but does it
->> without the error messages being logged, it just freezes, feeling
->> identical to this in the minutes before the total freeze.  I've tried 2 of
->> those too, but the newest one won't even run X.
+Well, on the one hand, since the driver is only being maintained we should not
+remove code that works. Also, i don't know how many users ide-tape really has
+but, would it be worth the trouble at all? Because if nobody's using it, we
+could just as well pipe the whole thing into /dev/null.. On the other hand, the
+pipelining part _is_ kinda big and, right, it is not that straightfoward to
+look at it and know what it actually does - it truly is a student project :)
+
+> >  Documentation/ide/ChangeLog.ide-tape.1995-2002 |  405 +++
+> >  drivers/ide/Kconfig                            |    3 +-
+> >  drivers/ide/ide-tape.c                         | 4146 +++++++++---------------
+> >  3 files changed, 1991 insertions(+), 2563 deletions(-)
+
+[...]
+
+> BTW what happend to patch #23?
+
+Well, it appeared in my lkml mailbox having gone over vger which means at least
+somebody got it :). But, yeah, that was a real nightmare yesterday sending all
+those patches in one go. See, i got a stupid umts modem behind a not so transparent
+proxy :) whose subnet is listed in almost every spam database on the planet
+and whenever i try to send more than one mail i hit all sorts of mail server
+restrictions like yahoo's maximum messages per day crap.. Gmail seems a bit
+smarter ?! and scans the mail message and then says all kinds of funny stuff :):
+
+27 10:48:31 gollum postfix/smtp[4011]: F1710123BFD: to=<linux-ide@vger.kernel.org>, relay=vger.kernel.org[209.132.176.167]:25,
+delay=10, delays=0.19/0.29/2.7/7.2, dsn=2.7.1,	status=sent (250 2.7.1 Looks like Linux source DIFF email.. BF:<H 1.55041e-06>; S1753942AbYA0Js4)
+
+what's next, probably something like:
+
+...(250 3.x.x uh, ok, i'm gonna relay your mail but please have another coffee, please) <hash>;
+
+Anyway, resending #23 to you in a private mail.
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-bureaucrat, n:
-	A politician who has tenure.
+Regards/Gruﬂ,
+    Boris.
