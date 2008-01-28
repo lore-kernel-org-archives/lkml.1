@@ -1,93 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYA1R6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbYA1R72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135AbYA1R6Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 12:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYA1R6C
+	id S1752840AbYA1R72 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 12:59:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbYA1R7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 12:58:02 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33068 "EHLO mx3.mail.elte.hu"
+	Mon, 28 Jan 2008 12:59:17 -0500
+Received: from iabervon.org ([66.92.72.58]:40329 "EHLO iabervon.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753414AbYA1R6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 12:58:00 -0500
-Date: Mon, 28 Jan 2008 18:57:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Jacob Shin <jacob.shin@amd.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH 2/5] x86: fix runtime error in
-	arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-Message-ID: <20080128175736.GC22487@elte.hu>
-References: <20080127233751.GA4524@kroah.com> <1201477122-4541-2-git-send-email-gregkh@suse.de> <20080128122434.GA24757@elte.hu> <20080128173706.GA17495@suse.de>
+	id S1750724AbYA1R7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 12:59:16 -0500
+Date: Mon, 28 Jan 2008 12:59:13 -0500 (EST)
+From: Daniel Barkalow <barkalow@iabervon.org>
+To: Gene Heskett <gene.heskett@gmail.com>
+cc: Zan Lynx <zlynx@acm.org>, Calvin Walton <calvin.walton@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Subject: Re: Problem with ata layer in 2.6.24
+In-Reply-To: <200801281230.32910.gene.heskett@gmail.com>
+Message-ID: <alpine.LNX.1.00.0801281248190.13593@iabervon.org>
+References: <200801272122.21823.gene.heskett@gmail.com> <1201539043.31293.7.camel@zem> <1201540830.6526.19.camel@localhost> <200801281230.32910.gene.heskett@gmail.com>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080128173706.GA17495@suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 28 Jan 2008, Gene Heskett wrote:
 
-* Greg KH <gregkh@suse.de> wrote:
-
-> I have added a lot more "robustness" checks to the kobject core now, 
-> see the lkml messages about the maple bus for examples of where it is 
-> catching real problems already.  And the kobject debugging code is now 
-> "unified", printing out everything in a standard, easy to understand 
-> manner.
+> I believe at this point, its moot.  I captured quite a few instances of that 
+> error message while rebooting the last time, all of which occurred long 
+> before I logged in and did a startx (I boot to runlevel 3 here), so the 
+> kernel was NOT tainted at that point.  That dmesg has been posted and some 
+> questions asked.
 > 
-> I really don't want to get into adding a "magic value" to a kobject 
-> field, and then checking it for every call, that too would have died 
-> on this kind of bug, just like the debug printk did :)
-> 
-> But if there's anything that you think I can add to make it easier to 
-> understand, please let me know.
+> As this has gone on for a while, it seems to me that with 14,800 google hits 
+> on this problem, Linus should call a halt until this is found and fixed.  But 
+> I'm not Linus.  I'm also locking up for 30 at a time, & probably ready for 
+> reboot #7 today.
 
-anything that just causes the function to die on that bug reliably 
-during normal use, without having to enable DEBUG_KOBJECT which just 
-kills the system due to its verbosity. A magic value would be perfect. 
-Are kobjects protected against accidental copying? If not add &kobj to 
-the 'magic value' too, and check that - it becomes copying-resistent 
-that way and has the same cost to check. (which is negligible anyway)
+Can you switch back to old IDE to get your work done (and to make sure 
+it's not a hardware issue that's developed recently)? I believe libata is 
+just a whole lot pickier about behavior than the IDE subsystem was, so 
+it's more likely to complain about stuff, both for good reasons and when 
+it shouldn't, and there are a slew of potential "we have to accept that 
+old PATA hardware does this" bugs that all have the same symptom of "we go 
+into error handling when nothing is actually wrong", hence the vast 
+quantity of hits. I think it's not exactly that it's a common problem as 
+that it's a lot of problems that aren't very distinguishable.
 
-> The root problem of this bug was us using a goto to call forward into 
-> a major code block within a function.  Not just using a goto for error 
-> cleanup, like the kernel code "normally" does.  Because of that, I 
-> totally missed this code path when reading the function many times. 
-> It's nasty code complexity for no reason at all that causes more 
-> problems than is needed, combined with a total lack of documentation 
-> for how this kobject userspace interface is supposed to be used, that 
-> needs to be fixed.
-
-no argument about that at all! This is exactly the same problem that the 
-spinlock/mutex/rwlock/etc. APIs were facing: it's used everywhere, and 
-that means dubious places as well that are not that well-known and are 
-rarely used. The more widely used a piece of kernel infrastructure is, 
-the more 'hardened' it must be against intentional or accidental abuse. 
-(at least with certain magic debug options enabled)
-
-So please regard this a good thing - obscure APIs need no debugging 
-infrastructure - widely used ones do need quite extensive debugging 
-infrastructure.
-
-For example locks currently have 4000 lines of code of debugging 
-infrastructure and 1500 lines of code of self-tests. The total amount of 
-core locking code is less 1000 lines of code. So for every line of 
-locking code there's more than 5 lines of debugging infrastructure (!). 
-And we only print to the console if we think there is a bug. That 
-extensive infrastructure is _good_, because locks are so central to all 
-our data structures that catching bugs as soon as possible (in fact 
-sooner than they trigger) aids in keeping bad code out of the kernel 
-ASAP.
-
-	Ingo
+	-Daniel
+*This .sig left intentionally blank*
