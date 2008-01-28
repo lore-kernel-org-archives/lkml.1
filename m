@@ -1,96 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYA1LfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760099AbYA1LhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbYA1LfJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 06:35:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759591AbYA1Leo
+	id S1760099AbYA1LhQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 06:37:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYA1LhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 06:34:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33339 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759348AbYA1Lem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 06:34:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Subject: Re: [Regression] 2.6.24-git3: Major annoyance during suspend/hibernation on x86-64 (bisected)
-Date: Mon, 28 Jan 2008 12:32:36 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <srostedt@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-References: <200801272229.48955.rjw@sisk.pl> <200801280226.22013.rjw@sisk.pl> <b647ffbd0801280056p71d939d4j882d640185c40d94@mail.gmail.com>
-In-Reply-To: <b647ffbd0801280056p71d939d4j882d640185c40d94@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801281232.36838.rjw@sisk.pl>
+	Mon, 28 Jan 2008 06:37:03 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:43918 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751825AbYA1LhA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 06:37:00 -0500
+To: akpm@linux-foundation.org
+CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20080126220156.5a8c97d4.akpm@linux-foundation.org> (message from
+	Andrew Morton on Sat, 26 Jan 2008 22:01:56 -0800)
+Subject: Re: [patch 00/26] mount options: fix filesystem's ->show_options
+References: <20080124193341.166753833@szeredi.hu> <20080126220156.5a8c97d4.akpm@linux-foundation.org>
+Message-Id: <E1JJSIM-00008f-Os@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 28 Jan 2008 12:36:58 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 28 of January 2008, Dmitry Adamushko wrote:
-> On 28/01/2008, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Sunday, 27 of January 2008, Ingo Molnar wrote:
-> > >
-> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > >
-> > > > Hi,
-> > > >
-> > > > 2.6.24-git3 adds a 5 - 10 sec delay to the suspend and hibernation
-> > > > code paths (probably related to the disabling of nonboot CPUs), which
-> > > > is !@#$%^&*() annoying.
-> > > >
-> > > > It's 100% reproducible on my HP nx6325 and bisection idendified the
-> > > > following commit as the first bad one:
-> > > >
-> > > > commit 764a9d6fe4b52995c8aba277e3634385699354f4
-> > > > Author: Steven Rostedt <srostedt@redhat.com>
-> > > > Date:   Fri Jan 25 21:08:04 2008 +0100
-> > > >
-> > > >     sched: track highest prio task queued
-> > >
-> > > hm, this patch is a NOP, so it's weird that it has an effect.
-> > >
-> > > Do you have serial logging enabled perhaps? If the following WARN_ON()
-> > > triggers:
-> > >
-> > > +               WARN_ON(p->prio < rq->rt.highest_prio);
-> > >
-> > > then perhaps that can cause a 5-10 seconds delay. (that's how much time
-> > > it takes to printk a warning on the slowest serial settings)
-> > >
-> > > but if you use suspend, then any such printks would be preserved in the
-> > > dmesg, right? If the WARN_ON() triggers, and if you remove it, do things
-> > > get faster?
-> >
-> > No, this isn't the WARN_ON().
-> >
-> > > this does have the feel of being scheduling related, but are you
-> > > absolutely sure about the precise identity of the patch?
-> >
-> > Actually, not quite.  That's why I have verified it and found that another
-> > patch is really responsible for the issue, namely:
-> >
-> > commit 82a1fcb90287052aabfa235e7ffc693ea003fe69
-> > Author: Ingo Molnar <mingo@elte.hu>
-> > Date:   Fri Jan 25 21:08:02 2008 +0100
-> >
-> >     softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
-> >
-> > Reverting this commit (it reverts with some minor modifications) fixes the
-> > problem for me.
+> > On Thu, 24 Jan 2008 20:33:41 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > Andrew,
+> > 
+> > Would you please consider these patches for -mm?
 > 
-> What if you use the same kernel that triggers a problem and just disable
-> this new 'softlockup' functionality:
+> Sure, but I'm too lazy to pick through them and work out which ones need
+> updating, which ones got acked and which ones someone else merged, all on a
+> very bumpy plane flight ;)
 > 
-> echo 0 > /proc/sys/kernel/hung_task_timeout_secs
-> 
-> does the problem disapear?
+> Please resend when the dust has settled?
 
-I haven't checked that yet, will do it later today.
+Yes, I should have thought, it won't quite work in a single iteration :)
+
+I'll resend them in a moment.
 
 Thanks,
-Rafael
+Miklos
