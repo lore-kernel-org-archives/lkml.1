@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbYA1Fck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbYA1FdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753447AbYA1Fck (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 00:32:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbYA1Fcc
+	id S1754563AbYA1FdQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 00:33:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYA1FdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 00:32:32 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45620 "EHLO
+	Mon, 28 Jan 2008 00:33:00 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60929 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750777AbYA1Fcb (ORCPT
+	by vger.kernel.org with ESMTP id S1750727AbYA1Fc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 00:32:31 -0500
-Date: Sun, 27 Jan 2008 21:32:40 -0800
+	Mon, 28 Jan 2008 00:32:59 -0500
+Date: Sun, 27 Jan 2008 21:32:57 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/14] M68k patches for 2.6.25
-Message-Id: <20080127213240.8933a000.akpm@linux-foundation.org>
-In-Reply-To: <20080127123216.897698766@mail.of.borg>
-References: <20080127123216.897698766@mail.of.borg>
+To: Abhishek Sagar <sagar.abhishek@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, jkenisto@us.ibm.com,
+       ananth@in.ibm.com, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH -mm] kprobes: kretprobe user entry-handler (updated)
+Message-Id: <20080127213257.0889c523.akpm@linux-foundation.org>
+In-Reply-To: <479B7A78.5090604@gmail.com>
+References: <479B7A78.5090604@gmail.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,26 +27,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Jan 2008 13:32:16 +0100 Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On Sat, 26 Jan 2008 23:52:48 +0530 Abhishek Sagar <sagar.abhishek@gmail.com> wrote:
 
-> 	Hi Linus, Andrew,
-> 
-> Here are the m68k patches I had queued up for 2.6.25:
->   [1] m68k: Use cc-cross-prefix
->   [2] m68k: ARRAY_SIZE() cleanup
->   [3] dio: ARRAY_SIZE() cleanup
->   [4] m68k: Balance ioremap and iounmap in m68k/atari/hades-pci.c
->   [5] nubus: kill drivers/nubus/nubus_syms.c
->   [6] m68k: kill arch/m68k/mac/mac_ksyms.c
->   [7] m68k: kill arch/m68k/hp300/ksyms.c
->   [8] m68k: kill arch/m68k/amiga/amiga_ksyms.c
->   [9] m68k: kill arch/m68k/atari/atari_ksyms.c
->   [10] m68k: kill arch/m68k/mvme16x/mvme16x_ksyms.c
->   [11] mac68k: macii adb comment correction
->   [12] mac68k: remove dead code
->   [13] mac68k: add nubus card definitions and a typo fix
->   [14] mac68k: remove dead MAC_ADBKEYCODES
+> This is a repost of a patch which was reviewed earlier at:
+> http://lkml.org/lkml/2007/11/13/58 (thanks to Jim Keniston and Srinivasa for their review comments). This provides support to add an optional user defined callback to be run at function entry of a kretprobe'd function. It also modifies the kprobe smoke tests to include an entry-handler during the kretprobe sanity test.
 > 
 
-I already have these merged and queued.  Hopefully none of them have
-changed.
+Neither the changelog nor the newly-added documentation explain why Linux
+needs this feature.  What will it be used for??
+
+
+> +1.3.2 Kretprobe entry-handler
+> +
+> +Kretprobes also provides an optional user-specified handler which runs
+
+I think "caller-specified" would be a better term here.  Generally "user"
+refers to Aunt Tillie sitting at the keyboard.
+
+> +/* Timestamp function entry. */
+> +static int entry_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
+> +{
+> +	struct my_data *data;
+> +
+> +	if(!current->mm)
+> +		return 1; /* skip kernel threads */
+
+gargh, what's happened to checkpatch lately?  It failed to notice the
+missing space.
+
