@@ -1,109 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbYA1PyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbYA1P4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760741AbYA1PyT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 10:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYA1PyL
+	id S1758964AbYA1P4R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 10:56:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYA1P4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 10:54:11 -0500
-Received: from styx.suse.cz ([82.119.242.94]:52388 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752120AbYA1PyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 10:54:09 -0500
-Date: Mon, 28 Jan 2008 16:54:08 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] HID updates for 2.6.25 merge window
-Message-ID: <Pine.LNX.4.64.0801281651520.22844@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="336216065-47462776-1201535558=:22844"
-Content-ID: <Pine.LNX.4.64.0801281652570.22844@jikos.suse.cz>
+	Mon, 28 Jan 2008 10:56:03 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49185 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752051AbYA1P4A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 10:56:00 -0500
+Date: Mon, 28 Jan 2008 07:55:34 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
+Subject: Re: [patch 1/3] x86: a new API for drivers/etc to control cache and
+ other page attributes
+Message-ID: <20080128075534.361de0ca@laptopd505.fenrus.org>
+In-Reply-To: <p733asi80dm.fsf@bingen.suse.de>
+References: <20080125144937.2709f9ae@laptopd505.fenrus.org>
+	<p733asi80dm.fsf@bingen.suse.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, 28 Jan 2008 15:56:21 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
---336216065-47462776-1201535558=:22844
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-2
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-ID: <Pine.LNX.4.64.0801281652571.22844@jikos.suse.cz>
+> Arjan van de Ven <arjan@infradead.org> writes:
+> 
+> > Right now, if drivers or other code want to change, say, a cache
+> > attribute of a page, the only API they have is change_page_attr().
+> > c-p-a is a really bad API for this, because it forces the caller to
+> > know *ALL* the attributes he wants for the page, not just the 1
+> > thing he wants to change. So code that wants to set a page
+> > uncachable, needs to be aware of the NX status as well etc etc etc.
+> 
+> Please think clearly through the various cases.
+> 
+> NX for areas which can be legitimately non NX (very few) is 100%
+> transparently handled in c_p_a() no matter what the caller passes in.
 
-Linus,
+1) that didn't used to be the case upto and including 2.6.24
+2) even for the various arch/x86 pieces there were.. interesting issues there
 
-could you please pull from 'for-linus' branch of
+The new API is a lot simpler, and it is INTENT driven.
+This means that PAT (for 2.6.26) no longer has to second guess various things
+and capabilities, it just gets a set_memory_uc() or set_memory_wc() call and 
+it can do the right thing for the hw/sw combination at hand.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-lin=
-us
+c_p_a() doesn't give you intent, it gives you a whole range of bits, and it's 
+not clear which ones the caller cares about.
 
-or
-        master.kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git for-linus
 
-to receive the following patches for HID code. All of them have been in=20
--mm for some time.
+ 
+> So if you look closely at the various cases there is no legitimate
+> reason to ever use anything other than the standard PAGE_KERNEL_*
+> defines with change_page_attr()
 
- drivers/hid/Makefile            |    2 +-
- drivers/hid/hid-core.c          |   12 +-
- drivers/hid/hid-input-quirks.c  |  423 +++++++++++++++++++++++++++++++++++=
-++++
- drivers/hid/hid-input.c         |  295 +++++++--------------------
- drivers/hid/usbhid/Kconfig      |    5 +-
- drivers/hid/usbhid/hid-quirks.c |  118 ++++++++++--
- drivers/hid/usbhid/hid-tmff.c   |    7 +-
- drivers/hid/usbhid/usbkbd.c     |    8 +
- drivers/hid/usbhid/usbmouse.c   |    8 +
- include/linux/hid.h             |   18 ++-
- 10 files changed, 651 insertions(+), 245 deletions(-)
+I looked carefully at all the cases, and there are basically 2 classes
+1) Drivers needed memory to be uncached (or in 2.6.26, wc) 
+2) Core x86 code needing to change 1 attribute only for various reasons
 
-Bastien Nocera (1):
-      HID: force hiddev creation for SONY PS3 controller
+The new API caters to both in a very natural way, while allowing the implementation
+to deal with things like PAT etc in a much more natural way because the intent
+is given, and only the intent is changed in behavior.
+ 
+> The only exception I know of is the cpa selftest which can change
+> attributes of arbitrary pages, but that one does a lookup_address on
+> its own anyways.
 
-Carlos Corbacho (1):
-      HID: Add support for Logitech Elite keyboards
+yeah the selftest was quite buggy; it would look at the first page of a range,
+and then mark the entire range with that attribute. This explodes nicely if the
+first page is in the read only .rodata section, but the range extends well beyond that... 
+it made the .data section and more read only. That works great... for about 100 nanoseconds.
 
-Drew Fisher (1):
-      HID: Microsoft Wireless Optical Desktop 3.0 quirk
+ 
+> You basically solved a non-issue here.
 
-Fengguang Wu (1):
-      HID: the `bit' in hidinput_mapping_quirks() is an out parameter
+Given the amount of issues in this area of code (now and in the future with PAT), including
+int the cpa-selftest that you wrote and was buggy in using cpa, I would have to disagree with you.
 
-Jan Kiszka (2):
-      HID: Map MS Presenter 8000 bottom-side buttons
-      HID: Refactor MS Presenter 8K key mapping
 
-Jiri Kosina (10):
-      HID: add full support for Genius KB-29E
-      HID: refactor mapping to input subsystem for quirky devices
-      HID: separate hid-input event quirks from generic code
-      HID: hid-input quirk for BTC 8193
-      HID: remove unused variable in quirk event handler
-      HID: proper handling of MS 4k and 6k devices
-      HID: remove redundant WARN_ON()s in order not to scare users
-      HID: fix compilation of hidbp drivers without usbhid
-      HID: MS Presenter mapping for PID 0x0701
-      HID: Logitech Extreme 3D needs NOGET quirk
 
-Li Zefan (1):
-      HID: fix a potential bug in pointer casting
-
-Michel D=C3=A4nzer (2):
-      HID: Rename some code identifiers from PowerBook specific to Apple ge=
-neric
-      HID: Add support for Apple aluminum USB keyboards.
-
-Nicolas Mailhot (1):
-      HID: Blacklist the Gretag-Macbeth Huey display colorimeter
-
-Pascal Terjan (1):
-      HID: Use hid blacklist in usbmouse/usbkbd
-
-Pavel Troller (1):
-      HID: Implement horizontal wheel handling for A4 Tech X5-005D
-
-Robert Schedel (1):
-      HID: Support Samsung IR remote
-
-Tobias Lorenz (1):
-      HID: ADS/Tech Radio si470x needs blacklist entry
---336216065-47462776-1201535558=:22844--
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
