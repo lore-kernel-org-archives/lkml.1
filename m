@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762870AbYA1XC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763185AbYA1XDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762870AbYA1XC1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:02:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760621AbYA1XCD
+	id S1763185AbYA1XDK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:03:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761844AbYA1XCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:02:03 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:50982 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761353AbYA1XB7 (ORCPT
+	Mon, 28 Jan 2008 18:02:48 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:44526 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762302AbYA1XCp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:01:59 -0500
-Message-ID: <479E5ECF.2000302@web.de>
-Date: Tue, 29 Jan 2008 00:01:35 +0100
-From: Jan Kiszka <jan.kiszka@web.de>
+	Mon, 28 Jan 2008 18:02:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=RGg5RcPGVS8wba66j23VLrRjuo7DJ1pypy4tk1EyG6PoktrbLMpzT3ekauhjzxwvBBanpjEDi4fK8I3zSnkR/KbIBP/7453oIiLTE8drkNHxNmBTiM6w8gw9FqvClucl9GLtj/xplF0xylNgZJLgyVMBjqjDOoeYfyEYWRxNxRY=
+Message-ID: <479E5F04.3000009@gmail.com>
+Date: Tue, 29 Jan 2008 08:02:28 +0900
+From: Tejun Heo <htejun@gmail.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, kgdb-bugreport@lists.sourceforge.net
-Subject: Re: [PATCH] KGDB: refactor kconfig menu
-References: <479CA7CE.8040407@web.de> <479E5C18.4010809@web.de>
-In-Reply-To: <479E5C18.4010809@web.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15
+To: Adrian Bunk <bunk@kernel.org>
+CC: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] ata_piix.c: make piix_merge_scr() static
+References: <20080128221019.GN8767@does.not.exist>
+In-Reply-To: <20080128221019.GN8767@does.not.exist>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19dFAeMtGNtgDT+z8OY7nul+EdH8puq9ZKpk5rN
-	nYMcdOX0u+/lRDEZSci6YeOHCiEpIRSorJ587zRhQvmmVCQAcd
-	ApIZU9//A=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kiszka wrote:
-> Jan Kiszka wrote:
->> This is an attempt to improve the so far, well, unfortunate Kconfig menu
->> organization of KGDB. Most notably, it pushes all sub-entries into their
->> own menuconfig, removes the (IMHO) unneeded "Method for KGDB
->> communication" choice, and ensures everything is indented properly. This
->> should keep the original semantic while reducing the number of knobs the
->> user is confronted with.
+Adrian Bunk wrote:
+> piix_merge_scr() can become static.
 > 
-> I realized that KGDB_8250_CONF_STRING is unused in case the driver is
-> built as module. So here comes an updated patch that exposes this option
-> only when it is actually needed.
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> f272ad2ac4274a59f0b43cfd65488c51855132d4 
+> diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
+> index a65c8ae..1a5c3bf 100644
+> --- a/drivers/ata/ata_piix.c
+> +++ b/drivers/ata/ata_piix.c
+> @@ -1068,7 +1068,7 @@ static void piix_sidpr_write(struct ata_device *dev, unsigned int reg, u32 val)
+>  	iowrite32(val, hpriv->sidpr + PIIX_SIDPR_DATA);
+>  }
+>  
+> -u32 piix_merge_scr(u32 val0, u32 val1, const int * const *merge_tbl)
+> +static u32 piix_merge_scr(u32 val0, u32 val1, const int * const *merge_tbl)
+>  {
+>  	u32 val = 0;
+>  	int i, mi;
 
-Oh, I missed that part one is already in x86.git. So the delta is:
+Ah.. right.  Thanks.  I somehow forgot static in front of it.
 
+Acked-by: Tejun Heo <htejun@gmail.com>
 
-Ask for KGDB_8250_CONF_STRING only in the non-modular case.
-
-Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
-
----
- lib/Kconfig.kgdb |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/lib/Kconfig.kgdb
-===================================================================
---- a/lib/Kconfig.kgdb
-+++ b/lib/Kconfig.kgdb
-@@ -55,7 +55,7 @@ config KGDB_PORT_NUM
-
- config KGDB_8250_CONF_STRING
- 	string "Configuration string for KGDB"
--	depends on KGDB_8250 && !KGDB_SIMPLE_SERIAL
-+	depends on (KGDB_8250 = y) && !KGDB_SIMPLE_SERIAL
- 	default "io,2f8,115200,3" if X86
- 	help
- 	  The format of this string should be <io or mmio>,
+-- 
+tejun
