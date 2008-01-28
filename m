@@ -1,100 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYA1Sfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbYA1SiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755521AbYA1Sfg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 13:35:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYA1Sf1
+	id S1755211AbYA1SiR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 13:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYA1SiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 13:35:27 -0500
-Received: from ns1.suse.de ([195.135.220.2]:55272 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751682AbYA1Sf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 13:35:26 -0500
-Date: Mon, 28 Jan 2008 10:32:37 -0800
-From: Greg KH <gregkh@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Jacob Shin <jacob.shin@amd.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH 2/5] x86: fix runtime error in
-	arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-Message-ID: <20080128183237.GA19829@suse.de>
-References: <20080127233751.GA4524@kroah.com> <1201477122-4541-2-git-send-email-gregkh@suse.de> <20080128122434.GA24757@elte.hu> <20080128173706.GA17495@suse.de> <20080128175736.GC22487@elte.hu>
+	Mon, 28 Jan 2008 13:38:07 -0500
+Received: from ithilien.qualcomm.com ([129.46.51.59]:58214 "EHLO
+	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751624AbYA1SiG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 13:38:06 -0500
+Message-ID: <479E20DA.2080403@qualcomm.com>
+Date: Mon, 28 Jan 2008 10:37:14 -0800
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080128175736.GC22487@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Paul Jackson <pj@sgi.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, srostedt@redhat.com, ghaskins@novell.com
+Subject: Re: [CPUISOL] CPU isolation extensions
+References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>	<1201511305.6149.30.camel@lappy> <20080128085910.7d38e9f5.pj@sgi.com>
+In-Reply-To: <20080128085910.7d38e9f5.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 06:57:36PM +0100, Ingo Molnar wrote:
+Paul Jackson wrote:
+> Thanks for the CC, Peter.
 > 
-> * Greg KH <gregkh@suse.de> wrote:
+>   Ingo - see question at end of message.
 > 
-> > I have added a lot more "robustness" checks to the kobject core now, 
-> > see the lkml messages about the maple bus for examples of where it is 
-> > catching real problems already.  And the kobject debugging code is now 
-> > "unified", printing out everything in a standard, easy to understand 
-> > manner.
-> > 
-> > I really don't want to get into adding a "magic value" to a kobject 
-> > field, and then checking it for every call, that too would have died 
-> > on this kind of bug, just like the debug printk did :)
-> > 
-> > But if there's anything that you think I can add to make it easier to 
-> > understand, please let me know.
+> Max wrote:
+>> We've had scheduler support for CPU isolation ever since O(1) scheduler went it. 
+>> I'd like to extend it further to avoid kernel activity on those CPUs as much as possible.
 > 
-> anything that just causes the function to die on that bug reliably 
-> during normal use, without having to enable DEBUG_KOBJECT which just 
-> kills the system due to its verbosity. A magic value would be perfect. 
-
-But for this case, how would we test that 0x18 is passed in for a
-pointer to a kobject, without just blowing up instantly no matter what?
-
-> Are kobjects protected against accidental copying? If not add &kobj to 
-> the 'magic value' too, and check that - it becomes copying-resistent 
-> that way and has the same cost to check. (which is negligible anyway)
-
-Oh, that's a very cool idea, I like it :)
-
-So I guess the complaint is that CONFIG_KOBJECT is too verbose?  I can
-understand that, I'll look to clean things up as we have a lot of
-"tracing" type functions in the debug output.  Hm, I wonder if the new
-marker code could help with that...
-
-> > The root problem of this bug was us using a goto to call forward into 
-> > a major code block within a function.  Not just using a goto for error 
-> > cleanup, like the kernel code "normally" does.  Because of that, I 
-> > totally missed this code path when reading the function many times. 
-> > It's nasty code complexity for no reason at all that causes more 
-> > problems than is needed, combined with a total lack of documentation 
-> > for how this kobject userspace interface is supposed to be used, that 
-> > needs to be fixed.
+> I recently added the per-cpuset flag 'sched_load_balance' for some
+> other realtime folks, so that they can disable the kernel scheduler
+> load balancing on isolated CPUs.  It essentially allows for dynamic
+> control of which CPUs are isolated by the scheduler, using the cpuset
+> hierarchy, rather than enhancing the 'isolated_cpus' mask.   That
+> 'isolated_cpus' mask remained a minimal kernel boottime parameter.
+> I believe this went to Linus's tree about Oct 2007.
 > 
-> no argument about that at all! This is exactly the same problem that the 
-> spinlock/mutex/rwlock/etc. APIs were facing: it's used everywhere, and 
-> that means dubious places as well that are not that well-known and are 
-> rarely used. The more widely used a piece of kernel infrastructure is, 
-> the more 'hardened' it must be against intentional or accidental abuse. 
-> (at least with certain magic debug options enabled)
+> It looks like you have three additional tweaks for realtime in this
+> patch set, with your patches:
 > 
-> So please regard this a good thing - obscure APIs need no debugging 
-> infrastructure - widely used ones do need quite extensive debugging 
-> infrastructure.
+>   [PATCH] [CPUISOL] Do not route IRQs to the CPUs isolated at boot
+>   [PATCH] [CPUISOL] Support for workqueue isolation
+>   [PATCH] [CPUISOL] Isolated CPUs should be ignored by the "stop machine"
+> 
+> It would be interesting to see a patchset with the above three realtime
+> tweaks, layered on this new cpuset 'sched_load_balance' apparatus, rather
+> than layered on changes to make 'isolated_cpus' more dynamic.  Some of us
+> run realtime and cpuset-intensive loads on the same system, so like to
+> have those two capabilities co-operate with each other.
+I'll definitely take a look. So far it seems that extending cpu_isolated_map
+is more natural way of propagating this notion to the rest of the kernel.
+Since it's very similar to the cpu_online_map concept and it's easy to integrated
+with the code that already uses it. 
+Anyway. I'll take a look at the cpuset flag that you mentioned and report back.
 
-I totally agree.
-
-> For example locks currently have 4000 lines of code of debugging 
-> infrastructure and 1500 lines of code of self-tests. The total amount of 
-> core locking code is less 1000 lines of code. So for every line of 
-> locking code there's more than 5 lines of debugging infrastructure (!). 
-
-Heh, good point, I'll look into fixing this up to be more useful to the
-"normal" developer, and not just the two of us doing kobject core
-development :)
-
-thanks,
-
-greg k-h
+Thanx
+Max
