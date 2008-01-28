@@ -1,61 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761405AbYA1QU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760212AbYA1QYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761405AbYA1QU7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 11:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYA1QUw
+	id S1760212AbYA1QYS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 11:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbYA1QYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 11:20:52 -0500
-Received: from gw.goop.org ([64.81.55.164]:33813 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbYA1QUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 11:20:51 -0500
-Message-ID: <479E00E0.2030908@goop.org>
-Date: Mon, 28 Jan 2008 08:20:48 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Jan Beulich <jbeulich@novell.com>,
-       Eduardo Pereira Habkost <ehabkost@redhat.com>,
-       Ian Campbell <ijc@hellion.org.uk>, H Peter Anvin <hpa@zytor.com>
-Subject: Re: [PATCH 00 of 11] x86: separate pmd lifetime from pgd
-References: <patchbomb.1201296189@localhost> <20080128151753.GA14451@elte.hu> <20080128154140.GA17017@elte.hu>
-In-Reply-To: <20080128154140.GA17017@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 28 Jan 2008 11:24:00 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:42434 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751277AbYA1QX7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 11:23:59 -0500
+In-Reply-To: <E1JJSFm-00007o-Ca@pomaz-ex.szeredi.hu>
+References: <20080124193341.166753833@szeredi.hu> <20080124193449.550058933@szeredi.hu> <4798F9BC.4040405@oracle.com> <E1JIL1f-0001N6-Tg@pomaz-ex.szeredi.hu> <2D4FA3F4-E481-40B2-A56C-A4D55178DA76@oracle.com> <E1JJSFm-00007o-Ca@pomaz-ex.szeredi.hu>
+Mime-Version: 1.0 (Apple Message framework v753)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B78211C2-B0CF-4462-947D-5C7E7B6A5A53@oracle.com>
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com
 Content-Transfer-Encoding: 7bit
+From: Chuck Lever <chuck.lever@oracle.com>
+Subject: Re: [patch 21/26] mount options: partially fix nfs
+Date: Mon, 28 Jan 2008 11:22:10 -0500
+To: Miklos Szeredi <miklos@szeredi.hu>
+X-Mailer: Apple Mail (2.753)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> and after a session of bisection, the winner patch is:
+On Jan 28, 2008, at 6:34 AM, Miklos Szeredi wrote:
+>>> All mount options should be shown, which are needed to reconstruct a
+>>> previous mount.
+>>
+>> Ah, OK.
+>>
+>> I'm happy to implement logic to display the all missing options.  I
+>> should have updated nfs_show_mount_options() when I wrote the NFS
+>> mount option parser.
+>>
+>> Let me know your preference.
 >
->   Subject: x86: unify PAE/non-PAE pgd_ctor
+> You are more familiar with NFS, so I think it would be better if you
+> updated nfs_show_mount_options().
 >
-> which is a tad unexpected, given the relatively harmless nature of the 
-> patch. (but then again, nothing is really harmless in PAE land.)
->   
+> Could you also queue my patch (updated) or incorporate it into a
+> combined fix?
 
-Oh, well, good.  At least off-the-cuff diagnosis was right.  I must have 
-overlooked some detail in that merge.
+Yes.  I'll have time in a day or two to get this finished.
 
-> btw., this is not fair i think: your patch was apparently caught by the 
-> new debugging helper that tells about itself here:
+> Thanks,
+> Miklos
+> ----
 >
->   
->> [   29.389872] debug: unmapping init memory c0b03000..c0b6f000
->>     
+> Subject: mount options: partially fix nfs
 >
-> note the close proximity of c0b6f000 and ebx = c0b6fc08. [ I regularly 
-> come up with such nasty tricks and debugging helpers like that to catch 
-> bad patches off-guard. You have been warned! ;-) ]
->   
+> From: Miklos Szeredi <mszeredi@suse.cz>
+>
+> Add posix, bsize=, namelen= options to /proc/mounts for nfs
+> filesystems.
+>
+> Document several other options that are still missing.
+>
+> Changes:
+>
+>  - display namelen= unconditionally
+>  - addr= isn't missing after all
+>
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> CC: Trond Myklebust <Trond.Myklebust@netapp.com>
+> ---
+>
+> Index: linux/fs/nfs/super.c
+> ===================================================================
+> --- linux.orig/fs/nfs/super.c	2008-01-25 15:44:56.000000000 +0100
+> +++ linux/fs/nfs/super.c	2008-01-25 15:57:32.000000000 +0100
+> @@ -449,6 +449,7 @@ static void nfs_show_mount_options(struc
+>  	} nfs_info[] = {
+>  		{ NFS_MOUNT_SOFT, ",soft", ",hard" },
+>  		{ NFS_MOUNT_INTR, ",intr", ",nointr" },
+> +		{ NFS_MOUNT_POSIX, ",posix", "" },
+>  		{ NFS_MOUNT_NOCTO, ",nocto", "" },
+>  		{ NFS_MOUNT_NOAC, ",noac", "" },
+>  		{ NFS_MOUNT_NONLM, ",nolock", "" },
+> @@ -463,6 +464,9 @@ static void nfs_show_mount_options(struc
+>  	seq_printf(m, ",vers=%d", clp->rpc_ops->version);
+>  	seq_printf(m, ",rsize=%d", nfss->rsize);
+>  	seq_printf(m, ",wsize=%d", nfss->wsize);
+> +	seq_printf(m, ",namelen=%d", nfss->namelen);
+> +	if (nfss->bsize != 0)
+> +		seq_printf(m, ",bsize=%d", nfss->bsize);
+>  	if (nfss->acregmin != 3*HZ || showdefaults)
+>  		seq_printf(m, ",acregmin=%d", nfss->acregmin/HZ);
+>  	if (nfss->acregmax != 60*HZ || showdefaults)
+> @@ -482,6 +486,17 @@ static void nfs_show_mount_options(struc
+>  	seq_printf(m, ",timeo=%lu", 10U * nfss->client->cl_timeout- 
+> >to_initval / HZ);
+>  	seq_printf(m, ",retrans=%u", nfss->client->cl_timeout->to_retries);
+>  	seq_printf(m, ",sec=%s", nfs_pseudoflavour_to_name(nfss->client- 
+> >cl_auth->au_flavor));
+> +
+> +	/*
+> +	 * Missing options:
+> +	 * port=
+> +	 * mountport=
+> +	 * mountvers=
+> +	 * mountproto=
+> +	 * clientaddr=
+> +	 * mounthost=
+> +	 * mountaddr=
+> +	 */
+>  }
+>
+>  /*
 
-Hm, perhaps, but it could be as easily coincidence.  The place there 
-initmem is freed is close to where it first needs to rely on a 
-non-initmm pagetable.  I presume that message means that c0b6f000 was 
-*not* freed.
+--
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
 
-    J
+
+
