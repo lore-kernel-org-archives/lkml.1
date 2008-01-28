@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763727AbYA1WTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763827AbYA1WT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763727AbYA1WTA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762644AbYA1WMR
+	id S1763827AbYA1WT2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:19:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762718AbYA1WMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:12:17 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:52353 "EHLO smtp4.pp.htv.fi"
+	Mon, 28 Jan 2008 17:12:35 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:46556 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762641AbYA1WMP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:12:15 -0500
-Date: Tue, 29 Jan 2008 00:12:41 +0200
+	id S1758370AbYA1WMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:12:33 -0500
+Date: Tue, 29 Jan 2008 00:13:00 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Michael Krufky <mkrufky@linuxtv.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Tobias Lorenz <tobias.lorenz@gmx.net>, mchehab@infradead.org
 Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] dvb/frontends/tda18271-common.c: fix off-by-one
-Message-ID: <20080128221241.GG8767@does.not.exist>
+Subject: media/radio/radio-si470x.c: check-after-use
+Message-ID: <20080128221300.GH8767@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,30 +23,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes an off-by-one error spotted by the Coverity checker.
+The Coverity checker spotted the following check-after-use in 
+drivers/media/radio/radio-si470x.c:
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+<--  snip  -->
 
----
---- linux-2.6/drivers/media/dvb/frontends/tda18271-common.c.old	2008-01-28 16:27:55.000000000 +0200
-+++ linux-2.6/drivers/media/dvb/frontends/tda18271-common.c	2008-01-28 16:28:38.000000000 +0200
-@@ -166,17 +166,17 @@ int tda18271_read_extended(struct dvb_fr
- 	/* read all registers */
- 	ret = i2c_transfer(priv->i2c_adap, msg, 2);
- 
- 	tda18271_i2c_gate_ctrl(fe, 0);
- 
- 	if (ret != 2)
- 		tda_err("ERROR: i2c_transfer returned: %d\n", ret);
- 
--	for (i = 0; i <= TDA18271_NUM_REGS; i++) {
-+	for (i = 0; i < TDA18271_NUM_REGS; i++) {
- 		/* don't update write-only registers */
- 		if ((i != R_EB9)  &&
- 		    (i != R_EB16) &&
- 		    (i != R_EB17) &&
- 		    (i != R_EB19) &&
- 		    (i != R_EB20))
- 		regs[i] = regdump[i];
- 	}
+...
+static void si470x_usb_driver_disconnect(struct usb_interface *intf)
+{
+        struct si470x_device *radio = usb_get_intfdata(intf);
+
+        del_timer_sync(&radio->timer);    <------------------
+        flush_scheduled_work();
+
+        usb_set_intfdata(intf, NULL);
+        if (radio) {                      <------------------
+                video_unregister_device(radio->videodev);
+                kfree(radio->buffer);
+                kfree(radio);
+        }
+}
+...
+
+<--  snip  -->
+
+Either "radio" can be NULL and this case has to be properly handled or 
+the NULL check is not required.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
