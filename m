@@ -1,85 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbYA1IYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYA1I1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755969AbYA1IYK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 03:24:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYA1IX5
+	id S1755500AbYA1I1q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 03:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYA1I1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 03:23:57 -0500
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:51790 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751149AbYA1IX4 (ORCPT
+	Mon, 28 Jan 2008 03:27:39 -0500
+Received: from embla.aitel.hist.no ([158.38.50.22]:59528 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751552AbYA1I1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 03:23:56 -0500
-From: Sripathi Kodi <sripathik@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] Per-thread getrusage
-Date: Mon, 28 Jan 2008 13:54:12 +0530
-User-Agent: KMail/1.9.4
-Cc: Vinay Sridhar <vinay@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       libc-alpha@sourceware.org, drepper@redhat.com, wli@holomorphy.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-References: <1200558425.5992.17.camel@srivinay.in.ibm.com> <20080127215242.b873c341.akpm@linux-foundation.org>
-In-Reply-To: <20080127215242.b873c341.akpm@linux-foundation.org>
+	Mon, 28 Jan 2008 03:27:39 -0500
+Message-ID: <479D91BE.7050503@aitel.hist.no>
+Date: Mon, 28 Jan 2008 09:26:38 +0100
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jon Masters <jonathan@jonmasters.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] driver core patches against 2.6.24
+References: <20080125071127.GA4860@kroah.com>	 <alpine.LFD.1.00.0801251035150.2979@hp.linux-foundation.org>	 <20080125185213.GA23475@suse.de>	 <alpine.LFD.1.00.0801251108480.2979@hp.linux-foundation.org>	 <479A3ED3.6020808@goop.org> <1201296027.32422.80.camel@perihelion>	 <alpine.LFD.1.00.0801251347010.5056@hp.linux-foundation.org>	 <479A5B72.6080701@goop.org> <1201299979.27573.11.camel@lappy>
+In-Reply-To: <1201299979.27573.11.camel@lappy>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801281354.12387.sripathik@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Peter Zijlstra wrote:
+> My wish is that distros would just boot without requiring an initrd. I
+> know how to make them for redhat and debian based distros, but the fact
+> that you can't (easily) cross-build them makes it a very tedious
+> construct.
+>   
+Debian is easy enough - make sure the drivers for the root
+device and root fs is built-in, and you can drop the initrd.
+Takes a second or two off the boot, and some more off the build.
 
-On Monday 28 January 2008 11:22, Andrew Morton wrote:
-> 	On Thu, 17 Jan 2008 13:57:05 +0530 Vinay Sridhar 
-<vinay@linux.vnet.ibm.com> wrote:
-> > Hi All,
-> >
-> > Last year, there was discussion about per-thread getrusage by
-> > adding RUSAGE_THREAD flag to getrusage(). Please refer to the
-> > thread http://lkml.org/lkml/2007/4/4/308. Ulrich had suggested that
-> > we should design a better user-space API. Specifically, we need a
-> > pthread_getrusage interface in the thread library, which accepts
-> > pthread_t, converts pthread_t into the corresponding tid and passes
-> > it down to the syscall.
-> >
-> > There are two ways to implement this in the kernel:
-> > 1) Introduce an additional parameter 'tid' to sys_getrusage() and
-> > put code in glibc to handle getrusage() and pthread_getrusage()
-> > calls correctly.
-> > 2) Introduce a new system call to handle pthread_getrusage() and
-> > leave sys_getrusage() untouched.
-> >
-> > We implemented the second idea above, simply because it avoids
-> > touching any existing code. We have implemented a new syscall,
-> > thread_getrusage() and we have exposed pthread_getrusage() API to
-> > applications.
-> >
-> > Could you please share your thoughts on this? Does the approach
-> > look alright? The code is hardly complete. It is just a prototype
-> > that works on IA32 at the moment.
-> >
-> > ...
-> >
-> > +asmlinkage long sys_thread_getrusage(int tid, struct rusage __user
-> > *ru);
->
-> What happens if `tid' refers to a thread in a different pid
-> namespace?
-
-The code was only meant to be a base for discussions. It surely needs 
-work. Our idea for the final version was to be able to read a thread's 
-rusage from another thread strictly within the same process. The idea 
-came from applications that need a cost enforcement mechanism. Having a 
-mechanism for a thread to read it's own usage is essential. If there is 
-a way to read other threads' rusage, it is even better.
-
-Does Roland's patch (http://lkml.org/lkml/2008/1/18/589) look good to go 
-in, provided Ulrich's comment (http://lkml.org/lkml/2008/1/19/15) is 
-addressed?
-
-Thanks,
-Sripathi.
+Helge Hafting
