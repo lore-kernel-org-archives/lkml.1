@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761183AbYA1WRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763531AbYA1WRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761183AbYA1WRg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:17:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761531AbYA1WL1
+	id S1763531AbYA1WRx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:17:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761747AbYA1WLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:11:27 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:52291 "EHLO smtp4.pp.htv.fi"
+	Mon, 28 Jan 2008 17:11:35 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48036 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754752AbYA1WLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:11:25 -0500
-Date: Tue, 29 Jan 2008 00:11:52 +0200
+	id S1761229AbYA1WLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:11:33 -0500
+Date: Tue, 29 Jan 2008 00:12:00 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Eric Paris <eparis@redhat.com>, "Stephen D. Smalley" <sds@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>
+To: Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make selinux_set_mnt_opts() static
-Message-ID: <20080128221152.GC8767@does.not.exist>
+Subject: [2.6 patch] #if 0 tasklet_kill_immediate()
+Message-ID: <20080128221200.GD8767@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,25 +23,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-selinux_set_mnt_opts() can become static.
+This patch #if 0's the no longer used tasklet_kill_immediate().
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-d9cfb159caa25ed5ad3dee35d62a6e1a0bd51ef6 
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 0396354..04eeab7 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -561,8 +561,8 @@ static int bad_option(struct superblock_security_struct *sbsec, char flag,
-  * Allow filesystems with binary mount data to explicitly set mount point
-  * labeling information.
-  */
--int selinux_set_mnt_opts(struct super_block *sb, char **mount_options,
--				 int *flags, int num_opts)
-+static int selinux_set_mnt_opts(struct super_block *sb, char **mount_options,
-+				int *flags, int num_opts)
+
+ include/linux/interrupt.h |    1 -
+ kernel/softirq.c          |    3 +++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+06fc93a10822d4e9c53eaa2b4d0a16792305957e 
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index c3db4a0..59d31dc 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -384,7 +384,6 @@ static inline void tasklet_hi_enable(struct tasklet_struct *t)
+ }
+ 
+ extern void tasklet_kill(struct tasklet_struct *t);
+-extern void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu);
+ extern void tasklet_init(struct tasklet_struct *t,
+ 			 void (*func)(unsigned long), unsigned long data);
+ 
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index bd89bc4..0f87c36 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -527,6 +527,8 @@ wait_to_die:
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
++
++#if 0
+ /*
+  * tasklet_kill_immediate is called to remove a tasklet which can already be
+  * scheduled for execution on @cpu.
+@@ -555,6 +557,7 @@ void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu)
+ 	}
+ 	BUG();
+ }
++#endif  /*  0  */
+ 
+ static void takeover_tasklets(unsigned int cpu)
  {
- 	int rc = 0, i;
- 	struct task_security_struct *tsec = current->security;
 
