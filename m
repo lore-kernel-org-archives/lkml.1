@@ -1,146 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759332AbYA1K5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbYA1LAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759332AbYA1K5V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 05:57:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbYA1K4v
+	id S1756989AbYA1LAj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 06:00:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYA1LAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 05:56:51 -0500
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:57572 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753086AbYA1K4t (ORCPT
+	Mon, 28 Jan 2008 06:00:32 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:54543 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750AbYA1LAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 05:56:49 -0500
-From: Junio C Hamano <gitster@pobox.com>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.4-rc5
-References: <7vsl13wmas.fsf@gitster.siamese.dyndns.org>
-	<7vsl0r3nvc.fsf@gitster.siamese.dyndns.org>
-cc: linux-kernel@vger.kernel.org
-Date: Mon, 28 Jan 2008 02:56:41 -0800
-Message-ID: <7vk5lutdzq.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 28 Jan 2008 06:00:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=GyVe/E1do0FC+fvl20jv9hJVQJSbDskXmhtXiISXn2cyO/BEAGW0ylR6wFyGHkhzkBecMd4OuMk+oXsU+daaJza4zLkY9Vw9NAD6zfTtBucZVWWRqtS3vWoXdAdtz+9U7qrEn9pADDMw9dufcvEeZa8qwIi7ByJylWaZJEzeiFM=
+Message-ID: <479DB5C5.9070608@gmail.com>
+Date: Mon, 28 Jan 2008 14:00:21 +0300
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Organization: DmVo Home
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] X86: coding style fixes to arch/x86/math-errors.c -	take
+ 2
+References: <20080127231527.2ea40804@paolo-desktop> <479D067E.3010100@gmail.com> <20080127224258.GA22018@elte.hu> <4d8e3fd30801271448ja6a44ferbf86d37c2f3b825@mail.gmail.com> <4d8e3fd30801271557i4310bc07ifbdea081001cc592@mail.gmail.com> <479D1FD1.2070105@gmail.com> <20080128104459.GA32342@elte.hu>
+In-Reply-To: <20080128104459.GA32342@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The fifth and hopefully the last rc for the next feature release
-GIT 1.5.4 is available at the usual places:
+Ingo Molnar пишет:
+> * Dmitri Vorobiev <dmitri.vorobiev@gmail.com> wrote:
+> 
+>> Paolo Ciarrocchi пишет:
+>>> On Jan 27, 2008 11:48 PM, Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+>>>> On Jan 27, 2008 11:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>> ...
+>>> How should I compare the .o file?
+>>> Simply doing a md5sum or should I do a objdump -d before?
+>>> Or a strip?
+>>>
+>> Comparing the vmlinux images shoudls suffice. But you'll have to make 
+>> sure that the object file resulting from the C source that you're 
+>> changing gets linked into vmlinux.
+> 
+> the vmlinux includes build timestamps so that wont really match. 
 
-  http://www.kernel.org/pub/software/scm/git/
+Oh, you're right. Sorry for a misleading comment.
 
-  git-1.5.4.rc5.tar.{gz,bz2}			(tarball)
-  git-htmldocs-1.5.4.rc5.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.4.rc5.tar.{gz,bz2}		(preformatted docs)
-  RPMS/$arch/git-*-1.5.4.rc5-1.$arch.rpm	(RPM)
-
-The changes since -rc4 are quite small, and except for git-gui
-updates they are all reasonably trivial fixes.  Please give it a
-good testing.
-
-----------------------------------------------------------------
-
-Changes since v1.5.4-rc4 are as follows:
-
- Documentation/RelNotes-1.5.4.txt |   37 ++++++---
- Documentation/fetch-options.txt  |   12 ++-
- Documentation/git-clone.txt      |    8 ++
- Documentation/git-http-push.txt  |    3 +
- Documentation/git-pull.txt       |    7 ++-
- Documentation/git-send-email.txt |    2 +
- Documentation/git-submodule.txt  |    5 +-
- Documentation/git-svn.txt        |   11 ++-
- GIT-VERSION-GEN                  |    2 +-
- Makefile                         |   18 ++++-
- builtin-commit.c                 |   15 +++-
- builtin-pack-objects.c           |    3 +-
- config.mak.in                    |    1 +
- configure.ac                     |    6 ++
- fast-import.c                    |   65 ++++++++++++++-
- git-compat-util.h                |    2 +
- git-cvsserver.perl               |    9 ++-
- git-gui/Makefile                 |    5 +-
- git-gui/git-gui.sh               |   28 ++++++
- git-gui/lib/choose_rev.tcl       |    3 +-
- git-gui/lib/commit.tcl           |  149 +++++++++++++++++++++------------
- git-gui/lib/error.tcl            |   18 ++--
- git-gui/po/glossary/fr.po        |   26 +++---
- git-gui/po/po2msg.sh             |   25 +++++-
- git-pull.sh                      |   12 +++-
- git-send-email.perl              |    2 +-
- git-submodule.sh                 |  169 +++++++++++++++++++++++++++-----------
- git-svn.perl                     |   10 +--
- http.h                           |    8 ++
- parse-options.c                  |   30 ++++++-
- t/t0040-parse-options.sh         |   11 +++
- t/t5520-pull.sh                  |   17 ++++
- t/t5710-info-alternate.sh        |   12 ++-
- t/t7400-submodule-basic.sh       |   56 ++++++------
- t/t9400-git-cvsserver-server.sh  |   17 +++-
- test-parse-options.c             |    1 +
- 36 files changed, 596 insertions(+), 209 deletions(-)
-
-Alex Riesen (1):
-      Make t5710 more strict when creating nested repos
-
-Brandon Casey (1):
-      git-commit: exit non-zero if we fail to commit the index
-
-Eric Wong (1):
-      git-svn: default to repacking every 1000 commits
-
-Gustaf Hendeby (1):
-      send-email, fix breakage in combination with --compose
-
-Jakub Narebski (1):
-      autoconf: define NO_SYS_SELECT_H on systems without <sys/select.h>.
-
-Johannes Schindelin (1):
-      pull --rebase: be cleverer with rebased upstream branches
-
-Junio C Hamano (5):
-      git-submodule: rename shell functions for consistency
-      git-submodule: fix subcommand parser
-      git-submodule: add test for the subcommand parser fix
-      Clarify that http-push being temporarily disabled with older cURL
-      GIT 1.5.4-rc5
-
-Mike Hommey (2):
-      Add a missing dependency on http.h
-      Documentation: add a bit about sendemail.to configuration
-
-Miklos Vajna (2):
-      git-clone -s: document problems with git gc --prune
-      git pull manpage: don't include -n from fetch-options.txt
-
-Nicolas Pitre (1):
-      pack-objects: Fix segfault when object count is less than thread count
-
-Pierre Habouzit (1):
-      parse-options: catch likely typo in presense of aggregated options.
-
-Robert Schiele (2):
-      pre-POSIX.1-2001 systems do not have <sys/select.h>
-      Makefile: customization for supporting HP-UX
-
-Sam Vilain (1):
-      git-svn(1): update instructions for resuming a git-svn clone
-
-Shawn O. Pearce (10):
-      git-gui: Honor the standard commit-msg hook
-      git-gui: Correct window title for hook failure dialogs
-      git-gui: Consolidate hook execution code into a single function
-      git-gui: Correct encoding of glossary/fr.po to UTF-8
-      Teach fast-import to honor pack.compression and pack.depth
-      Document the hairy gfi_unpack_entry part of fast-import
-      git-gui: Work around random missing scrollbar in revision list
-      git-gui: Fallback to Tcl based po2msg.sh if msgfmt isn't available
-      git-gui: Make the statistics of po2msg match those of msgfmt
-      git-gui: Correctly cleanup msgfmt '1 message untranslated' output
-
-Steffen Prohaska (3):
-      submodule: Document the details of the command line syntax
-      t9400-git-cvsserver-server: Wrap setup into test case
-      cvsserver: Fix for histories with multiple roots
-
+Dmitri
