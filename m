@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbYA1BrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbYA1BtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758588AbYA1BrS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 20:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYA1BrD
+	id S1758111AbYA1BtT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 20:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYA1BtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 20:47:03 -0500
-Received: from mga11.intel.com ([192.55.52.93]:30679 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752705AbYA1BrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 20:47:01 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,257,1199692800"; 
-   d="scan'208";a="508901763"
-Subject: Re: [RFC] some page can't be migrated
-From: Shaohua Li <shaohua.li@intel.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200801281243.08849.nickpiggin@yahoo.com.au>
-References: <1201069357.32059.13.camel@sli10-desk.sh.intel.com>
-	 <1201241005.24290.5.camel@sli10-desk.sh.intel.com>
-	 <20080126220351.a04819f9.akpm@linux-foundation.org>
-	 <200801281243.08849.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Mon, 28 Jan 2008 09:48:28 +0800
-Message-Id: <1201484908.1737.0.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Sun, 27 Jan 2008 20:49:12 -0500
+Received: from rv-out-0910.google.com ([209.85.198.190]:19903 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752705AbYA1BtK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 20:49:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tXepo6tEwEPlMjI3w2JVnYsSHHYQVr5gHCEfhaub919H/+RvCfhdCW9mA4g5mwnvjH6vUrxTCCvpZH5pP/dUVAkQha38mZXt2bqVrZBdLRBPs7ZZHGvLflrj+XoEbdAy+CUzif5u2ECvxDA6nwKNGSlQt/9JpH654Xa8ybiTmQM=
+Message-ID: <86802c440801271749h3c479b81rf1a5edda25f1f259@mail.gmail.com>
+Date: Sun, 27 Jan 2008 17:49:08 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 3/9] x86_64: Switch to .data.compressed in arch/x86/boot/compressed/vmlinux_64.scr
+Cc: "Ian Campbell" <ijc@hellion.org.uk>, linux-kernel@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@redhat.com>
+In-Reply-To: <479D22CF.6060201@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ff184a8ea93f18a787bb9bd0c860036219b83ee0.1201348185.git.ijc@hellion.org.uk>
+	 <d4158549e6497ee261ed220d9cbc8ca8fced8ba7.1201348185.git.ijc@hellion.org.uk>
+	 <86802c440801261659s1102f38cr16858d350929b0e1@mail.gmail.com>
+	 <1201471499.18241.23.camel@localhost.localdomain>
+	 <86802c440801271538xce702c2l6b0ddbccfcdf9553@mail.gmail.com>
+	 <479D22CF.6060201@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 27, 2008 4:33 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+>
+> Yinghai Lu wrote:
+> > On Jan 27, 2008 2:04 PM, Ian Campbell <ijc@hellion.org.uk> wrote:
+> >> On Sat, 2008-01-26 at 16:59 -0800, Yinghai Lu wrote:
+> >>
+> >>> can you make 32 bit use .text.compressed instead ?
+> >> Any reason to prefer .text? It is data at this stage after all.
+> >>
+> > it is comressed text insead of compressed data.
+> >
+>
+> No it's not.  It's both.
 
-On Mon, 2008-01-28 at 12:43 +1100, Nick Piggin wrote:
-> On Sunday 27 January 2008 17:03, Andrew Morton wrote:
-> > > On Fri, 25 Jan 2008 14:03:25 +0800 Shaohua Li <shaohua.li@intel.com>
-> > > wrote:
-> > >
-> > > -	if (!page->mapping)
-> > > +	if (!page->mapping) {
-> > > +		if (!PageAnon(page) && PagePrivate(page))
-> > > +			try_to_release_page(page, GFP_KERNEL);
-> > >  		goto rcu_unlock;
-> > > +	}
-> >
-> > We call something(GFP_KERNEL) under rcu_read_lock()?  I've lost track of
-> > the myriad flavours of rcu which we purport to support, but I don't think
-> > they'll all like us blocking under rcu_read_lock().
-> >
-> > We _won't_ block, because try_to_release_page() will see the NULL ->mapping
-> > and will call the non-blocking try_to_free_buffers().  But still, it looks
-> > bad, and will cause problems if someone decides to add a might_sleep_if()
-> > to try_to_release_page().
-> >
-> > So...  I'd suggest that it would be better to add an apologetic comment and
-> > call direct into try_to_free_buffers().
-> 
-> You're right, but can't we just rcu_read_unlock() before try_to_release_page?
-or we could move the code above before doing rcu_read_lock()?
+payload.compressed ?
 
+YH
