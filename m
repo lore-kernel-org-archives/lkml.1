@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbYA1Rbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbYA1ReU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758036AbYA1Rbf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 12:31:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYA1Rb0
+	id S1761240AbYA1ReU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 12:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYA1ReI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 12:31:26 -0500
-Received: from vms042pub.verizon.net ([206.46.252.42]:46162 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751893AbYA1RbZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 12:31:25 -0500
-Date: Mon, 28 Jan 2008 12:30:32 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Problem with ata layer in 2.6.24
-In-reply-to: <1201540830.6526.19.camel@localhost>
-To: Zan Lynx <zlynx@acm.org>
-Cc: Calvin Walton <calvin.walton@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-Message-id: <200801281230.32910.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200801272122.21823.gene.heskett@gmail.com>
- <1201539043.31293.7.camel@zem> <1201540830.6526.19.camel@localhost>
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+	Mon, 28 Jan 2008 12:34:08 -0500
+Received: from styx.suse.cz ([82.119.242.94]:44244 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752120AbYA1ReG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 12:34:06 -0500
+Date: Mon, 28 Jan 2008 18:34:05 +0100
+From: Jan Kara <jack@suse.cz>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Diego Calleja <diegocg@gmail.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>
+Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
+Message-ID: <20080128173405.GH14038@duck.suse.cz>
+References: <200801242336.00340.a1426z@gawab.com> <20080124225026.55fc6c20.diegocg@gmail.com> <200801260827.43284.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200801260827.43284.a1426z@gawab.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 January 2008, Zan Lynx wrote:
->On Mon, 2008-01-28 at 11:50 -0500, Calvin Walton wrote:
->> On Mon, 2008-01-28 at 11:35 -0500, Gene Heskett wrote:
->> > On Monday 28 January 2008, Mikael Pettersson wrote:
->> > >Unfortunately we also see:
->> > > > [   48.285456] nvidia: module license 'NVIDIA' taints kernel.
->> > > > [   48.549725] ACPI: PCI Interrupt 0000:02:00.0[A] -> Link [APC4] ->
->> > > > GSI 19 (level, high) -> IRQ 20 [   48.550149] NVRM: loading NVIDIA
->> > > > UNIX x86 Kernel Module  169.07  Thu Dec 13 18:42:56 PST 2007
->> > >
->> > >We have no way of debugging that module, so please try 2.6.24 without
->> > > it.
->> >
->> > Sorry, I can't do this and have a working machine.  The nv driver has
->> > suffered bit rot or something since the FC2 days when it COULD run a 19"
->> > crt at 1600x1200, and will not drive this 20" wide screen lcd 1680x1050
->> > monitor at more than 800x600, which is absolutely butt ugly fuzzy,
->> > looking like a jpg compressed to 10%.  The system is not usable on a day
->> > to basis without the nvidia driver.
->>
->> You should probably give the nouveau[1] driver a try, if only for
->> testing purposes; if you are running an NV4x (G6x or G7x) card in
->> particular, it works a lot better than the nv driver for 2d support.
->>
->> 1. http://nouveau.freedesktop.org/wiki/InstallNouveau
->
->But nouveau is much less stable than nv.  For testing purposes, go with
->stable.
->
-I believe at this point, its moot.  I captured quite a few instances of that 
-error message while rebooting the last time, all of which occurred long 
-before I logged in and did a startx (I boot to runlevel 3 here), so the 
-kernel was NOT tainted at that point.  That dmesg has been posted and some 
-questions asked.
+On Sat 26-01-08 08:27:43, Al Boldi wrote:
+> Diego Calleja wrote:
+> > El Thu, 24 Jan 2008 23:36:00 +0300, Al Boldi <a1426z@gawab.com> escribió:
+> > > Greetings!
+> > >
+> > > data=ordered mode has proven reliable over the years, and it does this
+> > > by ordering filedata flushes before metadata flushes.  But this
+> > > sometimes causes contention in the order of a 10x slowdown for certain
+> > > apps, either due to the misuse of fsync or due to inherent behaviour
+> > > like db's, as well as inherent starvation issues exposed by the
+> > > data=ordered mode.
+> >
+> > There's a related bug in bugzilla:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=9546
+> >
+> > The diagnostic from Jan Kara is different though, but I think it may be
+> > the same problem...
+> >
+> > "One process does data-intensive load. Thus in the ordered mode the
+> > transaction is tiny but has tons of data buffers attached. If commit
+> > happens, it takes a long time to sync all the data before the commit
+> > can proceed... In the writeback mode, we don't wait for data buffers, in
+> > the journal mode amount of data to be written is really limited by the
+> > maximum size of a transaction and so we write by much smaller chunks
+> > and better latency is thus ensured."
+> >
+> >
+> > I'm hitting this bug too...it's surprising that there's not many people
+> > reporting more bugs about this, because it's really annoying.
+> >
+> >
+> > There's a patch by Jan Kara (that I'm including here because bugzilla
+> > didn't include it and took me a while to find it) which I don't know if
+> > it's supposed to fix the problem , but it'd be interesting to try:
+> 
+> Thanks a lot, but it doesn't fix it.
+  Hmm, if you're willing to test patches, then you could try a debug patch:
+http://bugzilla.kernel.org/attachment.cgi?id=14574
+  and send me the output. What kind of load do you observe problems with
+and which problems exactly?
 
-As this has gone on for a while, it seems to me that with 14,800 google hits 
-on this problem, Linus should call a halt until this is found and fixed.  But 
-I'm not Linus.  I'm also locking up for 30 at a time, & probably ready for 
-reboot #7 today.
-
->I'm not sure why it won't run his screen though.  I can use nv to run a
->1920x1200 laptop LCD.  It *is* dog slow (although nouveau was not any
->better with a NV17 / 440-Go -- render support for AA fonts seems to be
->missing), but it does work.
-
-
-
+									Honza
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-There cannot be a crisis next week.  My schedule is already full.
-		-- Henry Kissinger
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
