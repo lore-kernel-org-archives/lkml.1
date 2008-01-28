@@ -1,127 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbYA1KfD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbYA1Kk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756300AbYA1KfD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 05:35:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbYA1Key
+	id S1755423AbYA1Kk1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 05:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYA1KkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 05:34:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56012 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752765AbYA1Kex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 05:34:53 -0500
-Date: Mon, 28 Jan 2008 11:34:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Mike Travis <travis@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] x86_64: mark x86_cpu_to_node_map_init to __initdata
-	like other xx_init
-Message-ID: <20080128103439.GC24010@elte.hu>
-References: <200801280116.54810.yinghai.lu@sun.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801280116.54810.yinghai.lu@sun.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 28 Jan 2008 05:40:15 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:20325 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751227AbYA1KkN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 05:40:13 -0500
+X-IronPort-AV: E=Sophos;i="4.25,258,1199682000"; 
+   d="scan'208";a="61042902"
+Subject: Re: [rfc] exposing MMR's of on-chip peripherals for debugging
+	purposes
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bryan Wu <cooloney.lkml@gmail.com>
+In-Reply-To: <8bd0f97a0801280216x56d52028s2ea247dd969e85e2@mail.gmail.com>
+References: <8bd0f97a0801280216x56d52028s2ea247dd969e85e2@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Mon, 28 Jan 2008 18:40:11 +0800
+Message-Id: <1201516811.7547.46.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 28 Jan 2008 10:40:11.0809 (UTC) FILETIME=[28D6E910:01C8619A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+On Mon, 2008-01-28 at 05:16 -0500, Mike Frysinger wrote:
+> we have guys who maintain xml descriptions of all Blackfin processors.
+>  these include an exhaustive list of all the peripherals and their
+> MMRs.  for example, there is an element that binds the address, the
+> MMR name (as described in the processor's hardware manual), the bit
+> size of it, and all those fun details.  i feed these xml files through
+> an xsl to generate a C file that populates /sys/kernel/debug/blackfin/
+> by using the standard debugfs functions.  so when i'm debugging the
+> watchdog driver, i can simply go into
+> /sys/kernel/debug/blackfin/watchdog/ and see the watchdog-specific
+> MMRs and cat/echo them on the fly.  it's been quite handy and feedback
+> from customers/developers is that it's nicely filled a small void in
+> the development process.
+> 
 
-> -int x86_cpu_to_node_map_init[NR_CPUS] = {
-> +int x86_cpu_to_node_map_init[NR_CPUS] __initdata = {
->  	[0 ... NR_CPUS-1] = NUMA_NO_NODE
->  };
+Mike is a quick developer, I am trying to keep up with him.
+Exactly, the MMR debug FS interface helps very much for developers and
+customers.
 
-i remember some linker warning here. While this array should indeed only 
-be used in early init, that decision is dynamic and our linker warnings 
-do not notice it. There's a special marker for such cases: 
-__initdata_refok. But ... i'm slightly nervous about turning off a vital 
-warning like that.
+> the trouble is that this file currently weighs in at ~1.8 megs.  this
+> is because it contains all the information for all Blackfin processors
+> we support (which currently, is about ~23 variants).  it's only going
+> to get bigger as we support more.  Bryan cringes at the thought of
+> submitting it to LKML :).  so i'm fishing around for alternatives ...
+> the code was originally developed against 2.6.21, so UIO was not a
+> possibility.  i'm still not sure if it is ... i'd have to research it
+> a bit more and play with things.
+> 
 
-Sam, it would be nice to have a DEBUG_INITDATA mode of operation: in 
-this case free_initmem() would not truly free those pages but would 
-unmap them via:
+The main reason I am not willing to submit this to mainline is the file
+size. It's almost the biggest file in the kernel source. And it will be
+bigger and bigger when more and more new Blackfin processors supported
+by Linux kernel.
 
-   kernel_map_pages(page, nrpages, 0);
+My suggestion is:
+ - move the large MMR table to user space
+ - add an interface of debug FS which let uses space app to send the large table to debug FS
+ - debug FS will take care of the rest HW things according to each architecture. 
 
-could be made dependent on DEBUG_PAGEALLOC.
+Or more deeper thought:
+ - we don't need all the MMR setup at the same time for debugging. for example, maybe for some developer, he/she only needs one driver MMR for debugging such as watchdog/usb/spi/i2c ....
+ - How about split the debug MMR table to each drivers or processors?
+ - watchdog driver implements a debug FS interface for debugging watchdog MMR and other drivers implement their own things.
 
-If this debugging is enabled then if any code references it, we get a 
-hard page fault. If we had a debug mode like that then bugs in this area 
-would not go unnoticed.
+I am not familiar with UIO, is it easy interactive with debug FS?
 
-Or perhaps just make this part of normal DEBUG_PAGEALLOC. Like the patch 
-below on top of latest x86.git. Hm?
-
-	Ingo
-
-------------------->
-Subject: x86: init memory debugging
-From: Ingo Molnar <mingo@elte.hu>
-
-debug incorrect/late access to init memory, by permanently unmapping
-the init memory ranges. Depends on CONFIG_DEBUG_PAGEALLOC=y.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/init_32.c |   12 ++++++++++++
- arch/x86/mm/init_64.c |   11 +++++++++++
- 2 files changed, 23 insertions(+)
-
-Index: linux-x86.q/arch/x86/mm/init_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/mm/init_32.c
-+++ linux-x86.q/arch/x86/mm/init_32.c
-@@ -794,6 +794,18 @@ void free_init_pages(char *what, unsigne
- 	unsigned long addr;
- 
- 	/*
-+	 * If debugging page accesses then do not free this memory but
-+	 * mark them not present - any buggy init-section access will
-+	 * create a kernel page fault:
-+	 */
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+	printk(KERN_INFO "debug: unmapping init memory %08lx..%08lx\n",
-+		begin, PAGE_ALIGN(end));
-+	set_memory_np(begin, (end - begin) >> PAGE_SHIFT);
-+	return;
-+#endif
-+	set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
-+	/*
- 	 * We just marked the kernel text read only above, now that
- 	 * we are going to free part of that, we need to make that
- 	 * writeable first.
-Index: linux-x86.q/arch/x86/mm/init_64.c
-===================================================================
---- linux-x86.q.orig/arch/x86/mm/init_64.c
-+++ linux-x86.q/arch/x86/mm/init_64.c
-@@ -580,6 +580,17 @@ void free_init_pages(char *what, unsigne
- 	if (begin >= end)
- 		return;
- 
-+	/*
-+	 * If debugging page accesses then do not free this memory but
-+	 * mark them not present - any buggy init-section access will
-+	 * create a kernel page fault:
-+	 */
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+	printk(KERN_INFO "debug: unmapping init memory %08lx..%08lx\n",
-+		begin, PAGE_ALIGN(end));
-+	set_memory_np(begin, (end - begin) >> PAGE_SHIFT);
-+	return;
-+#endif
- 	printk(KERN_INFO "Freeing %s: %luk freed\n", what, (end - begin) >> 10);
- 
- 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
+Thanks
+-Bryan Wu
