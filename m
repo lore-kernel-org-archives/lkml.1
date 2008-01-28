@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbYA1URq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYA1UXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756358AbYA1URq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 15:17:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbYA1URe
+	id S1753203AbYA1UXA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 15:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbYA1UWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 15:17:34 -0500
-Received: from [212.12.190.100] ([212.12.190.100]:54394 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751474AbYA1URc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 15:17:32 -0500
-From: Al Boldi <a1426z@gawab.com>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: [RFC] ext3: per-process soft-syncing data=ordered mode
-Date: Mon, 28 Jan 2008 23:17:19 +0300
-User-Agent: KMail/1.5
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200801242336.00340.a1426z@gawab.com> <200801260827.59675.a1426z@gawab.com> <20080128172726.GG14038@duck.suse.cz>
-In-Reply-To: <20080128172726.GG14038@duck.suse.cz>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 28 Jan 2008 15:22:52 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:39014 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751282AbYA1UWv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 15:22:51 -0500
+Subject: Re: [CPUISOL] CPU isolation extensions
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Max Krasnyanskiy <maxk@qualcomm.com>, Paul Jackson <pj@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>
+In-Reply-To: <Pine.LNX.4.58.0801281358070.10419@gandalf.stny.rr.com>
+References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
+	 <1201511305.6149.30.camel@lappy> <20080128085910.7d38e9f5.pj@sgi.com>
+	 <20080128163450.GC12598@goodmis.org> <479E2305.3040408@qualcomm.com>
+	 <Pine.LNX.4.58.0801281358070.10419@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Mon, 28 Jan 2008 21:22:09 +0100
+Message-Id: <1201551730.28547.54.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200801282317.19124.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
-> On Sat 26-01-08 08:27:59, Al Boldi wrote:
-> > Do you mean there is a locking problem?
->
->   No, but if you write to an mmaped file, then we can find out only later
-> we have dirty data in pages and we call writepage() on behalf of e.g.
-> pdflush().
 
-Ok, that's a special case, which we could code for, but doesn't seem 
-worthwile.  In any case, child-forks should inherit its parent mode.
+On Mon, 2008-01-28 at 14:00 -0500, Steven Rostedt wrote:
+> 
+> On Mon, 28 Jan 2008, Max Krasnyanskiy wrote:
+> > >>   [PATCH] [CPUISOL] Support for workqueue isolation
+> > >
+> > > The thing about workqueues is that they should only be woken on a CPU if
+> > > something on that CPU accessed them. IOW, the workqueue on a CPU handles
+> > > work that was called by something on that CPU. Which means that
+> > > something that high prio task did triggered a workqueue to do some work.
+> > > But this can also be triggered by interrupts, so by keeping interrupts
+> > > off the CPU no workqueue should be activated.
+> 
+> > No no no. That's what I though too ;-). The problem is that things like NFS and friends
+> > expect _all_ their workqueue threads to report back when they do certain things like
+> > flushing buffers and stuff. The reason I added this is because my machines were getting
+> > stuck because CPU0 was waiting for CPU1 to run NFS work queue threads even though no IRQs
+> > or other things are running on it.
+> 
+> This sounds more like we should fix NFS than add this for all workqueues.
+> Again, we want workqueues to run on the behalf of whatever is running on
+> that CPU, including those tasks that are running on an isolcpu.
 
-> > > And in case of DB, they use direct-io
-> > > anyway most of the time so they don't care about journaling mode
-> > > anyway.
+agreed, by looking at my top output (and not the nfs code) it looks like
+it just spawns a configurable number of active kernel threads which are
+not cpu bound by in any way. I think just removing the isolated cpus
+from their runnable mask should take care of them.
+
+> 
 > >
-> > Testing with sqlite3 and mysql4 shows that performance drastically
-> > improves with writeback writeout.
->
->   And do you have the databases configured to use direct IO or not?
+> > >>   [PATCH] [CPUISOL] Isolated CPUs should be ignored by the "stop machine"
+> > >
+> > > This I find very dangerous. We are making an assumption that tasks on an
+> > > isolated CPU wont be doing things that stopmachine requires. What stops
+> > > a task on an isolated CPU from calling something into the kernel that
+> > > stop_machine requires to halt?
+> 
+> > I agree in general. The thing is though that stop machine just kills any kind of latency
+> > guaranties. Without the patch the machine just hangs waiting for the stop-machine to run
+> > when module is inserted/removed. And running without dynamic module loading is not very
+> > practical on general purpose machines. So I'd rather have an option with a big red warning
+> > than no option at all :).
+> 
+> Well, that's something one of the greater powers (Linus, Andrew, Ingo)
+> must decide. ;-)
 
-I don't think so, but these tests are only meant to expose the underlying 
-problem which needs to be fixed, while this RFC proposes a useful 
-workaround.
+I'm in favour of better engineered method, that is, we really should try
+to solve these problems in a proper way. Hacks like this might be fine
+for custom kernels, but I think we should have a higher standard when it
+comes to upstream - we all have to live many years with whatever we put
+in there, we'd better think well about it.
 
-In another post Jan Kara wrote:
->   Hmm, if you're willing to test patches, then you could try a debug
-> patch: http://bugzilla.kernel.org/attachment.cgi?id=14574
->   and send me the output. What kind of load do you observe problems with
-> and which problems exactly?
-
-8M-record insert into indexed db-table:
-         ordered  writeback
-sqlite3:  75m22s    8m45s
-mysql4 :  23m35s    5m29s
-
-Also, see the 'konqueror deadlocks in 2.6.22' thread.
-
-
-Thanks!
-
---
-Al
 
