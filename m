@@ -1,85 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761695AbYA1QgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbYA1Qj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761695AbYA1QgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 11:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbYA1QgE
+	id S1760074AbYA1Qj6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 11:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYA1Qju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 11:36:04 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:51380 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753171AbYA1QgB (ORCPT
+	Mon, 28 Jan 2008 11:39:50 -0500
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:33874
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbYA1Qjt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 11:36:01 -0500
-Date: Mon, 28 Jan 2008 11:34:50 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Paul Jackson <pj@sgi.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, maxk@qualcomm.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, srostedt@redhat.com,
-       ghaskins@novell.com
-Subject: Re: [CPUISOL] CPU isolation extensions
-Message-ID: <20080128163450.GC12598@goodmis.org>
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com> <1201511305.6149.30.camel@lappy> <20080128085910.7d38e9f5.pj@sgi.com>
+	Mon, 28 Jan 2008 11:39:49 -0500
+X-Greylist: delayed 1734 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jan 2008 11:39:49 EST
+Message-ID: <479DFE7F.9030305@qumranet.com>
+Date: Mon, 28 Jan 2008 18:10:39 +0200
+From: Izik Eidus <izike@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080128085910.7d38e9f5.pj@sgi.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Andrea Arcangeli <andrea@qumranet.com>
+CC: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 0/4] [RFC] MMU Notifiers V1
+References: <20080125055606.102986685@sgi.com> <20080125114229.GA7454@v2.random>
+In-Reply-To: <20080125114229.GA7454@v2.random>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 08:59:10AM -0600, Paul Jackson wrote:
-> Thanks for the CC, Peter.
+Andrea Arcangeli wrote:
+> On Thu, Jan 24, 2008 at 09:56:06PM -0800, Christoph Lameter wrote:
+>   
+>> Andrea's mmu_notifier #4 -> RFC V1
+>>
+>> - Merge subsystem rmap based with Linux rmap based approach
+>> - Move Linux rmap based notifiers out of macro
+>> - Try to account for what locks are held while the notifiers are
+>>   called.
+>> - Develop a patch sequence that separates out the different types of
+>>   hooks so that it is easier to review their use.
+>> - Avoid adding #include to linux/mm_types.h
+>> - Integrate RCU logic suggested by Peter.
+>>     
+>
+> I'm glad you're converging on something a bit saner and much much
+> closer to my code, plus perfectly usable by KVM optimal rmap design
+> too. It would have preferred if you would have sent me patches like
+> Peter did for review and merging etc... that would have made review
+> especially easier. Anyway I'm used to that on lkml so it's ok, I just
+> need this patch to be included in mainline, everything else is
+> irrelevant to me.
+>
+> On a technical merit this still partially makes me sick and I think
+> it's the last issue to debate.
+>
+> @@ -971,6 +974,9 @@ int try_to_unmap(struct page *page, int 
+>         else
+>                 ret = try_to_unmap_file(page, migration);
+>
+> +       if (unlikely(PageExternalRmap(page)))
+> +               mmu_rmap_notifier(invalidate_page, page);
+> +
+>         if (!page_mapped(page))
+>                 ret = SWAP_SUCCESS;
+>         return ret;
+>
+> I find the above hard to accept, because the moment you work with
+> physical pages and not "mm+address" I think you couldn't possibly care
+> if page_mapped is true or false, and I think the above notifier should
+> be called _outside_ try_to_unmap. Infact I'd call
+> mmu_rmap_notifier(invalidate_page, page); only if page_unmapped is
+> false and the linux pte is gone already (practically just before the
+> page_count == 2 check and after try_to_unmap).
+>   
 
-Thanks from me too.
+i dont understand how is that better than notification on tlb flush?
+i mean cpus have very smiler problem as we do,
+so why not deal with the notification at the same place as they do (tlb 
+flush) ?
 
-> Max wrote:
-> > We've had scheduler support for CPU isolation ever since O(1) scheduler went it. 
-> > I'd like to extend it further to avoid kernel activity on those CPUs as much as possible.
-> 
-> I recently added the per-cpuset flag 'sched_load_balance' for some
-> other realtime folks, so that they can disable the kernel scheduler
-> load balancing on isolated CPUs.  It essentially allows for dynamic
-> control of which CPUs are isolated by the scheduler, using the cpuset
-> hierarchy, rather than enhancing the 'isolated_cpus' mask.   That
-> 'isolated_cpus' mask remained a minimal kernel boottime parameter.
-> I believe this went to Linus's tree about Oct 2007.
-> 
-> It looks like you have three additional tweaks for realtime in this
-> patch set, with your patches:
-> 
->   [PATCH] [CPUISOL] Do not route IRQs to the CPUs isolated at boot
-
-I didn't know we still routed IRQs to isolated CPUs. I guess I need to
-look deeper into the code on this one. But I agree that isolated CPUs
-should not have IRQs routed to them.
-
->   [PATCH] [CPUISOL] Support for workqueue isolation
-
-The thing about workqueues is that they should only be woken on a CPU if
-something on that CPU accessed them. IOW, the workqueue on a CPU handles
-work that was called by something on that CPU. Which means that
-something that high prio task did triggered a workqueue to do some work.
-But this can also be triggered by interrupts, so by keeping interrupts
-off the CPU no workqueue should be activated.
-
->   [PATCH] [CPUISOL] Isolated CPUs should be ignored by the "stop machine"
-
-This I find very dangerous. We are making an assumption that tasks on an
-isolated CPU wont be doing things that stopmachine requires. What stops
-a task on an isolated CPU from calling something into the kernel that
-stop_machine requires to halt?
-
--- Steve
-
-
-> 
-> It would be interesting to see a patchset with the above three realtime
-> tweaks, layered on this new cpuset 'sched_load_balance' apparatus, rather
-> than layered on changes to make 'isolated_cpus' more dynamic.  Some of us
-> run realtime and cpuset-intensive loads on the same system, so like to
-> have those two capabilities co-operate with each other.
-> 
-> Ingo - what's your sense of the value of the above three realtime tweaks
->        (the last three patches in Max's patch set)?
-> 
+moreover notification on tlb flush allow unmodified applications to work 
+with us
+for example the memory merging driver that i wrote was able to work with kvm
+without any change to its source code.
