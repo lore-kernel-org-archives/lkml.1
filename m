@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbYA1VAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761965AbYA1VBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757331AbYA1VAq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 16:00:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbYA1VAj
+	id S1761965AbYA1VBn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 16:01:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbYA1VBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 16:00:39 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:47908 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752553AbYA1VAi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 16:00:38 -0500
-Message-ID: <479E4201.8040500@oracle.com>
-Date: Mon, 28 Jan 2008 12:58:41 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Mon, 28 Jan 2008 16:01:34 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36813 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752633AbYA1VBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 16:01:33 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native format.
+Date: Mon, 28 Jan 2008 21:59:18 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ian Campbell <ijc@hellion.org.uk>,
+       Mika =?iso-8859-1?q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+References: <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <200801282126.45751.rjw@sisk.pl> <479E3B89.20101@zytor.com>
+In-Reply-To: <479E3B89.20101@zytor.com>
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: michael-lists@free-electrons.com, rob@landley.net,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Documentation: mention email-clients.txt in SubmittingPatches
-References: <200801181120.03168.michael-lists@free-electrons.com>	<20080118083415.07c37f2a.randy.dunlap@oracle.com>	<20080128095245.f8306466.pj@sgi.com>	<20080128081759.4efa8544.randy.dunlap@oracle.com> <20080128133254.f70d50c2.pj@sgi.com>
-In-Reply-To: <20080128133254.f70d50c2.pj@sgi.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200801282159.19616.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Randy wrote:
->> Does Sylpheed IMAP do filtering for you?
->>
->> It does not according to the Sylpheed FAQ, but the FAQ is
->> extremely out of date.
+On Monday, 28 of January 2008, H. Peter Anvin wrote:
+> Rafael J. Wysocki wrote:
+> > On Monday, 28 of January 2008, Pavel Machek wrote:
+> >> Hi!
+> >>
+> >>>>>  /*
+> >>>>>   * Swap suspend & friends need this for resume because things like the intel-agp
+> >>>>>   * driver might have split up a kernel 4MB mapping.
+> >>>>>   */
+> >>>>> -char __nosavedata swsusp_pg_dir[PAGE_SIZE]
+> >>>>> +char swsusp_pg_dir[PAGE_SIZE]
+> >>>> thanks, applied.
+> >> Sorry, this is subtle and I've overlooked it before.
+> >>
+> >> (I thought you were only changing ifdef).
+> >>
+> >> Now you memcpy() over pg_dir when that pgdir is in use during swsusp
+> >> resume.
+> > 
+> > It is not.  swsusp hasn't been using swsusp_pg_dir for several months.
+> > Hence, the patch. :-)
+> > 
+> >> Granted, you memcpy() with same data that already are there, 
+> >> but it may still do some funny effects.
+> >>
+> >> Hmm, but same argument applies to lower levels of paging in 64-bit and
+> >> PAE cases, and we still do that memcpy-over-active-pagetables there...
+> >> :-(.
+> > 
+> > Actually, no.  We only do that with the kernel code mapping which should be
+> > safe as long as TLBs are not flushed (and they aren't).
+> > 
 > 
-> You are correct that the Sylpheed FAQ, such as at:
-> 
->     http://sylpheeddoc.sourceforge.net/en/faq/faq-1.html
-> 
-> states:
-> 
->     1.8 Q08 Does Sylpheed have mail filtering?
->     A. Yes. You can find it in Configuration -> filtering tab.
->     Please note that filtering is not yet implemented for IMAP accounts. 
-> 
-> And you are correct -- that FAQ is out of date.  It seems to be
-> dated 2002.
-> 
-> To answer your question, yes filtering now works fine on IMAP folders
-> using Sylpheed.  I make heavy use of it.  I'm using Sylpheed version
-> 2.2.4 at the moment.
-> 
-> ===
-> 
-> Be that as it may, whether Sylpheed IMAP folder filters worked or not,
-> I'd suggest that the Documentation/email-clients.txt file not engage
-> in evaluation of the general purpose feature sets of various email
-> clients, but rather confine itself to what matters to the kernel
-> mailing list, such as how to get patches formatted correctly.
+> Okay... does that in any way affect using the kernel code mapping 
+> synchronization code to maintain a set of trampoline pagetables?
 
-Agreed.  I'll modify it.
+I really don't think so.
 
--- 
-~Randy
+Rafael
