@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759730AbYA1MXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbYA1MXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759730AbYA1MXR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 07:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbYA1MXF
+	id S1755658AbYA1MXe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 07:23:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760655AbYA1MXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 07:23:05 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38830 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbYA1MXD (ORCPT
+	Mon, 28 Jan 2008 07:23:23 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:59612 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754882AbYA1MXV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 07:23:03 -0500
-Date: Mon, 28 Jan 2008 10:22:32 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Trent Piepho <xyzzy@speakeasy.org>, Hans Verkuil <hverkuil@xs4all.nl>,
-       v4l-dvb-maintainer@linuxtv.org,
-       Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] 2.6.25 regression: VIDEO_DEV=y/m, I2C=n
- compile error
-Message-ID: <20080128102232.4282eef9@gaivota>
-In-Reply-To: <20080128121245.GG1001@does.not.exist>
-References: <20080127185216.GB13300@does.not.exist>
-	<20080127223334.696fce6e@gaivota>
-	<20080128084001.GB1001@does.not.exist>
-	<Pine.LNX.4.58.0801280053010.15635@shell4.speakeasy.net>
-	<20080128094912.1848eacd@gaivota>
-	<20080128121245.GG1001@does.not.exist>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; x86_64-mandriva-linux-gnu)
+	Mon, 28 Jan 2008 07:23:21 -0500
+Date: Mon, 28 Jan 2008 12:20:30 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: rth@twiddle.net, bryan.wu@analog.com, dhowells@redhat.com,
+       gerg@uclinux.org, lethal@linux-sh.org, wli@holomorphy.com,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       torvalds@linux-foundation.org
+Subject: Re: [RFC][PATCH 2/2] xtime_lock vs update_process_times
+Message-ID: <20080128122030.GA14058@flint.arm.linux.org.uk>
+Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, rth@twiddle.net,
+	bryan.wu@analog.com, dhowells@redhat.com, gerg@uclinux.org,
+	lethal@linux-sh.org, wli@holomorphy.com, davem@davemloft.net,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	tglx@linutronix.de, mingo@elte.hu, torvalds@linux-foundation.org
+References: <20080128103953.326762000@chello.nl> <20080128104056.184943000@chello.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080128104056.184943000@chello.nl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008 14:12:45 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
-
-> On Mon, Jan 28, 2008 at 09:49:12AM -0200, Mauro Carvalho Chehab wrote:
-> > > Maybe the kernel headers should provide a couple macros for testing
-> > > configs, since people get it wrong over and over again?
-> > > 
-> > > #define CONFIG_ON(x) (defined(CONFIG_##x) || defined(CONFIG_##x##_MODULE))
-> > > #define CONFIG_AVAIABLE(x) (defined(CONFIG_##x) || (defined(MODULE) && defined(CONFIG_##x##_MODULE)))
-> > 
-> > Seems a good idea to me.
-> > > 
-> > > Not sure what to do about VIDEO_DEV=y, I2C=m.  It should be possible except
-> > > for this function.
-> > 
-> > I don't see much sense on allowing v4l2-common being in-kernel, while having
-> > I2C as module. Also, creating a separate module for just a single function
-> > seems to be overkill.
-> > 
-> > IMO, in this specific case, v4l2-common should also be a module. Not sure,
-> > however,the better syntax on Kconfig. Once, someone suggested a very weird
-> > syntax, like:
-> > 
-> > 	depends on I2C if I2C
+On Mon, Jan 28, 2008 at 11:39:55AM +0100, Peter Zijlstra wrote:
+> move update_process_times() out from under xtime_lock.
 > 
-> Why does anyone want to introduce such a weird syntax for something 
-> that already works with the simple
-> 
-> 	depends on I2C || I2C=n
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-On that time, I nacked the weird syntax. The one you've pointed seems good
-enough.
+Peter,
 
-Trent,
+Mind if I merge:
 
-Could you please prepare the changeset for the macro, as suggested by Ian?
+>  arch/arm/common/time-acorn.c          |    2 --
+>  arch/arm/mach-at91/at91sam926x_time.c |    3 ---
+>  arch/arm/plat-iop/time.c              |    4 ----
+>  arch/arm/plat-s3c24xx/time.c          |    2 --
 
-I'll rewrite my patch to use your macro, and add the "depends on" syntax as
-suggested by Adrian.
+with my patch and submit it as part of the ARM merge (which I'm hoping
+to send in about an hours time.)
 
-Cheers,
-Mauro
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
