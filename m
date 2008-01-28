@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760797AbYA1QE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752409AbYA1QFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760797AbYA1QE6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 11:04:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYA1QEs
+	id S1752409AbYA1QFT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 11:05:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbYA1QEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 11:04:48 -0500
-Received: from ns.suse.de ([195.135.220.2]:42583 "EHLO mx1.suse.de"
+	Mon, 28 Jan 2008 11:04:52 -0500
+Received: from mx2.suse.de ([195.135.220.15]:35407 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbYA1QEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 11:04:46 -0500
+	id S1753605AbYA1QEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 11:04:51 -0500
 Subject: Re: [PATCH] Allocate pnp resources dynamically via krealloc	-
-	working version - Addon patch 1
+	working version - Addon patch 2
 From: Thomas Renninger <trenn@suse.de>
 Reply-To: trenn@suse.de
 To: Rene Herman <rene.herman@keyaccess.nl>
@@ -25,8 +25,8 @@ References: <1200772810.3708.42.camel@queen>
 	 <1201530103.20940.413.camel@queen.suse.de> <479DEE10.6060203@keyaccess.nl>
 Content-Type: text/plain
 Organization: Novell/SUSE
-Date: Mon, 28 Jan 2008 17:04:44 +0100
-Message-Id: <1201536284.20940.424.camel@queen.suse.de>
+Date: Mon, 28 Jan 2008 17:04:49 +0100
+Message-Id: <1201536289.20940.425.camel@queen.suse.de>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
@@ -57,269 +57,107 @@ On Mon, 2008-01-28 at 16:00 +0100, Rene Herman wrote:
 > I"m not sure of the flow of things by the way but if it makes better/nicer 
 > code to just pretend that ISAPnP is also unlimited then I'd say to simply do 
 > so. ISAPnP is getting obsolete anyway, not anything to optimise for...
-Can you try these two "on top" patches pls.
-This one should fix the real cause (the "pnp: Port resource 0 not
-allocated, cannot assign value" messages). The next should avoid the
-NULL pointer in error case:
 
-Also allocate memory for dependent/independent resource lists
+Also go the dynamic way in isapnp layer
 
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 
 ---
- drivers/pnp/manager.c |  138 ++++++++++++++++++++++----------------------------
- 1 file changed, 61 insertions(+), 77 deletions(-)
+ drivers/pnp/isapnp/core.c |   25 +++++++++++++++++--------
+ 1 file changed, 17 insertions(+), 8 deletions(-)
 
-Index: linux-2.6.23/drivers/pnp/manager.c
+Index: linux-2.6.23/drivers/pnp/isapnp/core.c
 ===================================================================
---- linux-2.6.23.orig/drivers/pnp/manager.c
-+++ linux-2.6.23/drivers/pnp/manager.c
-@@ -341,99 +341,89 @@ int pnp_assign_resource(struct pnp_resou
+--- linux-2.6.23.orig/drivers/pnp/isapnp/core.c
++++ linux-2.6.23/drivers/pnp/isapnp/core.c
+@@ -953,7 +953,7 @@ static int isapnp_read_resources(struct 
  
- static int pnp_assign_port(struct pnp_dev *dev, struct pnp_port *rule, int idx)
- {
--	resource_size_t *start, *end;
--	unsigned long *flags;
--
--	if (!pnp_port_ok(dev, idx)) {
--		pnp_print_assign_err("Port", idx);
--		/* pretend we were successful so at least the manager won't try again */
--		return 1;
--	}
-+	struct resource res;
- 
- 	/* check if this resource has been manually set, if so skip */
- 	if (!(dev->res.port_resource[idx].flags & IORESOURCE_AUTO))
- 		return 1;
- 
--	start = &dev->res.port_resource[idx].start;
--	end = &dev->res.port_resource[idx].end;
--	flags = &dev->res.port_resource[idx].flags;
-+	res.start = dev->res.port_resource[idx].start;
-+	res.end = dev->res.port_resource[idx].end;
-+	res.flags = dev->res.port_resource[idx].flags;
- 
- 	/* set the initial values */
--	*flags |= rule->flags | IORESOURCE_IO;
--	*flags &= ~IORESOURCE_UNSET;
-+	res.flags |= rule->flags | IORESOURCE_IO;
-+	res.flags &= ~IORESOURCE_UNSET;
- 
- 	if (!rule->size) {
--		*flags |= IORESOURCE_DISABLED;
-+		res.flags |= IORESOURCE_DISABLED;
-+		pnp_assign_resource(&dev->res, &res);
- 		return 1;	/* skip disabled resource requests */
- 	}
- 
--	*start = rule->min;
--	*end = *start + rule->size - 1;
-+	res.start = rule->min;
-+	res.end = res.start + rule->size - 1;
- 
- 	/* run through until pnp_check_port is happy */
- 	while (!pnp_check_port(dev, idx)) {
--		*start += rule->align;
--		*end = *start + rule->size - 1;
--		if (*start > rule->max || !rule->align)
--			return 0;
-+		res.start += rule->align;
-+		res.end = res.start + rule->size - 1;
-+		if (res.start > rule->max || !rule->align)
-+			return pnp_assign_resource(&dev->res, &res);
- 	}
-+	pnp_assign_resource(&dev->res, &res);
- 	return 1;
- }
- 
- static int pnp_assign_mem(struct pnp_dev *dev, struct pnp_mem *rule, int idx)
- {
--	resource_size_t *start, *end;
--	unsigned long *flags;
--
--	if (!pnp_mem_ok(dev, idx)) {
--		pnp_print_assign_err("System Memory", idx);
--		return 1;
--	}
-+	struct resource res;
- 
- 	/* check if this resource has been manually set, if so skip */
- 	if (!(dev->res.mem_resource[idx].flags & IORESOURCE_AUTO))
- 		return 1;
- 
--	start = &dev->res.mem_resource[idx].start;
--	end = &dev->res.mem_resource[idx].end;
--	flags = &dev->res.mem_resource[idx].flags;
-+	res.start = dev->res.mem_resource[idx].start;
-+	res.end = dev->res.mem_resource[idx].end;
-+	res.flags = dev->res.mem_resource[idx].flags;
- 
- 	/* set the initial values */
--	*flags |= rule->flags | IORESOURCE_MEM;
--	*flags &= ~IORESOURCE_UNSET;
-+	res.flags |= rule->flags | IORESOURCE_MEM;
-+	res.flags &= ~IORESOURCE_UNSET;
- 
- 	/* convert pnp flags to standard Linux flags */
- 	if (!(rule->flags & IORESOURCE_MEM_WRITEABLE))
--		*flags |= IORESOURCE_READONLY;
-+		res.flags |= IORESOURCE_READONLY;
- 	if (rule->flags & IORESOURCE_MEM_CACHEABLE)
--		*flags |= IORESOURCE_CACHEABLE;
-+		res.flags |= IORESOURCE_CACHEABLE;
- 	if (rule->flags & IORESOURCE_MEM_RANGELENGTH)
--		*flags |= IORESOURCE_RANGELENGTH;
-+		res.flags |= IORESOURCE_RANGELENGTH;
- 	if (rule->flags & IORESOURCE_MEM_SHADOWABLE)
--		*flags |= IORESOURCE_SHADOWABLE;
-+		res.flags |= IORESOURCE_SHADOWABLE;
- 
- 	if (!rule->size) {
--		*flags |= IORESOURCE_DISABLED;
-+		res.flags |= IORESOURCE_DISABLED;
-+		pnp_assign_resource(&dev->res, &res);
- 		return 1;	/* skip disabled resource requests */
- 	}
- 
--	*start = rule->min;
--	*end = *start + rule->size - 1;
-+	res.start = rule->min;
-+	res.end = res.start + rule->size - 1;
- 
- 	/* run through until pnp_check_mem is happy */
- 	while (!pnp_check_mem(dev, idx)) {
--		*start += rule->align;
--		*end = *start + rule->size - 1;
--		if (*start > rule->max || !rule->align)
--			return 0;
-+		res.start += rule->align;
-+		res.end = res.start + rule->size - 1;
-+		if (res.start > rule->max || !rule->align)
-+			return pnp_assign_resource(&dev->res, &res);
- 	}
-+	pnp_assign_resource(&dev->res, &res);
- 	return 1;
- }
- 
- static int pnp_assign_irq(struct pnp_dev *dev, struct pnp_irq *rule, int idx)
- {
--	resource_size_t *start, *end;
--	unsigned long *flags;
-+	struct resource res;
- 	int i;
- 
- 	/* IRQ priority: this table is good for i386 */
-@@ -441,48 +431,44 @@ static int pnp_assign_irq(struct pnp_dev
- 		5, 10, 11, 12, 9, 14, 15, 7, 3, 4, 13, 0, 1, 6, 8, 2
- 	};
- 
--	if (!pnp_irq_ok(dev, idx)) {
--		pnp_print_assign_err("Irq", idx);
--		return 1;
--	}
--
- 	/* check if this resource has been manually set, if so skip */
- 	if (!(dev->res.irq_resource[idx].flags & IORESOURCE_AUTO))
- 		return 1;
- 
--	start = &dev->res.irq_resource[idx].start;
--	end = &dev->res.irq_resource[idx].end;
--	flags = &dev->res.irq_resource[idx].flags;
-+	res.start = dev->res.irq_resource[idx].start;
-+	res.end = dev->res.irq_resource[idx].end;
-+	res.flags = dev->res.irq_resource[idx].flags;
- 
- 	/* set the initial values */
--	*flags |= rule->flags | IORESOURCE_IRQ;
--	*flags &= ~IORESOURCE_UNSET;
-+	res.flags |= rule->flags | IORESOURCE_IRQ;
-+	res.flags &= ~IORESOURCE_UNSET;
- 
- 	if (bitmap_empty(rule->map, PNP_IRQ_NR)) {
--		*flags |= IORESOURCE_DISABLED;
-+		res.flags |= IORESOURCE_DISABLED;
-+		pnp_assign_resource(&dev->res, &res);
- 		return 1;	/* skip disabled resource requests */
- 	}
- 
- 	/* TBD: need check for >16 IRQ */
--	*start = find_next_bit(rule->map, PNP_IRQ_NR, 16);
--	if (*start < PNP_IRQ_NR) {
--		*end = *start;
-+	res.start = find_next_bit(rule->map, PNP_IRQ_NR, 16);
-+	if (res.start < PNP_IRQ_NR) {
-+		res.end = res.start;
-+		pnp_assign_resource(&dev->res, &res);
- 		return 1;
- 	}
- 	for (i = 0; i < 16; i++) {
- 		if (test_bit(xtab[i], rule->map)) {
--			*start = *end = xtab[i];
-+			res.start = res.end = xtab[i];
- 			if (pnp_check_irq(dev, idx))
- 				return 1;
+ 	dev->active = isapnp_read_byte(ISAPNP_CFG_ACTIVATE);
+ 	if (dev->active) {
+-		for (tmp = 0; tmp < PNP_MAX_PORT; tmp++) {
++		for (tmp = 0; pnp_port_ok(dev, tmp); tmp++) {
+ 			ret = isapnp_read_word(ISAPNP_CFG_PORT + (tmp << 1));
+ 			if (!ret)
+ 				continue;
+@@ -961,8 +961,10 @@ static int isapnp_read_resources(struct 
+ 			new_res.flags = IORESOURCE_IO;
+ 			if (pnp_assign_resource(res, &new_res))
+ 				pnp_err("Bug in %s", __FUNCTION__);
++			if (tmp > PNP_MAX_PORT)
++				pnp_warn("ISA exceeds spec max port");
+ 		}
+-		for (tmp = 0; tmp < PNP_MAX_MEM; tmp++) {
++		for (tmp = 0; pnp_mem_ok(dev, tmp); tmp++) {
+ 			ret =
+ 			    isapnp_read_word(ISAPNP_CFG_MEM + (tmp << 3)) << 8;
+ 			if (!ret)
+@@ -971,8 +973,10 @@ static int isapnp_read_resources(struct 
+ 			new_res.flags = IORESOURCE_MEM;
+ 			if (pnp_assign_resource(res, &new_res))
+ 				pnp_err("Bug in %s", __FUNCTION__);
++			if (tmp > PNP_MAX_MEM)
++				pnp_warn("ISA exceeds spec max mem");
+ 		}
+-		for (tmp = 0; tmp < PNP_MAX_IRQ; tmp++) {
++		for (tmp = 0; pnp_irq_ok(dev, tmp); tmp++) {
+ 			ret =
+ 			    (isapnp_read_word(ISAPNP_CFG_IRQ + (tmp << 1)) >>
+ 			     8);
+@@ -982,8 +986,11 @@ static int isapnp_read_resources(struct 
+ 			new_res.flags = IORESOURCE_IRQ;
+ 			if (pnp_assign_resource(res, &new_res))
+ 				pnp_err("Bug in %s", __FUNCTION__);
++			if (tmp > PNP_MAX_IRQ)
++				pnp_warn("ISA exceeds spec max irq");
++
+ 		}
+-		for (tmp = 0; tmp < PNP_MAX_DMA; tmp++) {
++		for (tmp = 0; pnp_dma_ok(dev, tmp); tmp++) {
+ 			ret = isapnp_read_byte(ISAPNP_CFG_DMA + tmp);
+ 			if (ret == 4)
+ 				continue;
+@@ -992,6 +999,8 @@ static int isapnp_read_resources(struct 
+ 			new_res.flags = IORESOURCE_DMA;
+ 			if (pnp_assign_resource(res, &new_res))
+ 				pnp_err("Bug in %s", __FUNCTION__);
++			if (tmp > PNP_MAX_DMA)
++				pnp_warn("ISA exceeds spec max dma");
  		}
  	}
--	return 0;
-+	return pnp_assign_resource(&dev->res, &res);
- }
- 
- static void pnp_assign_dma(struct pnp_dev *dev, struct pnp_dma *rule, int idx)
- {
--	resource_size_t *start, *end;
--	unsigned long *flags;
-+	struct resource res;
- 	int i;
- 
- 	/* DMA priority: this table is good for i386 */
-@@ -490,34 +476,32 @@ static void pnp_assign_dma(struct pnp_de
- 		1, 3, 5, 6, 7, 0, 2, 4
- 	};
- 
--	if (!pnp_dma_ok(dev, idx)) {
--		pnp_print_assign_err("DMA", idx);
--		return;
--	}
--
- 	/* check if this resource has been manually set, if so skip */
- 	if (!(dev->res.dma_resource[idx].flags & IORESOURCE_AUTO))
- 		return;
- 
--	start = &dev->res.dma_resource[idx].start;
--	end = &dev->res.dma_resource[idx].end;
--	flags = &dev->res.dma_resource[idx].flags;
-+	res.start = dev->res.dma_resource[idx].start;
-+	res.end = dev->res.dma_resource[idx].end;
-+	res.flags = dev->res.dma_resource[idx].flags;
- 
- 	/* set the initial values */
--	*flags |= rule->flags | IORESOURCE_DMA;
--	*flags &= ~IORESOURCE_UNSET;
-+	res.flags |= rule->flags | IORESOURCE_DMA;
-+	res.flags &= ~IORESOURCE_UNSET;
- 
- 	for (i = 0; i < 8; i++) {
- 		if (rule->map & (1 << xtab[i])) {
--			*start = *end = xtab[i];
--			if (pnp_check_dma(dev, idx))
-+			res.start = res.end = xtab[i];
-+			if (pnp_check_dma(dev, idx)){
-+				pnp_assign_resource(&dev->res, &res);
- 				return;
-+			}
- 		}
+ 	return 0;
+@@ -1017,14 +1026,14 @@ static int isapnp_set_resources(struct p
+ 	isapnp_cfg_begin(dev->card->number, dev->number);
+ 	dev->active = 1;
+ 	for (tmp = 0;
+-	     tmp < PNP_MAX_PORT
++	     pnp_port_ok(dev, tmp)
+ 	     && (res->port_resource[tmp].
+ 		 flags & (IORESOURCE_IO | IORESOURCE_UNSET)) == IORESOURCE_IO;
+ 	     tmp++)
+ 		isapnp_write_word(ISAPNP_CFG_PORT + (tmp << 1),
+ 				  res->port_resource[tmp].start);
+ 	for (tmp = 0;
+-	     tmp < PNP_MAX_IRQ
++	     pnp_irq_ok(dev, tmp)
+ 	     && (res->irq_resource[tmp].
+ 		 flags & (IORESOURCE_IRQ | IORESOURCE_UNSET)) == IORESOURCE_IRQ;
+ 	     tmp++) {
+@@ -1034,14 +1043,14 @@ static int isapnp_set_resources(struct p
+ 		isapnp_write_byte(ISAPNP_CFG_IRQ + (tmp << 1), irq);
  	}
- #ifdef MAX_DMA_CHANNELS
--	*start = *end = MAX_DMA_CHANNELS;
-+	res.start = res.end = MAX_DMA_CHANNELS;
- #endif
--	*flags |= IORESOURCE_UNSET | IORESOURCE_DISABLED;
-+	res.flags |= IORESOURCE_UNSET | IORESOURCE_DISABLED;
-+	pnp_assign_resource(&dev->res, &res);
- }
- 
- /**
-
-
+ 	for (tmp = 0;
+-	     tmp < PNP_MAX_DMA
++	     pnp_dma_ok(dev, tmp)
+ 	     && (res->dma_resource[tmp].
+ 		 flags & (IORESOURCE_DMA | IORESOURCE_UNSET)) == IORESOURCE_DMA;
+ 	     tmp++)
+ 		isapnp_write_byte(ISAPNP_CFG_DMA + tmp,
+ 				  res->dma_resource[tmp].start);
+ 	for (tmp = 0;
+-	     tmp < PNP_MAX_MEM
++	     pnp_mem_ok(dev, tmp)
+ 	     && (res->mem_resource[tmp].
+ 		 flags & (IORESOURCE_MEM | IORESOURCE_UNSET)) == IORESOURCE_MEM;
+ 	     tmp++)
 
 
