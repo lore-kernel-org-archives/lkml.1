@@ -1,84 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbYA1SLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbYA1STA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754040AbYA1SLf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 13:11:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYA1SL2
+	id S1753441AbYA1STA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 13:19:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbYA1SSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 13:11:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52930 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751624AbYA1SL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 13:11:28 -0500
-Date: Mon, 28 Jan 2008 19:11:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, jeremy@goop.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: git-x86 oopses in acpi_ps_peek_opcode
-Message-ID: <20080128181113.GA5375@elte.hu>
-References: <20080128171907.GA24037@basil.nowhere.org> <20080128173449.GA22487@elte.hu> <20080128183204.GA25724@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080128183204.GA25724@one.firstfloor.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 28 Jan 2008 13:18:49 -0500
+Received: from yorgi.telenet-ops.be ([195.130.133.69]:57089 "EHLO
+	yorgi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732AbYA1SSs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 13:18:48 -0500
+X-Greylist: delayed 788 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jan 2008 13:18:48 EST
+Subject: Re: 2.6.24 regression: pan hanging unkilleable and un-straceable
+From: Frederik Himpe <fhimpe@telenet.be>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <200801281246.24043.nickpiggin@yahoo.com.au>
+References: <1200949086.6648.19.camel@Anastacia>
+	 <200801221625.58615.nickpiggin@yahoo.com.au>
+	 <1201354155.6853.4.camel@Anastacia>
+	 <200801281246.24043.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 28 Jan 2008 19:05:29 +0100
+Message-Id: <1201543529.13883.1.camel@Anastacia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5-1mdv2008.1 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> > do you still see that crash?
+On ma, 2008-01-28 at 12:46 +1100, Nick Piggin wrote:
+> On Sunday 27 January 2008 00:29, Frederik Himpe wrote:
+> > On di, 2008-01-22 at 16:25 +1100, Nick Piggin wrote:
+> > > > > On Tuesday 22 January 2008 07:58, Frederik Himpe wrote:
+> > > > > > With Linux 2.6.24-rc8 I often have the problem that the pan usenet
+> > > > > > reader starts using 100% of CPU time after some time. When this
+> > > > > > happens, kill -9 does not work, and strace just hangs when trying
+> > > > > > to attach to the process. The same with gdb. ﻿ps shows the process
+> > > > > > as being in the R state.
+> > > > > >
+> > > > > > I pressed Ctrl-Alt-SysRq-T, and this was shown for pan:
+> > > > > > Jan 21 21:45:01 Anastacia kernel: pan           R  running task
+> > > > > > 0
+> > >
+> > > Nasty. The attached patch is something really simple that can sometimes
+> > > help. sysrq+p is also an option, if you're on a UP system.
+> > >
+> > > Any luck getting traces?
+> >
+> > I just succeeded to reproduce the problem with this patch. Does this
+> > smell like an XFS problem?
+> >
+> > Jan 26 14:17:43 Anastacia kernel: pan           R  running task        0 
+> > 7564      1 Jan 26 14:17:43 Anastacia kernel:  000000003f5b3248
+> > 0000000000001000 ffffffff880c28b0 0000000000000000 Jan 26 14:17:43
+> > Anastacia kernel:  ffff81003f5b3248 ffff81002d1ed900 000000002d1ed900
+> > 0000000000000000 Jan 26 14:17:43 Anastacia kernel:  ffff810016050dd0
+> > fffff000fffff000 0000000000000000 ffff81002d1eda10 Jan 26 14:17:43
+> > Anastacia kernel: Call Trace:
+> > Jan 26 14:17:43 Anastacia kernel:  [_end+127964408/2129947720]
+> > :xfs:xfs_get_blocks+0x0/0x10 Jan 26 14:17:43 Anastacia kernel: 
+> > [unix_poll+0/176] unix_poll+0x0/0xb0 Jan 26 14:17:43 Anastacia kernel: 
+> > [_end+127964408/2129947720] :xfs:xfs_get_blocks+0x0/0x10 Jan 26 14:17:43
+> > Anastacia kernel:  [iov_iter_copy_from_user_atomic+65/160]
+> > iov_iter_copy_from_user_atomic+0x41/0xa0 Jan 26 14:17:43 Anastacia kernel: 
+> > [iov_iter_copy_from_user_atomic+46/160]
+> > iov_iter_copy_from_user_atomic+0x2e/0xa0 Jan 26 14:17:43 Anastacia kernel: 
+> > [generic_file_buffered_write+383/1728]
 > 
-> New the second oops in 
-> allocate_threshold_blocks->sysfs_add_file->kobject_uevent_env happens 
-> (see other mail)
+> Well after trying a lot of writev combinations, I've reproduced a hang
+> *hangs head*.
+> 
+> Does this help?
 
-that's a Linus -git problem, the upstream kobject changes - try Greg's 
-and Yinghai Lu's patch below, does it help?
+I'm currently running with this patch. The problem happens about two
+times a week, so it will take a few days to come to a conclusion whether
+it is fixed. I'll let you all know.
 
-	Ingo
+Thanks for the patch!
 
-Index: linux-x86.q/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-+++ linux-x86.q/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-@@ -450,7 +450,8 @@ recurse:
- 	if (err)
- 		goto out_free;
- 
--	kobject_uevent(&b->kobj, KOBJ_ADD);
-+	if (b)
-+		kobject_uevent(&b->kobj, KOBJ_ADD);
- 
- 	return err;
- 
-@@ -553,8 +554,9 @@ static __cpuinit int threshold_create_de
- 	unsigned int bank;
- 	int err = 0;
- 
-+	printk(KERN_DEBUG "threshold_create_device: cpu %d, bank_map=%02x\n", cpu, per_cpu(bank_map,cpu));
- 	for (bank = 0; bank < NR_BANKS; ++bank) {
--		if (!(per_cpu(bank_map, cpu) & 1 << bank))
-+		if (!(per_cpu(bank_map, cpu) & (1 << bank)))
- 			continue;
- 		err = threshold_create_bank(cpu, bank);
- 		if (err)
-@@ -637,7 +639,7 @@ static void threshold_remove_device(unsi
- 	unsigned int bank;
- 
- 	for (bank = 0; bank < NR_BANKS; ++bank) {
--		if (!(per_cpu(bank_map, cpu) & 1 << bank))
-+		if (!(per_cpu(bank_map, cpu) & (1 << bank)))
- 			continue;
- 		threshold_remove_bank(cpu, bank);
- 	}
+-- 
+Frederik Himpe <fhimpe@telenet.be>
+
