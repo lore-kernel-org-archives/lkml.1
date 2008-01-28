@@ -1,57 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760213AbYA1JNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbYA1JQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760213AbYA1JNu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 04:13:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756139AbYA1JNd
+	id S1758712AbYA1JQP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 04:16:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYA1JP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 04:13:33 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45920 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755584AbYA1JNb (ORCPT
+	Mon, 28 Jan 2008 04:15:59 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:60670 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750776AbYA1JP5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 04:13:31 -0500
-Subject: Re: [CPUISOL] CPU isolation extensions
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: maxk@qualcomm.com
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, Paul Jackson <pj@sgi.com>
-In-Reply-To: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
-Content-Type: text/plain
-Date: Mon, 28 Jan 2008 10:08:25 +0100
-Message-Id: <1201511305.6149.30.camel@lappy>
+	Mon, 28 Jan 2008 04:15:57 -0500
+Date: Mon, 28 Jan 2008 10:15:51 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Brownell <david-b@pacbell.net>, Andrew Victor <linux@maxim.org.za>,
+       Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
+       kernel@avr32linux.org, David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: [PATCH -mm 2/2] PWM LED driver
+Message-ID: <20080128101551.7cbc7af5@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080127213232.ade044d5.akpm@linux-foundation.org>
+References: <1201185225-15789-1-git-send-email-hskinnemoen@atmel.com>
+	<1201185225-15789-2-git-send-email-hskinnemoen@atmel.com>
+	<1201185225-15789-3-git-send-email-hskinnemoen@atmel.com>
+	<20080127213232.ade044d5.akpm@linux-foundation.org>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ You really ought to CC people :-) ]
+On Sun, 27 Jan 2008 21:32:32 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-On Sun, 2008-01-27 at 20:09 -0800, maxk@qualcomm.com wrote:
-> Following patch series extends CPU isolation support. Yes, most people want to virtuallize 
-> CPUs these days and I want to isolate them :).
-> The primary idea here is to be able to use some CPU cores as dedicated engines for running
-> user-space code with minimal kernel overhead/intervention, think of it as an SPE in the 
-> Cell processor.
+> On Thu, 24 Jan 2008 15:33:45 +0100 Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 > 
-> We've had scheduler support for CPU isolation ever since O(1) scheduler went it. 
-> I'd like to extend it further to avoid kernel activity on those CPUs as much as possible.
-> In fact that the primary distinction that I'm making between say "CPU sets" and 
-> "CPU isolation". "CPU sets" let you manage user-space load while "CPU isolation" provides
-> a way to isolate a CPU as much as possible (including kernel activities).
+> > +	if (i > 0) {
+> > +		for (i = i - 1; i >= 0; i--) {
+> > +			led_classdev_unregister(&leds[i].cdev);
+> > +			pwm_channel_free(&leds[i].pwmc);
+> > +		}
+> > +	}
+> 
+> Could be:
+> 
+> 	while (--i > 0) {
+> 		led_classdev_unregister(&leds[i].cdev);
+> 		pwm_channel_free(&leds[i].pwmc);
+> 	}
+> 
+> or thereabouts.
 
-Ok, so you're aware of CPU sets, miss a feature, but instead of
-extending it to cover your needs you build something new entirely?
+Almost...we need to clean up for leds[0] too. Using a postfix decrement
+should take care of that. How about the patch below?
 
-> I'm personally using this for hard realtime purposes. With CPU isolation it's very easy to 
-> achieve single digit usec worst case and around 200 nsec average response times on off-the-shelf
-> multi- processor/core systems under exteme system load. I'm working with legal folks on releasing 
-> hard RT user-space framework for that.
-> I can also see other application like simulators and stuff that can benefit from this.
+Haavard
 
-have you been using just this, or in combination with the -rt effort?
+>From de5002ad71a1000f81817410f02a7d9fbd5d4ecd Mon Sep 17 00:00:00 2001
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Date: Mon, 28 Jan 2008 10:14:14 +0100
+Subject: [PATCH] PWM led driver: Simplify cleanup loop
 
+Why use a for loop inside an if() when we can get away with a simple
+while() loop?
+
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ drivers/leds/leds-atmel-pwm.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/leds/leds-atmel-pwm.c b/drivers/leds/leds-atmel-pwm.c
+index af61f55..187031c 100644
+--- a/drivers/leds/leds-atmel-pwm.c
++++ b/drivers/leds/leds-atmel-pwm.c
+@@ -100,11 +100,9 @@ static int __init pwmled_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ err:
+-	if (i > 0) {
+-		for (i = i - 1; i >= 0; i--) {
+-			led_classdev_unregister(&leds[i].cdev);
+-			pwm_channel_free(&leds[i].pwmc);
+-		}
++	while (i-- > 0) {
++		led_classdev_unregister(&leds[i].cdev);
++		pwm_channel_free(&leds[i].pwmc);
+ 	}
+ 	kfree(leds);
+ 
+-- 
+1.5.3.8
 
