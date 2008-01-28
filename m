@@ -1,58 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762812AbYA1TRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757116AbYA1TWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762812AbYA1TRe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 14:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758075AbYA1TQF
+	id S1757116AbYA1TWM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 14:22:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbYA1TV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 14:16:05 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:59679 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762552AbYA1TQE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 14:16:04 -0500
-Message-ID: <479E29F2.7020307@s5r6.in-berlin.de>
-Date: Mon, 28 Jan 2008 20:16:02 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+	Mon, 28 Jan 2008 14:21:58 -0500
+Received: from mx48.mail.ru ([194.67.23.226]:1691 "EHLO mx48.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751092AbYA1TV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 14:21:57 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Problem with ata layer in 2.6.24
+Date: Mon, 28 Jan 2008 22:21:49 +0300
+User-Agent: KMail/1.9.6 (enterprise 0.20071123.740460)
+Cc: Richard Heck <rgheck@bobjweil.com>, linux-kernel@vger.kernel.org
+References: <200801272122.21823.gene.heskett@gmail.com> <20080128185345.CF0A51871238@smtp03.mtu.ru> <200801281409.05839.gene.heskett@gmail.com>
+In-Reply-To: <200801281409.05839.gene.heskett@gmail.com>
 MIME-Version: 1.0
-To: Jarod Wilson <jwilson@redhat.com>
-CC: linux1394-devel@lists.sourceforge.net,
-       =?ISO-8859-1?Q?Kristian_H=F8?= =?ISO-8859-1?Q?gsberg?= 
-	<krh@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH update] firewire: fix "kobject_add failed for fw* with
- -EEXIST"
-References: <tkrat.e1db90404aee1115@s5r6.in-berlin.de> <tkrat.a4603d89e4c2fde1@s5r6.in-berlin.de> <200801281148.54017.jwilson@redhat.com>
-In-Reply-To: <200801281148.54017.jwilson@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart1491252.XydvviUaXZ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200801282221.53303.arvidjaar@mail.ru>
+X-Spam: Not detected
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarod Wilson wrote:
-> Looks straight-forward enough, and I'll give these a spin shortly and see if I 
-> can reproduce the situation I was hitting with my raid array...
+--nextPart1491252.XydvviUaXZ
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-As far as the naming of devices is concerned, the bug and the necessary
-fix are entirely obvious.
+On Monday 28 January 2008, Gene Heskett wrote:
+> On Monday 28 January 2008, Andrey Borzenkov wrote:
+> >Richard Heck wrote:
+> >> Daniel Barkalow wrote:
+> >>> Can you switch back to old IDE to get your work done (and to make sure
+> >>> it's not a hardware issue that's developed recently)?
+> >>
+> >> I think it'd be really, REALLY helpful to a lot of people if you, or
+> >> someone, could explain in moderate detail how this might be done. I
+> >> tried doing it myself, but I'm not sufficiently expert at configuring
+> >> kernels that I was ever able to figure out how to do it.
+> >
+> >well, here on Mandriva I
+> >
+> >1) compile both IDE and libata as modules
+> >2) create initrd that contains either IDE or libata modules
+> >3) use labels for file system mounts, swaps and resume device.
+> >
+> >
+> >Now 1) should be pretty straightforward (I could send you config if you
+> >like, it is stripped down to bare minimum on my system, you will have to
+> >check drivers for your hardware). 2 and 3 are obviously distribution
+> >dependent. I can explain how to do it on Mandriva that ATM has near to
+> >perfect support for addressing devices via label/UUID; also ide/scsi/ata
+> >switch is trivial using Mandriva mkinitrd.
+> >
+>=20
+> I already build as modules, and it would be relatively easy to make 2 boo=
+t=20
+> stanza's that used the different initrd's if there were examples that cou=
+ld=20
+> be used as 'excludes' when building the initrd's.  Is such a creature=20
+> breedable?
+>=20
 
-But the interaction with userspace processes opening /dev/fwX while the
-respective node is being shut down gave me headaches.  I am still not
-entirely sure if I got it right in the patch update, i.e. if it is free
-from deadlocks.  fw_device_shutdown() and fw_device_op_open() can be
-entered at the same time.  Would device_unregister() have to acquire a
-driver core lock which open() already took?  If yes, device_unregister()
-would be blocked on this lock while fw_device_op_open() is blocked on
-idr_rwsem.
+I am not sure I understand a question (it is not my native language) but he=
+re I=20
+simply do
 
-So why did I move device_unregister() into the idr_rwsem protected
-section in the first place?  That's because I wanted to guarantee that
-fw_device_op_open() wouldn't look up a fw_device which is just in the
-process of being unregistered.  But maybe we don't even need this guarantee.
+mkinitrd --omit-ide-modules --preload pata_ali --preload sd_mod ...
 
-It would all be so easy if I knew how the driver core works.  :-/
--- 
-Stefan Richter
--=====-==--- ---= ===--
-http://arcgraph.de/sr/
+or
+
+mkinitrd --omit-scsi-modules --preload alim15x3 --preload ide-disk ...
+
+If you ask how --omit part is implemented I happily send you mkinitrd scrip=
+t.
+
+--nextPart1491252.XydvviUaXZ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+
+iEYEABECAAYFAkeeK04ACgkQR6LMutpd94xbOACeOjrQs2WzR7GQ7DAdWqi7H1tI
+zHMAniKjwoWxHS+fLbziGfGCaqElD7W4
+=L17v
+-----END PGP SIGNATURE-----
+
+--nextPart1491252.XydvviUaXZ--
