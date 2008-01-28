@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764341AbYA1XNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764373AbYA1XOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764341AbYA1XNp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:13:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764303AbYA1XNR
+	id S1764373AbYA1XOX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:14:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764293AbYA1XNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:13:17 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:43907 "EHLO
+	Mon, 28 Jan 2008 18:13:21 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:42115 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764296AbYA1XNP (ORCPT
+	with ESMTP id S1764300AbYA1XNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:13:15 -0500
+	Mon, 28 Jan 2008 18:13:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=hiMuGixBMILTatvX889tPw8lk2nGqhcdLGJH3fcvGdtw8EgpDdTDa/ab9e8vz5RFyU+1mAO0VAYSKZ4coVOxM6RCpBQ86uFzX6VJeIysYZoRSYxhpASXyTz7GQ5yXIaSZhoXnHi7cHZqL67beXkfCpABdQBpS3NwBN7VWXnNKu8=
-Message-ID: <6101e8c40801281513p24352c4ex6c44e79aefe77696@mail.gmail.com>
-Date: Tue, 29 Jan 2008 00:13:13 +0100
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=i/AN5Lpp7SO58cUr4z9Zn0R6CFczJtIDxpCEy5lYllI1pE5OzmijIFzpciwqfMaBZYeg4j9wbMB8HZoUSjvLhPZfxKnerJRORw1Ld33z6TNr3ZeGAM/QNRrdopKgXwFd3oJN66bJnXwctf/7RiDnOIQySo3VfWTdjmcpLW86xMM=
+Message-ID: <6101e8c40801281513i74a39743j2dbfe764545cb834@mail.gmail.com>
+Date: Tue, 29 Jan 2008 00:13:16 +0100
 From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
 	<oliver.pntr@gmail.com>
 To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
        stable-commits@vger.kernel.org
-Subject: [2.6.22.y] {00/17} series for stable kernel
+Subject: [2.6.22.y] {01/17} - do_anonymous_page-race - series for stable kernel
 Cc: "chrisw@sous-sol.org" <chrisw@sous-sol.org>, "Greg KH" <gregkh@suse.de>,
-       "Willy Tarreau" <w@1wt.eu>, "Adrian Bunk" <bunk@kernel.org>
+       "Willy Tarreau" <w@1wt.eu>, "Adrian Bunk" <bunk@kernel.org>,
+       "Andrea Arcangeli" <andrea@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_8095_22104236.1201561996736"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-do_anonymous_page-race
-invalid-semicolon
-pci-fix-unterminated-pci_device_id-lists
-cciss-panic-in-blk_rq_map_sg
-cciss-fix_memory_leak
-handle-bogus-%cs-selector-in-single-step-instruction-decoding
-i386-fixup-TRACE_IRQ-breakage
-intel-agp-965gme-fix
-sony-laptop-call-sonypi_compat_init-earlier
-via-velocity-dont-oops-on-mtu-change-1
-via-velocity-dont-oops-on-mtu-change-2
-nfsacl-retval.diff
-nfs-fix-nfs-reval-fsid
-nfs-name-len-limit
-nfs-unmount-leak.patch
-nfsv4-MAXNAME-fix.diff
-nopage-range-fix.patch
+------=_Part_8095_22104236.1201561996736
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-this patches is from suse 10.3 kernel, the most is applyied in
-mainline, but 2 not.
-
-/* allyesconfig comile tested and used in my pc with own kernel */
 -- 
 Thanks,
 Oliver
+
+------=_Part_8095_22104236.1201561996736
+Content-Type: text/x-diff; name=do_anonymous_page-race
+Content-Transfer-Encoding: base64
+X-Attachment-Id: file0
+Content-Disposition: attachment; filename=do_anonymous_page-race
+
+Y29tbWl0IDgzMjdlMGYxOTEzNDFjYzMyZmI4OWJmNGQ3YmVlN2MyNTI0YWU0ZTAKQXV0aG9yOiBB
+bmRyZWEgQXJjYW5nZWxpIDxhbmRyZWFAc3VzZS5kZT4KRGF0ZTogICBNb24gSmFuIDI4IDIwOjUy
+OjI5IDIwMDggKzAxMDAKCiAgICBTdWJqZWN0OiBSYWNlIGNvbmRpdGlvbiBpbiB1c2Vyc3BhY2Ug
+dGVzdGNhc2UKICAgIFJlZmVyZW5jZXM6IDQ2OTQ4LCBMVEMxMTU3NAogICAgCiAgICAKICAgIEFk
+ZGl0aW9uYWwgQ29tbWVudCAjMTAzIEZyb20gQW5kcmVhIEFyY2FuZ2VsaSAyMDA0LTEwLTE1IDE5
+OjQxCiAgICB0aGUgbGFzdCBwYXRjaCBJIGF0dGFjaGVkIGlzIHRoZSBzYWZlc3QgSSBiZWxpZXZl
+LgogICAgCiAgICBJJ20gbm90IHN1cmUgaWYgYSBsb2NrX3VubG9jayBvciBsb2NrX3VubG9jayBp
+cyBhbHdheXMgZ3VhcmFudGVlZCB0byBoYXBwZW4KICAgIGFmdGVyIHRoZSBJL08sIGFuZCB0aGlz
+IG1ha2VzIHN1cmUgbm8gcmFjZSBjYW4gaGFwcGVuIGFueW1vcmUuCgpkaWZmIC0tZ2l0IGEvZnMv
+YmlvLmMgYi9mcy9iaW8uYwppbmRleCAwOTMzNDVmLi45ODRkNTg5IDEwMDY0NAotLS0gYS9mcy9i
+aW8uYworKysgYi9mcy9iaW8uYwpAQCAtMTAyOCw2ICsxMDI4LDE1IEBAIHZvaWQgYmlvX2VuZGlv
+KHN0cnVjdCBiaW8gKmJpbywgdW5zaWduZWQgaW50IGJ5dGVzX2RvbmUsIGludCBlcnJvcikKIAli
+aW8tPmJpX3NpemUgLT0gYnl0ZXNfZG9uZTsKIAliaW8tPmJpX3NlY3RvciArPSAoYnl0ZXNfZG9u
+ZSA+PiA5KTsKIAorCWlmIChiaW9fZGF0YV9kaXIoYmlvKSA9PSBSRUFEKQorCQkvKgorCQkgKiBJ
+ZiB0aGUgY3VycmVudCBjcHUgaGFzIHdyaXR0ZW4gdG8gdGhlIHBhZ2UgYnkgaGFuZAorCQkgKiB3
+aXRob3V0IGRtYSwgd2UgbXVzdCBlbmZvcmNlIG9yZGVyaW5nIHRvIGJlIHN1cmUKKwkJICogdGhp
+cyB3cml0dGVuIGRhdGEgd2lsbCBiZSB2aXNpYmxlIGJlZm9yZSB3ZSBleHBvc2UKKwkJICogdGhl
+IHBhZ2UgY29udGVudHMgdG8gb3RoZXIgY3B1cyAoZm9yIGV4YW1wbGUgd2l0aAorCQkgKiBhIHNl
+dF9wdGUpLgorCQkgKi8KKwkJc21wX3dtYigpOwogCWlmIChiaW8tPmJpX2VuZF9pbykKIAkJYmlv
+LT5iaV9lbmRfaW8oYmlvLCBieXRlc19kb25lLCBlcnJvcik7CiB9Cg==
+------=_Part_8095_22104236.1201561996736--
