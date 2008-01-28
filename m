@@ -1,75 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbYA1WKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760474AbYA1WKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753706AbYA1WKM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:10:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbYA1WJZ
+	id S1760474AbYA1WKk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:10:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758249AbYA1WJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 28 Jan 2008 17:09:27 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:44318 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757258AbYA1WJZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Jan 2008 17:09:25 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:52175 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757202AbYA1WJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:09:24 -0500
-Date: Tue, 29 Jan 2008 00:09:50 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] small ide-scan-pci.c cleanup
-Message-ID: <20080128220950.GJ8767@does.not.exist>
+Date: Mon, 28 Jan 2008 23:09:24 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Greg KH <gregkh@suse.de>
+cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 108/196] Kobject: change net/bridge to use kobject_create_and_add
+In-Reply-To: <20080125174552.GA4242@suse.de>
+Message-ID: <Pine.LNX.4.64.0801282309070.1185@fbirervta.pbzchgretzou.qr>
+References: <20080125071127.GA4860@kroah.com> <1201246425-5058-29-git-send-email-gregkh@suse.de>
+ <20080125081923.22425d36@deepthought> <20080125174552.GA4242@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- ide_scan_pcibus() can become static
-- instead of ide_scan_pci() we can use ide_scan_pcibus() directly
-  in module_init()
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-
- drivers/ide/ide-scan-pci.c |    9 ++-------
- include/linux/ide.h        |    1 -
- 2 files changed, 2 insertions(+), 8 deletions(-)
-
-03f221931265eda3ae7dfad9eaa8191e171d2c0c 
-diff --git a/drivers/ide/ide-scan-pci.c b/drivers/ide/ide-scan-pci.c
-index 7ffa332..93d2e41 100644
---- a/drivers/ide/ide-scan-pci.c
-+++ b/drivers/ide/ide-scan-pci.c
-@@ -81,7 +81,7 @@ static int __init ide_scan_pcidev(struct pci_dev *dev)
-  *	module ordering not traditionally ordered.
-  */
- 
--int __init ide_scan_pcibus(void)
-+static int __init ide_scan_pcibus(void)
- {
- 	struct pci_dev *dev = NULL;
- 	struct pci_driver *d;
-@@ -113,9 +113,4 @@ int __init ide_scan_pcibus(void)
- 	return 0;
- }
- 
--static int __init ide_scan_pci(void)
--{
--	return ide_scan_pcibus();
--}
--
--module_init(ide_scan_pci);
-+module_init(ide_scan_pcibus);
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 5d3d88e..7072c53 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1015,7 +1015,6 @@ void ide_init_disk(struct gendisk *, ide_drive_t *);
- 
- #ifdef CONFIG_IDEPCI_PCIBUS_ORDER
- extern int ide_scan_direction;
--int __init ide_scan_pcibus(void);
- extern int __ide_pci_register_driver(struct pci_driver *driver, struct module *owner, const char *mod_name);
- #define ide_pci_register_driver(d) __ide_pci_register_driver(d, THIS_MODULE, KBUILD_MODNAME)
- #else
-
+On Jan 25 2008 09:45, Greg KH wrote:
+>> 
+>> Okay, but where is the new kobject freed?
+>
+>In the call to kobject_unregister(), which has then later in the series
+>been converted to a call to kobject_put().
+>
+Hm, working on LDD 3.1? :-)
