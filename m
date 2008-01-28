@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbYA1WJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbYA1WKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbYA1WJp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:09:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbYA1WJT
+	id S1753706AbYA1WKM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:10:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbYA1WJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:09:19 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:47929 "EHLO smtp5.pp.htv.fi"
+	Mon, 28 Jan 2008 17:09:25 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:52175 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753529AbYA1WJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:09:18 -0500
-Date: Tue, 29 Jan 2008 00:09:44 +0200
+	id S1757202AbYA1WJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:09:24 -0500
+Date: Tue, 29 Jan 2008 00:09:50 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] x86: allow 64bit setting in Kconfig
-Message-ID: <20080128220944.GI8767@does.not.exist>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] small ide-scan-pci.c cleanup
+Message-ID: <20080128220950.GJ8767@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,40 +23,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recently someone told me he had a bug on x86 and to reproduce
-it I should "'make allyesconfig' and disable CONFIG_HOTPLUG=y".
-
-But I didn't see it.
-
-"make allyesconfig" is ambiguous on x86 and he had a 64bit computer.
-
-There go another two hours compile time.
-
-It makes sense to have the Kconfig default and the defconfig based on 
-whether you are on a 32bit or a 64bit machine, but it's complete 
-nonsense to not offer the Kconfig variable unless you had explicitely 
-given ARCH=x86 (in which case you could as well immediately set the ARCH 
-to i386 or x86_64).
+- ide_scan_pcibus() can become static
+- instead of ide_scan_pci() we can use ide_scan_pcibus() directly
+  in module_init()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
-This patch has been sent on:
-- 17 Jan 2008
+ drivers/ide/ide-scan-pci.c |    9 ++-------
+ include/linux/ide.h        |    1 -
+ 2 files changed, 2 insertions(+), 8 deletions(-)
 
-fcf848366a166812fa32b2a22f2631fcd4982cb4 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 80b7ba4..0e6e74d 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -3,7 +3,7 @@ mainmenu "Linux Kernel Configuration for x86"
+03f221931265eda3ae7dfad9eaa8191e171d2c0c 
+diff --git a/drivers/ide/ide-scan-pci.c b/drivers/ide/ide-scan-pci.c
+index 7ffa332..93d2e41 100644
+--- a/drivers/ide/ide-scan-pci.c
++++ b/drivers/ide/ide-scan-pci.c
+@@ -81,7 +81,7 @@ static int __init ide_scan_pcidev(struct pci_dev *dev)
+  *	module ordering not traditionally ordered.
+  */
  
- # Select 32 or 64 bit
- config 64BIT
--	bool "64-bit kernel" if ARCH = "x86"
-+	bool "64-bit kernel"
- 	default ARCH = "x86_64"
- 	help
- 	  Say yes to build a 64-bit kernel - formerly known as x86_64
+-int __init ide_scan_pcibus(void)
++static int __init ide_scan_pcibus(void)
+ {
+ 	struct pci_dev *dev = NULL;
+ 	struct pci_driver *d;
+@@ -113,9 +113,4 @@ int __init ide_scan_pcibus(void)
+ 	return 0;
+ }
+ 
+-static int __init ide_scan_pci(void)
+-{
+-	return ide_scan_pcibus();
+-}
+-
+-module_init(ide_scan_pci);
++module_init(ide_scan_pcibus);
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index 5d3d88e..7072c53 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1015,7 +1015,6 @@ void ide_init_disk(struct gendisk *, ide_drive_t *);
+ 
+ #ifdef CONFIG_IDEPCI_PCIBUS_ORDER
+ extern int ide_scan_direction;
+-int __init ide_scan_pcibus(void);
+ extern int __ide_pci_register_driver(struct pci_driver *driver, struct module *owner, const char *mod_name);
+ #define ide_pci_register_driver(d) __ide_pci_register_driver(d, THIS_MODULE, KBUILD_MODNAME)
+ #else
 
