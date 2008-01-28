@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764714AbYA2AeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbYA2Aef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764714AbYA2AeG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 19:34:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758346AbYA2AdW
+	id S1758831AbYA2Aef (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 19:34:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758773AbYA2AdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 19:33:22 -0500
-Received: from zrnetservice.com ([209.133.52.163]:50315 "EHLO
+	Mon, 28 Jan 2008 19:33:23 -0500
+Received: from zrnetservice.com ([209.133.52.163]:50316 "EHLO
 	www.zrnetservice.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757348AbYA2AdV (ORCPT
+	with ESMTP id S1758116AbYA2AdW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 19:33:21 -0500
+	Mon, 28 Jan 2008 19:33:22 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 2 of 4] x86: revert "defer cr3 reload when doing pud_clear()"
-X-Mercurial-Node: d7a81a4e06370bcc1118cda27e0dcb7536b264d7
-Message-Id: <d7a81a4e06370bcc1118.1201564122@localhost>
+Subject: [PATCH 1 of 4] x86: unify PAE/non-PAE pgd_ctor
+X-Mercurial-Node: 3bf362a4b0534ec44feb78a67cf2f846a7070e21
+Message-Id: <3bf362a4b0534ec44feb.1201564121@localhost>
 In-Reply-To: <patchbomb.1201564120@localhost>
-Date: Mon, 28 Jan 2008 15:48:42 -0800
+Date: Mon, 28 Jan 2008 15:48:41 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
@@ -28,64 +28,101 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Revert "defer cr3 reload when doing pud_clear()" since I'm going to
-replace it.
+The constructors for PAE and non-PAE pgd_ctors are more or less
+identical, and can be made into the same function.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
----
- include/asm-x86/pgalloc_32.h     |    7 -------
- include/asm-x86/pgtable-3level.h |   21 ++++++---------------
- 2 files changed, 6 insertions(+), 22 deletions(-)
+Cc: William Irwin <wli@holomorphy.com>
 
-diff --git a/include/asm-x86/pgalloc_32.h b/include/asm-x86/pgalloc_32.h
---- a/include/asm-x86/pgalloc_32.h
-+++ b/include/asm-x86/pgalloc_32.h
-@@ -74,13 +74,6 @@ static inline void pmd_free(pmd_t *pmd)
+---
+ arch/x86/mm/pgtable_32.c |   58 +++++++++++++++++-----------------------------
+ 1 file changed, 22 insertions(+), 36 deletions(-)
+
+diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
+--- a/arch/x86/mm/pgtable_32.c
++++ b/arch/x86/mm/pgtable_32.c
+@@ -219,50 +219,39 @@ static inline void pgd_list_del(pgd_t *p
+ 	list_del(&page->lru);
+ }
  
- static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
- {
--	/* This is called just after the pmd has been detached from
--	   the pgd, which requires a full tlb flush to be recognized
--	   by the CPU.  Rather than incurring multiple tlb flushes
--	   while the address space is being pulled down, make the tlb
--	   gathering machinery do a full flush when we're done. */
--	tlb->fullmm = 1;
++#define UNSHARED_PTRS_PER_PGD				\
++	(SHARED_KERNEL_PMD ? USER_PTRS_PER_PGD : PTRS_PER_PGD)
+ 
 -
- 	paravirt_release_pd(__pa(pmd) >> PAGE_SHIFT);
- 	tlb_remove_page(tlb, virt_to_page(pmd));
- }
-diff --git a/include/asm-x86/pgtable-3level.h b/include/asm-x86/pgtable-3level.h
---- a/include/asm-x86/pgtable-3level.h
-+++ b/include/asm-x86/pgtable-3level.h
-@@ -96,23 +96,14 @@ static inline void pud_clear(pud_t *pudp
- 	set_pud(pudp, __pud(0));
+-#if (PTRS_PER_PMD == 1)
+-/* Non-PAE pgd constructor */
+-static void pgd_ctor(void *pgd)
++static void pgd_ctor(void *p)
+ {
++	pgd_t *pgd = p;
+ 	unsigned long flags;
  
- 	/*
--	 * In principle we need to do a cr3 reload here to make sure
--	 * the processor recognizes the changed pgd.  In practice, all
--	 * the places where pud_clear() gets called are followed by
--	 * full tlb flushes anyway, so we can defer the cost here.
-+	 * Pentium-II erratum A13: in PAE mode we explicitly have to flush
-+	 * the TLB via cr3 if the top-level pgd is changed...
- 	 *
--	 * Specifically:
--	 *
--	 * mm/memory.c:free_pmd_range() - immediately after the
--	 * pud_clear() it does a pmd_free_tlb().  We change the
--	 * mmu_gather structure to do a full tlb flush (which has the
--	 * effect of reloading cr3) when the pagetable free is
--	 * complete.
--	 *
--	 * arch/x86/mm/hugetlbpage.c:huge_pmd_unshare() - the call to
--	 * this is followed by a flush_tlb_range, which on x86 does a
--	 * full tlb flush.
-+	 * XXX I don't think we need to worry about this here, since
-+	 * when clearing the pud, the calling code needs to flush the
-+	 * tlb anyway.  But do it now for safety's sake. - jsgf
- 	 */
-+	write_cr3(read_cr3());
- }
+-	/* !PAE, no pagetable sharing */
++	/* Clear usermode parts of PGD */
+ 	memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
  
- #define pud_page(pud) \
+ 	spin_lock_irqsave(&pgd_lock, flags);
+ 
+-	/* must happen under lock */
+-	clone_pgd_range((pgd_t *)pgd + USER_PTRS_PER_PGD,
+-			swapper_pg_dir + USER_PTRS_PER_PGD,
+-			KERNEL_PGD_PTRS);
+-	paravirt_alloc_pd_clone(__pa(pgd) >> PAGE_SHIFT,
+-				__pa(swapper_pg_dir) >> PAGE_SHIFT,
+-				USER_PTRS_PER_PGD,
++	/* If the pgd points to a shared pagetable level (either the
++	   ptes in non-PAE, or shared PMD in PAE), then just copy the
++	   references from swapper_pg_dir. */
++	if (PAGETABLE_LEVELS == 2 ||
++	    (PAGETABLE_LEVELS == 3 && SHARED_KERNEL_PMD)) {
++		clone_pgd_range(pgd + USER_PTRS_PER_PGD,
++				swapper_pg_dir + USER_PTRS_PER_PGD,
+ 				KERNEL_PGD_PTRS);
+-	pgd_list_add(pgd);
++		paravirt_alloc_pd_clone(__pa(pgd) >> PAGE_SHIFT,
++					__pa(swapper_pg_dir) >> PAGE_SHIFT,
++					USER_PTRS_PER_PGD,
++					KERNEL_PGD_PTRS);
++	}
++
++	/* list required to sync kernel mapping updates */
++	if (!SHARED_KERNEL_PMD)
++		pgd_list_add(pgd);
++
+ 	spin_unlock_irqrestore(&pgd_lock, flags);
+ }
+-#else  /* PTRS_PER_PMD > 1 */
+-/* PAE pgd constructor */
+-static void pgd_ctor(void *pgd)
+-{
+-	/* PAE, kernel PMD may be shared */
+-
+-	if (SHARED_KERNEL_PMD) {
+-		clone_pgd_range((pgd_t *)pgd + USER_PTRS_PER_PGD,
+-				swapper_pg_dir + USER_PTRS_PER_PGD,
+-				KERNEL_PGD_PTRS);
+-	} else {
+-		unsigned long flags;
+-
+-		memset(pgd, 0, USER_PTRS_PER_PGD*sizeof(pgd_t));
+-		spin_lock_irqsave(&pgd_lock, flags);
+-		pgd_list_add(pgd);
+-		spin_unlock_irqrestore(&pgd_lock, flags);
+-	}
+-}
+-#endif	/* PTRS_PER_PMD */
+ 
+ static void pgd_dtor(void *pgd)
+ {
+@@ -275,9 +264,6 @@ static void pgd_dtor(void *pgd)
+ 	pgd_list_del(pgd);
+ 	spin_unlock_irqrestore(&pgd_lock, flags);
+ }
+-
+-#define UNSHARED_PTRS_PER_PGD				\
+-	(SHARED_KERNEL_PMD ? USER_PTRS_PER_PGD : PTRS_PER_PGD)
+ 
+ #ifdef CONFIG_X86_PAE
+ /*
 
 
