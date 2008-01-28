@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbYA1KlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760319AbYA1Klj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbYA1KlY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 05:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756298AbYA1Kku
+	id S1760319AbYA1Klj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 05:41:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbYA1Kkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 05:40:50 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:59141 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755617AbYA1Kkp (ORCPT
+	Mon, 28 Jan 2008 05:40:51 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:56678 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755904AbYA1Kkq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 05:40:45 -0500
-Message-Id: <20080128104055.935144000@chello.nl>
+	Mon, 28 Jan 2008 05:40:46 -0500
+Message-Id: <20080128104056.184943000@chello.nl>
 References: <20080128103953.326762000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Mon, 28 Jan 2008 11:39:54 +0100
+Date: Mon, 28 Jan 2008 11:39:55 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: rth@twiddle.net, rmk@arm.linux.org.uk, bryan.wu@analog.com,
        dhowells@redhat.com, gerg@uclinux.org, lethal@linux-sh.org,
@@ -21,259 +21,114 @@ To: rth@twiddle.net, rmk@arm.linux.org.uk, bryan.wu@analog.com,
 Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
        tglx@linutronix.de, mingo@elte.hu, torvalds@linux-foundation.org,
        a.p.zijlstra@chello.nl
-Subject: [RFC][PATCH 1/2] Fix many ARM timer handlers
-Content-Disposition: inline; filename=arm-xtime.patch
+Subject: [RFC][PATCH 2/2] xtime_lock vs update_process_times
+Content-Disposition: inline; filename=xtime-foo.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Russell King <rmk@arm.linux.org.uk>
+move update_process_times() out from under xtime_lock.
 
-Mostly untested patch: move the xtime write mode seqlock into
-timer_tick(), so it only surrounds the call to do_timer().
-
-This avoids a deadlock in update_process_times() ...
-hrtimer_get_softirq_time() which tries to get a read mode seqlock
-on xtime.
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- arch/arm/kernel/time.c                   |    2 ++
- arch/arm/mach-aaec2000/core.c            |    4 ----
- arch/arm/mach-clps711x/time.c            |    2 --
- arch/arm/mach-clps7500/core.c            |    4 ----
- arch/arm/mach-ebsa110/core.c             |    4 ----
- arch/arm/mach-ep93xx/core.c              |    4 ----
- arch/arm/mach-footbridge/dc21285-timer.c |    4 ----
- arch/arm/mach-footbridge/isa-timer.c     |    2 --
- arch/arm/mach-h720x/cpu-h7201.c          |    4 ----
- arch/arm/mach-h720x/cpu-h7202.c          |    2 --
- arch/arm/mach-integrator/core.c          |    4 ----
- arch/arm/mach-ixp2000/core.c             |    4 ----
- arch/arm/mach-ks8695/time.c              |    3 ---
- arch/arm/mach-lh7a40x/time.c             |    4 ----
- arch/arm/mach-mx3/time.c                 |    4 ----
- arch/arm/mach-netx/time.c                |    4 ----
- arch/arm/mach-omap2/timer-gp.c           |    4 ----
- arch/arm/mach-pnx4008/time.c             |    4 ----
- arch/arm/mach-realview/core.c            |    4 ----
- arch/arm/mach-sa1100/time.c              |    4 ----
- arch/arm/mach-shark/core.c               |    2 --
- 21 files changed, 2 insertions(+), 71 deletions(-)
+ arch/alpha/kernel/time.c              |   15 ++++++++-------
+ arch/arm/common/time-acorn.c          |    2 --
+ arch/arm/mach-at91/at91sam926x_time.c |    3 ---
+ arch/arm/plat-iop/time.c              |    4 ----
+ arch/arm/plat-s3c24xx/time.c          |    2 --
+ arch/blackfin/kernel/time.c           |    8 +++++---
+ arch/frv/kernel/time.c                |    6 ++++--
+ arch/m68knommu/kernel/time.c          |   12 +++++++-----
+ arch/sh/kernel/time.c                 |   19 +++++++++++++++----
+ arch/sh/kernel/timers/timer-cmt.c     |    9 ---------
+ arch/sh/kernel/timers/timer-mtu2.c    |    2 --
+ arch/sh64/kernel/time.c               |   31 +++++++++++++++++--------------
+ arch/sparc/kernel/pcic.c              |    2 +-
+ arch/sparc/kernel/time.c              |    7 +++----
+ 14 files changed, 60 insertions(+), 62 deletions(-)
 
-Index: linux-2.6/arch/arm/kernel/time.c
+Index: linux-2.6/arch/alpha/kernel/time.c
 ===================================================================
---- linux-2.6.orig/arch/arm/kernel/time.c
-+++ linux-2.6/arch/arm/kernel/time.c
-@@ -325,7 +325,9 @@ void timer_tick(void)
- 	profile_tick(CPU_PROFILING);
- 	do_leds();
- 	do_set_rtc();
-+	write_seqlock(&xtime_lock);
- 	do_timer(1);
-+	write_sequnlock(&xtime_lock);
- #ifndef CONFIG_SMP
- 	update_process_times(user_mode(get_irq_regs()));
- #endif
-Index: linux-2.6/arch/arm/mach-aaec2000/core.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-aaec2000/core.c
-+++ linux-2.6/arch/arm/mach-aaec2000/core.c
-@@ -130,13 +130,9 @@ static irqreturn_t
- aaec2000_timer_interrupt(int irq, void *dev_id)
- {
- 	/* TODO: Check timer accuracy */
--	write_seqlock(&xtime_lock);
--
- 	timer_tick();
- 	TIMER1_CLEAR = 1;
+--- linux-2.6.orig/arch/alpha/kernel/time.c
++++ linux-2.6/arch/alpha/kernel/time.c
+@@ -119,13 +119,8 @@ irqreturn_t timer_interrupt(int irq, voi
+ 	state.partial_tick = delta & ((1UL << FIX_SHIFT) - 1); 
+ 	nticks = delta >> FIX_SHIFT;
  
--	write_sequnlock(&xtime_lock);
--
- 	return IRQ_HANDLED;
- }
+-	while (nticks > 0) {
+-		do_timer(1);
+-#ifndef CONFIG_SMP
+-		update_process_times(user_mode(get_irq_regs()));
+-#endif
+-		nticks--;
+-	}
++	if (nticks)
++		do_timer(nticks);
  
-Index: linux-2.6/arch/arm/mach-clps711x/time.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-clps711x/time.c
-+++ linux-2.6/arch/arm/mach-clps711x/time.c
-@@ -50,9 +50,7 @@ static unsigned long clps711x_gettimeoff
- static irqreturn_t
- p720t_timer_interrupt(int irq, void *dev_id)
- {
--	write_seqlock(&xtime_lock);
- 	timer_tick();
--	write_sequnlock(&xtime_lock);
- 	return IRQ_HANDLED;
- }
- 
-Index: linux-2.6/arch/arm/mach-clps7500/core.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-clps7500/core.c
-+++ linux-2.6/arch/arm/mach-clps7500/core.c
-@@ -298,8 +298,6 @@ extern unsigned long ioc_timer_gettimeof
- static irqreturn_t
- clps7500_timer_interrupt(int irq, void *dev_id)
- {
--	write_seqlock(&xtime_lock);
--
- 	timer_tick();
- 
- 	/* Why not using do_leds interface?? */
-@@ -313,8 +311,6 @@ clps7500_timer_interrupt(int irq, void *
- 		}
- 	}
- 
--	write_sequnlock(&xtime_lock);
--
- 	return IRQ_HANDLED;
- }
- 
-Index: linux-2.6/arch/arm/mach-ebsa110/core.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-ebsa110/core.c
-+++ linux-2.6/arch/arm/mach-ebsa110/core.c
-@@ -178,8 +178,6 @@ ebsa110_timer_interrupt(int irq, void *d
- {
- 	u32 count;
- 
--	write_seqlock(&xtime_lock);
--
- 	/* latch and read timer 1 */
- 	__raw_writeb(0x40, PIT_CTRL);
- 	count = __raw_readb(PIT_T1);
-@@ -192,8 +190,6 @@ ebsa110_timer_interrupt(int irq, void *d
- 
- 	timer_tick();
- 
--	write_sequnlock(&xtime_lock);
--
- 	return IRQ_HANDLED;
- }
- 
-Index: linux-2.6/arch/arm/mach-ep93xx/core.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-ep93xx/core.c
-+++ linux-2.6/arch/arm/mach-ep93xx/core.c
-@@ -99,8 +99,6 @@ static unsigned int last_jiffy_time;
- 
- static int ep93xx_timer_interrupt(int irq, void *dev_id)
- {
--	write_seqlock(&xtime_lock);
--
- 	__raw_writel(1, EP93XX_TIMER1_CLEAR);
- 	while ((signed long)
- 		(__raw_readl(EP93XX_TIMER4_VALUE_LOW) - last_jiffy_time)
-@@ -109,8 +107,6 @@ static int ep93xx_timer_interrupt(int ir
- 		timer_tick();
- 	}
- 
--	write_sequnlock(&xtime_lock);
--
- 	return IRQ_HANDLED;
- }
- 
-Index: linux-2.6/arch/arm/mach-footbridge/dc21285-timer.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-footbridge/dc21285-timer.c
-+++ linux-2.6/arch/arm/mach-footbridge/dc21285-timer.c
-@@ -30,14 +30,10 @@ static unsigned long timer1_gettimeoffse
- static irqreturn_t
- timer1_interrupt(int irq, void *dev_id)
- {
--	write_seqlock(&xtime_lock);
--
- 	*CSR_TIMER1_CLR = 0;
- 
- 	timer_tick();
- 
--	write_sequnlock(&xtime_lock);
--
- 	return IRQ_HANDLED;
- }
- 
-Index: linux-2.6/arch/arm/mach-footbridge/isa-timer.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-footbridge/isa-timer.c
-+++ linux-2.6/arch/arm/mach-footbridge/isa-timer.c
-@@ -64,9 +64,7 @@ static unsigned long isa_gettimeoffset(v
- static irqreturn_t
- isa_timer_interrupt(int irq, void *dev_id)
- {
--	write_seqlock(&xtime_lock);
- 	timer_tick();
--	write_sequnlock(&xtime_lock);
- 	return IRQ_HANDLED;
- }
- 
-Index: linux-2.6/arch/arm/mach-h720x/cpu-h7201.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-h720x/cpu-h7201.c
-+++ linux-2.6/arch/arm/mach-h720x/cpu-h7201.c
-@@ -29,13 +29,9 @@
- static irqreturn_t
- h7201_timer_interrupt(int irq, void *dev_id)
- {
--	write_seqlock(&xtime_lock);
--
- 	CPU_REG (TIMER_VIRT, TIMER_TOPSTAT);
- 	timer_tick();
- 
--	write_sequnlock(&xtime_lock);
--
- 	return IRQ_HANDLED;
- }
- 
-Index: linux-2.6/arch/arm/mach-h720x/cpu-h7202.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-h720x/cpu-h7202.c
-+++ linux-2.6/arch/arm/mach-h720x/cpu-h7202.c
-@@ -113,9 +113,7 @@ h7202_timerx_demux_handler(unsigned int 
- 	mask = CPU_REG (TIMER_VIRT, TIMER_TOPSTAT);
- 
- 	if ( mask & TSTAT_T0INT ) {
--		write_seqlock(&xtime_lock);
- 		timer_tick();
--		write_sequnlock(&xtime_lock);
- 		if( mask == TSTAT_T0INT )
- 			return;
- 	}
-Index: linux-2.6/arch/arm/mach-integrator/core.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-integrator/core.c
-+++ linux-2.6/arch/arm/mach-integrator/core.c
-@@ -250,8 +250,6 @@ unsigned long integrator_gettimeoffset(v
- static irqreturn_t
- integrator_timer_interrupt(int irq, void *dev_id)
- {
--	write_seqlock(&xtime_lock);
--
  	/*
- 	 * clear the interrupt
- 	 */
-@@ -259,8 +257,6 @@ integrator_timer_interrupt(int irq, void
+ 	 * If we have an externally synchronized Linux clock, then update
+@@ -141,6 +136,12 @@ irqreturn_t timer_interrupt(int irq, voi
+ 	}
  
- 	timer_tick();
- 
--	write_sequnlock(&xtime_lock);
--
+ 	write_sequnlock(&xtime_lock);
++
++#ifndef CONFIG_SMP
++	while (nticks--)
++		update_process_times(user_mode(get_irq_regs()));
++#endif
++
  	return IRQ_HANDLED;
  }
  
-Index: linux-2.6/arch/arm/mach-ixp2000/core.c
+Index: linux-2.6/arch/arm/common/time-acorn.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-ixp2000/core.c
-+++ linux-2.6/arch/arm/mach-ixp2000/core.c
-@@ -206,8 +206,6 @@ unsigned long ixp2000_gettimeoffset (voi
+--- linux-2.6.orig/arch/arm/common/time-acorn.c
++++ linux-2.6/arch/arm/common/time-acorn.c
+@@ -69,9 +69,7 @@ void __init ioctime_init(void)
+ static irqreturn_t
+ ioc_timer_interrupt(int irq, void *dev_id)
+ {
+-	write_seqlock(&xtime_lock);
+ 	timer_tick();
+-	write_sequnlock(&xtime_lock);
+ 	return IRQ_HANDLED;
+ }
  
- static int ixp2000_timer_interrupt(int irq, void *dev_id)
+Index: linux-2.6/arch/arm/mach-at91/at91sam926x_time.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-at91/at91sam926x_time.c
++++ linux-2.6/arch/arm/mach-at91/at91sam926x_time.c
+@@ -49,8 +49,6 @@ static irqreturn_t at91sam926x_timer_int
+ 	volatile long nr_ticks;
+ 
+ 	if (at91_sys_read(AT91_PIT_SR) & AT91_PIT_PITS) {	/* This is a shared interrupt */
+-		write_seqlock(&xtime_lock);
+-
+ 		/* Get number to ticks performed before interrupt and clear PIT interrupt */
+ 		nr_ticks = PIT_PICNT(at91_sys_read(AT91_PIT_PIVR));
+ 		do {
+@@ -58,7 +56,6 @@ static irqreturn_t at91sam926x_timer_int
+ 			nr_ticks--;
+ 		} while (nr_ticks);
+ 
+-		write_sequnlock(&xtime_lock);
+ 		return IRQ_HANDLED;
+ 	} else
+ 		return IRQ_NONE;		/* not handled */
+Index: linux-2.6/arch/arm/plat-iop/time.c
+===================================================================
+--- linux-2.6.orig/arch/arm/plat-iop/time.c
++++ linux-2.6/arch/arm/plat-iop/time.c
+@@ -57,8 +57,6 @@ unsigned long iop_gettimeoffset(void)
+ static irqreturn_t
+ iop_timer_interrupt(int irq, void *dev_id)
  {
 -	write_seqlock(&xtime_lock);
 -
- 	/* clear timer 1 */
- 	ixp2000_reg_wrb(IXP2000_T1_CLR, 1);
+ 	write_tisr(1);
  
-@@ -217,8 +215,6 @@ static int ixp2000_timer_interrupt(int i
+ 	while ((signed long)(next_jiffy_time - read_tcr1())
+@@ -67,8 +65,6 @@ iop_timer_interrupt(int irq, void *dev_i
  		next_jiffy_time -= ticks_per_jiffy;
  	}
  
@@ -282,173 +137,288 @@ Index: linux-2.6/arch/arm/mach-ixp2000/core.c
  	return IRQ_HANDLED;
  }
  
-Index: linux-2.6/arch/arm/mach-ks8695/time.c
+Index: linux-2.6/arch/arm/plat-s3c24xx/time.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-ks8695/time.c
-+++ linux-2.6/arch/arm/mach-ks8695/time.c
-@@ -70,10 +70,7 @@ static unsigned long ks8695_gettimeoffse
-  */
- static irqreturn_t ks8695_timer_interrupt(int irq, void *dev_id)
- {
--	write_seqlock(&xtime_lock);
- 	timer_tick();
--	write_sequnlock(&xtime_lock);
--
- 	return IRQ_HANDLED;
- }
- 
-Index: linux-2.6/arch/arm/mach-lh7a40x/time.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-lh7a40x/time.c
-+++ linux-2.6/arch/arm/mach-lh7a40x/time.c
-@@ -41,13 +41,9 @@
+--- linux-2.6.orig/arch/arm/plat-s3c24xx/time.c
++++ linux-2.6/arch/arm/plat-s3c24xx/time.c
+@@ -130,9 +130,7 @@ static unsigned long s3c2410_gettimeoffs
  static irqreturn_t
- lh7a40x_timer_interrupt(int irq, void *dev_id)
+ s3c2410_timer_interrupt(int irq, void *dev_id)
  {
 -	write_seqlock(&xtime_lock);
--
- 	TIMER_EOI = 0;
  	timer_tick();
- 
 -	write_sequnlock(&xtime_lock);
--
  	return IRQ_HANDLED;
  }
  
-Index: linux-2.6/arch/arm/mach-mx3/time.c
+Index: linux-2.6/arch/blackfin/kernel/time.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-mx3/time.c
-+++ linux-2.6/arch/arm/mach-mx3/time.c
-@@ -45,8 +45,6 @@ static irqreturn_t mxc_timer_interrupt(i
- {
- 	unsigned int next_match;
+--- linux-2.6.orig/arch/blackfin/kernel/time.c
++++ linux-2.6/arch/blackfin/kernel/time.c
+@@ -137,9 +137,6 @@ irqreturn_t timer_interrupt(int irq, voi
  
--	write_seqlock(&xtime_lock);
--
- 	if (__raw_readl(MXC_GPT_GPTSR) & GPTSR_OF1) {
- 		do {
- 			timer_tick();
-@@ -57,8 +55,6 @@ static irqreturn_t mxc_timer_interrupt(i
- 				       __raw_readl(MXC_GPT_GPTCNT)) <= 0);
+ 	do_timer(1);
+ 
+-#ifndef CONFIG_SMP
+-	update_process_times(user_mode(get_irq_regs()));
+-#endif
+ 	profile_tick(CPU_PROFILING);
+ 
+ 	/*
+@@ -161,6 +158,11 @@ irqreturn_t timer_interrupt(int irq, voi
+ 			last_rtc_update = xtime.tv_sec - 600;
  	}
- 
--	write_sequnlock(&xtime_lock);
--
+ 	write_sequnlock(&xtime_lock);
++
++#ifndef CONFIG_SMP
++	update_process_times(user_mode(get_irq_regs()));
++#endif
++
  	return IRQ_HANDLED;
  }
  
-Index: linux-2.6/arch/arm/mach-netx/time.c
+Index: linux-2.6/arch/frv/kernel/time.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-netx/time.c
-+++ linux-2.6/arch/arm/mach-netx/time.c
-@@ -33,12 +33,8 @@
- static irqreturn_t
- netx_timer_interrupt(int irq, void *dev_id)
- {
--	write_seqlock(&xtime_lock);
--
- 	timer_tick();
+--- linux-2.6.orig/arch/frv/kernel/time.c
++++ linux-2.6/arch/frv/kernel/time.c
+@@ -63,6 +63,7 @@ static irqreturn_t timer_interrupt(int i
+ 	/* last time the cmos clock got updated */
+ 	static long last_rtc_update = 0;
  
--	write_sequnlock(&xtime_lock);
--
- 	/* acknowledge interrupt */
- 	writel(COUNTER_BIT(0), NETX_GPIO_IRQ);
++	profile_tick(CPU_PROFILING);
+ 	/*
+ 	 * Here we are in the timer irq handler. We just have irqs locally
+ 	 * disabled but we don't know if the timer_bh is running on the other
+@@ -73,8 +74,6 @@ static irqreturn_t timer_interrupt(int i
+ 	write_seqlock(&xtime_lock);
  
-Index: linux-2.6/arch/arm/mach-omap2/timer-gp.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-omap2/timer-gp.c
-+++ linux-2.6/arch/arm/mach-omap2/timer-gp.c
-@@ -40,13 +40,9 @@ static inline void omap2_gp_timer_start(
+ 	do_timer(1);
+-	update_process_times(user_mode(get_irq_regs()));
+-	profile_tick(CPU_PROFILING);
  
- static irqreturn_t omap2_gp_timer_interrupt(int irq, void *dev_id)
- {
--	write_seqlock(&xtime_lock);
--
- 	omap_dm_timer_write_status(gptimer, OMAP_TIMER_INT_OVERFLOW);
- 	timer_tick();
+ 	/*
+ 	 * If we have an externally synchronized Linux clock, then update
+@@ -99,6 +98,9 @@ static irqreturn_t timer_interrupt(int i
+ #endif /* CONFIG_HEARTBEAT */
  
--	write_sequnlock(&xtime_lock);
--
+ 	write_sequnlock(&xtime_lock);
++
++	update_process_times(user_mode(get_irq_regs()));
++
  	return IRQ_HANDLED;
  }
  
-Index: linux-2.6/arch/arm/mach-pnx4008/time.c
+Index: linux-2.6/arch/m68knommu/kernel/time.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-pnx4008/time.c
-+++ linux-2.6/arch/arm/mach-pnx4008/time.c
-@@ -51,8 +51,6 @@ static irqreturn_t pnx4008_timer_interru
- {
- 	if (__raw_readl(HSTIM_INT) & MATCH0_INT) {
+--- linux-2.6.orig/arch/m68knommu/kernel/time.c
++++ linux-2.6/arch/m68knommu/kernel/time.c
+@@ -43,14 +43,12 @@ irqreturn_t arch_timer_interrupt(int irq
+ 	/* last time the cmos clock got updated */
+ 	static long last_rtc_update=0;
  
--		write_seqlock(&xtime_lock);
--
- 		do {
- 			timer_tick();
++	if (current->pid)
++		profile_tick(CPU_PROFILING);
++
+ 	write_seqlock(&xtime_lock);
  
-@@ -73,8 +71,6 @@ static irqreturn_t pnx4008_timer_interru
- 		} while ((signed)
- 			 (__raw_readl(HSTIM_MATCH0) -
- 			  __raw_readl(HSTIM_COUNTER)) < 0);
--
--		write_sequnlock(&xtime_lock);
- 	}
+ 	do_timer(1);
+-#ifndef CONFIG_SMP
+-	update_process_times(user_mode(get_irq_regs()));
+-#endif
+-	if (current->pid)
+-		profile_tick(CPU_PROFILING);
  
- 	return IRQ_HANDLED;
-Index: linux-2.6/arch/arm/mach-realview/core.c
+ 	/*
+ 	 * If we have an externally synchronized Linux clock, then update
+@@ -91,6 +89,10 @@ irqreturn_t arch_timer_interrupt(int irq
+ #endif /* CONFIG_HEARTBEAT */
+ 
+ 	write_sequnlock(&xtime_lock);
++
++#ifndef CONFIG_SMP
++	update_process_times(user_mode(get_irq_regs()));
++#endif
+ 	return(IRQ_HANDLED);
+ }
+ 
+Index: linux-2.6/arch/sh/kernel/time.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-realview/core.c
-+++ linux-2.6/arch/arm/mach-realview/core.c
-@@ -530,8 +530,6 @@ static unsigned long realview_gettimeoff
+--- linux-2.6.orig/arch/sh/kernel/time.c
++++ linux-2.6/arch/sh/kernel/time.c
+@@ -120,10 +120,6 @@ static long last_rtc_update;
   */
- static irqreturn_t realview_timer_interrupt(int irq, void *dev_id)
+ void handle_timer_tick(void)
  {
--	write_seqlock(&xtime_lock);
--
- 	// ...clear the interrupt
- 	writel(1, TIMER0_VA_BASE + TIMER_INTCLR);
+-	do_timer(1);
+-#ifndef CONFIG_SMP
+-	update_process_times(user_mode(get_irq_regs()));
+-#endif
+ 	if (current->pid)
+ 		profile_tick(CPU_PROFILING);
  
-@@ -542,8 +540,6 @@ static irqreturn_t realview_timer_interr
- 	update_process_times(user_mode(get_irq_regs()));
+@@ -133,6 +129,16 @@ void handle_timer_tick(void)
  #endif
  
+ 	/*
++	 * Here we are in the timer irq handler. We just have irqs locally
++	 * disabled but we don't know if the timer_bh is running on the other
++	 * CPU. We need to avoid to SMP race with it. NOTE: we don' t need
++	 * the irq version of write_lock because as just said we have irq
++	 * locally disabled. -arca
++	 */
++	write_seqlock(&xtime_lock);
++	do_timer(1);
++
++	/*
+ 	 * If we have an externally synchronized Linux clock, then update
+ 	 * RTC clock accordingly every ~11 minutes. Set_rtc_mmss() has to be
+ 	 * called as close as possible to 500 ms before the new second starts.
+@@ -147,6 +153,11 @@ void handle_timer_tick(void)
+ 			/* do it again in 60s */
+ 			last_rtc_update = xtime.tv_sec - 600;
+ 	}
++	write_sequnlock(&xtime_lock);
++
++#ifndef CONFIG_SMP
++	update_process_times(user_mode(get_irq_regs()));
++#endif
+ }
+ #endif /* !CONFIG_GENERIC_CLOCKEVENTS */
+ 
+Index: linux-2.6/arch/sh/kernel/timers/timer-cmt.c
+===================================================================
+--- linux-2.6.orig/arch/sh/kernel/timers/timer-cmt.c
++++ linux-2.6/arch/sh/kernel/timers/timer-cmt.c
+@@ -98,16 +98,7 @@ static irqreturn_t cmt_timer_interrupt(i
+ 	timer_status &= ~0x80;
+ 	ctrl_outw(timer_status, CMT_CMCSR_0);
+ 
+-	/*
+-	 * Here we are in the timer irq handler. We just have irqs locally
+-	 * disabled but we don't know if the timer_bh is running on the other
+-	 * CPU. We need to avoid to SMP race with it. NOTE: we don' t need
+-	 * the irq version of write_lock because as just said we have irq
+-	 * locally disabled. -arca
+-	 */
+-	write_seqlock(&xtime_lock);
+ 	handle_timer_tick();
 -	write_sequnlock(&xtime_lock);
--
+ 
+ 	return IRQ_HANDLED;
+ }
+Index: linux-2.6/arch/sh/kernel/timers/timer-mtu2.c
+===================================================================
+--- linux-2.6.orig/arch/sh/kernel/timers/timer-mtu2.c
++++ linux-2.6/arch/sh/kernel/timers/timer-mtu2.c
+@@ -100,9 +100,7 @@ static irqreturn_t mtu2_timer_interrupt(
+ 	ctrl_outb(timer_status, MTU2_TSR_1);
+ 
+ 	/* Do timer tick */
+-	write_seqlock(&xtime_lock);
+ 	handle_timer_tick();
+-	write_sequnlock(&xtime_lock);
+ 
+ 	return IRQ_HANDLED;
+ }
+Index: linux-2.6/arch/sh64/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/sh64/kernel/time.c
++++ linux-2.6/arch/sh64/kernel/time.c
+@@ -285,15 +285,22 @@ static long last_rtc_update = 0;
+ static inline void do_timer_interrupt(void)
+ {
+ 	unsigned long long current_ctc;
++
++	if (current->pid)
++		profile_tick(CPU_PROFILING);
++
++	/*
++	 * Here we are in the timer irq handler. We just have irqs locally
++	 * disabled but we don't know if the timer_bh is running on the other
++	 * CPU. We need to avoid to SMP race with it. NOTE: we don' t need
++	 * the irq version of write_lock because as just said we have irq
++	 * locally disabled. -arca
++	 */
++	write_lock(&xtime_lock);
+ 	asm ("getcon cr62, %0" : "=r" (current_ctc));
+ 	ctc_last_interrupt = (unsigned long) current_ctc;
+ 
+ 	do_timer(1);
+-#ifndef CONFIG_SMP
+-	update_process_times(user_mode(get_irq_regs()));
+-#endif
+-	if (current->pid)
+-		profile_tick(CPU_PROFILING);
+ 
+ #ifdef CONFIG_HEARTBEAT
+ 	{
+@@ -317,6 +324,11 @@ static inline void do_timer_interrupt(vo
+ 		else
+ 			last_rtc_update = xtime.tv_sec - 600; /* do it again in 60 s */
+ 	}
++	write_unlock(&xtime_lock);
++
++#ifndef CONFIG_SMP
++	update_process_times(user_mode(get_irq_regs()));
++#endif
+ }
+ 
+ /*
+@@ -333,16 +345,7 @@ static irqreturn_t timer_interrupt(int i
+ 	timer_status &= ~0x100;
+ 	ctrl_outw(timer_status, TMU0_TCR);
+ 
+-	/*
+-	 * Here we are in the timer irq handler. We just have irqs locally
+-	 * disabled but we don't know if the timer_bh is running on the other
+-	 * CPU. We need to avoid to SMP race with it. NOTE: we don' t need
+-	 * the irq version of write_lock because as just said we have irq
+-	 * locally disabled. -arca
+-	 */
+-	write_lock(&xtime_lock);
+ 	do_timer_interrupt();
+-	write_unlock(&xtime_lock);
+ 
+ 	return IRQ_HANDLED;
+ }
+Index: linux-2.6/arch/sparc/kernel/pcic.c
+===================================================================
+--- linux-2.6.orig/arch/sparc/kernel/pcic.c
++++ linux-2.6/arch/sparc/kernel/pcic.c
+@@ -713,10 +713,10 @@ static irqreturn_t pcic_timer_handler (i
+ 	write_seqlock(&xtime_lock);	/* Dummy, to show that we remember */
+ 	pcic_clear_clock_irq();
+ 	do_timer(1);
++	write_sequnlock(&xtime_lock);
+ #ifndef CONFIG_SMP
+ 	update_process_times(user_mode(get_irq_regs()));
+ #endif
+-	write_sequnlock(&xtime_lock);
  	return IRQ_HANDLED;
  }
  
-Index: linux-2.6/arch/arm/mach-sa1100/time.c
+Index: linux-2.6/arch/sparc/kernel/time.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-sa1100/time.c
-+++ linux-2.6/arch/arm/mach-sa1100/time.c
-@@ -62,8 +62,6 @@ sa1100_timer_interrupt(int irq, void *de
- {
- 	unsigned int next_match;
+--- linux-2.6.orig/arch/sparc/kernel/time.c
++++ linux-2.6/arch/sparc/kernel/time.c
+@@ -128,10 +128,6 @@ irqreturn_t timer_interrupt(int irq, voi
+ 	clear_clock_irq();
  
--	write_seqlock(&xtime_lock);
+ 	do_timer(1);
+-#ifndef CONFIG_SMP
+-	update_process_times(user_mode(get_irq_regs()));
+-#endif
 -
- #ifdef CONFIG_NO_IDLE_HZ
- 	if (match_posponed) {
- 		match_posponed = 0;
-@@ -85,8 +83,6 @@ sa1100_timer_interrupt(int irq, void *de
- 		next_match = (OSMR0 += LATCH);
- 	} while ((signed long)(next_match - OSCR) <= 0);
  
--	write_sequnlock(&xtime_lock);
--
- 	return IRQ_HANDLED;
- }
+ 	/* Determine when to update the Mostek clock. */
+ 	if (ntp_synced() &&
+@@ -145,6 +141,9 @@ irqreturn_t timer_interrupt(int irq, voi
+ 	}
+ 	write_sequnlock(&xtime_lock);
  
-Index: linux-2.6/arch/arm/mach-shark/core.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-shark/core.c
-+++ linux-2.6/arch/arm/mach-shark/core.c
-@@ -82,9 +82,7 @@ static void __init shark_map_io(void)
- static irqreturn_t
- shark_timer_interrupt(int irq, void *dev_id)
- {
--	write_seqlock(&xtime_lock);
- 	timer_tick();
--	write_sequnlock(&xtime_lock);
++#ifndef CONFIG_SMP
++	update_process_times(user_mode(get_irq_regs()));
++#endif
  	return IRQ_HANDLED;
  }
  
