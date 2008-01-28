@@ -1,76 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760637AbYA1Lli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbYA1LtI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760637AbYA1Lli (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 06:41:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbYA1Ll3
+	id S1758227AbYA1LtI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 06:49:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbYA1Lsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 06:41:29 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:62669 "EHLO relay.atmel.no"
+	Mon, 28 Jan 2008 06:48:54 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:62117 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756858AbYA1Ll2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 06:41:28 -0500
-Date: Mon, 28 Jan 2008 12:41:25 +0100
+	id S1750798AbYA1Lsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 06:48:53 -0500
 From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux@maxim.org.za, linux@bohmer.net, coldwell@redhat.com,
-       marc.pignat@hevs.ch, david-b@pacbell.net, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH -mm v4 7/9] atmel_serial: Add DMA support
-Message-ID: <20080128124125.5c4e0a31@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080128022000.82ac86ab.akpm@linux-foundation.org>
-References: <1201178511-12133-1-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-2-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-3-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-4-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-5-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-6-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-7-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-8-git-send-email-hskinnemoen@atmel.com>
-	<20080126220200.368742e7.akpm@linux-foundation.org>
-	<20080128105909.0fa8a431@dhcp-252-066.norway.atmel.com>
-	<20080128022000.82ac86ab.akpm@linux-foundation.org>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       linux-kernel@vger.kernel.org, marc.pignat@hevs.ch, david-b@pacbell.net,
+       alan@lxorguk.ukuu.org.uk, Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH -mm] atmel_serial dma: Misc fixes and cleanups
+Date: Mon, 28 Jan 2008 12:48:50 +0100
+Message-Id: <1201520930-17183-1-git-send-email-hskinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.3.8
+In-Reply-To: <20080128124125.5c4e0a31@dhcp-252-066.norway.atmel.com>
+References: <20080128124125.5c4e0a31@dhcp-252-066.norway.atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008 02:20:00 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Fix some issues identified by Andrew Morton:
+  * Kill unused PDC_RX_BUF() and PDC_RX_SWITCH() macros
+  * Simplify TX circ buffer management a bit.
+  * Don't open-code min()
+  * Add comment explaining why "count = head - tail" will not cause
+    wraparound problems.
 
-> On Mon, 28 Jan 2008 10:59:09 +0100 Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-> 
-> > > ho-hum.  The generic uart buffer-handling code does ringbuffers the wrong
-> > > way.  Maybe it has to handle non-power-of-two buffer sizes.
-> > 
-> > Hmm...I don't understand. What does it do wrong?
-> 
-> An faq ;) If the buffer size is a power-of-two it's better to allow the
-> head and tail indices wrap through 0xffffffff and only mask them when
-> subscripting.  It ends up faster (usually) and you can use all of the
-> elements of the buffer (rather than all-1) and you get nice things like:
-> 
-> is_empty = (head == tail)
-> is_full = (tail - head == size)
-> nr_items_in_ring = (tail - head)
+Also, s/SERIAL_XMIT_SIZE/UART_XMIT_SIZE/ since the latter is what the
+serial core circ macros use.
 
-Ok, that makes sense. Thanks for explaining. Not sure if want to start
-improving things right now, although I'm pretty sure the circ stuff
-can't handle non-power-of-two buffer size currently so it should be
-possible.
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+Please fold into atmel_serial-add-dma-support.patch, or let me know if
+you want a replacement for that patch.
 
-> > > All those uart_circ_*() macros reference their arg more than once and ... 
-> > > you know the deal.
-> > 
-> > Yeah. Would you like a patch that inline-ifies <linux/circ.h>?
-> 
-> uh, if you're feeling especially keen.  We have bigger problems than this.
+ drivers/serial/atmel_serial.c |   27 +++++++++++++--------------
+ 1 files changed, 13 insertions(+), 14 deletions(-)
 
-Well, if you put it like that; no, not really.
+diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+index 63505cc..62654ab 100644
+--- a/drivers/serial/atmel_serial.c
++++ b/drivers/serial/atmel_serial.c
+@@ -114,7 +114,7 @@ static void (*atmel_close_hook)(struct uart_port *);
+ struct atmel_dma_buffer {
+ 	unsigned char	*buf;
+ 	dma_addr_t	dma_addr;
+-	size_t		dma_size;
++	unsigned int	dma_size;
+ 	unsigned int	ofs;
+ };
+ 
+@@ -150,9 +150,6 @@ struct atmel_uart_port {
+ 
+ static struct atmel_uart_port atmel_ports[ATMEL_MAX_UART];
+ 
+-#define PDC_RX_BUF(port)	&(port)->pdc_rx[(port)->pdc_rx_idx]
+-#define PDC_RX_SWITCH(port)	(port)->pdc_rx_idx = !(port)->pdc_rx_idx
+-
+ #ifdef SUPPORT_SYSRQ
+ static struct console atmel_console;
+ #endif
+@@ -567,8 +564,7 @@ static void atmel_tx_dma(struct uart_port *port)
+ 	int count;
+ 
+ 	xmit->tail += pdc->ofs;
+-	if (xmit->tail >= SERIAL_XMIT_SIZE)
+-		xmit->tail -= SERIAL_XMIT_SIZE;
++	xmit->tail &= UART_XMIT_SIZE - 1;
+ 
+ 	port->icount.tx += pdc->ofs;
+ 	pdc->ofs = 0;
+@@ -583,10 +579,7 @@ static void atmel_tx_dma(struct uart_port *port)
+ 					   pdc->dma_size,
+ 					   DMA_TO_DEVICE);
+ 
+-		if (xmit->tail < xmit->head)
+-			count = xmit->head - xmit->tail;
+-		else
+-			count = SERIAL_XMIT_SIZE - xmit->tail;
++		count = CIRC_CNT_TO_END(xmit->head, xmit->tail, UART_XMIT_SIZE);
+ 		pdc->ofs = count;
+ 
+ 		UART_PUT_TPR(port, pdc->dma_addr + xmit->tail);
+@@ -701,14 +694,20 @@ static void atmel_rx_from_dma(struct uart_port *port)
+ 		 * ENDRX bit as well, so that we can safely re-enable
+ 		 * all interrupts below.
+ 		 */
+-		if (head >= pdc->dma_size)
+-			head = pdc->dma_size;
++		head = min(head, pdc->dma_size);
+ 
+ 		if (likely(head != tail)) {
+ 			dma_sync_single_for_cpu(port->dev, pdc->dma_addr,
+ 					pdc->dma_size, DMA_FROM_DEVICE);
+ 
++			/*
++			 * head will only wrap around when we recycle
++			 * the DMA buffer, and when that happens, we
++			 * explicitly set tail to 0. So head will
++			 * always be greater than tail.
++			 */
+ 			count = head - tail;
++
+ 			tty_insert_flip_string(tty, pdc->buf + pdc->ofs, count);
+ 
+ 			dma_sync_single_for_device(port->dev, pdc->dma_addr,
+@@ -859,9 +858,9 @@ static int atmel_startup(struct uart_port *port)
+ 		pdc->buf = xmit->buf;
+ 		pdc->dma_addr = dma_map_single(port->dev,
+ 					       pdc->buf,
+-					       SERIAL_XMIT_SIZE,
++					       UART_XMIT_SIZE,
+ 					       DMA_TO_DEVICE);
+-		pdc->dma_size = SERIAL_XMIT_SIZE;
++		pdc->dma_size = UART_XMIT_SIZE;
+ 		pdc->ofs = 0;
+ 	}
+ 
+-- 
+1.5.3.8
 
-I'll post a fix for the other things you pointed out shortly.
-
-Haavard
