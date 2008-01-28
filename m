@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763567AbYA1XMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763817AbYA1XMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763567AbYA1XMJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:12:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763867AbYA1XIS
+	id S1763817AbYA1XMt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763369AbYA1XIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:08:18 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:30734 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763838AbYA1XIP (ORCPT
+	Mon, 28 Jan 2008 18:08:39 -0500
+Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199]:63292 "EHLO
+	mta4.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763991AbYA1XIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:08:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=txkDoF/0wjviyyjHH4uSZcwZVRkjGwbWU4zoy4jMVLusKjNX3uZugztOyvY4S7iSSUGLs6tcuBdq00F4t2X6dw0UUfirjhQfdSEAfhTyL+JTrny/3nYuP7/gAQQRc0YXm6EeG2ZLlLBUqKFotAyskixrob+aLo7s8gyopJAAM/o=
-Date: Tue, 29 Jan 2008 00:08:10 +0100
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 7/7]  fix lines over 80 characters
-Message-ID: <20080129000810.42d0d6f0@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jan 2008 18:08:35 -0500
+X-Greylist: delayed 1802 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jan 2008 18:08:35 EST
+Date: Mon, 28 Jan 2008 17:38:17 -0500
+From: Steven Toth <stoth@linuxtv.org>
+Subject: Re: [v4l-dvb-maintainer] [2.6 patch] dvb/frontends/xc5000.c: make a
+ struct static
+In-reply-to: <20080128221030.GP8767@does.not.exist>
+To: Adrian Bunk <bunk@kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Steven Toth <stoth@hauppauge.com>, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org
+Message-id: <479E5959.1010601@linuxtv.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20080128221030.GP8767@does.not.exist>
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fix lines over 80 characters
+Adrian Bunk wrote:
+> struct XC5000_Standard[] can become static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
----
- arch/x86/math-emu/errors.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+Reviewed-by: Steven Toth <stoth@hauppauge.com>
 
-diff --git a/arch/x86/math-emu/errors.c b/arch/x86/math-emu/errors.c
-index 569a62e..e5a5b80 100644
---- a/arch/x86/math-emu/errors.c
-+++ b/arch/x86/math-emu/errors.c
-@@ -75,7 +75,8 @@ void FPU_printall(void)
- 	  FPU_get_user(FPU_modrm, 1 + (u_char __user *) address);
- 
- 	  if (FPU_modrm >= 0300)
--	    printk(KERN_ERR " %02x (%02x+%d)\n", FPU_modrm, FPU_modrm & 0xf8, FPU_modrm & 7);
-+	    printk(KERN_ERR " %02x (%02x+%d)\n", FPU_modrm, FPU_modrm & 0xf8,
-+		FPU_modrm & 7);
- 	  else
- 	    printk(KERN_ERR " /%d, mod=%d rm=%d\n",
- 		   (FPU_modrm >> 3) & 7, (FPU_modrm >> 6) & 3, FPU_modrm & 7);
-@@ -309,7 +310,8 @@ asmlinkage void FPU_exception(int n)
- 	printk(KERN_ERR "FPU emulator: Unknown Exception: 0x%04x!\n", n);
- 
-       if (n == EX_INTERNAL) {
--	  printk(KERN_ERR "FPU emulator: Internal error type 0x%04x\n", int_type);
-+	  printk(KERN_ERR "FPU emulator: Internal error type 0x%04x\n",
-+		int_type);
- 	  FPU_printall();
- 	}
- #ifdef PRINT_MESSAGES
--- 
-1.5.4.rc3
+Thanks Adrian.
+
+Mauro, please merge.
+
+- Steve
+
+> 
+> ---
+> e1f9c8304c807ecce026156ee2185925295fe835 
+> diff --git a/drivers/media/dvb/frontends/xc5000.c b/drivers/media/dvb/frontends/xc5000.c
+> index f642ca2..a5094b7 100644
+> --- a/drivers/media/dvb/frontends/xc5000.c
+> +++ b/drivers/media/dvb/frontends/xc5000.c
+> @@ -151,7 +151,7 @@ typedef struct {
+>  #define FM_Radio_INPUT2 	21
+>  #define FM_Radio_INPUT1 	22
+>  
+> -XC_TV_STANDARD XC5000_Standard[MAX_TV_STANDARD] = {
+> +static XC_TV_STANDARD XC5000_Standard[MAX_TV_STANDARD] = {
+>  	{"M/N-NTSC/PAL-BTSC", 0x0400, 0x8020},
+>  	{"M/N-NTSC/PAL-A2",   0x0600, 0x8020},
+>  	{"M/N-NTSC/PAL-EIAJ", 0x0440, 0x8020},
+> 
+> 
+> _______________________________________________
+> v4l-dvb-maintainer mailing list
+> v4l-dvb-maintainer@linuxtv.org
+> http://www.linuxtv.org/cgi-bin/mailman/listinfo/v4l-dvb-maintainer
 
