@@ -1,40 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbYA1JXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759640AbYA1JYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758786AbYA1JXx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 04:23:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbYA1JXq
+	id S1759640AbYA1JYe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 04:24:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbYA1JY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 04:23:46 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43182 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752166AbYA1JXp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 04:23:45 -0500
-Date: Mon, 28 Jan 2008 01:22:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sripathi Kodi <sripathik@in.ibm.com>
-Cc: Vinay Sridhar <vinay@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       libc-alpha@sourceware.org, drepper@redhat.com, wli@holomorphy.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC] Per-thread getrusage
-Message-Id: <20080128012245.cee1f9ea.akpm@linux-foundation.org>
-In-Reply-To: <200801281354.12387.sripathik@in.ibm.com>
-References: <1200558425.5992.17.camel@srivinay.in.ibm.com>
-	<20080127215242.b873c341.akpm@linux-foundation.org>
-	<200801281354.12387.sripathik@in.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jan 2008 04:24:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54951 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753198AbYA1JYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 04:24:25 -0500
+Date: Mon, 28 Jan 2008 10:24:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: Jason Wessel <jason.wessel@windriver.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kgdb-bugreport@lists.sourceforge.net
+Subject: Re: [RFC PATCH] KGDB: various refactorings
+Message-ID: <20080128092411.GA4774@elte.hu>
+References: <479CD13D.7070703@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <479CD13D.7070703@web.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008 13:54:12 +0530 Sripathi Kodi <sripathik@in.ibm.com> wrote:
 
-> Does Roland's patch (http://lkml.org/lkml/2008/1/18/589) look good to go 
-> in, provided Ulrich's comment (http://lkml.org/lkml/2008/1/19/15) is 
-> addressed?
+* Jan Kiszka <jan.kiszka@web.de> wrote:
 
-Sure, it looks sane - it avoids the problematic get_task_by_pid() too.
+> Things I changed:
+>  - Reduce EXPORT_SYMBOLs, switch the rest to EXPORT_SYMBOL_GPL
+>  - Drop code that is (yet) unused
+>  - Rename variables, refactor their types (personal taste, for sure)
+>  - Remove "extern" for function prototypes
+>  - Remove MODULE_LICENSE/DESCRIPTION from kgdb core
+
+thanks, applied - these look like very sensible cleanups prior merge.
+
+	Ingo
