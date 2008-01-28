@@ -1,87 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbYA1SsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbYA1SvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbYA1SsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 13:48:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbYA1SsJ
+	id S1755472AbYA1SvR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 13:51:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYA1SvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 13:48:09 -0500
-Received: from ithilien.qualcomm.com ([129.46.51.59]:59180 "EHLO
-	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbYA1SsI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 13:48:08 -0500
-Message-ID: <479E2305.3040408@qualcomm.com>
-Date: Mon, 28 Jan 2008 10:46:29 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 28 Jan 2008 13:51:05 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:42433 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751538AbYA1SvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 13:51:04 -0500
+Date: Mon, 28 Jan 2008 10:51:03 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Robin Holt <holt@sgi.com>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 1/4] mmu_notifier: Core code
+In-Reply-To: <20080126115639.GQ26420@sgi.com>
+Message-ID: <Pine.LNX.4.64.0801281048330.14003@schroedinger.engr.sgi.com>
+References: <20080125055606.102986685@sgi.com> <20080125055801.212744875@sgi.com>
+ <20080125183934.GO26420@sgi.com> <Pine.LNX.4.64.0801251041040.672@schroedinger.engr.sgi.com>
+ <20080125185646.GQ3058@sgi.com> <Pine.LNX.4.64.0801251058170.3198@schroedinger.engr.sgi.com>
+ <20080125193554.GP26420@sgi.com> <Pine.LNX.4.64.0801251206390.7856@schroedinger.engr.sgi.com>
+ <20080126115639.GQ26420@sgi.com>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, srostedt@redhat.com,
-       ghaskins@novell.com
-Subject: Re: [CPUISOL] CPU isolation extensions
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com> <1201511305.6149.30.camel@lappy> <20080128085910.7d38e9f5.pj@sgi.com> <20080128163450.GC12598@goodmis.org>
-In-Reply-To: <20080128163450.GC12598@goodmis.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Mon, Jan 28, 2008 at 08:59:10AM -0600, Paul Jackson wrote:
->> Thanks for the CC, Peter.
-> 
-> Thanks from me too.
-> 
->> Max wrote:
->>> We've had scheduler support for CPU isolation ever since O(1) scheduler went it. 
->>> I'd like to extend it further to avoid kernel activity on those CPUs as much as possible.
->> I recently added the per-cpuset flag 'sched_load_balance' for some
->> other realtime folks, so that they can disable the kernel scheduler
->> load balancing on isolated CPUs.  It essentially allows for dynamic
->> control of which CPUs are isolated by the scheduler, using the cpuset
->> hierarchy, rather than enhancing the 'isolated_cpus' mask.   That
->> 'isolated_cpus' mask remained a minimal kernel boottime parameter.
->> I believe this went to Linus's tree about Oct 2007.
->>
->> It looks like you have three additional tweaks for realtime in this
->> patch set, with your patches:
->>
->>   [PATCH] [CPUISOL] Do not route IRQs to the CPUs isolated at boot
-> 
-> I didn't know we still routed IRQs to isolated CPUs. I guess I need to
-> look deeper into the code on this one. But I agree that isolated CPUs
-> should not have IRQs routed to them.
-Also note that it's just a convenience feature. In other words it's not that with this patch
-we'll never route IRQs to those CPUs. They can still be explicitly routed by writing to 
-irq/N/smp_affitnity.
+On Sat, 26 Jan 2008, Robin Holt wrote:
 
->>   [PATCH] [CPUISOL] Support for workqueue isolation
+> > No you cannot do that because there are still callbacks that come later. 
+> > The invalidate_all may lead to invalidate_range() doing nothing for this 
+> > mm. The ops notifier and the freeing of the structure has to wait until 
+> > release().
 > 
-> The thing about workqueues is that they should only be woken on a CPU if
-> something on that CPU accessed them. IOW, the workqueue on a CPU handles
-> work that was called by something on that CPU. Which means that
-> something that high prio task did triggered a workqueue to do some work.
-> But this can also be triggered by interrupts, so by keeping interrupts
-> off the CPU no workqueue should be activated.
-No no no. That's what I though too ;-). The problem is that things like NFS and friends
-expect _all_ their workqueue threads to report back when they do certain things like
-flushing buffers and stuff. The reason I added this is because my machines were getting
-stuck because CPU0 was waiting for CPU1 to run NFS work queue threads even though no IRQs
-or other things are running on it.
- 
->>   [PATCH] [CPUISOL] Isolated CPUs should be ignored by the "stop machine"
-> 
-> This I find very dangerous. We are making an assumption that tasks on an
-> isolated CPU wont be doing things that stopmachine requires. What stops
-> a task on an isolated CPU from calling something into the kernel that
-> stop_machine requires to halt?
-I agree in general. The thing is though that stop machine just kills any kind of latency 
-guaranties. Without the patch the machine just hangs waiting for the stop-machine to run
-when module is inserted/removed. And running without dynamic module loading is not very 
-practical on general purpose machines. So I'd rather have an option with a big red warning 
-than no option at all :).
+> Could you be a little more clear here?  If you are saying that the other
+> callbacks will need to do work?  I can assure you we will clean up those
+> pages and raise memory protections.  It will also be done in a much more
+> efficient fashion than the individual callouts.
 
-Thanx
-Max
+No the other callbacks need to work in the sense that they can be called. 
+You could have them do nothing after an invalidate_all().
+But you cannot release the allocated structs needed for list traversal 
+etc.
+
+> If, on the other hand, you are saying we can not because of the way
+> we traverse the list, can we return a result indicating to the caller
+> we would like to be unregistered and then the mmu_notifier code do the
+> remove followed by a call to the release notifier?
+
+You would need to release the resources when the release notifier is 
+called.
+
+> > That does not sync with the current scheme of the invalidate_range() 
+> > hooks. We would have to do a global invalidate early and then place the 
+> > other invalidate_range hooks in such a way that none is called in later in 
+> > process exit handling.
+> 
+> But if the notifier is removed from the list following the invalidate_all
+> callout, there would be no additional callouts.
+
+Hmmm.... Okay did not think about that. Then you would need to do a 
+synchronize_rcu() in invalidate_all()?
+
