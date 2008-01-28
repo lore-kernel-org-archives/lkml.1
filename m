@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbYA1AUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757638AbYA1A3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757479AbYA1AUw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 19:20:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYA1AUn
+	id S1757638AbYA1A3j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 19:29:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYA1A3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 19:20:43 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:4623 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752702AbYA1AUn (ORCPT
+	Sun, 27 Jan 2008 19:29:30 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:56914 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752652AbYA1A33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 19:20:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=PM+fkKlHv2G5rhv9FAf3+qtPzphfTt6NIK7h23oprXjo0vAUPbOgpwLHjIvmyeL3UCGySB9OdbXf2h9h8Mc8gLN7m99MItrOCk50+NAWCzviKgzNXTb/yspDVvz1N3uIe8zOvu2eZ3TlB3FSyD48ODG92RJ3LhYLkjQ8QWo6JgM=
-Message-ID: <479D1FD1.2070105@gmail.com>
-Date: Mon, 28 Jan 2008 03:20:33 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Organization: DmVo Home
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
+	Sun, 27 Jan 2008 19:29:29 -0500
+Date: Mon, 28 Jan 2008 01:29:34 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.24 regression: Wake On Lan in sky2 broken on Mac mini
+Message-ID: <20080128002934.GA6354@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] X86: coding style fixes to arch/x86/math-errors.c - take
- 2
-References: <20080127231527.2ea40804@paolo-desktop>	 <479D067E.3010100@gmail.com> <20080127224258.GA22018@elte.hu>	 <4d8e3fd30801271448ja6a44ferbf86d37c2f3b825@mail.gmail.com> <4d8e3fd30801271557i4310bc07ifbdea081001cc592@mail.gmail.com>
-In-Reply-To: <4d8e3fd30801271557i4310bc07ifbdea081001cc592@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paolo Ciarrocchi пишет:
-> On Jan 27, 2008 11:48 PM, Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
->> On Jan 27, 2008 11:42 PM, Ingo Molnar <mingo@elte.hu> wrote:
-...
-> 
-> How should I compare the .o file?
-> Simply doing a md5sum or should I do a objdump -d before?
-> Or a strip?
-> 
+Hi folks,
 
-Comparing the vmlinux images shoudls suffice. But you'll
-have to make sure that the object file resulting from the
-C source that you're changing gets linked into vmlinux.
+with 2.6.24-rc8, Wake On LAN doesn't work anymore as it used to with
+2.6.23 on my Mac mini Core Duo. I saw that this was reported in
+http://bugzilla.kernel.org/show_bug.cgi?id=9721 and on netdev a patch
+for the sky2 driver was sent by Stephen Hemminger. This patch fixed WOL
+for me after applying it to 2.6.24-rc8.
 
-Dmitri
+However, it seems as the patch never made it into the kernel. Instead,
+the commit that was suspected to break WOL
+(84cd2dfb04d23a961c5f537baa243fa54d0987ac) was reverted
+(be63a21c9573fbf88106ff0f030da5974551257b).
 
-> Ciao,
+Now I tried the 2.6.24 release and noticed that WOL is still broken.
+I'll be happy to test any patches that can make it into 2.6.24.1.
 
+Regards,
+Tino
