@@ -1,79 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbYA1JLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759156AbYA1JML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758320AbYA1JLt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 04:11:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYA1JLe
+	id S1759156AbYA1JML (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 04:12:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYA1JLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 04:11:34 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56644 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753198AbYA1JLd (ORCPT
+	Mon, 28 Jan 2008 04:11:54 -0500
+Received: from kunder.interhost.no ([80.239.54.98]:59040 "EHLO
+	kunder.interhost.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758357AbYA1JLu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 04:11:33 -0500
-Date: Mon, 28 Jan 2008 01:10:10 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Vinay Sridhar <vinay@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       libc-alpha@sourceware.org, drepper@redhat.com, wli@holomorphy.com,
-       sripathik@in.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [RFC] Per-thread getrusage
-Message-Id: <20080128011010.d162d336.akpm@linux-foundation.org>
-In-Reply-To: <479D88C7.5030101@openvz.org>
-References: <1200558425.5992.17.camel@srivinay.in.ibm.com>
-	<20080127215242.b873c341.akpm@linux-foundation.org>
-	<479D88C7.5030101@openvz.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jan 2008 04:11:50 -0500
+Message-ID: <479D9C78.50202@sannes.org>
+Date: Mon, 28 Jan 2008 10:12:24 +0100
+From: =?ISO-8859-1?Q?Asbj=F8rn_Sannes?= <ace@sannes.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071217)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Unpredictable performance
+References: <4799C8E8.9060501@ifi.uio.no> <4799F2D7.5060504@sannes.org> <4799FA3C.6040700@sannes.org> <200801261138.30963.nickpiggin@yahoo.com.au>
+In-Reply-To: <200801261138.30963.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008 10:48:23 +0300 Pavel Emelyanov <xemul@openvz.org> wrote:
+Nick Piggin wrote:
+> On Saturday 26 January 2008 02:03, Asbjørn Sannes wrote:
+>   
+>> Asbjørn Sannes wrote:
+>>     
+>>> Nick Piggin wrote:
+>>>       
+>>>> On Friday 25 January 2008 22:32, Asbjorn Sannes wrote:
+>>>>         
+>>>>> Hi,
+>>>>>
+>>>>> I am experiencing unpredictable results with the following test
+>>>>> without other processes running (exception is udev, I believe):
+>>>>> cd /usr/src/test
+>>>>> tar -jxf ../linux-2.6.22.12
+>>>>> cp ../working-config linux-2.6.22.12/.config
+>>>>> cd linux-2.6.22.12
+>>>>> make oldconfig
+>>>>> time make -j3 > /dev/null # This is what I note down as a "test" result
+>>>>> cd /usr/src ; umount /usr/src/test ; mkfs.ext3 /dev/cc/test
+>>>>> and then reboot
+>>>>>
+>>>>> The kernel is booted with the parameter mem=81920000
+>>>>>
+>>>>> For 2.6.23.14 the results vary from (real time) 33m30.551s to
+>>>>> 45m32.703s (30 runs)
+>>>>> For 2.6.23.14 with nop i/o scheduler from 29m8.827s to 55m36.744s (24
+>>>>> runs) For 2.6.22.14 also varied a lot.. but, lost results :(
+>>>>> For 2.6.20.21 only vary from 34m32.054s to 38m1.928s (10 runs)
+>>>>>
+>>>>> Any idea of what can cause this? I have tried to make the runs as equal
+>>>>> as possible, rebooting between each run.. i/o scheduler is cfq as
+>>>>> default.
+>>>>>
+>>>>> sys and user time only varies a couple of seconds.. and the order of
+>>>>> when it is "fast" and when it is "slow" is completly random, but it
+>>>>> seems that the results are mostly concentrated around the mean.
+>>>>>           
+>>>> Hmm, lots of things could cause it. With such big variations in
+>>>> elapsed time, and small variations on CPU time, I guess the fs/IO
+>>>> layers are the prime suspects, although it could also involve the
+>>>> VM if you are doing a fair amount of page reclaim.
+>>>>
+>>>> Can you boot with enough memory such that it never enters page
+>>>> reclaim? `grep scan /proc/vmstat` to check.
+>>>>
+>>>> Otherwise you could mount the working directory as tmpfs to
+>>>> eliminate IO.
+>>>>
+>>>> bisecting it down to a single patch would be really helpful if you
+>>>> can spare the time.
+>>>>         
+>>> I'm going to run some tests without limiting the memory to 80 megabytes
+>>> (so that it is 2 gigabyte) and see how much it varies then, but iff I
+>>> recall correctly it did not vary much. I'll reply to this e-mail with
+>>> the results.
+>>>       
+>> 5 runs gives me:
+>> real    5m58.626s
+>> real    5m57.280s
+>> real    5m56.584s
+>> real    5m57.565s
+>> real    5m56.613s
+>>
+>> Should I test with tmpfs aswell?
+>>     
+>
+> I wouldn't worry about it. It seems like it might be due to page reclaim
+> (fs / IO can't be ruled out completely though). Hmm, I haven't been following
+> reclaim so closely lately; you say it started going bad around 2.6.22? It
+> may be lumpy reclaim patches?
+>   
+Going to bisect it soon, but I suspect it will take some time
+(considering how many runs I need to make any sense of the results).
 
-> Andrew Morton wrote:
-> > 	On Thu, 17 Jan 2008 13:57:05 +0530 Vinay Sridhar <vinay@linux.vnet.ibm.com> wrote:
-> > 
-> >> Hi All,
-> >>
-> >> Last year, there was discussion about per-thread getrusage by adding
-> >> RUSAGE_THREAD flag to getrusage(). Please refer to the thread
-> >> http://lkml.org/lkml/2007/4/4/308. Ulrich had suggested that we should
-> >> design a better user-space API. Specifically, we need a
-> >> pthread_getrusage interface in the thread library, which accepts
-> >> pthread_t, converts pthread_t into the corresponding tid and passes it
-> >> down to the syscall.
-> >>
-> >> There are two ways to implement this in the kernel:
-> >> 1) Introduce an additional parameter 'tid' to sys_getrusage() and put
-> >> code in glibc to handle getrusage() and pthread_getrusage() calls
-> >> correctly.
-> >> 2) Introduce a new system call to handle pthread_getrusage() and leave
-> >> sys_getrusage() untouched.
-> >>
-> >> We implemented the second idea above, simply because it avoids touching
-> >> any existing code. We have implemented a new syscall, thread_getrusage()
-> >> and we have exposed pthread_getrusage() API to applications.
-> >>
-> >> Could you please share your thoughts on this? Does the approach look
-> >> alright? The code is hardly complete. It is just a prototype that works
-> >> on IA32 at the moment.
-> >>
-> >> ...
-> >>
-> >> +asmlinkage long sys_thread_getrusage(int tid, struct rusage __user *ru);
-> > 
-> > What happens if `tid' refers to a thread in a different pid namespace?
-> > 
-> 
-> That's impossible. I explicitly deny namespace creation in case the
-> CLONE_THREAD is specified. So all threads of a single process always
-> live in one pid namespace.
-> 
+--
+Asbjorn Sannes
 
-If the code was using find_task_by_vpid() then OK (I guess).  But it is
-looking the tids up in the init_pid_ns.  Which I assume means that if it's
-in a new namespace and is looking up a sibling thread it will simply fail?
-
-Or am I missing something?
