@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765017AbYA2Ac2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764904AbYA2Ada@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765017AbYA2Ac2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 19:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbYA2AcU
+	id S1764904AbYA2Ada (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 19:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbYA2AdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 19:32:20 -0500
-Received: from zrnetservice.com ([209.133.52.163]:50288 "EHLO
+	Mon, 28 Jan 2008 19:33:21 -0500
+Received: from zrnetservice.com ([209.133.52.163]:50313 "EHLO
 	www.zrnetservice.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752949AbYA2AcT (ORCPT
+	with ESMTP id S1757348AbYA2AdU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 19:32:19 -0500
-X-Greylist: delayed 2553 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jan 2008 19:32:19 EST
+	Mon, 28 Jan 2008 19:33:20 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 3 of 4] x86: pud_clear: only reload cr3 if necessary
-X-Mercurial-Node: 6c5c4139cb6939f5b0c3e495630f47c3f70179ac
-Message-Id: <6c5c4139cb6939f5b0c3.1201564123@localhost>
+Subject: [PATCH 4 of 4] x86: update reference for PAE tlb flushing
+X-Mercurial-Node: b114ed40c337347cde5ec410e231dabec106eeb0
+Message-Id: <b114ed40c337347cde5e.1201564124@localhost>
 In-Reply-To: <patchbomb.1201564120@localhost>
-Date: Mon, 28 Jan 2008 15:48:43 -0800
+Date: Mon, 28 Jan 2008 15:48:44 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
@@ -29,47 +28,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than unconditionally reloading cr3, only do so if the pud we're
-updating is within the active pgd.
-
-This eliminates TLB flushes most of the time.  The
-performance-critical uses of pud_clear are during execve and exit, but
-in those cases cr3 is referring to some other pagetable.  The only
-other use of pud_clear is during a large (1Gbyte+) munmap, and those
-are sufficiently rare that a couple of cr3 reloads won't hurt.
+Remove bogus reference to "Pentium-II erratum A13" and point to the
+actual canonical source of information about what requirements x86
+processors have for PAE pagetable updates.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 ---
- include/asm-x86/pgtable-3level.h |   11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ include/asm-x86/pgalloc_32.h     |    6 ++++--
+ include/asm-x86/pgtable-3level.h |    6 ++++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
+diff --git a/include/asm-x86/pgalloc_32.h b/include/asm-x86/pgalloc_32.h
+--- a/include/asm-x86/pgalloc_32.h
++++ b/include/asm-x86/pgalloc_32.h
+@@ -87,8 +87,10 @@ static inline void pud_populate(struct m
+ 	set_pud(pudp, __pud(__pa(pmd) | _PAGE_PRESENT));
+ 
+ 	/*
+-	 * Pentium-II erratum A13: in PAE mode we explicitly have to flush
+-	 * the TLB via cr3 if the top-level pgd is changed...
++	 * According to Intel App note "TLBs, Paging-Structure Caches,
++	 * and Their Invalidation", April 2007, document 317080-001,
++	 * section 8.1: in PAE mode we explicitly have to flush the
++	 * TLB via cr3 if the top-level pgd is changed...
+ 	 */
+ 	if (mm == current->active_mm)
+ 		write_cr3(read_cr3());
 diff --git a/include/asm-x86/pgtable-3level.h b/include/asm-x86/pgtable-3level.h
 --- a/include/asm-x86/pgtable-3level.h
 +++ b/include/asm-x86/pgtable-3level.h
-@@ -93,17 +93,20 @@ static inline void native_pmd_clear(pmd_
- 
- static inline void pud_clear(pud_t *pudp)
- {
-+	unsigned long pgd;
-+
+@@ -98,8 +98,10 @@ static inline void pud_clear(pud_t *pudp
  	set_pud(pudp, __pud(0));
  
  	/*
- 	 * Pentium-II erratum A13: in PAE mode we explicitly have to flush
- 	 * the TLB via cr3 if the top-level pgd is changed...
+-	 * Pentium-II erratum A13: in PAE mode we explicitly have to flush
+-	 * the TLB via cr3 if the top-level pgd is changed...
++	 * According to Intel App note "TLBs, Paging-Structure Caches,
++	 * and Their Invalidation", April 2007, document 317080-001,
++	 * section 8.1: in PAE mode we explicitly have to flush the
++	 * TLB via cr3 if the top-level pgd is changed...
  	 *
--	 * XXX I don't think we need to worry about this here, since
--	 * when clearing the pud, the calling code needs to flush the
--	 * tlb anyway.  But do it now for safety's sake. - jsgf
-+	 * Make sure the pud entry we're updating is within the
-+	 * current pgd to avoid unnecessary TLB flushes.
- 	 */
--	write_cr3(read_cr3());
-+	pgd = read_cr3();
-+	if (__pa(pudp) >= pgd && __pa(pudp) < (pgd + sizeof(pgd_t)*PTRS_PER_PGD))
-+		write_cr3(pgd);
- }
- 
- #define pud_page(pud) \
+ 	 * Make sure the pud entry we're updating is within the
+ 	 * current pgd to avoid unnecessary TLB flushes.
 
 
