@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765220AbYA1XZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764365AbYA1X2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765220AbYA1XZr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763375AbYA1XXb
+	id S1764365AbYA1X2W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbYA1X2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:23:31 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45375 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765022AbYA1XX3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:23:29 -0500
-Message-ID: <479E6323.5030200@zytor.com>
-Date: Mon, 28 Jan 2008 15:20:03 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ian Campbell <ijc@hellion.org.uk>
-CC: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: PATCH/RFC: bzImage payload as compressed ELF file.
-References: <1201560133.17053.36.camel@cthulhu.hellion.org.uk>
-In-Reply-To: <1201560133.17053.36.camel@cthulhu.hellion.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 28 Jan 2008 18:28:14 -0500
+Received: from main.gmane.org ([80.91.229.2]:35600 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751679AbYA1X2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 18:28:13 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jon Masters <jonathan@jonmasters.org>
+Subject: Re: Kernel Event Notifications (was: [RFC] Parallelize IO for
+	e2fsck)
+Date: Mon, 28 Jan 2008 18:28:02 -0500
+Organization: World Organi[sz]ation Of Broken Dreams
+Message-ID: <1201562634.5412.70.camel@jcmlaptop>
+References: <9Mo9w-7Ws-25@gated-at.bofh.it> <20080124234037.GJ15858@mit.edu>
+	 <2f11576a0801260432y4405d817p6ef4005d06189654@mail.gmail.com>
+	 <200801261655.31313.a1426z@gawab.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: nat-pool-bos.redhat.com
+In-Reply-To: <200801261655.31313.a1426z@gawab.com>
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
-> 
-> What would be the preferred way of allowing bootloaders/domain builders
-> to find the compressed payload? Tacking the offset from the end onto the
-> end as I have done for the moment seems pretty skanky...
-> 
+On Sat, 2008-01-26 at 16:55 +0300, Al Boldi wrote:
+> KOSAKI Motohiro wrote:
+> > > > And from a performance point of view letting applications voluntarily
+> > > > free some memory is better even than starting to swap.
+> > >
+> > > Absolutely.
+> >
+> > the mem_notify patch can realize "just before starting swapping"
+> > notification :)
 
-As Jeremy already mentioned, putting a pointer to the compressed ELF 
-image in the bzImage header (and bumping the version number to 2.08) is 
-the right way to go about it.  The compression format (for now, always 
-gzip) can then be identified in the usual way via compression format 
-magic number.
+I looked at this a year or two back, then ran out of time. But the thing
+I wanted to do was have libc's memory allocation routines extended to
+handle these through reservations - the kernel should send a userspace
+notification and then there should be some kind of concept of returning
+memory that's been used for "opportunistic" userspace caching, e.g. in
+firefox to cache the last 10 web pages. Let us know how you get on :)
 
-As I've previously expressed, I'm much happier with this approach than 
-having the compressor portion itself be an ELF image, so I'm happy to 
-see this patch.  However, I think it needs to ride a cycle in -mm, so 
-although I didn't see any problems from a cursory look I might not get a 
-chance to do a detailed review until the merge window is over.
+Jon.
 
-	-hpa
+
+
