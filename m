@@ -1,171 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763756AbYA1TQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763921AbYA1TQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763756AbYA1TQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 14:16:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761804AbYA1TLg
+	id S1763921AbYA1TQl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 14:16:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761955AbYA1TLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 14:11:36 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:23728 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762618AbYA1TLf (ORCPT
+	Mon, 28 Jan 2008 14:11:41 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:52285 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762641AbYA1TLk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 14:11:35 -0500
-Message-ID: <479E2800.903@indt.org.br>
-Date: Mon, 28 Jan 2008 15:07:44 -0400
+	Mon, 28 Jan 2008 14:11:40 -0500
+Message-ID: <479E2804.4020507@indt.org.br>
+Date: Mon, 28 Jan 2008 15:07:48 -0400
 From: Carlos Aguiar <carlos.aguiar@indt.org.br>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
 To: Pierre Ossman <drzeus-list@drzeus.cx>
 CC: Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 10/18] MMC: OMAP: General cleanup for MMC multislot support
+Subject: [PATCH 11/18] MMC: OMAP: Abort stuck commands
 X-Enigmail-Version: 0.94.0.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jan 2008 19:09:29.0914 (UTC) FILETIME=[4EE3B1A0:01C861E1]
+X-OriginalArrivalTime: 28 Jan 2008 19:09:34.0149 (UTC) FILETIME=[5169E750:01C861E1]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Juha Yrjola <juha.yrjola@solidboot.com>
+From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
 
-General code cleanup, modifications at some dev_* functions and
-other hacks at mmc_omap_irq() for MMC multislot support.
+When a card is removed while it is being accessed, a command can get stuck so
+that no timeout or end of command interrupt ever occurs. The command getting
+stuck is almost always CDM12, but also the other commands can get stuck. Catch
+a stuck command with a timer and try sending the initiliazation stream until
+the controller starts running again and responds with the end of command
+status.
 
-Signed-off-by: Juha Yrjola <juha.yrjola@solidboot.com>
+Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
 Signed-off-by: Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- drivers/mmc/host/omap.c |   52 ++++++++++++++++++++++++++++-------------------
- 1 files changed, 31 insertions(+), 21 deletions(-)
+ drivers/mmc/host/omap.c |   93 ++++++++++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 83 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
-index ea3b79e..169f721 100644
+index 169f721..62b9d71 100644
 --- a/drivers/mmc/host/omap.c
 +++ b/drivers/mmc/host/omap.c
-@@ -562,11 +562,12 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
- 	u16 status;
- 	int end_command;
- 	int end_transfer;
--	int transfer_error;
-+	int transfer_error, cmd_error;
+@@ -135,6 +135,9 @@ struct mmc_omap_host {
+ 	unsigned char		bus_mode;
+ 	unsigned char		hw_bus_mode;
  
- 	if (host->cmd == NULL && host->data == NULL) {
- 		status = OMAP_MMC_READ(host, STAT);
--		dev_info(mmc_dev(host->mmc),"spurious irq 0x%04x\n", status);
-+		dev_info(mmc_dev(host->slots[0]->mmc),
-+			 "Spurious IRQ 0x%04x\n", status);
- 		if (status != 0) {
- 			OMAP_MMC_WRITE(host, STAT, status);
- 			OMAP_MMC_WRITE(host, IE, 0);
-@@ -577,12 +578,19 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
- 	end_command = 0;
- 	end_transfer = 0;
- 	transfer_error = 0;
-+	cmd_error = 0;
- 
- 	while ((status = OMAP_MMC_READ(host, STAT)) != 0) {
-+		int cmd;
++	struct work_struct	cmd_abort;
++	struct timer_list	cmd_timer;
 +
- 		OMAP_MMC_WRITE(host, STAT, status);
-+		if (host->cmd != NULL)
-+			cmd = host->cmd->opcode;
-+		else
-+			cmd = -1;
- #ifdef CONFIG_MMC_DEBUG
- 		dev_dbg(mmc_dev(host->mmc), "MMC IRQ %04x (CMD %d): ",
--			status, host->cmd != NULL ? host->cmd->opcode : -1);
-+			status, cmd);
- 		mmc_omap_report_irq(status);
- 		printk("\n");
- #endif
-@@ -594,12 +602,12 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
- 				mmc_omap_xfer_data(host, 1);
- 		}
+ 	unsigned int		sg_len;
+ 	int			sg_idx;
+ 	u16 *			buffer;
+@@ -329,6 +332,8 @@ mmc_omap_start_command(struct mmc_omap_host *host, struct mmc_command *cmd)
+ 	if (host->data && !(host->data->flags & MMC_DATA_WRITE))
+ 		cmdreg |= 1 << 15;
  
--		if (status & OMAP_MMC_STAT_END_OF_DATA) {
-+		if (status & OMAP_MMC_STAT_END_OF_DATA)
- 			end_transfer = 1;
--		}
- 
- 		if (status & OMAP_MMC_STAT_DATA_TOUT) {
--			dev_dbg(mmc_dev(host->mmc), "data timeout\n");
-+			dev_dbg(mmc_dev(host->mmc), "data timeout (CMD%d)\n",
-+				cmd);
- 			if (host->data) {
- 				host->data->error = -ETIMEDOUT;
- 				transfer_error = 1;
-@@ -624,16 +632,16 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
- 				struct mmc_omap_slot *slot =
- 					host->current_slot;
- 				if (host->cmd->opcode != MMC_ALL_SEND_CID &&
--						host->cmd->opcode !=
--						MMC_SEND_OP_COND &&
--						host->cmd->opcode !=
--						MMC_APP_CMD &&
--						!mmc_omap_cover_is_open(slot))
-+				    host->cmd->opcode != MMC_SEND_OP_COND &&
-+				    host->cmd->opcode != MMC_APP_CMD &&
-+				    (slot == NULL ||
-+				     !mmc_omap_cover_is_open(slot)))
- 					dev_err(mmc_dev(host->mmc),
--						"command timeout, CMD %d\n",
--						host->cmd->opcode);
-+						"command timeout (CMD%d)\n",
-+						cmd);
- 				host->cmd->error = -ETIMEDOUT;
- 				end_command = 1;
-+				cmd_error = 1;
- 			}
- 		}
- 
-@@ -641,9 +649,10 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
- 			if (host->cmd) {
- 				dev_err(mmc_dev(host->mmc),
- 					"command CRC error (CMD%d, arg 0x%08x)\n",
--					host->cmd->opcode, host->cmd->arg);
-+					cmd, host->cmd->arg);
- 				host->cmd->error = -EILSEQ;
- 				end_command = 1;
-+				cmd_error = 1;
- 			} else
- 				dev_err(mmc_dev(host->mmc),
- 					"command CRC error without cmd?\n");
-@@ -652,13 +661,13 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
- 		if (status & OMAP_MMC_STAT_CARD_ERR) {
- 			dev_dbg(mmc_dev(host->mmc),
- 				"ignoring card status error (CMD%d)\n",
--				host->cmd->opcode);
-+				cmd);
- 			end_command = 1;
- 		}
- 
- 		/*
- 		 * NOTE: On 1610 the END_OF_CMD may come too early when
--		 * starting a write 
-+		 * starting a write
- 		 */
- 		if ((status & OMAP_MMC_STAT_END_OF_CMD) &&
- 		    (!(status & OMAP_MMC_STAT_A_EMPTY))) {
-@@ -666,13 +675,14 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
- 		}
- 	}
- 
--	if (end_command) {
-+	if (end_command)
- 		mmc_omap_cmd_done(host, host->cmd);
-+	if (host->data != NULL) {
-+		if (transfer_error)
-+			mmc_omap_xfer_done(host, host->data);
-+		else if (end_transfer)
-+			mmc_omap_end_of_data(host, host->data);
- 	}
--	if (transfer_error)
--		mmc_omap_xfer_done(host, host->data);
--	else if (end_transfer)
--		mmc_omap_end_of_data(host, host->data);
- 
- 	return IRQ_HANDLED;
++	mod_timer(&host->cmd_timer, jiffies + HZ/2);
++
+ 	OMAP_MMC_WRITE(host, CTO, 200);
+ 	OMAP_MMC_WRITE(host, ARGL, cmd->arg & 0xffff);
+ 	OMAP_MMC_WRITE(host, ARGH, cmd->arg >> 16);
+@@ -388,9 +393,37 @@ mmc_omap_xfer_done(struct mmc_omap_host *host, struct mmc_data *data)
  }
+ 
+ static void
++mmc_omap_send_abort(struct mmc_omap_host *host)
++{
++	struct mmc_omap_slot *slot = host->current_slot;
++	unsigned int restarts, passes, timeout;
++	u16 stat = 0;
++
++	/* Sending abort takes 80 clocks. Have some extra and round up */
++	timeout = (120*1000000 + slot->fclk_freq - 1)/slot->fclk_freq;
++	restarts = 0;
++	while (restarts < 10000) {
++		OMAP_MMC_WRITE(host, STAT, 0xFFFF);
++		OMAP_MMC_WRITE(host, CMD, (3 << 12) | (1 << 7));
++
++		passes = 0;
++		while (passes < timeout) {
++			stat = OMAP_MMC_READ(host, STAT);
++			if (stat & OMAP_MMC_STAT_END_OF_CMD)
++				goto out;
++			udelay(1);
++			passes++;
++		}
++
++		restarts++;
++	}
++out:
++	OMAP_MMC_WRITE(host, STAT, stat);
++}
++
++static void
+ mmc_omap_abort_xfer(struct mmc_omap_host *host, struct mmc_data *data)
+ {
+-	int loops;
+ 	u16 ie;
+ 
+ 	if (host->dma_in_use)
+@@ -401,16 +434,8 @@ mmc_omap_abort_xfer(struct mmc_omap_host *host, struct mmc_data *data)
+ 
+ 	ie = OMAP_MMC_READ(host, IE);
+ 	OMAP_MMC_WRITE(host, IE, 0);
+-	OMAP_MMC_WRITE(host, CMD, 1 << 7);
+-	loops = 0;
+-	while (!(OMAP_MMC_READ(host, STAT) & OMAP_MMC_STAT_END_OF_CMD)) {
+-		udelay(1);
+-		loops++;
+-		if (loops == 100000)
+-			break;
+-	}
+-	OMAP_MMC_WRITE(host, STAT, OMAP_MMC_STAT_END_OF_CMD);
+ 	OMAP_MMC_WRITE(host, IE, ie);
++	mmc_omap_send_abort(host);
+ }
+ 
+ static void
+@@ -466,6 +491,8 @@ mmc_omap_cmd_done(struct mmc_omap_host *host, struct mmc_command *cmd)
+ {
+ 	host->cmd = NULL;
+ 
++	del_timer(&host->cmd_timer);
++
+ 	if (cmd->flags & MMC_RSP_PRESENT) {
+ 		if (cmd->flags & MMC_RSP_136) {
+ 			/* response type 2 */
+@@ -501,6 +528,47 @@ mmc_omap_cmd_done(struct mmc_omap_host *host, struct mmc_command *cmd)
+ 	}
+ }
+ 
++/*
++ * Abort stuck command. Can occur when card is removed while it is being
++ * read.
++ */
++static void mmc_omap_abort_command(struct work_struct *work)
++{
++	struct mmc_omap_host *host = container_of(work, struct mmc_omap_host,
++						  cmd_abort);
++	u16 ie;
++
++	ie = OMAP_MMC_READ(host, IE);
++	OMAP_MMC_WRITE(host, IE, 0);
++
++	if (!host->cmd) {
++		OMAP_MMC_WRITE(host, IE, ie);
++		return;
++	}
++
++	dev_dbg(mmc_dev(host->mmc), "Aborting stuck command CMD%d\n",
++		host->cmd->opcode);
++
++	if (host->data && host->dma_in_use)
++		mmc_omap_release_dma(host, host->data, 1);
++
++	host->data = NULL;
++	host->sg_len = 0;
++
++	mmc_omap_send_abort(host);
++	host->cmd->error = -ETIMEDOUT;
++	mmc_omap_cmd_done(host, host->cmd);
++	OMAP_MMC_WRITE(host, IE, ie);
++}
++
++static void
++mmc_omap_cmd_timer(unsigned long data)
++{
++	struct mmc_omap_host *host = (struct mmc_omap_host *) data;
++
++	schedule_work(&host->cmd_abort);
++}
++
+ /* PIO only */
+ static void
+ mmc_omap_sg_to_buf(struct mmc_omap_host *host)
+@@ -1273,6 +1341,11 @@ static int __init mmc_omap_probe(struct platform_device *pdev)
+ 		goto err_free_mem_region;
+ 	}
+ 
++	INIT_WORK(&host->cmd_abort, mmc_omap_abort_command);
++	init_timer(&host->cmd_timer);
++	host->cmd_timer.function = mmc_omap_cmd_timer;
++	host->cmd_timer.data = (unsigned long) host;
++
+ 	spin_lock_init(&host->dma_lock);
+ 	init_timer(&host->dma_timer);
+ 	spin_lock_init(&host->slot_lock);
 -- 1.5.3.GIT
 
