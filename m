@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761865AbYA1Qt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761780AbYA1Qu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761865AbYA1Qt0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 11:49:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbYA1QtS
+	id S1761780AbYA1Qu6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 11:50:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758415AbYA1Quu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 11:49:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57910 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754229AbYA1QtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 11:49:17 -0500
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH update] firewire: fix "kobject_add failed for fw* with -EEXIST"
-Date: Mon, 28 Jan 2008 11:48:53 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux1394-devel@lists.sourceforge.net,
-       Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@redhat.com>,
-       linux-kernel@vger.kernel.org
-References: <tkrat.e1db90404aee1115@s5r6.in-berlin.de> <tkrat.a4603d89e4c2fde1@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.a4603d89e4c2fde1@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 28 Jan 2008 11:50:50 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:26738 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756282AbYA1Qus (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 11:50:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=J4W/qTTt5DqSM6wCQbzAWE2KEJCOU8Yz6nJgaILV6AO1SCNxz7DSw1+0CACiImyfyTCZ2uVFl7b2eBryTyLfE4qBgak5jrLg+MtrfJ3I8XMH+wupwrL+mLkaymsjUmtv5TQEHJDH/pYqCJsUWaVyaxu8S8IdEnS5NPyKm/8SEAM=
+Subject: Re: Problem with ata layer in 2.6.24
+From: Calvin Walton <calvin.walton@gmail.com>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+In-Reply-To: <200801281135.14555.gene.heskett@gmail.com>
+References: <200801272122.21823.gene.heskett@gmail.com>
+	 <200801280754.53768.gene.heskett@gmail.com>
+	 <18333.57152.472830.608248@harpo.it.uu.se>
+	 <200801281135.14555.gene.heskett@gmail.com>
+Content-Type: text/plain
+Date: Mon, 28 Jan 2008 11:50:43 -0500
+Message-Id: <1201539043.31293.7.camel@zem>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801281148.54017.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 27 January 2008 12:20:40 pm Stefan Richter wrote:
-> There is a race between shutdown and creation of devices:  fw-core may
-> attempt to add a device with the same name of an already existing
-> device.  http://bugzilla.kernel.org/show_bug.cgi?id=9828
->
-> Impact of the bug:  Happens rarely, forces the user to unplug and replug
-> the new device to get it working.
+On Mon, 2008-01-28 at 11:35 -0500, Gene Heskett wrote:
+> On Monday 28 January 2008, Mikael Pettersson wrote:
+> >Unfortunately we also see:
+> > > [   48.285456] nvidia: module license 'NVIDIA' taints kernel.
+> > > [   48.549725] ACPI: PCI Interrupt 0000:02:00.0[A] -> Link [APC4] -> GSI
+> > > 19 (level, high) -> IRQ 20 [   48.550149] NVRM: loading NVIDIA UNIX x86
+> > > Kernel Module  169.07  Thu Dec 13 18:42:56 PST 2007
+> >
+> >We have no way of debugging that module, so please try 2.6.24 without it.
+> 
+> Sorry, I can't do this and have a working machine.  The nv driver has suffered 
+> bit rot or something since the FC2 days when it COULD run a 19" crt at 
+> 1600x1200, and will not drive this 20" wide screen lcd 1680x1050 monitor at 
+> more than 800x600, which is absolutely butt ugly fuzzy, looking like a jpg 
+> compressed to 10%.  The system is not usable on a day to basis without the 
+> nvidia driver.
 
-If you're crazy enough to set up a software raid array on two firewire drives 
-that end up contending for the fwX device, its much worse than simply having 
-to unplug and replug though, since all hell breaks loose at the fs level and 
-the array level.
+You should probably give the nouveau[1] driver a try, if only for
+testing purposes; if you are running an NV4x (G6x or G7x) card in
+particular, it works a lot better than the nv driver for 2d support.
 
-We may have another issue there though, as when this happened to me, the md 
-layer apparently never noticed (after ~6 hours) that one of the array members 
-had disappeared -- not sure if that's firewire's fault or md's though... This 
-will presumably avoid this situation entirely, but worth noting that there 
-may still be somewhere we need to better communicate status to an upper 
-layer.
-
-> The fix moves deregistration of the minor number and device_unregister()
-> into a common rw_sem protected section.
->
-> We also move the ref count increment from fw_device_op_open into an
-> rw_sem protected section with the lookup of the device, so that the
-> device pointer can't become invalid between lookup and usage.
->
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-
-Looks straight-forward enough, and I'll give these a spin shortly and see if I 
-can reproduce the situation I was hitting with my raid array...
-
+1. http://nouveau.freedesktop.org/wiki/InstallNouveau
 
 -- 
-Jarod Wilson
-jwilson@redhat.com
+Calvin Walton <calvin.walton@gmail.com>
+
