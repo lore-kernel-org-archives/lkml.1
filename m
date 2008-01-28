@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762869AbYA1WNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762663AbYA1WN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762869AbYA1WNi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:13:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760185AbYA1WK3
+	id S1762663AbYA1WN6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759685AbYA1WKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:10:29 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:46435 "EHLO smtp6.pp.htv.fi"
+	Mon, 28 Jan 2008 17:10:33 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:47979 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756677AbYA1WK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:10:27 -0500
-Date: Tue, 29 Jan 2008 00:10:53 +0200
+	id S1760251AbYA1WKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:10:31 -0500
+Date: Tue, 29 Jan 2008 00:10:58 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Ian Armstrong <ian@iarmst.demon.co.uk>, Hans Verkuil <hverkuil@xs4all.nl>,
+To: Jaime Velasco Juan <jsagarribay@gmail.com>,
        Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: ivtv-devel@ivtvdriver.org, linux-kernel@vger.kernel.org,
-       v4l-dvb-maintainer@linuxtv.org
-Subject: [2.6 patch] ivtv-yuv.c: make 3 functions static
-Message-ID: <20080128221053.GS8767@does.not.exist>
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] stk-sensor.c: make 2 functions static
+Message-ID: <20080128221058.GT8767@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -26,47 +25,51 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This patch makes the following needlessly global functions static:
-- ivtv_yuv_next_free()
-- ivtv_yuv_setup_frame()
-- ivtv_yuv_udma_frame()
+- stk_sensor_outb()
+- stk_sensor_inb()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/media/video/ivtv/ivtv-yuv.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/media/video/stk-sensor.c |    4 ++--
+ drivers/media/video/stk-webcam.h |    2 --
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-d73b9df5534f05010ef1c46db1ed2fe28874cfc1 
-diff --git a/drivers/media/video/ivtv/ivtv-yuv.c b/drivers/media/video/ivtv/ivtv-yuv.c
-index 8518348..8fdd67c 100644
---- a/drivers/media/video/ivtv/ivtv-yuv.c
-+++ b/drivers/media/video/ivtv/ivtv-yuv.c
-@@ -914,7 +914,7 @@ static void ivtv_yuv_init(struct ivtv *itv)
+8e641823e6d54c8d45f6406bcd6716cbed81cb4e 
+diff --git a/drivers/media/video/stk-sensor.c b/drivers/media/video/stk-sensor.c
+index 4a9a0b6..1ce8cc8 100644
+--- a/drivers/media/video/stk-sensor.c
++++ b/drivers/media/video/stk-sensor.c
+@@ -225,7 +225,7 @@
+ 
+ 
+ /* Returns 0 if OK */
+-int stk_sensor_outb(struct stk_camera *dev, u8 reg, u8 val)
++static int stk_sensor_outb(struct stk_camera *dev, u8 reg, u8 val)
+ {
+ 	int i = 0;
+ 	int tmpval = 0;
+@@ -250,7 +250,7 @@ int stk_sensor_outb(struct stk_camera *dev, u8 reg, u8 val)
+ 		return 0;
  }
  
- /* Get next available yuv buffer on PVR350 */
--void ivtv_yuv_next_free(struct ivtv *itv)
-+static void ivtv_yuv_next_free(struct ivtv *itv)
+-int stk_sensor_inb(struct stk_camera *dev, u8 reg, u8 *val)
++static int stk_sensor_inb(struct stk_camera *dev, u8 reg, u8 *val)
  {
- 	int draw, display;
- 	struct yuv_playback_info *yi = &itv->yuv_info;
-@@ -937,7 +937,7 @@ void ivtv_yuv_next_free(struct ivtv *itv)
- }
+ 	int i = 0;
+ 	int tmpval = 0;
+diff --git a/drivers/media/video/stk-webcam.h b/drivers/media/video/stk-webcam.h
+index 7e989d1..bc9ce78 100644
+--- a/drivers/media/video/stk-webcam.h
++++ b/drivers/media/video/stk-webcam.h
+@@ -127,8 +127,6 @@ void stk_camera_delete(struct kref *);
+ int stk_camera_write_reg(struct stk_camera *, u16, u8);
+ int stk_camera_read_reg(struct stk_camera *, u16, int *);
  
- /* Set up frame according to ivtv_dma_frame parameters */
--void ivtv_yuv_setup_frame(struct ivtv *itv, struct ivtv_dma_frame *args)
-+static void ivtv_yuv_setup_frame(struct ivtv *itv, struct ivtv_dma_frame *args)
- {
- 	struct yuv_playback_info *yi = &itv->yuv_info;
- 	u8 frame = yi->draw_frame;
-@@ -1042,7 +1042,7 @@ void ivtv_yuv_frame_complete(struct ivtv *itv)
- 			(itv->yuv_info.draw_frame + 1) % IVTV_YUV_BUFFERS);
- }
- 
--int ivtv_yuv_udma_frame(struct ivtv *itv, struct ivtv_dma_frame *args)
-+static int ivtv_yuv_udma_frame(struct ivtv *itv, struct ivtv_dma_frame *args)
- {
- 	DEFINE_WAIT(wait);
- 	int rc = 0;
+-int stk_sensor_outb(struct stk_camera *dev, u8 reg, u8 val);
+-int stk_sensor_inb(struct stk_camera *dev, u8 reg, u8 *val);
+ int stk_sensor_init(struct stk_camera *);
+ int stk_sensor_configure(struct stk_camera *);
+ int stk_sensor_sleep(struct stk_camera *dev);
 
