@@ -1,62 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761780AbYA1Qu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761022AbYA1Qx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761780AbYA1Qu6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 11:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758415AbYA1Quu
+	id S1761022AbYA1Qx5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 11:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbYA1Qxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 11:50:50 -0500
-Received: from py-out-1112.google.com ([64.233.166.179]:26738 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756282AbYA1Qus (ORCPT
+	Mon, 28 Jan 2008 11:53:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:45380 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753099AbYA1Qxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 11:50:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=J4W/qTTt5DqSM6wCQbzAWE2KEJCOU8Yz6nJgaILV6AO1SCNxz7DSw1+0CACiImyfyTCZ2uVFl7b2eBryTyLfE4qBgak5jrLg+MtrfJ3I8XMH+wupwrL+mLkaymsjUmtv5TQEHJDH/pYqCJsUWaVyaxu8S8IdEnS5NPyKm/8SEAM=
-Subject: Re: Problem with ata layer in 2.6.24
-From: Calvin Walton <calvin.walton@gmail.com>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-In-Reply-To: <200801281135.14555.gene.heskett@gmail.com>
-References: <200801272122.21823.gene.heskett@gmail.com>
-	 <200801280754.53768.gene.heskett@gmail.com>
-	 <18333.57152.472830.608248@harpo.it.uu.se>
-	 <200801281135.14555.gene.heskett@gmail.com>
-Content-Type: text/plain
-Date: Mon, 28 Jan 2008 11:50:43 -0500
-Message-Id: <1201539043.31293.7.camel@zem>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jan 2008 11:53:48 -0500
+Date: Mon, 28 Jan 2008 08:52:15 -0800
+From: Greg KH <greg@kroah.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Message-ID: <20080128165215.GA9759@kroah.com>
+References: <20080125180232.GA4613@kroah.com> <479DB203.2050809@panasas.com> <20080128161305.GB8790@kroah.com> <479E065E.5080105@panasas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <479E065E.5080105@panasas.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-01-28 at 11:35 -0500, Gene Heskett wrote:
-> On Monday 28 January 2008, Mikael Pettersson wrote:
-> >Unfortunately we also see:
-> > > [   48.285456] nvidia: module license 'NVIDIA' taints kernel.
-> > > [   48.549725] ACPI: PCI Interrupt 0000:02:00.0[A] -> Link [APC4] -> GSI
-> > > 19 (level, high) -> IRQ 20 [   48.550149] NVRM: loading NVIDIA UNIX x86
-> > > Kernel Module  169.07  Thu Dec 13 18:42:56 PST 2007
-> >
-> >We have no way of debugging that module, so please try 2.6.24 without it.
-> 
-> Sorry, I can't do this and have a working machine.  The nv driver has suffered 
-> bit rot or something since the FC2 days when it COULD run a 19" crt at 
-> 1600x1200, and will not drive this 20" wide screen lcd 1680x1050 monitor at 
-> more than 800x600, which is absolutely butt ugly fuzzy, looking like a jpg 
-> compressed to 10%.  The system is not usable on a day to basis without the 
-> nvidia driver.
+On Mon, Jan 28, 2008 at 06:44:14PM +0200, Boaz Harrosh wrote:
+> Thank you, I do support what you are doing here. Just the ndiswrapper
+> is a special case. But I guess I, as a user, can always use it anyway,
+> right? But not the commercial distros. Don't stop the transition on my
+> account.
 
-You should probably give the nouveau[1] driver a try, if only for
-testing purposes; if you are running an NV4x (G6x or G7x) card in
-particular, it works a lot better than the nv driver for 2d support.
+Yes, as a user, you are free to do whatever you want with the source
+code :)
 
-1. http://nouveau.freedesktop.org/wiki/InstallNouveau
+thanks,
 
--- 
-Calvin Walton <calvin.walton@gmail.com>
-
+greg k-h
