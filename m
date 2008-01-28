@@ -1,94 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbYA1RUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762211AbYA1RV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762063AbYA1RUm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 12:20:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbYA1RUc
+	id S1762211AbYA1RV1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 12:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265AbYA1RVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 12:20:32 -0500
-Received: from threatwall.zlynx.org ([199.45.143.218]:33224 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751970AbYA1RUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 12:20:31 -0500
-Subject: Re: Problem with ata layer in 2.6.24
-From: Zan Lynx <zlynx@acm.org>
-To: Calvin Walton <calvin.walton@gmail.com>
-Cc: Gene Heskett <gene.heskett@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-In-Reply-To: <1201539043.31293.7.camel@zem>
-References: <200801272122.21823.gene.heskett@gmail.com>
-	 <200801280754.53768.gene.heskett@gmail.com>
-	 <18333.57152.472830.608248@harpo.it.uu.se>
-	 <200801281135.14555.gene.heskett@gmail.com>  <1201539043.31293.7.camel@zem>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-rbt0sZQVa8wgMzyfU6Z6"
-Date: Mon, 28 Jan 2008 10:20:30 -0700
-Message-Id: <1201540830.6526.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20080128/1JJXeX-0004fl-7F-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
+	Mon, 28 Jan 2008 12:21:19 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:10503 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755219AbYA1RVS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 12:21:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bDzqBHmLHrDkinEJ1FK0CYgK1EEZm/zGlD1SOFubYBrNovE2Fwz2UhUHRVKBuBtbyx05H1P3TBx7f2S1N+zrKMtzLBgJDKO8JKbhuJOf3o0HnQEZ607/7rWWGjWOCvEYAqqH0d0m5kib2gay2gnxcbSZT9GjOXd0/PSK6xGe9kw=
+Message-ID: <386072610801280921q3e96bfc1v40ad09660c0f7ad8@mail.gmail.com>
+Date: Tue, 29 Jan 2008 01:21:15 +0800
+From: "Bryan Wu" <cooloney.lkml@gmail.com>
+To: "Jochen Friedrich" <jochen@scram.de>
+Subject: Re: [PATCHv3 2.6.25] i2c: adds support for i2c bus on Freescale CPM1/CPM2 controllers
+Cc: "Scott Wood" <scottwood@freescale.com>,
+       "Jean Delvare" <khali@linux-fr.org>,
+       "Kumar Gala" <galak@kernel.crashing.org>,
+       "Vitaly Bordug" <vitb@kernel.crashing.org>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       "linuxppc-dev list" <linuxppc-dev@ozlabs.org>,
+       "Linux I2C" <i2c@lm-sensors.org>
+In-Reply-To: <479A185D.6010406@scram.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <479A185D.6010406@scram.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jan 26, 2008 1:11 AM, Jochen Friedrich <jochen@scram.de> wrote:
+> Using the port of 2.4 code from Vitaly Bordug <vitb@kernel.crashing.org>
+> and the actual algorithm used by the i2c driver of the DBox code on
+> cvs.tuxboc.org from Tmbinc, Gillem (htoa@gmx.net). Renamed i2c-rpx.c and
+> i2c-algo-8xx.c to i2c-cpm.c and converted the driver to an
+> of_platform_driver.
+>
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+>  arch/powerpc/boot/dts/mpc8272ads.dts         |   10 +
+>  arch/powerpc/boot/dts/mpc866ads.dts          |   10 +
+>  arch/powerpc/boot/dts/mpc885ads.dts          |   10 +
+>  arch/powerpc/platforms/8xx/mpc885ads_setup.c |    5 +
+>  drivers/i2c/busses/Kconfig                   |   10 +
+>  drivers/i2c/busses/Makefile                  |    1 +
+>  drivers/i2c/busses/i2c-cpm.c                 |  759 ++++++++++++++++++++++++++
+>  7 files changed, 805 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/i2c/busses/i2c-cpm.c
+>
+> diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
+> index 7285ca1..7273996 100644
+> --- a/arch/powerpc/boot/dts/mpc8272ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc8272ads.dts
+> @@ -215,6 +215,16 @@
+>                                 linux,network-index = <1>;
+>                                 fsl,cpm-command = <16200300>;
+>                         };
+> +
+> +                       i2c@11860 {
+> +                               compatible = "fsl,mpc8248-i2c",
+> +                                            "fsl,cpm2-i2c",
+> +                                            "fsl,cpm-i2c";
+> +                               reg = <11860 20 8afc 2>;
+> +                               interrupts = <1 8>;
+> +                               interrupt-parent = <&PIC>;
+> +                               fsl,cpm-command = <29600000>;
+> +                       };
+>                 };
+>
+>                 PIC: interrupt-controller@10c00 {
+> diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
+> index daf9433..80c08bf 100644
+> --- a/arch/powerpc/boot/dts/mpc866ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc866ads.dts
+> @@ -169,6 +169,16 @@
+>                                 fsl,cpm-command = <0000>;
+>                                 linux,network-index = <1>;
+>                         };
+> +
+> +                       i2c@860 {
+> +                               compatible = "fsl,mpc866-i2c",
+> +                                            "fsl,cpm1-i2c",
+> +                                            "fsl,cpm-i2c";
+> +                               reg = <860 20 3c80 30>;
+> +                               interrupts = <10 3>;
+> +                               interrupt-parent = <&Cpm_pic>;
+> +                               fsl,cpm-command = <0010>;
+> +                       };
+>                 };
+>         };
+>
+> diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
+> index 8848e63..fd9c9d7 100644
+> --- a/arch/powerpc/boot/dts/mpc885ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc885ads.dts
+> @@ -213,6 +213,16 @@
+>                                 fsl,cpm-command = <0080>;
+>                                 linux,network-index = <2>;
+>                         };
+> +
+> +                       i2c@860 {
+> +                               compatible = "fsl,mpc885-i2c",
+> +                                            "fsl,cpm1-i2c",
+> +                                            "fsl,cpm-i2c";
+> +                               reg = <860 20 3c80 30>;
+> +                               interrupts = <10>;
+> +                               interrupt-parent = <&CPM_PIC>;
+> +                               fsl,cpm-command = <0010>;
+> +                       };
+>                 };
+>         };
+>
+> diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+> index f39447b..1e7d056 100644
+> --- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+> +++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+> @@ -157,6 +157,11 @@ static struct cpm_pin mpc885ads_pins[] = {
+>         {CPM_PORTE, 28, CPM_PIN_OUTPUT},
+>         {CPM_PORTE, 29, CPM_PIN_OUTPUT},
+>  #endif
+> +       /* I2C */
+> +#ifdef CONFIG_I2C_8XX
+> +       {CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
+> +       {CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
+> +#endif
+>  };
+>
+>  static void __init init_ioports(void)
+> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> index c466c6c..5950172 100644
+> --- a/drivers/i2c/busses/Kconfig
+> +++ b/drivers/i2c/busses/Kconfig
+> @@ -114,6 +114,16 @@ config I2C_BLACKFIN_TWI_CLK_KHZ
+>         help
+>           The unit of the TWI clock is kHz.
+>
+> +config I2C_CPM
+> +       tristate "Freescale CPM1 or CPM2 (MPC8xx/826x)"
+> +       depends on (CPM1 || CPM2) && I2C && PPC_OF
+> +       help
+> +         This supports the use of the I2C interface on Freescale
+> +         processors with CPM1 or CPM2.
+> +
+> +         This driver can also be built as a module.  If so, the module
+> +         will be called i2c-cpm.
+> +
+>  config I2C_DAVINCI
+>         tristate "DaVinci I2C driver"
+>         depends on ARCH_DAVINCI
+> diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
+> index 81d43c2..a395555 100644
+> --- a/drivers/i2c/busses/Makefile
+> +++ b/drivers/i2c/busses/Makefile
+> @@ -11,6 +11,7 @@ obj-$(CONFIG_I2C_AMD8111)     += i2c-amd8111.o
+>  obj-$(CONFIG_I2C_AT91)         += i2c-at91.o
+>  obj-$(CONFIG_I2C_AU1550)       += i2c-au1550.o
+>  obj-$(CONFIG_I2C_BLACKFIN_TWI) += i2c-bfin-twi.o
+> +obj-$(CONFIG_I2C_CPM)          += i2c-cpm.o
+>  obj-$(CONFIG_I2C_DAVINCI)      += i2c-davinci.o
+>  obj-$(CONFIG_I2C_ELEKTOR)      += i2c-elektor.o
+>  obj-$(CONFIG_I2C_GPIO)         += i2c-gpio.o
+> diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+> new file mode 100644
+> index 0000000..7191427
+> --- /dev/null
+> +++ b/drivers/i2c/busses/i2c-cpm.c
+> @@ -0,0 +1,759 @@
+> +/*
+> + * Freescale CPM1/CPM2 I2C interface.
+> + * Copyright (c) 1999 Dan Malek (dmalek@jlc.net).
+> + *
 
---=-rbt0sZQVa8wgMzyfU6Z6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+[!snip!]
 
+> +
+> +       /* register new adapter to i2c module... */
+> +
+> +       result = i2c_add_adapter(&cpm->adap);
 
-On Mon, 2008-01-28 at 11:50 -0500, Calvin Walton wrote:
-> On Mon, 2008-01-28 at 11:35 -0500, Gene Heskett wrote:
-> > On Monday 28 January 2008, Mikael Pettersson wrote:
-> > >Unfortunately we also see:
-> > > > [   48.285456] nvidia: module license 'NVIDIA' taints kernel.
-> > > > [   48.549725] ACPI: PCI Interrupt 0000:02:00.0[A] -> Link [APC4] -=
-> GSI
-> > > > 19 (level, high) -> IRQ 20 [   48.550149] NVRM: loading NVIDIA UNIX=
- x86
-> > > > Kernel Module  169.07  Thu Dec 13 18:42:56 PST 2007
-> > >
-> > >We have no way of debugging that module, so please try 2.6.24 without =
-it.
-> >=20
-> > Sorry, I can't do this and have a working machine.  The nv driver has s=
-uffered=20
-> > bit rot or something since the FC2 days when it COULD run a 19" crt at=20
-> > 1600x1200, and will not drive this 20" wide screen lcd 1680x1050 monito=
-r at=20
-> > more than 800x600, which is absolutely butt ugly fuzzy, looking like a =
-jpg=20
-> > compressed to 10%.  The system is not usable on a day to basis without =
-the=20
-> > nvidia driver.
->=20
-> You should probably give the nouveau[1] driver a try, if only for
-> testing purposes; if you are running an NV4x (G6x or G7x) card in
-> particular, it works a lot better than the nv driver for 2d support.
->=20
-> 1. http://nouveau.freedesktop.org/wiki/InstallNouveau
+As I was pointed before, please use the new style i2c driver interface:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=991dee591a99d035796a8c194eb1796cc020e142
 
-But nouveau is much less stable than nv.  For testing purposes, go with
-stable.
+-Bryan Wu
 
-I'm not sure why it won't run his screen though.  I can use nv to run a
-1920x1200 laptop LCD.  It *is* dog slow (although nouveau was not any
-better with a NV17 / 440-Go -- render support for AA fonts seems to be
-missing), but it does work.
---=20
-Zan Lynx <zlynx@acm.org>
-
---=-rbt0sZQVa8wgMzyfU6Z6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBHng7eG8fHaOLTWwgRAhMlAJ0Uzwl/qwupf9IoWkBLLiQCu0/i/QCfVx25
-a7yZlkrffM2PZwl/qINLPyo=
-=jYrN
------END PGP SIGNATURE-----
-
---=-rbt0sZQVa8wgMzyfU6Z6--
-
+[!snip!]
