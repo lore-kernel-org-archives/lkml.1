@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762567AbYA1WL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762708AbYA1WMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762567AbYA1WL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755453AbYA1WJ7
+	id S1762708AbYA1WMc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760040AbYA1WKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:09:59 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:52208 "EHLO smtp4.pp.htv.fi"
+	Mon, 28 Jan 2008 17:10:06 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:46415 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759932AbYA1WJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:09:58 -0500
-Date: Tue, 29 Jan 2008 00:10:24 +0200
+	id S1760049AbYA1WKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:10:04 -0500
+Date: Tue, 29 Jan 2008 00:10:31 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make suspend_device() static
-Message-ID: <20080128221024.GO8767@does.not.exist>
+To: Steven Toth <stoth@hauppauge.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] dvb/frontends/xc5000.c: make a struct static
+Message-ID: <20080128221030.GP8767@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,23 +24,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-suspend_device() can become static.
+struct XC5000_Standard[] can become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-344fcfcea0df8cbaa83e10d7e66b826ead67290b 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 200ed5f..cfcc54f 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -414,7 +414,7 @@ EXPORT_SYMBOL_GPL(device_power_down);
-  *	@dev:	Device.
-  *	@state:	Power state device is entering.
-  */
--int suspend_device(struct device *dev, pm_message_t state)
-+static int suspend_device(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
+e1f9c8304c807ecce026156ee2185925295fe835 
+diff --git a/drivers/media/dvb/frontends/xc5000.c b/drivers/media/dvb/frontends/xc5000.c
+index f642ca2..a5094b7 100644
+--- a/drivers/media/dvb/frontends/xc5000.c
++++ b/drivers/media/dvb/frontends/xc5000.c
+@@ -151,7 +151,7 @@ typedef struct {
+ #define FM_Radio_INPUT2 	21
+ #define FM_Radio_INPUT1 	22
  
+-XC_TV_STANDARD XC5000_Standard[MAX_TV_STANDARD] = {
++static XC_TV_STANDARD XC5000_Standard[MAX_TV_STANDARD] = {
+ 	{"M/N-NTSC/PAL-BTSC", 0x0400, 0x8020},
+ 	{"M/N-NTSC/PAL-A2",   0x0600, 0x8020},
+ 	{"M/N-NTSC/PAL-EIAJ", 0x0440, 0x8020},
 
