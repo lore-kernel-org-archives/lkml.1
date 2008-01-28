@@ -1,53 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761271AbYA1WYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763995AbYA1WY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761271AbYA1WYI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYA1WXv
+	id S1763995AbYA1WY2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:24:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761874AbYA1WXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 28 Jan 2008 17:23:53 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:19304 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754520AbYA1WXv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Jan 2008 17:23:51 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37167 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753229AbYA1WXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:23:50 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
 To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] make suspend_device() static
-Date: Mon, 28 Jan 2008 23:21:24 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: pavel@suse.cz, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <20080128221024.GO8767@does.not.exist>
-In-Reply-To: <20080128221024.GO8767@does.not.exist>
+Subject: Re: [2.6 patch] security/selinux/netlabel.c: fix double free
+Date: Mon, 28 Jan 2008 17:23:46 -0500
+User-Agent: KMail/1.9.7
+Cc: James Morris <jmorris@namei.org>, sds@tycho.nsa.gov, eparis@parisplace.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080128220938.GH8767@does.not.exist>
+In-Reply-To: <20080128220938.GH8767@does.not.exist>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200801282321.25567.rjw@sisk.pl>
+Message-Id: <200801281723.46273.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 28 of January 2008, Adrian Bunk wrote:
-> suspend_device() can become static.
+On Monday 28 January 2008 5:09:38 pm Adrian Bunk wrote:
+> This patch fixes a double free (security_netlbl_sid_to_secattr()
+> already calls netlbl_secattr_destroy() when it returns !0) introduced
+> by commit 45c950e0f839fded922ebc0bfd59b1081cc71b70 and spotted by the
+> Coverity checker.
 
-That's correct.  I'll push the patch to Len.
+Hi Adrian,
+
+Thanks for finding this mistake, however, I'd rather see it fixed by 
+removing the netlbl_secattr_destroy() call in 
+security_netlbl_sid_to_secattr() as it really shouldn't be there 
+anymore.  We moved the matching _init() call into 
+selinux_netlbl_sock_setsid() and I'd like to see the _init() and 
+_destroy() calls done in the same function.  I can push a revised patch 
+for this if you would prefer, otherwise I'll be happy to ack an updated 
+version ...
 
 > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
+>
 > ---
-> 344fcfcea0df8cbaa83e10d7e66b826ead67290b 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 200ed5f..cfcc54f 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -414,7 +414,7 @@ EXPORT_SYMBOL_GPL(device_power_down);
->   *	@dev:	Device.
->   *	@state:	Power state device is entering.
+> --- linux-2.6/security/selinux/netlabel.c.old	2008-01-23
+> 00:38:19.000000000 +0200 +++
+> linux-2.6/security/selinux/netlabel.c	2008-01-23 00:39:09.000000000
+> +0200 @@ -58,22 +58,22 @@ static int selinux_netlbl_sock_setsid(st rc
+> = security_netlbl_sid_to_secattr(sid, &secattr);
+>  	if (rc != 0)
+>  		goto sock_setsid_return;
+>  	rc = netlbl_sock_setattr(sk, &secattr);
+>  	if (rc == 0) {
+>  		spin_lock_bh(&sksec->nlbl_lock);
+>  		sksec->nlbl_state = NLBL_LABELED;
+>  		spin_unlock_bh(&sksec->nlbl_lock);
+>  	}
+>
+> -sock_setsid_return:
+>  	netlbl_secattr_destroy(&secattr);
+> +sock_setsid_return:
+>  	return rc;
+>  }
+>
+>  /**
+>   * selinux_netlbl_cache_invalidate - Invalidate the NetLabel cache
+>   *
+>   * Description:
+>   * Invalidate the NetLabel security attribute mapping cache.
+>   *
 >   */
-> -int suspend_device(struct device *dev, pm_message_t state)
-> +static int suspend_device(struct device *dev, pm_message_t state)
->  {
->  	int error = 0;
->  
-> 
+
+
+
+-- 
+paul moore
+linux security @ hp
