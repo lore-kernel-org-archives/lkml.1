@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764290AbYA1XvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764301AbYA1Xyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764290AbYA1XvV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:51:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbYA1XvF
+	id S1764301AbYA1Xyc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:54:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYA1XyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:51:05 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44585 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755593AbYA1XvC (ORCPT
+	Mon, 28 Jan 2008 18:54:24 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:34802 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751707AbYA1XyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:51:02 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <479E6A3D.3090201@s5r6.in-berlin.de>
-Date: Tue, 29 Jan 2008 00:50:21 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
+	Mon, 28 Jan 2008 18:54:23 -0500
+Date: Tue, 29 Jan 2008 00:54:22 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/5] Module: check to see if we have a built in module
+ with the same name
+In-Reply-To: <1201477122-4541-3-git-send-email-gregkh@suse.de>
+Message-ID: <Pine.LNX.4.64.0801290052100.1185@fbirervta.pbzchgretzou.qr>
+References: <20080127233751.GA4524@kroah.com> <1201477122-4541-3-git-send-email-gregkh@suse.de>
 MIME-Version: 1.0
-To: Jarod Wilson <jwilson@redhat.com>
-CC: linux1394-devel@lists.sourceforge.net,
-       =?ISO-8859-1?Q?Kristian_H=F8?= =?ISO-8859-1?Q?gsberg?= 
-	<krh@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] firewire: fail open() quickly if the node doesn't exist
- anymore
-References: <tkrat.e1db90404aee1115@s5r6.in-berlin.de> <tkrat.a4603d89e4c2fde1@s5r6.in-berlin.de> <tkrat.340b4530dff1f75a@s5r6.in-berlin.de> <200801281732.03912.jwilson@redhat.com>
-In-Reply-To: <200801281732.03912.jwilson@redhat.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarod Wilson wrote:
-> On Sunday 27 January 2008 12:21:56 pm Stefan Richter wrote:
->> Scenario:  Process A keeps the character device file of node N open.
->> N is being unplugged.  File /dev/fwN won't be destroyed as long as A
->> doesn't close it.  Now, process B opens /dev/fwN as well.  Previously
->> it would succeed but be unable to do any IO on it of course.  With this
->> patch, process B's open() will fail immediately with -ENODEV.
 
-> Makes perfect sense to me, no problems with it in cursory testing.
+On Jan 27 2008 15:38, Greg Kroah-Hartman wrote:
+>Subject: [PATCH 3/5] Module: check to see if we have a built in module with the
+>     same name
+>
+>When trying to load a module with the same name as a built-in one, a
+>scary kobject backtrace comes up.  Prevent that from checking for this
+>condition and warning the user as to what exactly is going on.
 
-Actually I have 2nd thoughts about it.  Clients should have a general
-way to know that a device went away.  (I.e. distinguish I/O errors from
-mere stale generation from I/O errors due to the node being gone for
-good.)  I will check tomorrow if the ABI does this distinction already.
-If yes, we don't need the patch.  (But might still need improvements in
-libraw1394 or/and clients to fail fast when appropriate.)
--- 
-Stefan Richter
--=====-==--- ---= ===-=
-http://arcgraph.de/sr/
+Should not external modules with internal names be rejected at modprobe 
+time? Otherwise I'd wonder how you want to deal with /sys/modules/XXX if 
+both modules export some module_param()s.
+
+It's just that if I happen to load vt.ko that the existing 
+/sys/modules/vt (from in-kernel vt.o) does not get overwritten by new 
+dentries that vt.ko will spawn. Something like /sys/modules/vt.1 perhaps 
+for /the new module with same name?
