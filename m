@@ -1,217 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYA1B7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757250AbYA1CR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754742AbYA1B7x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 20:59:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756343AbYA1B7e
+	id S1757250AbYA1CR6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 21:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYA1CRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 20:59:34 -0500
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:41985 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755354AbYA1B7c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 20:59:32 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Message-Id:Content-Type;
-  b=jisfbUoiPhqvOPaHEugoC/LaLzR3xH9Uj1lqCOh1sDs8WJF9GLHzEOxFuIJY3h08/W5ZL+N+nXBT2VCyV8v5Zk5E0yx7FpGaiu+8qN5C0IHmYUnlwm9dDT2Tq3seUfqe7wAqFQZ4ex5Ks+GC4OYfCx7NREr3zRnL7nIdE0/eyf8=  ;
-X-YMail-OSG: GCIQGnMVM1lV9.T.7_.OOZbcel1xKY9G2dhRISQ_sSSpYMlQdeifiMhhbcXaRXhl9GqiOlT6DA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] [0/18] Implement some low hanging BKL removal fruit in fs/*
-Date: Mon, 28 Jan 2008 12:59:14 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, akpm@osdl.org
-References: <20080127317.043953000@suse.de>
-In-Reply-To: <20080127317.043953000@suse.de>
-MIME-Version: 1.0
-Message-Id: <200801281259.15198.nickpiggin@yahoo.com.au>
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_zbTnHVXP47qS2jD"
+	Sun, 27 Jan 2008 21:17:49 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:54702 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751540AbYA1CRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 21:17:48 -0500
+Date: Mon, 28 Jan 2008 08:01:29 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: "Guillaume Chazarain" <guichaz@yahoo.fr>
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       a.p.zijlstra@chello.nl, dhaval@linux.vnet.ibm.com
+Subject: Re: High wake up latencies with FAIR_USER_SCHED
+Message-ID: <20080128023129.GD1044@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <3d8471ca0801271201o5a41955cg552ef06a2f821285@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="LQksG6bCIzRHxTLp"
+Content-Disposition: inline
+In-Reply-To: <3d8471ca0801271201o5a41955cg552ef06a2f821285@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_zbTnHVXP47qS2jD
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Sunday 27 January 2008 13:17, Andi Kleen wrote:
-> [Andrew: I believe this is -mm material for .25]
->
-> - Convert some more file systems (generally those who don't use the BKL
-> for anything except mount) to use unlocked_bkl.
-> - Implement BKL less fasync (see patch for the rationale)
-> This is currently a separate entry point, but since the number of fasync
-> users in the tree is relatively small I hope the older entry point can
-> be removed then in the not too far future
-> [help from other people converting more fasync users to unlocked_fasync
-> would be appreciated]
-> - Implement BKL less remote_llseek
-> - While I was at it I also added a few missing compat ioctl handlers
-> - Fix a few comments
->
-> This fixes a lot of relatively trivial BKL users in fs/*. The main
-> remaining non legacy offenders are now locks.c, nfs/nfsd and reiserfs.
-> I believe BKL removal for all of those is being worked on by other people.
-> Also a lot of "legacy" file systems still use it, but converting those
-> does not seem to be very pressing.
+On Sun, Jan 27, 2008 at 09:01:15PM +0100, Guillaume Chazarain wrote:
+> I noticed some strangely high wake up latencies with FAIR_USER_SCHED
+> using this script:
 
-BTW. here is a patch I did a while back for minix. I know it isn't
-a big deal, but the work is done so I guess I should send it along.
+<snip>
 
---Boundary-00=_zbTnHVXP47qS2jD
-Content-Type: text/x-diff;
-  charset="utf-8";
-  name="minix-no-bkl.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="minix-no-bkl.patch"
+> We have two busy loops with UID=1.
+> And UID=2 maintains the running median of its wake up latency.
+> I get these latencies:
+> 
+> # ./sched.py
+> 4.300022 ms
+> 4.801178 ms
+> 4.604006 ms
 
-The minix filesystem uses bkl to protect access to metadata. Switch
-to a per-superblock mutex.
+Given that sysctl_sched_wakeup_granularity is set to 10ms by default,
+this doesn't sound abnormal.
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
+<snip>
 
-Index: linux-2.6/fs/minix/bitmap.c
+> Disabling FAIR_USER_SCHED restores wake up latencies in the noise:
+> 
+> # ./sched.py
+> -0.156975 ms
+> -0.067091 ms
+> -0.022984 ms
+
+The reason why we are getting better wakeup latencies for !FAIR_USER_SCHED is 
+because of this snippet of code in place_entity():
+
+	if (!initial) {
+		/* sleeps upto a single latency don't count. */
+		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se))
+						     ^^^^^^^^^^^^^^^^^^
+			vruntime -= sysctl_sched_latency;
+
+		/* ensure we never gain time by being placed backwards. */
+		vruntime = max_vruntime(se->vruntime, vruntime);
+	}
+
+
+NEW_FAIR_SLEEPERS feature gives credit for sleeping only to tasks and
+not group-level entities. With the patch attached, I could see that wakeup 
+latencies with FAIR_USER_SCHED are restored to the same level as 
+!FAIR_USER_SCHED. 
+
+However I am not sure whether that is the way to go. We want to let one group of
+tasks running as much as possible until the fairness/wakeup-latency threshold is
+exceeded. If someone does want better wakeup latencies between groups too, they 
+can always tune sysctl_sched_wakeup_granularity.
+
+<snip>
+
+> Strangely enough, another way to restore normal latencies is to change
+> setuid(2) to setuid(1), that is, putting the latency measurement in
+> the same group as the two busy loops.
+
+
+
+-- 
+Regards,
+vatsa
+
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="fix.patch"
+
+
+---
+ kernel/sched_fair.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+Index: current/kernel/sched_fair.c
 ===================================================================
---- linux-2.6.orig/fs/minix/bitmap.c
-+++ linux-2.6/fs/minix/bitmap.c
-@@ -69,11 +69,11 @@ void minix_free_block(struct inode *inod
- 		return;
- 	}
- 	bh = sbi->s_zmap[zone];
--	lock_kernel();
-+	mutex_lock(&sbi->s_mutex);
- 	if (!minix_test_and_clear_bit(bit, bh->b_data))
- 		printk("minix_free_block (%s:%lu): bit already cleared\n",
- 		       sb->s_id, block);
--	unlock_kernel();
-+	mutex_unlock(&sbi->s_mutex);
- 	mark_buffer_dirty(bh);
- 	return;
- }
-@@ -88,18 +88,18 @@ int minix_new_block(struct inode * inode
- 		struct buffer_head *bh = sbi->s_zmap[i];
- 		int j;
+--- current.orig/kernel/sched_fair.c
++++ current/kernel/sched_fair.c
+@@ -511,7 +511,7 @@
  
--		lock_kernel();
-+		mutex_lock(&sbi->s_mutex);
- 		j = minix_find_first_zero_bit(bh->b_data, bits_per_zone);
- 		if (j < bits_per_zone) {
- 			minix_set_bit(j, bh->b_data);
--			unlock_kernel();
-+			mutex_unlock(&sbi->s_mutex);
- 			mark_buffer_dirty(bh);
- 			j += i * bits_per_zone + sbi->s_firstdatazone-1;
- 			if (j < sbi->s_firstdatazone || j >= sbi->s_nzones)
- 				break;
- 			return j;
- 		}
--		unlock_kernel();
-+		mutex_unlock(&sbi->s_mutex);
- 	}
- 	return 0;
- }
-@@ -211,10 +211,10 @@ void minix_free_inode(struct inode * ino
- 	minix_clear_inode(inode);	/* clear on-disk copy */
+ 	if (!initial) {
+ 		/* sleeps upto a single latency don't count. */
+-		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se))
++		if (sched_feat(NEW_FAIR_SLEEPERS))
+ 			vruntime -= sysctl_sched_latency;
  
- 	bh = sbi->s_imap[ino];
--	lock_kernel();
-+	mutex_lock(&sbi->s_mutex);
- 	if (!minix_test_and_clear_bit(bit, bh->b_data))
- 		printk("minix_free_inode: bit %lu already cleared\n", bit);
--	unlock_kernel();
-+	mutex_unlock(&sbi->s_mutex);
- 	mark_buffer_dirty(bh);
-  out:
- 	clear_inode(inode);		/* clear in-memory copy */
-@@ -237,7 +237,7 @@ struct inode * minix_new_inode(const str
- 	j = bits_per_zone;
- 	bh = NULL;
- 	*error = -ENOSPC;
--	lock_kernel();
-+	mutex_lock(&sbi->s_mutex);
- 	for (i = 0; i < sbi->s_imap_blocks; i++) {
- 		bh = sbi->s_imap[i];
- 		j = minix_find_first_zero_bit(bh->b_data, bits_per_zone);
-@@ -245,17 +245,17 @@ struct inode * minix_new_inode(const str
- 			break;
- 	}
- 	if (!bh || j >= bits_per_zone) {
--		unlock_kernel();
-+		mutex_unlock(&sbi->s_mutex);
- 		iput(inode);
- 		return NULL;
- 	}
- 	if (minix_test_and_set_bit(j, bh->b_data)) {	/* shouldn't happen */
--		unlock_kernel();
-+		mutex_unlock(&sbi->s_mutex);
- 		printk("minix_new_inode: bit already set\n");
- 		iput(inode);
- 		return NULL;
- 	}
--	unlock_kernel();
-+	mutex_unlock(&sbi->s_mutex);
- 	mark_buffer_dirty(bh);
- 	j += i * bits_per_zone;
- 	if (!j || j > sbi->s_ninodes) {
-Index: linux-2.6/fs/minix/dir.c
-===================================================================
---- linux-2.6.orig/fs/minix/dir.c
-+++ linux-2.6/fs/minix/dir.c
-@@ -102,7 +102,7 @@ static int minix_readdir(struct file * f
- 	char *name;
- 	__u32 inumber;
- 
--	lock_kernel();
-+	mutex_lock(&sbi->s_mutex);
- 
- 	pos = (pos + chunk_size-1) & ~(chunk_size-1);
- 	if (pos >= inode->i_size)
-@@ -146,7 +146,7 @@ static int minix_readdir(struct file * f
- 
- done:
- 	filp->f_pos = (n << PAGE_CACHE_SHIFT) | offset;
--	unlock_kernel();
-+	mutex_unlock(&sbi->s_mutex);
- 	return 0;
- }
- 
-Index: linux-2.6/fs/minix/inode.c
-===================================================================
---- linux-2.6.orig/fs/minix/inode.c
-+++ linux-2.6/fs/minix/inode.c
-@@ -174,6 +174,7 @@ static int minix_fill_super(struct super
- 	sbi->s_firstdatazone = ms->s_firstdatazone;
- 	sbi->s_log_zone_size = ms->s_log_zone_size;
- 	sbi->s_max_size = ms->s_max_size;
-+	mutex_init(&sbi->s_mutex);
- 	s->s_magic = ms->s_magic;
- 	if (s->s_magic == MINIX_SUPER_MAGIC) {
- 		sbi->s_version = MINIX_V1;
-Index: linux-2.6/fs/minix/minix.h
-===================================================================
---- linux-2.6.orig/fs/minix/minix.h
-+++ linux-2.6/fs/minix/minix.h
-@@ -1,6 +1,7 @@
- #include <linux/fs.h>
- #include <linux/pagemap.h>
- #include <linux/minix_fs.h>
-+#include <linux/mutex.h>
- 
- /*
-  * change the define below to 0 if you want names > info->s_namelen chars to be
-@@ -43,6 +44,8 @@ struct minix_sb_info {
- 	struct minix_super_block * s_ms;
- 	unsigned short s_mount_state;
- 	unsigned short s_version;
-+
-+	struct mutex s_mutex;
- };
- 
- extern struct inode *minix_iget(struct super_block *, unsigned long);
+ 		/* ensure we never gain time by being placed backwards. */
 
---Boundary-00=_zbTnHVXP47qS2jD--
+--LQksG6bCIzRHxTLp--
