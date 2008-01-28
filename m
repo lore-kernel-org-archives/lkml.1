@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbYA1T5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbYA1T6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756837AbYA1T5d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 14:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbYA1T5W
+	id S1760042AbYA1T6Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 14:58:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbYA1T6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 14:57:22 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:58473 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752369AbYA1T5U (ORCPT
+	Mon, 28 Jan 2008 14:58:17 -0500
+Received: from wr-out-0506.google.com ([64.233.184.237]:43290 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752731AbYA1T6Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 14:57:20 -0500
-Date: Mon, 28 Jan 2008 14:56:33 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Valdis.Kletnieks@vt.edu, David Chinner <dgc@sgi.com>,
-       Valerie Henson <val@vahconsulting.com>, linux-fsdevel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andreas Dilger <adilger@clusterfs.com>, Ric Wheeler <ric@emc.com>
-Subject: Re: [RFC] Parallelize IO for e2fsck
-Message-ID: <20080128195633.GB20528@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-	Valdis.Kletnieks@vt.edu, David Chinner <dgc@sgi.com>,
-	Valerie Henson <val@vahconsulting.com>,
-	linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Andreas Dilger <adilger@clusterfs.com>, Ric Wheeler <ric@emc.com>
-References: <70b6f0bf0801161322k2740a8dch6a0d6e6e112cd2d0@mail.gmail.com> <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com> <20080121230041.GL3180@webber.adilger.int> <20080122033830.GR155259@sgi.com> <3673.1200975438@turing-police.cc.vt.edu> <20080122070050.GM3180@webber.adilger.int> <20080122144052.GC17804@mit.edu> <20080128193005.GC4032@ucw.cz>
+	Mon, 28 Jan 2008 14:58:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VGVnBkPUeS5nzNhPYlJoTnGim1D5WT+1hq0keBylRHJ5V2YrG5XPs4+x6jrlcrDJ9++xXORyXDFD9fpiIaPykz1zdtg6l043Wn85R0yrH24jbGegNNBEf/l4VKTMhwLtuFXKNBaoL7I+/draA/MpXZ+YnlOrEP8PWdCoEsI0y4o=
+Message-ID: <83f15e30801281158s36b0da3el210f5a97b0348ea3@mail.gmail.com>
+Date: Mon, 28 Jan 2008 14:58:12 -0500
+From: "Jason Price" <japrice@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Fwd: show label for swap partition.
+In-Reply-To: <83f15e30801281156od91c2a8p3ec439cb16232386@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080128193005.GC4032@ucw.cz>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+References: <83f15e30801281151w21466ef9m82dc50ab09dc390f@mail.gmail.com>
+	 <83f15e30801281156od91c2a8p3ec439cb16232386@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 07:30:05PM +0000, Pavel Machek wrote:
-> 
-> As user pages are always in highmem, this should be easy to decide:
-> only send SIGDANGER when highmem is full. (Yes, there are
-> inodes/dentries/file descriptors in lowmem, but I doubt apps will
-> respond to SIGDANGER by closing files).
+I apologize if this is the wrong forum.  Please CC me on replies.
 
-Good point; for a system with at least (say) 2GB of memory, that
-definitely makes sense.  For a system with less than 768 megs of
-memory (how quaint, but it wasn't that long ago this was a lot of
-memory :-), there wouldn't *be* any memory in highmem at all....
+A admin accidentally deleted the swap line from the fstab file.  We
+mount the swap filesystem via labels.  However, there seems to be no
+way to list the label on an existing swap partition, via the command
+line swap tools (mkswap, swapon/off, etc)
 
-	       		     	 	- Ted
+Is this blindness on my part, or should there be an analog to e2label
+for swap partitions?
+
+--Jason
