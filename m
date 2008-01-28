@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761223AbYA1PKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbYA1PLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761223AbYA1PKj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 10:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756140AbYA1PKW
+	id S1761371AbYA1PLn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 10:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYA1PLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 10:10:22 -0500
-Received: from sacred.ru ([62.205.161.221]:49432 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755226AbYA1PKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 10:10:20 -0500
-Message-ID: <479DF05B.9020608@openvz.org>
-Date: Mon, 28 Jan 2008 18:10:19 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 28 Jan 2008 10:11:34 -0500
+Received: from metis.extern.pengutronix.de ([83.236.181.26]:56831 "EHLO
+	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753605AbYA1PLd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 10:11:33 -0500
+Message-ID: <479DF0A1.3000906@pengutronix.de>
+Date: Mon, 28 Jan 2008 16:11:29 +0100
+From: Luotao Fu <l.fu@pengutronix.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: [PATCH 2/4] Pidns: fix badly converted mqueues pid handling
-Content-Type: text/plain; charset=ISO-8859-1
+To: Wolfgang Grandegger <wg@grandegger.com>
+CC: Luotao Fu <l.fu@pengutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc
+References: <1200544050.318.18.camel@localhost.localdomain> <478F2A46.5070506@grandegger.com> <20080123145340.GE6200@pengutronix.de> <47976D06.1010900@grandegger.com>
+In-Reply-To: <47976D06.1010900@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 28 Jan 2008 18:09:59 +0300 (MSK)
+X-SA-Exim-Connect-IP: 10.1.0.69
+X-SA-Exim-Mail-From: l.fu@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When sending the pid namespaces patches I wrongly converted 
-the tsk->tgid into task_pid_vnr(tsk) in mqueue-s (the git id
-of this patch is b488893a390edfe027bae7a46e9af8083e740668).
+Hi,
 
-The proper behavior is to get the task_tgid_vnr(tsk).
+I took some time today and went through Wolfgangs scenarios partly. Now 
+some results from my side. I ran my tests on a 2.6.24-rt1
 
-This seem to be the only mistake of that kind.
+Wolfgang Grandegger wrote:
+  > I also did some more measurements and made, by chance, interesting
+> observations. I will summarize in more detail later on. Here are some
+> preliminary results. My high latencies of up to 570us (without latency
+> tracer) seem to be caused mainly by the following setting:
+> 
+>   CONFIG_RCU_TRACE=m
+> 
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+I also got high latencies without CONFIG_RCU_TRACE set at all. setting 
+CONFIG_RCU_TRACE to y or m causes also high latency though in my test 
+runs. Hence I doubt the rcu Tracer is really the problem.
 
----
+As I mentioned in my last mail. Only thing I could reproduce reliably is 
+that the measurement results depend heavily on kind of the non-rt 
+Workload. For with hackbench or cache calibrator I couldn't produce 
+abnormal high latencies. Nor could I produce the hight latencies on a 
+system booted via flash. Hence my suspects stays on the fec irq thread 
+and filesystem access routines.
 
- ipc/mqueue.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> With CONFIG_NO_HZ=y or CONFIG_PPC_BESTCOMM_GEN_BD=y the latency
+> increases by approx. 100..150us, each.
+> 
 
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index eb3f489..b83e983 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -509,7 +509,7 @@ static void __do_notify(struct mqueue_inode_info *info)
- 			sig_i.si_errno = 0;
- 			sig_i.si_code = SI_MESGQ;
- 			sig_i.si_value = info->notify.sigev_value;
--			sig_i.si_pid = task_pid_vnr(current);
-+			sig_i.si_pid = task_tgid_vnr(current);
- 			sig_i.si_uid = current->uid;
- 
- 			kill_pid_info(info->notify.sigev_signo,
+Since I was producing high latencies independently from the rcu 
+settings. I didn't spend a lot of time playing around with the GEN_BD 
+and dynamic clock. All I can say is that disabling them also cause high 
+latency. ;-) The average results don't differ significantly in my test runs.
+
+cheers
+Luotao Fu
 -- 
-1.5.3.4
+    Dipl.-Ing. Luotao Fu | Phone: +49-5121-206917-3
+Pengutronix - Linux Solutions for Science and Industry
+Entwicklungszentrum Nord     http://www.pengutronix.de
 
