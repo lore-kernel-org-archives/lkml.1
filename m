@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbYA1PLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760663AbYA1PN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761371AbYA1PLn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 10:11:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYA1PLe
+	id S1760663AbYA1PN2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 10:13:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYA1PNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 10:11:34 -0500
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:56831 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753605AbYA1PLd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 10:11:33 -0500
-Message-ID: <479DF0A1.3000906@pengutronix.de>
-Date: Mon, 28 Jan 2008 16:11:29 +0100
-From: Luotao Fu <l.fu@pengutronix.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+	Mon, 28 Jan 2008 10:13:20 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54687 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754413AbYA1PNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 10:13:19 -0500
+Date: Mon, 28 Jan 2008 16:13:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sudhir Kumar <skumar@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc8-mm1 Kernel BUG while bootup
+Message-ID: <20080128151300.GB12205@elte.hu>
+References: <20080122135800.GA6084@in.ibm.com> <20080122155329.GA30119@elte.hu> <20080128145722.GB25517@in.ibm.com>
 MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>
-CC: Luotao Fu <l.fu@pengutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc
-References: <1200544050.318.18.camel@localhost.localdomain> <478F2A46.5070506@grandegger.com> <20080123145340.GE6200@pengutronix.de> <47976D06.1010900@grandegger.com>
-In-Reply-To: <47976D06.1010900@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 10.1.0.69
-X-SA-Exim-Mail-From: l.fu@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080128145722.GB25517@in.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I took some time today and went through Wolfgangs scenarios partly. Now 
-some results from my side. I ran my tests on a 2.6.24-rt1
+* Sudhir Kumar <skumar@linux.vnet.ibm.com> wrote:
 
-Wolfgang Grandegger wrote:
-  > I also did some more measurements and made, by chance, interesting
-> observations. I will summarize in more detail later on. Here are some
-> preliminary results. My high latencies of up to 570us (without latency
-> tracer) seem to be caused mainly by the following setting:
+> I applied all the hot fixes patches but still the bug is there. (crash 
+> at early boot).
 > 
->   CONFIG_RCU_TRACE=m
-> 
+> As I replied your earlier mail in which the patch sent by you does not 
+> apply (reverse). can you please look into the problem ?
 
-I also got high latencies without CONFIG_RCU_TRACE set at all. setting 
-CONFIG_RCU_TRACE to y or m causes also high latency though in my test 
-runs. Hence I doubt the rcu Tracer is really the problem.
+could you test latest x86.git:
 
-As I mentioned in my last mail. Only thing I could reproduce reliably is 
-that the measurement results depend heavily on kind of the non-rt 
-Workload. For with hackbench or cache calibrator I couldn't produce 
-abnormal high latencies. Nor could I produce the hight latencies on a 
-system booted via flash. Hence my suspects stays on the fec irq thread 
-and filesystem access routines.
+   http://redhat.com/~mingo/x86.git/README
 
-> With CONFIG_NO_HZ=y or CONFIG_PPC_BESTCOMM_GEN_BD=y the latency
-> increases by approx. 100..150us, each.
-> 
+does that crash too?
 
-Since I was producing high latencies independently from the rcu 
-settings. I didn't spend a lot of time playing around with the GEN_BD 
-and dynamic clock. All I can say is that disabling them also cause high 
-latency. ;-) The average results don't differ significantly in my test runs.
-
-cheers
-Luotao Fu
--- 
-    Dipl.-Ing. Luotao Fu | Phone: +49-5121-206917-3
-Pengutronix - Linux Solutions for Science and Industry
-Entwicklungszentrum Nord     http://www.pengutronix.de
-
+	Ingo
