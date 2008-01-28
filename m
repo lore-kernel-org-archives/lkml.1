@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759670AbYA1TfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762086AbYA1Tfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759670AbYA1TfJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 14:35:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbYA1Tez
+	id S1762086AbYA1Tfc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 14:35:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758311AbYA1TfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 14:34:55 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:48637 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751732AbYA1Tey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 14:34:54 -0500
-Subject: Re: [PATCH] [8/18] BKL-removal: Remove BKL from remote_llseek
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Steve French <smfrench@gmail.com>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>, swhiteho@redhat.com,
-       sfrench@samba.org, vandrove@vc.cvut.cz, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <524f69650801281033o542e18c5y696dc239b70f1307@mail.gmail.com>
-References: <20080127317.043953000@suse.de> <200801280538.25345.ak@suse.de>
-	 <20080127211345.6e73fa0b.akpm@linux-foundation.org>
-	 <200801280917.52574.ak@suse.de>
-	 <524f69650801281033o542e18c5y696dc239b70f1307@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 28 Jan 2008 19:34:39 +0000
-Message-Id: <1201548879.6784.13.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jan 2008 14:35:03 -0500
+Received: from vms040pub.verizon.net ([206.46.252.40]:45238 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757289AbYA1TfA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 14:35:00 -0500
+Date: Mon, 28 Jan 2008 14:31:11 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Problem with ata layer in 2.6.24
+In-reply-to: <200801282221.53303.arvidjaar@mail.ru>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: Richard Heck <rgheck@bobjweil.com>, linux-kernel@vger.kernel.org
+Message-id: <200801281431.11733.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200801272122.21823.gene.heskett@gmail.com>
+ <200801281409.05839.gene.heskett@gmail.com>
+ <200801282221.53303.arvidjaar@mail.ru>
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 28 January 2008, Andrey Borzenkov wrote:
+>On Monday 28 January 2008, Gene Heskett wrote:
+>> On Monday 28 January 2008, Andrey Borzenkov wrote:
+>> >Richard Heck wrote:
+>> >> Daniel Barkalow wrote:
+>> >>> Can you switch back to old IDE to get your work done (and to make sure
+>> >>> it's not a hardware issue that's developed recently)?
+>> >>
+>> >> I think it'd be really, REALLY helpful to a lot of people if you, or
+>> >> someone, could explain in moderate detail how this might be done. I
+>> >> tried doing it myself, but I'm not sufficiently expert at configuring
+>> >> kernels that I was ever able to figure out how to do it.
+>> >
+>> >well, here on Mandriva I
+>> >
+>> >1) compile both IDE and libata as modules
+>> >2) create initrd that contains either IDE or libata modules
+>> >3) use labels for file system mounts, swaps and resume device.
+>> >
+>> >
+>> >Now 1) should be pretty straightforward (I could send you config if you
+>> >like, it is stripped down to bare minimum on my system, you will have to
+>> >check drivers for your hardware). 2 and 3 are obviously distribution
+>> >dependent. I can explain how to do it on Mandriva that ATM has near to
+>> >perfect support for addressing devices via label/UUID; also ide/scsi/ata
+>> >switch is trivial using Mandriva mkinitrd.
+>>
+>> I already build as modules, and it would be relatively easy to make 2 boot
+>> stanza's that used the different initrd's if there were examples that
+>> could be used as 'excludes' when building the initrd's.  Is such a
+>> creature breedable?
+>
+>I am not sure I understand a question (it is not my native language) but
+> here I simply do
+>
+>mkinitrd --omit-ide-modules --preload pata_ali --preload sd_mod ...
+>
+>or
+>
+>mkinitrd --omit-scsi-modules --preload alim15x3 --preload ide-disk ...
+>
+This looks doable, thanks.  I was trying to be cute above when I'm rather 
+frustrated by all this.  I might have to fiddle a bit but I got the idea.
 
-On Mon, 2008-01-28 at 12:33 -0600, Steve French wrote:
-> On Jan 28, 2008 2:17 AM, Andi Kleen <ak@suse.de> wrote:
-> > > I completely agree.  If one thread writes A and another writes B then the
-> > > kernel should record either A or B, not ((A & 0xffffffff00000000) | (B &
-> > > 0xffffffff))
-> >
-> > The problem is pretty nasty unfortunately. To solve it properly I think
-> > the file_operations->read/write prototypes would need to be changed
-> > because otherwise it is not possible to do atomic relative updates
-> > of f_pos. Right now the actual update is burrowed deeply in the low level
-> > read/write implementation. But that would be a huge impact all over
-> > the tree :/
-> 
-> If there were a wrapper around reads and writes of f_pos as there is
-> for i_size e.g. it would hit a lot of code, but not as many as I had
-> originally thought.  the most important ones are in the vfs itself, where
-> there are only 59 uses of the field (not all need to be changed).   ext3
-> has fewer (25), and cifs only 12 uses.
+OTOH, I and about 15,000 others according to google, would be everlastingly 
+gratefull if it was just fixed. :)
 
-Most of the uses in ext3 and cifs deal with a directory's f_pos in
-readdir, which is protected by i_mutex, so I don't think we need to
-worry about them at all.
+Thanks
+
+>If you ask how --omit part is implemented I happily send you mkinitrd
+> script.
+
+
+
 -- 
-David Kleikamp
-IBM Linux Technology Center
-
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+If everybody minded their own business, the world would go around a deal 
+faster.
+		-- The Duchess, "Through the Looking Glass"
