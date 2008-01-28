@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762305AbYA1Vb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762550AbYA1Vcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762305AbYA1Vb4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 16:31:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753264AbYA1Vbs
+	id S1762550AbYA1Vcg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 16:32:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753264AbYA1Vc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 16:31:48 -0500
-Received: from an-out-0708.google.com ([209.85.132.242]:36957 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbYA1Vbr (ORCPT
+	Mon, 28 Jan 2008 16:32:28 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:47100 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752534AbYA1Vc1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 16:31:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=mWZDkPPLrLVbxLXPAOkXFCAJV1qB2GCmQtsYrCrZlX+OBV56dlea25+AhCKPE0nE8GwWgpmVLo7jVgAtG7vQ4gIuMJZa9DFxy1oGHsUIrEuGHo2MY9hpXFMhFE8QqOqp/trtt6LPkZAt2CXrGtQ0I9Y+C30TDcUqcOg4wYHLZ2w=
-Date: Mon, 28 Jan 2008 19:30:11 -0200
-From: Leonardo Baldelli <leitoox@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [BUG] 2.6.24 net/core/dev.c:1416 skb_gso_segment()
-Message-ID: <20080128193011.6a5898be@lara>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jan 2008 16:32:27 -0500
+Date: Mon, 28 Jan 2008 13:49:23 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH] x86: add PCI IDs to k8topology_64.c
+In-reply-to: <20080128205441.GA13442@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Joachim Deguara <joachim.deguara@amd.com>, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, Dean Roe <roe@cray.com>
+Message-id: <200801281349.24303.yinghai.lu@sun.com>
+Organization: SUN
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200801281211.28214.joachim.deguara@amd.com>
+ <20080128205441.GA13442@elte.hu>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WARNING: at net/core/dev.c:1416 skb_gso_segment()
-Pid: 0, comm: swapper Tainted: P        2.6.24 #1
+On Monday 28 January 2008 12:54:41 pm Ingo Molnar wrote:
+> 
+> * Joachim Deguara <joachim.deguara@amd.com> wrote:
+> 
+> >     x86: add PCI IDs to k8topology_64.c
+> >     
+> >     This just adds the PCI IDs of AMD's family 10h and 11h CPU's 
+> >  northbridges to k8topology discovery.
+> 
+> thanks Joachim, applied.
 
-Call Trace:
- <IRQ>  [<ffffffff811c4496>]
- [<ffffffff811c4736>]
- [<ffffffff81028c39>]
- [<ffffffff811d24b4>]
- [<ffffffff811c6e18>]
- [<ffffffff811e1163>]
- [<ffffffff88603d35>]
- [<ffffffff8103aa24>]
- [<ffffffff811f1e4a>]
- [<ffffffff811ea74e>]
- [<ffffffff811f3b4f>]
- [<ffffffff8107bad9>]
- [<ffffffff8107bc95>]
- [<ffffffff811f0f1f>]
- [<ffffffff811f75e5>]
- [<ffffffff811d93a7>]
- [<ffffffff81028c39>]
- [<ffffffff811f9dd0>]
- [<ffffffff81028c39>]
- [<ffffffff811dbcf5>]
- [<ffffffff811dc0fe>]
- [<ffffffff81214543>]
- [<ffffffff811c4032>]
- [<ffffffff811c6b14>]
- [<ffffffff811c64e3>]
- [<ffffffff81036955>]
- [<ffffffff81023675>]
- [<ffffffff8100cdec>]
- [<ffffffff8100ee85>]
- [<ffffffff8100f0e0>]
- [<ffffffff8100ace0>]
- [<ffffffff8100ace0>]
- [<ffffffff8100c171>]
- <EOI>  [<ffffffff8100ad09>]
- [<ffffffff8100ad8a>]
- [<ffffffff812e1b5a>]
- [<ffffffff812e112d>]
+thanks.
+
+I used it with my local patches for supporting family 10h with acpi=off pci=nomsi for a while.
+
+YH
