@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbYA1FdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbYA1Fde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754563AbYA1FdQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 00:33:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYA1FdA
+	id S1755637AbYA1Fde (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 00:33:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYA1FdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 00:33:00 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60929 "EHLO
+	Mon, 28 Jan 2008 00:33:01 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59929 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750727AbYA1Fc7 (ORCPT
+	by vger.kernel.org with ESMTP id S1750798AbYA1Fc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 Jan 2008 00:32:59 -0500
-Date: Sun, 27 Jan 2008 21:32:57 -0800
+Date: Sun, 27 Jan 2008 21:33:12 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, jkenisto@us.ibm.com,
-       ananth@in.ibm.com, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH -mm] kprobes: kretprobe user entry-handler (updated)
-Message-Id: <20080127213257.0889c523.akpm@linux-foundation.org>
-In-Reply-To: <479B7A78.5090604@gmail.com>
-References: <479B7A78.5090604@gmail.com>
+To: "minchan kim" <minchan.kim@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Martin Bligh <mbligh@mbligh.org>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] remove duplicating priority setting in try_to_free_p
+Message-Id: <20080127213312.517b8014.akpm@linux-foundation.org>
+In-Reply-To: <28c262360801252329q7232edc2l2d0e4ed17c054832@mail.gmail.com>
+References: <28c262360801252329q7232edc2l2d0e4ed17c054832@mail.gmail.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,31 +27,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Jan 2008 23:52:48 +0530 Abhishek Sagar <sagar.abhishek@gmail.com> wrote:
+On Sat, 26 Jan 2008 02:29:23 -0500 "minchan kim" <minchan.kim@gmail.com> wrote:
 
-> This is a repost of a patch which was reviewed earlier at:
-> http://lkml.org/lkml/2007/11/13/58 (thanks to Jim Keniston and Srinivasa for their review comments). This provides support to add an optional user defined callback to be run at function entry of a kretprobe'd function. It also modifies the kprobe smoke tests to include an entry-handler during the kretprobe sanity test.
+> shrink_zones in try_to_free_pages already set zone through
+> note_zone_scanning_priority.
+> So, setting prev_priority in try_to_free_pages is needless.
 > 
+> This patch is made by 2.6.24-rc8.
+> 
+> Signed-off-by: barrios <minchan.kim@gmail.com>
+> ---
+>  mm/vmscan.c |   17 -----------------
+>  1 files changed, 0 insertions(+), 17 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index e5a9597..fc55c23 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1273,23 +1273,6 @@ unsigned long try_to_free_pages(struct z
+>     if (!sc.all_unreclaimable)
+>         ret = 1;
+>  out:
+> -   /*
+> -    * Now that we've scanned all the zones at this priority level, note
+> -    * that level within the zone so that the next thread which performs
+> -    * scanning of this zone will immediately start out at this priority
+> -    * level.  This affects only the decision whether or not to bring
+> -    * mapped pages onto the inactive list.
+> -    */
+> -   if (priority < 0)
+> -       priority = 0;
+> -   for (i = 0; zones[i] != NULL; i++) {
+> -       struct zone *zone = zones[i];
+> -
+> -       if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+> -           continue;
+> -
+> -       zone->prev_priority = priority;
+> -   }
+>     return ret;
+>  }
 
-Neither the changelog nor the newly-added documentation explain why Linux
-needs this feature.  What will it be used for??
+(your mail client is replacing tabs with spaces)
 
+I think this is actually a bugfix.  The code you're removing doesn't do the 
 
-> +1.3.2 Kretprobe entry-handler
-> +
-> +Kretprobes also provides an optional user-specified handler which runs
+	if (priority < zone->prev_priority)
 
-I think "caller-specified" would be a better term here.  Generally "user"
-refers to Aunt Tillie sitting at the keyboard.
+thing.
 
-> +/* Timestamp function entry. */
-> +static int entry_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
-> +{
-> +	struct my_data *data;
-> +
-> +	if(!current->mm)
-> +		return 1; /* skip kernel threads */
+otoh with this change, the only thing which will cause prev_priority to
+increase (ie: lower priority) is kswapd, which seems odd.
 
-gargh, what's happened to checkpatch lately?  It failed to notice the
-missing space.
+So:
 
+a) this is a functional change and needs more thought and lots of runtime
+   testing.  I'll duck it for now.
+
+b) the prev_priority stuff is still screwed up.
