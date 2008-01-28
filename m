@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762275AbYA1Xpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764934AbYA1Xp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762275AbYA1Xpi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:45:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbYA1Xp2
+	id S1764934AbYA1Xp6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:45:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761574AbYA1Xpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:45:28 -0500
-Received: from fk-out-0910.google.com ([209.85.128.185]:28930 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbYA1Xp0 (ORCPT
+	Mon, 28 Jan 2008 18:45:45 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:17845 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761993AbYA1Xpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:45:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=h4trdF31EfPAd6nrreB39vekFs2emYaBufOA4YOj2UzcqGRu7mWo+j7EJTPf32c8E6w80P3AUle750adcpZH0T9OdcLy+quZWzshDuTmWFPI6R3vNQNZjquHBJlLtwF8eHEtqUbPXQDr1gHQJiyoM5RyAUrw8NAO0MOjjiodUDc=
-Message-ID: <479E6911.7050703@gmail.com>
-Date: Tue, 29 Jan 2008 00:45:21 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com,
-       jeffrey.t.kirsher@intel.com, john.ronciak@intel.com,
-       e1000-devel@lists.sourceforge.net, venkatesh.pallipadi@intel.com
-Subject: Re: [PATCH 1/1] Net: e100, fix iomap mem accesses
-References: <1200608900-3507-1-git-send-email-jirislaby@gmail.com>	<4791004B.50408@garzik.org> <20080127213330.148989f1.akpm@linux-foundation.org> <479E57CF.5040308@intel.com>
-In-Reply-To: <479E57CF.5040308@intel.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jan 2008 18:45:44 -0500
+Date: Mon, 28 Jan 2008 17:47:41 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Blu Ray LG GGW-H20L crashes Linux
+In-reply-to: <1201563794.3182.18.camel@fermat.scientia.net>
+To: Christoph Anton Mitterer <calestyo@scientia.net>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <479E699D.1090102@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.QKOfoC0jShKF1yDA3BpSsRBOQzY@ifi.uio.no>
+ <479E677C.9070301@shaw.ca> <1201563794.3182.18.camel@fermat.scientia.net>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/28/2008 11:31 PM, Kok, Auke wrote:
-> Andrew Morton wrote:
->> Please resend when convenient.  Maybe more luodly or something, I dunno.
+Christoph Anton Mitterer wrote:
+> On Mon, 2008-01-28 at 17:38 -0600, Robert Hancock wrote:
+>> Christoph Anton Mitterer wrote:
+>>> btw: I'm cross posting this to lkml and debian-user,... hope nobody
+>>> feels offended :-)
+>> How much RAM is in your machine? There's a known problem with sata_nv 
+>> ADMA with ATAPI devices and over 4GB of RAM.
+> Uhm *tadaaa* ... got 4GB ^^
+> Ok,.. so If this only applies to ATAPI devices it should be clear why my
+> SATA HDDs aren't affected ;)
 > 
-> just repost to me and Jeff and I'll pick it up this week if Jeff does not.
+>> As a temporary workaround, 
+>> you can boot with sata_nv.adma=0 on the kernel command line, or limit 
+>> your memory with the mem= command line option so that memory over 4GB is 
+>> not used.
+> Great,.. will have a try tomorrow :-)
+> 
+> Is this already fixed in git?
 
-Sent few hours ago, you should had received a copy, hadn't you?
+Nope, I/we are still trying to figure out how to fix this properly..
