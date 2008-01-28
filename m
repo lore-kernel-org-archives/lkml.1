@@ -1,109 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbYA1I44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759927AbYA1I5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758870AbYA1I44 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 03:56:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYA1I4r
+	id S1759927AbYA1I5W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 03:57:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbYA1I5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 03:56:47 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54646 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753094AbYA1I4q (ORCPT
+	Mon, 28 Jan 2008 03:57:04 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:50571 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758933AbYA1I5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 03:56:46 -0500
-Date: Mon, 28 Jan 2008 00:56:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] Only print kernel debug information for OOMs caused by
- kernel allocations
-Message-Id: <20080128005657.24236df5.akpm@linux-foundation.org>
-In-Reply-To: <200801280710.08204.ak@suse.de>
-References: <20080116222421.GA7953@wotan.suse.de>
-	<20080127215249.94db142b.akpm@linux-foundation.org>
-	<200801280710.08204.ak@suse.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Jan 2008 03:57:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=rPZaMpns+ztg3HAhIonm7SHHJtyuhOdMlxt+d2IAnKds0yE4vgdgCSDGRRmqrjz1scr9FYSd18AABU/Pngy0T0dkGULbCacR6VE6EGEmwf5Pu//OePpXpXIeuNKPnEnzg2qoiOYWdvDVXhgEj4hEUoyOquP/qUnBeh6smg6ULWE=
+Date: Mon, 28 Jan 2008 16:58:00 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] kobject : kerneldoc comment fix
+Message-ID: <20080128085800.GB27570@darkstar.te-china.tietoenator.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008 07:10:07 +0100 Andi Kleen <ak@suse.de> wrote:
+Fix kerneldoc comment of kobject_create.
 
-> On Monday 28 January 2008 06:52, Andrew Morton wrote:
-> > On Wed, 16 Jan 2008 23:24:21 +0100 Andi Kleen <ak@suse.de> wrote:
-> > > I recently suffered an 20+ minutes oom thrash disk to death and computer
-> > > completely unresponsive situation on my desktop when some user program
-> > > decided to grab all memory. It eventually recovered, but left lots
-> > > of ugly and imho misleading messages in the kernel log. here's a minor
-> > > improvement
-> 
-> As a followup this was with swap over dm crypt. I've recently heard
-> about other people having trouble with this too so this setup seems to trigger
-> something bad in the VM.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-Where's the backtrace and show_mem() output? :)
+---
+lib/kobject.c |    2 +-
+1 file changed, 1 insertion(+), 1 deletion(-)
 
-> > That information is useful for working out why a userspace allocation
-> > attempt failed.  If we don't print it, and the application gets killed and
-> > thus frees a lot of memory, we will just never know why the allocation
-> > failed.
-> 
-> But it's basically only either page fault (direct or indirect) or write et.al.
-> who do these page cache allocations. Do you really think it is that important
-> to distingush these cases individually? In 95+% of all cases it should
-> be a standard user page fault which always has the same backtrace.
-
-Sure, the backtrace isn't very important.  The show_mem() output is vital.
-
-> To figure out why the application really oom'ed for those you would
-> need a user level backtrace, but the message doesn't supply that one anyways. 
-> 
-> All other cases will still print the full backtrace so if some kernel 
-> subsystem runs amok it should be still possible to diagnose it.
-> 
-
-We need the show_mem() output to see where all the memory went, and to see
-what state page reclaim is in.
-
-> 
-> >
-> > >  struct page *__page_cache_alloc(gfp_t gfp)
-> > >  {
-> > > +	struct task_struct *me = current;
-> > > +	unsigned old = (~me->flags) & PF_USER_ALLOC;
-> > > +	struct page *p;
-> > > +
-> > > +	me->flags |= PF_USER_ALLOC;
-> > >  	if (cpuset_do_page_mem_spread()) {
-> > >  		int n = cpuset_mem_spread_node();
-> > > -		return alloc_pages_node(n, gfp, 0);
-> > > -	}
-> > > -	return alloc_pages(gfp, 0);
-> > > +		p = alloc_pages_node(n, gfp, 0);
-> > > +	} else
-> > > +		p = alloc_pages(gfp, 0);
-> > > +	/* Clear USER_ALLOC if it wasn't set originally */
-> > > +	me->flags ^= old;
-> > > +	return p;
-> > >  }
-> >
-> > That's appreciable amount of new overhead for at best a fairly marginal
-> > benefit.  Perhaps __GFP_USER could be [re|ab]used.
-> 
-> It's a few non atomic bit operations. You really think that is considerable
-> overhead? Also all should be cache hot already. My guess is that even with the 
-> additional function call it's < 10 cycles more.
-
-Plus an additional function call.  On the already-deep page allocation
-path, I might add.
-
-> > Alternatively: if we've printed the diagnostic on behalf of this process
-> > and then decided to kill it, set some flag to prevent us from printing it
-> > again.
-> 
-> Do you really think that would help?  I thought these messages came usually
-> from different processes.
-
-Dunno.
+diff -upr a/lib/kobject.c b/lib/kobject.c
+--- a/lib/kobject.c	2008-01-28 16:53:08.000000000 +0800
++++ b/lib/kobject.c	2008-01-28 16:53:08.000000000 +0800
+@@ -637,7 +637,7 @@ struct kobject *kobject_create(void)
+  * @name: the name for the kset
+  * @parent: the parent kobject of this kobject, if any.
+  *
+- * This function creates a kset structure dynamically and registers it
++ * This function creates a kobject structure dynamically and registers it
+  * with sysfs.  When you are finished with this structure, call
+  * kobject_put() and the structure will be dynamically freed when
+  * it is no longer being used.
