@@ -1,90 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbYA1UC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbYA1UDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935AbYA1UC3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 15:02:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbYA1UCD
+	id S1754982AbYA1UDu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 15:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYA1UDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 15:02:03 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:41444 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757782AbYA1UCA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 15:02:00 -0500
-Date: Mon, 28 Jan 2008 11:54:36 -0800
-From: Greg KH <greg@kroah.com>
-To: Nathan Lynch <ntl@pobox.com>
-Cc: Jan-Bernd Themann <ossthema@de.ibm.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       Christoph Raisch <raisch@de.ibm.com>
-Subject: Re: [2.6.24-rc6-mm1]Build failure in drivers/net/ehea/ehea_main.c
-Message-ID: <20080128195436.GA8574@kroah.com>
-References: <20080108163305.GB10026@in.ibm.com> <20080110173418.GA14728@kroah.com> <200801181016.49128.ossthema@de.ibm.com> <20080125191047.GM14201@localdomain> <20080128182423.GC28861@kroah.com> <20080128192204.GO14201@localdomain>
+	Mon, 28 Jan 2008 15:03:42 -0500
+Received: from gw.goop.org ([64.81.55.164]:54711 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750813AbYA1UDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 15:03:41 -0500
+Message-ID: <479E3519.4070105@goop.org>
+Date: Mon, 28 Jan 2008 12:03:37 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080128192204.GO14201@localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>, Ian Campbell <ijc@hellion.org.uk>,
+       =?ISO-8859-1?Q?Mika_Penttil=E4?= <mika.penttila@kolumbus.fi>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native
+ format.
+References: <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <200801252302.52164.rjw@sisk.pl> <20080128150022.GE27928@elte.hu> <200801281625.45165.rjw@sisk.pl> <20080128194017.GA4481@ucw.cz> <479E3248.40409@zytor.com>
+In-Reply-To: <479E3248.40409@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 01:22:04PM -0600, Nathan Lynch wrote:
-> Greg KH wrote:
-> > On Fri, Jan 25, 2008 at 01:10:48PM -0600, Nathan Lynch wrote:
-> > > Jan-Bernd Themann wrote:
-> > > > 
-> > > > On Thursday 10 January 2008 18:34, Greg KH wrote:
-> > > > > > The structure device_driver(in device.h) has a member struct driver_private which
-> > > > > > contains the member kobj (according to drivers/base/base.h).
-> > > > > > But in device.h struct driver_private has been declared localy and 
-> > > > > > neither defined nor included from base.h.
-> > > > > > So my effort to use driver->driver_private->obj also does not work.
-> > > > > > (I am surprised from where do you access the struct device_driver)
-> > > > > 
-> > > > > That is because a driver should not be accessing such a field.
-> > > > > 
-> > > > > And especially not in this manner, why would this driver be creating a
-> > > > > symlink that has already been created by the driver core?  This whole
-> > > > > thing can just be removed with no problems.  Can you try just removing
-> > > > > the ehea_driver_sysfs_add and ehea_driver_sysfs_remove functions to
-> > > > > verify this as I don't have the hardware present to test it out.
-> > > > 
-> > > > The eHEA driver tries to orginize its sys-entries as close as possible to
-> > > > other ethernet drivers. Each eHEA NIC has multiple ports which is not that
-> > > > common in PCI. This means that each port is represented by a subdirectory
-> > > > which has not the "driver" sys-link, only the root directory has.
-> > > > Some tools expect to have this driver link in each port directory.
-> > > > That is the reason why this link is created manually.
-> > > > 
-> > > > Are there any other ways to create this link?
-> > > 
-> > > 
-> > > This is now broken in mainline...
-> > > 
-> > > drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_add':
-> > > drivers/net/ehea/ehea_main.c:2812: error: 'struct device_driver' has
-> > > no member named 'kobj'
-> > > drivers/net/ehea/ehea_main.c:2815: error: 'struct device_driver' has
-> > > no member named 'kobj'
-> > > drivers/net/ehea/ehea_main.c:2818: error: 'struct device_driver' has
-> > > no member named 'kobj'
-> > > drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_remove':
-> > > drivers/net/ehea/ehea_main.c:2830: error: 'struct device_driver' has
-> > > no member named 'kobj'
-> > 
-> > Does the patch below fix this?  That driver should not have been trying
-> > to create symlinks that the driver core has already created for it.
-> 
-> Yes, it fixes the build error, by just removing the code that got
-> broken.  Jan-Bernd gave a rationale for creating the symlink that
-> didn't really seem to be answered.
+H. Peter Anvin wrote:
+>  and we already have to have code to synchronize the PGDs on !PAE and 
+> the PMDs on Xen (although that was supposedly getting fixed).
 
-See my other post to him.  I do not see why this is not just duplicating
-the same exact code in the driver core.  If you are trying to "fake out"
-userspace by saying a device is bound to a driver, well, that's just
-wrong.
+No, I don't have any plans there.  Xen will continue to require 
+non-shared kernel pmd, at least for a 32-bit host.  I think the point is 
+that nothing that requires an identity mapping will work under Xen 
+anyway, so Xen just doesn't care about this case.
 
-thanks,
-
-greg k-h
+    J
