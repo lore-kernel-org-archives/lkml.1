@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761248AbYA1Nne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761134AbYA1Noq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761248AbYA1Nne (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 08:43:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758133AbYA1NnL
+	id S1761134AbYA1Noq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 08:44:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755495AbYA1Noi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 08:43:11 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:47427 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759904AbYA1NnJ (ORCPT
+	Mon, 28 Jan 2008 08:44:38 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35918 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755188AbYA1Nog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 08:43:09 -0500
-Date: Mon, 28 Jan 2008 08:43:08 -0500
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>
-Subject: Re: LinuxPPS patch
-Message-ID: <20080128134308.GC16173@csclub.uwaterloo.ca>
-References: <20080127173923.GT11364@enneenne.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080127173923.GT11364@enneenne.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Mon, 28 Jan 2008 08:44:36 -0500
+Date: Mon, 28 Jan 2008 13:38:57 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Steve French <smfrench@gmail.com>, swhiteho@redhat.com,
+       sfrench@samba.org, vandrove@vc.cvut.cz, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] [8/18] BKL-removal: Remove BKL from remote_llseek
+Message-ID: <20080128133857.6c53ac9f@core>
+In-Reply-To: <200801281427.36048.ak@suse.de>
+References: <20080127317.043953000@suse.de>
+	<20080127211345.6e73fa0b.akpm@linux-foundation.org>
+	<20080128125605.299740a1@core>
+	<200801281427.36048.ak@suse.de>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 27, 2008 at 06:39:23PM +0100, Rodolfo Giometti wrote:
-> here my patch for PPS support against kernel 2.6.24:
-> 
->    http://ftp.enneenne.com/pub/misc/linuxpps/patches/ntp-pps-2.6.24.diff
-> 
-> The code has been tested by some guys intered in PPS stuff and it
-> seems ok. :)
-> 
-> Please report your suggestions in order to get kernel inclusion.
+> Also worse really fixing it would be a major change to the VFS 
+> because of the way ->read/write are defined :/
 
-I would test it except I am still on 2.6.18 and probably will be for
-quite a while.  I am still using an older patch of yours which works
-great for now, although I know the interface has a changed a bit since.
+I don't see a problem there. ->read and ->write update the passed pointer
+which is not the real f_pos anyway. Just the copies need fixing.
 
---
-Len Sorensen
+Alan
