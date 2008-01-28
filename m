@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758115AbYA1JqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759120AbYA1Jqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758115AbYA1JqS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 04:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbYA1JqF
+	id S1759120AbYA1Jqf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 04:46:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758176AbYA1JqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 04:46:05 -0500
-Received: from sacred.ru ([62.205.161.221]:40166 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750777AbYA1JqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 04:46:04 -0500
-Message-ID: <479DA289.7090403@openvz.org>
-Date: Mon, 28 Jan 2008 12:38:17 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 28 Jan 2008 04:46:19 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:52792 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756185AbYA1JqQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 04:46:16 -0500
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH] [8/18] BKL-removal: Remove BKL from remote_llseek
+To: Trond Myklebust <Trond.Myklebust@netapp.com>, Andi Kleen <ak@suse.de>,
+       Steve French <smfrench@gmail.com>, swhiteho@redhat.com,
+       sfrench@samba.org, vandrove@vc.cvut.cz, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@osdl.org
+Reply-To: 7eggert@gmx.de
+Date: Mon, 28 Jan 2008 10:44:41 +0100
+References: <9Q5hR-3MI-9@gated-at.bofh.it> <9Qsob-7is-1@gated-at.bofh.it> <9QtDz-121-11@gated-at.bofh.it> <9QtWX-1qg-15@gated-at.bofh.it> <9Qugj-1PK-1@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Vinay Sridhar <vinay@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       libc-alpha@sourceware.org, drepper@redhat.com, wli@holomorphy.com,
-       sripathik@in.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [RFC] Per-thread getrusage
-References: <1200558425.5992.17.camel@srivinay.in.ibm.com>	<20080127215242.b873c341.akpm@linux-foundation.org>	<479D88C7.5030101@openvz.org> <20080128011010.d162d336.akpm@linux-foundation.org>
-In-Reply-To: <20080128011010.d162d336.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 28 Jan 2008 12:38:05 +0300 (MSK)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1JJQXh-0000kW-VW@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/IAGn9EaUvNsQkENcWgoL1f2OmoSRpi25NJ7J
+ RuhexaUzjO+BMsoN7JXi12p2I19NTvijNU7R8AFLA+8vMjLdrx
+ xEmhvie3lxtsWO1u+XSJg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 28 Jan 2008 10:48:23 +0300 Pavel Emelyanov <xemul@openvz.org> wrote:
+Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
+> On Mon, 2008-01-28 at 05:38 +0100, Andi Kleen wrote:
+>> On Monday 28 January 2008 05:13:09 Trond Myklebust wrote:
+>> > On Mon, 2008-01-28 at 03:58 +0100, Andi Kleen wrote:
+
+>> > > The problem is that it's not a race in who gets to do its thing first,
+>> > > but a parallel reader can actually see a corrupted value from the two
+>> > > independent words on 32bit (e.g. during a 4GB). And this could actually
+>> > > completely corrupt f_pos when it happens with two racing relative seeks
+>> > > or read/write()s
+>> > > 
+>> > > I would consider that a bug.
+>> > 
+>> > I disagree. The corruption occurs because this isn't a situation that is
+>> > allowed by either POSIX or SUSv2/v3. Exactly what spec are you referring
+>> > to here?
+>> 
+>> No specific spec, just general quality of implementation. We normally don't
+>> have non thread safe system calls even if it was in theory allowed by some
+>> specification.
 > 
->> Andrew Morton wrote:
->>> 	On Thu, 17 Jan 2008 13:57:05 +0530 Vinay Sridhar <vinay@linux.vnet.ibm.com> wrote:
->>>
->>>> Hi All,
->>>>
->>>> Last year, there was discussion about per-thread getrusage by adding
->>>> RUSAGE_THREAD flag to getrusage(). Please refer to the thread
->>>> http://lkml.org/lkml/2007/4/4/308. Ulrich had suggested that we should
->>>> design a better user-space API. Specifically, we need a
->>>> pthread_getrusage interface in the thread library, which accepts
->>>> pthread_t, converts pthread_t into the corresponding tid and passes it
->>>> down to the syscall.
->>>>
->>>> There are two ways to implement this in the kernel:
->>>> 1) Introduce an additional parameter 'tid' to sys_getrusage() and put
->>>> code in glibc to handle getrusage() and pthread_getrusage() calls
->>>> correctly.
->>>> 2) Introduce a new system call to handle pthread_getrusage() and leave
->>>> sys_getrusage() untouched.
->>>>
->>>> We implemented the second idea above, simply because it avoids touching
->>>> any existing code. We have implemented a new syscall, thread_getrusage()
->>>> and we have exposed pthread_getrusage() API to applications.
->>>>
->>>> Could you please share your thoughts on this? Does the approach look
->>>> alright? The code is hardly complete. It is just a prototype that works
->>>> on IA32 at the moment.
->>>>
->>>> ...
->>>>
->>>> +asmlinkage long sys_thread_getrusage(int tid, struct rusage __user *ru);
->>> What happens if `tid' refers to a thread in a different pid namespace?
->>>
->> That's impossible. I explicitly deny namespace creation in case the
->> CLONE_THREAD is specified. So all threads of a single process always
->> live in one pid namespace.
->>
-> 
-> If the code was using find_task_by_vpid() then OK (I guess).  But it is
+> We've had the existing implementation for quite some time. The arguments
+> against changing it have been the same all along: if your application
+> wants to share files between threads, the portability argument implies
+> that you should either use pread/pwrite or use a mutex or some other
+> form of synchronisation primitive in order to ensure that
+> lseek()/read()/write() do not overlap.
 
-Yup, find_task_by_vpid() will find the proper (i.e. in your namespace) task.
+Does anything in the kernel depend on f_pos being valid?
+E.g. is it possible to read beyond the EOF using this race, or to have files
+larger than the ulimit?
 
-> looking the tids up in the init_pid_ns.  Which I assume means that if it's
-> in a new namespace and is looking up a sibling thread it will simply fail?
+If not, update the manpage and be done. ¢¢
 
-If it looks in the init_pid_ns, then it can either fail or obtain a task 
-from different namespace. The find_task_by_pid_ns() was intended to be used
-in proc mainly, to get tasks from the namespace pointed by the super-block
-being explored.
-
-Please excuse my lamentable ignorance, but which code does such things with
-init_pid_ns? I followed the 'per-thread rusage' thread and didn't find any.
-
-> Or am I missing something?
-> 
-
-Thanks,
-Pavel
