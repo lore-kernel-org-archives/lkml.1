@@ -1,137 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbYA1XVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765194AbYA1XWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbYA1XVx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:21:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764415AbYA1XOR
+	id S1765194AbYA1XWY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:22:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762302AbYA1XOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:14:17 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:43945 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764125AbYA1XON (ORCPT
+	Mon, 28 Jan 2008 18:14:43 -0500
+Received: from mail3.key-systems.net ([81.3.43.213]:41066 "HELO
+	mail3.key-systems.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1764515AbYA1XOm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:14:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=wc64ng46LDiW0qGC847/jsiQAZ7eJfm7nIPHMmz6LGyLPx20c5YtKDDl5sr4kaOnEh4HXtEWwiQ/u/glYgzhbRfx3YfxS2nRYgYCH4kTnvqUwzyh6j+9KpshyuaSf9uGb/XtqqKWg9tId4C6INDhvVAFBFyaF3GEhXcuvqo7isg=
-Message-ID: <6101e8c40801281514n4e049385teebfa30e17178a49@mail.gmail.com>
-Date: Tue, 29 Jan 2008 00:14:12 +0100
-From: "=?ISO-8859-1?Q?Oliver_Pinter_(Pint=E9r_Oliv=E9r)?=" 
-	<oliver.pntr@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       stable-commits@vger.kernel.org
-Subject: [2.6.22.y] {17/17} - nopage-range-fix.patch (CVE-2008-0007) - series for stable kernel
-Cc: "chrisw@sous-sol.org" <chrisw@sous-sol.org>, "Greg KH" <gregkh@suse.de>,
-       "Willy Tarreau" <w@1wt.eu>, "Adrian Bunk" <bunk@kernel.org>,
-       "Nick Piggin" <npiggin@suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_8131_6535908.1201562052432"
+	Mon, 28 Jan 2008 18:14:42 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jan 2008 18:14:41 EST
+Subject: Blu Ray LG GGW-H20L crashes Linux
+From: Christoph Anton Mitterer <calestyo@scientia.net>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 29 Jan 2008 00:07:56 +0100
+Message-Id: <1201561676.3182.11.camel@fermat.scientia.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_8131_6535908.1201562052432
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi everybody.
 
--- 
-Thanks,
-Oliver
+I've just bought and installed a LG GGW-H20L Blu-Ray burner,...
+This is an SATA device, I'm running a 2.6.23.10 kernel (not the Debian
+version) on Debian sid (AMD64) and I use the proprietary nvidia drivers
+(169.07).
+The system is an Dual (!) DualCore AMD Opteron machine.
+(Please ask if you need further information)
 
-------=_Part_8131_6535908.1201562052432
-Content-Type: text/x-diff; name=nopage-range-fix.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: file0
-Content-Disposition: attachment; filename=nopage-range-fix.patch
+The kernel seems to correctly identify the device (part of dmesg):
+Jan 28 23:22:28 fermat kernel: ata4: SATA link up 1.5 Gbps (SStatus 113
+SControl 300)
+Jan 28 23:22:28 fermat kernel: ata4.00: ATAPI: HL-DT-ST BD-RE  GGW-H20L,
+YL02, max UDMA/133
+Jan 28 23:22:28 fermat kernel: ata4.00: configured for UDMA/133
+Jan 28 23:22:28 fermat kernel: scsi 2:0:0:0: Direct-Access     ATA
+ST3750640AS      3.AA PQ: 0 ANSI: 5
+Jan 28 23:22:28 fermat kernel: ata3: bounce limit 0xFFFFFFFFFFFFFFFF,
+segment boundary 0xFFFFFFFF, hw segs 61
+Jan 28 23:22:28 fermat kernel: sd 2:0:0:0: [sdc] 1465149168 512-byte
+hardware sectors (750156 MB)
+Jan 28 23:22:28 fermat kernel: sd 2:0:0:0: [sdc] Write Protect is off
+Jan 28 23:22:28 fermat kernel: sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+Jan 28 23:22:28 fermat kernel: sd 2:0:0:0: [sdc] Write cache: enabled,
+read cache: enabled, doesn't support DPO or FUA
+Jan 28 23:22:28 fermat kernel: sd 2:0:0:0: [sdc] 1465149168 512-byte
+hardware sectors (750156 MB)
+Jan 28 23:22:28 fermat kernel: sd 2:0:0:0: [sdc] Write Protect is off
+Jan 28 23:22:28 fermat kernel: sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+Jan 28 23:22:28 fermat kernel: sd 2:0:0:0: [sdc] Write cache: enabled,
+read cache: enabled, doesn't support DPO or FUA
+Jan 28 23:22:28 fermat kernel:  sdc: sdc1
+Jan 28 23:22:28 fermat kernel: sd 2:0:0:0: [sdc] Attached SCSI disk
+Jan 28 23:22:28 fermat kernel: sd 2:0:0:0: Attached scsi generic sg2
+type 0
+Jan 28 23:22:28 fermat kernel: scsi 3:0:0:0: CD-ROM            HL-DT-ST
+BD-RE  GGW-H20L  YL02 PQ: 0 ANSI: 5
+Jan 28 23:22:28 fermat kernel: ata4: bounce limit 0xFFFFFFFF, segment
+boundary 0xFFFF, hw segs 127
+Jan 28 23:22:28 fermat kernel: sr0: scsi3-mmc drive: 0x/0x caddy
+Jan 28 23:22:28 fermat kernel: sr 3:0:0:0: Attached scsi CD-ROM sr0
+Jan 28 23:22:28 fermat kernel: sr 3:0:0:0: Attached scsi generic sg3
+type 5
 
-Y29tbWl0IDdhODQ4YjJjZTQ1N2E0MWE5N2VjMDU5YWY5NjU4Y2ZjY2I1NTFlNjAKQXV0aG9yOiBO
-aWNrIFBpZ2dpbiA8bnBpZ2dpbkBzdXNlLmRlPgpEYXRlOiAgIE1vbiBKYW4gMjggMjE6MTk6MzQg
-MjAwOCArMDEwMAoKICAgIFN1YmplY3Q6IGluc3VmZmljaWVudCByYW5nZSBjaGVja3Mgb2YgY2Vy
-dGFpbiBmYXVsdCBoYW5kbGVycyAoQ1ZFLTIwMDgtMDAwNykKICAgIFJlZmVyZW5jZXM6IDM1MzIw
-NwogICAgUGF0Y2gtdXBzdHJlYW06IG5vdCB5ZXQKICAgIAogICAgVGhpcyBwYXRjaCBpcyBhIHNl
-Y3VyaXR5IGZpeCBmb3IgQ1ZFLTIwMDgtMDAwNy4gU2VlIGJ1Z3ppbGxhIGZvciBkZXRhaWxzLgoK
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2hhci9kcm0vZHJtX3ZtLmMgYi9kcml2ZXJzL2NoYXIvZHJt
-L2RybV92bS5jCmluZGV4IGI1YzViOWYuLmUyZDdiZTkgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvY2hh
-ci9kcm0vZHJtX3ZtLmMKKysrIGIvZHJpdmVycy9jaGFyL2RybS9kcm1fdm0uYwpAQCAtNTIwLDYg
-KzUyMCw3IEBAIHN0YXRpYyBpbnQgZHJtX21tYXBfZG1hKHN0cnVjdCBmaWxlICpmaWxwLCBzdHJ1
-Y3Qgdm1fYXJlYV9zdHJ1Y3QgKnZtYSkKIAl2bWEtPnZtX29wcyA9ICZkcm1fdm1fZG1hX29wczsK
-IAogCXZtYS0+dm1fZmxhZ3MgfD0gVk1fUkVTRVJWRUQ7CS8qIERvbid0IHN3YXAgKi8KKwl2bWEt
-PnZtX2ZsYWdzIHw9IFZNX0RPTlRFWFBBTkQ7CiAKIAl2bWEtPnZtX2ZpbGUgPSBmaWxwOwkvKiBO
-ZWVkZWQgZm9yIGRybV92bV9vcGVuKCkgKi8KIAlkcm1fdm1fb3Blbl9sb2NrZWQodm1hKTsKQEAg
-LTY2OSw2ICs2NzAsNyBAQCBzdGF0aWMgaW50IGRybV9tbWFwX2xvY2tlZChzdHJ1Y3QgZmlsZSAq
-ZmlscCwgc3RydWN0IHZtX2FyZWFfc3RydWN0ICp2bWEpCiAJCXJldHVybiAtRUlOVkFMOwkvKiBU
-aGlzIHNob3VsZCBuZXZlciBoYXBwZW4uICovCiAJfQogCXZtYS0+dm1fZmxhZ3MgfD0gVk1fUkVT
-RVJWRUQ7CS8qIERvbid0IHN3YXAgKi8KKwl2bWEtPnZtX2ZsYWdzIHw9IFZNX0RPTlRFWFBBTkQ7
-CiAKIAl2bWEtPnZtX2ZpbGUgPSBmaWxwOwkvKiBOZWVkZWQgZm9yIGRybV92bV9vcGVuKCkgKi8K
-IAlkcm1fdm1fb3Blbl9sb2NrZWQodm1hKTsKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2hhci9tc3Bl
-Yy5jIGIvZHJpdmVycy9jaGFyL21zcGVjLmMKaW5kZXggN2FjMzA2MS4uNWYyMjQ4YyAxMDA2NDQK
-LS0tIGEvZHJpdmVycy9jaGFyL21zcGVjLmMKKysrIGIvZHJpdmVycy9jaGFyL21zcGVjLmMKQEAg
-LTI2NSw3ICsyNjUsNyBAQCBtc3BlY19tbWFwKHN0cnVjdCBmaWxlICpmaWxlLCBzdHJ1Y3Qgdm1f
-YXJlYV9zdHJ1Y3QgKnZtYSwgaW50IHR5cGUpCiAJdmRhdGEtPnJlZmNudCA9IEFUT01JQ19JTklU
-KDEpOwogCXZtYS0+dm1fcHJpdmF0ZV9kYXRhID0gdmRhdGE7CiAKLQl2bWEtPnZtX2ZsYWdzIHw9
-IChWTV9JTyB8IFZNX0xPQ0tFRCB8IFZNX1JFU0VSVkVEIHwgVk1fUEZOTUFQKTsKKwl2bWEtPnZt
-X2ZsYWdzIHw9IChWTV9JTyB8IFZNX0xPQ0tFRCB8IFZNX1JFU0VSVkVEIHwgVk1fUEZOTUFQIHwg
-Vk1fRE9OVEVYUEFORCk7CiAJaWYgKHZkYXRhLT50eXBlID09IE1TUEVDX0ZFVENIT1AgfHwgdmRh
-dGEtPnR5cGUgPT0gTVNQRUNfVU5DQUNIRUQpCiAJCXZtYS0+dm1fcGFnZV9wcm90ID0gcGdwcm90
-X25vbmNhY2hlZCh2bWEtPnZtX3BhZ2VfcHJvdCk7CiAJdm1hLT52bV9vcHMgPSAmbXNwZWNfdm1f
-b3BzOwpkaWZmIC0tZ2l0IGEva2VybmVsL3JlbGF5LmMgYi9rZXJuZWwvcmVsYXkuYwppbmRleCA5
-NWRiOGM3Li4yNGRiN2U4IDEwMDY0NAotLS0gYS9rZXJuZWwvcmVsYXkuYworKysgYi9rZXJuZWwv
-cmVsYXkuYwpAQCAtOTEsNiArOTEsNyBAQCBpbnQgcmVsYXlfbW1hcF9idWYoc3RydWN0IHJjaGFu
-X2J1ZiAqYnVmLCBzdHJ1Y3Qgdm1fYXJlYV9zdHJ1Y3QgKnZtYSkKIAkJcmV0dXJuIC1FSU5WQUw7
-CiAKIAl2bWEtPnZtX29wcyA9ICZyZWxheV9maWxlX21tYXBfb3BzOworCXZtYS0+dm1fZmxhZ3Mg
-fD0gVk1fRE9OVEVYUEFORDsKIAl2bWEtPnZtX3ByaXZhdGVfZGF0YSA9IGJ1ZjsKIAlidWYtPmNo
-YW4tPmNiLT5idWZfbWFwcGVkKGJ1ZiwgZmlscCk7CiAKZGlmZiAtLWdpdCBhL21tL21tYXAuYyBi
-L21tL21tYXAuYwppbmRleCA5MDZlZDQwLi4zM2ZiNjcxIDEwMDY0NAotLS0gYS9tbS9tbWFwLmMK
-KysrIGIvbW0vbW1hcC5jCkBAIC0yMTU3LDcgKzIxNTcsNyBAQCBpbnQgaW5zdGFsbF9zcGVjaWFs
-X21hcHBpbmcoc3RydWN0IG1tX3N0cnVjdCAqbW0sCiAJdm1hLT52bV9zdGFydCA9IGFkZHI7CiAJ
-dm1hLT52bV9lbmQgPSBhZGRyICsgbGVuOwogCi0Jdm1hLT52bV9mbGFncyA9IHZtX2ZsYWdzIHwg
-bW0tPmRlZl9mbGFnczsKKwl2bWEtPnZtX2ZsYWdzID0gdm1fZmxhZ3MgfCBtbS0+ZGVmX2ZsYWdz
-IHwgVk1fRE9OVEVYUEFORDsKIAl2bWEtPnZtX3BhZ2VfcHJvdCA9IHByb3RlY3Rpb25fbWFwW3Zt
-YS0+dm1fZmxhZ3MgJiA3XTsKIAogCXZtYS0+dm1fb3BzID0gJnNwZWNpYWxfbWFwcGluZ192bW9w
-czsKZGlmZiAtLWdpdCBhL3NvdW5kL29zcy9lbXUxMGsxL2F1ZGlvLmMgYi9zb3VuZC9vc3MvZW11
-MTBrMS9hdWRpby5jCmluZGV4IGU3NWVhMjEuLjZjODZjMjUgMTAwNjQ0Ci0tLSBhL3NvdW5kL29z
-cy9lbXUxMGsxL2F1ZGlvLmMKKysrIGIvc291bmQvb3NzL2VtdTEwazEvYXVkaW8uYwpAQCAtMTEx
-MSw3ICsxMTExLDcgQEAgc3RhdGljIGludCBlbXUxMGsxX2F1ZGlvX21tYXAoc3RydWN0IGZpbGUg
-KmZpbGUsIHN0cnVjdCB2bV9hcmVhX3N0cnVjdCAqdm1hKQogCWlmIChwZ29mZnNldCArIG5fcGFn
-ZXMgPiBtYXhfcGFnZXMpCiAJCXJldHVybiAtRUlOVkFMOwogCi0Jdm1hLT52bV9mbGFncyB8PSBW
-TV9SRVNFUlZFRDsKKwl2bWEtPnZtX2ZsYWdzIHw9IFZNX1JFU0VSVkVEIHwgVk1fRE9OVEVYUEFO
-RDsKIAl2bWEtPnZtX29wcyA9ICZlbXUxMGsxX21tX29wczsKIAl2bWEtPnZtX3ByaXZhdGVfZGF0
-YSA9IHdhdmVfZGV2OwogCXJldHVybiAwOwpkaWZmIC0tZ2l0IGEvc291bmQvb3NzL3ZpYTgyY3h4
-eF9hdWRpby5jIGIvc291bmQvb3NzL3ZpYTgyY3h4eF9hdWRpby5jCmluZGV4IDVkM2MwMzcuLmY5
-NWFhMDkgMTAwNjQ0Ci0tLSBhL3NvdW5kL29zcy92aWE4MmN4eHhfYXVkaW8uYworKysgYi9zb3Vu
-ZC9vc3MvdmlhODJjeHh4X2F1ZGlvLmMKQEAgLTIxMDQsNiArMjEwNCw3IEBAIHN0YXRpYyBzdHJ1
-Y3QgcGFnZSAqIHZpYV9tbV9ub3BhZ2UgKHN0cnVjdCB2bV9hcmVhX3N0cnVjdCAqIHZtYSwKIHsK
-IAlzdHJ1Y3QgdmlhX2luZm8gKmNhcmQgPSB2bWEtPnZtX3ByaXZhdGVfZGF0YTsKIAlzdHJ1Y3Qg
-dmlhX2NoYW5uZWwgKmNoYW4gPSAmY2FyZC0+Y2hfb3V0OworCXVuc2lnbmVkIGxvbmcgbWF4X2J1
-ZnM7CiAJc3RydWN0IHBhZ2UgKmRtYXBhZ2U7CiAJdW5zaWduZWQgbG9uZyBwZ29mZjsKIAlpbnQg
-cmQsIHdyOwpAQCAtMjEyNywxNCArMjEyOCwxMSBAQCBzdGF0aWMgc3RydWN0IHBhZ2UgKiB2aWFf
-bW1fbm9wYWdlIChzdHJ1Y3Qgdm1fYXJlYV9zdHJ1Y3QgKiB2bWEsCiAJcmQgPSBjYXJkLT5jaF9p
-bi5pc19tYXBwZWQ7CiAJd3IgPSBjYXJkLT5jaF9vdXQuaXNfbWFwcGVkOwogCi0jaWZuZGVmIFZJ
-QV9OREVCVUcKLQl7Ci0JdW5zaWduZWQgbG9uZyBtYXhfYnVmcyA9IGNoYW4tPmZyYWdfbnVtYmVy
-OwotCWlmIChyZCAmJiB3cikgbWF4X2J1ZnMgKj0gMjsKLQkvKiB2aWFfZHNwX21tYXAoKSBzaG91
-bGQgZW5zdXJlIHRoaXMgKi8KLQlhc3NlcnQgKHBnb2ZmIDwgbWF4X2J1ZnMpOwotCX0KLSNlbmRp
-ZgorCW1heF9idWZzID0gY2hhbi0+ZnJhZ19udW1iZXI7CisJaWYgKHJkICYmIHdyKQorCQltYXhf
-YnVmcyAqPSAyOworCWlmIChwZ29mZiA+PSBtYXhfYnVmcykKKwkJcmV0dXJuIE5PUEFHRV9TSUdC
-VVM7CiAKIAkvKiBpZiBmdWxsLWR1cGxleCAocmVhZCt3cml0ZSkgYW5kIHdlIGhhdmUgdHdvIHNl
-dHMgb2YgYnVmcywKIAkgKiB0aGVuIHRoZSBwbGF5YmFjayBidWZmZXJzIGNvbWUgZmlyc3QsIHNl
-eiBzb3VuZGNhcmQuYyAqLwpkaWZmIC0tZ2l0IGEvc291bmQvdXNiL3VzeDJ5L3VzWDJZaHdkZXAu
-YyBiL3NvdW5kL3VzYi91c3gyeS91c1gyWWh3ZGVwLmMKaW5kZXggYjc2YjNkZC4uZTYxN2Q3ZSAx
-MDA2NDQKLS0tIGEvc291bmQvdXNiL3VzeDJ5L3VzWDJZaHdkZXAuYworKysgYi9zb3VuZC91c2Iv
-dXN4MnkvdXNYMllod2RlcC5jCkBAIC04OCw3ICs4OCw3IEBAIHN0YXRpYyBpbnQgc25kX3VzNDI4
-Y3Rsc19tbWFwKHN0cnVjdCBzbmRfaHdkZXAgKiBodywgc3RydWN0IGZpbGUgKmZpbHAsIHN0cnVj
-dCB2CiAJCXVzNDI4LT51czQyOGN0bHNfc2hhcmVkbWVtLT5DdGxTbmFwU2hvdExhc3QgPSAtMjsK
-IAl9CiAJYXJlYS0+dm1fb3BzID0gJnVzNDI4Y3Rsc192bV9vcHM7Ci0JYXJlYS0+dm1fZmxhZ3Mg
-fD0gVk1fUkVTRVJWRUQ7CisJYXJlYS0+dm1fZmxhZ3MgfD0gVk1fUkVTRVJWRUQgfCBWTV9ET05U
-RVhQQU5EOwogCWFyZWEtPnZtX3ByaXZhdGVfZGF0YSA9IGh3LT5wcml2YXRlX2RhdGE7CiAJcmV0
-dXJuIDA7CiB9CmRpZmYgLS1naXQgYS9zb3VuZC91c2IvdXN4MnkvdXN4Mnlod2RlcHBjbS5jIGIv
-c291bmQvdXNiL3VzeDJ5L3VzeDJ5aHdkZXBwY20uYwppbmRleCBhNWU3YmNkLi42ZTcwNTIwIDEw
-MDY0NAotLS0gYS9zb3VuZC91c2IvdXN4MnkvdXN4Mnlod2RlcHBjbS5jCisrKyBiL3NvdW5kL3Vz
-Yi91c3gyeS91c3gyeWh3ZGVwcGNtLmMKQEAgLTcyOCw3ICs3MjgsNyBAQCBzdGF0aWMgaW50IHNu
-ZF91c1gyWV9od2RlcF9wY21fbW1hcChzdHJ1Y3Qgc25kX2h3ZGVwICogaHcsIHN0cnVjdCBmaWxl
-ICpmaWxwLCBzdAogCQlyZXR1cm4gLUVOT0RFVjsKIAl9CiAJYXJlYS0+dm1fb3BzID0gJnNuZF91
-c1gyWV9od2RlcF9wY21fdm1fb3BzOwotCWFyZWEtPnZtX2ZsYWdzIHw9IFZNX1JFU0VSVkVEOwor
-CWFyZWEtPnZtX2ZsYWdzIHw9IFZNX1JFU0VSVkVEIHwgVk1fRE9OVEVYUEFORDsKIAlhcmVhLT52
-bV9wcml2YXRlX2RhdGEgPSBody0+cHJpdmF0ZV9kYXRhOwogCXJldHVybiAwOwogfQo=
-------=_Part_8131_6535908.1201562052432--
+
+Anyway,... as soon as I insert an BluRay disc or an DVD my system
+crashes (it either freezes, that happened with the DVD-R, or it reboots,
+that happened with the BluRay disc).
+
+There are no panics, oopses, or any other messages in the usual logs (at
+least I didn't recognize them ;) ).
+
+Any ideas?
+
+Thanks and best wishes,
+Chris.
+
+btw: I'm cross posting this to lkml and debian-user,... hope nobody
+feels offended :-)
+
