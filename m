@@ -1,48 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbYA1Kd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbYA1KfD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758723AbYA1Kd6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 05:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYA1Kdu
+	id S1756300AbYA1KfD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 05:35:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbYA1Key
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 05:33:50 -0500
-Received: from mail.mev.co.uk ([62.49.15.74]:57119 "EHLO mail.mev.co.uk"
+	Mon, 28 Jan 2008 05:34:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56012 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752532AbYA1Kdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 05:33:49 -0500
-Message-ID: <479DAF85.5020202@mev.co.uk>
-Date: Mon, 28 Jan 2008 10:33:41 +0000
-From: Ian Abbott <abbotti@mev.co.uk>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071116)
+	id S1752765AbYA1Kex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 05:34:53 -0500
+Date: Mon, 28 Jan 2008 11:34:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Mike Travis <travis@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] x86_64: mark x86_cpu_to_node_map_init to __initdata
+	like other xx_init
+Message-ID: <20080128103439.GC24010@elte.hu>
+References: <200801280116.54810.yinghai.lu@sun.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net, gregkh@suse.de,
-       kristen.c.accardi@intel.com
-Subject: Re: [PATCH(v3) 2.6.24] Fix fakephp deadlock
-References: <479A0D1C.8080401@mev.co.uk> <20080126220101.9e767f41.akpm@linux-foundation.org>
-In-Reply-To: <20080126220101.9e767f41.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jan 2008 10:33:41.0713 (UTC) FILETIME=[4052FC10:01C86199]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801280116.54810.yinghai.lu@sun.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27/01/08 06:01, Andrew Morton wrote:
-> Adding a deferred-work like this just because we can't get the locking and
-> refcounting correct is a really sad hack.
 
-True, but some would argue that the fakephp driver itself was a really 
-sad hack. :-)
+* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-> Can we get the locking and refcounting right please?  Start by making that
-> wait-for-refcount-to-go-away go away.
+> -int x86_cpu_to_node_map_init[NR_CPUS] = {
+> +int x86_cpu_to_node_map_init[NR_CPUS] __initdata = {
+>  	[0 ... NR_CPUS-1] = NUMA_NO_NODE
+>  };
 
-I guess that stuff was added for a good reason and fixed other potential 
-problems - it just broke fakephp.  It's an unusual requirement to try 
-and support -- a file that self-destructs when you write to it.  Are 
-there any other cases in sysfs that do that?
+i remember some linker warning here. While this array should indeed only 
+be used in early init, that decision is dynamic and our linker warnings 
+do not notice it. There's a special marker for such cases: 
+__initdata_refok. But ... i'm slightly nervous about turning off a vital 
+warning like that.
 
--- 
--=( Ian Abbott @ MEV Ltd.    E-mail: <abbotti@mev.co.uk>        )=-
--=( Tel: +44 (0)161 477 1898   FAX: +44 (0)161 718 3587         )=-
+Sam, it would be nice to have a DEBUG_INITDATA mode of operation: in 
+this case free_initmem() would not truly free those pages but would 
+unmap them via:
+
+   kernel_map_pages(page, nrpages, 0);
+
+could be made dependent on DEBUG_PAGEALLOC.
+
+If this debugging is enabled then if any code references it, we get a 
+hard page fault. If we had a debug mode like that then bugs in this area 
+would not go unnoticed.
+
+Or perhaps just make this part of normal DEBUG_PAGEALLOC. Like the patch 
+below on top of latest x86.git. Hm?
+
+	Ingo
+
+------------------->
+Subject: x86: init memory debugging
+From: Ingo Molnar <mingo@elte.hu>
+
+debug incorrect/late access to init memory, by permanently unmapping
+the init memory ranges. Depends on CONFIG_DEBUG_PAGEALLOC=y.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/mm/init_32.c |   12 ++++++++++++
+ arch/x86/mm/init_64.c |   11 +++++++++++
+ 2 files changed, 23 insertions(+)
+
+Index: linux-x86.q/arch/x86/mm/init_32.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/mm/init_32.c
++++ linux-x86.q/arch/x86/mm/init_32.c
+@@ -794,6 +794,18 @@ void free_init_pages(char *what, unsigne
+ 	unsigned long addr;
+ 
+ 	/*
++	 * If debugging page accesses then do not free this memory but
++	 * mark them not present - any buggy init-section access will
++	 * create a kernel page fault:
++	 */
++#ifdef CONFIG_DEBUG_PAGEALLOC
++	printk(KERN_INFO "debug: unmapping init memory %08lx..%08lx\n",
++		begin, PAGE_ALIGN(end));
++	set_memory_np(begin, (end - begin) >> PAGE_SHIFT);
++	return;
++#endif
++	set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
++	/*
+ 	 * We just marked the kernel text read only above, now that
+ 	 * we are going to free part of that, we need to make that
+ 	 * writeable first.
+Index: linux-x86.q/arch/x86/mm/init_64.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/mm/init_64.c
++++ linux-x86.q/arch/x86/mm/init_64.c
+@@ -580,6 +580,17 @@ void free_init_pages(char *what, unsigne
+ 	if (begin >= end)
+ 		return;
+ 
++	/*
++	 * If debugging page accesses then do not free this memory but
++	 * mark them not present - any buggy init-section access will
++	 * create a kernel page fault:
++	 */
++#ifdef CONFIG_DEBUG_PAGEALLOC
++	printk(KERN_INFO "debug: unmapping init memory %08lx..%08lx\n",
++		begin, PAGE_ALIGN(end));
++	set_memory_np(begin, (end - begin) >> PAGE_SHIFT);
++	return;
++#endif
+ 	printk(KERN_INFO "Freeing %s: %luk freed\n", what, (end - begin) >> 10);
+ 
+ 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
