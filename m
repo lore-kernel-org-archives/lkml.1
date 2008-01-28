@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbYA1KVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760433AbYA1KW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756800AbYA1KVN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 05:21:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760256AbYA1KUy
+	id S1760433AbYA1KW7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 05:22:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbYA1KWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 05:20:54 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49730 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760233AbYA1KUx (ORCPT
+	Mon, 28 Jan 2008 05:22:52 -0500
+Received: from rv-out-0910.google.com ([209.85.198.191]:55282 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752596AbYA1KWv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 05:20:53 -0500
-Date: Mon, 28 Jan 2008 02:20:00 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: linux@maxim.org.za, linux@bohmer.net, coldwell@redhat.com,
-       marc.pignat@hevs.ch, david-b@pacbell.net, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH -mm v4 7/9] atmel_serial: Add DMA support
-Message-Id: <20080128022000.82ac86ab.akpm@linux-foundation.org>
-In-Reply-To: <20080128105909.0fa8a431@dhcp-252-066.norway.atmel.com>
-References: <1201178511-12133-1-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-2-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-3-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-4-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-5-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-6-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-7-git-send-email-hskinnemoen@atmel.com>
-	<1201178511-12133-8-git-send-email-hskinnemoen@atmel.com>
-	<20080126220200.368742e7.akpm@linux-foundation.org>
-	<20080128105909.0fa8a431@dhcp-252-066.norway.atmel.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 28 Jan 2008 05:22:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qmhN7JsEGurkj/jdgYG1hVAU2mW346pyW5zLHtPDdHNtK6ictSNQLQQcv/Ccl+nSoaJUAwbzOQ47IHElMVAAywTbZlnAFMfJ6BsG1zcBcgoKzC4l+rNx2BOuEnmy3fbMfyh74gPLQ0UYB4zisjLbO9cp7SF1/ipqHhRvQinimhU=
+Message-ID: <38b2ab8a0801280222m3aadc1b1t792165174733b04d@mail.gmail.com>
+Date: Mon, 28 Jan 2008 11:22:49 +0100
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
+Subject: Re: Question about DMA
+Cc: "Jiri Slaby" <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080128102149.545c0619@dhcp-252-066.norway.atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <38b2ab8a0801271251v1a9ea256w8fa4b9fcc620f742@mail.gmail.com>
+	 <479D06E0.3090601@gmail.com>
+	 <38b2ab8a0801280055j6d1d235boe79e6aea058f8f96@mail.gmail.com>
+	 <20080128102149.545c0619@dhcp-252-066.norway.atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008 10:59:09 +0100 Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+Hello Haavard,
 
-> > ho-hum.  The generic uart buffer-handling code does ringbuffers the wrong
-> > way.  Maybe it has to handle non-power-of-two buffer sizes.
-> 
-> Hmm...I don't understand. What does it do wrong?
+On Jan 28, 2008 10:21 AM, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+> On Mon, 28 Jan 2008 09:55:58 +0100
+> "Francis Moreau" <francis.moro@gmail.com> wrote:
+>
+> > My DMA controller has very little in common with ISA DMA one. But I'd like to
+> > use it in a driver. This driver can do DMA but with the help of an external DMA
+> > controller. It's only implement the "slave" side. So basically this driver needs
+> > to configure one of the DMAC channels before transfering data.
+>
+> Have a look at this thread:
+>
+> http://lkml.org/lkml/2007/11/23/79
+>
+> I'm planning to post an updated patch set this week that addresses the
+> comments by Dan Williams, and that applies on top of the other DMA
+> Engine patches that have been posted since then.
+>
+> Please let me know if you think this will work for your hardware.
 
-An faq ;) If the buffer size is a power-of-two it's better to allow the
-head and tail indices wrap through 0xffffffff and only mask them when
-subscripting.  It ends up faster (usually) and you can use all of the
-elements of the buffer (rather than all-1) and you get nice things like:
+Thanks for pointing this out. I currently can't look at this but I'll
+try to give it
+a deep look this week.
 
-is_empty = (head == tail)
-is_full = (tail - head == size)
-nr_items_in_ring = (tail - head)
+> What platform are you working on, btw?
+>
 
+SH
 
-> > > +		/* more to transmit - setup next transfer */
-> > > +
-> > > +		/* disable PDC transmit */
-> > > +		UART_PUT_PTCR(port, ATMEL_PDC_TXTDIS);
-> > > +		dma_sync_single_for_device(port->dev,
-> > > +					   pdc->dma_addr,
-> > > +					   pdc->dma_size,
-> > > +					   DMA_TO_DEVICE);
-> > > +
-> > > +		if (xmit->tail < xmit->head)
-> > > +			count = xmit->head - xmit->tail;
-> > > +		else
-> > > +			count = SERIAL_XMIT_SIZE - xmit->tail;
-> > 
-> > Doesn't uart_circ_chars_pending() do this?
-> 
-> Hmm...no. I think we really want something CIRC_CNT_TO_END()-ish.
-> 
-> > All those uart_circ_*() macros reference their arg more than once and ... 
-> > you know the deal.
-> 
-> Yeah. Would you like a patch that inline-ifies <linux/circ.h>?
-
-uh, if you're feeling especially keen.  We have bigger problems than this.
-
-
+Thanks.
+-- 
+Francis
