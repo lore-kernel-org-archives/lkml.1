@@ -1,66 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYA1K5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759332AbYA1K5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbYA1K5A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 05:57:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYA1K4s
+	id S1759332AbYA1K5V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 05:57:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbYA1K4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 05:56:48 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4711 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403AbYA1K4r (ORCPT
+	Mon, 28 Jan 2008 05:56:51 -0500
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:57572 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753086AbYA1K4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 05:56:47 -0500
-Date: Mon, 28 Jan 2008 10:57:03 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Abhishek Sagar <sagar.abhishek@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, jkenisto@us.ibm.com,
-       ananth@in.ibm.com
-Subject: Re: [PATCH -mm] kprobes: kretprobe user entry-handler (updated)
-Message-ID: <20080128105702.GE12910@shadowen.org>
-References: <479B7A78.5090604@gmail.com> <20080127213257.0889c523.akpm@linux-foundation.org>
+	Mon, 28 Jan 2008 05:56:49 -0500
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.4-rc5
+References: <7vsl13wmas.fsf@gitster.siamese.dyndns.org>
+	<7vsl0r3nvc.fsf@gitster.siamese.dyndns.org>
+cc: linux-kernel@vger.kernel.org
+Date: Mon, 28 Jan 2008 02:56:41 -0800
+Message-ID: <7vk5lutdzq.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080127213257.0889c523.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 27, 2008 at 09:32:57PM -0800, Andrew Morton wrote:
-> On Sat, 26 Jan 2008 23:52:48 +0530 Abhishek Sagar <sagar.abhishek@gmail.com> wrote:
-> 
-> > This is a repost of a patch which was reviewed earlier at:
-> > http://lkml.org/lkml/2007/11/13/58 (thanks to Jim Keniston and Srinivasa for their review comments). This provides support to add an optional user defined callback to be run at function entry of a kretprobe'd function. It also modifies the kprobe smoke tests to include an entry-handler during the kretprobe sanity test.
-> > 
-> 
-> Neither the changelog nor the newly-added documentation explain why Linux
-> needs this feature.  What will it be used for??
-> 
-> 
-> > +1.3.2 Kretprobe entry-handler
-> > +
-> > +Kretprobes also provides an optional user-specified handler which runs
-> 
-> I think "caller-specified" would be a better term here.  Generally "user"
-> refers to Aunt Tillie sitting at the keyboard.
-> 
-> > +/* Timestamp function entry. */
-> > +static int entry_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
-> > +{
-> > +	struct my_data *data;
-> > +
-> > +	if(!current->mm)
-> > +		return 1; /* skip kernel threads */
-> 
-> gargh, what's happened to checkpatch lately?  It failed to notice the
-> missing space.
+The fifth and hopefully the last rc for the next feature release
+GIT 1.5.4 is available at the usual places:
 
-This had me going for a while.  This was missed as this code is not
-actually in a source file.  Its actually found in Documentation/kprobes.txt
-and we do not apply source level checks to non-source file types.
+  http://www.kernel.org/pub/software/scm/git/
 
-Hmmm.
+  git-1.5.4.rc5.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.4.rc5.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.4.rc5.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.4.rc5-1.$arch.rpm	(RPM)
 
--apw
+The changes since -rc4 are quite small, and except for git-gui
+updates they are all reasonably trivial fixes.  Please give it a
+good testing.
+
+----------------------------------------------------------------
+
+Changes since v1.5.4-rc4 are as follows:
+
+ Documentation/RelNotes-1.5.4.txt |   37 ++++++---
+ Documentation/fetch-options.txt  |   12 ++-
+ Documentation/git-clone.txt      |    8 ++
+ Documentation/git-http-push.txt  |    3 +
+ Documentation/git-pull.txt       |    7 ++-
+ Documentation/git-send-email.txt |    2 +
+ Documentation/git-submodule.txt  |    5 +-
+ Documentation/git-svn.txt        |   11 ++-
+ GIT-VERSION-GEN                  |    2 +-
+ Makefile                         |   18 ++++-
+ builtin-commit.c                 |   15 +++-
+ builtin-pack-objects.c           |    3 +-
+ config.mak.in                    |    1 +
+ configure.ac                     |    6 ++
+ fast-import.c                    |   65 ++++++++++++++-
+ git-compat-util.h                |    2 +
+ git-cvsserver.perl               |    9 ++-
+ git-gui/Makefile                 |    5 +-
+ git-gui/git-gui.sh               |   28 ++++++
+ git-gui/lib/choose_rev.tcl       |    3 +-
+ git-gui/lib/commit.tcl           |  149 +++++++++++++++++++++------------
+ git-gui/lib/error.tcl            |   18 ++--
+ git-gui/po/glossary/fr.po        |   26 +++---
+ git-gui/po/po2msg.sh             |   25 +++++-
+ git-pull.sh                      |   12 +++-
+ git-send-email.perl              |    2 +-
+ git-submodule.sh                 |  169 +++++++++++++++++++++++++++-----------
+ git-svn.perl                     |   10 +--
+ http.h                           |    8 ++
+ parse-options.c                  |   30 ++++++-
+ t/t0040-parse-options.sh         |   11 +++
+ t/t5520-pull.sh                  |   17 ++++
+ t/t5710-info-alternate.sh        |   12 ++-
+ t/t7400-submodule-basic.sh       |   56 ++++++------
+ t/t9400-git-cvsserver-server.sh  |   17 +++-
+ test-parse-options.c             |    1 +
+ 36 files changed, 596 insertions(+), 209 deletions(-)
+
+Alex Riesen (1):
+      Make t5710 more strict when creating nested repos
+
+Brandon Casey (1):
+      git-commit: exit non-zero if we fail to commit the index
+
+Eric Wong (1):
+      git-svn: default to repacking every 1000 commits
+
+Gustaf Hendeby (1):
+      send-email, fix breakage in combination with --compose
+
+Jakub Narebski (1):
+      autoconf: define NO_SYS_SELECT_H on systems without <sys/select.h>.
+
+Johannes Schindelin (1):
+      pull --rebase: be cleverer with rebased upstream branches
+
+Junio C Hamano (5):
+      git-submodule: rename shell functions for consistency
+      git-submodule: fix subcommand parser
+      git-submodule: add test for the subcommand parser fix
+      Clarify that http-push being temporarily disabled with older cURL
+      GIT 1.5.4-rc5
+
+Mike Hommey (2):
+      Add a missing dependency on http.h
+      Documentation: add a bit about sendemail.to configuration
+
+Miklos Vajna (2):
+      git-clone -s: document problems with git gc --prune
+      git pull manpage: don't include -n from fetch-options.txt
+
+Nicolas Pitre (1):
+      pack-objects: Fix segfault when object count is less than thread count
+
+Pierre Habouzit (1):
+      parse-options: catch likely typo in presense of aggregated options.
+
+Robert Schiele (2):
+      pre-POSIX.1-2001 systems do not have <sys/select.h>
+      Makefile: customization for supporting HP-UX
+
+Sam Vilain (1):
+      git-svn(1): update instructions for resuming a git-svn clone
+
+Shawn O. Pearce (10):
+      git-gui: Honor the standard commit-msg hook
+      git-gui: Correct window title for hook failure dialogs
+      git-gui: Consolidate hook execution code into a single function
+      git-gui: Correct encoding of glossary/fr.po to UTF-8
+      Teach fast-import to honor pack.compression and pack.depth
+      Document the hairy gfi_unpack_entry part of fast-import
+      git-gui: Work around random missing scrollbar in revision list
+      git-gui: Fallback to Tcl based po2msg.sh if msgfmt isn't available
+      git-gui: Make the statistics of po2msg match those of msgfmt
+      git-gui: Correctly cleanup msgfmt '1 message untranslated' output
+
+Steffen Prohaska (3):
+      submodule: Document the details of the command line syntax
+      t9400-git-cvsserver-server: Wrap setup into test case
+      cvsserver: Fix for histories with multiple roots
+
