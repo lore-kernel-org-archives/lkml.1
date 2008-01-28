@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764063AbYA1Xnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763894AbYA1XpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764063AbYA1Xnr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:43:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbYA1Xne
+	id S1763894AbYA1XpN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:45:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYA1Xo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:43:34 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:12841 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763565AbYA1Xnc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:43:32 -0500
-Subject: Re: [CPUISOL] CPU isolation extensions
-From: Daniel Walker <dwalker@mvista.com>
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, Paul Jackson <pj@sgi.com>
-In-Reply-To: <479E1FD4.5040606@qualcomm.com>
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
-	 <1201511305.6149.30.camel@lappy>  <479E1FD4.5040606@qualcomm.com>
-Content-Type: text/plain
-Date: Mon, 28 Jan 2008 15:41:45 -0800
-Message-Id: <1201563706.2826.34.camel@imap.mvista.com>
+	Mon, 28 Jan 2008 18:44:58 -0500
+Received: from 1wt.eu ([62.212.114.60]:1636 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751572AbYA1Xo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 18:44:57 -0500
+Date: Tue, 29 Jan 2008 00:07:46 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/7] X86: Fix trailing statements should be on next line
+Message-ID: <20080128230746.GL8953@1wt.eu>
+References: <20080129000744.698639d3@paolo-desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080129000744.698639d3@paolo-desktop>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Paolo,
 
-On Mon, 2008-01-28 at 10:32 -0800, Max Krasnyanskiy wrote:
-> Just this patches. RT patches cannot achieve what I needed. Even RTAI/Xenomai can't do that.
-> For example I have separate tasks with hard deadlines that must be enforced in 50usec kind 
-> of range and basically no idle time whatsoever. Just to give more background it's a wireless
-> basestation with SW MAC/Scheduler. Another requirement is for the SW to know precise timing
-> because SW. For example there is no way we can do predictable 1-2 usec sleeps. 
-> So I wrote a user-space engine that does all this, it requires full control of the CPU ie minimal
-> overhead from the kernel, just IPIs for memory management and that's basically it. When my legal 
-> department lets me I'll do a presentation on this stuff at Linux RT conference or something. 
+On Tue, Jan 29, 2008 at 12:07:44AM +0100, Paolo Ciarrocchi wrote:
+> Fix trailing statements should be on next line
 
-What kind of hardware are you doing this on? Also I should note there is
-HRT (High resolution timers) which provided microsecond level
-granularity ..
+> -if ( partial_status & SW_C3 )          printk("SW: condition bit 3\n");
+> -if ( partial_status & SW_C2 )          printk("SW: condition bit 2\n");
+> -if ( partial_status & SW_C1 )          printk("SW: condition bit 1\n");
+> -if ( partial_status & SW_C0 )          printk("SW: condition bit 0\n");
+> -if ( partial_status & SW_Summary )     printk("SW: exception summary\n");
+> -if ( partial_status & SW_Stack_Fault ) printk("SW: stack fault\n");
+> -if ( partial_status & SW_Precision )   printk("SW: loss of precision\n");
+> -if ( partial_status & SW_Underflow )   printk("SW: underflow\n");
+> -if ( partial_status & SW_Overflow )    printk("SW: overflow\n");
+> -if ( partial_status & SW_Zero_Div )    printk("SW: divide by zero\n");
+> -if ( partial_status & SW_Denorm_Op )   printk("SW: denormalized operand\n");
+> -if ( partial_status & SW_Invalid )     printk("SW: invalid operation\n");
 
-Daniel
+> +if ( partial_status & SW_Backward )
+> +printk("SW: backward compatibility\n");
+> +if ( partial_status & SW_C3 )
+> +printk("SW: condition bit 3\n");
+> +if ( partial_status & SW_C2 )
+> +printk("SW: condition bit 2\n");
+> +if ( partial_status & SW_C1 )
+> +printk("SW: condition bit 1\n");
+> +if ( partial_status & SW_C0 )
+> +printk("SW: condition bit 0\n");
+> +if ( partial_status & SW_Summary )
+> +printk("SW: exception summary\n");
+> +if ( partial_status & SW_Stack_Fault )
+> +printk("SW: stack fault\n");
+> +if ( partial_status & SW_Precision )
+> +printk("SW: loss of precision\n");
+> +if ( partial_status & SW_Underflow )
+> +printk("SW: underflow\n");
+> +if ( partial_status & SW_Overflow )
+> +printk("SW: overflow\n");
+> +if ( partial_status & SW_Zero_Div )
+> +printk("SW: divide by zero\n");
+> +if ( partial_status & SW_Denorm_Op )
+> +printk("SW: denormalized operand\n");
+> +if ( partial_status & SW_Invalid )
+> +printk("SW: invalid operation\n");
+>  #endif /* DEBUGGING */
+
+Well, IMHO, the code was more readable and checkable in the initial
+version. I think this is one example of exceptions where code appearance
+is more important than style correctness.
+
+Regards,
+Willy
 
