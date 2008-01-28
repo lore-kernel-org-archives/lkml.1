@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbYA1SYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbYA1SYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbYA1SYU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 13:24:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbYA1SX4
+	id S1755378AbYA1SYr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 13:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbYA1SYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 13:23:56 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39145 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752556AbYA1SXy (ORCPT
+	Mon, 28 Jan 2008 13:24:35 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:21346 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752486AbYA1SYe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 13:23:54 -0500
-Date: Mon, 28 Jan 2008 10:21:39 -0800
-From: Greg KH <greg@kroah.com>
-To: Nathan Lynch <ntl@pobox.com>
-Cc: Jan-Bernd Themann <ossthema@de.ibm.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       Christoph Raisch <raisch@de.ibm.com>
-Subject: Re: [2.6.24-rc6-mm1]Build failure in drivers/net/ehea/ehea_main.c
-Message-ID: <20080128182139.GB28861@kroah.com>
-References: <20080108163305.GB10026@in.ibm.com> <20080110173418.GA14728@kroah.com> <200801181016.49128.ossthema@de.ibm.com> <20080125191047.GM14201@localdomain>
+	Mon, 28 Jan 2008 13:24:34 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=2+xaouDqQKC1BobzWmvekL7vQwnpVPhrk5EU7+6JUl80AbHUgBfEb11Ig6eeVwu4gQy/1c8P68EHDaso9mqrKqDFawtlWCIjU5Ht4kVcqCbuu1xKX+An1zzdLIwNuW1uyw062bdfJGREurxGUD6qx6byx6oll2rVdGmp7jcCkDs=  ;
+X-YMail-OSG: 1TFly54VM1kSocBQ2Gn4P_.yA0l8yZzs6oDHs6kGmxBWPQWaGOdWAXeLOn2KfgtyS07ejDWHRQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: at91sam9260 wakeup on serial port
+Date: Mon, 28 Jan 2008 10:21:57 -0800
+User-Agent: KMail/1.9.6
+Cc: michael <trimarchi@gandalf.sssup.it>, linux-kernel@vger.kernel.org,
+       Andrew Victor <linux@maxim.org.za>
+References: <479DB934.6090806@gandalf.sssup.it> <20080128145615.1d756025@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080128145615.1d756025@dhcp-252-066.norway.atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080125191047.GM14201@localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200801281021.57317.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 25, 2008 at 01:10:48PM -0600, Nathan Lynch wrote:
-> Jan-Bernd Themann wrote:
+On Monday 28 January 2008, Haavard Skinnemoen wrote:
+> On Mon, 28 Jan 2008 12:15:00 +0100
+> michael <trimarchi@gandalf.sssup.it> wrote:
+> 
 > > Hi,
-> > 
-> > sorry for answering so late, I'm only tracking netdev and ppc mailing list.
-> > 
-> > On Thursday 10 January 2008 18:34, Greg KH wrote:
-> > > > The structure device_driver(in device.h) has a member struct driver_private which
-> > > > contains the member kobj (according to drivers/base/base.h).
-> > > > But in device.h struct driver_private has been declared localy and 
-> > > > neither defined nor included from base.h.
-> > > > So my effort to use driver->driver_private->obj also does not work.
-> > > > (I am surprised from where do you access the struct device_driver)
-> > > 
-> > > That is because a driver should not be accessing such a field.
-> > > 
-> > > And especially not in this manner, why would this driver be creating a
-> > > symlink that has already been created by the driver core?  This whole
-> > > thing can just be removed with no problems.  Can you try just removing
-> > > the ehea_driver_sysfs_add and ehea_driver_sysfs_remove functions to
-> > > verify this as I don't have the hardware present to test it out.
-> > 
-> > The eHEA driver tries to orginize its sys-entries as close as possible to
-> > other ethernet drivers. Each eHEA NIC has multiple ports which is not that
-> > common in PCI. This means that each port is represented by a subdirectory
-> > which has not the "driver" sys-link, only the root directory has.
-> > Some tools expect to have this driver link in each port directory.
-> > That is the reason why this link is created manually.
-> > 
-> > Are there any other ways to create this link?
+> > I implement a little patch (ndr just for a try) for the atmel serial 
+> > driver atmel_serial.c to wakeup the system when it is in suspend-ram state.
+> > I reconfigure the RXD pin as a gpio in suspend function and restore it 
+> > in the resume function. It is the correct way?
 > 
-> 
-> This is now broken in mainline...
-> 
-> drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_add':
-> drivers/net/ehea/ehea_main.c:2812: error: 'struct device_driver' has
-> no member named 'kobj'
-> drivers/net/ehea/ehea_main.c:2815: error: 'struct device_driver' has
-> no member named 'kobj'
-> drivers/net/ehea/ehea_main.c:2818: error: 'struct device_driver' has
-> no member named 'kobj'
-> drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_remove':
-> drivers/net/ehea/ehea_main.c:2830: error: 'struct device_driver' has
-> no member named 'kobj'
+> I'm not sure...this is rather platform-specific, so I don't think it
+> really belongs in the atmel_serial() driver. One solution might be to
+> add a function pointer to struct atmel_uart_data that the driver can
+> call from ->suspend() in order to let the platform code handle this as
+> appropriate.
 
-Crap, I missed that one.  I'll go fix it up right now...
+The core issue is that the system clock driving the baud rate generator
+is no longer running fast enough to let the UART run.  (In "standby" the
+clock is still driven by the PLL, so this issue doesn't come up.)  The
+GPIO logic can catch the START bit though ... this technique is used on
+some OMAP boards too.  
 
-sorry about this.
+Agreed that knowing exactly which pin(s) should be remuxed (UARTn.RX to
+GPIO in suspend then enabling it as a wakeup irq, then reversing that
+on resume; maybe UARTn.DCD should work too..), and how (as A-peripheral?
+or  B?) is chip-specific knowledge.  Such a function pointer could work.
 
-greg k-h
+What will AVR32 (AP7) need to do, when it supports system sleep states?
+
+- Dave
