@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762132AbYA1W4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761039AbYA1W5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762132AbYA1W4B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:56:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759844AbYA1Wzo
+	id S1761039AbYA1W5B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:57:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYA1W4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:55:44 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54035 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756431AbYA1Wzn (ORCPT
+	Mon, 28 Jan 2008 17:56:52 -0500
+Received: from bizon.gios.gov.pl ([212.244.124.8]:42638 "EHLO
+	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752148AbYA1W4v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:55:43 -0500
-Date: Mon, 28 Jan 2008 14:53:34 -0800
-From: Greg KH <greg@kroah.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Tony Camuso <tcamuso@redhat.com>,
-       Grant Grundler <grundler@parisc-linux.org>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
-	opt-in
-Message-ID: <20080128225334.GD4720@kroah.com>
-References: <20080113090108.3224698c@laptopd505.fenrus.org> <20080114225225.GQ18741@parisc-linux.org> <20080114230448.GL9847@does.not.exist> <478CD8A5.5090608@myri.com> <20080115174643.GB28238@kroah.com> <20080115175641.GE18741@parisc-linux.org> <20080119165809.GB11553@colo.lackof.org> <479E1FA6.1030708@redhat.com> <20080128204431.GA15227@kroah.com> <20080128223141.GA31101@parisc-linux.org>
+	Mon, 28 Jan 2008 17:56:51 -0500
+Date: Mon, 28 Jan 2008 23:56:29 +0100 (CET)
+From: Krzysztof Oledzki <ole@ans.pl>
+X-X-Sender: ole@bizon.gios.gov.pl
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+cc: lkml <linux-kernel@vger.kernel.org>, cups-bugs <cups-bugs@easysw.com>,
+       Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
+       Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>,
+       cups-bugs <cups-bugs@easysw.com>, netfilter-devel@vger.kernel.org
+Subject: Re: cups slow on linux-2.6.24
+In-Reply-To: <Pine.LNX.4.64.0801290635001.23096@boston.corp.fedex.com>
+Message-ID: <Pine.LNX.4.64.0801282348440.30640@bizon.gios.gov.pl>
+References: <Pine.LNX.4.64.0801290635001.23096@boston.corp.fedex.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080128223141.GA31101@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-187430788-216295690-1201560989=:30640"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 03:31:42PM -0700, Matthew Wilcox wrote:
-> On Mon, Jan 28, 2008 at 12:44:31PM -0800, Greg KH wrote:
-> > On Mon, Jan 28, 2008 at 01:32:06PM -0500, Tony Camuso wrote:
-> > > Greg,
-> > >
-> > > Have you given Grant's suggestion any further consideration?
-> > >
-> > > I'd like to know how the MMCONFIG issues discussed in this thread are going
-> > > to be handled upstream. I have a patch implemented in RHEL 5.2, but I would
-> > > rather have the upstream patch implemented, whatever it is.
-> > 
-> > Well, everyone still doesn't seem to agree on the proper way forward
-> > here, so for me to just "pick one" isn't very appropriate.
-> > 
-> > So, can we try again?
-> > 
-> > Can people submit, what they think the change should be?  Right now I
-> > have Arjan's patch in my kernel tree, but will not send it to Linus for
-> > .25 for now, unless everyone thinks that is the best solution at the
-> > moment (which, for me, I'm leaning toward right now...)
-> 
-> My opinion is that Ivan's patch followed by my patch is the best way
-> forward.  I see Arjan's patch as a good prototype, but it introduces a lot
-> of unnecessary infrastructure (and a userspace interface that I dislike).
-> 
-> I would like to see Ivan's patch merged ASAP as it does fix one of
-> my machines.  akpm has the patch from me to disable io decoding, and
-> intends to send it to Linus during this merge window ... that patch
-> becomes unnecessary if we merge Ivan's patch.
-> 
-> My patch is an incremental improvement that adds some of the features
-> of Arjan's patch without the extra infrastructure.  I don't think it's
-> urgent, but it does make some of our internal interfaces cleaner.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Please send me patches, in a form that can be merged, along with a
-proper changelog entry, in the order in which you wish them to be
-applied, so I know exactly what changes you are referring to.
+---187430788-216295690-1201560989=:30640
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-thanks,
 
-greg k-h
+
+On Tue, 29 Jan 2008, Jeff Chua wrote:
+
+>
+>
+> On Jan 28, 2008 7:18 AM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+>> I'm sending printing jobs to a network printer (it's actually printing
+>> to the localhost simply creating a file), and running this on
+>> Linux-2.6.24 will cause the printing to slow down to 1 print every 3
+>> seconds after printing 500 times.
+>
+> I bisected the kernel since the last known good 2.6.23 and zeroed in to t=
+his=20
+> commit.
+>
+> commit 17311393f969090ab060540bd9dbe7dc885a76d5
+> Author: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+> Date:   Thu Oct 11 14:35:52 2007 -0700
+>
+>    [NETFILTER]: nf_conntrack_tcp: fix connection reopening
+>
+>
+> Reverting this commit solves the problem.
+>
+> Version              1000 jobs
+> 2.6.23                 90 sec
+> 2.6.24              1,492 sec  <=3D=3D with commit
+> 2.6.24(patch)          90 sec  <=3D=3D reverted the commit
+>
+
+Strange. You stated that 2.6.23.12 is OK, however above patch
+was included in 2.6.23.4:
+
+http://www.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.23.4
+http://git.kernel.org/?p=3Dlinux/kernel/git/stable/linux-2.6.23.y.git;a=3Dc=
+ommitdiff;h=3D0ac38060c5e1e12e851ed3e281597286b57f9ad1
+
+Commit 0ac38060c5e1e12e851ed3e281597286b57f9ad1 combines two fixes from=20
+2.6.24:
+
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
+itdiff;h=3D17311393f969090ab060540bd9dbe7dc885a76d5
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
+itdiff;h=3Dbc34b841556aad437baf4199744e55500bfa2088
+
+Are you 100% sure that 2.6.23.12 is OK?
+
+Best regards,
+
+ =09=09=09=09Krzysztof Ol=EAdzki
+---187430788-216295690-1201560989=:30640--
