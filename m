@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYA1Lcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbYA1Le0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbYA1Lcm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 06:32:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbYA1Lcd
+	id S1758213AbYA1Le0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 06:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbYA1LeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 06:32:33 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1586 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750802AbYA1Lcc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 06:32:32 -0500
-Date: Mon, 28 Jan 2008 11:27:41 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Konrad Rzeszutek <konrad@darnok.org>, linux-kernel@vger.kernel.org,
-       greg@kroah.com, dwm@enoyolf.org, darnok@68k.org, pjones@redhat.com,
-       konradr@redhat.com, konradr@linux.vnet.ibm.com, randy.dunlap@oracle.com,
-       hpa@zytor.com, lenb@kernel.org, mike.anderson@us.ibm.com,
-       dwm@austin.ibm.com, arjan@infradead.org, michaelc@cs.wisc.edu
-Subject: Re: [PATCH] Add iSCSI iBFT support (v0.4.5)
-Message-ID: <20080128112741.GF12910@shadowen.org>
-References: <20080125220629.GA25325@andromeda.dapyr.net> <20080126220123.d20dd393.akpm@linux-foundation.org>
+	Mon, 28 Jan 2008 06:34:19 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33329 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750798AbYA1LeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 06:34:18 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [Regression] 2.6.24-git3: Major annoyance during suspend/hibernation on x86-64 (bisected)
+Date: Mon, 28 Jan 2008 12:31:50 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <200801272229.48955.rjw@sisk.pl> <200801280226.22013.rjw@sisk.pl> <479D3287.1050604@redhat.com>
+In-Reply-To: <479D3287.1050604@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080126220123.d20dd393.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200801281231.51545.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 26, 2008 at 10:01:23PM -0800, Andrew Morton wrote:
-
-> >  int __initdata user_defined_memmap = 0;
+On Monday, 28 of January 2008, Steven Rostedt wrote:
+> Rafael J. Wysocki wrote:
 > 
-> checkpatch should have told you that this "= 0" shouldn't be there.  But it
-> doesn't.
-
-Ok, this line would be correctly picked up if it was being added by this
-author, but this line is in the context only.  We do not blame the current
-author for those.
-
-ERROR: do not initialise externals to 0 or NULL
-#1: FILE: Z57.c:1:
-+int __initdata user_defined_memmap = 0;
-
-> > +	for (pos = (u8 *)hdr; pos < (u8 *)hdr + len; pos ++)
+> > No, this isn't the WARN_ON().
+> > 
+> >> this does have the feel of being scheduling related, but are you 
+> >> absolutely sure about the precise identity of the patch?
+> > 
+> > Actually, not quite.  That's why I have verified it and found that another
+> > patch is really responsible for the issue, namely:
+> > 
+> > commit 82a1fcb90287052aabfa235e7ffc693ea003fe69
+> > Author: Ingo Molnar <mingo@elte.hu>
+> > Date:   Fri Jan 25 21:08:02 2008 +0100
+> > 
+> >     softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
 > 
-> checkpatch should have caught the " ++" but didn't.  I think it used to. 
-> It seems to be going backwards?
+> Are you getting a bunch of prints from the softlockup detector in dmesg?
 
-Somehow this variant was not covered.  Added to the tests and to the
-next version:
+No, I don't.  In fact, I don't get _any_ messages from it whatsoever.
 
-ERROR: no space before that '++' (ctx:WxB)
-#3: FILE: Z57.c:3:
-+       for (pos = (u8 *)hdr; pos < (u8 *)hdr + len; pos ++)
+> I wonder if the detector can detect a long timeout caused by suspend and 
+> resume and if not is triggering false positives?
 
--apw
+I'm not sure, but the code is supposed to be suspend-aware, IIRC.  However,
+I'm seeing a similar symptom on poweroff on an SMP x86-64 box, so it may be
+more directly related to the CPU hotplug.  I'll try to verify that.
+
+Thanks,
+Rafael
