@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764934AbYA1Xp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762435AbYA1XuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764934AbYA1Xp6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761574AbYA1Xpp
+	id S1762435AbYA1XuV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:50:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbYA1XuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:45:45 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:17845 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761993AbYA1Xpo (ORCPT
+	Mon, 28 Jan 2008 18:50:07 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:7701 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751902AbYA1XuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:45:44 -0500
-Date: Mon, 28 Jan 2008 17:47:41 -0600
+	Mon, 28 Jan 2008 18:50:05 -0500
+Date: Mon, 28 Jan 2008 17:50:56 -0600
 From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Blu Ray LG GGW-H20L crashes Linux
-In-reply-to: <1201563794.3182.18.camel@fermat.scientia.net>
-To: Christoph Anton Mitterer <calestyo@scientia.net>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <479E699D.1090102@shaw.ca>
+Subject: Re: fixed a bug of adma in rhel4u5 with HDS7250SASUN500G.
+In-reply-to: <15F501D1A78BD343BE8F4D8DB854566B1BFE2ACA@hkemmail01.nvidia.com>
+To: Kuan Luo <kluo@nvidia.com>
+Cc: Allen Martin <AMartin@nvidia.com>, Tejun Heo <htejun@gmail.com>,
+       Mark Lord <liml@rtr.ca>, Jeff Garzik <jeff@garzik.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Peer Chen <pchen@nvidia.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       David Milburn <dmilburn@redhat.com>
+Message-id: <479E6A60.5070208@shaw.ca>
 MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
 Content-transfer-encoding: 7bit
-References: <fa.QKOfoC0jShKF1yDA3BpSsRBOQzY@ifi.uio.no>
- <479E677C.9070301@shaw.ca> <1201563794.3182.18.camel@fermat.scientia.net>
+References: <4781F008.9070404@gmail.com> <4782422C.8020202@rtr.ca>
+ <4782B73B.8080309@shaw.ca> <4782BC48.4000309@gmail.com>
+ <4782C008.3030902@shaw.ca> <4782CB62.7040901@gmail.com>
+ <4782CEF9.3040708@gmail.com> <4782DFFE.50301@shaw.ca>
+ <4782E5A8.9010305@gmail.com> <4782E63E.1000606@gmail.com>
+ <4782E78F.9050205@shaw.ca> <4782E912.1050204@gmail.com>
+ <4783493A.7070800@gmail.com> <47838B57.8020407@shaw.ca>
+ <47842A54.2060107@gmail.com> <47842ABA.2060605@gmail.com>
+ <47844471.4070705@shaw.ca> <47845708.6060900@gmail.com>
+ <478567D8.10601@shaw.ca>
+ <15F501D1A78BD343BE8F4D8DB854566B1BFE2ABF@hkemmail01.nvidia.com>
+ <478812C9.1000901@shaw.ca>
+ <15F501D1A78BD343BE8F4D8DB854566B1BFE2AC0@hkemmail01.nvidia.com>
+ <4797DF30.6050208@shaw.ca>
+ <15F501D1A78BD343BE8F4D8DB854566B1BFE2ACA@hkemmail01.nvidia.com>
 User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Anton Mitterer wrote:
-> On Mon, 2008-01-28 at 17:38 -0600, Robert Hancock wrote:
->> Christoph Anton Mitterer wrote:
->>> btw: I'm cross posting this to lkml and debian-user,... hope nobody
->>> feels offended :-)
->> How much RAM is in your machine? There's a known problem with sata_nv 
->> ADMA with ATAPI devices and over 4GB of RAM.
-> Uhm *tadaaa* ... got 4GB ^^
-> Ok,.. so If this only applies to ATAPI devices it should be clear why my
-> SATA HDDs aren't affected ;)
+Kuan Luo wrote:
+> Robert worte.
+>> Kuan, does this patch (using the notifiers to see if the command is 
+>> really done) still work if one port on the controller has 
+>> ADMA disabled 
+>> because it's in ATAPI mode? I seem to recall Allen Martin mentioning 
+>> that notifiers wouldn't work in this case.
+>>
 > 
->> As a temporary workaround, 
->> you can boot with sata_nv.adma=0 on the kernel command line, or limit 
->> your memory with the mem= command line option so that memory over 4GB is 
->> not used.
-> Great,.. will have a try tomorrow :-)
+> I just tried the 2.6.24-rc7 sata_nv driver with one hd and  one cdrom in
+> the same controller. 
+> I mkfs hd and mounted the cdrom and no error happened.
 > 
-> Is this already fixed in git?
+> Allen,  is there anything about notifier that we should pay attention
+> to?
 
-Nope, I/we are still trying to figure out how to fix this properly..
+Assuming not, then this patch should be applied..
+
