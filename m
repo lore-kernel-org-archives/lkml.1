@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764168AbYA1WXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761271AbYA1WYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764168AbYA1WXA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:23:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763405AbYA1WSY
+	id S1761271AbYA1WYI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:24:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYA1WXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:18:24 -0500
-Received: from main.gmane.org ([80.91.229.2]:45860 "EHLO ciao.gmane.org"
+	Mon, 28 Jan 2008 17:23:51 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37167 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763191AbYA1WSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:18:21 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-Subject: Re: chars > 0xa0 not displayed in console since 2.6.24
-Date: Mon, 28 Jan 2008 22:18:06 +0000
-Message-ID: <yw1xlk694msh.fsf@mansr.com>
-References: <479E5082.50208@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: thrashbarg.mansr.com
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (Educational Television, linux)
-Cancel-Lock: sha1:yYkLk/moWVOzyEmFx/OquHiqQjQ=
+	id S1753229AbYA1WXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:23:50 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] make suspend_device() static
+Date: Mon, 28 Jan 2008 23:21:24 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: pavel@suse.cz, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <20080128221024.GO8767@does.not.exist>
+In-Reply-To: <20080128221024.GO8767@does.not.exist>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801282321.25567.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerardo Exequiel Pozzi <djgera@gmail.com> writes:
+On Monday, 28 of January 2008, Adrian Bunk wrote:
+> suspend_device() can become static.
 
-> Hello,
->
-> Chars are displayed OK in kernels < 2.6.24 (2.6.22.16, 2.6.23.14) with
-> the same config.
-> I booted clean with init=/bin/bash to discard distro
-> (slackware-current) problem/incompat, but the problem persist.
->
-> This is a know problem?
+That's correct.  I'll push the patch to Len.
 
-Probably something to do with this commit:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ecb77fa96ceda9cae88015bfe3293ffe19006159
-
--- 
-Måns Rullgård
-mans@mansr.com
-
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 344fcfcea0df8cbaa83e10d7e66b826ead67290b 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 200ed5f..cfcc54f 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -414,7 +414,7 @@ EXPORT_SYMBOL_GPL(device_power_down);
+>   *	@dev:	Device.
+>   *	@state:	Power state device is entering.
+>   */
+> -int suspend_device(struct device *dev, pm_message_t state)
+> +static int suspend_device(struct device *dev, pm_message_t state)
+>  {
+>  	int error = 0;
+>  
+> 
