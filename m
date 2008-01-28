@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763032AbYA1WZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbYA1Wa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763032AbYA1WZR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757299AbYA1WY5
+	id S1757433AbYA1Wa0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:30:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbYA1WaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:24:57 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:46485 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753285AbYA1WYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:24:55 -0500
-Date: Mon, 28 Jan 2008 23:24:55 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [GIT PATCH] kbuild updates
-Message-ID: <20080128222455.GB4222@uranus.ravnborg.org>
-References: <20080128212624.GA3842@uranus.ravnborg.org> <alpine.LFD.1.00.0801290901340.3505@www.l.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0801290901340.3505@www.l.google.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 28 Jan 2008 17:30:12 -0500
+Received: from mail.hauppauge.com ([167.206.143.4]:4473 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751684AbYA1WaK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:30:10 -0500
+X-Greylist: delayed 926 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jan 2008 17:30:06 EST
+Message-ID: <479E53B8.6030505@linuxtv.org>
+From: mkrufky@linuxtv.org
+To: bunk@kernel.org
+Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] dvb/frontends/tda18271-common.c: fix off-by-one
+Date: Mon, 28 Jan 2008 17:14:16 -0500
+MIME-Version: 1.0
+X-Mailer: Internet Mail Service (5.5.2657.72)
+in-reply-to: <20080128221241.GG8767@does.not.exist>
+x-originalarrivaltime: 28 Jan 2008 22:08:28.0397 (UTC) FILETIME=[4F8629D0:01C861FA]
+user-agent: Thunderbird 2.0.0.9 (Windows/20071031)
+Content-Type: text/plain;
+	charset="utf-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 09:04:38AM +1100, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 28 Jan 2008, Sam Ravnborg wrote:
-> > 
-> > Please pull following patches for kbuild/kconfig and a few other areas.
-> > 
-> > Pull from:
-> > 	ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
-> 
-> This conflicts with the SH updates (sh is also integrating 32/64-bit into 
-> one tree now).
-> 
-> Since I don't know the SH tree or your changes, the probably fairly 
-> trivial manual merge isn't an option (especially as I'm not at home and 
-> doing this on a laptop with a less than ideal keyboard and smaller screen 
-> than I'm used to).
-> 
-> So I hope you and Paul can resolve the conflicts and re-send.
+Adrian Bunk wrote:
+> This patch fixes an off-by-one error spotted by the Coverity checker.
+>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>   
+Reviewed-by: Michael Krufky <mkrufky@linuxtv.org>
 
-As expected the conflicts were trivial and I fixed it up.
-It was:
-- The edit of the vmlinux.lds files
-- The removal of make dep
+Thank you, Adrian.
 
-Please pull the updated tree.
+Mauro, please merge this and queue for upstream.
 
-	Sam
+Cheers,
+
+Mike
+
+
+> ---
+> --- linux-2.6/drivers/media/dvb/frontends/tda18271-common.c.old
+2008-01-28 16:27:55.000000000 +0200
+> +++ linux-2.6/drivers/media/dvb/frontends/tda18271-common.c	2008-01-28
+16:28:38.000000000 +0200
+> @@ -166,17 +166,17 @@ int tda18271_read_extended(struct dvb_fr
+>  	/* read all registers */
+>  	ret = i2c_transfer(priv->i2c_adap, msg, 2);
+>  
+>  	tda18271_i2c_gate_ctrl(fe, 0);
+>  
+>  	if (ret != 2)
+>  		tda_err("ERROR: i2c_transfer returned: %d\n", ret);
+>  
+> -	for (i = 0; i <= TDA18271_NUM_REGS; i++) {
+> +	for (i = 0; i < TDA18271_NUM_REGS; i++) {
+>  		/* don't update write-only registers */
+>  		if ((i != R_EB9)  &&
+>  		    (i != R_EB16) &&
+>  		    (i != R_EB17) &&
+>  		    (i != R_EB19) &&
+>  		    (i != R_EB20))
+>  		regs[i] = regdump[i];
+>  	}
+>
+>   
+
