@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759262AbYA1ItS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760269AbYA1Ite@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759262AbYA1ItS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 03:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYA1IrP
+	id S1760269AbYA1Ite (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 03:49:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759976AbYA1Isv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 03:47:15 -0500
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:56277 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758303AbYA1IrN (ORCPT
+	Mon, 28 Jan 2008 03:48:51 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:41849 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759932AbYA1Ist (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 03:47:13 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
+	Mon, 28 Jan 2008 03:48:49 -0500
+X-Greylist: delayed 392 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jan 2008 03:48:49 EST
+Date: Mon, 28 Jan 2008 09:48:55 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
 To: linux-kernel@vger.kernel.org
-Cc: Ian Campbell <ijc@hellion.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Date: Mon, 28 Jan 2008 08:45:48 +0000
-Message-Id: <1201509949-3285-9-git-send-email-ijc@hellion.org.uk>
-X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <1201509949-3285-8-git-send-email-ijc@hellion.org.uk>
-References: <1201509949-3285-1-git-send-email-ijc@hellion.org.uk>
- <1201509949-3285-2-git-send-email-ijc@hellion.org.uk>
- <1201509949-3285-3-git-send-email-ijc@hellion.org.uk>
- <1201509949-3285-4-git-send-email-ijc@hellion.org.uk>
- <1201509949-3285-5-git-send-email-ijc@hellion.org.uk>
- <1201509949-3285-6-git-send-email-ijc@hellion.org.uk>
- <1201509949-3285-7-git-send-email-ijc@hellion.org.uk>
- <1201509949-3285-8-git-send-email-ijc@hellion.org.uk>
-X-SA-Exim-Connect-IP: 192.168.1.223
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: [PATCHv2 8/9] x86: Unify variable names in arch/x86/boot/compressed/misc_??.c
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+Cc: netdev@vger.kernel.org
+Subject: Re: 2.6.24 regression: Wake On Lan in sky2 broken on Mac mini
+Message-ID: <20080128084855.GA5926@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20080128002934.GA6354@dose.home.local> <18333.37002.749771.524523@harpo.it.uu.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18333.37002.749771.524523@harpo.it.uu.se>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-size reports no change in arch/x86/boot/compressed/vmlinux.
+On Mon, Jan 28, 2008 at 09:21:30 +0100, Mikael Pettersson wrote:
+> Tino Keitel writes:
+>  > Hi folks,
+>  > 
+>  > with 2.6.24-rc8, Wake On LAN doesn't work anymore as it used to with
+>  > 2.6.23 on my Mac mini Core Duo. I saw that this was reported in
+>  > http://bugzilla.kernel.org/show_bug.cgi?id=9721 and on netdev a patch
+>  > for the sky2 driver was sent by Stephen Hemminger. This patch fixed WOL
+>  > for me after applying it to 2.6.24-rc8.
+>  > 
+>  > However, it seems as the patch never made it into the kernel. Instead,
+>  > the commit that was suspected to break WOL
+>  > (84cd2dfb04d23a961c5f537baa243fa54d0987ac) was reverted
+>  > (be63a21c9573fbf88106ff0f030da5974551257b).
+>  > 
+>  > Now I tried the 2.6.24 release and noticed that WOL is still broken.
+>  > I'll be happy to test any patches that can make it into 2.6.24.1.
+> 
+> 1. Wrong mailing list; use netdev (@vger) instead.
 
-Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/boot/compressed/misc_32.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+Done.
 
-diff --git a/arch/x86/boot/compressed/misc_32.c b/arch/x86/boot/compressed/misc_32.c
-index ad0528a..2b1c22d 100644
---- a/arch/x86/boot/compressed/misc_32.c
-+++ b/arch/x86/boot/compressed/misc_32.c
-@@ -348,7 +348,7 @@ static void error(char *x)
- 		asm("hlt");
- }
- 
--asmlinkage void decompress_kernel(void *rmode, unsigned long end,
-+asmlinkage void decompress_kernel(void *rmode, unsigned long heap,
- 				  uch *input_data, unsigned long input_len,
- 				  uch *output)
- {
-@@ -366,15 +366,15 @@ asmlinkage void decompress_kernel(void *rmode, unsigned long end,
- 	cols = RM_SCREEN_INFO.orig_video_cols;
- 
- 	window = output;		/* Output buffer (Normally at 1M) */
--	free_mem_ptr     = end;		/* Heap */
--	free_mem_end_ptr = end + HEAP_SIZE;
-+	free_mem_ptr     = heap;	/* Heap */
-+	free_mem_end_ptr = heap + HEAP_SIZE;
- 	inbuf  = input_data;		/* Input buffer */
- 	insize = input_len;
- 	inptr  = 0;
- 
- 	if ((u32)output & (CONFIG_PHYSICAL_ALIGN -1))
- 		error("Destination address not CONFIG_PHYSICAL_ALIGN aligned");
--	if (end > ((-__PAGE_OFFSET-(512 <<20)-1) & 0x7fffffff))
-+	if (heap > ((-__PAGE_OFFSET-(512<<20)-1) & 0x7fffffff))
- 		error("Destination address too large");
- #ifndef CONFIG_RELOCATABLE
- 	if ((u32)output != LOAD_PHYSICAL_ADDR)
--- 
-1.5.3.8
+> 2. The reverted commit had much much more serious consequences than
+>    "wol doesn't work", it actually caused BIOS hangs and failed reboots.
 
+Yes, but even with the reverted commit, WOL still doesn't work. I just
+tried the patch from the netdev mailing list with the 2.6.24 release
+version and now WOL works for me.
+
+Regards,
+Tino
