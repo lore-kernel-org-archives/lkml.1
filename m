@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757782AbYA1UCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbYA1UC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757782AbYA1UCE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 15:02:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbYA1UBv
+	id S1756935AbYA1UC3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 15:02:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbYA1UCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 15:01:51 -0500
-Received: from iabervon.org ([66.92.72.58]:49217 "EHLO iabervon.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761975AbYA1UBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 15:01:50 -0500
-Date: Mon, 28 Jan 2008 15:01:41 -0500 (EST)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Richard Heck <rgheck@bobjweil.com>
-cc: Gene Heskett <gene.heskett@gmail.com>, Zan Lynx <zlynx@acm.org>,
-       Calvin Walton <calvin.walton@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-Subject: Re: Problem with ata layer in 2.6.24
-In-Reply-To: <479E1D9E.3000900@bobjweil.com>
-Message-ID: <alpine.LNX.1.00.0801281445200.13593@iabervon.org>
-References: <200801272122.21823.gene.heskett@gmail.com> <1201539043.31293.7.camel@zem> <1201540830.6526.19.camel@localhost> <200801281230.32910.gene.heskett@gmail.com> <alpine.LNX.1.00.0801281248190.13593@iabervon.org> <479E1D9E.3000900@bobjweil.com>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	Mon, 28 Jan 2008 15:02:03 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:41444 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757782AbYA1UCA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 15:02:00 -0500
+Date: Mon, 28 Jan 2008 11:54:36 -0800
+From: Greg KH <greg@kroah.com>
+To: Nathan Lynch <ntl@pobox.com>
+Cc: Jan-Bernd Themann <ossthema@de.ibm.com>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org,
+       Christoph Raisch <raisch@de.ibm.com>
+Subject: Re: [2.6.24-rc6-mm1]Build failure in drivers/net/ehea/ehea_main.c
+Message-ID: <20080128195436.GA8574@kroah.com>
+References: <20080108163305.GB10026@in.ibm.com> <20080110173418.GA14728@kroah.com> <200801181016.49128.ossthema@de.ibm.com> <20080125191047.GM14201@localdomain> <20080128182423.GC28861@kroah.com> <20080128192204.GO14201@localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080128192204.GO14201@localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008, Richard Heck wrote:
+On Mon, Jan 28, 2008 at 01:22:04PM -0600, Nathan Lynch wrote:
+> Greg KH wrote:
+> > On Fri, Jan 25, 2008 at 01:10:48PM -0600, Nathan Lynch wrote:
+> > > Jan-Bernd Themann wrote:
+> > > > 
+> > > > On Thursday 10 January 2008 18:34, Greg KH wrote:
+> > > > > > The structure device_driver(in device.h) has a member struct driver_private which
+> > > > > > contains the member kobj (according to drivers/base/base.h).
+> > > > > > But in device.h struct driver_private has been declared localy and 
+> > > > > > neither defined nor included from base.h.
+> > > > > > So my effort to use driver->driver_private->obj also does not work.
+> > > > > > (I am surprised from where do you access the struct device_driver)
+> > > > > 
+> > > > > That is because a driver should not be accessing such a field.
+> > > > > 
+> > > > > And especially not in this manner, why would this driver be creating a
+> > > > > symlink that has already been created by the driver core?  This whole
+> > > > > thing can just be removed with no problems.  Can you try just removing
+> > > > > the ehea_driver_sysfs_add and ehea_driver_sysfs_remove functions to
+> > > > > verify this as I don't have the hardware present to test it out.
+> > > > 
+> > > > The eHEA driver tries to orginize its sys-entries as close as possible to
+> > > > other ethernet drivers. Each eHEA NIC has multiple ports which is not that
+> > > > common in PCI. This means that each port is represented by a subdirectory
+> > > > which has not the "driver" sys-link, only the root directory has.
+> > > > Some tools expect to have this driver link in each port directory.
+> > > > That is the reason why this link is created manually.
+> > > > 
+> > > > Are there any other ways to create this link?
+> > > 
+> > > 
+> > > This is now broken in mainline...
+> > > 
+> > > drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_add':
+> > > drivers/net/ehea/ehea_main.c:2812: error: 'struct device_driver' has
+> > > no member named 'kobj'
+> > > drivers/net/ehea/ehea_main.c:2815: error: 'struct device_driver' has
+> > > no member named 'kobj'
+> > > drivers/net/ehea/ehea_main.c:2818: error: 'struct device_driver' has
+> > > no member named 'kobj'
+> > > drivers/net/ehea/ehea_main.c: In function 'ehea_driver_sysfs_remove':
+> > > drivers/net/ehea/ehea_main.c:2830: error: 'struct device_driver' has
+> > > no member named 'kobj'
+> > 
+> > Does the patch below fix this?  That driver should not have been trying
+> > to create symlinks that the driver core has already created for it.
+> 
+> Yes, it fixes the build error, by just removing the code that got
+> broken.  Jan-Bernd gave a rationale for creating the symlink that
+> didn't really seem to be answered.
 
-> Daniel Barkalow wrote:
-> > Can you switch back to old IDE to get your work done (and to make sure it's
-> > not a hardware issue that's developed recently)? 
-> I think it'd be really, REALLY helpful to a lot of people if you, or someone,
-> could explain in moderate detail how this might be done. I tried doing it
-> myself, but I'm not sufficiently expert at configuring kernels that I was ever
-> able to figure out how to do it.
+See my other post to him.  I do not see why this is not just duplicating
+the same exact code in the driver core.  If you are trying to "fake out"
+userspace by saying a device is bound to a driver, well, that's just
+wrong.
 
-As far as configuring the kernel, I can help:
+thanks,
 
-Go to Device Drivers, ATA/ATAPI/MFM/RLL support, and turn on anything that 
-looks relevant; go to Device Drivers, Serial ATA and Parallel ATA drivers, 
-and turn off anything that's PATA and looks relevant.
-
-(Whether a device uses IDE or PATA depends on which driver that supports 
-the device is present and find it first, not on any sort of global 
-configuration, which is probably what tripped you up)
-
-Building this and installing it along with the appropriate initrd (which 
-might be handled by Fedora's install scripts) will either get you back to 
-old IDE or will make your kernel panic on boot, depending on whether you 
-got it right (so make sure you can still boot the kernel you're sure of or 
-something from a boot disk). This will also cause your hard drives to show 
-up as different device nodes, so if your boot process doesn't mount by 
-disk uuid but by some other feature (and I don't know what Fedora does), 
-you'll also need to change it to something either stable across access 
-methods or which works for the one you're now using.
-
-> Obviously, the short version is: switch back to Fedora 6. But this kind of
-> problem with libata---and yes, you're almost surely right that it's not one
-> problem but lots---is sufficiently widespread that a Mini HOWTO, say, would be
-> really welcome and, I'm guessing, widely used.
-
-Fedora really ought to provide documentation, because there's some 
-distro-specific stuff (like how you deal with the kernel's device node for 
-the root partition changing), and they're using code by default that's at 
-least somewhat documented as experimental (although it doesn't seem to be 
-actually marked as experimental in all cases).
-
-	-Daniel
-*This .sig left intentionally blank*
+greg k-h
