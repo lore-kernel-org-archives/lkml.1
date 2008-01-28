@@ -1,42 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbYA1AeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbYA1Aeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759268AbYA1AeQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 19:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYA1AeC
+	id S1753531AbYA1Aeb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 19:34:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbYA1AeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 19:34:02 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46472 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751540AbYA1AeA (ORCPT
+	Sun, 27 Jan 2008 19:34:10 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49832 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753719AbYA1AeJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 19:34:00 -0500
-Message-ID: <479D22CF.6060201@zytor.com>
-Date: Sun, 27 Jan 2008 16:33:19 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ian Campbell <ijc@hellion.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH 3/9] x86_64: Switch to .data.compressed in arch/x86/boot/compressed/vmlinux_64.scr
-References: <ff184a8ea93f18a787bb9bd0c860036219b83ee0.1201348185.git.ijc@hellion.org.uk>	 <d4158549e6497ee261ed220d9cbc8ca8fced8ba7.1201348185.git.ijc@hellion.org.uk>	 <86802c440801261659s1102f38cr16858d350929b0e1@mail.gmail.com>	 <1201471499.18241.23.camel@localhost.localdomain> <86802c440801271538xce702c2l6b0ddbccfcdf9553@mail.gmail.com>
-In-Reply-To: <86802c440801271538xce702c2l6b0ddbccfcdf9553@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 27 Jan 2008 19:34:09 -0500
+Date: Sun, 27 Jan 2008 22:33:34 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>, Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Hans Verkuil <hverkuil@xs4all.nl>, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25 regression: VIDEO_DEV=y/m, I2C=n compile error
+Message-ID: <20080127223334.696fce6e@gaivota>
+In-Reply-To: <20080127185216.GB13300@does.not.exist>
+References: <20080127185216.GB13300@does.not.exist>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Jan 27, 2008 2:04 PM, Ian Campbell <ijc@hellion.org.uk> wrote:
->> On Sat, 2008-01-26 at 16:59 -0800, Yinghai Lu wrote:
->>
->>> can you make 32 bit use .text.compressed instead ?
->> Any reason to prefer .text? It is data at this stage after all.
->>
-> it is comressed text insead of compressed data.
+Hi Adrian and Marcin,
+
+On Sun, 27 Jan 2008 20:52:16 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
+
+> Commit 8ffbc6559493c64d6194c92d856196fdaeb8a5fb causes the following 
+> compile error with CONFIG_VIDEO_DEV=y/m, CONFIG_I2C=n:
 > 
+> <--  snip  -->
+> 
+> ...
+>   MODPOST 26 modules
+> ERROR: "i2c_attach_client" [drivers/media/video/v4l2-common.ko] undefined!
+> make[2]: *** [__modpost] Error 1
+> 
+> <--  snip  -->
 
-No it's not.  It's both.
 
-	-hpa
+Thanks for getting this regression. Please test the enclosed patch.
+
+
+Cheers,
+Mauro
+
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+
+diff -r b0815101889d linux/drivers/media/video/v4l2-common.c
+--- a/linux/drivers/media/video/v4l2-common.c	Sun Jan 27 20:39:00 2008
+-0200 +++ b/linux/drivers/media/video/v4l2-common.c	Sun Jan 27 22:23:25
+2008 -0200 @@ -1585,6 +1585,7 @@ u32 v4l2_ctrl_next(const u32 * const * c
+ 	return **ctrl_classes;
+ }
+ 
++#ifdef CONFIG_I2C
+ int v4l2_chip_match_i2c_client(struct i2c_client *c, u32 match_type, u32
+match_chip) {
+ 	switch (match_type) {
+@@ -1596,6 +1597,7 @@ int v4l2_chip_match_i2c_client(struct i2
+ 		return 0;
+ 	}
+ }
++EXPORT_SYMBOL(v4l2_chip_match_i2c_client);
+ 
+ int v4l2_chip_ident_i2c_client(struct i2c_client *c, struct v4l2_chip_ident
+*chip, u32 ident, u32 revision)
+@@ -1612,6 +1614,7 @@ int v4l2_chip_ident_i2c_client(struct i2
+ 	}
+ 	return 0;
+ }
++EXPORT_SYMBOL(v4l2_chip_ident_i2c_client);
+ 
+ int v4l2_chip_match_host(u32 match_type, u32 match_chip)
+ {
+@@ -1622,6 +1625,7 @@ int v4l2_chip_match_host(u32 match_type,
+ 		return 0;
+ 	}
+ }
++EXPORT_SYMBOL(v4l2_chip_match_host);
+ 
+ /* ----------------------------------------------------------------- */
+ 
+@@ -1656,6 +1660,8 @@ int v4l2_i2c_attach(struct i2c_adapter *
+ 	}
+ 	return err != -ENOMEM ? 0 : err;
+ }
++EXPORT_SYMBOL(v4l2_i2c_attach);
++#endif
+ 
+ /* ----------------------------------------------------------------- */
+ 
+@@ -1679,15 +1685,3 @@ EXPORT_SYMBOL(v4l2_ctrl_query_menu);
+ EXPORT_SYMBOL(v4l2_ctrl_query_menu);
+ EXPORT_SYMBOL(v4l2_ctrl_query_fill);
+ EXPORT_SYMBOL(v4l2_ctrl_query_fill_std);
+-
+-EXPORT_SYMBOL(v4l2_chip_match_i2c_client);
+-EXPORT_SYMBOL(v4l2_chip_ident_i2c_client);
+-EXPORT_SYMBOL(v4l2_chip_match_host);
+-
+-EXPORT_SYMBOL(v4l2_i2c_attach);
+-
+-/*
+- * Local variables:
+- * c-basic-offset: 8
+- * End:
+- */
