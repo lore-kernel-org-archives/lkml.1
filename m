@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbYA1Nmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761008AbYA1NnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760724AbYA1Nmu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 08:42:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbYA1Nml
+	id S1761008AbYA1NnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 08:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbYA1NnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 08:42:41 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36410 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbYA1Nmk (ORCPT
+	Mon, 28 Jan 2008 08:43:04 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:54687 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbYA1NnD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 08:42:40 -0500
-Date: Mon, 28 Jan 2008 13:40:56 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, rth@twiddle.net,
-       bryan.wu@analog.com, dhowells@redhat.com, gerg@uclinux.org,
-       lethal@linux-sh.org, wli@holomorphy.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, torvalds@linux-foundation.org
-Subject: Re: [RFC][PATCH 2/2] xtime_lock vs update_process_times
-Message-ID: <20080128134056.GA2792@flint.arm.linux.org.uk>
-Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, rth@twiddle.net,
-	bryan.wu@analog.com, dhowells@redhat.com, gerg@uclinux.org,
-	lethal@linux-sh.org, wli@holomorphy.com, davem@davemloft.net,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-	tglx@linutronix.de, mingo@elte.hu, torvalds@linux-foundation.org
-References: <20080128103953.326762000@chello.nl> <20080128104056.184943000@chello.nl> <20080128122030.GA14058@flint.arm.linux.org.uk>
-Mime-Version: 1.0
+	Mon, 28 Jan 2008 08:43:03 -0500
+Date: Mon, 28 Jan 2008 14:43:05 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24 regression: Wake On Lan in sky2 broken on Mac mini
+Message-ID: <20080128134305.GA31052@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <20080128002934.GA6354@dose.home.local> <18333.37002.749771.524523@harpo.it.uu.se> <20080128125535.GE32496@elte.hu> <18333.55970.74841.660462@harpo.it.uu.se>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080128122030.GA14058@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <18333.55970.74841.660462@harpo.it.uu.se>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 12:20:30PM +0000, Russell King wrote:
-> On Mon, Jan 28, 2008 at 11:39:55AM +0100, Peter Zijlstra wrote:
-> > move update_process_times() out from under xtime_lock.
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> Peter,
-> 
-> Mind if I merge:
-> 
-> >  arch/arm/common/time-acorn.c          |    2 --
-> >  arch/arm/mach-at91/at91sam926x_time.c |    3 ---
-> >  arch/arm/plat-iop/time.c              |    4 ----
-> >  arch/arm/plat-s3c24xx/time.c          |    2 --
-> 
-> with my patch and submit it as part of the ARM merge (which I'm hoping
-> to send in about an hours time.)
+On Mon, Jan 28, 2008 at 14:37:38 +0100, Mikael Pettersson wrote:
 
-Don't bother - I'm sending my patch _now_ - I've run out of time to 
-merge the above into this ARM tree pull (since I want to get Linus to
-pull it before yet more breakage happens to it - I've had to drop a
-number of branches with new conflicts as of last night to even get this
-far...)
+[...]
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+> However, it _is_ a fact that there is a proliferation of specialized
+> mailing lists, and it is also a fact that many developers _only_ read
+> those lists. I'm in no way defending this behaviour, on the contrary
+> I probably dislike it as much as you do. But we can't ignore it.
+
+I planned to post this to netdev first, but then I thought that it's
+more a task for the stable team and/or those people who track
+regressions, and I don't know if those people track all the subsystem
+mailing lists. Especially as there is a patch that fixes the issue for
+me, and the corresponding bugzilla entry is alrealy marked as resolved
+and "patch available", so it seems to me as it is just a matter of
+incorporating an existing patch into further revisions of 2.6.24.
+
+Regards,
+Tino
