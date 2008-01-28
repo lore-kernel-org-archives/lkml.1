@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765429AbYA1XYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765284AbYA1XYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765429AbYA1XYA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:24:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764886AbYA1XRk
+	id S1765284AbYA1XYj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:24:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764800AbYA1XSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:17:40 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:39111 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764877AbYA1XRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:17:39 -0500
-Date: Mon, 28 Jan 2008 15:17:38 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Shaohua Li <shaohua.li@intel.com>, nickpiggin@yahoo.com.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] some page can't be migrated
-In-Reply-To: <20080126220351.a04819f9.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0801281514260.17050@schroedinger.engr.sgi.com>
-References: <1201069357.32059.13.camel@sli10-desk.sh.intel.com>
- <1201233590.28282.13.camel@sli10-desk.sh.intel.com>
- <Pine.LNX.4.64.0801242000320.1932@schroedinger.engr.sgi.com>
- <200801251517.02287.nickpiggin@yahoo.com.au> <1201241005.24290.5.camel@sli10-desk.sh.intel.com>
- <20080126220351.a04819f9.akpm@linux-foundation.org>
+	Mon, 28 Jan 2008 18:18:11 -0500
+Received: from fk-out-0910.google.com ([209.85.128.187]:5423 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753613AbYA1XSI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 18:18:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Hp08vdUBgVTPJ9lk+nyKrOhc2V8WdIFLnxHiO2HUQFkdZu/Hr64+K/3+77ZTMnAcEPkdGkikxFkwOwXqfQhggrHRWx5O5tTxRGpAY1m6jqQwxE0X/dWUsN4T6WEGzlzY5arrlU67WVBMGF7J2sqN1Zg7wukaD+Td7Rs/tqFYlVg=
+Message-ID: <479E62AB.3010603@gmail.com>
+Date: Tue, 29 Jan 2008 00:18:03 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Randy Dunlap <rdunlap@xenotime.net>
+CC: dsterba@suse.cz, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, jkosina@suse.cz, benm@symmetric.co.nz,
+       stephen@symmetric.co.nz
+Subject: Re: [PATCH] ipwireless: driver for 3G PC Card
+References: <20080128171929.GA3906@ds.suse.cz> <20080128100854.fe7acad8.rdunlap@xenotime.net>
+In-Reply-To: <20080128100854.fe7acad8.rdunlap@xenotime.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Jan 2008, Andrew Morton wrote:
-
-> > 
-> > -	if (!page->mapping)
-> > +	if (!page->mapping) {
-> > +		if (!PageAnon(page) && PagePrivate(page))
-> > +			try_to_release_page(page, GFP_KERNEL);
-> >  		goto rcu_unlock;
-> > +	}
+On 01/28/2008 07:08 PM, Randy Dunlap wrote:
+>> +/*
+>> + * @return 1 if something has been received from hw
 > 
-> We call something(GFP_KERNEL) under rcu_read_lock()?  I've lost track of
-> the myriad flavours of rcu which we purport to support, but I don't think
-> they'll all like us blocking under rcu_read_lock().
+> What's with the '@'?
+...
+>> +
+>> +/*!
+> 
+> and the '!' ?
+> 
+>> + * @return true if the card is physically present.
+>> + */
 
-I still think your solution is good but even with the original patch we do 
-not call try_to_release_page() with GFP_KERNEL under rcu.
+What exactly is wrong with @ and !? It's perfectly doxygen-styled.
 
-   if (PageAnon(page)) {
-                rcu_read_lock();
-                rcu_locked = 1;
-        }
+>> diff --git a/drivers/char/pcmcia/ipwireless/main.c b/drivers/char/pcmcia/ipwireless/main.c
+>> new file mode 100644
+>> index 0000000..cab5722
+>> --- /dev/null
+>> +++ b/drivers/char/pcmcia/ipwireless/main.c
+>> @@ -0,0 +1,496 @@
+[...]
+>> +module_param(major, int, 0);
+>> +module_param(ipwireless_debug, int, 0);
+>> +module_param(ipwireless_loopback, int, 0);
+>> +module_param(ipwireless_out_queue, int, 0);
+>> +MODULE_PARM_DESC(major, "ttyIPWp major number [0]");
+>> +MODULE_PARM_DESC(ipwireless_debug, "switch on debug messages [0]");
+>> +MODULE_PARM_DESC(ipwireless_debug, "switch on loopback mode [0]");
+>> +MODULE_PARM_DESC(ipwireless_debug, "set size of outgoing queue [1]");
+> 
+> Will these parameters be documented anywhere?
 
-
-rcu is only active if we have an anonymous page and in that case we do not
-call try_to_release_page(). Just to make sure that Nick and I do not get 
-dinged needlessly....
+Anyway the descs are wrong. Those 3 are for the only one variable.
 
