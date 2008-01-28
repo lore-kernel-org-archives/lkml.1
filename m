@@ -1,199 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761298AbYA1TH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbYA1TIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761298AbYA1TH3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 14:07:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbYA1THR
+	id S1753764AbYA1TIq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 14:08:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYA1TIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 14:07:17 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:56814 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbYA1THP (ORCPT
+	Mon, 28 Jan 2008 14:08:35 -0500
+Received: from vms040pub.verizon.net ([206.46.252.40]:48077 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732AbYA1TIe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 14:07:15 -0500
-Date: Mon, 28 Jan 2008 20:07:06 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Bodo Eggert <7eggert@gmx.de>
-cc: Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH] Introduce softpanic V.2
-In-Reply-To: <alpine.LSU.0.999.0801251836420.2201@be1.lrz>
-Message-ID: <alpine.LSU.0.999.0801281930580.4906@be1.lrz>
-References: <alpine.LSU.0.999.0801251551060.21522@be1.lrz>
- <Pine.LNX.4.64.0801251603380.15243@fbirervta.pbzchgretzou.qr>
- <alpine.LSU.0.999.0801251836420.2201@be1.lrz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19RLrVRRasGLqNfWqo6+DqFo8bDqP+Ljm5ZIXs
- O6UHm5enyzlrmgV3OTG96Z4W+Cbb+KbQZRygt2uh7fuq0J8lS3
- qHnIxCcpVqpqm50oebzUA==
+	Mon, 28 Jan 2008 14:08:34 -0500
+Date: Mon, 28 Jan 2008 13:59:23 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Problem with ata layer in 2.6.24
+In-reply-to: <479E1CF4.7060706@rtr.ca>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Mikael Pettersson <mikpe@it.uu.se>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Message-id: <200801281359.24050.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 8BIT
+Content-disposition: inline
+References: <200801272122.21823.gene.heskett@gmail.com>
+ <200801281156.28844.gene.heskett@gmail.com> <479E1CF4.7060706@rtr.ca>
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enabling this option changes a hard panic on boot errors to a
-soft panic, which does not stop the system completely.
-You can still scroll the screen and read the messages.
+On Monday 28 January 2008, Mark Lord wrote:
+>> [   64.037975] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+>> [   64.038102] ata1.00: BMDMA stat 0x65
+>> [   64.038227] ata1.00: cmd c8/00:58:89:3d:07/00:00:00:00:00/e0 tag 0 dma
+>> 45056 in [   64.038229]          res 51/40:58:8b:3d:07/00:00:00:00:00/e0
+>> Emask 0x9 (media error) [   64.038432] ata1.00: status: { DRDY ERR }
+>> [   64.038555] ata1.00: error: { UNC }
+>> [   64.050125] ata1.00: configured for UDMA/100
+>> [   64.050134] sd 0:0:0:0: [sda] Result: hostbyte=0x00 driverbyte=0x08
+>> [   64.050138] sd 0:0:0:0: [sda] Sense Key : 0x3 [current] [descriptor]
+>> [   64.050142] Descriptor sense data with sense descriptors (in hex):
+>> [   64.050143]         72 03 11 04 00 00 00 0c 00 0a 80 00 00 00 00 00
+>> [   64.050149]         00 07 3d 8b
+>> [   64.050152] sd 0:0:0:0: [sda] ASC=0x11 ASCQ=0x4
+>> [   64.050155] end_request: I/O error, dev sda, sector 474507
+>
+>..
+>
+>This error looks somewhat different from the samples posted earlier.
+>This one is quite definitively a "bad sector".
+>
+>It should also show up in "smartctl -a -data /dev/sda" (near the bottom)
+>if SMART was enabled on this drive at boot.
+>
+It does not unforch.
 
-Signed-Off-By: Bodo Eggert <7eggert@gmx.de>
+>You could try reading that specific sector again just to make sure.
+>One way is to figure out how to use "dd" for this.
+[root@coyote ~]# dd if=/dev/sda bs=512 skip=474506 count=3
+��▒6
+{�G���G���libkdecorations.so.1.0.0��c�®���J{�G���G���libkfontinst.so.0.0.0��c�®����"ʂ�GP�~GJ3G 
+6�7�8�#��z;����{�G���G���libkhotkeys_shared.so.1.0.0��c�®���N{�G���G���libkickermain.so.1.0.0��c�®���Y{�G���G���libkonq.so.4.2.0��c�®���Z{�G���G���libkonqsidebarplugin.so.1.2.0��c�®���d{�G���G���libksgrd.so.1.2.0��c�®����▒��G7 
+G▒�=G▒]��^���▒?����e{�G���G���libksplashthemes.so.0.0.0��c�®����{�G���G���libtaskbar.so.1.2.0��c�®����{�G���G���libtaskmanager.so.1.0.0��c�®�3+0 
+records in
+3+0 records out
+1536 bytes (1.5 kB) copied, 6.1403e-05 s, 25.0 MB/s
 
----
+>Another way is to use the "make_bad_sector" utility that
+>is included in the source tarball for hdparm-7.7, as follows:
+>
+>   make_bad_sector --readback /dev/sda 474507
+>
+Apparently not in the rpm, darnit.
 
-Fixed: s/SOFTPANIC/CONFIG_SOFTPANIC/
+>(when invoked as above, it does *not* "make" a bad sector; no worries).
+>
+>If it reports an I/O error consistently on that, then the sector is
+>indeed faulty, and it's contents have long been lost.
+>
+>You can repair the bad sector (but not the original contents) like this:
+>
+>   make_bad_sector --rewrite /dev/sda 474507
+>
+>Cheers
 
-I did not implement shutting down the network on panic, which was requested 
-to let the watchdog reboot the machine. For this purpose, you should use 
-"panic=$n".
+I'm going up to Clarksburg this afternoon to see if I can find a couple of 
+drives, one a 2.5" bigger than 40Gb for my 2.5" maxtor usb housing, and 
+another pata drive big enough to run this thing & just re-install the 
+December respin after I save as much of this as I can, there's nearly 50GB 
+here now.
 
+Maybe it won't be so fscking picky about the next drive.
 
-diff -pruN -X dontdiff linux-2.6.24.pure/include/linux/kernel.h linux-2.6.24.softpanic/include/linux/kernel.h
---- linux-2.6.24.pure/include/linux/kernel.h	2008-01-25 15:09:36.000000000 +0100
-+++ linux-2.6.24.softpanic/include/linux/kernel.h	2008-01-25 15:31:26.000000000 +0100
-@@ -130,6 +130,12 @@ extern struct atomic_notifier_head panic
- extern long (*panic_blink)(long time);
- NORET_TYPE void panic(const char * fmt, ...)
- 	__attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
-+#ifdef SOFTPANIC
-+NORET_TYPE void softpanic(const char *fmt, ...)
-+	__attribute__ ((NORET_AND format (printf, 1, 2))) __cold;
-+#else
-+# define softpanic(...) do { panic(__VA_ARGS__); } while (0)
-+#endif
- extern void oops_enter(void);
- extern void oops_exit(void);
- extern int oops_may_print(void);
-diff -pruN -X dontdiff linux-2.6.24.pure/init/Kconfig linux-2.6.24.softpanic/init/Kconfig
---- linux-2.6.24.pure/init/Kconfig	2008-01-25 15:09:38.000000000 +0100
-+++ linux-2.6.24.softpanic/init/Kconfig	2008-01-25 15:15:08.000000000 +0100
-@@ -526,6 +526,14 @@ config BUG
-           option for embedded systems with no facilities for reporting errors.
-           Just say Y.
- 
-+config SOFTPANIC
-+	bool "Enable softpanic for boot errors" if EMBEDDED
-+	default y
-+	help
-+		Enabling this option changes a hard panic on boot errors to a
-+		soft panic, which does not stop the system completely.
-+		You can still scroll the screen and read the messages.
-+
- config ELF_CORE
- 	default y
- 	bool "Enable ELF core dumps" if EMBEDDED
-diff -pruN -X dontdiff linux-2.6.24.pure/init/do_mounts.c linux-2.6.24.softpanic/init/do_mounts.c
---- linux-2.6.24.pure/init/do_mounts.c	2008-01-25 15:08:31.000000000 +0100
-+++ linux-2.6.24.softpanic/init/do_mounts.c	2008-01-25 15:15:08.000000000 +0100
-@@ -330,7 +330,7 @@ retry:
- 		printk("Please append a correct \"root=\" boot option; here are the available partitions:\n");
- 
- 		printk_all_partitions();
--		panic("VFS: Unable to mount root fs on %s", b);
-+		softpanic("VFS: Unable to mount root fs on %s", b);
- 	}
- 
- 	printk("List of all partitions:\n");
-@@ -342,7 +342,7 @@ retry:
- #ifdef CONFIG_BLOCK
- 	__bdevname(ROOT_DEV, b);
- #endif
--	panic("VFS: Unable to mount root fs on %s", b);
-+	softpanic("VFS: Unable to mount root fs on %s", b);
- out:
- 	putname(fs_names);
- }
-diff -pruN -X dontdiff linux-2.6.24.pure/init/main.c linux-2.6.24.softpanic/init/main.c
---- linux-2.6.24.pure/init/main.c	2008-01-25 15:09:38.000000000 +0100
-+++ linux-2.6.24.softpanic/init/main.c	2008-01-25 15:15:08.000000000 +0100
-@@ -585,7 +585,7 @@ asmlinkage void __init start_kernel(void
- 	 */
- 	console_init();
- 	if (panic_later)
--		panic(panic_later, panic_param);
-+		softpanic(panic_later, panic_param);
- 
- 	lockdep_info();
- 
-@@ -800,7 +800,7 @@ static int noinline init_post(void)
- 	run_init_process("/bin/init");
- 	run_init_process("/bin/sh");
- 
--	panic("No init found.  Try passing init= option to kernel.");
-+	softpanic("No init found.  Try passing init= option to kernel.");
- }
- 
- static int __init kernel_init(void * unused)
-diff -pruN -X dontdiff linux-2.6.24.pure/kernel/panic.c linux-2.6.24.softpanic/kernel/panic.c
---- linux-2.6.24.pure/kernel/panic.c	2008-01-25 15:09:38.000000000 +0100
-+++ linux-2.6.24.softpanic/kernel/panic.c	2008-01-25 18:37:59.000000000 +0100
-@@ -142,6 +142,66 @@ NORET_TYPE void panic(const char * fmt, 
- 
- EXPORT_SYMBOL(panic);
- 
-+#ifdef CONFIG_SOFTPANIC
-+NORET_TYPE void softpanic(const char *fmt, ...)
-+{
-+	long i;
-+	static char buf[1024];
-+	va_list args;
-+#if defined(CONFIG_S390)
-+	unsigned long caller = (unsigned long) __builtin_return_address(0);
-+#endif
-+
-+	va_start(args, fmt);
-+	vsnprintf(buf, sizeof(buf), fmt, args);
-+	va_end(args);
-+	printk(KERN_EMERG "Kernel panic - not syncing: %s\n", buf);
-+
-+	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
-+
-+	if (!panic_blink)
-+		panic_blink = no_blink;
-+
-+	if (panic_timeout > 0) {
-+		/*
-+		 * Delay timeout seconds before rebooting the machine.
-+		 * We can't use the "normal" timers since we just panicked..
-+		 */
-+		printk(KERN_EMERG "Rebooting in %d seconds..", panic_timeout);
-+		for (i = 0; i < panic_timeout*1000; ) {
-+			touch_nmi_watchdog();
-+			i += panic_blink(i);
-+			mdelay(1);
-+			i++;
-+		}
-+		/*	This will not be a clean reboot, with everything
-+		 *	shutting down.  But if there is a chance of
-+		 *	rebooting the system it will be rebooted.
-+		 */
-+		kernel_restart(NULL);
-+	}
-+#ifdef __sparc__
-+	{
-+		extern int stop_a_enabled;
-+		/* Make sure the user can actually press Stop-A (L1-A) */
-+		stop_a_enabled = 1;
-+		printk(KERN_EMERG
-+		       "Press Stop-A (L1-A) to return to the boot prom\n");
-+	}
-+#endif
-+#if defined(CONFIG_S390)
-+	disabled_wait(caller);
-+#endif
-+	for (i = 0;;) {
-+		touch_softlockup_watchdog();
-+		i += panic_blink(i);
-+		msleep(1);
-+		i++;
-+	}
-+}
-+EXPORT_SYMBOL(softpanic);
-+#endif
-+
- /**
-  *	print_tainted - return a string to represent the kernel taint state.
-  *
+I was hoping someone could look at that last dmseg I attached, but apparently 
+everybody is blinded by unrelated details as that bad sector may have been 
+transient, caused by the multiple hardware reset type reboots so far today :(
+
+The last 3 reboots have interrupted a 'smartctl -t long /dev/sda' in 
+progress. :(
+
+If I reconvert to non libata, can I do that only for the pata drives of which 
+there are 3 here including the dvd writer, and still use libata for the lone 
+sata drive left?
+
+And can I do that without mucking with the device map, which will make 
+amanda/tar attempt to do a level 0 on the whole system if its changed.  I see 
+the drives are at 254 again, when are they going to be given a stable device 
+address out of the LANANA experimental group so we can reboot without mucking 
+with that and driving tar crazy?
+
+Thanks everybody.
+
 -- 
-Top 100 things you don't want the sysadmin to say:
-15. now it's funny you should ask that, because I don't know either
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+I just had my entire INTESTINAL TRACT coated with TEFLON!
