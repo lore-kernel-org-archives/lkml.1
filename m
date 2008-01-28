@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbYA1E0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbYA1Edl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755071AbYA1E0k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 23:26:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYA1E0a
+	id S1755827AbYA1Edl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 23:33:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYA1Ed3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 23:26:30 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37779 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752091AbYA1E03 (ORCPT
+	Sun, 27 Jan 2008 23:33:29 -0500
+Received: from warlock.qualcomm.com ([129.46.50.49]:41107 "EHLO
+	warlock.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751822AbYA1Ed2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 23:26:29 -0500
-Date: Sun, 27 Jan 2008 20:24:49 -0800
-From: Greg KH <greg@kroah.com>
-To: Romit Dasgupta <romlinux@gmail.com>
-Cc: David Brownell <david-b@pacbell.net>, stern@rowland.harvard.edu,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Moving spinlock to struct usb_hcd
-Message-ID: <20080128042449.GA6374@kroah.com>
-References: <1201329041.5807.20.camel@maxwell> <200801260021.50786.david-b@pacbell.net> <9f29ca150801260736j205b67d2jf9b57d3ac05176a2@mail.gmail.com> <9f29ca150801272020t2ced46b6ka8e7890dfbe1e1a8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9f29ca150801272020t2ced46b6ka8e7890dfbe1e1a8@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 27 Jan 2008 23:33:28 -0500
+X-Greylist: delayed 666 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Jan 2008 23:33:28 EST
+From: maxk@qualcomm.com
+To: linux-kernel@vger.kernel.org
+Cc: Max Krasnyansky <maxk@qualcomm.com>
+Subject: [PATCH] [CPUISOL] Do not route IRQs to the CPUs isolated at boot
+Date: Sun, 27 Jan 2008 20:09:40 -0800
+Message-Id: <1201493382-29804-4-git-send-email-maxk@qualcomm.com>
+X-Mailer: git-send-email 1.5.3.7
+In-Reply-To: <1201493382-29804-3-git-send-email-maxk@qualcomm.com>
+References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
+ <1201493382-29804-2-git-send-email-maxk@qualcomm.com>
+ <1201493382-29804-3-git-send-email-maxk@qualcomm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 09:50:36AM +0530, Romit Dasgupta wrote:
-> Hi,
->                  Should I go ahead and submit the patch with the usual
-> "signed-off" thingie? Or is it totally useless patch that is going to
-> be ignored?
+From: Max Krasnyansky <maxk@qualcomm.com>
 
-Let's see some proof that it actually helps, and then we can evaluate if
-it is needed or not :)
+Most people would expect isolated CPUs to not get any
+IRQs by default. This happens naturally if CPU is brought
+off-line, marked isolated and then brought back online.
 
-thanks,
+Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
+---
+ arch/x86/kernel/genapic_flat_64.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-greg k-h
+diff --git a/arch/x86/kernel/genapic_flat_64.c b/arch/x86/kernel/genapic_flat_64.c
+index 07352b7..e02e58c 100644
+--- a/arch/x86/kernel/genapic_flat_64.c
++++ b/arch/x86/kernel/genapic_flat_64.c
+@@ -21,7 +21,9 @@
+ 
+ static cpumask_t flat_target_cpus(void)
+ {
+-	return cpu_online_map;
++	cpumask_t target;
++	cpus_andnot(target, cpu_online_map, cpu_isolated_map);
++	return target;
+ }
+ 
+ static cpumask_t flat_vector_allocation_domain(int cpu)
+-- 
+1.5.3.7
+
