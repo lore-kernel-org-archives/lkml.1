@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764062AbYA1WVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761776AbYA1WWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764062AbYA1WVy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762916AbYA1WPm
+	id S1761776AbYA1WWX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:22:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760760AbYA1WQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:15:42 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:52503 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762855AbYA1WPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:15:41 -0500
-Date: Tue, 29 Jan 2008 00:10:06 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.o
-Subject: [2.6 patch] ide: make wait_drive_not_busy() static again
-Message-ID: <20080128221006.GK8767@does.not.exist>
+	Mon, 28 Jan 2008 17:16:05 -0500
+Received: from hs-out-0708.google.com ([64.233.178.248]:48646 "EHLO
+	hs-out-2122.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763279AbYA1WQB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:16:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=xR33hU01eP777jTzg8KHo/mnyR7OmINkIqi58i8fDatdfnB0GJbbIB7hrhUvcVjCS64avtc6lIkxcIdfW40jQGfFGYQV5T1smYX4VRFQSgF1xKyhxSL98yz47CLIcYwnvcSB52xBIiDLMQf10c4NHDocupccyedf0sYKETlsKmE=
+Message-ID: <e8ca35370801281416q77158bf5qbfcaee46429e8f40@mail.gmail.com>
+Date: Mon, 28 Jan 2008 23:16:00 +0100
+From: "Pascal Terjan" <pterjan@gmail.com>
+To: "Gerardo Exequiel Pozzi" <djgera@gmail.com>
+Subject: Re: chars > 0xa0 not displayed in console since 2.6.24
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <e8ca35370801281412u3ba8f1b9k5024e0ce59f93599@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <479E5082.50208@gmail.com>
+	 <e8ca35370801281412u3ba8f1b9k5024e0ce59f93599@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After commit 7267c3377443322588cddaf457cf106839a60463 
-wait_drive_not_busy() can become static again.
+On Jan 28, 2008 11:12 PM, Pascal Terjan <pterjan@gmail.com> wrote:
+> On Jan 28, 2008 11:00 PM, Gerardo Exequiel Pozzi <djgera@gmail.com> wrote:
+> > Hello,
+> Hello,
+>
+> > Chars are displayed OK in kernels < 2.6.24 (2.6.22.16, 2.6.23.14) with
+> > the same config.
+> > I booted clean with init=/bin/bash to discard distro (slackware-current)
+> > problem/incompat, but the problem persist.
+> >
+> > This is a know problem?
+>
+> I think this is because the console is now by default in UTF-8 mode.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+You can try with vt.default_utf8=0
 
----
-
- drivers/ide/ide-taskfile.c |    2 +-
- include/linux/ide.h        |    2 --
- 2 files changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/ide/ide-taskfile.c b/drivers/ide/ide-taskfile.c
-index 5eb6fa1..d320001 100644
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -260,7 +260,7 @@ static ide_startstop_t task_no_data_intr(ide_drive_t *drive)
- 	return ide_stopped;
- }
- 
--u8 wait_drive_not_busy(ide_drive_t *drive)
-+static u8 wait_drive_not_busy(ide_drive_t *drive)
- {
- 	ide_hwif_t *hwif = HWIF(drive);
- 	int retries;
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 27cb39d..5d3d88e 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -986,8 +986,6 @@ ide_startstop_t do_rw_taskfile(ide_drive_t *, ide_task_t *);
- 
- void task_end_request(ide_drive_t *, struct request *, u8);
- 
--u8 wait_drive_not_busy(ide_drive_t *);
--
- int ide_raw_taskfile(ide_drive_t *, ide_task_t *, u8 *, u16);
- int ide_no_data_taskfile(ide_drive_t *, ide_task_t *);
- 
-
+> > The dmesg and config are attached.
+>
+> hmm no :)
+>
