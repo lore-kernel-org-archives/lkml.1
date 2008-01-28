@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763838AbYA1Xdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbYA1XeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763838AbYA1Xdr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:33:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYA1Xdi
+	id S1762650AbYA1XeH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:34:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbYA1Xdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:33:38 -0500
-Received: from ara.aytolacoruna.es ([91.117.124.165]:56699 "EHLO
-	mx.aytolacoruna.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751092AbYA1Xdh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:33:37 -0500
-Date: Tue, 29 Jan 2008 00:33:34 +0100
-From: Santiago Garcia Mantinan <manty@manty.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: dl2k stopped working on 2.6.24
-Message-ID: <20080128233334.GA14326@dis.manty.net>
-References: <20080125211153.GA10203@dis.manty.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080125211153.GA10203@dis.manty.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 28 Jan 2008 18:33:53 -0500
+Received: from xenotime.net ([66.160.160.81]:50858 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1764382AbYA1Xdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 18:33:52 -0500
+Date: Mon, 28 Jan 2008 15:33:50 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: dsterba@suse.cz, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, jkosina@suse.cz, benm@symmetric.co.nz,
+       stephen@symmetric.co.nz
+Subject: Re: [PATCH] ipwireless: driver for 3G PC Card
+Message-Id: <20080128153350.c3fd0406.rdunlap@xenotime.net>
+In-Reply-To: <479E654F.4070804@gmail.com>
+References: <20080128171929.GA3906@ds.suse.cz>
+	<20080128100854.fe7acad8.rdunlap@xenotime.net>
+	<479E62AB.3010603@gmail.com>
+	<20080128152809.59d1f52a.rdunlap@xenotime.net>
+	<479E654F.4070804@gmail.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I've been playing with ethtools and got it to work at 100FD by setting it
-> manually, but if afterwards I set it to auto it again goes 1000 HD and thus
-> not working again.
+On Tue, 29 Jan 2008 00:29:19 +0100 Jiri Slaby wrote:
 
-I have changed my gigabit switch for a 100Mb wrt and the dl2k sets the link
-right at 100FD and works much better than when using it at the forced 100FD
-on the gigabit switch, in this last configuration the card was strugling a
-lot, with tranfers under the megabyte/s.
+> On 01/29/2008 12:28 AM, Randy Dunlap wrote:
+> > On Tue, 29 Jan 2008 00:18:03 +0100 Jiri Slaby wrote:
+> > 
+> >> On 01/28/2008 07:08 PM, Randy Dunlap wrote:
+> >>>> +/*
+> >>>> + * @return 1 if something has been received from hw
+> >>> What's with the '@'?
+> >> ...
+> >>>> +
+> >>>> +/*!
+> >>> and the '!' ?
+> >>>
+> >>>> + * @return true if the card is physically present.
+> >>>> + */
+> >> What exactly is wrong with @ and !? It's perfectly doxygen-styled.
+> > 
+> > What part of kernel documentation uses doxygen?
+> 
+> So then, what's the problem?
 
-I don't believe this is anything on my side as the e1000 cards and Nforce4
-forcedeth I have all work ok at 1000FD with 2.4.24. Besides, the dl2k works
-ok on the same environment with 2.4.23.
+Why is it there?  We have a kernel documentation language.
+Please use it or plain text.
 
-If there is a better list or anybody to contact about the dl2k so that I can
-send this info please let me know.
-
-As I said on my previous mail, if any other info is needed or testing any
-special stuff, don't hesitate to ask.
-
-Regards...
--- 
-Manty/BestiaTester -> http://manty.net
+---
+~Randy
