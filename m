@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbYA1QAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759871AbYA1QC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756355AbYA1QAA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 11:00:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbYA1P7w
+	id S1759871AbYA1QC6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 11:02:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbYA1QCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 10:59:52 -0500
-Received: from main.gmane.org ([80.91.229.2]:47948 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752205AbYA1P7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 10:59:51 -0500
-X-Injected-Via-Gmane: http://gmane.org/
+	Mon, 28 Jan 2008 11:02:51 -0500
+Received: from wx-out-0506.google.com ([66.249.82.235]:37247 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbYA1QCu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 11:02:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=KxfKKigdvSF3J7ZH/8ZTw2wsEV02+AJfYkLRcgtq0KgCj7AQr222CxA1WS0o+cFBrUcQmBOr6jNalMCb4T5H10gg6/rlcQWzkwocmYXFfgasRdAXVjjtuaHS9KJHgFp3Jk8SfuAk6KqiRAYH/M2d9G27rlpo8eXjcb53rJCZk1Y=
+Message-ID: <eca31190801280802m6e5b2c4bna4cc567e9935b30c@mail.gmail.com>
+Date: Mon, 28 Jan 2008 10:02:29 -0600
+From: "Roy Zacharias" <royprogram@gmail.com>
 To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: 2.6.24 regression: Wake On Lan in sky2 broken on Mac mini
-Date: Mon, 28 Jan 2008 07:59:35 -0800
-Organization: Linux Foundation
-Message-ID: <20080128075935.6613286f@deepthought>
-References: <20080128002934.GA6354@dose.home.local>
-	<18333.37002.749771.524523@harpo.it.uu.se>
-	<20080128084855.GA5926@dose.home.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: telnet hanging issues in kernel 2.6.16
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: netdev@vger.kernel.org
-X-Gmane-NNTP-Posting-Host: 75-175-39-56.ptld.qwest.net
-In-Reply-To: <20080128084855.GA5926@dose.home.local>
-X-Newsreader: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008 09:48:55 +0100
-Tino Keitel <tino.keitel@gmx.de> wrote:
+Hello,
 
-> On Mon, Jan 28, 2008 at 09:21:30 +0100, Mikael Pettersson wrote:
-> > Tino Keitel writes:
-> >  > Hi folks,
-> >  > 
-> >  > with 2.6.24-rc8, Wake On LAN doesn't work anymore as it used to with
-> >  > 2.6.23 on my Mac mini Core Duo. I saw that this was reported in
-> >  > http://bugzilla.kernel.org/show_bug.cgi?id=9721 and on netdev a patch
-> >  > for the sky2 driver was sent by Stephen Hemminger. This patch fixed WOL
-> >  > for me after applying it to 2.6.24-rc8.
-> >  > 
-> >  > However, it seems as the patch never made it into the kernel. Instead,
-> >  > the commit that was suspected to break WOL
-> >  > (84cd2dfb04d23a961c5f537baa243fa54d0987ac) was reverted
-> >  > (be63a21c9573fbf88106ff0f030da5974551257b).
-> >  > 
-> >  > Now I tried the 2.6.24 release and noticed that WOL is still broken.
-> >  > I'll be happy to test any patches that can make it into 2.6.24.1.
-> > 
-> > 1. Wrong mailing list; use netdev (@vger) instead.
-> 
-> Done.
-> 
-> > 2. The reverted commit had much much more serious consequences than
-> >    "wol doesn't work", it actually caused BIOS hangs and failed reboots.
-> 
-> Yes, but even with the reverted commit, WOL still doesn't work. I just
-> tried the patch from the netdev mailing list with the 2.6.24 release
-> version and now WOL works for me.
+This is my first time posting on this list.  Currently, I am working
+on a powerpc board and I encounter some problems.  When I do the
+following:
 
-Patch went to Jeff, but never made it into 2.6.24.  The timing was just wrong.
+1. Login to my card from pc as root
+2. Run command (i.e. ls, ps, etc.)
+3. Wait 30 min-1hr
+4. Run command
 
--- 
-Stephen Hemminger <stephen.hemminger@vyatta.com>
+After the fourth step, I only see the partial output of the command
+and my telnet session becomes unresponsive and I have to connect
+again.  This same issue occurs even on ssh leading me to believe that
+there is an inherent network driver issue.  I am using the e100
+drivers in the 2.6.16 kernel.  Are there any issues with this driver?
+Are there any patches for it?  I am running on busybox 1.7.1 with the
+eldk 4.1 toolchain.  I appreciate anyone's help.
 
+Thanks,
+Royous
