@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757638AbYA1A3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbYA1AeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757638AbYA1A3j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 19:29:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYA1A3a
+	id S1759268AbYA1AeQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 19:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYA1AeC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 19:29:30 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:56914 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752652AbYA1A33 (ORCPT
+	Sun, 27 Jan 2008 19:34:02 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46472 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540AbYA1AeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 19:29:29 -0500
-Date: Mon, 28 Jan 2008 01:29:34 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.24 regression: Wake On Lan in sky2 broken on Mac mini
-Message-ID: <20080128002934.GA6354@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Sun, 27 Jan 2008 19:34:00 -0500
+Message-ID: <479D22CF.6060201@zytor.com>
+Date: Sun, 27 Jan 2008 16:33:19 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ian Campbell <ijc@hellion.org.uk>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH 3/9] x86_64: Switch to .data.compressed in arch/x86/boot/compressed/vmlinux_64.scr
+References: <ff184a8ea93f18a787bb9bd0c860036219b83ee0.1201348185.git.ijc@hellion.org.uk>	 <d4158549e6497ee261ed220d9cbc8ca8fced8ba7.1201348185.git.ijc@hellion.org.uk>	 <86802c440801261659s1102f38cr16858d350929b0e1@mail.gmail.com>	 <1201471499.18241.23.camel@localhost.localdomain> <86802c440801271538xce702c2l6b0ddbccfcdf9553@mail.gmail.com>
+In-Reply-To: <86802c440801271538xce702c2l6b0ddbccfcdf9553@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+Yinghai Lu wrote:
+> On Jan 27, 2008 2:04 PM, Ian Campbell <ijc@hellion.org.uk> wrote:
+>> On Sat, 2008-01-26 at 16:59 -0800, Yinghai Lu wrote:
+>>
+>>> can you make 32 bit use .text.compressed instead ?
+>> Any reason to prefer .text? It is data at this stage after all.
+>>
+> it is comressed text insead of compressed data.
+> 
 
-with 2.6.24-rc8, Wake On LAN doesn't work anymore as it used to with
-2.6.23 on my Mac mini Core Duo. I saw that this was reported in
-http://bugzilla.kernel.org/show_bug.cgi?id=9721 and on netdev a patch
-for the sky2 driver was sent by Stephen Hemminger. This patch fixed WOL
-for me after applying it to 2.6.24-rc8.
+No it's not.  It's both.
 
-However, it seems as the patch never made it into the kernel. Instead,
-the commit that was suspected to break WOL
-(84cd2dfb04d23a961c5f537baa243fa54d0987ac) was reverted
-(be63a21c9573fbf88106ff0f030da5974551257b).
-
-Now I tried the 2.6.24 release and noticed that WOL is still broken.
-I'll be happy to test any patches that can make it into 2.6.24.1.
-
-Regards,
-Tino
+	-hpa
