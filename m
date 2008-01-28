@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbYA1BPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756364AbYA1B0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757054AbYA1BPq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 20:15:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbYA1BPh
+	id S1756364AbYA1B0T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 20:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbYA1B0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 20:15:37 -0500
-Received: from mga11.intel.com ([192.55.52.93]:3412 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753047AbYA1BPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 20:15:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,257,1199692800"; 
-   d="scan'208";a="293564317"
-Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0
-	sound card
-From: Shaohua Li <shaohua.li@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Avuton Olrich <avuton@gmail.com>, Zhao Yakui <yakui.zhao@intel.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Thomas Renninger <trenn@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Linux-Kernel," <linux-kernel@vger.kernel.org>,
-       Alsa-Devel <alsa-devel@alsa-project.org>
-In-Reply-To: <alpine.LFD.1.00.0801280841440.4544@www.l.google.com>
-References: <3aa654a40801270640s59cfdcc4lfa3fb487e0d9b799@mail.gmail.com>
-	 <alpine.LFD.1.00.0801280841440.4544@www.l.google.com>
-Content-Type: text/plain
-Date: Mon, 28 Jan 2008 09:15:23 +0800
-Message-Id: <1201482923.24645.1.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Jan 2008 20:26:09 -0500
+Received: from cavan.codon.org.uk ([78.32.9.130]:58843 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752526AbYA1B0I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 20:26:08 -0500
+Date: Mon, 28 Jan 2008 01:25:50 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Message-ID: <20080128012549.GA24166@srcf.ucam.org>
+References: <20071226020325.GA21099@srcf.ucam.org> <200801241644.49114.lenb@kernel.org> <20080126220045.b93db7c9.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080126220045.b93db7c9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] Rationalise ACPI backlight implementation
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jan 26, 2008 at 10:00:45PM -0800, Andrew Morton wrote:
+> - Create a new /sys node with a new name which has the new semantics.
 
-On Mon, 2008-01-28 at 08:50 +1100, Linus Torvalds wrote:
-> 
-> On Sun, 27 Jan 2008, Avuton Olrich wrote:
-> >
-> > With v2.6.24 my second ALSA sound device stopped working.
-> 
-> Hmm. Why is PnP ACPI called before PCI probing? That seems to be the 
-> problem here - we should *never* have any firmware allocation block known 
-> hardware BARs, they should only be blocking new dynamic allocations.
-> 
-> Hmm. I wonder if the problem is that ACPIPnP marks the regions busy. That 
-> would be wrong. They shouldn't be busy, they should just "exist".
-> 
-> A busy region will stop a "request_region()" (incorrect for this case - 
-> thats' not what the PnP resurce allocation should be all about), but an 
-> *existing* resource will just stop a new resource being dynamically 
-> assigned to that address (not not stop a known resource from using it).
-> 
-> So maybe the ACPIPnP allocation is doen at the right moment, just doing 
-> the wrong thing..
-This is because the region is declaimed in motherboard device. That is
-BIOS thinks the region is reserved for motherboard. Maybe we should
-blacklist the system too.
+The semantics are the same as they always have been - values between 0 
+and max_brightness are valid values. If you've made assumptions about 
+what max_brightness is, then that's a bug in the userspace application 
+rather than a change in the semantics of the interface.
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
