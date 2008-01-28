@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYA1ENY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbYA1EUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754670AbYA1ENY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Jan 2008 23:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYA1ENN
+	id S1754962AbYA1EUs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Jan 2008 23:20:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYA1EUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Jan 2008 23:13:13 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:26000 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777AbYA1ENM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Jan 2008 23:13:12 -0500
-X-IronPort-AV: E=Sophos;i="4.25,257,1199692800"; 
-   d="scan'208";a="146715059"
-Subject: Re: [PATCH] [8/18] BKL-removal: Remove BKL from remote_llseek
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Steve French <smfrench@gmail.com>, swhiteho@redhat.com, sfrench@samba.org,
-       vandrove@vc.cvut.cz, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@osdl.org
-In-Reply-To: <200801280358.14024.ak@suse.de>
-References: <20080127317.043953000@suse.de>
-	 <524f69650801271418s16f88928xc58dcbe9f5ede9e4@mail.gmail.com>
-	 <1201475336.7346.37.camel@heimdal.trondhjem.org>
-	 <200801280358.14024.ak@suse.de>
-Content-Type: text/plain
+	Sun, 27 Jan 2008 23:20:38 -0500
+Received: from an-out-0708.google.com ([209.85.132.246]:46435 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbYA1EUh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Jan 2008 23:20:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IaMH/cSQaxaSMRiwnyBxYzOtkXDj9naB/j317vyiAWDlma3/Mje3pQsWXcJi8imfZodYGWBFnUybo7Sm1bT8ZHh1jhvlqVUS8+n52cxANHXtLj4I5lynGZKezFMEVeHdcd9Tv7h7kfywIfYiwGBDEyBqlco2dtSTfjoNNY+h89k=
+Message-ID: <9f29ca150801272020t2ced46b6ka8e7890dfbe1e1a8@mail.gmail.com>
+Date: Mon, 28 Jan 2008 09:50:36 +0530
+From: "Romit Dasgupta" <romlinux@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH] Moving spinlock to struct usb_hcd
+Cc: greg@kroah.com, stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <9f29ca150801260736j205b67d2jf9b57d3ac05176a2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Sun, 27 Jan 2008 23:13:09 -0500
-Message-Id: <1201493589.8132.7.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-OriginalArrivalTime: 28 Jan 2008 04:13:10.0644 (UTC) FILETIME=[17F25340:01C86164]
+Content-Disposition: inline
+References: <1201329041.5807.20.camel@maxwell>
+	 <200801260021.50786.david-b@pacbell.net>
+	 <9f29ca150801260736j205b67d2jf9b57d3ac05176a2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+                 Should I go ahead and submit the patch with the usual
+"signed-off" thingie? Or is it totally useless patch that is going to
+be ignored?
 
-On Mon, 2008-01-28 at 03:58 +0100, Andi Kleen wrote:
-> The problem is that it's not a race in who gets to do its thing first, but a 
-> parallel reader can actually see a corrupted value from the two independent 
-> words on 32bit (e.g. during a 4GB). And this could actually completely corrupt 
-> f_pos when it happens with two racing relative seeks or read/write()s
-> 
-> I would consider that a bug.
+Thanks,
+-Romit
 
-I disagree. The corruption occurs because this isn't a situation that is
-allowed by either POSIX or SUSv2/v3. Exactly what spec are you referring
-to here?
 
-Trond
+On Jan 26, 2008 9:06 PM, Romit Dasgupta <romlinux@gmail.com> wrote:
+> >
+> >
+> > Looking at how this lock is used, contention doesn't look likely
+> > to be an issue.  It's never held for long ...
+> yes in the general case but in usb_hcd_flush_endpoint routine it seems
+> to be held for longer than other routines. I agree that
+> usb_hcd_flush_endpoint is an infrequently called routine. Normal
+> systems dont have too many HCs. My computer shows 1 EHCI and 3 OHCIs
+> so I guess when I connect high speed devices there are less chances of
+> contention. With more HC this lock might be contended for.
+> Nevertheless, the right place for the lock seems to be inside usb_hcd.
+> What do you think?
+>
+> >
+> >
+> > Do you have any proof that contention is an actual problem?
+> > Because otherwise I see no benefit to such a change.
+> >
+>
+> I will try to see what I can find with /proc/lock_stat.
+>
+> Thanks,
+> -Romit
+>
