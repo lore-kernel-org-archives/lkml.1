@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbYA1WFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbYA1WGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499AbYA1WFb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 17:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYA1WFS
+	id S1757260AbYA1WGW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 17:06:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbYA1WGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 17:05:18 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37041 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754157AbYA1WFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 17:05:16 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: Construct 32 bit boot time page tables in native format.
-Date: Mon, 28 Jan 2008 23:02:50 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@elte.hu>, Ian Campbell <ijc@hellion.org.uk>,
-       Mika =?iso-8859-1?q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <1201167544.30671.64.camel@cthulhu.hellion.org.uk> <200801282150.15411.rjw@sisk.pl> <479E4918.3010204@zytor.com>
-In-Reply-To: <479E4918.3010204@zytor.com>
+	Mon, 28 Jan 2008 17:06:13 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52282 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752534AbYA1WGM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 17:06:12 -0500
+Date: Mon, 28 Jan 2008 14:06:10 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 1/6] mmu_notifier: Core code
+In-Reply-To: <20080128202923.609249585@sgi.com>
+Message-ID: <Pine.LNX.4.64.0801281405250.13963@schroedinger.engr.sgi.com>
+References: <20080128202840.974253868@sgi.com> <20080128202923.609249585@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801282302.51796.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 28 of January 2008, H. Peter Anvin wrote:
-> Rafael J. Wysocki wrote:
-> > On Monday, 28 of January 2008, Jeremy Fitzhardinge wrote:
-> >> Rafael J. Wysocki wrote:
-> >>> Actually, no.  We only do that with the kernel code mapping which should be
-> >>> safe as long as TLBs are not flushed (and they aren't).
-> >>>   
-> >> Er, what?  Assuming the TLB will retain some mappings while you 
-> >> overwrite the pagetable is a highly dubious prospect.  Are you copying 
-> >> the same values over, or something else?
-> > 
-> > As long as a relocatable kernel is not used to restore a non-relocatable one
-> > (or vice versa), we're copying the same values over.
-> > 
-> 
-> So that case is deliberately considered broken?
+mmu core: Need to use hlist_del
 
-Not deliberately, but the fix I had caused a regression.  It's just a pending
-issue.
+Wrong type of list del in mmu_notifier_release()
 
-Rafael
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ mm/mmu_notifier.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/mm/mmu_notifier.c
+===================================================================
+--- linux-2.6.orig/mm/mmu_notifier.c	2008-01-28 14:02:18.000000000 -0800
++++ linux-2.6/mm/mmu_notifier.c	2008-01-28 14:02:30.000000000 -0800
+@@ -23,7 +23,7 @@ void mmu_notifier_release(struct mm_stru
+ 					  &mm->mmu_notifier.head, hlist) {
+ 			if (mn->ops->release)
+ 				mn->ops->release(mn, mm);
+-			hlist_del(&mn->hlist);
++			hlist_del_rcu(&mn->hlist);
+ 		}
+ 		rcu_read_unlock();
+ 		synchronize_rcu();
+
