@@ -1,61 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762062AbYA1VRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762401AbYA1VRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762062AbYA1VRe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 16:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbYA1VR0
+	id S1762401AbYA1VRt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 16:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbYA1VR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 16:17:26 -0500
-Received: from yorgi.telenet-ops.be ([195.130.133.69]:35120 "EHLO
-	yorgi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753486AbYA1VRZ (ORCPT
+	Mon, 28 Jan 2008 16:17:27 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:63976 "EHLO
+	outbound3-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750707AbYA1VR0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 16:17:25 -0500
-Subject: Udev coldplugging loads 8139too driver instead of 8139cp
-From: Frederik Himpe <fhimpe@telenet.be>
-To: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 28 Jan 2008 22:16:32 +0100
-Message-Id: <1201554992.13883.13.camel@Anastacia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5-1mdv2008.1 
+	Mon, 28 Jan 2008 16:17:26 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <479E459D.5080407@am.sony.com>
+Date: Mon, 28 Jan 2008 13:14:05 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070926)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: a.p.zijlstra@chello.nl, rostedt@goodmis.org, dwalker@mvista.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       torvalds@linux-foundation.org, hch@infradead.org,
+       mathieu.desnoyers@polymtl.ca, ghaskins@novell.com,
+       acme@ghostprotocols.net, tglx@linutronix.de, sam@ravnborg.org,
+       fche@redhat.com, jan.kiszka@siemens.com, johnstul@us.ibm.com,
+       arjan@infradead.org, srostedt@redhat.com
+Subject: Re: [PATCH] defer printks in irqs
+References: <20080123160236.969334052@goodmis.org>	<20080123160441.236562634@goodmis.org>	<1201107978.13596.16.camel@imap.mvista.com>	<Pine.LNX.4.58.0801231213430.12932@gandalf.stny.rr.com>	<1201110185.13596.22.camel@imap.mvista.com>	<Pine.LNX.4.58.0801231315500.6127@gandalf.stny.rr.com>	<47991454.50603@am.sony.com>	<1201214935.6341.105.camel@lappy>	<47991DD7.9070009@am.sony.com> <20080126220151.784893b1.akpm@linux-foundation.org>
+In-Reply-To: <20080126220151.784893b1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jan 2008 21:16:01.0825 (UTC) FILETIME=[FC056110:01C861F2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux 2.6.24 kernel gives the following messages when udev coldplugging
-loads the driver for my NIC:
+Andrew Morton wrote:
+>> On Thu, 24 Jan 2008 15:23:03 -0800 Tim Bird <tim.bird@am.sony.com> wrote:
+>> Peter Zijlstra wrote:
+>>> I suspect these features reduce the chance a crash messages makes it out
+>>> onto the console, but fail to spot any of the copious text mention this
+>>> critical issue.
+>> Anything not in interrupts would not be deferred.
+>> The following code is meant to avoid deferring in oops as well.
+>> I'm not sure if that covers all crash cases or not.
+>> If you know of other cases, and ways to detect them, please advise.
+>>
+> 
+> Yes, using oops_in_progress seems an appropriate fix for that.
+> 
+> I assume that another downside is that printk-from-interrupt will now get
+> jumbled up with an interrupted pritk-from-non-interrupt.
 
-8139too 0000:00:0b.0: This (id 10ec:8139 rev 20) is an enhanced 8139C+ chip
-8139too 0000:00:0b.0: Use the "8139cp" driver for improved performance and stability.
-ACPI: PCI Interrupt Link [LNK1] enabled at IRQ 10
-ACPI: PCI Interrupt 0000:00:0b.0[A] -> Link [LNK1] -> GSI 10 (level, low) -> IRQ 10
-8139too 0000:00:0b.0: unknown chip version, assuming RTL-8139
-8139too 0000:00:0b.0: TxConfig = 0x74800000
-eth1: RealTek RTL8139 at 0xcee8e800, 00:08:02:d8:d5:b9, IRQ 10
-eth1:  Identified 8139 chip type 'RTL-8139'
-ACPI: PCI Interrupt Link [LNK3] enabled at IRQ 11
-PCI: setting IRQ 11 as level-triggered
-ACPI: PCI Interrupt 0000:00:13.2[C] -> Link [LNK3] -> GSI 11 (level, low) -> IRQ 11
+No.  The order of printk messages (whether printk'ed
+from interrupt context or not) should not be affected.
+This patch should only affect the timing of when the
+messages are output to console.
 
-Output of lspci -vvvn:
-00:0b.0 0200: 10ec:8139 (rev 20)
-	Subsystem: 0e11:0056
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 64 (8000ns min, 16000ns max), Cache Line Size: 32 bytes
-	Interrupt: pin A routed to IRQ 10
-	Region 0: I/O ports at 9000 [size=256]
-	Region 1: Memory at f0018800 (32-bit, non-prefetchable) [size=256]
-	Capabilities: [50] Power Management version 2
-		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0-,D1+,D2+,D3hot+,D3cold+)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Kernel driver in use: 8139too
-	Kernel modules: 8139cp, 8139too
+Note that an oops will flush any buffered messages
+ahead of the oops messages themselves.
 
-Why does not udev coldpluggin first try to load 8139cp instead of
-8139too?
+Some messages, not in oops, that were printk'ed in
+interrupt context, may still be in the log buffer
+but not have made it to console if the machine hangs
+hard.  Because of this (IMO slight) downgrade in
+debugging utility, I chose to make the changes
+configurable.
 
--- 
-Frederik Himpe <fhimpe@telenet.be>
+> Please use checkpatch.
+
+Will do from now on!  Thanks!
+  -- Tim
+
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
