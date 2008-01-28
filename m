@@ -1,107 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759156AbYA1JML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759842AbYA1JMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759156AbYA1JML (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 04:12:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYA1JLy
+	id S1759842AbYA1JMd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 04:12:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759490AbYA1JMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 04:11:54 -0500
-Received: from kunder.interhost.no ([80.239.54.98]:59040 "EHLO
-	kunder.interhost.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758357AbYA1JLu (ORCPT
+	Mon, 28 Jan 2008 04:12:15 -0500
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:56743 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759381AbYA1JMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 04:11:50 -0500
-Message-ID: <479D9C78.50202@sannes.org>
-Date: Mon, 28 Jan 2008 10:12:24 +0100
-From: =?ISO-8859-1?Q?Asbj=F8rn_Sannes?= <ace@sannes.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071217)
+	Mon, 28 Jan 2008 04:12:12 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Jan 2008 04:12:12 EST
+Date: Mon, 28 Jan 2008 01:05:30 -0800 (PST)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Adrian Bunk <bunk@kernel.org>
+cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Hans Verkuil <hverkuil@xs4all.nl>, v4l-dvb-maintainer@linuxtv.org,
+       Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [v4l-dvb-maintainer] 2.6.25 regression: VIDEO_DEV=y/m,	I2C=n
+ compile error
+In-Reply-To: <20080128084001.GB1001@does.not.exist>
+Message-ID: <Pine.LNX.4.58.0801280053010.15635@shell4.speakeasy.net>
+References: <20080127185216.GB13300@does.not.exist> <20080127223334.696fce6e@gaivota>
+ <20080128084001.GB1001@does.not.exist>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Unpredictable performance
-References: <4799C8E8.9060501@ifi.uio.no> <4799F2D7.5060504@sannes.org> <4799FA3C.6040700@sannes.org> <200801261138.30963.nickpiggin@yahoo.com.au>
-In-Reply-To: <200801261138.30963.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Saturday 26 January 2008 02:03, Asbjørn Sannes wrote:
->   
->> Asbjørn Sannes wrote:
->>     
->>> Nick Piggin wrote:
->>>       
->>>> On Friday 25 January 2008 22:32, Asbjorn Sannes wrote:
->>>>         
->>>>> Hi,
->>>>>
->>>>> I am experiencing unpredictable results with the following test
->>>>> without other processes running (exception is udev, I believe):
->>>>> cd /usr/src/test
->>>>> tar -jxf ../linux-2.6.22.12
->>>>> cp ../working-config linux-2.6.22.12/.config
->>>>> cd linux-2.6.22.12
->>>>> make oldconfig
->>>>> time make -j3 > /dev/null # This is what I note down as a "test" result
->>>>> cd /usr/src ; umount /usr/src/test ; mkfs.ext3 /dev/cc/test
->>>>> and then reboot
->>>>>
->>>>> The kernel is booted with the parameter mem=81920000
->>>>>
->>>>> For 2.6.23.14 the results vary from (real time) 33m30.551s to
->>>>> 45m32.703s (30 runs)
->>>>> For 2.6.23.14 with nop i/o scheduler from 29m8.827s to 55m36.744s (24
->>>>> runs) For 2.6.22.14 also varied a lot.. but, lost results :(
->>>>> For 2.6.20.21 only vary from 34m32.054s to 38m1.928s (10 runs)
->>>>>
->>>>> Any idea of what can cause this? I have tried to make the runs as equal
->>>>> as possible, rebooting between each run.. i/o scheduler is cfq as
->>>>> default.
->>>>>
->>>>> sys and user time only varies a couple of seconds.. and the order of
->>>>> when it is "fast" and when it is "slow" is completly random, but it
->>>>> seems that the results are mostly concentrated around the mean.
->>>>>           
->>>> Hmm, lots of things could cause it. With such big variations in
->>>> elapsed time, and small variations on CPU time, I guess the fs/IO
->>>> layers are the prime suspects, although it could also involve the
->>>> VM if you are doing a fair amount of page reclaim.
->>>>
->>>> Can you boot with enough memory such that it never enters page
->>>> reclaim? `grep scan /proc/vmstat` to check.
->>>>
->>>> Otherwise you could mount the working directory as tmpfs to
->>>> eliminate IO.
->>>>
->>>> bisecting it down to a single patch would be really helpful if you
->>>> can spare the time.
->>>>         
->>> I'm going to run some tests without limiting the memory to 80 megabytes
->>> (so that it is 2 gigabyte) and see how much it varies then, but iff I
->>> recall correctly it did not vary much. I'll reply to this e-mail with
->>> the results.
->>>       
->> 5 runs gives me:
->> real    5m58.626s
->> real    5m57.280s
->> real    5m56.584s
->> real    5m57.565s
->> real    5m56.613s
->>
->> Should I test with tmpfs aswell?
->>     
+On Mon, 28 Jan 2008, Adrian Bunk wrote:
+> On Sun, Jan 27, 2008 at 10:33:34PM -0200, Mauro Carvalho Chehab wrote:
+> > On Sun, 27 Jan 2008 20:52:16 +0200
+> > Adrian Bunk <bunk@kernel.org> wrote:
+> >
+> > > Commit 8ffbc6559493c64d6194c92d856196fdaeb8a5fb causes the following
+> > > compile error with CONFIG_VIDEO_DEV=y/m, CONFIG_I2C=n:
+> > >
+> > > ERROR: "i2c_attach_client" [drivers/media/video/v4l2-common.ko] undefined!
+
+> > Thanks for getting this regression. Please test the enclosed patch.
 >
-> I wouldn't worry about it. It seems like it might be due to page reclaim
-> (fs / IO can't be ruled out completely though). Hmm, I haven't been following
-> reclaim so closely lately; you say it started going bad around 2.6.22? It
-> may be lumpy reclaim patches?
->   
-Going to bisect it soon, but I suspect it will take some time
-(considering how many runs I need to make any sense of the results).
+> It doesn't enable the code if CONFIG_VIDEO_DEV=m, CONFIG_I2C=m.
+>
+> And what should happen if CONFIG_VIDEO_DEV=y, CONFIG_I2C=m?
+>
+> If the latter should offer this code to modules we'll have to put it
+> into an own module.
 
---
-Asbjorn Sannes
+Adrian beat me to it, but I was going to point out the same thing.  Also
+only the function v4l2_i2c_attach() is a problem.  The other functions,
+like v4l2_chip_match_i2c_client(), which the patch put inside an #ifdef
+don't use any i2c symbols and don't need to be protected.
+v4l2_chip_match_host() could even easily be used by a driver that doesn't
+need I2C.
 
+Maybe the kernel headers should provide a couple macros for testing
+configs, since people get it wrong over and over again?
+
+#define CONFIG_ON(x) (defined(CONFIG_##x) || defined(CONFIG_##x##_MODULE))
+#define CONFIG_AVAIABLE(x) (defined(CONFIG_##x) || (defined(MODULE) && defined(CONFIG_##x##_MODULE)))
+
+Would save typing too.
+
+Not sure what to do about VIDEO_DEV=y, I2C=m.  It should be possible except
+for this function.
+
+> > diff -r b0815101889d linux/drivers/media/video/v4l2-common.c
+> > --- a/linux/drivers/media/video/v4l2-common.c	Sun Jan 27 20:39:00 2008
+> > -0200 +++ b/linux/drivers/media/video/v4l2-common.c	Sun Jan 27 22:23:25
+> > 2008 -0200 @@ -1585,6 +1585,7 @@ u32 v4l2_ctrl_next(const u32 * const * c
+> >  	return **ctrl_classes;
+> >  }
+> >
+> > +#ifdef CONFIG_I2C
+> >  int v4l2_chip_match_i2c_client(struct i2c_client *c, u32 match_type, u32
+> > match_chip) {
+> >  	switch (match_type) {
+> > @@ -1596,6 +1597,7 @@ int v4l2_chip_match_i2c_client(struct i2
+> >  		return 0;
+> >  	}
+> >  }
+> > +EXPORT_SYMBOL(v4l2_chip_match_i2c_client);
+> >
+> >  int v4l2_chip_ident_i2c_client(struct i2c_client *c, struct v4l2_chip_ident
+> > *chip, u32 ident, u32 revision)
+> > @@ -1612,6 +1614,7 @@ int v4l2_chip_ident_i2c_client(struct i2
+> >  	}
+> >  	return 0;
+> >  }
+> > +EXPORT_SYMBOL(v4l2_chip_ident_i2c_client);
+> >
+> >  int v4l2_chip_match_host(u32 match_type, u32 match_chip)
+> >  {
+> > @@ -1622,6 +1625,7 @@ int v4l2_chip_match_host(u32 match_type,
+> >  		return 0;
+> >  	}
+> >  }
+> > +EXPORT_SYMBOL(v4l2_chip_match_host);
+> >
+> >  /* ----------------------------------------------------------------- */
+> >
+> > @@ -1656,6 +1660,8 @@ int v4l2_i2c_attach(struct i2c_adapter *
+> >  	}
+> >  	return err != -ENOMEM ? 0 : err;
+> >  }
+> > +EXPORT_SYMBOL(v4l2_i2c_attach);
+> > +#endif
