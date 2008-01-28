@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763938AbYA1XIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764013AbYA1XIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763938AbYA1XIX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:08:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763531AbYA1XHi
+	id S1764013AbYA1XIy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 18:08:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763605AbYA1XHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:07:38 -0500
+	Mon, 28 Jan 2008 18:07:45 -0500
 Received: from fg-out-1718.google.com ([72.14.220.152]:30734 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763486AbYA1XHf (ORCPT
+	with ESMTP id S1763296AbYA1XHm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:07:35 -0500
+	Mon, 28 Jan 2008 18:07:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=nc9+uQhe+4YYVnrhWJj9pOY+XVPlXPgNFX0dsfp7CT/494H/VRcxW4BQMrThB49wuNUUWg/tGBFa1r8CI3eMW4YXT8NxXktoCAgddNwERd1+Uo/Dhpax9dfBkiw7YOoYR2znXPauCbUyPTiz1SeJd0oZ1N2y+hU3hNhuX/yEj/8=
-Date: Tue, 29 Jan 2008 00:07:31 +0100
+        b=YoUYoZd+kIWlvLlVlJRmY448OTBcWozYgIVtCyVa6Ar3YwIaNv4/1tJk3To3QlhWgQKSWPxId8ij9IT1gFi1UCI0R6Wg1RucZB8oGa6RwvDTzcpf/XAZIfCwnDjLSN50OsBTbCk/TQDiSAE+4BWyaqaKyPv9XoZZV1bTmol5H3U=
+Date: Tue, 29 Jan 2008 00:07:37 +0100
 From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/7] X86: Remove dead code
-Message-ID: <20080129000731.3258f58f@paolo-desktop>
+Subject: [PATCH 2/7] X86: Clean up comments
+Message-ID: <20080129000737.03057806@paolo-desktop>
 X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,61 +27,168 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove dead code 
+Clean up comments
 
 Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 ---
- arch/x86/math-emu/errors.c |   37 -------------------------------------
- 1 files changed, 0 insertions(+), 37 deletions(-)
+ arch/x86/math-emu/errors.c |  144 ++++++++++++++++++++++----------------------
+ 1 files changed, 72 insertions(+), 72 deletions(-)
 
 diff --git a/arch/x86/math-emu/errors.c b/arch/x86/math-emu/errors.c
-index a1b0d22..ece95cd 100644
+index ece95cd..7f96db4 100644
 --- a/arch/x86/math-emu/errors.c
 +++ b/arch/x86/math-emu/errors.c
-@@ -34,43 +34,6 @@
- /* */
+@@ -182,78 +182,78 @@ static struct {
+  error was detected.
  
+  Internal error types:
+-       0x14   in fpu_etc.c
+-       0x1nn  in a *.c file:
+-              0x101  in reg_add_sub.c
+-              0x102  in reg_mul.c
+-              0x104  in poly_atan.c
+-              0x105  in reg_mul.c
+-              0x107  in fpu_trig.c
+-	      0x108  in reg_compare.c
+-	      0x109  in reg_compare.c
+-	      0x110  in reg_add_sub.c
+-	      0x111  in fpe_entry.c
+-	      0x112  in fpu_trig.c
+-	      0x113  in errors.c
+-	      0x115  in fpu_trig.c
+-	      0x116  in fpu_trig.c
+-	      0x117  in fpu_trig.c
+-	      0x118  in fpu_trig.c
+-	      0x119  in fpu_trig.c
+-	      0x120  in poly_atan.c
+-	      0x121  in reg_compare.c
+-	      0x122  in reg_compare.c
+-	      0x123  in reg_compare.c
+-	      0x125  in fpu_trig.c
+-	      0x126  in fpu_entry.c
+-	      0x127  in poly_2xm1.c
+-	      0x128  in fpu_entry.c
+-	      0x129  in fpu_entry.c
+-	      0x130  in get_address.c
+-	      0x131  in get_address.c
+-	      0x132  in get_address.c
+-	      0x133  in get_address.c
+-	      0x140  in load_store.c
+-	      0x141  in load_store.c
+-              0x150  in poly_sin.c
+-              0x151  in poly_sin.c
+-	      0x160  in reg_ld_str.c
+-	      0x161  in reg_ld_str.c
+-	      0x162  in reg_ld_str.c
+-	      0x163  in reg_ld_str.c
+-	      0x164  in reg_ld_str.c
+-	      0x170  in fpu_tags.c
+-	      0x171  in fpu_tags.c
+-	      0x172  in fpu_tags.c
+-	      0x180  in reg_convert.c
+-       0x2nn  in an *.S file:
+-              0x201  in reg_u_add.S
+-              0x202  in reg_u_div.S
+-              0x203  in reg_u_div.S
+-              0x204  in reg_u_div.S
+-              0x205  in reg_u_mul.S
+-              0x206  in reg_u_sub.S
+-              0x207  in wm_sqrt.S
+-	      0x208  in reg_div.S
+-              0x209  in reg_u_sub.S
+-              0x210  in reg_u_sub.S
+-              0x211  in reg_u_sub.S
+-              0x212  in reg_u_sub.S
+-	      0x213  in wm_sqrt.S
+-	      0x214  in wm_sqrt.S
+-	      0x215  in wm_sqrt.S
+-	      0x220  in reg_norm.S
+-	      0x221  in reg_norm.S
+-	      0x230  in reg_round.S
+-	      0x231  in reg_round.S
+-	      0x232  in reg_round.S
+-	      0x233  in reg_round.S
+-	      0x234  in reg_round.S
+-	      0x235  in reg_round.S
+-	      0x236  in reg_round.S
+-	      0x240  in div_Xsig.S
+-	      0x241  in div_Xsig.S
+-	      0x242  in div_Xsig.S
++	0x14   in fpu_etc.c
++	0x1nn  in a *.c file:
++	0x101  in reg_add_sub.c
++	0x102  in reg_mul.c
++	0x104  in poly_atan.c
++	0x105  in reg_mul.c
++	0x107  in fpu_trig.c
++	0x108  in reg_compare.c
++	0x109  in reg_compare.c
++	0x110  in reg_add_sub.c
++	0x111  in fpe_entry.c
++	0x112  in fpu_trig.c
++	0x113  in errors.c
++	0x115  in fpu_trig.c
++	0x116  in fpu_trig.c
++	0x117  in fpu_trig.c
++	0x118  in fpu_trig.c
++	0x119  in fpu_trig.c
++	0x120  in poly_atan.c
++	0x121  in reg_compare.c
++	0x122  in reg_compare.c
++	0x123  in reg_compare.c
++	0x125  in fpu_trig.c
++	0x126  in fpu_entry.c
++	0x127  in poly_2xm1.c
++	0x128  in fpu_entry.c
++	0x129  in fpu_entry.c
++	0x130  in get_address.c
++	0x131  in get_address.c
++	0x132  in get_address.c
++	0x133  in get_address.c
++	0x140  in load_store.c
++	0x141  in load_store.c
++	0x150  in poly_sin.c
++	0x151  in poly_sin.c
++	0x160  in reg_ld_str.c
++	0x161  in reg_ld_str.c
++	0x162  in reg_ld_str.c
++	0x163  in reg_ld_str.c
++	0x164  in reg_ld_str.c
++	0x170  in fpu_tags.c
++	0x171  in fpu_tags.c
++	0x172  in fpu_tags.c
++	0x180  in reg_convert.c
++	0x2nn  in an *.S file:
++	0x201  in reg_u_add.S
++	0x202  in reg_u_div.S
++	0x203  in reg_u_div.S
++	0x204  in reg_u_div.S
++	0x205  in reg_u_mul.S
++	0x206  in reg_u_sub.S
++	0x207  in wm_sqrt.S
++	0x208  in reg_div.S
++	0x209  in reg_u_sub.S
++	0x210  in reg_u_sub.S
++	0x211  in reg_u_sub.S
++	0x212  in reg_u_sub.S
++	0x213  in wm_sqrt.S
++	0x214  in wm_sqrt.S
++	0x215  in wm_sqrt.S
++	0x220  in reg_norm.S
++	0x221  in reg_norm.S
++	0x230  in reg_round.S
++	0x231  in reg_round.S
++	0x232  in reg_round.S
++	0x233  in reg_round.S
++	0x234  in reg_round.S
++	0x235  in reg_round.S
++	0x236  in reg_round.S
++	0x240  in div_Xsig.S
++	0x241  in div_Xsig.S
++	0x242  in div_Xsig.S
+  */
  
--#if 0
--void Un_impl(void)
--{
--  u_char byte1, FPU_modrm;
--  unsigned long address = FPU_ORIG_EIP;
--
--  RE_ENTRANT_CHECK_OFF;
--  /* No need to check access_ok(), we have previously fetched these bytes. */
--  printk("Unimplemented FPU Opcode at eip=%p : ", (void __user *) address);
--  if ( FPU_CS == __USER_CS )
--    {
--      while ( 1 )
--	{
--	  FPU_get_user(byte1, (u_char __user *) address);
--	  if ( (byte1 & 0xf8) == 0xd8 ) break;
--	  printk("[%02x]", byte1);
--	  address++;
--	}
--      printk("%02x ", byte1);
--      FPU_get_user(FPU_modrm, 1 + (u_char __user *) address);
--      
--      if (FPU_modrm >= 0300)
--	printk("%02x (%02x+%d)\n", FPU_modrm, FPU_modrm & 0xf8, FPU_modrm & 7);
--      else
--	printk("/%d\n", (FPU_modrm >> 3) & 7);
--    }
--  else
--    {
--      printk("cs selector = %04x\n", FPU_CS);
--    }
--
--  RE_ENTRANT_CHECK_ON;
--
--  EXCEPTION(EX_Invalid);
--
--}
--#endif  /*  0  */
- 
- 
- /*
+ asmlinkage void FPU_exception(int n)
 -- 
 1.5.4.rc3
 
