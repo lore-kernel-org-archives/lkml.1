@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763859AbYA2AHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762842AbYA2AHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763859AbYA2AHH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 19:07:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbYA2AGu
+	id S1762842AbYA2AHk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 19:07:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbYA2AGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 19:06:50 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:26213 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbYA2AGs (ORCPT
+	Mon, 28 Jan 2008 19:06:53 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:54815 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755364AbYA2AGt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 19:06:48 -0500
-Date: Mon, 28 Jan 2008 18:08:44 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: DMA mapping on SCSI device?
-To: linux-arch@vger.kernel.org, ide <linux-ide@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Message-id: <479E6E8C.2090501@shaw.ca>
+	Mon, 28 Jan 2008 19:06:49 -0500
+Date: Mon, 28 Jan 2008 19:06:44 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Problem with ata layer in 2.6.24
+In-reply-to: <479E3E7A.7000308@rtr.ca>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Mikael Pettersson <mikpe@it.uu.se>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Message-id: <200801281906.44892.gene.heskett@gmail.com>
+Organization: Organization? very little
 MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
+Content-type: text/plain; charset=utf-8
 Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+Content-disposition: inline
+References: <200801272122.21823.gene.heskett@gmail.com>
+ <200801281359.24050.gene.heskett@gmail.com> <479E3E7A.7000308@rtr.ca>
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We've got a bit of a problem with the sata_nv driver that I'm trying to 
-figure out a decent solution to (hence all the lists CCed). This is the 
-situation:
+On Monday 28 January 2008, Mark Lord wrote:
+>Gene Heskett wrote:
+>> On Monday 28 January 2008, Mark Lord wrote:
+>>..
+>>
+>>> Another way is to use the "make_bad_sector" utility that
+>>> is included in the source tarball for hdparm-7.7, as follows:
+>>>
+>>>   make_bad_sector --readback /dev/sda 474507
+>>
+>> Apparently not in the rpm, darnit.
+>
+>..
+>
+>That's okay.  It should still be in the SRPM source file.
+>And it's a tiny download from sourceforge.net:
+>
+>http://sourceforge.net/search/?type_of_search=soft&type_of_search=soft&words
+>=hdparm
+>
+>Cheers
 
-The nForce4 ADMA hardware has 2 modes: legacy mode, where it acts like a 
-normal ATA controller with 32-bit DMA limits, and ADMA mode where it can 
-access all of 64-bit memory. Each PCI device has 2 SATA ports, and the 
-legacy/ADMA mode can be controlled independently on both of them.
+That's ok, dd seemed to do the job also.
 
-The trick is that if an ATAPI device is connected, we (as far as I'm 
-aware) can't use ADMA mode, so we have to switch that port into legacy 
-mode. This means it's only capable of 32-bit DMA. However the other port 
-on the controller may be connected to a hard drive and therefore still 
-capable of 64-bit DMA. (To make things more complicated, devices can be 
-hotplugged and so this can change dynamically.) Since the device that 
-libata is doing DMA mapping against is attached to the PCI device and 
-not the port, it creates a problem here. If we change the mask on one it 
-affects the other one as well.
+Thanks Mark.
 
-The original solution used by the driver was to leave the DMA mask at 
-64-bit and use blk_queue_bounce_limit to try to force the block layer 
-not to send any requests with DMA addresses over 4GB into the driver. 
-However it seems on x86_64 this doesn't work, since it pushes high 
-addresses through anyway and expects the IOMMU to take care of it (which 
-it doesn't because of the 64-bit mask).
-
-The last solution I tried was to set the DMA mask on both ports to 
-32-bit on slave_configure when an ATAPI device is connected. However, 
-this runs into complications as well. This is run on initialization and 
-when trying to set the other port into 32-bit DMA, it may not be 
-initialized yet. Plus, it forces the port with a hard drive on it into 
-32-bit DMA needlessly.
-
-The ideal solution would be to do mapping against a different struct 
-device for each port, so that we could maintain the proper DMA mask for 
-each of them at all times. However I'm not sure if that's possible. The 
-thought of using the SCSI struct device for DMA mapping was brought up 
-at one point.. any thoughts on that?
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Those who do not understand Unix are condemned to reinvent it, poorly.
+		-- Henry Spencer
