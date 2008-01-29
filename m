@@ -1,63 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbYA2Qv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765348AbYA2QyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932832AbYA2Qv1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760770AbYA2QvK
+	id S1765348AbYA2QyQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:54:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbYA2Qx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:51:10 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:50427 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760441AbYA2QvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:51:08 -0500
-Date: Tue, 29 Jan 2008 10:51:04 -0600
-From: Paul Jackson <pj@sgi.com>
-To: "Gregory Haskins" <ghaskins@novell.com>
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, dmitry.adamushko@gmail.com,
-       rostedt@goodmis.org, menage@google.com, rientjes@google.com,
-       tong.n.li@intel.com, tglx@linutronix.de, akpm@linux-foundation.org,
-       dhaval@linux.vnet.ibm.com, vatsa@linux.vnet.ibm.com, sgrubb@redhat.com,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       nickpiggin@yahoo.com.au
-Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
-Message-Id: <20080129105104.d70f36ef.pj@sgi.com>
-In-Reply-To: <479F0507.BA47.005A.0@novell.com>
-References: <1201600428.28547.87.camel@lappy>
-	<1201604243.28547.101.camel@lappy>
-	<20080129053005.bc7a11d7.pj@sgi.com>
-	<1201607401.28547.124.camel@lappy>
-	<479F0507.BA47.005A.0@novell.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Jan 2008 11:53:58 -0500
+Received: from ns.gsystems.sk ([62.176.172.50]:36262 "EHLO www.gsystems.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754519AbYA2Qx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 11:53:56 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Subject: Re: Udev coldplugging loads 8139too driver instead of 8139cp
+Date: Tue, 29 Jan 2008 17:53:16 +0100
+User-Agent: KMail/1.9.7
+Cc: Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <1201554992.13883.13.camel@Anastacia> <20080128170830.6f67fa5a@deepthought> <479F0369.3080309@msgid.tls.msk.ru>
+In-Reply-To: <479F0369.3080309@msgid.tls.msk.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801291753.18578.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory wrote:
-> This is correct.  We have the balance policy polymorphically associated
-> with each sched_class, and the CFS load-balancer and RT "load" (really,
-> priority) balancer can coexist together at the same time and across
-> arbitrary #s of cores
+On Tuesday 29 January 2008 11:43:53 Michael Tokarev wrote:
+> Stephen Hemminger wrote:
+> > On Tue, 29 Jan 2008 03:46:08 +0300
+> > Michael Tokarev <mjt@tls.msk.ru> wrote:
+>
+> []
+>
+> >> There are 2 drivers for 8139-based NICs.  For really different two kinds
+> >> of hardware, which both uses the same PCI identifiers.  Both drivers
+> >> "claims" to work with all NICs with those PCI ids, because "externally"
+> >> (by means of udev for example) it's impossible to distinguish the two
+> >> kinds of hardware, it becomes clean only when the driver (either of the
+> >> two) loads and actually checks which hardware we have here.
+> >
+> > Is there any chance of using subdevice or subversion to tell them apart?
+> > That worked for other vendors like DLINK who slapped same ID on different
+> > cards.
+>
+> If it were that simple... ;)
+>
+> No.  The difference is in PCI revision number (byte #8 in PCI config
+> space). If it's >= 0x40 - it's 8139too, < 0x40 - 8139cp.  Or 0x20 - I
+> forgot.
 
-So ... we have the option of having all sched_classes coexist polymorphically.
+Perhaps a module could be created that will claim this device ID and then use 
+the correct driver.
 
-That I didn't realize until this thread.
+> Here's a code snippet from a shell script I used ages ago to automatically
+> load modules (similar to what udev does nowadays):
+>
+>   # special hack for 8139{too,cp} stuff
+>   case "$modalias" in
+>   *v000010ECd00008139*)
+>     rev="$(dd if="$1/config" bs=1 skip=8 count=1 2>/dev/null)"
+>     if [ -n "$rev" ]; then
+>       list=
+>       for module in $modlist; do
+>         case "$module" in
+>         8139cp)
+>           if [ ".$rev" \< ". " ]; then
+>             $vecho1 "$TAG: not loading $module for this device"
+>             continue
+>           fi
+>           ;;
+>         8139too)
+>           if [ ".$rev" \> ". " ]; then
+>             $vecho1 "$TAG: not loading $module for this device"
+>             continue
+>           fi
+>           ;;
+>         esac
+>         list="$list $module"
+>       done
+>       modlist="$list"
+>     fi
+>     ;;
+>   esac
+>
+> /mjt
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Now ... do we -want- to ?)
 
-That is, what is the easiest kernel-user API to work with and understand?
-
-Is it one where we essentially expose sched_class to user space, and let
-them pick their sched_class, or pick none of the above (don't balance)?
-
-Or is it one where, other than the special case my batch schedulers need
-to not balance at all, we expose nothing more to user space, and provide
-all sched_class load balancers to all sched_domains (other than those
-not balanced at all)?
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Ondrej Zary
