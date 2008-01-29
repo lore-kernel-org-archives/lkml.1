@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933558AbYA2SMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933729AbYA2SM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933558AbYA2SMc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 13:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbYA2SKc
+	id S933729AbYA2SM6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 13:12:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758048AbYA2SKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 13:10:32 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:58702 "EHLO relay.atmel.no"
+	Tue, 29 Jan 2008 13:10:34 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:50259 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753747AbYA2SKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754675AbYA2SKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 Jan 2008 13:10:21 -0500
 From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 To: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org
@@ -18,1557 +18,1563 @@ Cc: Shannon Nelson <shannon.nelson@intel.com>,
        "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
        Pierre Ossman <drzeus-list@drzeus.cx>,
        Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [RFC v2 4/5] dmaengine: Driver for the Synopsys DesignWare DMA controller
-Date: Tue, 29 Jan 2008 19:10:12 +0100
-Message-Id: <1201630213-31900-5-git-send-email-hskinnemoen@atmel.com>
+Subject: [RFC v2 5/5] Atmel MCI: Driver for Atmel on-chip MMC controllers
+Date: Tue, 29 Jan 2008 19:10:13 +0100
+Message-Id: <1201630213-31900-6-git-send-email-hskinnemoen@atmel.com>
 X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <1201630213-31900-4-git-send-email-hskinnemoen@atmel.com>
+In-Reply-To: <1201630213-31900-5-git-send-email-hskinnemoen@atmel.com>
 References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
  <1201630213-31900-2-git-send-email-hskinnemoen@atmel.com>
  <1201630213-31900-3-git-send-email-hskinnemoen@atmel.com>
  <1201630213-31900-4-git-send-email-hskinnemoen@atmel.com>
+ <1201630213-31900-5-git-send-email-hskinnemoen@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a driver for the Synopsys DesignWare DMA controller (aka
-DMACA on AVR32 systems.) This DMA controller can be found integrated
-on the AT32AP7000 chip and is primarily meant for peripheral DMA
-transfer, but can also be used for memory-to-memory transfers.
+This is a driver for the MMC controller on the AP7000 chips from
+Atmel. It should in theory work on AT91 systems too with some
+tweaking, but since the DMA interface is quite different, it's not
+entirely clear if it's worth it.
 
-The dmatest client shows no problems, but the performance is not as
-good as it should be yet -- iperf shows a slight slowdown when
-enabling TCP receive copy offload. This is probably because the
-controller is set up to always do byte transfers; I'll try to optimize
-this, but if someone can tell me if there any guaranteed alignment
-requirements for the users of the DMA engine API, that would help a
-lot.
-
-This driver implements the new DMA_SLAVE capability and has been
-tested with the Atmel MMC driver posted later in this series.
-
-This patch is based on a driver from David Brownell which was based on
-an older version of the DMA Engine framework. It also implements the
-proposed extensions to the DMA Engine API for slave DMA operations.
+This driver has been around for a while in BSPs and kernel sources
+provided by Atmel, but this particular version uses the generic DMA
+Engine framework (with the slave extensions) instead of an
+avr32-only DMA controller framework.
 
 Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 ---
- arch/avr32/mach-at32ap/at32ap700x.c        |   29 +-
- drivers/dma/Kconfig                        |    9 +
- drivers/dma/Makefile                       |    1 +
- drivers/dma/dw_dmac.c                      | 1120 ++++++++++++++++++++++++++++
- drivers/dma/dw_dmac.h                      |  256 +++++++
- include/asm-avr32/arch-at32ap/at32ap700x.h |   16 +
- 6 files changed, 1418 insertions(+), 13 deletions(-)
- create mode 100644 drivers/dma/dw_dmac.c
- create mode 100644 drivers/dma/dw_dmac.h
+ arch/avr32/boards/atngw100/setup.c      |    6 +
+ arch/avr32/boards/atstk1000/atstk1002.c |    3 +
+ arch/avr32/mach-at32ap/at32ap700x.c     |   31 +-
+ drivers/mmc/host/Kconfig                |   10 +
+ drivers/mmc/host/Makefile               |    1 +
+ drivers/mmc/host/atmel-mci.c            | 1159 +++++++++++++++++++++++++++++++
+ drivers/mmc/host/atmel-mci.h            |  192 +++++
+ include/asm-avr32/arch-at32ap/board.h   |   10 +-
+ 8 files changed, 1406 insertions(+), 6 deletions(-)
+ create mode 100644 drivers/mmc/host/atmel-mci.c
+ create mode 100644 drivers/mmc/host/atmel-mci.h
 
-diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
-index 14e61f0..4f130a8 100644
---- a/arch/avr32/mach-at32ap/at32ap700x.c
-+++ b/arch/avr32/mach-at32ap/at32ap700x.c
-@@ -451,6 +451,20 @@ static void __init genclk_init_parent(struct clk *clk)
- 	clk->parent = parent;
- }
- 
-+/* REVISIT we may want a real struct for this driver's platform data,
-+ * but for now we'll only use it to pass the number of DMA channels
-+ * configured into this instance.  Also, most platform data here ought
-+ * to be declared as "const" (not just this) ...
-+ */
-+static unsigned dw_dmac0_data = 3;
-+
-+static struct resource dw_dmac0_resource[] = {
-+	PBMEM(0xff200000),
-+	IRQ(2),
-+};
-+DEFINE_DEV_DATA(dw_dmac, 0);
-+DEV_CLK(hclk, dw_dmac0, hsb, 10);
-+
- /* --------------------------------------------------------------------
-  *  System peripherals
-  * -------------------------------------------------------------------- */
-@@ -557,17 +571,6 @@ static struct clk pico_clk = {
- 	.users		= 1,
+diff --git a/arch/avr32/boards/atngw100/setup.c b/arch/avr32/boards/atngw100/setup.c
+index a398be2..c58f2cf 100644
+--- a/arch/avr32/boards/atngw100/setup.c
++++ b/arch/avr32/boards/atngw100/setup.c
+@@ -42,6 +42,11 @@ static struct spi_board_info spi0_board_info[] __initdata = {
+ 	},
  };
  
--static struct resource dmaca0_resource[] = {
--	{
--		.start	= 0xff200000,
--		.end	= 0xff20ffff,
--		.flags	= IORESOURCE_MEM,
--	},
--	IRQ(2),
--};
--DEFINE_DEV(dmaca, 0);
--DEV_CLK(hclk, dmaca0, hsb, 10);
--
- /* --------------------------------------------------------------------
-  * HMATRIX
-  * -------------------------------------------------------------------- */
-@@ -667,7 +670,7 @@ void __init at32_add_system_devices(void)
- 	platform_device_register(&at32_eic0_device);
- 	platform_device_register(&smc0_device);
- 	platform_device_register(&pdc_device);
--	platform_device_register(&dmaca0_device);
-+	platform_device_register(&dw_dmac0_device);
- 
- 	platform_device_register(&at32_systc0_device);
- 
-@@ -1634,7 +1637,7 @@ struct clk *at32_clock_list[] = {
- 	&smc0_mck,
- 	&pdc_hclk,
- 	&pdc_pclk,
--	&dmaca0_hclk,
-+	&dw_dmac0_hclk,
- 	&pico_clk,
- 	&pio0_mck,
- 	&pio1_mck,
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 1a727c1..76582db 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -37,6 +37,15 @@ config INTEL_IOP_ADMA
- 	help
- 	  Enable support for the Intel(R) IOP Series RAID engines.
- 
-+config DW_DMAC
-+	tristate "Synopsys DesignWare AHB DMA support"
-+	depends on AVR32
-+	select DMA_ENGINE
-+	default y if CPU_AT32AP7000
-+	help
-+	  Support the Synopsys DesignWare AHB DMA controller.  This
-+	  can be integrated in chips such as the Atmel AT32ap7000.
++static struct mci_platform_data __initdata mci0_data = {
++	.detect_pin	= GPIO_PIN_PC(25),
++	.wp_pin		= GPIO_PIN_PE(0),
++};
 +
- config DMA_ENGINE
- 	bool
+ /*
+  * The next two functions should go away as the boot loader is
+  * supposed to initialize the macb address registers with a valid
+@@ -157,6 +162,7 @@ static int __init atngw100_init(void)
+ 	set_hw_addr(at32_add_device_eth(1, &eth_data[1]));
  
-diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-index cecfb60..0f3b24f 100644
---- a/drivers/dma/Makefile
-+++ b/drivers/dma/Makefile
-@@ -1,6 +1,7 @@
- obj-$(CONFIG_DMA_ENGINE) += dmaengine.o
- obj-$(CONFIG_NET_DMA) += iovlock.o
- obj-$(CONFIG_INTEL_IOATDMA) += ioatdma.o
-+obj-$(CONFIG_DW_DMAC) += dw_dmac.o
- ioatdma-objs := ioat.o ioat_dma.o ioat_dca.o
- obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
- obj-$(CONFIG_DMATEST) += dmatest.o
-diff --git a/drivers/dma/dw_dmac.c b/drivers/dma/dw_dmac.c
+ 	at32_add_device_spi(0, spi0_board_info, ARRAY_SIZE(spi0_board_info));
++	at32_add_device_mci(0, &mci0_data);
+ 	at32_add_device_usba(0, NULL);
+ 
+ 	for (i = 0; i < ARRAY_SIZE(ngw_leds); i++) {
+diff --git a/arch/avr32/boards/atstk1000/atstk1002.c b/arch/avr32/boards/atstk1000/atstk1002.c
+index 000eb42..8b92cd6 100644
+--- a/arch/avr32/boards/atstk1000/atstk1002.c
++++ b/arch/avr32/boards/atstk1000/atstk1002.c
+@@ -228,6 +228,9 @@ static int __init atstk1002_init(void)
+ #ifdef CONFIG_BOARD_ATSTK100X_SPI1
+ 	at32_add_device_spi(1, spi1_board_info, ARRAY_SIZE(spi1_board_info));
+ #endif
++#ifndef CONFIG_BOARD_ATSTK1002_SW2_CUSTOM
++	at32_add_device_mci(0, NULL);
++#endif
+ #ifdef CONFIG_BOARD_ATSTK1002_SW5_CUSTOM
+ 	set_hw_addr(at32_add_device_eth(1, &eth_data[1]));
+ #else
+diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
+index 4f130a8..de0644b 100644
+--- a/arch/avr32/mach-at32ap/at32ap700x.c
++++ b/arch/avr32/mach-at32ap/at32ap700x.c
+@@ -1035,20 +1035,34 @@ static struct clk atmel_mci0_pclk = {
+ 	.index		= 9,
+ };
+ 
+-struct platform_device *__init at32_add_device_mci(unsigned int id)
++struct platform_device *__init
++at32_add_device_mci(unsigned int id, struct mci_platform_data *data)
+ {
+-	struct platform_device *pdev;
++	struct mci_platform_data	_data;
++	struct platform_device		*pdev;
+ 
+ 	if (id != 0)
+ 		return NULL;
+ 
+ 	pdev = platform_device_alloc("atmel_mci", id);
+ 	if (!pdev)
+-		return NULL;
++		goto fail;
+ 
+ 	if (platform_device_add_resources(pdev, atmel_mci0_resource,
+ 				ARRAY_SIZE(atmel_mci0_resource)))
+-		goto err_add_resources;
++		goto fail;
++
++	if (!data) {
++		data = &_data;
++		memset(data, 0, sizeof(struct mci_platform_data));
++	}
++
++	data->rx_periph_id = 0;
++	data->tx_periph_id = 1;
++
++	if (platform_device_add_data(pdev, data,
++				sizeof(struct mci_platform_data)))
++		goto fail;
+ 
+ 	select_peripheral(PA(10), PERIPH_A, 0);	/* CLK	 */
+ 	select_peripheral(PA(11), PERIPH_A, 0);	/* CMD	 */
+@@ -1057,12 +1071,19 @@ struct platform_device *__init at32_add_device_mci(unsigned int id)
+ 	select_peripheral(PA(14), PERIPH_A, 0);	/* DATA2 */
+ 	select_peripheral(PA(15), PERIPH_A, 0);	/* DATA3 */
+ 
++	if (data) {
++		if (data->detect_pin != GPIO_PIN_NONE)
++			at32_select_gpio(data->detect_pin, 0);
++		if (data->wp_pin != GPIO_PIN_NONE)
++			at32_select_gpio(data->wp_pin, 0);
++	}
++
+ 	atmel_mci0_pclk.dev = &pdev->dev;
+ 
+ 	platform_device_add(pdev);
+ 	return pdev;
+ 
+-err_add_resources:
++fail:
+ 	platform_device_put(pdev);
+ 	return NULL;
+ }
+diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+index 5fef678..daddca0 100644
+--- a/drivers/mmc/host/Kconfig
++++ b/drivers/mmc/host/Kconfig
+@@ -91,6 +91,16 @@ config MMC_AT91
+ 
+ 	  If unsure, say N.
+ 
++config MMC_ATMELMCI
++	tristate "Atmel Multimedia Card Interface support"
++	depends on AVR32 && DMA_ENGINE
++	help
++	  This selects the Atmel Multimedia Card Interface driver. If
++	  you have an AT32 (AVR32) platform with a Multimedia Card
++	  slot, say Y or M here.
++
++	  If unsure, say N.
++
+ config MMC_IMX
+ 	tristate "Motorola i.MX Multimedia Card Interface support"
+ 	depends on ARCH_IMX
+diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
+index 3877c87..e80ea72 100644
+--- a/drivers/mmc/host/Makefile
++++ b/drivers/mmc/host/Makefile
+@@ -15,6 +15,7 @@ obj-$(CONFIG_MMC_WBSD)		+= wbsd.o
+ obj-$(CONFIG_MMC_AU1X)		+= au1xmmc.o
+ obj-$(CONFIG_MMC_OMAP)		+= omap.o
+ obj-$(CONFIG_MMC_AT91)		+= at91_mci.o
++obj-$(CONFIG_MMC_ATMELMCI)	+= atmel-mci.o
+ obj-$(CONFIG_MMC_TIFM_SD)	+= tifm_sd.o
+ obj-$(CONFIG_MMC_SPI)		+= mmc_spi.o
+ 
+diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
 new file mode 100644
-index 0000000..d5defc4
+index 0000000..d484b91
 --- /dev/null
-+++ b/drivers/dma/dw_dmac.c
-@@ -0,0 +1,1120 @@
++++ b/drivers/mmc/host/atmel-mci.c
+@@ -0,0 +1,1159 @@
 +/*
-+ * Driver for the Synopsys DesignWare DMA Controller (aka DMACA on
-+ * AVR32 systems.)
++ * Atmel MultiMedia Card Interface driver
 + *
-+ * Copyright (C) 2007 Atmel Corporation
++ * Copyright (C) 2004-2007 Atmel Corporation
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + */
-+/* #define DEBUG
-+#define VERBOSE_DEBUG */
-+
++#include <linux/blkdev.h>
 +#include <linux/clk.h>
-+#include <linux/delay.h>
-+#include <linux/dmaengine.h>
++#include <linux/device.h>
 +#include <linux/dma-mapping.h>
++#include <linux/dmaengine.h>
 +#include <linux/init.h>
 +#include <linux/interrupt.h>
-+#include <linux/mm.h>
++#include <linux/ioport.h>
 +#include <linux/module.h>
 +#include <linux/platform_device.h>
 +
++#include <linux/mmc/host.h>
 +
-+/* NOTE:  DMS+SMS could be system-specific... */
-+#define DWC_DEFAULT_CTLLO	(DWC_CTLL_DST_MSIZE(0)		\
-+				| DWC_CTLL_SRC_MSIZE(0)		\
-+				| DWC_CTLL_DMS(0)		\
-+				| DWC_CTLL_SMS(1)		\
-+				| DWC_CTLL_LLP_D_EN		\
-+				| DWC_CTLL_LLP_S_EN)
++#include <asm/io.h>
++#include <asm/arch/board.h>
++#include <asm/arch/gpio.h>
 +
-+/*
-+ * This is configuration-dependent and is usually a funny size like
-+ * 4095. Let's round it down to the nearest power of two.
-+ */
-+#define DWC_MAX_LEN	2048
++#include "atmel-mci.h"
 +
-+/*
-+ * This supports the Synopsis "DesignWare AHB Central DMA Controller",
-+ * (DW_ahb_dmac) which is used with various AMBA 2.0 systems (not all
-+ * of which use ARM any more).  See the "Databook" from Synopsis for
-+ * information beyond what licensees probably provide.
-+ *
-+ * This "DMA Engine" framework is currently only a memcpy accelerator,
-+ * so the **PRIMARY FUNCTIONALITY** of this controller is not available:
-+ * hardware-synchronized DMA to/from external hardware or integrated
-+ * peripherals (such as an MMC/SD controller or audio interface).
-+ *
-+ * The driver has currently been tested only with the Atmel AT32AP7000,
-+ * which appears to be configured without writeback ... contrary to docs,
-+ * unless there's a bug in dma-coherent memory allocation.
-+ */
++#define DRIVER_NAME "atmel_mci"
 +
-+#define USE_DMA_POOL
-+#undef USE_FREELIST
++#define MCI_DATA_ERROR_FLAGS	(MCI_BIT(DCRCE) | MCI_BIT(DTOE) |	\
++				 MCI_BIT(OVRE) | MCI_BIT(UNRE))
 +
-+#ifdef USE_DMA_POOL
-+#include <linux/dmapool.h>
++enum {
++	EVENT_CMD_COMPLETE = 0,
++	EVENT_DATA_COMPLETE,
++	EVENT_DATA_ERROR,
++	EVENT_STOP_SENT,
++	EVENT_STOP_COMPLETE,
++	EVENT_DMA_COMPLETE,
++	EVENT_DMA_ERROR,
++	EVENT_CARD_DETECT,
++};
++
++struct atmel_mci_dma {
++	struct dma_client	client;
++	struct dma_slave	slave;
++	struct dma_chan		*chan;
++	struct list_head	data_descs;
++};
++
++struct atmel_mci {
++	struct mmc_host		*mmc;
++	void __iomem		*regs;
++	struct atmel_mci_dma	dma;
++
++	struct mmc_request	*mrq;
++	struct mmc_command	*cmd;
++	struct mmc_data		*data;
++
++	u32			cmd_status;
++	u32			data_status;
++	u32			stop_status;
++	u32			stop_cmdr;
++
++	struct tasklet_struct	tasklet;
++	unsigned long		pending_events;
++	unsigned long		completed_events;
++
++	int			present;
++	int			detect_pin;
++	int			wp_pin;
++
++	unsigned long		bus_hz;
++	unsigned long		mapbase;
++	struct clk		*mck;
++	struct platform_device	*pdev;
++
++#ifdef CONFIG_DEBUG_FS
++	struct dentry		*debugfs_root;
++	struct dentry		*debugfs_regs;
++	struct dentry		*debugfs_req;
++	struct dentry		*debugfs_pending_events;
++	struct dentry		*debugfs_completed_events;
++#endif
++};
++
++static inline struct atmel_mci *
++dma_client_to_atmel_mci(struct dma_client *client)
++{
++	return container_of(client, struct atmel_mci, dma.client);
++}
++
++/* Those printks take an awful lot of time... */
++#ifndef DEBUG
++static unsigned int fmax = 15000000U;
 +#else
-+#include <linux/slab.h>
++static unsigned int fmax = 1000000U;
 +#endif
++module_param(fmax, uint, 0444);
++MODULE_PARM_DESC(fmax, "Max frequency in Hz of the MMC bus clock");
 +
-+#include "dw_dmac.h"
++#define atmci_is_completed(host, event)				\
++	test_bit(event, &host->completed_events)
++#define atmci_test_and_clear_pending(host, event)		\
++	test_and_clear_bit(event, &host->pending_events)
++#define atmci_test_and_set_completed(host, event)		\
++	test_and_set_bit(event, &host->completed_events)
++#define atmci_set_completed(host, event)			\
++	set_bit(event, &host->completed_events)
++#define atmci_set_pending(host, event)				\
++	set_bit(event, &host->pending_events)
++#define atmci_clear_pending(host, event)			\
++	clear_bit(event, &host->pending_events)
 +
-+/*----------------------------------------------------------------------*/
 +
-+#define NR_DESCS_PER_CHANNEL	8
++#ifdef CONFIG_DEBUG_FS
++#include <linux/debugfs.h>
 +
-+/* Because we're not relying on writeback from the controller (it may not
-+ * even be configured into the core!) we don't need to use dma_pool.  These
-+ * descriptors -- and associated data -- are cacheable.  We do need to make
-+ * sure their dcache entries are written back before handing them off to
-+ * the controller, though.
-+ */
++#define DBG_REQ_BUF_SIZE	(4096 - sizeof(unsigned int))
 +
-+#ifdef USE_FREELIST
-+#define	FREECNT		10		/* for fastpath allocations */
-+#endif
++struct req_dbg_data {
++	unsigned int	nbytes;
++	char		str[DBG_REQ_BUF_SIZE];
++};
 +
-+static struct dw_lli *
-+dwc_lli_alloc(struct dw_dma_chan *dwc, gfp_t flags)
++static int req_dbg_open(struct inode *inode, struct file *file)
 +{
-+	struct dw_lli	*lli;
++	struct atmel_mci	*host;
++	struct mmc_request	*mrq;
++	struct mmc_command	*cmd;
++	struct mmc_command	*stop;
++	struct mmc_data		*data;
++	struct req_dbg_data	*priv;
++	char			*str;
++	unsigned long		n = 0;
 +
-+#ifdef USE_DMA_POOL
-+	dma_addr_t phys;
++	priv = kzalloc(DBG_REQ_BUF_SIZE, GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++	str = priv->str;
 +
-+	lli = dma_pool_alloc(dwc->lli_pool, flags, &phys);
-+	if (likely(lli))
-+		lli->phys = phys;
-+#else
-+	lli = kmem_cache_alloc(dwc->lli_pool, flags);
-+	if (unlikely(!lli))
-+		return NULL;
-+	lli->phys = dma_map_single(dwc->dev, lli,
-+			sizeof *lli, DMA_TO_DEVICE);
-+#endif
++	mutex_lock(&inode->i_mutex);
++	host = inode->i_private;
 +
-+	return lli;
-+}
-+
-+static inline void
-+dwc_lli_free(struct dw_dma_chan *dwc, struct dw_lli *lli)
-+{
-+#ifdef USE_DMA_POOL
-+	dma_pool_free(dwc->lli_pool, lli, lli->phys);
-+#else
-+	dma_unmap_single(dwc->dev, lli->phys, sizeof *lli, DMA_TO_DEVICE);
-+	kmem_cache_free(dwc->lli_pool, lli);
-+#endif
-+}
-+
-+static inline void
-+dwc_lli_sync_for_device(struct dw_dma_chan *dwc, struct dw_lli *lli)
-+{
-+#ifndef USE_DMA_POOL
-+	dma_sync_single_for_device(dwc->dev, lli->phys,
-+			sizeof(struct dw_lli), DMA_TO_DEVICE);
-+#endif
-+}
-+
-+static inline struct dw_lli *
-+dwc_lli_get(struct dw_dma_chan *dwc, gfp_t flags)
-+{
-+	struct dw_lli	*lli;
-+
-+#ifdef USE_FREELIST
-+	lli = dwc->free;
-+
-+	if (lli && FREECNT) {
-+		dwc->free = lli->next;
-+		dwc->freecnt--;
-+	} else
-+#endif
-+		lli = dwc_lli_alloc(dwc, flags);
-+
-+	return lli;
-+}
-+
-+static inline void
-+dwc_lli_put(struct dw_dma_chan *dwc, struct dw_lli *lli)
-+{
-+#ifdef USE_FREELIST
-+	if (dwc->freecnt < FREECNT) {
-+		lli->ctllo = lli->ctlhi = 0;
-+		lli->next = dwc->free;
-+		dwc->free = lli;
-+		dwc->freecnt++;
-+	} else
-+#endif
-+		dwc_lli_free(dwc, lli);
-+}
-+
-+static struct dw_desc *dwc_desc_get(struct dw_dma_chan *dwc)
-+{
-+	struct dw_desc *desc, *_desc;
-+	struct dw_desc *ret = NULL;
-+
-+	spin_lock_bh(&dwc->lock);
-+	list_for_each_entry_safe(desc, _desc, &dwc->free_list, desc_node) {
-+		if (desc->slave.txd.ack) {
-+			list_del(&desc->desc_node);
-+			desc->slave.txd.ack = 0;
-+			ret = desc;
-+			break;
-+		}
++	spin_lock_irq(&host->mmc->lock);
++	mrq = host->mrq;
++	if (mrq) {
++		cmd = mrq->cmd;
++		data = mrq->data;
++		stop = mrq->stop;
++		n = snprintf(str, DBG_REQ_BUF_SIZE,
++			     "CMD%u(0x%x) %x %x %x %x %x (err %u)\n",
++			     cmd->opcode, cmd->arg, cmd->flags,
++			     cmd->resp[0], cmd->resp[1], cmd->resp[2],
++			     cmd->resp[3], cmd->error);
++		if (n < DBG_REQ_BUF_SIZE && data)
++			n += snprintf(str + n, DBG_REQ_BUF_SIZE - n,
++				      "DATA %u * %u (%u) %x (err %u)\n",
++				      data->blocks, data->blksz,
++				      data->bytes_xfered, data->flags,
++				      data->error);
++		if (n < DBG_REQ_BUF_SIZE && stop)
++			n += snprintf(str + n, DBG_REQ_BUF_SIZE - n,
++				      "CMD%u(0x%x) %x %x %x %x %x (err %u)\n",
++				      stop->opcode, stop->arg, stop->flags,
++				      stop->resp[0], stop->resp[1],
++				      stop->resp[2], stop->resp[3],
++				      stop->error);
 +	}
-+	spin_unlock_bh(&dwc->lock);
++	spin_unlock_irq(&host->mmc->lock);
++	mutex_unlock(&inode->i_mutex);
++
++	priv->nbytes = min(n, DBG_REQ_BUF_SIZE);
++	file->private_data = priv;
++
++	return 0;
++}
++
++static ssize_t req_dbg_read(struct file *file, char __user *buf,
++			    size_t nbytes, loff_t *ppos)
++{
++	struct req_dbg_data *priv = file->private_data;
++
++	return simple_read_from_buffer(buf, nbytes, ppos,
++				       priv->str, priv->nbytes);
++}
++
++static int req_dbg_release(struct inode *inode, struct file *file)
++{
++	kfree(file->private_data);
++	return 0;
++}
++
++static const struct file_operations req_dbg_fops = {
++	.owner		= THIS_MODULE,
++	.open		= req_dbg_open,
++	.llseek		= no_llseek,
++	.read		= req_dbg_read,
++	.release	= req_dbg_release,
++};
++
++static int regs_dbg_open(struct inode *inode, struct file *file)
++{
++	struct atmel_mci	*host;
++	unsigned int		i;
++	u32			*data;
++	int			ret;
++
++	mutex_lock(&inode->i_mutex);
++	host = inode->i_private;
++	data = kmalloc(inode->i_size, GFP_KERNEL);
++	if (!data) {
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	spin_lock_irq(&host->mmc->lock);
++	for (i = 0; i < inode->i_size / 4; i++)
++		data[i] = __raw_readl(host->regs + i * 4);
++	spin_unlock_irq(&host->mmc->lock);
++
++	file->private_data = data;
++	ret = 0;
++
++out:
++	mutex_unlock(&inode->i_mutex);
 +
 +	return ret;
 +}
 +
-+static void dwc_desc_put(struct dw_dma_chan *dwc, struct dw_desc *desc)
++static ssize_t regs_dbg_read(struct file *file, char __user *buf,
++			     size_t nbytes, loff_t *ppos)
 +{
-+	spin_lock_bh(&dwc->lock);
-+	list_add_tail(&desc->desc_node, &dwc->free_list);
-+	spin_unlock_bh(&dwc->lock);
++	struct inode	*inode = file->f_dentry->d_inode;
++	int		ret;
++
++	mutex_lock(&inode->i_mutex);
++	ret = simple_read_from_buffer(buf, nbytes, ppos,
++				      file->private_data,
++				      file->f_dentry->d_inode->i_size);
++	mutex_unlock(&inode->i_mutex);
++
++	return ret;
 +}
 +
-+/* Called with dwc->lock held and bh disabled */
-+static dma_cookie_t
-+dwc_assign_cookie(struct dw_dma_chan *dwc, struct dw_desc *desc)
++static int regs_dbg_release(struct inode *inode, struct file *file)
 +{
-+	dma_cookie_t cookie = dwc->chan.cookie;
-+
-+	if (++cookie < 0)
-+		cookie = 1;
-+
-+	dwc->chan.cookie = cookie;
-+	desc->slave.txd.cookie = cookie;
-+
-+	return cookie;
++	kfree(file->private_data);
++	return 0;
 +}
 +
-+/*----------------------------------------------------------------------*/
++static const struct file_operations regs_dbg_fops = {
++	.owner		= THIS_MODULE,
++	.open		= regs_dbg_open,
++	.llseek		= generic_file_llseek,
++	.read		= regs_dbg_read,
++	.release	= regs_dbg_release,
++};
 +
-+/* Called with dwc->lock held and bh disabled */
-+static void dwc_dostart(struct dw_dma_chan *dwc, struct dw_lli *first)
++static void atmci_init_debugfs(struct atmel_mci *host)
 +{
-+	struct dw_dma	*dw = to_dw_dma(dwc->chan.device);
++	struct mmc_host	*mmc;
++	struct dentry	*root;
++	struct dentry	*regs;
++	struct resource	*res;
 +
-+	if (dma_readl(dw, CH_EN) & dwc->mask) {
-+		dev_err(&dwc->chan.dev,
-+			"BUG: Attempted to start non-idle channel\n");
-+		dev_err(&dwc->chan.dev, "  new: %p last_lli: %p\n",
-+			first, dwc->last_lli);
-+		dev_err(&dwc->chan.dev,
-+			"  first_queued: %p last_queued: %p\n",
-+			dwc->first_queued, dwc->last_queued);
-+		dev_err(&dwc->chan.dev,
-+			"  LLP: 0x%x CTL: 0x%x:%08x\n",
-+			channel_readl(dwc, LLP),
-+			channel_readl(dwc, CTL_HI),
-+			channel_readl(dwc, CTL_LO));
++	mmc = host->mmc;
++	root = debugfs_create_dir(mmc_hostname(mmc), NULL);
++	if (IS_ERR(root) || !root)
++		goto err_root;
++	host->debugfs_root = root;
 +
-+		/* The tasklet will hopefully advance the queue... */
-+		return;
++	regs = debugfs_create_file("regs", 0400, root, host, &regs_dbg_fops);
++	if (!regs)
++		goto err_regs;
++
++	res = platform_get_resource(host->pdev, IORESOURCE_MEM, 0);
++	regs->d_inode->i_size = res->end - res->start + 1;
++	host->debugfs_regs = regs;
++
++	host->debugfs_req = debugfs_create_file("req", 0400, root,
++						host, &req_dbg_fops);
++	if (!host->debugfs_req)
++		goto err_req;
++
++	host->debugfs_pending_events
++		= debugfs_create_u32("pending_events", 0400, root,
++				     (u32 *)&host->pending_events);
++	if (!host->debugfs_pending_events)
++		goto err_pending_events;
++
++	host->debugfs_completed_events
++		= debugfs_create_u32("completed_events", 0400, root,
++				     (u32 *)&host->completed_events);
++	if (!host->debugfs_completed_events)
++		goto err_completed_events;
++
++	return;
++
++err_completed_events:
++	debugfs_remove(host->debugfs_pending_events);
++err_pending_events:
++	debugfs_remove(host->debugfs_req);
++err_req:
++	debugfs_remove(host->debugfs_regs);
++err_regs:
++	debugfs_remove(host->debugfs_root);
++err_root:
++	host->debugfs_root = NULL;
++	dev_err(&host->pdev->dev,
++		"failed to initialize debugfs for %s\n",
++		mmc_hostname(mmc));
++}
++
++static void atmci_cleanup_debugfs(struct atmel_mci *host)
++{
++	if (host->debugfs_root) {
++		debugfs_remove(host->debugfs_completed_events);
++		debugfs_remove(host->debugfs_pending_events);
++		debugfs_remove(host->debugfs_req);
++		debugfs_remove(host->debugfs_regs);
++		debugfs_remove(host->debugfs_root);
++		host->debugfs_root = NULL;
++	}
++}
++#else
++static inline void atmci_init_debugfs(struct atmel_mci *host)
++{
++
++}
++
++static inline void atmci_cleanup_debugfs(struct atmel_mci *host)
++{
++
++}
++#endif /* CONFIG_DEBUG_FS */
++
++static inline unsigned int ns_to_clocks(struct atmel_mci *host,
++					unsigned int ns)
++{
++	return (ns * (host->bus_hz / 1000000) + 999) / 1000;
++}
++
++static void atmci_set_timeout(struct atmel_mci *host,
++			      struct mmc_data *data)
++{
++	static unsigned	dtomul_to_shift[] = {
++		0, 4, 7, 8, 10, 12, 16, 20
++	};
++	unsigned	timeout;
++	unsigned	dtocyc;
++	unsigned	dtomul;
++
++	timeout = ns_to_clocks(host, data->timeout_ns) + data->timeout_clks;
++
++	for (dtomul = 0; dtomul < 8; dtomul++) {
++		unsigned shift = dtomul_to_shift[dtomul];
++		dtocyc = (timeout + (1 << shift) - 1) >> shift;
++		if (dtocyc < 15)
++			break;
 +	}
 +
-+	/* ASSERT:  channel is idle */
++	if (dtomul >= 8) {
++		dtomul = 7;
++		dtocyc = 15;
++	}
 +
-+	channel_writel(dwc, LLP, first->phys);
-+	channel_writel(dwc, CTL_LO,
-+			DWC_CTLL_LLP_D_EN | DWC_CTLL_LLP_S_EN);
-+	channel_writel(dwc, CTL_HI, 0);
-+	channel_set_bit(dw, CH_EN, dwc->mask);
++	dev_vdbg(&host->mmc->class_dev, "setting timeout to %u cycles\n",
++			dtocyc << dtomul_to_shift[dtomul]);
++	mci_writel(host, DTOR, (MCI_BF(DTOMUL, dtomul)
++				| MCI_BF(DTOCYC, dtocyc)));
 +}
-+
-+/*----------------------------------------------------------------------*/
 +
 +/*
-+ * Move descriptors that have been queued up because the DMA
-+ * controller was busy at the time of submission, to the "active"
-+ * list. The caller must make sure that the DMA controller is
-+ * kickstarted if necessary.
-+ *
-+ * Called with dwc->lock held and bh disabled.
++ * Return mask with command flags to be enabled for this command.
 + */
-+static void dwc_submit_queue(struct dw_dma_chan *dwc)
++static u32 atmci_prepare_command(struct mmc_host *mmc,
++				 struct mmc_command *cmd)
 +{
-+	dwc->last_lli = dwc->last_queued;
-+	list_splice_init(&dwc->queue, dwc->active_list.prev);
-+	dwc->first_queued = dwc->last_queued = NULL;
-+}
++	u32 cmdr;
 +
-+static void
-+dwc_descriptor_complete(struct dw_dma_chan *dwc, struct dw_desc *desc)
-+{
-+	struct dw_lli *lli;
++	cmd->error = 0;
 +
-+	dev_vdbg(&dwc->chan.dev, "descriptor %u complete\n",
-+			desc->slave.txd.cookie);
++	cmdr = MCI_BF(CMDNB, cmd->opcode);
 +
-+	dwc->completed = desc->slave.txd.cookie;
-+	for (lli = desc->first_lli; lli; lli = lli->next)
-+		dwc_lli_put(dwc, lli);
-+
-+	desc->first_lli = NULL;
-+	list_move(&desc->desc_node, &dwc->free_list);
-+
-+	/*
-+	 * The API requires that no submissions are done from a
-+	 * callback, so we don't need to drop the lock here
-+	 */
-+	if (desc->slave.txd.callback)
-+		desc->slave.txd.callback(desc->slave.txd.callback_param);
-+}
-+
-+static void dwc_complete_all(struct dw_dma *dw, struct dw_dma_chan *dwc)
-+{
-+	struct dw_desc *desc, *_desc;
-+	LIST_HEAD(list);
-+
-+	/*
-+	 * Submit queued descriptors ASAP, i.e. before we go through
-+	 * the completed ones.
-+	 */
-+	list_splice_init(&dwc->active_list, &list);
-+
-+	if (dma_readl(dw, CH_EN) & dwc->mask) {
-+		dev_err(&dwc->chan.dev,
-+			"BUG: XFER bit set, but channel not idle!\n");
-+
-+		/* Try to continue after resetting the channel... */
-+		channel_clear_bit(dw, CH_EN, dwc->mask);
-+		while (dma_readl(dw, CH_EN) & dwc->mask)
-+			cpu_relax();
++	if (cmd->flags & MMC_RSP_PRESENT) {
++		if (cmd->flags & MMC_RSP_136)
++			cmdr |= MCI_BF(RSPTYP, MCI_RSPTYP_136_BIT);
++		else
++			cmdr |= MCI_BF(RSPTYP, MCI_RSPTYP_48_BIT);
 +	}
 +
-+	dwc->last_lli = NULL;
-+	if (dwc->first_queued) {
-+		dwc_dostart(dwc, dwc->first_queued);
-+		dwc_submit_queue(dwc);
-+	}
++	/*
++	 * This should really be MAXLAT_5 for CMD2 and ACMD41, but
++	 * it's too difficult to determine whether this is an ACMD or
++	 * not. Better make it 64.
++	 */
++	cmdr |= MCI_BIT(MAXLAT);
 +
-+	list_for_each_entry_safe(desc, _desc, &list, desc_node)
-+		dwc_descriptor_complete(dwc, desc);
++	if (mmc->ios.bus_mode == MMC_BUSMODE_OPENDRAIN)
++		cmdr |= MCI_BIT(OPDCMD);
++
++	return cmdr;
 +}
 +
-+static void dwc_scan_descriptors(struct dw_dma *dw, struct dw_dma_chan *dwc)
++static void atmci_start_data(struct atmel_mci *host)
 +{
-+	dma_addr_t llp;
-+	struct dw_desc *desc, *_desc;
-+	struct dw_lli *lli, *next;
-+	u32 status_xfer;
++	struct dma_slave_descriptor	*desc, *_desc;
++	struct dma_chan			*chan;
++
++	dev_vdbg(&host->mmc->class_dev, "submitting descriptors...\n");
 +
 +	/*
-+	 * Clear block interrupt flag before scanning so that we don't
-+	 * miss any, and read LLP before RAW_XFER to ensure it is
-+	 * valid if we decide to scan the list.
++	 * Use the _safe() variant here because the might complete and
++	 * get deleted from the list before we get around to the next
++	 * entry. No need to lock since we're not modifying the list,
++	 * and only entries we've submitted can be removed.
 +	 */
-+	dma_writel(dw, CLEAR_BLOCK, dwc->mask);
-+	llp = channel_readl(dwc, LLP);
-+	status_xfer = dma_readl(dw, RAW_XFER);
++	list_for_each_entry_safe(desc, _desc, &host->dma.data_descs,
++			client_node)
++		desc->txd.tx_submit(&desc->txd);
 +
-+	if (status_xfer & dwc->mask) {
-+		/* Everything we've submitted is done */
-+		dma_writel(dw, CLEAR_XFER, dwc->mask);
-+		dwc_complete_all(dw, dwc);
-+		return;
++	chan = host->dma.chan;
++
++	chan->device->device_issue_pending(chan);
++}
++
++static void atmci_start_command(struct atmel_mci *host,
++				struct mmc_command *cmd,
++				u32 cmd_flags)
++{
++	WARN_ON(host->cmd);
++	host->cmd = cmd;
++
++	dev_vdbg(&host->mmc->class_dev,
++			"start command: ARGR=0x%08x CMDR=0x%08x\n",
++			cmd->arg, cmd_flags);
++
++	mci_writel(host, ARGR, cmd->arg);
++	mci_writel(host, CMDR, cmd_flags);
++
++	if (cmd->data)
++		atmci_start_data(host);
++}
++
++static void send_stop_cmd(struct mmc_host *mmc, struct mmc_data *data)
++{
++	struct atmel_mci *host = mmc_priv(mmc);
++
++	atmci_start_command(host, data->stop, host->stop_cmdr);
++	mci_writel(host, IER, MCI_BIT(CMDRDY));
++}
++
++static void atmci_request_end(struct mmc_host *mmc, struct mmc_request *mrq)
++{
++	struct atmel_mci *host = mmc_priv(mmc);
++
++	WARN_ON(host->cmd || host->data);
++	host->mrq = NULL;
++
++	mmc_request_done(mmc, mrq);
++}
++
++static void atmci_dma_cleanup(struct atmel_mci *host)
++{
++	struct dma_slave_descriptor	*desc, *_desc;
++	struct mmc_data			*data = host->data;
++
++	dma_unmap_sg(&host->pdev->dev, data->sg, data->sg_len,
++		     ((data->flags & MMC_DATA_WRITE)
++		      ? DMA_TO_DEVICE : DMA_FROM_DEVICE));
++
++	/*
++	 * REVISIT: Recycle these descriptors instead of handing them
++	 * back to the controller.
++	 */
++	list_for_each_entry_safe(desc, _desc, &host->dma.data_descs,
++			client_node) {
++		list_del(&desc->client_node);
++		async_tx_ack(&desc->txd);
++	}
++}
++
++static void atmci_stop_dma(struct atmel_mci *host)
++{
++	struct dma_chan *chan = host->dma.chan;
++
++	chan->device->device_terminate_all(chan);
++
++	atmci_dma_cleanup(host);
++}
++
++/* This function is called by the DMA driver from tasklet context. */
++static void atmci_dma_complete(void *arg)
++{
++	struct atmel_mci	*host = arg;
++	struct mmc_data		*data = host->data;
++
++	/* A short DMA transfer may complete before the command */
++	atmci_set_completed(host, EVENT_DMA_COMPLETE);
++	if (atmci_is_completed(host, EVENT_CMD_COMPLETE)
++			&& data->stop
++			&& !atmci_test_and_set_completed(host, EVENT_STOP_SENT))
++		send_stop_cmd(host->mmc, data);
++
++	atmci_dma_cleanup(host);
++
++	/*
++	 * Regardless of what the documentation says, we have to wait
++	 * for NOTBUSY even after block read operations.
++	 *
++	 * When the DMA transfer is complete, the controller may still
++	 * be reading the CRC from the card, i.e. the data transfer is
++	 * still in progress and we haven't seen all the potential
++	 * error bits yet.
++	 *
++	 * The interrupt handler will schedule a different tasklet to
++	 * finish things up when the data transfer is completely done.
++	 *
++	 * We may not complete the mmc request here anyway because the
++	 * mmc layer may call back and cause us to violate the "don't
++	 * submit new operations from the completion callback" rule of
++	 * the dma engine framework.
++	 */
++	mci_writel(host, IER, MCI_BIT(NOTBUSY));
++}
++
++/*
++ * Returns a mask of flags to be set in the command register when the
++ * command to start the transfer is to be sent.
++ */
++static u32 atmci_prepare_data(struct mmc_host *mmc, struct mmc_data *data)
++{
++	struct atmel_mci		*host = mmc_priv(mmc);
++	struct dma_chan			*chan = host->dma.chan;
++	struct dma_slave_descriptor	*desc;
++	struct scatterlist		*sg;
++	unsigned int			sg_len;
++	unsigned int			i;
++	enum dma_slave_direction	direction;
++	unsigned long			dma_flags;
++	u32				cmd_flags;
++
++	WARN_ON(host->data);
++	host->data = data;
++
++	atmci_set_timeout(host, data);
++	mci_writel(host, BLKR, (MCI_BF(BCNT, data->blocks)
++				| MCI_BF(BLKLEN, data->blksz)));
++	dev_vdbg(&mmc->class_dev, "BLKR=0x%08x\n",
++			(MCI_BF(BCNT, data->blocks)
++				| MCI_BF(BLKLEN, data->blksz)));
++
++	cmd_flags = MCI_BF(TRCMD, MCI_TRCMD_START_TRANS);
++	if (data->flags & MMC_DATA_STREAM)
++		cmd_flags |= MCI_BF(TRTYP, MCI_TRTYP_STREAM);
++	else if (data->blocks > 1)
++		cmd_flags |= MCI_BF(TRTYP, MCI_TRTYP_MULTI_BLOCK);
++	else
++		cmd_flags |= MCI_BF(TRTYP, MCI_TRTYP_BLOCK);
++
++	/* REVISIT: Try to cache pre-initialized descriptors */
++	dma_flags = 0;
++	dev_vdbg(&mmc->class_dev, "setting up descriptors (%c)...\n",
++			(data->flags & MMC_DATA_READ) ? 'r' : 'w');
++
++	if (data->flags & MMC_DATA_READ) {
++		cmd_flags |= MCI_BIT(TRDIR);
++		direction = DMA_SLAVE_TO_MEMORY;
++
++#ifdef POISON_READ_BUFFER
++		for_each_sg(data->sg, sg, data->sg_len, i) {
++			void *p = kmap(sg_page(sg));
++			memset(p + sg->offset, 0x55, sg->length);
++			kunmap(p);
++		}
++#endif
++		sg_len = dma_map_sg(&host->pdev->dev, data->sg,
++				data->sg_len, DMA_FROM_DEVICE);
++	} else {
++		direction = DMA_SLAVE_FROM_MEMORY;
++
++		sg_len = dma_map_sg(&host->pdev->dev, data->sg,
++				data->sg_len, DMA_TO_DEVICE);
 +	}
 +
-+	dev_vdbg(&dwc->chan.dev, "scan_descriptors: llp=0x%x\n", llp);
++	for_each_sg(data->sg, sg, sg_len, i) {
++		if (i == sg_len - 1)
++			dma_flags = DMA_PREP_INTERRUPT;
 +
-+	list_for_each_entry_safe(desc, _desc, &dwc->active_list, desc_node) {
-+		for (lli = desc->first_lli ; lli; lli = next) {
-+			next = lli->next;
++		dev_vdbg(&mmc->class_dev, "  addr %08x len %u\n",
++				sg_dma_address(sg), sg_dma_len(sg));
 +
-+			dev_vdbg(&dwc->chan.dev, "  lli 0x%x done?\n",
-+					lli->phys);
-+			/*
-+			 * The last descriptor can't be done because
-+			 * the controller isn't idle.
-+			 */
-+			if (!next || next->phys == llp)
-+				return;
++		desc = chan->device->device_prep_slave(chan,
++				sg_dma_address(sg), direction,
++				DMA_SLAVE_WIDTH_32BIT,
++				sg_dma_len(sg), dma_flags);
++		desc->txd.callback = NULL;
++		list_add_tail(&desc->client_node,
++				&host->dma.data_descs);
++	}
 +
-+			/* Last LLI in a this descriptor? */
-+			if (lli->last)
-+				break;
++	/* Make sure we get notified when the last descriptor is done. */
++	desc = list_entry(host->dma.data_descs.prev,
++			struct dma_slave_descriptor, client_node);
++	desc->txd.callback = atmci_dma_complete;
++	desc->txd.callback_param = host;
++
++	return cmd_flags;
++}
++
++static void atmci_request(struct mmc_host *mmc, struct mmc_request *mrq)
++{
++	struct atmel_mci	*host = mmc_priv(mmc);
++	struct mmc_data		*data = mrq->data;
++	u32			iflags;
++	u32			cmdflags = 0;
++
++	iflags = mci_readl(host, IMR);
++	if (iflags)
++		dev_warn(&mmc->class_dev, "WARNING: IMR=0x%08x\n",
++				mci_readl(host, IMR));
++
++	WARN_ON(host->mrq != NULL);
++	host->mrq = mrq;
++	host->pending_events = 0;
++	host->completed_events = 0;
++
++	iflags = MCI_BIT(CMDRDY);
++	cmdflags = atmci_prepare_command(mmc, mrq->cmd);
++
++	if (mrq->stop) {
++		WARN_ON(!data);
++
++		host->stop_cmdr = atmci_prepare_command(mmc, mrq->stop);
++		host->stop_cmdr |= MCI_BF(TRCMD, MCI_TRCMD_STOP_TRANS);
++		if (!(data->flags & MMC_DATA_WRITE))
++			host->stop_cmdr |= MCI_BIT(TRDIR);
++		if (data->flags & MMC_DATA_STREAM)
++			host->stop_cmdr |= MCI_BF(TRTYP, MCI_TRTYP_STREAM);
++		else
++			host->stop_cmdr |= MCI_BF(TRTYP, MCI_TRTYP_MULTI_BLOCK);
++	}
++	if (data) {
++		cmdflags |= atmci_prepare_data(mmc, data);
++		iflags |= MCI_DATA_ERROR_FLAGS;
++	}
++
++	atmci_start_command(host, mrq->cmd, cmdflags);
++	mci_writel(host, IER, iflags);
++}
++
++static void atmci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
++{
++	struct atmel_mci	*host = mmc_priv(mmc);
++	u32			mr;
++
++	if (ios->clock) {
++		u32 clkdiv;
++
++		/* Set clock rate */
++		clkdiv = host->bus_hz / (2 * ios->clock) - 1;
++		if (clkdiv > 255) {
++			dev_warn(&mmc->class_dev,
++				"clock %u too slow; using %lu\n",
++				ios->clock, host->bus_hz / (2 * 256));
++			clkdiv = 255;
 +		}
 +
-+		dwc_descriptor_complete(dwc, desc);
++		mr = mci_readl(host, MR);
++		mr = MCI_BFINS(CLKDIV, clkdiv, mr)
++			| MCI_BIT(WRPROOF) | MCI_BIT(RDPROOF);
++		mci_writel(host, MR, mr);
++
++		/* Enable the MCI controller */
++		mci_writel(host, CR, MCI_BIT(MCIEN));
++	} else {
++		/* Disable the MCI controller */
++		mci_writel(host, CR, MCI_BIT(MCIDIS));
 +	}
 +
-+	dev_err(&dwc->chan.dev,
-+		"BUG: All descriptors done, but channel not idle!\n");
++	switch (ios->bus_width) {
++	case MMC_BUS_WIDTH_1:
++		mci_writel(host, SDCR, 0);
++		break;
++	case MMC_BUS_WIDTH_4:
++		mci_writel(host, SDCR, MCI_BIT(SDCBUS));
++		break;
++	}
 +
-+	/* Try to continue after resetting the channel... */
-+	channel_clear_bit(dw, CH_EN, dwc->mask);
-+	while (dma_readl(dw, CH_EN) & dwc->mask)
-+		cpu_relax();
-+
-+	dwc->last_lli = NULL;
-+	if (dwc->first_queued) {
-+		dwc_dostart(dwc, dwc->first_queued);
-+		dwc_submit_queue(dwc);
++	switch (ios->power_mode) {
++	case MMC_POWER_ON:
++		/* Send init sequence (74 clock cycles) */
++		mci_writel(host, IDR, ~0UL);
++		mci_writel(host, CMDR, MCI_BF(SPCMD, MCI_SPCMD_INIT_CMD));
++		while (!(mci_readl(host, SR) & MCI_BIT(CMDRDY)))
++			cpu_relax();
++		break;
++	default:
++		/*
++		 * TODO: None of the currently available AVR32-based
++		 * boards allow MMC power to be turned off. Implement
++		 * power control when this can be tested properly.
++		 */
++		break;
 +	}
 +}
 +
-+static void dwc_handle_error(struct dw_dma *dw, struct dw_dma_chan *dwc)
++static int atmci_get_ro(struct mmc_host *mmc)
 +{
-+	struct dw_desc *bad_desc;
-+	struct dw_desc *next_desc;
-+	struct dw_lli *lli;
++	int			read_only = 0;
++	struct atmel_mci	*host = mmc_priv(mmc);
 +
-+	dwc_scan_descriptors(dw, dwc);
-+
-+	/*
-+	 * The descriptor currently at the head of the active list is
-+	 * borked. Since we don't have any way to report errors, we'll
-+	 * just have to scream loudly and try to carry on.
-+	 */
-+	bad_desc = list_entry(dwc->active_list.next,
-+			struct dw_desc, desc_node);
-+	list_del_init(&bad_desc->desc_node);
-+	if (dwc->first_queued)
-+		dwc_submit_queue(dwc);
-+
-+	/* Clear the error flag and try to restart the controller */
-+	dma_writel(dw, CLEAR_ERROR, dwc->mask);
-+	if (!list_empty(&dwc->active_list)) {
-+		next_desc = list_entry(dwc->active_list.next,
-+				struct dw_desc, desc_node);
-+		dwc_dostart(dwc, next_desc->first_lli);
++	if (host->wp_pin >= 0) {
++		read_only = gpio_get_value(host->wp_pin);
++		dev_dbg(&mmc->class_dev, "card is %s\n",
++				read_only ? "read-only" : "read-write");
++	} else {
++		dev_dbg(&mmc->class_dev,
++			"no pin for checking read-only switch."
++			" Assuming write-enable.\n");
 +	}
 +
-+	/*
-+	 * KERN_CRITICAL may seem harsh, but since this only happens
-+	 * when someone submits a bad physical address in a
-+	 * descriptor, we should consider ourselves lucky that the
-+	 * controller flagged an error instead of scribbling over
-+	 * random memory locations.
-+	 */
-+	dev_printk(KERN_CRIT, &dwc->chan.dev,
-+			"Bad descriptor submitted for DMA!\n");
-+	dev_printk(KERN_CRIT, &dwc->chan.dev,
-+			"  cookie: %d\n", bad_desc->slave.txd.cookie);
-+	for (lli = bad_desc->first_lli; lli; lli = lli->next)
-+		dev_printk(KERN_CRIT, &dwc->chan.dev,
-+			"  LLI: s/0x%x d/0x%x l/0x%x c/0x%x:%x\n",
-+			lli->sar, lli->dar, lli->llp,
-+			lli->ctlhi, lli->ctllo);
-+
-+	/* Pretend the descriptor completed successfully */
-+	dwc_descriptor_complete(dwc, bad_desc);
++	return read_only;
 +}
 +
-+static void dw_dma_tasklet(unsigned long data)
++static struct mmc_host_ops atmci_ops = {
++	.request	= atmci_request,
++	.set_ios	= atmci_set_ios,
++	.get_ro		= atmci_get_ro,
++};
++
++static void atmci_command_complete(struct atmel_mci *host,
++			struct mmc_command *cmd, u32 status)
 +{
-+	struct dw_dma *dw = (struct dw_dma *)data;
-+	struct dw_dma_chan *dwc;
-+	u32 status_block;
-+	u32 status_xfer;
-+	u32 status_err;
-+	int i;
++	/* Read the response from the card (up to 16 bytes) */
++	cmd->resp[0] = mci_readl(host, RSPR);
++	cmd->resp[1] = mci_readl(host, RSPR);
++	cmd->resp[2] = mci_readl(host, RSPR);
++	cmd->resp[3] = mci_readl(host, RSPR);
 +
-+	status_block = dma_readl(dw, RAW_BLOCK);
-+	status_xfer = dma_readl(dw, RAW_BLOCK);
-+	status_err = dma_readl(dw, RAW_ERROR);
++	host->cmd = NULL;
 +
-+	dev_dbg(dw->dma.dev, "tasklet: status_block=%x status_err=%x\n",
-+			status_block, status_err);
++	if (status & MCI_BIT(RTOE))
++		cmd->error = -ETIMEDOUT;
++	else if ((cmd->flags & MMC_RSP_CRC) && (status & MCI_BIT(RCRCE)))
++		cmd->error = -EILSEQ;
++	else if (status & (MCI_BIT(RINDE) | MCI_BIT(RDIRE) | MCI_BIT(RENDE)))
++		cmd->error = -EIO;
 +
-+	for (i = 0; i < NDMA; i++) {
-+		dwc = &dw->chan[i];
-+		spin_lock(&dwc->lock);
-+		if (status_err & (1 << i))
-+			dwc_handle_error(dw, dwc);
-+		else if ((status_block | status_xfer) & (1 << i))
-+			dwc_scan_descriptors(dw, dwc);
-+		spin_unlock(&dwc->lock);
++	if (cmd->error) {
++		dev_dbg(&host->mmc->class_dev,
++			"command error: status=0x%08x\n", status);
++
++		if (cmd->data) {
++			atmci_stop_dma(host);
++			mci_writel(host, IDR, MCI_BIT(NOTBUSY)
++					| MCI_DATA_ERROR_FLAGS);
++			host->data = NULL;
++		}
 +	}
-+
-+	/*
-+	 * Re-enable interrupts. Block Complete interrupts are only
-+	 * enabled if the INT_EN bit in the descriptor is set. This
-+	 * will trigger a scan before the whole list is done.
-+	 */
-+	channel_set_bit(dw, MASK_XFER, (1 << NDMA) - 1);
-+	channel_set_bit(dw, MASK_BLOCK, (1 << NDMA) - 1);
-+	channel_set_bit(dw, MASK_ERROR, (1 << NDMA) - 1);
 +}
 +
-+static irqreturn_t dw_dma_interrupt(int irq, void *dev_id)
++static void atmci_tasklet_func(unsigned long priv)
 +{
-+	struct dw_dma *dw = dev_id;
-+	u32 status;
++	struct mmc_host		*mmc = (struct mmc_host *)priv;
++	struct atmel_mci	*host = mmc_priv(mmc);
++	struct mmc_request	*mrq = host->mrq;
++	struct mmc_data		*data = host->data;
 +
-+	dev_vdbg(dw->dma.dev, "interrupt: status=0x%x\n",
-+			dma_readl(dw, STATUS_INT));
++	dev_vdbg(&mmc->class_dev,
++		"tasklet: pending/completed/mask %lx/%lx/%x\n",
++		 host->pending_events, host->completed_events,
++		 mci_readl(host, IMR));
 +
-+	/*
-+	 * Just disable the interrupts. We'll turn them back on in the
-+	 * softirq handler.
-+	 */
-+	channel_clear_bit(dw, MASK_XFER, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_BLOCK, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_ERROR, (1 << NDMA) - 1);
++	if (atmci_test_and_clear_pending(host, EVENT_CMD_COMPLETE)) {
++		atmci_set_completed(host, EVENT_CMD_COMPLETE);
++		atmci_command_complete(host, mrq->cmd, host->cmd_status);
 +
-+	status = dma_readl(dw, STATUS_INT);
-+	if (status) {
-+		dev_err(dw->dma.dev,
-+			"BUG: Unexpected interrupts pending: 0x%x\n",
-+			status);
++		if (mrq->stop && atmci_is_completed(host, EVENT_DMA_COMPLETE)
++				&& !atmci_test_and_set_completed(host,
++					EVENT_STOP_SENT))
++			send_stop_cmd(host->mmc, mrq->data);
++	}
++	if (atmci_test_and_clear_pending(host, EVENT_STOP_COMPLETE)) {
++		atmci_set_completed(host, EVENT_STOP_COMPLETE);
++		atmci_command_complete(host, mrq->stop, host->stop_status);
++	}
++	if (atmci_test_and_clear_pending(host, EVENT_DATA_ERROR)) {
++		u32 status = host->data_status;
 +
-+		/* Try to recover */
-+		channel_clear_bit(dw, MASK_XFER, (1 << 8) - 1);
-+		channel_clear_bit(dw, MASK_BLOCK, (1 << 8) - 1);
-+		channel_clear_bit(dw, MASK_SRC_TRAN, (1 << 8) - 1);
-+		channel_clear_bit(dw, MASK_DST_TRAN, (1 << 8) - 1);
-+		channel_clear_bit(dw, MASK_ERROR, (1 << 8) - 1);
++		atmci_set_completed(host, EVENT_DATA_ERROR);
++		atmci_clear_pending(host, EVENT_DATA_COMPLETE);
++
++		atmci_stop_dma(host);
++
++		if (status & MCI_BIT(DCRCE)) {
++			dev_dbg(&mmc->class_dev, "data CRC error\n");
++			data->error = -EILSEQ;
++		} else if (status & MCI_BIT(DTOE)) {
++			dev_dbg(&mmc->class_dev, "data timeout error\n");
++			data->error = -ETIMEDOUT;
++		} else {
++			dev_dbg(&mmc->class_dev, "data FIFO error\n");
++			data->error = -EIO;
++		}
++
++		if (data->stop && atmci_test_and_set_completed(host,
++					EVENT_STOP_SENT))
++			/* TODO: Check if card is still present */
++			send_stop_cmd(host->mmc, data);
++
++		host->data = NULL;
++	}
++	if (atmci_test_and_clear_pending(host, EVENT_DATA_COMPLETE)) {
++		atmci_set_completed(host, EVENT_DATA_COMPLETE);
++		data->bytes_xfered = data->blocks * data->blksz;
++		host->data = NULL;
++	}
++	if (atmci_test_and_clear_pending(host, EVENT_CARD_DETECT)) {
++		/* Reset controller if card is gone */
++		if (!host->present) {
++			mci_writel(host, CR, MCI_BIT(SWRST));
++			mci_writel(host, IDR, ~0UL);
++			mci_writel(host, CR, MCI_BIT(MCIEN));
++		}
++
++		/* Clean up queue if present */
++		if (mrq) {
++			if (!atmci_is_completed(host, EVENT_CMD_COMPLETE))
++				mrq->cmd->error = -EIO;
++
++			if (mrq->data && !atmci_is_completed(host,
++						EVENT_DATA_COMPLETE)
++					&& !atmci_is_completed(host,
++						EVENT_DATA_ERROR)) {
++				atmci_stop_dma(host);
++				mrq->data->error = -EIO;
++				host->data = NULL;
++			}
++			if (mrq->stop && !atmci_is_completed(host,
++						EVENT_STOP_COMPLETE))
++				mrq->stop->error = -EIO;
++
++			host->cmd = NULL;
++			atmci_request_end(mmc, mrq);
++		}
++		mmc_detect_change(host->mmc, msecs_to_jiffies(100));
 +	}
 +
-+	tasklet_schedule(&dw->tasklet);
++	if (host->mrq && !host->cmd && !host->data)
++		atmci_request_end(mmc, host->mrq);
++}
++
++static void atmci_cmd_interrupt(struct mmc_host *mmc, u32 status)
++{
++	struct atmel_mci	*host = mmc_priv(mmc);
++
++	mci_writel(host, IDR, MCI_BIT(CMDRDY));
++
++	if (atmci_is_completed(host, EVENT_STOP_SENT)) {
++		host->stop_status = status;
++		atmci_set_pending(host, EVENT_STOP_COMPLETE);
++	} else {
++		host->cmd_status = status;
++		atmci_set_pending(host, EVENT_CMD_COMPLETE);
++	}
++
++	tasklet_schedule(&host->tasklet);
++}
++
++static irqreturn_t atmci_interrupt(int irq, void *dev_id)
++{
++	struct mmc_host		*mmc = dev_id;
++	struct atmel_mci	*host = mmc_priv(mmc);
++	u32			status, mask, pending;
++
++	spin_lock(&mmc->lock);
++
++	status = mci_readl(host, SR);
++	mask = mci_readl(host, IMR);
++	pending = status & mask;
++
++	do {
++		if (pending & MCI_DATA_ERROR_FLAGS) {
++			mci_writel(host, IDR, (MCI_BIT(NOTBUSY)
++					       | MCI_DATA_ERROR_FLAGS));
++			host->data_status = status;
++			atmci_set_pending(host, EVENT_DATA_ERROR);
++			tasklet_schedule(&host->tasklet);
++			break;
++		}
++		if (pending & MCI_BIT(CMDRDY))
++			atmci_cmd_interrupt(mmc, status);
++		if (pending & MCI_BIT(NOTBUSY)) {
++			mci_writel(host, IDR, (MCI_BIT(NOTBUSY)
++					       | MCI_DATA_ERROR_FLAGS));
++			atmci_set_pending(host, EVENT_DATA_COMPLETE);
++			tasklet_schedule(&host->tasklet);
++		}
++
++		status = mci_readl(host, SR);
++		mask = mci_readl(host, IMR);
++		pending = status & mask;
++	} while (pending);
++
++	spin_unlock(&mmc->lock);
 +
 +	return IRQ_HANDLED;
 +}
 +
-+/*----------------------------------------------------------------------*/
-+
-+static dma_cookie_t dwc_tx_submit(struct dma_async_tx_descriptor *tx)
++static irqreturn_t atmci_detect_change(int irq, void *dev_id)
 +{
-+	struct dw_desc		*desc = txd_to_dw_desc(tx);
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(tx->chan);
-+	struct dw_lli		*lli;
-+	dma_cookie_t		cookie;
++	struct mmc_host		*mmc = dev_id;
++	struct atmel_mci	*host = mmc_priv(mmc);
 +
-+	/* Make sure all descriptors are written to RAM */
-+	for (lli = desc->first_lli; lli; lli = lli->next) {
-+		dev_vdbg(&dwc->chan.dev,
-+				"tx_submit: %x: s/%x d/%x p/%x h/%x l/%x\n",
-+				lli->phys, lli->sar, lli->dar, lli->llp,
-+				lli->ctlhi, lli->ctllo);
-+		dwc_lli_sync_for_device(dwc, lli);
++	int present = !gpio_get_value(irq_to_gpio(irq));
++
++	if (present != host->present) {
++		dev_dbg(&mmc->class_dev, "card %s\n",
++			present ? "inserted" : "removed");
++		host->present = present;
++		atmci_set_pending(host, EVENT_CARD_DETECT);
++		tasklet_schedule(&host->tasklet);
 +	}
-+
-+	spin_lock_bh(&dwc->lock);
-+	cookie = dwc_assign_cookie(dwc, desc);
-+
-+	/*
-+	 * REVISIT: We should attempt to chain as many descriptors as
-+	 * possible, perhaps even appending to those already submitted
-+	 * for DMA. But this is hard to do in a race-free manner.
-+	 */
-+	if (dwc->last_queued || dwc->last_lli) {
-+		dev_vdbg(&tx->chan->dev, "tx_submit: queued %u\n",
-+				desc->slave.txd.cookie);
-+
-+		list_add_tail(&desc->desc_node, &dwc->queue);
-+		dwc->last_queued = desc->last_lli;
-+		if (!dwc->first_queued)
-+			dwc->first_queued = desc->first_lli;
-+	} else {
-+		dev_vdbg(&tx->chan->dev, "tx_submit: started %u\n",
-+				desc->slave.txd.cookie);
-+
-+		dwc_dostart(dwc, desc->first_lli);
-+		list_add_tail(&desc->desc_node, &dwc->active_list);
-+		dwc->last_lli = desc->last_lli;
-+	}
-+
-+	spin_unlock_bh(&dwc->lock);
-+
-+	return cookie;
++	return IRQ_HANDLED;
 +}
 +
-+static struct dw_desc *dwc_prep_descriptor(struct dw_dma_chan *dwc,
-+		u32 ctllo, dma_addr_t dest, dma_addr_t src,
-+		size_t len, unsigned long flags)
++static enum dma_state_client atmci_dma_event(struct dma_client *client,
++		struct dma_chan *chan, enum dma_state state)
 +{
-+	struct dma_chan		*chan = &dwc->chan;
-+	struct dw_desc		*desc;
-+	struct dw_lli		*prev, *lli;
-+	unsigned int		offset;
-+	size_t			block_len;
++	struct atmel_mci	*host;
++	enum dma_state_client	ret = DMA_NAK;
 +
-+	if (unlikely(!len))
-+		return NULL;
++	host = dma_client_to_atmel_mci(client);
 +
-+	desc = dwc_desc_get(dwc);
-+	if (!desc)
-+		return NULL;
-+
-+	dev_vdbg(&chan->dev, "  got descriptor %p\n", desc);
-+
-+	/*
-+	 * Use block chaining, and "transfer type 10" with source and
-+	 * destination addresses updated through LLP.  Terminate using
-+	 * a dummy descriptor with invalid LLP.
-+	 *
-+	 * IMPORTANT:  here we assume the core is configured with each
-+	 * channel supporting dma descriptor lists!
-+	 */
-+	prev = NULL;
-+	for (offset = 0; offset < len; offset += block_len) {
-+		size_t		max_len = DWC_MAX_LEN;
-+
-+		lli = dwc_lli_get(dwc, GFP_ATOMIC);
-+		if (!lli)
-+			goto err_lli_get;
-+
-+		block_len = min(len - offset, max_len);
-+
-+		if (!prev) {
-+			desc->first_lli = lli;
-+		} else {
-+			prev->last = 0;
-+			prev->llp = lli->phys;
-+			prev->next = lli;
++	switch (state) {
++	case DMA_RESOURCE_AVAILABLE:
++		if (!host->dma.chan) {
++			dev_dbg(&host->pdev->dev, "Got channel %s\n",
++					chan->dev.bus_id);
++			host->dma.chan = chan;
++			ret = DMA_ACK;
 +		}
-+		lli->sar = src + offset;
-+		lli->dar = dest + offset;
-+		lli->ctllo = ctllo;
-+		lli->ctlhi = block_len;
-+
-+		prev = lli;
-+
-+		dev_vdbg(&chan->dev,
-+			"  lli %p: src 0x%x dst 0x%x len %zu phys 0x%x\n",
-+			lli, src, dest, block_len, lli->phys);
-+	}
-+
-+	if (flags & DMA_PREP_INTERRUPT)
-+		/* Trigger interrupt after last block */
-+		prev->ctllo |= DWC_CTLL_INT_EN;
-+
-+	prev->next = NULL;
-+	prev->llp = 0;
-+	prev->last = 1;
-+	desc->last_lli = prev;
-+
-+	return desc;
-+
-+err_lli_get:
-+	for (lli = desc->first_lli; lli; lli = lli->next)
-+		dwc_lli_put(dwc, lli);
-+	dwc_desc_put(dwc, desc);
-+	return NULL;
-+}
-+
-+static struct dma_async_tx_descriptor *
-+dwc_prep_dma_memcpy(struct dma_chan *chan, dma_addr_t dest, dma_addr_t src,
-+		size_t len, unsigned long flags)
-+{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-+	struct dw_desc		*desc;
-+	u32			ctllo;
-+
-+	dev_vdbg(&chan->dev, "prep_dma_memcpy\n");
-+
-+	if (unlikely(!len))
-+		return NULL;
-+
-+	/* FIXME: Try to use wider transfers when possible */
-+	ctllo = DWC_DEFAULT_CTLLO
-+			| DWC_CTLL_DST_WIDTH(0)
-+			| DWC_CTLL_SRC_WIDTH(0)
-+			| DWC_CTLL_DST_INC
-+			| DWC_CTLL_SRC_INC
-+			| DWC_CTLL_FC_M2M;
-+
-+	desc = dwc_prep_descriptor(dwc, ctllo, dest, src, len, flags);
-+
-+	return desc ? &desc->slave.txd : NULL;
-+}
-+
-+static struct dma_slave_descriptor *dwc_prep_slave(struct dma_chan *chan,
-+		dma_addr_t mem_addr,
-+		enum dma_slave_direction direction,
-+		enum dma_slave_width reg_width,
-+		size_t len, unsigned long flags)
-+{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-+	struct dw_desc		*desc;
-+	u32			ctllo;
-+	dma_addr_t		dest, src;
-+
-+	dev_vdbg(&chan->dev, "prep_dma_slave\n");
-+
-+	/*
-+	 * Sanity checks. Don't know if the alignment requirements
-+	 * are always valid though...
-+	 */
-+	BUG_ON(!dwc->slave);
-+	BUG_ON(mem_addr & ((1 << reg_width) - 1));
-+	BUG_ON(len & ((1 << reg_width) - 1));
-+
-+	len >>= reg_width;
-+	ctllo = DWC_DEFAULT_CTLLO
-+		| DWC_CTLL_DST_WIDTH(reg_width)
-+		| DWC_CTLL_SRC_WIDTH(reg_width);
-+
-+	switch (direction) {
-+	case DMA_SLAVE_TO_MEMORY:
-+		ctllo |= (DWC_CTLL_DST_INC
-+				| DWC_CTLL_SRC_FIX
-+				| DWC_CTLL_FC_P2M);
-+		src = dwc->slave->rx_reg;
-+		dest = mem_addr;
 +		break;
-+	case DMA_SLAVE_FROM_MEMORY:
-+		ctllo |= (DWC_CTLL_DST_FIX
-+				| DWC_CTLL_SRC_INC
-+				| DWC_CTLL_FC_M2P);
-+		src = mem_addr;
-+		dest = dwc->slave->tx_reg;
++
++	case DMA_RESOURCE_REMOVED:
++		if (host->dma.chan == chan) {
++			dev_dbg(&host->pdev->dev, "Lost channel %s\n",
++					chan->dev.bus_id);
++			host->dma.chan = NULL;
++			ret = DMA_ACK;
++		}
 +		break;
++
 +	default:
-+		return NULL;
++		break;
 +	}
-+
-+	desc = dwc_prep_descriptor(dwc, ctllo, dest, src, len, flags);
-+
-+	return desc ? &desc->slave : NULL;
-+}
-+
-+static void dwc_terminate_all(struct dma_chan *chan)
-+{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-+	struct dw_dma		*dw = to_dw_dma(chan->device);
-+
-+	/*
-+	 * This is only called when something went wrong elsewhere, so
-+	 * we don't really care about the data. Just disable the
-+	 * channel. We still have to poll the channel enable bit due
-+	 * to AHB/HSB limitations.
-+	 */
-+	channel_clear_bit(dw, CH_EN, dwc->mask);
-+
-+	while (dma_readl(dw, CH_EN) & dwc->mask)
-+		cpu_relax();
-+}
-+
-+static void dwc_dependency_added(struct dma_chan *chan)
-+{
-+	/* FIXME: What is this hook supposed to do? */
-+}
-+
-+static enum dma_status
-+dwc_is_tx_complete(struct dma_chan *chan,
-+		dma_cookie_t cookie,
-+		dma_cookie_t *done, dma_cookie_t *used)
-+{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-+	dma_cookie_t		last_used;
-+	dma_cookie_t		last_complete;
-+	int			ret;
-+
-+	last_complete = dwc->completed;
-+	last_used = chan->cookie;
-+
-+	ret = dma_async_is_complete(cookie, last_complete, last_used);
-+	if (ret != DMA_SUCCESS) {
-+		dwc_scan_descriptors(to_dw_dma(chan->device), dwc);
-+
-+		last_complete = dwc->completed;
-+		last_used = chan->cookie;
-+
-+		ret = dma_async_is_complete(cookie, last_complete, last_used);
-+	}
-+
-+	if (done)
-+		*done = last_complete;
-+	if (used)
-+		*used = last_used;
 +
 +	return ret;
 +}
 +
-+static void dwc_issue_pending(struct dma_chan *chan)
++static int __init atmci_probe(struct platform_device *pdev)
 +{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
++	struct mci_platform_data	*pdata;
++	struct atmel_mci *host;
++	struct mmc_host *mmc;
++	struct resource *regs;
++	struct dma_chan *chan;
++	int irq;
++	int ret;
 +
-+	spin_lock_bh(&dwc->lock);
-+	if (dwc->last_queued)
-+		dwc_scan_descriptors(to_dw_dma(chan->device), dwc);
-+	spin_unlock_bh(&dwc->lock);
-+}
-+
-+static int dwc_alloc_chan_resources(struct dma_chan *chan,
-+		struct dma_client *client)
-+{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-+	struct dw_dma		*dw = to_dw_dma(chan->device);
-+	struct dw_desc		*desc;
-+	struct dma_slave	*slave;
-+	int			i;
-+	u32			cfghi;
-+
-+	dev_vdbg(&chan->dev, "alloc_chan_resources\n");
-+
-+	/* ASSERT:  channel is idle */
-+	if (dma_readl(dw, CH_EN) & dwc->mask) {
-+		dev_dbg(&chan->dev, "DMA channel not idle?\n");
-+		return -EIO;
-+	}
-+
-+	dwc->completed = chan->cookie = 1;
-+
-+	cfghi = DWC_CFGH_FIFO_MODE;
-+
-+	slave = client->slave;
-+	if (slave) {
-+		BUG_ON(slave->rx_handshake_id > 15);
-+		BUG_ON(slave->tx_handshake_id > 15);
-+
-+		dwc->slave = slave;
-+		cfghi |= DWC_CFGH_SRC_PER(slave->rx_handshake_id);
-+		cfghi |= DWC_CFGH_DST_PER(slave->tx_handshake_id);
-+	} else {
-+		dwc->slave = NULL;
-+	}
-+
-+	channel_writel(dwc, CFG_LO, 0);
-+	channel_writel(dwc, CFG_HI, cfghi);
-+
-+	/*
-+	 * NOTE: some controllers may have additional features that we
-+	 * need to initialize here, like "scatter-gather" (which
-+	 * doesn't mean what you think it means), and status writeback.
-+	 */
-+
-+	spin_lock_bh(&dwc->lock);
-+	i = dwc->descs_allocated;
-+	while (dwc->descs_allocated < NR_DESCS_PER_CHANNEL) {
-+		spin_unlock_bh(&dwc->lock);
-+
-+		desc = kzalloc(sizeof(struct dw_desc), GFP_KERNEL);
-+		if (!desc) {
-+			dev_info(&chan->dev,
-+				"only allocated %d descriptors\n", i);
-+			spin_lock_bh(&dwc->lock);
-+			break;
-+		}
-+
-+		dma_async_tx_descriptor_init(&desc->slave.txd, chan);
-+		desc->slave.txd.ack = 1;
-+		desc->slave.txd.tx_submit = dwc_tx_submit;
-+
-+		dev_vdbg(&chan->dev, "  adding descriptor %p\n", desc);
-+
-+		spin_lock_bh(&dwc->lock);
-+		i = ++dwc->descs_allocated;
-+		list_add_tail(&desc->desc_node, &dwc->free_list);
-+	}
-+
-+	/* Enable interrupts */
-+	channel_set_bit(dw, MASK_XFER, dwc->mask);
-+	channel_set_bit(dw, MASK_BLOCK, dwc->mask);
-+	channel_set_bit(dw, MASK_ERROR, dwc->mask);
-+
-+	spin_unlock_bh(&dwc->lock);
-+
-+	dev_vdbg(&chan->dev,
-+		"alloc_chan_resources allocated %d descriptors\n", i);
-+
-+	return i;
-+}
-+
-+static void dwc_free_chan_resources(struct dma_chan *chan)
-+{
-+	struct dw_dma_chan	*dwc = to_dw_dma_chan(chan);
-+	struct dw_dma		*dw = to_dw_dma(chan->device);
-+	struct dw_desc		*desc, *_desc;
-+	LIST_HEAD(list);
-+
-+	dev_vdbg(&chan->dev, "free_chan_resources (descs allocated=%u)\n",
-+			dwc->descs_allocated);
-+
-+	/* ASSERT:  channel is idle */
-+	BUG_ON(!list_empty(&dwc->active_list));
-+	BUG_ON(!list_empty(&dwc->queue));
-+	BUG_ON(dma_readl(to_dw_dma(chan->device), CH_EN) & dwc->mask);
-+
-+	spin_lock_bh(&dwc->lock);
-+	list_splice_init(&dwc->free_list, &list);
-+	dwc->descs_allocated = 0;
-+	dwc->slave = NULL;
-+
-+	/* Disable interrupts */
-+	channel_clear_bit(dw, MASK_XFER, dwc->mask);
-+	channel_clear_bit(dw, MASK_BLOCK, dwc->mask);
-+	channel_clear_bit(dw, MASK_ERROR, dwc->mask);
-+
-+	spin_unlock_bh(&dwc->lock);
-+
-+	list_for_each_entry_safe(desc, _desc, &list, desc_node) {
-+		dev_vdbg(&chan->dev, "  freeing descriptor %p\n", desc);
-+		kfree(desc);
-+	}
-+
-+	dev_vdbg(&chan->dev, "free_chan_resources done\n");
-+}
-+
-+/*----------------------------------------------------------------------*/
-+
-+static void dw_dma_off(struct dw_dma *dw)
-+{
-+	dma_writel(dw, CFG, 0);
-+
-+	channel_clear_bit(dw, MASK_XFER, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_BLOCK, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_SRC_TRAN, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_DST_TRAN, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_ERROR, (1 << NDMA) - 1);
-+
-+	while (dma_readl(dw, CFG) & DW_CFG_DMA_EN)
-+		cpu_relax();
-+}
-+
-+static int __init dw_probe(struct platform_device *pdev)
-+{
-+	struct resource		*io;
-+	struct dw_dma		*dw;
-+#ifdef USE_DMA_POOL
-+	struct dma_pool		*lli_pool;
-+#else
-+	struct kmem_cache	*lli_pool;
-+#endif
-+	int			irq;
-+	int			err;
-+	int			i;
-+
-+	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!io)
-+		return -EINVAL;
-+
++	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!regs)
++		return -ENXIO;
++	pdata = pdev->dev.platform_data;
++	if (!pdata)
++		return -ENXIO;
 +	irq = platform_get_irq(pdev, 0);
 +	if (irq < 0)
 +		return irq;
 +
-+	/* FIXME platform_data holds NDMA.  Use that to adjust the size
-+	 * of this allocation to match the silicon, and channel init.
-+	 */
-+
-+	dw = kzalloc(sizeof *dw, GFP_KERNEL);
-+	if (!dw)
++	mmc = mmc_alloc_host(sizeof(struct atmel_mci), &pdev->dev);
++	if (!mmc)
 +		return -ENOMEM;
 +
-+	if (request_mem_region(io->start, DW_REGLEN,
-+			pdev->dev.driver->name) == 0) {
-+		err = -EBUSY;
-+		goto err_kfree;
++	host = mmc_priv(mmc);
++	host->pdev = pdev;
++	host->mmc = mmc;
++	host->detect_pin = pdata->detect_pin;
++	host->wp_pin = pdata->wp_pin;
++	INIT_LIST_HEAD(&host->dma.data_descs);
++
++	host->mck = clk_get(&pdev->dev, "mci_clk");
++	if (IS_ERR(host->mck)) {
++		ret = PTR_ERR(host->mck);
++		goto err_clk_get;
++	}
++	clk_enable(host->mck);
++
++	ret = -ENOMEM;
++	host->regs = ioremap(regs->start, regs->end - regs->start + 1);
++	if (!host->regs)
++		goto err_ioremap;
++
++	mci_writel(host, CR, MCI_BIT(SWRST));
++	mci_writel(host, IDR, ~0UL);
++
++	host->bus_hz = clk_get_rate(host->mck);
++	host->mapbase = regs->start;
++
++	mmc->ops = &atmci_ops;
++	mmc->f_min = (host->bus_hz + 511) / 512;
++	mmc->f_max = min((unsigned int)(host->bus_hz / 2), fmax);
++	mmc->ocr_avail	= MMC_VDD_32_33 | MMC_VDD_33_34;
++	mmc->caps |= MMC_CAP_4_BIT_DATA;
++
++	tasklet_init(&host->tasklet, atmci_tasklet_func, (unsigned long)mmc);
++
++	ret = request_irq(irq, atmci_interrupt, 0, "mmci", mmc);
++	if (ret)
++		goto err_request_irq;
++
++	host->dma.slave.dev = &pdev->dev;
++	host->dma.slave.tx_reg = regs->start + MCI_TDR;
++	host->dma.slave.rx_reg = regs->start + MCI_RDR;
++	host->dma.slave.tx_handshake_id = pdata->tx_periph_id;
++	host->dma.slave.rx_handshake_id = pdata->rx_periph_id;
++
++	/* Try to grab a DMA channel */
++	host->dma.client.event_callback = atmci_dma_event;
++	dma_cap_set(DMA_SLAVE, host->dma.client.cap_mask);
++	host->dma.client.slave = &host->dma.slave;
++
++	dma_async_client_register(&host->dma.client);
++	dma_async_client_chan_request(&host->dma.client);
++
++	chan = host->dma.chan;
++	if (!chan) {
++		dev_dbg(&mmc->class_dev, "no DMA channels available\n");
++		ret = -ENODEV;
++		goto err_dma_chan;
 +	}
 +
-+	memset(dw, 0, sizeof *dw);
-+
-+	dw->regs = ioremap(io->start, DW_REGLEN);
-+	if (!dw->regs) {
-+		err = -ENOMEM;
-+		goto err_release_r;
++	/* Assume card is present if we don't have a detect pin */
++	host->present = 1;
++	if (host->detect_pin >= 0) {
++		if (gpio_request(host->detect_pin, "mmc_detect")) {
++			dev_dbg(&mmc->class_dev, "no detect pin available\n");
++			host->detect_pin = -1;
++		} else {
++			host->present = !gpio_get_value(host->detect_pin);
++		}
++	}
++	if (host->wp_pin >= 0) {
++		if (gpio_request(host->wp_pin, "mmc_wp")) {
++			dev_dbg(&mmc->class_dev, "no WP pin available\n");
++			host->wp_pin = -1;
++		}
 +	}
 +
-+	dw->clk = clk_get(&pdev->dev, "hclk");
-+	if (IS_ERR(dw->clk)) {
-+		err = PTR_ERR(dw->clk);
-+		goto err_clk;
-+	}
-+	clk_enable(dw->clk);
++	platform_set_drvdata(pdev, host);
 +
-+	/* force dma off, just in case */
-+	dw_dma_off(dw);
++	mmc_add_host(mmc);
 +
-+	err = request_irq(irq, dw_dma_interrupt, 0, "dw_dmac", dw);
-+	if (err)
-+		goto err_irq;
-+
-+#ifdef USE_DMA_POOL
-+	lli_pool = dma_pool_create(pdev->dev.bus_id, &pdev->dev,
-+			sizeof(struct dw_lli), 4, 0);
-+#else
-+	lli_pool = kmem_cache_create(pdev->dev.bus_id,
-+			sizeof(struct dw_lli), 4, 0, NULL);
-+#endif
-+	if (!lli_pool) {
-+		err = -ENOMEM;
-+		goto err_dma_pool;
++	if (host->detect_pin >= 0) {
++		ret = request_irq(gpio_to_irq(host->detect_pin),
++				atmci_detect_change,
++				IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
++				DRIVER_NAME, mmc);
++		if (ret) {
++			dev_dbg(&mmc->class_dev,
++				"could not request IRQ %d for detect pin\n",
++				gpio_to_irq(host->detect_pin));
++			gpio_free(host->detect_pin);
++			host->detect_pin = -1;
++		}
 +	}
 +
-+	dw->lli_pool = lli_pool;
-+	platform_set_drvdata(pdev, dw);
++	dev_info(&mmc->class_dev,
++			"Atmel MCI controller at 0x%08lx irq %d dma %s\n",
++			host->mapbase, irq, chan->dev.bus_id);
 +
-+	tasklet_init(&dw->tasklet, dw_dma_tasklet, (unsigned long)dw);
-+
-+	INIT_LIST_HEAD(&dw->dma.channels);
-+	for (i = 0; i < NDMA; i++, dw->dma.chancnt++) {
-+		struct dw_dma_chan	*dwc = &dw->chan[i];
-+
-+		dwc->chan.device = &dw->dma;
-+		dwc->chan.cookie = dwc->completed = 1;
-+		dwc->chan.chan_id = i;
-+		list_add_tail(&dwc->chan.device_node, &dw->dma.channels);
-+
-+		dwc->ch_regs = dw->regs + DW_DMAC_CHAN_BASE(i);
-+		dwc->lli_pool = lli_pool;
-+		spin_lock_init(&dwc->lock);
-+		dwc->mask = 1 << i;
-+
-+		/* FIXME dmaengine API bug:  the dma_device isn't coupled
-+		 * to the underlying hardware; so neither is the dma_chan.
-+		 *
-+		 * Workaround:  dwc->dev instead of dwc->chan.cdev.dev
-+		 * (or eventually dwc->chan.dev.parent).
-+		 */
-+		dwc->dev = &pdev->dev;
-+
-+		INIT_LIST_HEAD(&dwc->active_list);
-+		INIT_LIST_HEAD(&dwc->queue);
-+		INIT_LIST_HEAD(&dwc->free_list);
-+
-+		channel_clear_bit(dw, CH_EN, dwc->mask);
-+	}
-+
-+	/* Clear/disable all interrupts on all channels. */
-+	dma_writel(dw, CLEAR_XFER, (1 << NDMA) - 1);
-+	dma_writel(dw, CLEAR_BLOCK, (1 << NDMA) - 1);
-+	dma_writel(dw, CLEAR_SRC_TRAN, (1 << NDMA) - 1);
-+	dma_writel(dw, CLEAR_DST_TRAN, (1 << NDMA) - 1);
-+	dma_writel(dw, CLEAR_ERROR, (1 << NDMA) - 1);
-+
-+	channel_clear_bit(dw, MASK_XFER, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_BLOCK, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_SRC_TRAN, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_DST_TRAN, (1 << NDMA) - 1);
-+	channel_clear_bit(dw, MASK_ERROR, (1 << NDMA) - 1);
-+
-+	dma_cap_set(DMA_MEMCPY, dw->dma.cap_mask);
-+	dma_cap_set(DMA_SLAVE, dw->dma.cap_mask);
-+	dw->dma.dev = &pdev->dev;
-+	dw->dma.device_alloc_chan_resources = dwc_alloc_chan_resources;
-+	dw->dma.device_free_chan_resources = dwc_free_chan_resources;
-+
-+	dw->dma.device_prep_dma_memcpy = dwc_prep_dma_memcpy;
-+
-+	dw->dma.device_prep_slave = dwc_prep_slave;
-+	dw->dma.device_terminate_all = dwc_terminate_all;
-+
-+	dw->dma.device_dependency_added = dwc_dependency_added;
-+	dw->dma.device_is_tx_complete = dwc_is_tx_complete;
-+	dw->dma.device_issue_pending = dwc_issue_pending;
-+
-+	dma_writel(dw, CFG, DW_CFG_DMA_EN);
-+
-+	printk(KERN_INFO "%s: DesignWare DMA Controller, %d channels\n",
-+			pdev->dev.bus_id, dw->dma.chancnt);
-+
-+	dma_async_device_register(&dw->dma);
++	atmci_init_debugfs(host);
 +
 +	return 0;
 +
-+err_dma_pool:
-+	free_irq(irq, dw);
-+err_irq:
-+	clk_disable(dw->clk);
-+	clk_put(dw->clk);
-+err_clk:
-+	iounmap(dw->regs);
-+	dw->regs = NULL;
-+err_release_r:
-+	release_resource(io);
-+err_kfree:
-+	kfree(dw);
-+	return err;
++err_dma_chan:
++	free_irq(irq, mmc);
++err_request_irq:
++	iounmap(host->regs);
++err_ioremap:
++	clk_disable(host->mck);
++	clk_put(host->mck);
++err_clk_get:
++	mmc_free_host(mmc);
++	return ret;
 +}
 +
-+static int __exit dw_remove(struct platform_device *pdev)
++static int __exit atmci_remove(struct platform_device *pdev)
 +{
-+	struct dw_dma		*dw = platform_get_drvdata(pdev);
-+	struct dw_dma_chan	*dwc, *_dwc;
-+	struct resource		*io;
++	struct atmel_mci *host = platform_get_drvdata(pdev);
 +
-+	dev_dbg(&pdev->dev, "dw_remove\n");
++	platform_set_drvdata(pdev, NULL);
 +
-+	dw_dma_off(dw);
-+	dma_async_device_unregister(&dw->dma);
++	if (host) {
++		atmci_cleanup_debugfs(host);
 +
-+	free_irq(platform_get_irq(pdev, 0), dw);
-+	tasklet_kill(&dw->tasklet);
++		if (host->detect_pin >= 0) {
++			free_irq(gpio_to_irq(host->detect_pin), host->mmc);
++			cancel_delayed_work(&host->mmc->detect);
++			gpio_free(host->detect_pin);
++		}
 +
-+	list_for_each_entry_safe(dwc, _dwc, &dw->dma.channels,
-+			chan.device_node) {
-+		list_del(&dwc->chan.device_node);
-+		channel_clear_bit(dw, CH_EN, dwc->mask);
++		mmc_remove_host(host->mmc);
++
++		mci_writel(host, IDR, ~0UL);
++		mci_writel(host, CR, MCI_BIT(MCIDIS));
++		mci_readl(host, SR);
++
++		dma_async_client_unregister(&host->dma.client);
++
++		if (host->wp_pin >= 0)
++			gpio_free(host->wp_pin);
++
++		free_irq(platform_get_irq(pdev, 0), host->mmc);
++		iounmap(host->regs);
++
++		clk_disable(host->mck);
++		clk_put(host->mck);
++
++		mmc_free_host(host->mmc);
 +	}
-+
-+#ifdef USE_DMA_POOL
-+	dma_pool_destroy(dw->lli_pool);
-+#else
-+	kmem_cache_destroy(dw->lli_pool);
-+#endif
-+
-+	clk_disable(dw->clk);
-+	clk_put(dw->clk);
-+
-+	iounmap(dw->regs);
-+	dw->regs = NULL;
-+
-+	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	release_mem_region(io->start, DW_REGLEN);
-+
-+	kfree(dw);
-+
-+	dev_dbg(&pdev->dev, "dw_remove done\n");
-+
 +	return 0;
 +}
 +
-+static void dw_shutdown(struct platform_device *pdev)
-+{
-+	struct dw_dma	*dw = platform_get_drvdata(pdev);
-+
-+	dw_dma_off(platform_get_drvdata(pdev));
-+	clk_disable(dw->clk);
-+}
-+
-+static int dw_suspend_late(struct platform_device *pdev, pm_message_t mesg)
-+{
-+	struct dw_dma	*dw = platform_get_drvdata(pdev);
-+
-+	dw_dma_off(platform_get_drvdata(pdev));
-+	clk_disable(dw->clk);
-+	return 0;
-+}
-+
-+static int dw_resume_early(struct platform_device *pdev)
-+{
-+	struct dw_dma	*dw = platform_get_drvdata(pdev);
-+
-+	clk_enable(dw->clk);
-+	dma_writel(dw, CFG, DW_CFG_DMA_EN);
-+	return 0;
-+
-+}
-+
-+static struct platform_driver dw_driver = {
-+	.remove		= __exit_p(dw_remove),
-+	.shutdown	= dw_shutdown,
-+	.suspend_late	= dw_suspend_late,
-+	.resume_early	= dw_resume_early,
-+	.driver = {
-+		.name	= "dw_dmac",
++static struct platform_driver atmci_driver = {
++	.remove		= __exit_p(atmci_remove),
++	.driver		= {
++		.name		= DRIVER_NAME,
 +	},
 +};
 +
-+static int __init dw_init(void)
++static int __init atmci_init(void)
 +{
-+	BUILD_BUG_ON(NDMA > 8);
-+	return platform_driver_probe(&dw_driver, dw_probe);
++	return platform_driver_probe(&atmci_driver, atmci_probe);
 +}
-+device_initcall(dw_init);
 +
-+static void __exit dw_exit(void)
++static void __exit atmci_exit(void)
 +{
-+	platform_driver_unregister(&dw_driver);
++	platform_driver_unregister(&atmci_driver);
 +}
-+module_exit(dw_exit);
 +
++module_init(atmci_init);
++module_exit(atmci_exit);
++
++MODULE_DESCRIPTION("Atmel Multimedia Card Interface driver");
 +MODULE_LICENSE("GPL");
-diff --git a/drivers/dma/dw_dmac.h b/drivers/dma/dw_dmac.h
+diff --git a/drivers/mmc/host/atmel-mci.h b/drivers/mmc/host/atmel-mci.h
 new file mode 100644
-index 0000000..2f31656
+index 0000000..60d15c4
 --- /dev/null
-+++ b/drivers/dma/dw_dmac.h
-@@ -0,0 +1,256 @@
++++ b/drivers/mmc/host/atmel-mci.h
+@@ -0,0 +1,192 @@
 +/*
-+ * Driver for the Synopsys DesignWare AHB DMA Controller
++ * Atmel MultiMedia Card Interface driver
 + *
-+ * Copyright (C) 2005-2007 Atmel Corporation
++ * Copyright (C) 2004-2006 Atmel Corporation
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + */
++#ifndef __DRIVERS_MMC_ATMEL_MCI_H__
++#define __DRIVERS_MMC_ATMEL_MCI_H__
 +
-+/* REVISIT Synopsys provides a C header; use symbols from there instead? */
++/* MCI register offsets */
++#define MCI_CR					0x0000
++#define MCI_MR					0x0004
++#define MCI_DTOR				0x0008
++#define MCI_SDCR				0x000c
++#define MCI_ARGR				0x0010
++#define MCI_CMDR				0x0014
++#define MCI_BLKR				0x0018
++#define MCI_RSPR				0x0020
++#define MCI_RSPR1				0x0024
++#define MCI_RSPR2				0x0028
++#define MCI_RSPR3				0x002c
++#define MCI_RDR					0x0030
++#define MCI_TDR					0x0034
++#define MCI_SR					0x0040
++#define MCI_IER					0x0044
++#define MCI_IDR					0x0048
++#define MCI_IMR					0x004c
 +
-+/* per-channel registers */
-+#define DW_DMAC_CHAN_SAR	0x000
-+#define DW_DMAC_CHAN_DAR	0x008
-+#define DW_DMAC_CHAN_LLP	0x010
-+#define DW_DMAC_CHAN_CTL_LO	0x018
-+#	define DWC_CTLL_INT_EN		(1 << 0)	/* irqs enabled? */
-+#	define DWC_CTLL_DST_WIDTH(n)	((n)<<1)	/* bytes per element */
-+#	define DWC_CTLL_SRC_WIDTH(n)	((n)<<4)
-+#	define DWC_CTLL_DST_INC		(0<<7)		/* DAR update/not */
-+#	define DWC_CTLL_DST_DEC		(1<<7)
-+#	define DWC_CTLL_DST_FIX		(2<<7)
-+#	define DWC_CTLL_SRC_INC		(0<<7)		/* SAR update/not */
-+#	define DWC_CTLL_SRC_DEC		(1<<9)
-+#	define DWC_CTLL_SRC_FIX		(2<<9)
-+#	define DWC_CTLL_DST_MSIZE(n)	((n)<<11)	/* burst, #elements */
-+#	define DWC_CTLL_SRC_MSIZE(n)	((n)<<14)
-+#	define DWC_CTLL_S_GATH_EN	(1 << 17)	/* src gather, !FIX */
-+#	define DWC_CTLL_D_SCAT_EN	(1 << 18)	/* dst scatter, !FIX */
-+#	define DWC_CTLL_FC_M2M		(0 << 20)	/* mem-to-mem */
-+#	define DWC_CTLL_FC_M2P		(1 << 20)	/* mem-to-periph */
-+#	define DWC_CTLL_FC_P2M		(2 << 20)	/* periph-to-mem */
-+#	define DWC_CTLL_FC_P2P		(3 << 20)	/* periph-to-periph */
-+	/* plus 4 transfer types for peripheral-as-flow-controller */
-+#	define DWC_CTLL_DMS(n)		((n)<<23)
-+#	define DWC_CTLL_SMS(n)		((n)<<25)
-+#	define DWC_CTLL_LLP_D_EN	(1 << 27)	/* dest block chain */
-+#	define DWC_CTLL_LLP_S_EN	(1 << 28)	/* src block chain */
-+#define DW_DMAC_CHAN_CTL_HI	0x01c
-+#	define DWC_CTLH_DONE		0x00001000
-+#	define DWC_CTLH_BLOCK_TS_MASK	0x00000fff
-+#define DW_DMAC_CHAN_SSTAT	0x020
-+#define DW_DMAC_CHAN_DSTAT	0x028
-+#define DW_DMAC_CHAN_SSTATAR	0x030
-+#define DW_DMAC_CHAN_DSTATAR	0x038
-+#define DW_DMAC_CHAN_CFG_LO	0x040
-+#	define DWC_CFGL_PRIO(x)		((x) << 5)	/* priority */
-+#	define DWC_CFGL_CH_SUSP		(1 << 8)	/* pause xfer */
-+#	define DWC_CFGL_FIFO_EMPTY	(1 << 9)	/* pause xfer */
-+#	define DWC_CFGL_HS_DST		(1 << 10)	/* handshake w/dst */
-+#	define DWC_CFGL_HS_SRC		(1 << 11)	/* handshake w/src */
-+#	define DWC_CFGL_LOCK_CH_XFER	(0 << 12)	/* scope of LOCK_CH */
-+#	define DWC_CFGL_LOCK_CH_BLOCK	(1 << 12)
-+#	define DWC_CFGL_LOCK_CH_XACT	(2 << 12)
-+#	define DWC_CFGL_LOCK_BUS_XFER	(0 << 14)	/* scope of LOCK_BUS */
-+#	define DWC_CFGL_LOCK_BUS_BLOCK	(1 << 14)
-+#	define DWC_CFGL_LOCK_BUS_XACT	(2 << 14)
-+#	define DWC_CFGL_LOCK_CH		(1 << 15)	/* channel lockout */
-+#	define DWC_CFGL_LOCK_BUS	(1 << 16)	/* busmaster lockout */
-+#	define DWC_CFGL_HS_DST_POL	(1 << 18)
-+#	define DWC_CFGL_HS_SRC_POL	(1 << 19)
-+#	define DWC_CFGL_MAX_BURST(x)	((x) << 20)
-+#	define DWC_CFGL_RELOAD_SAR	(1 << 30)
-+#	define DWC_CFGL_RELOAD_DAR	(1 << 31)
-+#define DW_DMAC_CHAN_CFG_HI	0x044
-+#	define DWC_CFGH_FCMODE		(1 << 0)
-+#	define DWC_CFGH_FIFO_MODE	(1 << 1)
-+#	define DWC_CFGH_PROTCTL(x)	((x) << 2)
-+#	define DWC_CFGH_DS_UPD_EN	(1 << 5)
-+#	define DWC_CFGH_SS_UPD_EN	(1 << 6)
-+#	define DWC_CFGH_SRC_PER(x)	((x) << 7)
-+#	define DWC_CFGH_DST_PER(x)	((x) << 11)
-+#define DW_DMAC_CHAN_SGR	0x048
-+#	define DWC_SGR_SGI(x)		((x) << 0)
-+#	define DWC_SGR_SGC(x)		((x) << 20)
-+#define DW_DMAC_CHAN_DSR	0x050
-+#	define DWC_DSR_DSI(x)		((x) << 0)
-+#	define DWC_DSR_DSC(x)		((x) << 20)
++/* Bitfields in CR */
++#define MCI_MCIEN_OFFSET			0
++#define MCI_MCIEN_SIZE				1
++#define MCI_MCIDIS_OFFSET			1
++#define MCI_MCIDIS_SIZE				1
++#define MCI_PWSEN_OFFSET			2
++#define MCI_PWSEN_SIZE				1
++#define MCI_PWSDIS_OFFSET			3
++#define MCI_PWSDIS_SIZE				1
++#define MCI_SWRST_OFFSET			7
++#define MCI_SWRST_SIZE				1
 +
-+#define	DW_DMAC_CHAN_BASE(n)	((n)*0x58)
++/* Bitfields in MR */
++#define MCI_CLKDIV_OFFSET			0
++#define MCI_CLKDIV_SIZE				8
++#define MCI_PWSDIV_OFFSET			8
++#define MCI_PWSDIV_SIZE				3
++#define MCI_RDPROOF_OFFSET			11
++#define MCI_RDPROOF_SIZE			1
++#define MCI_WRPROOF_OFFSET			12
++#define MCI_WRPROOF_SIZE			1
++#define MCI_DMAPADV_OFFSET			14
++#define MCI_DMAPADV_SIZE			1
++#define MCI_BLKLEN_OFFSET			16
++#define MCI_BLKLEN_SIZE				16
 +
-+/* irq handling */
-+#define DW_DMAC_RAW_XFER	0x2c0		/* r */
-+#define DW_DMAC_RAW_BLOCK	0x2c8
-+#define DW_DMAC_RAW_SRC_TRAN	0x2d0
-+#define DW_DMAC_RAW_DST_TRAN	0x2d8
-+#define DW_DMAC_RAW_ERROR	0x2e0
++/* Bitfields in DTOR */
++#define MCI_DTOCYC_OFFSET			0
++#define MCI_DTOCYC_SIZE				4
++#define MCI_DTOMUL_OFFSET			4
++#define MCI_DTOMUL_SIZE				3
 +
-+#define DW_DMAC_STATUS_XFER	0x2e8		/* r (raw & mask) */
-+#define DW_DMAC_STATUS_BLOCK	0x2f0
-+#define DW_DMAC_STATUS_SRC_TRAN	0x2f8
-+#define DW_DMAC_STATUS_DST_TRAN	0x300
-+#define DW_DMAC_STATUS_ERROR	0x308
++/* Bitfields in SDCR */
++#define MCI_SDCSEL_OFFSET			0
++#define MCI_SDCSEL_SIZE				4
++#define MCI_SDCBUS_OFFSET			7
++#define MCI_SDCBUS_SIZE				1
 +
-+#define DW_DMAC_MASK_XFER	0x310		/* rw (set = irq enabled) */
-+#define DW_DMAC_MASK_BLOCK	0x318
-+#define DW_DMAC_MASK_SRC_TRAN	0x320
-+#define DW_DMAC_MASK_DST_TRAN	0x328
-+#define DW_DMAC_MASK_ERROR	0x330
++/* Bitfields in ARGR */
++#define MCI_ARG_OFFSET				0
++#define MCI_ARG_SIZE				32
 +
-+#define DW_DMAC_CLEAR_XFER	0x338		/* w (ack, affects "raw") */
-+#define DW_DMAC_CLEAR_BLOCK	0x340
-+#define DW_DMAC_CLEAR_SRC_TRAN	0x348
-+#define DW_DMAC_CLEAR_DST_TRAN	0x350
-+#define DW_DMAC_CLEAR_ERROR	0x358
++/* Bitfields in CMDR */
++#define MCI_CMDNB_OFFSET			0
++#define MCI_CMDNB_SIZE				6
++#define MCI_RSPTYP_OFFSET			6
++#define MCI_RSPTYP_SIZE				2
++#define MCI_SPCMD_OFFSET			8
++#define MCI_SPCMD_SIZE				3
++#define MCI_OPDCMD_OFFSET			11
++#define MCI_OPDCMD_SIZE				1
++#define MCI_MAXLAT_OFFSET			12
++#define MCI_MAXLAT_SIZE				1
++#define MCI_TRCMD_OFFSET			16
++#define MCI_TRCMD_SIZE				2
++#define MCI_TRDIR_OFFSET			18
++#define MCI_TRDIR_SIZE				1
++#define MCI_TRTYP_OFFSET			19
++#define MCI_TRTYP_SIZE				2
 +
-+#define DW_DMAC_STATUS_INT	0x360		/* r */
++/* Bitfields in BLKR */
++#define MCI_BCNT_OFFSET				0
++#define MCI_BCNT_SIZE				16
 +
-+/* software handshaking */
-+#define	DW_DMAC_REQ_SRC		0x368		/* rw */
-+#define	DW_DMAC_REQ_DST		0x370
-+#define	DW_DMAC_SGL_REQ_SRC	0x378
-+#define	DW_DMAC_SGL_REQ_DST	0x380
-+#define	DW_DMAC_LAST_SRC	0x388
-+#define	DW_DMAC_LAST_DST	0x390
++/* Bitfields in RSPRn */
++#define MCI_RSP_OFFSET				0
++#define MCI_RSP_SIZE				32
 +
-+/* miscellaneous */
-+#define DW_DMAC_CFG		0x398		/* rw */
-+#	define DW_CFG_DMA_EN		(1 << 0)
-+#define DW_DMAC_CH_EN		0x3a0
++/* Bitfields in SR/IER/IDR/IMR */
++#define MCI_CMDRDY_OFFSET			0
++#define MCI_CMDRDY_SIZE				1
++#define MCI_RXRDY_OFFSET			1
++#define MCI_RXRDY_SIZE				1
++#define MCI_TXRDY_OFFSET			2
++#define MCI_TXRDY_SIZE				1
++#define MCI_BLKE_OFFSET				3
++#define MCI_BLKE_SIZE				1
++#define MCI_DTIP_OFFSET				4
++#define MCI_DTIP_SIZE				1
++#define MCI_NOTBUSY_OFFSET			5
++#define MCI_NOTBUSY_SIZE			1
++#define MCI_ENDRX_OFFSET			6
++#define MCI_ENDRX_SIZE				1
++#define MCI_ENDTX_OFFSET			7
++#define MCI_ENDTX_SIZE				1
++#define MCI_RXBUFF_OFFSET			14
++#define MCI_RXBUFF_SIZE				1
++#define MCI_TXBUFE_OFFSET			15
++#define MCI_TXBUFE_SIZE				1
++#define MCI_RINDE_OFFSET			16
++#define MCI_RINDE_SIZE				1
++#define MCI_RDIRE_OFFSET			17
++#define MCI_RDIRE_SIZE				1
++#define MCI_RCRCE_OFFSET			18
++#define MCI_RCRCE_SIZE				1
++#define MCI_RENDE_OFFSET			19
++#define MCI_RENDE_SIZE				1
++#define MCI_RTOE_OFFSET				20
++#define MCI_RTOE_SIZE				1
++#define MCI_DCRCE_OFFSET			21
++#define MCI_DCRCE_SIZE				1
++#define MCI_DTOE_OFFSET				22
++#define MCI_DTOE_SIZE				1
++#define MCI_OVRE_OFFSET				30
++#define MCI_OVRE_SIZE				1
++#define MCI_UNRE_OFFSET				31
++#define MCI_UNRE_SIZE				1
 +
-+#define DW_DMAC_ID		0x3a8		/* r */
-+#define DW_DMAC_TEST		0x3b0		/* rw */
++/* Constants for DTOMUL */
++#define MCI_DTOMUL_1_CYCLE			0
++#define MCI_DTOMUL_16_CYCLES			1
++#define MCI_DTOMUL_128_CYCLES			2
++#define MCI_DTOMUL_256_CYCLES			3
++#define MCI_DTOMUL_1024_CYCLES			4
++#define MCI_DTOMUL_4096_CYCLES			5
++#define MCI_DTOMUL_65536_CYCLES			6
++#define MCI_DTOMUL_1048576_CYCLES		7
 +
-+/* optional encoded params, 0x3c8..0x3 */
++/* Constants for RSPTYP */
++#define MCI_RSPTYP_NO_RESP			0
++#define MCI_RSPTYP_48_BIT			1
++#define MCI_RSPTYP_136_BIT			2
 +
-+#define DW_REGLEN		0x400
++/* Constants for SPCMD */
++#define MCI_SPCMD_NO_SPEC_CMD			0
++#define MCI_SPCMD_INIT_CMD			1
++#define MCI_SPCMD_SYNC_CMD			2
++#define MCI_SPCMD_INT_CMD			4
++#define MCI_SPCMD_INT_RESP			5
 +
++/* Constants for TRCMD */
++#define MCI_TRCMD_NO_TRANS			0
++#define MCI_TRCMD_START_TRANS			1
++#define MCI_TRCMD_STOP_TRANS			2
 +
-+/* How many channels ... potentially, up to 8 */
-+#ifdef CONFIG_CPU_AT32AP7000
-+#define	NDMA	3
-+#endif
++/* Constants for TRTYP */
++#define MCI_TRTYP_BLOCK				0
++#define MCI_TRTYP_MULTI_BLOCK			1
++#define MCI_TRTYP_STREAM			2
 +
-+#ifndef NDMA
-+/* REVISIT want a better (static) solution than this */
-+#warning system unrecognized, assuming max NDMA=8
-+#define	NDMA	8
-+#endif
++/* Bit manipulation macros */
++#define MCI_BIT(name)					\
++	(1 << MCI_##name##_OFFSET)
++#define MCI_BF(name,value)				\
++	(((value) & ((1 << MCI_##name##_SIZE) - 1))	\
++	 << MCI_##name##_OFFSET)
++#define MCI_BFEXT(name,value)				\
++	(((value) >> MCI_##name##_OFFSET)		\
++	 & ((1 << MCI_##name##_SIZE) - 1))
++#define MCI_BFINS(name,value,old)			\
++	(((old) & ~(((1 << MCI_##name##_SIZE) - 1)	\
++		    << MCI_##name##_OFFSET))		\
++	 | MCI_BF(name,value))
 +
-+struct dw_dma_chan {
-+	struct dma_chan		chan;
-+	void __iomem		*ch_regs;
-+#ifdef USE_DMA_POOL
-+	struct dma_pool		*lli_pool;
-+#else
-+	struct kmem_cache	*lli_pool;
-+#endif
-+	struct device		*dev;
++/* Register access macros */
++#define mci_readl(port,reg)				\
++	__raw_readl((port)->regs + MCI_##reg)
++#define mci_writel(port,reg,value)			\
++	__raw_writel((value), (port)->regs + MCI_##reg)
 +
-+	u8			mask;
-+
-+	spinlock_t		lock;
-+
-+	/* these other elements are all protected by lock */
-+	dma_cookie_t		completed;
-+	struct list_head	active_list;
-+	struct list_head	queue;
-+	struct list_head	free_list;
-+
-+	struct dw_lli		*last_lli;
-+	struct dw_lli		*first_queued;
-+	struct dw_lli		*last_queued;
-+
-+	struct dma_slave	*slave;
-+
-+	unsigned int		descs_allocated;
-+};
-+
-+/* REVISIT these register access macros cause inefficient code: the st.w
-+ * and ld.w displacements are all zero, never DW_DMAC_ constants embedded
-+ * in the instructions.  GCC 4.0.2-atmel.0.99.2 issue?  Struct access is
-+ * as efficient as one would expect...
-+ */
-+
-+#define channel_readl(dwc, name) \
-+	__raw_readl((dwc)->ch_regs + DW_DMAC_CHAN_##name)
-+#define channel_writel(dwc, name, val) \
-+	__raw_writel((val), (dwc)->ch_regs + DW_DMAC_CHAN_##name)
-+
-+static inline struct dw_dma_chan *to_dw_dma_chan(struct dma_chan *chan)
-+{
-+	return container_of(chan, struct dw_dma_chan, chan);
-+}
-+
-+
-+struct dw_dma {
-+	struct dma_device	dma;
-+	void __iomem		*regs;
-+#ifdef USE_DMA_POOL
-+	struct dma_pool		*lli_pool;
-+#else
-+	struct kmem_cache	*lli_pool;
-+#endif
-+	struct tasklet_struct	tasklet;
-+	struct clk		*clk;
-+	struct dw_dma_chan	chan[NDMA];
-+};
-+
-+#define dma_readl(dw, name) \
-+	__raw_readl((dw)->regs + DW_DMAC_##name)
-+#define dma_writel(dw, name, val) \
-+	__raw_writel((val), (dw)->regs + DW_DMAC_##name)
-+
-+#define channel_set_bit(dw, reg, mask) \
-+	dma_writel(dw, reg, ((mask) << 8) | (mask))
-+#define channel_clear_bit(dw, reg, mask) \
-+	dma_writel(dw, reg, ((mask) << 8) | 0)
-+
-+static inline struct dw_dma *to_dw_dma(struct dma_device *ddev)
-+{
-+	return container_of(ddev, struct dw_dma, dma);
-+}
-+
-+
-+/* LLI == Linked List Item; a.k.a. DMA block descriptor */
-+struct dw_lli {
-+	/* FIRST values the hardware uses */
-+	dma_addr_t	sar;
-+	dma_addr_t	dar;
-+	dma_addr_t	llp;		/* chain to next lli */
-+	u32		ctllo;
-+	/* values that may get written back: */
-+	u32		ctlhi;
-+	/* sstat and dstat can snapshot peripheral register state.
-+	 * silicon config may discard either or both...
-+	 */
-+	u32		sstat;
-+	u32		dstat;
-+
-+	/* THEN values for driver housekeeping */
-+	struct dw_lli	*next;
-+	dma_addr_t	phys;
-+	int		last;
-+};
-+
-+struct dw_desc {
-+	struct dw_lli	*first_lli;
-+	struct dw_lli	*last_lli;
-+
-+	struct dma_slave_descriptor slave;
-+	struct list_head desc_node;
-+};
-+
-+static inline struct dw_desc *
-+txd_to_dw_desc(struct dma_async_tx_descriptor *txd)
-+{
-+	return container_of(txd, struct dw_desc, slave.txd);
-+}
-+
-+static inline struct dw_desc *
-+sd_to_dw_desc(struct dma_slave_descriptor *sd)
-+{
-+	return container_of(sd, struct dw_desc, slave);
-+}
-diff --git a/include/asm-avr32/arch-at32ap/at32ap700x.h b/include/asm-avr32/arch-at32ap/at32ap700x.h
-index 99684d6..064f5a9 100644
---- a/include/asm-avr32/arch-at32ap/at32ap700x.h
-+++ b/include/asm-avr32/arch-at32ap/at32ap700x.h
-@@ -32,4 +32,20 @@
- #define GPIO_PIN_PD(N)	(GPIO_PIOD_BASE + (N))
- #define GPIO_PIN_PE(N)	(GPIO_PIOE_BASE + (N))
++#endif /* __DRIVERS_MMC_ATMEL_MCI_H__ */
+diff --git a/include/asm-avr32/arch-at32ap/board.h b/include/asm-avr32/arch-at32ap/board.h
+index d6993a6..665682e 100644
+--- a/include/asm-avr32/arch-at32ap/board.h
++++ b/include/asm-avr32/arch-at32ap/board.h
+@@ -66,7 +66,15 @@ struct platform_device *
+ at32_add_device_ssc(unsigned int id, unsigned int flags);
  
+ struct platform_device *at32_add_device_twi(unsigned int id);
+-struct platform_device *at32_add_device_mci(unsigned int id);
 +
-+/*
-+ * DMAC peripheral hardware handshaking interfaces, used with dw_dmac
-+ */
-+#define DMAC_MCI_RX		0
-+#define DMAC_MCI_TX		1
-+#define DMAC_DAC_TX		2
-+#define DMAC_AC97_A_RX		3
-+#define DMAC_AC97_A_TX		4
-+#define DMAC_AC97_B_RX		5
-+#define DMAC_AC97_B_TX		6
-+#define DMAC_DMAREQ_0		7
-+#define DMAC_DMAREQ_1		8
-+#define DMAC_DMAREQ_2		9
-+#define DMAC_DMAREQ_3		10
-+
- #endif /* __ASM_ARCH_AT32AP700X_H__ */
++struct mci_platform_data {
++	unsigned int tx_periph_id;
++	unsigned int rx_periph_id;
++	int detect_pin;
++	int wp_pin;
++};
++struct platform_device *
++at32_add_device_mci(unsigned int id, struct mci_platform_data *data);
+ struct platform_device *at32_add_device_ac97c(unsigned int id);
+ struct platform_device *at32_add_device_abdac(unsigned int id);
+ 
 -- 
 1.5.3.8
 
