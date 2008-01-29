@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762861AbYA2A2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763632AbYA2Aa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762861AbYA2A2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 19:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbYA2A2I
+	id S1763632AbYA2Aa1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 19:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbYA2AaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 19:28:08 -0500
-Received: from mga02.intel.com ([134.134.136.20]:59393 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753414AbYA2A2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 19:28:05 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,264,1199692800"; 
-   d="scan'208";a="331191518"
-From: Jason Gaston <jason.d.gaston@intel.com>
-To: perex@suse.cz, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       tiwai@suse.de, jason.d.gaston@intel.com
-Subject: [PATCH 2.6.24] hda_intel: ALSA HD Audio patch for Intel ICH10 DeviceID's
-Date: Mon, 28 Jan 2008 17:31:00 -0800
-User-Agent: KMail/1.9.1
+	Mon, 28 Jan 2008 19:30:11 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:34625 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753470AbYA2AaJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 19:30:09 -0500
+Date: Tue, 29 Jan 2008 00:29:58 +0000
+From: Christoph Hellwig <hch@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>, torvalds@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] unexport sys_{open,read}
+Message-ID: <20080129002958.GA32567@infradead.org>
+References: <20080128221040.GQ8767@does.not.exist>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801281731.00789.jason.d.gaston@intel.com>
+In-Reply-To: <20080128221040.GQ8767@does.not.exist>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the Intel ICH10 HD Audio Controller DeviceID's.
+On Tue, Jan 29, 2008 at 12:10:40AM +0200, Adrian Bunk wrote:
+> Now that they are unused we can finally unexport sys_{open,read}.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+Linus. any reason this is not in? 
 
---- linux-2.6.24/sound/pci/hda/hda_intel.c.orig	2008-01-24 14:58:37.000000000 -0800
-+++ linux-2.6.24/sound/pci/hda/hda_intel.c	2008-01-28 14:58:22.000000000 -0800
-@@ -98,6 +98,7 @@
- 			 "{Intel, ESB2},"
- 			 "{Intel, ICH8},"
- 			 "{Intel, ICH9},"
-+			 "{Intel, ICH10},"
- 			 "{ATI, SB450},"
- 			 "{ATI, SB600},"
- 			 "{ATI, RS600},"
-@@ -1936,6 +1937,8 @@
- 	{ 0x8086, 0x284b, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_ICH }, /* ICH8 */
- 	{ 0x8086, 0x293e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_ICH }, /* ICH9 */
- 	{ 0x8086, 0x293f, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_ICH }, /* ICH9 */
-+	{ 0x8086, 0x3a3e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_ICH }, /* ICH10 */
-+	{ 0x8086, 0x3a6e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_ICH }, /* ICH10 */
- 	{ 0x1002, 0x437b, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_ATI }, /* ATI SB450 */
- 	{ 0x1002, 0x4383, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_ATI }, /* ATI SB600 */
- 	{ 0x1002, 0x793b, PCI_ANY_ID, PCI_ANY_ID, 0, 0, AZX_DRIVER_ATIHDMI }, /* ATI RS600 HDMI */
+> 
+>  fs/open.c       |    1 -
+>  fs/read_write.c |    1 -
+>  2 files changed, 2 deletions(-)
+> 
+> eb86553917b5d7dc5c22e584145360ad0460372e 
+> diff --git a/fs/open.c b/fs/open.c
+> index 4932b4d..21acf85 100644
+> --- a/fs/open.c
+> +++ b/fs/open.c
+> @@ -1061,7 +1061,6 @@ asmlinkage long sys_open(const char __user *filename, int flags, int mode)
+>  	prevent_tail_call(ret);
+>  	return ret;
+>  }
+> -EXPORT_UNUSED_SYMBOL_GPL(sys_open); /* To be deleted for 2.6.25 */
+>  
+>  asmlinkage long sys_openat(int dfd, const char __user *filename, int flags,
+>  			   int mode)
+> diff --git a/fs/read_write.c b/fs/read_write.c
+> index c4d3d17..af2c82f 100644
+> --- a/fs/read_write.c
+> +++ b/fs/read_write.c
+> @@ -366,7 +366,6 @@ asmlinkage ssize_t sys_read(unsigned int fd, char __user * buf, size_t count)
+>  
+>  	return ret;
+>  }
+> -EXPORT_UNUSED_SYMBOL_GPL(sys_read); /* to be deleted for 2.6.25 */
+>  
+>  asmlinkage ssize_t sys_write(unsigned int fd, const char __user * buf, size_t count)
+>  {
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+---end quoted text---
