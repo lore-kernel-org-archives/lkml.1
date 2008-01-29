@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbYA2Mnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758682AbYA2Mou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757365AbYA2Mnd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 07:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbYA2MnY
+	id S1758682AbYA2Mou (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 07:44:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbYA2Mon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 07:43:24 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:35543 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754278AbYA2MnX (ORCPT
+	Tue, 29 Jan 2008 07:44:43 -0500
+Received: from michael.checkpoint.com ([194.29.32.68]:58983 "EHLO
+	michael.checkpoint.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754617AbYA2Mom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 07:43:23 -0500
-Message-ID: <479F1F69.5000206@s5r6.in-berlin.de>
-Date: Tue, 29 Jan 2008 13:43:21 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+	Tue, 29 Jan 2008 07:44:42 -0500
+X-Greylist: delayed 1884 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Jan 2008 07:44:41 EST
+Message-ID: <479F1866.4050007@checkpoint.com>
+Date: Tue, 29 Jan 2008 14:13:26 +0200
+From: Yoav Artzi <yoavar@checkpoint.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/7] X86: Fix trailing statements should be on next line
-References: <20080129000744.698639d3@paolo-desktop> <20080128230746.GL8953@1wt.eu>
-In-Reply-To: <20080128230746.GL8953@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: Sending IOCTLs from 32-bit userland to 64-bit Kernel module
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> Hi Paolo,
-> 
-> On Tue, Jan 29, 2008 at 12:07:44AM +0100, Paolo Ciarrocchi wrote:
->> Fix trailing statements should be on next line
-> 
->> -if ( partial_status & SW_C3 )          printk("SW: condition bit 3\n");
-...
->> +if ( partial_status & SW_Backward )
->> +printk("SW: backward compatibility\n");
-...
-> 
-> Well, IMHO, the code was more readable and checkable in the initial
-> version. I think this is one example of exceptions where code appearance
-> is more important than style correctness.
+Hi,
 
-Besides, the proposed style "fix" itself violates CodingStyle in at
-least two obvious ways.
--- 
-Stefan Richter
--=====-==--- ---= ===-=
-http://arcgraph.de/sr/
+
+I have a 32-bit user land application which sends an IOCTL to a 64-bit 
+Kernel module. I have a few different cmd codes that I can send through 
+the IOCTL. For some reason I seem to always get the same IOCTL cmd from 
+user land, no matter what the ioctl() call is given. This cmd code that 
+I get has some bytes (W/R and the module code) that are OK, but the rest 
+is just garbage or zeros. This was originally a 32-bit system, and we 
+are no converting the Kernel module to 64-bit, so maybe there's 
+something special for 32-64 communication that miss.
+
+
+I am working on Linux Kernel v2.6.18.
+
+
+Thanks
+
