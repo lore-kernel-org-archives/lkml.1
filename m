@@ -1,116 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761373AbYA1QOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbYA1QQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761373AbYA1QOx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 11:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbYA1QOq
+	id S1761468AbYA1QQT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 11:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYA1QQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 11:14:46 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1634 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752624AbYA1QOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 11:14:45 -0500
-Date: Mon, 28 Jan 2008 16:11:48 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Arai <arai@vmware.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: ACPI CPU hot removal: Problem with automatic scripting in response to hotplug events
-Message-ID: <20080128161148.GB4032@ucw.cz>
-References: <4790EC2D.4050201@vmware.com>
-Mime-Version: 1.0
+	Mon, 28 Jan 2008 11:16:10 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:45267 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753009AbYA1QQJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 11:16:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:x-mailer:x-operating-system:user-agent;
+        b=Xif8yInuoZeXQf6gYGSTmA0bd9UpjDIpRu1FOfI2AV/YBlQOY3RoTGkNmrryKiXSmU3rm21eVKsH66zoMQvEia5RzIoICXKllvTy/J5NxOo6NlhPxHGxfXK6/LvEEnCFMo/fPp3C++LUodo1VbzyVZpzfUhATiUo8GxU3Z9cRxk=
+Date: Tue, 29 Jan 2008 08:21:40 +0800
+From: Zhenyu Wang <zhen78@gmail.com>
+To: mark gross <mgross@linux.intel.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>
+Subject: Re: [agp-mm][PATCH 1/4][intel_iommu] explicit export current graphics dmar status
+Message-ID: <20080129002140.GA11932@localdomain>
+References: <20071218050809.GA12564@zhen-devel.sh.intel.com> <20071219052030.GA24238@zhen-devel.sh.intel.com> <20071219052608.GB24238@zhen-devel.sh.intel.com> <20080104015338.GA17253@zhen-devel.sh.intel.com> <20080108204420.GA9491@linux.intel.com> <20080125030255.GB19129@zhen-devel.sh.intel.com> <20080125180820.GA16868@linux.intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4790EC2D.4050201@vmware.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080125180820.GA16868@linux.intel.com>
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.24-rc6 unknown
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-01-18 10:13:01, Daniel Arai wrote:
-> I have an x86_64 system that's capable of doing ACPI CPU 
-> hot removal.
-> One issue that's worrying me right now is that there 
-> isn't enough
-> information to automatically script CPU removal when 
-> it's requested by
-> the hardware platform.
+On 2008.01.25 10:08:20 -0800, mark gross wrote:
+> > This is used for our graphics driver module to know if we have to
+> > do dma remapping in iommu case, both in kernel config and kernel
+> > boot time param config. 
 > 
-> I'm doing my testing with 2.6.24-rc8 from kernel.org.  I 
-> have applied
-> the patch series from 
-> http://bugzilla.kernel.org/show_bug.cgi?id=2884
-> to avoid running into deadlocks on CPU removal.  This 
-> issue is almost
-> certainly independent of these patches.
+> ok. How soon do you need this export?
 > 
-> /sbin/hotplug does get invoked for CPU ejection requests 
-> that are sent
-> from the platform.  It only gets a pointer to the ACPI 
-> /sys node
-> describing the ACPI processor object for which ejection 
-> has been
-> requested.  There doesn't seem to be a way to map from 
-> this device
-> node to a CPU number so the processor can be taken 
-> offline before
 
-Submit a patch, I guess you are first one with physical hotplug
-capable system.
+As graphics part of these patches depend on this one, it should go
+first, or along with agpgart patches, that should first be in Airlie's
+agp-mm queue.
 
-> 3. Provide a symbolic link from the ACPI device tree to 
-> the
-> appropriate CPU device, and possibly the reverse link as 
-> well.  This
-> would enable /sbin/hotplug to find the appropriate CPU 
-> node to take
-> the CPU offline by itself, and would also be usefil for 
-> a system
-> administrator who needs to know the mapping from ACPI 
-> device to CPU
-> number.  What I don't know is how hard it is to 
-> construct these new
-> nodes.  It also gets slightly messy because ACPI 
-> processor objects can
-> appear at different levels in the /sys node hierarchy 
-> depending on how
-> they're represented in the ACPI tables, so constructing 
-> relative
-> symlinks isn't a trivial matter.
-> 
-> I think that overall the third approach seems the most 
-> appealing,
-> because it provides additional information to the system 
-> administrator
-> without adding special information just there for 
-> /sbin/hotplug.  I
-> think #1 is probably a nice thing to have just in 
-> general, though I
-> don't understand the rationale for the code being the 
-> way it is now.
-> Sadly, #2 is the only one I'm sure I know how to 
-> implement.
+> send me your current patch and eta for the graphics module patches so I
+> can better coordinate with you.
 
-So do #2 and see what happens...
+You can find my current patches against agp-mm tree (so equally against
+current -mm kernel) here, http://people.freedesktop.org/~zhen/, fixed
+with some warnings from checkpatch.
 
-> So any suggestions on the best way to go about solving 
-> this problem?
-> 
-> I've also noticed one other minor anomaly.  CPUs get 
-> device nodes
-> named ACPI0007:00, ACPI0007:01, ACPI0007:02, etc.  If I 
-> remove a CPU
-> from the system, then add another cpu to the system, the 
-> removed
-> device node goes away, but its number doesn't get 
-> reused.  So if I
-> remove and then re-add the same CPU over and over, I end 
-> up getting
-> nodes named ACPI0007:03, then that gets deleted, then I 
-> get
-> ACPI0007:04, and so on.  Is this supposed to happen?  
-> What happens if
-> I remove and add the same CPU more than 99 times?
-
-No idea, I'm surprised it works at all...
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
