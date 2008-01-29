@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933509AbYA2ROq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933586AbYA2RQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933509AbYA2ROq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 12:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764815AbYA2RON
+	id S933586AbYA2RQW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 12:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764759AbYA2RQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 12:14:13 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:35030 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760172AbYA2ROJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 12:14:09 -0500
-Message-ID: <479F5EDF.9010601@pobox.com>
-Date: Tue, 29 Jan 2008 12:14:07 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Jason Gaston <jason.d.gaston@intel.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, htejun@gmail.com
-Subject: Re: [PATCH 2.6.24] ata_piix:  IDE mode SATA patch for Intel ICH10
- DeviceID's
-References: <200801281736.45574.jason.d.gaston@intel.com>
-In-Reply-To: <200801281736.45574.jason.d.gaston@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Tue, 29 Jan 2008 12:16:08 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:52288 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752296AbYA2RQF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 12:16:05 -0500
+Date: Tue, 29 Jan 2008 12:12:03 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Problem with ata layer in 2.6.24
+In-reply-to: <479F5B39.1000708@garzik.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Florian Attenberger <valdyn@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Message-id: <200801291212.03910.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200801272122.21823.gene.heskett@gmail.com>
+ <200801291004.12565.gene.heskett@gmail.com> <479F5B39.1000708@garzik.org>
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Gaston wrote:
-> This patch adds the Intel ICH10 IDE mode SATA Controller DeviceID's.
-> 
-> Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
-> 
-> --- linux-2.6.24/drivers/ata/ata_piix.c.orig	2008-01-24 14:58:37.000000000 -0800
-> +++ linux-2.6.24/drivers/ata/ata_piix.c	2008-01-28 14:58:22.000000000 -0800
-> @@ -263,6 +263,14 @@
->  	{ 0x8086, 0x292e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
->  	/* SATA Controller IDE (Tolapai) */
->  	{ 0x8086, 0x5028, PCI_ANY_ID, PCI_ANY_ID, 0, 0, tolapai_sata_ahci },
-> +	/* SATA Controller IDE (ICH10) */
-> +	{ 0x8086, 0x3a00, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
-> +	/* SATA Controller IDE (ICH10) */
-> +	{ 0x8086, 0x3a06, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_2port_sata },
-> +	/* SATA Controller IDE (ICH10) */
-> +	{ 0x8086, 0x3a20, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
-> +	/* SATA Controller IDE (ICH10) */
-> +	{ 0x8086, 0x3a26, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_2port_sata },
+On Tuesday 29 January 2008, Jeff Garzik wrote:
+>Gene Heskett wrote:
+>> Does anyone know why my dvdwriter isn't being assigned a '/dev/sdx' number
+>> when dmesg says its found ok at ata2.00?  I've turned on an option that
+>> says something about using the bios for device access this build, but I'll
+>> be surprised if that's it. :)
+>
+>I think you mean /dev/scdx not /dev/sdx.  Make sure you have the 'sr'
+>driver compiled and load (CONFIG_BLK_DEV_SR).
+>
+That menu item COULD be moved, I don't have any REAL scsi stuff, so I didn't 
+look there.  My bad, with help from hiding it like that. :-)
 
-can these do AHCI mode without losing any PATA ports?
+>The bios-for-dev-access thing definitely won't help, and may hurt (by
+>taking over the device you wanted to test).
+>
+Ok, if BLK_DEV_SR fails, I'll take that back out.  I'm heating the room making 
+kernels here. :)
 
-if so, I would prefer to always drive the hardware in AHCI mode, if it 
-is capable of doing so.
+Thanks Jeff.
 
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Life sucks, but death doesn't put out at all.
+		-- Thomas J. Kopp
