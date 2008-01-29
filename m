@@ -1,93 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764638AbYA2QoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765537AbYA2Qoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764638AbYA2QoK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:44:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbYA2Qn5
+	id S1765537AbYA2Qoq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:44:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbYA2Qoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:43:57 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:53780 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754256AbYA2Qn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:43:56 -0500
-Date: Tue, 29 Jan 2008 10:43:54 -0600
-To: linux-kernel@vger.kernel.org
-Cc: pj@sgi.com, akpm@osdl.org
-Subject: [PATCH 4/4] hotplug cpu move tasks in empty cpusets - refinements
-User-Agent: nail 11.25 7/29/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 29 Jan 2008 11:44:37 -0500
+Received: from mail.cyberdogtech.com ([64.22.125.39]:50340 "EHLO
+	mail.cyberdogtech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753041AbYA2Qog (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 11:44:36 -0500
+Date: Tue, 29 Jan 2008 10:44:28 -0600
+From: Matt LaPlante <kernel1@cyberdogtech.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: "Default Linux Capabilities" default in 2.6.24
+Message-Id: <20080129104428.787c6c6f.kernel1@cyberdogtech.com>
+In-Reply-To: <20080129130825.GD28931@sergelap.austin.ibm.com>
+References: <20080124191201.324cf1a0.kernel1@cyberdogtech.com>
+	<20080128201041.e0ac76d5.kernel1@cyberdogtech.com>
+	<Xine.LNX.4.64.0801291347460.29383@us.intercode.com.au>
+	<20080129130825.GD28931@sergelap.austin.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080129164354.D7E5F33B943@attica.americas.sgi.com>
-From: cpw@sgi.com (Cliff Wickman)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 29 Jan 2008 07:08:25 -0600
+"Serge E. Hallyn" <serue@us.ibm.com> wrote:
 
-   Narrow the scope of callback_mutex in scan_for_empty_cpusets().
-    Avoid rewriting the cpus, mems of cpusets except when it is
-         likely that we'll be changing them.
-    Have remove_tasks_in_empty_cpuset() also check for empty mems.
+> Quoting James Morris (jmorris@namei.org):
+> > On Mon, 28 Jan 2008, Matt LaPlante wrote:
+> > 
+> > > On Thu, 24 Jan 2008 19:12:01 -0600
+> > > Matt LaPlante <kernel1@cyberdogtech.com> wrote:
+> > > 
+> > > > 
+> > > > I'm doing a make oldconfig with the new 2.6.24 kernel.  I came to the prompt for "Default Linux Capabilities" which defaults to No:
+> > > > 
+> > > > ---
+> > > >  Default Linux Capabilities (SECURITY_CAPABILITIES) [N/y/?] (NEW) ?
+> > > > ---
+> > > > 
+> > > > However the help text recommends saying Yes.
+> > > > 
+> > > > ---
+> > > >  This enables the "default" Linux capabilities functionality.
+> > > >  If you are unsure how to answer this question, answer Y.
+> > > > ---
+> > > > 
+> > > > Does this seem incongruous?  Also, what's the "question"? :)
+> > > > 
+> > > > Thanks, 
+> > > > Matt LaPlante
+> > > 
+> > > Anyone?
+> > 
+> > I think this should be default y.
+> 
+> True, it was made the default when CONFIG_SECURITY=n a few years ago,
+> and switching it off when toggling CONFIG_SECURITY is probably unsafe
+> for unsuspecting users/testers.
+> 
+> Thanks Matt.
+> 
+> -serge
+> 
+> From 0528f582de5534b972abddbb3294a3fb11435a21 Mon Sep 17 00:00:00 2001
+> From: sergeh@us.ibm.com <hallyn@kernel.(none)>
+> Date: Tue, 29 Jan 2008 05:04:43 -0800
+> Subject: [PATCH 1/1] security: compile capabilities by default
+> 
+> Capabilities have long been the default when CONFIG_SECURITY=n,
+> and its help text suggests turning it on when CONFIG_SECURITY=y.
+> But it is set to default n.
+> 
+> Default it to y instead.
+> 
+> Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+> ---
+>  security/Kconfig |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/security/Kconfig b/security/Kconfig
+> index 8086e61..389e151 100644
+> --- a/security/Kconfig
+> +++ b/security/Kconfig
+> @@ -76,6 +76,7 @@ config SECURITY_NETWORK_XFRM
+>  config SECURITY_CAPABILITIES
+>  	bool "Default Linux Capabilities"
+>  	depends on SECURITY
+> +	default y
+>  	help
+>  	  This enables the "default" Linux capabilities functionality.
+>  	  If you are unsure how to answer this question, answer Y.
+> -- 
+> 1.5.1
+> 
 
-Signed-off-by: Paul Jackson <pj@sgi.com>
-Acked-by: Cliff Wickman <cpw@sgi.com>
-
-
----
-
- kernel/cpuset.c |   21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/kernel/cpuset.c
-===================================================================
---- linux-2.6.orig/kernel/cpuset.c
-+++ linux-2.6/kernel/cpuset.c
-@@ -1748,7 +1748,8 @@ static void remove_tasks_in_empty_cpuset
- 	 * has online cpus, so can't be empty).
- 	 */
- 	parent = cs->parent;
--	while (cpus_empty(parent->cpus_allowed))
-+	while (cpus_empty(parent->cpus_allowed) ||
-+			nodes_empty(parent->mems_allowed))
- 		parent = parent->parent;
- 
- 	move_member_tasks_to_cpuset(cs, parent);
-@@ -1780,7 +1781,6 @@ static void scan_for_empty_cpusets(const
- 
- 	list_add_tail((struct list_head *)&root->stack_list, &queue);
- 
--	mutex_lock(&callback_mutex);
- 	while (!list_empty(&queue)) {
- 		cp = container_of(queue.next, struct cpuset, stack_list);
- 		list_del(queue.next);
-@@ -1789,19 +1789,24 @@ static void scan_for_empty_cpusets(const
- 			list_add_tail(&child->stack_list, &queue);
- 		}
- 		cont = cp->css.cgroup;
-+
-+		/* Continue past cpusets with all cpus, mems online */
-+		if (cpus_subset(cp->cpus_allowed, cpu_online_map) &&
-+		    nodes_subset(cp->mems_allowed, node_states[N_HIGH_MEMORY]))
-+			continue;
-+
- 		/* Remove offline cpus and mems from this cpuset. */
-+		mutex_lock(&callback_mutex);
- 		cpus_and(cp->cpus_allowed, cp->cpus_allowed, cpu_online_map);
- 		nodes_and(cp->mems_allowed, cp->mems_allowed,
- 						node_states[N_HIGH_MEMORY]);
-+		mutex_unlock(&callback_mutex);
-+
-+		/* Move tasks from the empty cpuset to a parent */
- 		if (cpus_empty(cp->cpus_allowed) ||
--		     nodes_empty(cp->mems_allowed)) {
--		        /* Move tasks from the empty cpuset to a parent */
--			mutex_unlock(&callback_mutex);
-+		     nodes_empty(cp->mems_allowed))
- 			remove_tasks_in_empty_cpuset(cp);
--			mutex_lock(&callback_mutex);
--		}
- 	}
--	mutex_unlock(&callback_mutex);
- }
- 
- /*
+Acked-by: Matt LaPlante <kernel1@cyberdogtech.com>
