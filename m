@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934171AbYA2TiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934201AbYA2Ti4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934171AbYA2TiR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 14:38:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934109AbYA2Tho
+	id S934201AbYA2Ti4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 14:38:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYA2Tik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 14:37:44 -0500
-Received: from smtp-out001.kontent.com ([81.88.40.215]:42812 "EHLO
-	smtp-out001.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934103AbYA2Thn (ORCPT
+	Tue, 29 Jan 2008 14:38:40 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53302 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752839AbYA2Tii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 14:37:43 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Tobias Lorenz <tobias.lorenz@gmx.net>
-Subject: Re: [PATCH] radio-si470x.c: check-after-use
-Date: Tue, 29 Jan 2008 20:37:36 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Adrian Bunk <bunk@kernel.org>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-References: <20080128221300.GH8767@does.not.exist> <200801282343.13589.tobias.lorenz@gmx.net>
-In-Reply-To: <200801282343.13589.tobias.lorenz@gmx.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 29 Jan 2008 14:38:38 -0500
+Date: Tue, 29 Jan 2008 19:34:03 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: Richard Heck <rgheck@bobjweil.com>, Gene Heskett <gene.heskett@gmail.com>,
+       Zan Lynx <zlynx@acm.org>, Calvin Walton <calvin.walton@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Subject: Re: Problem with ata layer in 2.6.24
+Message-ID: <20080129193403.62fe95e8@core>
+In-Reply-To: <alpine.LNX.1.00.0801291354240.13593@iabervon.org>
+References: <200801272122.21823.gene.heskett@gmail.com>
+	<1201539043.31293.7.camel@zem>
+	<1201540830.6526.19.camel@localhost>
+	<200801281230.32910.gene.heskett@gmail.com>
+	<alpine.LNX.1.00.0801281248190.13593@iabervon.org>
+	<479E1D9E.3000900@bobjweil.com>
+	<20080129121201.2f727f5f@core>
+	<alpine.LNX.1.00.0801291202550.13593@iabervon.org>
+	<20080129184613.16846ae5@core>
+	<alpine.LNX.1.00.0801291354240.13593@iabervon.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801292037.36647.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 28 Januar 2008 schrieb Tobias Lorenz:
-> > Either "radio" can be NULL and this case has to be properly handled or 
-> > the NULL check is not required.
-> 
-> These two lines should indeed better be inside the if statement. The patch for this is below.
+> I've seen a lot of verbosity out of SCSI messages, but I haven't seen a 
+> straightforward interpretation of the problem in there. It's all 
+> information useful for debugging, not information useful for system 
+> administration.
 
-No, in disconnect intfdata must be valid. Any check for NULL is wrong
-there.
+It tells you what is going on. Unfortunately that frequently requires
+some basic knowledge of how to interpret the error report. Drive
+interface behaviour simply doesn't boil down to a fault light on the
+dashboard or a "tighten the cable". For most common fault types you'll
+get errors most administrators should find meaningful - like "Media error"
 
-	Regards
-		Oliver
+> On the other hand, bringing the system down because a device is 
+> misbehaving is a poor idea. I've personally recovered most of the data off 
 
+Hence we have RAID and SATA hotplug.
+
+Alan
