@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbYA2Osu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760372AbYA2Ow3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757197AbYA2Osu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:48:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYA2Osi
+	id S1760372AbYA2Ow3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:52:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbYA2OwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:48:38 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37891 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752947AbYA2Osh (ORCPT
+	Tue, 29 Jan 2008 09:52:21 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:62198 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753718AbYA2OwT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:48:37 -0500
-Date: Tue, 29 Jan 2008 06:47:24 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: tcamuso@redhat.com
-Cc: Greg KH <greg@kroah.com>, Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
- opt-in
-Message-ID: <20080129064724.0f7e91e5@laptopd505.fenrus.org>
-In-Reply-To: <479F34E6.40806@redhat.com>
-References: <20080114225225.GQ18741@parisc-linux.org>
-	<20080114230448.GL9847@does.not.exist>
-	<478CD8A5.5090608@myri.com>
-	<20080115174643.GB28238@kroah.com>
-	<20080115175641.GE18741@parisc-linux.org>
-	<20080119165809.GB11553@colo.lackof.org>
-	<479E1FA6.1030708@redhat.com>
-	<20080128204431.GA15227@kroah.com>
-	<20080128190505.5f5b1ccc@laptopd505.fenrus.org>
-	<20080129031804.GF20198@parisc-linux.org>
-	<20080129131955.GC10761@kroah.com>
-	<479F34E6.40806@redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 29 Jan 2008 09:52:19 -0500
+Date: Tue, 29 Jan 2008 09:51:53 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Problem with ata layer in 2.6.24
+In-reply-to: <20080129121201.2f727f5f@core>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Richard Heck <rgheck@bobjweil.com>,
+       Daniel Barkalow <barkalow@iabervon.org>, Zan Lynx <zlynx@acm.org>,
+       Calvin Walton <calvin.walton@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Message-id: <200801290951.55492.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200801272122.21823.gene.heskett@gmail.com>
+ <479E1D9E.3000900@bobjweil.com> <20080129121201.2f727f5f@core>
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jan 2008 09:15:02 -0500
-Tony Camuso <tcamuso@redhat.com> wrote:
+On Tuesday 29 January 2008, Alan Cox wrote:
+>> not one problem but lots---is sufficiently widespread that a Mini HOWTO,
+>> say, would be really welcome and, I'm guessing, widely used.
+>
+>We don't see very many libata problems at the distro level and they for
+>the most part boil down to
+>
+>- error messages looking different - Most bugs I get are things like
+>media errors (timeout looks different, UNC report looks different)
+>
+>- broken hardware - I've closed a whole raft of bugs that turn out to be
+>new PC systems where even the BIOS doesn't see the drives
+>
+>- faulty hardware being picked up because we actually do real error
+>checking now. We now check for and give some devices more slack while
+>still doing error checking. Both IDE layers also added blacklists for
+>stuff like the TSScorp DVD drives. Qemu has now had its bugs patched.
+>
+>- sata_nv with >4GB of RAM, knowing being worked on, no old IDE driver
+>anyway
+>
+>- pata_ali MWDMA with ATAPI, PIO works fine, all a bit of a mystery and
+>as it affects only a few chip variants hard to figure out. Workaround
+>libata.dma=1
+>
+>- CS handling. On a few boxes using cable select (particularly on one
+>drive and not the other) shows up a problem, normally a failed SRST.
+>That's still under investigation.
+>
+>- Promise timeouts. The old IDE times out then polls the device and finds
+>the IRQ was never sent and then recovers so the user sees a short stall
+>but no errors. The new libata doesn't do this and pdc202xx_old thus
+>produces some error messages on some boxes. Backup polling is on my todo
+>list.
 
-> Greg KH wrote:
-> > On Mon, Jan 28, 2008 at 08:18:04PM -0700, Matthew Wilcox wrote:
-> >> I'm more optimistic because we've so severely restricted the use of
-> >> mmconf after these patches that it's unlikely to cause problems.
-> >> I also hear Vista is now using mmconf, so fewer implementations
-> >> are going to be buggy at this point.
-> > 
-> > Hahahaha, oh, that's a good one...
-> > 
-> > But what about the thousands of implementations out there that are
-> > buggy?
-> > 
-> > I'm with Arjan here, I'm very skeptical.
-> > 
-> > Matthew, with Arjan's patch, is anything that currently works now
-> > broken?  Why do you feel it is somehow "wrong"?
-> > 
-> > thanks,
-> > 
-> > greg k-h
-> 
-> Greg,
-> 
-> The problem with Arjan's patch, if I understand it correctly, is that
-> it requires drivers to make a call to access extended PCI config
-> space.
-> 
-> And, IIRC, Arjan's patch encumbers drivers for all arch's, even those
-> that have no MMCONFIG problems.
-> 
-> The patches proposed by Loic, Ivan, Matthew, and myself, all address
-> the problem in an x86-specific manner that is transparent to the
-> drivers.
-
-this is not quite correct; the patches from Loic, Ivan, Matthew and you are for a different
-problem statement.
-
-Your patch problem statement is "need to fix mmconfig", my patch problem statement is "need
-to not make users who don't need it suffer". These are orthogonal problems.
-
+As slight change here, I was going to use the same .config as 2.6.24-rc8, but 
+just discovered that neither rc8 nor final is finding the drivers for my
+dvd writer while using libata, so its not useable.  So I've enable a couple of 
+things in the 2.6.24 build that aren't in the 2.6.24-rc8.  When I find the 
+magic twanger, I'll rebuild -rc8 with it too.
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+River: "He didn't lie down.  They never lie down."
+				--"Serenity"
