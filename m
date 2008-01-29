@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbYA2LVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbYA2LXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbYA2LVe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 06:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbYA2LVX
+	id S1757605AbYA2LXA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 06:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbYA2LWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 06:21:23 -0500
-Received: from ftp.linux-mips.org ([194.74.144.162]:37603 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbYA2LVW (ORCPT
+	Tue, 29 Jan 2008 06:22:53 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44428 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753285AbYA2LWw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 06:21:22 -0500
-Date: Tue, 29 Jan 2008 11:21:20 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org
-Subject: [PATCH 2/2] MIPS: Mark all but i8259 interrupts as no-probe.
-Message-ID: <20080129112120.GB8665@linux-mips.org>
-References: <200801280217.38273.rob@landley.net> <20080129111622.GC7237@linux-mips.org> <20080129112048.GA8665@linux-mips.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080129112048.GA8665@linux-mips.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 29 Jan 2008 06:22:52 -0500
+Date: Tue, 29 Jan 2008 09:22:33 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: v4l-dvb-maintainer@linuxtv.org, Adrian Bunk <bunk@kernel.org>,
+       Ian Armstrong <ian@iarmst.demon.co.uk>, linux-kernel@vger.kernel.org,
+       ivtv-devel@ivtvdriver.org
+Subject: Re: [v4l-dvb-maintainer] [2.6 patch] ivtv-yuv.c: make 3 functions
+ static
+Message-ID: <20080129092233.4c203ac4@gaivota>
+In-Reply-To: <200801282350.22243.hverkuil@xs4all.nl>
+References: <20080128221053.GS8767@does.not.exist>
+	<200801282350.22243.hverkuil@xs4all.nl>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use set_irq_noprobe() to mark all MIPS interrupts as non-probe.  Override
-that default for i8259 interrupts.
+On Mon, 28 Jan 2008 23:50:22 +0100
+Hans Verkuil <hverkuil@xs4all.nl> wrote:
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+> On Monday 28 January 2008 23:10:53 Adrian Bunk wrote:
+> > This patch makes the following needlessly global functions static:
+> > - ivtv_yuv_next_free()
+> > - ivtv_yuv_setup_frame()
+> > - ivtv_yuv_udma_frame()
+> >
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
+> 
+> Mauro, feel free to merge. Alternatively, I can add it to my v4l-dvb 
+> tree which has some additional patches (will post a PULL request for 
+> that in the next few days).
 
- arch/mips/kernel/i8259.c |    4 +++-
- arch/mips/kernel/irq.c   |    5 +++++
- 2 files changed, 8 insertions(+), 1 deletion(-)
+I'll merge it right now. It is easier for me to run a script importing the
+entire Adrian patch series ;)
 
-Index: linux-mips/arch/mips/kernel/i8259.c
-===================================================================
---- linux-mips.orig/arch/mips/kernel/i8259.c
-+++ linux-mips/arch/mips/kernel/i8259.c
-@@ -338,8 +338,10 @@ void __init init_i8259_irqs(void)
- 
- 	init_8259A(0);
- 
--	for (i = I8259A_IRQ_BASE; i < I8259A_IRQ_BASE + 16; i++)
-+	for (i = I8259A_IRQ_BASE; i < I8259A_IRQ_BASE + 16; i++) {
- 		set_irq_chip_and_handler(i, &i8259A_chip, handle_level_irq);
-+		set_irq_probe(i);
-+	}
- 
- 	setup_irq(I8259A_IRQ_BASE + PIC_CASCADE_IR, &irq2);
- }
-Index: linux-mips/arch/mips/kernel/irq.c
-===================================================================
---- linux-mips.orig/arch/mips/kernel/irq.c
-+++ linux-mips/arch/mips/kernel/irq.c
-@@ -145,6 +145,11 @@ __setup("nokgdb", nokgdb);
- 
- void __init init_IRQ(void)
- {
-+	int i;
-+
-+	for (i = 0; i < NR_IRQS; i++)
-+		set_irq_noprobe(i);
-+
- 	arch_init_irq();
- 
- #ifdef CONFIG_KGDB
+Since I've received the patch directly from Adrian, I've changed your SOB to
+reviewed-by.
+
+
+Cheers,
+Mauro
