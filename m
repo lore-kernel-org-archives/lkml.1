@@ -1,87 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759041AbYA2Vyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759492AbYA2Vyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759041AbYA2Vyd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 16:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbYA2VyG
+	id S1759492AbYA2Vyr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 16:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758742AbYA2VyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 16:54:06 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:59412 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757645AbYA2VyE (ORCPT
+	Tue, 29 Jan 2008 16:54:24 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58965 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758677AbYA2VyW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 16:54:04 -0500
-Date: Tue, 29 Jan 2008 22:54:03 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Theodore Tso <tytso@MIT.EDU>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] ext4 update
-In-Reply-To: <20080129125307.GF6774@mit.edu>
-Message-ID: <Pine.LNX.4.64.0801292250110.14907@fbirervta.pbzchgretzou.qr>
-References: <E1JJjMo-00011j-EU@closure.thunk.org> <20080129125307.GF6774@mit.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 29 Jan 2008 16:54:22 -0500
+Date: Tue, 29 Jan 2008 13:54:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Clements <paul.clements@steeleye.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] NBD: raise max number of nbd devices to 1024
+Message-Id: <20080129135417.e20b8107.akpm@linux-foundation.org>
+In-Reply-To: <479F9B12.8010207@steeleye.com>
+References: <479F9B12.8010207@steeleye.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 29 Jan 2008 16:30:58 -0500
+Paul Clements <paul.clements@steeleye.com> wrote:
 
-On Jan 29 2008 07:53, Theodore Tso wrote:
->
->>fwiw, diffstat is confused by git's diff output; you need to use
->>'diffstat -p1'
+> The limit was 128. This changes it to 1024.
+> 
 
-I am seeing normal behavior:
+Please include the "why" in changelogs as well as the "what".  It's fairly
+easy to guess why this needs to be increased, but it would be useful and
+interesting to hear about the operational scenarios in which 128 was
+insufficient.
 
-22:52 sovereign:~/linux > git status
-# On branch dev-pcidata-dvb
-# Changes to be committed:
-#   (use "git reset HEAD <file>..." to unstage)
-#
-#       modified:   drivers/media/dvb/b2c2/flexcop-pci.c
-#       modified:   drivers/media/dvb/ttpci/av7110.c
-#       modified:   drivers/media/dvb/ttpci/budget-av.c
-#       modified:   drivers/media/dvb/ttpci/budget-ci.c
-#       modified:   drivers/media/dvb/ttpci/budget-patch.c
-#       modified:   drivers/media/dvb/ttpci/budget.c
-#       modified:   drivers/media/radio/radio-gemtek-pci.c
-#       modified:   drivers/media/radio/radio-maestro.c
-#       modified:   drivers/media/radio/radio-maxiradio.c
-#       modified:   drivers/media/video/bt8xx/bttv-driver.c
-#       modified:   drivers/media/video/cafe_ccic.c
-#       modified:   drivers/media/video/cx23885/cx23885-core.c
-#       modified:   drivers/media/video/cx88/cx88-mpeg.c
-#       modified:   drivers/media/video/cx88/cx88-video.c
-#       modified:   drivers/media/video/dpc7146.c
-#       modified:   drivers/media/video/hexium_gemini.c
-#       modified:   drivers/media/video/hexium_orion.c
-#       modified:   drivers/media/video/meye.c
-#       modified:   drivers/media/video/mxb.c
-#       modified:   drivers/media/video/saa7134/saa7134-cards.c
-#       modified:   drivers/media/video/stradis.c
-#       modified:   drivers/media/video/zoran_card.c
-#
-22:52 sovereign:~/linux > git diff HEAD | diffstat
- dvb/b2c2/flexcop-pci.c        |    2 +-
- dvb/ttpci/av7110.c            |    4 ++--
- dvb/ttpci/budget-av.c         |    2 +-
- dvb/ttpci/budget-ci.c         |    4 ++--
- dvb/ttpci/budget-patch.c      |    2 +-
- dvb/ttpci/budget.c            |    2 +-
- radio/radio-gemtek-pci.c      |    3 +--
- radio/radio-maestro.c         |    2 +-
- radio/radio-maxiradio.c       |    2 +-
- video/bt8xx/bttv-driver.c     |    2 +-
- video/cafe_ccic.c             |    2 +-
- video/cx23885/cx23885-core.c  |    2 +-
- video/cx88/cx88-mpeg.c        |    2 +-
- video/cx88/cx88-video.c       |    2 +-
- video/dpc7146.c               |    4 ++--
- video/hexium_gemini.c         |    4 ++--
- video/hexium_orion.c          |    4 ++--
- video/meye.c                  |    2 +-
- video/mxb.c                   |    4 ++--
- video/saa7134/saa7134-cards.c |    2 +-
- video/stradis.c               |    2 +-
- video/zoran_card.c            |    2 +-
- 22 files changed, 28 insertions(+), 29 deletions(-)
+> 
+> --- ./include/linux/nbd.h.TIMEOUT	2007-08-22 13:18:12.000000000 -0400
+> +++ ./include/linux/nbd.h	2008-01-29 14:35:17.000000000 -0500
+> @@ -35,7 +35,7 @@ enum {
+>  };
+>  
+>  #define nbd_cmd(req) ((req)->cmd[0])
+> -#define MAX_NBD 128
+> +#define MAX_NBD 1024
+>  
+>  /* userspace doesn't need the nbd_device structure */
+>  #ifdef __KERNEL__
+> 
+
+But one still needs to specify the nbds_max module parameter.
+
+Can't we just nuke MAX_NBD altogether?
+
+
+--- a/drivers/block/nbd.c~a
++++ a/drivers/block/nbd.c
+@@ -54,7 +54,7 @@ static unsigned int debugflags;
+ #endif /* NDEBUG */
+ 
+ static unsigned int nbds_max = 16;
+-static struct nbd_device nbd_dev[MAX_NBD];
++static struct nbd_device *nbd_dev;
+ 
+ /*
+  * Use just one lock (or at most 1 per NIC). Two arguments for this:
+@@ -651,12 +651,6 @@ static int __init nbd_init(void)
+ 
+ 	BUILD_BUG_ON(sizeof(struct nbd_request) != 28);
+ 
+-	if (nbds_max > MAX_NBD) {
+-		printk(KERN_CRIT "nbd: cannot allocate more than %u nbds; %u requested.\n", MAX_NBD,
+-				nbds_max);
+-		return -EINVAL;
+-	}
+-
+ 	for (i = 0; i < nbds_max; i++) {
+ 		struct gendisk *disk = alloc_disk(1);
+ 		if (!disk)
+@@ -715,6 +709,10 @@ out:
+ static void __exit nbd_cleanup(void)
+ {
+ 	int i;
++
++	nbd_dev = kcalloc(nbds_max, sizeof(*nbd_dev), GFP_KERNEL);
++	if (!nbd_dev)
++		return -ENOMEM;
+ 	for (i = 0; i < nbds_max; i++) {
+ 		struct gendisk *disk = nbd_dev[i].disk;
+ 		nbd_dev[i].magic = 0;
+diff -puN include/linux/nbd.h~a include/linux/nbd.h
+--- a/include/linux/nbd.h~a
++++ a/include/linux/nbd.h
+@@ -35,7 +35,6 @@ enum {
+ };
+ 
+ #define nbd_cmd(req) ((req)->cmd[0])
+-#define MAX_NBD 128
+ 
+ /* userspace doesn't need the nbd_device structure */
+ #ifdef __KERNEL__
+_
+
+
+much nicer?
+
