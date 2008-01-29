@@ -1,121 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYA2WCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYA2WC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756318AbYA2WCa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 17:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYA2WCU
+	id S1753888AbYA2WC4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 17:02:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbYA2WCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 17:02:20 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:38602
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbYA2WCP (ORCPT
+	Tue, 29 Jan 2008 17:02:47 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:24477 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752008AbYA2WCq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 17:02:15 -0500
-Date: Tue, 29 Jan 2008 23:02:12 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080129220212.GX7233@v2.random>
-References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com> <20080129162004.GL7233@v2.random> <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com> <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
+	Tue, 29 Jan 2008 17:02:46 -0500
+Date: Tue, 29 Jan 2008 14:02:35 -0800
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "Luck, Tony" <tony.luck@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mike.miller@hp.com, k-ueda@ct.jp.nec.com, j-nomura@ce.jp.nec.com
+Subject: Re: kernel BUG at drivers/block/cciss.c:1260! (with recent
+	linux-2.6  tree)
+Message-ID: <20080129220235.GE21785@plap3.qlogic.org>
+References: <20080129183705.GL12400@plap3.qlogic.org> <20080129184442.GK15220@kernel.dk> <20080129184929.GN12400@plap3.qlogic.org> <20080129185358.GM15220@kernel.dk> <20080129210837.GA21785@plap3.qlogic.org> <20080129211634.GB15220@kernel.dk> <20080129212435.GC15220@kernel.dk> <1FE6DD409037234FAB833C420AA843EC757564@orsmsx424.amr.corp.intel.com> <20080129213526.GE15220@kernel.dk> <1FE6DD409037234FAB833C420AA843EC7575C5@orsmsx424.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC7575C5@orsmsx424.amr.corp.intel.com>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 29 Jan 2008 22:02:45.0319 (UTC) FILETIME=[AD725D70:01C862C2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 01:35:58PM -0800, Christoph Lameter wrote:
-> On Tue, 29 Jan 2008, Andrea Arcangeli wrote:
+On Tue, 29 Jan 2008, Luck, Tony wrote:
+
+> > > Will try this next.
+> >
+> > Should work even better since it avoids a lock and copy, but please do
+> > test if you have the time.
 > 
-> > > It seems to be okay to invalidate range if you hold mmap_sem writably. In 
-> > > that case no additional faults can happen that would create new ptes.
-> > 
-> > In that place the mmap_sem is taken but in readonly mode. I never rely
-> > on the mmap_sem in the mmu notifier methods. Not invoking the notifier
+> That one works too (survived two full builds at "make -j32" on the 16-way
+> system).
 > 
-> Well it seems that we have to rely on mmap_sem otherwise concurrent faults 
-> can occur. The mmap_sem seems to be acquired for write there.
-      	     	 	  	      	       	   	 ^^^^^
-> 
->               if (!has_write_lock) {
->                         up_read(&mm->mmap_sem);
->                         down_write(&mm->mmap_sem);
->                         has_write_lock = 1;
->                         goto retry;
->                 }
+> Thanks for the quick turnaround.
 
+Jens, this patch appears to work well on my 16-way box...  Compile
+tests appear to pass (quickly).  I'll be sure to let you know if
+anything else 'block' related pops-up...
 
-hmm, "there" where? When I said it was taken in readonly mode I meant
-for the quoted code (it would be at the top if it wasn't cut), so I
-quote below again:
-
-> > +   mmu_notifier(invalidate_range, mm, address,
-> > +                           address + PAGE_SIZE - 1, 0);
-> >     page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
-> >     if (likely(pte_same(*page_table, orig_pte))) {
-> >             if (old_page) {
-
-The "there" for me was do_wp_page.
-
-Even for the code you quoted in freemap.c, the has_write_lock is set
-to 1 _only_ for the very first time you call sys_remap_file_pages on a
-VMA. Only the transition of the VMA between linear to nonlinear
-requires the mmap in write mode. So you can be sure all freemap code
-99% of the time is populating (overwriting) already present ptes with
-only the mmap_sem in readonly mode like do_wp_page. It would be
-unnecessary to populate the nonlinear range with the mmap in write
-mode. Only the "vma" mangling requires the mmap_sem in write mode, the
-pte modifications only requires the PT_lock + mmap_sem in read mode.
-
-Effectively the first invocation of populate_range runs with the
-mmap_sem in write mode, I wonder why, there seem to be no good reason
-for that. I guess it's a bit that should be optimized, by calling
-downgrade_write before calling populate_range even for the first time
-the vma switches from linear to nonlinear (after the vma has been
-fully updated to the new status). But for sure all later invocations
-runs populate_range with the semaphore readonly like the rest of the
-VM does when instantiating ptes in the page faults.
-
-> > before releasing the PT lock adds quite some uncertainty on the smp
-> > safety of the spte invalidates, because the pte may be unmapped and
-> > remapped by a minor fault before invalidate_range is invoked, but I
-> > didn't figure out a kernel crashing race yet thanks to the pin we take
-> > through get_user_pages (and only thanks to it). The requirement is
-> > that invalidate_range is invoked after the last ptep_clear_flush or it
-> > leaks pins that's why I had to move it at the end.
->  
-> So "pins" means a reference count right? I still do not get why you 
-
-Yes.
-
-> have refcount problems. You take a refcount when you export the page 
-> through KVM and then drop the refcount in invalidate page right?
-
-Yes.
-
-> So you walk through the KVM ptes and drop the refcount for each spte you 
-> encounter?
-
-Yes.
-
-All pins are gone by the time invalidate_page/range returns. But there
-is no critical section between invalidate_page and the _later_
-ptep_clear_flush. So get_user_pages is free to run and take the PT
-lock before the ptep_clear_flush, find the linux pte still
-instantiated, and to create a new spte, before ptep_clear_flush runs.
-
-Think of why the tlb flushes are being called at the end of
-ptep_clear_flush. The mmu notifier invalidate has to be called after
-for the exact same reason.
-
-Perhaps somebody else should explain this, I started exposing this
-smp race the moment after I've seen the backwards ordering being
-proposed in export-notifier-v1, sorry if I'm not clear enough.
+thanks, av
