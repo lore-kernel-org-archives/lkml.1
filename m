@@ -1,89 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757660AbYA2M66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760067AbYA2NB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757660AbYA2M66 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 07:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYA2M6s
+	id S1760067AbYA2NB0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 08:01:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758686AbYA2NBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 07:58:48 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:64428 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751388AbYA2M6r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 07:58:47 -0500
-Date: Tue, 29 Jan 2008 07:53:07 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] ext4 update
-Message-ID: <20080129125307.GF6774@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <E1JJjMo-00011j-EU@closure.thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JJjMo-00011j-EU@closure.thunk.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Tue, 29 Jan 2008 08:01:07 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:38870 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758651AbYA2NBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 08:01:05 -0500
+Date: Tue, 29 Jan 2008 07:00:59 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: rmenage@google.com, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, mingo@elte.hu, dmitry.adamushko@gmail.com,
+       ghaskins@novell.com, a.p.zijlstra@chello.nl
+Subject: Re: [PATCH -v2 4/7] RT overloaded runqueues accounting
+Message-Id: <20080129070059.0dd6c918.pj@sgi.com>
+In-Reply-To: <20071023144615.89ed9c86.pj@sgi.com>
+References: <20071023025900.927578809@goodmis.org>
+	<20071023032916.651749224@goodmis.org>
+	<20071022211709.7be79fea.pj@sgi.com>
+	<6599ad830710222311x402c3d1agcc458742fb5e219c@mail.gmail.com>
+	<Pine.LNX.4.58.0710230844040.29506@gandalf.stny.rr.com>
+	<20071023144615.89ed9c86.pj@sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->fwiw, diffstat is confused by git's diff output; you need to use
->'diffstat -p1'
+Back in October 2007, this thread to which I am now (Jan 2008)
+responding had a discussion of realtime versus normal load balancing
+and how to setup sched domains for this, perhaps using cpusets.
 
-Argh, I have *got* to create a script that does this automatically.
+Thanks to Peter Zijlstra, this discussion has started up again on lkml,
+in the new thread:
 
-Revised diffstat -p1 output follows...
+   http://lkml.org/lkml/2008/1/29/60
 
-						- Ted
+Come on over and join the fun if you like.
 
- Documentation/filesystems/ext4.txt           |   20 
- Documentation/filesystems/proc.txt           |   39 
- fs/Kconfig                                   |    1 
- fs/afs/dir.c                                 |    9 
- fs/afs/inode.c                               |    3 
- fs/buffer.c                                  |   44 
- fs/ext2/super.c                              |   32 
- fs/ext3/super.c                              |   32 
- fs/ext4/Makefile                             |    4 
- fs/ext4/balloc.c                             |  251 +
- fs/ext4/dir.c                                |   14 
- fs/ext4/extents.c                            |  525 +--
- fs/ext4/file.c                               |   23 
- fs/ext4/group.h                              |    8 
- fs/ext4/ialloc.c                             |  161 
- fs/ext4/inode.c                              |  396 +-
- fs/ext4/ioctl.c                              |    7 
- fs/ext4/mballoc.c                            | 4552 +++++++++++++++++++++++++++
- fs/ext4/migrate.c                            |  570 +++
- fs/ext4/namei.c                              |  135 
- fs/ext4/resize.c                             |   28 
- fs/ext4/super.c                              |  389 +-
- fs/ext4/xattr.c                              |    4 
- fs/inode.c                                   |   39 
- fs/jbd2/checkpoint.c                         |   22 
- fs/jbd2/commit.c                             |  255 +
- fs/jbd2/journal.c                            |  368 ++
- fs/jbd2/recovery.c                           |  151 
- fs/jbd2/revoke.c                             |    6 
- fs/jbd2/transaction.c                        |   34 
- fs/read_write.c                              |    1 
- include/asm-arm/bitops.h                     |    2 
- include/asm-generic/bitops/ext2-non-atomic.h |    2 
- include/asm-generic/bitops/le.h              |    4 
- include/asm-m68k/bitops.h                    |    2 
- include/asm-m68knommu/bitops.h               |    2 
- include/asm-powerpc/bitops.h                 |    4 
- include/asm-s390/bitops.h                    |    2 
- include/linux/buffer_head.h                  |    2 
- include/linux/ext4_fs.h                      |  224 +
- include/linux/ext4_fs_extents.h              |   25 
- include/linux/ext4_fs_i.h                    |   25 
- include/linux/ext4_fs_sb.h                   |   55 
- include/linux/fs.h                           |   21 
- include/linux/jbd2.h                         |  135 
- lib/find_next_bit.c                          |   43 
- 46 files changed, 7773 insertions(+), 898 deletions(-)
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
