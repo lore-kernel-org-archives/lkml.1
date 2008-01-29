@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764690AbYA2RmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764187AbYA2RnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764690AbYA2RmY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 12:42:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756300AbYA2RmG
+	id S1764187AbYA2RnQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 12:43:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYA2Rm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 12:42:06 -0500
-Received: from bay0-omc3-s1.bay0.hotmail.com ([65.54.246.201]:21501 "EHLO
-	bay0-omc3-s1.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755905AbYA2RmF convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 12:42:05 -0500
-Message-ID: <BAY101-W159C6F9F2C09199889AA3C8350@phx.gbl>
-X-Originating-IP: [99.147.122.210]
-From: Adam Turk <bofh1234@hotmail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: Re: Problem with ata layer in 2.6.24
-Date: Tue, 29 Jan 2008 12:42:04 -0500
-Importance: Normal
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Tue, 29 Jan 2008 12:42:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59686 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753433AbYA2Rm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 12:42:56 -0500
+Date: Tue, 29 Jan 2008 18:42:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86_64: fix overlap between pagetable with bss section
+Message-ID: <20080129174242.GA26562@elte.hu>
+References: <200801281844.36940.yinghai.lu@sun.com>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 29 Jan 2008 17:42:04.0516 (UTC) FILETIME=[42CD3A40:01C8629E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200801281844.36940.yinghai.lu@sun.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I just found this thread and it looks like it will fix my problem too.  I have an IDE cd-rw drive and 2 SCSI hard drives.  My ide cd-rw drive hasn't been showing up.  I looked at setting scsi cdrom support (CONFIG_BLOCK_DEV_SR) but it doesn't mention anything about ide drives using libata.
-I know the drive is being detecting by looking at dmesg:
-ata_piix 0000:00:07.1: version 2.12
-scsi1 : ata_piix
-scsi2 : ata_piix
-ata1: PATA max UDMA/33 cmd 0x1f0 ctl 0x3f6 bmdma 0xffa0 irq 14
-ata2: PATA max UDMA/33 cmd 0x170 ctl 0x376 bmdma 0xffa8 irq 15
-ata1.00: ATAPI: Memorex 52MAXX 3252AJ1, 4WS2, max UDMA/33
-ata1.00: configured for UDMA/33
-ata2: port disabled. ignoring.
-scsi 1:0:0:0: CD-ROM            Memorex  52MAXX 3252AJ1   4WS2 PQ: 0 ANSI: 5
-if this works then it really needs to move and be renamed.  I am compiling with DEV_SR set.
+* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-Just my $0.02 but may be worth more or less,
-Adam
+> [PATCH] x86_64: fix overlap between pagetable with bss section
+> 
+> one early crash on one 8 node 256g machine
 
+> +++ b/arch/x86/mm/init_64.c
+> @@ -358,6 +358,8 @@ static void __init find_early_table_space(unsigned long end)
+>  	if (table_start == -1UL)
+>  		panic("Cannot find space for the kernel page tables");
+>  
+> +	/* need to round it up to avoid overlap less one page */
+> +	table_start = round_up(table_start, PAGE_SIZE);
+>  	table_start >>= PAGE_SHIFT;
+>  	table_end = table_start;
 
-_________________________________________________________________
-Need to know the score, the latest news, or you need your Hotmail®-get your "fix".
-http://www.msnmobilefix.com/Default.aspx
+thanks, applied.
+
+	Ingo
