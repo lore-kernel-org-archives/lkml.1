@@ -1,72 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbYA2WQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbYA2WRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758111AbYA2WQr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 17:16:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbYA2WQf
+	id S1758606AbYA2WRj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 17:17:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYA2WRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 17:16:35 -0500
-Received: from web31812.mail.mud.yahoo.com ([68.142.207.75]:38264 "HELO
-	web31812.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753832AbYA2WQd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 17:16:33 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=iSsbpR0Hu925Brau94xG74nR8oDYsAK+s07UWgIl9s8XsHemq0jezBNi+Ieeco5NwcLLpnmI0BCqX99wi7WnpXoaC+7fba5wrdzNyGRwxcPQAzhVA44Vlc2PH0BGLrmDhIMwbc7NaqTwG8WeEuE+WVEqsFK6ALf7CQ77GD6rBKw=;
-X-YMail-OSG: 1BYdo5AVM1lUFTm4pndGgkS.xWnBgd3gcumCWpSL6VGN3HcrhDQHzl5RgXOlNL7eIyKVjA--
-X-Mailer: YahooMailWebService/0.7.162
-Date: Tue, 29 Jan 2008 14:09:52 -0800 (PST)
-From: Luben Tuikov <ltuikov@yahoo.com>
-Reply-To: ltuikov@yahoo.com
-Subject: Re: DMA mapping on SCSI device?
-To: linux-arch@vger.kernel.org, ide <linux-ide@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       Robert Hancock <hancockr@shaw.ca>
-In-Reply-To: <479E6E8C.2090501@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <896139.88121.qm@web31812.mail.mud.yahoo.com>
+	Tue, 29 Jan 2008 17:17:31 -0500
+Received: from cheypa.inria.fr ([138.96.218.90]:48722 "EHLO cheypa.inria.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753890AbYA2WRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 17:17:30 -0500
+X-Greylist: delayed 3730 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Jan 2008 17:17:29 EST
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Guillaume Chazarain <guichaz@yahoo.fr>
+Subject: [PATCH] x86: remove unused code in set_cyc2ns_scale()
+Date: Tue, 29 Jan 2008 22:15:01 +0100
+Message-Id: <1201641301-9288-1-git-send-email-guichaz@yahoo.fr>
+X-Mailer: git-send-email 1.5.3.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- On Mon, 1/28/08, Robert Hancock <hancockr@shaw.ca> wrote:
-> The trick is that if an ATAPI device is connected, we (as
-> far as I'm 
-> aware) can't use ADMA mode, so we have to switch that
-> port into legacy 
-> mode.
+This should be fold into:
+4f95bd6e2b21a8c724357463f8341502d47aba13
+x86: scale cyc_2_nsec according to CPU frequency
 
-Can you double check this with the HW architect of the
-HW DMA engine of the ASIC?
+Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+---
+ arch/x86/kernel/tsc_32.c |   14 +++++---------
+ arch/x86/kernel/tsc_64.c |   14 +++++---------
+ 2 files changed, 10 insertions(+), 18 deletions(-)
 
-> This means it's only capable of 32-bit DMA.
-> However the other port 
-> on the controller may be connected to a hard drive and
-> therefore still 
-> capable of 64-bit DMA.
-
-If this is indeed the case as you've presented it here,
-it sounds like a HW shortcoming.  I cannot see how the device
-type (or protocol) dictate how the DMA engine operates.
-They live in two different domains.
-
-> The ideal solution would be to do mapping against a
-> different struct 
-> device for each port, so that we could maintain the proper
-> DMA mask for 
-> each of them at all times. However I'm not sure if
-> that's possible. The 
-> thought of using the SCSI struct device for DMA mapping was
-> brought up 
-> at one point.. any thoughts on that?
-
-The reason for this is that the object that a struct scsi_dev
-represents has nothing to do with HW DMA engines.
-
-It looks like your current solution is correct and
-x86_64's blk_queue_bounce_limit needs work.
-
-    Luben
+diff --git a/arch/x86/kernel/tsc_32.c b/arch/x86/kernel/tsc_32.c
+index 43517e3..e05e221 100644
+--- a/arch/x86/kernel/tsc_32.c
++++ b/arch/x86/kernel/tsc_32.c
+@@ -83,20 +83,16 @@ DEFINE_PER_CPU(unsigned long, cyc2ns);
+ 
+ static void set_cyc2ns_scale(unsigned long cpu_khz, int cpu)
+ {
+-	unsigned long flags, prev_scale, *scale;
+-	unsigned long long tsc_now, ns_now;
++	unsigned long flags, *scale;
++
++	if (!cpu_khz)
++		return;
+ 
+ 	local_irq_save(flags);
+ 	sched_clock_idle_sleep_event();
+ 
+ 	scale = &per_cpu(cyc2ns, cpu);
+-
+-	rdtscll(tsc_now);
+-	ns_now = __cycles_2_ns(tsc_now);
+-
+-	prev_scale = *scale;
+-	if (cpu_khz)
+-		*scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
++	*scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
+ 
+ 	/*
+ 	 * Start smoothly with the new frequency:
+diff --git a/arch/x86/kernel/tsc_64.c b/arch/x86/kernel/tsc_64.c
+index 947554d..e0e9d4f 100644
+--- a/arch/x86/kernel/tsc_64.c
++++ b/arch/x86/kernel/tsc_64.c
+@@ -44,20 +44,16 @@ DEFINE_PER_CPU(unsigned long, cyc2ns);
+ 
+ static void set_cyc2ns_scale(unsigned long cpu_khz, int cpu)
+ {
+-	unsigned long flags, prev_scale, *scale;
+-	unsigned long long tsc_now, ns_now;
++	unsigned long flags, *scale;
++
++	if (!cpu_khz)
++		return;
+ 
+ 	local_irq_save(flags);
+ 	sched_clock_idle_sleep_event();
+ 
+ 	scale = &per_cpu(cyc2ns, cpu);
+-
+-	rdtscll(tsc_now);
+-	ns_now = __cycles_2_ns(tsc_now);
+-
+-	prev_scale = *scale;
+-	if (cpu_khz)
+-		*scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
++	*scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
+ 
+ 	sched_clock_idle_wakeup_event(0);
+ 	local_irq_restore(flags);
+-- 
+1.5.3.7
 
