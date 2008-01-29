@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764835AbYA2Rs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765624AbYA2Rtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764835AbYA2Rs0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 12:48:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbYA2RsN
+	id S1765624AbYA2Rtj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 12:49:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYA2Rt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 12:48:13 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45878 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750825AbYA2RsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 12:48:12 -0500
-Date: Tue, 29 Jan 2008 18:47:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Tue, 29 Jan 2008 12:49:26 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37120 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751833AbYA2RtZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 12:49:25 -0500
+Date: Tue, 29 Jan 2008 17:44:55 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: Gene Heskett <gene.heskett@gmail.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       Richard Heck <rgheck@bobjweil.com>, Zan Lynx <zlynx@acm.org>,
+       Calvin Walton <calvin.walton@gmail.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86_64: fix overlap between pagetable with bss section
-Message-ID: <20080129174755.GA28549@elte.hu>
-References: <200801281844.36940.yinghai.lu@sun.com> <20080129174242.GA26562@elte.hu> <200801291003.14741.yinghai.lu@sun.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200801291003.14741.yinghai.lu@sun.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Subject: Re: Problem with ata layer in 2.6.24
+Message-ID: <20080129174455.62742b82@core>
+In-Reply-To: <alpine.LNX.1.00.0801291220540.13593@iabervon.org>
+References: <200801272122.21823.gene.heskett@gmail.com>
+	<200801291132.41657.gene.heskett@gmail.com>
+	<18335.22763.625990.528217@alkaid.it.uu.se>
+	<200801291204.44671.gene.heskett@gmail.com>
+	<alpine.LNX.1.00.0801291220540.13593@iabervon.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> things in the kernel that refer to SCSI probably should say "storage" (or 
+> "ATA", really, but that would make the acronyms confusing).
 
-* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+SCSI is a command protocol. It is what your CD-ROM drive and USB storage
+devices talk (albeit with a bit of an accent).
 
-> > > +	/* need to round it up to avoid overlap less one page */
-> > > +	table_start = round_up(table_start, PAGE_SIZE);
-> > >  	table_start >>= PAGE_SHIFT;
-> > >  	table_end = table_start;
-> > 
-> > thanks, applied.
-> 
-> can you use v2 instead? v2 have more comments.
-
-yes, i have v2.
-
-	Ingo
+Alan
