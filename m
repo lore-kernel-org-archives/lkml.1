@@ -1,294 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbYA2QWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765810AbYA2QXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932260AbYA2QWd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:22:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933295AbYA2QU7
+	id S1765810AbYA2QXF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:23:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933373AbYA2QVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:20:59 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:45187 "EHLO
+	Tue, 29 Jan 2008 11:21:30 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:45312 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933280AbYA2QU5 (ORCPT
+	with ESMTP id S1765697AbYA2QV3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:20:57 -0500
-Message-Id: <20080129162101.364025453@bull.net>
+	Tue, 29 Jan 2008 11:21:29 -0500
+Message-Id: <20080129162131.743970100@bull.net>
 References: <20080129160229.612172683@bull.net>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 Jan 2008 17:02:40 +0100
+Date: Tue, 29 Jan 2008 17:02:41 +0100
 From: pierre.peiffer@bull.net
 To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: [PATCH 2.6.24-rc8-mm1 11/15] (RFC) IPC: new IPC_SETALL command to modify all settings
+Subject: [PATCH 2.6.24-rc8-mm1 12/15] (RFC) IPC/semaphores: make use of RCU to free the sem_undo_list
 X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 29/01/2008 17:29:37,
+ 29/01/2008 17:30:07,
 	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 29/01/2008 17:29:38,
-	Serialize complete at 29/01/2008 17:29:38
-Content-Disposition: inline; filename=ipc_setall.patch
+ 29/01/2008 17:30:10,
+	Serialize complete at 29/01/2008 17:30:10
+Content-Disposition: inline; filename=ipc_exit_sem_use_rcu.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pierre Peiffer <pierre.peiffer@bull.net>
 
-This patch adds a new IPC_SETALL command to the System V IPCs set of commands,
-which allows to change all the settings of an IPC
+Today, the sem_undo_list is freed when the last task using it exits.
+There is no mechanism in place, that allows a safe concurrent access to
+the sem_undo_list of a target task and protects efficiently against a
+task-exit.
 
-It works exactly the same way as the IPC_SET command, except that it
-additionally changes all the times and the pids values
+That is okay for now as we don't need this.
+
+As I would like to provide a /proc interface to access this data, I need
+such a safe access, without blocking the target task if possible. 
+
+This patch proposes to introduce the use of RCU to delay the real free of
+these sem_undo_list structures. They can then be accessed in a safe manner
+by any tasks inside read critical section, this way:
+
+	struct sem_undo_list *undo_list;
+	int ret;
+	...
+	rcu_read_lock();
+	undo_list = rcu_dereference(task->sysvsem.undo_list);
+	if (undo_list)
+		ret = atomic_inc_not_zero(&undo_list->refcnt);
+	rcu_read_unlock();
+	...
+	if (undo_list && ret) {
+		/* section where undo_list can be used quietly */
+		...
+	}
+	...
 
 Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
 
- include/linux/ipc.h      |    1 +
- ipc/compat.c             |    3 +++
- ipc/msg.c                |   15 +++++++++++++--
- ipc/sem.c                |   10 +++++++++-
- ipc/shm.c                |   13 ++++++++++++-
- ipc/util.c               |    7 ++++++-
- security/selinux/hooks.c |    3 +++
- 7 files changed, 47 insertions(+), 5 deletions(-)
+ include/linux/sem.h |    7 +++++--
+ ipc/sem.c           |   42 ++++++++++++++++++++++++++----------------
+ 2 files changed, 31 insertions(+), 18 deletions(-)
 
-Index: b/include/linux/ipc.h
+Index: b/include/linux/sem.h
 ===================================================================
---- a/include/linux/ipc.h
-+++ b/include/linux/ipc.h
-@@ -40,6 +40,7 @@ struct ipc_perm
- #define IPC_STAT   2     /* get ipc_perm options */
- #define IPC_INFO   3     /* see ipcs */
- #define IPC_SETID  4     /* set ipc ID */
-+#define IPC_SETALL 5     /* set all parameters */
+--- a/include/linux/sem.h
++++ b/include/linux/sem.h
+@@ -115,7 +115,8 @@ struct sem_queue {
+ };
  
- /*
-  * Version flags for semctl, msgctl, and shmctl commands
-Index: b/ipc/compat.c
-===================================================================
---- a/ipc/compat.c
-+++ b/ipc/compat.c
-@@ -282,6 +282,7 @@ long compat_sys_semctl(int first, int se
- 			err = -EFAULT;
- 		break;
+ /* Each task has a list of undo requests. They are executed automatically
+- * when the process exits.
++ * when the last refcnt of sem_undo_list is released (ie when the process exits
++ * in the general case)
+  */
+ struct sem_undo {
+ 	struct sem_undo *	proc_next;	/* next entry on this process */
+@@ -125,12 +126,14 @@ struct sem_undo {
+ };
  
-+	case IPC_SETALL:
- 	case IPC_SET:
- 		if (version == IPC_64) {
- 			err = get_compat_semid64_ds(&s64, compat_ptr(pad));
-@@ -431,6 +432,7 @@ long compat_sys_msgctl(int first, int se
- 		err = sys_msgctl(first, second, uptr);
- 		break;
+ /* sem_undo_list controls shared access to the list of sem_undo structures
+- * that may be shared among all a CLONE_SYSVSEM task group.
++ * that may be shared among all a CLONE_SYSVSEM task group or with an external
++ * process which changes the list through procfs.
+  */ 
+ struct sem_undo_list {
+ 	atomic_t	refcnt;
+ 	spinlock_t	lock;
+ 	struct sem_undo	*proc_list;
++	struct ipc_namespace *ns;
+ };
  
-+	case IPC_SETALL:
- 	case IPC_SET:
- 		if (version == IPC_64) {
- 			err = get_compat_msqid64(&m64, uptr);
-@@ -621,6 +623,7 @@ long compat_sys_shmctl(int first, int se
- 		break;
- 
- 
-+	case IPC_SETALL:
- 	case IPC_SET:
- 		if (version == IPC_64) {
- 			err = get_compat_shmid64_ds(&s64, uptr);
-Index: b/ipc/msg.c
-===================================================================
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -426,7 +426,7 @@ static int msgctl_down(struct ipc_namesp
- 	struct msg_queue *msq;
- 	int err;
- 
--	if (cmd == IPC_SET) {
-+	if (cmd == IPC_SET || cmd == IPC_SETALL) {
- 		if (copy_msqid_from_user(&msqid64, buf, version))
- 			return -EFAULT;
- 	}
-@@ -447,6 +447,7 @@ static int msgctl_down(struct ipc_namesp
- 		freeque(ns, ipcp);
- 		goto out_up;
- 	case IPC_SET:
-+	case IPC_SETALL:
- 		if (msqid64.msg_qbytes > ns->msg_ctlmnb &&
- 		    !capable(CAP_SYS_RESOURCE)) {
- 			err = -EPERM;
-@@ -456,7 +457,14 @@ static int msgctl_down(struct ipc_namesp
- 		msq->q_qbytes = msqid64.msg_qbytes;
- 
- 		ipc_update_perm(&msqid64.msg_perm, ipcp);
--		msq->q_ctime = get_seconds();
-+		if (cmd == IPC_SETALL) {
-+			msq->q_stime = msqid64.msg_stime;
-+			msq->q_rtime = msqid64.msg_rtime;
-+			msq->q_ctime = msqid64.msg_ctime;
-+			msq->q_lspid = msqid64.msg_lspid;
-+			msq->q_lrpid = msqid64.msg_lrpid;
-+		} else
-+			msq->q_ctime = get_seconds();
- 		/* sleeping receivers might be excluded by
- 		 * stricter permissions.
- 		 */
-@@ -507,6 +515,8 @@ asmlinkage long sys_msgctl(int msqid, in
- 		return -EINVAL;
- 
- 	version = ipc_parse_version(&cmd);
-+	if (version < 0)
-+		return -EINVAL;
- 	ns = current->nsproxy->ipc_ns;
- 
- 	switch (cmd) {
-@@ -594,6 +604,7 @@ asmlinkage long sys_msgctl(int msqid, in
- 		return success_return;
- 	}
- 	case IPC_SET:
-+	case IPC_SETALL:
- 	case IPC_RMID:
- 		err = msgctl_down(ns, msqid, cmd, buf, version);
- 		return err;
+ struct sysv_sem {
 Index: b/ipc/sem.c
 ===================================================================
 --- a/ipc/sem.c
 +++ b/ipc/sem.c
-@@ -913,7 +913,7 @@ static int semctl_down(struct ipc_namesp
- 	struct semid64_ds semid64;
- 	struct kern_ipc_perm *ipcp;
- 
--	if(cmd == IPC_SET) {
-+	if (cmd == IPC_SET || cmd == IPC_SETALL) {
- 		if (copy_semid_from_user(&semid64, arg.buf, version))
- 			return -EFAULT;
+@@ -1038,6 +1038,7 @@ static inline int get_undo_list(struct s
+ 			return -ENOMEM;
+ 		spin_lock_init(&undo_list->lock);
+ 		atomic_set(&undo_list->refcnt, 1);
++		undo_list->ns = get_ipc_ns(current->nsproxy->ipc_ns);
+ 		current->sysvsem.undo_list = undo_list;
  	}
-@@ -936,6 +936,11 @@ static int semctl_down(struct ipc_namesp
- 		ipc_update_perm(&semid64.sem_perm, ipcp);
- 		sma->sem_ctime = get_seconds();
- 		break;
-+	case IPC_SETALL:
-+		ipc_update_perm(&semid64.sem_perm, ipcp);
-+		sma->sem_ctime = semid64.sem_ctime;
-+		sma->sem_otime = semid64.sem_otime;
-+		break;
- 	case IPC_SETID:
- 		err = sem_chid_nolock(ns, sma, (int)arg.val);
- 		break;
-@@ -978,6 +983,8 @@ asmlinkage long sys_semctl (int semid, i
- 		return -EINVAL;
- 
- 	version = ipc_parse_version(&cmd);
-+	if (version < 0)
-+		return -EINVAL;
- 	ns = current->nsproxy->ipc_ns;
- 
- 	switch(cmd) {
-@@ -998,6 +1005,7 @@ asmlinkage long sys_semctl (int semid, i
- 		return err;
- 	case IPC_RMID:
- 	case IPC_SET:
-+	case IPC_SETALL:
- 		err = semctl_down(ns, semid, cmd, version, arg);
- 		return err;
- 	case IPC_SETID:
-Index: b/ipc/shm.c
-===================================================================
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -658,7 +658,7 @@ static int shmctl_down(struct ipc_namesp
- 	struct shmid_kernel *shp;
- 	int err;
- 
--	if (cmd == IPC_SET) {
-+	if (cmd == IPC_SET || cmd == IPC_SETALL) {
- 		if (copy_shmid_from_user(&shmid64, buf, version))
- 			return -EFAULT;
- 	}
-@@ -680,6 +680,14 @@ static int shmctl_down(struct ipc_namesp
- 		ipc_update_perm(&shmid64.shm_perm, ipcp);
- 		shp->shm_ctim = get_seconds();
- 		break;
-+	case IPC_SETALL:
-+		ipc_update_perm(&shmid64.shm_perm, ipcp);
-+		shp->shm_atim = shmid64.shm_atime;
-+		shp->shm_dtim = shmid64.shm_dtime;
-+		shp->shm_ctim = shmid64.shm_ctime;
-+		shp->shm_cprid = shmid64.shm_cpid;
-+		shp->shm_lprid = shmid64.shm_lpid;
-+		break;
- 	case IPC_SETID:
- 		err = shm_chid_nolock(ns, shp, (int)(long)buf);
- 		break;
-@@ -723,6 +731,8 @@ asmlinkage long sys_shmctl(int shmid, in
- 	}
- 
- 	version = ipc_parse_version(&cmd);
-+	if (version < 0)
-+		return -EINVAL;
- 	ns = current->nsproxy->ipc_ns;
- 
- 	switch (cmd) { /* replace with proc interface ? */
-@@ -870,6 +880,7 @@ asmlinkage long sys_shmctl(int shmid, in
- 	}
- 	case IPC_RMID:
- 	case IPC_SET:
-+	case IPC_SETALL:
- 		err = shmctl_down(ns, shmid, cmd, buf, version);
- 		return err;
- 	case IPC_SETID:
-Index: b/ipc/util.c
-===================================================================
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -855,7 +855,7 @@ struct kern_ipc_perm *ipcctl_pre_down(st
- 	if (err)
- 		goto out_unlock;
- 
--	if (cmd == IPC_SET) {
-+	if (cmd == IPC_SET || cmd == IPC_SETALL) {
- 		err = audit_ipc_set_perm(extrat_perm, perm->uid,
- 					 perm->gid, perm->mode);
- 		if (err)
-@@ -883,6 +883,8 @@ out_up:
-  *	Return IPC_64 for new style IPC and IPC_OLD for old style IPC. 
-  *	The @cmd value is turned from an encoding command and version into
-  *	just the command code.
-+ *	In case of incompatibility between the command and the style, an
-+ *	errcode is returned.
-  */
-  
- int ipc_parse_version (int *cmd)
-@@ -891,6 +893,9 @@ int ipc_parse_version (int *cmd)
- 		*cmd ^= IPC_64;
- 		return IPC_64;
- 	} else {
-+		/* don't support this command for old ipc */
-+		if (*cmd == IPC_SETALL)
-+			return -EINVAL;
- 		return IPC_OLD;
- 	}
+ 	*undo_listp = undo_list;
+@@ -1316,7 +1317,8 @@ int copy_semundo(unsigned long clone_fla
  }
-Index: b/security/selinux/hooks.c
-===================================================================
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -4651,6 +4651,7 @@ static int selinux_msg_queue_msgctl(stru
- 		perms = MSGQ__GETATTR | MSGQ__ASSOCIATE;
- 		break;
- 	case IPC_SET:
-+	case IPC_SETALL:
- 	case IPC_SETID:
- 		perms = MSGQ__SETATTR;
- 		break;
-@@ -4800,6 +4801,7 @@ static int selinux_shm_shmctl(struct shm
- 		perms = SHM__GETATTR | SHM__ASSOCIATE;
- 		break;
- 	case IPC_SET:
-+	case IPC_SETALL:
- 	case IPC_SETID:
- 		perms = SHM__SETATTR;
- 		break;
-@@ -4912,6 +4914,7 @@ static int selinux_sem_semctl(struct sem
- 		perms = SEM__DESTROY;
- 		break;
- 	case IPC_SET:
-+	case IPC_SETALL:
- 	case IPC_SETID:
- 		perms = SEM__SETATTR;
- 		break;
+ 
+ /*
+- * add semadj values to semaphores, free undo structures.
++ * add semadj values to semaphores, free undo structures, if there is no
++ * more user.
+  * undo structures are not freed when semaphore arrays are destroyed
+  * so some of them may be out of date.
+  * IMPLEMENTATION NOTE: There is some confusion over whether the
+@@ -1326,23 +1328,17 @@ int copy_semundo(unsigned long clone_fla
+  * The original implementation attempted to do this (queue and wait).
+  * The current implementation does not do so. The POSIX standard
+  * and SVID should be consulted to determine what behavior is mandated.
++ *
++ * Note:
++ * A concurrent task is only allowed to access and go through the list
++ * of sem_undo if it successfully grabs a refcnt.
+  */
+-void exit_sem(struct task_struct *tsk)
++static void free_semundo_list(struct sem_undo_list *undo_list)
+ {
+-	struct sem_undo_list *undo_list;
+ 	struct sem_undo *u, **up;
+-	struct ipc_namespace *ns;
+ 
+-	undo_list = tsk->sysvsem.undo_list;
+-	if (!undo_list)
+-		return;
+-
+-	if (!atomic_dec_and_test(&undo_list->refcnt))
+-		return;
+-
+-	ns = tsk->nsproxy->ipc_ns;
+-	/* There's no need to hold the semundo list lock, as current
+-         * is the last task exiting for this undo list.
++	/* There's no need to hold the semundo list lock, as there are
++	 * no more tasks or possible users for this undo list.
+ 	 */
+ 	for (up = &undo_list->proc_list; (u = *up); *up = u->proc_next, kfree(u)) {
+ 		struct sem_array *sma;
+@@ -1354,7 +1350,7 @@ void exit_sem(struct task_struct *tsk)
+ 
+ 		if(semid == -1)
+ 			continue;
+-		sma = sem_lock(ns, semid);
++		sma = sem_lock(undo_list->ns, semid);
+ 		if (IS_ERR(sma))
+ 			continue;
+ 
+@@ -1368,7 +1364,8 @@ void exit_sem(struct task_struct *tsk)
+ 			if (u == un)
+ 				goto found;
+ 		}
+-		printk ("exit_sem undo list error id=%d\n", u->semid);
++		printk(KERN_ERR "free_semundo_list error id=%d\n",
++		       u->semid);
+ 		goto next_entry;
+ found:
+ 		*unp = un->id_next;
+@@ -1404,9 +1401,22 @@ found:
+ next_entry:
+ 		sem_unlock(sma);
+ 	}
++	put_ipc_ns(undo_list->ns);
+ 	kfree(undo_list);
+ }
+ 
++/* called from do_exit() */
++void exit_sem(struct task_struct *tsk)
++{
++	struct sem_undo_list *ul = tsk->sysvsem.undo_list;
++	if (ul) {
++		rcu_assign_pointer(tsk->sysvsem.undo_list, NULL);
++		synchronize_rcu();
++		if (atomic_dec_and_test(&ul->refcnt))
++			free_semundo_list(ul);
++	}
++}
++
+ #ifdef CONFIG_PROC_FS
+ static int sysvipc_sem_proc_show(struct seq_file *s, void *it)
+ {
 
 -- 
 Pierre Peiffer
