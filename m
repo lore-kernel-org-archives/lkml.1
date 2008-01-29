@@ -1,98 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764404AbYA2OL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764482AbYA2ONv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764404AbYA2OL1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763278AbYA2OLO
+	id S1764482AbYA2ONv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:13:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763030AbYA2ONo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:11:14 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:26294 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758107AbYA2OLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:11:12 -0500
-Date: Tue, 29 Jan 2008 15:11:08 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Greg KH <greg@kroah.com>, Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [BUG] 2.6.24-git usb reset problems
-Message-ID: <20080129141108.GV15220@kernel.dk>
-References: <20080128204935.GI15220@kernel.dk> <20080128212114.GA15586@kroah.com> <479F18D3.9030709@panasas.com> <20080129135443.GU15220@kernel.dk> <479F32E9.10609@panasas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <479F32E9.10609@panasas.com>
+	Tue, 29 Jan 2008 09:13:44 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45482 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759486AbYA2ONn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 09:13:43 -0500
+Date: Tue, 29 Jan 2008 14:09:36 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-kernel@vger.kernel.org
+Subject: Heads Up: tty locking changes
+Message-ID: <20080129140936.0350d685@core>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29 2008, Boaz Harrosh wrote:
-> On Tue, Jan 29 2008 at 15:54 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > On Tue, Jan 29 2008, Boaz Harrosh wrote:
-> >> Greg KH wrote:
-> >>> On Mon, Jan 28, 2008 at 09:49:35PM +0100, Jens Axboe wrote:
-> >>>> Hi,
-> >>>>
-> >>>> Running latest -git (head 91525300baf162e83e923b09ca286f9205e21522) and
-> >>>> connecting my cf usb storage device yields and endless stream of:
-> >>>>
-> >>>> Initializing USB Mass Storage driver...
-> >>>> scsi6 : SCSI emulation for USB Mass Storage devices
-> >>>> usb-storage: device found at 2
-> >>>> usb-storage: waiting for device to settle before scanning
-> >>>> usbcore: registered new interface driver usb-storage
-> >>>> USB Mass Storage support registered.
-> >>>> scsi 6:0:0:0: Direct-Access     Generic  STORAGE DEVICE   0125 PQ: 0
-> >>>> ANSI: 0
-> >>>> sd 6:0:0:0: [sdb] 4001760 512-byte hardware sectors (2049 MB)
-> >>>> sd 6:0:0:0: [sdb] Write Protect is off
-> >>>> sd 6:0:0:0: [sdb] Mode Sense: 02 00 00 00
-> >>>> sd 6:0:0:0: [sdb] Assuming drive cache: write through
-> >>>> sd 6:0:0:0: [sdb] 4001760 512-byte hardware sectors (2049 MB)
-> >>>> sd 6:0:0:0: [sdb] Write Protect is off
-> >>>> sd 6:0:0:0: [sdb] Mode Sense: 02 00 00 00
-> >>>> sd 6:0:0:0: [sdb] Assuming drive cache: write through
-> >>>>  sdb: sdb1
-> >>>> sd 6:0:0:0: [sdb] Attached SCSI removable disk
-> >>>> sd 6:0:0:0: Attached scsi generic sg1 type 0
-> >>>> scsi 6:0:0:1: Direct-Access     Generic  STORAGE DEVICE   0125 PQ: 0
-> >>>> ANSI: 0
-> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
-> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
-> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
-> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
-> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
-> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
-> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
-> >>>> [...]
-> >>>>
-> >>>> until I disconnect it. The device doesn't work. Worked fine in 2.6.24.
-> >>>> I'm attaching boot messages and my .config.
-> >>> That's a bit wierd, as we haven't added any USB patches to the -git tree
-> >>> yet after 2.6.24 :)
-> >>>
-> >>> Could this be caused by some scsi changes perhaps?
-> >>>
-> >>> thanks,
-> >>>
-> >>> greg k-h
-> >>> -
-> >> Yes it is ;)
-> >>
-> >> Jens could you test the patch below? if it works I'll submit a proper
-> >> patch. Please forgive me for the bug.
-> > 
-> > No difference, still just a lot of resets.
-> > 
-> Where you able to figure out which usb storage transport is used?
-> 
-> in drivers/usb/storage/usb.c you have get_protocol() and get_transport()
-> functions. I'm not sure if these get stored in sysfs perhaps. This will
-> pinpoint better where to look. Let me research a bit. 
 
-Did the quick'n easy and dumped it. Protocol is 'Transparent SCSI' and
-transport is 'Bulk'
+In the next few days I'll be submitting some further tty locking changes
+to the kernel. Line discipline ->write and ->read methods will no longer
+be covered by lock_kernel. For the moment tty->driver write methods won't
+change (that is they will be either lock_kernel or in an IRQ but never
+both). That is next on the hit list once the lock is driven out of the
+tty ldisc layer.
 
--- 
-Jens Axboe
+If you have any out of tree ldiscs please be ready. If you maintain any
+serial drivers still relying on lock_kernel for internal locking on the
+read/write paths, now would be a good time to fix them before they break
 
+Alan
