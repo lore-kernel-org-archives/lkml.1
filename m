@@ -1,88 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933477AbYA2N7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933503AbYA2OA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933477AbYA2N7e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 08:59:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932657AbYA2N7T
+	id S933503AbYA2OA3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:00:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760976AbYA2OAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 08:59:19 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:37918
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932529AbYA2N7S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 08:59:18 -0500
-Date: Tue, 29 Jan 2008 14:59:14 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 1/6] mmu_notifier: Core code
-Message-ID: <20080129135914.GF7233@v2.random>
-References: <20080128202840.974253868@sgi.com> <20080128202923.609249585@sgi.com>
+	Tue, 29 Jan 2008 09:00:14 -0500
+Received: from sacred.ru ([62.205.161.221]:45166 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757756AbYA2OAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 09:00:12 -0500
+Message-ID: <479F3155.9060504@openvz.org>
+Date: Tue, 29 Jan 2008 16:59:49 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080128202923.609249585@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, David Howells <dhowells@redhat.com>
+Subject: [PATCH 8/12] frv: use find_task_by_vpid in cxn_pin_by_pid
+References: <479F2C5C.1050303@openvz.org>
+In-Reply-To: <479F2C5C.1050303@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 29 Jan 2008 16:59:28 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 12:28:41PM -0800, Christoph Lameter wrote:
-> +struct mmu_notifier_head {
-> +	struct hlist_head head;
-> +};
-> +
->  struct mm_struct {
->  	struct vm_area_struct * mmap;		/* list of VMAs */
->  	struct rb_root mm_rb;
-> @@ -219,6 +223,8 @@ struct mm_struct {
->  	/* aio bits */
->  	rwlock_t		ioctx_list_lock;
->  	struct kioctx		*ioctx_list;
-> +
-> +	struct mmu_notifier_head mmu_notifier; /* MMU notifier list */
->  };
+The function is question gets the pid from sysctl table,
+so this one is a virtual pid, i.e. the pid of a task as it
+is seen from inside a namespace.
 
-Not sure why you prefer to waste ram when MMU_NOTIFIER=n, this is a
-regression (a minor one though).
+So the find_task_by_vpid() must be used here.
 
-> +	/*
-> +	 * lock indicates that the function is called under spinlock.
-> +	 */
-> +	void (*invalidate_range)(struct mmu_notifier *mn,
-> +				 struct mm_struct *mm,
-> +				 unsigned long start, unsigned long end,
-> +				 int lock);
-> +};
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-It's out of my reach how can you be ok with lock=1. You said you have
-to block, if you can deal with lock=1 once, why can't you deal with
-lock=1 _always_?
+---
+ arch/frv/mm/mmu-context.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> +/*
-> + * Note that all notifiers use RCU. The updates are only guaranteed to be
-> + * visible to other processes after a RCU quiescent period!
-> + */
-> +void __mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm)
-> +{
-> +	hlist_add_head_rcu(&mn->hlist, &mm->mmu_notifier.head);
-> +}
-> +EXPORT_SYMBOL_GPL(__mmu_notifier_register);
-> +
-> +void mmu_notifier_register(struct mmu_notifier *mn, struct mm_struct *mm)
-> +{
-> +	down_write(&mm->mmap_sem);
-> +	__mmu_notifier_register(mn, mm);
-> +	up_write(&mm->mmap_sem);
-> +}
-> +EXPORT_SYMBOL_GPL(mmu_notifier_register);
+diff --git a/arch/frv/mm/mmu-context.c b/arch/frv/mm/mmu-context.c
+index 1530a41..81757d5 100644
+--- a/arch/frv/mm/mmu-context.c
++++ b/arch/frv/mm/mmu-context.c
+@@ -181,7 +181,7 @@ int cxn_pin_by_pid(pid_t pid)
+ 
+ 	/* get a handle on the mm_struct */
+ 	read_lock(&tasklist_lock);
+-	tsk = find_task_by_pid(pid);
++	tsk = find_task_by_vpid(pid);
+ 	if (tsk) {
+ 		ret = -EINVAL;
+ 
+-- 
+1.5.3.4
 
-The down_write is garbage. The caller should put it around
-mmu_notifier_register if something. The same way the caller should
-call synchronize_rcu after mmu_notifier_register if it needs
-synchronous behavior from the notifiers. The default version of
-mmu_notifier_register shouldn't be cluttered with unnecessary locking.
