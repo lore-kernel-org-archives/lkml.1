@@ -1,109 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759492AbYA2Vyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759678AbYA2Vze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759492AbYA2Vyr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 16:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758742AbYA2VyY
+	id S1759678AbYA2Vze (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 16:55:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbYA2VzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 16:54:24 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58965 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758677AbYA2VyW (ORCPT
+	Tue, 29 Jan 2008 16:55:21 -0500
+Received: from mga02.intel.com ([134.134.136.20]:62330 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752926AbYA2VzS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 16:54:22 -0500
-Date: Tue, 29 Jan 2008 13:54:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Clements <paul.clements@steeleye.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] NBD: raise max number of nbd devices to 1024
-Message-Id: <20080129135417.e20b8107.akpm@linux-foundation.org>
-In-Reply-To: <479F9B12.8010207@steeleye.com>
-References: <479F9B12.8010207@steeleye.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Tue, 29 Jan 2008 16:55:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,271,1199692800"; 
+   d="scan'208";a="255739063"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Subject: RE: kernel BUG at drivers/block/cciss.c:1260! (with recent  linux-2.6  tree)
+Date: Tue, 29 Jan 2008 13:53:58 -0800
+Message-ID: <1FE6DD409037234FAB833C420AA843EC7575C5@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20080129213526.GE15220@kernel.dk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: kernel BUG at drivers/block/cciss.c:1260! (with recent  linux-2.6  tree)
+Thread-Index: AchivuDqI3jvmlblRaWOExOUngxs+wAAmC1A
+References: <20080129182217.GK12400@plap3.qlogic.org> <20080129182833.GG15220@kernel.dk> <20080129183705.GL12400@plap3.qlogic.org> <20080129184442.GK15220@kernel.dk> <20080129184929.GN12400@plap3.qlogic.org> <20080129185358.GM15220@kernel.dk> <20080129210837.GA21785@plap3.qlogic.org> <20080129211634.GB15220@kernel.dk> <20080129212435.GC15220@kernel.dk> <1FE6DD409037234FAB833C420AA843EC757564@orsmsx424.amr.corp.intel.com> <20080129213526.GE15220@kernel.dk>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Cc: "Andrew Vasquez" <andrew.vasquez@qlogic.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       <mike.miller@hp.com>, <k-ueda@ct.jp.nec.com>, <j-nomura@ce.jp.nec.com>
+X-OriginalArrivalTime: 29 Jan 2008 21:53:59.0630 (UTC) FILETIME=[741C96E0:01C862C1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jan 2008 16:30:58 -0500
-Paul Clements <paul.clements@steeleye.com> wrote:
+> > Will try this next.
+>
+> Should work even better since it avoids a lock and copy, but please do
+> test if you have the time.
 
-> The limit was 128. This changes it to 1024.
-> 
+That one works too (survived two full builds at "make -j32" on the 16-way
+system).
 
-Please include the "why" in changelogs as well as the "what".  It's fairly
-easy to guess why this needs to be increased, but it would be useful and
-interesting to hear about the operational scenarios in which 128 was
-insufficient.
+Thanks for the quick turnaround.
 
-> 
-> --- ./include/linux/nbd.h.TIMEOUT	2007-08-22 13:18:12.000000000 -0400
-> +++ ./include/linux/nbd.h	2008-01-29 14:35:17.000000000 -0500
-> @@ -35,7 +35,7 @@ enum {
->  };
->  
->  #define nbd_cmd(req) ((req)->cmd[0])
-> -#define MAX_NBD 128
-> +#define MAX_NBD 1024
->  
->  /* userspace doesn't need the nbd_device structure */
->  #ifdef __KERNEL__
-> 
-
-But one still needs to specify the nbds_max module parameter.
-
-Can't we just nuke MAX_NBD altogether?
-
-
---- a/drivers/block/nbd.c~a
-+++ a/drivers/block/nbd.c
-@@ -54,7 +54,7 @@ static unsigned int debugflags;
- #endif /* NDEBUG */
- 
- static unsigned int nbds_max = 16;
--static struct nbd_device nbd_dev[MAX_NBD];
-+static struct nbd_device *nbd_dev;
- 
- /*
-  * Use just one lock (or at most 1 per NIC). Two arguments for this:
-@@ -651,12 +651,6 @@ static int __init nbd_init(void)
- 
- 	BUILD_BUG_ON(sizeof(struct nbd_request) != 28);
- 
--	if (nbds_max > MAX_NBD) {
--		printk(KERN_CRIT "nbd: cannot allocate more than %u nbds; %u requested.\n", MAX_NBD,
--				nbds_max);
--		return -EINVAL;
--	}
--
- 	for (i = 0; i < nbds_max; i++) {
- 		struct gendisk *disk = alloc_disk(1);
- 		if (!disk)
-@@ -715,6 +709,10 @@ out:
- static void __exit nbd_cleanup(void)
- {
- 	int i;
-+
-+	nbd_dev = kcalloc(nbds_max, sizeof(*nbd_dev), GFP_KERNEL);
-+	if (!nbd_dev)
-+		return -ENOMEM;
- 	for (i = 0; i < nbds_max; i++) {
- 		struct gendisk *disk = nbd_dev[i].disk;
- 		nbd_dev[i].magic = 0;
-diff -puN include/linux/nbd.h~a include/linux/nbd.h
---- a/include/linux/nbd.h~a
-+++ a/include/linux/nbd.h
-@@ -35,7 +35,6 @@ enum {
- };
- 
- #define nbd_cmd(req) ((req)->cmd[0])
--#define MAX_NBD 128
- 
- /* userspace doesn't need the nbd_device structure */
- #ifdef __KERNEL__
-_
-
-
-much nicer?
-
+-Tony
