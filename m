@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbYA2Gp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbYA2HSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757604AbYA2Gp6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 01:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYA2Gpu
+	id S1756221AbYA2HSZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 02:18:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYA2HSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 01:45:50 -0500
-Received: from ns2.suse.de ([195.135.220.15]:60300 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751196AbYA2Gpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 01:45:50 -0500
-Date: Mon, 28 Jan 2008 22:44:15 -0800
-From: Greg KH <gregkh@suse.de>
-To: Michael E Brown <Michael_E_Brown@dell.com>
-Cc: Jos?? Luis Tall??n <jltallon@adv-solutions.net>, Douglas_Warzecha@dell.com,
-       Abhay_Salunke@dell.com, linux-kernel@vger.kernel.org,
-       matt_domsch@dell.com, marcel@holtmann.org
-Subject: Re: 2.6.24 breaks BIOS updates on all Dell machines
-Message-ID: <20080129064415.GA8822@suse.de>
-References: <20080129063244.GA19076@humbolt.us.dell.com>
+	Tue, 29 Jan 2008 02:18:14 -0500
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:51819
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbYA2HSM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 02:18:12 -0500
+Date: Tue, 29 Jan 2008 00:29:28 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Theodore Tso <tytso@MIT.EDU>
+cc: Pavel Machek <pavel@ucw.cz>, Valdis.Kletnieks@vt.edu,
+       David Chinner <dgc@sgi.com>, Valerie Henson <val@vahconsulting.com>,
+       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andreas Dilger <adilger@clusterfs.com>,
+       Ric Wheeler <ric@emc.com>
+Subject: Re: [RFC] Parallelize IO for e2fsck
+In-Reply-To: <20080128195633.GB20528@mit.edu>
+Message-ID: <alpine.DEB.1.00.0801290028460.16707@asgard.lang.hm>
+References: <70b6f0bf0801161322k2740a8dch6a0d6e6e112cd2d0@mail.gmail.com> <70b6f0bf0801161330y46ec555m5d4994a1eea7d045@mail.gmail.com> <20080121230041.GL3180@webber.adilger.int> <20080122033830.GR155259@sgi.com> <3673.1200975438@turing-police.cc.vt.edu>
+ <20080122070050.GM3180@webber.adilger.int> <20080122144052.GC17804@mit.edu> <20080128193005.GC4032@ucw.cz> <20080128195633.GB20528@mit.edu>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080129063244.GA19076@humbolt.us.dell.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 12:32:44AM -0600, Michael E Brown wrote:
-> BIOS updates are broken on all Dell systems due to Commit
-> 109f0e93b6b728f03c1eb4af02bc25d71b646c59, which is now in 2.6.24.
-> 
->   static inline void fw_setup_device_id(struct device *f_dev, struct
-> device *dev)
->   {
-> -       /* XXX warning we should watch out for name collisions */
-> -       strlcpy(f_dev->bus_id, dev->bus_id, BUS_ID_SIZE);
-> +       snprintf(f_dev->bus_id, BUS_ID_SIZE, "firmware-%s",
-> dev->bus_id);
->  }
-> 
-> Two programs are broken by this change: 
->     1) dellBiosUpdate, which is part of libsmbios
->     2) All of the Dell Update Packages (DUPs) that are part of Dell
-> OpenManage: each BIOS release for each of 3-4 dozen platforms.
-> 
-> These programs are broken due to the pathname change from
-> /sys/class/firmware/dell_rbu/   to
-> /sys/class/firmware/firmware-dell_rbu/loading. 
-> 
-> Realistically, I can fix libsmbios in a couple of weeks, but there is no
-> way that we can go back and fix a couple hundred DUP packages for this
-> change. If this stays, we are looking at over 6 months before we have an
-> officially-available Dell OpenManage that can deal with it, and that
-> would be for new BIOS releases only, I suspect.
-> 
-> Some of the relevant threads from when this was submitted and accepted:
-> http://lkml.org/lkml/2005/5/23/73
-> http://lkml.org/lkml/2005/5/23/62
-> 
-> Due to the extremely large and disruptive nature of this bug, it would
-> be nice to get a 2.6.24.1 with this patch reverted.
-> 
-> I have copied the relevant developers at Dell who maintain this driver.
-> Please preserve the cc: list when replying.
+On Mon, 28 Jan 2008, Theodore Tso wrote:
 
-Fair enough, I have no problem reverting this.
+> On Mon, Jan 28, 2008 at 07:30:05PM +0000, Pavel Machek wrote:
+>>
+>> As user pages are always in highmem, this should be easy to decide:
+>> only send SIGDANGER when highmem is full. (Yes, there are
+>> inodes/dentries/file descriptors in lowmem, but I doubt apps will
+>> respond to SIGDANGER by closing files).
+>
+> Good point; for a system with at least (say) 2GB of memory, that
+> definitely makes sense.  For a system with less than 768 megs of
+> memory (how quaint, but it wasn't that long ago this was a lot of
+> memory :-), there wouldn't *be* any memory in highmem at all....
 
-Anyone want to keep it in?
+not to mention machines with 1G of ram (900M lowmem, 128M highmem)
 
-thanks,
-
-greg k-h
+David Lang
