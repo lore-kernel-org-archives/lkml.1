@@ -1,16 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbYA2Nau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbYA2Nbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932561AbYA2Nau (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 08:30:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932188AbYA2N3X
+	id S1762014AbYA2Nbi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 08:31:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932553AbYA2N3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 08:29:23 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46013 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932519AbYA2N3S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 08:29:18 -0500
-Date: Tue, 29 Jan 2008 07:29:17 -0600
+	Tue, 29 Jan 2008 08:29:25 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:55046 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932531AbYA2N3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 08:29:20 -0500
+Date: Tue, 29 Jan 2008 07:29:19 -0600
 To: linux-kernel@vger.kernel.org
 Cc: pj@sgi.com, clameter@sgi.com, rientjes@google.com, menage@google.com,
        cpw@sgi.com, Lee.Schermerhorn@hp.com, akpm@osdl.org
@@ -20,7 +19,7 @@ User-Agent: nail 11.25 7/29/05
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080129132917.267DA33B943@attica.americas.sgi.com>
+Message-Id: <20080129132919.BACC633B943@attica.americas.sgi.com>
 From: cpw@sgi.com (Cliff Wickman)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
