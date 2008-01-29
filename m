@@ -1,125 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932737AbYA2Nle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933295AbYA2Nmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932737AbYA2Nle (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 08:41:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933126AbYA2NkS
+	id S933295AbYA2Nmc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 08:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933206AbYA2NlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 08:40:18 -0500
-Received: from styx.suse.cz ([82.119.242.94]:55426 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764014AbYA2NkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 08:40:14 -0500
-From: David Sterba <dsterba@suse.cz>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: [PATCH] ipwireless: driver for 3G PC Card
-Date: Tue, 29 Jan 2008 14:40:05 +0100
-User-Agent: KMail/1.9.6 (enterprise 20071221.751182)
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jkosina@suse.cz, benm@symmetric.co.nz, stephen@symmetric.co.nz
-References: <20080128171929.GA3906@ds.suse.cz> <20080128100854.fe7acad8.rdunlap@xenotime.net>
-In-Reply-To: <20080128100854.fe7acad8.rdunlap@xenotime.net>
+	Tue, 29 Jan 2008 08:41:23 -0500
+Received: from sacred.ru ([62.205.161.221]:35253 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758036AbYA2NlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 08:41:21 -0500
+Message-ID: <479F2D00.9000304@openvz.org>
+Date: Tue, 29 Jan 2008 16:41:20 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: [PATCH 1/12] Use find_task_by_vpid in posix timers
+References: <479F2C5C.1050303@openvz.org>
+In-Reply-To: <479F2C5C.1050303@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801291440.06099.dsterba@suse.cz>
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 29 Jan 2008 16:41:00 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 of January 2008 19:08:54 Randy Dunlap wrote:
+All the functions that need to lookup a task by pid in posix 
+timers obtain this pid from a user space, and thus this value 
+refers to a task in the same namespace, as the current task 
+lives in.
 
-> > +/* Number of bytes in NL packet header (can not do
->
-> cannot
+So the proper behavior is to call find_task_by_vpid() here.
 
-Fixed.
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
->
-> > + * sizeof(nl_packet_header) since it's a bitfield) */
-> > +#define NL_FOLLOWING_PACKET_HEADER_SIZE    1
-> > +
-> > +struct nl_first_paket_header {
->
->                    packet ?
+---
+ kernel/posix-cpu-timers.c |    8 ++++----
+ kernel/posix-timers.c     |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-Yes, packet of course.
-
->
-> > +#if defined(__BIG_ENDIAN)
-> > +	unsigned char packet_rank:2;
-> > +	unsigned char address:3;
-> > +	unsigned char protocol:3;
-> > +#else
-> > +	unsigned char protocol:3;
-> > +	unsigned char address:3;
-> > +	unsigned char packet_rank:2;
-> > +#endif
->
-> From C99 spec:
-> "The order of allocation of bit-fields within a unit (high-order to
-> low-order or low-order to high-order) is implementation-defined."
->
-> so if the order/location of these bitfields is important (from one
-> system to another), you should use bit masks instead of bitfields
-> for them.
-
-I've changed it to __BIG_ENDIAN_BITFIELDS, as suggested by Alexey. The order 
-is important. I'll add it to my todo to convert it to bitmasks.
-
-> > +/*
-> > + * @return 1 if something has been received from hw
->
-> What's with the '@'?
-
-Removed, and converted to plaintext as suggested by others.
-
-> Need ":" and/or space between CARD_NAME and following string.
-> (in several places)
-
-Found a few of them and fixed.
-
-> > +module_param(major, int, 0);
-> > +module_param(ipwireless_debug, int, 0);
-> > +module_param(ipwireless_loopback, int, 0);
-> > +module_param(ipwireless_out_queue, int, 0);
-> > +MODULE_PARM_DESC(major, "ttyIPWp major number [0]");
-> > +MODULE_PARM_DESC(ipwireless_debug, "switch on debug messages [0]");
-> > +MODULE_PARM_DESC(ipwireless_debug, "switch on loopback mode [0]");
-> > +MODULE_PARM_DESC(ipwireless_debug, "set size of outgoing queue [1]");
->
-> Will these parameters be documented anywhere?
-
-The options are intended for debugging. Normal user does not need to tweak 
-them. Adjusted the description to reflect their debugging purpose.
-
-> > +#ifdef IPWIRELESS_STATE_DEBUG
-> > +int ipwireless_dump_network_state(char *p, struct ipw_network *network)
-> > +{
-> > +	int idx = 0;
-> > +
-> > +	idx += sprintf(p + idx, "debug: ppp_blocked=%d\n",
-> > +			network->ppp_blocked);
-> > +	idx += sprintf(p + idx, "debug: outgoing_packets_queued=%d\n",
-> > +			network->outgoing_packets_queued);
-> > +	idx += sprintf(p + idx, "debug: network.shutting_down=%d\n",
-> > +			network->shutting_down);
->
-> check for overflow of 'p'?
-
-Converted to one snprintf too.
-
-> > +/* Syncronous start-messages */
->
-> 	Synchronous
-
-Fixed.
-
-Updated patch will follow.
-
-
-Thank you for comments.
-
-Dave
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index 0b7c82a..2eae91f 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -20,7 +20,7 @@ static int check_clock(const clockid_t which_clock)
+ 		return 0;
+ 
+ 	read_lock(&tasklist_lock);
+-	p = find_task_by_pid(pid);
++	p = find_task_by_vpid(pid);
+ 	if (!p || !(CPUCLOCK_PERTHREAD(which_clock) ?
+ 		   same_thread_group(p, current) : thread_group_leader(p))) {
+ 		error = -EINVAL;
+@@ -305,7 +305,7 @@ int posix_cpu_clock_get(const clockid_t which_clock, struct timespec *tp)
+ 		 */
+ 		struct task_struct *p;
+ 		rcu_read_lock();
+-		p = find_task_by_pid(pid);
++		p = find_task_by_vpid(pid);
+ 		if (p) {
+ 			if (CPUCLOCK_PERTHREAD(which_clock)) {
+ 				if (same_thread_group(p, current)) {
+@@ -354,7 +354,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
+ 		if (pid == 0) {
+ 			p = current;
+ 		} else {
+-			p = find_task_by_pid(pid);
++			p = find_task_by_vpid(pid);
+ 			if (p && !same_thread_group(p, current))
+ 				p = NULL;
+ 		}
+@@ -362,7 +362,7 @@ int posix_cpu_timer_create(struct k_itimer *new_timer)
+ 		if (pid == 0) {
+ 			p = current->group_leader;
+ 		} else {
+-			p = find_task_by_pid(pid);
++			p = find_task_by_vpid(pid);
+ 			if (p && !thread_group_leader(p))
+ 				p = NULL;
+ 		}
+diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
+index 80d5620..c75d4e2 100644
+--- a/kernel/posix-timers.c
++++ b/kernel/posix-timers.c
+@@ -404,7 +404,7 @@ static struct task_struct * good_sigevent(sigevent_t * event)
+ 	struct task_struct *rtn = current->group_leader;
+ 
+ 	if ((event->sigev_notify & SIGEV_THREAD_ID ) &&
+-		(!(rtn = find_task_by_pid(event->sigev_notify_thread_id)) ||
++		(!(rtn = find_task_by_vpid(event->sigev_notify_thread_id)) ||
+ 		 !same_thread_group(rtn, current) ||
+ 		 (event->sigev_notify & ~SIGEV_THREAD_ID) != SIGEV_SIGNAL))
+ 		return NULL;
+-- 
+1.5.3.4
 
