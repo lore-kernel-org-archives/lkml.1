@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762347AbYA2XrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762574AbYA2Xr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762347AbYA2XrO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 18:47:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbYA2Xqx
+	id S1762574AbYA2Xr4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 18:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbYA2Xrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 18:46:53 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:58073 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756653AbYA2Xqu (ORCPT
+	Tue, 29 Jan 2008 18:47:46 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:40905 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754404AbYA2Xrp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 18:46:50 -0500
-Message-ID: <479FBAE8.3070809@web.de>
-Date: Wed, 30 Jan 2008 00:46:48 +0100
+	Tue, 29 Jan 2008 18:47:45 -0500
+Message-ID: <479FBB1E.4000402@web.de>
+Date: Wed, 30 Jan 2008 00:47:42 +0100
 From: Jan Kiszka <jan.kiszka@web.de>
 User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
@@ -19,337 +19,590 @@ To: Jason Wessel <jason.wessel@windriver.com>
 CC: Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        kgdb-bugreport@lists.sourceforge.net
-Subject: [PATCH 4/5] KGDB-8250: refactor configuration
+Subject: [PATCH 5/5] KGDB-8250: more refactorings
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18IzStNgGbt4IQh0n/A5az4D4/+fLB/Dvxow0rS
-	LCKlKEoSNW4Ynv2blgDWV7fjRCAz4FH5ndDQ2Xiz+29uFsNcHb
-	E2zQOPQ7Y=
+X-Provags-ID: V01U2FsdGVkX1+1XP4iXML9b2/SN3vnLfpmP+syOn+6ON+Y1gIq
+	TluyJXvgXsxLvl8ywGDckj9oqnxsZSKF1JKFbEQINpukkIbsLR
+	RLan6hk0g=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This major refactoring of the quite complex kgdb8250 configuration does
-the following:
+Here comes the rest of 8250_kgdb refactorings (the root of the previous
+patches - before I realized that there was more to do...). It
+basically...
 
- - ensures that static configurations according to SERIAL_PORT_DFNS are
-   always loaded first
- - tries to pull more accurate configuration via serial8250_get_port_def
-   if simple-config is used
- - detects empty/invalid simple-configs
- - enforces KGDB_PORT_NUM <= SERIAL_8250_NR_UARTS at kconfig level
- - removes kgdb8250_add_port and its hook in serial_core (calling
-   serial8250_get_port_def in demand should provide us the same
-   information)
+ - reorders functions to avoid prototypes (as far as possible)
+ - removes a redundant module parameter help (=>modinfo)
+ - fixes some minor style issues
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 
 ---
- drivers/serial/8250.c        |   47 ++++++++++++----------------
- drivers/serial/8250_kgdb.c   |   72 +++++++++++++------------------------------
- drivers/serial/serial_core.c |    7 ----
- include/linux/kgdb.h         |    1 
- lib/Kconfig.kgdb             |   16 ++++-----
- 5 files changed, 52 insertions(+), 91 deletions(-)
+ drivers/serial/8250_kgdb.c |  452 +++++++++++++++++++++------------------------
+ 1 file changed, 219 insertions(+), 233 deletions(-)
 
 Index: b/drivers/serial/8250_kgdb.c
 ===================================================================
 --- a/drivers/serial/8250_kgdb.c
 +++ b/drivers/serial/8250_kgdb.c
-@@ -53,16 +53,6 @@ static char kgdb8250_buf[GDB_BUF_SIZE];
+@@ -32,19 +32,27 @@
+ 
+ MODULE_DESCRIPTION("KGDB driver for the 8250");
+ MODULE_LICENSE("GPL");
+-/* These will conflict with early_param otherwise. */
++
+ #ifdef CONFIG_KGDB_8250_MODULE
+-static char config[256];
+-module_param_string(kgdb8250, config, 256, 0);
+-MODULE_PARM_DESC(kgdb8250,
+-		 " kgdb8250=<io or mmio>,<address>,<baud rate>,<irq>\n");
+-static struct kgdb_io local_kgdb_io_ops;
++/* If built-in, we use early_param instead. */
++static char config_string[256];
++module_param_string(kgdb8250, config_string, sizeof(config_string), 0);
++MODULE_PARM_DESC(kgdb8250, "<io or mmio>,<address>,<baud rate>,<irq> or "
++			   "<port #>,<baud rate>");
++
++static struct kgdb_io kgdb8250_io_ops;
++
+ #else  /* !CONFIG_KGDB_8250_MODULE */
+ static int params_evaluated;
+ #endif /* !CONFIG_KGDB_8250_MODULE */
+ 
+-/* Speed of the UART. */
+-static int kgdb8250_baud;
++/* Our internal table of UARTS. */
++#define UART_NR	CONFIG_SERIAL_8250_NR_UARTS
++static struct uart_port kgdb8250_ports[UART_NR];
++static struct uart_port *current_port;
++
++static int kgdb8250_baud;	/* Speed of the UART. */
++static void *kgdb8250_addr;	/* Base of the UART. */
+ 
+ /* Flag for if we need to call request_mem_region */
+ static int kgdb8250_needs_request_mem_region;
+@@ -53,19 +61,7 @@ static char kgdb8250_buf[GDB_BUF_SIZE];
  static atomic_t kgdb8250_buf_in_cnt;
  static int kgdb8250_buf_out_inx;
  
--/* Old-style serial definitions, if existant, and a counter. */
--#ifdef CONFIG_KGDB_SIMPLE_SERIAL
--static int should_copy_rs_table = 1;
--static struct serial_state old_rs_table[] __initdata = {
--#ifdef SERIAL_PORT_DFNS
--	SERIAL_PORT_DFNS
--#endif
--};
--#endif
+-/* Our internal table of UARTS. */
+-#define UART_NR	CONFIG_SERIAL_8250_NR_UARTS
+-static struct uart_port kgdb8250_ports[UART_NR];
 -
- /* Our internal table of UARTS. */
- #define UART_NR	CONFIG_SERIAL_8250_NR_UARTS
- static struct uart_port kgdb8250_ports[UART_NR];
-@@ -255,12 +245,18 @@ static int kgdb8250_uart_init(void)
-  * had values specifically configured in.  We need to make sure this only
-  * happens once.
+-static struct uart_port *current_port;
+-
+-/* Base of the UART. */
+-static void *kgdb8250_addr;
+-
+-/* Forward declarations. */
+ static int kgdb8250_uart_init(void);
+-static int __init kgdb_init_io(void);
+-static int __init kgdb8250_opt(char *str);
+ 
+ /* These are much shorter calls to ioread8/iowrite8 that take into
+  * account our shifts, etc. */
+@@ -141,8 +137,7 @@ static int kgdb_get_debug_char(void)
+  * line we're in charge of.  If this is true, schedule a breakpoint and
+  * return.
   */
--static void __init kgdb8250_copy_rs_table(void)
-+static void kgdb8250_copy_rs_table(void)
+-static irqreturn_t
+-kgdb8250_interrupt(int irq, void *dev_id)
++static irqreturn_t kgdb8250_interrupt(int irq, void *dev_id)
  {
- #ifdef CONFIG_KGDB_SIMPLE_SERIAL
-+	static struct serial_state old_rs_table[] = {
-+#ifdef SERIAL_PORT_DFNS
-+		SERIAL_PORT_DFNS
-+#endif
-+	};
-+	static int rs_table_copied;
- 	int i;
- 
--	if (!should_copy_rs_table)
-+	if (rs_table_copied)
- 		return;
- 
- 	for (i = 0; i < ARRAY_SIZE(old_rs_table); i++) {
-@@ -273,8 +269,8 @@ static void __init kgdb8250_copy_rs_tabl
- 		kgdb8250_ports[i].line = i;
- 	}
- 
--	should_copy_rs_table = 0;
--#endif
-+	rs_table_copied = 1;
-+#endif /* CONFIG_KGDB_SIMPLE_SERIAL */
+ 	if (!(kgdb_ioread(UART_IIR) & UART_IIR_RDI))
+ 		return IRQ_NONE;
+@@ -158,89 +153,6 @@ kgdb8250_interrupt(int irq, void *dev_id
  }
  
  /*
-@@ -284,9 +280,6 @@ static void __init kgdb8250_copy_rs_tabl
-  */
- static void __init kgdb8250_late_init(void)
- {
--	/* Try and copy the old_rs_table. */
--	kgdb8250_copy_rs_table();
--
- #if defined(CONFIG_SERIAL_8250) || defined(CONFIG_SERIAL_8250_MODULE)
- 	/* Take the port away from the main driver. */
- 	serial8250_unregister_by_port(current_port);
-@@ -306,9 +299,6 @@ static void __init kgdb8250_late_init(vo
- 
- static __init int kgdb_init_io(void)
- {
--	/* Give us the basic table of uarts. */
--	kgdb8250_copy_rs_table();
--
- 	/* We're either a module and parse a config string, or we have a
- 	 * semi-static config. */
- #ifdef CONFIG_KGDB_8250_MODULE
-@@ -325,8 +315,15 @@ static __init int kgdb_init_io(void)
- #else  /* !CONFIG_KGDB_8250_MODULE */
- 	if (!params_evaluated) {
- #ifdef CONFIG_KGDB_SIMPLE_SERIAL
-+		kgdb8250_copy_rs_table();
-+
- 		kgdb8250_baud = CONFIG_KGDB_BAUDRATE;
- 		current_port = &kgdb8250_ports[CONFIG_KGDB_PORT_NUM];
-+
-+		if (serial8250_get_port_def(current_port,
-+					    CONFIG_KGDB_PORT_NUM) < 0 &&
-+		    !current_port->iobase && !current_port->membase)
-+			return -EINVAL;
- #else /* !CONFIG_KGDB_SIMPLE_SERIAL */
- 		if (kgdb8250_opt(CONFIG_KGDB_8250_CONF_STRING))
- 			return -EINVAL;
-@@ -395,29 +392,6 @@ struct kgdb_io kgdb_io_ops = {
- };
- 
- /**
-- * 	kgdb8250_add_port - Define a serial port for use with KGDB
-- * 	@i: The index of the port being added
-- * 	@serial_req: The &struct uart_port describing the port
-- *
-- * 	On platforms where we must register the serial device
-- * 	dynamically, this is the best option if a platform also normally
-- * 	calls early_serial_setup().
+- *  Initializes the UART.
+- *  Returns:
+- *	0 on success, 1 on failure.
 - */
--void kgdb8250_add_port(int i, struct uart_port *serial_req)
+-static int kgdb8250_uart_init(void)
 -{
--#ifdef CONFIG_KGDB_SIMPLE_SERIAL
--	if (should_copy_rs_table)
--		printk(KERN_ERR "8250_kgdb: warning will over write serial"
--			   " port definitions at kgdb init time\n");
--#endif
+-	unsigned int ier;
+-	unsigned int base_baud = current_port->uartclk ?
+-		current_port->uartclk / 16 : BASE_BAUD;
 -
--	/* Copy the whole thing over. */
--	if (current_port != &kgdb8250_ports[i])
--		memcpy(&kgdb8250_ports[i], serial_req,
--		sizeof(struct uart_port));
+-	/* test uart existance */
+-	if (kgdb_ioread(UART_LSR) == 0xff)
+-		return -1;
+-
+-	/* disable interrupts */
+-	kgdb_iowrite(0, UART_IER);
+-
+-#if defined(CONFIG_ARCH_OMAP1510)
+-	/* Workaround to enable 115200 baud on OMAP1510 internal ports */
+-	if (cpu_is_omap1510() && is_omap_port((void *)kgdb8250_addr)) {
+-		if (kgdb8250_baud == 115200) {
+-			base_baud = 1;
+-			kgdb8250_baud = 1;
+-			kgdb_iowrite(1, UART_OMAP_OSC_12M_SEL);
+-		} else
+-			kgdb_iowrite(0, UART_OMAP_OSC_12M_SEL);
+-	}
+-#endif
+-	/* set DLAB */
+-	kgdb_iowrite(UART_LCR_DLAB, UART_LCR);
+-
+-	/* set baud */
+-	kgdb_iowrite((base_baud / kgdb8250_baud) & 0xff, UART_DLL);
+-	kgdb_iowrite((base_baud / kgdb8250_baud) >> 8, UART_DLM);
+-
+-	/* reset DLAB, set LCR */
+-	kgdb_iowrite(UART_LCR_WLEN8, UART_LCR);
+-
+-	/* set DTR and RTS */
+-	kgdb_iowrite(UART_MCR_OUT2 | UART_MCR_DTR | UART_MCR_RTS, UART_MCR);
+-
+-	/* setup fifo */
+-	kgdb_iowrite(UART_FCR_ENABLE_FIFO | UART_FCR_CLEAR_RCVR
+-		| UART_FCR_CLEAR_XMIT | UART_FCR_TRIGGER_8,
+-		UART_FCR);
+-
+-	/* clear pending interrupts */
+-	kgdb_ioread(UART_IIR);
+-	kgdb_ioread(UART_RX);
+-	kgdb_ioread(UART_LSR);
+-	kgdb_ioread(UART_MSR);
+-
+-	/* turn on RX interrupt only */
+-	kgdb_iowrite(UART_IER_RDI, UART_IER);
+-
+-	/*
+-	 * Borrowed from the main 8250 driver.
+-	 * Try writing and reading the UART_IER_UUE bit (b6).
+-	 * If it works, this is probably one of the Xscale platform's
+-	 * internal UARTs.
+-	 * We're going to explicitly set the UUE bit to 0 before
+-	 * trying to write and read a 1 just to make sure it's not
+-	 * already a 1 and maybe locked there before we even start start.
+-	 */
+-	ier = kgdb_ioread(UART_IER);
+-	kgdb_iowrite(ier & ~UART_IER_UUE, UART_IER);
+-	if (!(kgdb_ioread(UART_IER) & UART_IER_UUE)) {
+-		/*
+-		 * OK it's in a known zero state, try writing and reading
+-		 * without disturbing the current state of the other bits.
+-		 */
+-		kgdb_iowrite(ier | UART_IER_UUE, UART_IER);
+-		if (kgdb_ioread(UART_IER) & UART_IER_UUE)
+-			/*
+-			 * It's an Xscale.
+-			 */
+-			ier |= UART_IER_UUE | UART_IER_RTOIE;
+-	}
+-	kgdb_iowrite(ier, UART_IER);
+-	return 0;
 -}
 -
--/**
-  * 	kgdb8250_add_platform_port - Define a serial port for use with KGDB
-  * 	@i: The index of the port being added
-  * 	@p: The &struct plat_serial8250_port describing the port
-@@ -447,7 +421,10 @@ void __init kgdb8250_add_platform_port(i
-  */
- static int __init kgdb8250_opt(char *str)
- {
--	/* We'll fill out and use the first slot. */
+-/*
+  * Copy the old serial_state table to our uart_port table if we haven't
+  * had values specifically configured in.  We need to make sure this only
+  * happens once.
+@@ -274,6 +186,91 @@ static void kgdb8250_copy_rs_table(void)
+ }
+ 
+ /*
++ * Syntax for this cmdline option is:
++ *  kgdb8250=<io or mmio>,<address>,<baud rate>,<irq> or
++ *  kgdb8250=<port #>,<baud rate>
++ */
++static int __init kgdb8250_opt(char *str)
++{
 +	/* Give us the basic table of uarts. */
 +	kgdb8250_copy_rs_table();
 +
 +	/* If we overwrite, we'll fill out and use the first slot. */
- 	current_port = &kgdb8250_ports[0];
- 
- 	if (!strncmp(str, "io", 2)) {
-@@ -467,7 +444,8 @@ static int __init kgdb8250_opt(char *str
- 		if (line >= UART_NR)
- 			goto errout;
- 		current_port = &kgdb8250_ports[line];
--		if (serial8250_get_port_def(current_port, line))
++	current_port = &kgdb8250_ports[0];
++
++	if (!strncmp(str, "io", 2)) {
++		current_port->iotype = UPIO_PORT;
++		str += 2;
++	} else if (!strncmp(str, "mmap", 4)) {
++		current_port->iotype = UPIO_MEM;
++		current_port->flags |= UPF_IOREMAP;
++		str += 4;
++	} else if (!strncmp(str, "mmio", 4)) {
++		current_port->iotype = UPIO_MEM;
++		current_port->flags &= ~UPF_IOREMAP;
++		str += 4;
++	} else if (*str >= '0' || *str <= '9') {
++		int line = *str - '0';
++		/* UARTS in the list from 0 -> 9 */
++		if (line >= UART_NR)
++			goto errout;
++		current_port = &kgdb8250_ports[line];
 +		if (serial8250_get_port_def(current_port, line) < 0 &&
 +		    !current_port->iobase && !current_port->membase)
- 			goto errout;
- 		str++;
- 		if (*str != ',')
-@@ -512,16 +490,12 @@ static int __init kgdb8250_opt(char *str
- 	current_port->irq = simple_strtoul(str, &str, 10);
- 
- finish:
--#ifdef CONFIG_KGDB_SIMPLE_SERIAL
--	should_copy_rs_table = 0;
--#endif
- #ifdef CONFIG_KGDB_8250
- 	params_evaluated = 1;
- #endif
- 	return 0;
- 
- errout:
--	printk(KERN_ERR "Invalid syntax for option kgdb8250=\n");
- 	return 1;
- }
- 
-Index: b/drivers/serial/8250.c
-===================================================================
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2860,37 +2860,32 @@ void serial8250_unregister_port(int line
- EXPORT_SYMBOL(serial8250_unregister_port);
- 
- /**
-- *  serial8250_get_port_def - Get port definition for a specific line
-- *  @port: generic uart_port output for a specific serial line
-- *  @line: specific serial line index
-+ *	serial8250_get_port_def - Get port definition for a specific line
-+ *	@port: generic uart_port output for a specific serial line
-+ *	@line: specific serial line index
-  *
-- *  Return 0 if the port existed
-- *  Return 1 on failure
-+ *	Returns 0 on success, -ENODEV if the port does not exist.
-  */
--
- int serial8250_get_port_def(struct uart_port *port, int line)
- {
--	struct uart_8250_port *uart;
-+	struct uart_port *port8250 = &serial8250_ports[line].port;
- 
--	if (line < 0 || line >= UART_NR)
--		return 1;
--	uart = &serial8250_ports[line];
--	if (uart) {
--		port->iobase = uart->port.iobase;
--		port->membase = uart->port.membase;
--		port->irq = uart->port.irq;
--		port->uartclk = uart->port.uartclk;
--		port->fifosize = uart->port.fifosize;
--		port->regshift = uart->port.regshift;
--		port->iotype = uart->port.iotype;
--		port->flags = uart->port.flags;
--		port->mapbase = uart->port.mapbase;
--		port->dev =	uart->port.dev;
--		return 0;
--	}
--	return 1;
-+	if (!port8250->iobase && !port8250->membase)
-+		return -ENODEV;
++			goto errout;
++		str++;
++		if (*str != ',')
++			goto errout;
++		str++;
++		kgdb8250_baud = simple_strtoul(str, &str, 10);
++		if (!kgdb8250_baud)
++			goto errout;
++		if (*str == ',')
++			goto errout;
++		goto finish;
++	} else
++		goto errout;
 +
-+	port->iobase   = port8250->iobase;
-+	port->membase  = port8250->membase;
-+	port->irq      = port8250->irq;
-+	port->uartclk  = port8250->uartclk;
-+	port->fifosize = port8250->fifosize;
-+	port->regshift = port8250->regshift;
-+	port->iotype   = port8250->iotype;
-+	port->flags    = port8250->flags;
-+	port->mapbase  = port8250->mapbase;
-+	port->dev      = port8250->dev;
++	if (*str != ',')
++		goto errout;
++	str++;
++
++	if (current_port->iotype == UPIO_PORT)
++		current_port->iobase = simple_strtoul(str, &str, 16);
++	else {
++		if (current_port->flags & UPF_IOREMAP)
++			current_port->mapbase =
++				(unsigned long) simple_strtoul(str, &str, 16);
++		else
++			current_port->membase =
++				(void *) simple_strtoul(str, &str, 16);
++	}
++
++	if (*str != ',')
++		goto errout;
++	str++;
++
++	kgdb8250_baud = simple_strtoul(str, &str, 10);
++	if (!kgdb8250_baud)
++		goto errout;
++
++	if (*str != ',')
++		goto errout;
++	str++;
++
++	current_port->irq = simple_strtoul(str, &str, 10);
++
++finish:
++#ifdef CONFIG_KGDB_8250
++	params_evaluated = 1;
++#endif
 +	return 0;
++
++errout:
++	return 1;
++}
++
++/*
+  * Hookup our IRQ line now that it is safe to do so, after we grab any
+  * memory regions we might need to.  If we haven't been initialized yet,
+  * go ahead and copy the old_rs_table in.
+@@ -286,7 +283,8 @@ static void __init kgdb8250_late_init(vo
+ 
+ 	/* Now reinit the port as the above has disabled things. */
+ 	kgdb8250_uart_init();
+-#endif
++#endif /* CONFIG_SERIAL_8250 || CONFIG_SERIAL_8250_MODULE */
++
+ 	/* We may need to call request_mem_region() first. */
+ 	if (kgdb8250_needs_request_mem_region)
+ 		request_mem_region(current_port->mapbase,
+@@ -302,16 +300,8 @@ static __init int kgdb_init_io(void)
+ 	/* We're either a module and parse a config string, or we have a
+ 	 * semi-static config. */
+ #ifdef CONFIG_KGDB_8250_MODULE
+-	if (strlen(config)) {
+-		if (kgdb8250_opt(config))
+-			return -EINVAL;
+-	} else {
+-		printk(KERN_ERR "kgdb8250: argument error, usage: "
+-		       "kgdb8250=<io or mmio>,<address>,<baud rate>,<irq>\n");
+-		printk(KERN_ERR "kgdb8250: alt usage: "
+-		       "kgdb8250=<line #>,<baud rate>\n");
++	if (strlen(config_string) || kgdb8250_opt(config_string))
+ 		return -EINVAL;
+-	}
+ #else  /* !CONFIG_KGDB_8250_MODULE */
+ 	if (!params_evaluated) {
+ #ifdef CONFIG_KGDB_SIMPLE_SERIAL
+@@ -356,49 +346,113 @@ static __init int kgdb_init_io(void)
+ 		printk(KERN_ERR "kgdb8250: init failed\n");
+ 		return -EIO;
+ 	}
++
+ #ifdef CONFIG_KGDB_8250_MODULE
+-	/* Attach the kgdb irq. When this is built into the kernel, it
++	/*
++	 * Attach the kgdb irq. When this is built into the kernel, it
+ 	 * is called as a part of late_init sequence.
+ 	 */
+ 	kgdb8250_late_init();
+-	if (kgdb_register_io_module(&local_kgdb_io_ops))
++	if (kgdb_register_io_module(&kgdb8250_io_ops))
+ 		return -EINVAL;
+ 
+ 	printk(KERN_INFO "kgdb8250: debugging enabled\n");
+-#endif				/* CONFIG_KGD_8250_MODULE */
++#endif 	/* CONFIG_KGD_8250_MODULE */
+ 
+ 	return 0;
  }
--EXPORT_SYMBOL(serial8250_get_port_def);
-+EXPORT_SYMBOL_GPL(serial8250_get_port_def);
+ 
+-#ifdef CONFIG_KGDB_8250_MODULE
+-/* If it is a module the kgdb_io_ops should be a static which
+- * is passed to the KGDB I/O initialization
++/*
++ *  Initializes the UART.
++ *  Returns:
++ *	0 on success, 1 on failure.
+  */
+-static void kgdb8250_pre_exception_handler(void);
+-static void kgdb8250_post_exception_handler(void);
++static int kgdb8250_uart_init(void)
++{
++	unsigned int ier;
++	unsigned int base_baud = current_port->uartclk ?
++		current_port->uartclk / 16 : BASE_BAUD;
++ 
++	/* test uart existance */
++	if (kgdb_ioread(UART_LSR) == 0xff)
++		return -1;
++ 
++	/* disable interrupts */
++	kgdb_iowrite(0, UART_IER);
+ 
+-static struct kgdb_io local_kgdb_io_ops = {
+-#else				/* ! CONFIG_KGDB_8250_MODULE */
+-struct kgdb_io kgdb_io_ops = {
+-#endif				/* ! CONFIG_KGD_8250_MODULE */
+-	.read_char = kgdb_get_debug_char,
+-	.write_char = kgdb_put_debug_char,
+-	.init = kgdb_init_io,
+-	.late_init = kgdb8250_late_init,
+-#ifdef CONFIG_KGDB_8250_MODULE
+-	.pre_exception = kgdb8250_pre_exception_handler,
+-	.post_exception = kgdb8250_post_exception_handler,
+-#endif
+-};
++#ifdef CONFIG_ARCH_OMAP1510
++	/* Workaround to enable 115200 baud on OMAP1510 internal ports */
++	if (cpu_is_omap1510() && is_omap_port((void *)kgdb8250_addr)) {
++		if (kgdb8250_baud == 115200) {
++			base_baud = 1;
++			kgdb8250_baud = 1;
++			kgdb_iowrite(1, UART_OMAP_OSC_12M_SEL);
++		} else
++			kgdb_iowrite(0, UART_OMAP_OSC_12M_SEL);
++	}
++#endif /* CONFIG_ARCH_OMAP1510 */
++	/* set DLAB */
++	kgdb_iowrite(UART_LCR_DLAB, UART_LCR);
++
++	/* set baud */
++	kgdb_iowrite((base_baud / kgdb8250_baud) & 0xff, UART_DLL);
++	kgdb_iowrite((base_baud / kgdb8250_baud) >> 8, UART_DLM);
++
++	/* reset DLAB, set LCR */
++	kgdb_iowrite(UART_LCR_WLEN8, UART_LCR);
++
++	/* set DTR and RTS */
++	kgdb_iowrite(UART_MCR_OUT2 | UART_MCR_DTR | UART_MCR_RTS, UART_MCR);
++
++	/* setup fifo */
++	kgdb_iowrite(UART_FCR_ENABLE_FIFO | UART_FCR_CLEAR_RCVR
++		| UART_FCR_CLEAR_XMIT | UART_FCR_TRIGGER_8,
++		UART_FCR);
++
++	/* clear pending interrupts */
++	kgdb_ioread(UART_IIR);
++	kgdb_ioread(UART_RX);
++	kgdb_ioread(UART_LSR);
++	kgdb_ioread(UART_MSR);
++
++	/* turn on RX interrupt only */
++	kgdb_iowrite(UART_IER_RDI, UART_IER);
++
++	/*
++	 * Borrowed from the main 8250 driver.
++	 * Try writing and reading the UART_IER_UUE bit (b6).
++	 * If it works, this is probably one of the Xscale platform's
++	 * internal UARTs.
++	 * We're going to explicitly set the UUE bit to 0 before
++	 * trying to write and read a 1 just to make sure it's not
++	 * already a 1 and maybe locked there before we even start start.
++	 */
++	ier = kgdb_ioread(UART_IER);
++	kgdb_iowrite(ier & ~UART_IER_UUE, UART_IER);
++	if (!(kgdb_ioread(UART_IER) & UART_IER_UUE)) {
++		/*
++		 * OK it's in a known zero state, try writing and reading
++		 * without disturbing the current state of the other bits.
++		 */
++		kgdb_iowrite(ier | UART_IER_UUE, UART_IER);
++		if (kgdb_ioread(UART_IER) & UART_IER_UUE)
++			/*
++			 * It's an Xscale.
++			 */
++			ier |= UART_IER_UUE | UART_IER_RTOIE;
++	}
++	kgdb_iowrite(ier, UART_IER);
++	return 0;
++}
  
  /**
-  *	serial8250_unregister_by_port - remove a 16x50 serial port
-@@ -2909,7 +2904,7 @@ void serial8250_unregister_by_port(struc
- 	if (uart)
- 		serial8250_unregister_port(uart->port.line);
- }
--EXPORT_SYMBOL(serial8250_unregister_by_port);
-+EXPORT_SYMBOL_GPL(serial8250_unregister_by_port);
- 
- static int __init serial8250_init(void)
+- * 	kgdb8250_add_platform_port - Define a serial port for use with KGDB
+- * 	@i: The index of the port being added
+- * 	@p: The &struct plat_serial8250_port describing the port
++ * kgdb8250_add_platform_port - Define a serial port for use with KGDB
++ * @i: The index of the port being added
++ * @p: The &struct plat_serial8250_port describing the port
+  *
+- * 	On platforms where we must register the serial device
+- * 	dynamically, this is the best option if a platform normally
+- * 	handles uart setup with an array of &struct plat_serial8250_port.
++ * On platforms where we must register the serial device
++ * dynamically, this is the best option if a platform normally
++ * handles uart setup with an array of &struct plat_serial8250_port.
+  */
+ void __init kgdb8250_add_platform_port(int i, struct plat_serial8250_port *p)
  {
-Index: b/drivers/serial/serial_core.c
-===================================================================
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -33,7 +33,6 @@
- #include <linux/serial.h> /* for serial_state and serial_icounter_struct */
- #include <linux/delay.h>
- #include <linux/mutex.h>
--#include <linux/kgdb.h>
+@@ -415,90 +469,6 @@ void __init kgdb8250_add_platform_port(i
+ 	kgdb8250_ports[i].mapbase = p->mapbase;
+ }
  
- #include <asm/irq.h>
- #include <asm/uaccess.h>
-@@ -2370,12 +2369,6 @@ int uart_add_one_port(struct uart_driver
- 	 */
- 	port->flags &= ~UPF_DEAD;
- 
--#if defined(CONFIG_KGDB_8250)
--	/* Add any 8250-like ports we find later. */
--	if (port->type <= PORT_MAX_8250)
--		kgdb8250_add_port(port->line, port);
+-/*
+- * Syntax for this cmdline option is:
+- * kgdb8250=<io or mmio>,<address>,<baud rate>,<irq>"
+- */
+-static int __init kgdb8250_opt(char *str)
+-{
+-	/* Give us the basic table of uarts. */
+-	kgdb8250_copy_rs_table();
+-
+-	/* If we overwrite, we'll fill out and use the first slot. */
+-	current_port = &kgdb8250_ports[0];
+-
+-	if (!strncmp(str, "io", 2)) {
+-		current_port->iotype = UPIO_PORT;
+-		str += 2;
+-	} else if (!strncmp(str, "mmap", 4)) {
+-		current_port->iotype = UPIO_MEM;
+-		current_port->flags |= UPF_IOREMAP;
+-		str += 4;
+-	} else if (!strncmp(str, "mmio", 4)) {
+-		current_port->iotype = UPIO_MEM;
+-		current_port->flags &= ~UPF_IOREMAP;
+-		str += 4;
+-	} else if (*str >= '0' || *str <= '9') {
+-		int line = *str - '0';
+-		/* UARTS in the list from 0 -> 9 */
+-		if (line >= UART_NR)
+-			goto errout;
+-		current_port = &kgdb8250_ports[line];
+-		if (serial8250_get_port_def(current_port, line) < 0 &&
+-		    !current_port->iobase && !current_port->membase)
+-			goto errout;
+-		str++;
+-		if (*str != ',')
+-			goto errout;
+-		str++;
+-		kgdb8250_baud = simple_strtoul(str, &str, 10);
+-		if (!kgdb8250_baud)
+-			goto errout;
+-		if (*str == ',')
+-			goto errout;
+-		goto finish;
+-	} else
+-		goto errout;
+-
+-	if (*str != ',')
+-		goto errout;
+-	str++;
+-
+-	if (current_port->iotype == UPIO_PORT)
+-		current_port->iobase = simple_strtoul(str, &str, 16);
+-	else {
+-		if (current_port->flags & UPF_IOREMAP)
+-			current_port->mapbase =
+-				(unsigned long) simple_strtoul(str, &str, 16);
+-		else
+-			current_port->membase =
+-				(void *) simple_strtoul(str, &str, 16);
+-	}
+-
+-	if (*str != ',')
+-		goto errout;
+-	str++;
+-
+-	kgdb8250_baud = simple_strtoul(str, &str, 10);
+-	if (!kgdb8250_baud)
+-		goto errout;
+-
+-	if (*str != ',')
+-		goto errout;
+-	str++;
+-
+-	current_port->irq = simple_strtoul(str, &str, 10);
+-
+-finish:
+-#ifdef CONFIG_KGDB_8250
+-	params_evaluated = 1;
 -#endif
+-	return 0;
 -
-  out:
- 	mutex_unlock(&state->mutex);
- 	mutex_unlock(&port_mutex);
-Index: b/include/linux/kgdb.h
-===================================================================
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -271,7 +271,6 @@ extern struct kgdb_arch arch_kgdb_ops;
- int kgdb_register_io_module(struct kgdb_io *local_kgdb_io_ops);
- void kgdb_unregister_io_module(struct kgdb_io *local_kgdb_io_ops);
+-errout:
+-	return 1;
+-}
+-
+ #ifdef CONFIG_KGDB_8250_MODULE
+ static void kgdb8250_pre_exception_handler(void)
+ {
+@@ -512,19 +482,25 @@ static void kgdb8250_post_exception_hand
+ 		module_put(THIS_MODULE);
+ }
  
--void kgdb8250_add_port(int i, struct uart_port *serial_req);
- void __init kgdb8250_add_platform_port(int i,
- 	struct plat_serial8250_port *serial_req);
- 
-Index: b/lib/Kconfig.kgdb
-===================================================================
---- a/lib/Kconfig.kgdb
-+++ b/lib/Kconfig.kgdb
-@@ -36,6 +36,14 @@ config KGDB_SIMPLE_SERIAL
- 	  or on the command line, the type (I/O or MMIO), IRQ and
- 	  address to use.  If in doubt, say Y.
- 
-+config KGDB_PORT_NUM
-+	int "Serial port number for KGDB"
-+	range 0 SERIAL_8250_NR_UARTS
-+	depends on KGDB_SIMPLE_SERIAL
-+	default "1"
-+	help
-+	  Pick the port number (0 based) for KGDB to use.
++static struct kgdb_io kgdb8250_io_ops = {
++	.read_char = kgdb_get_debug_char,
++	.write_char = kgdb_put_debug_char,
++	.init = kgdb_init_io,
++	.late_init = kgdb8250_late_init,
++	.pre_exception = kgdb8250_pre_exception_handler,
++	.post_exception = kgdb8250_post_exception_handler,
++};
 +
- config KGDB_BAUDRATE
- 	int "Debug serial port baud rate"
- 	depends on KGDB_SIMPLE_SERIAL
-@@ -45,14 +53,6 @@ config KGDB_BAUDRATE
- 	  used.  Standard rates from 9600 to 115200 are allowed, and this
- 	  may be overridden via the commandline.
+ static void cleanup_kgdb8250(void)
+ {
+-	kgdb_unregister_io_module(&local_kgdb_io_ops);
++	kgdb_unregister_io_module(&kgdb8250_io_ops);
  
--config KGDB_PORT_NUM
--	int "Serial port number for KGDB"
--	range 0 3
--	depends on KGDB_SIMPLE_SERIAL
--	default "1"
--	help
--	  Pick the port number (0 based) for KGDB to use.
--
- config KGDB_8250_CONF_STRING
- 	string "Configuration string for KGDB"
- 	depends on (KGDB_8250 = y) && !KGDB_SIMPLE_SERIAL
+-	/* Clean up the irq and memory */
+ 	free_irq(current_port->irq, current_port);
+ 
+ 	if (kgdb8250_needs_request_mem_region)
+ 		release_mem_region(current_port->mapbase,
+ 				   8 << current_port->regshift);
+-	/* Hook up the serial port back to what it was previously
+-	 * hooked up to.
+-	 */
++
+ #if defined(CONFIG_SERIAL_8250) || defined(CONFIG_SERIAL_8250_MODULE)
+ 	/* Give the port back to the 8250 driver. */
+ 	serial8250_register_port(current_port);
+@@ -533,6 +509,16 @@ static void cleanup_kgdb8250(void)
+ 
+ module_init(kgdb_init_io);
+ module_exit(cleanup_kgdb8250);
+-#else				/* ! CONFIG_KGDB_8250_MODULE */
++
++#else  /* !CONFIG_KGDB_8250_MODULE */
++
++/* This is the only I/O driver, thus it defines the global kgdb_io_ops. */
++struct kgdb_io kgdb_io_ops = {
++	.read_char = kgdb_get_debug_char,
++	.write_char = kgdb_put_debug_char,
++	.init = kgdb_init_io,
++	.late_init = kgdb8250_late_init,
++};
++
+ early_param("kgdb8250", kgdb8250_opt);
+-#endif				/* ! CONFIG_KGDB_8250_MODULE */
++#endif /* !CONFIG_KGDB_8250_MODULE */
