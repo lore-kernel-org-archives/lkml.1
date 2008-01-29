@@ -1,131 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764267AbYA2OKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764404AbYA2OL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764267AbYA2OKV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:10:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763278AbYA2OKF
+	id S1764404AbYA2OL1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763278AbYA2OLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:10:05 -0500
-Received: from sacred.ru ([62.205.161.221]:49468 "EHLO sacred.ru"
+	Tue, 29 Jan 2008 09:11:14 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:26294 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762774AbYA2OKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:10:03 -0500
-Message-ID: <479F33B3.1030301@openvz.org>
-Date: Tue, 29 Jan 2008 17:09:55 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1758107AbYA2OLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 09:11:12 -0500
+Date: Tue, 29 Jan 2008 15:11:08 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Greg KH <greg@kroah.com>, Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+Message-ID: <20080129141108.GV15220@kernel.dk>
+References: <20080128204935.GI15220@kernel.dk> <20080128212114.GA15586@kroah.com> <479F18D3.9030709@panasas.com> <20080129135443.GU15220@kernel.dk> <479F32E9.10609@panasas.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: [PATCH 12/12] Deprecate the find_task_by_pid
-References: <479F2C5C.1050303@openvz.org>
-In-Reply-To: <479F2C5C.1050303@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 29 Jan 2008 17:09:34 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <479F32E9.10609@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are some places that are known to operate on tasks'
-global pids only:
+On Tue, Jan 29 2008, Boaz Harrosh wrote:
+> On Tue, Jan 29 2008 at 15:54 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > On Tue, Jan 29 2008, Boaz Harrosh wrote:
+> >> Greg KH wrote:
+> >>> On Mon, Jan 28, 2008 at 09:49:35PM +0100, Jens Axboe wrote:
+> >>>> Hi,
+> >>>>
+> >>>> Running latest -git (head 91525300baf162e83e923b09ca286f9205e21522) and
+> >>>> connecting my cf usb storage device yields and endless stream of:
+> >>>>
+> >>>> Initializing USB Mass Storage driver...
+> >>>> scsi6 : SCSI emulation for USB Mass Storage devices
+> >>>> usb-storage: device found at 2
+> >>>> usb-storage: waiting for device to settle before scanning
+> >>>> usbcore: registered new interface driver usb-storage
+> >>>> USB Mass Storage support registered.
+> >>>> scsi 6:0:0:0: Direct-Access     Generic  STORAGE DEVICE   0125 PQ: 0
+> >>>> ANSI: 0
+> >>>> sd 6:0:0:0: [sdb] 4001760 512-byte hardware sectors (2049 MB)
+> >>>> sd 6:0:0:0: [sdb] Write Protect is off
+> >>>> sd 6:0:0:0: [sdb] Mode Sense: 02 00 00 00
+> >>>> sd 6:0:0:0: [sdb] Assuming drive cache: write through
+> >>>> sd 6:0:0:0: [sdb] 4001760 512-byte hardware sectors (2049 MB)
+> >>>> sd 6:0:0:0: [sdb] Write Protect is off
+> >>>> sd 6:0:0:0: [sdb] Mode Sense: 02 00 00 00
+> >>>> sd 6:0:0:0: [sdb] Assuming drive cache: write through
+> >>>>  sdb: sdb1
+> >>>> sd 6:0:0:0: [sdb] Attached SCSI removable disk
+> >>>> sd 6:0:0:0: Attached scsi generic sg1 type 0
+> >>>> scsi 6:0:0:1: Direct-Access     Generic  STORAGE DEVICE   0125 PQ: 0
+> >>>> ANSI: 0
+> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+> >>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+> >>>> [...]
+> >>>>
+> >>>> until I disconnect it. The device doesn't work. Worked fine in 2.6.24.
+> >>>> I'm attaching boot messages and my .config.
+> >>> That's a bit wierd, as we haven't added any USB patches to the -git tree
+> >>> yet after 2.6.24 :)
+> >>>
+> >>> Could this be caused by some scsi changes perhaps?
+> >>>
+> >>> thanks,
+> >>>
+> >>> greg k-h
+> >>> -
+> >> Yes it is ;)
+> >>
+> >> Jens could you test the patch below? if it works I'll submit a proper
+> >> patch. Please forgive me for the bug.
+> > 
+> > No difference, still just a lot of resets.
+> > 
+> Where you able to figure out which usb storage transport is used?
+> 
+> in drivers/usb/storage/usb.c you have get_protocol() and get_transport()
+> functions. I'm not sure if these get stored in sysfs perhaps. This will
+> pinpoint better where to look. Let me research a bit. 
 
-* the rest_init() call (called on boot)
-* the kgdb's getthread
-* the create_kthread() (since the kthread is run in init ns)
+Did the quick'n easy and dumped it. Protocol is 'Transparent SCSI' and
+transport is 'Bulk'
 
-So use the find_task_by_pid_ns(..., &init_pid_ns) there
-and schedule the find_task_by_pid for removal.
-
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
----
- Documentation/feature-removal-schedule.txt |   19 +++++++++++++++++++
- include/linux/sched.h                      |    2 +-
- init/main.c                                |    2 +-
- kernel/kgdb.c                              |    2 +-
- kernel/kthread.c                           |    2 +-
- 5 files changed, 23 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index be6c2db..1e6960d 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -264,3 +264,22 @@ Why:	These drivers are superseded by i810fb, intelfb and savagefb.
- Who:	Jean Delvare <khali@linux-fr.org>
- 
- ---------------------------
-+
-+What:	find_task_by_pid
-+When:	2.6.26
-+Why:	With pid namespaces, calling this funciton will return the
-+	wrong task when called from inside a namespace.
-+
-+	The best way to save a task pid and find a task by this
-+	pid later, is to find this task's struct pid pointer (or get
-+	it directly from the task) and call pid_task() later.
-+
-+	If someone really needs to get a task by its pid_t, then
-+	he most likely needs the find_task_by_vpid() to get the
-+	task from the same namespace as the current task is in, but
-+	this may be not so in general.
-+
-+Who:	Pavel Emelyanov <xemul@openvz.org>
-+
-+---------------------------
-+
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 198659b..ccb9bba 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1617,7 +1617,7 @@ extern struct pid_namespace init_pid_ns;
- extern struct task_struct *find_task_by_pid_type_ns(int type, int pid,
- 		struct pid_namespace *ns);
- 
--extern struct task_struct *find_task_by_pid(pid_t nr);
-+extern struct task_struct *find_task_by_pid(pid_t nr) __deprecated;
- extern struct task_struct *find_task_by_vpid(pid_t nr);
- extern struct task_struct *find_task_by_pid_ns(pid_t nr,
- 		struct pid_namespace *ns);
-diff --git a/init/main.c b/init/main.c
-index e702632..38a16ba 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -437,7 +437,7 @@ static void noinline __init_refok rest_init(void)
- 	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
- 	numa_default_policy();
- 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
--	kthreadd_task = find_task_by_pid(pid);
-+	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
- 	unlock_kernel();
- 
- 	/*
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index 87b0463..6de0fd0 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -621,7 +621,7 @@ static struct task_struct *getthread(struct pt_regs *regs, int tid)
- 	if (!tid)
- 		return NULL;
- 
--	return find_task_by_pid(tid);
-+	return find_task_by_pid_ns(tid, &init_pid_ns);
- }
- 
- #ifdef CONFIG_SMP
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 0ac8878..b9caa46 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -99,7 +99,7 @@ static void create_kthread(struct kthread_create_info *create)
- 		struct sched_param param = { .sched_priority = 0 };
- 		wait_for_completion(&create->started);
- 		read_lock(&tasklist_lock);
--		create->result = find_task_by_pid(pid);
-+		create->result = find_task_by_pid_ns(pid, &init_pid_ns);
- 		read_unlock(&tasklist_lock);
- 		/*
- 		 * root may have changed our (kthreadd's) priority or CPU mask.
 -- 
-1.5.3.4
+Jens Axboe
 
