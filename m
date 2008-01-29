@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933041AbYA2So4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764955AbYA2Sr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933041AbYA2So4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 13:44:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYA2Sor
+	id S1764955AbYA2Sr0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 13:47:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbYA2SrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 13:44:47 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:4984 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751444AbYA2Soq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 13:44:46 -0500
-Date: Tue, 29 Jan 2008 19:44:42 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mike.miller@hp.com, k-ueda@ct.jp.nec.com, j-nomura@ce.jp.nec.com
-Subject: Re: kernel BUG at drivers/block/cciss.c:1260! (with recent  linux-2.6  tree)
-Message-ID: <20080129184442.GK15220@kernel.dk>
-References: <20080129175426.GJ12400@plap3.qlogic.org> <20080129180242.GZ15220@kernel.dk> <20080129180537.GA15220@kernel.dk> <20080129182217.GK12400@plap3.qlogic.org> <20080129182833.GG15220@kernel.dk> <20080129183705.GL12400@plap3.qlogic.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080129183705.GL12400@plap3.qlogic.org>
+	Tue, 29 Jan 2008 13:47:17 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:55839 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751564AbYA2SrQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 13:47:16 -0500
+Date: Tue, 29 Jan 2008 12:53:18 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Problem with ata layer in 2.6.24
+In-reply-to: <479F6314.6090906@garzik.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Florian Attenberger <valdyn@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Message-id: <200801291253.18586.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200801272122.21823.gene.heskett@gmail.com>
+ <200801291212.03910.gene.heskett@gmail.com> <479F6314.6090906@garzik.org>
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29 2008, Andrew Vasquez wrote:
-> On Tue, 29 Jan 2008, Jens Axboe wrote:
-> 
-> > > Here the final snippet that was logged:
-> > > 
-> > > [   12.724997] input: USB HID v1.01 Mouse [HP Virtual Keyboard] on usb-0000:01:04.4-1
-> > > [   12.728971] usbcore: registered new interface driver usbhid
-> > > [   12.732866] drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
-> > > [   12.741172] TCP cubic registered
-> > > [   12.744506] NET: Registered protocol family 1
-> > > [   12.744884] NET: Registered protocol family 17
-> > > [   12.749217] Freeing unused kernel memory: 228k freed
-> > > [   12.885823] cciss rq: dev cciss/c0d0: type=2, flags=104c8
-> > > [   12.888929] 
-> > > [   12.888930] sector 6510615555426900570, nr/cnr 0/0
-> > > [   12.892895] bio ffff81042f130730, biotail ffff81042f130730, buffer 0000000000000000, data 0000000000000000, len 0
-> > > [   12.896895] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00 
-> > 
-> > Ah ok, I see the problem... cciss is overriding the data_len for
-> > BLOCK_PC requests, hence it does not complete them properly. Hmm. Does
-> > this work?
-> > 
-> > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-> > index ef50068..b6fa52e 100644
-> > --- a/drivers/block/cciss.c
-> > +++ b/drivers/block/cciss.c
-> > @@ -2524,7 +2524,6 @@ after_error_processing:
-> >  		resend_cciss_cmd(h, cmd);
-> >  		return;
-> >  	}
-> > -	cmd->rq->data_len = 0;
-> >  	cmd->rq->completion_data = cmd;
-> >  	blk_complete_request(cmd->rq);
-> >  }
-> 
-> 
-> Things look good so far -- with the patch above I can finally boot the
-> machine.
+On Tuesday 29 January 2008, Jeff Garzik wrote:
+>Gene Heskett wrote:
+>> On Tuesday 29 January 2008, Jeff Garzik wrote:
+>>> Gene Heskett wrote:
+>>>> Does anyone know why my dvdwriter isn't being assigned a '/dev/sdx'
+>>>> number when dmesg says its found ok at ata2.00?  I've turned on an
+>>>> option that says something about using the bios for device access this
+>>>> build, but I'll be surprised if that's it. :)
+>>>
+>>> I think you mean /dev/scdx not /dev/sdx.  Make sure you have the 'sr'
+>>> driver compiled and load (CONFIG_BLK_DEV_SR).
+>>
+>> That menu item COULD be moved, I don't have any REAL scsi stuff, so I
+>> didn't look there.  My bad, with help from hiding it like that. :-)
+>>
+>>> The bios-for-dev-access thing definitely won't help, and may hurt (by
+>>> taking over the device you wanted to test).
+>>
+>> Ok, if BLK_DEV_SR fails, I'll take that back out.  I'm heating the room
+>> making kernels here. :)
+>
+>I can say with 100% certainty that 'sr' is required in order to use your
+>dvd writer with libata.  :)
+>
+>	Jeff
 
-Cool, sorry about that. Will get that applied asap. So after this patch
-was applied, you didn't see any debug messages from blk_dump_rq_flags()
-anymore, right?
+And as usual, you are 100% correct, thanks.
+
+And now back to our regularly scheduled testing for 'exception Emask' 
+errors. :)
 
 -- 
-Jens Axboe
-
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Main's Law:
+	For every action there is an equal and opposite government program.
