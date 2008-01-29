@@ -1,272 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763971AbYA1X7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759053AbYA2AE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763971AbYA1X7V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 18:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYA1X7M
+	id S1759053AbYA2AE7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 19:04:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbYA2AEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 18:59:12 -0500
-Received: from hosted07.westnet.com.au ([203.10.1.223]:52359 "EHLO
-	hosted07.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785AbYA1X7J (ORCPT
+	Mon, 28 Jan 2008 19:04:49 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:57456 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752002AbYA2AEt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 18:59:09 -0500
-Message-ID: <479E6C3A.4070401@snapgear.com>
-Date: Tue, 29 Jan 2008 09:58:50 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 28 Jan 2008 19:04:49 -0500
+Date: Mon, 28 Jan 2008 17:04:47 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Liam Howlett <howlett@gmail.com>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Pull request: TASK_KILLABLE
+Message-ID: <20080129000447.GC31101@parisc-linux.org>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Jochen Friedrich <jochen@scram.de>, "Garzik, Jeff" <jgarzik@pobox.com>,
-       Vitaly Bordug <vitb@kernel.crashing.org>,
-       Scott Wood <scottwood@freescale.com>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-m68k@vger.kernel.org,
-       uClinux list <uclinux-dev@uclinux.org>
-Subject: Re: [PATCH] [NET]: Remove PowerPC code from fec.c
-References: <4799F349.9090102@scram.de> <Pine.LNX.4.64.0801251544480.13060@anakin>
-In-Reply-To: <Pine.LNX.4.64.0801251544480.13060@anakin>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-PMX-Branch: TNG-Outgoing
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
- > ---------- Forwarded message ----------
- > Date: Fri, 25 Jan 2008 15:33:45 +0100
- > From: Jochen Friedrich <jochen@scram.de>
- > To: "Garzik, Jeff" <jgarzik@pobox.com>
- > Cc: Vitaly Bordug <vitb@kernel.crashing.org>,
- >     Scott Wood <scottwood@freescale.com>,
- >     Kumar Gala <galak@kernel.crashing.org>,
- >     Geert Uytterhoeven <geert@linux-m68k.org>,
- >     "Kernel, Linux" <linux-kernel@vger.kernel.org>,
- >     "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- >     linuxppc-dev list <linuxppc-dev@ozlabs.org>, 
-linux-m68k@vger.kernel.org
- > Subject: [PATCH] [NET]: Remove PowerPC code from fec.c
- >
- > fec.c is only used on M68k Coldfire CPUs. Remove leftover
- > PowerPC code from this driver.
+Hi Linus,
 
-I was always hoping that this driver would be supported on both
-architectures. After all the underlying eth device is essentially
-the same on both.
+I'd like you to pull the task_killable branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git
 
-Anyway... I don't have a problem with this patch, looks ok
-the me.
+All the patches have been posted to linux-kernel before, and various
+comments (and acks) have been taken into account.
 
-Acked-by: Greg Ungerer <gerg@uclinux.org>
+Andrew's had the first fifteen patches (up to, and including 'Use
+lock_page_killable') in his tree for a few months.  There's a lot more
+work pending, but it's all incremental improvements.
 
-Regards
-Greg
-
-
-
-
- > Signed-off-by: Jochen Friedrich <jochen@scram.de>
- > ---
- >  drivers/net/fec.c |  136 
-+---------------------------------------------------
- >  1 files changed, 3 insertions(+), 133 deletions(-)
- >
- > diff --git a/drivers/net/fec.c b/drivers/net/fec.c
- > index 0fbf1bb..0499cbb 100644
- > --- a/drivers/net/fec.c
- > +++ b/drivers/net/fec.c
- > @@ -23,6 +23,9 @@
- >   *
- >   * Bug fixes and cleanup by Philippe De Muyter (phdm@macqel.be)
- >   * Copyright (c) 2004-2006 Macq Electronique SA.
- > + *
- > + * This driver is now only used on ColdFire processors. Remove 
-conditional
- > + * Powerpc code.
- >   */
- >
- >  #include <linux/module.h>
- > @@ -49,17 +52,9 @@
- >  #include <asm/pgtable.h>
- >  #include <asm/cacheflush.h>
- >
- > -#if defined(CONFIG_M523x) || defined(CONFIG_M527x) || \
- > -    defined(CONFIG_M5272) || defined(CONFIG_M528x) || \
- > -    defined(CONFIG_M520x) || defined(CONFIG_M532x)
- >  #include <asm/coldfire.h>
- >  #include <asm/mcfsim.h>
- >  #include "fec.h"
- > -#else
- > -#include <asm/8xx_immap.h>
- > -#include <asm/mpc8xx.h>
- > -#include "commproc.h"
- > -#endif
- >
- >  #if defined(CONFIG_FEC2)
- >  #define	FEC_MAX_PORTS	2
- > @@ -1223,14 +1218,9 @@ static phy_info_t const * const phy_info[] = {
- >
- >  /* 
-------------------------------------------------------------------------- */
- >  #if !defined(CONFIG_M532x)
- > -#ifdef CONFIG_RPXCLASSIC
- > -static void
- > -mii_link_interrupt(void *dev_id);
- > -#else
- >  static irqreturn_t
- >  mii_link_interrupt(int irq, void * dev_id);
- >  #endif
- > -#endif
- >
- >  #if defined(CONFIG_M5272)
- >  /*
- > @@ -1800,121 +1790,6 @@ static void __inline__ fec_uncache(unsigned 
-long addr)
- >  /* 
-------------------------------------------------------------------------- */
- >
- >
- > -#else
- > -
- > -/*
- > - *	Code specific to the MPC860T setup.
- > - */
- > -static void __inline__ fec_request_intrs(struct net_device *dev)
- > -{
- > -	volatile immap_t *immap;
- > -
- > -	immap = (immap_t *)IMAP_ADDR;	/* pointer to internal registers */
- > -
- > -	if (request_8xxirq(FEC_INTERRUPT, fec_enet_interrupt, 0, "fec", 
-dev) != 0)
- > -		panic("Could not allocate FEC IRQ!");
- > -
- > -#ifdef CONFIG_RPXCLASSIC
- > -	/* Make Port C, bit 15 an input that causes interrupts.
- > -	*/
- > -	immap->im_ioport.iop_pcpar &= ~0x0001;
- > -	immap->im_ioport.iop_pcdir &= ~0x0001;
- > -	immap->im_ioport.iop_pcso &= ~0x0001;
- > -	immap->im_ioport.iop_pcint |= 0x0001;
- > -	cpm_install_handler(CPMVEC_PIO_PC15, mii_link_interrupt, dev);
- > -
- > -	/* Make LEDS reflect Link status.
- > -	*/
- > -	*((uint *) RPX_CSR_ADDR) &= ~BCSR2_FETHLEDMODE;
- > -#endif
- > -#ifdef CONFIG_FADS
- > -	if (request_8xxirq(SIU_IRQ2, mii_link_interrupt, 0, "mii", dev) != 0)
- > -		panic("Could not allocate MII IRQ!");
- > -#endif
- > -}
- > -
- > -static void __inline__ fec_get_mac(struct net_device *dev)
- > -{
- > -	bd_t *bd;
- > -
- > -	bd = (bd_t *)__res;
- > -	memcpy(dev->dev_addr, bd->bi_enetaddr, ETH_ALEN);
- > -
- > -#ifdef CONFIG_RPXCLASSIC
- > -	/* The Embedded Planet boards have only one MAC address in
- > -	 * the EEPROM, but can have two Ethernet ports.  For the
- > -	 * FEC port, we create another address by setting one of
- > -	 * the address bits above something that would have (up to
- > -	 * now) been allocated.
- > -	 */
- > -	dev->dev_adrd[3] |= 0x80;
- > -#endif
- > -}
- > -
- > -static void __inline__ fec_set_mii(struct net_device *dev, struct 
-fec_enet_private *fep)
- > -{
- > -	extern uint _get_IMMR(void);
- > -	volatile immap_t *immap;
- > -	volatile fec_t *fecp;
- > -
- > -	fecp = fep->hwp;
- > -	immap = (immap_t *)IMAP_ADDR;	/* pointer to internal registers */
- > -
- > -	/* Configure all of port D for MII.
- > -	*/
- > -	immap->im_ioport.iop_pdpar = 0x1fff;
- > -
- > -	/* Bits moved from Rev. D onward.
- > -	*/
- > -	if ((_get_IMMR() & 0xffff) < 0x0501)
- > -		immap->im_ioport.iop_pddir = 0x1c58;	/* Pre rev. D */
- > -	else
- > -		immap->im_ioport.iop_pddir = 0x1fff;	/* Rev. D and later */
- > -
- > -	/* Set MII speed to 2.5 MHz
- > -	*/
- > -	fecp->fec_mii_speed = fep->phy_speed =
- > -		((bd->bi_busfreq * 1000000) / 2500000) & 0x7e;
- > -}
- > -
- > -static void __inline__ fec_enable_phy_intr(void)
- > -{
- > -	volatile fec_t *fecp;
- > -
- > -	fecp = fep->hwp;
- > -
- > -	/* Enable MII command finished interrupt
- > -	*/
- > -	fecp->fec_ivec = (FEC_INTERRUPT/2) << 29;
- > -}
- > -
- > -static void __inline__ fec_disable_phy_intr(void)
- > -{
- > -}
- > -
- > -static void __inline__ fec_phy_ack_intr(void)
- > -{
- > -}
- > -
- > -static void __inline__ fec_localhw_setup(void)
- > -{
- > -	volatile fec_t *fecp;
- > -
- > -	fecp = fep->hwp;
- > -	fecp->fec_r_hash = PKT_MAXBUF_SIZE;
- > -	/* Enable big endian and don't care about SDMA FC.
- > -	*/
- > -	fecp->fec_fun_code = 0x78000000;
- > -}
- > -
- > -static void __inline__ fec_uncache(unsigned long addr)
- > -{
- > -	pte_t *pte;
- > -	pte = va_to_pte(mem_addr);
- > -	pte_val(*pte) |= _PAGE_NO_CACHE;
- > -	flush_tlb_page(init_mm.mmap, mem_addr);
- > -}
- > -
- >  #endif
- >
- >  /* 
-------------------------------------------------------------------------- */
- > @@ -2126,13 +2001,8 @@ mii_discover_phy(uint mii_reg, struct 
-net_device *dev)
- >
- >  /* This interrupt occurs when the PHY detects a link change.
- >  */
- > -#ifdef CONFIG_RPXCLASSIC
- > -static void
- > -mii_link_interrupt(void *dev_id)
- > -#else
- >  static irqreturn_t
- >  mii_link_interrupt(int irq, void * dev_id)
- > -#endif
- >  {
- >  	struct	net_device *dev = dev_id;
- >  	struct fec_enet_private *fep = netdev_priv(dev);
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
