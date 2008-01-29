@@ -1,76 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933892AbYA2SvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761152AbYA2SyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933892AbYA2SvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 13:51:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756954AbYA2Suo
+	id S1761152AbYA2SyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 13:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbYA2SyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 13:50:44 -0500
-Received: from ns2.suse.de ([195.135.220.15]:38286 "EHLO mx2.suse.de"
+	Tue, 29 Jan 2008 13:54:05 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:10769 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753987AbYA2Sum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 13:50:42 -0500
-Date: Tue, 29 Jan 2008 10:54:48 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mark Fasheh <mark.fasheh@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [git pull] Fix recent Ocfs2 breakage
-Message-ID: <20080129185448.GA358@suse.de>
-References: <20080129033307.GE23506@ca-server1.us.oracle.com> <20080129050804.GA2285@suse.de> <20080129074402.GA27097@ca-server1.us.oracle.com>
+	id S1750836AbYA2SyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 13:54:04 -0500
+Date: Tue, 29 Jan 2008 19:53:58 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mike.miller@hp.com, k-ueda@ct.jp.nec.com, j-nomura@ce.jp.nec.com
+Subject: Re: kernel BUG at drivers/block/cciss.c:1260! (with recent  linux-2.6  tree)
+Message-ID: <20080129185358.GM15220@kernel.dk>
+References: <20080129175426.GJ12400@plap3.qlogic.org> <20080129180242.GZ15220@kernel.dk> <20080129180537.GA15220@kernel.dk> <20080129182217.GK12400@plap3.qlogic.org> <20080129182833.GG15220@kernel.dk> <20080129183705.GL12400@plap3.qlogic.org> <20080129184442.GK15220@kernel.dk> <20080129184929.GN12400@plap3.qlogic.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080129074402.GA27097@ca-server1.us.oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080129184929.GN12400@plap3.qlogic.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 11:44:02PM -0800, Joel Becker wrote:
-> On Mon, Jan 28, 2008 at 09:08:04PM -0800, Greg KH wrote:
-> > And please please please please document stuff like this, and all of the
-> > different files you have in this subdirectory in Documentation/ABI/ so
+On Tue, Jan 29 2008, Andrew Vasquez wrote:
+> On Tue, 29 Jan 2008, Jens Axboe wrote:
 > 
-> 	Huh, I didn't know Documentation/ABI existed.  That would
-> certainly help in the future.
-
-Yeah, not many people know about it, despite being present for over a
-year now :(
-
-So I'm starting to poke people to fix this.  I'd like to see all new
-sysfs attributes (and syscalls and other stuff that is an ABI) be
-documented here.  As well as creating the information for the ABI we
-currently have, but I know that will take longer.
-
-> > those of us who are trying to figure out the code (and there's still
-> > parts of the kobject usage I'm pretty sure is not correct) can have a
+> > On Tue, Jan 29 2008, Andrew Vasquez wrote:
+> > > On Tue, 29 Jan 2008, Jens Axboe wrote:
+> > > 
+> > > > > Here the final snippet that was logged:
+> > > > > 
+> > > > > [   12.724997] input: USB HID v1.01 Mouse [HP Virtual Keyboard] on usb-0000:01:04.4-1
+> > > > > [   12.728971] usbcore: registered new interface driver usbhid
+> > > > > [   12.732866] drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
+> > > > > [   12.741172] TCP cubic registered
+> > > > > [   12.744506] NET: Registered protocol family 1
+> > > > > [   12.744884] NET: Registered protocol family 17
+> > > > > [   12.749217] Freeing unused kernel memory: 228k freed
+> > > > > [   12.885823] cciss rq: dev cciss/c0d0: type=2, flags=104c8
+> > > > > [   12.888929] 
+> > > > > [   12.888930] sector 6510615555426900570, nr/cnr 0/0
+> > > > > [   12.892895] bio ffff81042f130730, biotail ffff81042f130730, buffer 0000000000000000, data 0000000000000000, len 0
+> > > > > [   12.896895] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00 
+> > > > 
+> > > > Ah ok, I see the problem... cciss is overriding the data_len for
+> > > > BLOCK_PC requests, hence it does not complete them properly. Hmm. Does
+> > > > this work?
+> > > > 
+> > > > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+> > > > index ef50068..b6fa52e 100644
+> > > > --- a/drivers/block/cciss.c
+> > > > +++ b/drivers/block/cciss.c
+> > > > @@ -2524,7 +2524,6 @@ after_error_processing:
+> > > >  		resend_cciss_cmd(h, cmd);
+> > > >  		return;
+> > > >  	}
+> > > > -	cmd->rq->data_len = 0;
+> > > >  	cmd->rq->completion_data = cmd;
+> > > >  	blk_complete_request(cmd->rq);
+> > > >  }
+> > > 
+> > > 
+> > > Things look good so far -- with the patch above I can finally boot the
+> > > machine.
+> > 
+> > Cool, sorry about that. Will get that applied asap. So after this patch
+> > was applied, you didn't see any debug messages from blk_dump_rq_flags()
+> > anymore, right?
 > 
-> 	ocfs2 kobject usage, or other folks'?  If there's anything in
-> the ocfs2 usage that you are unsure of, feel free to ask!
+> That's correct.  I've yet to see any additional debug-messages from
+> blk_dump_rq_flags().
 
-Ok, great.  Here's a few questions:
+Great, thanks for confirming. It does look like a clear bug in cciss, it
+just got exposed now that it uses proper end request handling. We never
+need to clear ->data_len, since for blk_fs_request() it will be cleared
+on init. So just setting a residual count there for blk_fs_request()
+like cciss does is fine.
 
-  - ocfs2/cluster/sys.c creates a single kset, o2cb, that is in
-    /sys/o2cb (and I had moved it to /sys/fs/o2cb/)  In that directory
-    it seems there is only 1 file, O2NM_API_VERSION.  Is that really all
-    that goes into that directory?  If so, this can be cleaned up even
-    further and only a single kobject is needed, a kset is overkill.
+Anyway, it's in my pending queue for Linus.
 
-  - that kset is then passed to the mlog_sys_init() file to chain
-    another subdirectory off of this.  Here's where the meat of the
-    sysfs files are.  You use a custom kset and show/store operations to
-    describe some bit fields?  You never use the kobject here, but only
-    go off of the name of the attribute file, which is fine.  But again,
-    using a ktype/kset is way overkill for this.  It can be all
-    simplified to only have 1 kobject for the directory, and then the
-    individual attributes can be a kobj_attribute.
+-- 
+Jens Axboe
 
-
-Actually that wasn't too bad.  It was gfs2 that I was thinking about
-with regard to totally strange kobject abuse, I'll go poke those
-developers about it while I'm remembering :)
-
-thanks,
-
-greg k-h
