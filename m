@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932815AbYA2NcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932624AbYA2Nej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932815AbYA2NcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 08:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932573AbYA2N32
+	id S932624AbYA2Nej (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 08:34:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932447AbYA2NeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 08:29:28 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46021 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932557AbYA2N3Z (ORCPT
+	Tue, 29 Jan 2008 08:34:18 -0500
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:54401 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932438AbYA2NeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 08:29:25 -0500
-Date: Tue, 29 Jan 2008 07:29:25 -0600
-To: linux-kernel@vger.kernel.org
-Cc: pj@sgi.com, akpm@osdl.org
-Subject: [4/4] hotplug cpu move tasks in empty cpusets - refinements
-User-Agent: nail 11.25 7/29/05
+	Tue, 29 Jan 2008 08:34:15 -0500
+Message-ID: <479F2B52.7010004@tiscali.nl>
+Date: Tue, 29 Jan 2008 14:34:10 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andy Whitcroft <apw@shadowen.org>
+CC: Joe Perches <joe@perches.com>, jwboyer@linux.vnet.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
+References: <4797C1AD.3040307@tiscali.nl> <1201129527.4988.69.camel@localhost> <4797D968.1030101@tiscali.nl> <20080129105531.GA651@shadowen.org>
+In-Reply-To: <20080129105531.GA651@shadowen.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080129132925.38A3D33B943@attica.americas.sgi.com>
-From: cpw@sgi.com (Cliff Wickman)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> On Wed, 2008-01-23 at 23:37 +0100, Roel Kluin wrote:
+>>>> -		if (val && 0x1)
+>>>> +		if (val & 0x1)
 
-   Narrow the scope of callback_mutex in scan_for_empty_cpusets().
-    Avoid rewriting the cpus, mems of cpusets except when it is
-         likely that we'll be changing them.
-    Have remove_tasks_in_empty_cpuset() also check for empty mems.
+>> Joe Perches wrote:
+>>> I think this pattern should be added to checkpatch
+>>> +		if ($line =~ /\&\&\s*0[xX]/) {
 
-Signed-off-by: Paul Jackson <pj@sgi.com>
-Acked-by: Cliff Wickman <cpw@sgi.com>
+> On Thu, Jan 24, 2008 at 01:18:48AM +0100, Roel Kluin wrote:
+>> I agree but there will be false positives, i'd propose to change that to
+>> +		if ($line =~ /(?:(?:\(|\&\&|\|\|)\s*0[xX]\s*(?:&&|\|\|)|
+>> +				(?:\&\&|\|\|)\s*0[xX]\s*(?:\)|&&|\|\|))/) {
 
+Andy Whitcroft wrote:
+> That one doesn't even match the original example.  Seems to be missing
+> some number matching.  The concept seems sound though.  Basically
+> looking for numbers which are definatly adjacent to a boolean or a brace
+> on both sides.
+
+You are right. here's a version that does work. It works the same as
+git-grep -E "((\(|&&|\|\|)[[:space:]]*(0[xX][0-9a-fA-F]+|[0-9]+)[[:space:]]*(&&|\|\|)|(&&|\|\|)[[:space:]]*(0[xX][0-9a-fA-F]+|[0-9]+)[[:space:]]*(\)|&&|\|\|))"
 
 ---
-
- kernel/cpuset.c |   21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/kernel/cpuset.c
-===================================================================
---- linux-2.6.orig/kernel/cpuset.c
-+++ linux-2.6/kernel/cpuset.c
-@@ -1748,7 +1748,8 @@ static void remove_tasks_in_empty_cpuset
- 	 * has online cpus, so can't be empty).
- 	 */
- 	parent = cs->parent;
--	while (cpus_empty(parent->cpus_allowed))
-+	while (cpus_empty(parent->cpus_allowed) ||
-+			nodes_empty(parent->mems_allowed))
- 		parent = parent->parent;
- 
- 	move_member_tasks_to_cpuset(cs, parent);
-@@ -1780,7 +1781,6 @@ static void scan_for_empty_cpusets(const
- 
- 	list_add_tail((struct list_head *)&root->stack_list, &queue);
- 
--	mutex_lock(&callback_mutex);
- 	while (!list_empty(&queue)) {
- 		cp = container_of(queue.next, struct cpuset, stack_list);
- 		list_del(queue.next);
-@@ -1789,19 +1789,24 @@ static void scan_for_empty_cpusets(const
- 			list_add_tail(&child->stack_list, &queue);
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 579f50f..62276f7 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1337,6 +1337,11 @@ sub process {
+ 			}
  		}
- 		cont = cp->css.cgroup;
-+
-+		/* Continue past cpusets with all cpus, mems online */
-+		if (cpus_subset(cp->cpus_allowed, cpu_online_map) &&
-+		    nodes_subset(cp->mems_allowed, node_states[N_HIGH_MEMORY]))
-+			continue;
-+
- 		/* Remove offline cpus and mems from this cpuset. */
-+		mutex_lock(&callback_mutex);
- 		cpus_and(cp->cpus_allowed, cp->cpus_allowed, cpu_online_map);
- 		nodes_and(cp->mems_allowed, cp->mems_allowed,
- 						node_states[N_HIGH_MEMORY]);
-+		mutex_unlock(&callback_mutex);
-+
-+		/* Move tasks from the empty cpuset to a parent */
- 		if (cpus_empty(cp->cpus_allowed) ||
--		     nodes_empty(cp->mems_allowed)) {
--		        /* Move tasks from the empty cpuset to a parent */
--			mutex_unlock(&callback_mutex);
-+		     nodes_empty(cp->mems_allowed))
- 			remove_tasks_in_empty_cpuset(cp);
--			mutex_lock(&callback_mutex);
--		}
- 	}
--	mutex_unlock(&callback_mutex);
- }
  
- /*
++# Check for bitwise tests written as boolean
++		if ($line =~ /((\(|&&|\|\|)\s*(0[xX][0-9a-fA-F]+|[0-9]+)\s*(&&|\|\|)|(&&|\|\|)\s*(0[xX][0-9a-fA-F]+|[0-9]+)\s*(\)|&&|\|\|))/) {
++			WARN("boolean test with hexadecimal, perhaps just \'&\' or \'|\'?\n" . $herecurr);
++		}
++
+ # if and else should not have general statements after it
+ 		if ($line =~ /^.\s*(?:}\s*)?else\b(.*)/ &&
+ 		    $1 !~ /^\s*(?:\sif|{|\\|$)/) {
+
