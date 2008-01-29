@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbYA2GnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbYA2Gp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758028AbYA2GnS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 01:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYA2GnK
+	id S1757604AbYA2Gp6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 01:45:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYA2Gpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 01:43:10 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53445 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571AbYA2GnJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 01:43:09 -0500
-Message-ID: <479ECAC9.5070709@jp.fujitsu.com>
-Date: Tue, 29 Jan 2008 15:42:17 +0900
-From: INAKOSHI Hiroya <inakoshi.hiroya@jp.fujitsu.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.9) Gecko/20071031 Thunderbird/2.0.0.9 Mnenhy/0.7.5.666
+	Tue, 29 Jan 2008 01:45:50 -0500
+Received: from ns2.suse.de ([195.135.220.15]:60300 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751196AbYA2Gpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 01:45:50 -0500
+Date: Mon, 28 Jan 2008 22:44:15 -0800
+From: Greg KH <gregkh@suse.de>
+To: Michael E Brown <Michael_E_Brown@dell.com>
+Cc: Jos?? Luis Tall??n <jltallon@adv-solutions.net>, Douglas_Warzecha@dell.com,
+       Abhay_Salunke@dell.com, linux-kernel@vger.kernel.org,
+       matt_domsch@dell.com, marcel@holtmann.org
+Subject: Re: 2.6.24 breaks BIOS updates on all Dell machines
+Message-ID: <20080129064415.GA8822@suse.de>
+References: <20080129063244.GA19076@humbolt.us.dell.com>
 MIME-Version: 1.0
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: Re: [Xen-devel] dm-band: The I/O bandwidth controller: Performance
- Report
-References: <20080123.215350.193721890.ryov@valinux.co.jp> <20080125.160720.183032233.ryov@valinux.co.jp>
-In-Reply-To: <20080125.160720.183032233.ryov@valinux.co.jp>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080129063244.GA19076@humbolt.us.dell.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Ryo Tsuruta wrote:
-> The results of bandwidth control test on band-groups.
-> =====================================================
-> The configurations of the test #3:
->    o Prepare three partitions sdb5 and sdb6.
->    o Create two extra band-groups on sdb5, the first is of user1 and the
->      second is of user2.
->    o Give weights of 40, 20, 10 and 10 to the user1 band-group, the user2
->      band-group, the default group of sdb5 and sdb6 respectively.
->    o Run 128 processes issuing random read/write direct I/O with 4KB data
->      on each device at the same time.
-
-you mean that you run 128 processes on each user-device pairs?  Namely,
-I guess that
-
-  user1: 128 processes on sdb5,
-  user2: 128 processes on sdb5,
-  another: 128 processes on sdb5,
-  user2: 128 processes on sdb6.
-
-> Conclusions and future works
-> ============================
-> Dm-band works well with random I/Os. I have a plan on running some tests
-> using various real applications such as databases or file servers.
-> If you have any other good idea to test dm-band, please let me know.
-
-The second preliminary studies might be:
-
-- What if you use a different I/O size on each device (or device-user pair)?
-- What if you use a different number of processes on each device (or
-device-user pair)?
-
-
-And my impression is that it's natural dm-band is in device-mapper,
-separated from I/O scheduler.  Because bandwidth control and I/O
-scheduling are two different things, it may be simpler that they are
-implemented in different layers.
-
-Regards,
-
-Hiroya.
-
-
+On Tue, Jan 29, 2008 at 12:32:44AM -0600, Michael E Brown wrote:
+> BIOS updates are broken on all Dell systems due to Commit
+> 109f0e93b6b728f03c1eb4af02bc25d71b646c59, which is now in 2.6.24.
 > 
-> Thank you,
-> Ryo Tsuruta.
+>   static inline void fw_setup_device_id(struct device *f_dev, struct
+> device *dev)
+>   {
+> -       /* XXX warning we should watch out for name collisions */
+> -       strlcpy(f_dev->bus_id, dev->bus_id, BUS_ID_SIZE);
+> +       snprintf(f_dev->bus_id, BUS_ID_SIZE, "firmware-%s",
+> dev->bus_id);
+>  }
 > 
-> _______________________________________________
-> Xen-devel mailing list
-> Xen-devel@lists.xensource.com
-> http://lists.xensource.com/xen-devel
+> Two programs are broken by this change: 
+>     1) dellBiosUpdate, which is part of libsmbios
+>     2) All of the Dell Update Packages (DUPs) that are part of Dell
+> OpenManage: each BIOS release for each of 3-4 dozen platforms.
 > 
+> These programs are broken due to the pathname change from
+> /sys/class/firmware/dell_rbu/   to
+> /sys/class/firmware/firmware-dell_rbu/loading. 
 > 
+> Realistically, I can fix libsmbios in a couple of weeks, but there is no
+> way that we can go back and fix a couple hundred DUP packages for this
+> change. If this stays, we are looking at over 6 months before we have an
+> officially-available Dell OpenManage that can deal with it, and that
+> would be for new BIOS releases only, I suspect.
+> 
+> Some of the relevant threads from when this was submitted and accepted:
+> http://lkml.org/lkml/2005/5/23/73
+> http://lkml.org/lkml/2005/5/23/62
+> 
+> Due to the extremely large and disruptive nature of this bug, it would
+> be nice to get a 2.6.24.1 with this patch reverted.
+> 
+> I have copied the relevant developers at Dell who maintain this driver.
+> Please preserve the cc: list when replying.
 
+Fair enough, I have no problem reverting this.
+
+Anyone want to keep it in?
+
+thanks,
+
+greg k-h
