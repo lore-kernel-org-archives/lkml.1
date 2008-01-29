@@ -1,53 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933130AbYA2NkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932737AbYA2Nle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933130AbYA2NkT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 08:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933028AbYA2Njs
+	id S932737AbYA2Nle (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 08:41:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933126AbYA2NkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 08:39:48 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53515 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932914AbYA2Njq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 08:39:46 -0500
-Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Jackson <pj@sgi.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@linux.vnet.ibm.com,
-       dhaval@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
-       ebiederm@xmission.com, akpm@linux-foundation.org, sgrubb@redhat.com,
-       rostedt@goodmis.org, ghaskins@novell.com, dmitry.adamushko@gmail.com,
-       tong.n.li@intel.com, tglx@linutronix.de, menage@google.com,
-       rientjes@google.com
-In-Reply-To: <20080129065246.6e99fb16.pj@sgi.com>
-References: <1201600428.28547.87.camel@lappy>
-	 <20080129040130.7b2904b6.pj@sgi.com> <1201603816.28547.94.camel@lappy>
-	 <20080129051353.4628c9eb.pj@sgi.com> <1201606284.28547.114.camel@lappy>
-	 <20080129060355.7d38338f.pj@sgi.com> <1201609804.28547.137.camel@lappy>
-	 <20080129065246.6e99fb16.pj@sgi.com>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 14:38:26 +0100
-Message-Id: <1201613906.28547.139.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+	Tue, 29 Jan 2008 08:40:18 -0500
+Received: from styx.suse.cz ([82.119.242.94]:55426 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764014AbYA2NkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 08:40:14 -0500
+From: David Sterba <dsterba@suse.cz>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [PATCH] ipwireless: driver for 3G PC Card
+Date: Tue, 29 Jan 2008 14:40:05 +0100
+User-Agent: KMail/1.9.6 (enterprise 20071221.751182)
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jkosina@suse.cz, benm@symmetric.co.nz, stephen@symmetric.co.nz
+References: <20080128171929.GA3906@ds.suse.cz> <20080128100854.fe7acad8.rdunlap@xenotime.net>
+In-Reply-To: <20080128100854.fe7acad8.rdunlap@xenotime.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801291440.06099.dsterba@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 28 of January 2008 19:08:54 Randy Dunlap wrote:
 
-On Tue, 2008-01-29 at 06:52 -0600, Paul Jackson wrote:
-> > Ok, I'll take a stab at understanding that code.
-> 
-> See also the section:
-> 
->   1.7 What is sched_load_balance ?
-> 
-> in Documentation/cpusets.txt.
-> 
-> Good luck ;).
+> > +/* Number of bytes in NL packet header (can not do
+>
+> cannot
 
-It seems Gregory tricked us both:
+Fixed.
 
-  57d885fea0da0e9541d7730a9e1dcf734981a173
+>
+> > + * sizeof(nl_packet_header) since it's a bitfield) */
+> > +#define NL_FOLLOWING_PACKET_HEADER_SIZE    1
+> > +
+> > +struct nl_first_paket_header {
+>
+>                    packet ?
+
+Yes, packet of course.
+
+>
+> > +#if defined(__BIG_ENDIAN)
+> > +	unsigned char packet_rank:2;
+> > +	unsigned char address:3;
+> > +	unsigned char protocol:3;
+> > +#else
+> > +	unsigned char protocol:3;
+> > +	unsigned char address:3;
+> > +	unsigned char packet_rank:2;
+> > +#endif
+>
+> From C99 spec:
+> "The order of allocation of bit-fields within a unit (high-order to
+> low-order or low-order to high-order) is implementation-defined."
+>
+> so if the order/location of these bitfields is important (from one
+> system to another), you should use bit masks instead of bitfields
+> for them.
+
+I've changed it to __BIG_ENDIAN_BITFIELDS, as suggested by Alexey. The order 
+is important. I'll add it to my todo to convert it to bitmasks.
+
+> > +/*
+> > + * @return 1 if something has been received from hw
+>
+> What's with the '@'?
+
+Removed, and converted to plaintext as suggested by others.
+
+> Need ":" and/or space between CARD_NAME and following string.
+> (in several places)
+
+Found a few of them and fixed.
+
+> > +module_param(major, int, 0);
+> > +module_param(ipwireless_debug, int, 0);
+> > +module_param(ipwireless_loopback, int, 0);
+> > +module_param(ipwireless_out_queue, int, 0);
+> > +MODULE_PARM_DESC(major, "ttyIPWp major number [0]");
+> > +MODULE_PARM_DESC(ipwireless_debug, "switch on debug messages [0]");
+> > +MODULE_PARM_DESC(ipwireless_debug, "switch on loopback mode [0]");
+> > +MODULE_PARM_DESC(ipwireless_debug, "set size of outgoing queue [1]");
+>
+> Will these parameters be documented anywhere?
+
+The options are intended for debugging. Normal user does not need to tweak 
+them. Adjusted the description to reflect their debugging purpose.
+
+> > +#ifdef IPWIRELESS_STATE_DEBUG
+> > +int ipwireless_dump_network_state(char *p, struct ipw_network *network)
+> > +{
+> > +	int idx = 0;
+> > +
+> > +	idx += sprintf(p + idx, "debug: ppp_blocked=%d\n",
+> > +			network->ppp_blocked);
+> > +	idx += sprintf(p + idx, "debug: outgoing_packets_queued=%d\n",
+> > +			network->outgoing_packets_queued);
+> > +	idx += sprintf(p + idx, "debug: network.shutting_down=%d\n",
+> > +			network->shutting_down);
+>
+> check for overflow of 'p'?
+
+Converted to one snprintf too.
+
+> > +/* Syncronous start-messages */
+>
+> 	Synchronous
+
+Fixed.
+
+Updated patch will follow.
+
+
+Thank you for comments.
+
+Dave
 
