@@ -1,86 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbYA2UL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964819AbYA2UM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464AbYA2UL4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 15:11:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764631AbYA2ULn
+	id S964819AbYA2UM5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 15:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756993AbYA2UMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 15:11:43 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:7717 "EHLO kernel.dk"
+	Tue, 29 Jan 2008 15:12:46 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:37135 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755106AbYA2ULl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 15:11:41 -0500
-Date: Tue, 29 Jan 2008 21:11:36 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: Re: system hang on latest git
-Message-ID: <20080129201136.GX15220@kernel.dk>
-References: <1FE6DD409037234FAB833C420AA843EC75736A@orsmsx424.amr.corp.intel.com>
-MIME-Version: 1.0
+	id S1755751AbYA2UMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 15:12:44 -0500
+Date: Tue, 29 Jan 2008 21:12:45 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: [RFC] __ref annotation of function/data referencing __init/__exit
+Message-ID: <20080129201245.GA14857@uranus.ravnborg.org>
+References: <20080126184454.GA25591@uranus.ravnborg.org> <20080128213811.GE3842@uranus.ravnborg.org> <Pine.LNX.4.64.0801292053531.14907@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC75736A@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <Pine.LNX.4.64.0801292053531.14907@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29 2008, Luck, Tony wrote:
-> I pulled Linus' tree this morning (git head = 0ba6c33bcddc64a54b5f1c25a696c4767dc76292)
-> and built for ia64 (using arch/ia64/configs/tiger_defconfig).   System booted
-> OK, but when I stressed it a little (building another kernel with "make -j32")
-> it hung.
+On Tue, Jan 29, 2008 at 08:55:32PM +0100, Jan Engelhardt wrote:
 > 
-> The console has a bunch (98) of warnings about tasks blocked for more than 120
-> seconds like this:
-> INFO: task grep:9168 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> On Jan 28 2008 22:38, Sam Ravnborg wrote:
+> >On Sat, Jan 26, 2008 at 07:44:54PM +0100, Sam Ravnborg wrote:
+> >> Today we have the following annotations for functions/data
+> >> referencing __init/__exit functions / data:
+> >> 
+> >> __init_refok for functions
+> >> __initdata_refok for data
+> >> 
+> >> and
+> >> _exit_refok for functions
+> >> 
+> >> To simplify it and to introduce a shorter annotation I
+> >> will suggest the following annotation:
+> >> 
+> >> __ref      <= for functions (code) that
+> >>               references __*init / __*exit
+> >> __refdata  <= for variables
+> >> __refconst <= for const variables
+> >>
+> >
+> >This patch was includedin todays kbuild.git submission
+> >as I heard no negative feedback.
 > 
-> Call Trace:
->  [<a000000100704120>] schedule+0x11c0/0x1340
->                                 sp=e0000001ed8afbf0 bsp=e0000001ed8a1280
->  [<a00000010024e720>] do_get_write_access+0x660/0xbe0
->                                 sp=e0000001ed8afc20 bsp=e0000001ed8a1208
->  [<a00000010024f060>] journal_get_write_access+0x40/0x80
->                                 sp=e0000001ed8afca0 bsp=e0000001ed8a11c8
->  [<a000000100245db0>] __ext3_journal_get_write_access+0x30/0xa0
->                                 sp=e0000001ed8afca0 bsp=e0000001ed8a1190
->  [<a00000010022dea0>] ext3_reserve_inode_write+0x80/0x120
->                                 sp=e0000001ed8afca0 bsp=e0000001ed8a1158
->  [<a00000010022df70>] ext3_mark_inode_dirty+0x30/0x80
->                                 sp=e0000001ed8afca0 bsp=e0000001ed8a1130
->  [<a000000100232530>] ext3_dirty_inode+0xd0/0x120
->                                 sp=e0000001ed8afcc0 bsp=e0000001ed8a1100
->  [<a000000100170e20>] __mark_inode_dirty+0xa0/0x3e0
->                                 sp=e0000001ed8afcc0 bsp=e0000001ed8a10b0
->  [<a00000010015b570>] touch_atime+0x310/0x340
->                                 sp=e0000001ed8afcc0 bsp=e0000001ed8a1088
->  [<a0000001000d6c20>] do_generic_mapping_read+0x780/0x7a0
->                                 sp=e0000001ed8afce0 bsp=e0000001ed8a0fe0
->  [<a0000001000db250>] generic_file_aio_read+0x290/0x340
->                                 sp=e0000001ed8afce0 bsp=e0000001ed8a0f80
->  [<a00000010012c990>] do_sync_read+0x170/0x200
->                                 sp=e0000001ed8afd10 bsp=e0000001ed8a0f40
->  [<a00000010012cbd0>] vfs_read+0x1b0/0x2e0
->                                 sp=e0000001ed8afe20 bsp=e0000001ed8a0ef0
->  [<a00000010012d250>] sys_read+0x70/0xe0
->                                 sp=e0000001ed8afe20 bsp=e0000001ed8a0e78
->  [<a00000010000a4a0>] ia64_ret_from_syscall+0x0/0x20
->                                 sp=e0000001ed8afe30 bsp=e0000001ed8a0e78
-> 
-> 
-> [The stack trace has several variations ... some from sys_read(), some from
-> sys_open(), some from sys_execve(), some from sys_mmap() etc. 84/98 stack
-> traces pass through the touch_atime->__mark_inode_dirty path ... all 98
-> are attached]
-> 
-> A quick dig into processor state shows 8 cpus are idle.  7 are spinning
-> in __spin_lock_irq() from __make_request() and one is in spin_lock() from
-> as_merged_requests().
+> I would like to see some real-world example of __ref*.
+> When would you want to "reference" (function pointer?) an __init
+> function from outside another __init function?
 
-Looks like a deadlock on queue lock and ioc lock, but I don't see
-immediately what the problem is. I can't stick around for longer
-tonight, but I'll get to the bottom of this tomorrow.
+It replaces the old __init_Refok - so you can just grep for that one.
+One obvious example:
 
--- 
-Jens Axboe
+init/main.c:static void noinline __init_refok rest_init(void)
 
+Here we jump from the the __init part to the normal operation.
+
+And
+static noinline __init_refok
+int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
+{
+       ...
+      if (system_state == SYSTEM_BOOTING) {
+                zone->wait_table = (wait_queue_head_t *)
+                        alloc_bootmem_node(pgdat, alloc_size);
+
+The program logic guarantee that we only call
+alloc_bootmem_node when we are in the init phase.
+So to silence the warning we added __init_refok that is
+now named __ref.
+
+We have plenty of data structures containing pointers to
+functions annotated __*init or __*exit.
+
+One that casues a lot of warnings is pci_serial_quirks.
+
+Here we can use the annotation to tell modpost that
+the references are OK like this (see __refdata):
+
+static struct pci_serial_quirk pci_serial_quirks[] __refdata = {
+	...
+                .exit           = __devexit_p(sbs_exit),
+        },
+
+
+thout the annotation modpost would complain about the
+reference to sbs_exit because sbs_exit is annotated __devexit.
+
+If you have proposals to improve the commeonts in init.h please let
+me know. This seems to confuse a lot of people.
+
+	Sam
