@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764041AbYA2OCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764207AbYA2OD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764041AbYA2OCe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:02:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933006AbYA2OCJ
+	id S1764207AbYA2OD6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762998AbYA2ODt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:02:09 -0500
-Received: from sacred.ru ([62.205.161.221]:43122 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932966AbYA2OCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:02:07 -0500
-Message-ID: <479F31DB.5000809@openvz.org>
-Date: Tue, 29 Jan 2008 17:02:03 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 29 Jan 2008 09:03:49 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:58614
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761915AbYA2ODt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 09:03:49 -0500
+Date: Tue, 29 Jan 2008 15:03:45 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 4/6] MMU notifier: invalidate_page callbacks using
+	Linux rmaps
+Message-ID: <20080129140345.GG7233@v2.random>
+References: <20080128202840.974253868@sgi.com> <20080128202924.334342410@sgi.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Tony Luck <tony.luck@intel.com>
-Subject: [PATCH 9/12] ia64: make pfm_get_task work with virtual pids
-References: <479F2C5C.1050303@openvz.org>
-In-Reply-To: <479F2C5C.1050303@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 29 Jan 2008 17:01:43 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080128202924.334342410@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This pid comes from user space, so treat it accordingly.
+On Mon, Jan 28, 2008 at 12:28:44PM -0800, Christoph Lameter wrote:
+>  	if (!migration && ((vma->vm_flags & VM_LOCKED) ||
+> -			(ptep_clear_flush_young(vma, address, pte)))) {
+> +			(ptep_clear_flush_young(vma, address, pte) ||
+> +				mmu_notifier_age_page(mm, address)))) {
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+here an example of how inferior and error prone it is to have
+mmu_notifier_age_page and invalidate_page outside of pgtable.h, you
+just managed to break again with the above || go figure. The
+mmu_notifier_age_page has to be called unconditionally regardless of
+ptep_clear_flush_young return value, we want to give only one
+additional LRU scan to the referenced pages, not more than that or the
+KVM guest pages will get tons more priority than the regular linux
+anonymous memory.
 
----
- arch/ia64/kernel/perfmon.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+>  		ret = SWAP_FAIL;
+>  		goto out_unmap;
+>  	}
+> @@ -688,6 +693,7 @@ static int try_to_unmap_one(struct page 
+>  	/* Nuke the page table entry. */
+>  	flush_cache_page(vma, address, page_to_pfn(page));
+>  	pteval = ptep_clear_flush(vma, address, pte);
+> +	mmu_notifier(invalidate_page, mm, address);
+>  
+>  	/* Move the dirty bit to the physical page now the pte is gone. */
+>  	if (pte_dirty(pteval))
+> @@ -815,9 +821,13 @@ static void try_to_unmap_cluster(unsigne
+>  		if (ptep_clear_flush_young(vma, address, pte))
+>  			continue;
+>  
+> +		if (mmu_notifier_age_page(mm, address))
+> +			continue;
+> +
 
-diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
-index 73e7c2e..da1cff0 100644
---- a/arch/ia64/kernel/perfmon.c
-+++ b/arch/ia64/kernel/perfmon.c
-@@ -2654,11 +2654,11 @@ pfm_get_task(pfm_context_t *ctx, pid_t pid, struct task_struct **task)
- 	/* XXX: need to add more checks here */
- 	if (pid < 2) return -EPERM;
- 
--	if (pid != current->pid) {
-+	if (pid != task_pid_vnr(current)) {
- 
- 		read_lock(&tasklist_lock);
- 
--		p = find_task_by_pid(pid);
-+		p = find_task_by_vpid(pid);
- 
- 		/* make sure task cannot go away while we operate on it */
- 		if (p) get_task_struct(p);
--- 
-1.5.3.4
-
+Here the same exact aging regression compared to my code.
