@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757791AbYA2Vfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbYA2VgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757791AbYA2Vfk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 16:35:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYA2Vfb
+	id S1758128AbYA2VgT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 16:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYA2VgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 16:35:31 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:29674 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbYA2Vfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 16:35:31 -0500
-Date: Tue, 29 Jan 2008 22:35:26 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mike.miller@hp.com, k-ueda@ct.jp.nec.com, j-nomura@ce.jp.nec.com
-Subject: Re: kernel BUG at drivers/block/cciss.c:1260! (with recent  linux-2.6  tree)
-Message-ID: <20080129213526.GE15220@kernel.dk>
-References: <20080129182217.GK12400@plap3.qlogic.org> <20080129182833.GG15220@kernel.dk> <20080129183705.GL12400@plap3.qlogic.org> <20080129184442.GK15220@kernel.dk> <20080129184929.GN12400@plap3.qlogic.org> <20080129185358.GM15220@kernel.dk> <20080129210837.GA21785@plap3.qlogic.org> <20080129211634.GB15220@kernel.dk> <20080129212435.GC15220@kernel.dk> <1FE6DD409037234FAB833C420AA843EC757564@orsmsx424.amr.corp.intel.com>
+	Tue, 29 Jan 2008 16:36:01 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40641 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751257AbYA2VgA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 16:36:00 -0500
+Date: Tue, 29 Jan 2008 13:35:58 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080129211759.GV7233@v2.random>
+Message-ID: <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com>
+References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com>
+ <20080129162004.GL7233@v2.random> <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com>
+ <20080129211759.GV7233@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757564@orsmsx424.amr.corp.intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29 2008, Luck, Tony wrote:
-> >> Ah crap, I see the problem, nioc is most often equal to rioc. Dang.
-> >> Please try this bandaid, will push a real fix now.
+On Tue, 29 Jan 2008, Andrea Arcangeli wrote:
+
+> > It seems to be okay to invalidate range if you hold mmap_sem writably. In 
+> > that case no additional faults can happen that would create new ptes.
 > 
-> Patches arriving faster than I can test :-) ... The bandaid appears to
-> be working (no hang yet).
+> In that place the mmap_sem is taken but in readonly mode. I never rely
+> on the mmap_sem in the mmu notifier methods. Not invoking the notifier
 
-OK good!
+Well it seems that we have to rely on mmap_sem otherwise concurrent faults 
+can occur. The mmap_sem seems to be acquired for write there.
 
-> > This is way cleaner.
-> 
-> Will try this next.
+              if (!has_write_lock) {
+                        up_read(&mm->mmap_sem);
+                        down_write(&mm->mmap_sem);
+                        has_write_lock = 1;
+                        goto retry;
+                }
 
-Should work even better since it avoids a lock and copy, but please do
-test if you have the time.
 
--- 
-Jens Axboe
+> before releasing the PT lock adds quite some uncertainty on the smp
+> safety of the spte invalidates, because the pte may be unmapped and
+> remapped by a minor fault before invalidate_range is invoked, but I
+> didn't figure out a kernel crashing race yet thanks to the pin we take
+> through get_user_pages (and only thanks to it). The requirement is
+> that invalidate_range is invoked after the last ptep_clear_flush or it
+> leaks pins that's why I had to move it at the end.
+ 
+So "pins" means a reference count right? I still do not get why you 
+have refcount problems. You take a refcount when you export the page 
+through KVM and then drop the refcount in invalidate page right?
+
+So you walk through the KVM ptes and drop the refcount for each spte you 
+encounter?
+
 
