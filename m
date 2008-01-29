@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764940AbYA2OZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764729AbYA2O2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764940AbYA2OZj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763920AbYA2OZV
+	id S1764729AbYA2O2X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759930AbYA2O2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:25:21 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:46485
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763330AbYA2OZU (ORCPT
+	Tue, 29 Jan 2008 09:28:11 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:58619 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758870AbYA2O2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:25:20 -0500
-Date: Tue, 29 Jan 2008 15:24:52 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 4/6] MMU notifier: invalidate_page callbacks using
-	Linux rmaps
-Message-ID: <20080129142452.GH7233@v2.random>
-References: <20080128202840.974253868@sgi.com> <20080128202924.334342410@sgi.com> <20080129140345.GG7233@v2.random>
+	Tue, 29 Jan 2008 09:28:10 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+Date: Tue, 29 Jan 2008 15:31:38 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Boaz Harrosh <bharrosh@panasas.com>, Greg KH <greg@kroah.com>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+References: <20080128204935.GI15220@kernel.dk> <479F32E9.10609@panasas.com> <20080129141108.GV15220@kernel.dk>
+In-Reply-To: <20080129141108.GV15220@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080129140345.GG7233@v2.random>
+Message-Id: <200801291531.39825.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This should fix the aging bugs you introduced through the faulty cpp
-expansion. This is hard to write for me, given any time somebody does
-a ptep_clear_flush_young w/o manually cpp-expandin "|
-mmu_notifier_age_page" after it, it's always a bug that needs fixing,
-similar bugs can emerge with time for ptep_clear_flush too. What will
-happen is that somebody will cleanup in 26+ and we'll remain with a
-#ifdef KERNEL_VERSION() < 2.6.26 in ksm.c to call
-mmu_notifier(invalidate_page) explicitly. Performance and
-optimizations or unnecessary invalidate_page are a red-herring, it can
-be fully optimized both ways. 99% of the time when somebody calls
-ptep_clear_flush and ptep_clear_flush_young, the respective mmu
-notifier can't be forgotten (and calling them once more even if a
-later invalidate_range is invoked, is always safer and preferable than
-not calling them at all) so I fail to see how this will not be cleaned
-up eventually, the same way the tlb flushes have been cleaned up
-already. Nevertheless I back your implementation and I'm not even
-trying at changing it with the risk to slowdown merging.
+Am Dienstag, 29. Januar 2008 15:11:08 schrieb Jens Axboe:
+> On Tue, Jan 29 2008, Boaz Harrosh wrote:
+> > On Tue, Jan 29 2008 at 15:54 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > On Tue, Jan 29 2008, Boaz Harrosh wrote:
+> > >> Greg KH wrote:
+ 
+> > > No difference, still just a lot of resets.
+> > > 
+> > Where you able to figure out which usb storage transport is used?
+> > 
+> > in drivers/usb/storage/usb.c you have get_protocol() and get_transport()
+> > functions. I'm not sure if these get stored in sysfs perhaps. This will
+> > pinpoint better where to look. Let me research a bit. 
+> 
+> Did the quick'n easy and dumped it. Protocol is 'Transparent SCSI' and
+> transport is 'Bulk'
 
-Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
+You can recompile your kernel with CONFIG_USB_DEBUG and CONFIG_STORAGE_DEBUG
+That should tell the reason for the resets.
 
-diff --git a/mm/rmap.c b/mm/rmap.c
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -285,10 +285,8 @@ static int page_referenced_one(struct pa
- 	if (!pte)
- 		goto out;
- 
--	if (ptep_clear_flush_young(vma, address, pte))
--		referenced++;
--
--	if (mmu_notifier_age_page(mm, address))
-+	if (ptep_clear_flush_young(vma, address, pte) |
-+	    mmu_notifier_age_page(mm, address))
- 		referenced++;
- 
- 	/* Pretend the page is referenced if the task has the
-@@ -684,7 +682,7 @@ static int try_to_unmap_one(struct page 
- 	 * skipped over this mm) then we should reactivate it.
- 	 */
- 	if (!migration && ((vma->vm_flags & VM_LOCKED) ||
--			(ptep_clear_flush_young(vma, address, pte) ||
-+			(ptep_clear_flush_young(vma, address, pte) |
- 				mmu_notifier_age_page(mm, address)))) {
- 		ret = SWAP_FAIL;
- 		goto out_unmap;
-@@ -818,10 +816,8 @@ static void try_to_unmap_cluster(unsigne
- 		page = vm_normal_page(vma, address, *pte);
- 		BUG_ON(!page || PageAnon(page));
- 
--		if (ptep_clear_flush_young(vma, address, pte))
--			continue;
--
--		if (mmu_notifier_age_page(mm, address))
-+		if (ptep_clear_flush_young(vma, address, pte) | 
-+		    mmu_notifier_age_page(mm, address))
- 			continue;
- 
- 		/* Nuke the page table entry. */
+	Regards
+		Oliver
