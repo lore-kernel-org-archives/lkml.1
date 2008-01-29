@@ -1,90 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760103AbYA2XoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbYA2Xoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760103AbYA2XoV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 18:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758893AbYA2Xn6
+	id S1760648AbYA2Xoe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 18:44:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759550AbYA2XoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 18:43:58 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:55836
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757923AbYA2Xn4 (ORCPT
+	Tue, 29 Jan 2008 18:44:03 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:56627 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758316AbYA2Xn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 18:43:56 -0500
-Date: Wed, 30 Jan 2008 00:43:53 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080129234353.GZ7233@v2.random>
-References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com> <20080129162004.GL7233@v2.random> <20080129182831.GS7233@v2.random> <Pine.LNX.4.64.0801291219030.25629@schroedinger.engr.sgi.com> <20080129213604.GW7233@v2.random> <Pine.LNX.4.64.0801291343530.26824@schroedinger.engr.sgi.com> <20080129223503.GY7233@v2.random> <Pine.LNX.4.64.0801291440170.27327@schroedinger.engr.sgi.com>
+	Tue, 29 Jan 2008 18:43:57 -0500
+Message-ID: <479FBA3B.5050209@web.de>
+Date: Wed, 30 Jan 2008 00:43:55 +0100
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801291440170.27327@schroedinger.engr.sgi.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kgdb-bugreport@lists.sourceforge.net
+Subject: [PATCH 1/5] KGDB: improve early init
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Provags-ID: V01U2FsdGVkX1+pviagzlYvzMXa3lf2kiQasXjSM+zm1RvHozkp
+	mq85l9Dvn014elqNET+XjTwLXRfQAXDmEmm6KpyqVPAoh0jx1B
+	VoaLHq0tM=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 02:55:56PM -0800, Christoph Lameter wrote:
-> On Tue, 29 Jan 2008, Andrea Arcangeli wrote:
-> 
-> > But now I think there may be an issue with a third thread that may
-> > show unsafe the removal of invalidate_page from ptep_clear_flush.
-> > 
-> > A third thread writing to a page through the linux-pte and the guest
-> > VM writing to the same page through the sptes, will be writing on the
-> > same physical page concurrently and using an userspace spinlock w/o
-> > ever entering the kernel. With your patch that invalidate_range after
-> > dropping the PT lock, the third thread may start writing on the new
-> > page, when the guest is still writing to the old page through the
-> > sptes. While this couldn't happen with my patch.
-> 
-> A user space spinlock plays into this??? That is irrelevant to the kernel. 
-> And we are discussing "your" placement of the invalidate_range not mine.
+[Warning in advance]
+This patch reintroduces the early KGDB_CONSOLE registration issue: If
+you switch this on, trigger the debugger before any tty-providing
+console was registered and you do not provide an explicit console=
+parameter, you end up with a panic due to lacking /dev/console. But this
+time I have a better fix (for register_console), will be posted
+separately later on.
 
-With "my" code, invalidate_range wasn't placed there at all, my
-modification to ptep_clear_flush already covered it in a automatic
-way, grep from the word fremap in my latest patch you won't find it,
-like you won't find any change to do_wp_page. Not sure why you keep
-thinking I added those invalidate_range when infact you did.
+<--snip-->
 
-The user space spinlock plays also in declaring rdtscp unworkable to
-provide a monotone vgettimeofday w/o kernel locking.
+In case "kgdbwait" is passed as kernel parameter, KGDB tries to set up
+and connect to the front-end already during early_param evaluation. This
+fails on x86 as the exception stack is not yet initialized, effectively
+delaying kgdbwait until late-init.
 
-My patch by calling invalidate_page inside ptep_clear_flush guaranteed
-that both the thread writing through sptes and the thread writing
-through linux ptes, couldn't possibly simultaneously write to two
-different physical pages.
+Therefore, this patch hooks into the x86 trap initialization and
+re-triggers the KGDB setup, including a potential early rendezvous with
+gdb. As a precondition, KGDB's setup states are refactored once again to
+allow multiple invocations of kgdb_early_entry and correct tracking of
+pending kgdbwait requests.
 
-Your patch allows the thread writing through linux-pte to write to a
-new populated page while the old thread writing through sptes still
-writes to the old page. Is that safe? I don't know for sure. The fact
-the physical page backing the virtual address could change back and
-forth, perhaps invalidates the theory that somebody could possibly do
-some useful locking out of it relaying on all threads seeing the same
-physical page at the same time.
+Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 
-Anyway as long as invalidate_page/range happens after ptep_clear_flush
-things are mostly ok.
+---
+ arch/x86/kernel/traps_32.c |    4 +++
+ arch/x86/kernel/traps_64.c |    4 +++
+ include/linux/kgdb.h       |    7 ++++-
+ kernel/kgdb.c              |   55 ++++++++++++++++++++++++---------------------
+ 4 files changed, 44 insertions(+), 26 deletions(-)
 
-> This is the scenario that I described before. You just need two threads.
-> One thread is in do_wp_page and the other is writing through the spte. 
-> We are in do_wp_page. Meaning the page is not writable. The writer will 
-
-Actually above I was describing remap_file_pages not do_wp_page.
-
-> have to take fault which will properly serialize access. It a bug if the 
-> spte would allow write.
-
-In that scenario because write is forbidden (unlike remap_file_pages)
-like you said things should be ok. The spte reader will eventually see
-the updates happening in the new page, as long as the spte invalidate
-happens after ptep_clear_flush (i.e. with my incremental fix applied
-to your code, or with my latest patch).
+Index: b/arch/x86/kernel/traps_32.c
+===================================================================
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -25,6 +25,7 @@
+ #include <linux/utsname.h>
+ #include <linux/kprobes.h>
+ #include <linux/kexec.h>
++#include <linux/kgdb.h>
+ #include <linux/unwind.h>
+ #include <linux/uaccess.h>
+ #include <linux/nmi.h>
+@@ -1215,6 +1216,9 @@ void __init trap_init(void)
+ 	 */
+ 	cpu_init();
+ 
++	/* With the TSS set up, it's now save to arm early KGDB. */
++	kgdb_early_entry();
++
+ 	trap_init_hook();
+ }
+ 
+Index: b/arch/x86/kernel/traps_64.c
+===================================================================
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -27,6 +27,7 @@
+ #include <linux/nmi.h>
+ #include <linux/kprobes.h>
+ #include <linux/kexec.h>
++#include <linux/kgdb.h>
+ #include <linux/unwind.h>
+ #include <linux/uaccess.h>
+ #include <linux/bug.h>
+@@ -1162,6 +1163,9 @@ void __init trap_init(void)
+ 	 * Should be a barrier for any external CPU state.
+ 	 */
+ 	cpu_init();
++
++	/* With the TSS set up, it's now save to arm early KGDB. */
++	kgdb_early_entry();
+ }
+ 
+ 
+Index: b/include/linux/kgdb.h
+===================================================================
+--- a/include/linux/kgdb.h
++++ b/include/linux/kgdb.h
+@@ -46,7 +46,8 @@ extern struct task_struct *kgdb_usethrea
+ 
+ enum kgdb_initstate {
+ 	KGDB_UNINITIALIZED = 0,
+-	KGDB_SEMI_INITIALIZED,
++	KGDB_ARCH_INITIALIZED,
++	KGDB_DELAYED_CONNECTION,
+ 	KGDB_FULLY_INITIALIZED
+ };
+ 
+@@ -286,11 +287,15 @@ int kgdb_handle_exception(int ex_vector,
+ 			  struct pt_regs *regs);
+ int kgdb_nmihook(int cpu, void *regs);
+ 
++void __init kgdb_early_entry(void);
++
+ extern int debugger_step;
+ extern atomic_t debugger_active;
+ 
+ #else /* !CONFIG_KGDB */
+ static const atomic_t debugger_active = ATOMIC_INIT(0);
++
++static inline void kgdb_early_entry(void) { }
+ #endif /* !CONFIG_KGDB */
+ 
+ #endif /* _KGDB_H_ */
+Index: b/kernel/kgdb.c
+===================================================================
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -1925,32 +1925,39 @@ void kgdb_unregister_io_module(struct kg
+ }
+ EXPORT_SYMBOL_GPL(kgdb_unregister_io_module);
+ 
++static void __init kgdb_initial_breakpoint(void)
++{
++	printk(KERN_CRIT "kgdb: Waiting for connection from remote gdb...\n");
++	breakpoint();
++}
++
+ /*
+  * This function can be called very early, either via early_param() or
+  * an explicit breakpoint() early on.
+  */
+-static void __init kgdb_early_entry(void)
++void __init kgdb_early_entry(void)
+ {
++	int need_break = (kgdb_state == KGDB_DELAYED_CONNECTION);
++
+ 	/* Let the architecture do any setup that it needs to. */
+-	kgdb_arch_init();
++	if (kgdb_state == KGDB_UNINITIALIZED) {
++		kgdb_arch_init();
++		kgdb_state = KGDB_ARCH_INITIALIZED;
++	}
+ 
+ 	/*
+ 	 * Don't try and do anything until the architecture is able to
+ 	 * setup the exception stack.  In this case, it is up to the
+ 	 * architecture to hook in and look at us when they are ready.
+ 	 */
+-
+-	if (!EXCEPTION_STACK_READY()) {
+-		kgdb_state = KGDB_SEMI_INITIALIZED;
+-		/* any kind of break point is deferred to late_init */
++	if (!EXCEPTION_STACK_READY())
+ 		return;
+-	}
+ 
+ 	/* Now try the I/O. */
+ 	/* For early entry kgdb_io_ops.init must be defined */
+ 	if (!kgdb_io_ops.init || kgdb_io_ops.init()) {
+-		/* Try again later. */
+-		kgdb_state = KGDB_SEMI_INITIALIZED;
++		printk(KERN_ERR "kgdb: Could not setup core I/O for KGDB.\n");
++		printk(KERN_INFO "kgdb: Defering I/O setup to late init.\n");
+ 		return;
+ 	}
+ 
+@@ -1964,6 +1971,9 @@ static void __init kgdb_early_entry(void
+ 	 */
+ 	if (kgdb_io_ops.init)
+ 		kgdb_register_for_panic();
++
++	if (need_break)
++		kgdb_initial_breakpoint();
+ }
+ 
+ /*
+@@ -1974,14 +1984,16 @@ static void __init kgdb_early_entry(void
+  */
+ static int __init kgdb_late_entry(void)
+ {
+-	int need_break = (kgdb_state == KGDB_SEMI_INITIALIZED);
++	int need_break = (kgdb_state == KGDB_DELAYED_CONNECTION);
+ 
+ 	/*
+ 	 * If we haven't tried to initialize KGDB yet, we need to call
+ 	 * kgdb_arch_init before moving onto the I/O.
+ 	 */
+-	if (kgdb_state == KGDB_UNINITIALIZED)
++	if (kgdb_state == KGDB_UNINITIALIZED) {
+ 		kgdb_arch_init();
++		kgdb_state = KGDB_ARCH_INITIALIZED;
++	}
+ 
+ 	if (kgdb_state != KGDB_FULLY_INITIALIZED) {
+ 		if (kgdb_io_ops.init && kgdb_io_ops.init()) {
+@@ -2015,11 +2027,8 @@ static int __init kgdb_late_entry(void)
+ 	if (kgdb_io_ops.late_init)
+ 		kgdb_io_ops.late_init();
+ 
+-	if (need_break) {
+-		printk(KERN_CRIT "kgdb: Waiting for connection from remote"
+-		       " gdb...\n");
+-		breakpoint();
+-	}
++	if (need_break)
++		kgdb_initial_breakpoint();
+ 
+ 	return 0;
+ }
+@@ -2072,7 +2081,6 @@ module_init(gdb_register_sysrq);
+ static int kgdb_notify_reboot(struct notifier_block *this,
+ 		unsigned long code, void *x)
+ {
+-
+ 	unsigned long flags;
+ 
+ 	/* If we're debugging, or KGDB has not connected, don't try
+@@ -2093,6 +2101,7 @@ static int __init opt_kgdb_attachwait(ch
+ 	attachwait = 1;
+ 	return 0;
+ }
++
+ static int __init opt_kgdb_enter(char *str)
+ {
+ 	/* We've already done this by an explicit breakpoint() call. */
+@@ -2101,15 +2110,11 @@ static int __init opt_kgdb_enter(char *s
+ 
+ 	kgdb_early_entry();
+ 	attachwait = 1;
+-	if (kgdb_state == KGDB_FULLY_INITIALIZED)
+-		printk(KERN_CRIT "Waiting for connection from remote "
+-		       "gdb...\n");
+-	else {
+-		printk(KERN_CRIT "KGDB cannot initialize I/O yet.\n");
+-		return 0;
+-	}
+ 
+-	breakpoint();
++	if (kgdb_state == KGDB_FULLY_INITIALIZED)
++		kgdb_initial_breakpoint();
++	else
++		kgdb_state = KGDB_DELAYED_CONNECTION;
+ 
+ 	return 0;
+ }
