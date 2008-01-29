@@ -1,55 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbYA2Kv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYA2Kz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbYA2Kv1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 05:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYA2KvT
+	id S1756030AbYA2Kz0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 05:55:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYA2KzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 05:51:19 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40661 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753403AbYA2KvS (ORCPT
+	Tue, 29 Jan 2008 05:55:14 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2880 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753967AbYA2KzM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 05:51:18 -0500
-Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Jackson <pj@sgi.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@linux.vnet.ibm.com,
-       dhaval@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
-       ebiederm@xmission.com, akpm@linux-foundation.org, sgrubb@redhat.com,
-       rostedt@goodmis.org, ghaskins@novell.com, dmitry.adamushko@gmail.com,
-       tong.n.li@intel.com, tglx@linutronix.de, menage@google.com,
-       rientjes@google.com
-In-Reply-To: <20080129040130.7b2904b6.pj@sgi.com>
-References: <1201600428.28547.87.camel@lappy>
-	 <20080129040130.7b2904b6.pj@sgi.com>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 11:50:16 +0100
-Message-Id: <1201603816.28547.94.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jan 2008 05:55:12 -0500
+Date: Tue, 29 Jan 2008 10:55:31 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: Joe Perches <joe@perches.com>, jwboyer@linux.vnet.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
+Message-ID: <20080129105531.GA651@shadowen.org>
+References: <4797C1AD.3040307@tiscali.nl> <1201129527.4988.69.camel@localhost> <4797D968.1030101@tiscali.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4797D968.1030101@tiscali.nl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-01-29 at 04:01 -0600, Paul Jackson wrote:
-> Peter wrote:
-> > Also the RT load-balance needs to become aware of such these sets, I
-> > think Paul J and Steven once talked about it, but can't quite remember
-> > where that ended
+On Thu, Jan 24, 2008 at 01:18:48AM +0100, Roel Kluin wrote:
+> Joe Perches wrote:
+> > On Wed, 2008-01-23 at 23:37 +0100, Roel Kluin wrote:
+> >> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> >> ---
+> >> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+> >> index ebf9e21..dcfb459 100644
+> >> --- a/arch/powerpc/boot/4xx.c
+> >> +++ b/arch/powerpc/boot/4xx.c
+> >> @@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
+> >>  	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
+> >>  	cs = 0;
+> >>  	while (val) {
+> >> -		if (val && 0x1)
+> >> +		if (val & 0x1)
+> >>  			cs++;
+> >>  		val = val >> 1;
+> > 
+> > I think this pattern should be added to checkpatch
 > 
-> See further the thread:
+> I agree but...
 > 
->   http://lkml.org/lkml/2007/10/22/400
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > 
+> > diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+> > index 579f50f..147e573 100755
+> > --- a/scripts/checkpatch.pl
+> > +++ b/scripts/checkpatch.pl
+> > @@ -1337,6 +1337,11 @@ sub process {
+> >  			}
+> >  		}
+> >  
+> > +# Check for bitwise tests written as boolean
+> > +		if ($line =~ /\&\&\s*0[xX]/) {
+> > +			WARN("boolean test with hexadecimal, perhaps just 1 \&?\n" . $herecurr);
+> > +		}
+> > +
 > 
-> (I don't remember where it ended up either; probably nowhere.
->  I'm just passing on the link, before doing any reading or thinking.)
+> when you use git-grep -n "\(&&\|||\)${s}0x\([A-Z0-9]*\|[a-z0-9]*\)",
+> (with s="[[:space:]]*") there will be false positives like
+> 
+> if (relocation < -0x20000 || 0x1fffc < relocation)
+> if (ARCH_SUN4C_SUN4 && addr < 0xe0000000 && 0x20000000 - len < addr) {
+> (and more)
+> 
+> However, if you search with
+> git-grep -n " \(&&\|||\)${s}0x\([A-Z0-9]*\|[a-z0-9]*\)$s\()\|&&\|||\)"
+> you won't get these false positives, but you do get the one I fixed.
+> 
+> Also there is the same logic flipped (though it did not give matches at
+> this time):
+> git-grep -n " \(&&\|||\|(\)${s}0x\([A-Z0-9]*\|[a-z0-9]*\)$s\(&&\|||\)"
+> 
+> so i'd propose to change that to
+> --
+> Catch boolean tests with hexadecimals, based on suggestion by Joe Perches
+> 
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> ---
+> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+> index 579f50f..8ac7c7b 100755
+> --- a/scripts/checkpatch.pl
+> +++ b/scripts/checkpatch.pl
+> @@ -1337,6 +1337,12 @@ sub process {
+>  			}
+>  		}
+>  
+> +# Check for bitwise tests written as boolean
+> +		if ($line =~ /(?:(?:\(|\&\&|\|\|)\s*0[xX]\s*(?:&&|\|\|)|
+> +				(?:\&\&|\|\|)\s*0[xX]\s*(?:\)|&&|\|\|))/) {
+> +			WARN("boolean test with hexadecimal, perhaps just 1 \& or \|?\n" . $herecurr);
+> +		}
+> +
+>  # if and else should not have general statements after it
+>  		if ($line =~ /^.\s*(?:}\s*)?else\b(.*)/ &&
+>  		    $1 !~ /^\s*(?:\sif|{|\\|$)/) {
 
-Thanks for the link. Yes I think your last suggestion of creating
-rt-domains ( http://lkml.org/lkml/2007/10/23/419 ) is a good one.
+That one doesn't even match the original example.  Seems to be missing
+some number matching.  The concept seems sound though.  Basically
+looking for numbers which are definatly adjacent to a boolean or a brace
+on both sides.
 
-Upon cpuset changes we could then look for the largest disjoint set and
-hang the rt balance code from that.
+/me goes play with some examples to see if the falsies are better than
+the reports.
 
-
+-apw
