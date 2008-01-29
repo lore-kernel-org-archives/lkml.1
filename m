@@ -1,60 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934201AbYA2Ti4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934041AbYA2TkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934201AbYA2Ti4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 14:38:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYA2Tik
+	id S934041AbYA2TkG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 14:40:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbYA2Tjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 14:38:40 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53302 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752839AbYA2Tii (ORCPT
+	Tue, 29 Jan 2008 14:39:49 -0500
+Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:37779
+	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753221AbYA2Tjq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 14:38:38 -0500
-Date: Tue, 29 Jan 2008 19:34:03 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Cc: Richard Heck <rgheck@bobjweil.com>, Gene Heskett <gene.heskett@gmail.com>,
-       Zan Lynx <zlynx@acm.org>, Calvin Walton <calvin.walton@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-Subject: Re: Problem with ata layer in 2.6.24
-Message-ID: <20080129193403.62fe95e8@core>
-In-Reply-To: <alpine.LNX.1.00.0801291354240.13593@iabervon.org>
-References: <200801272122.21823.gene.heskett@gmail.com>
-	<1201539043.31293.7.camel@zem>
-	<1201540830.6526.19.camel@localhost>
-	<200801281230.32910.gene.heskett@gmail.com>
-	<alpine.LNX.1.00.0801281248190.13593@iabervon.org>
-	<479E1D9E.3000900@bobjweil.com>
-	<20080129121201.2f727f5f@core>
-	<alpine.LNX.1.00.0801291202550.13593@iabervon.org>
-	<20080129184613.16846ae5@core>
-	<alpine.LNX.1.00.0801291354240.13593@iabervon.org>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 29 Jan 2008 14:39:46 -0500
+Date: Tue, 29 Jan 2008 11:37:13 -0800
+From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Oliver Neukum <oliver@neukum.org>, Boaz Harrosh <bharrosh@panasas.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+Message-ID: <20080129193713.GP14375@one-eyed-alien.net>
+Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
+	Oliver Neukum <oliver@neukum.org>,
+	Boaz Harrosh <bharrosh@panasas.com>, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+	linux-scsi@vger.kernel.org
+References: <20080128204935.GI15220@kernel.dk> <479F32E9.10609@panasas.com> <20080129141108.GV15220@kernel.dk> <200801291531.39825.oliver@neukum.org> <20080129143109.GW15220@kernel.dk> <20080129183910.GI15220@kernel.dk> <20080129191024.GO14375@one-eyed-alien.net> <20080129191504.GO15220@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="NJSRbAqOy4NeGDns"
+Content-Disposition: inline
+In-Reply-To: <20080129191504.GO15220@kernel.dk>
+User-Agent: Mutt/1.4.2.3i
+Organization: One Eyed Alien Networks
+X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
+X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Tue, 29 Jan 2008 11:37:13 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I've seen a lot of verbosity out of SCSI messages, but I haven't seen a 
-> straightforward interpretation of the problem in there. It's all 
-> information useful for debugging, not information useful for system 
-> administration.
 
-It tells you what is going on. Unfortunately that frequently requires
-some basic knowledge of how to interpret the error report. Drive
-interface behaviour simply doesn't boil down to a fault light on the
-dashboard or a "tighten the cable". For most common fault types you'll
-get errors most administrators should find meaningful - like "Media error"
+--NJSRbAqOy4NeGDns
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On the other hand, bringing the system down because a device is 
-> misbehaving is a poor idea. I've personally recovered most of the data off 
+On Tue, Jan 29, 2008 at 08:15:04PM +0100, Jens Axboe wrote:
+> On Tue, Jan 29 2008, Matthew Dharm wrote:
+> > On Tue, Jan 29, 2008 at 07:39:11PM +0100, Jens Axboe wrote:
+> > > On Tue, Jan 29 2008, Jens Axboe wrote:
+> > > > On Tue, Jan 29 2008, Oliver Neukum wrote:
+> > > > > Am Dienstag, 29. Januar 2008 15:11:08 schrieb Jens Axboe:
+> > > > > > On Tue, Jan 29 2008, Boaz Harrosh wrote:
+> > > > > > > On Tue, Jan 29 2008 at 15:54 +0200, Jens Axboe <jens.axboe@or=
+acle.com> wrote:
+> > > > > > > > On Tue, Jan 29 2008, Boaz Harrosh wrote:
+> > > > > > > >> Greg KH wrote:
+> > > > > =20
+> > > > > > > > No difference, still just a lot of resets.
+> > > > > > > >=20
+> > > > > > > Where you able to figure out which usb storage transport is u=
+sed?
+> > > > > > >=20
+> > > > > > > in drivers/usb/storage/usb.c you have get_protocol() and get_=
+transport()
+> > > > > > > functions. I'm not sure if these get stored in sysfs perhaps.=
+ This will
+> > > > > > > pinpoint better where to look. Let me research a bit.=20
+> > > > > >=20
+> > > > > > Did the quick'n easy and dumped it. Protocol is 'Transparent SC=
+SI' and
+> > > > > > transport is 'Bulk'
+> > > > >=20
+> > > > > You can recompile your kernel with CONFIG_USB_DEBUG and CONFIG_ST=
+ORAGE_DEBUG
+> > > > > That should tell the reason for the resets.
+> > > >=20
+> > > > Sure, I'll do that. Will post the results tonight.
+> > >=20
+> > > OK, fresh boot with CONFIG_USB_DEBUG and CONFIG_STORAGE_DEBUG. Plugged
+> > > in the device, waited 10 seconds or so and pulled it out. These are t=
+he
+> > > messages.
+> > >=20
+> > > It all looks good until the MODE_SENSE command, where it only transfe=
+rs
+> > > 4 of 192 bytes.
+> >=20
+> > No, that's not the problem.  This is the problem:
+>=20
+> It's where the problem starts, otherwise there would not be a need to
+> sense :-)
 
-Hence we have RAID and SATA hotplug.
+MODE_SENSE has nothing to do with it.  A short MODE_SENSE response is
+perfectly valid, and the log shows it was handled correctly and subsequent
+commands worked just fine.  It's not until the TUR fails that we get the
+problem.
 
-Alan
+Matt
+
+--=20
+Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
+net=20
+Maintainer, Linux USB Mass Storage Driver
+
+P:  Nine more messages in admin.policy.
+M: I know, I'm typing as fast as I can!
+					-- Pitr and Mike
+User Friendly, 11/27/97
+
+--NJSRbAqOy4NeGDns
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHn4BpHL9iwnUZqnkRAjFhAJ0Zpe7ze1JAMgU+S5cNm3PM0eDCbACfWm4d
+MV0Ppy6gr3ZNwXlv53gIkOg=
+=CX+K
+-----END PGP SIGNATURE-----
+
+--NJSRbAqOy4NeGDns--
