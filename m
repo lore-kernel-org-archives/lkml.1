@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756281AbYA2MM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757963AbYA2MNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756281AbYA2MM0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 07:12:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYA2MMQ
+	id S1757963AbYA2MNp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 07:13:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYA2MNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 07:12:16 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43998 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750727AbYA2MMP (ORCPT
+	Tue, 29 Jan 2008 07:13:36 -0500
+Received: from metis.extern.pengutronix.de ([83.236.181.26]:44359 "EHLO
+	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751273AbYA2MNf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 07:12:15 -0500
-Date: Tue, 29 Jan 2008 06:12:02 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@linux.vnet.ibm.com,
-       dhaval@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
-       ebiederm@xmission.com, akpm@linux-foundation.org, sgrubb@redhat.com,
-       rostedt@goodmis.org, ghaskins@novell.com, dmitry.adamushko@gmail.com,
-       tong.n.li@intel.com, tglx@linutronix.de, menage@google.com,
-       rientjes@google.com
-Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
-Message-Id: <20080129061202.95b66041.pj@sgi.com>
-In-Reply-To: <1201607401.28547.124.camel@lappy>
-References: <1201600428.28547.87.camel@lappy>
-	<1201604243.28547.101.camel@lappy>
-	<20080129053005.bc7a11d7.pj@sgi.com>
-	<1201607401.28547.124.camel@lappy>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Jan 2008 07:13:35 -0500
+Message-ID: <479F186A.4020004@pengutronix.de>
+Date: Tue, 29 Jan 2008 13:13:30 +0100
+From: Luotao Fu <l.fu@pengutronix.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071009)
+MIME-Version: 1.0
+To: Wolfgang Grandegger <wg@grandegger.com>
+CC: Luotao Fu <l.fu@pengutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24-rc8-rt1: Strange latencies on mpc5200 powerpc - RCU issue?
+References: <1200544050.318.18.camel@localhost.localdomain> <478F2A46.5070506@grandegger.com> <20080123145340.GE6200@pengutronix.de> <47976D06.1010900@grandegger.com> <479DF0A1.3000906@pengutronix.de> <479DF711.5090406@grandegger.com>
+In-Reply-To: <479DF711.5090406@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 10.1.0.69
+X-SA-Exim-Mail-From: l.fu@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter, replying to Paul:
-> >  3) you turn off sched_load_balance in that realtime cpuset.
-> 
-> Ah, I don't think 3 is needed. Quite to the contrary, there is quite a
-> large body of research work covering the scheduling of (hard and soft)
-> realtime tasks on multiple cpus.
+Hi,
 
-Well, the way it's coded now, the user space code needs to do (3),
-because that's the only way they get the system to have anything
-other than one big fat sched domain covering the all the CPUs in
-the system.
+Wolfgang Grandegger wrote:
+..........
+ > Do you still get high latencies with:
+ >
+ >   CONFIG_PREEMPT_RCU_BOOST=y
+ >   CONFIG_RCU_TRACE=y
+ >   CONFIG_NO_HZ is not set
+ >
+ > With this setting I have not yet realized latencies > 150us. Could you
+ > please give it a try? If I change one of the parameters above, latency
+ > increases in short time.
 
-Actually ... I need a picture of a bunny with a pancake hat here,
-as I have no idea what you just said ;).
+I played through some combination of the RCU options and can back your 
+observation this time: With the rcu Tracer or the priority boost turned 
+off I also could measure reliably extraordinory high latencies. If they 
+are both turned on, no high latencies could be measured. Turning on the 
+dynamic ticker however doesn't seem to cause high latencies during my 
+test runs. Seemed like an rcu issue here.
 
+Further such results only appear if the target board is booted with 
+nfsrootfs. (As I already have mentioned several times before), which 
+leads my suspection to rcu usage in nfs implementation. In this case 
+this problem might even be platformindependent. I'd have to do some 
+tests on one of our arm boards later to test this. Since there're no 
+reports like this for other architecture as powerpc till now, I doubt 
+quite if this is verifiable.
+
+regards
+Luotao Fu
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+    Dipl.-Ing. Luotao Fu | Phone: +49-5121-206917-3
+Pengutronix - Linux Solutions for Science and Industry
+Entwicklungszentrum Nord     http://www.pengutronix.de
+
