@@ -1,84 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbYA2Ved@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757791AbYA2Vfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757272AbYA2Ved (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 16:34:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbYA2VeZ
+	id S1757791AbYA2Vfk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 16:35:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYA2Vfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 16:34:25 -0500
-Received: from lixom.net ([66.141.50.11]:55276 "EHLO mail.lixom.net"
+	Tue, 29 Jan 2008 16:35:31 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:29674 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751257AbYA2VeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 16:34:24 -0500
-Date: Tue, 29 Jan 2008 15:46:53 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Luck, Tony" <tony.luck@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-Subject: Re: system hang on latest git
-Message-ID: <20080129214653.GA27978@lixom.net>
-References: <1FE6DD409037234FAB833C420AA843EC75736A@orsmsx424.amr.corp.intel.com> <20080129201136.GX15220@kernel.dk> <20080129201648.GA15220@kernel.dk>
+	id S1750811AbYA2Vfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 16:35:31 -0500
+Date: Tue, 29 Jan 2008 22:35:26 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mike.miller@hp.com, k-ueda@ct.jp.nec.com, j-nomura@ce.jp.nec.com
+Subject: Re: kernel BUG at drivers/block/cciss.c:1260! (with recent  linux-2.6  tree)
+Message-ID: <20080129213526.GE15220@kernel.dk>
+References: <20080129182217.GK12400@plap3.qlogic.org> <20080129182833.GG15220@kernel.dk> <20080129183705.GL12400@plap3.qlogic.org> <20080129184442.GK15220@kernel.dk> <20080129184929.GN12400@plap3.qlogic.org> <20080129185358.GM15220@kernel.dk> <20080129210837.GA21785@plap3.qlogic.org> <20080129211634.GB15220@kernel.dk> <20080129212435.GC15220@kernel.dk> <1FE6DD409037234FAB833C420AA843EC757564@orsmsx424.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080129201648.GA15220@kernel.dk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC757564@orsmsx424.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 09:16:48PM +0100, Jens Axboe wrote:
+On Tue, Jan 29 2008, Luck, Tony wrote:
+> >> Ah crap, I see the problem, nioc is most often equal to rioc. Dang.
+> >> Please try this bandaid, will push a real fix now.
+> 
+> Patches arriving faster than I can test :-) ... The bandaid appears to
+> be working (no hang yet).
 
-> Actually, can you try this? It has a known race but nothing to worry
-> about, and it removes ioc->lock from irq context.
+OK good!
 
-I just tried this myself, since I saw hangs within seconds of running
-'aiostress' from autotest on this morning's kernel as well (g0ba6c33).
+> > This is way cleaner.
+> 
+> Will try this next.
 
-It didn't help. My config is 2 cores (powerpc), built with
-arch/powerpc/configs/pasemi_defconfig. Hardware is sata disk on marvell
-7042.
+Should work even better since it avoids a lock and copy, but please do
+test if you have the time.
 
-Stacktraces:
+-- 
+Jens Axboe
 
-0:mon> t           
-[link register   ] c000000000221984 .as_merged_requests+0x164/0x1e0
-[c00000007e8ff750] c00000007e8ff800 (unreliable)
-[c00000007e8ff800] c000000000212f20 .elv_merge_requests+0x50/0xb0
-[c00000007e8ff890] c000000000218c98 .attempt_merge+0x318/0x3d0
-[c00000007e8ff940] c00000000021af98 .__make_request+0x2f8/0x720
-[c00000007e8ffa20] c000000000216e6c .generic_make_request+0x22c/0x2f0
-[c00000007e8ffad0] c000000000216fd8 .submit_bio+0xa8/0x150
-[c00000007e8ffb90] c0000000000efa7c .submit_bh+0x15c/0x1e0
-[c00000007e8ffc20] c000000000145d5c .journal_do_submit_data+0x6c/0xb0
-[c00000007e8ffcc0] c000000000147460 .journal_commit_transaction+0x1640/0x16e0
-[c00000007e8ffe10] c00000000014c238 .kjournald+0x108/0x2f0
-[c00000007e8fff00] c000000000067ca8 .kthread+0xc8/0xe0
-[c00000007e8fff90] c0000000000237bc .kernel_thread+0x4c/0x68
-0:mon> c1
-1:mon> t
-[link register   ] c00000000033c20c .scsi_device_unbusy+0x8c/0x120
-[c00000007e10b6f0] c00000000033c1a8 .scsi_device_unbusy+0x28/0x120 (unreliable)
-[c00000007e10b780] c000000000333078 .scsi_finish_command+0x38/0x130
-[c00000007e10b810] c00000000033c478 .scsi_softirq_done+0xd8/0x1a0
-[c00000007e10b8b0] c00000000021a780 .blk_done_softirq+0xb0/0xe0
-[c00000007e10b940] c000000000051e58 .__do_softirq+0xe8/0x1d0
-[c00000007e10ba00] c00000000000ac64 .do_softirq+0x64/0xa0
-[c00000007e10ba80] c000000000051b84 .irq_exit+0xc4/0xd0
-[c00000007e10bb00] c00000000000b3c0 .do_IRQ+0xe0/0x120
-[c00000007e10bb80] c00000000000405c hardware_interrupt_entry+0x18/0x3c
---- Exception: 501 (Hardware Interrupt) at c000000000010564 .cpu_idle+0xb4/0x160
-[c00000007e10be70] c000000000010524 .cpu_idle+0x74/0x160 (unreliable)
-[c00000007e10bf00] c000000000540e6c
-[c00000007e10bf90] c000000000007364 .start_secondary_prolog+0xc/0x10
-
-
-scsi_device_busy is sitting on:
-
-        spin_lock(sdev->request_queue->queue_lock);
-
-and as_merged_requests on the second lock at:
-
-	double_spin_lock(&rioc->lock, &nioc->lock, rioc < nioc);
-
-
--Olof
