@@ -1,97 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765023AbYA2Qen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764211AbYA2Qg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765023AbYA2Qen (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:34:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYA2Qe2
+	id S1764211AbYA2Qg4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:36:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbYA2Qgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:34:28 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:51435 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751765AbYA2Qe0 (ORCPT
+	Tue, 29 Jan 2008 11:36:45 -0500
+Received: from vms046pub.verizon.net ([206.46.252.46]:43714 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987AbYA2Qgo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:34:26 -0500
-Subject: Re: [BUG] 2.6.24-git usb reset problems
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, Greg KH <greg@kroah.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.44L0.0801291032210.4229-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0801291032210.4229-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 11:34:15 -0500
-Message-Id: <1201624455.3069.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jan 2008 11:36:44 -0500
+Date: Tue, 29 Jan 2008 11:36:42 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Problem with ata layer in 2.6.24
+In-reply-to: <479F507A.1030203@rtr.ca>
+To: Mark Lord <liml@rtr.ca>
+Cc: Florian Attenberger <valdyn@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Message-id: <200801291136.42612.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200801272122.21823.gene.heskett@gmail.com>
+ <200801291004.12565.gene.heskett@gmail.com> <479F507A.1030203@rtr.ca>
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-01-29 at 10:36 -0500, Alan Stern wrote:
-> On Tue, 29 Jan 2008, Boaz Harrosh wrote:
-> 
-> > --- a/drivers/usb/storage/transport.c
-> > +++ b/drivers/usb/storage/transport.c
-> > @@ -462,18 +462,24 @@ static int usb_stor_bulk_transfer_sglist(struct us_data *us, unsigned int pipe,
-> >   * Common used function. Transfer a complete command
-> >   * via usb_stor_bulk_transfer_sglist() above. Set cmnd resid
-> >   */
-> > -int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
-> > -		      struct scsi_cmnd* srb)
-> > +int usb_stor_bulk_srb_length(struct us_data* us, unsigned int pipe,
-> > +		      struct scsi_cmnd* srb, unsigned length)
-> >  {
-> >  	unsigned int partial;
-> >  	int result = usb_stor_bulk_transfer_sglist(us, pipe, scsi_sglist(srb),
-> > -				      scsi_sg_count(srb), scsi_bufflen(srb),
-> > +				      scsi_sg_count(srb), length,
-> >  				      &partial);
-> >  
-> >  	scsi_set_resid(srb, scsi_bufflen(srb) - partial);
-> >  	return result;
-> >  }
-> >  
-> > +int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
-> > +		struct scsi_cmnd* srb)
-> > +{
-> > +	return usb_stor_bulk_srb_length(us, pipe, srb, scsi_bufflen(srb));
-> > +}
-> > +
-> 
-> I don't like this patch very much.  Why add another layer of 
-> indirection when the two subroutines do hardly any work?  Leave 
-> usb_stor_bulk_srb() the way it was, and add usb_stor_bulk_srb_length() 
-> as a separate routine that simply calls usb_stor_bulk_transfer_sglist() 
-> and scsi_set_resid().
-> 
-> BTW, the standard coding style calls for a blank line after the list of 
-> local variables at the start of a function or block.
+On Tuesday 29 January 2008, Mark Lord wrote:
+>Gene Heskett wrote:
+>>..
+>> Does anyone know why my dvdwriter isn't being assigned a '/dev/sdx' number
+>> when dmesg says its found ok at ata2.00?  I've turned on an option that
+>> says something about using the bios for device access this build, but I'll
+>> be surprised if that's it. :)
+>
+>..
+>
+>It should show up as /dev/scd0 or something very similar.
 
-There's another bug in the transport.c conversion in that the residuals
-are updated with bogus data in several error cases, since
-usb_stor_bulk_transfer_sglist() only sets the actual length if the urb
-is actually sent.
+Tisn't.  Darnit.
 
-I'm not sure if this is is the solution to the problem at hand, but it
-definitely fixes another bug in the code.
-
-James
-
-diff --git a/drivers/usb/storage/transport.c b/drivers/usb/storage/transport.c
-index d9f4912..bab0858 100644
---- a/drivers/usb/storage/transport.c
-+++ b/drivers/usb/storage/transport.c
-@@ -465,7 +465,7 @@ static int usb_stor_bulk_transfer_sglist(struct us_data *us, unsigned int pipe,
- int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
- 		      struct scsi_cmnd* srb)
- {
--	unsigned int partial;
-+	unsigned int partial = scsi_get_resid(srb);
- 	int result = usb_stor_bulk_transfer_sglist(us, pipe, scsi_sglist(srb),
- 				      scsi_sg_count(srb), scsi_bufflen(srb),
- 				      &partial);
-
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+clock speed
