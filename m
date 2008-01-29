@@ -1,51 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbYA2Xn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760103AbYA2XoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758699AbYA2Xn5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 18:43:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYA2Xnt
+	id S1760103AbYA2XoV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 18:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758893AbYA2Xn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 18:43:49 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:49394 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752148AbYA2Xns (ORCPT
+	Tue, 29 Jan 2008 18:43:58 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:55836
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757923AbYA2Xn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 18:43:48 -0500
-Date: Tue, 29 Jan 2008 16:43:45 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Greg KH <greg@kroah.com>
-Cc: Tony Camuso <tcamuso@redhat.com>,
-       Grant Grundler <grundler@parisc-linux.org>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
+	Tue, 29 Jan 2008 18:43:56 -0500
+Date: Wed, 30 Jan 2008 00:43:53 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: PCI x86: always use conf1 to access config space below 256 bytes
-Message-ID: <20080129234345.GB14088@parisc-linux.org>
-References: <20080115174643.GB28238@kroah.com> <20080115175641.GE18741@parisc-linux.org> <20080119165809.GB11553@colo.lackof.org> <479E1FA6.1030708@redhat.com> <20080128204431.GA15227@kroah.com> <20080128223141.GA31101@parisc-linux.org> <20080128225334.GD4720@kroah.com> <20080129025615.GC20198@parisc-linux.org> <20080129025743.GD20198@parisc-linux.org> <20080129132108.GD10761@kroah.com>
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
+	ranges
+Message-ID: <20080129234353.GZ7233@v2.random>
+References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com> <20080129162004.GL7233@v2.random> <20080129182831.GS7233@v2.random> <Pine.LNX.4.64.0801291219030.25629@schroedinger.engr.sgi.com> <20080129213604.GW7233@v2.random> <Pine.LNX.4.64.0801291343530.26824@schroedinger.engr.sgi.com> <20080129223503.GY7233@v2.random> <Pine.LNX.4.64.0801291440170.27327@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080129132108.GD10761@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0801291440170.27327@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 05:21:08AM -0800, Greg KH wrote:
-> Hm, who wrote this, Ivan?
+On Tue, Jan 29, 2008 at 02:55:56PM -0800, Christoph Lameter wrote:
+> On Tue, 29 Jan 2008, Andrea Arcangeli wrote:
 > 
-> If so, Matthew, please do not strip off authorship of patches, and place
-> a "From:" line on the first line above the description, so it is not
-> lost.
+> > But now I think there may be an issue with a third thread that may
+> > show unsafe the removal of invalidate_page from ptep_clear_flush.
+> > 
+> > A third thread writing to a page through the linux-pte and the guest
+> > VM writing to the same page through the sptes, will be writing on the
+> > same physical page concurrently and using an userspace spinlock w/o
+> > ever entering the kernel. With your patch that invalidate_range after
+> > dropping the PT lock, the third thread may start writing on the new
+> > page, when the guest is still writing to the old page through the
+> > sptes. While this couldn't happen with my patch.
+> 
+> A user space spinlock plays into this??? That is irrelevant to the kernel. 
+> And we are discussing "your" placement of the invalidate_range not mine.
 
-Sorry, I didn't know that was the convention.  I thought the first
-Signed-off-by: was assumed to be the author.
+With "my" code, invalidate_range wasn't placed there at all, my
+modification to ptep_clear_flush already covered it in a automatic
+way, grep from the word fremap in my latest patch you won't find it,
+like you won't find any change to do_wp_page. Not sure why you keep
+thinking I added those invalidate_range when infact you did.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+The user space spinlock plays also in declaring rdtscp unworkable to
+provide a monotone vgettimeofday w/o kernel locking.
+
+My patch by calling invalidate_page inside ptep_clear_flush guaranteed
+that both the thread writing through sptes and the thread writing
+through linux ptes, couldn't possibly simultaneously write to two
+different physical pages.
+
+Your patch allows the thread writing through linux-pte to write to a
+new populated page while the old thread writing through sptes still
+writes to the old page. Is that safe? I don't know for sure. The fact
+the physical page backing the virtual address could change back and
+forth, perhaps invalidates the theory that somebody could possibly do
+some useful locking out of it relaying on all threads seeing the same
+physical page at the same time.
+
+Anyway as long as invalidate_page/range happens after ptep_clear_flush
+things are mostly ok.
+
+> This is the scenario that I described before. You just need two threads.
+> One thread is in do_wp_page and the other is writing through the spte. 
+> We are in do_wp_page. Meaning the page is not writable. The writer will 
+
+Actually above I was describing remap_file_pages not do_wp_page.
+
+> have to take fault which will properly serialize access. It a bug if the 
+> spte would allow write.
+
+In that scenario because write is forbidden (unlike remap_file_pages)
+like you said things should be ok. The spte reader will eventually see
+the updates happening in the new page, as long as the spte invalidate
+happens after ptep_clear_flush (i.e. with my incremental fix applied
+to your code, or with my latest patch).
