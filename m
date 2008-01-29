@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbYA2ARQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYA2ARc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758426AbYA2ARQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 19:17:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYA2ARB
+	id S1754839AbYA2ARc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 19:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbYA2ARI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 19:17:01 -0500
-Received: from numenor.qualcomm.com ([129.46.51.58]:54772 "EHLO
-	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752112AbYA2ARA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 19:17:00 -0500
-Message-ID: <479E6F71.4040906@qualcomm.com>
-Date: Mon, 28 Jan 2008 16:12:33 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 28 Jan 2008 19:17:08 -0500
+Received: from mga02.intel.com ([134.134.136.20]:4381 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753966AbYA2ARH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 19:17:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,264,1199692800"; 
+   d="scan'208";a="331184519"
+From: Jason Gaston <jason.d.gaston@intel.com>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, khali@linux-fr.org,
+       i2c@lm-sensors.nu, jason.d.gaston@intel.com
+Subject: [PATCH 2.6.24] pci_ids: patch for Intel ICH10 DeviceID's
+Date: Mon, 28 Jan 2008 17:20:36 -0800
+User-Agent: KMail/1.9.1
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, Paul Jackson <pj@sgi.com>
-Subject: Re: [CPUISOL] CPU isolation extensions
-References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>	 <1201511305.6149.30.camel@lappy>  <479E1FD4.5040606@qualcomm.com> <1201563706.2826.34.camel@imap.mvista.com>
-In-Reply-To: <1201563706.2826.34.camel@imap.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200801281720.37350.jason.d.gaston@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-> On Mon, 2008-01-28 at 10:32 -0800, Max Krasnyanskiy wrote:
->> Just this patches. RT patches cannot achieve what I needed. Even RTAI/Xenomai can't do that.
->> For example I have separate tasks with hard deadlines that must be enforced in 50usec kind 
->> of range and basically no idle time whatsoever. Just to give more background it's a wireless
->> basestation with SW MAC/Scheduler. Another requirement is for the SW to know precise timing
->> because SW. For example there is no way we can do predictable 1-2 usec sleeps. 
->> So I wrote a user-space engine that does all this, it requires full control of the CPU ie minimal
->> overhead from the kernel, just IPIs for memory management and that's basically it. When my legal 
->> department lets me I'll do a presentation on this stuff at Linux RT conference or something. 
-> 
-> What kind of hardware are you doing this on? 
-All kinds of HW. I mentioned it in the intro email.
-Here are the highlights
-	HP XW9300 (Dual Opteron NUMA box) and XW9400 (Dual Core Opteron)
-	HP DL145 G2 (Dual Opteron) and G3 (Dual Core Opteron)
-	Dell Precision workstations (Core2 Duo and Quad) 
-	Various Core2 Duo based systems uTCA boards
-		Mercury AXA110 (1.5Ghz)
-		Concurrent Tech AM110 (2.1Ghz)
+This patch adds the Intel ICH10 LPC and SMBus Controller DeviceID's.
 
-This scheme should work on anything that lets you disable SMI on the isolated core(s).
+Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
 
-> Also I should note there is HRT (High resolution timers) which provided microsecond level
-> granularity ..
-Not accurate enough and way too much overhead for what I need. I know at this point it probably 
-sounds like I'm talking BS :). I wish I've released the engine and examples by now. Anyway let 
-me just say that SW MAC has crazy tight deadlines with lots of small tasks. Using nanosleep() & 
-gettimeofday() is simply not practical. So it's all TSC based with clever time sync logic between
-HW and SW.
-
-Max
+--- linux-2.6.24/include/linux/pci_ids.h.orig	2008-01-24 14:58:37.000000000 -0800
++++ linux-2.6.24/include/linux/pci_ids.h	2008-01-28 15:05:41.000000000 -0800
+@@ -2339,6 +2339,12 @@
+ #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
+ #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
+ #define PCI_DEVICE_ID_INTEL_IOAT_CNB	0x360b
++#define PCI_DEVICE_ID_INTEL_ICH10_0	0x3a14
++#define PCI_DEVICE_ID_INTEL_ICH10_1	0x3a16
++#define PCI_DEVICE_ID_INTEL_ICH10_2	0x3a18
++#define PCI_DEVICE_ID_INTEL_ICH10_3	0x3a1a
++#define PCI_DEVICE_ID_INTEL_ICH10_4	0x3a30
++#define PCI_DEVICE_ID_INTEL_ICH10_5	0x3a60
+ #define PCI_DEVICE_ID_INTEL_IOAT_SNB	0x402f
+ #define PCI_DEVICE_ID_INTEL_IOAT_SCNB	0x65ff
+ #define PCI_DEVICE_ID_INTEL_TOLAPAI_0	0x5031
