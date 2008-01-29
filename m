@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbYA2Hjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbYA2Hpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757331AbYA2Hjk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 02:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYA2Hjd
+	id S1756176AbYA2Hpp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 02:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbYA2Hph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 02:39:33 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:44090 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752373AbYA2Hjc (ORCPT
+	Tue, 29 Jan 2008 02:45:37 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:62987 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753403AbYA2Hpg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 02:39:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LcSkQONNDVvduhXB/4Y5V3eZ8MpwGKCZo2pqM1k9VcZnCCtAc4if51RO8HnxJihLxuI3p4oMKbLUHSR1CGj1YPqIS/yCmmBWLuaAE2nygqd0wkpAhhEoab+2HXlzt6bSiDIYEFTsqzbcGYs/0ZM1O/LSY+MNunQZKnHiuqWGGX0=
-Message-ID: <86802c440801282339q77a585f5h82df44295ddfb6fd@mail.gmail.com>
-Date: Mon, 28 Jan 2008 23:39:30 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] x86: add PCI IDs to k8topology_64.c II
-Cc: "Joachim Deguara" <joachim.deguara@amd.com>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       "Dean Roe" <roe@cray.com>
-In-Reply-To: <20080129080927.GA1414@one.firstfloor.org>
+	Tue, 29 Jan 2008 02:45:36 -0500
+Date: Mon, 28 Jan 2008 23:44:02 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Mark Fasheh <mark.fasheh@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [git pull] Fix recent Ocfs2 breakage
+Message-ID: <20080129074402.GA27097@ca-server1.us.oracle.com>
+Mail-Followup-To: Greg KH <gregkh@suse.de>,
+	Mark Fasheh <mark.fasheh@oracle.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <20080129033307.GE23506@ca-server1.us.oracle.com> <20080129050804.GA2285@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200801281211.28214.joachim.deguara@amd.com>
-	 <p73y7a970nd.fsf@bingen.suse.de>
-	 <200801282012.47190.yinghai.lu@sun.com>
-	 <20080129045659.GA31847@one.firstfloor.org>
-	 <20080129080927.GA1414@one.firstfloor.org>
+In-Reply-To: <20080129050804.GA2285@suse.de>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 29, 2008 12:09 AM, Andi Kleen <andi@firstfloor.org> wrote:
-> > SRAT is essentially just a two dimensional table with node distances.
->
-> Sorry, that was actually SLIT. SRAT is not two dimensional, but also
-> relatively simple. SLIT you don't really need to implement.
->
+On Mon, Jan 28, 2008 at 09:08:04PM -0800, Greg KH wrote:
+> And please please please please document stuff like this, and all of the
+> different files you have in this subdirectory in Documentation/ABI/ so
 
-need to add some CONFIG option to parse SRAT, MADT etc only. but don't
-pull DSDT related...
+	Huh, I didn't know Documentation/ABI existed.  That would
+certainly help in the future.
 
-YH
+> those of us who are trying to figure out the code (and there's still
+> parts of the kobject usage I'm pretty sure is not correct) can have a
+
+	ocfs2 kobject usage, or other folks'?  If there's anything in
+the ocfs2 usage that you are unsure of, feel free to ask!
+
+Joel
+
+-- 
+
+"Also, all of life's big problems include the words 'indictment' or
+	'inoperable.' Everything else is small stuff."
+	- Alton Brown
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
