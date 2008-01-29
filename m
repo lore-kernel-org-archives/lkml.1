@@ -1,71 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934047AbYA2TOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934088AbYA2TP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934047AbYA2TOl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 14:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765693AbYA2TO1
+	id S934088AbYA2TP3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 14:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYA2TPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 14:14:27 -0500
-Received: from iabervon.org ([66.92.72.58]:35051 "EHLO iabervon.org"
+	Tue, 29 Jan 2008 14:15:11 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:20874 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933761AbYA2TO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 14:14:26 -0500
-Date: Tue, 29 Jan 2008 14:14:13 -0500 (EST)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Richard Heck <rgheck@bobjweil.com>, Gene Heskett <gene.heskett@gmail.com>,
-       Zan Lynx <zlynx@acm.org>, Calvin Walton <calvin.walton@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-Subject: Re: Problem with ata layer in 2.6.24
-In-Reply-To: <20080129184613.16846ae5@core>
-Message-ID: <alpine.LNX.1.00.0801291354240.13593@iabervon.org>
-References: <200801272122.21823.gene.heskett@gmail.com> <1201539043.31293.7.camel@zem> <1201540830.6526.19.camel@localhost> <200801281230.32910.gene.heskett@gmail.com> <alpine.LNX.1.00.0801281248190.13593@iabervon.org> <479E1D9E.3000900@bobjweil.com>
- <20080129121201.2f727f5f@core> <alpine.LNX.1.00.0801291202550.13593@iabervon.org> <20080129184613.16846ae5@core>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	id S1751938AbYA2TPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 14:15:08 -0500
+Date: Tue, 29 Jan 2008 20:15:04 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Oliver Neukum <oliver@neukum.org>, Boaz Harrosh <bharrosh@panasas.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+Message-ID: <20080129191504.GO15220@kernel.dk>
+References: <20080128204935.GI15220@kernel.dk> <479F32E9.10609@panasas.com> <20080129141108.GV15220@kernel.dk> <200801291531.39825.oliver@neukum.org> <20080129143109.GW15220@kernel.dk> <20080129183910.GI15220@kernel.dk> <20080129191024.GO14375@one-eyed-alien.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080129191024.GO14375@one-eyed-alien.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jan 2008, Alan Cox wrote:
-
-> > The SCSI error reporting really ought to include a simple interpretation 
-> > of the error for end users ("The drive doesn't support this command" "A 
-> > sector's data got lost" "The drive timed out" "The drive failed" "The 
-> > drive is entirely gone"). There's too much similarity between the message 
-> > you get when you try a SMART test that doesn't apply to the drive and what 
-> > you get when the drive is broken.
+On Tue, Jan 29 2008, Matthew Dharm wrote:
+> On Tue, Jan 29, 2008 at 07:39:11PM +0100, Jens Axboe wrote:
+> > On Tue, Jan 29 2008, Jens Axboe wrote:
+> > > On Tue, Jan 29 2008, Oliver Neukum wrote:
+> > > > Am Dienstag, 29. Januar 2008 15:11:08 schrieb Jens Axboe:
+> > > > > On Tue, Jan 29 2008, Boaz Harrosh wrote:
+> > > > > > On Tue, Jan 29 2008 at 15:54 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > > > > On Tue, Jan 29 2008, Boaz Harrosh wrote:
+> > > > > > >> Greg KH wrote:
+> > > >  
+> > > > > > > No difference, still just a lot of resets.
+> > > > > > > 
+> > > > > > Where you able to figure out which usb storage transport is used?
+> > > > > > 
+> > > > > > in drivers/usb/storage/usb.c you have get_protocol() and get_transport()
+> > > > > > functions. I'm not sure if these get stored in sysfs perhaps. This will
+> > > > > > pinpoint better where to look. Let me research a bit. 
+> > > > > 
+> > > > > Did the quick'n easy and dumped it. Protocol is 'Transparent SCSI' and
+> > > > > transport is 'Bulk'
+> > > > 
+> > > > You can recompile your kernel with CONFIG_USB_DEBUG and CONFIG_STORAGE_DEBUG
+> > > > That should tell the reason for the resets.
+> > > 
+> > > Sure, I'll do that. Will post the results tonight.
+> > 
+> > OK, fresh boot with CONFIG_USB_DEBUG and CONFIG_STORAGE_DEBUG. Plugged
+> > in the device, waited 10 seconds or so and pulled it out. These are the
+> > messages.
+> > 
+> > It all looks good until the MODE_SENSE command, where it only transfers
+> > 4 of 192 bytes.
 > 
-> That would be the SCSI verbose messages option. I think the Eric
-> Youngdale consortium added it about Linux 1.2. Nowdays its always built
-> that way.
+> No, that's not the problem.  This is the problem:
 
-I've seen a lot of verbosity out of SCSI messages, but I haven't seen a 
-straightforward interpretation of the problem in there. It's all 
-information useful for debugging, not information useful for system 
-administration.
+It's where the problem starts, otherwise there would not be a need to
+sense :-)
 
-> > And it's possible that the error recovery is suboptimal in some cases. It 
-> > seems to like resetting drives too much; perhaps if it keeps seeing the 
-> > same problem and resetting the drive, it should decide that the drive's 
-> > error reporting is just bad and just ignore that error like the old IDE 
-> > did (but, in this case, after saying what it's doing).
+> > usb-storage: *** thread awakened.
+> > usb-storage: Command TEST_UNIT_READY (6 bytes)
+> > usb-storage:  00 00 00 00 00 00
+> > usb-storage: Bulk Command S 0x43425355 T 0xd L 0 F 0 Trg 0 LUN 1 CL 6
+> > usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
+> > usb-storage: Status code 0; transferred 31/31
+> > usb-storage: -- transfer complete
+> > usb-storage: Bulk command transfer result=0
+> > usb-storage: Attempting to get CSW...
+> > usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
+> > usb-storage: Status code 0; transferred 13/13
+> > usb-storage: -- transfer complete
+> > usb-storage: Bulk status result = 0
+> > usb-storage: Bulk Status S 0x53425355 T 0xd R 0 Stat 0x1
+> > usb-storage: -- transport indicates command failure
+> > usb-storage: Issuing auto-REQUEST_SENSE
+> > usb-storage: Bulk Command S 0x43425355 T 0xe L 18 F 128 Trg 0 LUN 1 CL 6
+> > usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
+> > usb-storage: Status code 0; transferred 31/31
+> > usb-storage: -- transfer complete
+> > usb-storage: Bulk command transfer result=0
+> > usb-storage: usb_stor_bulk_transfer_sglist: xfer 18 bytes, 1 entries
+> > usb-storage: usb_sg_init returned -22
+> > usb-storage: Bulk data transfer result 0x4
+> > usb-storage: -- auto-sense failure
+> > usb-storage: storage_pre_reset
+> > ehci_hcd 0000:00:1d.7: port 1 high speed
+> > ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001005 POWER sig=se0 PE CONNECT
+> > usb 5-1: reset high speed USB device using ehci_hcd and address 2
+> > ehci_hcd 0000:00:1d.7: port 1 high speed
+> > ehci_hcd 0000:00:1d.7: GetStatus port 1 status 001005 POWER sig=se0 PE CONNECT
+> > usb-storage: storage_post_reset
+> > usb-storage: usb_reset_composite_device returns 0
+> > usb-storage: scsi cmd done, result=0x70000
+> > usb-storage: *** thread sleeping.
 > 
-> Nothing like casually praying the users data hasn't gone for a walk is
-> there. If we don't act on them the users don't report them until
-> something really bad occurs so that isn't an option.
+> For some reason, usb_sg_init is boned during auto-sense.
 
-On the other hand, bringing the system down because a device is 
-misbehaving is a poor idea. I've personally recovered most of the data off 
-of a dying drive because the system was willing to let me keep using the 
-drive anyway; IIRC, the drive didn't work at all after a reboot, so I 
-would have lost all the data instead of only a little had the system 
-insisted on a perfectly functioning drive in order to use it at all.
+My guess would be that sg == NULL, hence the -EINVAL.
 
-There ought to be some middle ground between doing nothing until the 
-computer really breaks and breaking the computer before then, but that's 
-an issue not specific to libata.
+-- 
+Jens Axboe
 
-	-Daniel
-*This .sig left intentionally blank*
