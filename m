@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933254AbYA2Nvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933313AbYA2Nwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933254AbYA2Nvk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 08:51:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764231AbYA2NuJ
+	id S933313AbYA2Nwo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 08:52:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932825AbYA2Nwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 08:50:09 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:55039 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932507AbYA2N3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 08:29:15 -0500
-Date: Tue, 29 Jan 2008 07:29:13 -0600
-To: linux-kernel@vger.kernel.org
-Cc: pj@sgi.com, clameter@sgi.com, rientjes@google.com,
-       linux-kernel@vger.kernel.org, Lee.Schermerhorn@hp.com, akpm@osdl.org
-Subject: [PATCH 1/4] hotplug cpu move tasks in empty cpusets to parent
- node_online_map fix
-User-Agent: nail 11.25 7/29/05
+	Tue, 29 Jan 2008 08:52:32 -0500
+Received: from sacred.ru ([62.205.161.221]:51936 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932418AbYA2Nwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 08:52:31 -0500
+Message-ID: <479F2F99.5080509@openvz.org>
+Date: Tue, 29 Jan 2008 16:52:25 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Paul Menage <menage@google.com>
+Subject: [PATCH 5/12] Handle pid namespaces in cgroups code
+References: <479F2C5C.1050303@openvz.org>
+In-Reply-To: <479F2C5C.1050303@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080129132913.2D5A633B943@attica.americas.sgi.com>
-From: cpw@sgi.com (Cliff Wickman)
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 29 Jan 2008 16:52:04 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+There's one place that works with task pids - its the "tasks" file
+in cgroups. The read/write handlers assume, that the pid values 
+go to/come from the user space and thus it is a virtual pid, i.e. 
+the pid as it is seen from inside a namespace.
 
-As of the October 2007 kernel/cpuset.c patch "Memoryless nodes:
-Use N_HIGH_MEMORY for cpusets", cpuset nodes are relative to
-the nodes with (HIGH) memory, not relative to all nodes in
-node_online_map.
+Tune the code accordingly.
 
-Signed-off-by: Paul Jackson <pj@sgi.com>
-Acked-by: Cliff Wickman <cpw@sgi.com>
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
 ---
+ kernel/cgroup.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- kernel/cpuset.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/kernel/cpuset.c
-===================================================================
---- linux-2.6.orig/kernel/cpuset.c
-+++ linux-2.6/kernel/cpuset.c
-@@ -1801,7 +1801,8 @@ static void scan_for_empty_cpusets(const
- 		cont = cp->css.cgroup;
- 		/* Remove offline cpus and mems from this cpuset. */
- 		cpus_and(cp->cpus_allowed, cp->cpus_allowed, cpu_online_map);
--		nodes_and(cp->mems_allowed, cp->mems_allowed, node_online_map);
-+		nodes_and(cp->mems_allowed, cp->mems_allowed,
-+						node_states[N_HIGH_MEMORY]);
- 		if ((cpus_empty(cp->cpus_allowed) ||
- 		     nodes_empty(cp->mems_allowed))) {
- 		        /* Move tasks from the empty cpuset to a parent */
-@@ -1816,8 +1817,8 @@ static void scan_for_empty_cpusets(const
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 2c5cccb..4766bb6 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -1269,7 +1269,7 @@ static int attach_task_by_pid(struct cgroup *cgrp, char *pidbuf)
  
- /*
-  * The cpus_allowed and mems_allowed nodemasks in the top_cpuset track
-- * cpu_online_map and node_online_map.  Force the top cpuset to track
-- * whats online after any CPU or memory node hotplug or unplug event.
-+ * cpu_online_map and node_states[N_HIGH_MEMORY].  Force the top cpuset to
-+ * track what's online after any CPU or memory node hotplug or unplug event.
-  *
-  * Since there are two callers of this routine, one for CPU hotplug
-  * events and one for memory node hotplug events, we could have coded
+ 	if (pid) {
+ 		rcu_read_lock();
+-		tsk = find_task_by_pid(pid);
++		tsk = find_task_by_vpid(pid);
+ 		if (!tsk || tsk->flags & PF_EXITING) {
+ 			rcu_read_unlock();
+ 			return -ESRCH;
+@@ -1955,7 +1955,7 @@ static int pid_array_load(pid_t *pidarray, int npids, struct cgroup *cgrp)
+ 	while ((tsk = cgroup_iter_next(cgrp, &it))) {
+ 		if (unlikely(n == npids))
+ 			break;
+-		pidarray[n++] = task_pid_nr(tsk);
++		pidarray[n++] = task_pid_vnr(tsk);
+ 	}
+ 	cgroup_iter_end(cgrp, &it);
+ 	return n;
+-- 
+1.5.3.4
+
