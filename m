@@ -1,115 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYA2Kz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbYA2K6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbYA2Kz0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 05:55:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbYA2KzO
+	id S1756431AbYA2K6n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 05:58:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYA2K6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 05:55:14 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2880 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753967AbYA2KzM (ORCPT
+	Tue, 29 Jan 2008 05:58:35 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44124 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750835AbYA2K6e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 05:55:12 -0500
-Date: Tue, 29 Jan 2008 10:55:31 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: Joe Perches <joe@perches.com>, jwboyer@linux.vnet.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
-Message-ID: <20080129105531.GA651@shadowen.org>
-References: <4797C1AD.3040307@tiscali.nl> <1201129527.4988.69.camel@localhost> <4797D968.1030101@tiscali.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4797D968.1030101@tiscali.nl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 29 Jan 2008 05:58:34 -0500
+Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, vatsa <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Paul Jackson <pj@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steve Grubb <sgrubb@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       "Li, Tong N" <tong.n.li@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Menage <menage@google.com>,
+       David Rientjes <rientjes@google.com>
+In-Reply-To: <1201600428.28547.87.camel@lappy>
+References: <1201600428.28547.87.camel@lappy>
+Content-Type: text/plain
+Date: Tue, 29 Jan 2008 11:57:22 +0100
+Message-Id: <1201604243.28547.101.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 24, 2008 at 01:18:48AM +0100, Roel Kluin wrote:
-> Joe Perches wrote:
-> > On Wed, 2008-01-23 at 23:37 +0100, Roel Kluin wrote:
-> >> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> >> ---
-> >> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
-> >> index ebf9e21..dcfb459 100644
-> >> --- a/arch/powerpc/boot/4xx.c
-> >> +++ b/arch/powerpc/boot/4xx.c
-> >> @@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
-> >>  	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
-> >>  	cs = 0;
-> >>  	while (val) {
-> >> -		if (val && 0x1)
-> >> +		if (val & 0x1)
-> >>  			cs++;
-> >>  		val = val >> 1;
-> > 
-> > I think this pattern should be added to checkpatch
-> 
-> I agree but...
-> 
-> > Signed-off-by: Joe Perches <joe@perches.com>
-> > 
-> > diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> > index 579f50f..147e573 100755
-> > --- a/scripts/checkpatch.pl
-> > +++ b/scripts/checkpatch.pl
-> > @@ -1337,6 +1337,11 @@ sub process {
-> >  			}
-> >  		}
-> >  
-> > +# Check for bitwise tests written as boolean
-> > +		if ($line =~ /\&\&\s*0[xX]/) {
-> > +			WARN("boolean test with hexadecimal, perhaps just 1 \&?\n" . $herecurr);
-> > +		}
-> > +
-> 
-> when you use git-grep -n "\(&&\|||\)${s}0x\([A-Z0-9]*\|[a-z0-9]*\)",
-> (with s="[[:space:]]*") there will be false positives like
-> 
-> if (relocation < -0x20000 || 0x1fffc < relocation)
-> if (ARCH_SUN4C_SUN4 && addr < 0xe0000000 && 0x20000000 - len < addr) {
-> (and more)
-> 
-> However, if you search with
-> git-grep -n " \(&&\|||\)${s}0x\([A-Z0-9]*\|[a-z0-9]*\)$s\()\|&&\|||\)"
-> you won't get these false positives, but you do get the one I fixed.
-> 
-> Also there is the same logic flipped (though it did not give matches at
-> this time):
-> git-grep -n " \(&&\|||\|(\)${s}0x\([A-Z0-9]*\|[a-z0-9]*\)$s\(&&\|||\)"
-> 
-> so i'd propose to change that to
-> --
-> Catch boolean tests with hexadecimals, based on suggestion by Joe Perches
-> 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index 579f50f..8ac7c7b 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -1337,6 +1337,12 @@ sub process {
->  			}
->  		}
->  
-> +# Check for bitwise tests written as boolean
-> +		if ($line =~ /(?:(?:\(|\&\&|\|\|)\s*0[xX]\s*(?:&&|\|\|)|
-> +				(?:\&\&|\|\|)\s*0[xX]\s*(?:\)|&&|\|\|))/) {
-> +			WARN("boolean test with hexadecimal, perhaps just 1 \& or \|?\n" . $herecurr);
-> +		}
-> +
->  # if and else should not have general statements after it
->  		if ($line =~ /^.\s*(?:}\s*)?else\b(.*)/ &&
->  		    $1 !~ /^\s*(?:\sif|{|\\|$)/) {
 
-That one doesn't even match the original example.  Seems to be missing
-some number matching.  The concept seems sound though.  Basically
-looking for numbers which are definatly adjacent to a boolean or a brace
-on both sides.
+Here I go, talking to myself..
 
-/me goes play with some examples to see if the falsies are better than
-the reports.
+On Tue, 2008-01-29 at 10:53 +0100, Peter Zijlstra wrote:
 
--apw
+> My thoughts were to make stronger use of disjoint cpu-sets. cgroups and
+> cpusets are related, in that cpusets provide a property to a cgroup.
+> However, load_balance_monitor()'s interaction with sched domains
+> confuses me - it might DTRT, but I can't tell.
+> 
+> [ It looks to me it balances a group over the largest SD the current cpu
+>   has access to, even though that might be larger than the SD associated
+>   with the cpuset of that particular cgroup. ]
+
+Hmm, with a bit more thought I think that does indeed DTRT. Because, if
+the cpu belongs to a disjoint cpuset, the highest sd (with
+load-balancing enabled) would be that. Right?
+
+[ Just a bit of a shame we have all cgroups represented on each cpu. ]
+
+Also, might be a nice idea to split the daemon up if there are indeed
+disjoint sets - currently there is only a single daemon which touches
+the whole system.
+
