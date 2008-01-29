@@ -1,15 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762312AbYA2U5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbYA2VCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762312AbYA2U5F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 15:57:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbYA2U4y
+	id S1756226AbYA2VCu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 16:02:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYA2VCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 15:56:54 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:47002 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750987AbYA2U4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 15:56:54 -0500
-Date: Tue, 29 Jan 2008 14:56:47 -0600
+	Tue, 29 Jan 2008 16:02:41 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39176 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751727AbYA2VCk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 16:02:40 -0500
+Date: Tue, 29 Jan 2008 15:02:34 -0600
 From: Paul Jackson <pj@sgi.com>
 To: "Gregory Haskins" <ghaskins@novell.com>
 Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, dmitry.adamushko@gmail.com,
@@ -19,16 +20,17 @@ Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, dmitry.adamushko@gmail.com,
        linux-kernel@vger.kernel.org, ebiederm@xmission.com,
        nickpiggin@yahoo.com.au
 Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
-Message-Id: <20080129145647.579b7d53.pj@sgi.com>
-In-Reply-To: <479F4631.BA47.005A.0@novell.com>
+Message-Id: <20080129150234.b57ce988.pj@sgi.com>
+In-Reply-To: <479F4812.BA47.005A.0@novell.com>
 References: <1201600428.28547.87.camel@lappy>
 	<1201604243.28547.101.camel@lappy>
 	<20080129053005.bc7a11d7.pj@sgi.com>
-	<479F01AF.BA47.005A.0@novell.com>
-	<20080129102836.be614579.pj@sgi.com>
-	<479F1118.BA47.005A.0@novell.com>
-	<20080129133700.7f1ab444.pj@sgi.com>
-	<479F4631.BA47.005A.0@novell.com>
+	<1201607401.28547.124.camel@lappy>
+	<479F0507.BA47.005A.0@novell.com>
+	<20080129105104.d70f36ef.pj@sgi.com>
+	<479F1A4F.BA47.005A.0@novell.com>
+	<20080129130403.92d0a1fe.pj@sgi.com>
+	<479F4812.BA47.005A.0@novell.com>
 Organization: SGI
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
@@ -39,23 +41,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Gregory wrote:
-> By moving it into the root_domain structure, there is now an instance
-> per (um, for lack of a better, more up to date word) "exclusive"
-> cpuset.   That way, disparate cpusets will not bother each other with
-> overload notifications, etc.
+> > ... (1) turning off
+> > sched_load_balance in any overlapping cpusets, including all
+> > encompassing parent cpusets, (2) leaving sched_load_balance on in the
+> > RT cpuset itself, and ...
+>
+> Technically you only need (2).  I run my 4-8 core development systems
+> in the single default global cpuset, normally.
 
-So the root_domain structure is meant to be the portions of the
-sched_domains that are shared across all CPUs in that sched_domain ?
+Well, if you're running in the default cpuset, then you automatically get (1),
+because sched_load_balance is turned off in all overlapping cpusets (there
+aren't any overlapping cpusets!)
 
-And the word 'cpuset', occurring in the above quote twice, should
-be 'sched_domain', right ?  Surely these aren't cpuset's ;).
-
-And 'exclusive cpuset' really means 'non-overlapping sched_domain' ?
-
-Or am I still confused ?
-
-I would like to get our concepts clear, and terms consistent.  That's
-important for those others who would try to understand this.
+So, yes, you -do- need both (1) and (2).  In your normal system, you
+just happen to get (1) effortlessly.
 
 -- 
                   I won't rest till it's the best ...
