@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933989AbYA2UCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934178AbYA2UCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933989AbYA2UCZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 15:02:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756360AbYA2UB6
+	id S934178AbYA2UCr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 15:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757421AbYA2UCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 15:01:58 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:8877 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753845AbYA2UB4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 15:01:56 -0500
-Message-ID: <479F866A.1030207@ru.mvista.com>
-Date: Tue, 29 Jan 2008 23:02:50 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 29 Jan 2008 15:02:06 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:46398 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757368AbYA2UCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 15:02:03 -0500
+Date: Tue, 29 Jan 2008 12:02:01 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Robin Holt <holt@sgi.com>
+cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 6/6] mmu_notifier: Add invalidate_all()
+In-Reply-To: <20080129163158.GX3058@sgi.com>
+Message-ID: <Pine.LNX.4.64.0801291200550.25300@schroedinger.engr.sgi.com>
+References: <20080128202840.974253868@sgi.com> <20080128202924.810792591@sgi.com>
+ <20080129163158.GX3058@sgi.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/8] ide: always set DMA masks in ide_pci_setup_ports()
-References: <20080106170220.6861.4814.sendpatchset@localhost.localdomain> <20080106170255.6861.36960.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080106170255.6861.36960.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Tue, 29 Jan 2008, Robin Holt wrote:
 
-Bartlomiej Zolnierkiewicz wrote:
+> What is the status of getting invalidate_all adjusted to indicate a need
+> to also call _release?
 
-> Always set DMA masks in ide_pci_setup_ports() to make sure that the valid
-> masks for a host are set.
+Release is only called if the mmu_notifier is still registered. If you 
+take it out on invalidate_all then there will be no call to release 
+(provided you deal with the RCU issues).
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-MBR, Sergei
