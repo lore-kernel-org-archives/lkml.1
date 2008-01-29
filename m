@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757098AbYA2VcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbYA2VdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757098AbYA2VcV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 16:32:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbYA2VcI
+	id S1757491AbYA2VdA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 16:33:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756488AbYA2Vcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 16:32:08 -0500
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:33597 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752965AbYA2VcF (ORCPT
+	Tue, 29 Jan 2008 16:32:47 -0500
+Received: from mga11.intel.com ([192.55.52.93]:57491 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754329AbYA2Vcp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 16:32:05 -0500
+	Tue, 29 Jan 2008 16:32:45 -0500
+X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,271,1199692800"; 
-   d="scan'208";a="10487459"
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Bart Van Assche <bart.vanassche@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-X-Message-Flag: Warning: May contain useful information
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	<1201639331.3069.58.camel@localhost.localdomain>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 29 Jan 2008 13:31:52 -0800
-In-Reply-To: <1201639331.3069.58.camel@localhost.localdomain> (James Bottomley's message of "Tue, 29 Jan 2008 15:42:11 -0500")
-Message-ID: <adazluoe2t3.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+   d="scan'208";a="294135308"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 29 Jan 2008 21:31:52.0929 (UTC) FILETIME=[5D561510:01C862BE]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: kernel BUG at drivers/block/cciss.c:1260! (with recent  linux-2.6  tree)
+Date: Tue, 29 Jan 2008 13:32:44 -0800
+Message-ID: <1FE6DD409037234FAB833C420AA843EC757564@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20080129212435.GC15220@kernel.dk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: kernel BUG at drivers/block/cciss.c:1260! (with recent  linux-2.6  tree)
+Thread-Index: AchivXi9vvKPdxgVSsKmKqkc7Lbd2gAAMFug
+References: <20080129180242.GZ15220@kernel.dk> <20080129180537.GA15220@kernel.dk> <20080129182217.GK12400@plap3.qlogic.org> <20080129182833.GG15220@kernel.dk> <20080129183705.GL12400@plap3.qlogic.org> <20080129184442.GK15220@kernel.dk> <20080129184929.GN12400@plap3.qlogic.org> <20080129185358.GM15220@kernel.dk> <20080129210837.GA21785@plap3.qlogic.org> <20080129211634.GB15220@kernel.dk> <20080129212435.GC15220@kernel.dk>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>,
+       "Andrew Vasquez" <andrew.vasquez@qlogic.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       <mike.miller@hp.com>, <k-ueda@ct.jp.nec.com>, <j-nomura@ce.jp.nec.com>
+X-OriginalArrivalTime: 29 Jan 2008 21:32:44.0897 (UTC) FILETIME=[7C4FC510:01C862BE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > .                           .   STGT read     SCST read    .    STGT read      SCST read    .
- > .                           .  performance   performance   . performance    performance   .
- > .                           .  (0.5K, MB/s)  (0.5K, MB/s)  .   (1 MB, MB/s)   (1 MB, MB/s)  .
- > . iSER     (8 Gb/s network) .     250            N/A       .       360           N/A       .
- > . SRP      (8 Gb/s network) .     N/A            421       .       N/A           683       .
+>> Ah crap, I see the problem, nioc is most often equal to rioc. Dang.
+>> Please try this bandaid, will push a real fix now.
 
- > On the comparable figures, which only seem to be IPoIB they're showing a
- > 13-18% variance, aren't they?  Which isn't an incredible difference.
+Patches arriving faster than I can test :-) ... The bandaid appears to
+be working (no hang yet).
 
-Maybe I'm all wet, but I think iSER vs. SRP should be roughly
-comparable.  The exact formatting of various messages etc. is
-different but the data path using RDMA is pretty much identical.  So
-the big difference between STGT iSER and SCST SRP hints at some big
-difference in the efficiency of the two implementations.
+> This is way cleaner.
 
- - R.
+Will try this next.
+
+-Tony
