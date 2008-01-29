@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934040AbYA2UQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934430AbYA2URR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934040AbYA2UQt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 15:16:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbYA2UQl
+	id S934430AbYA2URR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 15:17:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934279AbYA2UQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 15:16:41 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:52121 "EHLO pasmtpB.tele.dk"
+	Tue, 29 Jan 2008 15:16:55 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:19613 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752154AbYA2UQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 15:16:40 -0500
-Date: Tue, 29 Jan 2008 21:16:41 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Section mismatch errors on current Linus tree
-Message-ID: <20080129201641.GB14857@uranus.ravnborg.org>
-References: <20080129170325.GA23544@joi>
-Mime-Version: 1.0
+	id S934275AbYA2UQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 15:16:53 -0500
+Date: Tue, 29 Jan 2008 21:16:48 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: Re: system hang on latest git
+Message-ID: <20080129201648.GA15220@kernel.dk>
+References: <1FE6DD409037234FAB833C420AA843EC75736A@orsmsx424.amr.corp.intel.com> <20080129201136.GX15220@kernel.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080129170325.GA23544@joi>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080129201136.GX15220@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 06:03:30PM +0100, Marcin Slusarz wrote:
-> Hi
-> I'm getting these warnings on current Linus tree (0ba6c33bcddc64a54b5f1c25a696c4767dc76292):
+On Tue, Jan 29 2008, Jens Axboe wrote:
+> On Tue, Jan 29 2008, Luck, Tony wrote:
+> > I pulled Linus' tree this morning (git head = 0ba6c33bcddc64a54b5f1c25a696c4767dc76292)
+> > and built for ia64 (using arch/ia64/configs/tiger_defconfig).   System booted
+> > OK, but when I stressed it a little (building another kernel with "make -j32")
+> > it hung.
+> > 
+> > The console has a bunch (98) of warnings about tasks blocked for more than 120
+> > seconds like this:
+> > INFO: task grep:9168 blocked for more than 120 seconds.
+> > "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> > 
+> > Call Trace:
+> >  [<a000000100704120>] schedule+0x11c0/0x1340
+> >                                 sp=e0000001ed8afbf0 bsp=e0000001ed8a1280
+> >  [<a00000010024e720>] do_get_write_access+0x660/0xbe0
+> >                                 sp=e0000001ed8afc20 bsp=e0000001ed8a1208
+> >  [<a00000010024f060>] journal_get_write_access+0x40/0x80
+> >                                 sp=e0000001ed8afca0 bsp=e0000001ed8a11c8
+> >  [<a000000100245db0>] __ext3_journal_get_write_access+0x30/0xa0
+> >                                 sp=e0000001ed8afca0 bsp=e0000001ed8a1190
+> >  [<a00000010022dea0>] ext3_reserve_inode_write+0x80/0x120
+> >                                 sp=e0000001ed8afca0 bsp=e0000001ed8a1158
+> >  [<a00000010022df70>] ext3_mark_inode_dirty+0x30/0x80
+> >                                 sp=e0000001ed8afca0 bsp=e0000001ed8a1130
+> >  [<a000000100232530>] ext3_dirty_inode+0xd0/0x120
+> >                                 sp=e0000001ed8afcc0 bsp=e0000001ed8a1100
+> >  [<a000000100170e20>] __mark_inode_dirty+0xa0/0x3e0
+> >                                 sp=e0000001ed8afcc0 bsp=e0000001ed8a10b0
+> >  [<a00000010015b570>] touch_atime+0x310/0x340
+> >                                 sp=e0000001ed8afcc0 bsp=e0000001ed8a1088
+> >  [<a0000001000d6c20>] do_generic_mapping_read+0x780/0x7a0
+> >                                 sp=e0000001ed8afce0 bsp=e0000001ed8a0fe0
+> >  [<a0000001000db250>] generic_file_aio_read+0x290/0x340
+> >                                 sp=e0000001ed8afce0 bsp=e0000001ed8a0f80
+> >  [<a00000010012c990>] do_sync_read+0x170/0x200
+> >                                 sp=e0000001ed8afd10 bsp=e0000001ed8a0f40
+> >  [<a00000010012cbd0>] vfs_read+0x1b0/0x2e0
+> >                                 sp=e0000001ed8afe20 bsp=e0000001ed8a0ef0
+> >  [<a00000010012d250>] sys_read+0x70/0xe0
+> >                                 sp=e0000001ed8afe20 bsp=e0000001ed8a0e78
+> >  [<a00000010000a4a0>] ia64_ret_from_syscall+0x0/0x20
+> >                                 sp=e0000001ed8afe30 bsp=e0000001ed8a0e78
+> > 
+> > 
+> > [The stack trace has several variations ... some from sys_read(), some from
+> > sys_open(), some from sys_execve(), some from sys_mmap() etc. 84/98 stack
+> > traces pass through the touch_atime->__mark_inode_dirty path ... all 98
+> > are attached]
+> > 
+> > A quick dig into processor state shows 8 cpus are idle.  7 are spinning
+> > in __spin_lock_irq() from __make_request() and one is in spin_lock() from
+> > as_merged_requests().
 > 
->   LD      vmlinux.o
->   MODPOST vmlinux.o
-> WARNING: vmlinux.o(.text+0x1a3c75): Section mismatch in reference from the function pci_scan_child_bus() to the function .devinit.text:pcibios_fixup_bus()
-> WARNING: vmlinux.o(.text+0x1e333c): Section mismatch in reference from the function acpi_pci_root_add() to the function .devinit.text:pci_acpi_scan_root()
-> WARNING: vmlinux.o(.meminit.text+0xc5e): Section mismatch in reference from the function free_area_init_node() to the function .init.text:__alloc_bootmem_node()
-> WARNING: vmlinux.o(__ksymtab+0x5400): Section mismatch in reference from the variable __ksymtab_pci_do_scan_bus to the function .devinit.text:pci_do_scan_bus()
-...
+> Looks like a deadlock on queue lock and ioc lock, but I don't see
+> immediately what the problem is. I can't stick around for longer
+> tonight, but I'll get to the bottom of this tomorrow.
 
-Thanks for the report Marcin.
+Actually, can you try this? It has a known race but nothing to worry
+about, and it removes ioc->lock from irq context.
 
-We have a lot of section mismatch warnings at present.
-I am personally awaiting merge of x86.git and first
-batch from Andrew Morton before I start to fix them.
+diff --git a/block/as-iosched.c b/block/as-iosched.c
+index b201d16..585aad2 100644
+--- a/block/as-iosched.c
++++ b/block/as-iosched.c
+@@ -235,10 +235,8 @@ static void as_put_io_context(struct request *rq)
+ 	aic = RQ_IOC(rq)->aic;
+ 
+ 	if (rq_is_sync(rq) && aic) {
+-		spin_lock(&aic->lock);
+ 		set_bit(AS_TASK_IORUNNING, &aic->state);
+ 		aic->last_end_request = jiffies;
+-		spin_unlock(&aic->lock);
+ 	}
+ 
+ 	put_io_context(RQ_IOC(rq));
 
-This is for two reasons:
-1) I know several warnings are fixed in the two trees
-2) I expect these two merges to touch a lot of the files
-   where I need to fix the warnings.
+-- 
+Jens Axboe
 
-Can you please repost no earlier than when you see -rc1. I hope that
-my builds get down below 25 warnings when we get there (> 120 warnings
-when I did a full build last time).
-
-	Sam
