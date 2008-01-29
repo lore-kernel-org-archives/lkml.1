@@ -1,147 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYA2S1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764723AbYA2S2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758048AbYA2S1V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 13:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYA2S1J
+	id S1764723AbYA2S2r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 13:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbYA2S2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 13:27:09 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:51837 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbYA2S1H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 13:27:07 -0500
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] lib: Add support for DIF CRC
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-Date: Tue, 29 Jan 2008 13:27:00 -0500
-Message-ID: <yq1prvk8p3f.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Tue, 29 Jan 2008 13:28:39 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:4854 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751986AbYA2S2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 13:28:38 -0500
+Date: Tue, 29 Jan 2008 19:28:33 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mike.miller@hp.com, k-ueda@ct.jp.nec.com, j-nomura@ce.jp.nec.com
+Subject: Re: kernel BUG at drivers/block/cciss.c:1260! (with recent  linux-2.6  tree)
+Message-ID: <20080129182833.GG15220@kernel.dk>
+References: <20080129175426.GJ12400@plap3.qlogic.org> <20080129180242.GZ15220@kernel.dk> <20080129180537.GA15220@kernel.dk> <20080129182217.GK12400@plap3.qlogic.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+In-Reply-To: <20080129182217.GK12400@plap3.qlogic.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 29 2008, Andrew Vasquez wrote:
+> On Tue, 29 Jan 2008, Jens Axboe wrote:
+> 
+> > Andrew, can you try with this applied?
+> > 
+> > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+> > index ef50068..bd7b352 100644
+> > --- a/drivers/block/cciss.c
+> > +++ b/drivers/block/cciss.c
+> > @@ -1257,7 +1257,7 @@ static void cciss_softirq_done(struct request *rq)
+> >  #endif				/* CCISS_DEBUG */
+> >  
+> >  	if (blk_end_request(rq, (rq->errors == 0) ? 0 : -EIO, blk_rq_bytes(rq)))
+> > -		BUG();
+> > +		blk_dump_rq_flags(rq, "cciss rq");
+> >  
+> >  	spin_lock_irqsave(&h->lock, flags);
+> >  	cmd_free(h, cmd, 1);
+> 
+> Here the final snippet that was logged:
+> 
+> [   12.724997] input: USB HID v1.01 Mouse [HP Virtual Keyboard] on usb-0000:01:04.4-1
+> [   12.728971] usbcore: registered new interface driver usbhid
+> [   12.732866] drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
+> [   12.741172] TCP cubic registered
+> [   12.744506] NET: Registered protocol family 1
+> [   12.744884] NET: Registered protocol family 17
+> [   12.749217] Freeing unused kernel memory: 228k freed
+> [   12.885823] cciss rq: dev cciss/c0d0: type=2, flags=104c8
+> [   12.888929] 
+> [   12.888930] sector 6510615555426900570, nr/cnr 0/0
+> [   12.892895] bio ffff81042f130730, biotail ffff81042f130730, buffer 0000000000000000, data 0000000000000000, len 0
+> [   12.896895] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00 
 
-Add support for the T10 Data Integrity Field CRC.
+Ah ok, I see the problem... cciss is overriding the data_len for
+BLOCK_PC requests, hence it does not complete them properly. Hmm. Does
+this work?
 
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index ef50068..b6fa52e 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -2524,7 +2524,6 @@ after_error_processing:
+ 		resend_cciss_cmd(h, cmd);
+ 		return;
+ 	}
+-	cmd->rq->data_len = 0;
+ 	cmd->rq->completion_data = cmd;
+ 	blk_complete_request(cmd->rq);
+ }
 
-diff -r f5ec697e8b10 include/linux/crc-t10dif.h
---- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/include/linux/crc-t10dif.h	Tue Jan 29 13:26:19 2008 -0500
-@@ -0,0 +1,9 @@
-+#ifndef _LINUX_CRC_T10DIF_H
-+#define _LINUX_CRC_T10DIF_H
-+
-+#include <linux/types.h>
-+
-+const __u16 t10_dif_crc_table[256];
-+__u16 crc_t10dif(unsigned char const *, size_t);
-+
-+#endif
-diff -r f5ec697e8b10 lib/Kconfig
---- a/lib/Kconfig	Tue Jan 29 12:11:57 2008 -0500
-+++ b/lib/Kconfig	Tue Jan 29 13:26:19 2008 -0500
-@@ -22,6 +22,13 @@ config CRC16
- 	  modules require CRC16 functions, but a module built outside
- 	  the kernel tree does. Such modules that use library CRC16
- 	  functions require M here.
-+
-+config CRC_T10DIF
-+	tristate "CRC calculation for the T10 Data Integrity Field"
-+	help
-+	  This option is only needed if a module that's not in the
-+	  kernel tree needs to calculate CRC checks for use with the
-+	  SCSI data integrity subsystem.
- 
- config CRC_ITU_T
- 	tristate "CRC ITU-T V.41 functions"
-diff -r f5ec697e8b10 lib/Makefile
---- a/lib/Makefile	Tue Jan 29 12:11:57 2008 -0500
-+++ b/lib/Makefile	Tue Jan 29 13:26:19 2008 -0500
-@@ -44,6 +44,7 @@ obj-$(CONFIG_BITREVERSE) += bitrev.o
- obj-$(CONFIG_BITREVERSE) += bitrev.o
- obj-$(CONFIG_CRC_CCITT)	+= crc-ccitt.o
- obj-$(CONFIG_CRC16)	+= crc16.o
-+obj-$(CONFIG_CRC_T10DIF)+= crc-t10dif.o
- obj-$(CONFIG_CRC_ITU_T)	+= crc-itu-t.o
- obj-$(CONFIG_CRC32)	+= crc32.o
- obj-$(CONFIG_CRC7)	+= crc7.o
-diff -r f5ec697e8b10 lib/crc-t10dif.c
---- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/lib/crc-t10dif.c	Tue Jan 29 13:26:19 2008 -0500
-@@ -0,0 +1,68 @@
-+/*
-+ * T10 Data Integrity Field CRC16 calculation
-+ *
-+ * Copyright (c) 2007 Oracle Corporation.  All rights reserved.
-+ * Written by Martin K. Petersen <martin.petersen@oracle.com>
-+ *
-+ * This source code is licensed under the GNU General Public License,
-+ * Version 2. See the file COPYING for more details.
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/module.h>
-+#include <linux/crc-t10dif.h>
-+
-+/* Table generated using the following polynomium:
-+ * x^16 + x^15 + x^11 + x^9 + x^8 + x^7 + x^5 + x^4 + x^2 + x + 1
-+ * gt: 0x8bb7
-+ */
-+const __u16 t10_dif_crc_table[256] = {
-+	0x0000, 0x8BB7, 0x9CD9, 0x176E, 0xB205, 0x39B2, 0x2EDC, 0xA56B,
-+	0xEFBD, 0x640A, 0x7364, 0xF8D3, 0x5DB8, 0xD60F, 0xC161, 0x4AD6,
-+	0x54CD, 0xDF7A, 0xC814, 0x43A3, 0xE6C8, 0x6D7F, 0x7A11, 0xF1A6,
-+	0xBB70, 0x30C7, 0x27A9, 0xAC1E, 0x0975, 0x82C2, 0x95AC, 0x1E1B,
-+	0xA99A, 0x222D, 0x3543, 0xBEF4, 0x1B9F, 0x9028, 0x8746, 0x0CF1,
-+	0x4627, 0xCD90, 0xDAFE, 0x5149, 0xF422, 0x7F95, 0x68FB, 0xE34C,
-+	0xFD57, 0x76E0, 0x618E, 0xEA39, 0x4F52, 0xC4E5, 0xD38B, 0x583C,
-+	0x12EA, 0x995D, 0x8E33, 0x0584, 0xA0EF, 0x2B58, 0x3C36, 0xB781,
-+	0xD883, 0x5334, 0x445A, 0xCFED, 0x6A86, 0xE131, 0xF65F, 0x7DE8,
-+	0x373E, 0xBC89, 0xABE7, 0x2050, 0x853B, 0x0E8C, 0x19E2, 0x9255,
-+	0x8C4E, 0x07F9, 0x1097, 0x9B20, 0x3E4B, 0xB5FC, 0xA292, 0x2925,
-+	0x63F3, 0xE844, 0xFF2A, 0x749D, 0xD1F6, 0x5A41, 0x4D2F, 0xC698,
-+	0x7119, 0xFAAE, 0xEDC0, 0x6677, 0xC31C, 0x48AB, 0x5FC5, 0xD472,
-+	0x9EA4, 0x1513, 0x027D, 0x89CA, 0x2CA1, 0xA716, 0xB078, 0x3BCF,
-+	0x25D4, 0xAE63, 0xB90D, 0x32BA, 0x97D1, 0x1C66, 0x0B08, 0x80BF,
-+	0xCA69, 0x41DE, 0x56B0, 0xDD07, 0x786C, 0xF3DB, 0xE4B5, 0x6F02,
-+	0x3AB1, 0xB106, 0xA668, 0x2DDF, 0x88B4, 0x0303, 0x146D, 0x9FDA,
-+	0xD50C, 0x5EBB, 0x49D5, 0xC262, 0x6709, 0xECBE, 0xFBD0, 0x7067,
-+	0x6E7C, 0xE5CB, 0xF2A5, 0x7912, 0xDC79, 0x57CE, 0x40A0, 0xCB17,
-+	0x81C1, 0x0A76, 0x1D18, 0x96AF, 0x33C4, 0xB873, 0xAF1D, 0x24AA,
-+	0x932B, 0x189C, 0x0FF2, 0x8445, 0x212E, 0xAA99, 0xBDF7, 0x3640,
-+	0x7C96, 0xF721, 0xE04F, 0x6BF8, 0xCE93, 0x4524, 0x524A, 0xD9FD,
-+	0xC7E6, 0x4C51, 0x5B3F, 0xD088, 0x75E3, 0xFE54, 0xE93A, 0x628D,
-+	0x285B, 0xA3EC, 0xB482, 0x3F35, 0x9A5E, 0x11E9, 0x0687, 0x8D30,
-+	0xE232, 0x6985, 0x7EEB, 0xF55C, 0x5037, 0xDB80, 0xCCEE, 0x4759,
-+	0x0D8F, 0x8638, 0x9156, 0x1AE1, 0xBF8A, 0x343D, 0x2353, 0xA8E4,
-+	0xB6FF, 0x3D48, 0x2A26, 0xA191, 0x04FA, 0x8F4D, 0x9823, 0x1394,
-+	0x5942, 0xD2F5, 0xC59B, 0x4E2C, 0xEB47, 0x60F0, 0x779E, 0xFC29,
-+	0x4BA8, 0xC01F, 0xD771, 0x5CC6, 0xF9AD, 0x721A, 0x6574, 0xEEC3,
-+	0xA415, 0x2FA2, 0x38CC, 0xB37B, 0x1610, 0x9DA7, 0x8AC9, 0x017E,
-+	0x1F65, 0x94D2, 0x83BC, 0x080B, 0xAD60, 0x26D7, 0x31B9, 0xBA0E,
-+	0xF0D8, 0x7B6F, 0x6C01, 0xE7B6, 0x42DD, 0xC96A, 0xDE04, 0x55B3
-+};
-+
-+__u16 crc_t10dif(unsigned char const *buffer, size_t len)
-+{
-+	__u16 crc = 0;
-+	unsigned int i;
-+
-+	for (i=0 ; i < len ; i++)
-+		crc = (crc << 8) ^ t10_dif_crc_table[((crc >> 8) ^ buffer[i]) & 0xff];
-+
-+	return crc;
-+}
-+
-+EXPORT_SYMBOL(crc_t10dif);
-+
-+MODULE_DESCRIPTION("T10 DIF CRC calculation");
-+MODULE_LICENSE("GPL");
+-- 
+Jens Axboe
+
