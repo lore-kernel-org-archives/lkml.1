@@ -1,75 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765647AbYA2U1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765351AbYA2UaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765647AbYA2U1w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 15:27:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbYA2U1j
+	id S1765351AbYA2UaW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 15:30:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYA2UaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 15:27:39 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:25733 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750778AbYA2U1i (ORCPT
+	Tue, 29 Jan 2008 15:30:10 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38045 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751324AbYA2UaI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 15:27:38 -0500
-Message-ID: <479F8C08.2060207@panasas.com>
-Date: Tue, 29 Jan 2008 22:26:48 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 29 Jan 2008 15:30:08 -0500
+Date: Tue, 29 Jan 2008 12:30:06 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
+In-Reply-To: <20080129182831.GS7233@v2.random>
+Message-ID: <Pine.LNX.4.64.0801291219030.25629@schroedinger.engr.sgi.com>
+References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com>
+ <20080129162004.GL7233@v2.random> <20080129182831.GS7233@v2.random>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Oliver Neukum <oliver@neukum.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [BUG] 2.6.24-git usb reset problems
-References: <20080129141108.GV15220@kernel.dk> <200801291531.39825.oliver@neukum.org> <20080129143109.GW15220@kernel.dk> <20080129183910.GI15220@kernel.dk> <20080129191024.GO14375@one-eyed-alien.net> <1201635195.3069.36.camel@localhost.localdomain> <20080129193520.GQ15220@kernel.dk> <20080129194543.GR15220@kernel.dk> <479F856C.4090900@panasas.com> <479F880F.20709@panasas.com> <20080129201328.GZ15220@kernel.dk>
-In-Reply-To: <20080129201328.GZ15220@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Jan 2008 20:26:52.0858 (UTC) FILETIME=[48B679A0:01C862B5]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29 2008 at 22:13 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Tue, Jan 29 2008, Boaz Harrosh wrote:
->>> Ok this is not in Linus tree is it? Hence I did not have that failure.
->>>
->>> Boaz
->>>
->>>
->> actually James bidi tree has a fix for this in the scsi_data_buffer patch.
->>
->> what you sent is not enough there are other places. look at this patch I
->> sent to the list.
->>
->> http://www.spinics.net/lists/linux-scsi/msg21938.html
-> 
-> Hard to compare, since its on different bases.
-Yes in this patchset I have taken your sg branch at the time, and
-rebased it ontop of scsi_data_buffer patch. Because I felt that
-it is more natural for this patch to come after the scsi total
-cleanup that is scsi_data_buffer. Then the extraction to sg_table
-is simple and trivial.
+On Tue, 29 Jan 2008, Andrea Arcangeli wrote:
 
-What I meant to point out with this patch is that all the exact same
-places that are touched there should be fixed when moving to sg_table.
+> diff --git a/mm/fremap.c b/mm/fremap.c
+> --- a/mm/fremap.c
+> +++ b/mm/fremap.c
+> @@ -212,8 +212,8 @@ asmlinkage long sys_remap_file_pages(uns
+>  		spin_unlock(&mapping->i_mmap_lock);
+>  	}
+>  
+> +	err = populate_range(mm, vma, start, size, pgoff);
+>  	mmu_notifier(invalidate_range, mm, start, start + size, 0);
+> -	err = populate_range(mm, vma, start, size, pgoff);
+>  	if (!err && !(flags & MAP_NONBLOCK)) {
+>  		if (unlikely(has_write_lock)) {
+>  			downgrade_write(&mm->mmap_sem);
 
-Look at it. It is a revised version of your patch.
+We invalidate the range *after* populating it? Isnt it okay to establish 
+references while populate_range() runs?
 
-> 
->> Could we take the 2 SG patches and submit them through the scsi
->> bidi tree? It is much more natural to have them in one tree as one
->> patchset then try coordinate with git-merge. Actually if you look at it,
->> the biggest change is to SCSI. So I think it is more natural this way
-> 
-> What 2 sg patches do you mean?
-> 
+> diff --git a/mm/memory.c b/mm/memory.c
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1639,8 +1639,6 @@ gotten:
+>  	/*
+>  	 * Re-check the pte - we dropped the lock
+>  	 */
+> -	mmu_notifier(invalidate_range, mm, address,
+> -				address + PAGE_SIZE - 1, 0);
+>  	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
+>  	if (likely(pte_same(*page_table, orig_pte))) {
+>  		if (old_page) {
 
-I mean the patches that where in sg branch of the linux-block tree, But
-I see that it is now to late, and that they are in Linus already
+What we did is to invalidate the page (?!) before taking the pte lock. In 
+the lock we replace the pte to point to another page. This means that we 
+need to clear stale information. So we zap it before. If another reference 
+is established after taking the spinlock then the pte contents have 
+changed at the cirtical section fails.
 
-James the most simple is to submit the scsi_data_buff patch that fixes
-all these places. If not do you want that I send in fixes?
+Before the critical section starts we have gotten an extra refcount on the 
+original page so the page cannot vanish from under us.
 
-Boaz
+> @@ -1676,6 +1674,8 @@ gotten:
+>  		page_cache_release(old_page);
+>  unlock:
+>  	pte_unmap_unlock(page_table, ptl);
+> +	mmu_notifier(invalidate_range, mm, address,
+> +				address + PAGE_SIZE - 1, 0);
+>  	if (dirty_page) {
+>  		if (vma->vm_file)
+>  			file_update_time(vma->vm_file);
+
+Now we invalidate the page after the transaction is complete. This means 
+external pte can persist while we change the pte? Possibly even dirty the 
+page?
+
+
+
