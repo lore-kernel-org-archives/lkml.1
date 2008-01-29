@@ -1,135 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764632AbYA2OOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764425AbYA2OOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764632AbYA2OOb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:14:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763769AbYA2OOV
+	id S1764425AbYA2OOy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764645AbYA2OOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:14:21 -0500
-Received: from zakalwe.fi ([80.83.5.154]:41917 "EHLO zakalwe.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763760AbYA2OOU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:14:20 -0500
-Date: Tue, 29 Jan 2008 16:14:19 +0200
-From: Heikki Orsila <shdl@zakalwe.fi>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] Improve Documentation/stable_api_nonsense.txt
-Message-ID: <20080129141419.GG12172@zakalwe.fi>
-References: <20080128230959.AA1A32BC98@zakalwe.fi> <20080129044805.GA1718@kroah.com> <20080129104018.GF12172@zakalwe.fi> <20080129131500.GA10761@kroah.com>
+	Tue, 29 Jan 2008 09:14:35 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:56250 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764634AbYA2OOd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 09:14:33 -0500
+Message-ID: <479F3472.5000103@panasas.com>
+Date: Tue, 29 Jan 2008 16:13:06 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20080129131500.GA10761@kroah.com>
-User-Agent: Mutt/1.5.11
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Greg KH <greg@kroah.com>, Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+References: <20080128204935.GI15220@kernel.dk> <20080128212114.GA15586@kroah.com> <479F18D3.9030709@panasas.com> <20080129135443.GU15220@kernel.dk> <479F32E9.10609@panasas.com>
+In-Reply-To: <479F32E9.10609@panasas.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is my last counter argument. Based on this I'll submit a new patch
-that is less intrusive.
-
-On Tue, Jan 29, 2008 at 05:15:00AM -0800, Greg KH wrote:
-> I strongly disagree with this.  If you are reading documentation, you
-> should at least be intertained a bit, and if you take the "flavor" of
-> the writer out of it entirely, it becomes quite boring and dry.
-
-I hope we agree that by definition the success of documentation is 
-measured by its ability to convey ideas. So the basic disagreement is 
-"simple English" versus "some flavor of English".
-"entertainment value" is there only to keep the person reading, but 
-"complicated" sentences harm readability.
-
-> > > > @@ -68,11 +68,11 @@ consider the following facts about the Linux kernel:
-> > > >      There is no way that binary drivers from one architecture will run
-> > > >      on another architecture properly.
-> > > >  
-> > > > -Now a number of these issues can be addressed by simply compiling your
-> > > > -module for the exact specific kernel configuration, using the same exact
-> > > > +Now, a number of these issues can be addressed by simply compiling your
-> > > > +module for the same kernel configuration, using the same
-> > > 
-> > > No, I want to emphasize the word "exact" here.  It has to be the same.
-> > 
-> > Do you want preserve both "exact specific" and "same exact"?
+On Tue, Jan 29 2008 at 16:06 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
+> On Tue, Jan 29 2008 at 15:54 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+>> On Tue, Jan 29 2008, Boaz Harrosh wrote:
+>>> Greg KH wrote:
+>>>> On Mon, Jan 28, 2008 at 09:49:35PM +0100, Jens Axboe wrote:
+>>>>> Hi,
+>>>>>
+>>>>> Running latest -git (head 91525300baf162e83e923b09ca286f9205e21522) and
+>>>>> connecting my cf usb storage device yields and endless stream of:
+>>>>>
+>>>>> Initializing USB Mass Storage driver...
+>>>>> scsi6 : SCSI emulation for USB Mass Storage devices
+>>>>> usb-storage: device found at 2
+>>>>> usb-storage: waiting for device to settle before scanning
+>>>>> usbcore: registered new interface driver usb-storage
+>>>>> USB Mass Storage support registered.
+>>>>> scsi 6:0:0:0: Direct-Access     Generic  STORAGE DEVICE   0125 PQ: 0
+>>>>> ANSI: 0
+>>>>> sd 6:0:0:0: [sdb] 4001760 512-byte hardware sectors (2049 MB)
+>>>>> sd 6:0:0:0: [sdb] Write Protect is off
+>>>>> sd 6:0:0:0: [sdb] Mode Sense: 02 00 00 00
+>>>>> sd 6:0:0:0: [sdb] Assuming drive cache: write through
+>>>>> sd 6:0:0:0: [sdb] 4001760 512-byte hardware sectors (2049 MB)
+>>>>> sd 6:0:0:0: [sdb] Write Protect is off
+>>>>> sd 6:0:0:0: [sdb] Mode Sense: 02 00 00 00
+>>>>> sd 6:0:0:0: [sdb] Assuming drive cache: write through
+>>>>>  sdb: sdb1
+>>>>> sd 6:0:0:0: [sdb] Attached SCSI removable disk
+>>>>> sd 6:0:0:0: Attached scsi generic sg1 type 0
+>>>>> scsi 6:0:0:1: Direct-Access     Generic  STORAGE DEVICE   0125 PQ: 0
+>>>>> ANSI: 0
+>>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>>> [...]
+>>>>>
+>>>>> until I disconnect it. The device doesn't work. Worked fine in 2.6.24.
+>>>>> I'm attaching boot messages and my .config.
+>>>> That's a bit wierd, as we haven't added any USB patches to the -git tree
+>>>> yet after 2.6.24 :)
+>>>>
+>>>> Could this be caused by some scsi changes perhaps?
+>>>>
+>>>> thanks,
+>>>>
+>>>> greg k-h
+>>>> -
+>>> Yes it is ;)
+>>>
+>>> Jens could you test the patch below? if it works I'll submit a proper
+>>> patch. Please forgive me for the bug.
+>> No difference, still just a lot of resets.
+>>
+> Where you able to figure out which usb storage transport is used?
 > 
-> Both.
+> in drivers/usb/storage/usb.c you have get_protocol() and get_transport()
+> functions. I'm not sure if these get stored in sysfs perhaps. This will
+> pinpoint better where to look. Let me research a bit. 
 > 
-> > Imo,
-> > "same exact C compiler" is just bad language, because C compilers are 
-> > always "exact". "exactly same C compiler" would do.
-> 
-> No, "exactly same C compiler" doesn't parse well in English.
+>From inspection of code it should be in /proc/scsi somewhere look for:
+	SPRINTF("     Protocol: %s\n", us->protocol_name);
+	SPRINTF("    Transport: %s\n", us->transport_name);
 
-"Same exact C compiler" does not mean what you try to say.
+(it's proc_info() in drivers/usb/storage/scsiglue.c)
 
-> > > >  C compiler that the kernel was built with.  This is sufficient if you
-> > > >  want to provide a module for a specific release version of a specific
-> > > > -Linux distribution.  But multiply that single build by the number of
-> > > > +Linux distribution. However, multiply that single build by the number of
-> > > 
-> > > You messed with the "two space" rule, and changed the word unecessarily
-> > > in my opinion.
-> > > 
-> > > >  different Linux distributions and the number of different supported
-> > > >  releases of the Linux distribution and you quickly have a nightmare of
-> > > >  different build options on different releases.  Also realize that each
-> > > > @@ -93,7 +93,7 @@ keep a Linux kernel driver that is not in the main kernel tree up to
-> > > >  date over time.
-> > > >  
-> > > >  Linux kernel development is continuous and at a rapid pace, never
-> > > > -stopping to slow down.  As such, the kernel developers find bugs in
-> > > > +slowing down.  As such, the kernel developers find bugs in
-> > > 
-> > > No, they never stop, I say leave it as is.
-> > 
-> > Imo, that statement is very odd. The meaning of it has to be guessed.
-> > "never slowing down" is very simple and conveys the essential idea.
-> 
-> Hm, but you understood the idea conveyed here, right?  That's the
-> important issue, we can argue about the exact structure of words all
-> day, which will get us no where.
-
-Right, this argument can't continue without other people's perspectives.
-
-> Ok, fair enough, I can agree with that.
-
-Good :)
-
-> > > > @@ -145,6 +145,10 @@ as small as possible, and that all potential interfaces are tested as
-> > > >  well as they can be (unused interfaces are pretty much impossible to
-> > > >  test for validity.)
-> > > >  
-> > > > +Some complain that kernel interfaces change too often for out-of-the-tree
-> > > > +modules, but this claim is false. Changing an interface can be delicate work,
-> > > > +and it can take significant amount of developer effort. Therefore, interfaces
-> > > > +are not changed without a good reason.
-> > > 
-> > > No, their claim is a valid one, it's not "false".  However we are not
-> > > going to do anything about it, and as such, we don't need this kind of
-> > > wording to get people worried about it even more.
-> > 
-> > How about this (scrap the whole paragraph):
-> > 
-> > Changing an interface can be delicate work and it can take significant 
-> > amount of developer effort. Therefore, an interface is not changed
-> > unless the change is regarded as very important by the developers.
-> 
-> Why do you feel this paragraph is needed at all?
-
-Some people may feel there is nothing to prevent constant changes. This 
-paragraph tries to assure it is not the case. Actually, the whole point 
-of this documentation is to comfort others.
-
-PS. Off topic: I think documentation is a very important topic for Linux 
-systems in general (there is lot to be improved!). I wonder how many 
-bugs in programs could be avoided by writing good man pages. For 
-example, many people tend to get select() wrong, and I suspect it's 
-partly because the man page is not as good as it could be. An example 
-of good man page would Davide Libenzi's epoll that has an FAQ for common 
-questions and an example of suggested usage. Good examples drive 
-developers for solutions that are known to work in practice.
-
--- 
-Heikki Orsila			Barbie's law:
-heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
-http://www.iki.fi/shd
+Thanks
+Boaz
