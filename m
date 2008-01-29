@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765391AbYA2Pxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765463AbYA2PyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765391AbYA2Pxm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 10:53:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764573AbYA2PvQ
+	id S1765463AbYA2PyH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 10:54:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764921AbYA2PwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 10:51:16 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:35288 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764809AbYA2PvO (ORCPT
+	Tue, 29 Jan 2008 10:52:19 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47078 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764811AbYA2PwQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 10:51:14 -0500
-Message-ID: <479F4B4B.2020000@panasas.com>
-Date: Tue, 29 Jan 2008 17:50:35 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [BUG] 2.6.24-git usb reset problems
-References: <20080128204935.GI15220@kernel.dk> <479F32E9.10609@panasas.com> <20080129141108.GV15220@kernel.dk> <200801291531.39825.oliver@neukum.org>
-In-Reply-To: <200801291531.39825.oliver@neukum.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 29 Jan 2008 10:52:16 -0500
+Date: Tue, 29 Jan 2008 15:47:52 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Richard Heck <rgheck@bobjweil.com>,
+       Daniel Barkalow <barkalow@iabervon.org>, Zan Lynx <zlynx@acm.org>,
+       Calvin Walton <calvin.walton@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Subject: Re: Problem with ata layer in 2.6.24
+Message-ID: <20080129154752.3d7758f1@core>
+In-Reply-To: <200801290951.55492.gene.heskett@gmail.com>
+References: <200801272122.21823.gene.heskett@gmail.com>
+	<479E1D9E.3000900@bobjweil.com>
+	<20080129121201.2f727f5f@core>
+	<200801290951.55492.gene.heskett@gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29 2008 at 16:31 +0200, Oliver Neukum <oliver@neukum.org> wrote:
-> Am Dienstag, 29. Januar 2008 15:11:08 schrieb Jens Axboe:
->> On Tue, Jan 29 2008, Boaz Harrosh wrote:
->>> On Tue, Jan 29 2008 at 15:54 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
->>>> On Tue, Jan 29 2008, Boaz Harrosh wrote:
->>>>> Greg KH wrote:
->  
->>>> No difference, still just a lot of resets.
->>>>
->>> Where you able to figure out which usb storage transport is used?
->>>
->>> in drivers/usb/storage/usb.c you have get_protocol() and get_transport()
->>> functions. I'm not sure if these get stored in sysfs perhaps. This will
->>> pinpoint better where to look. Let me research a bit. 
->> Did the quick'n easy and dumped it. Protocol is 'Transparent SCSI' and
->> transport is 'Bulk'
-> 
-> You can recompile your kernel with CONFIG_USB_DEBUG and CONFIG_STORAGE_DEBUG
-> That should tell the reason for the resets.
-> 
-> 	Regards
-> 		Oliver
-> -
+> As slight change here, I was going to use the same .config as 2.6.24-rc8, but 
+> just discovered that neither rc8 nor final is finding the drivers for my
 
-I can not see what it is. Yes CONFIG_USB_STORAGE_DEBUG will help.
-I have a device here that uses the same trasport/protocol I'll
-try to reproduce the failure here.
+If it is not finding a driver that is nothing to do with libata. It means
+it's not being loaded by the distribution, or the distribution kernel is
+too old (2.6.22) for the hardware - in which case see the Fedora respins
+which are on 2.6.23.something right now.
 
-Boaz
+Alan
