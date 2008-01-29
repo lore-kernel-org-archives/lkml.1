@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764211AbYA2Qg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765594AbYA2Qh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764211AbYA2Qg4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbYA2Qgp
+	id S1765594AbYA2Qh5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:37:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYA2Qhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:36:45 -0500
-Received: from vms046pub.verizon.net ([206.46.252.46]:43714 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750987AbYA2Qgo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:36:44 -0500
-Date: Tue, 29 Jan 2008 11:36:42 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Problem with ata layer in 2.6.24
-In-reply-to: <479F507A.1030203@rtr.ca>
-To: Mark Lord <liml@rtr.ca>
-Cc: Florian Attenberger <valdyn@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Message-id: <200801291136.42612.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200801272122.21823.gene.heskett@gmail.com>
- <200801291004.12565.gene.heskett@gmail.com> <479F507A.1030203@rtr.ca>
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+	Tue, 29 Jan 2008 11:37:48 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:48172 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753541AbYA2Qhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 11:37:47 -0500
+Date: Tue, 29 Jan 2008 19:40:19 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] fix tasklist + find_pid() with CONFIG_PREEMPT_RCU
+Message-ID: <20080129164019.GA2060@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 January 2008, Mark Lord wrote:
->Gene Heskett wrote:
->>..
->> Does anyone know why my dvdwriter isn't being assigned a '/dev/sdx' number
->> when dmesg says its found ok at ata2.00?  I've turned on an option that
->> says something about using the bios for device access this build, but I'll
->> be surprised if that's it. :)
->
->..
->
->It should show up as /dev/scd0 or something very similar.
+With CONFIG_PREEMPT_RCU read_lock(tasklist_lock) doesn't imply rcu_read_lock(),
+but find_pid_ns()->hlist_for_each_entry_rcu() should be safe under tasklist.
 
-Tisn't.  Darnit.
+Usually it is, detach_pid() is always called under write_lock(tasklist_lock),
+but copy_process() calls free_pid() lockless.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-clock speed
+"#ifdef CONFIG_PREEMPT_RCU" is added mostly as documentation, perhaps it is
+too ugly and should be removed.
+
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- MM/kernel/fork.c~PR_RCU	2008-01-27 17:09:47.000000000 +0300
++++ MM/kernel/fork.c	2008-01-29 19:23:44.000000000 +0300
+@@ -1335,8 +1335,19 @@ static struct task_struct *copy_process(
+ 	return p;
+ 
+ bad_fork_free_pid:
+-	if (pid != &init_struct_pid)
++	if (pid != &init_struct_pid) {
++#ifdef CONFIG_PREEMPT_RCU
++		/*
++		 * read_lock(tasklist_lock) doesn't imply rcu_read_lock(),
++		 * make sure find_pid() is safe under read_lock(tasklist).
++		 */
++		write_lock_irq(&tasklist_lock);
++#endif
+ 		free_pid(pid);
++#ifdef CONFIG_PREEMPT_RCU
++		write_unlock_irq(&tasklist_lock);
++#endif
++	}
+ bad_fork_cleanup_namespaces:
+ 	exit_task_namespaces(p);
+ bad_fork_cleanup_keys:
+
