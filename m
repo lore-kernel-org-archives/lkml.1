@@ -1,165 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765619AbYA2QNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765412AbYA2QPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765619AbYA2QNx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:13:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764337AbYA2QNg
+	id S1765412AbYA2QPe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:15:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763920AbYA2QPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:13:36 -0500
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:54837 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765497AbYA2QNe (ORCPT
+	Tue, 29 Jan 2008 11:15:24 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43681 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762982AbYA2QPX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:13:34 -0500
-In-Reply-To: <47986165.4050407@openvz.org>
-References: <1200497268.3999.17.camel@localhost.localdomain> <47986165.4050407@openvz.org>
-Subject: Re: [Devel] LTP result output for container-init ( failure with 2.6.24
- kernel )
-To: Pavel Emelyanov <xemul@openvz.org>, vgusev@openvz.org
-Cc: balbir@linux.vnet.ibm.com, containers@lists.osdl.org,
-       Poornima Nayak <Poornima.Nayak@in.ibm.com>, serue@linux.vnet.ibm.com,
-       sukadev@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Lotus Notes Release 8.0 August 02, 2007
-Message-ID: <OFDB71F099.8DF97877-ON652573DF.00581FA6-652573DF.00591A31@in.ibm.com>
-From: Rishikesh K Rajak <risrajak@in.ibm.com>
-Date: Tue, 29 Jan 2008 21:42:42 +0530
-X-MIMETrack: Serialize by Router on d23ml063/23/M/IBM(Release 7.0.2FP2HF300 | September
- 14, 2007) at 29/01/2008 21:42:44
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+	Tue, 29 Jan 2008 11:15:23 -0500
+Message-Id: <20080129160229.612172683@bull.net>
+User-Agent: quilt/0.46-1
+Date: Tue, 29 Jan 2008 17:02:29 +0100
+From: pierre.peiffer@bull.net
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: [PATCH 2.6.24-rc8-mm1 00/15] IPC: code rewrite + new functionalities
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 29/01/2008 17:24:01,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 29/01/2008 17:24:03,
+	Serialize complete at 29/01/2008 17:24:03
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+	Here is a patchset about the IPC, which proposes to consolidate some
+part of the existing code and to add some functionalities.
 
-Hi Pavel/Vitaliy,
+* Patches 1 to 8 don't change the existing behavior, but propose to rewrite
+some parts of the existing code. In fact, the three kinds of IPC (semaphores,
+message queues and shared memory) have some common commands (IPC_SET, IPC_RMID,
+etc...) but they are mainly handled in three different ways. These patches
+propose to consolidate this, by handling these commands the same way and try
+to use, as much as possible, some common code. This should increase
+readability and maintainability of the code, making them probably good
+candidate for the -mm tree, I think.
 
-Pavel Emelyanov <xemul@openvz.org> wrote on 01/24/2008 03:29:01 PM:
+* Patches 9 to 15 propose to add some functionalities, and thus are
+submitted here for RFC, about both the interest and their implementation.
+These functionalities are:
+    - Two new control-commands:
+	. IPC_SETID: to change an IPC's id.
+	. IPC_SETALL: behaves as IPC_SET, except that it also sets all time
+	  and pid values)
+    - add a /proc/<pid>/semundo file to read and write the undo values of
+some semaphores for a given process.
 
-> Rishikesh K. Rajak wrote:
-> > Hi All,
-> >
-> > Today i ran full LTP on kernel 2.6.24-rc6 inside container-init and
-also
-> > on parent namespace and got some observations.
-> >
-> > Here is the machine information:
-> >     Linux rishi.in.ibm.com 2.6.18-53.el5 #1 SMP Wed Oct 10 16:34:02 EDT
-> > 2007 i686 i686 i386 GNU/Linux
-> >
-> >     OS: SLES 10
-> >
-> > I found these fcntl are failing inside container and it pass on parent
-> > namespace. I am attaching the log file with this mail.
-> >
-> > These failures are conceding with 2.6.23-mm1 itself. Just wanted to
-know
-> > if someone is working on this still.
-> >
-> >   fcntl11                        FAIL
-> >   fcntl14                        FAIL
-> >   fcntl17                        FAIL
-> >   fcntl19                        FAIL
-> >   fcntl20                        FAIL
-> >   fcntl21                        FAIL
+	As the namespaces and the "containers" are being integrated in the
+kernel, these functionalities may be a first step to implement  the
+checkpoint/restart of an application: in fact the existing API does not allow
+to specify or to change an ID when creating an IPC, when restarting an
+application, and the times/pids values of each IPCs are also altered. May be
+someone may find another interest about this ?
 
-Today, I tested 2.6.24 kernel and ran LTP inside container, and found that
-the above failure is still existing.
-These failures are not occuring when i run LTP in parent namespace.
+So again, comments are welcome.
 
->
-> As I already said, these are fixed in -mm tree with the
-> pid-namespaces-vs-locks-interaction.patch patch.
+Thanks.
 
-I verified, the above patch is still not applied with 2.6.24 kernel.
-
-Parden me ! if i have missed some earlier mail thread.
-
-But one good thing, no syslog failure :)
-
-Thanks
-Rishi
->
-> > And also other observation was:
-> >
-> > syslog is failing inside parent namespace but pass inside
-> > container-init.
-> >
-> > syslog01                       FAIL
-> > 1
-> > syslog02                       FAIL
-> > 1
-> > syslog08                       FAIL
-> > 1
->
-> What really bothers me in this case is that in the "output"
-> file you attached I see
->
-> <<<test_output>>>
-> syslog08    0  INFO  :   Test all the facilities at a particular level.
-> syslog08    0  INFO  :   Facilities available are: LOG_KERN,
-> LOG_USER, LOG_MAIL
-> syslog08    0  INFO  :   LOG_DAEMON, LOG_AUTH, LOG_LPR.
-> syslog08    0  INFO  :   Don't know how to send kernel messages from
-syslog()
-> syslog08    0  INFO  :   o Create seperate entries in config file
-> for each facility.
-> syslog08    0  INFO  :   o Send the message and grep for the entry
-> in log file.
->
-> syslog08    0  INFO  :  syslog: Testing all the facilities
->
-> syslog08    0  INFO  :  Doing facility: user...
-> syslog08    0  INFO  :  Restart /etc/init.d/syslog
-> syslog08    0  INFO  :   Facility user passed
-> syslog08    0  INFO  :  Doing facility: mail...
-> syslog08    0  INFO  :  Restart /etc/init.d/syslog
-> syslog08    0  INFO  :   Facility mail failed
-> syslog08    0  INFO  :  Doing facility: daemon...
-> syslog08    0  INFO  :  Restart /etc/init.d/syslog
-> syslog08    0  INFO  :   Facility daemon passed
-> syslog08    0  INFO  :  Doing facility: auth...
-> syslog08    0  INFO  :  Restart /etc/init.d/syslog
-> syslog08    0  INFO  :   Facility auth passed
-> syslog08    0  INFO  :  Doing facility: lpr...
-> syslog08    0  INFO  :  Restart /etc/init.d/syslog
-> syslog08    0  INFO  :   Facility lpr passed
-> syslog08    1  PASS  :  some facilities failed to work
-> syslog08    0  INFO  :  restart /etc/init.d/syslog
->
-> The says it passed, but the status is "some facilities failed to
-> work" and the log file says that the test failed %)
->
-> I launched ltp on my box but the 01, 02 and 08 syslog tests
-> passed... I have a CentOS 4 setup on this node, maybe this
-> is a SuSE issue? Rishikesh, can you try this on another OS?
->
-> > Please let me know your opinion on this.
-> >
-> > Thanks
-> >
-> > Rishi
-> > IBM LTC
-> > Bangalore
-> >
-> >
-> >
-> >
-------------------------------------------------------------------------
-> >
-> > _______________________________________________
-> > Containers mailing list
-> > Containers@lists.linux-foundation.org
-> > https://lists.linux-foundation.org/mailman/listinfo/containers
-> >
-> >
-> >
-------------------------------------------------------------------------
-> >
-> > _______________________________________________
-> > Devel mailing list
-> > Devel@openvz.org
-> > https://openvz.org/mailman/listinfo/devel
->
-
+-- 
+Pierre
