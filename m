@@ -1,49 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933564AbYA2Qdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765023AbYA2Qen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933564AbYA2Qdw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:33:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbYA2QdW
+	id S1765023AbYA2Qen (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:34:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYA2Qe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:33:22 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:37950 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751881AbYA2QdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:33:20 -0500
-Date: Tue, 29 Jan 2008 10:33:13 -0600
-From: Paul Jackson <pj@sgi.com>
-To: "Gregory Haskins" <ghaskins@novell.com>
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, dmitry.adamushko@gmail.com,
-       rostedt@goodmis.org, menage@google.com, rientjes@google.com,
-       tong.n.li@intel.com, tglx@linutronix.de, akpm@linux-foundation.org,
-       dhaval@linux.vnet.ibm.com, vatsa@linux.vnet.ibm.com, sgrubb@redhat.com,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       nickpiggin@yahoo.com.au
-Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
-Message-Id: <20080129103313.46b52442.pj@sgi.com>
-In-Reply-To: <479F06A4.BA47.005A.0@novell.com>
-References: <1201600428.28547.87.camel@lappy>
-	<1201604243.28547.101.camel@lappy>
-	<20080129053005.bc7a11d7.pj@sgi.com>
-	<1201607401.28547.124.camel@lappy>
-	<20080129061202.95b66041.pj@sgi.com>
-	<479F06A4.BA47.005A.0@novell.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Tue, 29 Jan 2008 11:34:28 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:51435 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751765AbYA2Qe0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 11:34:26 -0500
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Boaz Harrosh <bharrosh@panasas.com>, Greg KH <greg@kroah.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.44L0.0801291032210.4229-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0801291032210.4229-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Tue, 29 Jan 2008 11:34:15 -0500
+Message-Id: <1201624455.3069.10.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory wrote:
-> What about exclusive cpusets?  Don't they create a
-> new sched-domain or did I misunderstand there?
+On Tue, 2008-01-29 at 10:36 -0500, Alan Stern wrote:
+> On Tue, 29 Jan 2008, Boaz Harrosh wrote:
+> 
+> > --- a/drivers/usb/storage/transport.c
+> > +++ b/drivers/usb/storage/transport.c
+> > @@ -462,18 +462,24 @@ static int usb_stor_bulk_transfer_sglist(struct us_data *us, unsigned int pipe,
+> >   * Common used function. Transfer a complete command
+> >   * via usb_stor_bulk_transfer_sglist() above. Set cmnd resid
+> >   */
+> > -int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
+> > -		      struct scsi_cmnd* srb)
+> > +int usb_stor_bulk_srb_length(struct us_data* us, unsigned int pipe,
+> > +		      struct scsi_cmnd* srb, unsigned length)
+> >  {
+> >  	unsigned int partial;
+> >  	int result = usb_stor_bulk_transfer_sglist(us, pipe, scsi_sglist(srb),
+> > -				      scsi_sg_count(srb), scsi_bufflen(srb),
+> > +				      scsi_sg_count(srb), length,
+> >  				      &partial);
+> >  
+> >  	scsi_set_resid(srb, scsi_bufflen(srb) - partial);
+> >  	return result;
+> >  }
+> >  
+> > +int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
+> > +		struct scsi_cmnd* srb)
+> > +{
+> > +	return usb_stor_bulk_srb_length(us, pipe, srb, scsi_bufflen(srb));
+> > +}
+> > +
+> 
+> I don't like this patch very much.  Why add another layer of 
+> indirection when the two subroutines do hardly any work?  Leave 
+> usb_stor_bulk_srb() the way it was, and add usb_stor_bulk_srb_length() 
+> as a separate routine that simply calls usb_stor_bulk_transfer_sglist() 
+> and scsi_set_resid().
+> 
+> BTW, the standard coding style calls for a blank line after the list of 
+> local variables at the start of a function or block.
 
-cpu_exclusive cpusets no longer determine sched domains.
-I just said more in this in an earlier reply.
+There's another bug in the transport.c conversion in that the residuals
+are updated with bogus data in several error cases, since
+usb_stor_bulk_transfer_sglist() only sets the actual length if the urb
+is actually sent.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+I'm not sure if this is is the solution to the problem at hand, but it
+definitely fixes another bug in the code.
+
+James
+
+diff --git a/drivers/usb/storage/transport.c b/drivers/usb/storage/transport.c
+index d9f4912..bab0858 100644
+--- a/drivers/usb/storage/transport.c
++++ b/drivers/usb/storage/transport.c
+@@ -465,7 +465,7 @@ static int usb_stor_bulk_transfer_sglist(struct us_data *us, unsigned int pipe,
+ int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
+ 		      struct scsi_cmnd* srb)
+ {
+-	unsigned int partial;
++	unsigned int partial = scsi_get_resid(srb);
+ 	int result = usb_stor_bulk_transfer_sglist(us, pipe, scsi_sglist(srb),
+ 				      scsi_sg_count(srb), scsi_bufflen(srb),
+ 				      &partial);
+
+
