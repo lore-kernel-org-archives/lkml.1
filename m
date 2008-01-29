@@ -1,129 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764721AbYA2OU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764395AbYA2OYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764721AbYA2OU2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:20:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759584AbYA2OUN
+	id S1764395AbYA2OYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYA2OYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:20:13 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:38388 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbYA2OUK (ORCPT
+	Tue, 29 Jan 2008 09:24:40 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:21199 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752112AbYA2OYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:20:10 -0500
-In-Reply-To: <20080129132309.GA10898@kroah.com>
-References: <20080108163305.GB10026@in.ibm.com> <20080128182423.GC28861@kroah.com> <20080128192204.GO14201@localdomain> <200801291112.41337.ossthema@de.ibm.com> <20080129132309.GA10898@kroah.com>
-Subject: Re: [2.6.24-rc6-mm1]Build failure in drivers/net/ehea/ehea_main.c
-To: Greg KH <greg@kroah.com>
-Cc: akpm@linux-foundation.org, Jan-Bernd Themann <THEMANN@de.ibm.com>,
-       linux-kernel@vger.kernel.org, Nathan Lynch <ntl@pobox.com>,
-       ossthema@linux.vnet.ibm.com, sam@ravnborg.org,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       Joachim Fenkes <FENKES@de.ibm.com>
-X-Mailer: Lotus Notes Release 8.0 August 02, 2007
-Message-ID: <OFB2A9433F.35E00CA4-ONC12573DF.0049FB58-C12573DF.005988BA@de.ibm.com>
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Tue, 29 Jan 2008 15:20:20 +0100
-X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2FP2HF322 | September
- 26, 2007) at 29/01/2008 15:20:07
+	Tue, 29 Jan 2008 09:24:39 -0500
+Message-ID: <479F36B9.2050308@ru.mvista.com>
+Date: Tue, 29 Jan 2008 17:22:49 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: Roel Kluin <12o3l@tiscali.nl>, linuxppc-dev@ozlabs.org, sr@denx.de,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
+References: <4797C1AD.3040307@tiscali.nl> <20080123191704.2d74073a@zod.rchland.ibm.com>
+In-Reply-To: <20080123191704.2d74073a@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> wrote on 29.01.2008 14:23:09:
+Josh Boyer wrote:
+> On Wed, 23 Jan 2008 23:37:33 +0100
+> Roel Kluin <12o3l@tiscali.nl> wrote:
+> 
+>> logical/bitand typo
+>>
+>> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+>> ---
+>> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
+>> index ebf9e21..dcfb459 100644
+>> --- a/arch/powerpc/boot/4xx.c
+>> +++ b/arch/powerpc/boot/4xx.c
+>> @@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
+>>  	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
+>>  	cs = 0;
+>>  	while (val) {
+>> -		if (val && 0x1)
+>> +		if (val & 0x1)
+>>  			cs++;
+>>  		val = val >> 1;
+>>  	}
+> 
+> Hm, good catch.
 
-> On Tue, Jan 29, 2008 at 11:12:40AM +0100, Jan-Bernd Themann wrote:
-...
-> > The sym-link is not gereated automatically as the device for portX is
-added
-> > to the eHEA device (as subnode) where the eHEA device is not a bus.
->
-> Then please fix that, no other driver has this kind of problem, right?
-> Are you just passing the wrong "device" to the networking subsystem?
->
-> > If this sym-link is of interest (which I guess is the case as most
-devices
-> > have it) we have to create it somehow.
->
-> Why would you have to do this by hand?  What makes this driver so unique
-> in the kernel that it would have to do this?  We have lots of other
-> multi-port ethernet drivers today without this issue, right?
->
-> confused,
->
-> greg k-h
+Yes, thanks!
 
-well, the major difference is hea is not PCI.
-All PCI cards we checked have a 1:1 relationship between PCI function (PCI
-config space)
-and a single ethernet port.
-Even if the same Ethernet chip has two ports, it shows up as two separate
-adapters from the PCI perspective (two PCI entries in /sys/bus/pci/devices
+Sequoia and Rainier are currently the only boards using denali 
+controller and have both chipselects enabled (val = 0x3).
+In this case the problem doesn't show up and we still get the right cs 
+value.
+Thanks,
+Valentine.
 
-host:/ # ls -l /sys/bus/pci/devices/0000\:c8\:01.0/
-total 0
-lrwxrwxrwx 1 root root      0 2008-01-28 14:59 bus -> ../../../../bus/pci
--r--r--r-- 1 root root   4096 2008-01-28 14:59 class
--rw-r--r-- 1 root root    256 2008-01-28 14:59 config
--r--r--r-- 1 root root   4096 2008-01-28 14:59 device
--r--r--r-- 1 root root   4096 2008-01-29 14:26 devspec
-lrwxrwxrwx 1 root root      0 2008-01-28 14:59 driver ->
-../../../../bus/pci/drivers/e1000
--r--r--r-- 1 root root   4096 2008-01-28 14:59 irq
--r--r--r-- 1 root root   4096 2008-01-29 14:26 local_cpus
--r--r--r-- 1 root root   4096 2008-01-28 14:59 modalias
-lrwxrwxrwx 1 root root      0 2008-01-29 14:26 net:eth1 ->
-../../../../class/net/eth1
--r--r--r-- 1 root root   4096 2008-01-28 14:59 resource
-....
-host:/ # ls -l /sys/bus/pci/devices/0000\:c8\:01.1/
-total 0
-lrwxrwxrwx 1 root root      0 2008-01-28 14:59 bus -> ../../../../bus/pci
--r--r--r-- 1 root root   4096 2008-01-28 14:59 class
--rw-r--r-- 1 root root    256 2008-01-28 14:59 config
--r--r--r-- 1 root root   4096 2008-01-28 14:59 device
--r--r--r-- 1 root root   4096 2008-01-29 14:29 devspec
-lrwxrwxrwx 1 root root      0 2008-01-28 14:59 driver ->
-../../../../bus/pci/drivers/e1000
--r--r--r-- 1 root root   4096 2008-01-28 14:59 irq
--r--r--r-- 1 root root   4096 2008-01-29 14:29 local_cpus
--r--r--r-- 1 root root   4096 2008-01-28 14:59 modalias
-lrwxrwxrwx 1 root root      0 2008-01-29 14:29 net:eth2 ->
-../../../../class/net/eth2
-...
-
-These pci functions corresponds to a
-/sys/bus/ibmebus/devices/789D.001.XXXXXX-P1/port0
-and
-/sys/bus/ibmebus/devices/789D.001.XXXXXX-P1/port1
-
-The busdriver currently does not find out, how many ports are in a
-/sys/bus/ibmebus/devices/789D.001.XXXXXX-P1.
-This is up to the hardware specific driver responsible for ehea or ehca.
-Think of a PCI card where the PCI busdriver
-can not determine how many ports are implemented on the card.
-
-How should this be mapped to /sys ?
-
-Should we try to "flatten" the ports to something like
-/sys/bus/ibmebus/devices/789D.001.XXXXXX-P1
-/sys/bus/ibmebus/devices/789D.001.XXXXXX-P1_port0
-/sys/bus/ibmebus/devices/789D.001.XXXXXX-P1_port1
-...which means physical hierarchy information would look a bit strange,
-but could be the simpler one.
-
-The way which corresponds to the hardware would be to
-improve the kernel in such a way that hierarchical ports also wortk for
-netdev_register.
-Then we could keep this structure
-/sys/bus/ibmebus/devices/789D.001.XXXXXX-P1/port0
-/sys/bus/ibmebus/devices/789D.001.XXXXXX-P1/port1
-
-
-So, which way should we try?
-
-Gruss / Regards
-Christoph Raisch
-
+> 
+> Stefan, have you had problems with this code at all?
+> 
+> josh
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
