@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933401AbYA2RG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933461AbYA2RHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933401AbYA2RG3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 12:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYA2RGO
+	id S933461AbYA2RHJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 12:07:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbYA2RGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 12:06:14 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:8059 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751719AbYA2RGM (ORCPT
+	Tue, 29 Jan 2008 12:06:53 -0500
+Received: from qmta03.westchester.pa.mail.comcast.net ([76.96.62.32]:35485
+	"EHLO QMTA03.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757661AbYA2RGv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 12:06:12 -0500
-Message-Id: <20080129170418.441437926@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 29 Jan 2008 09:04:18 -0800
-Message-Id: <20080129170230.209662753@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 29 Jan 2008 09:02:30 -0800
-From: Daniel Walker <dwalker@mvista.com>
-To: mingo@elte.hu
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Kevin Hilman <khilman@mvista.com>
-Cc: linux-rt-users@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix workqueue plist init to include a spinlock
+	Tue, 29 Jan 2008 12:06:51 -0500
+X-Authority-Analysis: v=1.0 c=1 a=vEPNTaulQc2DmXLr8tIA:9 a=dcaZonj0A3vKbm-pwCjyEK6aJeEA:4 a=v47ZLdibA2YA:10
+Message-ID: <479F5D29.1020705@bobjweil.com>
+Date: Tue, 29 Jan 2008 12:06:49 -0500
+From: rgheck <rgheck@bobjweil.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Daniel Barkalow <barkalow@iabervon.org>,
+       Gene Heskett <gene.heskett@gmail.com>, Zan Lynx <zlynx@acm.org>,
+       Calvin Walton <calvin.walton@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Subject: Re: Problem with ata layer in 2.6.24
+References: <200801272122.21823.gene.heskett@gmail.com>	<1201539043.31293.7.camel@zem>	<1201540830.6526.19.camel@localhost>	<200801281230.32910.gene.heskett@gmail.com>	<alpine.LNX.1.00.0801281248190.13593@iabervon.org>	<479E1D9E.3000900@bobjweil.com> <20080129121201.2f727f5f@core>
+In-Reply-To: <20080129121201.2f727f5f@core>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The lock field in plist_head_init() is used for debugging the plist,
-and if a NULL is sent in it spews constant errors with debugging enabled ..
-So I added what looks like the correct spinlocks into the plist_head_init().
+Alan Cox wrote:
+>> not one problem but lots---is sufficiently widespread that a Mini HOWTO, 
+>> say, would be really welcome and, I'm guessing, widely used.
+>>     
+>
+> We don't see very many libata problems at the distro level and they for
+> the most part boil down to
+>
+> - sata_nv with >4GB of RAM, knowing being worked on, no old IDE driver
+> anyway
+>   
+Is this >4GB or >=4GB? I've seen contradictory reports, and I've got 4GB.
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+Richard
 
----
- kernel/workqueue.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.24/kernel/workqueue.c
-===================================================================
---- linux-2.6.24.orig/kernel/workqueue.c
-+++ linux-2.6.24/kernel/workqueue.c
-@@ -415,7 +415,7 @@ static void insert_wq_barrier(struct cpu
- 	INIT_WORK(&barr->work, wq_barrier_func);
- 	__set_bit(WORK_STRUCT_PENDING, work_data_bits(&barr->work));
- 
--	plist_head_init(&barr->worklist, NULL);
-+	plist_head_init(&barr->worklist, &cwq->lock);
- 	plist_head_splice(&cwq->worklist, &barr->worklist);
- 	barr->cwq = cwq;
- 	init_completion(&barr->done);
-@@ -845,7 +845,7 @@ init_cpu_workqueue(struct workqueue_stru
- 
- 	cwq->wq = wq;
- 	spin_lock_init(&cwq->lock);
--	plist_head_init(&cwq->worklist, NULL);
-+	plist_head_init(&cwq->worklist, &cwq->lock);
- 	init_waitqueue_head(&cwq->more_work);
- 	cwq->barrier = NULL;
- 	init_waitqueue_head(&cwq->work_done);
--- 
-
--- 
