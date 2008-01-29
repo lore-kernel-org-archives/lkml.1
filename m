@@ -1,105 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933720AbYA2SUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934024AbYA2SU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933720AbYA2SUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 13:20:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYA2STM
+	id S934024AbYA2SU4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 13:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765439AbYA2STV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 13:19:12 -0500
-Received: from smtp03.mtu.ru ([62.5.255.50]:49664 "EHLO smtp03.mtu.ru"
+	Tue, 29 Jan 2008 13:19:21 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:8247 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750778AbYA2STK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 13:19:10 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: Udev coldplugging loads 8139too driver instead of 8139cp
-To: Ondrej Zary <linux@rainbow-software.org>, linux-kernel@vger.kernel.org
-Date: Tue, 29 Jan 2008 21:18:59 +0300
-References: <1201554992.13883.13.camel@Anastacia> <20080128170830.6f67fa5a@deepthought> <479F0369.3080309@msgid.tls.msk.ru> <200801291753.18578.linux@rainbow-software.org>
-User-Agent: KNode/0.10.5
+	id S1758866AbYA2STT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 13:19:19 -0500
+Date: Tue, 29 Jan 2008 19:19:15 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: linux-kernel@vger.kernel.org, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] [RFC] block/elevator: change nr_requests handling
+Message-ID: <20080129181915.GD15220@kernel.dk>
+References: <1201627774.14644.5.camel@nikanth-laptop.blr.novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <20080129181903.A8AE618712F0@smtp03.mtu.ru>
-X-DCC-STREAM-Metrics: smtp03.mtu.ru 10002; Body=0 Fuz1=0 Fuz2=0
+Content-Disposition: inline
+In-Reply-To: <1201627774.14644.5.camel@nikanth-laptop.blr.novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ondrej Zary wrote:
-
-> On Tuesday 29 January 2008 11:43:53 Michael Tokarev wrote:
->> Stephen Hemminger wrote:
->> > On Tue, 29 Jan 2008 03:46:08 +0300
->> > Michael Tokarev <mjt@tls.msk.ru> wrote:
->>
->> []
->>
->> >> There are 2 drivers for 8139-based NICs.  For really different two
->> >> kinds
->> >> of hardware, which both uses the same PCI identifiers.  Both drivers
->> >> "claims" to work with all NICs with those PCI ids, because
->> >> "externally" (by means of udev for example) it's impossible to
->> >> distinguish the two kinds of hardware, it becomes clean only when the
->> >> driver (either of the two) loads and actually checks which hardware we
->> >> have here.
->> >
->> > Is there any chance of using subdevice or subversion to tell them
->> > apart? That worked for other vendors like DLINK who slapped same ID on
->> > different cards.
->>
->> If it were that simple... ;)
->>
->> No.  The difference is in PCI revision number (byte #8 in PCI config
->> space). If it's >= 0x40 - it's 8139too, < 0x40 - 8139cp.  Or 0x20 - I
->> forgot.
+On Tue, Jan 29 2008, Nikanth Karthikesan wrote:
+> The /sys/block/whateverdisk/queue/nr_requests is used to limit the
+> number of requests allocated per queue. There can be atmost nr_requests
+> read requests and nr_requests write requests allocated.
 > 
-> Perhaps a module could be created that will claim this device ID and then
-> use the correct driver.
+> But this can lead to starvation when there are many tasks doing heavy
+> IO. And the ioc_batching code lets those who had failed to allocate a
+> request once, to allocate upto 150% of nr_requests in next round. This
+> just makes the limit a little higher, when there are too many tasks
+> doing heavy IO. IO schedulers have no control over this to choose which
+> task should get the requests. During such situations, even ionice cannot
+> help as CFQ cannot serve a task which cannot allocate any requests.
+> Setting nr_requests to a higher value is like disabling this queue depth
+> check at all.
 > 
-
-C'mon, really ...
-
-echo 'alias ...v000010ECd00008139... 8139too' >> /etc/modprobe.conf
-
-
->> Here's a code snippet from a shell script I used ages ago to
->> automatically load modules (similar to what udev does nowadays):
->>
->>   # special hack for 8139{too,cp} stuff
->>   case "$modalias" in
->>   *v000010ECd00008139*)
->>     rev="$(dd if="$1/config" bs=1 skip=8 count=1 2>/dev/null)"
->>     if [ -n "$rev" ]; then
->>       list=
->>       for module in $modlist; do
->>         case "$module" in
->>         8139cp)
->>           if [ ".$rev" \< ". " ]; then
->>             $vecho1 "$TAG: not loading $module for this device"
->>             continue
->>           fi
->>           ;;
->>         8139too)
->>           if [ ".$rev" \> ". " ]; then
->>             $vecho1 "$TAG: not loading $module for this device"
->>             continue
->>           fi
->>           ;;
->>         esac
->>         list="$list $module"
->>       done
->>       modlist="$list"
->>     fi
->>     ;;
->>   esac
->>
->> /mjt
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
->> in the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
+> This patch defers the nr_requests check till dispatching the requests
+> instead of limiting while creating them. There can be more than
+> nr_requests allocated, but only upto nr_requests chosen by the io
+> scheduler will be dispatched at a time. This lets the io scheduler to
+> guarantee some sort of interactivity even when there are many batchers,
+> if it wants to.
 > 
-> 
-> 
+> This patch removes the ioc_batching code. Also the schedulers stop
+> dispatching when it chooses a Read request and Read queue is full and
+> vice versa. On top of this patch, the individual schedulers can be
+> changed to take advantage of knowing the no of read and write requests
+> that can be dispatched. Or atleast dispatch until both read and write
+> queues are full.
 
+This is all a bit backwards, I think. The io schedulers CAN choose which
+processes get to allocate requests, through the ->may_queue() hook.
+
+I definitely think the batching logic could do with some improvements,
+so I'd encourage you to try and fix that instead. It'd be nice if it did
+honor the max number of requests limit. The current batching works well
+for allowing a process to queue some IO when it gets the allocation
+'token', that should be retained.
+
+Did you do any performance numbers with your patch, btw?
+
+-- 
+Jens Axboe
 
