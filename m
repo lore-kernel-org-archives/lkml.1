@@ -1,40 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765151AbYA2QMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764231AbYA2QNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765151AbYA2QMz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:12:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763002AbYA2QMq
+	id S1764231AbYA2QNb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763920AbYA2QNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:12:46 -0500
-Received: from rtr.ca ([76.10.145.34]:1337 "EHLO mail.rtr.ca"
+	Tue, 29 Jan 2008 11:13:22 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47073 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752162AbYA2QMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:12:45 -0500
-Message-ID: <479F507A.1030203@rtr.ca>
-Date: Tue, 29 Jan 2008 11:12:42 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Florian Attenberger <valdyn@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: Problem with ata layer in 2.6.24
-References: <200801272122.21823.gene.heskett@gmail.com> <200801281413.21347.gene.heskett@gmail.com> <20080129074127.5699afcf.valdyn@gmail.com> <200801291004.12565.gene.heskett@gmail.com>
-In-Reply-To: <200801291004.12565.gene.heskett@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1763002AbYA2QNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 11:13:21 -0500
+Date: Tue, 29 Jan 2008 21:56:58 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: "Guillaume Chazarain" <guichaz@yahoo.fr>
+Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       a.p.zijlstra@chello.nl, dhaval@linux.vnet.ibm.com
+Subject: Re: High wake up latencies with FAIR_USER_SCHED
+Message-ID: <20080129162658.GN1044@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <3d8471ca0801271201o5a41955cg552ef06a2f821285@mail.gmail.com> <20080128023129.GD1044@linux.vnet.ibm.com> <3d8471ca0801280857m2ea8518ds2ad8d5346f756a0e@mail.gmail.com> <3d8471ca0801281213l5ec62984i763afb22216cb423@mail.gmail.com> <20080129054742.GA7902@linux.vnet.ibm.com> <3d8471ca0801290753j481c658bud39c541128f3f005@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3d8471ca0801290753j481c658bud39c541128f3f005@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
->..
-> Does anyone know why my dvdwriter isn't being assigned a '/dev/sdx' number 
-> when dmesg says its found ok at ata2.00?  I've turned on an option that says 
-> something about using the bios for device access this build, but I'll be 
-> surprised if that's it. :)
-..
+On Tue, Jan 29, 2008 at 04:53:56PM +0100, Guillaume Chazarain wrote:
+> I just thought about something to restore low latencies with
+> FAIR_GROUP_SCHED, but it's possibly utter nonsense, so bear with me
+> ;-) The idea would be to reverse the trees upside down. The scheduler
+> would only see tasks (on the leaves) so could apply its interactivity
+> magic, but the hierarchical groups would be used to compute dynamic
+> loads for each task according to their position in the tree:
 
-It should show up as /dev/scd0 or something very similar.
+I think this is equivalent to flattening the hierarchy? We discussed this a bit 
+sometime back [1], but one of its weaknesses is providing strong
+partitioning between groups when it comes to ensuring fairness. Ex: imagine a 
+group which does a fork-bomb. With the flattened tree, it affects other groups 
+more than it would with a 1-level deep hierarchy.
 
+Having said that, I would be interested to hear other solutions that maintain 
+this good partitioning b/n groups and still provide good interactivity!
+
+1. http://lkml.org/lkml/2007/5/30/300
+
+> - now:
+>   - we schedule each level of the tree starting from the root
+> 
+> - with my proposition:
+>   - we schedule tasks like with !FAIR_GROUP_SCHED, but
+> calc_delta_fair() would traverse the tree starting from the leaves to
+> compute the dynamic load.
+
+-- 
+Regards,
+vatsa
