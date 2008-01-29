@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbYA2EGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761634AbYA2EIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761467AbYA2EGG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 23:06:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbYA2EFz
+	id S1761634AbYA2EIH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 23:08:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYA2EHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 23:05:55 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:62560 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752161AbYA2EFy (ORCPT
+	Mon, 28 Jan 2008 23:07:54 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:38733 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752038AbYA2EHx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 23:05:54 -0500
-Date: Mon, 28 Jan 2008 20:12:46 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH] x86: add PCI IDs to k8topology_64.c
-In-reply-to: <p73y7a970nd.fsf@bingen.suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Joachim Deguara <joachim.deguara@amd.com>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       Dean Roe <roe@cray.com>
-Message-id: <200801282012.47190.yinghai.lu@sun.com>
-Organization: Sun
+	Mon, 28 Jan 2008 23:07:53 -0500
+Date: Mon, 28 Jan 2008 23:07:43 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Problem with ata layer in 2.6.24
+In-reply-to: <479E9A70.6090108@rtr.ca>
+To: Mark Lord <liml@rtr.ca>
+Cc: Mikael Pettersson <mikpe@it.uu.se>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Message-id: <200801282307.43585.gene.heskett@gmail.com>
+Organization: Organization? very little
 MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
 Content-disposition: inline
-References: <200801281211.28214.joachim.deguara@amd.com>
- <p73y7a970nd.fsf@bingen.suse.de>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+References: <200801272122.21823.gene.heskett@gmail.com>
+ <200801281906.44892.gene.heskett@gmail.com> <479E9A70.6090108@rtr.ca>
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 January 2008 07:48:06 pm Andi Kleen wrote:
-> "Joachim Deguara" <joachim.deguara@amd.com> writes:
-> 
-> > Quick history, this is a harmless patch that got dropped by Andi as a mixup to 
-> 
-> It's not harmless.
-> 
-> > dropping another patch of mine that was made obsolete by Yinghai.
-> > http://thread.gmane.org/gmane.linux.kernel/559581
-> 
-> No that's not the correct history. The correct history is that 
-> I intentionally rejected this patch because the old k8topology
-> hack should really not be used anymore on modern machines (especially
-> not on Quad Cores). SRAT is the far better way to handle this problem
-> because it has a proper abstraction.
-> 
-> The problem with k8topology.c is that it needs to know very low level
-> information (like HT node numbers etc.) the kernel should not really
-> need to know and which are difficult to handle generally without
-> motherboard specific knowledge. 
-> 
-> k8topology.c mostly guesses, which was never a good way to handle this. 
-> Also in in the various "node has no memory" cases it needs quite
-> hackish fallback heuristics which will be always fragile. Then there
-> are some ugly interactions with quad cores. And some other issues
-> 
-> I still think the patch a bad idea because adapting this file all
-> the time is a long term maintenance issue. I can say that as 
-> the original author :-) It was just a quick hack long ago
-> to get NUMA going early. But now it far outlived its usefulness
-> and adapting it to modern machines is the wrong direction. 
-> 
-> Best is to phase k8topology out.
+On Monday 28 January 2008, Mark Lord wrote:
+>Gene Heskett wrote:
+>..
+>
+>> That's ok, dd seemed to do the job also.
+>
+>..
+>
+>The two programs operate entirely differently from each other,
+>so it may still be worth trying the make_bad_sector utility there.
+>
+>dd goes through the regular kernel I/O calls,
+>whereas make_bad_sector sends raw ATA commands
+>directly (more or less) to the drive.
+>
+Humm, if it (the sector error) continues.  I'm rather convinced that was a one 
+time transient item caused by doing so many hardware resets.  It has not 
+repeated in subsequent stanzas of this error.  Several times it went away 
+while the drives long self test was in progress, and the resets that go with 
+the reboot, or one of these errors seems to stop the long test, which from my 
+reading, should resume with no delay, but maybe that only applies to a 
+powerdown restart, which I haven't been doing.  The last such error was about 
+11 hours ago now. I just started another long test, which if ok, should clear 
+the stuff its showing now because the test was interrupted.  It has passed 
+that test twice before in the last 36 hours.
 
-then with acpi=off, we can not use numa any more.
+Thanks Mark.
 
-also there are some users are using LinuxBIOS or other firmware that doesn't have  or like ACPI support. but they still need numa.
-for them ACPI doesn't help.
-
-YH
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+You are a fluke of the universe; you have no right to be here.
