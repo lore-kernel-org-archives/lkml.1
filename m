@@ -1,48 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbYA2VyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759041AbYA2Vyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758233AbYA2VyL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 16:54:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYA2Vx4
+	id S1759041AbYA2Vyd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 16:54:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbYA2VyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 16:53:56 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37035 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753636AbYA2Vxz (ORCPT
+	Tue, 29 Jan 2008 16:54:06 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:59412 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757645AbYA2VyE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 16:53:55 -0500
-Message-ID: <479F9FA4.8020504@zytor.com>
-Date: Tue, 29 Jan 2008 13:50:28 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 29 Jan 2008 16:54:04 -0500
+Date: Tue, 29 Jan 2008 22:54:03 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Theodore Tso <tytso@MIT.EDU>
+cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] ext4 update
+In-Reply-To: <20080129125307.GF6774@mit.edu>
+Message-ID: <Pine.LNX.4.64.0801292250110.14907@fbirervta.pbzchgretzou.qr>
+References: <E1JJjMo-00011j-EU@closure.thunk.org> <20080129125307.GF6774@mit.edu>
 MIME-Version: 1.0
-To: Ian Campbell <ijc@hellion.org.uk>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: PATCH/RFC: bzImage payload as compressed ELF file.
-References: <1201560133.17053.36.camel@cthulhu.hellion.org.uk>	 <479E5D22.1070109@goop.org>	 <1201599251.5301.26.camel@localhost.localdomain>	 <479F6845.1070902@goop.org> <479F6AD2.8050908@zytor.com>	 <479F70E9.40905@goop.org>  <479F71B6.2010305@zytor.com> <1201639112.9516.23.camel@cthulhu.hellion.org.uk>
-In-Reply-To: <1201639112.9516.23.camel@cthulhu.hellion.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
-> 
-> I finessed the length issue slightly since it happens that the word
-> before the payload is the payload's length. I'm mulling a variety of
-> options:
->       * declare it compression scheme dependant. At least for gzip it
->         knows when it has reached the end.
->       * codify the length followed by data thing we happen to have now
->       * add a length field to the header, using another 4 bytes (is
->         there any pressure on the size of the header?).
-> 
-> I'd probably go with the later unless we are pressed for space in the
-> header.
 
-I would agree with that.  In fact, while we're adding fields to the 
-header, I would like to add a field that would be the CRC32 (or other 
-simple integrity check) over the whole image.
+On Jan 29 2008 07:53, Theodore Tso wrote:
+>
+>>fwiw, diffstat is confused by git's diff output; you need to use
+>>'diffstat -p1'
 
-	-hpa
+I am seeing normal behavior:
+
+22:52 sovereign:~/linux > git status
+# On branch dev-pcidata-dvb
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#       modified:   drivers/media/dvb/b2c2/flexcop-pci.c
+#       modified:   drivers/media/dvb/ttpci/av7110.c
+#       modified:   drivers/media/dvb/ttpci/budget-av.c
+#       modified:   drivers/media/dvb/ttpci/budget-ci.c
+#       modified:   drivers/media/dvb/ttpci/budget-patch.c
+#       modified:   drivers/media/dvb/ttpci/budget.c
+#       modified:   drivers/media/radio/radio-gemtek-pci.c
+#       modified:   drivers/media/radio/radio-maestro.c
+#       modified:   drivers/media/radio/radio-maxiradio.c
+#       modified:   drivers/media/video/bt8xx/bttv-driver.c
+#       modified:   drivers/media/video/cafe_ccic.c
+#       modified:   drivers/media/video/cx23885/cx23885-core.c
+#       modified:   drivers/media/video/cx88/cx88-mpeg.c
+#       modified:   drivers/media/video/cx88/cx88-video.c
+#       modified:   drivers/media/video/dpc7146.c
+#       modified:   drivers/media/video/hexium_gemini.c
+#       modified:   drivers/media/video/hexium_orion.c
+#       modified:   drivers/media/video/meye.c
+#       modified:   drivers/media/video/mxb.c
+#       modified:   drivers/media/video/saa7134/saa7134-cards.c
+#       modified:   drivers/media/video/stradis.c
+#       modified:   drivers/media/video/zoran_card.c
+#
+22:52 sovereign:~/linux > git diff HEAD | diffstat
+ dvb/b2c2/flexcop-pci.c        |    2 +-
+ dvb/ttpci/av7110.c            |    4 ++--
+ dvb/ttpci/budget-av.c         |    2 +-
+ dvb/ttpci/budget-ci.c         |    4 ++--
+ dvb/ttpci/budget-patch.c      |    2 +-
+ dvb/ttpci/budget.c            |    2 +-
+ radio/radio-gemtek-pci.c      |    3 +--
+ radio/radio-maestro.c         |    2 +-
+ radio/radio-maxiradio.c       |    2 +-
+ video/bt8xx/bttv-driver.c     |    2 +-
+ video/cafe_ccic.c             |    2 +-
+ video/cx23885/cx23885-core.c  |    2 +-
+ video/cx88/cx88-mpeg.c        |    2 +-
+ video/cx88/cx88-video.c       |    2 +-
+ video/dpc7146.c               |    4 ++--
+ video/hexium_gemini.c         |    4 ++--
+ video/hexium_orion.c          |    4 ++--
+ video/meye.c                  |    2 +-
+ video/mxb.c                   |    4 ++--
+ video/saa7134/saa7134-cards.c |    2 +-
+ video/stradis.c               |    2 +-
+ video/zoran_card.c            |    2 +-
+ 22 files changed, 28 insertions(+), 29 deletions(-)
