@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764929AbYA2R55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764288AbYA2SAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764929AbYA2R55 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 12:57:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbYA2R5t
+	id S1764288AbYA2SAY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 13:00:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYA2SAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 12:57:49 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:61564 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753875AbYA2R5s (ORCPT
+	Tue, 29 Jan 2008 13:00:08 -0500
+Received: from vms048pub.verizon.net ([206.46.252.48]:41485 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753864AbYA2SAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 12:57:48 -0500
-Date: Tue, 29 Jan 2008 12:55:59 -0500
+	Tue, 29 Jan 2008 13:00:06 -0500
+Date: Tue, 29 Jan 2008 12:59:54 -0500
 From: Gene Heskett <gene.heskett@gmail.com>
 Subject: Re: Problem with ata layer in 2.6.24
-In-reply-to: <BAY101-W159C6F9F2C09199889AA3C8350@phx.gbl>
-To: Adam Turk <bofh1234@hotmail.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <200801291255.59375.gene.heskett@gmail.com>
+In-reply-to: <alpine.LNX.1.00.0801291220540.13593@iabervon.org>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Richard Heck <rgheck@bobjweil.com>, Zan Lynx <zlynx@acm.org>,
+       Calvin Walton <calvin.walton@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Message-id: <200801291259.54262.gene.heskett@gmail.com>
 Organization: Organization? very little
 MIME-version: 1.0
 Content-type: text/plain; charset=iso-8859-1
 Content-transfer-encoding: 7bit
 Content-disposition: inline
-References: <BAY101-W159C6F9F2C09199889AA3C8350@phx.gbl>
+References: <200801272122.21823.gene.heskett@gmail.com>
+ <200801291204.44671.gene.heskett@gmail.com>
+ <alpine.LNX.1.00.0801291220540.13593@iabervon.org>
 User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 January 2008, Adam Turk wrote:
->I just found this thread and it looks like it will fix my problem too.  I
-> have an IDE cd-rw drive and 2 SCSI hard drives.  My ide cd-rw drive hasn't
-> been showing up.  I looked at setting scsi cdrom support
-> (CONFIG_BLOCK_DEV_SR) but it doesn't mention anything about ide drives
-> using libata. I know the drive is being detecting by looking at dmesg:
->ata_piix 0000:00:07.1: version 2.12
->scsi1 : ata_piix
->scsi2 : ata_piix
->ata1: PATA max UDMA/33 cmd 0x1f0 ctl 0x3f6 bmdma 0xffa0 irq 14
->ata2: PATA max UDMA/33 cmd 0x170 ctl 0x376 bmdma 0xffa8 irq 15
->ata1.00: ATAPI: Memorex 52MAXX 3252AJ1, 4WS2, max UDMA/33
->ata1.00: configured for UDMA/33
->ata2: port disabled. ignoring.
->scsi 1:0:0:0: CD-ROM            Memorex  52MAXX 3252AJ1   4WS2 PQ: 0 ANSI: 5
->if this works then it really needs to move and be renamed.  I am compiling
-> with DEV_SR set.
+On Tuesday 29 January 2008, Daniel Barkalow wrote:
+>On Tue, 29 Jan 2008, Gene Heskett wrote:
+>> >For starters, enable CONFIG_BLK_DEV_SR.
+>>
+>> That could stand to be moved or renamed, it is well buried in the menu for
+>> the REAL scsi stuffs, which I don't have any of.  Enabled & building now.
 >
->Just my $0.02 but may be worth more or less,
->Adam
+>The "SCSI support type (disk, tape, CD-ROM)" section of that menu actually
+>applies to all ATA-command-set devices that don't use the old IDE code.
+>For example, usb-storage uses "SCSI disk" out of that section, and
+>I've only seen "Probe all LUNs on each SCSI device" be needed for a
+>particular USB card reader with two slots. At this point, most of the
+>things in the kernel that refer to SCSI probably should say "storage" (or
+>"ATA", really, but that would make the acronyms confusing).
 >
-That fixed me right up, Adam, & k3b is once again as happy as a clam.
+>Incidentally, you should be able to save debugging time for problems like
+>missing "sr" by building it as a module, which will build really quickly
+>and not require a reboot to test.
+>
+>	-Daniel
+>*This .sig left intentionally blank*
+
+I did, Daniel, but while that has worked, its not been 100% foolproof in the 
+past, so I just waste the 9 minutes building a new kernel as cheap insurance.
 
 -- 
 Cheers, Gene
 "There are four boxes to be used in defense of liberty:
  soap, ballot, jury, and ammo. Please use in that order."
 -Ed Howdershelt (Author)
-Main's Law:
-	For every action there is an equal and opposite government program.
+Mal: "If it's Alliance trouble you got, you might want to consider another
+ship. Some onboard here fought for the Independents."
+				--Episode #8, "Out of Gas"
