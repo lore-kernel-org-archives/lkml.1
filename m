@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbYA2WmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbYA2Wm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757874AbYA2WmF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 17:42:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYA2Wls
+	id S1759677AbYA2Wm3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 17:42:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755747AbYA2Wl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 17:41:48 -0500
-Received: from web32409.mail.mud.yahoo.com ([68.142.207.202]:40193 "HELO
-	web32409.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752360AbYA2Wlr (ORCPT
+	Tue, 29 Jan 2008 17:41:56 -0500
+Received: from vms046pub.verizon.net ([206.46.252.46]:60882 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754911AbYA2Wly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 17:41:47 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Jan 2008 17:41:47 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=P+uY6I0EaXa8SUixj/v4eYnbLAF4dGgOob4u3vmoC81wvzJ1JBSqbbkl6j//nOYPBpJrsdEbzkXgPYaTJsehOLeH25LI683FEycJ2I9f2MOPzWZWnvxvIvQH+r+5MRZ6Oyx7Fl8HKuBh0eAAn7zp7wgy2EQ80xzLFlqUYhA6jq8=;
-X-YMail-OSG: XYMqluIVM1nkZD5M7aGtzShEK6g3aw6TNWHP9reIm89LG9zCR_r1_TZTlv_0WMz0DQniRTMQQzBAGooiVDWglGOY1esTf3x13orHuK5yqcneqSZRFTT6Lv_7kQ--
-Date: Tue, 29 Jan 2008 14:35:07 -0800 (PST)
-From: Giridhar Pemmasani <pgiri@yahoo.com>
-Subject: Re: ndiswrapper and GPL-only symbols redux
-To: Valdis.Kletnieks@vt.edu, Pavel Roskin <proski@gnu.org>
-Cc: linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>
-In-Reply-To: <24944.1201645637@turing-police.cc.vt.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <682467.73095.qm@web32409.mail.mud.yahoo.com>
+	Tue, 29 Jan 2008 17:41:54 -0500
+Date: Tue, 29 Jan 2008 17:41:49 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Problem with ata layer in 2.6.24
+In-reply-to: <20080129185445.1c7d3a83@core>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, Richard Heck <rgheck@bobjweil.com>,
+       Daniel Barkalow <barkalow@iabervon.org>, Zan Lynx <zlynx@acm.org>,
+       Calvin Walton <calvin.walton@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Message-id: <200801291741.50192.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200801272122.21823.gene.heskett@gmail.com>
+ <200801291204.44671.gene.heskett@gmail.com> <20080129185445.1c7d3a83@core>
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Valdis.Kletnieks@vt.edu wrote:
+On Tuesday 29 January 2008, Alan Cox wrote:
+>> That could stand to be moved or renamed, it is well buried in the menu for
+>> the REAL scsi stuffs, which I don't have any of.
+>
+>Yes you do - USB storage and ATAPI are SCSI
 
-> At some point, a compromise position of "Have ndiswrapper do the tainting
-> if it loads something with contentious licensing" was suggested - whatever
-> happened to that?
-> 
-> (If for no other reason than if you load ndiswrapper for testing, and then
-> do *not* actually load something, your kernel should remain untainted...)
+By the linux software definition maybe.  But I've defined scsi as that which 
+uses a 50 wire cable using 50 contact centronics connectors since the 
+mid '70's, and which often needs a ready supply of nubile virgins to 
+sacrifice to make it work, particularly with the old resistor pack 
+terminations & psu's whose 5 volt line is only 4.85 volts due to old age.  
+That's what I call REAL scsi.  Its also a REAL PITA if the terms aren't 
+active.
 
-ndiswrapper does taint the kernel when a Windows driver is loaded.
+You can call what you are doing 'scsi' because you are using much the same 
+command structure, and that is good, but its not the real thing with all its 
+hardware warts and/or capabilities.  For one thing, this version usually 
+works. :)
 
-Giri
+Furinstance, you can tell 2 scsi devices on the same controller to talk to 
+each other, moving files from one to the other, and the host controller can 
+then goto sleep & the cpu isn't involved until the devices send it a wakeup 
+to advise the controller that the transfer has been done, and the controller 
+may or may not then interrupt and advise the cpu.  You can do that with 
+separate controllers too as long as they have a compatible DMA channel 
+available to both.
 
+I doubt libata has that capability now, or ever will, cuz these ide/atapi 
+devices are generally dumber than rocks about that.  But any device claiming 
+to be scsi-II is supposed to be able to do those sorts of things while the 
+cpu is off crunching numbers for BOINC or whatever.
 
-      ____________________________________________________________________________________
-Be a better friend, newshound, and 
-know-it-all with Yahoo! Mobile.  Try it now.  http://mobile.yahoo.com/;_ylt=Ahu06i62sR8HDtDypao8Wcj9tAcJ 
+But that puts my mild objections to classifying this as 'scsi' in a more 
+understandable context.  :-)
 
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+When some people decide it's time for everyone to make big changes,
+it means that they want you to change first.
