@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbYA2CUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762066AbYA2CVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759454AbYA2CUv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 21:20:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYA2CUl
+	id S1762066AbYA2CVY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 21:21:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbYA2CVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 21:20:41 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:45765 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752468AbYA2CUl (ORCPT
+	Mon, 28 Jan 2008 21:21:11 -0500
+Received: from qmta04.emeryville.ca.mail.comcast.net ([76.96.30.40]:53077 "EHLO
+	QMTA04.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760843AbYA2CVJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 21:20:41 -0500
-Date: Mon, 28 Jan 2008 21:20:33 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Problem with ata layer in 2.6.24
-In-reply-to: <200801282051.13680.gene.heskett@gmail.com>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Mark Lord <liml@rtr.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200801282120.33442.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <fa.YoSRdik0niRWE1jgfb9yTQPim5A@ifi.uio.no>
- <479E81FE.2090604@shaw.ca> <200801282051.13680.gene.heskett@gmail.com>
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+	Mon, 28 Jan 2008 21:21:09 -0500
+X-Authority-Analysis: v=1.0 c=1 a=7FI6iYLfQLEA:10 a=eJaesg7dyJUKDnsq4nEA:9 a=ucAoU3do4fvT9_pHhvWPc1A2i-4A:4 a=bt0zGP92IBIA:10 a=9XSpoOj3B7kA:10
+From: Paul Moore <paul.moore@hp.com>
+Subject: [PATCH] SELinux: Fix double free in selinux_netlbl_sock_setsid()
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, selinux@tycho.nsa.gov, stable@kernel.org,
+       bunk@kernel.org, jmorris@namei.org
+Date: Mon, 28 Jan 2008 21:20:26 -0500
+Message-ID: <20080129022026.7930.18782.stgit@flek.lan>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-MooreFamily-MailScanner-Information: Please contact pcmoore@engin.umich.edu
+X-MailScanner: Found to be clean
+X-MailScanner-From: paul.moore@hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 January 2008, Gene Heskett wrote:
->On Monday 28 January 2008, Robert Hancock wrote:
->[...]
->
->>Check the /etc/modprobe.conf file, a lot of distributions use this to
->>generate the initrd. If there's references to pata_amd it'll try and
->>include it.
->
->Bingo!  Thanks Robert, I'll try it again with that line commented.  I wasn't
->aware of that connection at all.  Yup, it worked, I feel a reboot coming
->on. :)
+As pointed out by Adrian Bunk, commit 45c950e0f839fded922ebc0bfd59b1081cc71b70
+caused a double-free when security_netlbl_sid_to_secattr() fails.  This patch
+fixes this by removing the netlbl_secattr_destroy() call from that function
+since we are already releasing the secattr memory in
+selinux_netlbl_sock_setsid().
 
-But it didn't work, apparently commenting that line out needs to be balanced 
-by adding another line telling it amd74xx is the 'hostadapter', not 
-necessarily scsi.
+Signed-off-by: Paul Moore <paul.moore@hp.com>
+---
 
-Can this be made more universal so I don't have to edit /etc/modprobe.conf?
+ security/selinux/ss/services.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-Thanks.
+diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
+index 4bf715d..3a16aba 100644
+--- a/security/selinux/ss/services.c
++++ b/security/selinux/ss/services.c
+@@ -2629,7 +2629,6 @@ int security_netlbl_sid_to_secattr(u32 sid, struct netlbl_lsm_secattr *secattr)
+ 
+ netlbl_sid_to_secattr_failure:
+ 	POLICY_RDUNLOCK;
+-	netlbl_secattr_destroy(secattr);
+ 	return rc;
+ }
+ #endif /* CONFIG_NETLABEL */
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Because we don't think about future generations, they will never forget us.
-		-- Henrik Tikkanen
