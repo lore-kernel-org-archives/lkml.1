@@ -1,112 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760332AbYA2BcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761776AbYA2Bf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760332AbYA2BcV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 20:32:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbYA2BcN
+	id S1761776AbYA2Bf2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 20:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbYA2BfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 20:32:13 -0500
-Received: from vms173001pub.verizon.net ([206.46.173.1]:51173 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbYA2BcL (ORCPT
+	Mon, 28 Jan 2008 20:35:20 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:2121 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752330AbYA2BfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 20:32:11 -0500
-Date: Mon, 28 Jan 2008 20:31:57 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Problem with ata layer in 2.6.24
-In-reply-to: <alpine.LNX.1.00.0801281909170.13593@iabervon.org>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Cc: Richard Heck <rgheck@bobjweil.com>, Zan Lynx <zlynx@acm.org>,
-       Calvin Walton <calvin.walton@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-Message-id: <200801282031.58429.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200801272122.21823.gene.heskett@gmail.com>
- <200801281905.35278.gene.heskett@gmail.com>
- <alpine.LNX.1.00.0801281909170.13593@iabervon.org>
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+	Mon, 28 Jan 2008 20:35:19 -0500
+Subject: Re: [CPUISOL] CPU isolation extensions
+From: Daniel Walker <dwalker@mvista.com>
+To: Max Krasnyanskiy <maxk@qualcomm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>, Paul Jackson <pj@sgi.com>
+In-Reply-To: <479E6F71.4040906@qualcomm.com>
+References: <1201493382-29804-1-git-send-email-maxk@qualcomm.com>
+	 <1201511305.6149.30.camel@lappy>  <479E1FD4.5040606@qualcomm.com>
+	 <1201563706.2826.34.camel@imap.mvista.com>  <479E6F71.4040906@qualcomm.com>
+Content-Type: text/plain
+Date: Mon, 28 Jan 2008 17:33:32 -0800
+Message-Id: <1201570413.2826.73.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 January 2008, Daniel Barkalow wrote:
->On Mon, 28 Jan 2008, Gene Heskett wrote:
->> On Monday 28 January 2008, Daniel Barkalow wrote:
->> >Building this and installing it along with the appropriate initrd (which
->> >might be handled by Fedora's install scripts)
->>
->> Or mine, which I've been using for years.
->
->You're ahead of a surprising number of people, including me, if you
->understand making initrds.
 
-In my script, its one line:
-mkinitrd -f initrd-$VER.img $VER && \
+On Mon, 2008-01-28 at 16:12 -0800, Max Krasnyanskiy wrote:
 
-where $VER is the shell variable I edit to = the version number, located at 
-the top of the script.
+> Not accurate enough and way too much overhead for what I need. I know at this point it probably 
+> sounds like I'm talking BS :). I wish I've released the engine and examples by now. Anyway let 
+> me just say that SW MAC has crazy tight deadlines with lots of small tasks. Using nanosleep() & 
+> gettimeofday() is simply not practical. So it's all TSC based with clever time sync logic between
+> HW and SW.
 
-Unforch, its failing:
-No module pata_amd found for kernel 2.6.24, aborting.
+I don't know if it's BS or not, you clearly fixed your own problem which
+is good .. Although when you say "RT patches cannot achieve what I
+needed. Even RTAI/Xenomai can't do that." , and HRT is "Not accurate
+enough and way too much overhead" .. Given the hardware your using,
+that's all difficult to believe.. You also said this code has been
+running on production systems for two year, which means it's at least
+two years old .. There's been some good sized leaps in real time linux
+in the past two years ..
 
-This is with pata_amd turned off and its counterpart under ATA/RLL/etc turned 
-on.  So something is still dependent on it.  I do have one sata drive, on an 
-accessory card in the box, so I need the rest of the sata_sil and friends 
-stuff.  Its my virtual tapes for amanda.  Also home built, the amanda 
-security model cannot be successfully bent into the shape of an rpm.  They 
-BTW are #2 on coverity's list of most secure software.
+Daniel
 
-So I've rebuilt 2.6.24 as it originally was, and added the acpi timer line to 
-the 2.6.24-rc8 stanza's kernel argument list.  It will boot one or the other 
-when I next reboot.  Its been about 8 hours since the last error was logged, 
-which is totally weirdsville to this old fart.  Phase of the moon maybe?  The 
-visit to the sawbones to see about my heart?  They are going to fit me with a 
-30 day recorder tomorrow, my skip a beat problem is getting worse.  The sort 
-of stuff that goes with the 7nth decade I guess.  Officially, I'm wearing out 
-me, too much sugar, too many times nearly electrocuted=shingles yadda 
-yadda. :-)  Oh, and don't forget Arther, he moved in uninvited about 25 years 
-ago too.  Those people that talk about the golden years?  They're full of 
-excrement...
-
->> >will either get you back to
->> >old IDE or will make your kernel panic on boot, depending on whether you
->> >got it right (so make sure you can still boot the kernel you're sure of
->> > or something from a boot disk). This will also cause your hard drives to
->> > show up as different device nodes, so if your boot process doesn't mount
->> > by disk uuid but by some other feature (and I don't know what Fedora
->> > does), you'll also need to change it to something either stable across
->> > access methods or which works for the one you're now using.
->>
->> It mounts by LABEL=.  All of it.
->
->That'll save a huge amount of hassle. So long as you manage to get the
->right drivers included and the wrong drivers not included, you should be
->pretty much set.
->
->> Fedora is not the only people having trouble,  name a distro, its probably
->> someplace in that 14,800 hit google returns.
->
->Yeah, but they each may need different instructions, particularly if
->they're not mounting by label in general, or not mounting the root
->partition by label. That was the big hassle going the opposite direction.
->And the procedure is 4 lines to describe to somebody who knows how to
->build and install a new kernel for the distro, which is much shorter than
->the explanation of how you generally build and install a kernel. A real
->howto would have to explain where to get the distro's kernel sources and
->default configuration, for example.
->
->	-Daniel
->*This .sig left intentionally blank*
-
-
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Never drink from your finger bowl -- it contains only water.
