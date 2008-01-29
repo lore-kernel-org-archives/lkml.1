@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759387AbYA2UoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbYA2UyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759387AbYA2UoE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 15:44:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbYA2Unu
+	id S1758674AbYA2UyZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 15:54:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbYA2UyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 15:43:50 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:56585
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752896AbYA2Unt (ORCPT
+	Tue, 29 Jan 2008 15:54:13 -0500
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:4403 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751027AbYA2UyL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 15:43:49 -0500
-Message-ID: <479F8F83.2030809@qumranet.com>
-Date: Tue, 29 Jan 2008 22:41:39 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 29 Jan 2008 15:54:11 -0500
+Message-ID: <479F9238.9070307@panasas.com>
+Date: Tue, 29 Jan 2008 22:53:12 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 1/6] mmu_notifier: Core code
-References: <20080128202840.974253868@sgi.com> <20080128202923.609249585@sgi.com> <20080129135914.GF7233@v2.random> <Pine.LNX.4.64.0801291148080.24807@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0801291148080.24807@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Oliver Neukum <oliver@neukum.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+References: <200801291531.39825.oliver@neukum.org>	 <20080129143109.GW15220@kernel.dk> <20080129183910.GI15220@kernel.dk>	 <20080129191024.GO14375@one-eyed-alien.net>	 <1201635195.3069.36.camel@localhost.localdomain>	 <20080129193520.GQ15220@kernel.dk> <20080129194543.GR15220@kernel.dk>	 <479F856C.4090900@panasas.com> <20080129200311.GV15220@kernel.dk>	 <1201637090.3069.38.camel@localhost.localdomain>	 <20080129200651.GW15220@kernel.dk> <1201638257.3069.42.camel@localhost.localdomain>
+In-Reply-To: <1201638257.3069.42.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (firebolt.argo.co.il [0.0.0.0]); Tue, 29 Jan 2008 22:41:39 +0200 (IST)
+X-OriginalArrivalTime: 29 Jan 2008 20:53:22.0774 (UTC) FILETIME=[FC606760:01C862B8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 29 Jan 2008, Andrea Arcangeli wrote:
->
->   
->>> +	struct mmu_notifier_head mmu_notifier; /* MMU notifier list */
->>>  };
->>>       
->> Not sure why you prefer to waste ram when MMU_NOTIFIER=n, this is a
->> regression (a minor one though).
->>     
->
-> Andrew does not like #ifdefs and it makes it possible to verify calling 
-> conventions if !CONFIG_MMU_NOTIFIER.
->
->   
+On Tue, Jan 29 2008 at 22:24 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> On Tue, 2008-01-29 at 21:06 +0100, Jens Axboe wrote:
+>>> I will ... but it will cause an explosion in the bidirectional tree
+>>> again.  I think the bidi updates also fix this.  However, give me time
+>>> to rebase and verify.
+>> OK thanks, just wanted to make sure that we didn't both expect each
+>> other to handle it :-)
+> 
+> Yes, confirm that; I think this is already fixed in scsi-misc-2.6.
+> Could you pull from
+> 
+> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+> 
+> and verify with your device?
+> 
+> Thanks,
+> 
+> James
+> 
+> 
+I still don't see these changes, I wanted to check, make sure...
+Are there mirrors on the way to here?
 
-You could define mmu_notifier_head as an empty struct in that case.
+James I would like to remind you that one small piece is missing 
+from the bidi tree, as I saw it from here, it's the few patches from
+scsi-pending. Mainly arm will break which is a grate loss.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+I'm going home now, I'll review all the patches tomorrow and compare
+to what I have, to make sure nothing was forgotten. What a waste of a day
+I pulled from Linus this morning apparently minutes before the merge, and
+chased a none existent bug in my tree. Sigh
+
+Bye
+Boaz
 
