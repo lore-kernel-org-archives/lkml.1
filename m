@@ -1,78 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750726AbYA2KlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbYA2KoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750726AbYA2KlT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 05:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbYA2KlA
+	id S1755903AbYA2KoN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 05:44:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbYA2Kn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 05:41:00 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:61312 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752980AbYA2Kk6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 05:40:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=V17sNENA8hgL20lJkvIEkIZ5Njj3hLszydia9rMvNIoJbfQI25kasIsB4Y0AsvoLgN6BUt7j/UR15P+WnRGO737Bg0kjbrRkM2XXpW9RsPn4/ELUZ86VA6NIbk2YGiO1dz4EvjCCBDeJ911dBEAzv5lIYaqIzdQqWnz8TisBLC0=
-Message-ID: <863e9df20801290240t6c724cb9x145fd6b1ca4f3c78@mail.gmail.com>
-Date: Tue, 29 Jan 2008 16:10:58 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: ananth@in.ibm.com
-Subject: Re: [PATCH 0/3][RFC] x86: Catch stray non-kprobe breakpoints
-Cc: LKML <linux-kernel@vger.kernel.org>, jkenisto@us.ibm.com,
-       "Masami Hiramatsu" <mhiramat@redhat.com>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <20080129060203.GA15576@in.ibm.com>
+	Tue, 29 Jan 2008 05:43:57 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:22991 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753835AbYA2Knz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 05:43:55 -0500
+Message-ID: <479F0369.3080309@msgid.tls.msk.ru>
+Date: Tue, 29 Jan 2008 13:43:53 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Udev coldplugging loads 8139too driver instead of 8139cp
+References: <1201554992.13883.13.camel@Anastacia>	<479E7750.9060304@msgid.tls.msk.ru> <20080128170830.6f67fa5a@deepthought>
+In-Reply-To: <20080128170830.6f67fa5a@deepthought>
+X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <479C4A28.3020705@gmail.com> <20080129060203.GA15576@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/29/08, Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
-> > Non kprobe breakpoints in the kernel might lie inside the .kprobes.text section. Such breakpoints can easily be identified by in_kprobes_functions and can be caught early. These are problematic and a warning should be emitted to discourage them (in any rare case, if they actually occur).
->
-> Why? As Masami indicated in an earlier reply, the annotation is to
-> prevent *only* kprobes.
+Stephen Hemminger wrote:
+> On Tue, 29 Jan 2008 03:46:08 +0300
+> Michael Tokarev <mjt@tls.msk.ru> wrote:
+[]
+>> There are 2 drivers for 8139-based NICs.  For really different two kinds
+>> of hardware, which both uses the same PCI identifiers.  Both drivers
+>> "claims" to work with all NICs with those PCI ids, because "externally"
+>> (by means of udev for example) it's impossible to distinguish the two
+>> kinds of hardware, it becomes clean only when the driver (either of the
+>> two) loads and actually checks which hardware we have here.
+> 
+> Is there any chance of using subdevice or subversion to tell them apart?
+> That worked for other vendors like DLINK who slapped same ID on different
+> cards.
 
-May be I'm completely off the mark here, but shouldn't a small subset
-of this section simply be 'breakpoint-free' rather than 'kprobe-free'?
-Placing a breakpoint on kprobe_handler (say) can loop into a recursive
-trap without allowing the debugger's notifier chain to be invoked. I'm
-assuming that non-kprobe exception notifiers may (or even should) run
-after kprobe's notifier callback (kprobe_exceptions_notify).
+If it were that simple... ;)
 
-> > For this, a check can route the trap handling of such breakpoints away from kprobe_handler (which ends up calling even more functions marked as __kprobes) from inside kprobe_exceptions_notify.
->
-> Well.. we pass on control of a !kprobe breakpoint to the kernel. This is
-> exactly what permits debuggers like xmon to work fine now.
+No.  The difference is in PCI revision number (byte #8 in PCI config space).
+If it's >= 0x40 - it's 8139too, < 0x40 - 8139cp.  Or 0x20 - I forgot.
 
-This will still happen. It doesn't stop non-kprobe breakpoints from
-being handled, wherever they may be.
+Here's a code snippet from a shell script I used ages ago to automatically
+load modules (similar to what udev does nowadays):
 
-> I don't see any harm in such breakpoints being handled autonomously
-> without any sort of kprobe influence.
+  # special hack for 8139{too,cp} stuff
+  case "$modalias" in
+  *v000010ECd00008139*)
+    rev="$(dd if="$1/config" bs=1 skip=8 count=1 2>/dev/null)"
+    if [ -n "$rev" ]; then
+      list=
+      for module in $modlist; do
+        case "$module" in
+        8139cp)
+          if [ ".$rev" \< ". " ]; then
+            $vecho1 "$TAG: not loading $module for this device"
+            continue
+          fi
+          ;;
+        8139too)
+          if [ ".$rev" \> ". " ]; then
+            $vecho1 "$TAG: not loading $module for this device"
+            continue
+          fi
+          ;;
+        esac
+        list="$list $module"
+      done
+      modlist="$list"
+    fi
+    ;;
+  esac
 
-Here's what seems to be happening currently:
-
-int3 (non-kprobe) -> do_int3 ->kprobe_exceptions_notify ->
-kprobe_handler (passes the buck to the kernel) -> non-krpobe/debugger
-exception handler.
-
-Here's what the patch will do:
-
-int3 (non-kprobe) -> do_int3 ->kprobe_exceptions_notify ->
-WARN_ON/kprobe_handler -> non-kprobe/debugger exception handler.
-
-The WARN_ON (and not a BUG_ON) will be hit iff:
-(in_kprobes_functions(addr) && !is_jprobe_bkpt(addr))
-
-> Ananth
-
-I hope I've understood the point you were making, or at least came close :-).
-
---
-Thanks,
-Abhishek
+/mjt
