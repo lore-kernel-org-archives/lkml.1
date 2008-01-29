@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754999AbYA2Jyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbYA2KBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754999AbYA2Jyz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 04:54:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbYA2Jyp
+	id S1754985AbYA2KBx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 05:01:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYA2KBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 04:54:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:59687 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbYA2Jyo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 04:54:44 -0500
-Subject: scheduler scalability - cgroups, cpusets and load-balancing
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, vatsa <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Paul Jackson <pj@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steve Grubb <sgrubb@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       "Li, Tong N" <tong.n.li@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Menage <menage@google.com>,
-       David Rientjes <rientjes@google.com>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 10:53:48 +0100
-Message-Id: <1201600428.28547.87.camel@lappy>
+	Tue, 29 Jan 2008 05:01:43 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:41283 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751538AbYA2KBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 05:01:42 -0500
+Date: Tue, 29 Jan 2008 04:01:30 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@linux.vnet.ibm.com,
+       dhaval@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
+       ebiederm@xmission.com, akpm@linux-foundation.org, sgrubb@redhat.com,
+       rostedt@goodmis.org, ghaskins@novell.com, dmitry.adamushko@gmail.com,
+       tong.n.li@intel.com, tglx@linutronix.de, menage@google.com,
+       rientjes@google.com
+Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
+Message-Id: <20080129040130.7b2904b6.pj@sgi.com>
+In-Reply-To: <1201600428.28547.87.camel@lappy>
+References: <1201600428.28547.87.camel@lappy>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+Peter wrote:
+> Also the RT load-balance needs to become aware of such these sets, I
+> think Paul J and Steven once talked about it, but can't quite remember
+> where that ended
 
-Some of the fancy new scheduler features such as the cgroup load
-balancer (load_balance_monitor) and the real-time load balancer are a
-bit of an scalability issue. They all seem to want a rather strong
-global bound to keep a global fairness (which is quite understandable).
+See further the thread:
 
-[ my own interest is currently real-time group scheduling on multiple
-  cpus, and that seems to require _very_ strong bonds ]
+  http://lkml.org/lkml/2007/10/22/400
 
-I think the current stuff would scale up to 8 maybe 16 cpus, but after
-that I'd be real worried.
+(I don't remember where it ended up either; probably nowhere.
+ I'm just passing on the link, before doing any reading or thinking.)
 
-Now we want distributions to enable most of these features. Distros seem
-to want containers, but distros also need to support 128+ cpu machines,
-so how are we going to solve this.
-
-My thoughts were to make stronger use of disjoint cpu-sets. cgroups and
-cpusets are related, in that cpusets provide a property to a cgroup.
-However, load_balance_monitor()'s interaction with sched domains
-confuses me - it might DTRT, but I can't tell.
-
-[ It looks to me it balances a group over the largest SD the current cpu
-  has access to, even though that might be larger than the SD associated
-  with the cpuset of that particular cgroup. ]
-
-Also the RT load-balance needs to become aware of such these sets, I
-think Paul J and Steven once talked about it, but can't quite remember
-where that ended. From my POV there should be sched-domain based balance
-information, not global.
-
-By cutting the problem into smaller pieces, and adding tunables to
-weaken to global fairness, I think we can give administrators enough
-freedom to make use of these features, even on the largest of machines.
-
-[ so I'd move the load_balance_monitor() tunables into cpusets as well,
-  I can imagine a smaller cpuset wanting a stronger fairness than a much
-  larger cpuset. ]
-
-I understand its a somewhat hand-wavey email, but I wanted to start
-discussion on the issue, or have someone show me I'm wrong and can stop
-worrying :-).
-
-Peter
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
