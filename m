@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764797AbYA2ALU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764934AbYA2AL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764797AbYA2ALU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 19:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbYA2ALM
+	id S1764934AbYA2AL7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 19:11:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757214AbYA2ALt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 19:11:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37597 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755143AbYA2ALL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 19:11:11 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Regression] 2.6.24-git3: Major annoyance during suspend/hibernation on x86-64 (bisected)
-Date: Tue, 29 Jan 2008 01:08:56 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Steven Rostedt <srostedt@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <200801272229.48955.rjw@sisk.pl> <200801281231.51545.rjw@sisk.pl> <200801281731.37636.rjw@sisk.pl>
-In-Reply-To: <200801281731.37636.rjw@sisk.pl>
+	Mon, 28 Jan 2008 19:11:49 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:35461 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755364AbYA2ALs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 19:11:48 -0500
+Date: Mon, 28 Jan 2008 17:11:47 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Andrew Morton <akpm@osdl.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Pull request: DMA pool updates
+Message-ID: <20080129001147.GD31101@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801290108.57310.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 28 of January 2008, Rafael J. Wysocki wrote:
-> On Monday, 28 of January 2008, Rafael J. Wysocki wrote:
-> > On Monday, 28 of January 2008, Steven Rostedt wrote:
-> > > Rafael J. Wysocki wrote:
-> > > 
-> > > > No, this isn't the WARN_ON().
-> > > > 
-> > > >> this does have the feel of being scheduling related, but are you 
-> > > >> absolutely sure about the precise identity of the patch?
-> > > > 
-> > > > Actually, not quite.  That's why I have verified it and found that another
-> > > > patch is really responsible for the issue, namely:
-> > > > 
-> > > > commit 82a1fcb90287052aabfa235e7ffc693ea003fe69
-> > > > Author: Ingo Molnar <mingo@elte.hu>
-> > > > Date:   Fri Jan 25 21:08:02 2008 +0100
-> > > > 
-> > > >     softlockup: automatically detect hung TASK_UNINTERRUPTIBLE tasks
-> > > 
-> > > Are you getting a bunch of prints from the softlockup detector in dmesg?
-> > 
-> > No, I don't.  In fact, I don't get _any_ messages from it whatsoever.
-> > 
-> > > I wonder if the detector can detect a long timeout caused by suspend and 
-> > > resume and if not is triggering false positives?
-> > 
-> > I'm not sure, but the code is supposed to be suspend-aware, IIRC.  However,
-> > I'm seeing a similar symptom on poweroff on an SMP x86-64 box, so it may be
-> > more directly related to the CPU hotplug.  I'll try to verify that.
-> 
-> As I expected, the delay is also observable when I do:
-> 
-> echo 0 > /sys/devices/system/cpu/cpu1/online
-> 
-> (it's variable, between 3 and 30 seconds).  Again, no messages appear in dmesg
-> when this happens.
-> 
-> I suspect I'll be able to reproduce it on another x86-64 SMP machine (I'm going
-> to try that later today).
 
-FWIW, the problem is reproducible on the second machine, with the same
-symptoms.  Both machines are AMD-based.
+G'day Linus, mate
 
-Thanks,
-Rafael
+Could you pull the dmapool branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git please?
+
+All the patches have been posted to linux-kernel before, and various
+comments (and acks) have been taken into account.
+
+It's a fairly nice performance improvement, so would be good to get in.
+It's survived a few hours of *mumble* high-stress database benchmark,
+so I have high confidence in its stability.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
