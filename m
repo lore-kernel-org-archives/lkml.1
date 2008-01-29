@@ -1,73 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbYA2MQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbYA2MRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbYA2MQh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 07:16:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYA2MQ2
+	id S1759257AbYA2MRS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 07:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbYA2MRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 07:16:28 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52370 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751099AbYA2MQ1 (ORCPT
+	Tue, 29 Jan 2008 07:17:00 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:58800 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752467AbYA2MQ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 07:16:27 -0500
-Date: Tue, 29 Jan 2008 12:12:01 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Richard Heck <rgheck@bobjweil.com>
-Cc: Daniel Barkalow <barkalow@iabervon.org>,
-       Gene Heskett <gene.heskett@gmail.com>, Zan Lynx <zlynx@acm.org>,
-       Calvin Walton <calvin.walton@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-Subject: Re: Problem with ata layer in 2.6.24
-Message-ID: <20080129121201.2f727f5f@core>
-In-Reply-To: <479E1D9E.3000900@bobjweil.com>
-References: <200801272122.21823.gene.heskett@gmail.com>
-	<1201539043.31293.7.camel@zem>
-	<1201540830.6526.19.camel@localhost>
-	<200801281230.32910.gene.heskett@gmail.com>
-	<alpine.LNX.1.00.0801281248190.13593@iabervon.org>
-	<479E1D9E.3000900@bobjweil.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Jan 2008 07:16:58 -0500
+Message-ID: <479F18D3.9030709@panasas.com>
+Date: Tue, 29 Jan 2008 14:15:15 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>
+CC: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+References: <20080128204935.GI15220@kernel.dk> <20080128212114.GA15586@kroah.com>
+In-Reply-To: <20080128212114.GA15586@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> not one problem but lots---is sufficiently widespread that a Mini HOWTO, 
-> say, would be really welcome and, I'm guessing, widely used.
+Greg KH wrote:
+> On Mon, Jan 28, 2008 at 09:49:35PM +0100, Jens Axboe wrote:
+>> Hi,
+>>
+>> Running latest -git (head 91525300baf162e83e923b09ca286f9205e21522) and
+>> connecting my cf usb storage device yields and endless stream of:
+>>
+>> Initializing USB Mass Storage driver...
+>> scsi6 : SCSI emulation for USB Mass Storage devices
+>> usb-storage: device found at 2
+>> usb-storage: waiting for device to settle before scanning
+>> usbcore: registered new interface driver usb-storage
+>> USB Mass Storage support registered.
+>> scsi 6:0:0:0: Direct-Access     Generic  STORAGE DEVICE   0125 PQ: 0
+>> ANSI: 0
+>> sd 6:0:0:0: [sdb] 4001760 512-byte hardware sectors (2049 MB)
+>> sd 6:0:0:0: [sdb] Write Protect is off
+>> sd 6:0:0:0: [sdb] Mode Sense: 02 00 00 00
+>> sd 6:0:0:0: [sdb] Assuming drive cache: write through
+>> sd 6:0:0:0: [sdb] 4001760 512-byte hardware sectors (2049 MB)
+>> sd 6:0:0:0: [sdb] Write Protect is off
+>> sd 6:0:0:0: [sdb] Mode Sense: 02 00 00 00
+>> sd 6:0:0:0: [sdb] Assuming drive cache: write through
+>>  sdb: sdb1
+>> sd 6:0:0:0: [sdb] Attached SCSI removable disk
+>> sd 6:0:0:0: Attached scsi generic sg1 type 0
+>> scsi 6:0:0:1: Direct-Access     Generic  STORAGE DEVICE   0125 PQ: 0
+>> ANSI: 0
+>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>> [...]
+>>
+>> until I disconnect it. The device doesn't work. Worked fine in 2.6.24.
+>> I'm attaching boot messages and my .config.
+> 
+> That's a bit wierd, as we haven't added any USB patches to the -git tree
+> yet after 2.6.24 :)
+> 
+> Could this be caused by some scsi changes perhaps?
+> 
+> thanks,
+> 
+> greg k-h
+> -
+Yes it is ;)
 
-We don't see very many libata problems at the distro level and they for
-the most part boil down to
+Jens could you test the patch below? if it works I'll submit a proper
+patch. Please forgive me for the bug.
 
-- error messages looking different - Most bugs I get are things like
-media errors (timeout looks different, UNC report looks different)
+Matthew, Greg, Is there a way to extract from messages the usb storage transport
+used? I'm guessing it is freecom do to the fact that I find a bug there.
 
-- broken hardware - I've closed a whole raft of bugs that turn out to be
-new PC systems where even the BIOS doesn't see the drives
+Thanks
+Boaz
 
-- faulty hardware being picked up because we actually do real error
-checking now. We now check for and give some devices more slack while
-still doing error checking. Both IDE layers also added blacklists for
-stuff like the TSScorp DVD drives. Qemu has now had its bugs patched.
+---
+ drivers/usb/storage/freecom.c   |    4 ++--
+ drivers/usb/storage/transport.c |   12 +++++++++---
+ drivers/usb/storage/transport.h |    3 ++-
+ 3 files changed, 13 insertions(+), 6 deletions(-)
 
-- sata_nv with >4GB of RAM, knowing being worked on, no old IDE driver
-anyway
+diff --git a/drivers/usb/storage/freecom.c b/drivers/usb/storage/freecom.c
+index f5a4e8d..8d77603 100644
+--- a/drivers/usb/storage/freecom.c
++++ b/drivers/usb/storage/freecom.c
+@@ -132,7 +132,7 @@ freecom_readdata (struct scsi_cmnd *srb, struct us_data *us,
  
-- pata_ali MWDMA with ATAPI, PIO works fine, all a bit of a mystery and
-as it affects only a few chip variants hard to figure out. Workaround
-libata.dma=1
+ 	/* Now transfer all of our blocks. */
+ 	US_DEBUGP("Start of read\n");
+-	result = usb_stor_bulk_srb(us, ipipe, srb);
++	result = usb_stor_bulk_srb_length(us, ipipe, srb, count);
+ 	US_DEBUGP("freecom_readdata done!\n");
+ 
+ 	if (result > USB_STOR_XFER_SHORT)
+@@ -165,7 +165,7 @@ freecom_writedata (struct scsi_cmnd *srb, struct us_data *us,
+ 
+ 	/* Now transfer all of our blocks. */
+ 	US_DEBUGP("Start of write\n");
+-	result = usb_stor_bulk_srb(us, opipe, srb);
++	result = usb_stor_bulk_srb_length(us, opipe, srb, count);
+ 
+ 	US_DEBUGP("freecom_writedata done!\n");
+ 	if (result > USB_STOR_XFER_SHORT)
+diff --git a/drivers/usb/storage/transport.c b/drivers/usb/storage/transport.c
+index d9f4912..5072235 100644
+--- a/drivers/usb/storage/transport.c
++++ b/drivers/usb/storage/transport.c
+@@ -462,18 +462,24 @@ static int usb_stor_bulk_transfer_sglist(struct us_data *us, unsigned int pipe,
+  * Common used function. Transfer a complete command
+  * via usb_stor_bulk_transfer_sglist() above. Set cmnd resid
+  */
+-int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
+-		      struct scsi_cmnd* srb)
++int usb_stor_bulk_srb_length(struct us_data* us, unsigned int pipe,
++		      struct scsi_cmnd* srb, unsigned length)
+ {
+ 	unsigned int partial;
+ 	int result = usb_stor_bulk_transfer_sglist(us, pipe, scsi_sglist(srb),
+-				      scsi_sg_count(srb), scsi_bufflen(srb),
++				      scsi_sg_count(srb), length,
+ 				      &partial);
+ 
+ 	scsi_set_resid(srb, scsi_bufflen(srb) - partial);
+ 	return result;
+ }
+ 
++int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
++		struct scsi_cmnd* srb)
++{
++	return usb_stor_bulk_srb_length(us, pipe, srb, scsi_bufflen(srb));
++}
++
+ /*
+  * Transfer an entire SCSI command's worth of data payload over the bulk
+  * pipe.
+diff --git a/drivers/usb/storage/transport.h b/drivers/usb/storage/transport.h
+index ada7c2f..03e395d 100644
+--- a/drivers/usb/storage/transport.h
++++ b/drivers/usb/storage/transport.h
+@@ -139,8 +139,9 @@ extern int usb_stor_bulk_transfer_buf(struct us_data *us, unsigned int pipe,
+ 		void *buf, unsigned int length, unsigned int *act_len);
+ extern int usb_stor_bulk_transfer_sg(struct us_data *us, unsigned int pipe,
+ 		void *buf, unsigned int length, int use_sg, int *residual);
++extern int usb_stor_bulk_srb_length(struct us_data* us, unsigned int pipe,
++		struct scsi_cmnd* srb, unsigned length);
+ extern int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
+ 		struct scsi_cmnd* srb);
+-
+ extern int usb_stor_port_reset(struct us_data *us);
+ #endif
 
-- CS handling. On a few boxes using cable select (particularly on one
-drive and not the other) shows up a problem, normally a failed SRST.
-That's still under investigation.
-
-- Promise timeouts. The old IDE times out then polls the device and finds
-the IRQ was never sent and then recovers so the user sees a short stall
-but no errors. The new libata doesn't do this and pdc202xx_old thus
-produces some error messages on some boxes. Backup polling is on my todo
-list.
