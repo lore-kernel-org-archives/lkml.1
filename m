@@ -1,71 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764395AbYA2OYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764872AbYA2OZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764395AbYA2OYu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYA2OYk
+	id S1764872AbYA2OZJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:25:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764161AbYA2OYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:24:40 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:21199 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752112AbYA2OYj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:24:39 -0500
-Message-ID: <479F36B9.2050308@ru.mvista.com>
-Date: Tue, 29 Jan 2008 17:22:49 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Roel Kluin <12o3l@tiscali.nl>, linuxppc-dev@ozlabs.org, sr@denx.de,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][ppc] logical/bitand typo in powerpc/boot/4xx.c
-References: <4797C1AD.3040307@tiscali.nl> <20080123191704.2d74073a@zod.rchland.ibm.com>
-In-Reply-To: <20080123191704.2d74073a@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 29 Jan 2008 09:24:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49478 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764044AbYA2OYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 09:24:45 -0500
+Subject: Re: [PATCH 6/12] gfs2: make gfs2_glock.gl_owner_pid be a struct
+	pid *
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <479F3063.2050006@openvz.org>
+References: <479F2C5C.1050303@openvz.org>  <479F3063.2050006@openvz.org>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Tue, 29 Jan 2008 14:19:45 +0000
+Message-Id: <1201616386.22038.337.camel@quoit>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Josh Boyer wrote:
-> On Wed, 23 Jan 2008 23:37:33 +0100
-> Roel Kluin <12o3l@tiscali.nl> wrote:
-> 
->> logical/bitand typo
->>
->> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
->> ---
->> diff --git a/arch/powerpc/boot/4xx.c b/arch/powerpc/boot/4xx.c
->> index ebf9e21..dcfb459 100644
->> --- a/arch/powerpc/boot/4xx.c
->> +++ b/arch/powerpc/boot/4xx.c
->> @@ -104,7 +104,7 @@ void ibm4xx_denali_fixup_memsize(void)
->>  	val = DDR_GET_VAL(val, DDR_CS_MAP, DDR_CS_MAP_SHIFT);
->>  	cs = 0;
->>  	while (val) {
->> -		if (val && 0x1)
->> +		if (val & 0x1)
->>  			cs++;
->>  		val = val >> 1;
->>  	}
-> 
-> Hm, good catch.
+Hi,
 
-Yes, thanks!
+Would you like me to take these two GFS2 patches into my git tree for
+the next merge window, or are you intending that these should go to
+Linus in this merge window? Either way I'm happy to add my:
 
-Sequoia and Rainier are currently the only boards using denali 
-controller and have both chipselects enabled (val = 0x3).
-In this case the problem doesn't show up and we still get the right cs 
-value.
-Thanks,
-Valentine.
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
+Steve.
+
+On Tue, 2008-01-29 at 16:55 +0300, Pavel Emelyanov wrote:
+> The gl_owner_pid field is used to get the lock owning
+> task by its pid, so make it in a proper manner, i.e.
+> by using the struct pid pointer and pid_task() function.
 > 
-> Stefan, have you had problems with this code at all?
+> The pid_task() becomes exported for the gfs2 module.
 > 
-> josh
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> ---
+>  fs/gfs2/glock.c  |   19 ++++++++++++-------
+>  fs/gfs2/incore.h |    2 +-
+>  2 files changed, 13 insertions(+), 8 deletions(-)
+> 
+> diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+> index 80e09c5..5fe585f 100644
+> --- a/fs/gfs2/glock.c
+> +++ b/fs/gfs2/glock.c
+> @@ -334,7 +334,7 @@ int gfs2_glock_get(struct gfs2_sbd *sdp, u64 number,
+>  	gl->gl_state = LM_ST_UNLOCKED;
+>  	gl->gl_demote_state = LM_ST_EXCLUSIVE;
+>  	gl->gl_hash = hash;
+> -	gl->gl_owner_pid = 0;
+> +	gl->gl_owner_pid = NULL;
+>  	gl->gl_ip = 0;
+>  	gl->gl_ops = glops;
+>  	gl->gl_req_gh = NULL;
+> @@ -631,7 +631,7 @@ static void gfs2_glmutex_lock(struct gfs2_glock *gl)
+>  		wait_on_holder(&gh);
+>  		gfs2_holder_uninit(&gh);
+>  	} else {
+> -		gl->gl_owner_pid = current->pid;
+> +		gl->gl_owner_pid = get_pid(task_pid(current));
+>  		gl->gl_ip = (unsigned long)__builtin_return_address(0);
+>  		spin_unlock(&gl->gl_spin);
+>  	}
+> @@ -652,7 +652,7 @@ static int gfs2_glmutex_trylock(struct gfs2_glock *gl)
+>  	if (test_and_set_bit(GLF_LOCK, &gl->gl_flags)) {
+>  		acquired = 0;
+>  	} else {
+> -		gl->gl_owner_pid = current->pid;
+> +		gl->gl_owner_pid = get_pid(task_pid(current));
+>  		gl->gl_ip = (unsigned long)__builtin_return_address(0);
+>  	}
+>  	spin_unlock(&gl->gl_spin);
+> @@ -668,12 +668,17 @@ static int gfs2_glmutex_trylock(struct gfs2_glock *gl)
+>  
+>  static void gfs2_glmutex_unlock(struct gfs2_glock *gl)
+>  {
+> +	struct pid *pid;
+> +
+>  	spin_lock(&gl->gl_spin);
+>  	clear_bit(GLF_LOCK, &gl->gl_flags);
+> -	gl->gl_owner_pid = 0;
+> +	pid = gl->gl_owner_pid;
+> +	gl->gl_owner_pid = NULL;
+>  	gl->gl_ip = 0;
+>  	run_queue(gl);
+>  	spin_unlock(&gl->gl_spin);
+> +
+> +	put_pid(pid);
+>  }
+>  
+>  /**
+> @@ -1877,13 +1882,13 @@ static int dump_glock(struct glock_iter *gi, struct gfs2_glock *gl)
+>  	print_dbg(gi, "  gl_ref = %d\n", atomic_read(&gl->gl_ref));
+>  	print_dbg(gi, "  gl_state = %u\n", gl->gl_state);
+>  	if (gl->gl_owner_pid) {
+> -		gl_owner = find_task_by_pid(gl->gl_owner_pid);
+> +		gl_owner = pid_task(gl->gl_owner_pid, PIDTYPE_PID);
+>  		if (gl_owner)
+>  			print_dbg(gi, "  gl_owner = pid %d (%s)\n",
+> -				  gl->gl_owner_pid, gl_owner->comm);
+> +				  pid_nr(gl->gl_owner_pid), gl_owner->comm);
+>  		else
+>  			print_dbg(gi, "  gl_owner = %d (ended)\n",
+> -				  gl->gl_owner_pid);
+> +				  pid_nr(gl->gl_owner_pid));
+>  	} else
+>  		print_dbg(gi, "  gl_owner = -1\n");
+>  	print_dbg(gi, "  gl_ip = %lu\n", gl->gl_ip);
+> diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
+> index 1339996..8ad1c3f 100644
+> --- a/fs/gfs2/incore.h
+> +++ b/fs/gfs2/incore.h
+> @@ -182,7 +182,7 @@ struct gfs2_glock {
+>  	unsigned int gl_hash;
+>  	unsigned int gl_demote_state; /* state requested by remote node */
+>  	unsigned long gl_demote_time; /* time of first demote request */
+> -	pid_t gl_owner_pid;
+> +	struct pid *gl_owner_pid;
+>  	unsigned long gl_ip;
+>  	struct list_head gl_holders;
+>  	struct list_head gl_waiters1;	/* HIF_MUTEX */
+> diff --git a/kernel/pid.c b/kernel/pid.c
+> index e4e5fc8..4776915 100644
+> --- a/kernel/pid.c
+> +++ b/kernel/pid.c
+> @@ -367,6 +367,7 @@ struct task_struct *pid_task(struct pid *pid, enum pid_type type)
+>  	}
+>  	return result;
+>  }
+> +EXPORT_SYMBOL(pid_task);
+>  
+>  /*
+>   * Must be called under rcu_read_lock() or with tasklist_lock read-held.
 
