@@ -1,127 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbYA2Kks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750726AbYA2KlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642AbYA2Kks (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 05:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbYA2Kki
+	id S1750726AbYA2KlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 05:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbYA2KlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 05:40:38 -0500
-Received: from zakalwe.fi ([80.83.5.154]:38373 "EHLO zakalwe.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754985AbYA2KkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 05:40:20 -0500
-Date: Tue, 29 Jan 2008 12:40:18 +0200
-From: Heikki Orsila <shdl@zakalwe.fi>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] Improve Documentation/stable_api_nonsense.txt
-Message-ID: <20080129104018.GF12172@zakalwe.fi>
-References: <20080128230959.AA1A32BC98@zakalwe.fi> <20080129044805.GA1718@kroah.com>
+	Tue, 29 Jan 2008 05:41:00 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:61312 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752980AbYA2Kk6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 05:40:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=V17sNENA8hgL20lJkvIEkIZ5Njj3hLszydia9rMvNIoJbfQI25kasIsB4Y0AsvoLgN6BUt7j/UR15P+WnRGO737Bg0kjbrRkM2XXpW9RsPn4/ELUZ86VA6NIbk2YGiO1dz4EvjCCBDeJ911dBEAzv5lIYaqIzdQqWnz8TisBLC0=
+Message-ID: <863e9df20801290240t6c724cb9x145fd6b1ca4f3c78@mail.gmail.com>
+Date: Tue, 29 Jan 2008 16:10:58 +0530
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: ananth@in.ibm.com
+Subject: Re: [PATCH 0/3][RFC] x86: Catch stray non-kprobe breakpoints
+Cc: LKML <linux-kernel@vger.kernel.org>, jkenisto@us.ibm.com,
+       "Masami Hiramatsu" <mhiramat@redhat.com>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <20080129060203.GA15576@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080129044805.GA1718@kroah.com>
-User-Agent: Mutt/1.5.11
+References: <479C4A28.3020705@gmail.com> <20080129060203.GA15576@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC'ing Andi as he commented also..
+On 1/29/08, Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+> > Non kprobe breakpoints in the kernel might lie inside the .kprobes.text section. Such breakpoints can easily be identified by in_kprobes_functions and can be caught early. These are problematic and a warning should be emitted to discourage them (in any rare case, if they actually occur).
+>
+> Why? As Masami indicated in an earlier reply, the annotation is to
+> prevent *only* kprobes.
 
-On Mon, Jan 28, 2008 at 08:48:05PM -0800, Greg KH wrote:
-> On Tue, Jan 29, 2008 at 01:09:59AM +0200, Heikki Orsila wrote:
-> > * Make a remark about avoiding unnecessary changes in interfaces
-> > * Improve wording
-> 
-> Well, "improve" is a bit judgemental :)
+May be I'm completely off the mark here, but shouldn't a small subset
+of this section simply be 'breakpoint-free' rather than 'kprobe-free'?
+Placing a breakpoint on kprobe_handler (say) can loop into a recursive
+trap without allowing the debugger's notifier chain to be invoked. I'm
+assuming that non-kprobe exception notifiers may (or even should) run
+after kprobe's notifier callback (kprobe_exceptions_notify).
 
-The places I corrected were somewhat unreadable English in my opinion.
-The problem with this text is mostly 
-style that breaks common sense rules how to write simple sentences.
-Documentation should not try to represent its writer but convey 
-the idea as well as possible.
+> > For this, a check can route the trap handling of such breakpoints away from kprobe_handler (which ends up calling even more functions marked as __kprobes) from inside kprobe_exceptions_notify.
+>
+> Well.. we pass on control of a !kprobe breakpoint to the kernel. This is
+> exactly what permits debuggers like xmon to work fine now.
 
-> > @@ -68,11 +68,11 @@ consider the following facts about the Linux kernel:
-> >      There is no way that binary drivers from one architecture will run
-> >      on another architecture properly.
-> >  
-> > -Now a number of these issues can be addressed by simply compiling your
-> > -module for the exact specific kernel configuration, using the same exact
-> > +Now, a number of these issues can be addressed by simply compiling your
-> > +module for the same kernel configuration, using the same
-> 
-> No, I want to emphasize the word "exact" here.  It has to be the same.
+This will still happen. It doesn't stop non-kprobe breakpoints from
+being handled, wherever they may be.
 
-Do you want preserve both "exact specific" and "same exact"? Imo,
-"same exact C compiler" is just bad language, because C compilers are 
-always "exact". "exactly same C compiler" would do.
+> I don't see any harm in such breakpoints being handled autonomously
+> without any sort of kprobe influence.
 
-> >  C compiler that the kernel was built with.  This is sufficient if you
-> >  want to provide a module for a specific release version of a specific
-> > -Linux distribution.  But multiply that single build by the number of
-> > +Linux distribution. However, multiply that single build by the number of
-> 
-> You messed with the "two space" rule, and changed the word unecessarily
-> in my opinion.
-> 
-> >  different Linux distributions and the number of different supported
-> >  releases of the Linux distribution and you quickly have a nightmare of
-> >  different build options on different releases.  Also realize that each
-> > @@ -93,7 +93,7 @@ keep a Linux kernel driver that is not in the main kernel tree up to
-> >  date over time.
-> >  
-> >  Linux kernel development is continuous and at a rapid pace, never
-> > -stopping to slow down.  As such, the kernel developers find bugs in
-> > +slowing down.  As such, the kernel developers find bugs in
-> 
-> No, they never stop, I say leave it as is.
+Here's what seems to be happening currently:
 
-Imo, that statement is very odd. The meaning of it has to be guessed.
-"never slowing down" is very simple and conveys the essential idea.
+int3 (non-kprobe) -> do_int3 ->kprobe_exceptions_notify ->
+kprobe_handler (passes the buck to the kernel) -> non-krpobe/debugger
+exception handler.
 
-> > @@ -116,7 +116,7 @@ issues:
-> >  
-> >  This is in stark contrast to a number of closed source operating systems
-> >  which have had to maintain their older USB interfaces over time.  This
-> > -provides the ability for new developers to accidentally use the old
-> > +has the risk for new developers to accidentally use the old
-> 
-> It's not so much as a "risk" as it is what always seems to happen.  So I
-> don't like this change either.
+Here's what the patch will do:
 
-No, it's definitely more "risk" than "ability" because "ability" should 
-refer to a positive property. Here "ability" is used to refer to a
-"negative outcome".
+int3 (non-kprobe) -> do_int3 ->kprobe_exceptions_notify ->
+WARN_ON/kprobe_handler -> non-kprobe/debugger exception handler.
 
-> > @@ -145,6 +145,10 @@ as small as possible, and that all potential interfaces are tested as
-> >  well as they can be (unused interfaces are pretty much impossible to
-> >  test for validity.)
-> >  
-> > +Some complain that kernel interfaces change too often for out-of-the-tree
-> > +modules, but this claim is false. Changing an interface can be delicate work,
-> > +and it can take significant amount of developer effort. Therefore, interfaces
-> > +are not changed without a good reason.
-> 
-> No, their claim is a valid one, it's not "false".  However we are not
-> going to do anything about it, and as such, we don't need this kind of
-> wording to get people worried about it even more.
+The WARN_ON (and not a BUG_ON) will be hit iff:
+(in_kprobes_functions(addr) && !is_jprobe_bkpt(addr))
 
-How about this (scrap the whole paragraph):
+> Ananth
 
-Changing an interface can be delicate work and it can take significant 
-amount of developer effort. Therefore, an interface is not changed
-unless the change is regarded as very important by the developers.
+I hope I've understood the point you were making, or at least came close :-).
 
-> So, care to redo the patch?
-
-Will try..
-
-> Also note, there are other translations of this text already, so if you
-> want to change phrases like this, you might want to cc: those
-> maintainers as well to get their input.
-
-OK.
-
--- 
-Heikki Orsila			Barbie's law:
-heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
-http://www.iki.fi/shd
+--
+Thanks,
+Abhishek
