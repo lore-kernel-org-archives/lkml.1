@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbYA2Que@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbYA2Qv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932174AbYA2Que (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760441AbYA2QuW
+	id S932832AbYA2Qv1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:51:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760770AbYA2QvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:50:22 -0500
-Received: from qmta09.westchester.pa.mail.comcast.net ([76.96.62.96]:44652
-	"EHLO QMTA09.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758578AbYA2QuU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:50:20 -0500
-X-Authority-Analysis: v=1.0 c=1 a=LhEZLq1m22fBr3wI_CwA:9 a=GPR280To7Hsl1fscFVK1Bq9cv2sA:4 a=vNGxQsTWjH8A:10
-Message-ID: <479F5949.4090906@bobjweil.com>
-Date: Tue, 29 Jan 2008 11:50:17 -0500
-From: rgheck <rgheck@bobjweil.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Gene Heskett <gene.heskett@gmail.com>,
-       Florian Attenberger <valdyn@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: Problem with ata layer in 2.6.24
-References: <200801272122.21823.gene.heskett@gmail.com> <200801281413.21347.gene.heskett@gmail.com> <20080129074127.5699afcf.valdyn@gmail.com> <200801291004.12565.gene.heskett@gmail.com> <479F507A.1030203@rtr.ca>
-In-Reply-To: <479F507A.1030203@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 29 Jan 2008 11:51:10 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:50427 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760441AbYA2QvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 11:51:08 -0500
+Date: Tue, 29 Jan 2008 10:51:04 -0600
+From: Paul Jackson <pj@sgi.com>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, dmitry.adamushko@gmail.com,
+       rostedt@goodmis.org, menage@google.com, rientjes@google.com,
+       tong.n.li@intel.com, tglx@linutronix.de, akpm@linux-foundation.org,
+       dhaval@linux.vnet.ibm.com, vatsa@linux.vnet.ibm.com, sgrubb@redhat.com,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       nickpiggin@yahoo.com.au
+Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
+Message-Id: <20080129105104.d70f36ef.pj@sgi.com>
+In-Reply-To: <479F0507.BA47.005A.0@novell.com>
+References: <1201600428.28547.87.camel@lappy>
+	<1201604243.28547.101.camel@lappy>
+	<20080129053005.bc7a11d7.pj@sgi.com>
+	<1201607401.28547.124.camel@lappy>
+	<479F0507.BA47.005A.0@novell.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Gene Heskett wrote:
->> ..
->> Does anyone know why my dvdwriter isn't being assigned a '/dev/sdx' 
->> number when dmesg says its found ok at ata2.00?  I've turned on an 
->> option that says something about using the bios for device access 
->> this build, but I'll be surprised if that's it. :)
-> ..
->
-> It should show up as /dev/scd0 or something very similar.
->
-Does it appear as /dev/sr0? Try ll /dev/s* and see what you get.
+Gregory wrote:
+> This is correct.  We have the balance policy polymorphically associated
+> with each sched_class, and the CFS load-balancer and RT "load" (really,
+> priority) balancer can coexist together at the same time and across
+> arbitrary #s of cores
 
-Anyway, these /dev/ entries are produced by udev, not by libata.
+So ... we have the option of having all sched_classes coexist polymorphically.
 
-rh
+That I didn't realize until this thread.
 
+Now ... do we -want- to ?)
+
+That is, what is the easiest kernel-user API to work with and understand?
+
+Is it one where we essentially expose sched_class to user space, and let
+them pick their sched_class, or pick none of the above (don't balance)?
+
+Or is it one where, other than the special case my batch schedulers need
+to not balance at all, we expose nothing more to user space, and provide
+all sched_class load balancers to all sched_domains (other than those
+not balanced at all)?
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
