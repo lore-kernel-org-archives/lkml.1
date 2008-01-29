@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764459AbYA2PeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764588AbYA2Pgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764459AbYA2PeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 10:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbYA2PeA
+	id S1764588AbYA2Pgc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 10:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756629AbYA2PgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 10:34:00 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:58964 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754256AbYA2Pd6 (ORCPT
+	Tue, 29 Jan 2008 10:36:22 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:55843 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752565AbYA2PgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 10:33:58 -0500
-Subject: Re: DMA mapping on SCSI device?
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-arch@vger.kernel.org,
-       ide <linux-ide@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-In-Reply-To: <200801290528.00934.ak@suse.de>
-References: <479E6E8C.2090501@shaw.ca>  <200801290528.00934.ak@suse.de>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 10:33:50 -0500
-Message-Id: <1201620830.3069.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jan 2008 10:36:20 -0500
+Date: Tue, 29 Jan 2008 10:36:19 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Boaz Harrosh <bharrosh@panasas.com>
+cc: Greg KH <greg@kroah.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+In-Reply-To: <479F18D3.9030709@panasas.com>
+Message-ID: <Pine.LNX.4.44L0.0801291032210.4229-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 29 Jan 2008, Boaz Harrosh wrote:
 
-On Tue, 2008-01-29 at 05:28 +0100, Andi Kleen wrote:
-> > The ideal solution would be to do mapping against a different struct
-> > device for each port, so that we could maintain the proper DMA mask for
-> > each of them at all times. However I'm not sure if that's possible.
-> 
-> I cannot imagine why it should be that difficult. The PCI subsystem
-> could over a pci_clone_device() or similar function.   For all complicated
-> purposes (sysfs etc)  the original device could be used, so it would
-> be hopefully not that difficult.
+> --- a/drivers/usb/storage/transport.c
+> +++ b/drivers/usb/storage/transport.c
+> @@ -462,18 +462,24 @@ static int usb_stor_bulk_transfer_sglist(struct us_data *us, unsigned int pipe,
+>   * Common used function. Transfer a complete command
+>   * via usb_stor_bulk_transfer_sglist() above. Set cmnd resid
+>   */
+> -int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
+> -		      struct scsi_cmnd* srb)
+> +int usb_stor_bulk_srb_length(struct us_data* us, unsigned int pipe,
+> +		      struct scsi_cmnd* srb, unsigned length)
+>  {
+>  	unsigned int partial;
+>  	int result = usb_stor_bulk_transfer_sglist(us, pipe, scsi_sglist(srb),
+> -				      scsi_sg_count(srb), scsi_bufflen(srb),
+> +				      scsi_sg_count(srb), length,
+>  				      &partial);
+>  
+>  	scsi_set_resid(srb, scsi_bufflen(srb) - partial);
+>  	return result;
+>  }
+>  
+> +int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
+> +		struct scsi_cmnd* srb)
+> +{
+> +	return usb_stor_bulk_srb_length(us, pipe, srb, scsi_bufflen(srb));
+> +}
+> +
 
-I know it works for parisc ... all we care about for DMA mapping is the
-mask in the actual device and the location of the iommu.  For the
-latter, we just go up device->parent until we find it, so as long as
-manufactured devices are properly parented we have no problems with
-mapping them.
+I don't like this patch very much.  Why add another layer of 
+indirection when the two subroutines do hardly any work?  Leave 
+usb_stor_bulk_srb() the way it was, and add usb_stor_bulk_srb_length() 
+as a separate routine that simply calls usb_stor_bulk_transfer_sglist() 
+and scsi_set_resid().
 
-The concern matthew has is this code in asm-generic/dma-mapping.h:
+BTW, the standard coding style calls for a blank line after the list of 
+local variables at the start of a function or block.
 
-static inline void *
-dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t
-*dma_handle,
-                   gfp_t flag)
-{
-        BUG_ON(dev->bus != &pci_bus_type);
-
-        return pci_alloc_consistent(to_pci_dev(dev), size, dma_handle);
-}
-
-The manufactured devices wouldn't be PCI devices (otherwise they'd show
-up in PCI and cause all sorts of confusion), so any architectures which
-haven't converted to using the dma_ functions internally will BUG here.
-
-However, a quick audit shows that to be just m68k, v850 and sparc (not
-sparc64), so they're probably none the driver cares about.
-
-> The alternative would be to add a new family of PCI mapping
-> functions that take an explicit mask. Disadvantage would be changing 
-> all architectures, but on the other hand the interface could be phase
-> in one by one (and nF4 primarily only works on x86 anyways) 
-
-I suppose it would allow us to clean dma_mask and dma_coherent_mask out
-of the device structures ... on the other hand, the mask isn't simply
-what the device wants, it's also what the platform allows you to set, so
-it would have to be stored somewhere anyway.
-
-> I suspect the later would be a little cleaner, although they don't
-> make much difference.
-
-James
-
+Alan Stern
 
