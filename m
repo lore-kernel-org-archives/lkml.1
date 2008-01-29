@@ -1,135 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763112AbYA2NOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763379AbYA2NQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763112AbYA2NOU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 08:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762901AbYA2NOA
+	id S1763379AbYA2NQo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 08:16:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763007AbYA2NQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 08:14:00 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38702 "EHLO
+	Tue, 29 Jan 2008 08:16:25 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36312 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762745AbYA2NN6 (ORCPT
+	with ESMTP id S1762997AbYA2NQX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 08:13:58 -0500
-Date: Tue, 29 Jan 2008 05:15:00 -0800
+	Tue, 29 Jan 2008 08:16:23 -0500
+Date: Tue, 29 Jan 2008 05:19:55 -0800
 From: Greg KH <greg@kroah.com>
-To: Heikki Orsila <shdl@zakalwe.fi>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] Improve Documentation/stable_api_nonsense.txt
-Message-ID: <20080129131500.GA10761@kroah.com>
-References: <20080128230959.AA1A32BC98@zakalwe.fi> <20080129044805.GA1718@kroah.com> <20080129104018.GF12172@zakalwe.fi>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Arjan van de Ven <arjan@infradead.org>, Tony Camuso <tcamuso@redhat.com>,
+       Grant Grundler <grundler@parisc-linux.org>, Loic Prylli <loic@myri.com>,
+       Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+	opt-in
+Message-ID: <20080129131955.GC10761@kroah.com>
+References: <20080114225225.GQ18741@parisc-linux.org> <20080114230448.GL9847@does.not.exist> <478CD8A5.5090608@myri.com> <20080115174643.GB28238@kroah.com> <20080115175641.GE18741@parisc-linux.org> <20080119165809.GB11553@colo.lackof.org> <479E1FA6.1030708@redhat.com> <20080128204431.GA15227@kroah.com> <20080128190505.5f5b1ccc@laptopd505.fenrus.org> <20080129031804.GF20198@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080129104018.GF12172@zakalwe.fi>
+In-Reply-To: <20080129031804.GF20198@parisc-linux.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 12:40:18PM +0200, Heikki Orsila wrote:
-> CC'ing Andi as he commented also..
-> 
-> On Mon, Jan 28, 2008 at 08:48:05PM -0800, Greg KH wrote:
-> > On Tue, Jan 29, 2008 at 01:09:59AM +0200, Heikki Orsila wrote:
-> > > * Make a remark about avoiding unnecessary changes in interfaces
-> > > * Improve wording
+On Mon, Jan 28, 2008 at 08:18:04PM -0700, Matthew Wilcox wrote:
+> On Mon, Jan 28, 2008 at 07:05:05PM -0800, Arjan van de Ven wrote:
+> > I think there's only one fundamental disagreement; and that is:
+> > do we think that things are now totally fixed and no new major issues
+> > will arrive after the "fix yet another mmconfig thing" patches are merged.
 > > 
-> > Well, "improve" is a bit judgemental :)
-> 
-> The places I corrected were somewhat unreadable English in my opinion.
-> The problem with this text is mostly 
-> style that breaks common sense rules how to write simple sentences.
-> Documentation should not try to represent its writer but convey 
-> the idea as well as possible.
-
-I strongly disagree with this.  If you are reading documentation, you
-should at least be intertained a bit, and if you take the "flavor" of
-the writer out of it entirely, it becomes quite boring and dry.
-
-> > > @@ -68,11 +68,11 @@ consider the following facts about the Linux kernel:
-> > >      There is no way that binary drivers from one architecture will run
-> > >      on another architecture properly.
-> > >  
-> > > -Now a number of these issues can be addressed by simply compiling your
-> > > -module for the exact specific kernel configuration, using the same exact
-> > > +Now, a number of these issues can be addressed by simply compiling your
-> > > +module for the same kernel configuration, using the same
+> > If the answer is no, then imho my patch is the right approach; it will limit the damage and doesn't make
+> > the people suffer who don't need extended config space.
+> > If the answer is yet, then my patch is not needed.
 > > 
-> > No, I want to emphasize the word "exact" here.  It has to be the same.
+> > This is a judgment call; I'm skeptical, others are more optimistic that after 2 years of messing around
+> > they have finally found the last golden fix.
 > 
-> Do you want preserve both "exact specific" and "same exact"?
+> I'm more optimistic because we've so severely restricted the use of
+> mmconf after these patches that it's unlikely to cause problems.  I also
+> hear Vista is now using mmconf, so fewer implementations are going to
+> be buggy at this point.
 
-Both.
+Hahahaha, oh, that's a good one...
 
-> Imo,
-> "same exact C compiler" is just bad language, because C compilers are 
-> always "exact". "exactly same C compiler" would do.
+But what about the thousands of implementations out there that are
+buggy?
 
-No, "exactly same C compiler" doesn't parse well in English.
+I'm with Arjan here, I'm very skeptical.
 
-> > >  C compiler that the kernel was built with.  This is sufficient if you
-> > >  want to provide a module for a specific release version of a specific
-> > > -Linux distribution.  But multiply that single build by the number of
-> > > +Linux distribution. However, multiply that single build by the number of
-> > 
-> > You messed with the "two space" rule, and changed the word unecessarily
-> > in my opinion.
-> > 
-> > >  different Linux distributions and the number of different supported
-> > >  releases of the Linux distribution and you quickly have a nightmare of
-> > >  different build options on different releases.  Also realize that each
-> > > @@ -93,7 +93,7 @@ keep a Linux kernel driver that is not in the main kernel tree up to
-> > >  date over time.
-> > >  
-> > >  Linux kernel development is continuous and at a rapid pace, never
-> > > -stopping to slow down.  As such, the kernel developers find bugs in
-> > > +slowing down.  As such, the kernel developers find bugs in
-> > 
-> > No, they never stop, I say leave it as is.
-> 
-> Imo, that statement is very odd. The meaning of it has to be guessed.
-> "never slowing down" is very simple and conveys the essential idea.
-
-Hm, but you understood the idea conveyed here, right?  That's the
-important issue, we can argue about the exact structure of words all
-day, which will get us no where.
-
-> > > @@ -116,7 +116,7 @@ issues:
-> > >  
-> > >  This is in stark contrast to a number of closed source operating systems
-> > >  which have had to maintain their older USB interfaces over time.  This
-> > > -provides the ability for new developers to accidentally use the old
-> > > +has the risk for new developers to accidentally use the old
-> > 
-> > It's not so much as a "risk" as it is what always seems to happen.  So I
-> > don't like this change either.
-> 
-> No, it's definitely more "risk" than "ability" because "ability" should 
-> refer to a positive property. Here "ability" is used to refer to a
-> "negative outcome".
-
-Ok, fair enough, I can agree with that.
-
-> > > @@ -145,6 +145,10 @@ as small as possible, and that all potential interfaces are tested as
-> > >  well as they can be (unused interfaces are pretty much impossible to
-> > >  test for validity.)
-> > >  
-> > > +Some complain that kernel interfaces change too often for out-of-the-tree
-> > > +modules, but this claim is false. Changing an interface can be delicate work,
-> > > +and it can take significant amount of developer effort. Therefore, interfaces
-> > > +are not changed without a good reason.
-> > 
-> > No, their claim is a valid one, it's not "false".  However we are not
-> > going to do anything about it, and as such, we don't need this kind of
-> > wording to get people worried about it even more.
-> 
-> How about this (scrap the whole paragraph):
-> 
-> Changing an interface can be delicate work and it can take significant 
-> amount of developer effort. Therefore, an interface is not changed
-> unless the change is regarded as very important by the developers.
-
-Why do you feel this paragraph is needed at all?
+Matthew, with Arjan's patch, is anything that currently works now
+broken?  Why do you feel it is somehow "wrong"?
 
 thanks,
 
