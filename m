@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758316AbYA2W4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbYA2W4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758316AbYA2W4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 17:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757164AbYA2Wz7
+	id S1759292AbYA2W4m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 17:56:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYA2W4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 17:55:59 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43608 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757130AbYA2Wz6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 17:55:58 -0500
-Date: Tue, 29 Jan 2008 14:55:56 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-In-Reply-To: <20080129223503.GY7233@v2.random>
-Message-ID: <Pine.LNX.4.64.0801291440170.27327@schroedinger.engr.sgi.com>
-References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com>
- <20080129162004.GL7233@v2.random> <20080129182831.GS7233@v2.random>
- <Pine.LNX.4.64.0801291219030.25629@schroedinger.engr.sgi.com>
- <20080129213604.GW7233@v2.random> <Pine.LNX.4.64.0801291343530.26824@schroedinger.engr.sgi.com>
- <20080129223503.GY7233@v2.random>
+	Tue, 29 Jan 2008 17:56:33 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:49076 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752156AbYA2W4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 17:56:31 -0500
+Date: Wed, 30 Jan 2008 00:57:01 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Pavel Roskin <proski@gnu.org>
+Cc: linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Giridhar Pemmasani <pgiri@yahoo.com>, rms@gnu.org
+Subject: Re: ndiswrapper and GPL-only symbols redux
+Message-ID: <20080129225701.GS8767@does.not.exist>
+References: <1201641765.18773.35.camel@dv>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1201641765.18773.35.camel@dv>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jan 2008, Andrea Arcangeli wrote:
-
-> But now I think there may be an issue with a third thread that may
-> show unsafe the removal of invalidate_page from ptep_clear_flush.
+On Tue, Jan 29, 2008 at 04:22:45PM -0500, Pavel Roskin wrote:
+> Hello!
 > 
-> A third thread writing to a page through the linux-pte and the guest
-> VM writing to the same page through the sptes, will be writing on the
-> same physical page concurrently and using an userspace spinlock w/o
-> ever entering the kernel. With your patch that invalidate_range after
-> dropping the PT lock, the third thread may start writing on the new
-> page, when the guest is still writing to the old page through the
-> sptes. While this couldn't happen with my patch.
+> It have come to my attention that a patch has been committed to the
+> kernel with the explicit purpose of tainting ndiswrapper - the kernel
+> module allowing Windows NDIS drivers for Ethernet and Wireless cards to
+> be used by the kernel.
+>...
+> Just to reiterate some points from the old discussion:
+>...
+> - no copyright violation is involved, as Windows drivers are not derived
+> from Linux sources
+>...
 
-A user space spinlock plays into this??? That is irrelevant to the kernel. 
-And we are discussing "your" placement of the invalidate_range not mine.
+It is interesting that someone posting with an @gnu.org address claims
+that dynamic linking of not GPLv2 compatible code into GPLv2 code was
+not a copyright violation.
 
-This is the scenario that I described before. You just need two threads.
-One thread is in do_wp_page and the other is writing through the spte. 
-We are in do_wp_page. Meaning the page is not writable. The writer will 
-have to take fault which will properly serialize access. It a bug if the 
-spte would allow write.
+Is it an official statement of the FSF that such linking is considered 
+legal?
+
+(RMS added to Cc)
+
+> Regards,
+> Pavel Roskin
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
