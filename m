@@ -1,83 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbYA2S3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbYA2S3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755015AbYA2S3R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 13:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756529AbYA2S2m
+	id S1758079AbYA2S3h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 13:29:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766003AbYA2S3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 13:28:42 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:56266
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754945AbYA2S2l (ORCPT
+	Tue, 29 Jan 2008 13:29:00 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:50176 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765691AbYA2S25 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 13:28:41 -0500
-Date: Tue, 29 Jan 2008 19:28:32 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080129182831.GS7233@v2.random>
-References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com> <20080129162004.GL7233@v2.random>
+	Tue, 29 Jan 2008 13:28:57 -0500
+Message-ID: <479F7009.3020306@panasas.com>
+Date: Tue, 29 Jan 2008 20:27:21 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080129162004.GL7233@v2.random>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+References: <Pine.LNX.4.44L0.0801291032210.4229-100000@iolanthe.rowland.org> <1201624455.3069.10.camel@localhost.localdomain>
+In-Reply-To: <1201624455.3069.10.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph, the below patch should fix the current leak of the pinned
-pages. I hope the page-pin that should be dropped by the
-invalidate_range op, is enough to prevent the "physical page" mapped
-on that "mm+address" to change before invalidate_range returns. If
-that would ever happen, there would be a coherency loss between the
-guest VM writes and the writes coming from userland on the same
-mm+address from a different thread (qemu, whatever). invalidate_page
-before PT lock was obviously safe. Now we entirely relay on the pin to
-prevent the page to change before invalidate_range returns. If the pte
-is unmapped and the page is mapped back in with a minor fault that's
-ok, as long as the physical page remains the same for that mm+address,
-until all sptes are gone.
+On Tue, Jan 29 2008 at 18:34 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> On Tue, 2008-01-29 at 10:36 -0500, Alan Stern wrote:
+>> On Tue, 29 Jan 2008, Boaz Harrosh wrote:
+>>
+>>> --- a/drivers/usb/storage/transport.c
+>>> +++ b/drivers/usb/storage/transport.c
+>>> @@ -462,18 +462,24 @@ static int usb_stor_bulk_transfer_sglist(struct us_data *us, unsigned int pipe,
+>>>   * Common used function. Transfer a complete command
+>>>   * via usb_stor_bulk_transfer_sglist() above. Set cmnd resid
+>>>   */
+>>> -int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
+>>> -		      struct scsi_cmnd* srb)
+>>> +int usb_stor_bulk_srb_length(struct us_data* us, unsigned int pipe,
+>>> +		      struct scsi_cmnd* srb, unsigned length)
+>>>  {
+>>>  	unsigned int partial;
+>>>  	int result = usb_stor_bulk_transfer_sglist(us, pipe, scsi_sglist(srb),
+>>> -				      scsi_sg_count(srb), scsi_bufflen(srb),
+>>> +				      scsi_sg_count(srb), length,
+>>>  				      &partial);
+>>>  
+>>>  	scsi_set_resid(srb, scsi_bufflen(srb) - partial);
+>>>  	return result;
+>>>  }
+>>>  
+>>> +int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
+>>> +		struct scsi_cmnd* srb)
+>>> +{
+>>> +	return usb_stor_bulk_srb_length(us, pipe, srb, scsi_bufflen(srb));
+>>> +}
+>>> +
+>> I don't like this patch very much.  Why add another layer of 
+>> indirection when the two subroutines do hardly any work?  Leave 
+>> usb_stor_bulk_srb() the way it was, and add usb_stor_bulk_srb_length() 
+>> as a separate routine that simply calls usb_stor_bulk_transfer_sglist() 
+>> and scsi_set_resid().
+>>
+>> BTW, the standard coding style calls for a blank line after the list of 
+>> local variables at the start of a function or block.
+> 
+> There's another bug in the transport.c conversion in that the residuals
+> are updated with bogus data in several error cases, since
+> usb_stor_bulk_transfer_sglist() only sets the actual length if the urb
+> is actually sent.
+> 
+> I'm not sure if this is is the solution to the problem at hand, but it
+> definitely fixes another bug in the code.
+> 
+> James
+> 
+> diff --git a/drivers/usb/storage/transport.c b/drivers/usb/storage/transport.c
+> index d9f4912..bab0858 100644
+> --- a/drivers/usb/storage/transport.c
+> +++ b/drivers/usb/storage/transport.c
+> @@ -465,7 +465,7 @@ static int usb_stor_bulk_transfer_sglist(struct us_data *us, unsigned int pipe,
+>  int usb_stor_bulk_srb(struct us_data* us, unsigned int pipe,
+>  		      struct scsi_cmnd* srb)
+>  {
+> -	unsigned int partial;
+> +	unsigned int partial = scsi_get_resid(srb);
+>  	int result = usb_stor_bulk_transfer_sglist(us, pipe, scsi_sglist(srb),
+>  				      scsi_sg_count(srb), scsi_bufflen(srb),
+>  				      &partial);
+> 
+> 
+> -
+But then this is weird because it is not what usb_stor_bulk_transfer_sg() is doing
+which was the one called before.
 
-Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
+I have such a device and I get one reset but then every thing works nice.
+This is with debug on. I'll try to make it fail.
 
-diff --git a/mm/fremap.c b/mm/fremap.c
---- a/mm/fremap.c
-+++ b/mm/fremap.c
-@@ -212,8 +212,8 @@ asmlinkage long sys_remap_file_pages(uns
- 		spin_unlock(&mapping->i_mmap_lock);
- 	}
- 
-+	err = populate_range(mm, vma, start, size, pgoff);
- 	mmu_notifier(invalidate_range, mm, start, start + size, 0);
--	err = populate_range(mm, vma, start, size, pgoff);
- 	if (!err && !(flags & MAP_NONBLOCK)) {
- 		if (unlikely(has_write_lock)) {
- 			downgrade_write(&mm->mmap_sem);
-diff --git a/mm/memory.c b/mm/memory.c
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1639,8 +1639,6 @@ gotten:
- 	/*
- 	 * Re-check the pte - we dropped the lock
- 	 */
--	mmu_notifier(invalidate_range, mm, address,
--				address + PAGE_SIZE - 1, 0);
- 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
- 	if (likely(pte_same(*page_table, orig_pte))) {
- 		if (old_page) {
-@@ -1676,6 +1674,8 @@ gotten:
- 		page_cache_release(old_page);
- unlock:
- 	pte_unmap_unlock(page_table, ptl);
-+	mmu_notifier(invalidate_range, mm, address,
-+				address + PAGE_SIZE - 1, 0);
- 	if (dirty_page) {
- 		if (vma->vm_file)
- 			file_update_time(vma->vm_file);
+Boaz
