@@ -1,83 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYA2VW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbYA2VYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518AbYA2VW4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 16:22:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYA2VWs
+	id S1753752AbYA2VYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 16:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYA2VYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 16:22:48 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:49142 "EHLO c60.cesmail.net"
+	Tue, 29 Jan 2008 16:24:42 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:7794 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751281AbYA2VWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 16:22:47 -0500
-Subject: ndiswrapper and GPL-only symbols redux
-From: Pavel Roskin <proski@gnu.org>
-To: linux-kernel@vger.kernel.org
-Cc: Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 16:22:45 -0500
-Message-Id: <1201641765.18773.35.camel@dv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1750837AbYA2VYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 16:24:40 -0500
+Date: Tue, 29 Jan 2008 22:24:35 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mike.miller@hp.com, k-ueda@ct.jp.nec.com, j-nomura@ce.jp.nec.com,
+       tony.luck@intel.com
+Subject: Re: kernel BUG at drivers/block/cciss.c:1260! (with recent  linux-2.6  tree)
+Message-ID: <20080129212435.GC15220@kernel.dk>
+References: <20080129180242.GZ15220@kernel.dk> <20080129180537.GA15220@kernel.dk> <20080129182217.GK12400@plap3.qlogic.org> <20080129182833.GG15220@kernel.dk> <20080129183705.GL12400@plap3.qlogic.org> <20080129184442.GK15220@kernel.dk> <20080129184929.GN12400@plap3.qlogic.org> <20080129185358.GM15220@kernel.dk> <20080129210837.GA21785@plap3.qlogic.org> <20080129211634.GB15220@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080129211634.GB15220@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Tue, Jan 29 2008, Jens Axboe wrote:
+> On Tue, Jan 29 2008, Andrew Vasquez wrote:
+> > On Tue, 29 Jan 2008, Jens Axboe wrote:
+> > 
+> > > Great, thanks for confirming. It does look like a clear bug in cciss, it
+> > > just got exposed now that it uses proper end request handling. We never
+> > > need to clear ->data_len, since for blk_fs_request() it will be cleared
+> > > on init. So just setting a residual count there for blk_fs_request()
+> > > like cciss does is fine.
+> > > 
+> > > Anyway, it's in my pending queue for Linus.
+> > > 
+> > 
+> > 
+> > Hmm, probably not related to the block changes in your tree, but I'm
+> > seeing yet another problem after working (compile jobs) the machine:
+> > 
+> > 	[   61.423922] BUG: spinlock recursion on CPU#2, kjournald/2317
+> > 	[   61.427843]  lock: ffff81042c5a4988, .magic: dead4ead, .owner: kjournald/2317, .owner_cpu: 2
+> > 	[   61.427843] Pid: 2317, comm: kjournald Not tainted 2.6.24 #45
+> > 	[   61.427843] 
+> > 	[   61.427843] Call Trace:
+> > 	[   61.427843]  [<ffffffff803332e1>] _raw_spin_lock+0xe9/0x12a
+> > 	[   61.427843]  [<ffffffff80324ccf>] as_merged_requests+0xfe/0x115
+> > 	[   61.427843]  [<ffffffff8031b558>] elv_merge_requests+0x1f/0x45
+> > 	[   61.427843]  [<ffffffff8031e6f7>] attempt_merge+0x281/0x347
+> > 	[   61.427843]  [<ffffffff8031f153>] __make_request+0x1e6/0x598
+> > 	[   61.427843]  [<ffffffff8031d6ea>] generic_make_request+0x1c8/0x276
+> > 	[   61.427843]  [<ffffffff8031d7f9>] submit_bio+0x61/0xdb
+> > 	[   61.427843]  [<ffffffff8029b0d2>] submit_bh+0xe2/0x118
+> > 	[   61.427843]  [<ffffffff802f69f3>] journal_do_submit_data+0x28/0x39
+> > 	[   61.427843]  [<ffffffff802f77da>] journal_commit_transaction+0xdbe/0x1394
+> > 	[   61.427843]  [<ffffffff802381a8>] lock_timer_base+0x26/0x4e
+> > 	[   61.427843]  [<ffffffff802fb85f>] kjournald+0x104/0x373
+> > 	[   61.427843]  [<ffffffff80242087>] autoremove_wake_function+0x0/0x2e
+> > 	[   61.427843]  [<ffffffff802fb75b>] kjournald+0x0/0x373
+> > 	[   61.427843]  [<ffffffff80241cd4>] kthread+0x3d/0x61
+> > 	[   61.427843]  [<ffffffff8020c0e8>] child_rip+0xa/0x12
+> > 	[   61.427843]  [<ffffffff80241c97>] kthread+0x0/0x61
+> > 	[   61.427843]  [<ffffffff8020c0de>] child_rip+0x0/0x12
+> 
+> Ah crap, I see the problem, nioc is most often equal to rioc. Dang.
+> Please try this bandaid, will push a real fix now.
 
-It have come to my attention that a patch has been committed to the
-kernel with the explicit purpose of tainting ndiswrapper - the kernel
-module allowing Windows NDIS drivers for Ethernet and Wireless cards to
-be used by the kernel.
+This is way cleaner.
 
-That's the commit in question:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0aa5bd52d0c49ca56d24584c646e6544ccbb3dc9
-
-It is not the first time it has happened.  The same was done in October
-2006.  A heated discussion ensued, and the patch was reverted as
-erroneous.  For those wishing to refresh their memories, this LWN story
-would be a great starting point:
-
-http://lwn.net/Articles/205644/
-
-I'd like to see this mistake to be fixed without lengthy arguments this
-time around.
-
-Just to reiterate some points from the old discussion:
-
-- ndiswrapper is licensed under GPL
-
-- ndiswrapper needs GPL-only symbols
-
-- tainting ndiswrapper denies its access to GPL-only symbols
-
-- denying ndiswrapper access to GPL-only symbols is unfair and not based
-on any copyright law
-
-- denying ndiswrapper access to GPL-only symbols makes it impossible for
-ndiswrapper to function
-
-- no copyright violation is involved, as Windows drivers are not derived
-from Linux sources
-
-- Windows drivers don't call GPL-only symbols directly; ndiswrapper
-stands in the middle and sanitizes the access
-
-- it's a fair game to taint the kernel in some way if ndiswrapper has
-been loaded at some point, since tainting per se is just an indicator
-that the kernel has been used in an unsupportable way
-
-- if this change stands, ndiswrapper will be renamed, which would only
-create more confusion and would thus defeat the purpose of tainting
-
-- ndiswrapper is used by kernel developers to create native drivers
-
-- ndiswrapper is a stepping stone towards a completely free OS; take it
-away and see less users, less testers and less reverse engineering
-efforts
+diff --git a/block/as-iosched.c b/block/as-iosched.c
+index b201d16..9603684 100644
+--- a/block/as-iosched.c
++++ b/block/as-iosched.c
+@@ -1275,9 +1275,13 @@ static void as_merged_requests(struct request_queue *q, struct request *req,
+ 			 * Don't copy here but swap, because when anext is
+ 			 * removed below, it must contain the unused context
+ 			 */
+-			double_spin_lock(&rioc->lock, &nioc->lock, rioc < nioc);
+-			swap_io_context(&rioc, &nioc);
+-			double_spin_unlock(&rioc->lock, &nioc->lock, rioc < nioc);
++			if (rioc != nioc) {
++				double_spin_lock(&rioc->lock, &nioc->lock,
++								rioc < nioc);
++				swap_io_context(&rioc, &nioc);
++				double_spin_unlock(&rioc->lock, &nioc->lock,
++								rioc < nioc);
++			}
+ 		}
+ 	}
+ 
 
 -- 
-Regards,
-Pavel Roskin
+Jens Axboe
+
