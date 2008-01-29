@@ -1,234 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763920AbYA2Oy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763594AbYA2O7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763920AbYA2Oy1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbYA2OyT
+	id S1763594AbYA2O7S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbYA2O7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:54:19 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:11057 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752947AbYA2OyS (ORCPT
+	Tue, 29 Jan 2008 09:59:09 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:9392 "EHLO
+	outbound4-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753396AbYA2O7I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:54:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:organization:to:subject:date:user-agent:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=P3LhiYXxQfQebHalPja1t6OkDyrtsMQprbIj2JVeQQ+Sozh7SVj1jFIPBVaMCCSJ7VB79B+87q9RYlIA/Ybz34Hp+MWSMXCYm+dgYwA+f9VahSSGw0yQ1EBwL38kEOMm13As36wiL6om/BkIVHlQnLey1tmiz1mU2SUcBXy1Csc=
-From: Nai Xia <nai.xia@gmail.com>
-Reply-To: nai.xia@gmail.com
-Organization: NJU
-To: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: Oops in touch_atime for kernel 2.6.23.12
-Date: Tue, 29 Jan 2008 22:54:02 +0800
-User-Agent: KMail/1.9.7
-References: <200801052202.10379.nai.xia@gmail.com> <20080109211016.GA20626@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20080109211016.GA20626@atrey.karlin.mff.cuni.cz>
+	Tue, 29 Jan 2008 09:59:08 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-WSS-ID: 0JVEUY6-01-UAE-01
+X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
+Message-ID: <479F3F60.8050108@amd.com>
+Date: Tue, 29 Jan 2008 15:59:44 +0100
+From: "Markus Rechberger" <markus.rechberger@amd.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200801292254.02186.nai.xia@gmail.com>
+To: Matt_Domsch@dell.com, "Jos?? Luis Tall??n" <jltallon@adv-solutions.net>,
+       Douglas_Warzecha@dell.com, Abhay_Salunke@dell.com,
+       linux-kernel@vger.kernel.org, matt_domsch@dell.com,
+       "Michael E Brown" <Michael_E_Brown@dell.com>,
+       "Greg KH" <gregkh@suse.de>, "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: FW: 2.6.24 breaks BIOS updates on all Dell machines
+References: <E9909A75A543064DB66E55B8E3BE41EC5FD218@ausx3mps307.aus.amer.dell.com>
+In-Reply-To: <E9909A75A543064DB66E55B8E3BE41EC5FD218@ausx3mps307.aus.amer.dell.com>
+X-OriginalArrivalTime: 29 Jan 2008 14:58:51.0321 (UTC)
+ FILETIME=[759A4290:01C86287]
+X-WSS-ID: 6B81E0A724S9479594-01-01
 Content-Type: text/plain;
-  charset="gb18030"
+ charset=iso-8859-1;
+ format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Matt_Domsch@Dell.com wrote:
+> Markus, I see you were accidentally left off the cc: list on this bug.
+> The change was yours, so I suspect you'll have an opinion to share with
+> LKML.
+>
+> Thanks,
+> Matt
+>
+> --
+> Matt Domsch
+> Linux Technology Strategist, Dell Office of the CTO
+> linux.dell.com & www.dell.com/linux
+>
+> -----Original Message-----
+> From: Greg KH [mailto:gregkh@suse.de] 
+> Sent: Tuesday, January 29, 2008 12:44 AM
+> To: Brown, Michael E
+> Cc: Jos?? Luis Tall??n; Warzecha, Douglas; Salunke, Abhay;
+> linux-kernel@vger.kernel.org; Domsch, Matt; marcel@holtmann.org
+> Subject: Re: 2.6.24 breaks BIOS updates on all Dell machines
+>
+> On Tue, Jan 29, 2008 at 12:32:44AM -0600, Michael E Brown wrote:
+>   
+>> BIOS updates are broken on all Dell systems due to Commit
+>> 109f0e93b6b728f03c1eb4af02bc25d71b646c59, which is now in 2.6.24.
+>>
+>>   static inline void fw_setup_device_id(struct device *f_dev, struct
+>> device *dev)
+>>   {
+>> -       /* XXX warning we should watch out for name collisions */
+>> -       strlcpy(f_dev->bus_id, dev->bus_id, BUS_ID_SIZE);
+>> +       snprintf(f_dev->bus_id, BUS_ID_SIZE, "firmware-%s",
+>> dev->bus_id);
+>>  }
+>>
+>> Two programs are broken by this change: 
+>>     1) dellBiosUpdate, which is part of libsmbios
+>>     2) All of the Dell Update Packages (DUPs) that are part of Dell
+>> OpenManage: each BIOS release for each of 3-4 dozen platforms.
+>>
+>> These programs are broken due to the pathname change from
+>> /sys/class/firmware/dell_rbu/   to
+>> /sys/class/firmware/firmware-dell_rbu/loading. 
+>>
+>> Realistically, I can fix libsmbios in a couple of weeks, but there is
+>>     
+> no
+>   
+>> way that we can go back and fix a couple hundred DUP packages for this
+>> change. If this stays, we are looking at over 6 months before we have
+>>     
+> an
+>   
+>> officially-available Dell OpenManage that can deal with it, and that
+>> would be for new BIOS releases only, I suspect.
+>>
+>> Some of the relevant threads from when this was submitted and
+>>     
+> accepted:
+>   
+>> http://lkml.org/lkml/2005/5/23/73
+>> http://lkml.org/lkml/2005/5/23/62
+>>
+>> Due to the extremely large and disruptive nature of this bug, it would
+>> be nice to get a 2.6.24.1 with this patch reverted.
+>>
+>> I have copied the relevant developers at Dell who maintain this
+>>     
+> driver.
+>   
+>> Please preserve the cc: list when replying.
+>>     
+>
+> Fair enough, I have no problem reverting this.
+>
+> Anyone want to keep it in?
+>
+>   
+Hi Greg,
 
-Sorry for the late reply, I was off for a few days. 
-Saddly, I never reproduced the bug. 
-I moved my main machine to an older kernel and let a virtual machine track down the bug, 
-but it never appeared again --- possibly because of the simpler hardwares.
+reverting this breaks support for several media (DVB/V4L) devices. I 
+would have to look up some bugreports the same name collision happened 
+with several different drivers.
+There was a comment in the fw code to watch out for name collisions 
+earlier already, so it needs a fix somewhere.
 
+Here's some history:
+http://mcentral.de/wiki/index.php5/Bugtracker#i2c_dev_problem
 
-And just as you say, I also think it should not be that place which origins the bug,
-because no inner called functions even touched the stack. 
-I think "mov    (%esp),%ebx" can only be bad on a corrupted stack. 
-
-
-I will come up with more detailed info if the same problem appears 
-and I catch the very first bug.
-
-Thanks a lot for your responding. 
-
-On Thursday 10 January 2008, you wrote:
->   Hi,
-> 
->   thanks for your report.
-> 
-> > I'm using Debian unstable/sid/lenny with homemade kernel 2.6.23.12 
-> > patched with tuxonice-3.0-rc3-for-2.6.23.9 and compiled with 
-> > gcc version 4.2.3 20071123 (prerelease) (Debian 4.2.2-4).
-> > 
-> > My root file system is xfs which does not have "noatime" option.
-> > I was "tar xf"ing a big tar ball when this happen and ultimately leads to a 
-> > hang  up. I am trying to reproduce it again in a similar setting virutal 
-> > machine,but till now it does not happen again. 
-> > I will provide further details if it appears again.
-> > 
-> > The objdump for touch_atime of my vmlinux is as follows:
-> > 
-> > c0191870 <touch_atime>:
-> > c0191870:	83 ec 0c             	sub    $0xc,%esp
-> > c0191873:	89 c1                	mov    %eax,%ecx
-> > c0191875:	89 1c 24             	mov    %ebx,(%esp)
-> > c0191878:	89 74 24 04          	mov    %esi,0x4(%esp)
-> > c019187c:	89 7c 24 08          	mov    %edi,0x8(%esp)
-> > c0191880:	8b 5a 08             	mov    0x8(%edx),%ebx
-> > c0191883:	f6 83 1c 01 00 00 02 	testb  $0x2,0x11c(%ebx)
-> > c019188a:	0f 85 92 00 00 00    	jne    c0191922 <touch_atime+0xb2>
-> > c0191890:	8b bb 88 00 00 00    	mov    0x88(%ebx),%edi
-> > c0191896:	8b 47 30             	mov    0x30(%edi),%eax
-> > c0191899:	a9 01 04 00 00       	test   $0x401,%eax
-> > c019189e:	0f 85 7e 00 00 00    	jne    c0191922 <touch_atime+0xb2>
-> > c01918a4:	f6 c4 08             	test   $0x8,%ah
-> > c01918a7:	74 10                	je     c01918b9 <touch_atime+0x49>
-> > c01918a9:	0f b7 43 66          	movzwl 0x66(%ebx),%eax
-> > c01918ad:	25 00 f0 00 00       	and    $0xf000,%eax
-> > c01918b2:	3d 00 40 00 00       	cmp    $0x4000,%eax
-> > c01918b7:	74 69                	je     c0191922 <touch_atime+0xb2>
-> > c01918b9:	85 c9                	test   %ecx,%ecx
-> > c01918bb:	0f 84 b7 00 00 00    	je     c0191978 <touch_atime+0x108>
-> > c01918c1:	8b 51 28             	mov    0x28(%ecx),%edx
-> > c01918c4:	f6 c2 08             	test   $0x8,%dl
-> > c01918c7:	75 59                	jne    c0191922 <touch_atime+0xb2>
-> > c01918c9:	f6 c2 10             	test   $0x10,%dl
-> > c01918cc:	75 63                	jne    c0191931 <touch_atime+0xc1>
-> > c01918ce:	83 e2 20             	and    $0x20,%edx
-> > c01918d1:	8d 73 44             	lea    0x44(%ebx),%esi
-> > c01918d4:	74 0d                	je     c01918e3 <touch_atime+0x73>
-> > c01918d6:	8b 43 44             	mov    0x44(%ebx),%eax
-> > c01918d9:	8d 53 4c             	lea    0x4c(%ebx),%edx
-> > c01918dc:	39 43 4c             	cmp    %eax,0x4c(%ebx)
-> > c01918df:	7c 39                	jl     c019191a <touch_atime+0xaa>
-> > c01918e1:	7e 2f                	jle    c0191912 <touch_atime+0xa2>
-> > c01918e3:	89 f8                	mov    %edi,%eax
-> > c01918e5:	e8 e6 04 f9 ff       	call   c0121dd0 <current_fs_time>
-> > c01918ea:	39 43 44             	cmp    %eax,0x44(%ebx)
-> > c01918ed:	8d 76 00             	lea    0x0(%esi),%esi
-> > c01918f0:	74 5e                	je     c0191950 <touch_atime+0xe0>
-> > c01918f2:	89 53 48             	mov    %edx,0x48(%ebx)
-> > c01918f5:	ba 01 00 00 00       	mov    $0x1,%edx
-> > c01918fa:	89 43 44             	mov    %eax,0x44(%ebx)
-> > c01918fd:	89 d8                	mov    %ebx,%eax
-> > c01918ff:		8b 74 24 04          	mov    0x4(%esp),%esi
-> > c0191903:	8b 1c 24             	mov    (%esp),%ebx
-> > c0191906:	8b 7c 24 08          	mov    0x8(%esp),%edi
-> > c019190a:	83 c4 0c             	add    $0xc,%esp
-> > c019190d:	e9 ce 8c 00 00       	jmp    c019a5e0 <__mark_inode_dirty>
-> > c0191912:	8b 4e 04             	mov    0x4(%esi),%ecx
-> > c0191915:	39 4a 04             	cmp    %ecx,0x4(%edx)
-> > c0191918:	79 c9                	jns    c01918e3 <touch_atime+0x73>
-> > c019191a:	3b 43 54             	cmp    0x54(%ebx),%eax
-> > c019191d:	8d 53 54             	lea    0x54(%ebx),%edx
-> > c0191920:	7e 35                	jle    c0191957 <touch_atime+0xe7>
-> > 
-> > c0191922:	8b 1c 24             	mov    (%esp),%ebx
->   This is really strange - we tried to load a value from a stack and
-> oopsed...
-> 
-> > c0191925:	8b 74 24 04          	mov    0x4(%esp),%esi
-> > c0191929:	8b 7c 24 08          	mov    0x8(%esp),%edi
-> > c019192d:	83 c4 0c             	add    $0xc,%esp
-> > c0191930:	c3                   	ret    
-> > c0191931:	0f b7 43 66          	movzwl 0x66(%ebx),%eax
-> > c0191935:	25 00 f0 00 00       	and    $0xf000,%eax
-> > c019193a:	3d 00 40 00 00       	cmp    $0x4000,%eax
-> > c019193f:	74 e1                	je     c0191922 <touch_atime+0xb2>
-> > c0191941:	83 e2 20             	and    $0x20,%edx
-> > c0191944:	8d 73 44             	lea    0x44(%ebx),%esi
-> > c0191947:	74 9a                	je     c01918e3 <touch_atime+0x73>
-> > c0191949:	eb 8b                	jmp    c01918d6 <touch_atime+0x66>
-> > c019194b:	90                   	nop    
-> > c019194c:	8d 74 26 00          	lea    0x0(%esi),%esi
-> > c0191950:	39 56 04             	cmp    %edx,0x4(%esi)
-> > c0191953:	75 9d                	jne    c01918f2 <touch_atime+0x82>
-> > c0191955:	eb cb                	jmp    c0191922 <touch_atime+0xb2>
-> > c0191957:	89 f6                	mov    %esi,%esi
-> > c0191959:	8d bc 27 00 00 00 00 	lea    0x0(%edi),%edi
-> > c0191960:	0f 8c 7d ff ff ff    	jl     c01918e3 <touch_atime+0x73>
-> > c0191966:	8b 46 04             	mov    0x4(%esi),%eax
-> > c0191969:	39 42 04             	cmp    %eax,0x4(%edx)
-> > c019196c:	8d 74 26 00          	lea    0x0(%esi),%esi
-> > c0191970:	0f 89 6d ff ff ff    	jns    c01918e3 <touch_atime+0x73>
-> > c0191976:	eb aa                	jmp    c0191922 <touch_atime+0xb2>
-> > c0191978:	8d 73 44             	lea    0x44(%ebx),%esi
-> > c019197b:	90                   	nop    
-> > c019197c:	8d 74 26 00          	lea    0x0(%esi),%esi
-> > c0191980:	e9 5e ff ff ff       	jmp    c01918e3 <touch_atime+0x73>
-> > c0191985:	90                   	nop    
-> > c0191986:	90                   	nop    
-> > c0191987:	90                   	nop    
-> > c0191988:	90                   	nop    
-> > c0191989:	90                   	nop    
-> > c019198a:	90                   	nop    
-> > c019198b:	90                   	nop    
-> > c019198c:	90                   	nop    
-> > c019198d:	90                   	nop    
-> > c019198e:	90                   	nop    
-> > c019198f:	90                   	nop    
-> > 
-> > 
-> > 
-> > code: 00 00 00 89 43 44 89 d8 8b 74 24 04 8b ff e9 8b 7c 24 08 83 c4 a0 01 ce 
-> > 8c 00 00 8b 4e 00 00 4a 04 79 c9 3b 43 8b 54 53 54 7e 35 <8b> 1c 00 00 74 24 
-> > 04 8b 7c 24 40 28 c4 0c c3 0f b7 43 8b 4c 00
-> > EIP: [<c0191922>] touch_atime+0xb2/0x120 SS:ESP 0068:da1cbd80
-> > BUG: unable to handle kernel paging request at virtual address 8efc67ce
-> > printing eip:
-> > c0191922
-> > *pde = 00000000
-> > Oops: 0000 [#196]
-> > PREEMPT
-> > Modules linked in: radeon drm binfmt_misc vboxdrv ipt_MASQUERADE iptable_nat 
-> > nf_nat nf_conntrack_ipv4 nf_conntrack iptable_filter ip_tables x_tables nfsd 
-> > exportfs auth_rpcgss ipv6 nfs lockd sunrpc dm_snapshot usbhid hid pcmcia 
-> > snd_intel8x0 snd_intel8x0m snd_ac97_codec ac97_bus snd_pcm_oss snd_pcm 
-> > snd_mixer_oss joydev tsdev snd_seq_dummy snd_seq_oss video backlight 
-> > snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq yenta_socket snd_timer 
-> > snd_seq_device ehci_hcd e1000 uhci_hcd rsrc_nonstatic pcmcia_core snd thermal 
-> > psmouse i2c_i801 soundcore serio_raw usbcore snd_page_alloc pcspkr evdev
-> > CPU:    0
-> > EIP:    0060:[<c0191922>]    Tainted: G      D VLI
->   The D flag here indicates that the kernel has already oopsed before.
-> The first oops will be probably more important (this second one is
-> likely just an fallout). Are you able to get the first oops?
-> 
-> > EFLAGS: 00010246   (2.6.23.12 #1)
-> > EIP is at touch_atime+0xb2/0x120
-> > eax: 477e33e7   ebx: ef611618   ecx: 00000001   edx: 256ccdf0
-> > esi: ef61165c   edi: efe57800   ebp: 00000000   esp: d6847d80
-> > ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-> > Process syslogd (pid: 4541, ti=d6846000 task=d8956a80 task.ti=d6846000)
-> > Stack: 00000000 00000180 cf24a200 c015b415 00001000 00000000 00000000 00000000
-> > 00000000 cf24a200 cf24a244 ef6116ac ef611618 00000180 00000001 00000000
-> > 00000000 00000000 00001000 00000000 00000000 00000000 00000020 00000000
-> > Call Trace:
-> > [<c015b415>] do_generic_mapping_read+0x3f5/0x4e0
-> > [<c015d04a>] generic_file_aio_read+0xba/0x1d0
-> > [<c015a8e0>] file_read_actor+0x0/0x130
-> > [<c018e06c>] dput+0x1c/0x160
-> > [<c02b6b06>] xfs_read+0x156/0x380
-> > [<c02b32ec>] xfs_file_aio_read+0x6c/0x80
-> > [<c017c845>] do_sync_read+0xd5/0x120
-> > [<c015d160>] filemap_fault+0x0/0x450
-> > [<c015d160>] filemap_fault+0x0/0x450
-> > [<c01302b0>] autoremove_wake_function+0x0/0x50
-> > [<c011706b>] do_page_fault+0x18b/0x680
-> > [<c017d111>] vfs_read+0xa1/0x140
-> > [<c017c770>] do_sync_read+0x0/0x120
-> > [<c017d551>] sys_read+0x41/0x70
-> > [<c010411e>] sysenter_past_esp+0x5f/0x85
-> > =======================
-> > Code: 00 00 00 89 43 44 89 d8 8b 74 24 04 8b ff e9 8b 7c 24 08 83 c4 a0 01 ce 
-> > 8c 00 00 8b 4e 00 00 4a 04 79 c9 3b 43 8b 54 53 54 7e 35 <8b> 1c 00 00 74 24 
-> > 04 8b 7c 24 40 28 c4 0c c3 0f b7 43 8b 4c 00
-> 
-> 								Honza
+Markus
 
 
-
--- 
-Best Regards,
-
-Nai
