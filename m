@@ -1,73 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764072AbYA2Ntm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932506AbYA2NuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764072AbYA2Ntm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 08:49:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932676AbYA2Nt2
+	id S932506AbYA2NuY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 08:50:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763547AbYA2Ntg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 08:49:28 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:55053 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932540AbYA2N3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 08:29:23 -0500
-Date: Tue, 29 Jan 2008 07:29:22 -0600
-To: linux-kernel@vger.kernel.org
-Cc: pj@sgi.com, menage@google.com, akpm@osdl.org
-Subject: [PATCH 3/4] cpusets: update_cpumask documentation fix
-User-Agent: nail 11.25 7/29/05
+	Tue, 29 Jan 2008 08:49:36 -0500
+Received: from sacred.ru ([62.205.161.221]:53281 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763754AbYA2Nte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 08:49:34 -0500
+Message-ID: <479F2EE7.8040902@openvz.org>
+Date: Tue, 29 Jan 2008 16:49:27 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 4/12] Don't operate with pid_t in rtmutex tester
+References: <479F2C5C.1050303@openvz.org>
+In-Reply-To: <479F2C5C.1050303@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080129132922.63C9733B943@attica.americas.sgi.com>
-From: cpw@sgi.com (Cliff Wickman)
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 29 Jan 2008 16:49:07 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The proper behavior to store task's pid and get this task 
+later is to get the struct pid pointer and get the task
+with the pid_task() call.
 
-Update cpuset documentation to match the October 2007
-"Fix cpusets update_cpumask" changes that now apply
-changes to a cpusets 'cpus' allowed mask immediately
-to the cpus_allowed of the tasks in that cpuset.
+Make it for rt_mutex_waiter->deadlock_task_pid field.
 
-Signed-off-by: Paul Jackson <pj@sgi.com>
-Acked-by: Cliff Wickman <cpw@sgi.com>
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
 ---
+ kernel/rtmutex-debug.c  |   12 +++++++++---
+ kernel/rtmutex_common.h |    2 +-
+ 2 files changed, 10 insertions(+), 4 deletions(-)
 
- Documentation/cpusets.txt |   23 ++++++++---------------
- 1 file changed, 8 insertions(+), 15 deletions(-)
+diff --git a/kernel/rtmutex-debug.c b/kernel/rtmutex-debug.c
+index 56d73cb..40ec85c 100644
+--- a/kernel/rtmutex-debug.c
++++ b/kernel/rtmutex-debug.c
+@@ -130,7 +130,7 @@ void debug_rt_mutex_deadlock(int detect, struct rt_mutex_waiter *act_waiter,
+ 
+ 	task = rt_mutex_owner(act_waiter->lock);
+ 	if (task && task != current) {
+-		act_waiter->deadlock_task_pid = task->pid;
++		act_waiter->deadlock_task_pid = get_pid(task_pid(task));
+ 		act_waiter->deadlock_lock = lock;
+ 	}
+ }
+@@ -142,9 +142,12 @@ void debug_rt_mutex_print_deadlock(struct rt_mutex_waiter *waiter)
+ 	if (!waiter->deadlock_lock || !rt_trace_on)
+ 		return;
+ 
+-	task = find_task_by_pid(waiter->deadlock_task_pid);
+-	if (!task)
++	rcu_read_lock();
++	task = pid_task(waiter->deadlock_task_pid, PIDTYPE_PID);
++	if (!task) {
++		rcu_read_unlock();
+ 		return;
++	}
+ 
+ 	TRACE_OFF_NOLOCK();
+ 
+@@ -173,6 +176,7 @@ void debug_rt_mutex_print_deadlock(struct rt_mutex_waiter *waiter)
+ 		current->comm, task_pid_nr(current));
+ 	dump_stack();
+ 	debug_show_all_locks();
++	rcu_read_unlock();
+ 
+ 	printk("[ turning off deadlock detection."
+ 	       "Please report this trace. ]\n\n");
+@@ -203,10 +207,12 @@ void debug_rt_mutex_init_waiter(struct rt_mutex_waiter *waiter)
+ 	memset(waiter, 0x11, sizeof(*waiter));
+ 	plist_node_init(&waiter->list_entry, MAX_PRIO);
+ 	plist_node_init(&waiter->pi_list_entry, MAX_PRIO);
++	waiter->deadlock_task_pid = NULL;
+ }
+ 
+ void debug_rt_mutex_free_waiter(struct rt_mutex_waiter *waiter)
+ {
++	put_pid(waiter->deadlock_task_pid);
+ 	TRACE_WARN_ON(!plist_node_empty(&waiter->list_entry));
+ 	TRACE_WARN_ON(!plist_node_empty(&waiter->pi_list_entry));
+ 	TRACE_WARN_ON(waiter->task);
+diff --git a/kernel/rtmutex_common.h b/kernel/rtmutex_common.h
+index 2d3b835..e124bf5 100644
+--- a/kernel/rtmutex_common.h
++++ b/kernel/rtmutex_common.h
+@@ -51,7 +51,7 @@ struct rt_mutex_waiter {
+ 	struct rt_mutex		*lock;
+ #ifdef CONFIG_DEBUG_RT_MUTEXES
+ 	unsigned long		ip;
+-	pid_t			deadlock_task_pid;
++	struct pid		*deadlock_task_pid;
+ 	struct rt_mutex		*deadlock_lock;
+ #endif
+ };
+-- 
+1.5.3.4
 
-Index: linux-2.6/Documentation/cpusets.txt
-===================================================================
---- linux-2.6.orig/Documentation/cpusets.txt
-+++ linux-2.6/Documentation/cpusets.txt
-@@ -523,21 +523,14 @@ from one cpuset to another, then the ker
- memory placement, as above, the next time that the kernel attempts
- to allocate a page of memory for that task.
- 
--If a cpuset has its CPUs modified, then each task using that
--cpuset does _not_ change its behavior automatically.  In order to
--minimize the impact on the critical scheduling code in the kernel,
--tasks will continue to use their prior CPU placement until they
--are rebound to their cpuset, by rewriting their pid to the 'tasks'
--file of their cpuset.  If a task had been bound to some subset of its
--cpuset using the sched_setaffinity() call, and if any of that subset
--is still allowed in its new cpuset settings, then the task will be
--restricted to the intersection of the CPUs it was allowed on before,
--and its new cpuset CPU placement.  If, on the other hand, there is
--no overlap between a tasks prior placement and its new cpuset CPU
--placement, then the task will be allowed to run on any CPU allowed
--in its new cpuset.  If a task is moved from one cpuset to another,
--its CPU placement is updated in the same way as if the tasks pid is
--rewritten to the 'tasks' file of its current cpuset.
-+If a cpuset has its 'cpus' modified, then each task in that cpuset
-+will have its allowed CPU placement changed immediately.  Similarly,
-+if a tasks pid is written to a cpusets 'tasks' file, in either its
-+current cpuset or another cpuset, then its allowed CPU placement is
-+changed immediately.  If such a task had been bound to some subset
-+of its cpuset using the sched_setaffinity() call, the task will be
-+allowed to run on any CPU allowed in its new cpuset, negating the
-+affect of the prior sched_setaffinity() call.
- 
- In summary, the memory placement of a task whose cpuset is changed is
- updated by the kernel, on the next allocation of a page for that task,
