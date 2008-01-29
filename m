@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761156AbYA2ECg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbYA2EGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761156AbYA2ECg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 23:02:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYA2EC3
+	id S1761467AbYA2EGG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 23:06:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbYA2EFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 23:02:29 -0500
-Received: from scrub.xs4all.nl ([194.109.195.176]:1216 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753992AbYA2EC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 23:02:28 -0500
-Date: Tue, 29 Jan 2008 05:02:21 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: john stultz <johnstul@us.ibm.com>
-cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] correct inconsistent ntp interval/tick_length usage
-In-Reply-To: <1201573686.6766.13.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0801290439480.17507@scrub.home>
-References: <1201142334.6383.40.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0801251349120.17507@scrub.home> <1201573686.6766.13.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 Jan 2008 23:05:55 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:62560 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752161AbYA2EFy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 23:05:54 -0500
+Date: Mon, 28 Jan 2008 20:12:46 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH] x86: add PCI IDs to k8topology_64.c
+In-reply-to: <p73y7a970nd.fsf@bingen.suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Joachim Deguara <joachim.deguara@amd.com>, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       Dean Roe <roe@cray.com>
+Message-id: <200801282012.47190.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200801281211.28214.joachim.deguara@amd.com>
+ <p73y7a970nd.fsf@bingen.suse.de>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Monday 28 January 2008 07:48:06 pm Andi Kleen wrote:
+> "Joachim Deguara" <joachim.deguara@amd.com> writes:
+> 
+> > Quick history, this is a harmless patch that got dropped by Andi as a mixup to 
+> 
+> It's not harmless.
+> 
+> > dropping another patch of mine that was made obsolete by Yinghai.
+> > http://thread.gmane.org/gmane.linux.kernel/559581
+> 
+> No that's not the correct history. The correct history is that 
+> I intentionally rejected this patch because the old k8topology
+> hack should really not be used anymore on modern machines (especially
+> not on Quad Cores). SRAT is the far better way to handle this problem
+> because it has a proper abstraction.
+> 
+> The problem with k8topology.c is that it needs to know very low level
+> information (like HT node numbers etc.) the kernel should not really
+> need to know and which are difficult to handle generally without
+> motherboard specific knowledge. 
+> 
+> k8topology.c mostly guesses, which was never a good way to handle this. 
+> Also in in the various "node has no memory" cases it needs quite
+> hackish fallback heuristics which will be always fragile. Then there
+> are some ugly interactions with quad cores. And some other issues
+> 
+> I still think the patch a bad idea because adapting this file all
+> the time is a long term maintenance issue. I can say that as 
+> the original author :-) It was just a quick hack long ago
+> to get NUMA going early. But now it far outlived its usefulness
+> and adapting it to modern machines is the wrong direction. 
+> 
+> Best is to phase k8topology out.
 
-On Mon, 28 Jan 2008, john stultz wrote:
+then with acpi=off, we can not use numa any more.
 
-> Regardless, current_tick_length() really is the base interval we're
-> using in the error accumulation loop, so it seems the cleanest interface
-> to use (just to avoid redundancy at least) when establishing the
-> clocksource's interval length. Or do you not agree?
+also there are some users are using LinuxBIOS or other firmware that doesn't have  or like ACPI support. but they still need numa.
+for them ACPI doesn't help.
 
-I see, what you need to use in timex.h for !CONFIG_NO_HZ is:
+YH
 
-#define NTP_INTERVAL_LENGTH ((s64)LATCH * NSEC_PER_SEC) / (s64)CLOCK_TICK_RATE)
-
-this calculates the base length of a clock tick in nsec.
-
-current_tick_length() would only work during boot. If you switch clocks 
-later, it would include random adjustments specific to the old clock.
-
-bye, Roman
