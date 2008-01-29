@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762317AbYA2Bv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbYA2CKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762317AbYA2Bv7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 20:51:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYA2Bvt
+	id S1760610AbYA2CKz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 21:10:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbYA2CKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 20:51:49 -0500
-Received: from iabervon.org ([66.92.72.58]:35361 "EHLO iabervon.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752330AbYA2Bvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 20:51:48 -0500
-Date: Mon, 28 Jan 2008 20:51:45 -0500 (EST)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Gene Heskett <gene.heskett@gmail.com>
-cc: Richard Heck <rgheck@bobjweil.com>, Zan Lynx <zlynx@acm.org>,
-       Calvin Walton <calvin.walton@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-Subject: Re: Problem with ata layer in 2.6.24
-In-Reply-To: <200801282031.58429.gene.heskett@gmail.com>
-Message-ID: <alpine.LNX.1.00.0801282040080.13593@iabervon.org>
-References: <200801272122.21823.gene.heskett@gmail.com> <200801281905.35278.gene.heskett@gmail.com> <alpine.LNX.1.00.0801281909170.13593@iabervon.org> <200801282031.58429.gene.heskett@gmail.com>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 Jan 2008 21:10:47 -0500
+Received: from mail.cyberdogtech.com ([64.22.125.39]:42035 "EHLO
+	mail.cyberdogtech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752412AbYA2CKq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 21:10:46 -0500
+Date: Mon, 28 Jan 2008 20:10:41 -0600
+From: Matt LaPlante <kernel1@cyberdogtech.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: "Default Linux Capabilities" default in 2.6.24
+Message-Id: <20080128201041.e0ac76d5.kernel1@cyberdogtech.com>
+In-Reply-To: <20080124191201.324cf1a0.kernel1@cyberdogtech.com>
+References: <20080124191201.324cf1a0.kernel1@cyberdogtech.com>
+X-Mailer: Sylpheed 2.4.6 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008, Gene Heskett wrote:
+On Thu, 24 Jan 2008 19:12:01 -0600
+Matt LaPlante <kernel1@cyberdogtech.com> wrote:
 
-> On Monday 28 January 2008, Daniel Barkalow wrote:
-> >On Mon, 28 Jan 2008, Gene Heskett wrote:
-> >> On Monday 28 January 2008, Daniel Barkalow wrote:
-> >> >Building this and installing it along with the appropriate initrd (which
-> >> >might be handled by Fedora's install scripts)
-> >>
-> >> Or mine, which I've been using for years.
-> >
-> >You're ahead of a surprising number of people, including me, if you
-> >understand making initrds.
 > 
-> In my script, its one line:
-> mkinitrd -f initrd-$VER.img $VER && \
+> I'm doing a make oldconfig with the new 2.6.24 kernel.  I came to the prompt for "Default Linux Capabilities" which defaults to No:
 > 
-> where $VER is the shell variable I edit to = the version number, located at 
-> the top of the script.
+> ---
+>  Default Linux Capabilities (SECURITY_CAPABILITIES) [N/y/?] (NEW) ?
+> ---
 > 
-> Unforch, its failing:
-> No module pata_amd found for kernel 2.6.24, aborting.
+> However the help text recommends saying Yes.
 > 
-> This is with pata_amd turned off and its counterpart under ATA/RLL/etc turned 
-> on.  So something is still dependent on it. 
+> ---
+>  This enables the "default" Linux capabilities functionality.
+>  If you are unsure how to answer this question, answer Y.
+> ---
+> 
+> Does this seem incongruous?  Also, what's the "question"? :)
+> 
+> Thanks, 
+> Matt LaPlante
 
-That looks like something in the guts of the initrd; it probably thinks 
-you need pata_amd and it's unhappy that you don't have it.
-
-Actually, another thing to try is making the ATA/etc one be "y" and 
-pata_amd be "m". Most likely, this should lead to the ATA one claiming the 
-drive before the module is loaded (but the module would be loaded later, 
-to avoid upsetting the initrd); you should be able to tell from dmesg (or 
-/dev, for that matter) which one got it, and I think built-in drivers will 
-claim everything they can before an initrd gets loaded.
-
-> I do have one sata drive, on an accessory card in the box, so I need the 
-> rest of the sata_sil and friends stuff. 
-
-Assuming it isn't picking up your hard drive, which it isn't, that 
-shouldn't matter.
-
-	-Daniel
-*This .sig left intentionally blank*
+Anyone?
