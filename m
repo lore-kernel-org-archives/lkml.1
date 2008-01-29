@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbYA2FMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763515AbYA2FMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762921AbYA2FMH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 00:12:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYA2FLz
+	id S1763515AbYA2FMc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 00:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763180AbYA2FML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 00:11:55 -0500
-Received: from ns2.suse.de ([195.135.220.15]:53378 "EHLO mx2.suse.de"
+	Tue, 29 Jan 2008 00:12:11 -0500
+Received: from mail.suse.de ([195.135.220.2]:44602 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750987AbYA2FLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 00:11:55 -0500
-Date: Mon, 28 Jan 2008 21:08:04 -0800
+	id S1762976AbYA2FMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 00:12:08 -0500
+Date: Mon, 28 Jan 2008 21:15:33 -0800
 From: Greg KH <gregkh@suse.de>
-To: Mark Fasheh <mark.fasheh@oracle.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com, Joel Becker <Joel.Becker@oracle.com>
-Subject: Re: [git pull] Fix recent Ocfs2 breakage
-Message-ID: <20080129050804.GA2285@suse.de>
-References: <20080129033307.GE23506@ca-server1.us.oracle.com>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Atari floppy: Rename disk_type to atari_disk_type
+Message-ID: <20080129051533.GB2331@suse.de>
+References: <Pine.LNX.4.64.0801271426590.8108@anakin>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080129033307.GE23506@ca-server1.us.oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0801271426590.8108@anakin>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 07:33:07PM -0800, Mark Fasheh wrote:
-> Greg's commit c60b71787982cefcf9fa09aa281fa8c4c685d557 inadvertantly broke
-> Ocfs2 userspace ABI, so I have a rather high priority single line patch from
-> Joel to fix things up for you to pull. A copy of the patch is attached to
-> the bottom of this e-mail. Embarassingly enough, I missed this while acking
-> the patch late last week :(
+On Sun, Jan 27, 2008 at 02:28:35PM +0100, Geert Uytterhoeven wrote:
+> Atari floppy: Rename disk_type to atari_disk_type
 > 
-> Please pull from 'upstream-linus' branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
+> Commit edfaa7c36574f1bf09c65ad602412db9da5f96bf
 > 
-> to receive the following updates:
+>     Driver core: convert block from raw kobjects to core devices
+>     
+>     This moves the block devices to /sys/class/block. It will create a
+>     flat list of all block devices, with the disks and partitions in one
+>     directory. For compatibility /sys/block is created and contains symlinks
+>     to the disks.
 > 
->  fs/ocfs2/cluster/sys.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> introduced a global disk_type variable in <linux/genhd.h>, causing the
+> following compile error on Atari:
 > 
-> Joel Becker (1):
->       ocfs2: Fix userspace ABI breakage in sysfs
-
-This is fine with me, for now.
-
-> From: Joel Becker <Joel.Becker@oracle.com>
+>     drivers/block/ataflop.c:93: error: conflicting types for 'disk_type'
+>     include/linux/genhd.h:21: error: previous declaration of 'disk_type' was here
 > 
-> ocfs2: Fix userspace ABI breakage in sysfs
+> Rename the local disk_type variable in drivers/block/ataflop.c to
+> atari_disk_type, to avoid the conflict.
 > 
-> The userspace ABI of ocfs2's internal cluster stack (o2cb) was broken by
-> commit c60b71787982cefcf9fa09aa281fa8c4c685d557 "kset: convert ocfs2 to
-> use kset_create".  Specifically, the '/sys/o2cb' kset was moved to
-> '/sys/fs/o2cb'.  This breaks all ocfs2 tools and renders the
-> filesystem unmountable.
-> 
-> This fix moves '/sys/o2cb' back where it belongs.
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Kay Sievers <kay.sievers@vrfy.org>
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
 
-"belongs" is pretty odd here.  This is a filesystem specific thing,
-right?  Why not put it in /sys/fs/ then?
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-And yes, I understand about legacy userspace tools, that's why I have no
-objection to it going back.  But you can put it in both places (with a
-symlink) and change your userspace code, and in a year or so, drop the
-symlink, right?
-
-And please please please please document stuff like this, and all of the
-different files you have in this subdirectory in Documentation/ABI/ so
-those of us who are trying to figure out the code (and there's still
-parts of the kobject usage I'm pretty sure is not correct) can have a
-chance to understand exactly how this stuff is being used and expected
-to work.
-
-thanks,
-
-greg k-h
