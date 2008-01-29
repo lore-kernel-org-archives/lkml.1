@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761684AbYA2BT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbYA2Bam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761684AbYA2BT5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 20:19:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbYA2BTt
+	id S1757845AbYA2Bam (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 20:30:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbYA2Bad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 20:19:49 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:45873 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752330AbYA2BTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 20:19:49 -0500
-Date: Mon, 28 Jan 2008 17:19:41 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Robin Holt <holt@sgi.com>
-cc: Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 1/6] mmu_notifier: Core code
-In-Reply-To: <20080129000534.GT3058@sgi.com>
-Message-ID: <Pine.LNX.4.64.0801281718160.19533@schroedinger.engr.sgi.com>
-References: <20080128202840.974253868@sgi.com> <20080128202923.609249585@sgi.com>
- <20080129000534.GT3058@sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 Jan 2008 20:30:33 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:34921 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751707AbYA2Bac (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 20:30:32 -0500
+Date: Mon, 28 Jan 2008 19:31:42 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Problem with ata layer in 2.6.24
+In-reply-to: <200801281955.04459.gene.heskett@gmail.com>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Mark Lord <liml@rtr.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <479E81FE.2090604@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.YoSRdik0niRWE1jgfb9yTQPim5A@ifi.uio.no>
+ <fa.ebGd1717PgKMzHUmaQOLoLkFdsI@ifi.uio.no> <479E7105.2090201@shaw.ca>
+ <200801281955.04459.gene.heskett@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008, Robin Holt wrote:
+Gene Heskett wrote:
+> On Monday 28 January 2008, Robert Hancock wrote:
+>> Gene Heskett wrote:
+>>> And so far no one has tried to comment on those 2 dmesg lines I've quoted
+>>> a couple of times now, here's another:
+>>> [    0.000000] Nvidia board detected. Ignoring ACPI timer override.
+>>> [    0.000000] If you got timer trouble try acpi_use_timer_override
+>>> what the heck is that trying to tell me to do, in some sort of broken
+>>> english?
+>> A lot of NVIDIA-chipset motherboards have BIOS problems where they
+>> include an incorrect ACPI interrupt override for the timer interrupt,
+>> which tends to cause the system to fail to boot due to the timer
+>> interrupt not working. The kernel normally ignores ACPI interrupt
+>> overrides on the timer interrupt for NVIDIA chipsets for this reason.
+>> Unfortunately on some such boards the override is actually correct and
+>> needed, and so this actually causes problems. Hence the
+>> acpi_use_timer_override option.
+>>
+>> In any case this is unlikely to have anything to do with your problem,
+>> since if that was messed up you likely would never have even booted.
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> In this case, there seems to be a buglet.  I turned on the nvidia/amd drives 
+> under the ATA section of the menu, and turned off the pata_amd under the sata 
+> menu in xconfig.
+> 
+> But I've tried twice now and it fails to build the initrd because the pata_amd 
+> module is on the missing list.  Of course its missing, I didn't have it 
+> built...
+> 
+> Next?
 
-> USE_AFTER_FREE!!!  I made this same comment as well as other relavent
-> comments last week.
-
-Must have slipped somehow. Patch needs to be applied after the rcu fix.
-
-Please repeat the other relevant comments if they are still relevant.... I 
-thought I had worked through them.
-
-
-
-mmu_notifier_release: remove mmu_notifier struct from list before calling ->release
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- mm/mmu_notifier.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/mm/mmu_notifier.c
-===================================================================
---- linux-2.6.orig/mm/mmu_notifier.c	2008-01-28 17:17:05.000000000 -0800
-+++ linux-2.6/mm/mmu_notifier.c	2008-01-28 17:17:10.000000000 -0800
-@@ -21,9 +21,9 @@ void mmu_notifier_release(struct mm_stru
- 		rcu_read_lock();
- 		hlist_for_each_entry_safe_rcu(mn, n, t,
- 					  &mm->mmu_notifier.head, hlist) {
-+			hlist_del_rcu(&mn->hlist);
- 			if (mn->ops->release)
- 				mn->ops->release(mn, mm);
--			hlist_del_rcu(&mn->hlist);
- 		}
- 		rcu_read_unlock();
- 		synchronize_rcu();
+Check the /etc/modprobe.conf file, a lot of distributions use this to 
+generate the initrd. If there's references to pata_amd it'll try and 
+include it.
