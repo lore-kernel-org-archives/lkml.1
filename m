@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbYA2Mg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbYA2Mnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337AbYA2Mg4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 07:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbYA2Mgq
+	id S1757365AbYA2Mnd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 07:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbYA2MnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 07:36:46 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44641 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751403AbYA2Mgq (ORCPT
+	Tue, 29 Jan 2008 07:43:24 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:35543 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754278AbYA2MnX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 07:36:46 -0500
-Date: Tue, 29 Jan 2008 06:36:38 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@linux.vnet.ibm.com,
-       dhaval@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
-       ebiederm@xmission.com, akpm@linux-foundation.org, sgrubb@redhat.com,
-       rostedt@goodmis.org, ghaskins@novell.com, dmitry.adamushko@gmail.com,
-       tong.n.li@intel.com, tglx@linutronix.de, menage@google.com,
-       rientjes@google.com
-Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
-Message-Id: <20080129063638.874b38ef.pj@sgi.com>
-In-Reply-To: <1201608457.28547.130.camel@lappy>
-References: <1201600428.28547.87.camel@lappy>
-	<20080129040130.7b2904b6.pj@sgi.com>
-	<1201603816.28547.94.camel@lappy>
-	<20080129051353.4628c9eb.pj@sgi.com>
-	<1201606284.28547.114.camel@lappy>
-	<20080129055318.5b669847.pj@sgi.com>
-	<1201608457.28547.130.camel@lappy>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Jan 2008 07:43:23 -0500
+Message-ID: <479F1F69.5000206@s5r6.in-berlin.de>
+Date: Tue, 29 Jan 2008 13:43:21 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+MIME-Version: 1.0
+To: Willy Tarreau <w@1wt.eu>
+CC: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/7] X86: Fix trailing statements should be on next line
+References: <20080129000744.698639d3@paolo-desktop> <20080128230746.GL8953@1wt.eu>
+In-Reply-To: <20080128230746.GL8953@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter, responding to Paul:
-> > I really doubt we'd want to have such systems triggering the hard RT
-> > scheduler on whatever CPUs were in the batch schedulers big cpuset
-> > that didn't happened to have an active job currently assigned to them.
+Willy Tarreau wrote:
+> Hi Paolo,
 > 
-> My turn to be confused..
+> On Tue, Jan 29, 2008 at 12:07:44AM +0100, Paolo Ciarrocchi wrote:
+>> Fix trailing statements should be on next line
 > 
-> If SD_LOAD_BALANCE is only set on the smaller, per-job, sets, how will
-> the RT balancer trigger on the large set?
+>> -if ( partial_status & SW_C3 )          printk("SW: condition bit 3\n");
+...
+>> +if ( partial_status & SW_Backward )
+>> +printk("SW: backward compatibility\n");
+...
+> 
+> Well, IMHO, the code was more readable and checkable in the initial
+> version. I think this is one example of exceptions where code appearance
+> is more important than style correctness.
 
-What 'sched_load_balance' does now is help you setup a -partial-
-covering of non-overlappping sched domains.  In the batch scheduler
-example, those CPUs that were:
- 1) being managed by the batch scheduler, but
- 2) were not assigned to any active job at the moment
-would -not- be in any sched domain.
-
-It's not a question of the SC_LOAD_BALANCE flag.  It's a question
-of whether a given CPU is even included in any sched domain.
-
-If we did as you are suggesting (if I understand) then instead of
-leaving these CPUs out of any sched domain, rather we'd setup a new
-kind of sched domain for these CPUs, marked for hard real time load
-balancing, rather than the somewhat more scalable, but softer normal
-load balancing.
-
-We want no load balancing on those CPUs, not realtime load balancing.
-Indeed, I suspect, we especially do not want realtime load balancing
-on those CPUs as that kind of load balancing is (I'm suspecting) more
-expensive and less scalable than normal load balancing.
-
+Besides, the proposed style "fix" itself violates CodingStyle in at
+least two obvious ways.
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Stefan Richter
+-=====-==--- ---= ===-=
+http://arcgraph.de/sr/
