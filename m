@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758929AbYA2XDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbYA2XG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758929AbYA2XDf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 18:03:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbYA2XDU
+	id S1756958AbYA2XG7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 18:06:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbYA2XGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 18:03:20 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:47575 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756859AbYA2XDR (ORCPT
+	Tue, 29 Jan 2008 18:06:52 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:38341 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753190AbYA2XGv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 18:03:17 -0500
-Date: Wed, 30 Jan 2008 00:03:15 +0100
-From: Andreas Mohr <andim2@users.sourceforge.net>
-To: andi@lisas.de
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bunk@kernel.org
-Subject: Re: [RFC/PATCH] e100 driver didn't support any MII-less PHYs...
-Message-ID: <20080129230315.GA13389@rhlx01.hs-esslingen.de>
-Reply-To: andi@lisas.de
-References: <20071228235118.GA31059@rhlx01.hs-esslingen.de> <477732A5.5020501@intel.com> <20080101200908.GA14805@rhlx01.hs-esslingen.de>
+	Tue, 29 Jan 2008 18:06:51 -0500
+Date: Wed, 30 Jan 2008 00:06:50 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Pavel Roskin <proski@gnu.org>, linux-kernel@vger.kernel.org,
+       Jon Masters <jonathan@jonmasters.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Giridhar Pemmasani <pgiri@yahoo.com>, rms@gnu.org
+Subject: Re: ndiswrapper and GPL-only symbols redux
+In-Reply-To: <20080129225701.GS8767@does.not.exist>
+Message-ID: <Pine.LNX.4.64.0801300004431.14907@fbirervta.pbzchgretzou.qr>
+References: <1201641765.18773.35.camel@dv> <20080129225701.GS8767@does.not.exist>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080101200908.GA14805@rhlx01.hs-esslingen.de>
-X-Priority: none
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Tue, Jan 01, 2008 at 09:09:08PM +0100, Andreas Mohr wrote:
-> Thanks for your quick reply!
-> 
-> OK, here's part 1, the MII-less support stuff.
-> (preliminary posting, for review only)
-> 
-> Note that these diffs apply to 2.6.24-rc6-mm1 without much trouble,
-> thus might want to do -mm testing soon.
+On Jan 30 2008 00:57, Adrian Bunk wrote:
+>> Hello!
+>> 
+>> It have come to my attention that a patch has been committed to the
+>> kernel with the explicit purpose of tainting ndiswrapper - the kernel
+>> module allowing Windows NDIS drivers for Ethernet and Wireless cards to
+>> be used by the kernel.
+>>...
+>> Just to reiterate some points from the old discussion:
+>>...
+>> - no copyright violation is involved, as Windows drivers are not derived
+>> from Linux sources
+>>...
+>
+>It is interesting that someone posting with an @gnu.org address claims
+>that dynamic linking of not GPLv2 compatible code into GPLv2 code was
+>not a copyright violation.
+>
+How about you see this as syscall linkage or pipe linkage^2 instead?
+Linux and GNU, respectively, allow these.
 
-Any verdict on this one?
 
-I happen to be asking now since silly me just ""upgraded"" a mere mortal's
-sorta-production machine to 2.6.24 proper without remembering
-that the previous -rc6 had contained a minor but effective change
-to make those wires do their thing. Or, to tell it as it was,
-"Mom wasn't impressed ;)".
-
-Perhaps it's useful to file a bug/patch
-on http://sourceforge.net/projects/e1000/ ? Perhaps -mm testing?
-
-Thanks,
-
-Andreas Mohr
+^2  gplprogram <input.txt | proprietaryprogram >output.txt
