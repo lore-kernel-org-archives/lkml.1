@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933501AbYA2SK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933334AbYA2SL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933501AbYA2SK7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 13:10:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbYA2SK0
+	id S933334AbYA2SL2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 13:11:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756070AbYA2SK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 13:10:26 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:54253 "EHLO relay.atmel.no"
+	Tue, 29 Jan 2008 13:10:28 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:53785 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754000AbYA2SKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753725AbYA2SKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 Jan 2008 13:10:20 -0500
 From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 To: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org
@@ -16,94 +16,118 @@ Cc: Shannon Nelson <shannon.nelson@intel.com>,
        "Francis Moreau" <francis.moro@gmail.com>,
        "Paul Mundt" <lethal@linux-sh.org>,
        "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
-       Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: [RFC v2 0/5] dmaengine: Slave DMA interface and example users
-Date: Tue, 29 Jan 2008 19:10:08 +0100
-Message-Id: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
+       Pierre Ossman <drzeus-list@drzeus.cx>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [RFC v2 1/5] dmaengine: Add dma_client parameter to device_alloc_chan_resources
+Date: Tue, 29 Jan 2008 19:10:09 +0100
+Message-Id: <1201630213-31900-2-git-send-email-hskinnemoen@atmel.com>
 X-Mailer: git-send-email 1.5.3.8
+In-Reply-To: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
+References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series adds the necessary interfaces to the DMA Engine
-framework to use functionality found on most embedded DMA controllers:
-DMA from and to I/O registers with hardware handshaking.
+A DMA controller capable of doing slave transfers may need to know a
+few things about the slave when preparing the channel. We don't want
+to add this information to struct dma_channel since the channel hasn't
+yet been bound to a client at this point.
 
-In this context, hardware hanshaking means that the peripheral that
-owns the I/O registers in question is able to tell the DMA controller
-when more data is available for reading, or when there is room for
-more data to be written. This usually happens internally on the chip,
-but these signals may also be exported outside the chip for things
-like IDE DMA, etc.
+Instead, pass a reference to the client requesting the channel to the
+driver's device_alloc_chan_resources hook so that it can pick the
+necessary information from the dma_client struct by itself.
 
-Since v1 that was posted in november last year, I've rebased it on top
-of the four async_tx patches that were posted by Dan Williams in
-december, and made a few changes to the "slave" part of the API:
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ drivers/dma/dmaengine.c   |    3 ++-
+ drivers/dma/ioat_dma.c    |    5 +++--
+ drivers/dma/iop-adma.c    |    7 ++++---
+ include/linux/dmaengine.h |    3 ++-
+ 4 files changed, 11 insertions(+), 7 deletions(-)
 
-  * Information about the slave device can now be found in struct
-    dma_client if the DMA_SLAVE capability is set.
-  * The dma_client struct is passed to device_alloc_chan_resources so
-    that the DMA engine driver can find this information.
-  * Because of this, the device_set_slave hook isn't needed anymore,
-    so it has been removed.
-  * The slave_set_width and slave_set_direction descriptor hooks have
-    been removed for the same reasons the tx_set_src and tx_set_dest
-    hooks were removed from the async_tx descriptor.
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 2996523..9b5bed9 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -174,7 +174,8 @@ static void dma_client_chan_alloc(struct dma_client *client)
+ 			if (!dma_chan_satisfies_mask(chan, client->cap_mask))
+ 				continue;
+ 
+-			desc = chan->device->device_alloc_chan_resources(chan);
++			desc = chan->device->device_alloc_chan_resources(
++					chan, client);
+ 			if (desc >= 0) {
+ 				ack = client->event_callback(client,
+ 						chan,
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index dff38ac..3e82bfb 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -452,7 +452,8 @@ static void ioat2_dma_massage_chan_desc(struct ioat_dma_chan *ioat_chan)
+  * ioat_dma_alloc_chan_resources - returns the number of allocated descriptors
+  * @chan: the channel to be filled out
+  */
+-static int ioat_dma_alloc_chan_resources(struct dma_chan *chan)
++static int ioat_dma_alloc_chan_resources(struct dma_chan *chan,
++					 struct dma_client *client)
+ {
+ 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
+ 	struct ioat_desc_sw *desc;
+@@ -1058,7 +1059,7 @@ static int ioat_dma_self_test(struct ioatdma_device *device)
+ 	dma_chan = container_of(device->common.channels.next,
+ 				struct dma_chan,
+ 				device_node);
+-	if (device->common.device_alloc_chan_resources(dma_chan) < 1) {
++	if (device->common.device_alloc_chan_resources(dma_chan, NULL) < 1) {
+ 		dev_err(&device->pdev->dev,
+ 			"selftest cannot allocate chan resource\n");
+ 		err = -ENODEV;
+diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
+index 853af18..a784918 100644
+--- a/drivers/dma/iop-adma.c
++++ b/drivers/dma/iop-adma.c
+@@ -447,7 +447,8 @@ static void iop_chan_start_null_memcpy(struct iop_adma_chan *iop_chan);
+ static void iop_chan_start_null_xor(struct iop_adma_chan *iop_chan);
+ 
+ /* returns the number of allocated descriptors */
+-static int iop_adma_alloc_chan_resources(struct dma_chan *chan)
++static int iop_adma_alloc_chan_resources(struct dma_chan *chan,
++					 struct dma_client *client)
+ {
+ 	char *hw_desc;
+ 	int idx;
+@@ -844,7 +845,7 @@ static int __devinit iop_adma_memcpy_self_test(struct iop_adma_device *device)
+ 	dma_chan = container_of(device->common.channels.next,
+ 				struct dma_chan,
+ 				device_node);
+-	if (iop_adma_alloc_chan_resources(dma_chan) < 1) {
++	if (iop_adma_alloc_chan_resources(dma_chan, NULL) < 1) {
+ 		err = -ENODEV;
+ 		goto out;
+ 	}
+@@ -942,7 +943,7 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
+ 	dma_chan = container_of(device->common.channels.next,
+ 				struct dma_chan,
+ 				device_node);
+-	if (iop_adma_alloc_chan_resources(dma_chan) < 1) {
++	if (iop_adma_alloc_chan_resources(dma_chan, NULL) < 1) {
+ 		err = -ENODEV;
+ 		goto out;
+ 	}
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index 586ea37..160835c 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -278,7 +278,8 @@ struct dma_device {
+ 	int dev_id;
+ 	struct device *dev;
+ 
+-	int (*device_alloc_chan_resources)(struct dma_chan *chan);
++	int (*device_alloc_chan_resources)(struct dma_chan *chan,
++			struct dma_client *client);
+ 	void (*device_free_chan_resources)(struct dma_chan *chan);
+ 
+ 	struct dma_async_tx_descriptor *(*device_prep_dma_memcpy)(
+-- 
+1.5.3.8
 
-Which I hope will address the concerns Dan had about my first patch
-series. I think this version is cleaner than the first one, and this
-is confirmed by the fact that the dw_dmac driver is 60 lines shorter
-than it was the first time around. The mmc driver is slightly shorter
-too.
-
-I would especially like some feedback on the first two patches in the
-series, but if you find any issues with the rest of them, I would
-certainly like to hear about those too.
-
-The whole thing has been tested using an SD card with an ext3
-filesystem on it: mke2fs, e2fsck and copying stuff around. The
-filesystem errors I mentioned the last time around are gone, but I get
-some warnings messages from the MMC driver that I need to investigate.
-They don't seem to cause any actual harm though.
-
-The patch series must be applied on top of Dan's "towards an async_tx
-update for 2.6.25" patches:
-
-http://lkml.org/lkml/2007/12/21/277
-
-or you can simply pull from the master branch of my (temporary)
-dmaslave git repository:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/dmaslave.git master
-
-which contains everything you need to try it out.
-
-Haavard Skinnemoen (5):
-      dmaengine: Add dma_client parameter to device_alloc_chan_resources
-      dmaengine: Add slave DMA interface
-      dmaengine: Make DMA Engine menu visible for AVR32 users
-      dmaengine: Driver for the Synopsys DesignWare DMA controller
-      Atmel MCI: Driver for Atmel on-chip MMC controllers
-
- arch/avr32/boards/atngw100/setup.c         |    6 +
- arch/avr32/boards/atstk1000/atstk1002.c    |    3 +
- arch/avr32/mach-at32ap/at32ap700x.c        |   60 +-
- drivers/dma/Kconfig                        |   11 +-
- drivers/dma/Makefile                       |    1 +
- drivers/dma/dmaengine.c                    |   11 +-
- drivers/dma/dw_dmac.c                      | 1120 +++++++++++++++++++++++++++
- drivers/dma/dw_dmac.h                      |  256 ++++++
- drivers/dma/ioat_dma.c                     |    5 +-
- drivers/dma/iop-adma.c                     |    7 +-
- drivers/mmc/host/Kconfig                   |   10 +
- drivers/mmc/host/Makefile                  |    1 +
- drivers/mmc/host/atmel-mci.c               | 1159 ++++++++++++++++++++++++++++
- drivers/mmc/host/atmel-mci.h               |  192 +++++
- include/asm-avr32/arch-at32ap/at32ap700x.h |   16 +
- include/asm-avr32/arch-at32ap/board.h      |   10 +-
- include/linux/dmaengine.h                  |   71 ++-
- 17 files changed, 2911 insertions(+), 28 deletions(-)
- create mode 100644 drivers/dma/dw_dmac.c
- create mode 100644 drivers/dma/dw_dmac.h
- create mode 100644 drivers/mmc/host/atmel-mci.c
- create mode 100644 drivers/mmc/host/atmel-mci.h
