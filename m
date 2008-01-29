@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933045AbYA2OGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932998AbYA2OIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933045AbYA2OGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932106AbYA2OGl
+	id S932998AbYA2OIQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:08:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932389AbYA2OIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:06:41 -0500
-Received: from sacred.ru ([62.205.161.221]:48876 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763531AbYA2OGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:06:39 -0500
-Message-ID: <479F32E8.3090001@openvz.org>
-Date: Tue, 29 Jan 2008 17:06:32 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
+	Tue, 29 Jan 2008 09:08:00 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:41448 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759395AbYA2OH7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 09:07:59 -0500
+Message-ID: <479F32E9.10609@panasas.com>
+Date: Tue, 29 Jan 2008 16:06:33 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Ralf Baechle <ralf@linux-mips.org>
-Subject: [PATCH 11/12] mips: use find_task_by_vpid in system calls
-References: <479F2C5C.1050303@openvz.org>
-In-Reply-To: <479F2C5C.1050303@openvz.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Greg KH <greg@kroah.com>, Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+References: <20080128204935.GI15220@kernel.dk> <20080128212114.GA15586@kroah.com> <479F18D3.9030709@panasas.com> <20080129135443.GU15220@kernel.dk>
+In-Reply-To: <20080129135443.GU15220@kernel.dk>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 29 Jan 2008 17:06:12 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are some places left in mips, that lookup task in
-initial namespace, while the code doing so gets the pid
-from the user space and thus must treat it as virtual.
+On Tue, Jan 29 2008 at 15:54 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Tue, Jan 29 2008, Boaz Harrosh wrote:
+>> Greg KH wrote:
+>>> On Mon, Jan 28, 2008 at 09:49:35PM +0100, Jens Axboe wrote:
+>>>> Hi,
+>>>>
+>>>> Running latest -git (head 91525300baf162e83e923b09ca286f9205e21522) and
+>>>> connecting my cf usb storage device yields and endless stream of:
+>>>>
+>>>> Initializing USB Mass Storage driver...
+>>>> scsi6 : SCSI emulation for USB Mass Storage devices
+>>>> usb-storage: device found at 2
+>>>> usb-storage: waiting for device to settle before scanning
+>>>> usbcore: registered new interface driver usb-storage
+>>>> USB Mass Storage support registered.
+>>>> scsi 6:0:0:0: Direct-Access     Generic  STORAGE DEVICE   0125 PQ: 0
+>>>> ANSI: 0
+>>>> sd 6:0:0:0: [sdb] 4001760 512-byte hardware sectors (2049 MB)
+>>>> sd 6:0:0:0: [sdb] Write Protect is off
+>>>> sd 6:0:0:0: [sdb] Mode Sense: 02 00 00 00
+>>>> sd 6:0:0:0: [sdb] Assuming drive cache: write through
+>>>> sd 6:0:0:0: [sdb] 4001760 512-byte hardware sectors (2049 MB)
+>>>> sd 6:0:0:0: [sdb] Write Protect is off
+>>>> sd 6:0:0:0: [sdb] Mode Sense: 02 00 00 00
+>>>> sd 6:0:0:0: [sdb] Assuming drive cache: write through
+>>>>  sdb: sdb1
+>>>> sd 6:0:0:0: [sdb] Attached SCSI removable disk
+>>>> sd 6:0:0:0: Attached scsi generic sg1 type 0
+>>>> scsi 6:0:0:1: Direct-Access     Generic  STORAGE DEVICE   0125 PQ: 0
+>>>> ANSI: 0
+>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>> usb 5-1: reset high speed USB device using ehci_hcd and address 2
+>>>> [...]
+>>>>
+>>>> until I disconnect it. The device doesn't work. Worked fine in 2.6.24.
+>>>> I'm attaching boot messages and my .config.
+>>> That's a bit wierd, as we haven't added any USB patches to the -git tree
+>>> yet after 2.6.24 :)
+>>>
+>>> Could this be caused by some scsi changes perhaps?
+>>>
+>>> thanks,
+>>>
+>>> greg k-h
+>>> -
+>> Yes it is ;)
+>>
+>> Jens could you test the patch below? if it works I'll submit a proper
+>> patch. Please forgive me for the bug.
+> 
+> No difference, still just a lot of resets.
+> 
+Where you able to figure out which usb storage transport is used?
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+in drivers/usb/storage/usb.c you have get_protocol() and get_transport()
+functions. I'm not sure if these get stored in sysfs perhaps. This will
+pinpoint better where to look. Let me research a bit. 
 
----
- arch/mips/kernel/mips-mt-fpaff.c |    2 +-
- arch/mips/kernel/sysirix.c       |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/mips/kernel/mips-mt-fpaff.c b/arch/mips/kernel/mips-mt-fpaff.c
-index bb4f00c..df4d3f2 100644
---- a/arch/mips/kernel/mips-mt-fpaff.c
-+++ b/arch/mips/kernel/mips-mt-fpaff.c
-@@ -36,7 +36,7 @@ unsigned long mt_fpemul_threshold = 0;
-  */
- static inline struct task_struct *find_process_by_pid(pid_t pid)
- {
--	return pid ? find_task_by_pid(pid) : current;
-+	return pid ? find_task_by_vpid(pid) : current;
- }
- 
- 
-diff --git a/arch/mips/kernel/sysirix.c b/arch/mips/kernel/sysirix.c
-index 672fba8..c357762 100644
---- a/arch/mips/kernel/sysirix.c
-+++ b/arch/mips/kernel/sysirix.c
-@@ -111,7 +111,7 @@ asmlinkage int irix_prctl(unsigned option, ...)
- 		printk("irix_prctl[%s:%d]: Wants PR_ISBLOCKED\n",
- 		       current->comm, current->pid);
- 		read_lock(&tasklist_lock);
--		task = find_task_by_pid(va_arg(args, pid_t));
-+		task = find_task_by_vpid(va_arg(args, pid_t));
- 		error = -ESRCH;
- 		if (error)
- 			error = (task->run_list.next != NULL);
--- 
-1.5.3.4
+Thanks for testing
+Boaz
 
