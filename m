@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765867AbYA2Tgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934028AbYA2Th1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765867AbYA2Tgc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 14:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728AbYA2TgL
+	id S934028AbYA2Th1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 14:37:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYA2ThK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 14:36:11 -0500
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:38893 "EHLO sabe.cs.wisc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752383AbYA2TgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 14:36:09 -0500
-Message-ID: <479F7B43.6090801@cs.wisc.edu>
-Date: Tue, 29 Jan 2008 13:15:15 -0600
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Konrad Rzeszutek <konrad@darnok.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>, dwm@enoyolf.org, darnok@68k.org,
-       pjones@redhat.com, konradr@redhat.com, konradr@linux.vnet.ibm.com,
-       randy.dunlap@oracle.com, hpa@zytor.com, lenb@kernel.org,
-       mike.anderson@us.ibm.com, dwm@austin.ibm.com, arjan@infradead.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       James.Bottomley@hansenpartnership.com
-Subject: Re: [PATCH] Add iSCSI IBFT support (v0.4.5) - fixes to the header
- files.
-References: <20080128185503.GA3930@andromeda.dapyr.net>
-In-Reply-To: <20080128185503.GA3930@andromeda.dapyr.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 29 Jan 2008 14:37:10 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:58940 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751196AbYA2ThJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 14:37:09 -0500
+Date: Tue, 29 Jan 2008 13:37:00 -0600
+From: Paul Jackson <pj@sgi.com>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, dmitry.adamushko@gmail.com,
+       rostedt@goodmis.org, menage@google.com, rientjes@google.com,
+       tong.n.li@intel.com, tglx@linutronix.de, akpm@linux-foundation.org,
+       dhaval@linux.vnet.ibm.com, vatsa@linux.vnet.ibm.com, sgrubb@redhat.com,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       nickpiggin@yahoo.com.au
+Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
+Message-Id: <20080129133700.7f1ab444.pj@sgi.com>
+In-Reply-To: <479F1118.BA47.005A.0@novell.com>
+References: <1201600428.28547.87.camel@lappy>
+	<1201604243.28547.101.camel@lappy>
+	<20080129053005.bc7a11d7.pj@sgi.com>
+	<479F01AF.BA47.005A.0@novell.com>
+	<20080129102836.be614579.pj@sgi.com>
+	<479F1118.BA47.005A.0@novell.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Konrad Rzeszutek wrote:
-> +/*
-> + * Helper functions to parse data properly.
-> + */
-> +static ssize_t sprintf_ipaddr(char *buf, u8 *ip)
-> +{
-> +	if (ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] == 0 &&
-> +	    ip[4] == 0 && ip[5] == 0 && ip[6] == 0 && ip[7] == 0 &&
-> +	    ip[8] == 0 && ip[9] == 0 && ip[10] == 0xff && ip[11] == 0xff) {
-> +		/*
-> +		 * IPV4
-> +		 */
-> +		return sprintf(buf, "%d.%d.%d.%d\n", ip[12],
-> +			       ip[13], ip[14], ip[15]);
-> +	} else
-> +		return 0;
-> +}
+Gregory wrote:
+> > 1) What are 'per-domain' variables?
+> 
+> s/per-domain/per-root-domain
 
-You probably just want to use the NIPQUAD_FMT and NIP6_FMT macros here. 
-Also why isn't ipv6 supported?
+Oh dear - now I've got more questions, not fewer.
+
+ 1) "variables"  ... what variables?
+
+ 2) Is a 'root-domain' just the RT specific portion
+    of a sched_domain, or is it something else?
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
