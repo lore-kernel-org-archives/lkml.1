@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765282AbYA2Q6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764667AbYA2RCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765282AbYA2Q6r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:58:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYA2Q6h
+	id S1764667AbYA2RCg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 12:02:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbYA2RC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:58:37 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:55158 "EHLO mail.dvmed.net"
+	Tue, 29 Jan 2008 12:02:29 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59187 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752452AbYA2Q6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:58:35 -0500
-Message-ID: <479F5B39.1000708@garzik.org>
-Date: Tue, 29 Jan 2008 11:58:33 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1752296AbYA2RC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 12:02:27 -0500
+Date: Tue, 29 Jan 2008 19:02:55 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: sections mismatches: How to mark new false positives?
+Message-ID: <20080129170255.GP8767@does.not.exist>
 MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-CC: Florian Attenberger <valdyn@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: Problem with ata layer in 2.6.24
-References: <200801272122.21823.gene.heskett@gmail.com> <200801281413.21347.gene.heskett@gmail.com> <20080129074127.5699afcf.valdyn@gmail.com> <200801291004.12565.gene.heskett@gmail.com>
-In-Reply-To: <200801291004.12565.gene.heskett@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> Does anyone know why my dvdwriter isn't being assigned a '/dev/sdx' number 
-> when dmesg says its found ok at ata2.00?  I've turned on an option that says 
-> something about using the bios for device access this build, but I'll be 
-> surprised if that's it. :)
+I'm getting the following in the latest -git:
 
-I think you mean /dev/scdx not /dev/sdx.  Make sure you have the 'sr' 
-driver compiled and load (CONFIG_BLK_DEV_SR).
+<--  snip  -->
 
-The bios-for-dev-access thing definitely won't help, and may hurt (by 
-taking over the device you wanted to test).
+...
+WARNING: arch/x86/kernel/built-in.o(.exit.text+0x1db): Section mismatch in reference from the function msr_exit() to the variable .cpuinit.data:msr_class_cpu_notifier
+...
 
-	Jeff
+<--  snip  -->
 
+That's obviously a false positive (unregister_hotcpu_notifier() is a 
+noop if CONFIG_HOTPLUG_CPU=n), but how can I silence the warning?
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
