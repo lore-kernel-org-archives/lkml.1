@@ -1,119 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764455AbYA2PxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765391AbYA2Pxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764455AbYA2PxR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 10:53:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764697AbYA2Pup
+	id S1765391AbYA2Pxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 10:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764573AbYA2PvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 10:50:45 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:52975 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760172AbYA2PuE (ORCPT
+	Tue, 29 Jan 2008 10:51:16 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:35288 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764809AbYA2PvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 10:50:04 -0500
-Message-Id: <20080129154949.974655390@szeredi.hu>
-References: <20080129154900.145303789@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Tue, 29 Jan 2008 16:49:03 +0100
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: [patch 3/6] mm: bdi: expose the BDI object in sysfs for NFS
-Content-Disposition: inline; filename=bdi-sysfs-nfs.patch
+	Tue, 29 Jan 2008 10:51:14 -0500
+Message-ID: <479F4B4B.2020000@panasas.com>
+Date: Tue, 29 Jan 2008 17:50:35 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Oliver Neukum <oliver@neukum.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, Greg KH <greg@kroah.com>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] 2.6.24-git usb reset problems
+References: <20080128204935.GI15220@kernel.dk> <479F32E9.10609@panasas.com> <20080129141108.GV15220@kernel.dk> <200801291531.39825.oliver@neukum.org>
+In-Reply-To: <200801291531.39825.oliver@neukum.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+On Tue, Jan 29 2008 at 16:31 +0200, Oliver Neukum <oliver@neukum.org> wrote:
+> Am Dienstag, 29. Januar 2008 15:11:08 schrieb Jens Axboe:
+>> On Tue, Jan 29 2008, Boaz Harrosh wrote:
+>>> On Tue, Jan 29 2008 at 15:54 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
+>>>> On Tue, Jan 29 2008, Boaz Harrosh wrote:
+>>>>> Greg KH wrote:
+>  
+>>>> No difference, still just a lot of resets.
+>>>>
+>>> Where you able to figure out which usb storage transport is used?
+>>>
+>>> in drivers/usb/storage/usb.c you have get_protocol() and get_transport()
+>>> functions. I'm not sure if these get stored in sysfs perhaps. This will
+>>> pinpoint better where to look. Let me research a bit. 
+>> Did the quick'n easy and dumped it. Protocol is 'Transparent SCSI' and
+>> transport is 'Bulk'
+> 
+> You can recompile your kernel with CONFIG_USB_DEBUG and CONFIG_STORAGE_DEBUG
+> That should tell the reason for the resets.
+> 
+> 	Regards
+> 		Oliver
+> -
 
-Register NFS' backing_dev_info under sysfs with the name
-"nfs-MAJOR:MINOR"
+I can not see what it is. Yes CONFIG_USB_STORAGE_DEBUG will help.
+I have a device here that uses the same trasport/protocol I'll
+try to reproduce the failure here.
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>
----
-
-Index: linux/fs/nfs/super.c
-===================================================================
---- linux.orig/fs/nfs/super.c	2008-01-29 10:26:47.000000000 +0100
-+++ linux/fs/nfs/super.c	2008-01-29 12:12:38.000000000 +0100
-@@ -1475,6 +1475,12 @@ static int nfs_compare_super(struct supe
- 	return nfs_compare_mount_options(sb, server, mntflags);
- }
- 
-+static int nfs_bdi_register(struct nfs_server *server)
-+{
-+	return bdi_register(&server->backing_dev_info, NULL, "nfs-%u:%u",
-+			    MAJOR(server->s_dev), MINOR(server->s_dev));
-+}
-+
- static int nfs_get_sb(struct file_system_type *fs_type,
- 	int flags, const char *dev_name, void *raw_data, struct vfsmount *mnt)
- {
-@@ -1515,6 +1521,10 @@ static int nfs_get_sb(struct file_system
- 	if (s->s_fs_info != server) {
- 		nfs_free_server(server);
- 		server = NULL;
-+	} else {
-+		error = nfs_bdi_register(server);
-+		if (error)
-+			goto error_splat_super;
- 	}
- 
- 	if (!s->s_root) {
-@@ -1555,6 +1565,7 @@ static void nfs_kill_super(struct super_
- {
- 	struct nfs_server *server = NFS_SB(s);
- 
-+	bdi_unregister(&server->backing_dev_info);
- 	kill_anon_super(s);
- 	nfs_free_server(server);
- }
-@@ -1599,6 +1610,10 @@ static int nfs_xdev_get_sb(struct file_s
- 	if (s->s_fs_info != server) {
- 		nfs_free_server(server);
- 		server = NULL;
-+	} else {
-+		error = nfs_bdi_register(server);
-+		if (error)
-+			goto error_splat_super;
- 	}
- 
- 	if (!s->s_root) {
-@@ -1889,6 +1904,10 @@ static int nfs4_get_sb(struct file_syste
- 	if (s->s_fs_info != server) {
- 		nfs_free_server(server);
- 		server = NULL;
-+	} else {
-+		error = nfs_bdi_register(server);
-+		if (error)
-+			goto error_splat_super;
- 	}
- 
- 	if (!s->s_root) {
-@@ -1974,6 +1993,10 @@ static int nfs4_xdev_get_sb(struct file_
- 	if (s->s_fs_info != server) {
- 		nfs_free_server(server);
- 		server = NULL;
-+	} else {
-+		error = nfs_bdi_register(server);
-+		if (error)
-+			goto error_splat_super;
- 	}
- 
- 	if (!s->s_root) {
-@@ -2053,6 +2076,10 @@ static int nfs4_referral_get_sb(struct f
- 	if (s->s_fs_info != server) {
- 		nfs_free_server(server);
- 		server = NULL;
-+	} else {
-+		error = nfs_bdi_register(server);
-+		if (error)
-+			goto error_splat_super;
- 	}
- 
- 	if (!s->s_root) {
-
---
+Boaz
