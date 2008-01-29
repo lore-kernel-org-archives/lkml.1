@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbYA2Rk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760523AbYA2Rlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758173AbYA2Rk7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 12:40:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYA2Rkt
+	id S1760523AbYA2Rlw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 12:41:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbYA2Rlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 12:40:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:58546 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752900AbYA2Rks (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 12:40:48 -0500
-Date: Tue, 29 Jan 2008 09:39:48 -0800
-From: Greg KH <greg@kroah.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: [patch 2/6] mm: bdi: export BDI attributes in sysfs
-Message-ID: <20080129173948.GA14450@kroah.com>
-References: <20080129154900.145303789@szeredi.hu> <20080129154948.823761079@szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080129154948.823761079@szeredi.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 29 Jan 2008 12:41:44 -0500
+Received: from ns2.suse.de ([195.135.220.15]:58088 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752446AbYA2Rln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 12:41:43 -0500
+Subject: Re: [PATCH] [RFC] block/elevator: change nr_requests handling
+From: Nikanth Karthikesan <knikanth@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: axboe@kernel.dk, nickpiggin@yahoo.com.au
+In-Reply-To: <1201627774.14644.5.camel@nikanth-laptop.blr.novell.com>
+References: <1201627774.14644.5.camel@nikanth-laptop.blr.novell.com>
+Content-Type: text/plain
+Date: Tue, 29 Jan 2008 23:17:04 +0530
+Message-Id: <1201628824.16911.0.camel@nikanth-laptop.blr.novell.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 04:49:02PM +0100, Miklos Szeredi wrote:
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> Provide a place in sysfs (/sys/class/bdi) for the backing_dev_info
-> object.  This allows us to see and set the various BDI specific
-> variables.
-> 
-> In particular this properly exposes the read-ahead window for all
-> relevant users and /sys/block/<block>/queue/read_ahead_kb should be
-> deprecated.
-> 
-> With patient help from Kay Sievers and Greg KH
-> 
-> [mszeredi@suse.cz]
-> 
->  - split off NFS and FUSE changes into separate patches
->  - document new sysfs attributes under Documentation/ABI
->  - do bdi_class_init as a core_initcall, otherwise the "default" BDI
->    won't be initialized
->  - remove bdi_init_fmt macro, it's not used very much
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> CC: Kay Sievers <kay.sievers@vrfy.org>
-> CC: Greg KH <greg@kroah.com>
+On Tue, 2008-01-29 at 22:59 +0530, Nikanth Karthikesan wrote:
 
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Check for nr_requests only when io schedulers dispatch
+> 
+> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> 
+
+Jens,
+
+The patch is against 2.6.24. Before the block/ll_rw_blk.c splitup.
+
+Thanks
+Nikanth
 
