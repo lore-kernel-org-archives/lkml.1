@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbYA2JfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754999AbYA2Jyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883AbYA2JfX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 04:35:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbYA2JfI
+	id S1754999AbYA2Jyz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 04:54:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbYA2Jyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 04:35:08 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:50663 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751902AbYA2JfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 04:35:06 -0500
-From: Andi Kleen <ak@suse.de>
-To: Yinghai Lu <Yinghai.Lu@sun.com>
-Subject: Re: [PATCH 2/2] x86_64: make early_node_mem return align address
-Date: Tue, 29 Jan 2008 10:33:29 +0100
-User-Agent: KMail/1.9.1
-Cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200801290053.45776.yinghai.lu@sun.com> <200801290105.03438.yinghai.lu@sun.com>
-In-Reply-To: <200801290105.03438.yinghai.lu@sun.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 29 Jan 2008 04:54:45 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:59687 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751707AbYA2Jyo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 04:54:44 -0500
+Subject: scheduler scalability - cgroups, cpusets and load-balancing
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, vatsa <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Paul Jackson <pj@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steve Grubb <sgrubb@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       "Li, Tong N" <tong.n.li@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Menage <menage@google.com>,
+       David Rientjes <rientjes@google.com>
+Content-Type: text/plain
+Date: Tue, 29 Jan 2008 10:53:48 +0100
+Message-Id: <1201600428.28547.87.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801291033.29871.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 January 2008 10:05, Yinghai Lu wrote:
-> [PATCH 2/2] x86_64: make early_node_mem return align address
->
-> boot oops when system get 64g or 128g installed
+Hi All,
 
-Probably it should just use reserve_early(). Does this patch work?
- 
-The alignment change is needed at some point too, but only to 
-relax the alignment to not force all early allocations to be page
-padded.
+Some of the fancy new scheduler features such as the cgroup load
+balancer (load_balance_monitor) and the real-time load balancer are a
+bit of an scalability issue. They all seem to want a rather strong
+global bound to keep a global fairness (which is quite understandable).
 
--Andi
+[ my own interest is currently real-time group scheduling on multiple
+  cpus, and that seems to require _very_ strong bonds ]
 
----
+I think the current stuff would scale up to 8 maybe 16 cpus, but after
+that I'd be real worried.
 
-Use early reservation for early node data
+Now we want distributions to enable most of these features. Distros seem
+to want containers, but distros also need to support 128+ cpu machines,
+so how are we going to solve this.
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+My thoughts were to make stronger use of disjoint cpu-sets. cgroups and
+cpusets are related, in that cpusets provide a property to a cgroup.
+However, load_balance_monitor()'s interaction with sched domains
+confuses me - it might DTRT, but I can't tell.
 
-Index: linux/arch/x86/mm/numa_64.c
-===================================================================
---- linux.orig/arch/x86/mm/numa_64.c
-+++ linux/arch/x86/mm/numa_64.c
-@@ -169,8 +169,10 @@ static void * __init early_node_mem(int 
- 	unsigned long mem = find_e820_area(start, end, size);
- 	void *ptr;
- 
--	if (mem != -1L)
-+	if (mem != -1L) {
-+		reserve_early(mem, mem + size);
- 		return __va(mem);
-+	}
- 	ptr = __alloc_bootmem_nopanic(size,
- 				SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS));
- 	if (ptr == NULL) {
+[ It looks to me it balances a group over the largest SD the current cpu
+  has access to, even though that might be larger than the SD associated
+  with the cpuset of that particular cgroup. ]
 
+Also the RT load-balance needs to become aware of such these sets, I
+think Paul J and Steven once talked about it, but can't quite remember
+where that ended. From my POV there should be sched-domain based balance
+information, not global.
+
+By cutting the problem into smaller pieces, and adding tunables to
+weaken to global fairness, I think we can give administrators enough
+freedom to make use of these features, even on the largest of machines.
+
+[ so I'd move the load_balance_monitor() tunables into cpusets as well,
+  I can imagine a smaller cpuset wanting a stronger fairness than a much
+  larger cpuset. ]
+
+I understand its a somewhat hand-wavey email, but I wanted to start
+discussion on the issue, or have someone show me I'm wrong and can stop
+worrying :-).
+
+Peter
 
