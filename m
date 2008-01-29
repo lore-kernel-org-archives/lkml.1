@@ -1,101 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbYA2Jeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbYA2JfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754985AbYA2Jeo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 04:34:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYA2Jeg
+	id S1756883AbYA2JfX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 04:35:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbYA2JfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 04:34:36 -0500
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:15253 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751037AbYA2Jef (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 04:34:35 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <479E5D22.1070109@goop.org>
-References: <1201560133.17053.36.camel@cthulhu.hellion.org.uk>
-	 <479E5D22.1070109@goop.org>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 09:34:11 +0000
-Message-Id: <1201599251.5301.26.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Tue, 29 Jan 2008 04:35:08 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50663 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751902AbYA2JfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 04:35:06 -0500
+From: Andi Kleen <ak@suse.de>
+To: Yinghai Lu <Yinghai.Lu@sun.com>
+Subject: Re: [PATCH 2/2] x86_64: make early_node_mem return align address
+Date: Tue, 29 Jan 2008 10:33:29 +0100
+User-Agent: KMail/1.9.1
+Cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200801290053.45776.yinghai.lu@sun.com> <200801290105.03438.yinghai.lu@sun.com>
+In-Reply-To: <200801290105.03438.yinghai.lu@sun.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 217.46.209.99
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: PATCH/RFC: bzImage payload as compressed ELF file.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+Content-Disposition: inline
+Message-Id: <200801291033.29871.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 29 January 2008 10:05, Yinghai Lu wrote:
+> [PATCH 2/2] x86_64: make early_node_mem return align address
+>
+> boot oops when system get 64g or 128g installed
 
-On Mon, 2008-01-28 at 14:54 -0800, Jeremy Fitzhardinge wrote:
-> Ian Campbell wrote:
-> > I'm mainly interested in something along these lines to allow the Xen
-> > bootloader to load a bzImage so that distros don't have to maintain two
-> > kernel packages with the same basic bits in different file formats, I
-> > think it would probably be of use to the kexec and/or lguest folks too.
-> >
-> > The patch boots on native 32 and 64 bit x86. I haven't done the matching
-> > Xen domain builder work but the attached bzexplode.c is a trivial/ugly
-> > (don't judge me based on it ;-)) test app which extracts the payload,
-> > which I have been able to boot as a 32 bit Xen domU, as you'd expect.
-> >   
-> 
-> I've got a bzImage-loading domain builder patch somewhere.  It's based 
-> on my version of what you've done here, which isn't very different.
+Probably it should just use reserve_early(). Does this patch work?
+ 
+The alignment change is needed at some point too, but only to 
+relax the alignment to not force all early allocations to be page
+padded.
 
-Thanks, I'll probably make use of that patch when I come to do the
-domain builder bits.
+-Andi
 
-> The problem I ran into is that 32-bit boot loaders expect to be able to 
-> load the payload portion of the bzImage and simply jmp 0x100000, which 
-> would start executing the ELF header.
+---
 
-The payload I'm changing is the payload from the point of view of
-arch/x86/boot/compressed -- i.e. piggy.o which becomes part of the
-vmlinux in that directory (too many files called vmlinux!). I that might
-more accurately be described that as the "payload of the payload" from
-the point of view of a bzImage file or the "payload of the compressor
-portion" or something.
+Use early reservation for early node data
 
-If you strip of setup_sects (+1?) from a bzImage, which I think is what
-you are referring above, then you end up with essentially
-arch/x86/boot/compressed/vmlinux (at address 0x100000 from one of the
-bzImage header fields) which can still be jumped to by a 32 bit
-bootloader. It will decompress and process the ELF bits correctly. I
-think this is where my patch differs from your previous version, you
-made the actual compressor portion an ELF file within the bzImage.
+Signed-off-by: Andi Kleen <ak@suse.de>
 
-The thing which no longer works here is scanning the whole image looking
-for a gzip header just past setup_sects and extracting that expecting to
-find a raw binary because you will actually find an ELF file. I'm not
-sure that's an "interface" which could be expected to continue to work
-for all time anyway.
+Index: linux/arch/x86/mm/numa_64.c
+===================================================================
+--- linux.orig/arch/x86/mm/numa_64.c
++++ linux/arch/x86/mm/numa_64.c
+@@ -169,8 +169,10 @@ static void * __init early_node_mem(int 
+ 	unsigned long mem = find_e820_area(start, end, size);
+ 	void *ptr;
+ 
+-	if (mem != -1L)
++	if (mem != -1L) {
++		reserve_early(mem, mem + size);
+ 		return __va(mem);
++	}
+ 	ptr = __alloc_bootmem_nopanic(size,
+ 				SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS));
+ 	if (ptr == NULL) {
 
-> > What would be the preferred way of allowing bootloaders/domain builders
-> > to find the compressed payload? Tacking the offset from the end onto the
-> > end as I have done for the moment seems pretty skanky...
-> >   
-> 
-> The header format is extensible, so you just up the bootloader revision 
-> and put the appropriate extra members.
-
-That's what I figured. There will be some build system pain to extract
-those offsets from boot/compressed/vmlinux and incorporate them into
-boot/bzImage but I'll figure something out.
-
-Ian.
-
--- 
-Ian Campbell
-Current Noise: Centurions Ghost - Specimen No.7
-
-Psychoanalysis is that mental illness for which it regards itself a
-therapy.
-		-- Karl Kraus
 
