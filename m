@@ -1,121 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759944AbYA2XVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758019AbYA2XYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759944AbYA2XVu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 18:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758613AbYA2XVf
+	id S1758019AbYA2XYT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 18:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYA2XYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 18:21:35 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:33944 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757718AbYA2XVd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 18:21:33 -0500
-Message-ID: <479FB4F6.90901@web.de>
-Date: Wed, 30 Jan 2008 00:21:26 +0100
-From: Jan Kiszka <jan.kiszka@web.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: kgdb-bugreport@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][KGDB] Re:  KGDB: 8250_kgdb warnings
-References: <479DAC35.60308@siemens.com> <479FAECF.8090308@windriver.com>
-In-Reply-To: <479FAECF.8090308@windriver.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigF8DA01D3EE602A8677C137A7"
-X-Provags-ID: V01U2FsdGVkX1/s3piD9puFeHIi75Fv997fMSaFk3ClZt/Wqbk+
-	ksan1xbcYEwPv24XeehetaqxLz2PpEi6e3vnnTkcVnZPLWrM35
-	3vxGUC9cs=
+	Tue, 29 Jan 2008 18:24:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43760 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754236AbYA2XYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 18:24:09 -0500
+Date: Tue, 29 Jan 2008 18:23:56 -0500 (EST)
+Message-Id: <20080129.182356.70224412.k-ueda@ct.jp.nec.com>
+To: bzolnier@gmail.com, rdreier@cisco.com
+Cc: nai.xia@gmail.com, flo@rfc822.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: Re: kernel BUG at ide-cd.c:1726 in 2.6.24-03863-g0ba6c33 &&
+ -g8561b089
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <adar6g0e0g2.fsf@cisco.com>
+References: <200801292201.45718.nai.xia@gmail.com>
+	<20080129.151353.48534987.k-ueda@ct.jp.nec.com>
+	<adar6g0e0g2.fsf@cisco.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
+ =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigF8DA01D3EE602A8677C137A7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Bart, 
 
-Jason Wessel wrote:
-> Jan Kiszka wrote:
->> Hi Jason,
->>
->> so far I ignored this because it worked, but I know my customer will
->> complain later anyway: What is the deeper meaning of this warning whic=
-h
->> shows up once per registered UART port on my (x86) boxes?
->>
->> void kgdb8250_add_port(int i, struct uart_port *serial_req)
->> {
->> #ifdef CONFIG_KGDB_SIMPLE_SERIAL
->> 	if (should_copy_rs_table)
->> 		printk(KERN_ERR "8250_kgdb: warning will over write serial"
->> 			   " port definitions at kgdb init time\n");
->> #endif
->> ...
->>
->> When I look at kgdb8250_add_platform_port, it starts with a call to
->> kgdb8250_copy_rs_table, and I'm wondering now if that wouldn't be more=
+On Tue, 29 Jan 2008 14:22:53 -0800, Roland Dreier wrote:
+> Hi, I saw the same BUG from ide-cd on one of my systems.  I applied
+> the debugging patch to replace the BUG with blk_dump_rq_flags(), and I
+> got the output below (full boot log and .config attached to this
+> email).
+> 
+> Please let me know if there's anything else that would help debug the
+> problem.
 
->> appropriate here.
->>
->> Jan
->>
->=20
->=20
-> This was the result of a race condition between the init code of the
-> platform vs the init code in kgdb.  The init code in the arch platform
-> could register serial ports prior to the kgdb module being configured
-> by the kernel while the kernel is processing all the __init functions.
-> It would have been easy to fix this with another call to
-> kgdb8250_copy_rs_table() but you cannot do that because a non-__init
-> function cannot call an __init function.
->=20
->=20
-> We might as well go ahead and fix the problem by adding in some checks
-> so as not to overwrite the dynamic registrations, because eventually
-> the SERIAL_PORT_DFNS will be gone.  Below is the patch with the fix to
-> add some saftey checks as well as to remove the warning.
->=20
-> --------Cut here-----------
->=20
->=20
-> Fix the initialization of the kgdb port structure such that
-> dynamically registered ports will not be later overwritten by the
-> SERIAL_PORT_DFNS table.  With this problem fixed, the printk about the
-> overwriting of the kgdb serial definitions at init time can be
-> removed.
->=20
-> Also add in additional runtime safety checks to make sure UART_NR was
-> statically allocated by the kernel at compile time to be large enough
-> for all the dynamic registered ports.
+Thank you for the information, Roland.
 
-I'm currently preparing to post a larger patch series for KGDB which
-also addresses this problem - but quite differently. Therefore this
-question in advance:
+ 
+> [    4.072271] Uniform CD-ROM driver Revision: 3.20
+> [    4.098236] ide-cd: rq still having bio: dev hda: type=2, flags=114c8
+> [    4.100269]
+> [    4.100269] sector 1949759, nr/cnr 0/0
+> [    4.100269] bio ffff8102418cc600, biotail ffff8102418cc600, buffer 0000000000000000, d8
+> [    4.100269] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
+> [    4.101005] ide-cd: rq still having bio: dev hda: type=2, flags=114c8
+> [    4.104269]
+> [    4.104269] sector 1949759, nr/cnr 0/0
+> [    4.104269] bio ffff8102418cc600, biotail ffff8102418cc600, buffer 0000000000000000, d2
+> [    4.104269] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
+> [    4.109203] ide-cd: rq still having bio: dev hda: type=2, flags=114c8
+> [    4.112270]
+> [    4.112270] sector 1949759, nr/cnr 0/0
+> [    4.112270] bio ffff8102418cc600, biotail ffff8102418cc600, buffer 0000000000000000, d8
+> [    4.112270] cdb: 12 01 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
+> [    4.112945] ide-cd: rq still having bio: dev hda: type=2, flags=114c8
+> [    4.116270]
+> [    4.116270] sector 1949759, nr/cnr 0/0
+> [    4.116270] bio ffff8102418cc600, biotail ffff8102418cc600, buffer 0000000000000000, d2
+> [    4.116270] cdb: 12 01 00 00 fe 00 00 00 00 00 00 00 00 00 00 00
 
-What use case could not be covered by polling the (8250) config via
-serial8250_get_port_def() when there were no kgdb8250_add_port()? That's
-in fact what I did in my patch because I found none and the result
-appears much more consistent to me. But I'm not claiming to be a UART
-expert across all those various embedded platforms.
+Bart,
+This means that the rq still has a bio even after DRQ_STAT is cleared.
+The original ide-cd code was calling only end_that_request_last() there.
+So I thought that the rq should have no bio when DRQ_STAT is cleared,
+otherwise the bio leaks.
 
-Jan
+Was my understanding wrong and is that correct behavior in ide-cd?
 
-
---------------enigF8DA01D3EE602A8677C137A7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFHn7T7niDOoMHTA+kRAuHjAJ9CxtuiVY+CcTIbZ648nbhkSt1h4QCeJLrE
-D9t8f7PUEvxsOhDf0YNYNzE=
-=ygS4
------END PGP SIGNATURE-----
-
---------------enigF8DA01D3EE602A8677C137A7--
+Thanks,
+Kiyoshi Ueda
