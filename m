@@ -1,150 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764872AbYA2OZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764940AbYA2OZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764872AbYA2OZJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:25:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764161AbYA2OYq
+	id S1764940AbYA2OZj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 09:25:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763920AbYA2OZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:24:46 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49478 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764044AbYA2OYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:24:45 -0500
-Subject: Re: [PATCH 6/12] gfs2: make gfs2_glock.gl_owner_pid be a struct
-	pid *
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <479F3063.2050006@openvz.org>
-References: <479F2C5C.1050303@openvz.org>  <479F3063.2050006@openvz.org>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Tue, 29 Jan 2008 14:19:45 +0000
-Message-Id: <1201616386.22038.337.camel@quoit>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Jan 2008 09:25:21 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:46485
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763330AbYA2OZU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 09:25:20 -0500
+Date: Tue, 29 Jan 2008 15:24:52 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 4/6] MMU notifier: invalidate_page callbacks using
+	Linux rmaps
+Message-ID: <20080129142452.GH7233@v2.random>
+References: <20080128202840.974253868@sgi.com> <20080128202924.334342410@sgi.com> <20080129140345.GG7233@v2.random>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080129140345.GG7233@v2.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This should fix the aging bugs you introduced through the faulty cpp
+expansion. This is hard to write for me, given any time somebody does
+a ptep_clear_flush_young w/o manually cpp-expandin "|
+mmu_notifier_age_page" after it, it's always a bug that needs fixing,
+similar bugs can emerge with time for ptep_clear_flush too. What will
+happen is that somebody will cleanup in 26+ and we'll remain with a
+#ifdef KERNEL_VERSION() < 2.6.26 in ksm.c to call
+mmu_notifier(invalidate_page) explicitly. Performance and
+optimizations or unnecessary invalidate_page are a red-herring, it can
+be fully optimized both ways. 99% of the time when somebody calls
+ptep_clear_flush and ptep_clear_flush_young, the respective mmu
+notifier can't be forgotten (and calling them once more even if a
+later invalidate_range is invoked, is always safer and preferable than
+not calling them at all) so I fail to see how this will not be cleaned
+up eventually, the same way the tlb flushes have been cleaned up
+already. Nevertheless I back your implementation and I'm not even
+trying at changing it with the risk to slowdown merging.
 
-Would you like me to take these two GFS2 patches into my git tree for
-the next merge window, or are you intending that these should go to
-Linus in this merge window? Either way I'm happy to add my:
+Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
 
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-
-Steve.
-
-On Tue, 2008-01-29 at 16:55 +0300, Pavel Emelyanov wrote:
-> The gl_owner_pid field is used to get the lock owning
-> task by its pid, so make it in a proper manner, i.e.
-> by using the struct pid pointer and pid_task() function.
-> 
-> The pid_task() becomes exported for the gfs2 module.
-> 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> 
-> ---
->  fs/gfs2/glock.c  |   19 ++++++++++++-------
->  fs/gfs2/incore.h |    2 +-
->  2 files changed, 13 insertions(+), 8 deletions(-)
-> 
-> diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-> index 80e09c5..5fe585f 100644
-> --- a/fs/gfs2/glock.c
-> +++ b/fs/gfs2/glock.c
-> @@ -334,7 +334,7 @@ int gfs2_glock_get(struct gfs2_sbd *sdp, u64 number,
->  	gl->gl_state = LM_ST_UNLOCKED;
->  	gl->gl_demote_state = LM_ST_EXCLUSIVE;
->  	gl->gl_hash = hash;
-> -	gl->gl_owner_pid = 0;
-> +	gl->gl_owner_pid = NULL;
->  	gl->gl_ip = 0;
->  	gl->gl_ops = glops;
->  	gl->gl_req_gh = NULL;
-> @@ -631,7 +631,7 @@ static void gfs2_glmutex_lock(struct gfs2_glock *gl)
->  		wait_on_holder(&gh);
->  		gfs2_holder_uninit(&gh);
->  	} else {
-> -		gl->gl_owner_pid = current->pid;
-> +		gl->gl_owner_pid = get_pid(task_pid(current));
->  		gl->gl_ip = (unsigned long)__builtin_return_address(0);
->  		spin_unlock(&gl->gl_spin);
->  	}
-> @@ -652,7 +652,7 @@ static int gfs2_glmutex_trylock(struct gfs2_glock *gl)
->  	if (test_and_set_bit(GLF_LOCK, &gl->gl_flags)) {
->  		acquired = 0;
->  	} else {
-> -		gl->gl_owner_pid = current->pid;
-> +		gl->gl_owner_pid = get_pid(task_pid(current));
->  		gl->gl_ip = (unsigned long)__builtin_return_address(0);
->  	}
->  	spin_unlock(&gl->gl_spin);
-> @@ -668,12 +668,17 @@ static int gfs2_glmutex_trylock(struct gfs2_glock *gl)
->  
->  static void gfs2_glmutex_unlock(struct gfs2_glock *gl)
->  {
-> +	struct pid *pid;
-> +
->  	spin_lock(&gl->gl_spin);
->  	clear_bit(GLF_LOCK, &gl->gl_flags);
-> -	gl->gl_owner_pid = 0;
-> +	pid = gl->gl_owner_pid;
-> +	gl->gl_owner_pid = NULL;
->  	gl->gl_ip = 0;
->  	run_queue(gl);
->  	spin_unlock(&gl->gl_spin);
-> +
-> +	put_pid(pid);
->  }
->  
->  /**
-> @@ -1877,13 +1882,13 @@ static int dump_glock(struct glock_iter *gi, struct gfs2_glock *gl)
->  	print_dbg(gi, "  gl_ref = %d\n", atomic_read(&gl->gl_ref));
->  	print_dbg(gi, "  gl_state = %u\n", gl->gl_state);
->  	if (gl->gl_owner_pid) {
-> -		gl_owner = find_task_by_pid(gl->gl_owner_pid);
-> +		gl_owner = pid_task(gl->gl_owner_pid, PIDTYPE_PID);
->  		if (gl_owner)
->  			print_dbg(gi, "  gl_owner = pid %d (%s)\n",
-> -				  gl->gl_owner_pid, gl_owner->comm);
-> +				  pid_nr(gl->gl_owner_pid), gl_owner->comm);
->  		else
->  			print_dbg(gi, "  gl_owner = %d (ended)\n",
-> -				  gl->gl_owner_pid);
-> +				  pid_nr(gl->gl_owner_pid));
->  	} else
->  		print_dbg(gi, "  gl_owner = -1\n");
->  	print_dbg(gi, "  gl_ip = %lu\n", gl->gl_ip);
-> diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-> index 1339996..8ad1c3f 100644
-> --- a/fs/gfs2/incore.h
-> +++ b/fs/gfs2/incore.h
-> @@ -182,7 +182,7 @@ struct gfs2_glock {
->  	unsigned int gl_hash;
->  	unsigned int gl_demote_state; /* state requested by remote node */
->  	unsigned long gl_demote_time; /* time of first demote request */
-> -	pid_t gl_owner_pid;
-> +	struct pid *gl_owner_pid;
->  	unsigned long gl_ip;
->  	struct list_head gl_holders;
->  	struct list_head gl_waiters1;	/* HIF_MUTEX */
-> diff --git a/kernel/pid.c b/kernel/pid.c
-> index e4e5fc8..4776915 100644
-> --- a/kernel/pid.c
-> +++ b/kernel/pid.c
-> @@ -367,6 +367,7 @@ struct task_struct *pid_task(struct pid *pid, enum pid_type type)
->  	}
->  	return result;
->  }
-> +EXPORT_SYMBOL(pid_task);
->  
->  /*
->   * Must be called under rcu_read_lock() or with tasklist_lock read-held.
-
+diff --git a/mm/rmap.c b/mm/rmap.c
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -285,10 +285,8 @@ static int page_referenced_one(struct pa
+ 	if (!pte)
+ 		goto out;
+ 
+-	if (ptep_clear_flush_young(vma, address, pte))
+-		referenced++;
+-
+-	if (mmu_notifier_age_page(mm, address))
++	if (ptep_clear_flush_young(vma, address, pte) |
++	    mmu_notifier_age_page(mm, address))
+ 		referenced++;
+ 
+ 	/* Pretend the page is referenced if the task has the
+@@ -684,7 +682,7 @@ static int try_to_unmap_one(struct page 
+ 	 * skipped over this mm) then we should reactivate it.
+ 	 */
+ 	if (!migration && ((vma->vm_flags & VM_LOCKED) ||
+-			(ptep_clear_flush_young(vma, address, pte) ||
++			(ptep_clear_flush_young(vma, address, pte) |
+ 				mmu_notifier_age_page(mm, address)))) {
+ 		ret = SWAP_FAIL;
+ 		goto out_unmap;
+@@ -818,10 +816,8 @@ static void try_to_unmap_cluster(unsigne
+ 		page = vm_normal_page(vma, address, *pte);
+ 		BUG_ON(!page || PageAnon(page));
+ 
+-		if (ptep_clear_flush_young(vma, address, pte))
+-			continue;
+-
+-		if (mmu_notifier_age_page(mm, address))
++		if (ptep_clear_flush_young(vma, address, pte) | 
++		    mmu_notifier_age_page(mm, address))
+ 			continue;
+ 
+ 		/* Nuke the page table entry. */
