@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYA2ARc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762317AbYA2ARt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbYA2ARc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 19:17:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbYA2ARI
+	id S1762317AbYA2ARt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 19:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763628AbYA2ARf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 19:17:08 -0500
-Received: from mga02.intel.com ([134.134.136.20]:4381 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753966AbYA2ARH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 19:17:07 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,264,1199692800"; 
-   d="scan'208";a="331184519"
-From: Jason Gaston <jason.d.gaston@intel.com>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, khali@linux-fr.org,
-       i2c@lm-sensors.nu, jason.d.gaston@intel.com
-Subject: [PATCH 2.6.24] pci_ids: patch for Intel ICH10 DeviceID's
-Date: Mon, 28 Jan 2008 17:20:36 -0800
-User-Agent: KMail/1.9.1
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200801281720.37350.jason.d.gaston@intel.com>
+	Mon, 28 Jan 2008 19:17:35 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:17701 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763572AbYA2ARe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 19:17:34 -0500
+Date: Mon, 28 Jan 2008 18:19:17 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Problem with ata layer in 2.6.24
+In-reply-to: <fa.ebGd1717PgKMzHUmaQOLoLkFdsI@ifi.uio.no>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Mark Lord <liml@rtr.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <479E7105.2090201@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.YoSRdik0niRWE1jgfb9yTQPim5A@ifi.uio.no>
+ <fa.fCSKKy5aVmh9IomaWmc+Y8P16+c@ifi.uio.no>
+ <fa.ebGd1717PgKMzHUmaQOLoLkFdsI@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the Intel ICH10 LPC and SMBus Controller DeviceID's.
+Gene Heskett wrote:
+> And so far no one has tried to comment on those 2 dmesg lines I've quoted a 
+> couple of times now, here's another:
+> [    0.000000] Nvidia board detected. Ignoring ACPI timer override.
+> [    0.000000] If you got timer trouble try acpi_use_timer_override
+> what the heck is that trying to tell me to do, in some sort of broken english?
 
-Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+A lot of NVIDIA-chipset motherboards have BIOS problems where they 
+include an incorrect ACPI interrupt override for the timer interrupt, 
+which tends to cause the system to fail to boot due to the timer 
+interrupt not working. The kernel normally ignores ACPI interrupt 
+overrides on the timer interrupt for NVIDIA chipsets for this reason. 
+Unfortunately on some such boards the override is actually correct and 
+needed, and so this actually causes problems. Hence the 
+acpi_use_timer_override option.
 
---- linux-2.6.24/include/linux/pci_ids.h.orig	2008-01-24 14:58:37.000000000 -0800
-+++ linux-2.6.24/include/linux/pci_ids.h	2008-01-28 15:05:41.000000000 -0800
-@@ -2339,6 +2339,12 @@
- #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
- #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
- #define PCI_DEVICE_ID_INTEL_IOAT_CNB	0x360b
-+#define PCI_DEVICE_ID_INTEL_ICH10_0	0x3a14
-+#define PCI_DEVICE_ID_INTEL_ICH10_1	0x3a16
-+#define PCI_DEVICE_ID_INTEL_ICH10_2	0x3a18
-+#define PCI_DEVICE_ID_INTEL_ICH10_3	0x3a1a
-+#define PCI_DEVICE_ID_INTEL_ICH10_4	0x3a30
-+#define PCI_DEVICE_ID_INTEL_ICH10_5	0x3a60
- #define PCI_DEVICE_ID_INTEL_IOAT_SNB	0x402f
- #define PCI_DEVICE_ID_INTEL_IOAT_SCNB	0x65ff
- #define PCI_DEVICE_ID_INTEL_TOLAPAI_0	0x5031
+In any case this is unlikely to have anything to do with your problem, 
+since if that was messed up you likely would never have even booted.
