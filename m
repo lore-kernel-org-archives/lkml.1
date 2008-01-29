@@ -1,30 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYA2Uzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762312AbYA2U5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbYA2Uzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 15:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765123AbYA2Uy5
+	id S1762312AbYA2U5F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 15:57:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbYA2U4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 15:54:57 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:60149 "EHLO relay.atmel.no"
+	Tue, 29 Jan 2008 15:56:54 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:47002 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765085AbYA2Uyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 15:54:55 -0500
-Date: Tue, 29 Jan 2008 21:54:53 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
-       Shannon Nelson <shannon.nelson@intel.com>,
-       David Brownell <david-b@pacbell.net>, kernel@avr32linux.org,
-       "Francis Moreau" <francis.moro@gmail.com>,
-       "Paul Mundt" <lethal@linux-sh.org>,
-       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
-       Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: [RFC v2 0/5] dmaengine: Slave DMA interface and example users
-Message-ID: <20080129215453.1e3758ab@siona>
-In-Reply-To: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
-References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
-Organization: Atmel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+	id S1750987AbYA2U4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 15:56:54 -0500
+Date: Tue, 29 Jan 2008 14:56:47 -0600
+From: Paul Jackson <pj@sgi.com>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, dmitry.adamushko@gmail.com,
+       rostedt@goodmis.org, menage@google.com, rientjes@google.com,
+       tong.n.li@intel.com, tglx@linutronix.de, akpm@linux-foundation.org,
+       dhaval@linux.vnet.ibm.com, vatsa@linux.vnet.ibm.com, sgrubb@redhat.com,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       nickpiggin@yahoo.com.au
+Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
+Message-Id: <20080129145647.579b7d53.pj@sgi.com>
+In-Reply-To: <479F4631.BA47.005A.0@novell.com>
+References: <1201600428.28547.87.camel@lappy>
+	<1201604243.28547.101.camel@lappy>
+	<20080129053005.bc7a11d7.pj@sgi.com>
+	<479F01AF.BA47.005A.0@novell.com>
+	<20080129102836.be614579.pj@sgi.com>
+	<479F1118.BA47.005A.0@novell.com>
+	<20080129133700.7f1ab444.pj@sgi.com>
+	<479F4631.BA47.005A.0@novell.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,36 +38,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jan 2008 19:10:08 +0100
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+Gregory wrote:
+> By moving it into the root_domain structure, there is now an instance
+> per (um, for lack of a better, more up to date word) "exclusive"
+> cpuset.   That way, disparate cpusets will not bother each other with
+> overload notifications, etc.
 
-> This patch series adds the necessary interfaces to the DMA Engine
-> framework to use functionality found on most embedded DMA controllers:
-> DMA from and to I/O registers with hardware handshaking.
+So the root_domain structure is meant to be the portions of the
+sched_domains that are shared across all CPUs in that sched_domain ?
 
-Btw, there's one issue I forgot to mention: I believe the DMA Engine
-framework is currently misusing the DMA mapping API, and this patchset
-makes things worse.
+And the word 'cpuset', occurring in the above quote twice, should
+be 'sched_domain', right ?  Surely these aren't cpuset's ;).
 
-Currently, the async_tx bits of the API do the required calls to
-dma_map_single() and/or dma_map_page(), but they rely on the driver to
-do the unmapping. This is problematic since the driver doesn't have a
-clue about whether it should use dma_unmap_single(), dma_unmap_page()
-or something else.
+And 'exclusive cpuset' really means 'non-overlapping sched_domain' ?
 
-The MMC driver I posted as a part of this series gets a scatterlist
-from the MMC core, so it needs to use dma_map_sg() / dma_unmap_sg(). To
-make this work, I decided not to do any unmapping in the DMA driver and
-do the necessary dma_unmap_sg() from the DMA completion callback in the
-MMC driver. Thus, for the normal async_tx operations, the buffers
-aren't unmapped at all when using the dw_dmac driver. Since the
-dma_unmap calls are no-ops on avr32, this doesn't have any consequences
-for me in practice, but I want to use the DMA mapping API correctly
-somehow.
+Or am I still confused ?
 
-Also, clients may want to just sync the buffer and reuse it. They can't
-do that if the DMA engine driver unmaps the buffer on completion.
+I would like to get our concepts clear, and terms consistent.  That's
+important for those others who would try to understand this.
 
-How do we solve this?
-
-Haavard
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
