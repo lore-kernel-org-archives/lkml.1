@@ -1,114 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764659AbYA2Uyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYA2Uzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764659AbYA2Uyt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 15:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYA2Uyf
+	id S1757237AbYA2Uzi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 15:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765123AbYA2Uy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 15:54:35 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:53585 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758678AbYA2UyZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 15:54:25 -0500
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vladislav Bolkhovitin <vst@vlnb.net>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-scsi@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 29 Jan 2008 15:42:11 -0500
-Message-Id: <1201639331.3069.58.camel@localhost.localdomain>
+	Tue, 29 Jan 2008 15:54:57 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:60149 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765085AbYA2Uyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 15:54:55 -0500
+Date: Tue, 29 Jan 2008 21:54:53 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       Shannon Nelson <shannon.nelson@intel.com>,
+       David Brownell <david-b@pacbell.net>, kernel@avr32linux.org,
+       "Francis Moreau" <francis.moro@gmail.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: Re: [RFC v2 0/5] dmaengine: Slave DMA interface and example users
+Message-ID: <20080129215453.1e3758ab@siona>
+In-Reply-To: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
+References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
+Organization: Atmel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-01-23 at 15:22 +0100, Bart Van Assche wrote:
-> As you probably know there is a trend in enterprise computing towards
-> networked storage. This is illustrated by the emergence during the
-> past few years of standards like SRP (SCSI RDMA Protocol), iSCSI
-> (Internet SCSI) and iSER (iSCSI Extensions for RDMA). Two different
-> pieces of software are necessary to make networked storage possible:
-> initiator software and target software. As far as I know there exist
-> three different SCSI target implementations for Linux:
-> - The iSCSI Enterprise Target Daemon (IETD,
-> http://iscsitarget.sourceforge.net/);
-> - The Linux SCSI Target Framework (STGT, http://stgt.berlios.de/);
-> - The Generic SCSI Target Middle Level for Linux project (SCST,
-> http://scst.sourceforge.net/).
-> Since I was wondering which SCSI target software would be best suited
-> for an InfiniBand network, I started evaluating the STGT and SCST SCSI
-> target implementations. Apparently the performance difference between
-> STGT and SCST is small on 100 Mbit/s and 1 Gbit/s Ethernet networks,
-> but the SCST target software outperforms the STGT software on an
-> InfiniBand network. See also the following thread for the details:
-> http://sourceforge.net/mailarchive/forum.php?thread_name=e2e108260801170127w2937b2afg9bef324efa945e43%40mail.gmail.com&forum_name=scst-devel.
+On Tue, 29 Jan 2008 19:10:08 +0100
+Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 
-That doesn't seem to pull up a thread.  However, I assume it's these
-figures:
+> This patch series adds the necessary interfaces to the DMA Engine
+> framework to use functionality found on most embedded DMA controllers:
+> DMA from and to I/O registers with hardware handshaking.
 
-.............................................................................................
-.                           .   STGT read     SCST read    .    STGT read      SCST read    .
-.                           .  performance   performance   . performance    performance   .
-.                           .  (0.5K, MB/s)  (0.5K, MB/s)  .   (1 MB, MB/s)   (1 MB, MB/s)  .
-.............................................................................................
-. Ethernet (1 Gb/s network) .      77             78       .        77            89       .
-. IPoIB    (8 Gb/s network) .     163            185       .       201           239       .
-. iSER     (8 Gb/s network) .     250            N/A       .       360           N/A       .
-. SRP      (8 Gb/s network) .     N/A            421       .       N/A           683       .
-.............................................................................................
+Btw, there's one issue I forgot to mention: I believe the DMA Engine
+framework is currently misusing the DMA mapping API, and this patchset
+makes things worse.
 
-On the comparable figures, which only seem to be IPoIB they're showing a
-13-18% variance, aren't they?  Which isn't an incredible difference.
+Currently, the async_tx bits of the API do the required calls to
+dma_map_single() and/or dma_map_page(), but they rely on the driver to
+do the unmapping. This is problematic since the driver doesn't have a
+clue about whether it should use dma_unmap_single(), dma_unmap_page()
+or something else.
 
-> About the design of the SCST software: while one of the goals of the
-> STGT project was to keep the in-kernel code minimal, the SCST project
-> implements the whole SCSI target in kernel space. SCST is implemented
-> as a set of new kernel modules, only minimal changes to the existing
-> kernel are necessary before the SCST kernel modules can be used. This
-> is the same approach that will be followed in the very near future in
-> the OpenSolaris kernel (see also
-> http://opensolaris.org/os/project/comstar/). More information about
-> the design of SCST can be found here:
-> http://scst.sourceforge.net/doc/scst_pg.html.
-> 
-> My impression is that both the STGT and SCST projects are well
-> designed, well maintained and have a considerable user base. According
-> to the SCST maintainer (Vladislav Bolkhovitin), SCST is superior to
-> STGT with respect to features, performance, maturity, stability, and
-> number of existing target drivers. Unfortunately the SCST kernel code
-> lives outside the kernel tree, which makes SCST harder to use than
-> STGT.
-> 
-> As an SCST user, I would like to see the SCST kernel code integrated
-> in the mainstream kernel because of its excellent performance on an
-> InfiniBand network. Since the SCST project comprises about 14 KLOC,
-> reviewing the SCST code will take considerable time. Who will do this
-> reviewing work ? And with regard to the comments made by the
-> reviewers: Vladislav, do you have the time to carry out the
-> modifications requested by the reviewers ? I expect a.o. that
-> reviewers will ask to move SCST's configuration pseudofiles from
-> procfs to sysfs.
+The MMC driver I posted as a part of this series gets a scatterlist
+from the MMC core, so it needs to use dma_map_sg() / dma_unmap_sg(). To
+make this work, I decided not to do any unmapping in the DMA driver and
+do the necessary dma_unmap_sg() from the DMA completion callback in the
+MMC driver. Thus, for the normal async_tx operations, the buffers
+aren't unmapped at all when using the dw_dmac driver. Since the
+dma_unmap calls are no-ops on avr32, this doesn't have any consequences
+for me in practice, but I want to use the DMA mapping API correctly
+somehow.
 
-The two target architectures perform essentially identical functions, so
-there's only really room for one in the kernel.  Right at the moment,
-it's STGT.  Problems in STGT come from the user<->kernel boundary which
-can be mitigated in a variety of ways.  The fact that the figures are
-pretty much comparable on non IB networks shows this.
+Also, clients may want to just sync the buffer and reuse it. They can't
+do that if the DMA engine driver unmaps the buffer on completion.
 
-I really need a whole lot more evidence than at worst a 20% performance
-difference on IB to pull one implementation out and replace it with
-another.  Particularly as there's no real evidence that STGT can't be
-tweaked to recover the 20% even on IB.
+How do we solve this?
 
-James
-
-
+Haavard
