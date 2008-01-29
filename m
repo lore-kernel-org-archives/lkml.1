@@ -1,132 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763594AbYA2O7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764158AbYA2PBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763594AbYA2O7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 09:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbYA2O7J
+	id S1764158AbYA2PBv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 10:01:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYA2PBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 09:59:09 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:9392 "EHLO
-	outbound4-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753396AbYA2O7I (ORCPT
+	Tue, 29 Jan 2008 10:01:43 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:54895 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbYA2PBm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 09:59:08 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-WSS-ID: 0JVEUY6-01-UAE-01
-X-Server-Uuid: D6C75999-9DAF-4D89-B9AC-C25E3A0BB76A
-Message-ID: <479F3F60.8050108@amd.com>
-Date: Tue, 29 Jan 2008 15:59:44 +0100
-From: "Markus Rechberger" <markus.rechberger@amd.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Tue, 29 Jan 2008 10:01:42 -0500
+Message-ID: <479F3EFB.4070204@linux.vnet.ibm.com>
+Date: Tue, 29 Jan 2008 20:28:03 +0530
+From: Ciju Rajan K <ciju@linux.vnet.ibm.com>
+Reply-To: ciju@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-To: Matt_Domsch@dell.com, "Jos?? Luis Tall??n" <jltallon@adv-solutions.net>,
-       Douglas_Warzecha@dell.com, Abhay_Salunke@dell.com,
-       linux-kernel@vger.kernel.org, matt_domsch@dell.com,
-       "Michael E Brown" <Michael_E_Brown@dell.com>,
-       "Greg KH" <gregkh@suse.de>, "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: FW: 2.6.24 breaks BIOS updates on all Dell machines
-References: <E9909A75A543064DB66E55B8E3BE41EC5FD218@ausx3mps307.aus.amer.dell.com>
-In-Reply-To: <E9909A75A543064DB66E55B8E3BE41EC5FD218@ausx3mps307.aus.amer.dell.com>
-X-OriginalArrivalTime: 29 Jan 2008 14:58:51.0321 (UTC)
- FILETIME=[759A4290:01C86287]
-X-WSS-ID: 6B81E0A724S9479594-01-01
-Content-Type: text/plain;
- charset=iso-8859-1;
- format=flowed
+To: William Lee Irwin III <wli@holomorphy.com>
+CC: aglitke <agl@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH] hugetlbfs :shmget with SHM_HUGETLB only works as
+ root
+References: <473B0317.6010603@linux.vnet.ibm.com> <1195054301.18047.20.camel@localhost.localdomain> <20071114220038.GD1806@holomorphy.com> <474F05C0.9040002@linux.vnet.ibm.com> <20071129231121.GA31637@holomorphy.com>
+In-Reply-To: <20071129231121.GA31637@holomorphy.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt_Domsch@Dell.com wrote:
-> Markus, I see you were accidentally left off the cc: list on this bug.
-> The change was yours, so I suspect you'll have an opinion to share with
-> LKML.
->
-> Thanks,
-> Matt
->
-> --
-> Matt Domsch
-> Linux Technology Strategist, Dell Office of the CTO
-> linux.dell.com & www.dell.com/linux
->
-> -----Original Message-----
-> From: Greg KH [mailto:gregkh@suse.de] 
-> Sent: Tuesday, January 29, 2008 12:44 AM
-> To: Brown, Michael E
-> Cc: Jos?? Luis Tall??n; Warzecha, Douglas; Salunke, Abhay;
-> linux-kernel@vger.kernel.org; Domsch, Matt; marcel@holtmann.org
-> Subject: Re: 2.6.24 breaks BIOS updates on all Dell machines
->
-> On Tue, Jan 29, 2008 at 12:32:44AM -0600, Michael E Brown wrote:
->   
->> BIOS updates are broken on all Dell systems due to Commit
->> 109f0e93b6b728f03c1eb4af02bc25d71b646c59, which is now in 2.6.24.
->>
->>   static inline void fw_setup_device_id(struct device *f_dev, struct
->> device *dev)
->>   {
->> -       /* XXX warning we should watch out for name collisions */
->> -       strlcpy(f_dev->bus_id, dev->bus_id, BUS_ID_SIZE);
->> +       snprintf(f_dev->bus_id, BUS_ID_SIZE, "firmware-%s",
->> dev->bus_id);
->>  }
->>
->> Two programs are broken by this change: 
->>     1) dellBiosUpdate, which is part of libsmbios
->>     2) All of the Dell Update Packages (DUPs) that are part of Dell
->> OpenManage: each BIOS release for each of 3-4 dozen platforms.
->>
->> These programs are broken due to the pathname change from
->> /sys/class/firmware/dell_rbu/   to
->> /sys/class/firmware/firmware-dell_rbu/loading. 
->>
->> Realistically, I can fix libsmbios in a couple of weeks, but there is
->>     
-> no
->   
->> way that we can go back and fix a couple hundred DUP packages for this
->> change. If this stays, we are looking at over 6 months before we have
->>     
-> an
->   
->> officially-available Dell OpenManage that can deal with it, and that
->> would be for new BIOS releases only, I suspect.
->>
->> Some of the relevant threads from when this was submitted and
->>     
-> accepted:
->   
->> http://lkml.org/lkml/2005/5/23/73
->> http://lkml.org/lkml/2005/5/23/62
->>
->> Due to the extremely large and disruptive nature of this bug, it would
->> be nice to get a 2.6.24.1 with this patch reverted.
->>
->> I have copied the relevant developers at Dell who maintain this
->>     
-> driver.
->   
->> Please preserve the cc: list when replying.
->>     
->
-> Fair enough, I have no problem reverting this.
->
-> Anyone want to keep it in?
->
->   
-Hi Greg,
+William Lee Irwin III wrote:
+> On Fri, Nov 30, 2007 at 12:02:32AM +0530, Ciju Rajan K wrote:
+>>   I tested your patch. But that is not solving the problem.
+>>   If the code change to user_shm_lock() is not a good solution, could 
+>> you please suggest a method so that the normal user is able to allocate 
+>> the huge pages, if his gid is added to /proc/sys/vm/hugetlb_shm_group
+> 
+> The patch I posted resolves a race unrelated to your issue. Raising your
+> locked memory limits should not be difficult. /etc/limits.conf or similar
+> should set it up for you. You can also change the default rlimit in the
+> kernel and compile it with default limits elevated to what you want your
+> unprivileged process to have to start with if you're truly having lots
+> of trouble getting userspace to set the default limits properly. I'd
+> look in include/asm-generic/resource.h
+> 
+> 
+> -- wli
 
-reverting this breaks support for several media (DVB/V4L) devices. I 
-would have to look up some bugreports the same name collision happened 
-with several different drivers.
-There was a comment in the fw code to watch out for name collisions 
-earlier already, so it needs a fix somewhere.
+Hi Wli,
 
-Here's some history:
-http://mcentral.de/wiki/index.php5/Bugtracker#i2c_dev_problem
+The documentation available in the kernel for huge pages does not talk
+about the issue associated with locked memory limit. I think it would be
+helpful to the users if we mention about this in the documentation. I
+am attaching a small documentation patch.
 
-Markus
+Thanks
+Ciju
 
+Signed-off-by: Ciju Rajan (ciju@linux.vnet.ibm.com)
+---
+--- Documentation/vm/hugetlbpage.txt.orig       2008-01-24 16:42:40.000000000 +0530
++++ Documentation/vm/hugetlbpage.txt    2008-01-29 19:36:45.000000000 +0530
+@@ -108,6 +108,18 @@ a supplementary group and system admin n
+  applications to use any combination of mmaps and shm* calls, though the
+  mount of filesystem will be required for using mmap calls.
+
++Note: The default locked limit in the kernel is just 32KB. If the normal
++user whose gid is present in the file /proc/sys/vm/hugetlb_shm_group needs
++more memory than this, the default limit must be increased. If pam is installed
++on your system, resource limits can be configured by installing lines similar
++to the following in /etc/security/limits.conf:
++
++@hugegroup      soft    memlock         2097152
++@hugegroup      hard    memlock         2097152
++
++Otherwise, you may manipulate the locked limit command directly with 'ulimit'.
++See its man page for more information.
++
+  *******************************************************************
+
+  /*
 
