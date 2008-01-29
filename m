@@ -1,317 +1,441 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933133AbYA2QTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933209AbYA2QUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933133AbYA2QTu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933010AbYA2QT3
+	id S933209AbYA2QUe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:20:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933088AbYA2QTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:19:29 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:44827 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765742AbYA2QT1 (ORCPT
+	Tue, 29 Jan 2008 11:19:44 -0500
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:51599 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932746AbYA2QTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:19:27 -0500
-Message-Id: <20080129161929.817008842@bull.net>
-References: <20080129160229.612172683@bull.net>
-User-Agent: quilt/0.46-1
-Date: Tue, 29 Jan 2008 17:02:37 +0100
-From: pierre.peiffer@bull.net
-To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: [PATCH 2.6.24-rc8-mm1 08/15] IPC: consolidate all xxxctl_down() functions
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 29/01/2008 17:28:06,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 29/01/2008 17:28:08,
-	Serialize complete at 29/01/2008 17:28:08
-Content-Disposition: inline; filename=ipc_introduce_ipcctl_pre_down.patch
+	Tue, 29 Jan 2008 11:19:42 -0500
+Date: Tue, 29 Jan 2008 11:18:12 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH] add support for dynamic ticks and preempt rcu
+Message-ID: <Pine.LNX.4.58.0801291113350.20371@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-semctl_down(), msgctl_down() and shmctl_down() are used to handle the same
-set of commands for each kind of IPC. They all start to do the same job (they
-retrieve the ipc and do some permission checks) before handling the commands
-on their own.
 
-This patch proposes to consolidate this by moving these same pieces of code
-into one common function called ipcctl_pre_down().
-It simplifies a little these xxxctl_down() functions and increases a little
-the maintainability.
+[
+ Paul, you had your Signed-off-by in the RT patch, so I attached it here
+  too
+]
 
-Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+The PREEMPT-RCU can get stuck if a CPU goes idle and NO_HZ is set. The
+idle CPU will not progress the RCU through its grace period and a
+synchronize_rcu my get stuck. Without this patch I have a box that will
+not boot when PREEMPT_RCU and NO_HZ are set. That same box boots fine with
+this patch.
+
+Note: This patch came directly from the -rt patch where it has been tested
+for several months.
+
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- ipc/msg.c  |   48 +++++-------------------------------------------
- ipc/sem.c  |   42 ++++--------------------------------------
- ipc/shm.c  |   42 ++++--------------------------------------
- ipc/util.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
- ipc/util.h |    2 ++
- 5 files changed, 66 insertions(+), 119 deletions(-)
+ include/linux/hardirq.h    |   10 ++
+ include/linux/rcuclassic.h |    3
+ include/linux/rcupreempt.h |   22 ++++
+ kernel/rcupreempt.c        |  224 ++++++++++++++++++++++++++++++++++++++++++++-
+ kernel/softirq.c           |    1
+ kernel/time/tick-sched.c   |    3
+ 6 files changed, 259 insertions(+), 4 deletions(-)
 
-Index: b/ipc/sem.c
+Index: linux-compile.git/kernel/rcupreempt.c
 ===================================================================
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -142,21 +142,6 @@ void __init sem_init (void)
- }
- 
- /*
-- * This routine is called in the paths where the rw_mutex is held to protect
-- * access to the idr tree.
-- */
--static inline struct sem_array *sem_lock_check_down(struct ipc_namespace *ns,
--						int id)
--{
--	struct kern_ipc_perm *ipcp = ipc_lock_check_down(&sem_ids(ns), id);
--
--	if (IS_ERR(ipcp))
--		return (struct sem_array *)ipcp;
--
--	return container_of(ipcp, struct sem_array, sem_perm);
--}
--
--/*
-  * sem_lock_(check_) routines are called in the paths where the rw_mutex
-  * is not held.
-  */
-@@ -880,31 +865,12 @@ static int semctl_down(struct ipc_namesp
- 		if (copy_semid_from_user(&semid64, arg.buf, version))
- 			return -EFAULT;
- 	}
--	down_write(&sem_ids(ns).rw_mutex);
--	sma = sem_lock_check_down(ns, semid);
--	if (IS_ERR(sma)) {
--		err = PTR_ERR(sma);
--		goto out_up;
--	}
--
--	ipcp = &sma->sem_perm;
- 
--	err = audit_ipc_obj(ipcp);
--	if (err)
--		goto out_unlock;
-+	ipcp = ipcctl_pre_down(&sem_ids(ns), semid, cmd, &semid64.sem_perm, 0);
-+	if (IS_ERR(ipcp))
-+		return PTR_ERR(ipcp);
- 
--	if (cmd == IPC_SET) {
--		err = audit_ipc_set_perm(0, semid64.sem_perm.uid,
--					 semid64.sem_perm.gid,
--					 semid64.sem_perm.mode);
--		if (err)
--			goto out_unlock;
--	}
--	if (current->euid != ipcp->cuid && 
--	    current->euid != ipcp->uid && !capable(CAP_SYS_ADMIN)) {
--	    	err=-EPERM;
--		goto out_unlock;
--	}
-+	sma = container_of(ipcp, struct sem_array, sem_perm);
- 
- 	err = security_sem_semctl(sma, cmd);
- 	if (err)
-Index: b/ipc/util.c
-===================================================================
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -774,6 +774,57 @@ void ipc_update_perm(struct ipc64_perm *
- 		| (in->mode & S_IRWXUGO);
- }
- 
-+/**
-+ * ipcctl_pre_down - retrieve an ipc and check permissions for some IPC_XXX cmd
-+ * @ids:  the table of ids where to look for the ipc
-+ * @id:   the id of the ipc to retrieve
-+ * @cmd:  the cmd to check
-+ * @perm: the permission to set
-+ * @extra_perm: one extra permission parameter used by msq
+--- linux-compile.git.orig/kernel/rcupreempt.c	2008-01-29 11:03:21.000000000 -0500
++++ linux-compile.git/kernel/rcupreempt.c	2008-01-29 11:10:08.000000000 -0500
+@@ -23,6 +23,10 @@
+  *		to Suparna Bhattacharya for pushing me completely away
+  *		from atomic instructions on the read side.
+  *
++ *  - Added handling of Dynamic Ticks
++ *      Copyright 2007 - Paul E. Mckenney <paulmck@us.ibm.com>
++ *                     - Steven Rostedt <srostedt@redhat.com>
 + *
-+ * This function does some common audit and permissions check for some IPC_XXX
-+ * cmd and is called from semctl_down, shmctl_down and msgctl_down.
-+ * It must be called without any lock held and
-+ *  - retrieves the ipc with the given id in the given table.
-+ *  - performs some audit and permission check, depending on the given cmd
-+ *  - returns the ipc with both ipc and rw_mutex locks held in case of success
-+ *    or an err-code without any lock held otherwise.
+  * Papers:  http://www.rdrop.com/users/paulmck/RCU
+  *
+  * Design Document: http://lwn.net/Articles/253651/
+@@ -409,6 +413,212 @@ static void __rcu_advance_callbacks(stru
+ 	}
+ }
+
++#ifdef CONFIG_NO_HZ
++
++DEFINE_PER_CPU(long, dynticks_progress_counter) = 1;
++static DEFINE_PER_CPU(long, rcu_dyntick_snapshot);
++static DEFINE_PER_CPU(int, rcu_update_flag);
++
++/**
++ * rcu_irq_enter - Called from Hard irq handlers and NMI/SMI.
++ *
++ * If the CPU was idle with dynamic ticks active, this updates the
++ * dynticks_progress_counter to let the RCU handling know that the
++ * CPU is active.
 + */
-+struct kern_ipc_perm *ipcctl_pre_down(struct ipc_ids *ids, int id, int cmd,
-+				      struct ipc64_perm *perm, int extrat_perm)
++void rcu_irq_enter(void)
 +{
-+	struct kern_ipc_perm *ipcp;
-+	int err;
++	int cpu = smp_processor_id();
 +
-+	down_write(&ids->rw_mutex);
-+	ipcp = ipc_lock_check_down(ids, id);
-+	if (IS_ERR(ipcp)) {
-+		err = PTR_ERR(ipcp);
-+		goto out_up;
++	if (per_cpu(rcu_update_flag, cpu))
++		per_cpu(rcu_update_flag, cpu)++;
++
++	/*
++	 * Only update if we are coming from a stopped ticks mode
++	 * (dynticks_progress_counter is even).
++	 */
++	if (!in_interrupt() &&
++	    (per_cpu(dynticks_progress_counter, cpu) & 0x1) == 0) {
++		/*
++		 * The following might seem like we could have a race
++		 * with NMI/SMIs. But this really isn't a problem.
++		 * Here we do a read/modify/write, and the race happens
++		 * when an NMI/SMI comes in after the read and before
++		 * the write. But NMI/SMIs will increment this counter
++		 * twice before returning, so the zero bit will not
++		 * be corrupted by the NMI/SMI which is the most important
++		 * part.
++		 *
++		 * The only thing is that we would bring back the counter
++		 * to a postion that it was in during the NMI/SMI.
++		 * But the zero bit would be set, so the rest of the
++		 * counter would again be ignored.
++		 *
++		 * On return from the IRQ, the counter may have the zero
++		 * bit be 0 and the counter the same as the return from
++		 * the NMI/SMI. If the state machine was so unlucky to
++		 * see that, it still doesn't matter, since all
++		 * RCU read-side critical sections on this CPU would
++		 * have already completed.
++		 */
++		per_cpu(dynticks_progress_counter, cpu)++;
++		/*
++		 * The following memory barrier ensures that any
++		 * rcu_read_lock() primitives in the irq handler
++		 * are seen by other CPUs to follow the above
++		 * increment to dynticks_progress_counter. This is
++		 * required in order for other CPUs to correctly
++		 * determine when it is safe to advance the RCU
++		 * grace-period state machine.
++		 */
++		smp_mb(); /* see above block comment. */
++		/*
++		 * Since we can't determine the dynamic tick mode from
++		 * the dynticks_progress_counter after this routine,
++		 * we use a second flag to acknowledge that we came
++		 * from an idle state with ticks stopped.
++		 */
++		per_cpu(rcu_update_flag, cpu)++;
++		/*
++		 * If we take an NMI/SMI now, they will also increment
++		 * the rcu_update_flag, and will not update the
++		 * dynticks_progress_counter on exit. That is for
++		 * this IRQ to do.
++		 */
 +	}
-+
-+	err = audit_ipc_obj(ipcp);
-+	if (err)
-+		goto out_unlock;
-+
-+	if (cmd == IPC_SET) {
-+		err = audit_ipc_set_perm(extrat_perm, perm->uid,
-+					 perm->gid, perm->mode);
-+		if (err)
-+			goto out_unlock;
-+	}
-+	if (current->euid == ipcp->cuid ||
-+	    current->euid == ipcp->uid || capable(CAP_SYS_ADMIN))
-+		return ipcp;
-+
-+	err = -EPERM;
-+out_unlock:
-+	ipc_unlock(ipcp);
-+out_up:
-+	up_write(&ids->rw_mutex);
-+	return ERR_PTR(err);
 +}
 +
- #ifdef __ARCH_WANT_IPC_PARSE_VERSION
- 
- 
-Index: b/ipc/util.h
-===================================================================
---- a/ipc/util.h
-+++ b/ipc/util.h
-@@ -113,6 +113,8 @@ struct kern_ipc_perm *ipc_lock(struct ip
- void kernel_to_ipc64_perm(struct kern_ipc_perm *in, struct ipc64_perm *out);
- void ipc64_perm_to_ipc_perm(struct ipc64_perm *in, struct ipc_perm *out);
- void ipc_update_perm(struct ipc64_perm *in, struct kern_ipc_perm *out);
-+struct kern_ipc_perm *ipcctl_pre_down(struct ipc_ids *ids, int id, int cmd,
-+				      struct ipc64_perm *perm, int extrat_perm);
- 
- #if defined(__ia64__) || defined(__x86_64__) || defined(__hppa__) || defined(__XTENSA__)
-   /* On IA-64, we always use the "64-bit version" of the IPC structures.  */ 
-Index: b/ipc/msg.c
-===================================================================
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -104,21 +104,6 @@ void __init msg_init(void)
- }
- 
++/**
++ * rcu_irq_exit - Called from exiting Hard irq context.
++ *
++ * If the CPU was idle with dynamic ticks active, update the
++ * dynticks_progress_counter to put let the RCU handling be
++ * aware that the CPU is going back to idle with no ticks.
++ */
++void rcu_irq_exit(void)
++{
++	int cpu = smp_processor_id();
++
++	/*
++	 * rcu_update_flag is set if we interrupted the CPU
++	 * when it was idle with ticks stopped.
++	 * Once this occurs, we keep track of interrupt nesting
++	 * because a NMI/SMI could also come in, and we still
++	 * only want the IRQ that started the increment of the
++	 * dynticks_progress_counter to be the one that modifies
++	 * it on exit.
++	 */
++	if (per_cpu(rcu_update_flag, cpu)) {
++		if (--per_cpu(rcu_update_flag, cpu))
++			return;
++
++		/* This must match the interrupt nesting */
++		WARN_ON(in_interrupt());
++
++		/*
++		 * If an NMI/SMI happens now we are still
++		 * protected by the dynticks_progress_counter being odd.
++		 */
++
++		/*
++		 * The following memory barrier ensures that any
++		 * rcu_read_unlock() primitives in the irq handler
++		 * are seen by other CPUs to preceed the following
++		 * increment to dynticks_progress_counter. This
++		 * is required in order for other CPUs to determine
++		 * when it is safe to advance the RCU grace-period
++		 * state machine.
++		 */
++		smp_mb(); /* see above block comment. */
++		per_cpu(dynticks_progress_counter, cpu)++;
++		WARN_ON(per_cpu(dynticks_progress_counter, cpu) & 0x1);
++	}
++}
++
++static void dyntick_save_progress_counter(int cpu)
++{
++	per_cpu(rcu_dyntick_snapshot, cpu) =
++		per_cpu(dynticks_progress_counter, cpu);
++}
++
++static inline int
++rcu_try_flip_waitack_needed(int cpu)
++{
++	long curr;
++	long snap;
++
++	curr = per_cpu(dynticks_progress_counter, cpu);
++	snap = per_cpu(rcu_dyntick_snapshot, cpu);
++	smp_mb(); /* force ordering with cpu entering/leaving dynticks. */
++
++	/*
++	 * If the CPU remained in dynticks mode for the entire time
++	 * and didn't take any interrupts, NMIs, SMIs, or whatever,
++	 * then it cannot be in the middle of an rcu_read_lock(), so
++	 * the next rcu_read_lock() it executes must use the new value
++	 * of the counter.  So we can safely pretend that this CPU
++	 * already acknowledged the counter.
++	 */
++
++	if ((curr == snap) && ((curr & 0x1) == 0))
++		return 0;
++
++	/*
++	 * If the CPU passed through or entered a dynticks idle phase with
++	 * no active irq handlers, then, as above, we can safely pretend
++	 * that this CPU already acknowledged the counter.
++	 */
++
++	if ((curr - snap) > 2 || (snap & 0x1) == 0)
++		return 0;
++
++	/* We need this CPU to explicitly acknowledge the counter flip. */
++
++	return 1;
++}
++
++static inline int
++rcu_try_flip_waitmb_needed(int cpu)
++{
++	long curr;
++	long snap;
++
++	curr = per_cpu(dynticks_progress_counter, cpu);
++	snap = per_cpu(rcu_dyntick_snapshot, cpu);
++	smp_mb(); /* force ordering with cpu entering/leaving dynticks. */
++
++	/*
++	 * If the CPU remained in dynticks mode for the entire time
++	 * and didn't take any interrupts, NMIs, SMIs, or whatever,
++	 * then it cannot have executed an RCU read-side critical section
++	 * during that time, so there is no need for it to execute a
++	 * memory barrier.
++	 */
++
++	if ((curr == snap) && ((curr & 0x1) == 0))
++		return 0;
++
++	/*
++	 * If the CPU either entered or exited an outermost interrupt,
++	 * SMI, NMI, or whatever handler, then we know that it executed
++	 * a memory barrier when doing so.  So we don't need another one.
++	 */
++	if (curr != snap)
++		return 0;
++
++	/* We need the CPU to execute a memory barrier. */
++
++	return 1;
++}
++
++#else /* !CONFIG_NO_HZ */
++
++# define dyntick_save_progress_counter(cpu)	do { } while (0)
++# define rcu_try_flip_waitack_needed(cpu)	(1)
++# define rcu_try_flip_waitmb_needed(cpu)	(1)
++
++#endif /* CONFIG_NO_HZ */
++
  /*
-- * This routine is called in the paths where the rw_mutex is held to protect
-- * access to the idr tree.
-- */
--static inline struct msg_queue *msg_lock_check_down(struct ipc_namespace *ns,
--						int id)
--{
--	struct kern_ipc_perm *ipcp = ipc_lock_check_down(&msg_ids(ns), id);
--
--	if (IS_ERR(ipcp))
--		return (struct msg_queue *)ipcp;
--
--	return container_of(ipcp, struct msg_queue, q_perm);
--}
--
--/*
-  * msg_lock_(check_) routines are called in the paths where the rw_mutex
-  * is not held.
-  */
-@@ -400,35 +385,12 @@ static int msgctl_down(struct ipc_namesp
- 			return -EFAULT;
- 	}
- 
--	down_write(&msg_ids(ns).rw_mutex);
--	msq = msg_lock_check_down(ns, msqid);
--	if (IS_ERR(msq)) {
--		err = PTR_ERR(msq);
--		goto out_up;
--	}
--
--	ipcp = &msq->q_perm;
--
--	err = audit_ipc_obj(ipcp);
--	if (err)
--		goto out_unlock;
--
--	if (cmd == IPC_SET) {
--		err = audit_ipc_set_perm(msqid64.msg_qbytes,
--					 msqid64.msg_perm.uid,
--					 msqid64.msg_perm.gid,
--					 msqid64.msg_perm.mode);
--		if (err)
--			goto out_unlock;
--	}
-+	ipcp = ipcctl_pre_down(&msg_ids(ns), msqid, cmd,
-+			       &msqid64.msg_perm, msqid64.msg_qbytes);
-+	if (IS_ERR(ipcp))
-+		return PTR_ERR(ipcp);
- 
--	if (current->euid != ipcp->cuid &&
--	    current->euid != ipcp->uid &&
--	    !capable(CAP_SYS_ADMIN)) {
--		/* We _could_ check for CAP_CHOWN above, but we don't */
--		err = -EPERM;
--		goto out_unlock;
--	}
-+	msq = container_of(ipcp, struct msg_queue, q_perm);
- 
- 	err = security_msg_queue_msgctl(msq, cmd);
- 	if (err)
-Index: b/ipc/shm.c
-===================================================================
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -127,18 +127,6 @@ static inline struct shmid_kernel *shm_l
- 	return container_of(ipcp, struct shmid_kernel, shm_perm);
- }
- 
--static inline struct shmid_kernel *shm_lock_check_down(
--						struct ipc_namespace *ns,
--						int id)
--{
--	struct kern_ipc_perm *ipcp = ipc_lock_check_down(&shm_ids(ns), id);
--
--	if (IS_ERR(ipcp))
--		return (struct shmid_kernel *)ipcp;
--
--	return container_of(ipcp, struct shmid_kernel, shm_perm);
--}
--
- /*
-  * shm_lock_(check_) routines are called in the paths where the rw_mutex
-  * is not held.
-@@ -629,33 +617,11 @@ static int shmctl_down(struct ipc_namesp
- 			return -EFAULT;
- 	}
- 
--	down_write(&shm_ids(ns).rw_mutex);
--	shp = shm_lock_check_down(ns, shmid);
--	if (IS_ERR(shp)) {
--		err = PTR_ERR(shp);
--		goto out_up;
--	}
--
--	ipcp = &shp->shm_perm;
--
--	err = audit_ipc_obj(ipcp);
--	if (err)
--		goto out_unlock;
--
--	if (cmd == IPC_SET) {
--		err = audit_ipc_set_perm(0, shmid64.shm_perm.uid,
--					 shmid64.shm_perm.gid,
--					 shmid64.shm_perm.mode);
--		if (err)
--			goto out_unlock;
--	}
-+	ipcp = ipcctl_pre_down(&shm_ids(ns), shmid, cmd, &shmid64.shm_perm, 0);
-+	if (IS_ERR(ipcp))
-+		return PTR_ERR(ipcp);
- 
--	if (current->euid != ipcp->uid &&
--	    current->euid != ipcp->cuid &&
--	    !capable(CAP_SYS_ADMIN)) {
--		err = -EPERM;
--		goto out_unlock;
--	}
-+	shp = container_of(ipcp, struct shmid_kernel, shm_perm);
- 
- 	err = security_shm_shmctl(shp, cmd);
- 	if (err)
+  * Get here when RCU is idle.  Decide whether we need to
+  * move out of idle state, and return non-zero if so.
+@@ -447,8 +657,10 @@ rcu_try_flip_idle(void)
 
--- 
-Pierre Peiffer
+ 	/* Now ask each CPU for acknowledgement of the flip. */
+
+-	for_each_cpu_mask(cpu, rcu_cpu_online_map)
++	for_each_cpu_mask(cpu, rcu_cpu_online_map) {
+ 		per_cpu(rcu_flip_flag, cpu) = rcu_flipped;
++		dyntick_save_progress_counter(cpu);
++	}
+
+ 	return 1;
+ }
+@@ -464,7 +676,8 @@ rcu_try_flip_waitack(void)
+
+ 	RCU_TRACE_ME(rcupreempt_trace_try_flip_a1);
+ 	for_each_cpu_mask(cpu, rcu_cpu_online_map)
+-		if (per_cpu(rcu_flip_flag, cpu) != rcu_flip_seen) {
++		if (rcu_try_flip_waitack_needed(cpu) &&
++		    per_cpu(rcu_flip_flag, cpu) != rcu_flip_seen) {
+ 			RCU_TRACE_ME(rcupreempt_trace_try_flip_ae1);
+ 			return 0;
+ 		}
+@@ -509,8 +722,10 @@ rcu_try_flip_waitzero(void)
+ 	smp_mb();  /*  ^^^^^^^^^^^^ */
+
+ 	/* Call for a memory barrier from each CPU. */
+-	for_each_cpu_mask(cpu, rcu_cpu_online_map)
++	for_each_cpu_mask(cpu, rcu_cpu_online_map) {
+ 		per_cpu(rcu_mb_flag, cpu) = rcu_mb_needed;
++		dyntick_save_progress_counter(cpu);
++	}
+
+ 	RCU_TRACE_ME(rcupreempt_trace_try_flip_z2);
+ 	return 1;
+@@ -528,7 +743,8 @@ rcu_try_flip_waitmb(void)
+
+ 	RCU_TRACE_ME(rcupreempt_trace_try_flip_m1);
+ 	for_each_cpu_mask(cpu, rcu_cpu_online_map)
+-		if (per_cpu(rcu_mb_flag, cpu) != rcu_mb_done) {
++		if (rcu_try_flip_waitmb_needed(cpu) &&
++		    per_cpu(rcu_mb_flag, cpu) != rcu_mb_done) {
+ 			RCU_TRACE_ME(rcupreempt_trace_try_flip_me1);
+ 			return 0;
+ 		}
+Index: linux-compile.git/include/linux/hardirq.h
+===================================================================
+--- linux-compile.git.orig/include/linux/hardirq.h	2008-01-29 11:03:15.000000000 -0500
++++ linux-compile.git/include/linux/hardirq.h	2008-01-29 11:04:55.000000000 -0500
+@@ -109,6 +109,14 @@ static inline void account_system_vtime(
+ }
+ #endif
+
++#if defined(CONFIG_PREEMPT_RCU) && defined(CONFIG_NO_HZ)
++extern void rcu_irq_enter(void);
++extern void rcu_irq_exit(void);
++#else
++# define rcu_irq_enter() do { } while (0)
++# define rcu_irq_exit() do { } while (0)
++#endif /* CONFIG_PREEMPT_RCU */
++
+ /*
+  * It is safe to do non-atomic ops on ->hardirq_context,
+  * because NMI handlers may not preempt and the ops are
+@@ -117,6 +125,7 @@ static inline void account_system_vtime(
+  */
+ #define __irq_enter()					\
+ 	do {						\
++		rcu_irq_enter();			\
+ 		account_system_vtime(current);		\
+ 		add_preempt_count(HARDIRQ_OFFSET);	\
+ 		trace_hardirq_enter();			\
+@@ -135,6 +144,7 @@ extern void irq_enter(void);
+ 		trace_hardirq_exit();			\
+ 		account_system_vtime(current);		\
+ 		sub_preempt_count(HARDIRQ_OFFSET);	\
++		rcu_irq_exit();				\
+ 	} while (0)
+
+ /*
+Index: linux-compile.git/include/linux/rcuclassic.h
+===================================================================
+--- linux-compile.git.orig/include/linux/rcuclassic.h	2008-01-29 11:03:15.000000000 -0500
++++ linux-compile.git/include/linux/rcuclassic.h	2008-01-29 11:04:55.000000000 -0500
+@@ -160,5 +160,8 @@ extern void rcu_restart_cpu(int cpu);
+ extern long rcu_batches_completed(void);
+ extern long rcu_batches_completed_bh(void);
+
++#define rcu_enter_nohz()	do { } while (0)
++#define rcu_exit_nohz()		do { } while (0)
++
+ #endif /* __KERNEL__ */
+ #endif /* __LINUX_RCUCLASSIC_H */
+Index: linux-compile.git/include/linux/rcupreempt.h
+===================================================================
+--- linux-compile.git.orig/include/linux/rcupreempt.h	2008-01-29 11:03:15.000000000 -0500
++++ linux-compile.git/include/linux/rcupreempt.h	2008-01-29 11:04:55.000000000 -0500
+@@ -82,5 +82,27 @@ extern struct rcupreempt_trace *rcupreem
+
+ struct softirq_action;
+
++#ifdef CONFIG_NO_HZ
++DECLARE_PER_CPU(long, dynticks_progress_counter);
++
++static inline void rcu_enter_nohz(void)
++{
++	__get_cpu_var(dynticks_progress_counter)++;
++	WARN_ON(__get_cpu_var(dynticks_progress_counter) & 0x1);
++	mb();
++}
++
++static inline void rcu_exit_nohz(void)
++{
++	mb();
++	__get_cpu_var(dynticks_progress_counter)++;
++	WARN_ON(!(__get_cpu_var(dynticks_progress_counter) & 0x1));
++}
++
++#else /* CONFIG_NO_HZ */
++#define rcu_enter_nohz()	do { } while (0)
++#define rcu_exit_nohz()		do { } while (0)
++#endif /* CONFIG_NO_HZ */
++
+ #endif /* __KERNEL__ */
+ #endif /* __LINUX_RCUPREEMPT_H */
+Index: linux-compile.git/kernel/softirq.c
+===================================================================
+--- linux-compile.git.orig/kernel/softirq.c	2008-01-29 11:03:15.000000000 -0500
++++ linux-compile.git/kernel/softirq.c	2008-01-29 11:04:55.000000000 -0500
+@@ -306,6 +306,7 @@ void irq_exit(void)
+ 	/* Make sure that timer wheel updates are propagated */
+ 	if (!in_interrupt() && idle_cpu(smp_processor_id()) && !need_resched())
+ 		tick_nohz_stop_sched_tick();
++	rcu_irq_exit();
+ #endif
+ 	preempt_enable_no_resched();
+ }
+Index: linux-compile.git/kernel/time/tick-sched.c
+===================================================================
+--- linux-compile.git.orig/kernel/time/tick-sched.c	2008-01-29 11:03:15.000000000 -0500
++++ linux-compile.git/kernel/time/tick-sched.c	2008-01-29 11:04:55.000000000 -0500
+@@ -254,6 +254,7 @@ void tick_nohz_stop_sched_tick(void)
+ 			ts->idle_tick = ts->sched_timer.expires;
+ 			ts->tick_stopped = 1;
+ 			ts->idle_jiffies = last_jiffies;
++			rcu_enter_nohz();
+ 		}
+
+ 		/*
+@@ -342,6 +343,8 @@ void tick_nohz_restart_sched_tick(void)
+ 	if (!ts->tick_stopped)
+ 		return;
+
++	rcu_exit_nohz();
++
+ 	/* Update jiffies first */
+ 	now = ktime_get();
+
+
