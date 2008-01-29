@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYA2BHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761799AbYA2BIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbYA2BHs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Jan 2008 20:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbYA2BHj
+	id S1761799AbYA2BIy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Jan 2008 20:08:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbYA2BIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Jan 2008 20:07:39 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56544 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751707AbYA2BHi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Jan 2008 20:07:38 -0500
-Date: Mon, 28 Jan 2008 17:07:34 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: torvalds@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Pull request: DMA pool updates
-Message-Id: <20080128170734.3101b6aa.akpm@linux-foundation.org>
-In-Reply-To: <20080129001147.GD31101@parisc-linux.org>
-References: <20080129001147.GD31101@parisc-linux.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 28 Jan 2008 20:08:43 -0500
+Received: from mail.vyatta.com ([216.93.170.194]:37371 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751785AbYA2BIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Jan 2008 20:08:42 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -1.906
+Date: Mon, 28 Jan 2008 17:08:30 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Udev coldplugging loads 8139too driver instead of 8139cp
+Message-ID: <20080128170830.6f67fa5a@deepthought>
+In-Reply-To: <479E7750.9060304@msgid.tls.msk.ru>
+References: <1201554992.13883.13.camel@Anastacia>
+	<479E7750.9060304@msgid.tls.msk.ru>
+Organization: Vyatta
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,38 +29,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008 17:11:47 -0700
-Matthew Wilcox <matthew@wil.cx> wrote:
+On Tue, 29 Jan 2008 03:46:08 +0300
+Michael Tokarev <mjt@tls.msk.ru> wrote:
 
+> Frederik Himpe wrote:
+> > Linux 2.6.24 kernel gives the following messages when udev coldplugging
+> > loads the driver for my NIC:
+> > 
+> > 8139too 0000:00:0b.0: This (id 10ec:8139 rev 20) is an enhanced 8139C+ chip
+> > 8139too 0000:00:0b.0: Use the "8139cp" driver for improved performance and stability.
 > 
-> G'day Linus, mate
+> There are 2 drivers for 8139-based NICs.  For really different two kinds
+> of hardware, which both uses the same PCI identifiers.  Both drivers
+> "claims" to work with all NICs with those PCI ids, because "externally"
+> (by means of udev for example) it's impossible to distinguish the two
+> kinds of hardware, it becomes clean only when the driver (either of the
+> two) loads and actually checks which hardware we have here.
+
+Is there any chance of using subdevice or subversion to tell them apart?
+That worked for other vendors like DLINK who slapped same ID on different
+cards.
+
+> Udev in fact loads both - 8139cp and 8139too.  The difference is the ORDER
+> in which it loads them - if for "cp-handled" hardware it first loads "too",
+> too will complain as above and will NOT claim the device.  The same is
+> true for the opposite.
 > 
-> Could you pull the dmapool branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git please?
-
-The usual form is, I believe,
-
-	git://git.kernel.org/pub/scm/linux/kernel/git/willy/misc.git dmapool
-
-Otherwise people get all confused and think it's an empty tree (like I just
-did).
-
-> All the patches have been posted to linux-kernel before, and various
-> comments (and acks) have been taken into account.
+> So - in short - things has always been this way (thanks to realtec).
+> I've seen similar (but opposite) effects on my systems, which are all
+> should be serviced by 8139too driver but 8139cp loaded first - up
+> till i gave up and just disabled 8139cp...
 > 
-> It's a fairly nice performance improvement, so would be good to get in.
-> It's survived a few hours of *mumble* high-stress database benchmark,
-> so I have high confidence in its stability.
+> I don't know what happened in 2.6.24, but my guess is that since 8139too-based
+> hw is now alot more common, the two drivers are listed in the opposite
+> order.
+> 
+> In short: NotABug, or ComplainToRealtec (but that's waaaay too late and
+> will not help anyway) ;)
+> 
+> /mjt
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Could we please at least have a shortlog so we can find out what the patch
-titles are so we can google them so we can find out what the heck you're
-proposing we add to the kernel?
 
-<does a pull, goes on an archive hunt>
-
-It shouldn't be this hard!
-
-There were no replies to v2 of the patch series.  It all looks reasonable
-from a quick scan (assuming the patches are unchanged since then).
-
-afaik these patches have been tested by nobody except thyself?
+-- 
+Stephen Hemminger <stephen.hemminger@vyatta.com>
