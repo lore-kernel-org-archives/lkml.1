@@ -1,89 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932901AbYA2Qiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764638AbYA2QoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932901AbYA2Qiw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:38:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYA2Qin
+	id S1764638AbYA2QoK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbYA2Qn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:38:43 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46357 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753206AbYA2Qim (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:38:42 -0500
-Date: Tue, 29 Jan 2008 14:38:09 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Trent Piepho <xyzzy@speakeasy.org>, Hans Verkuil <hverkuil@xs4all.nl>,
-       v4l-dvb-maintainer@linuxtv.org,
-       Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] 2.6.25 regression: VIDEO_DEV=y/m, I2C=n
- compile error
-Message-ID: <20080129143809.30cff2f1@gaivota>
-In-Reply-To: <20080128121245.GG1001@does.not.exist>
-References: <20080127185216.GB13300@does.not.exist>
-	<20080127223334.696fce6e@gaivota>
-	<20080128084001.GB1001@does.not.exist>
-	<Pine.LNX.4.58.0801280053010.15635@shell4.speakeasy.net>
-	<20080128094912.1848eacd@gaivota>
-	<20080128121245.GG1001@does.not.exist>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.1; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 Jan 2008 11:43:57 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:53780 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754256AbYA2Qn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 11:43:56 -0500
+Date: Tue, 29 Jan 2008 10:43:54 -0600
+To: linux-kernel@vger.kernel.org
+Cc: pj@sgi.com, akpm@osdl.org
+Subject: [PATCH 4/4] hotplug cpu move tasks in empty cpusets - refinements
+User-Agent: nail 11.25 7/29/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <20080129164354.D7E5F33B943@attica.americas.sgi.com>
+From: cpw@sgi.com (Cliff Wickman)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Jan 2008 14:12:45 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
 
->
-> Why does anyone want to introduce such a weird syntax for something 
-> that already works with the simple
-> 
-> 	depends on I2C || I2C=n
-> 
-This didn't work.
+   Narrow the scope of callback_mutex in scan_for_empty_cpusets().
+    Avoid rewriting the cpus, mems of cpusets except when it is
+         likely that we'll be changing them.
+    Have remove_tasks_in_empty_cpuset() also check for empty mems.
 
-Something weird is happening here... It seems that "menuconfig I2C" is not
-working properly, or maybe I'm blind ;)
+Signed-off-by: Paul Jackson <pj@sgi.com>
+Acked-by: Cliff Wickman <cpw@sgi.com>
 
-I'm trying to generate the patch for fixing this issue. However, every time I
-add a dependency for I2C, I got wrong results:
-
-make oldconfig >/dev/null; grep CONFIG_VIDEO_DEV .config; grep CONFIG_I2C= .config; grep CONFIG_VIDEO_V4L2_COMMON .config
-CONFIG_VIDEO_DEV=y
-CONFIG_I2C=m
-CONFIG_VIDEO_V4L2_COMMON=y
 
 ---
 
-Trying to isolate the problem, I'm applying this patch to define
-CONFIG_VIDEO_V4L2_COMMON:
+ kernel/cpuset.c |   21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
 
-
-diff --git a/drivers/media/Kconfig b/drivers/media/Kconfig
-index 8f4a453..20a5d26 100644
---- a/drivers/media/Kconfig
-+++ b/drivers/media/Kconfig
-@@ -25,6 +25,11 @@ config VIDEO_DEV
-          To compile this driver as a module, choose M here: the
-          module will be called videodev.
-
-+config VIDEO_V4L2_COMMON
-+       tristate
-+       depends on I2C
-+       default y
+Index: linux-2.6/kernel/cpuset.c
+===================================================================
+--- linux-2.6.orig/kernel/cpuset.c
++++ linux-2.6/kernel/cpuset.c
+@@ -1748,7 +1748,8 @@ static void remove_tasks_in_empty_cpuset
+ 	 * has online cpus, so can't be empty).
+ 	 */
+ 	parent = cs->parent;
+-	while (cpus_empty(parent->cpus_allowed))
++	while (cpus_empty(parent->cpus_allowed) ||
++			nodes_empty(parent->mems_allowed))
+ 		parent = parent->parent;
+ 
+ 	move_member_tasks_to_cpuset(cs, parent);
+@@ -1780,7 +1781,6 @@ static void scan_for_empty_cpusets(const
+ 
+ 	list_add_tail((struct list_head *)&root->stack_list, &queue);
+ 
+-	mutex_lock(&callback_mutex);
+ 	while (!list_empty(&queue)) {
+ 		cp = container_of(queue.next, struct cpuset, stack_list);
+ 		list_del(queue.next);
+@@ -1789,19 +1789,24 @@ static void scan_for_empty_cpusets(const
+ 			list_add_tail(&child->stack_list, &queue);
+ 		}
+ 		cont = cp->css.cgroup;
 +
- config VIDEO_V4L1
-        bool "Enable Video For Linux API 1 (DEPRECATED)"
-        depends on VIDEO_DEV
-
----
-
-Shouldn't VIDEO_V4L2_COMMON be equal to 'm', due to I2C dependency?
-
-Cheers,
-Mauro
++		/* Continue past cpusets with all cpus, mems online */
++		if (cpus_subset(cp->cpus_allowed, cpu_online_map) &&
++		    nodes_subset(cp->mems_allowed, node_states[N_HIGH_MEMORY]))
++			continue;
++
+ 		/* Remove offline cpus and mems from this cpuset. */
++		mutex_lock(&callback_mutex);
+ 		cpus_and(cp->cpus_allowed, cp->cpus_allowed, cpu_online_map);
+ 		nodes_and(cp->mems_allowed, cp->mems_allowed,
+ 						node_states[N_HIGH_MEMORY]);
++		mutex_unlock(&callback_mutex);
++
++		/* Move tasks from the empty cpuset to a parent */
+ 		if (cpus_empty(cp->cpus_allowed) ||
+-		     nodes_empty(cp->mems_allowed)) {
+-		        /* Move tasks from the empty cpuset to a parent */
+-			mutex_unlock(&callback_mutex);
++		     nodes_empty(cp->mems_allowed))
+ 			remove_tasks_in_empty_cpuset(cp);
+-			mutex_lock(&callback_mutex);
+-		}
+ 	}
+-	mutex_unlock(&callback_mutex);
+ }
+ 
+ /*
