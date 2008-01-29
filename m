@@ -1,66 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765507AbYA2Sfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763764AbYA2Sh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765507AbYA2Sfl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 13:35:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753433AbYA2Sfb
+	id S1763764AbYA2Sh5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 13:37:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYA2Shs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 13:35:31 -0500
-Received: from qmta01.emeryville.ca.mail.comcast.net ([76.96.30.16]:44244 "EHLO
-	QMTA01.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752174AbYA2Sfa (ORCPT
+	Tue, 29 Jan 2008 13:37:48 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44963 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752888AbYA2Shr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 13:35:30 -0500
-X-Greylist: delayed 420 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Jan 2008 13:35:30 EST
-X-Authority-Analysis: v=1.0 c=1 a=9LLHw7IY_zGYgOZ2X-4A:9 a=xXKJZ231m6N7PZS7kde6yFwaXs0A:4 a=vNGxQsTWjH8A:10
-Message-ID: <479F7049.3080904@bobjweil.com>
-Date: Tue, 29 Jan 2008 13:28:25 -0500
-From: rgheck <rgheck@bobjweil.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 29 Jan 2008 13:37:47 -0500
+Date: Tue, 29 Jan 2008 10:41:29 -0800
+From: Greg KH <greg@kroah.com>
+To: Markus Rechberger <markus.rechberger@amd.com>
+Cc: Matt_Domsch@dell.com, Jos?? Luis Tall??n <jltallon@adv-solutions.net>,
+       Douglas_Warzecha@dell.com, Abhay_Salunke@dell.com,
+       linux-kernel@vger.kernel.org,
+       Michael E Brown <Michael_E_Brown@dell.com>, Greg KH <gregkh@suse.de>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: Re: FW: 2.6.24 breaks BIOS updates on all Dell machines
+Message-ID: <20080129184129.GA23681@kroah.com>
+References: <E9909A75A543064DB66E55B8E3BE41EC5FD218@ausx3mps307.aus.amer.dell.com> <479F3F60.8050108@amd.com>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Barkalow <barkalow@iabervon.org>,
-       Gene Heskett <gene.heskett@gmail.com>, Zan Lynx <zlynx@acm.org>,
-       Calvin Walton <calvin.walton@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ide Mailing list <linux-ide@vger.kernel.org>
-Subject: Re: Problem with ata layer in 2.6.24
-References: <200801272122.21823.gene.heskett@gmail.com>	<1201539043.31293.7.camel@zem>	<1201540830.6526.19.camel@localhost>	<200801281230.32910.gene.heskett@gmail.com>	<alpine.LNX.1.00.0801281248190.13593@iabervon.org>	<479E1D9E.3000900@bobjweil.com> <20080129121201.2f727f5f@core> <479F5D29.1020705@bobjweil.com> <479F6C6B.7090505@rtr.ca>
-In-Reply-To: <479F6C6B.7090505@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <479F3F60.8050108@amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> rgheck wrote:
->> Alan Cox wrote:
->>>> not one problem but lots---is sufficiently widespread that a Mini 
->>>> HOWTO, say, would be really welcome and, I'm guessing, widely used.
->>>>     
+On Tue, Jan 29, 2008 at 03:59:44PM +0100, Markus Rechberger wrote:
+>> -----Original Message-----
+>> From: Greg KH [mailto:gregkh@suse.de] Sent: Tuesday, January 29, 2008 
+>> 12:44 AM
+>> To: Brown, Michael E
+>> Cc: Jos?? Luis Tall??n; Warzecha, Douglas; Salunke, Abhay;
+>> linux-kernel@vger.kernel.org; Domsch, Matt; marcel@holtmann.org
+>> Subject: Re: 2.6.24 breaks BIOS updates on all Dell machines
+>>
+>> On Tue, Jan 29, 2008 at 12:32:44AM -0600, Michael E Brown wrote:
+>>   
+>>> BIOS updates are broken on all Dell systems due to Commit
+>>> 109f0e93b6b728f03c1eb4af02bc25d71b646c59, which is now in 2.6.24.
 >>>
->>> We don't see very many libata problems at the distro level and they for
->>> the most part boil down to
+>>>   static inline void fw_setup_device_id(struct device *f_dev, struct
+>>> device *dev)
+>>>   {
+>>> -       /* XXX warning we should watch out for name collisions */
+>>> -       strlcpy(f_dev->bus_id, dev->bus_id, BUS_ID_SIZE);
+>>> +       snprintf(f_dev->bus_id, BUS_ID_SIZE, "firmware-%s",
+>>> dev->bus_id);
+>>>  }
 >>>
->>> - sata_nv with >4GB of RAM, knowing being worked on, no old IDE driver
->>> anyway
->>>   
->> Is this >4GB or >=4GB? I've seen contradictory reports, and I've got 
->> 4GB.
-> ..
+>>> Two programs are broken by this change:     1) dellBiosUpdate, which is 
+>>> part of libsmbios
+>>>     2) All of the Dell Update Packages (DUPs) that are part of Dell
+>>> OpenManage: each BIOS release for each of 3-4 dozen platforms.
+>>>
+>>> These programs are broken due to the pathname change from
+>>> /sys/class/firmware/dell_rbu/   to
+>>> /sys/class/firmware/firmware-dell_rbu/loading. 
+>>> Realistically, I can fix libsmbios in a couple of weeks, but there is
+>>>     
+>> no
+>>   
+>>> way that we can go back and fix a couple hundred DUP packages for this
+>>> change. If this stays, we are looking at over 6 months before we have
+>>>     
+>> an
+>>   
+>>> officially-available Dell OpenManage that can deal with it, and that
+>>> would be for new BIOS releases only, I suspect.
+>>>
+>>> Some of the relevant threads from when this was submitted and
+>>>     
+>> accepted:
+>>   
+>>> http://lkml.org/lkml/2005/5/23/73
+>>> http://lkml.org/lkml/2005/5/23/62
+>>>
+>>> Due to the extremely large and disruptive nature of this bug, it would
+>>> be nice to get a 2.6.24.1 with this patch reverted.
+>>>
+>>> I have copied the relevant developers at Dell who maintain this
+>>>     
+>> driver.
+>>   
+>>> Please preserve the cc: list when replying.
+>>>     
+>>
+>> Fair enough, I have no problem reverting this.
+>>
+>> Anyone want to keep it in?
+>>
+>>   
+> Hi Greg,
 >
-> For all practical purposes, most memory over 3GB (or sometimes even 2GB)
-> on a 32-bit x86 system is treated as >4GB by the motherboard.
+> reverting this breaks support for several media (DVB/V4L) devices. I would 
+> have to look up some bugreports the same name collision happened with 
+> several different drivers.
+> There was a comment in the fw code to watch out for name collisions earlier 
+> already, so it needs a fix somewhere.
 >
-> Because it's not the amount of *memory* that matters so much,
-> but rather the amount of *used address space*.  Video cards,
-> PCI devices, other motherboard resources etc.. can all subtract
-> from the available address space, leaving much less than 4GB
-> for your RAM.
+> Here's some history:
+> http://mcentral.de/wiki/index.php5/Bugtracker#i2c_dev_problem
 
-Right. So it looks like I do have this issue, though I haven't seen any 
-actual problems on 24. Is there a known workaround?
+Yes, but we can't break existing code that has been working for quite
+some time.  That's just unacceptable.  The i2c devices can fix things by
+changing their module names so this collision doesn't happen :)
 
-rh
+So, I'm all for reverting this patch.
 
+And then, feel free to revisit the problem by proposing something that
+doesn't break existing users of the interface.
+
+Michael, can you please send me a patch, and CC: stable@kernel.org so we
+make sure to get this into 2.6.24.1?
+
+thanks,
+
+greg k-h
