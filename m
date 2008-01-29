@@ -1,110 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765980AbYA2TKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933886AbYA2TL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765980AbYA2TKt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 14:10:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYA2TKj
+	id S933886AbYA2TL3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 14:11:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbYA2TLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 14:10:39 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:30628 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751324AbYA2TKh (ORCPT
+	Tue, 29 Jan 2008 14:11:19 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:48878 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753747AbYA2TLS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 14:10:37 -0500
-Message-ID: <479F7A07.8080204@panasas.com>
-Date: Tue, 29 Jan 2008 21:09:59 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 29 Jan 2008 14:11:18 -0500
+Date: Tue, 29 Jan 2008 11:11:07 -0800
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "k-ueda@ct.jp.nec.com" <k-ueda@ct.jp.nec.com>,
+       "j-nomura@ce.jp.nec.com" <j-nomura@ce.jp.nec.com>
+Subject: Re: kernel BUG at drivers/block/cciss.c:1260! (with recent
+	linux-2.6  tree)
+Message-ID: <20080129191107.GP12400@plap3.qlogic.org>
+References: <20080129175426.GJ12400@plap3.qlogic.org> <20080129180242.GZ15220@kernel.dk> <20080129180537.GA15220@kernel.dk> <20080129182217.GK12400@plap3.qlogic.org> <20080129182833.GG15220@kernel.dk> <20080129183705.GL12400@plap3.qlogic.org> <20080129184442.GK15220@kernel.dk> <20080129184929.GN12400@plap3.qlogic.org> <20080129185358.GM15220@kernel.dk> <DEE40752C8AF224BB890E455C7B8E0FE0423F6D181@G6W0268.americas.hpqcorp.net>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Oliver Neukum <oliver@neukum.org>, Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [BUG] 2.6.24-git usb reset problems
-References: <20080128204935.GI15220@kernel.dk> <479F32E9.10609@panasas.com> <20080129141108.GV15220@kernel.dk> <200801291531.39825.oliver@neukum.org> <20080129143109.GW15220@kernel.dk> <20080129183910.GI15220@kernel.dk>
-In-Reply-To: <20080129183910.GI15220@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Jan 2008 19:10:05.0850 (UTC) FILETIME=[8EB8D7A0:01C862AA]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <DEE40752C8AF224BB890E455C7B8E0FE0423F6D181@G6W0268.americas.hpqcorp.net>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 29 Jan 2008 19:11:17.0348 (UTC) FILETIME=[B9569240:01C862AA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29 2008 at 20:39 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Tue, Jan 29 2008, Jens Axboe wrote:
->> On Tue, Jan 29 2008, Oliver Neukum wrote:
->>> Am Dienstag, 29. Januar 2008 15:11:08 schrieb Jens Axboe:
->>>> On Tue, Jan 29 2008, Boaz Harrosh wrote:
->>>>> On Tue, Jan 29 2008 at 15:54 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
->>>>>> On Tue, Jan 29 2008, Boaz Harrosh wrote:
->>>>>>> Greg KH wrote:
->>>  
->>>>>> No difference, still just a lot of resets.
->>>>>>
->>>>> Where you able to figure out which usb storage transport is used?
->>>>>
->>>>> in drivers/usb/storage/usb.c you have get_protocol() and get_transport()
->>>>> functions. I'm not sure if these get stored in sysfs perhaps. This will
->>>>> pinpoint better where to look. Let me research a bit. 
->>>> Did the quick'n easy and dumped it. Protocol is 'Transparent SCSI' and
->>>> transport is 'Bulk'
->>> You can recompile your kernel with CONFIG_USB_DEBUG and CONFIG_STORAGE_DEBUG
->>> That should tell the reason for the resets.
->> Sure, I'll do that. Will post the results tonight.
+On Tue, 29 Jan 2008, Miller, Mike (OS Dev) wrote:
+
+> Jens wrote:
 > 
-> OK, fresh boot with CONFIG_USB_DEBUG and CONFIG_STORAGE_DEBUG. Plugged
-> in the device, waited 10 seconds or so and pulled it out. These are the
-> messages.
+> > -----Original Message-----
+> > From: Jens Axboe [mailto:jens.axboe@oracle.com]
+> > Sent: Tuesday, January 29, 2008 12:54 PM
+> > To: Andrew Vasquez
+> > Cc: Linux Kernel Mailing List; Miller, Mike (OS Dev);
+> > k-ueda@ct.jp.nec.com; j-nomura@ce.jp.nec.com
+> > Subject: Re: kernel BUG at drivers/block/cciss.c:1260! (with
+> > recent linux-2.6 tree)
+> >
+> > On Tue, Jan 29 2008, Andrew Vasquez wrote:
+> > > On Tue, 29 Jan 2008, Jens Axboe wrote:
+> > >
+> > > > On Tue, Jan 29 2008, Andrew Vasquez wrote:
+> > > > > On Tue, 29 Jan 2008, Jens Axboe wrote:
+> > > > >
+> > > > > > > Here the final snippet that was logged:
+> > > > > > >
+> > > > > > > [   12.724997] input: USB HID v1.01 Mouse [HP
+> > Virtual Keyboard] on usb-0000:01:04.4-1
+> > > > > > > [   12.728971] usbcore: registered new interface
+> > driver usbhid
+> > > > > > > [   12.732866] drivers/hid/usbhid/hid-core.c:
+> > v2.6:USB HID core driver
+> > > > > > > [   12.741172] TCP cubic registered
+> > > > > > > [   12.744506] NET: Registered protocol family 1
+> > > > > > > [   12.744884] NET: Registered protocol family 17
+> > > > > > > [   12.749217] Freeing unused kernel memory: 228k freed
+> > > > > > > [   12.885823] cciss rq: dev cciss/c0d0: type=2, flags=104c8
+> > > > > > > [   12.888929]
+> > > > > > > [   12.888930] sector 6510615555426900570, nr/cnr 0/0
+> > > > > > > [   12.892895] bio ffff81042f130730, biotail
+> > ffff81042f130730, buffer 0000000000000000, data
+> > 0000000000000000, len 0
+> > > > > > > [   12.896895] cdb: 12 00 00 00 fe 00 00 00 00 00
+> > 00 00 00 00 00 00
+> > > > > >
+> > > > > > Ah ok, I see the problem... cciss is overriding the
+> > data_len for
+> > > > > > BLOCK_PC requests, hence it does not complete them properly.
+> > > > > > Hmm. Does this work?
+> > > > > >
+> > > > > > diff --git a/drivers/block/cciss.c
+> > b/drivers/block/cciss.c index
+> > > > > > ef50068..b6fa52e 100644
+> > > > > > --- a/drivers/block/cciss.c
+> > > > > > +++ b/drivers/block/cciss.c
+> > > > > > @@ -2524,7 +2524,6 @@ after_error_processing:
+> > > > > >                 resend_cciss_cmd(h, cmd);
+> > > > > >                 return;
+> > > > > >         }
+> > > > > > -       cmd->rq->data_len = 0;
+> > > > > >         cmd->rq->completion_data = cmd;
+> > > > > >         blk_complete_request(cmd->rq);  }
+> > > > >
+> > > > >
+> > > > > Things look good so far -- with the patch above I can
+> > finally boot
+> > > > > the machine.
+> > > >
+> > > > Cool, sorry about that. Will get that applied asap. So after this
+> > > > patch was applied, you didn't see any debug messages from
+> > > > blk_dump_rq_flags() anymore, right?
+> > >
+> > > That's correct.  I've yet to see any additional debug-messages from
+> > > blk_dump_rq_flags().
+> >
+> > Great, thanks for confirming. It does look like a clear bug
+> > in cciss, it just got exposed now that it uses proper end
+> > request handling. We never need to clear ->data_len, since
+> > for blk_fs_request() it will be cleared on init. So just
+> > setting a residual count there for blk_fs_request() like
+> > cciss does is fine.
 > 
-> It all looks good until the MODE_SENSE command, where it only transfers
-> 4 of 192 bytes.
-> 
-<snip>
-> usb-storage: Command MODE_SENSE (6 bytes)
-> usb-storage:  1a 00 3f 00 c0 00
-> usb-storage: Bulk Command S 0x43425355 T 0x4 L 192 F 128 Trg 0 LUN 0 CL 6
-> usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
-> usb-storage: Status code 0; transferred 31/31
-> usb-storage: -- transfer complete
-> usb-storage: Bulk command transfer result=0
-> usb-storage: usb_stor_bulk_transfer_sglist: xfer 192 bytes, 1 entries
-> usb-storage: Status code -121; transferred 4/192
-> usb-storage: -- short read transfer
-> usb-storage: Bulk data transfer result 0x1
-> usb-storage: Attempting to get CSW...
-<snip>
+> Just so I'm clear: just removing the one line is enough to resolve the problem?
 
-I get something similar but better:
-usb-storage: Command MODE_SENSE (6 bytes)
-usb-storage:  1a 00 3f 00 c0 00
-usb-storage: Bulk Command S 0x43425355 T 0x6 L 192 F 128 Trg 0 LUN 0 CL 6
-usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
-usb-storage: Status code 0; transferred 31/31
-usb-storage: -- transfer complete
-usb-storage: Bulk command transfer result=0
-usb-storage: usb_stor_bulk_transfer_sglist: xfer 192 bytes, 1 entries
-usb-storage: Status code -121; transferred 36/192
-usb-storage: -- short read transfer
-usb-storage: Bulk data transfer result 0x1
-usb-storage: Attempting to get CSW...
+That's correct.  The only other change to cciss.c in my tree is where
+the BUG() call was replaced with a call to blk_dump_rq_flags():
 
-So I get 36 bytes, then code goes on into one reset, and every thing is then
-fine.
+	@@ -1257,7 +1257,8 @@ static void cciss_softirq_done(struct request *rq)
+	 #endif                         /* CCISS_DEBUG */
 
-Could you put us out of our mesery and revert that patch:
-[SCSI] usb: transport - convert to accessors and !use_sg code path removal
-(6d416e6173394defda5933e419e805b696681b7e)
+		if (blk_end_request(rq, (rq->errors == 0) ? 0 : -EIO, blk_rq_bytes(rq)))
+	-               BUG();
+	+               blk_dump_rq_flags(rq, "cciss rq");
+	+//             BUG();
 
-to make sure this is it. I hate to do this to you, but I cannot reproduce the
-failure down here. If it works please send a log with the debugs on perhaps
-we can compare.
-
-You will need to configure out the CONFIG_USB_STORAG_* they will not compile
-you should have only have CONFIG_USB_STORAGE & CONFIG_USB_STORAGE_DEBUG. it should
-support your HW.
-
-
-Thanks Jens
-Boaz
-
-
+		spin_lock_irqsave(&h->lock, flags);
+		cmd_free(h, cmd, 1);
