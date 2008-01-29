@@ -1,78 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbYA2MEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbYA2MEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756231AbYA2MEZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 07:04:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbYA2MEP
+	id S1758671AbYA2MEs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 07:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbYA2MEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 07:04:15 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43811 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751642AbYA2MEO (ORCPT
+	Tue, 29 Jan 2008 07:04:38 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58910 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757240AbYA2MEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 07:04:14 -0500
-Date: Tue, 29 Jan 2008 06:03:55 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Tue, 29 Jan 2008 07:04:34 -0500
+Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Jackson <pj@sgi.com>
 Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@linux.vnet.ibm.com,
        dhaval@linux.vnet.ibm.com, nickpiggin@yahoo.com.au,
        ebiederm@xmission.com, akpm@linux-foundation.org, sgrubb@redhat.com,
        rostedt@goodmis.org, ghaskins@novell.com, dmitry.adamushko@gmail.com,
        tong.n.li@intel.com, tglx@linutronix.de, menage@google.com,
        rientjes@google.com
-Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
-Message-Id: <20080129060355.7d38338f.pj@sgi.com>
-In-Reply-To: <1201606284.28547.114.camel@lappy>
+In-Reply-To: <20080129053005.bc7a11d7.pj@sgi.com>
 References: <1201600428.28547.87.camel@lappy>
-	<20080129040130.7b2904b6.pj@sgi.com>
-	<1201603816.28547.94.camel@lappy>
-	<20080129051353.4628c9eb.pj@sgi.com>
-	<1201606284.28547.114.camel@lappy>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	 <1201604243.28547.101.camel@lappy>  <20080129053005.bc7a11d7.pj@sgi.com>
+Content-Type: text/plain
+Date: Tue, 29 Jan 2008 12:50:00 +0100
+Message-Id: <1201607401.28547.124.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.21.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul, responding to Peter:
-> > We now have a per-cpuset Boolean flag file called 'sched_load_balance'.
+
+On Tue, 2008-01-29 at 05:30 -0600, Paul Jackson wrote:
+> Peter wrote, in reply to Peter ;):
+> > > [ It looks to me it balances a group over the largest SD the current cpu
+> > >   has access to, even though that might be larger than the SD associated
+> > >   with the cpuset of that particular cgroup. ]
+> > 
+> > Hmm, with a bit more thought I think that does indeed DTRT. Because, if
+> > the cpu belongs to a disjoint cpuset, the highest sd (with
+> > load-balancing enabled) would be that. Right?
 > 
-> SD_LOAD_BALANCE, right?
-
-No.  SD_LOAD_BALANCE is some attribute of sched domains.
-
-The 'sched_load_balance' flag is an attribute of cpusets.
-
-The mapping of cpusets to sched domains required several pages of 'fun
-to write' code, which had to go through a couple of years of fixing and
-one major rewrite before it (knock on wood) worked correctly.  It's not
-a one-to-one relation, in other words.  See my earlier messages for
-further explanation of how this works.
-
-I'm not sure what SD_LOAD_BALANCE does ... I guess from a quick
-read that it just optimizes the recognition of singleton sched
-domains for which load balancing would be a wasted effort.
-
-
-> > This 'sched_load_balance' flag is, thus far, "the" cpuset hook
-> > supporting realtime.  One can use it to configure a system so that
-> > the kernel does not do normal load balancing on select CPUs, such
-> > as those CPUs dedicated to realtime use.
+> The code that defines sched domains, kernel/sched.c partition_sched_domains(),
+> as called from the cpuset code in kernel/cpuset.c rebuild_sched_domains(),
+> does not make use of the full range of sched_domain possibilities.
 > 
-> Ah, here I disagree, it is possible to do (hard) realtime scheduling
-> over multiple cpus, the only draw back is that it requires a very strong
-> load-balancer, making it unsuitable for large number of cpus.
+> In particular, it only sets up some non-overlapping set of sched domains.
+> Every CPU ends up in at most a single sched domain.
 
-I don't think we are disagreeing.  I was speaking of "normal"
-load balancing (what the mainline kernel/sched.c code normally
-does).  You're speaking of hard realtime load balancing.
+Ah, good to know. I thought it would reflect the hierarchy of the sets
+themselves.
 
-I think we agree that these both exist, and require different
-load balancing code, the latter 'very strong.'
+> The original reason that one can't define overlapping sched domains via
+> this cpuset interface (based off the cpuset 'sched_load_balance' flag)
+> is that I didn't realize it was even possible to overlap sched domains
+> when I wrote the cpuset code defining sched domains.  And then when I
+> later realized one could overlap sched domains, I (a) didn't see a need
+> to do so, and (b) couldn't see how to do so via the cpuset interface
+> without causing my brain to explode.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Good reason :-), this code needs all the reasons it can grasp to not
+grow more complexity.
+
+> Now, back to Peter's question, being a bit pedantic, CPUs don't belong
+> to disjoint cpusets, except in the most minimal situation that there is
+> only one cpuset covering all CPUs.
+> 
+> Rather what happens, when you have need for some realtime CPUs, is that:
+>  1) you turn off sched_load_balance on the top cpuset,
+>  2) you setup your realtime cpuset as a child cpuset of the top cpuset
+>     such that its CPUs doesn't overlap any of its siblings, and
+>  3) you turn off sched_load_balance in that realtime cpuset.
+
+Ah, I don't think 3 is needed. Quite to the contrary, there is quite a
+large body of research work covering the scheduling of (hard and soft)
+realtime tasks on multiple cpus.
+
+> At that point, sched domains are rebuilt, including providing a
+> sched domain that just contains the CPUs in that realtime cpuset, and
+> normal scheduler load balancing ceases on the CPUs in that realtime
+> cpuset.
+
+Right, which would also disable the realtime load-balancing we do want.
+Hence my suggestion to stick the rt balance data in this sched domain.
+
+> > [ Just a bit of a shame we have all cgroups represented on each cpu. ]
+> 
+> Could you restate this -- I suspect it's obvious, but I'm oblivious ;).
+
+Ah, sure. struct task_group creates cfs_rq/rt_rq entities for each cpu's
+runqueue. So an iteration like for_each_leaf_{cfs,rt}_rq() will touch
+all task_groups/cgroups, not only those that are actually schedulable on
+that cpu.
+
+Now, I think that could be easily solved by adding/removing
+{cfs,rt}_rq->leaf_{cfs,rt}_rq_list to/from rq->leaf_{cfs,rt}_rq_list on
+enqueue of the first/dequeue of the last entity of its tg on that rq.
+
+
+
