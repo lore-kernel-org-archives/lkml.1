@@ -1,99 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933426AbYA2TAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759105AbYA2TEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933426AbYA2TAc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 14:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYA2TAV
+	id S1759105AbYA2TEW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 14:04:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYA2TEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 14:00:21 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:34909 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbYA2TAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 14:00:19 -0500
-Date: Tue, 29 Jan 2008 21:00:46 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sections mismatches: How to mark new false positives?
-Message-ID: <20080129190046.GR8767@does.not.exist>
-References: <20080129170255.GP8767@does.not.exist> <20080129181305.GB14056@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080129181305.GB14056@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 29 Jan 2008 14:04:14 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:33489 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750969AbYA2TEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 14:04:13 -0500
+Date: Tue, 29 Jan 2008 13:04:03 -0600
+From: Paul Jackson <pj@sgi.com>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, dmitry.adamushko@gmail.com,
+       rostedt@goodmis.org, menage@google.com, rientjes@google.com,
+       tong.n.li@intel.com, tglx@linutronix.de, akpm@linux-foundation.org,
+       dhaval@linux.vnet.ibm.com, vatsa@linux.vnet.ibm.com, sgrubb@redhat.com,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       nickpiggin@yahoo.com.au
+Subject: Re: scheduler scalability - cgroups, cpusets and load-balancing
+Message-Id: <20080129130403.92d0a1fe.pj@sgi.com>
+In-Reply-To: <479F1A4F.BA47.005A.0@novell.com>
+References: <1201600428.28547.87.camel@lappy>
+	<1201604243.28547.101.camel@lappy>
+	<20080129053005.bc7a11d7.pj@sgi.com>
+	<1201607401.28547.124.camel@lappy>
+	<479F0507.BA47.005A.0@novell.com>
+	<20080129105104.d70f36ef.pj@sgi.com>
+	<479F1A4F.BA47.005A.0@novell.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 07:13:06PM +0100, Sam Ravnborg wrote:
-> On Tue, Jan 29, 2008 at 07:02:55PM +0200, Adrian Bunk wrote:
-> > I'm getting the following in the latest -git:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> > WARNING: arch/x86/kernel/built-in.o(.exit.text+0x1db): Section mismatch in reference from the function msr_exit() to the variable .cpuinit.data:msr_class_cpu_notifier
-> > ...
-> > 
-> > <--  snip  -->
-> > 
-> > That's obviously a false positive (unregister_hotcpu_notifier() is a 
-> > noop if CONFIG_HOTPLUG_CPU=n), but how can I silence the warning?
-> 
-> What is the purpose of __cpuinit?
-> It seems to be used for two purposes:
-> 
-> To annotate code that is used to initialize cpu's
->   if CONFIG_HOTPLUG_CPU=n then discard it after
->                                init has completed
->   if CONFIG_HOTPLUG_CPU=y then keep it
-> 
-> To annotate all 'core' cpu hotplug related code
->   if CONFIG_HOTPLUG_CPU=n then it is not used and
->                                can safely be discarded
->   if CONFIG_HOTPLUG_CPU=y then keep it
-> 
-> And the variable msr_class_cpu_notifier belongs to the last category.
-> So the root cause of all the __cpu* related section mismatch
-> warnings are the misuse of __cpuinit to mark all core functions.
-> 
-> How are we going to fix this?
-> 
-> I see a couple of possibilities:
-> 
-> 1) annotate like hell to hide the misuse of __cpuinit
-> 2) introduce __cpu to make cpu hotplug 'core' stuff
-> 3) drop section mismatch checks for __cpu stuff
+Gregory wrote:
+> IMHO it works well the way it is:  The user selects the class for a
+> particular task using sched_setscheduler(), and they select the cpuset
+> (or inherit it) that defines its execution scope.  If that scope has
+> balancing enabled, the policy for the member classes is in effect.
 
-My main point is not related to __cpu*
+Ok.
 
-E.g. look at the following warnings:
+For the various classes of schedulers (sched_class's), it's fine by me
+if sched domains are polymorphic, supporting all classes, and it is
+left to each task to self-select the scheduling class of its preference.
 
-WARNING: drivers/pci/built-in.o(.text+0xa385): Section mismatch in 
-reference from the function cpci_configure_slot() to the function 
-.devinit.text:pci_do_scan_bus()
-WARNING: drivers/pci/built-in.o(.text+0x13052): Section mismatch in 
-reference from the function cpqhp_configure_device() to the function 
-.devinit.text:pci_do_scan_bus()
-WARNING: drivers/pci/built-in.o(.text+0x1561c): Section mismatch in 
-reference from the function ibm_configure_device() to the function 
-.devinit.text:pci_do_scan_bus()
-WARNING: drivers/pci/built-in.o(.text+0x26176): Section mismatch in 
-reference from the function shpchp_configure_device() to the function 
-.devinit.text:pci_do_scan_bus()
+For the batch scheduler case, this -must- be imposable from outside
+the task, by the batch scheduler that is overseeing the job, and it
+must support the batch scheduler being able to disable all the
+balancers in selected cpusets (selected sched_domains).
 
-The code seems to be 100% correct, but how can I silence the warnings 
-without needlessly bloating the kernel in the CONFIG_HOTPLUG=n case?
+We have that now.  Each of us only knew of part of the solution,
+but we managed to arrive at the desired answer even so ... amazing.
 
-> 	Sam
+The batch scheduler just has to arrange to get 'sched_load_balance'
+turned off in a cpuset and all overlapping cpusets, and then the
+CPUS in that cpuset will not belong to -any- sched_domain, and hence
+(could you verify I'm right in this detail?) won't be balanced by any
+sched_class.
 
-cu
-Adrian
+I should update the documentation for sched_load_balance, changing it
+from saying that you get realtime by turning off sched_load_balance in
+the RT cpuset, to saying that you get realtime by (1) turning off
+sched_load_balance in any overlapping cpusets, including all
+encompassing parent cpusets, (2) leaving sched_load_balance on in the
+RT cpuset itself, and (3) having those realtime tasks each self-select
+(elect) the desired SCHED_* using sched_setscheduler().
+
+Condition (1) above is a tad difficult to understand, but servicable,
+I guess.  The combination of (1) and (2) results in a separate
+sched_domain just for the CPUs in the RT cpuset.
+
+> (on this topic, note that I do not know if the RT-balancer will
+> respect the cpuset concept of "balance-enabled" anyway.  That might
+> have to be fixed)
+
+Er eh ... it has no choice.  If the user space code has configured a
+cpuset with 'sched_load_balance' turned off in that cpuset and all
+overlapping cpusets, then there will not even be a sched_domain
+covering those CPUs, and hence no balancer, RT or other class, will
+even see those CPUs.
+
+Unless I really don't understand the kernel/sched.c sched_domain code
+(a distinct possibility), if some CPU is not in any sched_domain, then
+it won't get balanced, RT or otherwise.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
