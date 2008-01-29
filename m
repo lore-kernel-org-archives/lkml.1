@@ -1,334 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933647AbYA2QYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933154AbYA2Q1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933647AbYA2QYs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:24:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933330AbYA2QXG
+	id S933154AbYA2Q1g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbYA2Q1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:23:06 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:45697 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933329AbYA2QXD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:23:03 -0500
-Message-Id: <20080129162303.605253402@bull.net>
-References: <20080129160229.612172683@bull.net>
-User-Agent: quilt/0.46-1
-Date: Tue, 29 Jan 2008 17:02:44 +0100
-From: pierre.peiffer@bull.net
-To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: [PATCH 2.6.24-rc8-mm1 15/15] (RFC) IPC/semaphores: add write() operation to semundo file in procfs
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 29/01/2008 17:31:39,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 29/01/2008 17:31:42,
-	Serialize complete at 29/01/2008 17:31:42
-Content-Disposition: inline; filename=ipc_procfs_semundo_write.patch
+	Tue, 29 Jan 2008 11:27:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36284 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752596AbYA2Q1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 11:27:24 -0500
+Message-ID: <479F53B1.9000101@redhat.com>
+Date: Tue, 29 Jan 2008 11:26:25 -0500
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: tcamuso@redhat.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Greg KH <greg@kroah.com>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>, Loic Prylli <loic@myri.com>,
+       Adrian Bunk <bunk@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
+Subject: Re: [Patch v2] Make PCI extended config space (MMCONFIG) a driver
+ opt-in
+References: <20080114225225.GQ18741@parisc-linux.org>	<20080114230448.GL9847@does.not.exist>	<478CD8A5.5090608@myri.com>	<20080115174643.GB28238@kroah.com>	<20080115175641.GE18741@parisc-linux.org>	<20080119165809.GB11553@colo.lackof.org>	<479E1FA6.1030708@redhat.com>	<20080128204431.GA15227@kroah.com>	<20080128190505.5f5b1ccc@laptopd505.fenrus.org>	<20080129031804.GF20198@parisc-linux.org>	<20080129131955.GC10761@kroah.com>	<479F34E6.40806@redhat.com>	<20080129064724.0f7e91e5@laptopd505.fenrus.org>	<479F4321.6030106@redhat.com> <20080129072951.5c8af9a0@laptopd505.fenrus.org>
+In-Reply-To: <20080129072951.5c8af9a0@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pierre Peiffer <pierre.peiffer@bull.net>
+Arjan van de Ven wrote:
+> On Tue, 29 Jan 2008 10:15:45 -0500
+> Tony Camuso <tcamuso@redhat.com> wrote:
+> 
 
-This patch adds the write operation to the semundo file.
-This write operation allows root to add or update the semundo list and
-their values for a given process.
+>> specific to legacy x86 hardware is, IMNSHO, a kludge.
+> 
+> in addition to pci_enable(), pci_enable_msi(), pci_enable_busmaster() they already need to do
+> to enable various features?
+> 
 
-The user must provide some lines, each containing the semaphores ID
-followed by the semaphores values to undo.
+These calls are related to generic aspects of the PCI* landscape itself and are
+not related to any arch-specific hardware, nor were they devised to address
+chipset-specific or BIOS-specific problems.
 
-The operation failed if the given semaphore ID does not exist or if the
-number of values does not match the number of semaphores in the array.
+For the good of all, we should endeavor to avoid putting arch-specific fixes into
+the generic code whenever possible.
 
-Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
----
+And in this case, not only is it possible, it's been done and tested.
 
- fs/proc/base.c |    2 
- ipc/sem.c      |  232 +++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 227 insertions(+), 7 deletions(-)
-
-Index: b/fs/proc/base.c
-===================================================================
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -2256,7 +2256,7 @@ static const struct pid_entry tgid_base_
- 	INF("io",	S_IRUGO, pid_io_accounting),
- #endif
- #ifdef CONFIG_SYSVIPC
--	REG("semundo",   S_IRUGO, semundo),
-+	REG("semundo",   S_IWUSR|S_IRUGO, semundo),
- #endif
- };
- 
-Index: b/ipc/sem.c
-===================================================================
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -1580,6 +1580,9 @@ static struct seq_operations semundo_op 
- 
- /*
-  * semundo_open: open operation for /proc/<PID>/semundo file
-+ *
-+ * If the file is opened in write mode and no semundo list exists for
-+ * this target PID, it is created here.
-  */
- static int semundo_open(struct inode *inode, struct file *file)
- {
-@@ -1598,18 +1601,31 @@ static int semundo_open(struct inode *in
- 		undo_list = rcu_dereference(task->sysvsem.undo_list);
- 		if (undo_list)
- 			ret = !atomic_inc_not_zero(&undo_list->refcnt);
--		put_task_struct(task);
- 	}
- 	rcu_read_unlock();
- 
--	if (!task || ret)
-+	if (!task)
- 		return -EINVAL;
- 
--	ret = seq_open(file, &semundo_op);
-+	if (ret) {
-+		put_task_struct(task);
-+		return -EINVAL;
-+	}
-+
-+
-+	/* Create an undo_list if needed and if file is opened in write mode */
-+	if (!undo_list && (file->f_flags & O_WRONLY || file->f_flags & O_RDWR))
-+		ret = get_undo_list(task, &undo_list);
-+
-+	put_task_struct(task);
-+
- 	if (!ret) {
--		struct seq_file *m = file->private_data;
--		m->private = undo_list;
--		return 0;
-+		ret = seq_open(file, &semundo_op);
-+		if (!ret) {
-+			struct seq_file *m = file->private_data;
-+			m->private = undo_list;
-+			return 0;
-+		}
- 	}
- 
- 	if (undo_list && atomic_dec_and_test(&undo_list->refcnt))
-@@ -1617,6 +1633,209 @@ static int semundo_open(struct inode *in
- 	return ret;
- }
- 
-+/* Skip all spaces at the beginning of the buffer */
-+static inline int skip_space(const char __user **buf, size_t *len)
-+{
-+	char c = 0;
-+	while (*len) {
-+		if (get_user(c, *buf))
-+			return -EFAULT;
-+		if (c != '\t' && c != ' ')
-+			break;
-+		--*len;
-+		++*buf;
-+	}
-+	return c;
-+}
-+
-+/* Retrieve the first numerical value contained in the string.
-+ * Note: The value is supposed to be a 32-bit integer.
-+ */
-+static inline int get_next_value(const char __user **buf, size_t *len, int *val)
-+{
-+#define BUFLEN 11
-+	int err, neg = 0, left;
-+	char s[BUFLEN], *p;
-+
-+	err = skip_space(buf, len);
-+	if (err < 0)
-+		return err;
-+	if (!*len)
-+		return INT_MAX;
-+	if (err == '\n') {
-+		++*buf;
-+		--*len;
-+		return INT_MAX;
-+	}
-+	if (err == '-') {
-+		++*buf;
-+		--*len;
-+		neg = 1;
-+	}
-+
-+	left = *len;
-+	if (left > sizeof(s) - 1)
-+		left = sizeof(s) - 1;
-+	if (copy_from_user(s, *buf, left))
-+		return -EFAULT;
-+
-+	s[left] = 0;
-+	p = s;
-+	if (*p < '0' || *p > '9')
-+		return -EINVAL;
-+
-+	*val = simple_strtoul(p, &p, 0);
-+	if (neg)
-+		*val = -(*val);
-+
-+	left = p-s;
-+	(*len) -= left;
-+	(*buf) += left;
-+
-+	return 0;
-+#undef BUFLEN
-+}
-+
-+/* semundo_readline: read a line of /proc/<PID>/semundo file
-+ * Return the number of value read or an errcode
-+ */
-+static inline int semundo_readline(const char __user **buf, size_t *left,
-+				   int *id,  short *array, int array_len)
-+{
-+	int i, val, err;
-+
-+	/* Read semid */
-+	err = get_next_value(buf, left, id);
-+	if (err)
-+		return err;
-+
-+	/* Read all (semundo-) values of a full line */
-+	for (i = 0; ; i++) {
-+
-+		err = get_next_value(buf, left, &val);
-+		if (err < 0)
-+			return err;
-+		/* reach end of line or end of buffer */
-+		if (err == INT_MAX)
-+			break;
-+		/* Return an error if we get more values then expected */
-+		if (i < array_len)
-+			array[i] = val;
-+		else
-+			return -EINVAL;
-+	}
-+	return i;
-+}
-+
-+/* semundo_update: set or update the undo values of the given undo_list
-+ * for a given semaphore id.
-+ */
-+static inline int semundo_update(struct sem_undo_list *undo_list, int id,
-+				 short array[], int size)
-+{
-+	struct sem_undo *un;
-+	struct sem_array *sma;
-+	struct ipc_namespace *ns = undo_list->ns;
-+
-+retry_undo:
-+	un = find_undo(undo_list, id);
-+	if (IS_ERR(un))
-+		return PTR_ERR(un);
-+
-+	/* lookup the sem_array */
-+	sma = sem_lock(ns, id);
-+	if (IS_ERR(sma))
-+		return PTR_ERR(sma);
-+
-+	/*
-+	 * semid identifiers are not unique - find_undo may have
-+	 * allocated an undo structure, it was invalidated by an RMID
-+	 * and now a new array which received the same id.
-+	 * Check and retry.
-+	 */
-+	if (un->semid == -1) {
-+		sem_unlock(sma);
-+		goto retry_undo;
-+	}
-+
-+	/*
-+	 * If the number of values given does not match the number of
-+	 * semaphores in the array, consider this as an error.
-+	 */
-+	if (size != sma->sem_nsems) {
-+		sem_unlock(sma);
-+		return -EINVAL;
-+	}
-+
-+	/* update the undo values */
-+	while (--size >= 0)
-+		un->semadj[size] = array[size];
-+
-+	sem_unlock(sma);
-+	return 0;
-+}
-+
-+/*
-+ * write operation for /proc/<pid>/semundo file
-+ *
-+ * It allows to set or update the sem_undo list for this task, for the given
-+ * semaphore ID with the given 'undo' values.
-+ *
-+ * The expected format of the given string is
-+ * "semID <val1> <val2> ... <valN>"
-+ *
-+ * The semID must match an existing semaphore array and the number of
-+ * of values following the semID must match the number of semaphores in
-+ * the corresponding array.
-+ *
-+ * Multiple semID can be passed simultaneously, the newline ('\n') behaving as
-+ * a separator in this case.
-+ *
-+ * Note: passing a sem_undo list (all undo values of one semID) through multiple
-+ * write-calls is not allowed.
-+ */
-+static ssize_t semundo_write(struct file *file, const char __user *buf,
-+			     size_t count, loff_t *ppos)
-+{
-+	struct seq_file *m = file->private_data;
-+	short *array;
-+	int err, max_sem, id = 0;
-+	size_t left = count;
-+	struct sem_undo_list *undo_list = m->private;
-+
-+	/* The undo_list must have been retrieved or created
-+	   in semundo_open() */
-+	if (undo_list == NULL)
-+		return -EINVAL;
-+
-+	max_sem = undo_list->ns->sc_semmsl;
-+
-+	array = kmalloc(sizeof(short)*max_sem, GFP_KERNEL);
-+	if (array == NULL)
-+		return -ENOMEM;
-+
-+	while (left) {
-+		int nval;
-+
-+		/* Read a line */
-+		nval = semundo_readline(&buf, &left, &id, array, max_sem);
-+		if (nval < 0) {
-+			err = nval;
-+			goto out;
-+		}
-+
-+		/* Update the values for the given semid */
-+		err = semundo_update(undo_list, id, array, nval);
-+		if (err)
-+			goto out;
-+	}
-+	err = count - left;
-+
-+out:
-+	kfree(array);
-+	return err;
-+}
-+
- static int semundo_release(struct inode *inode, struct file *file)
- {
- 	struct seq_file *m = file->private_data;
-@@ -1631,6 +1850,7 @@ static int semundo_release(struct inode 
- const struct file_operations proc_semundo_operations = {
- 	.open		= semundo_open,
- 	.read		= seq_read,
-+	.write		= semundo_write,
- 	.llseek		= seq_lseek,
- 	.release	= semundo_release,
- };
-
--- 
-Pierre Peiffer
