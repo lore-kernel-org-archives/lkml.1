@@ -1,100 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbYA2VST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYA2VW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755733AbYA2VST (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 16:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYA2VSG
+	id S1754518AbYA2VW4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 16:22:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYA2VWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 16:18:06 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:59251
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750811AbYA2VSE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 16:18:04 -0500
-Date: Tue, 29 Jan 2008 22:17:59 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080129211759.GV7233@v2.random>
-References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com> <20080129162004.GL7233@v2.random> <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com>
+	Tue, 29 Jan 2008 16:22:48 -0500
+Received: from c60.cesmail.net ([216.154.195.49]:49142 "EHLO c60.cesmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751281AbYA2VWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Jan 2008 16:22:47 -0500
+Subject: ndiswrapper and GPL-only symbols redux
+From: Pavel Roskin <proski@gnu.org>
+To: linux-kernel@vger.kernel.org
+Cc: Jon Masters <jonathan@jonmasters.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Giridhar Pemmasani <pgiri@yahoo.com>
+Content-Type: text/plain
+Date: Tue, 29 Jan 2008 16:22:45 -0500
+Message-Id: <1201641765.18773.35.camel@dv>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 29, 2008 at 11:55:10AM -0800, Christoph Lameter wrote:
-> I am not sure. AFAICT you wrote that code.
+Hello!
 
-Actually I didn't need to change a single line in do_wp_page because
-ptep_clear_flush was already doing everything transparently for
-me. This was the memory.c part of my last patch I posted, it only
-touches zap_page_range, remap_pfn_range and apply_to_page_range.
+It have come to my attention that a patch has been committed to the
+kernel with the explicit purpose of tainting ndiswrapper - the kernel
+module allowing Windows NDIS drivers for Ethernet and Wireless cards to
+be used by the kernel.
 
-diff --git a/mm/memory.c b/mm/memory.c
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -889,6 +889,7 @@ unsigned long zap_page_range(struct vm_a
- 	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
- 	if (tlb)
- 		tlb_finish_mmu(tlb, address, end);
-+	mmu_notifier(invalidate_range, mm, address, end);
- 	return end;
- }
- 
-@@ -1317,7 +1318,7 @@ int remap_pfn_range(struct vm_area_struc
- {
- 	pgd_t *pgd;
- 	unsigned long next;
--	unsigned long end = addr + PAGE_ALIGN(size);
-+	unsigned long start = addr, end = addr + PAGE_ALIGN(size);
- 	struct mm_struct *mm = vma->vm_mm;
- 	int err;
- 
-@@ -1358,6 +1359,7 @@ int remap_pfn_range(struct vm_area_struc
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
-+	mmu_notifier(invalidate_range, mm, start, end);
- 	return err;
- }
- EXPORT_SYMBOL(remap_pfn_range);
-@@ -1441,7 +1443,7 @@ int apply_to_page_range(struct mm_struct
- {
- 	pgd_t *pgd;
- 	unsigned long next;
--	unsigned long end = addr + size;
-+	unsigned long start = addr, end = addr + size;
- 	int err;
- 
- 	BUG_ON(addr >= end);
-@@ -1452,6 +1454,7 @@ int apply_to_page_range(struct mm_struct
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
-+	mmu_notifier(invalidate_range, mm, start, end);
- 	return err;
- }
- EXPORT_SYMBOL_GPL(apply_to_page_range);
+That's the commit in question:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0aa5bd52d0c49ca56d24584c646e6544ccbb3dc9
 
-> It seems to be okay to invalidate range if you hold mmap_sem writably. In 
-> that case no additional faults can happen that would create new ptes.
+It is not the first time it has happened.  The same was done in October
+2006.  A heated discussion ensued, and the patch was reverted as
+erroneous.  For those wishing to refresh their memories, this LWN story
+would be a great starting point:
 
-In that place the mmap_sem is taken but in readonly mode. I never rely
-on the mmap_sem in the mmu notifier methods. Not invoking the notifier
-before releasing the PT lock adds quite some uncertainty on the smp
-safety of the spte invalidates, because the pte may be unmapped and
-remapped by a minor fault before invalidate_range is invoked, but I
-didn't figure out a kernel crashing race yet thanks to the pin we take
-through get_user_pages (and only thanks to it). The requirement is
-that invalidate_range is invoked after the last ptep_clear_flush or it
-leaks pins that's why I had to move it at the end.
+http://lwn.net/Articles/205644/
+
+I'd like to see this mistake to be fixed without lengthy arguments this
+time around.
+
+Just to reiterate some points from the old discussion:
+
+- ndiswrapper is licensed under GPL
+
+- ndiswrapper needs GPL-only symbols
+
+- tainting ndiswrapper denies its access to GPL-only symbols
+
+- denying ndiswrapper access to GPL-only symbols is unfair and not based
+on any copyright law
+
+- denying ndiswrapper access to GPL-only symbols makes it impossible for
+ndiswrapper to function
+
+- no copyright violation is involved, as Windows drivers are not derived
+from Linux sources
+
+- Windows drivers don't call GPL-only symbols directly; ndiswrapper
+stands in the middle and sanitizes the access
+
+- it's a fair game to taint the kernel in some way if ndiswrapper has
+been loaded at some point, since tainting per se is just an indicator
+that the kernel has been used in an unsupportable way
+
+- if this change stands, ndiswrapper will be renamed, which would only
+create more confusion and would thus defeat the purpose of tainting
+
+- ndiswrapper is used by kernel developers to create native drivers
+
+- ndiswrapper is a stepping stone towards a completely free OS; take it
+away and see less users, less testers and less reverse engineering
+efforts
+
+-- 
+Regards,
+Pavel Roskin
