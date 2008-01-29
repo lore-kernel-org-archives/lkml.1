@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933835AbYA2Stu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933425AbYA2Suw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933835AbYA2Stu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 13:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYA2Stk
+	id S933425AbYA2Suw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 13:50:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYA2Sum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 13:49:40 -0500
-Received: from avexch1.qlogic.com ([198.70.193.115]:43662 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753418AbYA2Stj (ORCPT
+	Tue, 29 Jan 2008 13:50:42 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59739 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752174AbYA2Suk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 13:49:39 -0500
-Date: Tue, 29 Jan 2008 10:49:29 -0800
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mike.miller@hp.com, k-ueda@ct.jp.nec.com, j-nomura@ce.jp.nec.com
-Subject: Re: kernel BUG at drivers/block/cciss.c:1260! (with recent
-	linux-2.6  tree)
-Message-ID: <20080129184929.GN12400@plap3.qlogic.org>
-References: <20080129175426.GJ12400@plap3.qlogic.org> <20080129180242.GZ15220@kernel.dk> <20080129180537.GA15220@kernel.dk> <20080129182217.GK12400@plap3.qlogic.org> <20080129182833.GG15220@kernel.dk> <20080129183705.GL12400@plap3.qlogic.org> <20080129184442.GK15220@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080129184442.GK15220@kernel.dk>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 29 Jan 2008 18:49:39.0350 (UTC) FILETIME=[B3ABCB60:01C862A7]
+	Tue, 29 Jan 2008 13:50:40 -0500
+Date: Tue, 29 Jan 2008 18:46:13 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: Richard Heck <rgheck@bobjweil.com>, Gene Heskett <gene.heskett@gmail.com>,
+       Zan Lynx <zlynx@acm.org>, Calvin Walton <calvin.walton@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ide Mailing list <linux-ide@vger.kernel.org>
+Subject: Re: Problem with ata layer in 2.6.24
+Message-ID: <20080129184613.16846ae5@core>
+In-Reply-To: <alpine.LNX.1.00.0801291202550.13593@iabervon.org>
+References: <200801272122.21823.gene.heskett@gmail.com>
+	<1201539043.31293.7.camel@zem>
+	<1201540830.6526.19.camel@localhost>
+	<200801281230.32910.gene.heskett@gmail.com>
+	<alpine.LNX.1.00.0801281248190.13593@iabervon.org>
+	<479E1D9E.3000900@bobjweil.com>
+	<20080129121201.2f727f5f@core>
+	<alpine.LNX.1.00.0801291202550.13593@iabervon.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Jan 2008, Jens Axboe wrote:
+> The SCSI error reporting really ought to include a simple interpretation 
+> of the error for end users ("The drive doesn't support this command" "A 
+> sector's data got lost" "The drive timed out" "The drive failed" "The 
+> drive is entirely gone"). There's too much similarity between the message 
+> you get when you try a SMART test that doesn't apply to the drive and what 
+> you get when the drive is broken.
 
-> On Tue, Jan 29 2008, Andrew Vasquez wrote:
-> > On Tue, 29 Jan 2008, Jens Axboe wrote:
-> > 
-> > > > Here the final snippet that was logged:
-> > > > 
-> > > > [   12.724997] input: USB HID v1.01 Mouse [HP Virtual Keyboard] on usb-0000:01:04.4-1
-> > > > [   12.728971] usbcore: registered new interface driver usbhid
-> > > > [   12.732866] drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
-> > > > [   12.741172] TCP cubic registered
-> > > > [   12.744506] NET: Registered protocol family 1
-> > > > [   12.744884] NET: Registered protocol family 17
-> > > > [   12.749217] Freeing unused kernel memory: 228k freed
-> > > > [   12.885823] cciss rq: dev cciss/c0d0: type=2, flags=104c8
-> > > > [   12.888929] 
-> > > > [   12.888930] sector 6510615555426900570, nr/cnr 0/0
-> > > > [   12.892895] bio ffff81042f130730, biotail ffff81042f130730, buffer 0000000000000000, data 0000000000000000, len 0
-> > > > [   12.896895] cdb: 12 00 00 00 fe 00 00 00 00 00 00 00 00 00 00 00 
-> > > 
-> > > Ah ok, I see the problem... cciss is overriding the data_len for
-> > > BLOCK_PC requests, hence it does not complete them properly. Hmm. Does
-> > > this work?
-> > > 
-> > > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-> > > index ef50068..b6fa52e 100644
-> > > --- a/drivers/block/cciss.c
-> > > +++ b/drivers/block/cciss.c
-> > > @@ -2524,7 +2524,6 @@ after_error_processing:
-> > >  		resend_cciss_cmd(h, cmd);
-> > >  		return;
-> > >  	}
-> > > -	cmd->rq->data_len = 0;
-> > >  	cmd->rq->completion_data = cmd;
-> > >  	blk_complete_request(cmd->rq);
-> > >  }
-> > 
-> > 
-> > Things look good so far -- with the patch above I can finally boot the
-> > machine.
-> 
-> Cool, sorry about that. Will get that applied asap. So after this patch
-> was applied, you didn't see any debug messages from blk_dump_rq_flags()
-> anymore, right?
+That would be the SCSI verbose messages option. I think the Eric
+Youngdale consortium added it about Linux 1.2. Nowdays its always built
+that way.
 
-That's correct.  I've yet to see any additional debug-messages from
-blk_dump_rq_flags().
+> And it's possible that the error recovery is suboptimal in some cases. It 
+> seems to like resetting drives too much; perhaps if it keeps seeing the 
+> same problem and resetting the drive, it should decide that the drive's 
+> error reporting is just bad and just ignore that error like the old IDE 
+> did (but, in this case, after saying what it's doing).
 
---
-av
+Nothing like casually praying the users data hasn't gone for a walk is
+there. If we don't act on them the users don't report them until
+something really bad occurs so that isn't an option.
+
+Alan
