@@ -1,441 +1,364 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933209AbYA2QUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933301AbYA2QVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933209AbYA2QUe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Jan 2008 11:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933088AbYA2QTo
+	id S933301AbYA2QVA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Jan 2008 11:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932644AbYA2QUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Jan 2008 11:19:44 -0500
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:51599 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932746AbYA2QTm (ORCPT
+	Tue, 29 Jan 2008 11:20:01 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:44946 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933170AbYA2QT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Jan 2008 11:19:42 -0500
-Date: Tue, 29 Jan 2008 11:18:12 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       john stultz <johnstul@us.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH] add support for dynamic ticks and preempt rcu
-Message-ID: <Pine.LNX.4.58.0801291113350.20371@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 29 Jan 2008 11:19:58 -0500
+Message-Id: <20080129162000.454857358@bull.net>
+References: <20080129160229.612172683@bull.net>
+User-Agent: quilt/0.46-1
+Date: Tue, 29 Jan 2008 17:02:38 +0100
+From: pierre.peiffer@bull.net
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: [PATCH 2.6.24-rc8-mm1 09/15] (RFC) IPC: new kernel API to change an ID
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 29/01/2008 17:28:36,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 29/01/2008 17:28:38,
+	Serialize complete at 29/01/2008 17:28:38
+Content-Disposition: inline; filename=ipc_chid.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Pierre Peiffer <pierre.peiffer@bull.net>
 
-[
- Paul, you had your Signed-off-by in the RT patch, so I attached it here
-  too
-]
+This patch provides three new API to change the ID of an existing
+System V IPCs.
 
-The PREEMPT-RCU can get stuck if a CPU goes idle and NO_HZ is set. The
-idle CPU will not progress the RCU through its grace period and a
-synchronize_rcu my get stuck. Without this patch I have a box that will
-not boot when PREEMPT_RCU and NO_HZ are set. That same box boots fine with
-this patch.
+These APIs are:
+	long msg_chid(struct ipc_namespace *ns, int id, int newid);
+	long sem_chid(struct ipc_namespace *ns, int id, int newid);
+	long shm_chid(struct ipc_namespace *ns, int id, int newid);
 
-Note: This patch came directly from the -rt patch where it has been tested
-for several months.
+They return 0 or an error code in case of failure.
 
+They may be useful for setting a specific ID for an IPC when preparing
+a restart operation.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+To be successful, the following rules must be respected:
+- the IPC exists (of course...)
+- the new ID must satisfy the ID computation rule.
+- the entry in the idr corresponding to the new ID must be free.
+
+Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 ---
- include/linux/hardirq.h    |   10 ++
- include/linux/rcuclassic.h |    3
- include/linux/rcupreempt.h |   22 ++++
- kernel/rcupreempt.c        |  224 ++++++++++++++++++++++++++++++++++++++++++++-
- kernel/softirq.c           |    1
- kernel/time/tick-sched.c   |    3
- 6 files changed, 259 insertions(+), 4 deletions(-)
 
-Index: linux-compile.git/kernel/rcupreempt.c
+ include/linux/msg.h |    2 ++
+ include/linux/sem.h |    2 ++
+ include/linux/shm.h |    3 +++
+ ipc/msg.c           |   45 +++++++++++++++++++++++++++++++++++++++++++++
+ ipc/sem.c           |   51 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ ipc/shm.c           |   45 +++++++++++++++++++++++++++++++++++++++++++++
+ ipc/util.c          |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
+ ipc/util.h          |    1 +
+ 8 files changed, 197 insertions(+)
+
+Index: b/include/linux/msg.h
 ===================================================================
---- linux-compile.git.orig/kernel/rcupreempt.c	2008-01-29 11:03:21.000000000 -0500
-+++ linux-compile.git/kernel/rcupreempt.c	2008-01-29 11:10:08.000000000 -0500
-@@ -23,6 +23,10 @@
-  *		to Suparna Bhattacharya for pushing me completely away
-  *		from atomic instructions on the read side.
-  *
-+ *  - Added handling of Dynamic Ticks
-+ *      Copyright 2007 - Paul E. Mckenney <paulmck@us.ibm.com>
-+ *                     - Steven Rostedt <srostedt@redhat.com>
-+ *
-  * Papers:  http://www.rdrop.com/users/paulmck/RCU
-  *
-  * Design Document: http://lwn.net/Articles/253651/
-@@ -409,6 +413,212 @@ static void __rcu_advance_callbacks(stru
- 	}
- }
-
-+#ifdef CONFIG_NO_HZ
+--- a/include/linux/msg.h
++++ b/include/linux/msg.h
+@@ -63,6 +63,7 @@ struct msginfo {
+ 
+ #ifdef __KERNEL__
+ #include <linux/list.h>
++#include <linux/ipc_namespace.h>
+ 
+ /* one msg_msg structure for each message */
+ struct msg_msg {
+@@ -96,6 +97,7 @@ extern long do_msgsnd(int msqid, long mt
+ 			size_t msgsz, int msgflg);
+ extern long do_msgrcv(int msqid, long *pmtype, void __user *mtext,
+ 			size_t msgsz, long msgtyp, int msgflg);
++long msg_chid(struct ipc_namespace *ns, int id, int newid);
+ 
+ #endif /* __KERNEL__ */
+ 
+Index: b/include/linux/sem.h
+===================================================================
+--- a/include/linux/sem.h
++++ b/include/linux/sem.h
+@@ -138,9 +138,11 @@ struct sysv_sem {
+ };
+ 
+ #ifdef CONFIG_SYSVIPC
++#include <linux/ipc_namespace.h>
+ 
+ extern int copy_semundo(unsigned long clone_flags, struct task_struct *tsk);
+ extern void exit_sem(struct task_struct *tsk);
++long sem_chid(struct ipc_namespace *ns, int id, int newid);
+ 
+ #else
+ static inline int copy_semundo(unsigned long clone_flags, struct task_struct *tsk)
+Index: b/include/linux/shm.h
+===================================================================
+--- a/include/linux/shm.h
++++ b/include/linux/shm.h
+@@ -104,8 +104,11 @@ struct shmid_kernel /* private to the ke
+ #define SHM_NORESERVE   010000  /* don't check for reservations */
+ 
+ #ifdef CONFIG_SYSVIPC
++#include <linux/ipc_namespace.h>
 +
-+DEFINE_PER_CPU(long, dynticks_progress_counter) = 1;
-+static DEFINE_PER_CPU(long, rcu_dyntick_snapshot);
-+static DEFINE_PER_CPU(int, rcu_update_flag);
+ long do_shmat(int shmid, char __user *shmaddr, int shmflg, unsigned long *addr);
+ extern int is_file_shm_hugepages(struct file *file);
++long shm_chid(struct ipc_namespace *ns, int id, int newid);
+ #else
+ static inline long do_shmat(int shmid, char __user *shmaddr,
+ 				int shmflg, unsigned long *addr)
+Index: b/ipc/msg.c
+===================================================================
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -291,6 +291,51 @@ asmlinkage long sys_msgget(key_t key, in
+ 	return ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params);
+ }
+ 
++/* must be called with mutex and msq locks held */
++static long msg_chid_nolock(struct ipc_namespace *ns, struct msg_queue *msq,
++			    int newid)
++{
++	long err;
++
++	err = ipc_chid(&msg_ids(ns), msq->q_perm.id, newid);
++	if (!err)
++		msq->q_ctime = get_seconds();
++
++	return err;
++}
++
++/* API to use for changing an id from kernel space, not from the syscall, as
++   there is no permission check done here */
++long msg_chid(struct ipc_namespace *ns, int id, int newid)
++{
++	long err;
++	struct msg_queue *msq;
++
++retry:
++	err = idr_pre_get(&msg_ids(ns).ipcs_idr, GFP_KERNEL);
++	if (!err)
++		return -ENOMEM;
++
++	down_write(&msg_ids(ns).rw_mutex);
++	msq = msg_lock_check(ns, id);
++
++	if (IS_ERR(msq)) {
++		up_write(&msg_ids(ns).rw_mutex);
++		return PTR_ERR(msq);
++	}
++
++	err = msg_chid_nolock(ns, msq, newid);
++
++	msg_unlock(msq);
++	up_write(&msg_ids(ns).rw_mutex);
++
++	/* ipc_chid may return -EAGAIN in case of memory requirement */
++	if (err == -EAGAIN)
++		goto retry;
++
++	return err;
++}
++
+ static inline unsigned long
+ copy_msqid_to_user(void __user *buf, struct msqid64_ds *in, int version)
+ {
+Index: b/ipc/sem.c
+===================================================================
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -564,6 +564,57 @@ static void freeary(struct ipc_namespace
+ 	ipc_rcu_putref(sma);
+ }
+ 
++/* must be called with rw_mutex and sma locks held */
++static long sem_chid_nolock(struct ipc_namespace *ns, struct sem_array *sma,
++			    int newid)
++{
++	long err;
++
++	err = ipc_chid(&sem_ids(ns), sma->sem_perm.id, newid);
++
++	if (!err) {
++		struct sem_undo *un;
++		for (un = sma->undo; un; un = un->id_next)
++			un->semid = newid;
++
++		sma->sem_ctime = get_seconds();
++	}
++
++	return err;
++}
++
++/* API to use for changing an id from kernel space, not from the syscall, as
++   there is no permission check done here */
++long sem_chid(struct ipc_namespace *ns, int id, int newid)
++{
++	long err;
++	struct sem_array *sma;
++
++retry:
++	err = idr_pre_get(&sem_ids(ns).ipcs_idr, GFP_KERNEL);
++	if (!err)
++		return -ENOMEM;
++
++	down_write(&sem_ids(ns).rw_mutex);
++	sma = sem_lock_check(ns, id);
++
++	if (IS_ERR(sma)) {
++		up_write(&sem_ids(ns).rw_mutex);
++		return PTR_ERR(sma);
++	}
++
++	err = sem_chid_nolock(ns, sma, newid);
++
++	sem_unlock(sma);
++	up_write(&sem_ids(ns).rw_mutex);
++
++	/* ipc_chid may return -EAGAIN in case of memory requirement */
++	if (err == -EAGAIN)
++		goto retry;
++
++	return err;
++}
++
+ static unsigned long copy_semid_to_user(void __user *buf, struct semid64_ds *in, int version)
+ {
+ 	switch(version) {
+Index: b/ipc/shm.c
+===================================================================
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -162,7 +162,52 @@ static inline int shm_addid(struct ipc_n
+ 	return ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni);
+ }
+ 
++/* must be called with mutex and shp locks held */
++static long shm_chid_nolock(struct ipc_namespace *ns, struct shmid_kernel *shp,
++			    int newid)
++{
++	long err;
++
++	err = ipc_chid(&shm_ids(ns), shp->shm_perm.id, newid);
++	if (!err) {
++		shp->shm_file->f_dentry->d_inode->i_ino = newid;
++		shp->shm_ctim = get_seconds();
++	}
++
++	return err;
++}
++
++/* API to use for changing an id from kernel space, not from the syscall, as
++   there is no permission check done here */
++long shm_chid(struct ipc_namespace *ns, int id, int newid)
++{
++	long err;
++	struct shmid_kernel *shp;
++
++retry:
++	err = idr_pre_get(&shm_ids(ns).ipcs_idr, GFP_KERNEL);
++	if (!err)
++		return -ENOMEM;
++
++	down_write(&shm_ids(ns).rw_mutex);
++	shp = shm_lock_check(ns, id);
++
++	if (IS_ERR(shp)) {
++		up_write(&shm_ids(ns).rw_mutex);
++		return PTR_ERR(shp);
++	}
++
++	err = shm_chid_nolock(ns, shp, newid);
+ 
++	shm_unlock(shp);
++	up_write(&shm_ids(ns).rw_mutex);
++
++	/* ipc_chid may return -EAGAIN in case of memory requirement */
++	if (err == -EAGAIN)
++			goto retry;
++
++	return err;
++}
+ 
+ /* This is called by fork, once for every shm attach. */
+ static void shm_open(struct vm_area_struct *vma)
+Index: b/ipc/util.c
+===================================================================
+--- a/ipc/util.c
++++ b/ipc/util.c
+@@ -363,6 +363,54 @@ retry:
+ 
+ 
+ /**
++ *	ipc_chid 	-	change an IPC identifier
++ *	@ids: IPC identifier set
++ *	@oldid: ID of the IPC permission set to move
++ *	@newid: new ID of the IPC permission set to move
++ *
++ *	Move an entry in the IPC idr from the 'oldid' place to the
++ *      'newid' place. The seq number of the entry is updated to match the
++ *      'newid' value.
++ *
++ *	Called with the ipc lock and ipc_ids.rw_mutex held.
++ */
++int ipc_chid(struct ipc_ids *ids, int oldid, int newid)
++{
++	struct kern_ipc_perm *p;
++	int old_lid = oldid % SEQ_MULTIPLIER;
++	int new_lid = newid % SEQ_MULTIPLIER;
++
++	if (newid !=  (new_lid + (newid/SEQ_MULTIPLIER)*SEQ_MULTIPLIER))
++		return -EINVAL;
++
++	p = idr_find(&ids->ipcs_idr, old_lid);
++
++	if (!p)
++		return -EINVAL;
++
++	/* The idx in the idr may be the same but not the seq number. */
++	if (new_lid != old_lid) {
++		int id, err;
++
++		err = idr_get_new_above(&ids->ipcs_idr, p, new_lid, &id);
++		if (err)
++			return err;
++
++		/* do we get our wished id ? */
++		if (id == new_lid) {
++			idr_remove(&ids->ipcs_idr, old_lid);
++		} else {
++			idr_remove(&ids->ipcs_idr, id);
++			return -EBUSY;
++		}
++	}
++
++	p->id = newid;
++	p->seq = newid/SEQ_MULTIPLIER;
++	return 0;
++}
 +
 +/**
-+ * rcu_irq_enter - Called from Hard irq handlers and NMI/SMI.
-+ *
-+ * If the CPU was idle with dynamic ticks active, this updates the
-+ * dynticks_progress_counter to let the RCU handling know that the
-+ * CPU is active.
-+ */
-+void rcu_irq_enter(void)
-+{
-+	int cpu = smp_processor_id();
-+
-+	if (per_cpu(rcu_update_flag, cpu))
-+		per_cpu(rcu_update_flag, cpu)++;
-+
-+	/*
-+	 * Only update if we are coming from a stopped ticks mode
-+	 * (dynticks_progress_counter is even).
-+	 */
-+	if (!in_interrupt() &&
-+	    (per_cpu(dynticks_progress_counter, cpu) & 0x1) == 0) {
-+		/*
-+		 * The following might seem like we could have a race
-+		 * with NMI/SMIs. But this really isn't a problem.
-+		 * Here we do a read/modify/write, and the race happens
-+		 * when an NMI/SMI comes in after the read and before
-+		 * the write. But NMI/SMIs will increment this counter
-+		 * twice before returning, so the zero bit will not
-+		 * be corrupted by the NMI/SMI which is the most important
-+		 * part.
-+		 *
-+		 * The only thing is that we would bring back the counter
-+		 * to a postion that it was in during the NMI/SMI.
-+		 * But the zero bit would be set, so the rest of the
-+		 * counter would again be ignored.
-+		 *
-+		 * On return from the IRQ, the counter may have the zero
-+		 * bit be 0 and the counter the same as the return from
-+		 * the NMI/SMI. If the state machine was so unlucky to
-+		 * see that, it still doesn't matter, since all
-+		 * RCU read-side critical sections on this CPU would
-+		 * have already completed.
-+		 */
-+		per_cpu(dynticks_progress_counter, cpu)++;
-+		/*
-+		 * The following memory barrier ensures that any
-+		 * rcu_read_lock() primitives in the irq handler
-+		 * are seen by other CPUs to follow the above
-+		 * increment to dynticks_progress_counter. This is
-+		 * required in order for other CPUs to correctly
-+		 * determine when it is safe to advance the RCU
-+		 * grace-period state machine.
-+		 */
-+		smp_mb(); /* see above block comment. */
-+		/*
-+		 * Since we can't determine the dynamic tick mode from
-+		 * the dynticks_progress_counter after this routine,
-+		 * we use a second flag to acknowledge that we came
-+		 * from an idle state with ticks stopped.
-+		 */
-+		per_cpu(rcu_update_flag, cpu)++;
-+		/*
-+		 * If we take an NMI/SMI now, they will also increment
-+		 * the rcu_update_flag, and will not update the
-+		 * dynticks_progress_counter on exit. That is for
-+		 * this IRQ to do.
-+		 */
-+	}
-+}
-+
-+/**
-+ * rcu_irq_exit - Called from exiting Hard irq context.
-+ *
-+ * If the CPU was idle with dynamic ticks active, update the
-+ * dynticks_progress_counter to put let the RCU handling be
-+ * aware that the CPU is going back to idle with no ticks.
-+ */
-+void rcu_irq_exit(void)
-+{
-+	int cpu = smp_processor_id();
-+
-+	/*
-+	 * rcu_update_flag is set if we interrupted the CPU
-+	 * when it was idle with ticks stopped.
-+	 * Once this occurs, we keep track of interrupt nesting
-+	 * because a NMI/SMI could also come in, and we still
-+	 * only want the IRQ that started the increment of the
-+	 * dynticks_progress_counter to be the one that modifies
-+	 * it on exit.
-+	 */
-+	if (per_cpu(rcu_update_flag, cpu)) {
-+		if (--per_cpu(rcu_update_flag, cpu))
-+			return;
-+
-+		/* This must match the interrupt nesting */
-+		WARN_ON(in_interrupt());
-+
-+		/*
-+		 * If an NMI/SMI happens now we are still
-+		 * protected by the dynticks_progress_counter being odd.
-+		 */
-+
-+		/*
-+		 * The following memory barrier ensures that any
-+		 * rcu_read_unlock() primitives in the irq handler
-+		 * are seen by other CPUs to preceed the following
-+		 * increment to dynticks_progress_counter. This
-+		 * is required in order for other CPUs to determine
-+		 * when it is safe to advance the RCU grace-period
-+		 * state machine.
-+		 */
-+		smp_mb(); /* see above block comment. */
-+		per_cpu(dynticks_progress_counter, cpu)++;
-+		WARN_ON(per_cpu(dynticks_progress_counter, cpu) & 0x1);
-+	}
-+}
-+
-+static void dyntick_save_progress_counter(int cpu)
-+{
-+	per_cpu(rcu_dyntick_snapshot, cpu) =
-+		per_cpu(dynticks_progress_counter, cpu);
-+}
-+
-+static inline int
-+rcu_try_flip_waitack_needed(int cpu)
-+{
-+	long curr;
-+	long snap;
-+
-+	curr = per_cpu(dynticks_progress_counter, cpu);
-+	snap = per_cpu(rcu_dyntick_snapshot, cpu);
-+	smp_mb(); /* force ordering with cpu entering/leaving dynticks. */
-+
-+	/*
-+	 * If the CPU remained in dynticks mode for the entire time
-+	 * and didn't take any interrupts, NMIs, SMIs, or whatever,
-+	 * then it cannot be in the middle of an rcu_read_lock(), so
-+	 * the next rcu_read_lock() it executes must use the new value
-+	 * of the counter.  So we can safely pretend that this CPU
-+	 * already acknowledged the counter.
-+	 */
-+
-+	if ((curr == snap) && ((curr & 0x1) == 0))
-+		return 0;
-+
-+	/*
-+	 * If the CPU passed through or entered a dynticks idle phase with
-+	 * no active irq handlers, then, as above, we can safely pretend
-+	 * that this CPU already acknowledged the counter.
-+	 */
-+
-+	if ((curr - snap) > 2 || (snap & 0x1) == 0)
-+		return 0;
-+
-+	/* We need this CPU to explicitly acknowledge the counter flip. */
-+
-+	return 1;
-+}
-+
-+static inline int
-+rcu_try_flip_waitmb_needed(int cpu)
-+{
-+	long curr;
-+	long snap;
-+
-+	curr = per_cpu(dynticks_progress_counter, cpu);
-+	snap = per_cpu(rcu_dyntick_snapshot, cpu);
-+	smp_mb(); /* force ordering with cpu entering/leaving dynticks. */
-+
-+	/*
-+	 * If the CPU remained in dynticks mode for the entire time
-+	 * and didn't take any interrupts, NMIs, SMIs, or whatever,
-+	 * then it cannot have executed an RCU read-side critical section
-+	 * during that time, so there is no need for it to execute a
-+	 * memory barrier.
-+	 */
-+
-+	if ((curr == snap) && ((curr & 0x1) == 0))
-+		return 0;
-+
-+	/*
-+	 * If the CPU either entered or exited an outermost interrupt,
-+	 * SMI, NMI, or whatever handler, then we know that it executed
-+	 * a memory barrier when doing so.  So we don't need another one.
-+	 */
-+	if (curr != snap)
-+		return 0;
-+
-+	/* We need the CPU to execute a memory barrier. */
-+
-+	return 1;
-+}
-+
-+#else /* !CONFIG_NO_HZ */
-+
-+# define dyntick_save_progress_counter(cpu)	do { } while (0)
-+# define rcu_try_flip_waitack_needed(cpu)	(1)
-+# define rcu_try_flip_waitmb_needed(cpu)	(1)
-+
-+#endif /* CONFIG_NO_HZ */
-+
- /*
-  * Get here when RCU is idle.  Decide whether we need to
-  * move out of idle state, and return non-zero if so.
-@@ -447,8 +657,10 @@ rcu_try_flip_idle(void)
-
- 	/* Now ask each CPU for acknowledgement of the flip. */
-
--	for_each_cpu_mask(cpu, rcu_cpu_online_map)
-+	for_each_cpu_mask(cpu, rcu_cpu_online_map) {
- 		per_cpu(rcu_flip_flag, cpu) = rcu_flipped;
-+		dyntick_save_progress_counter(cpu);
-+	}
-
- 	return 1;
- }
-@@ -464,7 +676,8 @@ rcu_try_flip_waitack(void)
-
- 	RCU_TRACE_ME(rcupreempt_trace_try_flip_a1);
- 	for_each_cpu_mask(cpu, rcu_cpu_online_map)
--		if (per_cpu(rcu_flip_flag, cpu) != rcu_flip_seen) {
-+		if (rcu_try_flip_waitack_needed(cpu) &&
-+		    per_cpu(rcu_flip_flag, cpu) != rcu_flip_seen) {
- 			RCU_TRACE_ME(rcupreempt_trace_try_flip_ae1);
- 			return 0;
- 		}
-@@ -509,8 +722,10 @@ rcu_try_flip_waitzero(void)
- 	smp_mb();  /*  ^^^^^^^^^^^^ */
-
- 	/* Call for a memory barrier from each CPU. */
--	for_each_cpu_mask(cpu, rcu_cpu_online_map)
-+	for_each_cpu_mask(cpu, rcu_cpu_online_map) {
- 		per_cpu(rcu_mb_flag, cpu) = rcu_mb_needed;
-+		dyntick_save_progress_counter(cpu);
-+	}
-
- 	RCU_TRACE_ME(rcupreempt_trace_try_flip_z2);
- 	return 1;
-@@ -528,7 +743,8 @@ rcu_try_flip_waitmb(void)
-
- 	RCU_TRACE_ME(rcupreempt_trace_try_flip_m1);
- 	for_each_cpu_mask(cpu, rcu_cpu_online_map)
--		if (per_cpu(rcu_mb_flag, cpu) != rcu_mb_done) {
-+		if (rcu_try_flip_waitmb_needed(cpu) &&
-+		    per_cpu(rcu_mb_flag, cpu) != rcu_mb_done) {
- 			RCU_TRACE_ME(rcupreempt_trace_try_flip_me1);
- 			return 0;
- 		}
-Index: linux-compile.git/include/linux/hardirq.h
+  *	ipc_rmid	-	remove an IPC identifier
+  *	@ids: IPC identifier set
+  *	@ipcp: ipc perm structure containing the identifier to remove
+Index: b/ipc/util.h
 ===================================================================
---- linux-compile.git.orig/include/linux/hardirq.h	2008-01-29 11:03:15.000000000 -0500
-+++ linux-compile.git/include/linux/hardirq.h	2008-01-29 11:04:55.000000000 -0500
-@@ -109,6 +109,14 @@ static inline void account_system_vtime(
- }
- #endif
+--- a/ipc/util.h
++++ b/ipc/util.h
+@@ -85,6 +85,7 @@ int ipc_get_maxid(struct ipc_ids *);
+ void ipc_rmid(struct ipc_ids *, struct kern_ipc_perm *);
+ 
+ /* must be called with ipcp locked */
++int ipc_chid(struct ipc_ids *ids, int oldid, int newid);
+ int ipcperms(struct kern_ipc_perm *ipcp, short flg);
+ 
+ /* for rare, potentially huge allocations.
 
-+#if defined(CONFIG_PREEMPT_RCU) && defined(CONFIG_NO_HZ)
-+extern void rcu_irq_enter(void);
-+extern void rcu_irq_exit(void);
-+#else
-+# define rcu_irq_enter() do { } while (0)
-+# define rcu_irq_exit() do { } while (0)
-+#endif /* CONFIG_PREEMPT_RCU */
-+
- /*
-  * It is safe to do non-atomic ops on ->hardirq_context,
-  * because NMI handlers may not preempt and the ops are
-@@ -117,6 +125,7 @@ static inline void account_system_vtime(
-  */
- #define __irq_enter()					\
- 	do {						\
-+		rcu_irq_enter();			\
- 		account_system_vtime(current);		\
- 		add_preempt_count(HARDIRQ_OFFSET);	\
- 		trace_hardirq_enter();			\
-@@ -135,6 +144,7 @@ extern void irq_enter(void);
- 		trace_hardirq_exit();			\
- 		account_system_vtime(current);		\
- 		sub_preempt_count(HARDIRQ_OFFSET);	\
-+		rcu_irq_exit();				\
- 	} while (0)
-
- /*
-Index: linux-compile.git/include/linux/rcuclassic.h
-===================================================================
---- linux-compile.git.orig/include/linux/rcuclassic.h	2008-01-29 11:03:15.000000000 -0500
-+++ linux-compile.git/include/linux/rcuclassic.h	2008-01-29 11:04:55.000000000 -0500
-@@ -160,5 +160,8 @@ extern void rcu_restart_cpu(int cpu);
- extern long rcu_batches_completed(void);
- extern long rcu_batches_completed_bh(void);
-
-+#define rcu_enter_nohz()	do { } while (0)
-+#define rcu_exit_nohz()		do { } while (0)
-+
- #endif /* __KERNEL__ */
- #endif /* __LINUX_RCUCLASSIC_H */
-Index: linux-compile.git/include/linux/rcupreempt.h
-===================================================================
---- linux-compile.git.orig/include/linux/rcupreempt.h	2008-01-29 11:03:15.000000000 -0500
-+++ linux-compile.git/include/linux/rcupreempt.h	2008-01-29 11:04:55.000000000 -0500
-@@ -82,5 +82,27 @@ extern struct rcupreempt_trace *rcupreem
-
- struct softirq_action;
-
-+#ifdef CONFIG_NO_HZ
-+DECLARE_PER_CPU(long, dynticks_progress_counter);
-+
-+static inline void rcu_enter_nohz(void)
-+{
-+	__get_cpu_var(dynticks_progress_counter)++;
-+	WARN_ON(__get_cpu_var(dynticks_progress_counter) & 0x1);
-+	mb();
-+}
-+
-+static inline void rcu_exit_nohz(void)
-+{
-+	mb();
-+	__get_cpu_var(dynticks_progress_counter)++;
-+	WARN_ON(!(__get_cpu_var(dynticks_progress_counter) & 0x1));
-+}
-+
-+#else /* CONFIG_NO_HZ */
-+#define rcu_enter_nohz()	do { } while (0)
-+#define rcu_exit_nohz()		do { } while (0)
-+#endif /* CONFIG_NO_HZ */
-+
- #endif /* __KERNEL__ */
- #endif /* __LINUX_RCUPREEMPT_H */
-Index: linux-compile.git/kernel/softirq.c
-===================================================================
---- linux-compile.git.orig/kernel/softirq.c	2008-01-29 11:03:15.000000000 -0500
-+++ linux-compile.git/kernel/softirq.c	2008-01-29 11:04:55.000000000 -0500
-@@ -306,6 +306,7 @@ void irq_exit(void)
- 	/* Make sure that timer wheel updates are propagated */
- 	if (!in_interrupt() && idle_cpu(smp_processor_id()) && !need_resched())
- 		tick_nohz_stop_sched_tick();
-+	rcu_irq_exit();
- #endif
- 	preempt_enable_no_resched();
- }
-Index: linux-compile.git/kernel/time/tick-sched.c
-===================================================================
---- linux-compile.git.orig/kernel/time/tick-sched.c	2008-01-29 11:03:15.000000000 -0500
-+++ linux-compile.git/kernel/time/tick-sched.c	2008-01-29 11:04:55.000000000 -0500
-@@ -254,6 +254,7 @@ void tick_nohz_stop_sched_tick(void)
- 			ts->idle_tick = ts->sched_timer.expires;
- 			ts->tick_stopped = 1;
- 			ts->idle_jiffies = last_jiffies;
-+			rcu_enter_nohz();
- 		}
-
- 		/*
-@@ -342,6 +343,8 @@ void tick_nohz_restart_sched_tick(void)
- 	if (!ts->tick_stopped)
- 		return;
-
-+	rcu_exit_nohz();
-+
- 	/* Update jiffies first */
- 	now = ktime_get();
-
-
+-- 
+Pierre Peiffer
