@@ -1,54 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbYA3WUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbYA3WZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbYA3WUp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 17:20:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbYA3WUh
+	id S1755948AbYA3WZg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 17:25:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbYA3WZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 17:20:37 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57161 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751386AbYA3WUh (ORCPT
+	Wed, 30 Jan 2008 17:25:25 -0500
+Received: from trinity.phys.uwm.edu ([129.89.57.159]:60763 "EHLO
+	trinity.phys.uwm.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750969AbYA3WZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 17:20:37 -0500
-Date: Wed, 30 Jan 2008 16:20:35 -0600
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Jack Steiner <steiner@sgi.com>, Andrea Arcangeli <andrea@qumranet.com>,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, daniel.blueman@quadrics.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 1/6] mmu_notifier: Core code
-Message-ID: <20080130222035.GX26420@sgi.com>
-References: <20080130022909.677301714@sgi.com> <20080130022944.236370194@sgi.com> <20080130153749.GN7233@v2.random> <20080130155306.GA13746@sgi.com> <Pine.LNX.4.64.0801301116510.27491@schroedinger.engr.sgi.com>
+	Wed, 30 Jan 2008 17:25:24 -0500
+Date: Wed, 30 Jan 2008 16:25:12 -0600 (CST)
+From: Bruce Allen <ballen@gravity.phys.uwm.edu>
+X-X-Sender: ballen@trinity.phys.uwm.edu
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: e1000 full-duplex TCP performance well below wire speed
+In-Reply-To: <20080130082136.1017631d@deepthought>
+Message-ID: <Pine.LNX.4.63.0801301610240.19938@trinity.phys.uwm.edu>
+References: <Pine.LNX.4.63.0801300324000.6391@trinity.phys.uwm.edu>
+ <20080130.055333.192844925.davem@davemloft.net>
+ <Pine.LNX.4.63.0801300758020.11487@trinity.phys.uwm.edu>
+ <20080130082136.1017631d@deepthought>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0801301116510.27491@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 11:19:28AM -0800, Christoph Lameter wrote:
-> On Wed, 30 Jan 2008, Jack Steiner wrote:
-> 
-> > Moving to a different lock solves the problem.
-> 
-> Well it gets us back to the issue why we removed the lock. As Robin said 
-> before: If its global then we can have a huge number of tasks contending 
-> for the lock on startup of a process with a large number of ranks. The 
-> reason to go to mmap_sem was that it was placed in the mm_struct and so we 
-> would just have a couple of contentions per mm_struct.
-> 
-> I'll be looking for some other way to do this.
+Hi Stephen,
 
-I think Andrea's original concept of the lock in the mmu_notifier_head
-structure was the best.  I agree with him that it should be a spinlock
-instead of the rw_lock.
+Thanks for your helpful reply and especially for the literature pointers.
 
-Thanks,
-Robin
+>> Indeed, we are not asking to see 1000 Mb/s.  We'd be happy to see 900
+>> Mb/s.
+>>
+>> Netperf is trasmitting a large buffer in MTU-sized packets (min 1500
+>> bytes).  Since the acks are only about 60 bytes in size, they should be
+>> around 4% of the total traffic.  Hence we would not expect to see more
+>> than 960 Mb/s.
+
+> Don't forget the network overhead: http://sd.wareonearth.com/~phil/net/overhead/
+> Max TCP Payload data rates over ethernet:
+>  (1500-40)/(38+1500) = 94.9285 %  IPv4, minimal headers
+>  (1500-52)/(38+1500) = 94.1482 %  IPv4, TCP timestamps
+
+Yes.  If you look further down the page, you will see that with jumbo 
+frames (which we have also tried) on Gb/s ethernet the maximum throughput 
+is:
+
+   (9000-20-20-12)/(9000+14+4+7+1+12)*1000000000/1000000 = 990.042 Mbps
+
+We are very far from this number -- averaging perhaps 600 or 700 Mbps.
+
+> I believe what you are seeing is an effect that occurs when using
+> cubic on links with no other idle traffic. With two flows at high speed,
+> the first flow consumes most of the router buffer and backs off gradually,
+> and the second flow is not very aggressive.  It has been discussed
+> back and forth between TCP researchers with no agreement, one side
+> says that it is unfairness and the other side says it is not a problem in
+> the real world because of the presence of background traffic.
+
+At least in principle, we should have NO congestion here.  We have ports 
+on two different machines wired with a crossover cable.  Box A can not 
+transmit faster than 1 Gb/s.  Box B should be able to receive that data 
+without dropping packets.  It's not doing anything else!
+
+> See:
+>  http://www.hamilton.ie/net/pfldnet2007_cubic_final.pdf
+>  http://www.csc.ncsu.edu/faculty/rhee/Rebuttal-LSM-new.pdf
+
+This is extremely helpful.  The typical oscillation (startup) period shown 
+in the plots in these papers is of order 10 seconds, which is similar to 
+the types of oscillation periods that we are seeing.
+
+*However* we have also seen similar behavior with the Reno congestion 
+control algorithm.  So this might not be due to cubic, or entirely due to 
+cubic.
+
+In our application (cluster computing) we use a very tightly coupled 
+high-speed low-latency network.  There is no 'wide area traffic'.  So it's 
+hard for me to understand why any networking components or software layers 
+should take more than milliseconds to ramp up or back off in speed. 
+Perhaps we should be asking for a TCP congestion avoidance algorithm which 
+is designed for a data center environment where there are very few hops 
+and typical packet delivery times are tens or hundreds of microseconds. 
+It's very different than delivering data thousands of km across a WAN.
+
+Cheers,
+ 	Bruce
