@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759543AbYA3NLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbYA3NMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759543AbYA3NLE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 08:11:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYA3NKv
+	id S1755547AbYA3NMv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 08:12:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbYA3NMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 08:10:51 -0500
-Received: from wr-out-0506.google.com ([64.233.184.236]:4858 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755601AbYA3NKu (ORCPT
+	Wed, 30 Jan 2008 08:12:43 -0500
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:49897 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755202AbYA3NMm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 08:10:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gzVVte+yhQf1te5sPj6ZDyNB/VeWx9VzKlj9JTBbrw1ANtFM8Jva27eemHfcziHgQ3OPAZJiBipLleTNPO7GVHR2/XnTycCi9pMIIQf5Y1lkc1rXhT+XiBFB1TQgNOofQjb70NvRuHQHWOeIJbqY/mCn03H76Kasv2xiCTl17hE=
-Message-ID: <e2e108260801300510q94bf9c8g31a0ba9d77c3c0b9@mail.gmail.com>
-Date: Wed, 30 Jan 2008 14:10:47 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "FUJITA Tomonori" <tomof@acm.org>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-Cc: fujita.tomonori@lab.ntt.co.jp, rdreier@cisco.com,
-       James.Bottomley@hansenpartnership.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, vst@vlnb.net, linux-scsi@vger.kernel.org,
-       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20080130195635T.tomof@acm.org>
+	Wed, 30 Jan 2008 08:12:42 -0500
+X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Jan 2008 08:12:41 EST
+Date: Wed, 30 Jan 2008 14:05:59 +0100
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: linux-pcmcia@lists.infradead.org, linux-sh <linux-sh@vger.kernel.org>,
+       linux-main <linux-kernel@vger.kernel.org>
+Subject: Re: [HD64461_PCMCIA_driver] - Shared IRQ lines / Segfaults
+Message-ID: <20080130130559.GA30360@roarinelk.homelinux.net>
+References: <20080130132036.87299f09.Kristoffer.ericson@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <adazluoe2t3.fsf@cisco.com>
-	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
-	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
-	 <20080130195635T.tomof@acm.org>
+In-Reply-To: <20080130132036.87299f09.Kristoffer.ericson@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 30, 2008 11:56 AM, FUJITA Tomonori <tomof@acm.org> wrote:
-> On Wed, 30 Jan 2008 09:38:04 +0100
-> "Bart Van Assche" <bart.vanassche@gmail.com> wrote:
-> >
-> > Please specify which parameters you are referring to. As you know I
->
-> Sorry, I can't say. I don't know much about iSER. But seems that Pete
-> and Robin can get the better I/O performance - line speed ratio with
-> STGT.
+On Wed, Jan 30, 2008 at 01:20:36PM +0100, Kristoffer Ericson wrote:
+> Greetings,
+> 
+> Driver detects card insertion / ejection and sets power properly. The mapping looks resonable also compairing to a working 2.6.17 driver.
+> modprobe hostap_cs
+> hostap_cs: Registered netdevice wifi0
+> Unable to handle kernel NULL pointer dereference at virtual address 00000028
+> pc = 8d0031b8
+> *pde = 00000000
+> Oops: 0000 [#1]
+> Modules linked in: hostap_cs hostap orinoco_cs orinoco hermes atmel_cs atmel
+> 
+> Pid : 283, Comm:             modprobe
+> PC is at generic_inw+0x8/0x20
+> PC  : 8d0031b8 SP  : 8ecaba74 SR  : 400000f0 TEA : c0045040    Not tainted
+> R0  : 00000028 R1  : 8d2d9030 R2  : 8d2ac050 R3  : 00000007
+> R4  : 00000028 R5  : 00000002 R6  : 00000080 R7  : 8ecf06a0
+> R8  : 8ee62000 R9  : 00008a32 R10 : c002a1b0 R11 : 8ee62000
+> R12 : 00000080 R13 : 8ee62000 R14 : 8ecf06a0
+> MACH: 0000458f MACL: 00001110 GBR : 296ce450 PR  : 8d0031b8
+> 
+> Call trace: 
+> [<c002a1fa>] prism2_interrupt+0x4a/0xc50 [hostap_cs]
 
-Robin Humble was using a DDR InfiniBand network, while my tests were
-performed with an SDR InfiniBand network. Robin's results can't be
-directly compared to my results.
+The oops output suggests it crashes in 
+drivers/net/wireless/hostap/hostap_hw.c::prism2_check_magic(),
+specifically when it tries to read the HF384X_SWSUPPORT0_OFF register
+(which ist at offset 0x28, just like the oopsing address).
+So, looking at the HFA384X_INW macro, it seems dev->base_addr is NULL.
+I suspect this is because of set_io_map() callback in the hd64461.c
+socket driver.  The comment there says IO area is statically mapped,
+yet it returns null; I suggest you let it return the base address of
+the IO area instead.
 
-Pete Wyckoff's results
-(http://www.osc.edu/~pw/papers/wyckoff-iser-snapi07-talk.pdf) are hard
-to interpret. I have asked Pete which of the numbers in his test can
-be compared with what I measured, but Pete did not reply.
-
-> The version of OpenIB might matters too. For example, Pete said that
-> STGT reads loses about 100 MB/s for some transfer sizes for some
-> transfer sizes due to the OpenIB version difference or other unclear
-> reasons.
->
-> http://article.gmane.org/gmane.linux.iscsi.tgt.devel/135
-
-Pete wrote about a degradation from 600 MB/s to 500 MB/s for reads
-with STGT+iSER. In my tests I measured 589 MB/s for reads (direct
-I/O), which matches with the better result obtained by Pete.
-
-Note: the InfiniBand kernel modules I used were those from the
-2.6.22.9 kernel, not from the OFED distribution.
-
-Bart.
+-- 
+ Manuel Lauss
