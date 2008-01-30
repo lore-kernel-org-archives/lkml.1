@@ -1,71 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbYA3Rp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760113AbYA3Rsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759916AbYA3Rp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 12:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbYA3RpU
+	id S1760113AbYA3Rsv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 12:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYA3Rso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 12:45:20 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51380 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752556AbYA3RpS (ORCPT
+	Wed, 30 Jan 2008 12:48:44 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:23909 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750794AbYA3Rsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 12:45:18 -0500
-Date: Wed, 30 Jan 2008 09:44:27 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <ak@suse.de>
-Cc: "Huang, Ying" <ying.huang@intel.com>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: ioremap_xxx() with EXEC enabled
-Message-ID: <20080130094427.720fdae7@laptopd505.fenrus.org>
-In-Reply-To: <20080130173048.GA9812@bingen.suse.de>
-References: <1201685530.17912.11.camel@caritas-dev.intel.com>
-	<20080130074540.031b6799@laptopd505.fenrus.org>
-	<20080130173048.GA9812@bingen.suse.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Jan 2008 12:48:43 -0500
+X-IronPort-AV: E=Sophos;i="4.25,278,1199682000"; 
+   d="scan'208";a="47658167"
+Subject: [PATCH 1/1 try #2] [Kallsyms] Blackfin: Allow kernel symbols in L1
+	to be found
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Paulo Marques <pmarques@grupopie.com>
+Cc: Bryan Wu <bryan.wu@analog.com>, linux-kernel@vger.kernel.org,
+       Robin Getz <robin.getz@analog.com>
+In-Reply-To: <47A05CBA.2030903@grupopie.com>
+References: <1201688453-1763-1-git-send-email-bryan.wu@analog.com>
+	 <47A05CBA.2030903@grupopie.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Organization: Analog Devices, Inc.
+Date: Thu, 31 Jan 2008 01:48:34 +0800
+Message-Id: <1201715314.6530.0.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 30 Jan 2008 17:48:41.0973 (UTC) FILETIME=[5A1E1A50:01C86368]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2008 18:30:48 +0100
-Andi Kleen <ak@suse.de> wrote:
+>From 027addca9ed40f16b4238a92ca6b871ca301c139 Mon Sep 17 00:00:00 2001
+From: Robin Getz <robin.getz@analog.com>
+Date: Thu, 31 Jan 2008 01:21:25 +0800
+Subject: [PATCH] [Kallsyms] Blackfin: Allow kernel symbols in L1 to be found
 
-> On Wed, Jan 30, 2008 at 07:45:40AM -0800, Arjan van de Ven wrote:
-> > On Wed, 30 Jan 2008 17:32:10 +0800
-> > "Huang, Ying" <ying.huang@intel.com> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > On i386, EFI may need to map EFI runtime code area as EXEC enabled
-> > > with ioremap(). But, I found that the memory are mapped as EXEC
-> > > disabled when mapped with ioremap() now. I think we may need a
-> > > method to map memory area as EXEC enabled with ioremap_xxx().
-> > > Some possible interface schemes for mapping as EXEC enabled are
-> > > as follow:
-> > > 
-> > > - Interface scheme 1:
-> > 
-> > scheme 3:
-> > 
-> > set_memory_x(... )
-> 
-> On i386 EFI is unlikely to be in the direct mapping ...
+Add _stext_l1, _etext_l1 for the L1 memory section in Blackfin.
 
-1) 32 bit EFI is totally irrelevant.
-2) set_memory_ and set_pages_ API is not restricted to direct mapping. That's why they take a virtual address / struct page
+Signed-off-by: Robin Getz <robin.getz@analog.com>
+Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+---
+ kernel/kallsyms.c  |    6 +++++-
+ scripts/kallsyms.c |    8 +++++++-
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
-> 
-> -Andi
-> 
-
-
+diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+index 7dadc71..714bd5b 100644
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -63,7 +63,11 @@ static inline int is_kernel_extratext(unsigned long addr)
+ 
+ static inline int is_kernel_text(unsigned long addr)
+ {
+-	if (addr >= (unsigned long)_stext && addr <= (unsigned long)_etext)
++	if ((addr >= (unsigned long)_stext && addr <= (unsigned long)_etext)
++#if defined(CONFIG_BLACKFIN)
++             || (addr >= (unsigned long)_stext_l1 && addr <= (unsigned long)_etext_l1)
++#endif
++	)
+ 		return 1;
+ 	return in_gate_area_no_task(addr);
+ }
+diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
+index 1f11d84..5271db7 100644
+--- a/scripts/kallsyms.c
++++ b/scripts/kallsyms.c
+@@ -42,6 +42,7 @@ struct sym_entry {
+ static struct sym_entry *table;
+ static unsigned int table_size, table_cnt;
+ static unsigned long long _text, _stext, _etext, _sinittext, _einittext, _sextratext, _eextratext;
++static unsigned long long _stext_l1, _etext_l1;
+ static int all_symbols = 0;
+ static char symbol_prefix_char = '\0';
+ 
+@@ -103,6 +104,10 @@ static int read_symbol(FILE *in, struct sym_entry *s)
+ 		_sextratext = s->addr;
+ 	else if (strcmp(sym, "_eextratext") == 0)
+ 		_eextratext = s->addr;
++	else if (strcmp(sym, "_stext_l1" ) == 0)
++		_stext_l1 = s->addr;
++	else if (strcmp(sym, "_etext_l1" ) == 0)
++		_etext_l1 = s->addr;
+ 	else if (toupper(stype) == 'A')
+ 	{
+ 		/* Keep these useful absolute symbols */
+@@ -166,7 +171,8 @@ static int symbol_valid(struct sym_entry *s)
+ 	if (!all_symbols) {
+ 		if ((s->addr < _stext || s->addr > _etext)
+ 		    && (s->addr < _sinittext || s->addr > _einittext)
+-		    && (s->addr < _sextratext || s->addr > _eextratext))
++		    && (s->addr < _sextratext || s->addr > _eextratext)
++		    && (s->addr < _stext_l1 || s->addr > _etext_l1))
+ 			return 0;
+ 		/* Corner case.  Discard any symbols with the same value as
+ 		 * _etext _einittext or _eextratext; they can move between pass
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.5.3.4
+
