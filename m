@@ -1,93 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764149AbYA3Xom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758715AbYA3Xw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764149AbYA3Xom (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 18:44:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbYA3Xo3
+	id S1758715AbYA3Xw2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 18:52:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbYA3XwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 18:44:29 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48700 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754326AbYA3Xo2 convert rfc822-to-8bit (ORCPT
+	Wed, 30 Jan 2008 18:52:18 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:42782
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752156AbYA3XwR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 18:44:28 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Regression] 2.6.24-git8 (and earlier): Multiple processes stuck in D states after logout from KDE
-Date: Thu, 31 Jan 2008 00:42:07 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200801302338.25365.rjw@sisk.pl>
-In-Reply-To: <200801302338.25365.rjw@sisk.pl>
+	Wed, 30 Jan 2008 18:52:17 -0500
+Date: Thu, 31 Jan 2008 00:52:14 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, Nick Piggin <npiggin@suse.de>,
+       kvm-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
+	ranges
+Message-ID: <20080130235214.GC7185@v2.random>
+References: <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com> <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com> <20080130000039.GA7233@v2.random> <20080130161123.GS26420@sgi.com> <20080130170451.GP7233@v2.random> <20080130173009.GT26420@sgi.com> <20080130182506.GQ7233@v2.random> <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200801310042.07910.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.64.0801301147330.30568@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update.
-
-On Wednesday, 30 of January 2008, Rafael J. Wysocki wrote:
-> Hi,
+On Wed, Jan 30, 2008 at 11:50:26AM -0800, Christoph Lameter wrote:
+> Then we have 
 > 
-> Recently I've been observing problems with unmounting the /home fs on reboot
-> and/or shutdown on two test boxes.
+> invalidate_range_start(mm)
 > 
-> After some more investigation I've found that this is due to some KDE processes
-> stuck in D states after their owner has logged out.
+> and
 > 
-> This happens 100% of the time if there's a suspend/resume cycle before the user
-> logs out (ie. the user logs into KDE, works for some time, suspends the box to
-> RAM and resmes one or more times and then logs out).  Still, I also observe the
-> symptoms on a box that's never suspended.
+> invalidate_range_finish(mm, start, end)
 > 
-> I'm not sure how to debug this, so please advise.
+> in addition to the invalidate rmap_notifier?
+> 
+> ---
+>  include/linux/mmu_notifier.h |    7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/include/linux/mmu_notifier.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/mmu_notifier.h	2008-01-30 11:49:02.000000000 -0800
+> +++ linux-2.6/include/linux/mmu_notifier.h	2008-01-30 11:49:57.000000000 -0800
+> @@ -69,10 +69,13 @@ struct mmu_notifier_ops {
+>  	/*
+>  	 * lock indicates that the function is called under spinlock.
+>  	 */
+> -	void (*invalidate_range)(struct mmu_notifier *mn,
+> +	void (*invalidate_range_begin)(struct mmu_notifier *mn,
+>  				 struct mm_struct *mm,
+> -				 unsigned long start, unsigned long end,
+>  				 int lock);
+> +
+> +	void (*invalidate_range_end)(struct mmu_notifier *mn,
+> +				 struct mm_struct *mm,
+> +				 unsigned long start, unsigned long end);
+>  };
 
-After reverting:
+start/finish/begin/end/before/after? ;)
 
-commit 37bb6cb4097e29ffee970065b74499cbf10603a3
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Fri Jan 25 21:08:32 2008 +0100
+I'd drop the 'int lock', you should skip the before/after if
+i_mmap_lock isn't null and offload it to the caller before taking the
+lock. At least for the "after" call that looks a few liner change,
+didn't figure out the "before" yet.
 
-    hrtimer: unlock hrtimer_wakeup
-
-I no longer get processes in the D state, but there still is a problem with
-artswrapper (this is an openSUSE 10.3 system, x86-64).  Namely,
-after a suspend/resume cycle and logging out/logging in the user,
-artswrapper gets stuck somewhere, apparently in the running (R) state.
-For this reason it blocks any subsequent attempts to suspend.
-
-Here's the relevant trace (from show_state()):
-
-[  522.474919] artswrapper   R  running task        0  4805      1
-[  522.474922]  ffff810074cd1f70 0000000000000082 0000000000000296 ffff810074cd1ed8
-[  522.474926]  ffffffff80311769 ffff810074cd1f20 ffffffff80701240 ffffffff80701240
-[  522.474930]  ffffffff80701240 ffffffff80701240 ffffffff80701240 ffffffff80701240
-[  522.474933] Call Trace:
-[  522.474940]  [<ffffffff80311769>] ? __up_read+0x8f/0x97
-[  522.474963]  [<ffffffff8020c5cf>] retint_careful+0xd/0x21
-
-where, according to gdb,
-
-(gdb) l *__up_read+0x8f
-0xffffffff80311769 is in __up_read (/home/rafael/src/linux-2.6/lib/rwsem-spinlock.c:273).
-268
-269             if (--sem->activity == 0 && !list_empty(&sem->wait_list))
-270                     sem = __rwsem_wake_one_writer(sem);
-271
-272             spin_unlock_irqrestore(&sem->wait_lock, flags);
-273     }
-274
-275     /*
-276      * release a write lock on the semaphore
-277      */
-
-What gives?
-
-Rafael
+Given the amount of changes that are going on in design terms to cover
+both XPMEM and GRE, can we split the minimal invalidate_page that
+provides an obviously safe and feature complete mmu notifier code for
+KVM, and merge that first patch that will cover KVM 100%, it will
+cover GRE 90%, and then we add invalidate_range_before/after in a
+separate patch and we close the remaining 10% for GRE covering
+ptep_get_and_clear or whatever else ptep_*?  The mmu notifiers are
+made so that are extendible in backwards compatible way. I think
+invalidate_page inside ptep_clear_flush is the first fundamental block
+of the mmu notifiers. Then once the fundamental is in and obviously
+safe and feature complete for KVM, the rest can be added very easily
+with incremental patches as far as I can tell. That would be my
+preferred route ;)
