@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbYA3FHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYA3FOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755072AbYA3FHj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 00:07:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYA3FHb
+	id S1755004AbYA3FOj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 00:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYA3FO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 00:07:31 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:58702 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751402AbYA3FHa (ORCPT
+	Wed, 30 Jan 2008 00:14:28 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46114
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751066AbYA3FO1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 00:07:30 -0500
-Date: Wed, 30 Jan 2008 05:07:21 +0000
-From: Jon Masters <jonathan@jonmasters.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Pavel Roskin <proski@gnu.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>
-Subject: Re: ndiswrapper and GPL-only symbols redux
-Message-ID: <20080130050721.GB22444@dallas.jonmasters.org>
-References: <1201641765.18773.35.camel@dv> <20080129224529.4b8016c3@core> <1201651006.23553.8.camel@dv> <p73bq746lml.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73bq746lml.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.11
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: jcm@dallas.jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Wed, 30 Jan 2008 00:14:27 -0500
+Date: Tue, 29 Jan 2008 21:14:46 -0800 (PST)
+Message-Id: <20080129.211446.254604070.davem@davemloft.net>
+To: hidave.darkstar@gmail.com
+Cc: marcel@holtmann.org, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: [PATCH retry] bluetooth : add conn add/del workqueues to avoid
+ connection fail
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080130022354.GA3132@darkstar.te-china.tietoenator.com>
+References: <20080130022354.GA3132@darkstar.te-china.tietoenator.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 04:24:50AM +0100, Andi Kleen wrote:
-> Pavel Roskin <proski@gnu.org> writes:
-> >
-> > static inline void add_taint_module(struct module *mod, unsigned flag)
-> > {
-> >         add_taint(flag);
-> >         mod->taints |= flag;
-> > }
-> >
-> > The module taint is set before the symbols are resolved.  Therefore, the
-> > GPL-only symbols won't be resolved.
+From: Dave Young <hidave.darkstar@gmail.com>
+Date: Wed, 30 Jan 2008 10:23:54 +0800
+
 > 
-> I think using a separate taint flag that does not disable GPL symbols
-> for the ndiswrapper case would be a fair solution. After all the main
-> motivation for tainting ndiswrapper is to make it visible in oopses, but not 
-> prevent it from loading in the first place.
+> The bluetooth hci_conn sysfs add/del executed in the default workqueue.
+> If the del_conn is executed after the new add_conn with same target,
+> add_conn will failed with warning of "same kobject name".
 > 
-> How about you submit an incremental patch to do that?
+> Here add btaddconn & btdelconn workqueues,
+> flush the btdelconn workqueue in the add_conn function to avoid the issue.
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-I'll happily submit a patch to do whateve is wanted, and add comments
-(I'm also debugging seveal module issues right now, so I have a
-good opportunity to look over some of the code).
+This looks good, applied, thanks Dave.
 
-But do we want to:
+I've queued this up for 2.6.25 merging, if you want me to
+schedule it for -stable, just let me know.
 
-*). Add a new taint?
-*). Move it later?
-
-It's all trivial, but a policy should be established for the future.
-
-Jon.
+Thanks again.
