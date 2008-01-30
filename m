@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbYA3QLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbYA3QNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758426AbYA3QLe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 11:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbYA3QL1
+	id S1759498AbYA3QNU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 11:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYA3QNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 11:11:27 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:39873 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751482AbYA3QL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 11:11:26 -0500
-Date: Wed, 30 Jan 2008 10:11:24 -0600
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>,
-       Christoph Lameter <clameter@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       Nick Piggin <npiggin@suse.de>, kvm-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080130161123.GS26420@sgi.com>
-References: <20080128202840.974253868@sgi.com> <20080128202923.849058104@sgi.com> <20080129162004.GL7233@v2.random> <Pine.LNX.4.64.0801291153520.25300@schroedinger.engr.sgi.com> <20080129211759.GV7233@v2.random> <Pine.LNX.4.64.0801291327330.26649@schroedinger.engr.sgi.com> <20080129220212.GX7233@v2.random> <Pine.LNX.4.64.0801291407380.27104@schroedinger.engr.sgi.com> <20080130000039.GA7233@v2.random>
+	Wed, 30 Jan 2008 11:13:06 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44298 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751345AbYA3QND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 11:13:03 -0500
+Date: Wed, 30 Jan 2008 17:10:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       linux-ia64@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: x86/non-x86: percpu, node ids, apic ids x86.git fixup
+Message-ID: <20080130161036.GA12293@elte.hu>
+References: <200801301414.m0UEEgCC006371@hera.kernel.org> <Pine.LNX.4.64.0801301622460.11859@vixen.sonytel.be> <47A09F8A.3000309@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080130000039.GA7233@v2.random>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <47A09F8A.3000309@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Robin, if you don't mind, could you please post or upload somewhere
-> your GPLv2 code that registers itself in Christoph's V2 notifiers? Or
-> is it top secret? I wouldn't mind to have a look so I can better
-> understand what's the exact reason you're sleeping besides attempting
-> GFP_KERNEL allocations. Thanks!
 
-Dean is still actively working on updating the xpmem patch posted
-here a few months ago reworked for the mmu_notifiers.  I am sure
-we can give you a early look, but it is in a really rough state.
+* Mike Travis <travis@sgi.com> wrote:
 
-http://marc.info/?l=linux-mm&w=2&r=1&s=xpmem&q=t
+> > This broke powerpc (and presumably ia64 and sparc64) in current 
+> > linux-2.6.git:
+> 
+> I'm generating a "fixup patch" right now...
 
-The need to sleep comes from the fact that these PFNs are sent to other
-hosts on the same NUMA fabric which have direct access to the pages
-and then placed into remote process's page tables and then filled into
-their TLBs.  Our only means of communicating the recall is async.
+thanks! Sorry about that: we cross-built on ARM but not on SMP non-x86 
+platforms so this dependency/breakage went unnoticed.
 
-I think I need to straighten this discussion out in my head a little bit.
-Am I correct in assuming Andrea's original patch set did not have any SMP
-race conditions for KVM?  If so, then we need to start looking at how to
-implement Christoph's and my changes in a safe fashion.  Andrea, I agree
-complete that our introduction of the range callouts have introduced
-SMP races.
-
-The three issues we need to simultaneously solve is revoking the remote
-page table/tlb information while still in a sleepable context and not
-having the remote faulters become out of sync with the granting process.
-Currently, I don't see a way to do that cleanly with a single callout.
-
-Could we consider doing a range-based recall and lock callout before
-clearing the processes page tables/TLBs, then use the _page or _range
-callouts from Andrea's patch to clear the mappings,  finally make a
-range-based unlock callout.  The mmu_notifier user would usually use ops
-for either the recall+lock/unlock family of callouts or the _page/_range
-family of callouts.
-
-Thanks,
-Robin
+	Ingo
