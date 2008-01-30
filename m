@@ -1,80 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760637AbYA3TrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759276AbYA3Tsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760637AbYA3TrQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Jan 2008 14:47:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbYA3Tq4
+	id S1759276AbYA3Tsm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Jan 2008 14:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbYA3Tse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Jan 2008 14:46:56 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:53163 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756100AbYA3Tqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Jan 2008 14:46:55 -0500
-From: akepner@sgi.com
-Date: Wed, 30 Jan 2008 11:45:28 -0800
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Tony Luck <tony.luck@intel.com>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] dma/ia64: update ia64 machvecs
-Message-ID: <20080130194528.GX30022@sgi.com>
-References: <20080130055212.GT30022@sgi.com> <1201713958.3292.27.camel@localhost.localdomain>
+	Wed, 30 Jan 2008 14:48:34 -0500
+Received: from main.gmane.org ([80.91.229.2]:58375 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751061AbYA3Tsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Jan 2008 14:48:33 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>
+Subject: [BUG?] GDTH driver not working after upgrade to 2.6.24
+Date: Wed, 30 Jan 2008 20:47:34 +0100
+Message-ID: <fnqka6$l46$1@ger.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1201713958.3292.27.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6A01A40DF1C3A97B29F162BD"
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: dslb-084-061-143-009.pools.arcor-ip.net
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+X-Enigmail-Version: 0.95.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 30, 2008 at 11:25:58AM -0600, James Bottomley wrote:
-> In general, the patches look reasonable to me.  Just an observation:
-> 
-> On Tue, 2008-01-29 at 21:52 -0800, akepner@sgi.com wrote:
-> > diff --git a/include/linux/dma-attrs.h b/include/linux/dma-attrs.h
-> > index e69de29..31af292 100644
-> > --- a/include/linux/dma-attrs.h
-> > +++ b/include/linux/dma-attrs.h
-> > @@ -0,0 +1,48 @@
-> > +#ifndef _DMA_ATTR_H
-> > +#define _DMA_ATTR_H
-> > +#ifdef ARCH_USES_DMA_ATTRS
-> > +
-> > +enum dma_attr {
-> > +       DMA_ATTR_BARRIER,
-> > +       DMA_ATTR_FOO,
-> > +       DMA_ATTR_GOO,
-> > +       DMA_ATTR_MAX,
-> > +};
-> > +
-> 
-> 
-> The attribute names (DMA_ATTR_...) are going to have to live somewhere
-> outside of the #ifdef ARCH_USES_DMA_ATTRS otherwise we'll get compile
-> failures of drivers using attributes on architectures that don't support
-> them.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6A01A40DF1C3A97B29F162BD
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-Right. Thanks for catching that.
+Hi,
 
-> 
-> Secondly, DMA_ATTR_BARRIER doesn't quite sound right.  What you're
-> actually doing is trying to prescribe strict ordering, so shouldn't this
-> be something like DMA_ATTR_STRICT_ORDERING (and perhaps with a
-> corresponding DMA_ATTR_RELAXED_ORDERING for the PCIe case).  
+so i have upgraded a system to kernel 2.6.24. After that, it failed to=20
+boot with the usual message telling, that the rootfs on device /dev/sda1 =
 
-OK, I'll reconsider the names here.
+  cannot be mounted (a raid1 run by the controller below).
 
-> ... also,
-> strike the DMA_ATTR_FOO and DMA_ATTR_GOO since they have no plausible
-> meaning.
-> 
+With 2.6.23.12, everything is working fine.
 
-Yeah, I realized only after sending that I'd forgotten to 
-remove these. 
+# lspci -v:
 
--- 
-Arthur
+03:01.0 RAID bus controller: Intel Corporation RAID Controller
+         Subsystem: Intel Corporation Unknown device 01db
+         Flags: bus master, 66MHz, slow devsel, latency 64, IRQ 17
+         Memory at ddffc000 (32-bit, prefetchable) [size=3D16K]
+         [virtual] Expansion ROM at deef0000 [disabled] [size=3D32K]
+         Capabilities: [80] Power Management version 2
+
+# GDT-related dmesg output (2.6.23.12):
+
+GDT-HA: Storage RAID Controller Driver. Version: 3.05
+ACPI: PCI Interrupt 0000:03:01.0[A] -> GSI 24 (level, low) -> IRQ 17
+GDT-HA: Found 1 PCI Storage RAID Controllers
+Configuring GDT-PCI HA at 3/1 IRQ 17
+GDT-HA 0: Name: SRCU42L
+scsi0 : SRCU42L
+scsi 0:0:0:0: Direct-Access     Intel    Host Drive  #00       PQ: 0 ANSI=
+: 2
+scsi 0:2:6:0: Processor         ESG-SHV  SCA HSBP M29     1.06 PQ: 0 ANSI=
+: 2
+sd 0:0:0:0: [sda] 143299800 512-byte hardware sectors (73369 MB)
+sd 0:0:0:0: [sda] Assuming Write Enabled
+sd 0:0:0:0: [sda] Assuming drive cache: write through
+sd 0:0:0:0: [sda] 143299800 512-byte hardware sectors (73369 MB)
+sd 0:0:0:0: [sda] Assuming Write Enabled
+sd 0:0:0:0: [sda] Assuming drive cache: write through
+  sda: sda1 sda2 < sda5 >
+sd 0:0:0:0: [sda] Attached SCSI disk
+
+# cat /boot/config-2.6.24 |grep GDT
+
+CONFIG_SCSI_GDTH=3Dy
+
+
+
+
+Any ideas?
+
+http://www.kernel.org/diff/diffview.cgi?file=3D%2Fpub%2Flinux%2Fkernel%2F=
+v2.6%2Fpatch-2.6.24.bz2=20
+show huge drivers/scsi/gdth* related changes.
+
+Can't test at the moment. System went production.
+
+
+Regards,
+   Sven
+
+
+--------------enig6A01A40DF1C3A97B29F162BD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHoNRW7Ww7FjRBE4ARAtofAKCAza4ps1dUfI6f2id78O1mxGQdfgCgqXeJ
+D7P5E7+EOiYXZ+jBNAUa+S8=
+=NT5k
+-----END PGP SIGNATURE-----
+
+--------------enig6A01A40DF1C3A97B29F162BD--
 
